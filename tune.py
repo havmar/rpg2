@@ -1,0 +1,74 @@
+"""Monte Carlo tuner for the dungeon, post survival add-on.
+
+Deaths are now the rare tail (a killing blow with the saves run dry), so the
+none/one/both death split is no longer the whole story. The real challenge is
+attrition: how often someone goes Down, and how far Power / STA / potions are
+drawn down by the end of a run. This sweeps room layouts and reports both.
+"""
+
+import random
+from collections import Counter
+
+import rpg
+
+
+def simulate(rooms, trials=20000):
+    counts = Counter()
+    downed_runs = 0          # runs where at least one hero went Down
+    pow_left = sta_left = heal_left = 0.0
+    pow_max = sta_max = 0.0
+    rng = random.Random(12345)
+    saved = rpg.DUNGEON_ROOMS
+    rpg.DUNGEON_ROOMS = rooms
+    try:
+        for _ in range(trials):
+            party = rpg.make_party(rng)
+            log = []
+            rpg.run_dungeon(party, rng, log)
+            counts[rpg.outcome(party)] += 1
+            # "Down" is transient (revived between rooms); a run shows it via the
+            # narrative. Count it by scanning the log for the down line.
+            if any("goes down" in line for line in log):
+                downed_runs += 1
+            for h in party:
+                pow_left += h.cur_power
+                sta_left += h.cur_sta
+                heal_left += h.items.get("healing", 0)
+                pow_max += h.power
+                sta_max += h.sta
+    finally:
+        rpg.DUNGEON_ROOMS = saved
+    n = trials * 2  # two heroes per run
+    stats = {
+        "down_pct": 100 * downed_runs / trials,
+        "pow_pct": 100 * pow_left / pow_max if pow_max else 0,
+        "sta_pct": 100 * sta_left / sta_max if sta_max else 0,
+        "heal_left": heal_left / n,
+    }
+    return counts, stats, trials
+
+
+def main():
+    layouts = [
+        [2, 2],
+        [2, 2, 2],
+        [2, 2, 3],
+        [2, 3, 3],
+        [3, 3, 3],
+        [2, 3, 4],
+    ]
+    print(f"{'rooms':<12}{'none':>7}{'one':>7}{'both':>7}"
+          f"{'down%':>8}{'Pow%':>7}{'STA%':>7}{'heal':>7}")
+    print("  (none/one/both = truly slain; down% = runs with a Down; "
+          "Pow%/STA% = avg budget left; heal = avg healing potions left)")
+    for rooms in layouts:
+        counts, stats, trials = simulate(rooms)
+        pct = {k: 100 * counts[k] / trials for k in ("none", "one", "both")}
+        print(f"{str(rooms):<12}"
+              f"{pct['none']:>6.1f}%{pct['one']:>6.1f}%{pct['both']:>6.1f}%"
+              f"{stats['down_pct']:>7.1f}%{stats['pow_pct']:>6.1f}%"
+              f"{stats['sta_pct']:>6.1f}%{stats['heal_left']:>7.2f}")
+
+
+if __name__ == "__main__":
+    main()
