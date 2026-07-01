@@ -1,6 +1,6 @@
 """Combat Sim - combat engine, random party, and a skeleton dungeon.
 
-Implements the ruleset in rpg2-rules.md (core + the Survival & Resources add-on).
+Implements the ruleset in rules.md (core + the Survival & Resources add-on).
 A fight takes no input once it starts; it produces an outcome and a narrative log.
 Generalized from a 1v1 exchange to a group melee so a party can be swarmed
 (numbers are the skeletons' whole threat).
@@ -349,6 +349,22 @@ def rest(survivors: list[Entity], log: list[str]) -> None:
                        f"(Power -> {h.cur_power}; {h.items['power']} left)")
 
 
+def party_wiped(party: list[Entity], log: list[str]) -> bool:
+    """A total party knockout is a defeat. If no hero is left standing after a
+    fight, there's no one to drag the fallen clear -- every Down hero is finished
+    off (marked Dead). Returns True on a wipe (the run should stop). Kept here so
+    every scenario shares one game-over rule."""
+    if any(h.alive for h in party):
+        return False
+    for h in party:
+        if not h.dead:
+            h.dead = True
+            h.down = False
+    log.append("  *** The party is overwhelmed -- none left standing. "
+               "The fallen do not rise. TOTAL DEFEAT. ***")
+    return True
+
+
 def run_dungeon(party: list[Entity], rng: random.Random,
                 log: list[str]) -> None:
     skel_count = 0
@@ -368,6 +384,9 @@ def run_dungeon(party: list[Entity], rng: random.Random,
             skeletons.append(make_skeleton(rng, skel_count))
 
         group_combat(living, skeletons, rng, log)
+
+        if party_wiped(party, log):
+            break
 
         survivors = [h for h in party if h.alive]
         if survivors:

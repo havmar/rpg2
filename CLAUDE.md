@@ -10,13 +10,35 @@ player's real decisions happen *between* fights.
 
 ## Files
 
-- `rpg2-rules.md` — the design doc and ruleset. The source of truth for *intent*
-  (the "why"). Read this before changing mechanics.
+- `rules.md` — the ruleset. The source of truth for *mechanics intent* (the
+  "why" behind the numbers). Read this before changing mechanics.
+- `plan.md` — the high-concept design record and phased build roadmap that sits
+  *above* `rules.md` (design spine, currencies, systems, the phase-by-phase
+  feature plan). Read this for direction / what to build next.
 - `rpg.py` — the implementation: combat engine, random party generation, and the
   skeleton dungeon. Self-contained, stdlib only.
 - `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both death
   distribution. Use it to re-check balance after any mechanics change.
+- `scratch_bandits.py` — one-off scenario: a *bandit hideout* (living fighters
+  with real DEX/STR who tire, unlike the brittle skeletons). Imports the engine
+  from `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
+  `rest`); prints both party and enemy stats per room. `--seed N` for repro.
+  Currently *brutal* — a near-certain wipe over seeds 1-10 now that a total party
+  knockout is a defeat; it needs retuning (softer roster) to be a fair fight
+  again. Keep it in sync with the `rpg.py` API.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
+
+> **Registering files:** whenever you add a new file to this project (a new
+> scenario, tool, or module), add it to this **Files** list with a one-line note
+> on what it is and how it's run. Keep this list the index of what exists.
+
+> **Keeping the docs current:** `rules.md` (mechanics) and `plan.md` (design +
+> roadmap) are living documents — keep them in sync with the code automatically,
+> as part of the same change, not as a follow-up. When you change a mechanic,
+> update `rules.md` to match; when you finish, defer, or re-scope a roadmap
+> feature, update `plan.md`'s phase status. If a code change contradicts either
+> doc, the doc is stale — fix it in the same commit. Flag any conflict you notice
+> between them rather than leaving it.
 
 ## Running
 
@@ -29,7 +51,7 @@ python tune.py           # outcome-distribution sweep over layouts
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
 is intentionally ASCII-only, so plain runs are usually fine.
 
-## Core mechanics (see `rpg2-rules.md` for the full spec)
+## Core mechanics (see `rules.md` for the full spec)
 
 - Three stats — **DEX** (who lands), **STR** (wound severity + soak), **STA**
   (a draining clock; **Winded** at STA ≤ 3) — plus an **HP** wound pool.
@@ -42,7 +64,7 @@ is intentionally ASCII-only, so plain runs are usually fine.
 
 ## Survival & Resources add-on (now implemented)
 
-See the add-on section in `rpg2-rules.md` for intent. In `rpg.py`:
+See the add-on section in `rules.md` for intent. In `rpg.py`:
 - **HP carries across the whole run** (drains like STA, never a per-fight reset),
   with only a minimal `HP_RECOVERY_BETWEEN_ROOMS` catch-breath; healing otherwise
   comes from potions/spells/resting between adventures. **0 HP = Down** (out of
@@ -58,6 +80,10 @@ See the add-on section in `rpg2-rules.md` for intent. In `rpg.py`:
   power/stamina potions deliberately when low.
 - A character only truly **dies** on an unsaved killing blow; `outcome()` counts
   only the slain.
+- **Total party knockout = defeat.** `party_wiped()` (in `rpg.py`, shared by both
+  scenarios) checks after every fight: if no hero is left standing, the Down are
+  finished off (marked Dead) and the run stops — a game over. So a double-Down is
+  no longer a recoverable state; it ends the run.
 
 ## The current prototype scenario
 
@@ -73,11 +99,15 @@ See the add-on section in `rpg2-rules.md` for intent. In `rpg.py`:
 
 ## Balance / tuning
 
-Deaths are now the **rare earned tail**, so `tune.py` reports attrition, not just
-the death split. At `[2, 2, 3]` over 20k runs: ~**96% / 4% / 0.2%** truly slain,
-a **Down in ~53%** of runs, and by the end ~**77% Power / ~13% STA** left with
-healing potions fully spent. The fail state is depletion (STA is the binding
-clock); single fights stay winnable, the *run* is the challenge.
+`tune.py` reports attrition alongside the death split. **Since a total party
+knockout now = defeat, the "both die" column is much heavier** (a double-Down is a
+wipe, not a recovery). At `[2, 2, 3]` over 20k runs: ~**64% / 0.6% / 35%**
+(none / one / both slain), a **Down in ~53%** of runs, and by the end ~**77%
+Power / ~13% STA** left with healing potions fully spent. The lethality now lives
+in the wipe tail rather than in lone killing blows — `[2, 2, 3]` is arguably too
+swingy and is a candidate for retuning (fewer/softer rooms, more `default_kit`, or
+a cheaper `SAVE_COST`). The fail state is still depletion feeding a wipe; single
+fights stay winnable, the *run* is the challenge.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
 (`SAVE_COST`, `HEAL_REGEN`, `STA_RECOVERY_BETWEEN_ROOMS`, `default_kit`), then
@@ -102,4 +132,4 @@ counter, composing the party so builds cover each other, and *buying* the
 consumables the survival layer now spends automatically. The survival mechanics
 (Power saves, items, Down/Dead, the day economy) exist; what's missing is the
 player deciding how to allocate and stock them. See the "Between-fights layer"
-and "Survival & Resources" sections in `rpg2-rules.md`.
+and "Survival & Resources" sections in `rules.md`.
