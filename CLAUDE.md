@@ -5,6 +5,29 @@ with Claude as DM. Fights resolve on their own (no input once a fight starts) an
 produce an outcome plus a narrative log; the DM narrates *over* that log. The
 player's real decisions happen *between* fights.
 
+## The feel we're going for
+
+A **mechanics-centered RPG** with the freedom of a tabletop game. Combat is
+*autocombat* — it runs to completion in one call so play stays fast in chat
+instead of grinding through every roll by hand — but the world around it stays
+open-ended and player-driven. The engine owns the numbers; the DM owns the
+fiction.
+
+**How play is driven:** the game is *two halves working together*.
+- **The scripts (`rpg.py`)** are a library of mechanics primitives — `start_fight`,
+  `group_combat`, `short_rest`, `long_rest`, `party_wiped`, etc.
+- **Claude (as DM)** calls those primitives *on purpose*, in whatever order the
+  story wants, and narrates over the result. There is deliberately **no
+  autopilot** for pacing: e.g. nothing forces the day to end — Claude decides
+  when the party makes camp and calls `long_rest`. This preserves TTRPG-style
+  freedom. Some of these calls can be automated more later; for now they're
+  manual on purpose.
+- **Part of the game lives in instructions to Claude**, not in code. The engine
+  won't ever encode every situation; judgement calls, improvised scenes, and
+  when-to-call-which-function all live in this file and the DM's reasoning. When
+  we settle a rule of play that isn't a pure number, write it here rather than
+  forcing it into the engine.
+
 > Project-level environment (Python path, encoding, etc.) lives in the parent
 > `C:\minden\projects\CLAUDE.md`. Don't duplicate it here.
 
@@ -19,13 +42,19 @@ player's real decisions happen *between* fights.
   skeleton dungeon. Self-contained, stdlib only.
 - `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both death
   distribution. Use it to re-check balance after any mechanics change.
-- `scratch_bandits.py` — one-off scenario: a *bandit hideout* (living fighters
-  with real DEX/STR who tire, unlike the brittle skeletons). Imports the engine
-  from `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
-  `rest`); prints both party and enemy stats per room. `--seed N` for repro.
-  Currently *brutal* — a near-certain wipe over seeds 1-10 now that a total party
-  knockout is a defeat; it needs retuning (softer roster) to be a fair fight
-  again. Keep it in sync with the `rpg.py` API.
+- `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters with real
+  DEX/STR who tire, unlike the brittle skeletons). Imports the engine from
+  `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
+  `short_rest`), exposing `run_hideout()` for batch use. **This is the intended
+  TOUGH site**: it pays 3x the skeleton barrow (XP and gold) and wipes a fresh
+  rank-0 party ~78% of the time — the designed play is to farm skeletons for
+  combat training first (rank 2 brings the wipe rate to ~23%). `--seed N` for
+  repro, `--training N` to start the party pre-trained. Keep it in sync with
+  the `rpg.py` API.
+- `bench_training.py` — Phase 3 benchmark: runs the barrow and the hideout at
+  combat-training ranks 0-3 and prints wipe/clear rates per rank ("does a
+  level-up feel noticeable against a fixed enemy"). Run:
+  `python bench_training.py`.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -45,7 +74,9 @@ player's real decisions happen *between* fights.
 ```
 python rpg.py            # random party + dungeon, full narrative log
 python rpg.py --seed 7   # reproducible run
+python scratch_bandits.py --seed 3 --training 2   # the tough site, pre-trained
 python tune.py           # outcome-distribution sweep over layouts
+python bench_training.py # wipe/clear rates per combat-training rank
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -55,10 +86,10 @@ is intentionally ASCII-only, so plain runs are usually fine.
 
 - Three stats — **DEX** (who lands), **STR** (wound severity + soak), **STA**
   (a draining clock; **Winded** at STA ≤ 3) — plus an **HP** wound pool.
-- Each round is an opposed `2d6 + DEX − (HP lost) − (2 if Winded)` exchange.
-  Higher roll lands; `severity = margin + atkSTR − defSTR` maps to a wound tier
-  (deflected/graze/wound/grievous/killing blow). **HP lost is itself a roll
-  penalty — the death spiral is the whole point.**
+- Each round is an opposed `2d6 + DEX + training − (HP lost) − (2 if Winded)`
+  exchange. Higher roll lands; `severity = margin + atkSTR − defSTR` maps to a
+  wound tier (deflected/graze/wound/grievous/killing blow). **HP lost is itself
+  a roll penalty — the death spiral is the whole point.**
 - `group_combat` generalizes the 1v1 exchange to a melee so a party can be
   swarmed. Heroes focus-fire the weakest foe; foes target party members at random.
 
@@ -66,18 +97,30 @@ is intentionally ASCII-only, so plain runs are usually fine.
 
 See the add-on section in `rules.md` for intent. In `rpg.py`:
 - **HP carries across the whole run** (drains like STA, never a per-fight reset),
-  with only a minimal `HP_RECOVERY_BETWEEN_ROOMS` catch-breath; healing otherwise
-  comes from potions/spells/resting between adventures. **0 HP = Down** (out of
-  this fight; stands back up at `REVIVE_HP` next room), **not Dead**.
+  with only a minimal `HP_RECOVERY_BETWEEN_ROOMS` catch-breath per short rest;
+  the real recovery is a **long rest**, which knits HP back at each character's
+  `hp_regen_per_night` (= `max(1, round(max_hp / 7))`, so **HP returns over ~a
+  week** — a 20-HP tank heals in ~7 nights, not 20). **0 HP = Down** (out of this
+  fight; stands back up at `REVIVE_HP` next room), **not Dead**.
 - **Power** + an **ability** (`heal` / `bulwark`) per entity. `_try_save` spends
   Power to step a blow down one tier — always buying off a *killing* blow, and a
   *would-Down grievous* only when a reserve remains. `_attack` logs the raw blow
   and the bought-down result.
-- **STA is per-day**: it carries across rooms (drains, never resets) with only a
-  small `STA_RECOVERY_BETWEEN_ROOMS` catch-breath. It's the binding clock.
-- **Items** (`healing` / `power` / `stamina`) are a per-day stock. A healing
-  potion is *prepped* before a room (`start_fight`) for HP regen; `rest` spends
-  power/stamina potions deliberately when low.
+- **STA is the binding clock**: it drains in combat and carries across rooms with
+  only a small `STA_RECOVERY_BETWEEN_ROOMS` catch-breath per short rest. A **long
+  rest recharges STA fully** (overnight).
+- **Time economy (`Clock`):** a `day` counter plus a per-day budget of
+  `SHORT_RESTS_PER_DAY` (2) short-rest slots. `short_rest(party, clock, log)` (~an
+  hour or two of narrative time) spends a slot for a small catch-breath + potion
+  use, and refuses once the slots are gone. `long_rest(party, clock, log)` makes
+  camp: full STA, the weekly HP tick, Down heroes back up, `day += 1`, slots
+  refill. **There is no auto-night** — `long_rest` is a function Claude calls on
+  purpose; nothing forces the day to end (see "The feel we're going for").
+- **Items** (`healing` / `power` / `stamina`) are a carried stock that **never
+  auto-refills**: heroes start with **two random potions** (`random_kit`) and
+  restock only via drops or `buy_potion`. A healing potion is *prepped* before a
+  room (`start_fight`) for HP regen; `short_rest` spends power/stamina potions
+  deliberately when low.
 - A character only truly **dies** on an unsaved killing blow; `outcome()` counts
   only the slain.
 - **Total party knockout = defeat.** `party_wiped()` (in `rpg.py`, shared by both
@@ -85,35 +128,56 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   finished off (marked Dead) and the run stops — a game over. So a double-Down is
   no longer a recoverable state; it ends the run.
 
+## Progression & economy (Phase 3 first slice — see `rules.md` add-on)
+
+- **XP:** every not-dead hero earns the full award — 15/encounter + 55/quest at
+  the skeleton site, 3x at the bandit hideout (45/165). Level `L -> L+1` costs
+  `100 * L` (`xp_to_next`), so the *first barrow clear is exactly a level-up*.
+  `award_xp` handles level-ups and banks skill points (1/level).
+- **Combat training** (`train_combat`) — the only skill so far: +1 to all tempo
+  rolls per rank, rank *n* costs *n* points, cap 5. Since it's the only sink,
+  scenarios auto-spend after quest awards; when more skills exist this becomes
+  a real player choice.
+- **Gold** lives in a shared `Purse`. Income: quest rewards (15 g barrow / 45 g
+  hideout) + per-encounter drops (20% -> 5 g, 10% -> a random potion to a random
+  hero, `roll_loot`). Sink: `buy_potion(hero, purse, kind, log)` at
+  `POTION_PRICE = 10` — a **DM-called between-adventures purchase**, the first
+  real player shopping decision. Nothing refills automatically.
+
 ## The current prototype scenario
 
-- **Party:** two random elite-veteran humans, each a `precise` / `powerful` /
-  `steady` archetype (`ARCHETYPES` in `rpg.py`), each with Power, one save, and a
-  starting `default_kit`.
+- **Party:** two randomly generated humans (`make_human`): DEX/STR/STA
+  `randint(3, 6)`, HP `randint(8, 12)`, Power `randint(3, 6)`, a random ability
+  (`heal` / `bulwark`), two random potions, and an epithet from the highest stat
+  (precise/powerful/steady). *(Rough edge: a rolled STA 3 starts at the Winded
+  threshold.)*
 - **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [2, 2, 3]` (one "day"). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
-  wounds persist for the run.
+  wounds persist for the run. Clearing all rooms completes the quest
+  (gold + XP lump).
 - **Skeletons:** brittle, weak individual hitters (DEX 3 / STR 2 / HP 5), no
   Power/kit but tireless — the threat is *numbers*, matching the goblin/swarm
-  puzzle in the rules, not raw power.
+  puzzle in the rules, not raw power. **The farmable site**; the bandit hideout
+  (`scratch_bandits.py`) is the tough one you train up for.
 
 ## Balance / tuning
 
-`tune.py` reports attrition alongside the death split. **Since a total party
-knockout now = defeat, the "both die" column is much heavier** (a double-Down is a
-wipe, not a recovery). At `[2, 2, 3]` over 20k runs: ~**64% / 0.6% / 35%**
-(none / one / both slain), a **Down in ~53%** of runs, and by the end ~**77%
-Power / ~13% STA** left with healing potions fully spent. The lethality now lives
-in the wipe tail rather than in lone killing blows — `[2, 2, 3]` is arguably too
-swingy and is a candidate for retuning (fewer/softer rooms, more `default_kit`, or
-a cheaper `SAVE_COST`). The fail state is still depletion feeding a wipe; single
-fights stay winnable, the *run* is the challenge.
+`tune.py` reports attrition alongside the death split, plus clear rate and gold.
+With random chargen + the 2-random-potion kit, at `[2, 2, 3]` over 20k runs:
+~**67% / 3% / 30%** (none / one / both slain), **clear ~70%**, a Down in ~45% of
+runs, ~77% Power / ~3% STA left, healing potions spent, ~13 g earned. The wipe
+tail is now the *designed* pressure to level: per `bench_training.py`, the
+barrow goes 71% -> 90% -> 98% clear across training ranks 0-2, and the bandit
+hideout 22% -> 50% -> 77% -> 94% across ranks 0-3. First runs are risky;
+trained parties farm.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
-(`SAVE_COST`, `HEAL_REGEN`, `STA_RECOVERY_BETWEEN_ROOMS`, `default_kit`), then
-skeleton stats, then party `ARCHETYPES` (Power/ability included). **Always re-run
-`tune.py` after touching any of these** — small changes swing both lethality and
-the attrition curve.
+(`SAVE_COST`, `HEAL_REGEN`, `STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`,
+`STARTING_POTIONS`), then economy/progression (`POTION_PRICE`, drop chances,
+quest rewards, `XP_LEVEL_STEP`, training cap), then skeleton stats, then the
+hero roll ranges (`HERO_STAT_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).
+**Always re-run `tune.py` and `bench_training.py` after touching any of
+these** — small changes swing both lethality and the attrition curve.
 
 ## Conventions
 
@@ -126,10 +190,11 @@ the attrition curve.
 
 ## Not yet built (the point of the design)
 
-The **between-fights layer** as *player choice*: gold/XP, raising stats toward an
-archetype, gear that shifts stats / soaks severity / adds STA, picking fights you
-counter, composing the party so builds cover each other, and *buying* the
-consumables the survival layer now spends automatically. The survival mechanics
-(Power saves, items, Down/Dead, the day economy) exist; what's missing is the
-player deciding how to allocate and stock them. See the "Between-fights layer"
-and "Survival & Resources" sections in `rules.md`.
+The between-fights layer is now *partly* player choice: gold/XP flow, combat
+training is bought with levels, and `buy_potion` makes stocking up a real
+decision (which site to run — farmable barrow vs 3x-paying hideout — is the
+first "pick your fights" choice). Still missing: more skills + weapon
+proficiencies (so skill points become an allocation, not an auto-spend), gear
+that shifts stats / soaks severity / adds STA, raising stats toward an
+archetype, and composing the party so builds cover each other. See the
+"Between-fights layer" and the add-on sections in `rules.md`.

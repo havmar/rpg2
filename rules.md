@@ -131,6 +131,13 @@ The band where tradeoffs are real: you cannot be good at everything.
 | Trained soldier | 3 | 3 | 3 | 7 |
 | Elite veteran | 4–5 | 4–5 | 4–5 | 8–10 |
 
+**Rolled party heroes** span this band and nudge past it: DEX/STR/STA
+`randint(3, 6)`, HP `randint(8, 12)`, Power `randint(3, 6)`, a random ability
+(Heal or Bulwark), and two random potions. A hero's epithet ("the precise" /
+"the powerful" / "the steady") is derived from their highest stat. *(Known rough
+edge: a rolled STA of 3 sits at the Winded threshold — that hero starts every
+day Winded. A tuning candidate: raise the STA floor or lower the threshold.)*
+
 ### Heroes — stats 6–10, HP 12–20
 Superhuman because they **break the mortal tradeoff**: a hero can be high in
 *two or three* stats at once, which no human can. That impossible combination is
@@ -163,13 +170,16 @@ the severity formula even before its HP matters.
 
 ## Between-fights layer (where the player actually plays)
 
-Not implemented here, but this is what the design exists to serve:
+Partially implemented (XP/training and the potion shop exist — see the
+*Progression & Economy* add-on below); the rest is what the design exists to
+serve:
 
 - **Allocate / raise stats** toward an archetype, or toward countering what's
   ahead.
 - **Equip gear** that shifts stats, soaks severity, or adds STA.
 - **Pick your fights** — knowing the loop, choose opponents your build counters
-  and avoid your counters.
+  and avoid your counters. *(Live now: farm the skeleton barrow to afford the
+  bandit hideout.)*
 - **Compose the party** — a PC plus a companion (same stat framework) whose
   builds cover each other's weak matchup.
 
@@ -194,8 +204,11 @@ near-thing, and the buffers that bought it visibly run out across a day.
 
 These are the only edits to the existing rules:
 
-- **HP is per-fight and resets.** It's a momentum/death-spiral track, not lasting
-  blood, so each encounter starts at full HP.
+- **HP carries across the run (a lasting wound).** *(This supersedes the original
+  "HP resets each fight" idea.)* HP still drives the in-fight death spiral, but it
+  no longer refills between encounters: a wound persists until healed. Recovery is
+  a slow catch-breath on a short rest and a **weekly knit-back on long rests** (see
+  *The day / run economy*); potions/spells can top it up in a pinch.
 - **0 HP = Down, not Dead.** A character at 0 is out of *this* fight only (see
   *Down, not dead* below).
 - **New round step — Regen.** After the drain step, if a healing potion was
@@ -224,8 +237,8 @@ These are the only edits to the existing rules:
 
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
-| **HP** | Per fight, resets to full | — (regen via prepped potion) | Lethal death-spiral inside one fight. |
-| **STA** | Per day | Slowly; rare/costly potions only | The **involuntary clock**. Drives the matchup loop. Stays expensive to buy back on purpose. |
+| **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / prepped potion; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
+| **STA** | Per day | Small catch-breath per short rest; rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities, heals, and the warrior's absorb. Fast — usable mid-fight. |
 | **Items** | Carried stock | Bought with gold, found in world | The *in-advance* buffer: prepped before a fight, or used after. |
 
@@ -270,8 +283,9 @@ than a routine top-up.
 
 - A character at **0 HP** is **Down** — out of this fight, not killed. The party
   fights shorthanded from that point (a real, graded cost).
-- **No mid-fight revival.** Recovery is a rest event: between fights, survivors
-  bring the Down back to full HP for the next encounter.
+- **No mid-fight revival.** Recovery is a rest event: between fights the Down get
+  back on their feet, but only *minimally* (a sliver of HP) — the wound itself
+  heals slowly, over days of long rest, not instantly for the next encounter.
 - **Death happens only when the saves run dry** — a killing blow lands with no
   Power for Bulwark/Heal and no buffer left. Loss is rare, earned, and specific
   to whoever was over-extended.
@@ -294,9 +308,27 @@ buying it tick down. "Running out" becomes dread, not bookkeeping.
 
 Power, potions, and stamina are the spendable survival layer; gold buys potions
 and the world drops them, so exploration feeds survivability. A hard run of
-fights *visibly* draws the stockpile down. The **day** — with rest restoring STA
-slowly and Power more freely — is the natural unit of attrition: the grind-down
-expressed as depletion of *kit and Power* rather than HP.
+fights *visibly* draws the stockpile down. The **day** is the natural unit of
+attrition: the grind-down expressed as depletion of *kit and Power* rather than
+HP.
+
+**Two tiers of rest, keyed to time:**
+
+- A **short rest** (~an hour or two of narrative time) is a limited within-day
+  resource — a handful of slots per day. It gives only a small catch-breath (a
+  little STA, a sliver of HP) plus deliberate potion use. When the slots run out
+  there is no more mid-day recovery: the party pushes on depleted or makes camp.
+- A **long rest** (overnight, making camp) is the real recovery: **STA recharges
+  fully** and **HP knits back at a weekly rate** (a character's nightly heal is
+  scaled to their HP pool, so a full bar returns over roughly a week regardless of
+  size — a big pool doesn't take proportionally longer). A long rest advances the
+  day and refills the short-rest slots.
+
+**Nothing forces the day to end.** Ending the day is a *choice* — the DM (Claude)
+decides when the party camps and takes the long rest; the mechanics never
+auto-camp. This keeps the tabletop freedom: you can press on wounded and Winded
+into one more fight, or pull back and pay the day. The tension is *when* to spend
+the day, not a timer running out on you.
 
 ---
 
@@ -330,10 +362,14 @@ On top of the existing build/allocation choices:
 
 ## Implementation notes (how `rpg.py` realizes this)
 
-- A **dungeon run is one "day".** STA carries across rooms (drains, never resets;
-  a brief between-room catch-breath gives a little back). HP resets to full at the
-  start of each room. Power and items are per-day stocks that deplete across the
-  run.
+- **Time is a `Clock`** (a `day` counter plus a per-day budget of short-rest
+  slots, `SHORT_RESTS_PER_DAY`). A dungeon run is a slice of a day. **HP and STA
+  both carry across rooms** (drain, never a per-fight reset); a `short_rest`
+  spends a slot for a small catch-breath, and `long_rest` makes camp for the full
+  STA recharge + the weekly HP tick (`hp_regen_per_night = max(1, round(max_hp /
+  7))`). Power and items are per-day stocks that deplete across the run.
+- **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
+  dungeon loop — the day ends when the player chooses to camp, not on a timer.
 - **Saves are automatic and conservative.** A character spends Power to buy off a
   *killing* blow whenever it can (Killing -> Grievous), and to buy off a
   *grievous* that would put it Down only when it can keep a reserve. Both the raw
@@ -341,3 +377,56 @@ On top of the existing build/allocation choices:
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
   killing blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
+
+---
+
+# Progression & Economy — Add-on
+
+The first slice of the between-fights layer: XP and levels buying **combat
+training** (the only skill so far), and a gold economy that keeps the potion
+stock a real decision. Follows the design spine: **XP buys permanent ability,
+gold buys staying power** — never the reverse.
+
+## XP and levels
+
+- **Earning.** Every hero who is not truly dead earns the *full* award (no
+  splitting; the party levels together): a small amount per **encounter won**
+  and a lump for **completing a quest** (clearing a whole site).
+- **The curve.** Level L → L+1 costs `100 × L` XP. Anchors:
+  - Skeleton site: **15 XP** per encounter, **55 XP** for the quest — a full
+    clear (3 rooms) is exactly 100 XP, so the *first clear is a level-up*; the
+    second level takes two clears, the third takes three.
+  - The bandit hideout pays **3×** (45 / 165) — tough fights, better wages.
+- **Level-ups grant skill points** (1 per level), spent on skills — free
+  allocation, never use-based (the Fallout principle from the design record).
+
+## Combat training — the general fighting skill
+
+The veteran-vs-novice axis: *"you know how to fight."*
+
+- **Effect:** +1 to **all tempo rolls** per rank. Because severity = margin +
+  STR difference, training quietly improves *everything*: you land more, get
+  hit less, and the hits you land cut deeper. One number, three effects — which
+  is why it stays cheap-per-rank but caps hard.
+- **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
+  level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
+  level 11, rank 5 at level 16. Cheap to start, expensive to max.
+- It is the **only skill for now**, so the scenarios auto-spend points on it;
+  once more skills exist, spending becomes a real between-fights choice.
+- **Benchmarked** (`bench_training.py`, 5k trials/rank): the bandit hideout
+  wipes a rank-0 party ~78% of the time, rank 1 → ~50%, rank 2 → ~23%,
+  rank 3 → ~6%. Each rank is a *felt* jump — Phase 3's test criterion.
+
+## Gold and the potion economy
+
+- **The purse is shared** (party-level); potions are per-hero.
+- **Income:**
+  - **Quests:** skeleton site **15 g**, bandit hideout **45 g**.
+  - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
+    potion) and **10%** chance of a stray potion (random kind, to a random
+    hero). Trash-tier on purpose — drops season the run, quests fund it.
+- **Sink:** any potion costs **10 g**. `buy_potion` is a deliberate,
+  DM-called, between-adventures purchase — nothing in the engine buys or
+  refills automatically. A quest reward is worth 1–2 potions (the hideout, 4+).
+- **Starting stock:** two *random* potions at creation. That's the whole kit;
+  from then on the stock only moves through drops, purchases, and use.

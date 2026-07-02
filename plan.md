@@ -164,15 +164,25 @@ Test: a well-stocked party reliably *survives a single fight*; deaths require th
 saves to be dry.
 
 **Phase 2 — Day / run economy** *(built — `rpg.py`; disengage/retreat still open)*
-Build: STA + Power + item carryover across encounters; rest events; the
-disengage/retreat hook *(not yet — belongs to the AI DM layer)*.
+Build: STA + Power + item carryover across encounters; rest events; a **time
+`Clock`** (day counter + short-rest slots). Two rest tiers: `short_rest` (a
+limited within-day slot, small catch-breath) and `long_rest` (overnight — full
+STA, HP knit back over ~a week at a per-character rate, day advances). **No
+auto-night: `long_rest` is a deliberate call, never fired by the loop** — the
+timing choice is the player's, preserving TTRPG freedom. The disengage/retreat
+hook *(not yet — belongs to the AI DM layer)*.
 Test: a run of fights produces a visible grind-down; the stockpile depletion is
-felt; a too-hard run forces retreat.
+felt; wounds linger across days until a week of rest clears them; a too-hard run
+forces retreat.
 
-**Phase 3 — Progression**
-Build: XP, levels, free skill + proficiency allocation; stats stay fixed.
-Test: against a fixed enemy benchmark, a level-up makes the outcome *noticeably*
-better — quantify the jump.
+**Phase 3 — Progression** *(first slice built — `rpg.py`)*
+Build: XP (per encounter + quest lump), levels (`100 × L` to next), skill
+points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
+points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
+remain Phase 4; with a single skill the allocation is auto-spent for now.
+Test: *passed* — against the bandit hideout benchmark (`bench_training.py`),
+wipe rate falls ~78% → ~50% → ~23% → ~6% across training ranks 0–3. Each rank
+is a felt jump.
 
 **Phase 4 — Weapons & proficiency**
 Build: the five weapons with distinct tempo/severity/STA profiles; per-weapon
@@ -180,7 +190,9 @@ proficiency; guns + ammo.
 Test: each weapon is build-*suited* rather than ranked (no single best); the
 proficiency switching cost is real.
 
-**Phase 5 — Loot & items**
+**Phase 5 — Loot & items** *(trash-tier slice built: gold/potion encounter
+drops + a quest-gold + potion-shop economy — see rules.md "Progression &
+Economy")*
 Build: Trash vs Named items; provenance metadata; stat-transcendence on rare
 items.
 Test: Named weapons read as events; trash is appropriately trivial; no power
