@@ -7,10 +7,11 @@ group melee so a party can be swarmed (numbers are the skeletons' whole threat).
 
 Survival layer: HP carries across the whole run (only a minimal catch-breath
 between rooms, never a per-fight reset); 0 HP is Down (out of this fight, stands
-back up minimally next room), not Dead; Power buys off killing/grievous blows in
-the moment; STA is a per-day clock that drains across the whole run; prepped
-healing potions regen HP each round. A character only truly dies when a killing
-blow lands and the saves have run dry.
+back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
+in the moment; Heal instead mends HP on self or an ally between fights (both
+cost Power, see use_heal); STA is a per-day clock that drains across the whole
+run; prepped healing potions regen HP each round. A character only truly dies
+when a killing blow lands and the saves have run dry.
 
 Progression & economy: heroes earn XP per encounter won and a lump for clearing
 a whole site (the quest); levels grant skill points spent on combat training
@@ -38,7 +39,9 @@ WINDED_STA = 3          # STA <= this -> Winded
 WINDED_PENALTY = 2      # roll penalty while Winded
 
 # Survival add-on tunables.
-SAVE_COST = 2           # Power spent to reduce one wound tier (Heal / Bulwark)
+SAVE_COST = 2           # Power spent to reduce one wound tier (Bulwark's mid-fight save)
+HEAL_COST = 3           # Power spent on the Heal ability (between fights, see use_heal)
+HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
 HEAL_REGEN = 1          # HP/round granted by a healing potion prepped before a fight
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
@@ -81,7 +84,7 @@ SHORT_RESTS_PER_DAY = 2          # short-rest slots available each day
 TIER_ORDER = ["deflected", "graze", "wound", "grievous", "killing blow"]
 TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "killing blow": 6}
 
-ABILITY_VERB = {"bulwark": "Bulwark", "heal": "Heal"}
+ABILITY_VERB = {"bulwark": "Bulwark"}   # mid-fight save verb; Heal has no in-fight role
 
 
 def wound_tier(severity: int) -> tuple[str, int]:
@@ -133,7 +136,8 @@ class Entity:
     sta: int
     max_hp: int
     power: int = 0
-    ability: str | None = None          # "heal" or "bulwark"; None = no in-fight save
+    ability: str | None = None          # "bulwark" (mid-fight save) or "heal" (between-
+                                         # fights HP restore, see use_heal); None = neither
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
@@ -189,11 +193,14 @@ class Entity:
 def _try_save(defender: Entity, tier: str, dmg: int) -> bool:
     """Decide whether the defender spends Power to step an incoming blow down.
 
+    Bulwark only -- Heal has no in-fight role; it mends HP between fights
+    instead (see use_heal).
+
     Policy (conservative, death-first): always buy off a *killing* blow if Power
     allows; buy off a *grievous* that would put us Down only when a reserve is
     left for a later death-save. Mutates Power. Returns True if a save fired.
     """
-    if not defender.ability or defender.cur_power < SAVE_COST:
+    if defender.ability != "bulwark" or defender.cur_power < SAVE_COST:
         return False
     if tier not in ("grievous", "killing blow"):
         return False
@@ -470,6 +477,34 @@ def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
     h.items[kind] = h.items.get(kind, 0) + 1
     log.append(f"    {h.name} buys a {kind} potion for {POTION_PRICE}g "
                f"({kind} x{h.items[kind]}; purse: {purse.gold}g).")
+    return True
+
+
+def use_heal(healer: Entity, target: Entity, rng: random.Random,
+             log: list[str]) -> bool:
+    """Spend Power on the Heal ability: mends a random 1-3 HP on self or an
+    ally. Unlike Bulwark's mid-fight save, Heal has no in-fight role -- it's a
+    between-fights, DM-called action (same shape as buy_potion), so it never
+    fires automatically."""
+    if healer.ability != "heal":
+        log.append(f"    {healer.name} has no Heal ability.")
+        return False
+    if healer.cur_power < HEAL_COST:
+        log.append(f"    {healer.name} doesn't have enough Power to Heal "
+                   f"({healer.cur_power}/{HEAL_COST}).")
+        return False
+    if target.dead:
+        log.append(f"    {target.name} is beyond Heal.")
+        return False
+    healer.cur_power -= HEAL_COST
+    amount = rng.randint(*HEAL_RESTORE_RANGE)
+    before = target.hp
+    target.hp = min(target.max_hp, target.hp + amount)
+    if target.hp > 0:
+        target.down = False
+    log.append(f"    {healer.name} spends {HEAL_COST} Power to Heal "
+               f"{target.name} (+{target.hp - before} HP -> "
+               f"{target.hp}/{target.max_hp}) [{healer.cur_power} Power left]")
     return True
 
 

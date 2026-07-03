@@ -63,7 +63,10 @@ fiction.
   drives a playthrough with this rather than one-shot `rpg.py` runs, so pacing
   decisions (when to rest, when to camp, when to press on) stay real choices
   made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `fight N
-  [--type skeleton]`, `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`.
+  [--type skeleton]`, `hideout ROOM` (1-3, resolves one bandit-hideout room
+  against the persisted party, mirroring `scratch_bandits.run_hideout`'s
+  rosters/rewards), `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`,
+  `heal HEALER TARGET` (Heal ability, between fights only -- see below).
   Keep it in sync with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
@@ -113,10 +116,14 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   `hp_regen_per_night` (= `max(1, round(max_hp / 7))`, so **HP returns over ~a
   week** — a 20-HP tank heals in ~7 nights, not 20). **0 HP = Down** (out of this
   fight; stands back up at `REVIVE_HP` next room), **not Dead**.
-- **Power** + an **ability** (`heal` / `bulwark`) per entity. `_try_save` spends
-  Power to step a blow down one tier — always buying off a *killing* blow, and a
-  *would-Down grievous* only when a reserve remains. `_attack` logs the raw blow
-  and the bought-down result.
+- **Power** + an **ability** (`bulwark` / `heal`) per entity, with distinct
+  roles. `bulwark` is the mid-fight save: `_try_save` spends Power to step a
+  blow down one tier — always buying off a *killing* blow, and a *would-Down
+  grievous* only when a reserve remains; `_attack` logs the raw blow and the
+  bought-down result. `heal` has no in-fight role at all — it's a
+  **between-fights** action, `use_heal(healer, target, rng, log)`, spending
+  `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3) HP on
+  self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
 - **STA is the binding clock**: it drains in combat and carries across rooms with
   only a small `STA_RECOVERY_BETWEEN_ROOMS` catch-breath per short rest. A **long
   rest recharges STA fully** (overnight).

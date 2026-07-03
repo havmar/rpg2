@@ -10,11 +10,13 @@ source) between invocations. It adds no game logic of its own.
 
 Run:  python session.py new [--seed N]              # new party, resets state
       python session.py status                       # show party/clock/purse
-      python session.py fight N [--type skeleton]     # resolve one room's melee
+      python session.py fight N [--type skeleton]     # resolve one barrow room's melee
+      python session.py hideout ROOM                  # resolve one hideout room (1-3)
       python session.py rest                          # short rest (spends a slot)
       python session.py camp                          # long rest (advance a day)
       python session.py quest GOLD XP NAME             # award a site-clear quest
       python session.py buy HERO KIND                  # buy a potion from the purse
+      python session.py heal HEALER TARGET              # Heal ability, between fights
 """
 from __future__ import annotations
 
@@ -29,8 +31,9 @@ from rpg import (
     start_fight, group_combat, party_wiped,
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
-    buy_potion as _buy_potion,
+    buy_potion as _buy_potion, use_heal as _use_heal,
 )
+from scratch_bandits import make_bandit, bandit_line, HIDEOUT_ROOMS
 
 STATE_PATH = Path(__file__).parent / ".session_state.pkl"
 
@@ -94,6 +97,35 @@ def cmd_fight(args: argparse.Namespace) -> None:
         print("\n*** RUN OVER: total party wipe. ***")
 
 
+def cmd_hideout(args: argparse.Namespace) -> None:
+    state = load()
+    party, purse, rng = state["party"], state["purse"], state["rng"]
+    log: list[str] = []
+    living = [h for h in party if not h.dead]
+    for h in living:
+        start_fight(h, log)
+
+    room_name, roster = HIDEOUT_ROOMS[args.room - 1]
+    log.append(f"=== Room {args.room}: {room_name} ({len(roster)} bandits) ===")
+    bandits = []
+    for kind in roster:
+        state["foe_count"] += 1
+        bandits.append(make_bandit(kind, state["foe_count"]))
+    for b in bandits:
+        log.append("  " + bandit_line(b))
+
+    group_combat(living, bandits, rng, log)
+    wiped = party_wiped(party, log)
+    if not wiped:
+        award_xp(party, 3 * SKELETON_ENCOUNTER_XP, log, "encounter")
+        roll_loot(party, purse, rng, log)
+
+    print("\n".join(log))
+    save(state)
+    if wiped:
+        print("\n*** RUN OVER: total party wipe. ***")
+
+
 def cmd_rest(args: argparse.Namespace) -> None:
     state = load()
     party, clock = state["party"], state["clock"]
@@ -131,6 +163,17 @@ def cmd_buy(args: argparse.Namespace) -> None:
     save(state)
 
 
+def cmd_heal(args: argparse.Namespace) -> None:
+    state = load()
+    party, rng = state["party"], state["rng"]
+    log: list[str] = []
+    healer = next(h for h in party if args.healer.lower() in h.name.lower())
+    target = next(h for h in party if args.target.lower() in h.name.lower())
+    _use_heal(healer, target, rng, log)
+    print("\n".join(log))
+    save(state)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -148,6 +191,10 @@ def main() -> None:
     p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
     p.set_defaults(func=cmd_fight)
 
+    p = sub.add_parser("hideout")
+    p.add_argument("room", type=int, choices=[1, 2, 3])
+    p.set_defaults(func=cmd_hideout)
+
     p = sub.add_parser("rest")
     p.set_defaults(func=cmd_rest)
 
@@ -164,6 +211,11 @@ def main() -> None:
     p.add_argument("hero")
     p.add_argument("kind", choices=list(POTION_KINDS))
     p.set_defaults(func=cmd_buy)
+
+    p = sub.add_parser("heal")
+    p.add_argument("healer")
+    p.add_argument("target")
+    p.set_defaults(func=cmd_heal)
 
     args = ap.parse_args()
     args.func(args)

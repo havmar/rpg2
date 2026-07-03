@@ -227,9 +227,11 @@ These are the only edits to the existing rules:
   party should win a given encounter; the fail state is attrition — running the
   buffers dry across a run of fights.
 - **Two buffer layers, cleanly split.** *In advance* (items, prepped before a
-  fight — too slow to use mid-fight) and *in the moment* (abilities paid in
-  Power — fast enough to fire during an exchange). Flavor-true rule: **magic and
-  trained skill are reflexive; rummaging in a pouch is not.**
+  fight — too slow to use mid-fight) and *in the moment* (Bulwark, paid in
+  Power — fast enough to fire during an exchange). Flavor-true rule: **trained
+  skill is reflexive; rummaging in a pouch is not.** Heal sits outside both —
+  a Power-cost ability, but a *between-fights* one (see below), since restoring
+  a wound isn't something you can do in the half-second of an exchange either.
 
 ---
 
@@ -239,7 +241,7 @@ These are the only edits to the existing rules:
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / prepped potion; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | Small catch-breath per short rest; rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
-| **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities, heals, and the warrior's absorb. Fast — usable mid-fight. |
+| **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
 | **Items** | Carried stock | Bought with gold, found in world | The *in-advance* buffer: prepped before a fight, or used after. |
 
 Give each character their **own** Power and item stock, not a shared pool — it
@@ -259,13 +261,18 @@ keeps build identity alive and makes "who am I about to lose" specific.
 - **Power potion** — restores Power. More freely available than stamina.
 
 **In the moment (abilities — fast, cost Power):**
-- **Heal** — spend Power to restore HP or reduce an incoming wound one tier on
-  the round it lands. Common among adventurers.
 - **Warrior's Bulwark (grievous-absorb)** — *active*: when a Grievous or Killing
   blow lands, spend Power to reduce it one tier (Killing -> Grievous, Grievous ->
-  Wound). The martial mirror of a heal, so non-casters also get an in-the-moment
-  save — and it can run out, which is the point.
+  Wound). Fires mid-fight, on the blow that just landed — and it can run out,
+  which is the point.
 - Other class skills are likewise paid in Power.
+
+**Between fights (ability — still costs Power, but not reflexive):**
+- **Heal** — spend Power to mend a random amount of HP on yourself or an ally,
+  called deliberately between fights (never mid-exchange; there's no time in an
+  attack this fast to rummage for a spell any more than a potion). Distinct
+  from Bulwark: it's proactive upkeep on the wound pool rather than a reactive
+  save against a specific blow, and it can target a teammate.
 
 ---
 
@@ -370,10 +377,14 @@ On top of the existing build/allocation choices:
   7))`). Power and items are per-day stocks that deplete across the run.
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
-- **Saves are automatic and conservative.** A character spends Power to buy off a
-  *killing* blow whenever it can (Killing -> Grievous), and to buy off a
-  *grievous* that would put it Down only when it can keep a reserve. Both the raw
-  and the bought-down result are logged.
+- **Saves are automatic and conservative.** A Bulwark-ability character spends
+  Power to buy off a *killing* blow whenever it can (Killing -> Grievous), and
+  to buy off a *grievous* that would put it Down only when it can keep a
+  reserve. Both the raw and the bought-down result are logged. **Heal is not
+  automatic** — it has no in-fight role at all; `use_heal(healer, target, ...)`
+  is a DM-called, between-fights action (same shape as `buy_potion`) that
+  spends `HEAL_COST` (3) Power for a random `HEAL_RESTORE_RANGE` (1-3) HP on
+  self or an ally.
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
   killing blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
