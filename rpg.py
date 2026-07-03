@@ -311,7 +311,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
 
 # Rolled ranges for a starting hero. 3-6 straddles the human bands in rules.md:
 # a 3 is trained-soldier grade, a 6 nudges past elite-veteran. HP 8-12 likewise.
-HERO_STAT_RANGE = (3, 6)
+HERO_STAT_RANGE = (3, 6)      # DEX / STR
+# STA gets its own, higher-floored range: a 3 would sit right at WINDED_STA,
+# so every hero would start the day already Winded. Floor raised to 4 to clear it.
+HERO_STA_RANGE = (4, 7)
 HERO_HP_RANGE = (8, 12)
 HERO_POWER_RANGE = (3, 6)
 
@@ -332,9 +335,10 @@ def random_kit(rng: random.Random) -> dict[str, int]:
 
 
 def make_human(rng: random.Random, name: str) -> Entity:
-    """Fully random generation: stats 3-6, HP 8-12, Power 3-6, a random
+    """Fully random generation: DEX/STR 3-6, STA 4-7, HP 8-12, Power 3-6, a random
     in-the-moment ability, and two random potions."""
-    stats = {k: rng.randint(*HERO_STAT_RANGE) for k in ("dex", "str", "sta")}
+    stats = {k: rng.randint(*HERO_STAT_RANGE) for k in ("dex", "str")}
+    stats["sta"] = rng.randint(*HERO_STA_RANGE)
     epithet = EPITHETS[max(stats, key=stats.get)]
     return Entity(
         name=f"{name} the {epithet}",

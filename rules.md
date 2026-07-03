@@ -131,12 +131,12 @@ The band where tradeoffs are real: you cannot be good at everything.
 | Trained soldier | 3 | 3 | 3 | 7 |
 | Elite veteran | 4–5 | 4–5 | 4–5 | 8–10 |
 
-**Rolled party heroes** span this band and nudge past it: DEX/STR/STA
-`randint(3, 6)`, HP `randint(8, 12)`, Power `randint(3, 6)`, a random ability
-(Heal or Bulwark), and two random potions. A hero's epithet ("the precise" /
-"the powerful" / "the steady") is derived from their highest stat. *(Known rough
-edge: a rolled STA of 3 sits at the Winded threshold — that hero starts every
-day Winded. A tuning candidate: raise the STA floor or lower the threshold.)*
+**Rolled party heroes** span this band and nudge past it: DEX/STR `randint(3, 6)`,
+STA `randint(4, 7)` (floor raised a step above the two so no hero starts the
+day already Winded at STA <= 3), HP `randint(8, 12)`, Power `randint(3, 6)`, a
+random ability (Heal or Bulwark), and two random potions. A hero's epithet
+("the precise" / "the powerful" / "the steady") is derived from their highest
+stat.
 
 ### Heroes — stats 6–10, HP 12–20
 Superhuman because they **break the mortal tradeoff**: a hero can be high in

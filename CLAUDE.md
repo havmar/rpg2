@@ -55,6 +55,16 @@ fiction.
   combat-training ranks 0-3 and prints wipe/clear rates per rank ("does a
   level-up feel noticeable against a fixed enemy"). Run:
   `python bench_training.py`.
+- `session.py` — **the DM driver used to actually play the game.** A thin CLI
+  over `rpg.py`'s primitives that persists party/clock/purse state to
+  `.session_state.pkl` (gitignored -- a save file, not source) between
+  invocations, since each terminal call is a fresh process. Adds no game logic
+  of its own; every subcommand is a direct call into `rpg.py`. Claude (as DM)
+  drives a playthrough with this rather than one-shot `rpg.py` runs, so pacing
+  decisions (when to rest, when to camp, when to press on) stay real choices
+  made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `fight N
+  [--type skeleton]`, `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`.
+  Keep it in sync with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -72,8 +82,9 @@ fiction.
 ## Running
 
 ```
-python rpg.py            # random party + dungeon, full narrative log
+python rpg.py            # random party + dungeon, full narrative log (one-shot)
 python rpg.py --seed 7   # reproducible run
+python session.py new    # start an actual DM-driven playthrough (see session.py)
 python scratch_bandits.py --seed 3 --training 2   # the tough site, pre-trained
 python tune.py           # outcome-distribution sweep over layouts
 python bench_training.py # wipe/clear rates per combat-training rank
@@ -146,11 +157,11 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 
 ## The current prototype scenario
 
-- **Party:** two randomly generated humans (`make_human`): DEX/STR/STA
-  `randint(3, 6)`, HP `randint(8, 12)`, Power `randint(3, 6)`, a random ability
-  (`heal` / `bulwark`), two random potions, and an epithet from the highest stat
-  (precise/powerful/steady). *(Rough edge: a rolled STA 3 starts at the Winded
-  threshold.)*
+- **Party:** two randomly generated humans (`make_human`): DEX/STR
+  `randint(3, 6)`, STA `randint(4, 7)` (floor raised a step above DEX/STR so no
+  hero starts a day already Winded), HP `randint(8, 12)`, Power `randint(3, 6)`,
+  a random ability (`heal` / `bulwark`), two random potions, and an epithet from
+  the highest stat (precise/powerful/steady).
 - **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [2, 2, 3]` (one "day"). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
   wounds persist for the run. Clearing all rooms completes the quest
@@ -164,11 +175,11 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
 With random chargen + the 2-random-potion kit, at `[2, 2, 3]` over 20k runs:
-~**67% / 3% / 30%** (none / one / both slain), **clear ~70%**, a Down in ~45% of
-runs, ~77% Power / ~3% STA left, healing potions spent, ~13 g earned. The wipe
+~**71% / 3% / 26%** (none / one / both slain), **clear ~74%**, a Down in ~40% of
+runs, ~79% Power / ~3% STA left, healing potions spent, ~14 g earned. The wipe
 tail is now the *designed* pressure to level: per `bench_training.py`, the
-barrow goes 71% -> 90% -> 98% clear across training ranks 0-2, and the bandit
-hideout 22% -> 50% -> 77% -> 94% across ranks 0-3. First runs are risky;
+barrow goes 71% -> 91% -> 98% clear across training ranks 0-2, and the bandit
+hideout 22% -> 49% -> 78% -> 93% across ranks 0-3. First runs are risky;
 trained parties farm.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
