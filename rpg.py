@@ -11,7 +11,9 @@ back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
 in the moment; First Blood opens the fight with a guaranteed graze on the
 focused foe (the aggressive third ability -- its value is the death spiral, not
 the point of damage); Heal instead mends HP on self or an ally between fights
-(all cost Power); STA is a per-day clock that drains across the whole run;
+(all cost Power); STA is a per-day clock -- attacks spend it (defense is free),
+an entity at 0 STA guards instead of attacking, and it only sawtooths back up
+(+1 after a fight, +3 per short rest, full overnight) across the run;
 healing potions restore HP instantly, drunk between fights. A character only
 truly dies when a killing blow lands and the saves have run dry.
 
@@ -47,6 +49,15 @@ from dataclasses import dataclass, field
 WINDED_STA = 3          # STA <= this -> Winded
 WINDED_PENALTY = 2      # roll penalty while Winded
 
+# Stamina economy: ATTACKING is what tires you; defending is reflexive and free.
+# An entity at 0 STA cannot attack -- it guards and catches its breath instead
+# (+STA_EXHAUST_RECOVERY), so an exhausted fighter swings every other round.
+# Recovery is a sawtooth that trends down across the day: +1 when a fight ends,
+# +3 on a short rest, full only on a long rest (overnight).
+STA_ATTACK_COST = 2         # STA per swing for a living human (Entity.sta_cost default)
+STA_EXHAUST_RECOVERY = 1    # STA caught back in a round spent guarding instead of attacking
+STA_RECOVERY_AFTER_FIGHT = 1  # survivors catch their breath when a fight ends
+
 # Survival add-on tunables.
 SAVE_COST = 2           # Power spent to reduce one wound tier (Bulwark's mid-fight save)
 HEAL_COST = 3           # Power spent on the Heal ability (between fights, see use_heal)
@@ -58,7 +69,9 @@ HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
 HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
-STA_RECOVERY_BETWEEN_ROOMS = 1   # STA regained per SHORT rest (small catch-breath)
+STA_RECOVERY_BETWEEN_ROOMS = 3   # STA regained per SHORT rest (a real breather, but
+                                 # from 0 it only *just* clears Winded with the
+                                 # fight-end +1 -- the day still grinds down)
 HP_RECOVERY_BETWEEN_ROOMS = 1    # HP regained per SHORT rest (minimal; wounds carry)
 REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 
@@ -156,7 +169,7 @@ class TempoRoll:
             parts.append(f"-{self.wound_pen} wounds")
         if self.winded_pen:
             parts.append(f"-{self.winded_pen} winded")
-        return f"{name} {self.total} ({', '.join(parts)})"
+        return f"{name}: {self.total} ({', '.join(parts)})"
 
 
 @dataclass
@@ -190,6 +203,10 @@ class Entity:
     power: int = 0
     ability: str | None = None          # "bulwark" (mid-fight save) or "heal" (between-
                                          # fights HP restore, see use_heal); None = neither
+    sta_cost: int = STA_ATTACK_COST     # STA spent per attack (defense is free);
+                                         # Phase 4 hangs weapon weight on this knob
+    undead: bool = False                # no pain: wound roll penalty halved (see
+                                         # wound_penalty), and typically a cheap swing
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
@@ -227,16 +244,17 @@ class Entity:
         return self.cur_sta <= WINDED_STA
 
     @property
-    def drain(self) -> int:
-        # Bigger frames burn fuel faster.
-        return 1 + self.str_ // 4
+    def wound_penalty(self) -> int:
+        # The death spiral. Undead feel no pain: it bites at half strength
+        # (integer halves -- a graze costs them nothing).
+        return self.hp_lost // 2 if self.undead else self.hp_lost
 
     def tempo(self, rng: random.Random) -> TempoRoll:
         dice = rng.randint(1, 6) + rng.randint(1, 6)
         winded_pen = WINDED_PENALTY if self.winded else 0
-        total = dice + self.dex + self.training - self.hp_lost - winded_pen
+        total = dice + self.dex + self.training - self.wound_penalty - winded_pen
         return TempoRoll(total=total, dice=dice, dex=self.dex,
-                         training=self.training, wound_pen=self.hp_lost,
+                         training=self.training, wound_pen=self.wound_penalty,
                          winded_pen=winded_pen)
 
 
@@ -293,8 +311,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         return
 
     if atk.total < dfn.total:
-        log.append(f"    {attacker.name} attacks {defender.name} -- "
-                   f"turned aside.")
+        log.append(f"    {attacker.name} attacks {defender.name} -- parried.")
         log.append(tempo_line)
         return
 
@@ -321,7 +338,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
     defender.hp = max(0, defender.hp - dmg)
     state = (f"{defender.name}: {defender.hp}/{defender.max_hp} HP, "
-             f"-{defender.hp_lost} to rolls")
+             f"-{defender.wound_penalty} to rolls")
 
     if saved:
         log.append(f"    {attacker.name} {margin_verb(margin)} {defender.name}"
@@ -365,7 +382,7 @@ def _first_blood(party: list[Entity], foes: list[Entity],
             log.append(f"    {hero.name} strikes before the lines meet -- "
                        f"First Blood! {target.name} is grazed "
                        f"(-{FIRST_BLOOD_HP} HP -> {target.hp}/{target.max_hp},"
-                       f" -{target.hp_lost} to rolls) "
+                       f" -{target.wound_penalty} to rolls) "
                        f"[{FIRST_BLOOD_COST} Power spent, "
                        f"{hero.cur_power} left]")
             if not target.alive:
@@ -374,7 +391,7 @@ def _first_blood(party: list[Entity], foes: list[Entity],
 
 
 def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
-    """One compact stamina readout per round (the drain is the clock -- the
+    """One compact stamina readout per round (attacks spend the clock -- the
     log shows it ticking every round). A * marks the Winded."""
     def side(group: list[Entity]) -> str:
         return ", ".join(f"{e.name} {e.cur_sta}/{e.sta}"
@@ -390,7 +407,17 @@ def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
 def group_combat(party: list[Entity], foes: list[Entity],
                  rng: random.Random, log: list[str],
                  max_rounds: int = 40) -> None:
-    """Resolve a melee in place. Survivors keep their HP/STA/Power as-is."""
+    """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
+
+    Exchanges resolve *sequentially* -- party in list order first, then foes --
+    and every attacker picks a living target at the moment it acts, so a foe
+    slain mid-round is neither attacked again nor gets a posthumous swing.
+
+    Stamina: an attack costs the attacker `sta_cost` STA (defense is free).
+    At 0 STA an entity cannot attack -- it guards and catches its breath
+    (+STA_EXHAUST_RECOVERY) instead, so the exhausted swing every other round.
+    When the fight ends the survivors catch their breath (+STA_RECOVERY_AFTER_FIGHT).
+    """
     party_set = set(party)
     rnd = 0
     while any(e.alive for e in party) and any(e.alive for e in foes):
@@ -401,44 +428,49 @@ def group_combat(party: list[Entity], foes: list[Entity],
         log.append(f"  Round {rnd}:")
         if rnd == 1:
             _first_blood(party, foes, rng, log)
-            if not any(f.alive for f in foes):
-                break
 
-        # Snapshot attacks against start-of-round state (simultaneous swings),
-        # so a foe felled this round still gets its swing in.
-        actions: list[tuple[Entity, Entity]] = []
-        for hero in party:
-            if hero.alive:
-                actions.append((hero, _pick_target(foes, rng, focus=True)))
-        for foe in foes:
-            if foe.alive:
-                actions.append((foe, _pick_target(party, rng, focus=False)))
-
-        standing = {e for e in party + foes if e.alive}
-        for attacker, defender in actions:
-            _attack(attacker, defender, rng, log)  # planned swing always lands its attempt
-
-        for e in foes + party:  # report exits once, foes first
-            if e in standing and not e.alive:
-                if e.dead:
-                    log.append(f"    *** {e.name} is SLAIN. ***")
-                elif e in party_set:
-                    log.append(f"    {e.name} goes down, out of the fight.")
+        for attacker in party + foes:
+            if not attacker.alive:
+                continue        # felled before its turn came: no swing
+            targets = foes if attacker in party_set else party
+            if not any(t.alive for t in targets):
+                break           # no one left to fight this round
+            if attacker.cur_sta <= 0:
+                # Too spent to swing: guard only, and catch a breath.
+                attacker.cur_sta = min(attacker.sta,
+                                       attacker.cur_sta + STA_EXHAUST_RECOVERY)
+                log.append(f"    {attacker.name} is too spent to attack -- "
+                           f"guards, catching breath "
+                           f"(+{STA_EXHAUST_RECOVERY} STA -> "
+                           f"{attacker.cur_sta}/{attacker.sta})")
+                continue
+            was_winded = attacker.winded
+            attacker.cur_sta = max(0, attacker.cur_sta - attacker.sta_cost)
+            if attacker.winded and not was_winded:
+                log.append(f"    !! {attacker.name} is Winded "
+                           f"(STA {attacker.cur_sta} -- -{WINDED_PENALTY} "
+                           f"to all rolls until they catch their breath)")
+            defender = _pick_target(targets, rng,
+                                    focus=attacker in party_set)
+            was_alive = defender.alive
+            _attack(attacker, defender, rng, log)
+            if was_alive and not defender.alive:
+                if defender.dead:
+                    log.append(f"    *** {defender.name} is SLAIN. ***")
+                elif defender in party_set:
+                    log.append(f"    {defender.name} goes down, "
+                               f"out of the fight.")
                 else:
-                    log.append(f"    *** {e.name} falls. ***")
-
-        # Drain hits everyone still standing. Crossing into Winded is a
-        # turning point worth its own line; the stamina readout prints every
-        # round so the clock is visible ticking.
-        for e in party + foes:
-            if e.alive:
-                was_winded = e.winded
-                e.cur_sta = max(0, e.cur_sta - e.drain)
-                if e.winded and not was_winded:
-                    log.append(f"    !! {e.name} is Winded "
-                               f"(STA {e.cur_sta} -- -{WINDED_PENALTY} "
-                               f"to all rolls until they catch their breath)")
+                    log.append(f"    *** {defender.name} falls. ***")
         log.append(_stamina_line(party, foes))
+
+    # The dust settles: whoever is still standing catches their breath.
+    survivors = [h for h in party if h.alive]
+    if survivors:
+        for h in survivors:
+            h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_AFTER_FIGHT)
+        log.append(f"    The party catches its breath "
+                   f"(+{STA_RECOVERY_AFTER_FIGHT} STA)")
 
 
 # --------------------------------------------------------------------------- #
@@ -495,9 +527,12 @@ def make_party(rng: random.Random) -> list[Entity]:
 
 
 def make_skeleton(rng: random.Random, n: int) -> Entity:
-    # Tireless but brittle, and a weak individual hitter (low STR -> low
-    # severity). No Power, no saves, no kit. The threat is numbers.
-    return Entity(name=f"Skeleton {n}", dex=3, str_=2, sta=8, max_hp=5)
+    # Brittle and a weak individual hitter (low STR -> low severity), but
+    # undead: no pain (wound roll penalty halved -- a graze costs it nothing,
+    # which also blunts First Blood's spiral here) and near-tireless (cheap
+    # swings). No Power, no saves, no kit. The threat is numbers.
+    return Entity(name=f"Skeleton {n}", dex=3, str_=2, sta=8, max_hp=5,
+                  sta_cost=1, undead=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -507,7 +542,8 @@ def make_skeleton(rng: random.Random, n: int) -> Entity:
 # Rooms of skeletons. HP and STA both carry across the whole run with only a brief
 # catch-breath between rooms (no per-fight reset); HP wounds and the per-day STA
 # clock both bind. Power and items are per-day stocks that deplete.
-DUNGEON_ROOMS = [3, 3, 4]
+# (Counts pulled back one per room when skeletons got the undead half-pain buff.)
+DUNGEON_ROOMS = [2, 2, 3]
 
 
 def stat_line(e: Entity) -> str:

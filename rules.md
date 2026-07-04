@@ -57,23 +57,34 @@ Every entity has three stats and a wound pool.
 |------|--------------|
 | **DEX** | Landing hits and avoiding them. Decides who connects each round. |
 | **STR** | Force behind a blow (how bad the wound) and soaking incoming wounds. |
-| **STA** | A pool that drains each round. When low, you're **Winded**. The clock. |
+| **STA** | The attack budget: every swing spends it (defense is free). When low, you're **Winded**; at zero you can only guard. The clock. |
 | **HP**  | Wound pool. Damage is taken *as* HP loss, and lost HP is a penalty to your rolls (see Wounds). |
 
 ---
 
 ## The round loop
 
-Each round, both fighters resolve one exchange:
+Each round, every combatant takes one attack in turn (party first, then foes;
+each attacker picks a **living** target when its turn comes, so no one strikes
+a corpse or swings posthumously):
 
-1. **Tempo roll.** Each rolls `2d6 + DEX − (HP lost so far) − (2 if Winded)`.
-2. **Who lands.** Higher total connects this round. `margin` = the difference.
-   (A tie is a clash — no one lands.)
-3. **Severity.** `severity = margin + attacker STR − defender STR`.
-4. **Wound.** Map severity to a tier; the defender loses that much HP.
-5. **Drain.** Both fighters lose STA (more for higher-STR fighters — big frames
-   burn fuel faster). At **STA ≤ 3**, a fighter is **Winded**.
-6. Repeat until someone reaches **0 HP** (dead/defeated) or yields.
+1. **Pay for the swing.** Attacking costs STA (`sta_cost`: a living human 2,
+   a skeleton 1). Defending is free — guarding is reflexive, swinging is the
+   exertion. At **STA ≤ 3** a fighter is **Winded** (−2 to all rolls).
+2. **Exhaustion.** At **0 STA** a fighter *cannot attack*: it spends the round
+   guarding and catches its breath (+1 STA) — so the exhausted swing every
+   other round. No one dies of tiredness; they fight at half tempo, Winded.
+3. **Tempo roll.** Attacker and defender each roll
+   `2d6 + DEX − (wound penalty) − (2 if Winded)`.
+4. **Who lands.** Higher total connects this round. `margin` = the difference.
+   (A tie is a clash — no one lands; if the defender wins, the attack is
+   *parried*.)
+5. **Severity.** `severity = margin + attacker STR − defender STR`.
+6. **Wound.** Map severity to a tier; the defender loses that much HP.
+7. Repeat until one side has no one standing (**0 HP** = Down/dead).
+
+The per-swing STA cost is also the planned weapon knob (Phase 4): a greatsword
+burns more per swing than a rapier, wanting a deep STA pool behind it.
 
 ### Wound tiers
 
@@ -85,10 +96,14 @@ Each round, both fighters resolve one exchange:
 | 5–6 | Grievous | 4 |
 | 7+  | Killing blow | 6 |
 
-**The death spiral is the whole point.** Your roll penalty equals the HP you've
-lost, so the first solid hit tilts every later round against you and the fight
-accelerates to a conclusion. There is no slow attrition to zero — one grievous
-hit can decide it.
+**The death spiral is the whole point.** Your **wound penalty** equals the HP
+you've lost, so the first solid hit tilts every later round against you and the
+fight accelerates to a conclusion. There is no slow attrition to zero — one
+grievous hit can decide it.
+
+**Undead feel no pain:** their wound penalty is *halved* (integer — `HP lost // 2`,
+so a graze costs them nothing on the roll). Chip damage and spiral-based tricks
+(First Blood) bite less against them; you have to actually break the bones.
 
 ---
 
@@ -103,7 +118,8 @@ so every exchange prints **two layers**:
 |-----------|-------|
 | Tempo tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
 | Tempo tie, low dice | **Lull** — they circle, probing for an opening |
-| Attacker loses the exchange | *turned aside* |
+| Attacker loses the exchange | *parried* |
+| Attacker at 0 STA | *too spent to attack — guards, catching breath* (+1 STA) |
 | Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
 | Hit lands but soak zeroes the severity | *deflected* — the blow glances off |
 | Wound tiers | *a graze / a solid wound / a grievous injury / a killing blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
@@ -115,8 +131,8 @@ for falls, slayings, and level-ups.
 
 **2. The raw mechanics**, indented under each headline: the actual `2d6`
 result, every modifier with its source (`+DEX`, `+training`, `-wounds`,
-`-winded`), both totals, then the full severity arithmetic
-(`severity = margin + STR - soak -> tier`).
+`-winded`), both totals (formatted `Name: total (parts)`), then the full
+severity arithmetic (`severity = margin + STR - soak -> tier`).
 
 A `stamina:` readout prints every round — the clock is visible ticking — with
 `*` marking the Winded. This is deliberately the *complete* version; a terser
@@ -127,7 +143,10 @@ mode can come later once the numbers have earned trust.
 ## Why three stats produce the loop (no range needed)
 
 - A **Power** build lands rarely (low DEX) but devastatingly, and is durable —
-  but burns STA fast, so it must win early.
+  but wants to win early, before the flat swing cost empties its pool. (The
+  "big frames burn fuel faster" idea now lives in the per-swing STA cost knob:
+  today it's flat per entity type; Phase 4 makes heavy weapons cost more per
+  swing, which is what makes a STR build a burst build mechanically.)
 - A **Precision** build lands often but softly, and is fragile — it wins by
   chipping and evading over time.
 - An **Endurance** build is middling but stays sharp longest — it survives the
@@ -270,7 +289,7 @@ These are the only edits to the existing rules:
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
-| **STA** | Per day | Small catch-breath per short rest; rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
+| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Attacks spend it; at 0 you guard instead of swinging. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
 | **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
 
@@ -360,8 +379,11 @@ HP.
 **Two tiers of rest, keyed to time:**
 
 - A **short rest** (~an hour or two of narrative time) is a limited within-day
-  resource — a handful of slots per day. It gives only a small catch-breath (a
-  little STA, a sliver of HP). Drinking potions is a *separate* deliberate act
+  resource — a handful of slots per day. It gives a real breather (+3 STA, a
+  sliver of HP) but never a reset: with the +1 a fight's end already gives,
+  a rest from empty lands you *just* past the Winded line. The day's shape is
+  a sawtooth trending down — the fights exhaust the characters faster than the
+  breaks give back. Drinking potions is a *separate* deliberate act
   (see "In advance" above / `use_potion`), not folded into the rest. When the
   slots run out there is no more mid-day recovery: the party pushes on depleted
   or makes camp.
@@ -411,10 +433,13 @@ On top of the existing build/allocation choices:
 
 - **Time is a `Clock`** (a `day` counter plus a per-day budget of short-rest
   slots, `SHORT_RESTS_PER_DAY`). A dungeon run is a slice of a day. **HP and STA
-  both carry across rooms** (drain, never a per-fight reset); a `short_rest`
-  spends a slot for a small catch-breath, and `long_rest` makes camp for the full
-  STA recharge + the weekly HP tick (`hp_regen_per_night = max(1, round(max_hp /
-  7))`). Power and items are per-day stocks that deplete across the run.
+  both carry across rooms** (never a per-fight reset). STA moves as a sawtooth:
+  attacks spend it (`sta_cost`), the end of a fight gives
+  `STA_RECOVERY_AFTER_FIGHT` (1) back, a `short_rest` spends a slot for
+  `STA_RECOVERY_BETWEEN_ROOMS` (3) + a sliver of HP, and `long_rest` makes camp
+  for the full STA recharge + the weekly HP tick (`hp_regen_per_night =
+  max(1, round(max_hp / 7))`). Power and items are per-day stocks that deplete
+  across the run.
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
 - **Saves are automatic and conservative.** A Bulwark-ability character spends

@@ -8,6 +8,10 @@ calls. That's all this file does: a thin CLI over rpg.py's functions, with
 state pickled to .session_state.pkl (gitignored -- it's a save file, not
 source) between invocations. It adds no game logic of its own.
 
+The first hero rolled (party[0]) is the PLAYER CHARACTER; the rest are
+companions. PC death ends the game even if a companion stands (see dm.md --
+the DM protocol for actually playing lives there).
+
 Run:  python session.py new [--seed N]              # new party, resets state
       python session.py status                       # show party/clock/purse
       python session.py fight N [--type skeleton]     # spawn N foes, resolve one melee
@@ -56,6 +60,11 @@ def load() -> dict:
         return pickle.load(f)
 
 
+def role_tag(party: list, h) -> str:
+    """party[0] is the player character; the rest are companions (see dm.md)."""
+    return "(YOU)      " if h is party[0] else "(companion)"
+
+
 def cmd_new(args: argparse.Namespace) -> None:
     rng = random.Random(args.seed)
     party = make_party(rng)
@@ -64,7 +73,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     save(state)
     print(f"New party rolled (seed={args.seed}):")
     for h in party:
-        print("  " + stat_line(h))
+        print(f"  {role_tag(party, h)} " + stat_line(h))
+    print(f"The player character is {party[0].name} -- if they die, game over.")
 
 
 def cmd_status(args: argparse.Namespace) -> None:
@@ -74,7 +84,7 @@ def cmd_status(args: argparse.Namespace) -> None:
           f"Purse: {purse.gold}g.")
     for h in party:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
-        print("  " + stat_line(h) + tag)
+        print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
 
 
 def cmd_fight(args: argparse.Namespace) -> None:
@@ -99,8 +109,18 @@ def cmd_fight(args: argparse.Namespace) -> None:
 
     print("\n".join(log))
     save(state)
+    report_game_over(party, wiped)
+
+
+def report_game_over(party: list, wiped: bool) -> None:
+    """The two run-ending states: a total wipe, or the player character slain
+    (party[0] is the PC -- see dm.md; the companion surviving doesn't save the
+    game)."""
     if wiped:
-        print("\n*** RUN OVER: total party wipe. ***")
+        print("\n*** RUN OVER: total party wipe. GAME OVER. ***")
+    elif party[0].dead:
+        print(f"\n*** {party[0].name} -- the player character -- is slain. "
+              f"GAME OVER. ***")
 
 
 def cmd_hideout(args: argparse.Namespace) -> None:
@@ -128,8 +148,7 @@ def cmd_hideout(args: argparse.Namespace) -> None:
 
     print("\n".join(log))
     save(state)
-    if wiped:
-        print("\n*** RUN OVER: total party wipe. ***")
+    report_game_over(party, wiped)
 
 
 def cmd_rest(args: argparse.Namespace) -> None:

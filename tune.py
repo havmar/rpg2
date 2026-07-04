@@ -57,10 +57,10 @@ def simulate(rooms, trials=20000):
 
 def main():
     layouts = [
-        [2, 2, 3],      # the old default, for comparison
+        [2, 2, 3],      # the current default (post undead half-pain buff)
         [2, 3, 3],
         [3, 3, 3],
-        [3, 3, 4],      # the current default
+        [3, 3, 4],      # the pre-buff default, for comparison
         [3, 4, 4],
         [4, 4, 5],
     ]

@@ -78,7 +78,9 @@ system):
 - **Tempo weighting** — DEX-favouring (rapier) vs STR-contributing (greatsword).
 - **Severity profile** — flat bonus vs STR-scaling.
 - **STA cost per swing** — heavy weapons burn the clock faster (a burst weapon
-  *mechanically*, wanting a high-STA frame behind it).
+  *mechanically*, wanting a high-STA frame behind it). *The engine hook already
+  exists*: `Entity.sta_cost` is the per-swing STA price (attacks spend STA,
+  defense is free, 0 STA = guard-only round) — weapons just need to set it.
 - **Reach** — survives as a small first-exchange modifier even though range isn't
   tracked.
 
@@ -182,8 +184,9 @@ points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
 points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
 Test: *passed* — against the bandit hideout benchmark (`bench_training.py`),
-wipe rate falls ~75% → ~46% → ~21% → ~5% across training ranks 0–3. Each rank
-is a felt jump.
+wipe rate falls ~70% → ~39% → ~16% → ~3% across training ranks 0–3 (numbers
+re-benched after the stamina rework + undead skeleton buff). Each rank is a
+felt jump.
 
 **Phase 4 — Weapons & proficiency**
 Build: the five weapons with distinct tempo/severity/STA profiles; per-weapon

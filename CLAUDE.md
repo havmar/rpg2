@@ -5,6 +5,13 @@ with Claude as DM. Fights resolve on their own (no input once a fight starts) an
 produce an outcome plus a narrative log; the DM narrates *over* that log. The
 player's real decisions happen *between* fights.
 
+> **PLAYING, NOT DEVELOPING? Read `dm.md` first.** Whenever the task is to
+> start, continue, or test a playthrough as DM (rather than change the game),
+> `dm.md` is the required reading: the play protocol (one encounter per
+> message, PC-vs-companion, which decisions are the player's), narration
+> style, and a quick mechanics reference. This file (CLAUDE.md) is the
+> development guide; you don't need most of it just to run a game.
+
 ## The feel we're going for
 
 A **mechanics-centered RPG** with the freedom of a tabletop game. Combat is
@@ -33,6 +40,10 @@ fiction.
 
 ## Files
 
+- `dm.md` — **the DM playbook: read it before playing or testing a game.** The
+  play protocol (PC/companion split, one-encounter-per-message, player-owned
+  decisions), narration style, and a quick mechanics reference. Keep it in
+  sync when play-facing rules change.
 - `rules.md` — the ruleset. The source of truth for *mechanics intent* (the
   "why" behind the numbers). Read this before changing mechanics.
 - `plan.md` — the high-concept design record and phased build roadmap that sits
@@ -47,8 +58,8 @@ fiction.
   `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
   `short_rest`), exposing `run_hideout()` for batch use. **This is the intended
   TOUGH site**: it pays 3x the skeleton barrow (XP and gold) and wipes a fresh
-  rank-0 party ~75% of the time — the designed play is to farm skeletons for
-  combat training first (rank 2 brings the wipe rate to ~21%). `--seed N` for
+  rank-0 party ~70% of the time — the designed play is to farm skeletons for
+  combat training first (rank 2 brings the wipe rate to ~16%). `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
   the `rpg.py` API.
 - `bench_training.py` — Phase 3 benchmark: runs the barrow and the hideout at
@@ -67,7 +78,7 @@ fiction.
   chosen by the DM each call, freely; it is *not* read from `rpg.py`'s
   `DUNGEON_ROOMS`**, which only sizes the one-shot `run_dungeon`/`tune.py`
   path. When narrating a "barrow room," pick a foe count that fits the scene
-  -- `DUNGEON_ROOMS = [3, 3, 4]` is a reasonable reference for what a
+  -- `DUNGEON_ROOMS = [2, 2, 3]` is a reasonable reference for what a
   farmable barrow room looks like, but session play isn't bound to it),
   `hideout ROOM` (1-3, resolves one bandit-hideout room against the persisted
   party using that room's **fixed** roster, mirroring
@@ -108,18 +119,27 @@ is intentionally ASCII-only, so plain runs are usually fine.
 ## Core mechanics (see `rules.md` for the full spec)
 
 - Three stats — **DEX** (who lands), **STR** (wound severity + soak), **STA**
-  (a draining clock; **Winded** at STA ≤ 3) — plus an **HP** wound pool.
-- Each round is an opposed `2d6 + DEX + training − (HP lost) − (2 if Winded)`
+  (the attack budget and clock; **Winded** at STA ≤ 3) — plus an **HP** wound pool.
+- Each round is an opposed `2d6 + DEX + training − (wound penalty) − (2 if Winded)`
   exchange. Higher roll lands; `severity = margin + atkSTR − defSTR` maps to a
-  wound tier (deflected/graze/wound/grievous/killing blow). **HP lost is itself
-  a roll penalty — the death spiral is the whole point.**
-- `group_combat` generalizes the 1v1 exchange to a melee so a party can be
-  swarmed. Heroes focus-fire the weakest foe; foes target party members at random.
+  wound tier (deflected/graze/wound/grievous/killing blow). **The wound penalty
+  (= HP lost; halved, integer, for the undead — they feel no pain) is the death
+  spiral, which is the whole point.**
+- **Attacking costs STA** (`Entity.sta_cost`: humans 2, skeletons 1); defending
+  is free. **At 0 STA an entity can't attack** — it guards and catches its
+  breath (+1 STA), so the exhausted swing every other round. Nobody dies of
+  exhaustion; they fight at half tempo, Winded. (The per-swing cost is the
+  planned Phase-4 weapon knob — greatsword heavy, rapier light.)
+- `group_combat` resolves a melee **sequentially** — party in list order first
+  (PC acts first), then foes; every attacker picks a *living* target at the
+  moment it acts, so a foe slain mid-round is neither attacked again nor swings
+  posthumously. Heroes focus-fire the weakest foe; foes target at random.
 - **The combat log is two-layered** (see `rules.md`, "Reading the combat log"):
-  every exchange prints an interpretive headline (Clash / Lull / turned aside /
+  every exchange prints an interpretive headline (Clash / Lull / parried /
   edges past / outmaneuvers / overwhelms, wound phrases with the target's
   `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
-  actual 2d6, every modifier and its source, the full severity arithmetic).
+  actual 2d6, every modifier and its source, the full severity arithmetic;
+  tempo lines read `Name: total (parts)`).
   Winded crossings get a `!!` line and a `stamina:` readout prints every round.
   Deliberately verbose for now — simplify only once the numbers have earned trust.
 
@@ -144,9 +164,11 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   all — it's a **between-fights** action, `use_heal(healer, target, rng, log)`,
   spending `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3)
   HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
-- **STA is the binding clock**: it drains in combat and carries across rooms with
-  only a small `STA_RECOVERY_BETWEEN_ROOMS` catch-breath per short rest. A **long
-  rest recharges STA fully** (overnight).
+- **STA is the binding clock**: attacks spend it and it carries across rooms.
+  Recovery is a **sawtooth trending down**: `STA_RECOVERY_AFTER_FIGHT` (1) when
+  a fight ends, `STA_RECOVERY_BETWEEN_ROOMS` (3) per short rest (from 0, fight-end
+  +1 plus a short rest = 4 — *just* clears Winded), and only a **long rest
+  recharges STA fully** (overnight).
 - **Time economy (`Clock`):** a `day` counter plus a per-day budget of
   `SHORT_RESTS_PER_DAY` (2) short-rest slots. `short_rest(party, clock, log)` (~an
   hour or two of narrative time) spends a slot for a small catch-breath + potion
@@ -201,31 +223,35 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   hero starts a day already Winded), HP `randint(8, 12)`, Power `randint(3, 6)`,
   a random ability (`heal` / `bulwark` / `first_blood`), two random potions, and
   an epithet from the highest stat (precise/powerful/steady).
-- **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [3, 3, 4]` (one "day"). HP,
+- **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [2, 2, 3]` (one "day";
+  counts pulled back one per room when skeletons got the undead buff). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
   wounds persist for the run. Clearing all rooms completes the quest
   (gold + XP lump).
 - **Skeletons:** brittle, weak individual hitters (DEX 3 / STR 2 / HP 5), no
-  Power/kit but tireless — the threat is *numbers*, matching the goblin/swarm
-  puzzle in the rules, not raw power. **The farmable site**; the bandit hideout
-  (`scratch_bandits.py`) is the tough one you train up for.
+  Power/kit, but **undead**: half wound penalty (`hp_lost // 2` — no pain, so
+  chip damage and First Blood's spiral bite less here) and cheap swings
+  (`sta_cost` 1, near-tireless) — the threat is *numbers*, matching the
+  goblin/swarm puzzle in the rules, not raw power. **The farmable site**; the
+  bandit hideout (`scratch_bandits.py`) is the tough one you train up for.
 
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-With random chargen + the 2-random-potion kit, at `[3, 3, 4]` over 20k runs:
-~**32% / 12% / 56%** (none / one / both slain), **clear ~44%**, a Down in ~48% of
-runs, ~64% Power / ~6% STA left, ~0.7 healing potions left, ~9 g earned. The wipe
-tail is now the *designed* pressure to level — and it is steep at rank 0: per
-`bench_training.py`, the barrow goes **45% -> 74% -> 92% -> 99%** clear across
-training ranks 0-3, and the bandit hideout **25% -> 54% -> 80% -> 95%**. A
-fresh party's first barrow run is now a genuine coin flip (the old `[2, 2, 3]`
-layout cleared ~77% at rank 0); trained parties farm. If the rank-0 opening
-feels too brutal in play, `DUNGEON_ROOMS` is the first lever to pull back.
+With random chargen + the 2-random-potion kit, at `[2, 2, 3]` over 20k runs
+(post stamina-rework + undead buff): ~**46% / 10% / 44%** (none / one / both
+slain), **clear ~56%**, a Down in ~45% of runs, ~69% Power / ~34% STA left,
+~0.7 healing potions left, ~11 g earned. The wipe tail is the *designed*
+pressure to level: per `bench_training.py`, the barrow goes
+**55% -> 82% -> 95% -> 99%** clear across training ranks 0-3, and the bandit
+hideout **30% -> 61% -> 84% -> 97%**. A fresh party's first barrow run is a
+better-than-coin-flip but real risk; trained parties farm. If the rank-0
+opening needs adjusting, `DUNGEON_ROOMS` is the first lever.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
-(`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`,
-`STARTING_POTIONS`), then economy/progression (`POTION_PRICE`, drop chances,
+(`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`, `STA_RECOVERY_AFTER_FIGHT`,
+`STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then
+economy/progression (`POTION_PRICE`, drop chances,
 quest rewards, `XP_LEVEL_STEP`, training cap), then skeleton stats, then the
 hero roll ranges (`HERO_STAT_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).
 **Always re-run `tune.py` and `bench_training.py` after touching any of
