@@ -57,7 +57,7 @@ def simulate(rooms, trials=20000):
 
 def main():
     layouts = [
-        [2, 2, 3],      # the old (pre-collapse) default, for comparison
+        [2, 2, 3],      # the old default (from before STA was lethal), for comparison
         [2, 3, 3],
         [3, 3, 3],
         [3, 3, 4],      # the current default (barrow = the TOUGH site now)

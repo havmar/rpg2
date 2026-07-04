@@ -1,7 +1,7 @@
 """Scenario: a bandit hideout -- the STARTER site. Imports the engine from rpg.py.
 
 Bandits are living fighters who play by exactly the party's rules: real
-DEX/STR, they spend STA to swing, go Winded, and COLLAPSE at 0 like anyone
+DEX/STR, they spend STA to swing, go Winded, and are SPENT at 0 like anyone
 alive. That's deliberate -- this is the first site a new party runs, and its
 logs teach the system with no special cases. (The skeleton barrow is the tough
 site: tireless undead in numbers, the exception enemies you train up for.)
@@ -24,7 +24,7 @@ BANDIT_QUEST_XP = QUEST_XP
 BANDIT_QUEST_GOLD = QUEST_GOLD
 
 # Bandit roster: name, dex, str, sta, hp. No Power/ability/kit -- raw fighters
-# who tire and collapse exactly like the heroes do.
+# who tire and go Spent exactly like the heroes do.
 BANDIT_TYPES = {
     "cutthroat": (4, 3, 5, 7),   # nimble knife-work
     "bruiser":   (3, 5, 5, 9),   # slow, heavy, durable
@@ -32,8 +32,8 @@ BANDIT_TYPES = {
 }
 
 HIDEOUT_ROOMS = [
-    ("the lookout post", ["cutthroat", "archer"]),
-    ("the common room", ["cutthroat", "cutthroat"]),
+    ("the lookout post", ["cutthroat"]),
+    ("the common room", ["cutthroat", "archer"]),
     ("the boss's den", ["bruiser", "cutthroat"]),
 ]
 

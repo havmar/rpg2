@@ -55,10 +55,10 @@ fiction.
   distribution. Use it to re-check balance after any mechanics change.
 - `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters who play
   by exactly the party's rules: real DEX/STR, they spend STA, go Winded, and
-  Collapse at 0). Imports the engine from `rpg.py` and mirrors the survival
+  are Spent at 0). Imports the engine from `rpg.py` and mirrors the survival
   flow (`start_fight` -> `group_combat` -> `short_rest`), exposing
   `run_hideout()` for batch use. **This is the STARTER site**: base pay (a
-  full clear = exactly the L1->2 XP cost), ~63% clear / ~5% wipe at rank 0,
+  full clear = exactly the L1->2 XP cost), ~86% clear / ~14% wipe at rank 0,
   and its logs teach the system with no special-case enemies. The skeleton
   barrow (in `rpg.py`) is the TOUGH site you train up for. `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
@@ -122,22 +122,24 @@ is intentionally ASCII-only, so plain runs are usually fine.
 
 - Three stats — **DEX** (who lands), **STR** (wound severity + soak), **STA**
   (the swing budget and second death-track; **Winded** at STA ≤ 3,
-  **Collapsed** at 0) — plus an **HP** wound pool. The identity split:
-  *DEX = swings that connect, STR = swings that count, STA = how many swings.*
+  **Spent** at 0) — plus an **HP** wound pool. The identity split:
+  *DEX = swings that connect, STR = swings that count, STA = how many good
+  swings you get.*
 - Each round is an opposed `2d6 + DEX + training − (wound penalty) − (fatigue)`
-  exchange (fatigue: 2 Winded / 6 Collapsed, never stacked). Higher roll lands;
+  exchange (fatigue: 2 Winded / 6 Spent, never stacked). Higher roll lands;
   `severity = margin + atkSTR − defSTR` maps to a wound tier
   (deflected/graze/wound/grievous/killing blow). **The wound penalty
   (= HP lost; halved, integer, for the undead — they feel no pain) is the death
   spiral, which is the whole point.**
 - **Attacking costs STA** (`Entity.sta_cost`: 1 for the living; the undead are
   **tireless** and never spend any); defending is free. **At 0 STA an entity
-  COLLAPSES**: it cannot attack for the rest of the fight, rolls at −6, and
-  gets **no in-fight recovery** — collapse in reach of a live enemy is usually
-  death; STA recovers only between fights. People die of exhaustion now; that
-  is the point. If nobody standing can attack, the fight staggers apart
-  unresolved (no XP, room not cleared). (The per-swing cost is the planned
-  Phase-4 weapon knob — greatsword heavy, rapier light.)
+  is SPENT**: it still swings (desperation is free) but takes −6 to *all*
+  rolls, with **no in-fight recovery** — against fresh foes that's a death
+  sentence; two spent sides cancel each other's penalties and the wound
+  spiral still ends the fight, so melees always resolve (draws exist only via
+  the `max_rounds` safety valve). STA recovers only between fights. People
+  die of exhaustion now; that is the point. (The per-swing cost is the
+  planned Phase-4 weapon knob — greatsword heavy, rapier light.)
 - `group_combat` resolves a melee **sequentially** — party in list order first
   (PC acts first), then foes; every attacker picks a *living* target at the
   moment it acts, so a foe slain mid-round is neither attacked again nor swings
@@ -148,8 +150,8 @@ is intentionally ASCII-only, so plain runs are usually fine.
   `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
   actual 2d6, every modifier and its source, the full severity arithmetic;
   tempo lines read `Name: total (parts)`).
-  Winded and Collapse crossings get `!!` lines and a `stamina:` readout prints
-  every round (`*` Winded, `!!` Collapsed, tireless entities summarized).
+  Winded and Spent crossings get `!!` lines and a `stamina:` readout prints
+  every round (`*` Winded, `!!` Spent, tireless entities summarized).
   Deliberately verbose for now — simplify only once the numbers have earned trust.
 
 ## Survival & Resources add-on (now implemented)
@@ -174,8 +176,9 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   spending `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3)
   HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
 - **STA is the second death-track**: attacks spend it, it carries across rooms,
-  and hitting 0 mid-fight is a Collapse (see Core mechanics) that usually kills.
-  Recovery is **between fights only**, a **sawtooth trending down**:
+  and hitting 0 mid-fight leaves you Spent (see Core mechanics), which against
+  fresh enemies usually kills. Recovery is **between fights only**, a
+  **sawtooth trending down**:
   `STA_RECOVERY_AFTER_FIGHT` (1) when a fight ends, `STA_RECOVERY_BETWEEN_ROOMS`
   (3) per short rest (from 0, fight-end +1 plus a short rest = 4 — *just* clears
   Winded), and only a **long rest recharges STA fully** (overnight). Walking
@@ -248,27 +251,28 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 - **Skeletons:** brittle, weak individual hitters (DEX 3 / STR 2 / HP 5), no
   Power/kit, but **undead**: half wound penalty (`hp_lost // 2` — no pain, so
   chip damage and First Blood's spiral bite less here) and **tireless** (never
-  spend STA, never Winded/Collapsed) — the threat is *numbers* pressing a party
+  spend STA, never Winded/Spent) — the threat is *numbers* pressing a party
   whose stamina is a death-track: they don't have to beat you, just outlast
   you. The exception enemies, met second on purpose (living foes first).
 
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-Post-collapse (STA a lethal second death-track), at the barrow's `[3, 3, 4]`
-over 20k runs at rank 0: ~**22% / 1% / 78%** (none / one / both slain),
-**clear ~22%** — a fresh party that walks into the barrow dies; that is the
+Post-Spent (STA a lethal second death-track), at the barrow's `[3, 3, 4]`
+over 20k runs at rank 0: ~**25% / 2% / 73%** (none / one / both slain),
+**clear ~26%** — a fresh party that walks into the barrow dies; that is the
 design (it pays 3x). Per `bench_training.py` (5k/rank), the barrow clears
-**22% -> 48% -> 74% -> 90%** across training ranks 0-3, and the starter
-hideout **63% -> 85% -> 96% -> 99%** (rank-0 wipe there is ~5%). The intended
-arc: clear the hideout fresh (~63%), level up, take the barrow trained. Note
-that most barrow deaths are collapse deaths — training helps by ending fights
-in fewer swings, so the STA budget stretches. If the rank-0 opening needs
-adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow, `DUNGEON_ROOMS`.
+**27% -> 55% -> 82% -> 95%** across training ranks 0-3, and the starter
+hideout **86% -> 96% -> 99% -> 100%** (rank-0 wipe there is ~14%). The
+intended arc: clear the hideout fresh, level up, take the barrow trained.
+Note that most barrow deaths come from running dry — training helps by ending
+fights in fewer swings, so the STA budget stretches. If the rank-0 opening
+needs adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow,
+`DUNGEON_ROOMS`.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
 survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,
-`COLLAPSED_PENALTY`, `STA_RECOVERY_AFTER_FIGHT`, `STA_RECOVERY_BETWEEN_ROOMS`,
+`SPENT_PENALTY`, `STA_RECOVERY_AFTER_FIGHT`, `STA_RECOVERY_BETWEEN_ROOMS`,
 `SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then economy/progression
 (`POTION_PRICE`, drop chances, quest rewards, `XP_LEVEL_STEP`, training cap),
 then skeleton/bandit stats, then the hero roll ranges (`HERO_STAT_RANGE`,

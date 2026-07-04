@@ -12,9 +12,10 @@ in the moment; First Blood opens the fight with a guaranteed graze on the
 focused foe (the aggressive third ability -- its value is the death spiral, not
 the point of damage); Heal instead mends HP on self or an ally between fights
 (all cost Power); STA is the second death-track -- attacks spend it (defense is
-free), and an entity that hits 0 STA COLLAPSES: it cannot attack for the rest
-of the fight and defends at a huge penalty, with no in-fight recovery. Running
-dry near an enemy is how you die. STA only sawtooths back up between fights
+free), and an entity that hits 0 STA is SPENT: still swinging, but at a huge
+penalty to every roll, with no in-fight recovery. Running dry near a fresh
+enemy is how you die (two spent sides cancel out and brawl to a real finish,
+so fights resolve). STA only sawtooths back up between fights
 (+1 after a fight, +3 per short rest, full overnight) across the run;
 healing potions restore HP instantly, drunk between fights. A character only
 truly dies when a killing blow lands and the saves have run dry.
@@ -50,20 +51,23 @@ from dataclasses import dataclass, field
 
 WINDED_STA = 3          # STA <= this -> Winded (the warning zone)
 WINDED_PENALTY = 2      # roll penalty while Winded
-COLLAPSED_PENALTY = 6   # roll penalty at 0 STA (replaces the Winded penalty)
+SPENT_PENALTY = 6       # roll penalty at 0 STA (replaces the Winded penalty)
 
 # Stamina economy: ATTACKING is what tires you; defending is reflexive and free.
-# STA is the SECOND DEATH-TRACK. An entity that hits 0 STA COLLAPSES: it cannot
-# attack for the rest of the fight and defends at -COLLAPSED_PENALTY, with no
-# in-fight recovery -- a collapsed fighter near a live enemy is all but finished
-# (its wounds still spiral on top). HP is how much you can bleed; STA is how
-# long you can fight; whichever empties first in reach of a foe kills you.
+# STA is the SECOND DEATH-TRACK. An entity that hits 0 STA is SPENT: still
+# swinging -- desperation is free -- but at -SPENT_PENALTY to ALL rolls, attack
+# and defense alike, with no in-fight recovery. Against fresh enemies that is a
+# death sentence (can't land, gets carved, wounds spiral on top); two spent
+# sides cancel each other's penalties and brawl it out to a real finish, so
+# fights RESOLVE rather than stall. HP is how much you can bleed; STA is how
+# long you can fight WELL; whichever empties first in reach of a foe kills you.
 # Recovery only happens BETWEEN fights, as a sawtooth that trends down across
 # the day: +1 when a fight ends, +3 on a short rest, full only on a long rest
-# (overnight). Tireless entities (undead) never spend STA and never collapse.
+# (overnight). Tireless entities (undead) never spend STA and are never
+# Winded/Spent.
 STA_ATTACK_COST = 1         # STA per swing (the pool is a swing budget now;
-                            # halved from 2 when collapse became lethal, so a
-                            # hero gets ~4-7 swings per fight, not 2-3)
+                            # halved from 2 when running dry became lethal, so
+                            # a hero gets ~5-8 full-strength swings, not 2-3)
 STA_RECOVERY_AFTER_FIGHT = 1  # survivors catch their breath when a fight ends
 
 # Survival add-on tunables.
@@ -176,9 +180,9 @@ class TempoRoll:
     dex: int
     training: int
     wound_pen: int      # HP lost so far (the death spiral)
-    fatigue_pen: int    # COLLAPSED_PENALTY at 0 STA, else WINDED_PENALTY if
+    fatigue_pen: int    # SPENT_PENALTY at 0 STA, else WINDED_PENALTY if
                         # Winded, else 0 (the two never stack)
-    fatigue_label: str  # "collapsed" / "winded" / ""
+    fatigue_label: str  # "spent" / "winded" / ""
 
     def breakdown(self, name: str) -> str:
         parts = [f"2d6={self.dice}", f"+{self.dex} DEX"]
@@ -226,7 +230,7 @@ class Entity:
                                          # Phase 4 hangs weapon weight on this knob
     undead: bool = False                # no pain: wound roll penalty halved (see
                                          # wound_penalty)
-    tireless: bool = False              # never spends STA, never Winded/Collapsed
+    tireless: bool = False              # never spends STA, never Winded/Spent
                                          # (the undead don't tire; you do)
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
@@ -261,16 +265,17 @@ class Entity:
         return self.max_hp - self.hp
 
     @property
-    def collapsed(self) -> bool:
-        # 0 STA = Collapsed: cannot attack, defends at -COLLAPSED_PENALTY, and
-        # there is NO in-fight recovery -- collapse lasts until the fight ends.
-        # (Derived from cur_sta, so a fighter entering a fight at 0 is
-        # collapsed from round 1: you don't start a fight with nothing left.)
+    def spent(self) -> bool:
+        # 0 STA = Spent: still swings (desperation is free) but takes
+        # -SPENT_PENALTY to all rolls, and there is NO in-fight recovery --
+        # spent lasts until the fight ends. (Derived from cur_sta, so a
+        # fighter entering a fight at 0 is spent from round 1: you don't
+        # start a fight with nothing left.)
         return not self.tireless and self.cur_sta <= 0
 
     @property
     def winded(self) -> bool:
-        return (not self.tireless and not self.collapsed
+        return (not self.tireless and not self.spent
                 and self.cur_sta <= WINDED_STA)
 
     @property
@@ -281,8 +286,8 @@ class Entity:
 
     def tempo(self, rng: random.Random) -> TempoRoll:
         dice = rng.randint(1, 6) + rng.randint(1, 6)
-        if self.collapsed:
-            fatigue_pen, fatigue_label = COLLAPSED_PENALTY, "collapsed"
+        if self.spent:
+            fatigue_pen, fatigue_label = SPENT_PENALTY, "spent"
         elif self.winded:
             fatigue_pen, fatigue_label = WINDED_PENALTY, "winded"
         else:
@@ -428,13 +433,13 @@ def _first_blood(party: list[Entity], foes: list[Entity],
 
 def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
     """One compact stamina readout per round (attacks spend the clock -- the
-    log shows it ticking every round). A * marks the Winded, !! the Collapsed;
+    log shows it ticking every round). A * marks the Winded, !! the Spent;
     tireless entities are summarized (their clock never moves)."""
     def side(group: list[Entity]) -> str:
         living = [e for e in group if e.alive]
         tireless = [e for e in living if e.tireless]
         parts = [f"{e.name} {e.cur_sta}/{e.sta}"
-                 + ("!!" if e.collapsed else "*" if e.winded else "")
+                 + ("!!" if e.spent else "*" if e.winded else "")
                  for e in living if not e.tireless]
         if tireless:
             parts.append(f"{len(tireless)} tireless")
@@ -444,16 +449,11 @@ def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
     legend = []
     if any(e.alive and e.winded for e in party + foes):
         legend.append("* = Winded")
-    if any(e.alive and e.collapsed for e in party + foes):
-        legend.append("!! = Collapsed")
+    if any(e.alive and e.spent for e in party + foes):
+        legend.append("!! = Spent")
     if legend:
         line += f"   ({', '.join(legend)})"
     return line
-
-
-def _can_attack(e: Entity) -> bool:
-    """Still has a swing in it: alive and either tireless or able to pay."""
-    return e.alive and (e.tireless or e.cur_sta >= e.sta_cost)
 
 
 def group_combat(party: list[Entity], foes: list[Entity],
@@ -466,26 +466,21 @@ def group_combat(party: list[Entity], foes: list[Entity],
     slain mid-round is neither attacked again nor gets a posthumous swing.
 
     Stamina: an attack costs the attacker `sta_cost` STA (defense is free);
-    tireless entities pay nothing. An entity that hits 0 STA COLLAPSES -- it
-    cannot attack for the rest of the fight and defends at -COLLAPSED_PENALTY,
-    with no in-fight recovery. Collapse near a live enemy is usually death; the
-    only rescue is allies ending the fight first. If nobody left standing can
-    attack, the fight staggers apart unresolved (both sides spent).
-    When the fight ends the survivors catch their breath
-    (+STA_RECOVERY_AFTER_FIGHT).
+    tireless entities pay nothing. An entity that hits 0 STA is SPENT: it
+    still swings (desperation is free) but takes -SPENT_PENALTY to all rolls,
+    attack and defense alike, with no in-fight recovery. Against fresh foes
+    that is a death sentence; two spent sides cancel each other's penalties
+    and the wound spiral still finishes the fight -- so melees resolve instead
+    of stalling (max_rounds is only a safety valve). When the fight ends the
+    survivors catch their breath (+STA_RECOVERY_AFTER_FIGHT).
     """
     party_set = set(party)
-    collapse_logged: set[Entity] = set()
+    spent_logged: set[Entity] = set()
     rnd = 0
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
         if rnd > max_rounds:
             log.append("    (the fight grinds to a standstill)")
-            break
-        if not any(_can_attack(e) for e in party + foes):
-            # Mutual collapse: no recovery in-fight, so this is permanent.
-            log.append("    Both sides are utterly spent -- the fight "
-                       "staggers apart, unresolved.")
             break
         log.append(f"  Round {rnd}:")
         if rnd == 1:
@@ -497,23 +492,20 @@ def group_combat(party: list[Entity], foes: list[Entity],
             targets = foes if attacker in party_set else party
             if not any(t.alive for t in targets):
                 break           # no one left to fight this round
-            if not _can_attack(attacker):
-                # Collapsed: nothing left to swing with. Log it once (covers
-                # both walking in at 0 and running dry between turns).
-                if attacker not in collapse_logged:
-                    collapse_logged.add(attacker)
-                    log.append(f"    !! {attacker.name} is COLLAPSED -- "
-                               f"spent, guard dropping (cannot attack; "
-                               f"-{COLLAPSED_PENALTY} to all rolls until "
-                               f"the fight ends)")
-                continue
             if not attacker.tireless:
                 was_winded = attacker.winded
-                attacker.cur_sta -= attacker.sta_cost
+                attacker.cur_sta = max(0, attacker.cur_sta - attacker.sta_cost)
                 if attacker.winded and not was_winded:
                     log.append(f"    !! {attacker.name} is Winded "
                                f"(STA {attacker.cur_sta} -- -{WINDED_PENALTY} "
                                f"to all rolls until they catch their breath)")
+                if attacker.spent and attacker not in spent_logged:
+                    # Covers both the swing that emptied the tank and walking
+                    # into the fight already at 0.
+                    spent_logged.add(attacker)
+                    log.append(f"    !! {attacker.name} is SPENT -- running "
+                               f"on empty (-{SPENT_PENALTY} to all rolls "
+                               f"until the fight ends)")
             defender = _pick_target(targets, rng,
                                     focus=attacker in party_set)
             was_alive = defender.alive
@@ -526,12 +518,6 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                f"out of the fight.")
                 else:
                     log.append(f"    *** {defender.name} falls. ***")
-            if attacker.collapsed and attacker not in collapse_logged:
-                # That was the last of it: the swing that emptied the tank.
-                collapse_logged.add(attacker)
-                log.append(f"    !! {attacker.name} COLLAPSES -- utterly "
-                           f"spent (cannot attack; -{COLLAPSED_PENALTY} to "
-                           f"all rolls until the fight ends)")
         log.append(_stamina_line(party, foes))
 
     # The dust settles: whoever is still standing catches their breath.
@@ -551,8 +537,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
 # a 3 is trained-soldier grade, a 6 nudges past elite-veteran. HP 8-12 likewise.
 HERO_STAT_RANGE = (3, 6)      # DEX / STR
 # STA gets its own, higher range: it is the second death-track (the swing
-# budget; collapse at 0 is usually fatal), so its floor matters like HP's
-# floor -- a 4-STA hero is a 4-swing hero, and the batch sims show those
+# budget; running dry mid-fight is usually fatal), so its floor matters like
+# HP's floor -- a 4-STA hero is a 4-swing hero, and the batch sims show those
 # parties are the wipes. Floor 5 also keeps a fresh hero two swings clear of
 # the Winded line (WINDED_STA = 3).
 HERO_STA_RANGE = (5, 8)
@@ -606,7 +592,7 @@ def make_skeleton(rng: random.Random, n: int) -> Entity:
     # Brittle and a weak individual hitter (low STR -> low severity), but
     # undead: no pain (wound roll penalty halved -- a graze costs it nothing,
     # which also blunts First Blood's spiral here) and TIRELESS (never spends
-    # STA, never Winded or Collapsed -- they don't tire; you do). No Power, no
+    # STA, never Winded or Spent -- they don't tire; you do). No Power, no
     # saves, no kit. The threat is numbers pressing a party whose stamina is a
     # death-track: the bones don't have to beat you, just outlast you.
     return Entity(name=f"Skeleton {n}", dex=3, str_=2, sta=8, max_hp=5,
@@ -621,7 +607,7 @@ def make_skeleton(rng: random.Random, n: int) -> Entity:
 # first). HP and STA both carry across the whole run with only a brief
 # catch-breath between rooms (no per-fight reset); HP wounds and the STA
 # death-track both bind, and the skeletons are tireless -- numbers grinding a
-# party toward collapse is the whole threat. Power and items deplete.
+# party dry is the whole threat. Power and items deplete.
 # BARROW_ROOMS is the SET encounter list for the site (name, skeleton count) --
 # session play (`session.py barrow ROOM`) and the one-shot run both use it, so
 # the layout tune.py/bench_training.py balance is the layout actually played.
