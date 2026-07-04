@@ -10,7 +10,11 @@ source) between invocations. It adds no game logic of its own.
 
 Run:  python session.py new [--seed N]              # new party, resets state
       python session.py status                       # show party/clock/purse
-      python session.py fight N [--type skeleton]     # resolve one barrow room's melee
+      python session.py fight N [--type skeleton]     # spawn N foes, resolve one melee
+                                                        # (N is the DM's call each time --
+                                                        # not read from rpg.py's DUNGEON_ROOMS,
+                                                        # which only sizes the one-shot/tune.py
+                                                        # dungeon run)
       python session.py hideout ROOM                  # resolve one hideout room (1-3)
       python session.py rest                          # short rest (spends a slot)
       python session.py camp                          # long rest (advance a day)
@@ -179,40 +183,45 @@ def main() -> None:
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("new")
+    p = sub.add_parser("new", help="start a fresh party/clock/purse (overwrites save)")
     p.add_argument("--seed", type=int, default=None)
     p.set_defaults(func=cmd_new)
 
-    p = sub.add_parser("status")
+    p = sub.add_parser("status", help="show the persisted party/clock/purse")
     p.set_defaults(func=cmd_status)
 
-    p = sub.add_parser("fight")
-    p.add_argument("n", type=int)
+    p = sub.add_parser(
+        "fight",
+        help="spawn N foes and resolve one encounter against the party "
+             "(N is a free choice each call, not tied to any fixed room list)")
+    p.add_argument("n", type=int, help="how many foes to spawn for this encounter")
     p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
     p.set_defaults(func=cmd_fight)
 
-    p = sub.add_parser("hideout")
+    p = sub.add_parser(
+        "hideout",
+        help="resolve one bandit-hideout room (fixed roster per room, unlike `fight`)")
     p.add_argument("room", type=int, choices=[1, 2, 3])
     p.set_defaults(func=cmd_hideout)
 
-    p = sub.add_parser("rest")
+    p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
     p.set_defaults(func=cmd_rest)
 
-    p = sub.add_parser("camp")
+    p = sub.add_parser("camp", help="long rest: full STA, weekly HP tick, advances a day")
     p.set_defaults(func=cmd_camp)
 
-    p = sub.add_parser("quest")
+    p = sub.add_parser("quest", help="award a site-clear quest bonus (gold + XP lump)")
     p.add_argument("gold", type=int)
     p.add_argument("xp", type=int)
     p.add_argument("name")
     p.set_defaults(func=cmd_quest)
 
-    p = sub.add_parser("buy")
+    p = sub.add_parser("buy", help="spend gold on a potion for one hero")
     p.add_argument("hero")
     p.add_argument("kind", choices=list(POTION_KINDS))
     p.set_defaults(func=cmd_buy)
 
-    p = sub.add_parser("heal")
+    p = sub.add_parser("heal", help="Heal ability, between fights only")
     p.add_argument("healer")
     p.add_argument("target")
     p.set_defaults(func=cmd_heal)

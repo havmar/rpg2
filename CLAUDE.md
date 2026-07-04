@@ -63,9 +63,16 @@ fiction.
   drives a playthrough with this rather than one-shot `rpg.py` runs, so pacing
   decisions (when to rest, when to camp, when to press on) stay real choices
   made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `fight N
-  [--type skeleton]`, `hideout ROOM` (1-3, resolves one bandit-hideout room
-  against the persisted party, mirroring `scratch_bandits.run_hideout`'s
-  rosters/rewards), `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`,
+  [--type skeleton]` (spawns N foes and resolves one encounter -- **N is
+  chosen by the DM each call, freely; it is *not* read from `rpg.py`'s
+  `DUNGEON_ROOMS`**, which only sizes the one-shot `run_dungeon`/`tune.py`
+  path. When narrating a "barrow room," pick a foe count that fits the scene
+  -- `DUNGEON_ROOMS = [3, 3, 4]` is a reasonable reference for what a
+  farmable barrow room looks like, but session play isn't bound to it),
+  `hideout ROOM` (1-3, resolves one bandit-hideout room against the persisted
+  party using that room's **fixed** roster, mirroring
+  `scratch_bandits.run_hideout` -- unlike `fight`, the roster size isn't a
+  free choice here), `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`,
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
   Keep it in sync with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
@@ -174,6 +181,11 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   real player shopping decision. Nothing refills automatically.
 
 ## The current prototype scenario
+
+> This section describes the one-shot `rpg.py`/`tune.py` run. **Session play
+> (`session.py fight N`) is not bound to `DUNGEON_ROOMS`** -- the DM picks a
+> foe count per encounter (see the `session.py` bullet above), using this
+> layout only as a reference for what a room "should" feel like.
 
 - **Party:** two randomly generated humans (`make_human`): DEX/STR
   `randint(3, 6)`, STA `randint(4, 7)` (floor raised a step above DEX/STR so no
