@@ -8,10 +8,17 @@ group melee so a party can be swarmed (numbers are the skeletons' whole threat).
 Survival layer: HP carries across the whole run (only a minimal catch-breath
 between rooms, never a per-fight reset); 0 HP is Down (out of this fight, stands
 back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
-in the moment; Heal instead mends HP on self or an ally between fights (both
-cost Power, see use_heal); STA is a per-day clock that drains across the whole
-run; prepped healing potions regen HP each round. A character only truly dies
-when a killing blow lands and the saves have run dry.
+in the moment; First Blood opens the fight with a guaranteed graze on the
+focused foe (the aggressive third ability -- its value is the death spiral, not
+the point of damage); Heal instead mends HP on self or an ally between fights
+(all cost Power); STA is a per-day clock that drains across the whole run;
+prepped healing potions regen HP each round. A character only truly dies when a
+killing blow lands and the saves have run dry.
+
+The combat log is two-layered (see rules.md "Reading the combat log"): every
+exchange gets an interpretive headline (Clash / Lull / edges past /
+outmaneuvers / overwhelms ...) with the raw numbers -- dice, every modifier and
+its source -- indented beneath it, plus a per-round stamina readout.
 
 Progression & economy: heroes earn XP per encounter won and a lump for clearing
 a whole site (the quest); levels grant skill points spent on combat training
@@ -41,6 +48,10 @@ WINDED_PENALTY = 2      # roll penalty while Winded
 # Survival add-on tunables.
 SAVE_COST = 2           # Power spent to reduce one wound tier (Bulwark's mid-fight save)
 HEAL_COST = 3           # Power spent on the Heal ability (between fights, see use_heal)
+FIRST_BLOOD_COST = 2    # Power spent on First Blood (the rogue's opening strike)
+FIRST_BLOOD_HP = 1      # First Blood inflicts a guaranteed graze -- light on purpose
+                        # (its real value is the death spiral: -1 to the foe's rolls
+                        # all fight), never a free kill
 HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
 HEAL_REGEN = 1          # HP/round granted by a healing potion prepped before a fight
 POWER_POTION_RESTORE = 5
@@ -84,7 +95,24 @@ SHORT_RESTS_PER_DAY = 2          # short-rest slots available each day
 TIER_ORDER = ["deflected", "graze", "wound", "grievous", "killing blow"]
 TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "killing blow": 6}
 
-ABILITY_VERB = {"bulwark": "Bulwark"}   # mid-fight save verb; Heal has no in-fight role
+# --- Log vocabulary (the interpretive layer) -------------------------------- #
+# Every exchange logs two layers: a catchy headline (what a watcher would say)
+# and the raw numbers beneath it (every die, modifier, and source). See
+# rules.md "Reading the combat log".
+TIER_PHRASE = {"graze": "a graze", "wound": "a solid wound",
+               "grievous": "a grievous injury", "killing blow": "a killing blow"}
+
+# Tie on the tempo roll: high dice = furious contact, low dice = cagey circling.
+TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "Lull"
+
+
+def margin_verb(margin: int) -> str:
+    """How decisively the exchange was won, as a verb for the headline."""
+    if margin >= 5:
+        return "overwhelms"
+    if margin >= 3:
+        return "outmaneuvers"
+    return "edges past"
 
 
 def wound_tier(severity: int) -> tuple[str, int]:
@@ -105,6 +133,28 @@ def reduce_tier(tier: str) -> tuple[str, int]:
     i = TIER_ORDER.index(tier)
     new = TIER_ORDER[max(0, i - 1)]
     return new, TIER_HP[new]
+
+
+@dataclass
+class TempoRoll:
+    """One tempo roll with its full breakdown, so the log can expose every
+    modifier and its source (the mechanics layer of the two-layer log)."""
+    total: int
+    dice: int           # the raw 2d6 sum
+    dex: int
+    training: int
+    wound_pen: int      # HP lost so far (the death spiral)
+    winded_pen: int     # WINDED_PENALTY if Winded, else 0
+
+    def breakdown(self, name: str) -> str:
+        parts = [f"2d6={self.dice}", f"+{self.dex} DEX"]
+        if self.training:
+            parts.append(f"+{self.training} training")
+        if self.wound_pen:
+            parts.append(f"-{self.wound_pen} wounds")
+        if self.winded_pen:
+            parts.append(f"-{self.winded_pen} winded")
+        return f"{name} {self.total} ({', '.join(parts)})"
 
 
 @dataclass
@@ -180,10 +230,13 @@ class Entity:
         # Bigger frames burn fuel faster.
         return 1 + self.str_ // 4
 
-    def tempo(self, rng: random.Random) -> int:
-        roll = rng.randint(1, 6) + rng.randint(1, 6)
-        penalty = self.hp_lost + (WINDED_PENALTY if self.winded else 0)
-        return roll + self.dex + self.training - penalty
+    def tempo(self, rng: random.Random) -> TempoRoll:
+        dice = rng.randint(1, 6) + rng.randint(1, 6)
+        winded_pen = WINDED_PENALTY if self.winded else 0
+        total = dice + self.dex + self.training - self.hp_lost - winded_pen
+        return TempoRoll(total=total, dice=dice, dex=self.dex,
+                         training=self.training, wound_pen=self.hp_lost,
+                         winded_pen=winded_pen)
 
 
 # --------------------------------------------------------------------------- #
@@ -219,32 +272,66 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     The *raw* result is computed first (it may be a killing blow); a Power save
     can then step it down one tier. The log states the blow that would have
     landed. Death only happens when a raw killing blow is not saved.
+
+    Every exchange logs two layers: an interpretive headline first, then the
+    raw numbers (dice, each modifier and its source) indented beneath it.
     """
     atk = attacker.tempo(rng)
     dfn = defender.tempo(rng)
-    if atk <= dfn:
-        return  # parried / evaded / clash
-    severity = (atk - dfn) + attacker.str_ - defender.str_
+    tempo_line = (f"        tempo: {atk.breakdown(attacker.name)} vs "
+                  f"{dfn.breakdown(defender.name)}")
+
+    if atk.total == dfn.total:
+        # A tie: no one lands. High dice = furious contact, low = circling.
+        if max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
+            label = "Clash! Steel rings; neither yields"
+        else:
+            label = "Lull. They circle, probing for an opening"
+        log.append(f"    {attacker.name} and {defender.name} -- {label}.")
+        log.append(tempo_line)
+        return
+
+    if atk.total < dfn.total:
+        log.append(f"    {attacker.name} attacks {defender.name} -- "
+                   f"turned aside.")
+        log.append(tempo_line)
+        return
+
+    margin = atk.total - dfn.total
+    severity = margin + attacker.str_ - defender.str_
     raw_tier, dmg = wound_tier(severity)
+    sev_line = (f"        severity: {severity} = margin {margin} "
+                f"+{attacker.str_} STR -{defender.str_} soak -> {raw_tier}")
+
     if dmg == 0:
+        log.append(f"    {attacker.name} {margin_verb(margin)} "
+                   f"{defender.name}, but the blow glances off -- deflected.")
+        log.append(tempo_line)
+        log.append(sev_line)
         return
 
     tier = raw_tier
     saved = _try_save(defender, tier, dmg)
     if saved:
         tier, dmg = reduce_tier(tier)
+        sev_line += f", Bulwark save -> {tier} (-{dmg} HP)"
+    else:
+        sev_line += f" (-{dmg} HP)"
 
     defender.hp = max(0, defender.hp - dmg)
+    state = (f"{defender.name}: {defender.hp}/{defender.max_hp} HP, "
+             f"-{defender.hp_lost} to rolls")
 
     if saved:
-        verb = ABILITY_VERB.get(defender.ability, "Save")
-        log.append(
-            f"    {attacker.name}'s {raw_tier} on {defender.name} -- {verb} "
-            f"flares; reduced to {tier} (-{dmg} HP -> {defender.hp}) "
-            f"[{defender.cur_power} Power left]")
+        log.append(f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+                   f" -- {TIER_PHRASE[raw_tier]}... {defender.name}'s Bulwark "
+                   f"flares! Reduced to {tier}. [{state}; "
+                   f"{defender.cur_power} Power left]")
     else:
-        log.append(f"    {attacker.name} lands a {tier} on {defender.name} "
-                   f"(-{dmg} HP -> {defender.hp})")
+        log.append(f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+                   f" -- {TIER_PHRASE[tier]}! [{state}]")
+    log.append(tempo_line)
+    log.append(sev_line)
 
     if raw_tier == "killing blow" and not saved:
         defender.dead = True
@@ -261,6 +348,44 @@ def _pick_target(targets: list[Entity], rng: random.Random,
     return rng.choice(living)
 
 
+def _first_blood(party: list[Entity], foes: list[Entity],
+                 rng: random.Random, log: list[str]) -> None:
+    """The rogue's opening strike, fired once as the fight begins (before the
+    first exchange). Spends Power for a guaranteed graze on the focused target;
+    the graze's real value is the death spiral (-1 to that foe's rolls all
+    fight). Automatic, like Bulwark: trained aggression is reflexive."""
+    for hero in party:
+        if (hero.alive and hero.ability == "first_blood"
+                and hero.cur_power >= FIRST_BLOOD_COST
+                and any(f.alive for f in foes)):
+            target = _pick_target(foes, rng, focus=True)
+            hero.cur_power -= FIRST_BLOOD_COST
+            target.hp = max(0, target.hp - FIRST_BLOOD_HP)
+            log.append(f"    {hero.name} strikes before the lines meet -- "
+                       f"First Blood! {target.name} is grazed "
+                       f"(-{FIRST_BLOOD_HP} HP -> {target.hp}/{target.max_hp},"
+                       f" -{target.hp_lost} to rolls) "
+                       f"[{FIRST_BLOOD_COST} Power spent, "
+                       f"{hero.cur_power} left]")
+            if not target.alive:
+                target.down = True
+                log.append(f"    *** {target.name} falls. ***")
+
+
+def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
+    """One compact stamina readout per round (the drain is the clock -- the
+    log shows it ticking every round). A * marks the Winded."""
+    def side(group: list[Entity]) -> str:
+        return ", ".join(f"{e.name} {e.cur_sta}/{e.sta}"
+                         + ("*" if e.winded else "")
+                         for e in group if e.alive)
+    sides = " | ".join(s for s in (side(party), side(foes)) if s)
+    line = f"    stamina: {sides}"
+    if any(e.alive and e.winded for e in party + foes):
+        line += "   (* = Winded)"
+    return line
+
+
 def group_combat(party: list[Entity], foes: list[Entity],
                  rng: random.Random, log: list[str],
                  max_rounds: int = 40) -> None:
@@ -273,6 +398,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
             log.append("    (the fight grinds to a standstill)")
             break
         log.append(f"  Round {rnd}:")
+        if rnd == 1:
+            _first_blood(party, foes, rng, log)
+            if not any(f.alive for f in foes):
+                break
 
         # Snapshot attacks against start-of-round state (simultaneous swings),
         # so a foe felled this round still gets its swing in.
@@ -297,10 +426,18 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 else:
                     log.append(f"    *** {e.name} falls. ***")
 
-        # Drain hits everyone still standing.
+        # Drain hits everyone still standing. Crossing into Winded is a
+        # turning point worth its own line; the stamina readout prints every
+        # round so the clock is visible ticking.
         for e in party + foes:
             if e.alive:
+                was_winded = e.winded
                 e.cur_sta = max(0, e.cur_sta - e.drain)
+                if e.winded and not was_winded:
+                    log.append(f"    !! {e.name} is Winded "
+                               f"(STA {e.cur_sta} -- -{WINDED_PENALTY} "
+                               f"to all rolls until they catch their breath)")
+        log.append(_stamina_line(party, foes))
 
         # Regen step: prepped healing potions tick after the drain.
         for e in party + foes:
@@ -343,7 +480,8 @@ def random_kit(rng: random.Random) -> dict[str, int]:
 
 def make_human(rng: random.Random, name: str) -> Entity:
     """Fully random generation: DEX/STR 3-6, STA 4-7, HP 8-12, Power 3-6, a random
-    in-the-moment ability, and two random potions."""
+    ability (heal / bulwark / first_blood -- mend, mitigate, or open aggressively),
+    and two random potions."""
     stats = {k: rng.randint(*HERO_STAT_RANGE) for k in ("dex", "str")}
     stats["sta"] = rng.randint(*HERO_STA_RANGE)
     epithet = EPITHETS[max(stats, key=stats.get)]
@@ -354,7 +492,7 @@ def make_human(rng: random.Random, name: str) -> Entity:
         sta=stats["sta"],
         max_hp=rng.randint(*HERO_HP_RANGE),
         power=rng.randint(*HERO_POWER_RANGE),
-        ability=rng.choice(["heal", "bulwark"]),
+        ability=rng.choice(["heal", "bulwark", "first_blood"]),
         items=random_kit(rng),
     )
 
@@ -377,7 +515,7 @@ def make_skeleton(rng: random.Random, n: int) -> Entity:
 # Rooms of skeletons. HP and STA both carry across the whole run with only a brief
 # catch-breath between rooms (no per-fight reset); HP wounds and the per-day STA
 # clock both bind. Power and items are per-day stocks that deplete.
-DUNGEON_ROOMS = [2, 2, 3]
+DUNGEON_ROOMS = [3, 3, 4]
 
 
 def stat_line(e: Entity) -> str:
@@ -615,6 +753,9 @@ def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
         for _ in range(n_skel):
             skel_count += 1
             skeletons.append(make_skeleton(rng, skel_count))
+        s = skeletons[0]
+        log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
+                   f"STA {s.sta}  HP {s.max_hp} each")
 
         group_combat(living, skeletons, rng, log)
 

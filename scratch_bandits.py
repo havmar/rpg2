@@ -5,9 +5,10 @@ brittle tireless skeletons. Mirrors the dungeon's survival flow: start_fight pre
 (revive Down, prep a potion) -> group_combat -> rest. Prints both sides' stats.
 
 This is the TOUGH site: rewards pay 3x the skeleton barrow (XP and gold), and a
-fresh level-1 party will usually wipe here -- the intended play is to farm the
-skeletons for a level or two of combat training first (see bench_training.py
-for the numbers). `--training N` starts the party pre-trained to see that jump.
+fresh level-1 party will usually wipe here (~73% at rank 0) -- the intended
+play is to farm the skeletons for a level or two of combat training first (see
+bench_training.py for the numbers). `--training N` starts the party pre-trained
+to see that jump.
 """
 
 import argparse

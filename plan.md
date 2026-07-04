@@ -158,8 +158,8 @@ when archetypes meet (run the rock-paper-scissors matrix).
 
 **Phase 1 — Survival layer** *(built — `rpg.py`)*
 Build: HP carries across the run (death spiral, not a per-fight reset);
-Down-not-dead; total-party-knockout = defeat; Power + abilities (Heal, Bulwark);
-potions (prepped regen, rare stamina draught); averted-death log.
+Down-not-dead; total-party-knockout = defeat; Power + abilities (Heal, Bulwark,
+First Blood); potions (prepped regen, rare stamina draught); averted-death log.
 Test: a well-stocked party reliably *survives a single fight*; deaths require the
 saves to be dry.
 
@@ -181,7 +181,7 @@ points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
 points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
 Test: *passed* — against the bandit hideout benchmark (`bench_training.py`),
-wipe rate falls ~78% → ~50% → ~23% → ~6% across training ranks 0–3. Each rank
+wipe rate falls ~73% → ~44% → ~19% → ~4% across training ranks 0–3. Each rank
 is a felt jump.
 
 **Phase 4 — Weapons & proficiency**

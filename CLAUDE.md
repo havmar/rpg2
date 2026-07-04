@@ -47,8 +47,8 @@ fiction.
   `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
   `short_rest`), exposing `run_hideout()` for batch use. **This is the intended
   TOUGH site**: it pays 3x the skeleton barrow (XP and gold) and wipes a fresh
-  rank-0 party ~78% of the time — the designed play is to farm skeletons for
-  combat training first (rank 2 brings the wipe rate to ~23%). `--seed N` for
+  rank-0 party ~73% of the time — the designed play is to farm skeletons for
+  combat training first (rank 2 brings the wipe rate to ~19%). `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
   the `rpg.py` API.
 - `bench_training.py` — Phase 3 benchmark: runs the barrow and the hideout at
@@ -106,6 +106,13 @@ is intentionally ASCII-only, so plain runs are usually fine.
   a roll penalty — the death spiral is the whole point.**
 - `group_combat` generalizes the 1v1 exchange to a melee so a party can be
   swarmed. Heroes focus-fire the weakest foe; foes target party members at random.
+- **The combat log is two-layered** (see `rules.md`, "Reading the combat log"):
+  every exchange prints an interpretive headline (Clash / Lull / turned aside /
+  edges past / outmaneuvers / overwhelms, wound phrases with the target's
+  `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
+  actual 2d6, every modifier and its source, the full severity arithmetic).
+  Winded crossings get a `!!` line and a `stamina:` readout prints every round.
+  Deliberately verbose for now — simplify only once the numbers have earned trust.
 
 ## Survival & Resources add-on (now implemented)
 
@@ -116,14 +123,18 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   `hp_regen_per_night` (= `max(1, round(max_hp / 7))`, so **HP returns over ~a
   week** — a 20-HP tank heals in ~7 nights, not 20). **0 HP = Down** (out of this
   fight; stands back up at `REVIVE_HP` next room), **not Dead**.
-- **Power** + an **ability** (`bulwark` / `heal`) per entity, with distinct
-  roles. `bulwark` is the mid-fight save: `_try_save` spends Power to step a
-  blow down one tier — always buying off a *killing* blow, and a *would-Down
-  grievous* only when a reserve remains; `_attack` logs the raw blow and the
-  bought-down result. `heal` has no in-fight role at all — it's a
-  **between-fights** action, `use_heal(healer, target, rng, log)`, spending
-  `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3) HP on
-  self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
+- **Power** + an **ability** (`bulwark` / `heal` / `first_blood`) per entity,
+  with distinct roles. `bulwark` is the mid-fight save: `_try_save` spends Power
+  to step a blow down one tier — always buying off a *killing* blow, and a
+  *would-Down grievous* only when a reserve remains; `_attack` logs the raw blow
+  and the bought-down result. `first_blood` is the aggressive counterpart
+  (rogue/glass-cannon): automatic at fight start, `_first_blood` spends
+  `FIRST_BLOOD_COST` (2) Power for a guaranteed `FIRST_BLOOD_HP` (1) graze on
+  the focused foe — light on purpose (never a free kill); its real value is the
+  death spiral (that foe rolls at -1 all fight). `heal` has no in-fight role at
+  all — it's a **between-fights** action, `use_heal(healer, target, rng, log)`,
+  spending `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3)
+  HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
 - **STA is the binding clock**: it drains in combat and carries across rooms with
   only a small `STA_RECOVERY_BETWEEN_ROOMS` catch-breath per short rest. A **long
   rest recharges STA fully** (overnight).
@@ -167,9 +178,9 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 - **Party:** two randomly generated humans (`make_human`): DEX/STR
   `randint(3, 6)`, STA `randint(4, 7)` (floor raised a step above DEX/STR so no
   hero starts a day already Winded), HP `randint(8, 12)`, Power `randint(3, 6)`,
-  a random ability (`heal` / `bulwark`), two random potions, and an epithet from
-  the highest stat (precise/powerful/steady).
-- **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [2, 2, 3]` (one "day"). HP,
+  a random ability (`heal` / `bulwark` / `first_blood`), two random potions, and
+  an epithet from the highest stat (precise/powerful/steady).
+- **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [3, 3, 4]` (one "day"). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
   wounds persist for the run. Clearing all rooms completes the quest
   (gold + XP lump).
@@ -181,13 +192,15 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-With random chargen + the 2-random-potion kit, at `[2, 2, 3]` over 20k runs:
-~**71% / 3% / 26%** (none / one / both slain), **clear ~74%**, a Down in ~40% of
-runs, ~79% Power / ~3% STA left, healing potions spent, ~14 g earned. The wipe
-tail is now the *designed* pressure to level: per `bench_training.py`, the
-barrow goes 71% -> 91% -> 98% clear across training ranks 0-2, and the bandit
-hideout 22% -> 49% -> 78% -> 93% across ranks 0-3. First runs are risky;
-trained parties farm.
+With random chargen + the 2-random-potion kit, at `[3, 3, 4]` over 20k runs:
+~**35% / 12% / 53%** (none / one / both slain), **clear ~47%**, a Down in ~46% of
+runs, ~64% Power / ~5% STA left, healing potions spent, ~9 g earned. The wipe
+tail is now the *designed* pressure to level — and it is steep at rank 0: per
+`bench_training.py`, the barrow goes **48% -> 76% -> 93% -> 99%** clear across
+training ranks 0-3, and the bandit hideout **27% -> 56% -> 81% -> 96%**. A
+fresh party's first barrow run is now a genuine coin flip (the old `[2, 2, 3]`
+layout cleared ~77% at rank 0); trained parties farm. If the rank-0 opening
+feels too brutal in play, `DUNGEON_ROOMS` is the first lever to pull back.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
 (`SAVE_COST`, `HEAL_REGEN`, `STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`,

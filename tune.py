@@ -57,12 +57,12 @@ def simulate(rooms, trials=20000):
 
 def main():
     layouts = [
-        [2, 2],
-        [2, 2, 2],
-        [2, 2, 3],
+        [2, 2, 3],      # the old default, for comparison
         [2, 3, 3],
         [3, 3, 3],
-        [2, 3, 4],
+        [3, 3, 4],      # the current default
+        [3, 4, 4],
+        [4, 4, 5],
     ]
     print(f"{'rooms':<12}{'none':>7}{'one':>7}{'both':>7}"
           f"{'down%':>8}{'clear%':>8}{'Pow%':>7}{'STA%':>7}{'heal':>7}"

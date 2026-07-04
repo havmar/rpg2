@@ -92,6 +92,38 @@ hit can decide it.
 
 ---
 
+## Reading the combat log
+
+The log is written for two readers at once — the human player and the AI DM —
+so every exchange prints **two layers**:
+
+**1. An interpretive headline** — a catchy label a spectator would use:
+
+| Situation | Label |
+|-----------|-------|
+| Tempo tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
+| Tempo tie, low dice | **Lull** — they circle, probing for an opening |
+| Attacker loses the exchange | *turned aside* |
+| Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
+| Hit lands but soak zeroes the severity | *deflected* — the blow glances off |
+| Wound tiers | *a graze / a solid wound / a grievous injury / a killing blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
+
+Notable events get their own lines: `!! X is Winded` when the STA threshold is
+crossed, `First Blood!` on the opening strike, a Bulwark *flare* on a saved
+blow (raw tier stated first — narrate the averted death), and the `***` lines
+for falls, slayings, and level-ups.
+
+**2. The raw mechanics**, indented under each headline: the actual `2d6`
+result, every modifier with its source (`+DEX`, `+training`, `-wounds`,
+`-winded`), both totals, then the full severity arithmetic
+(`severity = margin + STR - soak -> tier`).
+
+A `stamina:` readout prints every round — the clock is visible ticking — with
+`*` marking the Winded. This is deliberately the *complete* version; a terser
+mode can come later once the numbers have earned trust.
+
+---
+
 ## Why three stats produce the loop (no range needed)
 
 - A **Power** build lands rarely (low DEX) but devastatingly, and is durable —
@@ -134,7 +166,7 @@ The band where tradeoffs are real: you cannot be good at everything.
 **Rolled party heroes** span this band and nudge past it: DEX/STR `randint(3, 6)`,
 STA `randint(4, 7)` (floor raised a step above the two so no hero starts the
 day already Winded at STA <= 3), HP `randint(8, 12)`, Power `randint(3, 6)`, a
-random ability (Heal or Bulwark), and two random potions. A hero's epithet
+random ability (Heal, Bulwark, or First Blood), and two random potions. A hero's epithet
 ("the precise" / "the powerful" / "the steady") is derived from their highest
 stat.
 
@@ -265,6 +297,14 @@ keeps build identity alive and makes "who am I about to lose" specific.
   blow lands, spend Power to reduce it one tier (Killing -> Grievous, Grievous ->
   Wound). Fires mid-fight, on the blow that just landed — and it can run out,
   which is the point.
+- **Rogue's First Blood (opening strike)** — *the aggressive counterpart*: as
+  the fight begins, before the first exchange, spend Power to land a
+  guaranteed graze on the focused foe. Deliberately light — 1 HP, never a free
+  kill — because its real value is the death spiral: that foe fights the whole
+  battle at −1 to its rolls. Priced like a Bulwark save (2 Power); where
+  Bulwark buys off ~2 HP of incoming harm reactively, First Blood buys roughly
+  the same swing proactively (a point of damage plus every roll the spiral now
+  costs the foe).
 - Other class skills are likewise paid in Power.
 
 **Between fights (ability — still costs Power, but not reflexive):**
@@ -380,7 +420,10 @@ On top of the existing build/allocation choices:
 - **Saves are automatic and conservative.** A Bulwark-ability character spends
   Power to buy off a *killing* blow whenever it can (Killing -> Grievous), and
   to buy off a *grievous* that would put it Down only when it can keep a
-  reserve. Both the raw and the bought-down result are logged. **Heal is not
+  reserve. Both the raw and the bought-down result are logged. **First Blood is
+  likewise automatic** — it fires at the start of every fight while the Power
+  lasts (`FIRST_BLOOD_COST` = 2 for a guaranteed 1-HP graze on the focused
+  foe); trained aggression is as reflexive as a trained guard. **Heal is not
   automatic** — it has no in-fight role at all; `use_heal(healer, target, ...)`
   is a DM-called, between-fights action (same shape as `buy_potion`) that
   spends `HEAL_COST` (3) Power for a random `HEAL_RESTORE_RANGE` (1-3) HP on
@@ -425,8 +468,8 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - It is the **only skill for now**, so the scenarios auto-spend points on it;
   once more skills exist, spending becomes a real between-fights choice.
 - **Benchmarked** (`bench_training.py`, 5k trials/rank): the bandit hideout
-  wipes a rank-0 party ~78% of the time, rank 1 → ~50%, rank 2 → ~23%,
-  rank 3 → ~6%. Each rank is a *felt* jump — Phase 3's test criterion.
+  wipes a rank-0 party ~73% of the time, rank 1 → ~44%, rank 2 → ~19%,
+  rank 3 → ~4%. Each rank is a *felt* jump — Phase 3's test criterion.
 
 ## Gold and the potion economy
 
