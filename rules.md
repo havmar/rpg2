@@ -243,8 +243,6 @@ These are the only edits to the existing rules:
   *The day / run economy*); potions/spells can top it up in a pinch.
 - **0 HP = Down, not Dead.** A character at 0 is out of *this* fight only (see
   *Down, not dead* below).
-- **New round step — Regen.** After the drain step, if a healing potion was
-  prepped, the drinker regains its per-round HP.
 - **New resource — Power.** Fuel for abilities and saves (mana, but it also
   powers martial skills). See the table below for ranges to add to each tier.
 
@@ -258,10 +256,10 @@ These are the only edits to the existing rules:
 - **Single fights are survivable; the campaign is the challenge.** A well-stocked
   party should win a given encounter; the fail state is attrition — running the
   buffers dry across a run of fights.
-- **Two buffer layers, cleanly split.** *In advance* (items, prepped before a
-  fight — too slow to use mid-fight) and *in the moment* (Bulwark, paid in
+- **Two buffer layers, cleanly split.** *Between fights* (items, drunk in the
+  lull — too slow to use mid-fight) and *in the moment* (Bulwark, paid in
   Power — fast enough to fire during an exchange). Flavor-true rule: **trained
-  skill is reflexive; rummaging in a pouch is not.** Heal sits outside both —
+  skill is reflexive; rummaging in a pouch is not.** Heal sits with the items —
   a Power-cost ability, but a *between-fights* one (see below), since restoring
   a wound isn't something you can do in the half-second of an exchange either.
 
@@ -271,10 +269,10 @@ These are the only edits to the existing rules:
 
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
-| **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / prepped potion; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
+| **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | Small catch-breath per short rest; rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
-| **Items** | Carried stock | Bought with gold, found in world | The *in-advance* buffer: prepped before a fight, or used after. |
+| **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
 
 Give each character their **own** Power and item stock, not a shared pool — it
 keeps build identity alive and makes "who am I about to lose" specific.
@@ -283,10 +281,10 @@ keeps build identity alive and makes "who am I about to lose" specific.
 
 ## The two-buffer split
 
-**In advance (items — slow, prepped):**
-- **Healing potion** — drunk *before* a fight grants HP regen each round (e.g.
-  +1 HP/round, capped) for that fight; or drunk *after* to restore HP directly.
-  **Cannot** be used mid-fight — no time in an exchange this fast.
+**Between fights (items — slow to reach for, instant once drunk):**
+- **Healing potion** — drunk in the lull between fights, restores HP instantly
+  (`HEALING_POTION_RESTORE`, currently 5). **Cannot** be used mid-fight — no time
+  in an exchange this fast; you top up in the breather, then wade back in.
 - **Stamina draught** — restores STA. Deliberately **rare and expensive**,
   because STA is the un-buyable clock; cheap refills would collapse the matchup
   loop. STA otherwise recovers only slowly across a day.
@@ -363,8 +361,10 @@ HP.
 
 - A **short rest** (~an hour or two of narrative time) is a limited within-day
   resource — a handful of slots per day. It gives only a small catch-breath (a
-  little STA, a sliver of HP) plus deliberate potion use. When the slots run out
-  there is no more mid-day recovery: the party pushes on depleted or makes camp.
+  little STA, a sliver of HP). Drinking potions is a *separate* deliberate act
+  (see "In advance" above / `use_potion`), not folded into the rest. When the
+  slots run out there is no more mid-day recovery: the party pushes on depleted
+  or makes camp.
 - A **long rest** (overnight, making camp) is the real recovery: **STA recharges
   fully** and **HP knits back at a weekly rate** (a character's nightly heal is
   scaled to their HP pool, so a full bar returns over roughly a week regardless of
@@ -398,8 +398,8 @@ Append to the existing stat blocks (combat stats and HP unchanged):
 
 On top of the existing build/allocation choices:
 
-- **Buy and prep consumables** — pre-load a healing potion for regen, carry a
-  rare stamina draught for the long fight, keep Power potions in reserve.
+- **Buy and carry consumables** — stock healing potions for the wounded lulls,
+  carry a rare stamina draught for the long fight, keep Power potions in reserve.
 - **Spend Power deliberately** — it's offense-or-survival; every save is a skill
   not used.
 - **Manage the run** — conserve resources against matchups you counter; expect to
@@ -428,6 +428,15 @@ On top of the existing build/allocation choices:
   is a DM-called, between-fights action (same shape as `buy_potion`) that
   spends `HEAL_COST` (3) Power for a random `HEAL_RESTORE_RANGE` (1-3) HP on
   self or an ally.
+- **Potions are not automatic either.** Drinking a carried potion is a DM call,
+  `use_potion(hero, kind, ...)`, between fights only (same shape as `buy_potion`
+  / `use_heal`): every potion takes effect **instantly on drink** -- *healing*
+  restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA, *power*
+  restores Power. Nothing in the engine drinks on its own. The one-shot / sim
+  paths (`run_dungeon`, `scratch_bandits`) model a sensible party via
+  `auto_use_potions_on_rest` (heal when badly hurt, drink stamina when winded,
+  power when the save budget is low), so `tune.py` / `bench_training.py` still
+  reflect a party that drinks when it should.
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
   killing blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
@@ -468,8 +477,8 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - It is the **only skill for now**, so the scenarios auto-spend points on it;
   once more skills exist, spending becomes a real between-fights choice.
 - **Benchmarked** (`bench_training.py`, 5k trials/rank): the bandit hideout
-  wipes a rank-0 party ~73% of the time, rank 1 → ~44%, rank 2 → ~19%,
-  rank 3 → ~4%. Each rank is a *felt* jump — Phase 3's test criterion.
+  wipes a rank-0 party ~75% of the time, rank 1 → ~46%, rank 2 → ~21%,
+  rank 3 → ~5%. Each rank is a *felt* jump — Phase 3's test criterion.
 
 ## Gold and the potion economy
 

@@ -20,6 +20,7 @@ Run:  python session.py new [--seed N]              # new party, resets state
       python session.py camp                          # long rest (advance a day)
       python session.py quest GOLD XP NAME             # award a site-clear quest
       python session.py buy HERO KIND                  # buy a potion from the purse
+      python session.py use HERO KIND                  # drink a carried potion (instant, between fights)
       python session.py heal HEALER TARGET              # Heal ability, between fights
 """
 from __future__ import annotations
@@ -36,6 +37,7 @@ from rpg import (
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
     buy_potion as _buy_potion, use_heal as _use_heal,
+    use_potion as _use_potion,
 )
 from scratch_bandits import make_bandit, bandit_line, HIDEOUT_ROOMS
 
@@ -167,6 +169,16 @@ def cmd_buy(args: argparse.Namespace) -> None:
     save(state)
 
 
+def cmd_use(args: argparse.Namespace) -> None:
+    state = load()
+    party = state["party"]
+    log: list[str] = []
+    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    _use_potion(hero, args.kind, log)
+    print("\n".join(log))
+    save(state)
+
+
 def cmd_heal(args: argparse.Namespace) -> None:
     state = load()
     party, rng = state["party"], state["rng"]
@@ -220,6 +232,14 @@ def main() -> None:
     p.add_argument("hero")
     p.add_argument("kind", choices=list(POTION_KINDS))
     p.set_defaults(func=cmd_buy)
+
+    p = sub.add_parser(
+        "use",
+        help="drink a carried potion for one hero, between fights "
+             "(instant top-up: healing restores HP, stamina/power restore now)")
+    p.add_argument("hero")
+    p.add_argument("kind", choices=list(POTION_KINDS))
+    p.set_defaults(func=cmd_use)
 
     p = sub.add_parser("heal", help="Heal ability, between fights only")
     p.add_argument("healer")

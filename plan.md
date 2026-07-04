@@ -159,7 +159,8 @@ when archetypes meet (run the rock-paper-scissors matrix).
 **Phase 1 — Survival layer** *(built — `rpg.py`)*
 Build: HP carries across the run (death spiral, not a per-fight reset);
 Down-not-dead; total-party-knockout = defeat; Power + abilities (Heal, Bulwark,
-First Blood); potions (prepped regen, rare stamina draught); averted-death log.
+First Blood); potions (instant HP/STA/Power top-ups, rare stamina draught);
+averted-death log.
 Test: a well-stocked party reliably *survives a single fight*; deaths require the
 saves to be dry.
 
@@ -181,7 +182,7 @@ points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
 points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
 Test: *passed* — against the bandit hideout benchmark (`bench_training.py`),
-wipe rate falls ~73% → ~44% → ~19% → ~4% across training ranks 0–3. Each rank
+wipe rate falls ~75% → ~46% → ~21% → ~5% across training ranks 0–3. Each rank
 is a felt jump.
 
 **Phase 4 — Weapons & proficiency**
@@ -191,8 +192,9 @@ Test: each weapon is build-*suited* rather than ranked (no single best); the
 proficiency switching cost is real.
 
 **Phase 5 — Loot & items** *(trash-tier slice built: gold/potion encounter
-drops + a quest-gold + potion-shop economy — see rules.md "Progression &
-Economy")*
+drops + a quest-gold + potion-shop economy, and potion *use* is now a
+between-fights player choice (`use_potion`), not auto-fired — see rules.md
+"Progression & Economy")*
 Build: Trash vs Named items; provenance metadata; stat-transcendence on rare
 items.
 Test: Named weapons read as events; trash is appropriately trivial; no power
@@ -227,6 +229,6 @@ Test: the prose layer is flavour-only and never alters mechanical outcomes.
   guns use ammo; armor = tier-shift.
 - **Charisma / party mechanics** — underdefined; detail deferred until the
   combat + progression spine runs.
-- **Untested numbers** — every constant (Power totals, regen rate, STA threshold,
+- **Untested numbers** — every constant (Power totals, potion restore, STA threshold,
   severity breakpoints, level curve) is provisional and tuned via batch sims, not
   hand-designed.

@@ -16,7 +16,8 @@ import random
 
 from rpg import (Entity, Clock, Purse, make_party, group_combat, stat_line,
                  outcome, start_fight, short_rest, party_wiped, award_xp,
-                 award_quest, roll_loot, SKELETON_ENCOUNTER_XP,
+                 award_quest, roll_loot, auto_use_potions_on_rest,
+                 SKELETON_ENCOUNTER_XP,
                  SKELETON_QUEST_XP, SKELETON_QUEST_GOLD)
 
 # The hideout pays 3x the skeleton site -- tough fights, better wages.
@@ -88,6 +89,7 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
         if survivors:
             log.append(f"  Room cleared. {len(survivors)} still standing.")
             short_rest(survivors, clock, log)
+            auto_use_potions_on_rest(survivors, log)  # batch sim: sensible party
 
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, BANDIT_QUEST_GOLD, BANDIT_QUEST_XP,

@@ -47,8 +47,8 @@ fiction.
   `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
   `short_rest`), exposing `run_hideout()` for batch use. **This is the intended
   TOUGH site**: it pays 3x the skeleton barrow (XP and gold) and wipes a fresh
-  rank-0 party ~73% of the time — the designed play is to farm skeletons for
-  combat training first (rank 2 brings the wipe rate to ~19%). `--seed N` for
+  rank-0 party ~75% of the time — the designed play is to farm skeletons for
+  combat training first (rank 2 brings the wipe rate to ~21%). `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
   the `rpg.py` API.
 - `bench_training.py` — Phase 3 benchmark: runs the barrow and the hideout at
@@ -73,6 +73,8 @@ fiction.
   party using that room's **fixed** roster, mirroring
   `scratch_bandits.run_hideout` -- unlike `fight`, the roster size isn't a
   free choice here), `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`,
+  `use HERO KIND` (drink a *carried* potion between fights -- DM-called, never
+  automatic; instant top-up -- healing restores HP, stamina/power restore now),
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
   Keep it in sync with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
@@ -154,9 +156,16 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   purpose; nothing forces the day to end (see "The feel we're going for").
 - **Items** (`healing` / `power` / `stamina`) are a carried stock that **never
   auto-refills**: heroes start with **two random potions** (`random_kit`) and
-  restock only via drops or `buy_potion`. A healing potion is *prepped* before a
-  room (`start_fight`) for HP regen; `short_rest` spends power/stamina potions
-  deliberately when low.
+  restock only via drops or `buy_potion`. **Using** a potion is a DM-called,
+  between-fights action too -- `use_potion(hero, kind, log)`, same shape as
+  `buy_potion` / `use_heal`, never automatic. Every potion takes effect
+  **instantly on drink**: *healing* restores `HEALING_POTION_RESTORE` (5) HP
+  (and stands a Down hero back up), *stamina* restores STA, *power* restores
+  Power. `start_fight` is revive-only and `short_rest` is a plain catch-breath --
+  neither drinks anything. The one-shot / sim paths (`run_dungeon`,
+  `scratch_bandits`) model a sensible party via `auto_use_potions_on_rest` (heal
+  when badly hurt, stamina when winded, power when the save budget is low), so
+  `tune.py` / `bench_training.py` still model a party that uses its consumables.
 - A character only truly **dies** on an unsaved killing blow; `outcome()` counts
   only the slain.
 - **Total party knockout = defeat.** `party_wiped()` (in `rpg.py`, shared by both
@@ -205,17 +214,17 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
 With random chargen + the 2-random-potion kit, at `[3, 3, 4]` over 20k runs:
-~**35% / 12% / 53%** (none / one / both slain), **clear ~47%**, a Down in ~46% of
-runs, ~64% Power / ~5% STA left, healing potions spent, ~9 g earned. The wipe
+~**32% / 12% / 56%** (none / one / both slain), **clear ~44%**, a Down in ~48% of
+runs, ~64% Power / ~6% STA left, ~0.7 healing potions left, ~9 g earned. The wipe
 tail is now the *designed* pressure to level — and it is steep at rank 0: per
-`bench_training.py`, the barrow goes **48% -> 76% -> 93% -> 99%** clear across
-training ranks 0-3, and the bandit hideout **27% -> 56% -> 81% -> 96%**. A
+`bench_training.py`, the barrow goes **45% -> 74% -> 92% -> 99%** clear across
+training ranks 0-3, and the bandit hideout **25% -> 54% -> 80% -> 95%**. A
 fresh party's first barrow run is now a genuine coin flip (the old `[2, 2, 3]`
 layout cleared ~77% at rank 0); trained parties farm. If the rank-0 opening
 feels too brutal in play, `DUNGEON_ROOMS` is the first lever to pull back.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
-(`SAVE_COST`, `HEAL_REGEN`, `STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`,
+(`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`,
 `STARTING_POTIONS`), then economy/progression (`POTION_PRICE`, drop chances,
 quest rewards, `XP_LEVEL_STEP`, training cap), then skeleton stats, then the
 hero roll ranges (`HERO_STAT_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).

@@ -12,8 +12,8 @@ in the moment; First Blood opens the fight with a guaranteed graze on the
 focused foe (the aggressive third ability -- its value is the death spiral, not
 the point of damage); Heal instead mends HP on self or an ally between fights
 (all cost Power); STA is a per-day clock that drains across the whole run;
-prepped healing potions regen HP each round. A character only truly dies when a
-killing blow lands and the saves have run dry.
+healing potions restore HP instantly, drunk between fights. A character only
+truly dies when a killing blow lands and the saves have run dry.
 
 The combat log is two-layered (see rules.md "Reading the combat log"): every
 exchange gets an interpretive headline (Clash / Lull / edges past /
@@ -25,7 +25,9 @@ a whole site (the quest); levels grant skill points spent on combat training
 (a flat tempo bonus, the veteran-vs-novice axis). Gold accrues in a shared
 party purse from quest rewards and occasional encounter drops; potions are
 bought with gold (buy_potion is a between-adventures call the DM makes), never
-auto-refilled. Heroes start with just two random potions.
+auto-refilled. Heroes start with just two random potions. Potions are also
+*used* by deliberate DM call (use_potion), between fights -- never automatically;
+the one-shot/sim paths model a sensible party via auto_use_potions_*.
 
 Run:  python rpg.py            -> generate a party, run the dungeon, print log
       python rpg.py --seed 7   -> reproducible run
@@ -53,7 +55,7 @@ FIRST_BLOOD_HP = 1      # First Blood inflicts a guaranteed graze -- light on pu
                         # (its real value is the death spiral: -1 to the foe's rolls
                         # all fight), never a free kill
 HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
-HEAL_REGEN = 1          # HP/round granted by a healing potion prepped before a fight
+HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
 STA_RECOVERY_BETWEEN_ROOMS = 1   # STA regained per SHORT rest (small catch-breath)
@@ -191,7 +193,6 @@ class Entity:
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
-    regen: int = field(default=0)       # HP/round this fight (prepped healing potion)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
     dead: bool = field(default=False)   # truly slain (unsaved killing blow)
     items: dict[str, int] = field(default_factory=dict)
@@ -439,15 +440,6 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                f"to all rolls until they catch their breath)")
         log.append(_stamina_line(party, foes))
 
-        # Regen step: prepped healing potions tick after the drain.
-        for e in party + foes:
-            if e.alive and e.regen:
-                before = e.hp
-                e.hp = min(e.max_hp, e.hp + e.regen)
-                if e.hp != before:
-                    log.append(f"    {e.name} steadies (potion regen "
-                               f"+{e.hp - before} HP -> {e.hp})")
-
 
 # --------------------------------------------------------------------------- #
 # Character generation
@@ -646,28 +638,72 @@ def use_heal(healer: Entity, target: Entity, rng: random.Random,
     return True
 
 
+def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
+    """Consume one carried potion by player choice, between fights. A DM-called
+    action (same shape as buy_potion / use_heal) -- nothing in the engine drinks
+    automatically. Every potion takes effect instantly on drink (you're between
+    fights; there's time to let it work). Returns True if a potion was spent.
+      healing -> restore HP now
+      stamina -> restore STA now
+      power   -> restore Power now"""
+    if kind not in POTION_KINDS:
+        raise ValueError(f"unknown potion kind: {kind}")
+    if h.items.get(kind, 0) <= 0:
+        log.append(f"    {h.name} has no {kind} potion to use.")
+        return False
+    h.items[kind] -= 1
+    if kind == "healing":
+        before = h.hp
+        h.hp = min(h.max_hp, max(h.hp, 0) + HEALING_POTION_RESTORE)
+        if h.hp > 0:
+            h.down = False
+        log.append(f"    {h.name} drinks a healing potion "
+                   f"(HP {before} -> {h.hp}/{h.max_hp}; {h.items['healing']} left)")
+    elif kind == "stamina":
+        before = h.cur_sta
+        h.cur_sta = min(h.sta, h.cur_sta + STAMINA_DRAUGHT_RESTORE)
+        log.append(f"    {h.name} downs a stamina draught "
+                   f"(STA {before} -> {h.cur_sta}; {h.items['stamina']} left)")
+    else:  # power
+        before = h.cur_power
+        h.cur_power = min(h.power, h.cur_power + POWER_POTION_RESTORE)
+        log.append(f"    {h.name} drinks a power potion "
+                   f"(Power {before} -> {h.cur_power}; {h.items['power']} left)")
+    return True
+
+
+def auto_use_potions_on_rest(survivors: list[Entity], log: list[str]) -> None:
+    """The 'sensible party' rest-time policy for the sim / one-shot paths only
+    (run_dungeon, scratch_bandits) -- NOT for real play, which leaves every
+    potion to the DM via use_potion(). Drinks a healing potion when badly hurt,
+    a stamina draught when winded, and a power potion when the save budget is
+    nearly gone -- so tune.py / bench_training.py still model a party that uses
+    its consumables."""
+    for h in survivors:
+        if h.hp <= h.max_hp // 2 and h.items.get("healing", 0) > 0:
+            use_potion(h, "healing", log)
+        if h.cur_sta <= WINDED_STA and h.items.get("stamina", 0) > 0:
+            use_potion(h, "stamina", log)
+        if h.cur_power <= SAVE_COST and h.items.get("power", 0) > 0:
+            use_potion(h, "power", log)
+
+
 def start_fight(h: Entity, log: list[str]) -> None:
-    """Per-fight prep: bring a Down hero back to their feet (minimally) and prep
-    a potion. HP is NOT reset -- wounds carry across rooms; healing comes from
-    potions, spells, and resting between adventures, never a free per-fight top-up."""
-    h.regen = 0
+    """Per-fight prep: bring a Down hero back to their feet (minimally). HP is NOT
+    reset -- wounds carry across rooms; healing comes from potions, spells, and
+    resting between adventures, never a free per-fight top-up."""
     if h.down or h.hp <= 0:
         h.hp = REVIVE_HP
         h.down = False
         log.append(f"    {h.name} is helped back to their feet ({REVIVE_HP} HP).")
-    # Prep a healing potion if any remain: regen each round, this fight only.
-    if h.items.get("healing", 0) > 0:
-        h.items["healing"] -= 1
-        h.regen = HEAL_REGEN
-        log.append(f"    {h.name} preps a healing potion "
-                   f"(+{HEAL_REGEN} HP/round; {h.items['healing']} left)")
 
 
 def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
-    """A short rest (~an hour or two): a little STA back, plus deliberate potion
-    use. Costs one of the day's short-rest slots. Returns False (no effect) once
-    the day's slots are spent -- there is no more mid-day recovery then; the party
-    pushes on depleted or Claude calls long_rest() to make camp."""
+    """A short rest (~an hour or two): a little STA and HP back. Costs one of the
+    day's short-rest slots. Returns False (no effect) once the day's slots are
+    spent -- there is no more mid-day recovery then; the party pushes on depleted
+    or Claude calls long_rest() to make camp. Potions are NOT drunk here: that is
+    a deliberate DM call (use_potion), never automatic."""
     if clock.short_rests_left <= 0:
         log.append("    (no short rest left today -- the party must push on "
                    "or make camp)")
@@ -680,18 +716,6 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
         h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_BETWEEN_ROOMS)
         # HP carries across rooms too: only a minimal catch-breath, not a reset.
         h.hp = min(h.max_hp, h.hp + HP_RECOVERY_BETWEEN_ROOMS)
-        # Stamina draught: rare, saved for when badly winded.
-        if h.cur_sta <= WINDED_STA and h.items.get("stamina", 0) > 0:
-            h.items["stamina"] -= 1
-            h.cur_sta = min(h.sta, h.cur_sta + STAMINA_DRAUGHT_RESTORE)
-            log.append(f"    {h.name} downs a stamina draught "
-                       f"(STA -> {h.cur_sta}; {h.items['stamina']} left)")
-        # Power potion: top up when the save budget is nearly gone.
-        if h.cur_power <= SAVE_COST and h.items.get("power", 0) > 0:
-            h.items["power"] -= 1
-            h.cur_power = min(h.power, h.cur_power + POWER_POTION_RESTORE)
-            log.append(f"    {h.name} drinks a power potion "
-                       f"(Power -> {h.cur_power}; {h.items['power']} left)")
     return True
 
 
@@ -770,6 +794,7 @@ def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
         if survivors:
             log.append(f"  Room cleared. {len(survivors)} still standing.")
             short_rest(survivors, clock, log)
+            auto_use_potions_on_rest(survivors, log)  # one-shot sim: sensible party
 
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, SKELETON_QUEST_GOLD, SKELETON_QUEST_XP,
