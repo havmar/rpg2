@@ -11,8 +11,10 @@ back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
 in the moment; First Blood opens the fight with a guaranteed graze on the
 focused foe (the aggressive third ability -- its value is the death spiral, not
 the point of damage); Heal instead mends HP on self or an ally between fights
-(all cost Power); STA is a per-day clock -- attacks spend it (defense is free),
-an entity at 0 STA guards instead of attacking, and it only sawtooths back up
+(all cost Power); STA is the second death-track -- attacks spend it (defense is
+free), and an entity that hits 0 STA COLLAPSES: it cannot attack for the rest
+of the fight and defends at a huge penalty, with no in-fight recovery. Running
+dry near an enemy is how you die. STA only sawtooths back up between fights
 (+1 after a fight, +3 per short rest, full overnight) across the run;
 healing potions restore HP instantly, drunk between fights. A character only
 truly dies when a killing blow lands and the saves have run dry.
@@ -46,16 +48,22 @@ from dataclasses import dataclass, field
 # Mechanics
 # --------------------------------------------------------------------------- #
 
-WINDED_STA = 3          # STA <= this -> Winded
+WINDED_STA = 3          # STA <= this -> Winded (the warning zone)
 WINDED_PENALTY = 2      # roll penalty while Winded
+COLLAPSED_PENALTY = 6   # roll penalty at 0 STA (replaces the Winded penalty)
 
 # Stamina economy: ATTACKING is what tires you; defending is reflexive and free.
-# An entity at 0 STA cannot attack -- it guards and catches its breath instead
-# (+STA_EXHAUST_RECOVERY), so an exhausted fighter swings every other round.
-# Recovery is a sawtooth that trends down across the day: +1 when a fight ends,
-# +3 on a short rest, full only on a long rest (overnight).
-STA_ATTACK_COST = 2         # STA per swing for a living human (Entity.sta_cost default)
-STA_EXHAUST_RECOVERY = 1    # STA caught back in a round spent guarding instead of attacking
+# STA is the SECOND DEATH-TRACK. An entity that hits 0 STA COLLAPSES: it cannot
+# attack for the rest of the fight and defends at -COLLAPSED_PENALTY, with no
+# in-fight recovery -- a collapsed fighter near a live enemy is all but finished
+# (its wounds still spiral on top). HP is how much you can bleed; STA is how
+# long you can fight; whichever empties first in reach of a foe kills you.
+# Recovery only happens BETWEEN fights, as a sawtooth that trends down across
+# the day: +1 when a fight ends, +3 on a short rest, full only on a long rest
+# (overnight). Tireless entities (undead) never spend STA and never collapse.
+STA_ATTACK_COST = 1         # STA per swing (the pool is a swing budget now;
+                            # halved from 2 when collapse became lethal, so a
+                            # hero gets ~4-7 swings per fight, not 2-3)
 STA_RECOVERY_AFTER_FIGHT = 1  # survivors catch their breath when a fight ends
 
 # Survival add-on tunables.
@@ -76,8 +84,9 @@ HP_RECOVERY_BETWEEN_ROOMS = 1    # HP regained per SHORT rest (minimal; wounds c
 REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 
 # --- Progression (XP, levels, combat training) ------------------------------ #
-# Level L -> L+1 costs XP_LEVEL_STEP * L. A skeleton-site clear (3 encounters +
-# quest) is exactly one level-1 level-up; the next level takes two clears.
+# Level L -> L+1 costs XP_LEVEL_STEP * L. A starter-site clear (3 encounters +
+# quest at the bandit hideout) is exactly one level-1 level-up; the next level
+# takes two clears (or one run at the 3x-paying barrow).
 XP_LEVEL_STEP = 100
 SKILL_POINTS_PER_LEVEL = 1
 TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to tempo rolls
@@ -91,10 +100,18 @@ DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
 
-# Skeleton-site rewards (the bandit hideout in scratch_bandits.py pays 3x).
-SKELETON_ENCOUNTER_XP = 15
-SKELETON_QUEST_XP = 55
-SKELETON_QUEST_GOLD = 15
+# Site rewards. The bandit hideout (scratch_bandits.py) is the STARTER site
+# and pays the base rate -- a full clear (3 encounters + quest) is exactly the
+# level-1 -> 2 XP cost, so the first clear is a level-up. The skeleton barrow
+# is the TOUGH site (tireless undead in numbers) and pays 3x: farm the bandits
+# for training first, then take the barrow for real wages.
+ENCOUNTER_XP = 15       # base per-encounter award (starter-site scale)
+QUEST_XP = 55
+QUEST_GOLD = 15
+BARROW_REWARD_MULT = 3  # the barrow is the tough site
+BARROW_ENCOUNTER_XP = ENCOUNTER_XP * BARROW_REWARD_MULT
+BARROW_QUEST_XP = QUEST_XP * BARROW_REWARD_MULT
+BARROW_QUEST_GOLD = QUEST_GOLD * BARROW_REWARD_MULT
 
 # --- Time economy (the clock) ---------------------------------------------- #
 # A "day" is a slot budget, not a wall clock. The party gets a limited number of
@@ -159,7 +176,9 @@ class TempoRoll:
     dex: int
     training: int
     wound_pen: int      # HP lost so far (the death spiral)
-    winded_pen: int     # WINDED_PENALTY if Winded, else 0
+    fatigue_pen: int    # COLLAPSED_PENALTY at 0 STA, else WINDED_PENALTY if
+                        # Winded, else 0 (the two never stack)
+    fatigue_label: str  # "collapsed" / "winded" / ""
 
     def breakdown(self, name: str) -> str:
         parts = [f"2d6={self.dice}", f"+{self.dex} DEX"]
@@ -167,8 +186,8 @@ class TempoRoll:
             parts.append(f"+{self.training} training")
         if self.wound_pen:
             parts.append(f"-{self.wound_pen} wounds")
-        if self.winded_pen:
-            parts.append(f"-{self.winded_pen} winded")
+        if self.fatigue_pen:
+            parts.append(f"-{self.fatigue_pen} {self.fatigue_label}")
         return f"{name}: {self.total} ({', '.join(parts)})"
 
 
@@ -206,7 +225,9 @@ class Entity:
     sta_cost: int = STA_ATTACK_COST     # STA spent per attack (defense is free);
                                          # Phase 4 hangs weapon weight on this knob
     undead: bool = False                # no pain: wound roll penalty halved (see
-                                         # wound_penalty), and typically a cheap swing
+                                         # wound_penalty)
+    tireless: bool = False              # never spends STA, never Winded/Collapsed
+                                         # (the undead don't tire; you do)
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
@@ -240,8 +261,17 @@ class Entity:
         return self.max_hp - self.hp
 
     @property
+    def collapsed(self) -> bool:
+        # 0 STA = Collapsed: cannot attack, defends at -COLLAPSED_PENALTY, and
+        # there is NO in-fight recovery -- collapse lasts until the fight ends.
+        # (Derived from cur_sta, so a fighter entering a fight at 0 is
+        # collapsed from round 1: you don't start a fight with nothing left.)
+        return not self.tireless and self.cur_sta <= 0
+
+    @property
     def winded(self) -> bool:
-        return self.cur_sta <= WINDED_STA
+        return (not self.tireless and not self.collapsed
+                and self.cur_sta <= WINDED_STA)
 
     @property
     def wound_penalty(self) -> int:
@@ -251,11 +281,17 @@ class Entity:
 
     def tempo(self, rng: random.Random) -> TempoRoll:
         dice = rng.randint(1, 6) + rng.randint(1, 6)
-        winded_pen = WINDED_PENALTY if self.winded else 0
-        total = dice + self.dex + self.training - self.wound_penalty - winded_pen
+        if self.collapsed:
+            fatigue_pen, fatigue_label = COLLAPSED_PENALTY, "collapsed"
+        elif self.winded:
+            fatigue_pen, fatigue_label = WINDED_PENALTY, "winded"
+        else:
+            fatigue_pen, fatigue_label = 0, ""
+        total = (dice + self.dex + self.training
+                 - self.wound_penalty - fatigue_pen)
         return TempoRoll(total=total, dice=dice, dex=self.dex,
                          training=self.training, wound_pen=self.wound_penalty,
-                         winded_pen=winded_pen)
+                         fatigue_pen=fatigue_pen, fatigue_label=fatigue_label)
 
 
 # --------------------------------------------------------------------------- #
@@ -392,16 +428,32 @@ def _first_blood(party: list[Entity], foes: list[Entity],
 
 def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
     """One compact stamina readout per round (attacks spend the clock -- the
-    log shows it ticking every round). A * marks the Winded."""
+    log shows it ticking every round). A * marks the Winded, !! the Collapsed;
+    tireless entities are summarized (their clock never moves)."""
     def side(group: list[Entity]) -> str:
-        return ", ".join(f"{e.name} {e.cur_sta}/{e.sta}"
-                         + ("*" if e.winded else "")
-                         for e in group if e.alive)
+        living = [e for e in group if e.alive]
+        tireless = [e for e in living if e.tireless]
+        parts = [f"{e.name} {e.cur_sta}/{e.sta}"
+                 + ("!!" if e.collapsed else "*" if e.winded else "")
+                 for e in living if not e.tireless]
+        if tireless:
+            parts.append(f"{len(tireless)} tireless")
+        return ", ".join(parts)
     sides = " | ".join(s for s in (side(party), side(foes)) if s)
     line = f"    stamina: {sides}"
+    legend = []
     if any(e.alive and e.winded for e in party + foes):
-        line += "   (* = Winded)"
+        legend.append("* = Winded")
+    if any(e.alive and e.collapsed for e in party + foes):
+        legend.append("!! = Collapsed")
+    if legend:
+        line += f"   ({', '.join(legend)})"
     return line
+
+
+def _can_attack(e: Entity) -> bool:
+    """Still has a swing in it: alive and either tireless or able to pay."""
+    return e.alive and (e.tireless or e.cur_sta >= e.sta_cost)
 
 
 def group_combat(party: list[Entity], foes: list[Entity],
@@ -413,17 +465,27 @@ def group_combat(party: list[Entity], foes: list[Entity],
     and every attacker picks a living target at the moment it acts, so a foe
     slain mid-round is neither attacked again nor gets a posthumous swing.
 
-    Stamina: an attack costs the attacker `sta_cost` STA (defense is free).
-    At 0 STA an entity cannot attack -- it guards and catches its breath
-    (+STA_EXHAUST_RECOVERY) instead, so the exhausted swing every other round.
-    When the fight ends the survivors catch their breath (+STA_RECOVERY_AFTER_FIGHT).
+    Stamina: an attack costs the attacker `sta_cost` STA (defense is free);
+    tireless entities pay nothing. An entity that hits 0 STA COLLAPSES -- it
+    cannot attack for the rest of the fight and defends at -COLLAPSED_PENALTY,
+    with no in-fight recovery. Collapse near a live enemy is usually death; the
+    only rescue is allies ending the fight first. If nobody left standing can
+    attack, the fight staggers apart unresolved (both sides spent).
+    When the fight ends the survivors catch their breath
+    (+STA_RECOVERY_AFTER_FIGHT).
     """
     party_set = set(party)
+    collapse_logged: set[Entity] = set()
     rnd = 0
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
         if rnd > max_rounds:
             log.append("    (the fight grinds to a standstill)")
+            break
+        if not any(_can_attack(e) for e in party + foes):
+            # Mutual collapse: no recovery in-fight, so this is permanent.
+            log.append("    Both sides are utterly spent -- the fight "
+                       "staggers apart, unresolved.")
             break
         log.append(f"  Round {rnd}:")
         if rnd == 1:
@@ -435,21 +497,23 @@ def group_combat(party: list[Entity], foes: list[Entity],
             targets = foes if attacker in party_set else party
             if not any(t.alive for t in targets):
                 break           # no one left to fight this round
-            if attacker.cur_sta <= 0:
-                # Too spent to swing: guard only, and catch a breath.
-                attacker.cur_sta = min(attacker.sta,
-                                       attacker.cur_sta + STA_EXHAUST_RECOVERY)
-                log.append(f"    {attacker.name} is too spent to attack -- "
-                           f"guards, catching breath "
-                           f"(+{STA_EXHAUST_RECOVERY} STA -> "
-                           f"{attacker.cur_sta}/{attacker.sta})")
+            if not _can_attack(attacker):
+                # Collapsed: nothing left to swing with. Log it once (covers
+                # both walking in at 0 and running dry between turns).
+                if attacker not in collapse_logged:
+                    collapse_logged.add(attacker)
+                    log.append(f"    !! {attacker.name} is COLLAPSED -- "
+                               f"spent, guard dropping (cannot attack; "
+                               f"-{COLLAPSED_PENALTY} to all rolls until "
+                               f"the fight ends)")
                 continue
-            was_winded = attacker.winded
-            attacker.cur_sta = max(0, attacker.cur_sta - attacker.sta_cost)
-            if attacker.winded and not was_winded:
-                log.append(f"    !! {attacker.name} is Winded "
-                           f"(STA {attacker.cur_sta} -- -{WINDED_PENALTY} "
-                           f"to all rolls until they catch their breath)")
+            if not attacker.tireless:
+                was_winded = attacker.winded
+                attacker.cur_sta -= attacker.sta_cost
+                if attacker.winded and not was_winded:
+                    log.append(f"    !! {attacker.name} is Winded "
+                               f"(STA {attacker.cur_sta} -- -{WINDED_PENALTY} "
+                               f"to all rolls until they catch their breath)")
             defender = _pick_target(targets, rng,
                                     focus=attacker in party_set)
             was_alive = defender.alive
@@ -462,6 +526,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                f"out of the fight.")
                 else:
                     log.append(f"    *** {defender.name} falls. ***")
+            if attacker.collapsed and attacker not in collapse_logged:
+                # That was the last of it: the swing that emptied the tank.
+                collapse_logged.add(attacker)
+                log.append(f"    !! {attacker.name} COLLAPSES -- utterly "
+                           f"spent (cannot attack; -{COLLAPSED_PENALTY} to "
+                           f"all rolls until the fight ends)")
         log.append(_stamina_line(party, foes))
 
     # The dust settles: whoever is still standing catches their breath.
@@ -480,9 +550,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
 # Rolled ranges for a starting hero. 3-6 straddles the human bands in rules.md:
 # a 3 is trained-soldier grade, a 6 nudges past elite-veteran. HP 8-12 likewise.
 HERO_STAT_RANGE = (3, 6)      # DEX / STR
-# STA gets its own, higher-floored range: a 3 would sit right at WINDED_STA,
-# so every hero would start the day already Winded. Floor raised to 4 to clear it.
-HERO_STA_RANGE = (4, 7)
+# STA gets its own, higher range: it is the second death-track (the swing
+# budget; collapse at 0 is usually fatal), so its floor matters like HP's
+# floor -- a 4-STA hero is a 4-swing hero, and the batch sims show those
+# parties are the wipes. Floor 5 also keeps a fresh hero two swings clear of
+# the Winded line (WINDED_STA = 3).
+HERO_STA_RANGE = (5, 8)
 HERO_HP_RANGE = (8, 12)
 HERO_POWER_RANGE = (3, 6)
 
@@ -508,7 +581,10 @@ def make_human(rng: random.Random, name: str) -> Entity:
     and two random potions."""
     stats = {k: rng.randint(*HERO_STAT_RANGE) for k in ("dex", "str")}
     stats["sta"] = rng.randint(*HERO_STA_RANGE)
-    epithet = EPITHETS[max(stats, key=stats.get)]
+    # Epithet from the highest stat, with STA normalized back to the DEX/STR
+    # scale (its rolled range sits 2 higher) so "steady" doesn't win every tie.
+    ranked = dict(stats, sta=stats["sta"] - (HERO_STA_RANGE[0] - HERO_STAT_RANGE[0]))
+    epithet = EPITHETS[max(ranked, key=ranked.get)]
     return Entity(
         name=f"{name} the {epithet}",
         dex=stats["dex"],
@@ -529,21 +605,32 @@ def make_party(rng: random.Random) -> list[Entity]:
 def make_skeleton(rng: random.Random, n: int) -> Entity:
     # Brittle and a weak individual hitter (low STR -> low severity), but
     # undead: no pain (wound roll penalty halved -- a graze costs it nothing,
-    # which also blunts First Blood's spiral here) and near-tireless (cheap
-    # swings). No Power, no saves, no kit. The threat is numbers.
+    # which also blunts First Blood's spiral here) and TIRELESS (never spends
+    # STA, never Winded or Collapsed -- they don't tire; you do). No Power, no
+    # saves, no kit. The threat is numbers pressing a party whose stamina is a
+    # death-track: the bones don't have to beat you, just outlast you.
     return Entity(name=f"Skeleton {n}", dex=3, str_=2, sta=8, max_hp=5,
-                  sta_cost=1, undead=True)
+                  sta_cost=0, undead=True, tireless=True)
 
 
 # --------------------------------------------------------------------------- #
 # The dungeon (one "day")
 # --------------------------------------------------------------------------- #
 
-# Rooms of skeletons. HP and STA both carry across the whole run with only a brief
-# catch-breath between rooms (no per-fight reset); HP wounds and the per-day STA
-# clock both bind. Power and items are per-day stocks that deplete.
-# (Counts pulled back one per room when skeletons got the undead half-pain buff.)
-DUNGEON_ROOMS = [2, 2, 3]
+# Rooms of skeletons -- the TOUGH site (pays 3x; train up at the bandit hideout
+# first). HP and STA both carry across the whole run with only a brief
+# catch-breath between rooms (no per-fight reset); HP wounds and the STA
+# death-track both bind, and the skeletons are tireless -- numbers grinding a
+# party toward collapse is the whole threat. Power and items deplete.
+# BARROW_ROOMS is the SET encounter list for the site (name, skeleton count) --
+# session play (`session.py barrow ROOM`) and the one-shot run both use it, so
+# the layout tune.py/bench_training.py balance is the layout actually played.
+BARROW_ROOMS = [
+    ("the collapsed entry", 3),
+    ("the ossuary", 3),
+    ("the burial vault", 4),
+]
+DUNGEON_ROOMS = [n for _, n in BARROW_ROOMS]  # counts only (tune.py sweeps this)
 
 
 def stat_line(e: Entity) -> str:
@@ -815,15 +902,20 @@ def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
             skeletons.append(make_skeleton(rng, skel_count))
         s = skeletons[0]
         log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
-                   f"STA {s.sta}  HP {s.max_hp} each")
+                   f"HP {s.max_hp} each (undead: no pain, tireless)")
 
         group_combat(living, skeletons, rng, log)
 
         if party_wiped(party, log):
             cleared_all = False
             break
+        if any(s.alive for s in skeletons):
+            # Unresolved (the fight staggered apart): no award, no clear.
+            log.append("  The room is not cleared -- the party pulls back.")
+            cleared_all = False
+            break
 
-        award_xp(party, SKELETON_ENCOUNTER_XP, log, "encounter")
+        award_xp(party, BARROW_ENCOUNTER_XP, log, "encounter")
         roll_loot(party, purse, rng, log)
 
         survivors = [h for h in party if h.alive]
@@ -833,7 +925,7 @@ def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
             auto_use_potions_on_rest(survivors, log)  # one-shot sim: sensible party
 
     if cleared_all and any(not h.dead for h in party):
-        award_quest(party, purse, SKELETON_QUEST_GOLD, SKELETON_QUEST_XP,
+        award_quest(party, purse, BARROW_QUEST_GOLD, BARROW_QUEST_XP,
                     log, "the barrow is cleansed")
 
 

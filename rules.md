@@ -32,7 +32,11 @@ decision instead of arithmetic. The loop is **burst / sustain / control**:
 comparison goes transitive and you're just adding totals. Stamina is what makes
 a fighter *change* mid-fight — dangerous early, fading late — so matchups become
 "*when* am I dangerous", which is what creates the counter-loop and what a text
-log narrates well.
+log narrates well. And the clock has teeth: STA is a **second death-track**.
+A fighter who runs it dry mid-fight **Collapses** — no more attacks, guard in
+ruins — and is usually finished where they stand. HP is how much you can bleed;
+STA is how long you can fight; whichever empties first in reach of an enemy
+kills you.
 
 **5. Wounds, not a hit-point buffer.** A clean hit can swing or end a fight. The
 decisive contact is short and brutal; the depth of a fighter's pool just sets how
@@ -57,7 +61,7 @@ Every entity has three stats and a wound pool.
 |------|--------------|
 | **DEX** | Landing hits and avoiding them. Decides who connects each round. |
 | **STR** | Force behind a blow (how bad the wound) and soaking incoming wounds. |
-| **STA** | The attack budget: every swing spends it (defense is free). When low, you're **Winded**; at zero you can only guard. The clock. |
+| **STA** | The attack budget: every swing spends it (defense is free). When low, you're **Winded**; at zero you **Collapse** — out of the fight offensively, guard in ruins. The second death-track. |
 | **HP**  | Wound pool. Damage is taken *as* HP loss, and lost HP is a penalty to your rolls (see Wounds). |
 
 ---
@@ -68,12 +72,18 @@ Each round, every combatant takes one attack in turn (party first, then foes;
 each attacker picks a **living** target when its turn comes, so no one strikes
 a corpse or swings posthumously):
 
-1. **Pay for the swing.** Attacking costs STA (`sta_cost`: a living human 2,
-   a skeleton 1). Defending is free — guarding is reflexive, swinging is the
-   exertion. At **STA ≤ 3** a fighter is **Winded** (−2 to all rolls).
-2. **Exhaustion.** At **0 STA** a fighter *cannot attack*: it spends the round
-   guarding and catches its breath (+1 STA) — so the exhausted swing every
-   other round. No one dies of tiredness; they fight at half tempo, Winded.
+1. **Pay for the swing.** Attacking costs STA (`sta_cost`: 1 for a living
+   fighter — the pool is a swing budget). Defending is free — guarding is
+   reflexive, swinging is the exertion. **Tireless** entities (the undead)
+   never spend STA at all. At **STA ≤ 3** a fighter is **Winded** (−2 to all
+   rolls) — the warning zone.
+2. **Collapse.** At **0 STA** a fighter **Collapses**: it *cannot attack for
+   the rest of the fight* and defends at **−6 to all rolls** (replacing the
+   Winded −2; wound penalties still stack on top). There is **no in-fight
+   recovery** — a collapsed fighter near a live enemy is all but finished; the
+   only rescue is allies ending the fight first. People absolutely die of
+   tiredness now: that is the point. If *nobody* left standing can attack,
+   the fight staggers apart unresolved (both sides spent — no award, no clear).
 3. **Tempo roll.** Attacker and defender each roll
    `2d6 + DEX − (wound penalty) − (2 if Winded)`.
 4. **Who lands.** Higher total connects this round. `margin` = the difference.
@@ -101,9 +111,15 @@ you've lost, so the first solid hit tilts every later round against you and the
 fight accelerates to a conclusion. There is no slow attrition to zero — one
 grievous hit can decide it.
 
-**Undead feel no pain:** their wound penalty is *halved* (integer — `HP lost // 2`,
-so a graze costs them nothing on the roll). Chip damage and spiral-based tricks
-(First Blood) bite less against them; you have to actually break the bones.
+**Undead are the exception enemies** (deliberately — living foes teach the
+system, undead break its rules):
+- **They feel no pain:** their wound penalty is *halved* (integer —
+  `HP lost // 2`, so a graze costs them nothing on the roll). Chip damage and
+  spiral-based tricks (First Blood) bite less against them; you have to
+  actually break the bones.
+- **They are tireless:** they never spend STA, never go Winded, never
+  Collapse. Against the undead the stamina war is entirely one-sided — they
+  don't have to beat you, just outlast you. That is their whole threat.
 
 ---
 
@@ -119,7 +135,7 @@ so every exchange prints **two layers**:
 | Tempo tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
 | Tempo tie, low dice | **Lull** — they circle, probing for an opening |
 | Attacker loses the exchange | *parried* |
-| Attacker at 0 STA | *too spent to attack — guards, catching breath* (+1 STA) |
+| A fighter hits 0 STA | `!! X COLLAPSES — utterly spent (cannot attack; -6 to all rolls until the fight ends)` |
 | Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
 | Hit lands but soak zeroes the severity | *deflected* — the blow glances off |
 | Wound tiers | *a graze / a solid wound / a grievous injury / a killing blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
@@ -135,8 +151,10 @@ result, every modifier with its source (`+DEX`, `+training`, `-wounds`,
 severity arithmetic (`severity = margin + STR - soak -> tier`).
 
 A `stamina:` readout prints every round — the clock is visible ticking — with
-`*` marking the Winded. This is deliberately the *complete* version; a terser
-mode can come later once the numbers have earned trust.
+`*` marking the Winded and `!!` the Collapsed; tireless entities are
+summarized (`3 tireless`) since their clock never moves. This is deliberately
+the *complete* version; a terser mode can come later once the numbers have
+earned trust.
 
 ---
 
@@ -156,6 +174,31 @@ mode can come later once the numbers have earned trust.
 Because you must *land* to deal damage, DEX gates STR for free (the old "range/
 bind" mechanic, removed). Because STA degrades fighters over time, *when* you're
 dangerous matters. Those two facts alone make the matchups rock-paper-scissors.
+
+### On DEX vs STR (a design note, post-collapse)
+
+Point for point, **DEX double-dips**: it decides who lands *and* (because
+margin feeds severity) adds to the wound when you do — everything +1 STR
+gives, plus the landing/avoidance. Under the old rules that made DEX strictly
+dominant, and worse: since 0 STA was a *safe* guard-loop, a high-DEX fighter
+could parry forever and win any fight given enough rounds. Time was free, so
+the chip strategy was unbeatable.
+
+**Collapse is the price tag on time.** Now every fighter has a hard swing
+budget, so the axes read: **DEX = swings that connect, STR = swings that
+count, STA = how many swings you get.** The DEX build still wins clean duels
+(it should — precision is the duelist stat), but its old grind-it-out wins
+now end in mutual collapse (a draw at best, death near anything tireless),
+and STR carries hidden defense: a collapsed fighter's DEX is swamped by the
+−6, while STR soak keeps working — the brute survives being spent, the fencer
+does not. Measured head-to-head at equal budget (20k duels): DEX-heavy vs
+STR-heavy went from near-total DEX dominance to 42% / 17% / 41% draws.
+
+The rest of the intended counter-loop ("Power beats Precision") arrives with
+Phase 4 weapons, which hang extra severity and per-swing STA cost on STR
+frames. If the gap still feels wrong before then, the next lever is weighting
+STR heavier in the severity formula (a `margin + 2×(STR−soak)` variant) — 
+rejected for now because it soak-locks low-STR swarm enemies out of the game.
 
 ---
 
@@ -183,11 +226,13 @@ The band where tradeoffs are real: you cannot be good at everything.
 | Elite veteran | 4–5 | 4–5 | 4–5 | 8–10 |
 
 **Rolled party heroes** span this band and nudge past it: DEX/STR `randint(3, 6)`,
-STA `randint(4, 7)` (floor raised a step above the two so no hero starts the
-day already Winded at STA <= 3), HP `randint(8, 12)`, Power `randint(3, 6)`, a
-random ability (Heal, Bulwark, or First Blood), and two random potions. A hero's epithet
-("the precise" / "the powerful" / "the steady") is derived from their highest
-stat.
+STA `randint(5, 8)` (its own, higher range: STA is the second death-track —
+the swing budget — so its floor matters like HP's floor; a 4-STA hero is a
+4-swing hero, and the batch sims showed those parties are the wipes), HP
+`randint(8, 12)`, Power `randint(3, 6)`, a random ability (Heal, Bulwark, or
+First Blood), and two random potions. A hero's epithet ("the precise" / "the
+powerful" / "the steady") is derived from their highest stat, with STA
+normalized back to the DEX/STR scale for the comparison.
 
 ### Heroes — stats 6–10, HP 12–20
 Superhuman because they **break the mortal tradeoff**: a hero can be high in
@@ -289,7 +334,7 @@ These are the only edits to the existing rules:
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
-| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)** | The **involuntary clock**. Attacks spend it; at 0 you guard instead of swinging. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
+| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. **Never recovers mid-fight.** | The **second death-track**. Attacks spend it; at 0 you **Collapse** (no attacks, −6, until the fight ends) and are usually finished where you stand. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
 | **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
 
@@ -336,10 +381,12 @@ keeps build identity alive and makes "who am I about to lose" specific.
 ## STA vs Power — keep them distinct
 
 STA is your **condition** — it drains whether you want it to or not, and it
-creates the fade that powers the matchup triangle. Power is your **budget** — you
-*choose* to spend it. Keeping them separate makes the warrior's Bulwark a real
-trade (skill budget spent to live) and keeps a stamina potion a rare cheat rather
-than a routine top-up.
+creates the fade that powers the matchup triangle; run it dry mid-fight and you
+Collapse and likely die. Power is your **budget** — you *choose* to spend it.
+Keeping them separate makes the warrior's Bulwark a real trade (skill budget
+spent to live) and keeps a stamina potion a rare cheat rather than a routine
+top-up — with a lethal collapse waiting at 0, the draught is now genuinely a
+life-saver, not a convenience.
 
 ---
 
@@ -434,12 +481,15 @@ On top of the existing build/allocation choices:
 - **Time is a `Clock`** (a `day` counter plus a per-day budget of short-rest
   slots, `SHORT_RESTS_PER_DAY`). A dungeon run is a slice of a day. **HP and STA
   both carry across rooms** (never a per-fight reset). STA moves as a sawtooth:
-  attacks spend it (`sta_cost`), the end of a fight gives
+  attacks spend it (`sta_cost`, 1 per swing), the end of a fight gives
   `STA_RECOVERY_AFTER_FIGHT` (1) back, a `short_rest` spends a slot for
   `STA_RECOVERY_BETWEEN_ROOMS` (3) + a sliver of HP, and `long_rest` makes camp
   for the full STA recharge + the weekly HP tick (`hp_regen_per_night =
-  max(1, round(max_hp / 7))`). Power and items are per-day stocks that deplete
-  across the run.
+  max(1, round(max_hp / 7))`). **There is no mid-fight STA recovery of any
+  kind**: an entity at 0 is Collapsed (`COLLAPSED_PENALTY` = 6, cannot attack)
+  until the fight ends; if nobody standing can attack, `group_combat` declares
+  the fight unresolved and the scenario treats the room as not cleared. Power
+  and items are per-day stocks that deplete across the run.
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
 - **Saves are automatic and conservative.** A Bulwark-ability character spends
@@ -481,10 +531,12 @@ gold buys staying power** — never the reverse.
   splitting; the party levels together): a small amount per **encounter won**
   and a lump for **completing a quest** (clearing a whole site).
 - **The curve.** Level L → L+1 costs `100 × L` XP. Anchors:
-  - Skeleton site: **15 XP** per encounter, **55 XP** for the quest — a full
+  - Bandit hideout (the **starter** site — living foes who play by the
+    party's rules): **15 XP** per encounter, **55 XP** for the quest — a full
     clear (3 rooms) is exactly 100 XP, so the *first clear is a level-up*; the
-    second level takes two clears, the third takes three.
-  - The bandit hideout pays **3×** (45 / 165) — tough fights, better wages.
+    second level takes two clears.
+  - The skeleton barrow (the **tough** site — tireless undead in numbers)
+    pays **3×** (45 / 165) — brutal fights, real wages.
 - **Level-ups grant skill points** (1 per level), spent on skills — free
   allocation, never use-based (the Fallout principle from the design record).
 
@@ -501,15 +553,17 @@ The veteran-vs-novice axis: *"you know how to fight."*
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
 - It is the **only skill for now**, so the scenarios auto-spend points on it;
   once more skills exist, spending becomes a real between-fights choice.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank): the bandit hideout
-  wipes a rank-0 party ~75% of the time, rank 1 → ~46%, rank 2 → ~21%,
-  rank 3 → ~5%. Each rank is a *felt* jump — Phase 3's test criterion.
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-collapse): the
+  skeleton barrow (tough site) clears **22% → 48% → 74% → 90%** across ranks
+  0–3 (a rank-0 party wipes ~78% of the time); the bandit hideout (starter)
+  clears **63% → 85% → 96% → 99%**. Each rank is a *felt* jump — Phase 3's
+  test criterion.
 
 ## Gold and the potion economy
 
 - **The purse is shared** (party-level); potions are per-hero.
 - **Income:**
-  - **Quests:** skeleton site **15 g**, bandit hideout **45 g**.
+  - **Quests:** bandit hideout (starter) **15 g**, skeleton barrow (tough) **45 g**.
   - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
     potion) and **10%** chance of a stray potion (random kind, to a random
     hero). Trash-tier on purpose — drops season the run, quests fund it.

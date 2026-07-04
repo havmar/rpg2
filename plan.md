@@ -80,7 +80,9 @@ system):
 - **STA cost per swing** — heavy weapons burn the clock faster (a burst weapon
   *mechanically*, wanting a high-STA frame behind it). *The engine hook already
   exists*: `Entity.sta_cost` is the per-swing STA price (attacks spend STA,
-  defense is free, 0 STA = guard-only round) — weapons just need to set it.
+  defense is free, 0 STA = Collapse — no attacks, −6, until the fight ends) —
+  weapons just need to set it. With collapse lethal, a heavy weapon is a real
+  gamble: fewer, harder swings against your own death-clock.
 - **Reach** — survives as a small first-exchange modifier even though range isn't
   tracked.
 
@@ -119,7 +121,9 @@ ignore the tier-shift (gear-counters-gear on top of build-counters-build).
 
 HP **carries across the whole run** (drains like STA, only a minimal catch-breath
 between rooms — never a per-fight reset), with the death spiral intact; STA as the
-un-buyable clock; **Power** as the spendable mid-fight budget (heals, the warrior's
+un-buyable clock **and second death-track** (0 STA mid-fight = Collapse: no
+attacks, −6, no recovery until the fight ends — running dry near an enemy is
+usually fatal); **Power** as the spendable mid-fight budget (heals, the warrior's
 Bulwark); potions as the in-advance buffer; **Down-not-dead** (0 HP is out of the
 fight, revived minimally next room); death only when a killing blow lands and the
 saves have run dry. **A total party knockout — no hero left standing — is a
@@ -183,10 +187,11 @@ Build: XP (per encounter + quest lump), levels (`100 × L` to next), skill
 points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
 points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
-Test: *passed* — against the bandit hideout benchmark (`bench_training.py`),
-wipe rate falls ~70% → ~39% → ~16% → ~3% across training ranks 0–3 (numbers
-re-benched after the stamina rework + undead skeleton buff). Each rank is a
-felt jump.
+Test: *passed* — against the skeleton-barrow benchmark (`bench_training.py`;
+the barrow is the tough site since the collapse rework swapped the two),
+clear rate climbs 22% → 48% → 74% → 90% across training ranks 0–3. Each rank
+is a felt jump: training ends fights in fewer swings, which is what stretches
+the (now lethal) STA budget.
 
 **Phase 4 — Weapons & proficiency**
 Build: the five weapons with distinct tempo/severity/STA profiles; per-weapon

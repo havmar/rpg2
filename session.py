@@ -14,12 +14,17 @@ the DM protocol for actually playing lives there).
 
 Run:  python session.py new [--seed N]              # new party, resets state
       python session.py status                       # show party/clock/purse
-      python session.py fight N [--type skeleton]     # spawn N foes, resolve one melee
-                                                        # (N is the DM's call each time --
-                                                        # not read from rpg.py's DUNGEON_ROOMS,
-                                                        # which only sizes the one-shot/tune.py
-                                                        # dungeon run)
-      python session.py hideout ROOM                  # resolve one hideout room (1-3)
+      python session.py hideout ROOM                  # resolve one hideout room (1-3,
+                                                        # SET roster per room -- the STARTER
+                                                        # site: living foes, base pay)
+      python session.py barrow ROOM                   # resolve one barrow room (1-3,
+                                                        # SET skeleton count per room from
+                                                        # rpg.BARROW_ROOMS -- the TOUGH site:
+                                                        # tireless undead, 3x pay)
+      python session.py fight N [--type skeleton|bandit]  # OFF-SCRIPT encounter: spawn N foes
+                                                        # (road ambushes and other improvised
+                                                        # scenes only -- the two sites are set
+                                                        # encounters, use barrow/hideout)
       python session.py rest                          # short rest (spends a slot)
       python session.py camp                          # long rest (advance a day)
       python session.py quest GOLD XP NAME             # award a site-clear quest
@@ -35,7 +40,8 @@ import random
 from pathlib import Path
 
 from rpg import (
-    Clock, Purse, POTION_KINDS, SKELETON_ENCOUNTER_XP,
+    Clock, Purse, POTION_KINDS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
+    BARROW_ROOMS,
     make_party, make_skeleton, stat_line,
     start_fight, group_combat, party_wiped,
     award_xp, roll_loot, award_quest,
@@ -43,11 +49,17 @@ from rpg import (
     buy_potion as _buy_potion, use_heal as _use_heal,
     use_potion as _use_potion,
 )
-from scratch_bandits import make_bandit, bandit_line, HIDEOUT_ROOMS
+from scratch_bandits import (make_bandit, bandit_line, HIDEOUT_ROOMS,
+                             BANDIT_TYPES, BANDIT_ENCOUNTER_XP)
 
 STATE_PATH = Path(__file__).parent / ".session_state.pkl"
 
-FOE_MAKERS = {"skeleton": make_skeleton}
+
+def _make_random_bandit(rng, n):
+    return make_bandit(rng.choice(sorted(BANDIT_TYPES)), n)
+
+
+FOE_MAKERS = {"skeleton": make_skeleton, "bandit": _make_random_bandit}
 
 
 def save(state: dict) -> None:
@@ -87,12 +99,30 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
 
 
+def resolve_encounter(state: dict, log: list[str], foes: list,
+                      encounter_xp: int) -> None:
+    """Shared tail of every encounter command: run the melee, award, persist."""
+    party, purse, rng = state["party"], state["purse"], state["rng"]
+    living = [h for h in party if not h.dead]
+    group_combat(living, foes, rng, log)
+    wiped = party_wiped(party, log)
+    if not wiped and any(f.alive for f in foes):
+        # Unresolved (the fight staggered apart, both sides spent): no award.
+        log.append("  The encounter is not cleared -- the foes still stand.")
+    elif not wiped:
+        award_xp(party, encounter_xp, log, "encounter")
+        roll_loot(party, purse, rng, log)
+
+    print("\n".join(log))
+    save(state)
+    report_game_over(party, wiped)
+
+
 def cmd_fight(args: argparse.Namespace) -> None:
     state = load()
-    party, purse, rng = state["party"], state["purse"], state["rng"]
+    party, rng = state["party"], state["rng"]
     log: list[str] = []
-    living = [h for h in party if not h.dead]
-    for h in living:
+    for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
     maker = FOE_MAKERS[args.type]
@@ -101,15 +131,28 @@ def cmd_fight(args: argparse.Namespace) -> None:
         state["foe_count"] += 1
         foes.append(maker(rng, state["foe_count"]))
 
-    group_combat(living, foes, rng, log)
-    wiped = party_wiped(party, log)
-    if not wiped:
-        award_xp(party, SKELETON_ENCOUNTER_XP, log, "encounter")
-        roll_loot(party, purse, rng, log)
+    resolve_encounter(state, log, foes, ENCOUNTER_XP)
 
-    print("\n".join(log))
-    save(state)
-    report_game_over(party, wiped)
+
+def cmd_barrow(args: argparse.Namespace) -> None:
+    state = load()
+    party, rng = state["party"], state["rng"]
+    log: list[str] = []
+    for h in [h for h in party if not h.dead]:
+        start_fight(h, log)
+
+    room_name, n_skel = BARROW_ROOMS[args.room - 1]
+    log.append(f"=== Barrow room {args.room}: {room_name} "
+               f"({n_skel} skeletons rise from the bones) ===")
+    skeletons = []
+    for _ in range(n_skel):
+        state["foe_count"] += 1
+        skeletons.append(make_skeleton(rng, state["foe_count"]))
+    s = skeletons[0]
+    log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
+               f"HP {s.max_hp} each (undead: no pain, tireless)")
+
+    resolve_encounter(state, log, skeletons, BARROW_ENCOUNTER_XP)
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -125,10 +168,9 @@ def report_game_over(party: list, wiped: bool) -> None:
 
 def cmd_hideout(args: argparse.Namespace) -> None:
     state = load()
-    party, purse, rng = state["party"], state["purse"], state["rng"]
+    party = state["party"]
     log: list[str] = []
-    living = [h for h in party if not h.dead]
-    for h in living:
+    for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
     room_name, roster = HIDEOUT_ROOMS[args.room - 1]
@@ -140,15 +182,7 @@ def cmd_hideout(args: argparse.Namespace) -> None:
     for b in bandits:
         log.append("  " + bandit_line(b))
 
-    group_combat(living, bandits, rng, log)
-    wiped = party_wiped(party, log)
-    if not wiped:
-        award_xp(party, 3 * SKELETON_ENCOUNTER_XP, log, "encounter")
-        roll_loot(party, purse, rng, log)
-
-    print("\n".join(log))
-    save(state)
-    report_game_over(party, wiped)
+    resolve_encounter(state, log, bandits, BANDIT_ENCOUNTER_XP)
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -222,18 +256,26 @@ def main() -> None:
     p.set_defaults(func=cmd_status)
 
     p = sub.add_parser(
-        "fight",
-        help="spawn N foes and resolve one encounter against the party "
-             "(N is a free choice each call, not tied to any fixed room list)")
-    p.add_argument("n", type=int, help="how many foes to spawn for this encounter")
-    p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
-    p.set_defaults(func=cmd_fight)
+        "barrow",
+        help="resolve one skeleton-barrow room (SET skeleton count per room, "
+             "from rpg.BARROW_ROOMS -- the TOUGH site, 3x pay)")
+    p.add_argument("room", type=int, choices=range(1, len(BARROW_ROOMS) + 1))
+    p.set_defaults(func=cmd_barrow)
 
     p = sub.add_parser(
         "hideout",
-        help="resolve one bandit-hideout room (fixed roster per room, unlike `fight`)")
-    p.add_argument("room", type=int, choices=[1, 2, 3])
+        help="resolve one bandit-hideout room (SET roster per room -- "
+             "the STARTER site)")
+    p.add_argument("room", type=int, choices=range(1, len(HIDEOUT_ROOMS) + 1))
     p.set_defaults(func=cmd_hideout)
+
+    p = sub.add_parser(
+        "fight",
+        help="OFF-SCRIPT encounter: spawn N foes (improvised scenes like road "
+             "ambushes only -- the two sites are set encounters, use barrow/hideout)")
+    p.add_argument("n", type=int, help="how many foes to spawn for this encounter")
+    p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
+    p.set_defaults(func=cmd_fight)
 
     p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
     p.set_defaults(func=cmd_rest)

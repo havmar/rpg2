@@ -53,13 +53,14 @@ fiction.
   skeleton dungeon. Self-contained, stdlib only.
 - `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both death
   distribution. Use it to re-check balance after any mechanics change.
-- `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters with real
-  DEX/STR who tire, unlike the brittle skeletons). Imports the engine from
-  `rpg.py` and mirrors the survival flow (`start_fight` -> `group_combat` ->
-  `short_rest`), exposing `run_hideout()` for batch use. **This is the intended
-  TOUGH site**: it pays 3x the skeleton barrow (XP and gold) and wipes a fresh
-  rank-0 party ~70% of the time — the designed play is to farm skeletons for
-  combat training first (rank 2 brings the wipe rate to ~16%). `--seed N` for
+- `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters who play
+  by exactly the party's rules: real DEX/STR, they spend STA, go Winded, and
+  Collapse at 0). Imports the engine from `rpg.py` and mirrors the survival
+  flow (`start_fight` -> `group_combat` -> `short_rest`), exposing
+  `run_hideout()` for batch use. **This is the STARTER site**: base pay (a
+  full clear = exactly the L1->2 XP cost), ~63% clear / ~5% wipe at rank 0,
+  and its logs teach the system with no special-case enemies. The skeleton
+  barrow (in `rpg.py`) is the TOUGH site you train up for. `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
   the `rpg.py` API.
 - `bench_training.py` — Phase 3 benchmark: runs the barrow and the hideout at
@@ -73,17 +74,18 @@ fiction.
   of its own; every subcommand is a direct call into `rpg.py`. Claude (as DM)
   drives a playthrough with this rather than one-shot `rpg.py` runs, so pacing
   decisions (when to rest, when to camp, when to press on) stay real choices
-  made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `fight N
-  [--type skeleton]` (spawns N foes and resolves one encounter -- **N is
-  chosen by the DM each call, freely; it is *not* read from `rpg.py`'s
-  `DUNGEON_ROOMS`**, which only sizes the one-shot `run_dungeon`/`tune.py`
-  path. When narrating a "barrow room," pick a foe count that fits the scene
-  -- `DUNGEON_ROOMS = [2, 2, 3]` is a reasonable reference for what a
-  farmable barrow room looks like, but session play isn't bound to it),
-  `hideout ROOM` (1-3, resolves one bandit-hideout room against the persisted
-  party using that room's **fixed** roster, mirroring
-  `scratch_bandits.run_hideout` -- unlike `fight`, the roster size isn't a
-  free choice here), `rest`, `camp`, `quest GOLD XP NAME`, `buy HERO KIND`,
+  made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `hideout ROOM`
+  (1-3, resolves one bandit-hideout room -- the STARTER site -- using that
+  room's **set** roster from `scratch_bandits.HIDEOUT_ROOMS`), `barrow ROOM`
+  (1-3, resolves one skeleton-barrow room -- the TOUGH site, 3x pay -- using
+  that room's **set** skeleton count from `rpg.BARROW_ROOMS`, the same
+  `[3, 3, 4]` layout that `run_dungeon`/`tune.py`/`bench_training.py` balance,
+  so the site played is the site tuned).
+  **Both sites are set encounters -- the DM never invents their foe counts.**
+  `fight N [--type skeleton|bandit]` is the *off-script* escape hatch (spawns
+  N foes) for improvised scenes only -- a road ambush, a one-off scrap --
+  never a substitute for running a site's rooms. Then `rest`, `camp`,
+  `quest GOLD XP NAME`, `buy HERO KIND`,
   `use HERO KIND` (drink a *carried* potion between fights -- DM-called, never
   automatic; instant top-up -- healing restores HP, stamina/power restore now),
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
@@ -108,7 +110,7 @@ fiction.
 python rpg.py            # random party + dungeon, full narrative log (one-shot)
 python rpg.py --seed 7   # reproducible run
 python session.py new    # start an actual DM-driven playthrough (see session.py)
-python scratch_bandits.py --seed 3 --training 2   # the tough site, pre-trained
+python scratch_bandits.py --seed 3   # the starter site, one-shot
 python tune.py           # outcome-distribution sweep over layouts
 python bench_training.py # wipe/clear rates per combat-training rank
 ```
@@ -119,17 +121,23 @@ is intentionally ASCII-only, so plain runs are usually fine.
 ## Core mechanics (see `rules.md` for the full spec)
 
 - Three stats — **DEX** (who lands), **STR** (wound severity + soak), **STA**
-  (the attack budget and clock; **Winded** at STA ≤ 3) — plus an **HP** wound pool.
-- Each round is an opposed `2d6 + DEX + training − (wound penalty) − (2 if Winded)`
-  exchange. Higher roll lands; `severity = margin + atkSTR − defSTR` maps to a
-  wound tier (deflected/graze/wound/grievous/killing blow). **The wound penalty
+  (the swing budget and second death-track; **Winded** at STA ≤ 3,
+  **Collapsed** at 0) — plus an **HP** wound pool. The identity split:
+  *DEX = swings that connect, STR = swings that count, STA = how many swings.*
+- Each round is an opposed `2d6 + DEX + training − (wound penalty) − (fatigue)`
+  exchange (fatigue: 2 Winded / 6 Collapsed, never stacked). Higher roll lands;
+  `severity = margin + atkSTR − defSTR` maps to a wound tier
+  (deflected/graze/wound/grievous/killing blow). **The wound penalty
   (= HP lost; halved, integer, for the undead — they feel no pain) is the death
   spiral, which is the whole point.**
-- **Attacking costs STA** (`Entity.sta_cost`: humans 2, skeletons 1); defending
-  is free. **At 0 STA an entity can't attack** — it guards and catches its
-  breath (+1 STA), so the exhausted swing every other round. Nobody dies of
-  exhaustion; they fight at half tempo, Winded. (The per-swing cost is the
-  planned Phase-4 weapon knob — greatsword heavy, rapier light.)
+- **Attacking costs STA** (`Entity.sta_cost`: 1 for the living; the undead are
+  **tireless** and never spend any); defending is free. **At 0 STA an entity
+  COLLAPSES**: it cannot attack for the rest of the fight, rolls at −6, and
+  gets **no in-fight recovery** — collapse in reach of a live enemy is usually
+  death; STA recovers only between fights. People die of exhaustion now; that
+  is the point. If nobody standing can attack, the fight staggers apart
+  unresolved (no XP, room not cleared). (The per-swing cost is the planned
+  Phase-4 weapon knob — greatsword heavy, rapier light.)
 - `group_combat` resolves a melee **sequentially** — party in list order first
   (PC acts first), then foes; every attacker picks a *living* target at the
   moment it acts, so a foe slain mid-round is neither attacked again nor swings
@@ -140,7 +148,8 @@ is intentionally ASCII-only, so plain runs are usually fine.
   `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
   actual 2d6, every modifier and its source, the full severity arithmetic;
   tempo lines read `Name: total (parts)`).
-  Winded crossings get a `!!` line and a `stamina:` readout prints every round.
+  Winded and Collapse crossings get `!!` lines and a `stamina:` readout prints
+  every round (`*` Winded, `!!` Collapsed, tireless entities summarized).
   Deliberately verbose for now — simplify only once the numbers have earned trust.
 
 ## Survival & Resources add-on (now implemented)
@@ -164,11 +173,13 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   all — it's a **between-fights** action, `use_heal(healer, target, rng, log)`,
   spending `HEAL_COST` (3) Power to restore a random `HEAL_RESTORE_RANGE` (1-3)
   HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
-- **STA is the binding clock**: attacks spend it and it carries across rooms.
-  Recovery is a **sawtooth trending down**: `STA_RECOVERY_AFTER_FIGHT` (1) when
-  a fight ends, `STA_RECOVERY_BETWEEN_ROOMS` (3) per short rest (from 0, fight-end
-  +1 plus a short rest = 4 — *just* clears Winded), and only a **long rest
-  recharges STA fully** (overnight).
+- **STA is the second death-track**: attacks spend it, it carries across rooms,
+  and hitting 0 mid-fight is a Collapse (see Core mechanics) that usually kills.
+  Recovery is **between fights only**, a **sawtooth trending down**:
+  `STA_RECOVERY_AFTER_FIGHT` (1) when a fight ends, `STA_RECOVERY_BETWEEN_ROOMS`
+  (3) per short rest (from 0, fight-end +1 plus a short rest = 4 — *just* clears
+  Winded), and only a **long rest recharges STA fully** (overnight). Walking
+  into a room already low on STA is the main way parties die.
 - **Time economy (`Clock`):** a `day` counter plus a per-day budget of
   `SHORT_RESTS_PER_DAY` (2) short-rest slots. `short_rest(party, clock, log)` (~an
   hour or two of narrative time) spends a slot for a small catch-breath + potion
@@ -198,62 +209,70 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 ## Progression & economy (Phase 3 first slice — see `rules.md` add-on)
 
 - **XP:** every not-dead hero earns the full award — 15/encounter + 55/quest at
-  the skeleton site, 3x at the bandit hideout (45/165). Level `L -> L+1` costs
-  `100 * L` (`xp_to_next`), so the *first barrow clear is exactly a level-up*.
+  the bandit hideout (the starter site), 3x at the skeleton barrow (45/165, the
+  tough site). Level `L -> L+1` costs `100 * L` (`xp_to_next`), so the *first
+  hideout clear is exactly a level-up*.
   `award_xp` handles level-ups and banks skill points (1/level).
 - **Combat training** (`train_combat`) — the only skill so far: +1 to all tempo
   rolls per rank, rank *n* costs *n* points, cap 5. Since it's the only sink,
   scenarios auto-spend after quest awards; when more skills exist this becomes
   a real player choice.
-- **Gold** lives in a shared `Purse`. Income: quest rewards (15 g barrow / 45 g
-  hideout) + per-encounter drops (20% -> 5 g, 10% -> a random potion to a random
+- **Gold** lives in a shared `Purse`. Income: quest rewards (15 g hideout / 45 g
+  barrow) + per-encounter drops (20% -> 5 g, 10% -> a random potion to a random
   hero, `roll_loot`). Sink: `buy_potion(hero, purse, kind, log)` at
   `POTION_PRICE = 10` — a **DM-called between-adventures purchase**, the first
   real player shopping decision. Nothing refills automatically.
 
 ## The current prototype scenario
 
-> This section describes the one-shot `rpg.py`/`tune.py` run. **Session play
-> (`session.py fight N`) is not bound to `DUNGEON_ROOMS`** -- the DM picks a
-> foe count per encounter (see the `session.py` bullet above), using this
-> layout only as a reference for what a room "should" feel like.
+> This layout is played the same everywhere: session play (`session.py barrow
+> ROOM`) and the one-shot `rpg.py`/`tune.py` run both draw from
+> `rpg.BARROW_ROOMS` / `DUNGEON_ROOMS` -- **the sites are set encounters,
+> balanced during development, never improvised at the table** (see the
+> `session.py` bullet above; `fight N` exists only for off-script scenes).
 
 - **Party:** two randomly generated humans (`make_human`): DEX/STR
-  `randint(3, 6)`, STA `randint(4, 7)` (floor raised a step above DEX/STR so no
-  hero starts a day already Winded), HP `randint(8, 12)`, Power `randint(3, 6)`,
-  a random ability (`heal` / `bulwark` / `first_blood`), two random potions, and
-  an epithet from the highest stat (precise/powerful/steady).
-- **Dungeon:** rooms of skeletons, `DUNGEON_ROOMS = [2, 2, 3]` (one "day";
-  counts pulled back one per room when skeletons got the undead buff). HP,
+  `randint(3, 6)`, STA `randint(5, 8)` (its own higher range — STA is the swing
+  budget / second death-track, so its floor matters like HP's floor), HP
+  `randint(8, 12)`, Power `randint(3, 6)`, a random ability (`heal` / `bulwark`
+  / `first_blood`), two random potions, and an epithet from the highest stat
+  (precise/powerful/steady; STA normalized down 2 for the comparison).
+- **The starter site:** the bandit hideout (`scratch_bandits.py`,
+  `HIDEOUT_ROOMS`: 2/2/2 living bandits). Same rules as the party — its logs
+  teach the system. Base pay; first clear = level 2.
+- **The tough site:** rooms of skeletons, `BARROW_ROOMS` (named rooms, counts
+  `DUNGEON_ROOMS = [3, 3, 4]`; one "day"; 3x pay). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
   wounds persist for the run. Clearing all rooms completes the quest
   (gold + XP lump).
 - **Skeletons:** brittle, weak individual hitters (DEX 3 / STR 2 / HP 5), no
   Power/kit, but **undead**: half wound penalty (`hp_lost // 2` — no pain, so
-  chip damage and First Blood's spiral bite less here) and cheap swings
-  (`sta_cost` 1, near-tireless) — the threat is *numbers*, matching the
-  goblin/swarm puzzle in the rules, not raw power. **The farmable site**; the
-  bandit hideout (`scratch_bandits.py`) is the tough one you train up for.
+  chip damage and First Blood's spiral bite less here) and **tireless** (never
+  spend STA, never Winded/Collapsed) — the threat is *numbers* pressing a party
+  whose stamina is a death-track: they don't have to beat you, just outlast
+  you. The exception enemies, met second on purpose (living foes first).
 
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-With random chargen + the 2-random-potion kit, at `[2, 2, 3]` over 20k runs
-(post stamina-rework + undead buff): ~**46% / 10% / 44%** (none / one / both
-slain), **clear ~56%**, a Down in ~45% of runs, ~69% Power / ~34% STA left,
-~0.7 healing potions left, ~11 g earned. The wipe tail is the *designed*
-pressure to level: per `bench_training.py`, the barrow goes
-**55% -> 82% -> 95% -> 99%** clear across training ranks 0-3, and the bandit
-hideout **30% -> 61% -> 84% -> 97%**. A fresh party's first barrow run is a
-better-than-coin-flip but real risk; trained parties farm. If the rank-0
-opening needs adjusting, `DUNGEON_ROOMS` is the first lever.
+Post-collapse (STA a lethal second death-track), at the barrow's `[3, 3, 4]`
+over 20k runs at rank 0: ~**22% / 1% / 78%** (none / one / both slain),
+**clear ~22%** — a fresh party that walks into the barrow dies; that is the
+design (it pays 3x). Per `bench_training.py` (5k/rank), the barrow clears
+**22% -> 48% -> 74% -> 90%** across training ranks 0-3, and the starter
+hideout **63% -> 85% -> 96% -> 99%** (rank-0 wipe there is ~5%). The intended
+arc: clear the hideout fresh (~63%), level up, take the barrow trained. Note
+that most barrow deaths are collapse deaths — training helps by ending fights
+in fewer swings, so the STA budget stretches. If the rank-0 opening needs
+adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow, `DUNGEON_ROOMS`.
 
-Difficulty levers, easiest first: edit `DUNGEON_ROOMS`, then survival tunables
-(`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`, `STA_RECOVERY_AFTER_FIGHT`,
-`STA_RECOVERY_BETWEEN_ROOMS`, `SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then
-economy/progression (`POTION_PRICE`, drop chances,
-quest rewards, `XP_LEVEL_STEP`, training cap), then skeleton stats, then the
-hero roll ranges (`HERO_STAT_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).
+Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
+survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,
+`COLLAPSED_PENALTY`, `STA_RECOVERY_AFTER_FIGHT`, `STA_RECOVERY_BETWEEN_ROOMS`,
+`SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then economy/progression
+(`POTION_PRICE`, drop chances, quest rewards, `XP_LEVEL_STEP`, training cap),
+then skeleton/bandit stats, then the hero roll ranges (`HERO_STAT_RANGE`,
+`HERO_STA_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).
 **Always re-run `tune.py` and `bench_training.py` after touching any of
 these** — small changes swing both lethality and the attrition curve.
 
@@ -270,7 +289,7 @@ these** — small changes swing both lethality and the attrition curve.
 
 The between-fights layer is now *partly* player choice: gold/XP flow, combat
 training is bought with levels, and `buy_potion` makes stocking up a real
-decision (which site to run — farmable barrow vs 3x-paying hideout — is the
+decision (which site to run — starter hideout vs 3x-paying barrow — is the
 first "pick your fights" choice). Still missing: more skills + weapon
 proficiencies (so skill points become an allocation, not an auto-spend), gear
 that shifts stats / soaks severity / adds STA, raising stats toward an

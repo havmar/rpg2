@@ -24,19 +24,28 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Turn protocol -- ONE encounter per message
 
-- Resolve **at most one encounter** (`fight` / `hideout`) per DM message, then
-  stop and hand the turn back to the player. Never chain fights, even if the
-  next room seems obvious.
+- Resolve **at most one encounter** (`hideout` / `barrow` / `fight`) per DM
+  message, then stop and hand the turn back to the player. Never chain fights,
+  even if the next room seems obvious.
+- **Watch the party's STA before every fight and say so.** Collapse (0 STA
+  mid-fight) is the main way characters die: no attacks, -6 to defense, no
+  recovery until the fight ends. Entering a room with less STA than the fight
+  will cost is walking into a grave -- warn the player plainly ("Kael has 2
+  swings in him; the vault holds 4 skeletons") and recommend a rest or a
+  retreat. The choice stays theirs.
 - **Player decisions -- suggest, never decide:** drinking a potion (`use`),
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
   (`camp`), buying (`buy`), which site to run, whether to press on or pull
   back. Recommend a move when it's smart ("Veld is at 2 HP -- drink the
   healing potion?"), then wait for the player's call.
-- **DM decisions:** foe counts that fit the scene (`DUNGEON_ROOMS = [2, 2, 3]`
-  is the reference for what barrow rooms look like; session play isn't bound
-  to it), quest rewards on a site clear (`quest 15 55 ...` for the barrow,
-  `quest 45 165 ...` for the hideout), and general pacing -- but pacing
+- **DM decisions:** quest rewards on a site clear (`quest 15 55 ...` for the
+  hideout, `quest 45 165 ...` for the barrow) and general pacing -- but pacing
   choices that spend player resources (rests, camping) belong to the player.
+- **The two sites are SET encounters** -- balanced during development, never
+  improvised at the table. Run them room-by-room with `hideout ROOM` and
+  `barrow ROOM` (1-3 each; fixed foe counts/rosters). `fight N
+  [--type skeleton|bandit]` is only for off-script scenes the story invents
+  (a road ambush), not for the sites.
 
 ## Narration style
 
@@ -51,15 +60,25 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Quick mechanics reference
 
-- Attacks cost STA (humans 2, skeletons 1); defense is free. At 0 STA a
-  fighter guards instead of attacking and recovers 1 STA (swings every other
-  round). Winded at STA <= 3: -2 to all rolls.
-- Recovery sawtooth: fight end +1 STA; short rest +3 STA / +1 HP (2 slots per
-  day); long rest (camp) = full STA, ~1/7 max HP, day advances, slots refill.
-  Nothing forces the day to end -- camping is the player's call.
-- Skeletons are undead: wound roll penalty halved (a graze doesn't slow
-  them), so the death spiral and First Blood bite less at the barrow.
+- Attacks cost 1 STA per swing (the pool is a swing budget); defense is free.
+  Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter COLLAPSES: no
+  more attacks this fight, -6 to all rolls, and NO recovery until the fight
+  ends -- a collapsed fighter near a live enemy is usually killed.** STA is a
+  second HP bar: whichever track empties first in a fight kills you.
+- Recovery is between fights only: fight end +1 STA; short rest +3 STA / +1 HP
+  (2 slots per day); long rest (camp) = full STA, ~1/7 max HP, day advances,
+  slots refill. Nothing forces the day to end -- camping is the player's call.
+- Skeletons are undead, the exception enemies: **tireless** (never spend STA,
+  never Winded/Collapsed -- they don't tire, you do) and no pain (wound roll
+  penalty halved, so the death spiral and First Blood bite less). The barrow
+  is an endurance war you can lose by simply running dry.
+- Bandits are living fighters under exactly the party's rules (they tire and
+  collapse too) -- hideout logs read with no special cases.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved killing blow. Total party knockout = the Down are finished off.
-- Sites: skeleton barrow = farmable (15 XP/encounter, 15 g + 55 XP quest);
-  bandit hideout = tough, pays 3x -- train up first (rank 1+ recommended).
+- If nobody left standing can attack, the fight staggers apart unresolved:
+  no XP, room not cleared, the foes still hold it.
+- Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
+  first clear = level 2); skeleton barrow = TOUGH, pays 3x (45/encounter,
+  45 g + 165 XP) -- train up first (rank 2+ strongly recommended; a fresh
+  party wipes there ~4 times in 5).

@@ -1,10 +1,11 @@
 """Phase 3 benchmark: does a level of combat training NOTICEABLY change the
 outcome against a fixed enemy? (plan.md Phase 3's test criterion.)
 
-Runs the bandit hideout (the tough site) and the skeleton barrow with the party
-pre-set to each training rank, and prints the wipe / death / clear rates per
-rank. The intended shape: rank 0 mostly wipes at the hideout, each rank buys a
-visible jump, and by rank 2-3 the hideout is a fair (still scary) fight.
+Runs the skeleton barrow (the TOUGH site: tireless undead) and the bandit
+hideout (the STARTER site) with the party pre-set to each training rank, and
+prints the wipe / death / clear rates per rank. The intended shape: rank 0
+mostly wipes at the barrow, each rank buys a visible jump, and by rank 2-3
+the barrow is a fair (still scary) fight.
 """
 
 import random

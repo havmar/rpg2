@@ -1,14 +1,13 @@
-"""One-off scenario: a bandit hideout. Imports the engine from rpg.py.
+"""Scenario: a bandit hideout -- the STARTER site. Imports the engine from rpg.py.
 
-Bandits are competent living fighters (real DEX/STR, and they tire), unlike the
-brittle tireless skeletons. Mirrors the dungeon's survival flow: start_fight prep
-(revive Down, prep a potion) -> group_combat -> rest. Prints both sides' stats.
+Bandits are living fighters who play by exactly the party's rules: real
+DEX/STR, they spend STA to swing, go Winded, and COLLAPSE at 0 like anyone
+alive. That's deliberate -- this is the first site a new party runs, and its
+logs teach the system with no special cases. (The skeleton barrow is the tough
+site: tireless undead in numbers, the exception enemies you train up for.)
 
-This is the TOUGH site: rewards pay 3x the skeleton barrow (XP and gold), and a
-fresh level-1 party will usually wipe here (~70% at rank 0) -- the intended
-play is to farm the skeletons for a level or two of combat training first (see
-bench_training.py for the numbers). `--training N` starts the party pre-trained
-to see that jump.
+Rewards pay the base rate (a full clear = exactly the level-1 -> 2 XP cost);
+the barrow pays 3x. `--training N` starts the party pre-trained.
 """
 
 import argparse
@@ -17,15 +16,15 @@ import random
 from rpg import (Entity, Clock, Purse, make_party, group_combat, stat_line,
                  outcome, start_fight, short_rest, party_wiped, award_xp,
                  award_quest, roll_loot, auto_use_potions_on_rest,
-                 SKELETON_ENCOUNTER_XP,
-                 SKELETON_QUEST_XP, SKELETON_QUEST_GOLD)
+                 ENCOUNTER_XP, QUEST_XP, QUEST_GOLD)
 
-# The hideout pays 3x the skeleton site -- tough fights, better wages.
-BANDIT_ENCOUNTER_XP = 3 * SKELETON_ENCOUNTER_XP
-BANDIT_QUEST_XP = 3 * SKELETON_QUEST_XP
-BANDIT_QUEST_GOLD = 3 * SKELETON_QUEST_GOLD
+# The starter site pays the base rate (the barrow pays 3x -- see rpg.py).
+BANDIT_ENCOUNTER_XP = ENCOUNTER_XP
+BANDIT_QUEST_XP = QUEST_XP
+BANDIT_QUEST_GOLD = QUEST_GOLD
 
-# Bandit roster: name, dex, str, sta, hp. No Power/ability/kit -- raw fighters.
+# Bandit roster: name, dex, str, sta, hp. No Power/ability/kit -- raw fighters
+# who tire and collapse exactly like the heroes do.
 BANDIT_TYPES = {
     "cutthroat": (4, 3, 5, 7),   # nimble knife-work
     "bruiser":   (3, 5, 5, 9),   # slow, heavy, durable
@@ -33,9 +32,9 @@ BANDIT_TYPES = {
 }
 
 HIDEOUT_ROOMS = [
-    ("the lookout post", ["cutthroat", "cutthroat"]),
-    ("the common room", ["bruiser", "cutthroat", "archer"]),
-    ("the boss's den", ["bruiser", "bruiser", "cutthroat"]),
+    ("the lookout post", ["cutthroat", "archer"]),
+    ("the common room", ["cutthroat", "cutthroat"]),
+    ("the boss's den", ["bruiser", "cutthroat"]),
 ]
 
 
@@ -79,6 +78,11 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
         group_combat(living, bandits, rng, log)
 
         if party_wiped(party, log):
+            cleared_all = False
+            break
+        if any(b.alive for b in bandits):
+            # Unresolved (the fight staggered apart): no award, no clear.
+            log.append("  The room is not cleared -- the party pulls back.")
             cleared_all = False
             break
 
