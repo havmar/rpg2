@@ -38,6 +38,27 @@ fiction.
 > Project-level environment (Python path, encoding, etc.) lives in the parent
 > `C:\minden\projects\CLAUDE.md`. Don't duplicate it here.
 
+## Working with the designer
+
+The user is this game's designer and only audience. He built these systems and
+knows them; what he doesn't hold in his head is the fine mechanical detail
+(exact modifiers, formulas, tuned constants) — supply *that*, don't re-explain
+his own design back to him.
+
+- **No reflexive commentary.** Cut filler observations like "that's the
+  stamina system working as designed" or "this is the intended difficulty" —
+  in dev and test sessions they're noise. When something happens that the
+  design intends, just show it happening.
+- **Real feedback is wanted — actively.** Say when something feels weird,
+  non-optimal, or frictful from the DM/co-designer chair: a fight that played
+  as a foregone grind, a log that buried the decisive number, a choice that
+  wasn't really a choice. General impressions and opinions are welcome;
+  point out obvious problems and low-hanging fruit proactively instead of
+  waiting to be asked.
+- **When transcribing his chat notes into docs, rewrite them.** Present the
+  intent in clean prose; don't paste raw brainstorm wording into rules.md /
+  plan.md / this file.
+
 ## Files
 
 - `dm.md` — **the DM playbook: read it before playing or testing a game.** The
@@ -80,7 +101,12 @@ fiction.
   of its own; every subcommand is a direct call into `rpg.py`. Claude (as DM)
   drives a playthrough with this rather than one-shot `rpg.py` runs, so pacing
   decisions (when to rest, when to camp, when to press on) stay real choices
-  made turn-by-turn. Subcommands: `new [--seed N]`, `status`, `hideout ROOM`
+  made turn-by-turn. Subcommands: `new [--seed N]`, `status` (every track
+  cur/max plus an XP/skill-point line per hero -- current STA is THE number
+  the play protocol turns on, so status must show it), `levelup` (the
+  skill-point spending menu: banked points, both sinks, costs, effects --
+  the DM presents this on any level-up instead of paraphrasing the training
+  rules), `hideout ROOM`
   (1-3, resolves one bandit-hideout room -- the STARTER site -- using that
   room's **set** roster from `scratch_bandits.HIDEOUT_ROOMS`), `barrow ROOM`
   (1-3, resolves one skeleton-barrow room -- the TOUGH site, 3x pay -- using
@@ -99,9 +125,11 @@ fiction.
   weapon -- **nothing auto-spends in session play**; that choice is the
   player's now),
   `use HERO KIND` (drink a *carried* potion between fights -- DM-called, never
-  automatic; instant top-up -- healing restores HP, stamina/power restore now),
+  automatic; instant top-up -- healing restores HP, stamina restores STA),
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
-  Keep it in sync with the `rpg.py` API whenever primitives change shape.
+  After a cleared encounter it prints a `Left among the dead:` loot line
+  (fallen foes' weapons with stats) for the DM to offer. Keep it in sync
+  with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -143,10 +171,13 @@ is intentionally ASCII-only, so plain runs are usually fine.
   weapon term is attack-side only — atk bonus + proficiency — except the
   staff's +1 / zweihander's −1 defense mod). Higher roll lands;
   `severity = margin + atkSTR + weapon severity mods − defSTR` maps to a
-  wound tier (deflected/graze/wound/grievous/killing blow; the rapier's graze
-  floor keeps a landed thrust from full deflection). **The wound penalty
-  (= HP lost; halved, integer, for the undead — they feel no pain) is the death
-  spiral, which is the whole point.**
+  wound tier (deflected/graze/wound/grievous/killing blow), subject to the
+  **graze floors**: a win by margin ≥ `GRAZE_FLOOR_MARGIN` (3) always at
+  least grazes regardless of soak (the universal floor — added 2026-07 so
+  fresh high-soak heroes can bleed at all before their stamina collapses),
+  and the rapier's stricter floor makes *any* landed thrust draw blood.
+  **The wound penalty (= HP lost; halved, integer, for the undead — they feel
+  no pain) is the death spiral, which is the whole point.**
 - **Attacking costs STA** (`Entity.swing_cost`, set by the wielded weapon —
   currently 1 for everything living; the undead are **tireless** and never
   spend any); defending is free. **At 0 STA an entity
@@ -167,10 +198,14 @@ is intentionally ASCII-only, so plain runs are usually fine.
   only plain is shoppable (quality 60 g). Starting roll (heroes & bandits):
   50% crude / 45% soldier / 5% heavy; healers 50% wooden staff. Skeletons
   swing durability-1 rusted blades that snap on good steel.
-- `group_combat` resolves a melee **sequentially** — party in list order first
-  (PC acts first), then foes; every attacker picks a *living* target at the
-  moment it acts, so a foe slain mid-round is neither attacked again nor swings
-  posthumously. Heroes focus-fire the weakest foe; foes target at random.
+- `group_combat` resolves a melee **sequentially with a round-start snapshot**
+  — party in list order first (PC acts first), then foes. Everyone alive at
+  round start gets their one swing, even if felled before their turn comes
+  (**the dying swing**: the blows cross in the air; it rolls with its
+  round-start wound penalty and costs no STA). Targeting stays live — every
+  attacker picks a target *living at the moment it acts*, so no swing is
+  wasted on a corpse. A foe dropped by First Blood (pre-round) gets no dying
+  swing. Heroes focus-fire the weakest foe; foes target at random.
 - **The combat log is two-layered** (see `rules.md`, "Reading the combat log"):
   every exchange prints an interpretive headline (Clash / Lull / parried /
   edges past / outmaneuvers / overwhelms, wound phrases with the target's
@@ -208,8 +243,10 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   **sawtooth trending down**:
   `STA_RECOVERY_AFTER_FIGHT` (1) when a fight ends, `STA_RECOVERY_BETWEEN_ROOMS`
   (3) per short rest (from 0, fight-end +1 plus a short rest = 4 — *just* clears
-  Winded), and only a **long rest recharges STA fully** (overnight). Walking
-  into a room already low on STA is the main way parties die.
+  Winded), and only a **long rest recharges STA fully** (overnight). Most
+  deaths trace to a fight costing more STA than it looked like it would —
+  a player rarely *chooses* to enter a room low; the danger is misjudging
+  what the room will cost.
 - **Time economy (`Clock`):** a `day` counter plus a per-day budget of
   `SHORT_RESTS_PER_DAY` (2) short-rest slots. `short_rest(party, clock, log)` (~an
   hour or two of narrative time) spends a slot for a small catch-breath + potion
@@ -217,18 +254,21 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   camp: full STA, the weekly HP tick, Down heroes back up, `day += 1`, slots
   refill. **There is no auto-night** — `long_rest` is a function Claude calls on
   purpose; nothing forces the day to end (see "The feel we're going for").
-- **Items** (`healing` / `power` / `stamina`) are a carried stock that **never
-  auto-refills**: heroes start with **two random potions** (`random_kit`) and
-  restock only via drops or `buy_potion`. **Using** a potion is a DM-called,
-  between-fights action too -- `use_potion(hero, kind, log)`, same shape as
-  `buy_potion` / `use_heal`, never automatic. Every potion takes effect
-  **instantly on drink**: *healing* restores `HEALING_POTION_RESTORE` (5) HP
-  (and stands a Down hero back up), *stamina* restores STA, *power* restores
-  Power. `start_fight` is revive-only and `short_rest` is a plain catch-breath --
+- **Items** are a carried stock that **never auto-refills**: heroes start with
+  **two random potions** (`random_kit`) and restock only via drops or
+  `buy_potion`. Only **healing and stamina** circulate
+  (`STOCKED_POTION_KINDS`); the **power potion is retired** from creation,
+  drops, and shops (2026-07: Power is never the bottleneck — the schema keeps
+  the kind so old saves can still drink one). **Using** a potion is a
+  DM-called, between-fights action too -- `use_potion(hero, kind, log)`, same
+  shape as `buy_potion` / `use_heal`, never automatic. Every potion takes
+  effect **instantly on drink**: *healing* restores `HEALING_POTION_RESTORE`
+  (5) HP (and stands a Down hero back up), *stamina* restores STA.
+  `start_fight` is revive-only and `short_rest` is a plain catch-breath --
   neither drinks anything. The one-shot / sim paths (`run_dungeon`,
-  `scratch_bandits`) model a sensible party via `auto_use_potions_on_rest` (heal
-  when badly hurt, stamina when winded, power when the save budget is low), so
-  `tune.py` / `bench_training.py` still model a party that uses its consumables.
+  `scratch_bandits`) model a sensible party via `auto_use_potions_on_rest`
+  (heal when badly hurt, stamina when winded), so `tune.py` /
+  `bench_training.py` still model a party that uses its consumables.
 - A character only truly **dies** on an unsaved killing blow; `outcome()` counts
   only the slain.
 - **Total party knockout = defeat.** `party_wiped()` (in `rpg.py`, shared by both
@@ -298,21 +338,30 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-Post-weapons (heroes and bandits roll the common table, so half start crude),
-at the barrow's `[3, 3, 4]` over 20k runs at rank 0: ~**20% / 2% / 78%**
-(none / one / both slain), **clear ~21%** — a fresh party that walks into the
-barrow dies; that is the design (it pays 3x). Per `bench_training.py`
-(5k/rank), the barrow clears **21% -> 49% -> 76% -> 94%** across training
-ranks 0-3, and the starter hideout **86% -> 96% -> 99% -> 100%** (rank-0 wipe
-there is ~14% — unchanged by weapons, since bandits roll the same table).
-Gear is the other axis (`bench_weapons.py` / gear check): a katana +
-zweihander loadout lifts the fresh barrow clear to ~**62%** — quality steel
-is worth about two training ranks. The intended arc: clear the hideout
-fresh, level up *and buy steel*, take the barrow trained and armed.
-Note that most barrow deaths come from running dry — training helps by ending
-fights in fewer swings, so the STA budget stretches. If the rank-0 opening
-needs adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow,
-`DUNGEON_ROOMS`.
+
+**A tuning principle (2026-07): the sims understate the player.** The batch
+policies rest on a fixed schedule and drink potions on crude thresholds; a
+real player paces rests, reads the STA math before every door, and retreats
+(once that exists). So sim clear rates run *below* played clear rates, and
+harsher sim numbers than "feels fair" are acceptable — tune for the felt
+game, and let rooms 1-2 of a site threaten in the sims, not just the last one.
+
+Post-graze-floor + dying-swing (2026-07 — both changes raise incoming chip
+damage on purpose; the party can now be wounded *before* its stamina
+collapses), at the barrow's `[3, 3, 4]` over 20k runs at rank 0:
+~**14% / 1% / 85%** (none / one / both slain), **clear ~15%**. Per
+`bench_training.py` (5k/rank), the barrow clears **15% -> 42% -> 71% -> 90%**
+across training ranks 0-3, and the starter hideout
+**82% -> 95% -> 99% -> 100%** (rank-0 wipe there ~18% — the starter site has
+real teeth now, not just its last room). Gear is the other axis: a katana +
+zweihander loadout lifts the fresh barrow clear to ~**45%** — quality steel
+is now worth about one training rank (down from ~two pre-floor; dying swings
+punish wading into swarms regardless of blade). The intended arc is
+unchanged: clear the hideout fresh, level up *and buy steel*, take the
+barrow trained and armed. Most barrow deaths still come from running dry —
+training helps by ending fights in fewer swings, so the STA budget
+stretches. If the rank-0 opening needs adjusting, `HIDEOUT_ROOMS` is the
+first lever; for the barrow, `DUNGEON_ROOMS`.
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
 survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,

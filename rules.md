@@ -68,9 +68,15 @@ Every entity has three stats and a wound pool.
 
 ## The round loop
 
-Each round, every combatant takes one attack in turn (party first, then foes;
-each attacker picks a **living** target when its turn comes, so no one strikes
-a corpse or swings posthumously):
+Each round, every combatant takes one attack in turn (party first, then foes).
+**Who acts is fixed at round start; who is targeted stays live.** Everyone
+alive when the round opens gets their one swing, even if felled before their
+turn comes — the blows cross in the air, so killing a foe mid-round does not
+cancel the blow it was already delivering (**the dying swing**: rolled with
+the wounds it had at round start, and free — desperation costs no STA). But
+every attacker picks a target *living at the moment it acts*, so no one wastes
+a swing on a corpse. A foe dropped by First Blood (before the lines meet)
+gets no dying swing.
 
 1. **Pay for the swing.** Attacking costs STA (`swing_cost`, set by the
    wielded weapon — currently 1 for everything living; the pool is a swing
@@ -98,9 +104,14 @@ a corpse or swings posthumously):
    *parried*. Both are weapon contact: see *Durability* under Weapons.)
 5. **Severity.** `severity = margin + attacker STR + weapon severity mods
    (weapon + proficiency) − defender STR`.
-6. **Wound.** Map severity to a tier; the defender loses that much HP.
-   (The rapier's graze floor applies here: a landed thrust is never fully
-   deflected.)
+6. **Wound.** Map severity to a tier; the defender loses that much HP —
+   subject to the **graze floors**: an exchange won by **margin ≥ 3** always
+   at least grazes, no matter the soak (the universal floor,
+   `GRAZE_FLOOR_MARGIN` — without it a high-STR frame literally could not be
+   injured before its stamina collapsed, which made HP dead weight), and the
+   rapier's own stricter floor makes *any* landed thrust draw blood. Soak
+   still gates the real wound tiers; the floors only stop chip damage from
+   being zeroed on a cleanly won exchange.
 7. Repeat until one side has no one standing (**0 HP** = Down/dead).
 
 ### Wound tiers
@@ -162,7 +173,7 @@ by low common enemies; plain ones are shoppable at 60 g.
 
 | Weapon | Atk | Sev | Def | Special | Identity |
 |--------|-----|-----|-----|---------|----------|
-| **Rapier** | +2 | −1 | — | **Graze floor**: a landed thrust is never fully deflected (min. 1 HP) | The duelist. Lands constantly, always draws blood, wins by the spiral. Laughs at heavy soak. |
+| **Rapier** | +2 | −1 | — | **Graze floor**: a landed thrust is never fully deflected (min. 1 HP) — stricter than the universal margin-3 floor: *any* hit counts | The duelist. Lands constantly, always draws blood, wins by the spiral. Laughs at heavy soak. |
 | **Katana** | +1 | +1 | — | — | The all-rounder: consistently near-best everywhere, best almost nowhere. |
 | **Zweihander** | +1 | +3 | **−1** | — | The crowd-breaker: mooks die in one blow, but there's no parrying a girder. Wants STR/soak behind it. |
 | **Wooden staff** | 0 | −1 | **+1** | **+1 HP per Heal** through it | The healer's weapon — deliberately poor steel, priced in support. |
@@ -469,7 +480,12 @@ keeps build identity alive and makes "who am I about to lose" specific.
 - **Stamina draught** — restores STA. Deliberately **rare and expensive**,
   because STA is the un-buyable clock; cheap refills would collapse the matchup
   loop. STA otherwise recovers only slowly across a day.
-- **Power potion** — restores Power. More freely available than stamina.
+- **Power potion** — *retired from circulation (2026-07)*: Power was never
+  the bottleneck in play, so the slot was dead weight in every kit. The kind
+  still exists in the schema (an old save can drink one), but creation rolls,
+  drops, and shops only circulate healing and stamina. Revisit if Power ever
+  becomes scarce (e.g. once Power-to-STA conversion abilities exist —
+  see plan.md).
 
 **In the moment (abilities — fast, cost Power):**
 - **Warrior's Bulwark (grievous-absorb)** — *active*: when a Grievous or Killing
@@ -624,12 +640,13 @@ On top of the existing build/allocation choices:
 - **Potions are not automatic either.** Drinking a carried potion is a DM call,
   `use_potion(hero, kind, ...)`, between fights only (same shape as `buy_potion`
   / `use_heal`): every potion takes effect **instantly on drink** -- *healing*
-  restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA, *power*
-  restores Power. Nothing in the engine drinks on its own. The one-shot / sim
-  paths (`run_dungeon`, `scratch_bandits`) model a sensible party via
-  `auto_use_potions_on_rest` (heal when badly hurt, drink stamina when winded,
-  power when the save budget is low), so `tune.py` / `bench_training.py` still
-  reflect a party that drinks when it should.
+  restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA. Only those
+  two kinds circulate (`STOCKED_POTION_KINDS`; the power potion is retired --
+  see the two-buffer split above). Nothing in the engine drinks on its own.
+  The one-shot / sim paths (`run_dungeon`, `scratch_bandits`) model a sensible
+  party via `auto_use_potions_on_rest` (heal when badly hurt, drink stamina
+  when winded), so `tune.py` / `bench_training.py` still reflect a party that
+  drinks when it should.
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
   killing blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
@@ -669,11 +686,11 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-weapons): the
-  skeleton barrow (tough site) clears **21% → 49% → 76% → 94%** across ranks
-  0–3 (a rank-0 party wipes ~79% of the time); the bandit hideout (starter)
-  clears **86% → 96% → 99% → 100%** (rank-0 wipe ~14%). Each rank is a *felt*
-  jump — Phase 3's test criterion.
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-graze-floor +
+  dying-swing 2026-07): the skeleton barrow (tough site) clears
+  **15% → 42% → 71% → 90%** across ranks 0–3 (a rank-0 party wipes ~85% of
+  the time); the bandit hideout (starter) clears **82% → 95% → 99% → 100%**
+  (rank-0 wipe ~18%). Each rank is a *felt* jump — Phase 3's test criterion.
 
 ## Weapon proficiency — the second skill
 
@@ -707,10 +724,11 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   clears of quest gold + drops); commons are shop-trivial (1–15 g).
   Masterwork/legendary are **never** for sale. This deliberately softens the
   old "gold never buys power" rule (see plan.md): a plain rapier is modest
-  permanent power, and worth it — sim-measured, a katana + zweihander loadout
-  lifts a fresh party's barrow clear rate from ~21% to ~62%, about the value
-  of two training ranks. The intended arc: clear the hideout fresh, level up
-  *and shop*, then take the barrow.
-- **Starting stock:** two *random* potions at creation (plus the rolled
-  starting weapon). That's the whole kit; from then on the stock only moves
-  through drops, purchases, and use.
+  permanent power, and worth it — sim-measured (post-graze-floor), a katana +
+  zweihander loadout lifts a fresh party's barrow clear rate from ~15% to
+  ~45%, about the value of one training rank. The intended arc: clear the
+  hideout fresh, level up *and shop*, then take the barrow.
+- **Starting stock:** two *random* potions at creation (healing or stamina —
+  the two circulating kinds), plus the rolled starting weapon. That's the
+  whole kit; from then on the stock only moves through drops, purchases,
+  and use.

@@ -30,18 +30,27 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - **Watch the party's STA before every fight and say so.** Going Spent (0 STA
   mid-fight) is the main way characters die: still swinging, but -6 to every
   roll and no recovery until the fight ends -- fresh enemies carve a spent
-  fighter apart. Entering a room with less STA than the fight will cost is
-  walking into a grave -- warn the player plainly ("Kael has 2 good swings in
-  him; the vault holds 4 skeletons") and recommend a rest or a retreat. The
-  choice stays theirs.
+  fighter apart. The real danger is a fight costing more STA than it looked
+  like it would, not the player knowingly entering on empty -- so the DM's
+  job is the *estimate*: "Kael has 2 good swings in him; the vault holds 4
+  skeletons" -- then recommend a rest or a retreat. `status` shows every
+  track as cur/max; never make the player infer current STA from a combat
+  log. The choice stays theirs.
 - **Player decisions -- suggest, never decide:** drinking a potion (`use`),
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
   (`camp`), buying potions or weapons (`buy`), **spending skill points**
   (`train HERO combat|weapon` -- points bank on level-up and NOTHING
-  auto-spends; always tell the player when they have unspent points), which
-  site to run, whether to press on or pull back. Recommend a move when it's
-  smart ("Veld is at 2 HP -- drink the healing potion?"), then wait for the
-  player's call.
+  auto-spends), which site to run, whether to press on or pull back.
+  Recommend a move when it's smart ("Veld is at 2 HP -- drink the healing
+  potion?"), then wait for the player's call.
+- **On any level-up, run `python session.py levelup` and show the player the
+  menu** -- banked points, both sinks, costs, effects. Don't paraphrase the
+  training rules from memory; the script prints the real numbers.
+- **Offer loot.** A cleared fight prints a `Left among the dead:` line with
+  the fallen foes' weapons and stats. Mention it in one short sentence --
+  most of it is trash and one clause is enough ("a shortsword among the
+  bodies, better than your club if you want it"); a quality blade is a real
+  find and deserves a beat. `give HERO WEAPON` hands one over.
 - **DM decisions:** quest rewards on a site clear (`quest 15 55 ...` for the
   hideout, `quest 45 165 ...` for the barrow), granting found/looted weapons
   (`give HERO WEAPON` -- e.g. the fallen bruiser's longsword; commons are
@@ -56,6 +65,13 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Narration style
 
+- **Know your audience: the player is also the game's designer.** He knows
+  the systems; don't explain them back to him unprompted, and cut reflexive
+  commentary entirely ("that's the stamina system working as designed",
+  "this is the intended difficulty"). What IS welcome -- actively so -- is
+  real observation: "this fight felt like a foregone grind", "the log buried
+  the one number that mattered", "as DM I had no good option to offer here".
+  Design feedback over narration filler, every time.
 - **Concise and mechanics-focused, with a little flavor.** A fight gets a
   2-4 sentence summary: the turning points (Winded crossings, Bulwark saves,
   First Blood, kills, anyone Down) and the end state. Don't re-tell every
@@ -73,6 +89,15 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   enemies carve a spent fighter apart.** (Two spent sides cancel out and
   brawl to a finish, so fights still resolve.) STA is a second HP bar:
   whichever track empties first in a fight kills you.
+- **The dying swing:** everyone alive at round start gets their one attack,
+  even if slain before their turn -- the blows cross in the air. Killing a
+  foe doesn't cancel the blow it was already delivering; expect chip damage
+  even from won exchanges.
+- **A decisively won exchange always cuts.** Win by margin 3+ and the hit at
+  least grazes, whatever the soak (the rapier grazes on ANY landed hit).
+  Fresh, high-soak heroes now bleed a little instead of being untouchable.
+- Only healing and stamina potions circulate (the power potion is retired --
+  Power was never the bottleneck).
 - Recovery is between fights only: fight end +1 STA; short rest +3 STA / +1 HP
   (2 slots per day); long rest (camp) = full STA, ~1/7 max HP, day advances,
   slots refill. Nothing forces the day to end -- camping is the player's call.

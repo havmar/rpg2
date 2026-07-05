@@ -106,7 +106,13 @@ TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to tempo roll
                         # (rank n costs n skill points: cheap to start, dear to max)
 
 # --- Gold & the potion economy ---------------------------------------------- #
-POTION_KINDS = ("healing", "power", "stamina")
+POTION_KINDS = ("healing", "power", "stamina")  # the full schema use_potion accepts
+STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and shops
+                        # actually circulate: the POWER POTION IS RETIRED from
+                        # circulation (design call, 2026-07) -- Power is never
+                        # the bottleneck in play, so the slot was dead weight.
+                        # Old saves may still carry and drink one; re-add the
+                        # kind here if Power ever becomes scarce.
 POTION_PRICE = 10       # gold per potion, any kind
 STARTING_POTIONS = 2    # random potions rolled at character creation
 DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
@@ -276,6 +282,15 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 # automatic. A long rest recharges STA fully and knits HP back at a per-character
 # weekly rate (~max_hp / 7 per night -> roughly a week to fully heal).
 SHORT_RESTS_PER_DAY = 2          # short-rest slots available each day
+
+# The universal graze floor: win the exchange by at least this margin and the
+# hit always draws blood (min. a graze), no matter the soak. Without it a
+# high-STR frame is unwoundable by weak foes until fatigue collapses its tempo
+# -- the party literally could not be injured before its stamina broke, which
+# made HP dead weight (design note, 2026-07). Soak still gates the REAL wound
+# tiers; this only stops chip damage from being zeroed on a clean win. The
+# rapier's own graze_floor is stricter still (any landed hit).
+GRAZE_FLOOR_MARGIN = 3
 
 # Wound tiers as an ordered ladder, so a save can step a blow down one notch.
 TIER_ORDER = ["deflected", "graze", "wound", "grievous", "killing blow"]
@@ -482,8 +497,14 @@ class Entity:
             mods.append((self.prof_rank, "proficiency"))
         return mods
 
-    def tempo(self, rng: random.Random, attacking: bool = False) -> TempoRoll:
+    def tempo(self, rng: random.Random, attacking: bool = False,
+              wound_pen: int | None = None) -> TempoRoll:
+        # wound_pen overrides the live wound penalty -- used for the dying
+        # swing (group_combat): a fighter felled mid-round still gets their
+        # blow in, rolled with the wounds they had at ROUND START, not the
+        # ones that just killed them (the blows cross in the air).
         dice = rng.randint(1, 6) + rng.randint(1, 6)
+        pen = self.wound_penalty if wound_pen is None else wound_pen
         if self.spent:
             fatigue_pen, fatigue_label = SPENT_PENALTY, "spent"
         elif self.winded:
@@ -508,9 +529,9 @@ class Entity:
                 weapon_mod = self.weapon.def_tempo
                 weapon_label = self.weapon.name
         total = (dice + self.dex + self.training + weapon_mod + prof
-                 - self.wound_penalty - fatigue_pen)
+                 - pen - fatigue_pen)
         return TempoRoll(total=total, dice=dice, dex=self.dex,
-                         training=self.training, wound_pen=self.wound_penalty,
+                         training=self.training, wound_pen=pen,
                          fatigue_pen=fatigue_pen, fatigue_label=fatigue_label,
                          weapon_mod=weapon_mod, weapon_label=weapon_label,
                          prof=prof)
@@ -566,17 +587,20 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
 
 
 def _attack(attacker: Entity, defender: Entity, rng: random.Random,
-            log: list[str]) -> None:
+            log: list[str], atk_wound_pen: int | None = None) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a killing blow); a Power save
     can then step it down one tier. The log states the blow that would have
     landed. Death only happens when a raw killing blow is not saved.
 
+    `atk_wound_pen` overrides the attacker's wound penalty (the dying swing --
+    see group_combat's round-start snapshot).
+
     Every exchange logs two layers: an interpretive headline first, then the
     raw numbers (dice, each modifier and its source) indented beneath it.
     """
-    atk = attacker.tempo(rng, attacking=True)
+    atk = attacker.tempo(rng, attacking=True, wound_pen=atk_wound_pen)
     dfn = defender.tempo(rng)
     tempo_line = (f"        tempo: {atk.breakdown(attacker.name)} vs "
                   f"{dfn.breakdown(defender.name)}")
@@ -612,12 +636,17 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     sev_line += f" -{defender.str_} soak -> {raw_tier}"
 
     if dmg == 0:
-        # The rapier's graze floor: a landed thrust always draws blood --
-        # soak can't zero it. The chip damage still feeds the death spiral.
+        # Anti-soak floors -- chip damage soak can't zero, feeding the spiral.
         if (attacker.weapon is not None and not attacker.weapon_broken
                 and attacker.weapon.graze_floor):
+            # The rapier's own floor: ANY landed thrust draws blood.
             raw_tier, dmg = "graze", TIER_HP["graze"]
             sev_line += f" -> the {attacker.weapon.name}'s point finds a seam: graze"
+        elif margin >= GRAZE_FLOOR_MARGIN:
+            # The universal floor: a decisively won exchange always cuts at
+            # least a little, no matter the soak (see GRAZE_FLOOR_MARGIN).
+            raw_tier, dmg = "graze", TIER_HP["graze"]
+            sev_line += " -> a clean hit still cuts: graze"
         else:
             log.append(f"    {attacker.name} {margin_verb(margin)} "
                        f"{defender.name}, but the blow glances off -- deflected.")
@@ -718,8 +747,13 @@ def group_combat(party: list[Entity], foes: list[Entity],
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
 
     Exchanges resolve *sequentially* -- party in list order first, then foes --
-    and every attacker picks a living target at the moment it acts, so a foe
-    slain mid-round is neither attacked again nor gets a posthumous swing.
+    but the ROSTER of who acts is snapshotted at round start: everyone alive
+    when the round opens gets their one swing, even if felled before their
+    turn comes (the blows cross in the air -- the dying swing). A dying
+    attacker rolls with the wounds it had at round start, not the ones that
+    just dropped it, and its swing is free (desperation costs nothing).
+    Targeting stays live: every attacker picks a target *living at the moment
+    it acts*, so nobody wastes a swing on a corpse.
 
     Stamina: an attack costs the attacker `swing_cost` STA -- set by the
     wielded weapon (defense is free); tireless entities pay nothing. An entity that hits 0 STA is SPENT: it
@@ -742,13 +776,19 @@ def group_combat(party: list[Entity], foes: list[Entity],
         if rnd == 1:
             _first_blood(party, foes, rng, log)
 
-        for attacker in party + foes:
-            if not attacker.alive:
-                continue        # felled before its turn came: no swing
+        # Round-start snapshot: everyone alive NOW acts this round, even if
+        # felled before their turn comes -- the dying swing (see docstring).
+        actors = [e for e in party + foes if e.alive]
+        start_pens = {e: e.wound_penalty for e in actors}
+        for attacker in actors:
+            dying = not attacker.alive      # felled earlier this round
             targets = foes if attacker in party_set else party
             if not any(t.alive for t in targets):
-                break           # no one left to fight this round
-            if not attacker.tireless:
+                continue        # nobody left on the other side for THIS
+                                # attacker; a dying foe later in the order
+                                # may still owe the party its last blow
+            if not attacker.tireless and not dying:
+                # The dying swing is free -- desperation costs nothing.
                 was_winded = attacker.winded
                 # The weapon sets the swing price (zweihander 2, most else 1).
                 attacker.cur_sta = max(0, attacker.cur_sta - attacker.swing_cost)
@@ -765,8 +805,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                f"until the fight ends)")
             defender = _pick_target(targets, rng,
                                     focus=attacker in party_set)
+            if dying:
+                log.append(f"    ({attacker.name} strikes even as they fall)")
             was_alive = defender.alive
-            _attack(attacker, defender, rng, log)
+            _attack(attacker, defender, rng, log,
+                    atk_wound_pen=start_pens[attacker] if dying else None)
             if was_alive and not defender.alive:
                 if defender.dead:
                     log.append(f"    *** {defender.name} is SLAIN. ***")
@@ -812,9 +855,9 @@ NAMES = ["Brand", "Sela", "Corvin", "Mira", "Doran", "Yssa", "Kael", "Rhea",
 def random_kit(rng: random.Random) -> dict[str, int]:
     """Two random potions at creation -- the whole starting stock. Nothing
     refills for free; further potions are bought with gold or dropped."""
-    kit = {k: 0 for k in POTION_KINDS}
+    kit = {k: 0 for k in STOCKED_POTION_KINDS}
     for _ in range(STARTING_POTIONS):
-        kit[rng.choice(POTION_KINDS)] += 1
+        kit[rng.choice(STOCKED_POTION_KINDS)] += 1
     return kit
 
 
@@ -900,11 +943,48 @@ def weapon_tag(e: Entity) -> str:
 
 
 def stat_line(e: Entity) -> str:
+    """One-line body readout. Every drainable track shows cur/max -- current
+    STA is THE number the play protocol turns on (dm.md: check it before
+    every fight), so it must never have to be scraped off a combat log."""
     kit = ", ".join(f"{k}x{v}" for k, v in e.items.items() if v) or "no kit"
     return (f"{e.name} (L{e.level}, training {e.training}): "
-            f"DEX {e.dex}  STR {e.str_}  STA {e.sta}  "
-            f"HP {e.hp}/{e.max_hp}  Power {e.power}  ({e.ability or 'no save'}; "
-            f"{weapon_tag(e)}; {kit})")
+            f"DEX {e.dex}  STR {e.str_}  STA {e.cur_sta}/{e.sta}  "
+            f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  "
+            f"({e.ability or 'no save'}; {weapon_tag(e)}; {kit})")
+
+
+def progress_line(e: Entity) -> str:
+    """The allocation sheet to pair with stat_line: XP toward the next level,
+    banked skill points, drilled proficiencies. Everything the player SPENDS
+    lives here; stat_line above is the body."""
+    parts = [f"XP {e.xp}/{xp_to_next(e.level)} to L{e.level + 1}",
+             f"skill points: {e.skill_points}"]
+    profs = ", ".join(f"{n} {r}" for n, r in sorted(e.proficiency.items()) if r)
+    if profs:
+        parts.append(f"proficiency: {profs}")
+    return " | ".join(parts)
+
+
+def fallen_weapons_line(foes: list[Entity]) -> str | None:
+    """The loot gesture after a cleared fight: what steel the fallen leave
+    behind, with just enough stats to decide on (the DM offers, the player
+    takes via `give`). Shattered weapons and worthless grave-steel (value 0,
+    e.g. the skeletons' rusted blades) aren't worth a line. Returns None if
+    there is nothing to mention."""
+    drops: dict[str, tuple[Weapon, int]] = {}
+    for f in foes:
+        w = f.weapon
+        if f.alive or w is None or f.weapon_broken or w.value <= 0:
+            continue
+        drops[w.name] = (w, drops.get(w.name, (w, 0))[1] + 1)
+    if not drops:
+        return None
+    bits = []
+    for name, (w, count) in drops.items():
+        n = f"{count}x " if count > 1 else "a "
+        bits.append(f"{n}{name} ({w.atk_tempo:+d} atk/{w.severity:+d} sev, "
+                    f"{w.value}g)")
+    return "  Left among the dead: " + ", ".join(bits) + "."
 
 
 # --------------------------------------------------------------------------- #
@@ -1018,7 +1098,7 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
         log.append(f"    Loot: {DROP_GOLD_AMOUNT} gold scavenged "
                    f"(purse: {purse.gold}g).")
     if rng.random() < DROP_POTION_CHANCE:
-        kind = rng.choice(POTION_KINDS)
+        kind = rng.choice(STOCKED_POTION_KINDS)
         h = rng.choice(living)
         h.items[kind] = h.items.get(kind, 0) + 1
         log.append(f"    Loot: a {kind} potion -- {h.name} pockets it "
@@ -1043,6 +1123,9 @@ def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
     makes on the player's decision -- nothing in the engine buys automatically."""
     if kind not in POTION_KINDS:
         raise ValueError(f"unknown potion kind: {kind}")
+    if kind not in STOCKED_POTION_KINDS:
+        log.append(f"    No shop stocks a {kind} potion.")
+        return False
     if purse.gold < POTION_PRICE:
         log.append(f"    Not enough gold for a {kind} potion "
                    f"({purse.gold}g / {POTION_PRICE}g).")

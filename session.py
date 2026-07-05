@@ -13,7 +13,9 @@ companions. PC death ends the game even if a companion stands (see dm.md --
 the DM protocol for actually playing lives there).
 
 Run:  python session.py new [--seed N]              # new party, resets state
-      python session.py status                       # show party/clock/purse
+      python session.py status                       # show party/clock/purse (all
+                                                        # tracks cur/max + XP/points)
+      python session.py levelup                       # the skill-point spending menu
       python session.py hideout ROOM                  # resolve one hideout room (1-3,
                                                         # SET roster per room -- the STARTER
                                                         # site: living foes, base pay)
@@ -52,8 +54,9 @@ from pathlib import Path
 
 from rpg import (
     Clock, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
-    BARROW_ROOMS,
-    make_party, make_skeleton, stat_line,
+    BARROW_ROOMS, TRAINING_MAX, PROFICIENCY_MAX,
+    make_party, make_skeleton, stat_line, progress_line, fallen_weapons_line,
+    xp_to_next,
     start_fight, group_combat, party_wiped,
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
@@ -111,6 +114,52 @@ def cmd_status(args: argparse.Namespace) -> None:
     for h in party:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
+        print(" " * 14 + progress_line(h))
+
+
+def cmd_levelup(args: argparse.Namespace) -> None:
+    """The spending menu: what each hero's banked skill points can buy right
+    now, with costs and effects -- the DM presents this to the player whenever
+    points are unspent (dm.md), instead of paraphrasing the rules from memory."""
+    state = load()
+    party = state["party"]
+    for h in party:
+        if h.dead:
+            continue
+        first = h.name.split()[0]
+        print(f"{h.name} -- L{h.level}, {h.skill_points} skill point(s) banked "
+              f"(XP {h.xp}/{xp_to_next(h.level)} to L{h.level + 1})")
+        # Sink 1: combat training (+1 to ALL tempo rolls per rank).
+        if h.training >= TRAINING_MAX:
+            print(f"  combat training      rank {h.training} -- CAPPED")
+        else:
+            cost = h.training + 1
+            mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
+            print(f"  combat training      rank {h.training} -> "
+                  f"{h.training + 1}  costs {cost}  [{mark}]  "
+                  f"(+1 to ALL tempo rolls per rank, cap {TRAINING_MAX})"
+                  f"  -> train {first} combat")
+        # Sink 2: proficiency with the WIELDED weapon.
+        if h.weapon is None or h.weapon_broken:
+            print("  weapon proficiency   (no whole weapon in hand to drill)")
+        else:
+            rank = h.proficiency.get(h.weapon.name, 0)
+            if rank >= PROFICIENCY_MAX:
+                print(f"  {h.weapon.name} proficiency  rank {rank} -- CAPPED")
+            else:
+                cost = rank + 1
+                mark = ("CAN BUY" if h.skill_points >= cost
+                        else "can't afford yet")
+                print(f"  {h.weapon.name} proficiency  rank {rank} -> "
+                      f"{rank + 1}  costs {cost}  [{mark}]  "
+                      f"(+1 atk tempo & +1 severity with it, cap "
+                      f"{PROFICIENCY_MAX}; lost on weapon switch)"
+                      f"  -> train {first} weapon")
+        other = {n: r for n, r in h.proficiency.items()
+                 if r and (h.weapon is None or n != h.weapon.name)}
+        if other:
+            dormant = ", ".join(f"{n} {r}" for n, r in sorted(other.items()))
+            print(f"  (drilled but not in hand: {dormant})")
 
 
 def resolve_encounter(state: dict, log: list[str], foes: list,
@@ -126,6 +175,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     elif not wiped:
         award_xp(party, encounter_xp, log, "encounter")
         roll_loot(party, purse, rng, log)
+        weapons_left = fallen_weapons_line(foes)
+        if weapons_left:
+            log.append(weapons_left)
 
     print("\n".join(log))
     save(state)
@@ -304,6 +356,13 @@ def main() -> None:
 
     p = sub.add_parser("status", help="show the persisted party/clock/purse")
     p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser(
+        "levelup",
+        help="the skill-point spending menu: each hero's banked points and "
+             "what they can buy (present this to the player whenever points "
+             "are unspent)")
+    p.set_defaults(func=cmd_levelup)
 
     p = sub.add_parser(
         "barrow",

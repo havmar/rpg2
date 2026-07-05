@@ -219,7 +219,7 @@ limited within-day slot, small catch-breath) and `long_rest` (overnight — full
 STA, HP knit back over ~a week at a per-character rate, day advances). **No
 auto-night: `long_rest` is a deliberate call, never fired by the loop** — the
 timing choice is the player's, preserving TTRPG freedom. The disengage/retreat
-hook *(not yet — belongs to the AI DM layer)*.
+hook *(designed 2026-07 — see Part 3b, Arc B; not yet built)*.
 Test: a run of fights produces a visible grind-down; the stockpile depletion is
 felt; wounds linger across days until a week of rest clears them; a too-hard run
 forces retreat.
@@ -231,9 +231,10 @@ points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
 Test: *passed* — against the skeleton-barrow benchmark (`bench_training.py`;
 the barrow is the tough site since the Spent rework swapped the two),
-clear rate climbs 27% → 55% → 82% → 95% across training ranks 0–3. Each rank
-is a felt jump: training ends fights in fewer swings, which is what stretches
-the (now lethal) STA budget.
+clear rate climbs 15% → 42% → 71% → 90% across training ranks 0–3 (numbers
+as of the 2026-07 graze-floor/dying-swing round). Each rank is a felt jump:
+training ends fights in fewer swings, which is what stretches the (now
+lethal) STA budget.
 
 **Phase 4 — Weapons & proficiency** *(first slice built — `rpg.py`; guns deferred)*
 Build: the quality four with distinct tempo/severity/defense profiles + the
@@ -245,11 +246,11 @@ to a later phase.
 Test: *passed* (`bench_weapons.py`) — suited, not ranked: the rapier is the
 best duelist on nearly every frame, the zweihander sweeps every swarm cell,
 the katana is the reliable second everywhere, the staff trails on purpose; no
-weapon tops every cell. Gear is a felt jump (`tune`-style check: katana +
-zweihander lift a fresh party's barrow clear from ~21% to ~62%, worth ~2
-training ranks). The proficiency switching cost is structural (per weapon
-type). Note: the planned 2-STA heavy swing was sim-rejected — see the weapons
-section above.
+weapon tops every cell. Gear is a felt jump (`tune`-style check, post-2026-07
+numbers: katana + zweihander lift a fresh party's barrow clear from ~15% to
+~45%, worth ~1 training rank). The proficiency switching cost is structural
+(per weapon type). Note: the planned 2-STA heavy swing was sim-rejected — see
+the weapons section above.
 
 **Phase 5 — Loot & items** *(trash-tier slice built: gold/potion encounter
 drops + a quest-gold + potion-shop economy, and potion *use* is now a
@@ -279,6 +280,110 @@ legible enough to *learn*.
 Build: narration over the deterministic log; encounter framing; choice prompts;
 the CHA/party layer.
 Test: the prose layer is flavour-only and never alters mechanical outcomes.
+
+---
+
+## Part 3b — Next design arcs (agreed 2026-07, from the first playtest)
+
+The first full playthrough (hideout clear, then a rank-1 barrow wipe) produced
+a batch of decisions. What shipped immediately: the **universal graze floor**
+(win an exchange by margin 3+ and the hit always at least grazes — before
+this, a fresh high-soak hero literally could not be injured until his stamina
+collapsed, so HP was dead weight), the **dying swing** (everyone alive at
+round start gets their attack, even if felled before their turn — killing a
+foe no longer cancels the blow it was already delivering), the **power potion
+retired** from circulation (Power is never the bottleneck), and the session
+UX round (status shows every track cur/max + XP/points, a `levelup` spending
+menu, a `Left among the dead:` loot line after each clear).
+
+The arcs below are agreed direction, in order. A standing tuning principle
+came out of the same session: **the sims understate the player** — batch
+policies rest on schedule and drink on crude thresholds, while a real player
+paces rests and reads the STA math before every door — so harsher sim numbers
+than "feels fair" are acceptable, and the early rooms of a site should
+threaten in the sims too, not just the last one.
+
+### Arc A — Lethality & feel (in progress; test in play before more knobs)
+
+- **Graze floor: shipped** (above). Effect on the numbers: barrow rank-0
+  clear 21% → 15%, hideout rank-0 wipe 14% → 18%, quality-steel gear check
+  62% → 45%. The party now bleeds *before* the stamina track collapses.
+- **d12 experiment: postponed** until the graze floor has been felt in play.
+  The flat die is the bigger hammer (more upsets both ways) but weakens every
+  modifier relative to noise — don't fork the variance dial while another
+  lethality change is still settling.
+- **Asymmetric Spent: waiting, same reason.** The candidate design if
+  spent-vs-fresh grinds still feel wrong after A+B land: keep the full −6 on
+  defense but soften the attack penalty (−3, "desperation swings") — a spent
+  fighter gets carved faster *and* stays dangerous, so those fights end
+  sooner from both directions. Note the current system already resolves
+  spent-vs-spent (the −6s cancel in the opposed roll); the pathology is
+  specifically spent-vs-fresh-tireless, and Arc B's retreat dissolves most
+  of it (the player exits at 2 STA instead of ever going Spent).
+- **Encounter retune** afterward, with the harsher-sims principle applied.
+
+### Arc B — The interrupt primitive: mid-fight potions, retreat, chase (next big build)
+
+One engine change carries the whole arc: `group_combat` learns to **pause at
+a trigger and resume**, with mid-fight state serialized into the session save.
+That fits the chat rhythm in exactly two messages: message 1 = the fight up to
+the pause + the DM's question; message 2 = `resume ...` to conclusion.
+
+- **Triggers:** a hero crossing STA ≤ 2, or HP ≤ 50%. Each fires at most once
+  per fight (no pause spam). The point: the "do I fight on?" decision happens
+  *before* Spent, which is where it was never available in play.
+- **At the pause, three options:**
+  - **Fight on** — resume; that trigger won't pause again.
+  - **Drink** (stamina potion; healing later once HP pressure is proven):
+    always succeeds, costs that round's attack, defends at −2 while drinking
+    — vulnerable, not helpless. This replaces the dead-weight "carry potions
+    into the fight that kills you" situation from the playtest. Manual
+    between-fights drinking stays available but stops being the only mode.
+  - **Retreat** — below.
+- **Retreat procedure:** every pursuit-capable foe (not Winded, not Spent)
+  gets one free swing, defended at −2. Then one opposed **group contest**
+  (side-average DEX, weighted by current STA) decides the break: success =
+  clean escape; failure = rare and catastrophic — autocombat resumes with the
+  free-swing damage already taken. Deliberately ONE roll: no multi-message
+  chase sequences. A summed threat score / multi-round chase can layer on
+  later if the single contest feels thin.
+- **The undead don't pursue beyond the barrow** — they are bound to the
+  grave. Fiction and mechanics agree: retreat from the barrow always succeeds
+  once past the door. This is what makes "come back tomorrow and finish it"
+  a real plan instead of a death sentence from tireless pursuers.
+- **Encounter persistence:** a per-room record in the session save (surviving
+  foes' HP, day stamp). Foe STA refills the moment the party leaves (they
+  rest too); living foes heal their HP over a day; skeletons stay hacked —
+  dead bone doesn't knit, which is exactly the asymmetry that rewards a
+  return trip to the barrow.
+- **Honest cost:** this softens "running dry is how parties die", which the
+  current balance leans on. The counterweights: the free swing has teeth, a
+  failed break is fatal-adjacent, and a re-entered room is a re-fought room
+  against STA-refreshed foes plus a burned day budget. `tune.py` needs a
+  retreat-aware policy in the same change, or the sims stop describing play.
+
+### Arc C — Resource-conversion abilities (after B; they ride the same pause)
+
+Stamina is the scarce, dynamic track; HP and Power mostly sit idle. Convert:
+
+- **Berserk** — sacrifice HP for STA. Warrior-flavored; later possibly tied
+  to the zweihander (the weapon-granted-ability hook).
+- **War-Breath** (working name; alternatives: Second Wind, Battle Trance) —
+  spend Power for STA. Flavored as a warrior's/monk's discipline (breath
+  control, battle trance), explicitly *not* wizardry; the staff-fighting monk
+  archetype is the natural carrier.
+
+Both are mechanically pause-menu options — the same primitive as Arc B's
+drink/retreat — and both give Power/HP live roles, which is the better fix
+for Power feeling inert than any potion. Design them once the pause exists.
+
+### Parked from the same session
+
+- **Auto-drink thresholds for healing potions** (e.g. at 30–50% HP) — blocked
+  on HP pressure actually existing in play (Arc A first), and it must be
+  statistically worth it before it's a default.
+- **Morale / surrender** interacting with retreat and chase — the existing
+  parked idea, now with a concrete attachment point (Arc B's pursuit logic).
 
 ---
 
