@@ -9,7 +9,12 @@ decisions happen *between* fights. Three stats, one wound track, one loop.
 
 **1. Autobattler, not a combat minigame.** A fight takes no input once it starts.
 The simulation produces an outcome (who won, in what shape) and a narrative log.
-All player agency lives *between* fights.
+All player agency lives *between* fights — with one deliberate exception: the
+**pause** (see the Survival add-on). At most twice a fight, the simulation
+stops at a trigger and asks one player-shaped question ("fight on, buy breath,
+or run?"), then resumes to conclusion. That is an interrupt, not a combat
+minigame: the fight still plays itself; the player only chooses *whether* it
+continues.
 
 **2. The strategy is the build, made in advance.** Between fights the player
 allocates stats, picks gear, chooses which opponents to take, and composes the
@@ -86,7 +91,10 @@ gets no dying swing.
 2. **Spent.** At **0 STA** a fighter is **Spent**: still swinging every round
    (desperation is free), but at **−6 to all rolls**, attack and defense alike
    (replacing the Winded −2; wound penalties still stack on top). There is
-   **no in-fight recovery** — Spent lasts until the fight ends. Against fresh
+   **no in-fight recovery** short of a stamina draught drunk at a pause (see
+   the add-on — bought at the price of a round's attack and a −2 guard, and
+   the pause usually fires *before* Spent) — otherwise Spent lasts until the
+   fight ends. Against fresh
    enemies it is a death sentence: you can't land and you get carved. But two
    spent sides *cancel each other's penalties* in the opposed roll and brawl
    on at even odds — the wound spiral still finishes the fight, so melees
@@ -462,7 +470,7 @@ These are the only edits to the existing rules:
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
-| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. **Never recovers mid-fight.** | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
+| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. **Never recovers mid-fight** — except bought at a pause (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
 | **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
 
@@ -479,13 +487,17 @@ keeps build identity alive and makes "who am I about to lose" specific.
   in an exchange this fast; you top up in the breather, then wade back in.
 - **Stamina draught** — restores STA. Deliberately **rare and expensive**,
   because STA is the un-buyable clock; cheap refills would collapse the matchup
-  loop. STA otherwise recovers only slowly across a day.
+  loop. STA otherwise recovers only slowly across a day. *The one item with a
+  mid-fight mode:* at a **pause** (see "The pause" below) a hero can drink one
+  in the teeth of the melee — at the cost of that round's attack and a −2
+  guard while drinking. Between-fights drinking stays available; it just isn't
+  the only mode anymore.
 - **Power potion** — *retired from circulation (2026-07)*: Power was never
   the bottleneck in play, so the slot was dead weight in every kit. The kind
   still exists in the schema (an old save can drink one), but creation rolls,
-  drops, and shops only circulate healing and stamina. Revisit if Power ever
-  becomes scarce (e.g. once Power-to-STA conversion abilities exist —
-  see plan.md).
+  drops, and shops only circulate healing and stamina. War-Breath (the
+  Power-to-STA conversion, see "The pause") now gives Power a live mid-fight
+  drain; if it makes Power genuinely scarce in play, re-stock the kind.
 
 **In the moment (abilities — fast, cost Power):**
 - **Warrior's Bulwark (grievous-absorb)** — *active*: when a Grievous or Killing
@@ -519,7 +531,83 @@ you're Spent and likely dead. Power is your **budget** — you *choose* to spend
 Keeping them separate makes the warrior's Bulwark a real trade (skill budget
 spent to live) and keeps a stamina potion a rare cheat rather than a routine
 top-up — with the Spent state waiting at 0, the draught is now genuinely a
-life-saver, not a convenience.
+life-saver, not a convenience. (War-Breath — below — deliberately bridges the
+two: Power *bought as* STA, at a poor exchange rate and the cost of a round's
+attack. The budget can subsidize the condition; it can never replace it.)
+
+---
+
+## The pause — the interrupt primitive
+
+One engine change carries the whole mid-fight decision layer: a fight can
+**pause at a trigger and resume**. This is where the "do I fight on?" decision
+finally lives — *before* Spent, which is where play never had it. In chat it
+fits exactly two messages: message 1 = the fight up to the pause plus the DM's
+question; message 2 = `resume ...` (or `retreat`) to conclusion.
+
+**Triggers** (party side only; each fires at most **once per fight** — no
+pause spam; checked at the end of a round, and only while both sides still
+stand):
+- a hero at **STA ≤ 2** — about to run dry;
+- a hero at **HP ≤ half** — being cut apart.
+
+**At the pause, the options** (pause *actions* are per-hero, at most one each;
+every action costs that round's attack and the hero defends at **−2** while
+occupied — vulnerable, not helpless):
+
+| Option | Cost | Effect |
+|--------|------|--------|
+| **Fight on** | — | Resume; that trigger won't pause again. |
+| **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight. The one exception to "no in-fight STA recovery" — it even un-Spends a fighter at 0. (Healing potions stay between-fights until HP pressure proves otherwise.) |
+| **Berserk** | 2 HP; the round's attack; −2 guard | +4 STA. Bleed for breath — and the HP loss deepens the wound spiral immediately, which is the real price. |
+| **War-Breath** | 2 Power; the round's attack; −2 guard | +3 STA. A fighter's breath discipline (battle trance), explicitly not wizardry. |
+| **Retreat** | see below | Break away from the fight. |
+
+Berserk and War-Breath are the **resource conversions**: STA is the scarce,
+dynamic track, while HP and Power mostly sit idle — these give both a live
+mid-fight role (a better fix for Power feeling inert than any potion). Both
+are open to any hero for now; tying Berserk to the zweihander (the
+weapon-granted-ability hook) is a parked idea.
+
+### Retreat & chase
+
+Deliberately **one roll** — no multi-message chase sequences.
+
+1. **Breaking contact:** every foe fit to swing (alive, not Winded, not
+   Spent) gets one **free parting blow** (free like the dying swing — no STA
+   cost) at a random fleeing hero, who defends at −2. This has teeth: heroes
+   can go Down or die at the door.
+2. **The chase:** ONE opposed group contest —
+   `2d6 + side-average DEX weighted by current STA` (fresher legs count for
+   more), the fleeing side at **+2** (the runner picks the moment and the
+   ground). Only foes that *pursue* roll: **the barrow's undead are bound to
+   the grave** — they swing at the door but never follow past it, so retreat
+   from the barrow always succeeds once past the door. Fiction and mechanics
+   agree, and "come back tomorrow and finish it" is a real plan instead of a
+   death sentence from tireless pursuers.
+3. **Success** = clean escape (the runners catch their fight-end breath).
+   **Failure** = rare and catastrophic: the fight resumes on the spot, the
+   parting-blow damage already taken.
+
+### Encounter persistence
+
+A fled room is not a reset room. Its survivors are recorded (per room, with a
+day stamp) and wait:
+
+- **Foe STA refills the moment the party leaves** — they rest too; a
+  re-entered room is a re-fought room against breath-fresh foes.
+- **Living foes heal their wounds over a day**; same-day re-entry catches
+  them still hurt.
+- **Skeletons stay hacked** — dead bone doesn't knit. This is exactly the
+  asymmetry that rewards the return trip to the barrow.
+
+**The honest cost of this whole layer:** it softens "running dry is how
+parties die," which the balance leans on. The counterweights: the parting
+blow has teeth, a failed break is fatal-adjacent, a re-entered room is a
+re-fought room against STA-refreshed foes, and the return trip burns rest
+slots or a whole day. The batch sims model all of it (a crude pause policy +
+one return trip per fled room — `sim_pause_policy` / `sim_fight`), so
+`tune.py` keeps describing play.
 
 ---
 
@@ -618,12 +706,23 @@ On top of the existing build/allocation choices:
   `STA_RECOVERY_AFTER_FIGHT` (1) back, a `short_rest` spends a slot for
   `STA_RECOVERY_BETWEEN_ROOMS` (3) + a sliver of HP, and `long_rest` makes camp
   for the full STA recharge + the weekly HP tick (`hp_regen_per_night =
-  max(1, round(max_hp / 7))`). **There is no mid-fight STA recovery of any
-  kind**: an entity at 0 is Spent (`SPENT_PENALTY` = 6 to all rolls; it still
-  attacks) until the fight ends, so fights always resolve; only the round-cap
-  safety valve (`max_rounds`) can leave a fight unresolved, in which case the
-  scenario treats the room as not cleared. Power and items are per-day stocks
-  that deplete across the run.
+  max(1, round(max_hp / 7))`). **There is no mid-fight STA recovery** except
+  what a pause action buys (`_do_pause_action`: a drunk draught, Berserk, or
+  War-Breath): an entity at 0 is otherwise Spent (`SPENT_PENALTY` = 6 to all
+  rolls; it still attacks) until the fight ends, so fights always resolve;
+  only the round-cap safety valve (`max_rounds`) can leave a fight
+  unresolved, in which case the scenario treats the room as not cleared.
+  Power and items are per-day stocks that deplete across the run.
+- **The pause is engine-level.** `group_combat(pause_triggers=True, ...)`
+  returns a `Pause` (round + what tripped it) instead of finishing; the caller
+  resumes with the same `fired` set, `first_round=round+1`, and optional
+  per-hero `actions`. `attempt_retreat` runs the parting blows + the one
+  chase contest (`FLEE_BONUS`, STA-weighted DEX; `pursues=False` foes never
+  chase); `refresh_foes_after_retreat` readies a fled room's survivors.
+  Session play persists a paused fight in the save (`session.py resume` /
+  `retreat`) and keeps per-room survivor records; the batch sims answer the
+  same pauses with `sim_pause_policy` (drink / convert / retreat, one return
+  trip per fled room) so tune/bench numbers describe the same game.
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
 - **Saves are automatic and conservative.** A Bulwark-ability character spends
@@ -686,11 +785,13 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-graze-floor +
-  dying-swing 2026-07): the skeleton barrow (tough site) clears
-  **15% → 42% → 71% → 90%** across ranks 0–3 (a rank-0 party wipes ~85% of
-  the time); the bandit hideout (starter) clears **82% → 95% → 99% → 100%**
-  (rank-0 wipe ~18%). Each rank is a *felt* jump — Phase 3's test criterion.
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-pause/retreat
+  2026-07): the skeleton barrow (tough site) clears
+  **22% → 51% → 79% → 95%** across ranks 0–3 (a rank-0 party wipes ~75% of
+  the time); the bandit hideout (starter) clears **89% → 98% → 100% → 100%**
+  (rank-0 wipe ~10%). Each rank is a *felt* jump — Phase 3's test criterion.
+  (The pause/retreat layer lifted every cell ~5–8 points over the
+  graze-floor-era numbers; accepted under "the sims understate the player.")
 
 ## Weapon proficiency — the second skill
 
@@ -724,9 +825,9 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   clears of quest gold + drops); commons are shop-trivial (1–15 g).
   Masterwork/legendary are **never** for sale. This deliberately softens the
   old "gold never buys power" rule (see plan.md): a plain rapier is modest
-  permanent power, and worth it — sim-measured (post-graze-floor), a katana +
-  zweihander loadout lifts a fresh party's barrow clear rate from ~15% to
-  ~45%, about the value of one training rank. The intended arc: clear the
+  permanent power, and worth it — sim-measured (post-pause/retreat), a katana
+  + zweihander loadout lifts a fresh party's barrow clear rate from ~22% to
+  ~49%, about the value of one training rank. The intended arc: clear the
   hideout fresh, level up *and shop*, then take the barrow.
 - **Starting stock:** two *random* potions at creation (healing or stamina —
   the two circulating kinds), plus the rolled starting weapon. That's the

@@ -27,6 +27,23 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - Resolve **at most one encounter** (`hideout` / `barrow` / `fight`) per DM
   message, then stop and hand the turn back to the player. Never chain fights,
   even if the next room seems obvious.
+- **A fight can PAUSE mid-melee** (a hero crosses STA <= 2 or half HP; each
+  trigger once per fight). The script prints the pause menu -- show it to the
+  player and STOP; the choice is theirs, never yours. Next message:
+  `resume` (fight on), `resume --drink HERO` (stamina draught mid-fight),
+  `resume --berserk HERO` (2 HP -> +4 STA), `resume --warbreath HERO`
+  (2 Power -> +3 STA) -- pause actions cost that round's attack and defend
+  at -2 -- or `retreat`. A paused fight blocks every between-fights command
+  until it's settled. So a fight with a pause spans two (rarely three)
+  messages: fight-to-pause + question, then the answer to conclusion.
+- **Retreat is a real option now -- offer it.** Parting blows from every foe
+  still fit to swing, then ONE group chase roll (the barrow's undead never
+  pursue past the door -- fleeing the barrow always succeeds once outside;
+  bandits DO give chase, and a failed break resumes the fight on the spot).
+  A fled site room keeps its survivors (shown in `status`): re-running the
+  room faces them again with their STA refreshed -- living foes heal their
+  wounds after a day, skeletons stay hacked. "Come back tomorrow" is a
+  legitimate plan; it costs the day.
 - **Watch the party's STA before every fight and say so.** Going Spent (0 STA
   mid-fight) is the main way characters die: still swinging, but -6 to every
   roll and no recovery until the fight ends -- fresh enemies carve a spent
@@ -40,7 +57,9 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
   (`camp`), buying potions or weapons (`buy`), **spending skill points**
   (`train HERO combat|weapon` -- points bank on level-up and NOTHING
-  auto-spends), which site to run, whether to press on or pull back.
+  auto-spends), which site to run, whether to press on or pull back, and
+  **every pause decision** (fight on / drink / Berserk / War-Breath /
+  retreat).
   Recommend a move when it's smart ("Veld is at 2 HP -- drink the healing
   potion?"), then wait for the player's call.
 - **On any level-up, run `python session.py levelup` and show the player the
@@ -85,10 +104,17 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is free.
   Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT: still
-  swinging, but -6 to ALL rolls and NO recovery until the fight ends -- fresh
-  enemies carve a spent fighter apart.** (Two spent sides cancel out and
-  brawl to a finish, so fights still resolve.) STA is a second HP bar:
-  whichever track empties first in a fight kills you.
+  swinging, but -6 to ALL rolls and no recovery until the fight ends (short
+  of a pause action) -- fresh enemies carve a spent fighter apart.** (Two
+  spent sides cancel out and brawl to a finish, so fights still resolve.)
+  STA is a second HP bar: whichever track empties first in a fight kills you.
+- **The pause:** a fight stops once per trigger (STA <= 2 / half HP) for the
+  player's call. Pause actions (one per hero; cost the round's attack,
+  defend at -2 while busy): drink a stamina draught (+4 STA -- even
+  un-Spends), Berserk (2 HP -> +4 STA; the wound penalty deepens now),
+  War-Breath (2 Power -> +3 STA). Retreat: parting blows, one chase roll
+  (flight gets +2, DEX weighted by current STA); undead never chase past
+  their ground. Failed break = the fight resumes at once.
 - **The dying swing:** everyone alive at round start gets their one attack,
   even if slain before their turn -- the blows cross in the air. Killing a
   foe doesn't cancel the blow it was already delivering; expect chip damage
@@ -116,7 +142,7 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   +1 HP per Heal, weak steel -- the healer's weapon). Commons are named trash
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
-  ~2 training ranks at the barrow; masterwork/legendary are never for sale.
+  ~1 training rank at the barrow; masterwork/legendary are never for sale.
 - **Weapon breaks are story beats.** On a parry or clash the flimsier weapon
   can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2 attack /
   -2 severity until re-armed (`give` them a fallen foe's blade between
@@ -129,4 +155,5 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
   first clear = level 2); skeleton barrow = TOUGH, pays 3x (45/encounter,
   45 g + 165 XP) -- train up AND arm up first (rank 2+ or quality steel
-  strongly recommended; a fresh party wipes there ~4 times in 5).
+  strongly recommended; a fresh party wipes there ~3 times in 4, and fleeing
+  the barrow is always possible -- the dead don't pursue).

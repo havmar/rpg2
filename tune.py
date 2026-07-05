@@ -16,6 +16,8 @@ def simulate(rooms, trials=20000):
     counts = Counter()
     downed_runs = 0          # runs where at least one hero went Down
     cleared_runs = 0         # runs where the quest completed (site cleared)
+    fled_runs = 0            # runs with at least one retreat (the pause policy)
+    days = 0                 # total days spent (retreats can force a camp)
     pow_left = sta_left = heal_left = gold = 0.0
     pow_max = sta_max = 0.0
     rng = random.Random(12345)
@@ -25,8 +27,9 @@ def simulate(rooms, trials=20000):
         for _ in range(trials):
             party = rpg.make_party(rng)
             purse = rpg.Purse()
+            clock = rpg.Clock()
             log = []
-            rpg.run_dungeon(party, rpg.Clock(), purse, rng, log)
+            rpg.run_dungeon(party, clock, purse, rng, log)
             counts[rpg.outcome(party)] += 1
             # "Down" is transient (revived between rooms); a run shows it via the
             # narrative. Count it by scanning the log for the down line.
@@ -34,6 +37,9 @@ def simulate(rooms, trials=20000):
                 downed_runs += 1
             if any("QUEST COMPLETE" in line for line in log):
                 cleared_runs += 1
+            if any("breaks for safety" in line for line in log):
+                fled_runs += 1
+            days += clock.day
             gold += purse.gold
             for h in party:
                 pow_left += h.cur_power
@@ -47,6 +53,8 @@ def simulate(rooms, trials=20000):
     stats = {
         "down_pct": 100 * downed_runs / trials,
         "clear_pct": 100 * cleared_runs / trials,
+        "flee_pct": 100 * fled_runs / trials,
+        "days": days / trials,
         "pow_pct": 100 * pow_left / pow_max if pow_max else 0,
         "sta_pct": 100 * sta_left / sta_max if sta_max else 0,
         "heal_left": heal_left / n,
@@ -65,10 +73,11 @@ def main():
         [3, 4, 5],
     ]
     print(f"{'rooms':<12}{'none':>7}{'one':>7}{'both':>7}"
-          f"{'down%':>8}{'clear%':>8}{'Pow%':>7}{'STA%':>7}{'heal':>7}"
-          f"{'gold':>7}")
+          f"{'down%':>8}{'clear%':>8}{'flee%':>7}{'days':>6}"
+          f"{'Pow%':>7}{'STA%':>7}{'heal':>7}{'gold':>7}")
     print("  (none/one/both = truly slain; down% = runs with a Down; "
-          "clear% = quest done;\n   Pow%/STA% = avg budget left; "
+          "clear% = quest done;\n   flee% = runs with a retreat; "
+          "days = avg days spent; Pow%/STA% = avg budget left;\n   "
           "heal = avg healing potions left; gold = avg purse)")
     for rooms in layouts:
         counts, stats, trials = simulate(rooms)
@@ -76,6 +85,7 @@ def main():
         print(f"{str(rooms):<12}"
               f"{pct['none']:>6.1f}%{pct['one']:>6.1f}%{pct['both']:>6.1f}%"
               f"{stats['down_pct']:>7.1f}%{stats['clear_pct']:>7.1f}%"
+              f"{stats['flee_pct']:>6.1f}%{stats['days']:>6.2f}"
               f"{stats['pow_pct']:>6.1f}%"
               f"{stats['sta_pct']:>6.1f}%{stats['heal_left']:>7.2f}"
               f"{stats['gold']:>7.1f}")

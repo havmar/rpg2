@@ -212,14 +212,15 @@ averted-death log.
 Test: a well-stocked party reliably *survives a single fight*; deaths require the
 saves to be dry.
 
-**Phase 2 — Day / run economy** *(built — `rpg.py`; disengage/retreat still open)*
+**Phase 2 — Day / run economy** *(built — `rpg.py`)*
 Build: STA + Power + item carryover across encounters; rest events; a **time
 `Clock`** (day counter + short-rest slots). Two rest tiers: `short_rest` (a
 limited within-day slot, small catch-breath) and `long_rest` (overnight — full
 STA, HP knit back over ~a week at a per-character rate, day advances). **No
 auto-night: `long_rest` is a deliberate call, never fired by the loop** — the
 timing choice is the player's, preserving TTRPG freedom. The disengage/retreat
-hook *(designed 2026-07 — see Part 3b, Arc B; not yet built)*.
+hook: *built 2026-07 as Part 3b's Arc B* (the pause primitive + retreat &
+chase + encounter persistence).
 Test: a run of fights produces a visible grind-down; the stockpile depletion is
 felt; wounds linger across days until a week of rest clears them; a too-hard run
 forces retreat.
@@ -296,12 +297,13 @@ retired** from circulation (Power is never the bottleneck), and the session
 UX round (status shows every track cur/max + XP/points, a `levelup` spending
 menu, a `Left among the dead:` loot line after each clear).
 
-The arcs below are agreed direction, in order. A standing tuning principle
-came out of the same session: **the sims understate the player** — batch
-policies rest on schedule and drink on crude thresholds, while a real player
-paces rests and reads the STA math before every door — so harsher sim numbers
-than "feels fair" are acceptable, and the early rooms of a site should
-threaten in the sims too, not just the last one.
+The arcs below are agreed direction, in order — **B and C are now built**
+(2026-07). A standing tuning principle came out of the same session: **the
+sims understate the player** — batch policies rest on schedule and drink on
+crude thresholds, while a real player paces rests and reads the STA math
+before every door — so harsher sim numbers than "feels fair" are acceptable,
+and the early rooms of a site should threaten in the sims too, not just the
+last one.
 
 ### Arc A — Lethality & feel (in progress; test in play before more knobs)
 
@@ -322,60 +324,59 @@ threaten in the sims too, not just the last one.
   of it (the player exits at 2 STA instead of ever going Spent).
 - **Encounter retune** afterward, with the harsher-sims principle applied.
 
-### Arc B — The interrupt primitive: mid-fight potions, retreat, chase (next big build)
+### Arc B — The interrupt primitive: mid-fight potions, retreat, chase *(built 2026-07)*
 
-One engine change carries the whole arc: `group_combat` learns to **pause at
-a trigger and resume**, with mid-fight state serialized into the session save.
-That fits the chat rhythm in exactly two messages: message 1 = the fight up to
-the pause + the DM's question; message 2 = `resume ...` to conclusion.
+One engine change carries the whole arc: `group_combat` **pauses at a trigger
+and resumes** (`pause_triggers=True` returns a `Pause`; re-call with the same
+`fired` set to continue), with the paused fight serialized into the session
+save. In chat it is exactly two messages: message 1 = the fight up to the
+pause + the DM's question; message 2 = `resume ...` (or `retreat`) to
+conclusion. As-built decisions:
 
-- **Triggers:** a hero crossing STA ≤ 2, or HP ≤ 50%. Each fires at most once
-  per fight (no pause spam). The point: the "do I fight on?" decision happens
-  *before* Spent, which is where it was never available in play.
-- **At the pause, three options:**
-  - **Fight on** — resume; that trigger won't pause again.
-  - **Drink** (stamina potion; healing later once HP pressure is proven):
-    always succeeds, costs that round's attack, defends at −2 while drinking
-    — vulnerable, not helpless. This replaces the dead-weight "carry potions
-    into the fight that kills you" situation from the playtest. Manual
-    between-fights drinking stays available but stops being the only mode.
-  - **Retreat** — below.
-- **Retreat procedure:** every pursuit-capable foe (not Winded, not Spent)
-  gets one free swing, defended at −2. Then one opposed **group contest**
-  (side-average DEX, weighted by current STA) decides the break: success =
-  clean escape; failure = rare and catastrophic — autocombat resumes with the
-  free-swing damage already taken. Deliberately ONE roll: no multi-message
-  chase sequences. A summed threat score / multi-round chase can layer on
-  later if the single contest feels thin.
-- **The undead don't pursue beyond the barrow** — they are bound to the
-  grave. Fiction and mechanics agree: retreat from the barrow always succeeds
-  once past the door. This is what makes "come back tomorrow and finish it"
-  a real plan instead of a death sentence from tireless pursuers.
-- **Encounter persistence:** a per-room record in the session save (surviving
-  foes' HP, day stamp). Foe STA refills the moment the party leaves (they
-  rest too); living foes heal their HP over a day; skeletons stay hacked —
-  dead bone doesn't knit, which is exactly the asymmetry that rewards a
-  return trip to the barrow.
-- **Honest cost:** this softens "running dry is how parties die", which the
-  current balance leans on. The counterweights: the free swing has teeth, a
-  failed break is fatal-adjacent, and a re-entered room is a re-fought room
-  against STA-refreshed foes plus a burned day budget. `tune.py` needs a
-  retreat-aware policy in the same change, or the sims stop describing play.
+- **Triggers as designed:** a hero at STA ≤ 2 or HP ≤ 50%, checked at round
+  end, each at most once per fight. A hero *entering* a fight already low
+  trips it at the end of round 1 — the drink decision is real there too.
+- **Drink shipped as a pause action** (stamina draught only; healing waits
+  for proven HP pressure): costs that round's attack, defends at −2 while
+  drinking. One pause action per hero per pause. It even un-Spends a fighter
+  at 0 — the deliberate exception to "no in-fight STA recovery."
+- **Retreat as designed:** parting blows from every foe fit to swing (free,
+  like the dying swing), fled at −2; then ONE group contest, 2d6 +
+  STA-weighted side-average DEX, the fleeing side at +`FLEE_BONUS` (2). A
+  summed threat score / multi-round chase can still layer on later if the
+  single contest feels thin.
+- **The undead don't pursue** (`pursues=False` on the skeletons): they swing
+  at the door, then stop. Retreat from the barrow always succeeds once past
+  it — "come back tomorrow and finish it" is a real plan.
+- **Encounter persistence shipped:** per-room survivor records (day-stamped)
+  in the session save; foe STA refills on the party leaving, living foes
+  heal over a day, skeletons stay hacked. `session.py` grew `resume`
+  (`--drink/--berserk/--warbreath HERO`) and `retreat`, blocks between-fights
+  commands mid-pause, and shows unfinished rooms in `status`.
+- **The honest cost, measured:** the sims got a matching pause policy
+  (`sim_pause_policy`: drink/convert/retreat on crude thresholds, one return
+  trip per fled room) so tune/bench keep describing play. Effect at rank 0:
+  barrow clear 15% → ~22% (wipes 85% → ~75%, ~14% of runs retreat at least
+  once), hideout wipe ~18% → ~10%. Softer, as predicted — and within the
+  "sims understate the player" allowance; watch it in play before touching
+  the encounter levers.
 
-### Arc C — Resource-conversion abilities (after B; they ride the same pause)
+### Arc C — Resource-conversion abilities *(built 2026-07; numbers provisional)*
 
-Stamina is the scarce, dynamic track; HP and Power mostly sit idle. Convert:
+Stamina is the scarce, dynamic track; HP and Power mostly sit idle. Both
+conversions shipped as pause-menu actions with the drink's exact shape (the
+round's attack + −2 guard), open to every hero for now:
 
-- **Berserk** — sacrifice HP for STA. Warrior-flavored; later possibly tied
-  to the zweihander (the weapon-granted-ability hook).
-- **War-Breath** (working name; alternatives: Second Wind, Battle Trance) —
-  spend Power for STA. Flavored as a warrior's/monk's discipline (breath
-  control, battle trance), explicitly *not* wizardry; the staff-fighting monk
-  archetype is the natural carrier.
+- **Berserk** — 2 HP -> +4 STA. The HP loss deepens the wound spiral on the
+  spot, which is the real price. Warrior-flavored; tying it to the
+  zweihander (the weapon-granted-ability hook) stays a parked idea.
+- **War-Breath** — 2 Power -> +3 STA. A fighter's/monk's breath discipline,
+  explicitly *not* wizardry; the staff-fighting monk archetype is the
+  natural carrier when abilities get assigned.
 
-Both are mechanically pause-menu options — the same primitive as Arc B's
-drink/retreat — and both give Power/HP live roles, which is the better fix
-for Power feeling inert than any potion. Design them once the pause exists.
+Both give Power/HP live mid-fight roles — the better fix for Power feeling
+inert than any potion. If War-Breath makes Power genuinely scarce, the
+retired power potion can circulate again (rules.md, two-buffer split).
 
 ### Parked from the same session
 

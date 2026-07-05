@@ -27,6 +27,23 @@ Run:  python session.py new [--seed N]              # new party, resets state
                                                         # (road ambushes and other improvised
                                                         # scenes only -- the two sites are set
                                                         # encounters, use barrow/hideout)
+      python session.py resume [--drink HERO] [--berserk HERO] [--warbreath HERO]
+                                                        # continue a PAUSED fight. A fight
+                                                        # pauses when a hero crosses STA <= 2
+                                                        # or half HP (once each per fight);
+                                                        # each flag is a pause action for one
+                                                        # hero (skip that round's attack,
+                                                        # defend at -2): drink = stamina
+                                                        # draught mid-fight, berserk =
+                                                        # HP -> STA, warbreath = Power -> STA.
+                                                        # Plain resume = fight on.
+      python session.py retreat                         # break away from a PAUSED fight:
+                                                        # parting blows, then ONE group chase
+                                                        # roll (the barrow's undead never
+                                                        # pursue). A fled room's survivors
+                                                        # persist -- re-run the room to face
+                                                        # them again (STA refreshed; living
+                                                        # foes heal over a day, bones don't).
       python session.py rest                          # short rest (spends a slot)
       python session.py camp                          # long rest (advance a day)
       python session.py quest GOLD XP NAME             # award a site-clear quest
@@ -55,9 +72,13 @@ from pathlib import Path
 from rpg import (
     Clock, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
     BARROW_ROOMS, TRAINING_MAX, PROFICIENCY_MAX,
+    STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
+    BERSERK_HP_COST, BERSERK_STA_GAIN,
+    WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
     make_party, make_skeleton, stat_line, progress_line, fallen_weapons_line,
     xp_to_next,
     start_fight, group_combat, party_wiped,
+    attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
     buy_potion as _buy_potion, use_heal as _use_heal,
@@ -94,11 +115,31 @@ def role_tag(party: list, h) -> str:
     return "(YOU)      " if h is party[0] else "(companion)"
 
 
+def find_hero(party: list, name: str):
+    """Substring hero lookup, None (with a message) instead of a crash."""
+    for h in party:
+        if name.lower() in h.name.lower():
+            return h
+    print(f"No hero matches {name!r}. Party: "
+          + ", ".join(h.name for h in party))
+    return None
+
+
+def require_no_pending(state: dict) -> bool:
+    """Most commands are between-fights actions; refuse them mid-melee."""
+    if state.get("pending"):
+        print("A fight is PAUSED -- the party is mid-melee. Resolve it "
+              "first: resume [--drink HERO] [--berserk HERO] "
+              "[--warbreath HERO], or retreat.")
+        return False
+    return True
+
+
 def cmd_new(args: argparse.Namespace) -> None:
     rng = random.Random(args.seed)
     party = make_party(rng)
     state = {"party": party, "clock": Clock(), "purse": Purse(), "rng": rng,
-              "foe_count": 0}
+              "foe_count": 0, "pending": None, "rooms": {}}
     save(state)
     print(f"New party rolled (seed={args.seed}):")
     for h in party:
@@ -115,6 +156,49 @@ def cmd_status(args: argparse.Namespace) -> None:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
         print(" " * 14 + progress_line(h))
+    for (site, room), rec in sorted(state.get("rooms", {}).items()):
+        standing = sum(1 for f in rec["foes"] if not f.dead)
+        print(f"  Unfinished: {site} room {room} -- {standing} foe(s) still "
+              f"hold it (fled day {rec['day']})")
+    if state.get("pending"):
+        print()
+        print_pause_menu(state)
+
+
+def print_pause_menu(state: dict) -> None:
+    """The DM-facing pause menu: who tripped it, the board, and every option
+    with its real cost -- presented, like `levelup`, instead of paraphrased."""
+    pending = state["pending"]
+    party = state["party"]
+    what = {"stamina": "is nearly out of breath",
+            "wounds": "is badly cut up"}
+    trips = "; ".join(f"{name} {what[kind]}"
+                      for kind, name in pending["crossings"])
+    print(f"*** FIGHT PAUSED (after round {pending['round']}): {trips}. ***")
+    standing = [f for f in pending["foes"] if f.alive]
+    print("  Facing: " + ", ".join(
+        f"{f.name} {f.hp}/{f.max_hp} HP" for f in standing))
+    for h in party:
+        if h.dead:
+            continue
+        tag = " [DOWN]" if h.down else ""
+        print(f"  {h.name}{tag}: STA {h.cur_sta}/{h.sta}  HP {h.hp}/{h.max_hp}"
+              f"  Power {h.cur_power}/{h.power}  "
+              f"stamina draughts x{h.items.get('stamina', 0)}")
+    print("  The player's call (pause actions cost that round's attack and "
+          f"defend at -{PAUSE_ACTION_DEF_PENALTY}):")
+    print("    resume                    -- fight on")
+    print(f"    resume --drink HERO       -- stamina draught, "
+          f"+{STAMINA_DRAUGHT_RESTORE} STA now")
+    print(f"    resume --berserk HERO     -- {BERSERK_HP_COST} HP -> "
+          f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens)")
+    print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} Power -> "
+          f"+{WAR_BREATH_STA_GAIN} STA")
+    print("    retreat                   -- parting blows from foes still "
+          "fit to swing, then one group chase roll"
+          + (" (the dead do not pursue past their ground)"
+             if any(f.alive and not f.pursues for f in pending["foes"])
+             else ""))
 
 
 def cmd_levelup(args: argparse.Namespace) -> None:
@@ -163,11 +247,36 @@ def cmd_levelup(args: argparse.Namespace) -> None:
 
 
 def resolve_encounter(state: dict, log: list[str], foes: list,
-                      encounter_xp: int) -> None:
-    """Shared tail of every encounter command: run the melee, award, persist."""
-    party, purse, rng = state["party"], state["purse"], state["rng"]
+                      encounter_xp: int, site: str | None = None,
+                      room: int | None = None) -> None:
+    """Shared tail of every encounter command: run the melee -- which may
+    PAUSE at a trigger (STA <= 2 / half HP, once each) -- then award and
+    persist. On a pause the fight is saved as `pending` and the turn goes
+    back to the player (resume / retreat next message)."""
+    party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
-    group_combat(living, foes, rng, log)
+    fired: set[str] = set()
+    pause = group_combat(living, foes, rng, log, pause_triggers=True,
+                         fired=fired)
+    if pause is not None:
+        state["pending"] = {
+            "foes": foes, "xp": encounter_xp, "site": site, "room": room,
+            "fired": fired, "round": pause.round,
+            "crossings": [(k, h.name) for k, h in pause.crossings],
+        }
+        print("\n".join(log))
+        print()
+        print_pause_menu(state)
+        save(state)
+        return
+    finish_encounter(state, log, foes, encounter_xp)
+
+
+def finish_encounter(state: dict, log: list[str], foes: list,
+                     encounter_xp: int) -> None:
+    """The melee actually ended: wipe check, awards, loot, persist."""
+    party, purse, rng = state["party"], state["purse"], state["rng"]
+    state["pending"] = None
     wiped = party_wiped(party, log)
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
@@ -186,6 +295,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
 
 def cmd_fight(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, rng = state["party"], state["rng"]
     log: list[str] = []
     for h in [h for h in party if not h.dead]:
@@ -200,25 +311,51 @@ def cmd_fight(args: argparse.Namespace) -> None:
     resolve_encounter(state, log, foes, ENCOUNTER_XP)
 
 
+def reclaim_room(state: dict, site: str, room: int) -> tuple[list, str] | None:
+    """If the party once fled this room, its survivors are still there:
+    STA refreshed the moment the party left; living foes healed if a day has
+    passed; the undead still hacked (dead bone doesn't knit). Returns the
+    readied foes and a log note, or None if the room has no record."""
+    rec = state.setdefault("rooms", {}).pop((site, room), None)
+    if rec is None:
+        return None
+    days = state["clock"].day - rec["day"]
+    foes = refresh_foes_after_retreat(rec["foes"], days)
+    standing = sum(1 for f in foes if f.alive)
+    healed = days > 0 and any(not f.undead for f in foes)
+    note = (f"  (the survivors of the earlier fight still hold it: "
+            f"{standing} standing{' -- rested and healed' if healed else ''})")
+    return foes, note
+
+
 def cmd_barrow(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, rng = state["party"], state["rng"]
     log: list[str] = []
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
     room_name, n_skel = BARROW_ROOMS[args.room - 1]
-    log.append(f"=== Barrow room {args.room}: {room_name} "
-               f"({n_skel} skeletons rise from the bones) ===")
-    skeletons = []
-    for _ in range(n_skel):
-        state["foe_count"] += 1
-        skeletons.append(make_skeleton(rng, state["foe_count"]))
-    s = skeletons[0]
-    log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
-               f"HP {s.max_hp} each (undead: no pain, tireless)")
+    held = reclaim_room(state, "barrow", args.room)
+    if held is None:
+        log.append(f"=== Barrow room {args.room}: {room_name} "
+                   f"({n_skel} skeletons rise from the bones) ===")
+        skeletons = []
+        for _ in range(n_skel):
+            state["foe_count"] += 1
+            skeletons.append(make_skeleton(rng, state["foe_count"]))
+        s = skeletons[0]
+        log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
+                   f"HP {s.max_hp} each (undead: no pain, tireless)")
+    else:
+        skeletons, note = held
+        log.append(f"=== Barrow room {args.room}: {room_name}, again ===")
+        log.append(note)
 
-    resolve_encounter(state, log, skeletons, BARROW_ENCOUNTER_XP)
+    resolve_encounter(state, log, skeletons, BARROW_ENCOUNTER_XP,
+                      site="barrow", room=args.room)
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -234,25 +371,146 @@ def report_game_over(party: list, wiped: bool) -> None:
 
 def cmd_hideout(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, rng = state["party"], state["rng"]
     log: list[str] = []
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
     room_name, roster = HIDEOUT_ROOMS[args.room - 1]
-    log.append(f"=== Room {args.room}: {room_name} ({len(roster)} bandits) ===")
-    bandits = []
-    for kind in roster:
-        state["foe_count"] += 1
-        bandits.append(make_bandit(kind, state["foe_count"], rng))
-    for b in bandits:
-        log.append("  " + bandit_line(b))
+    held = reclaim_room(state, "hideout", args.room)
+    if held is None:
+        log.append(f"=== Room {args.room}: {room_name} "
+                   f"({len(roster)} bandits) ===")
+        bandits = []
+        for kind in roster:
+            state["foe_count"] += 1
+            bandits.append(make_bandit(kind, state["foe_count"], rng))
+        for b in bandits:
+            log.append("  " + bandit_line(b))
+    else:
+        bandits, note = held
+        log.append(f"=== Room {args.room}: {room_name}, again ===")
+        log.append(note)
+        for b in bandits:
+            if b.alive:
+                log.append("  " + bandit_line(b))
 
-    resolve_encounter(state, log, bandits, BANDIT_ENCOUNTER_XP)
+    resolve_encounter(state, log, bandits, BANDIT_ENCOUNTER_XP,
+                      site="hideout", room=args.room)
+
+
+def cmd_resume(args: argparse.Namespace) -> None:
+    """Continue the paused fight, with optional pause actions (one per hero:
+    drink / berserk / warbreath -- each costs that round's attack and defends
+    at -2). Invalid requests abort BEFORE the fight moves, so the DM can
+    correct the call; a valid resume runs to the next pause or the end."""
+    state = load()
+    pending = state.get("pending")
+    if not pending:
+        print("No paused fight to resume.")
+        return
+    party, rng = state["party"], state["rng"]
+    living = [h for h in party if not h.dead]
+
+    actions: dict = {}
+    for flag, action in (("drink", "drink"), ("berserk", "berserk"),
+                         ("warbreath", "war-breath")):
+        for name in getattr(args, flag) or []:
+            hero = find_hero(party, name)
+            if hero is None:
+                return
+            if not hero.alive:
+                print(f"{hero.name} is not on their feet -- no pause action.")
+                return
+            if hero in actions:
+                print(f"{hero.name} can only take ONE pause action.")
+                return
+            if action == "drink" and hero.items.get("stamina", 0) <= 0:
+                print(f"{hero.name} carries no stamina draught.")
+                return
+            if action == "berserk" and hero.hp <= BERSERK_HP_COST:
+                print(f"{hero.name} is too torn up to Berserk "
+                      f"(HP {hero.hp}, must survive the {BERSERK_HP_COST}).")
+                return
+            if action == "war-breath" and hero.cur_power < WAR_BREATH_POWER_COST:
+                print(f"{hero.name} lacks the Power for War-Breath "
+                      f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
+                return
+            actions[hero] = action
+
+    log: list[str] = []
+    pause = group_combat(living, pending["foes"], rng, log,
+                         pause_triggers=True, fired=pending["fired"],
+                         first_round=pending["round"] + 1,
+                         actions=actions or None)
+    if pause is not None:
+        pending["round"] = pause.round
+        pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
+        print("\n".join(log))
+        print()
+        print_pause_menu(state)
+        save(state)
+        return
+    finish_encounter(state, log, pending["foes"], pending["xp"])
+
+
+def cmd_retreat(args: argparse.Namespace) -> None:
+    """Break away from the paused fight: parting blows from every foe still
+    fit to swing, then ONE opposed group chase roll (the barrow's undead never
+    pursue past the door). A clean escape leaves the room to its survivors --
+    recorded, so re-running the room resumes against them (STA refreshed;
+    living foes heal over a day; bones stay hacked). A failed break resumes
+    the fight on the spot."""
+    state = load()
+    pending = state.get("pending")
+    if not pending:
+        print("No paused fight to retreat from.")
+        return
+    party, rng, clock = state["party"], state["rng"], state["clock"]
+    living = [h for h in party if not h.dead]
+    log: list[str] = []
+
+    escaped = attempt_retreat(living, pending["foes"], rng, log)
+    wiped = party_wiped(party, log)
+    if wiped or escaped:
+        state["pending"] = None
+        if escaped and not wiped:
+            site, room = pending["site"], pending["room"]
+            if site is not None:
+                state.setdefault("rooms", {})[(site, room)] = {
+                    "foes": pending["foes"], "day": clock.day}
+                standing = sum(1 for f in pending["foes"] if f.alive)
+                log.append(f"  ({site} room {room} is left to its "
+                           f"{standing} standing foe(s) -- it will remember)")
+            else:
+                log.append("  (the foes scatter -- an off-script encounter "
+                           "is not kept)")
+        print("\n".join(log))
+        save(state)
+        report_game_over(party, wiped)
+        return
+
+    # Run down: the fight resumes at once, the parting damage already taken.
+    pause = group_combat(living, pending["foes"], rng, log,
+                         pause_triggers=True, fired=pending["fired"],
+                         first_round=pending["round"] + 1)
+    if pause is not None:
+        pending["round"] = pause.round
+        pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
+        print("\n".join(log))
+        print()
+        print_pause_menu(state)
+        save(state)
+        return
+    finish_encounter(state, log, pending["foes"], pending["xp"])
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, clock = state["party"], state["clock"]
     log: list[str] = []
     _short_rest([h for h in party if h.alive], clock, log)
@@ -262,6 +520,8 @@ def cmd_rest(args: argparse.Namespace) -> None:
 
 def cmd_camp(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, clock = state["party"], state["clock"]
     log: list[str] = []
     _long_rest(party, clock, log)
@@ -271,6 +531,8 @@ def cmd_camp(args: argparse.Namespace) -> None:
 
 def cmd_quest(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, purse = state["party"], state["purse"]
     log: list[str] = []
     award_quest(party, purse, args.gold, args.xp, log, args.name)
@@ -280,6 +542,8 @@ def cmd_quest(args: argparse.Namespace) -> None:
 
 def cmd_buy(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, purse = state["party"], state["purse"]
     log: list[str] = []
     hero = next(h for h in party if args.hero.lower() in h.name.lower())
@@ -298,6 +562,8 @@ def cmd_buy(args: argparse.Namespace) -> None:
 
 def cmd_give(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party = state["party"]
     log: list[str] = []
     hero = next(h for h in party if args.hero.lower() in h.name.lower())
@@ -313,6 +579,8 @@ def cmd_give(args: argparse.Namespace) -> None:
 
 def cmd_train(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party = state["party"]
     log: list[str] = []
     hero = next(h for h in party if args.hero.lower() in h.name.lower())
@@ -326,6 +594,8 @@ def cmd_train(args: argparse.Namespace) -> None:
 
 def cmd_use(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party = state["party"]
     log: list[str] = []
     hero = next(h for h in party if args.hero.lower() in h.name.lower())
@@ -336,6 +606,8 @@ def cmd_use(args: argparse.Namespace) -> None:
 
 def cmd_heal(args: argparse.Namespace) -> None:
     state = load()
+    if not require_no_pending(state):
+        return
     party, rng = state["party"], state["rng"]
     log: list[str] = []
     healer = next(h for h in party if args.healer.lower() in h.name.lower())
@@ -385,6 +657,24 @@ def main() -> None:
     p.add_argument("n", type=int, help="how many foes to spawn for this encounter")
     p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
     p.set_defaults(func=cmd_fight)
+
+    p = sub.add_parser(
+        "resume",
+        help="continue a PAUSED fight, optionally with pause actions (one "
+             "per hero; each costs that round's attack and defends at -2): "
+             "--drink HERO (stamina draught), --berserk HERO (HP -> STA), "
+             "--warbreath HERO (Power -> STA). Plain resume = fight on.")
+    p.add_argument("--drink", action="append", metavar="HERO")
+    p.add_argument("--berserk", action="append", metavar="HERO")
+    p.add_argument("--warbreath", action="append", metavar="HERO")
+    p.set_defaults(func=cmd_resume)
+
+    p = sub.add_parser(
+        "retreat",
+        help="break away from a PAUSED fight: parting blows from foes fit "
+             "to swing, then ONE group chase roll. A fled site room keeps "
+             "its survivors; re-run the room to face them again.")
+    p.set_defaults(func=cmd_retreat)
 
     p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
     p.set_defaults(func=cmd_rest)

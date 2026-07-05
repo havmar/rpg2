@@ -1,9 +1,11 @@
 # RPG2 — Combat Sim Prototype
 
 A combat simulator for a fantasy RPG, intended to be played through Claude Code
-with Claude as DM. Fights resolve on their own (no input once a fight starts) and
-produce an outcome plus a narrative log; the DM narrates *over* that log. The
-player's real decisions happen *between* fights.
+with Claude as DM. Fights resolve on their own (no input once a fight starts,
+except the at-most-twice-a-fight **pause**: a trigger stops the melee for one
+"fight on / drink / convert / retreat?" question, then it runs to conclusion)
+and produce an outcome plus a narrative log; the DM narrates *over* that log.
+The player's real decisions happen *between* fights — and at the pause.
 
 > **PLAYING, NOT DEVELOPING? Read `dm.md` first.** Whenever the task is to
 > start, continue, or test a playthrough as DM (rather than change the game),
@@ -72,8 +74,9 @@ his own design back to him.
   feature plan). Read this for direction / what to build next.
 - `rpg.py` — the implementation: combat engine, random party generation, and the
   skeleton dungeon. Self-contained, stdlib only.
-- `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both death
-  distribution. Use it to re-check balance after any mechanics change.
+- `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both
+  death distribution plus attrition, clear%, flee% (runs with a retreat), and
+  avg days. Use it to re-check balance after any mechanics change.
 - `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters who play
   by exactly the party's rules: real DEX/STR, they spend STA, go Winded, and
   are Spent at 0). Imports the engine from `rpg.py` and mirrors the survival
@@ -116,7 +119,17 @@ his own design back to him.
   **Both sites are set encounters -- the DM never invents their foe counts.**
   `fight N [--type skeleton|bandit]` is the *off-script* escape hatch (spawns
   N foes) for improvised scenes only -- a road ambush, a one-off scrap --
-  never a substitute for running a site's rooms. Then `rest`, `camp`,
+  never a substitute for running a site's rooms. **A fight can PAUSE**
+  (a hero crosses STA <= 2 or half HP; once each per fight): the paused melee
+  is saved, every between-fights command refuses until it's settled, and the
+  player answers with `resume [--drink HERO] [--berserk HERO] [--warbreath
+  HERO]` (pause actions: skip that round's attack, defend at -2; drink =
+  stamina draught mid-fight, berserk = 2 HP -> +4 STA, warbreath = 2 Power ->
+  +3 STA) or `retreat` (parting blows + ONE group chase roll; the barrow's
+  undead never pursue past the door). A fled site room keeps its survivors
+  (day-stamped record, shown in `status`): re-running the room faces them
+  again -- STA refreshed, living foes healed after a day, bones still hacked.
+  Then `rest`, `camp`,
   `quest GOLD XP NAME`, `buy HERO THING` (a potion OR a weapon -- weapons are
   equipped on the spot; plain tier only, quality 60g / commons 1-15g),
   `give HERO WEAPON` (DM-granted loot: wield a weapon for free -- quest
@@ -182,12 +195,28 @@ is intentionally ASCII-only, so plain runs are usually fine.
   currently 1 for everything living; the undead are **tireless** and never
   spend any); defending is free. **At 0 STA an entity
   is SPENT**: it still swings (desperation is free) but takes −6 to *all*
-  rolls, with **no in-fight recovery** — against fresh foes that's a death
+  rolls, with **no in-fight recovery** (short of a pause action, below) —
+  against fresh foes that's a death
   sentence; two spent sides cancel each other's penalties and the wound
   spiral still ends the fight, so melees always resolve (draws exist only via
-  the `max_rounds` safety valve). STA recovers only between fights. People
-  die of exhaustion now; that is the point. (The planned 2-STA heavy swing
-  was sim-rejected — see `bench_weapons.py` / rules.md "Weapons".)
+  the `max_rounds` safety valve). STA otherwise recovers only between fights.
+  People die of exhaustion now; that is the point. (The planned 2-STA heavy
+  swing was sim-rejected — see `bench_weapons.py` / rules.md "Weapons".)
+- **The pause (interrupt primitive)** — with `pause_triggers=True`,
+  `group_combat` stops at the end of a round in which a hero crossed
+  **STA ≤ 2** or **half HP** (each trigger once per fight) and returns a
+  `Pause`; re-call with the same `fired` set / `first_round=round+1` to
+  resume. Options at the pause: fight on; per-hero **pause actions** (cost
+  that round's attack, defend at −2): drink a stamina draught mid-fight
+  (+4 STA — the one exception to "no in-fight STA recovery"), **Berserk**
+  (2 HP → +4 STA, the spiral deepens), **War-Breath** (2 Power → +3 STA); or
+  `attempt_retreat` — parting blows from every foe fit to swing, then ONE
+  group chase contest (2d6 + STA-weighted avg DEX, fleeing side
+  +`FLEE_BONUS`; `pursues=False` foes — the barrow's skeletons — never
+  chase). Fled rooms persist via `refresh_foes_after_retreat` (STA refills,
+  living heal over a day, bones stay hacked). The batch sims answer pauses
+  with `sim_pause_policy` (one return trip per fled room), so tune/bench
+  describe the same game; see rules.md "The pause".
 - **Weapons (Phase 4 first slice)** — one wielded weapon per fighter, no
   inventory. Quality four: rapier (+2 atk, −1 sev, graze floor), katana
   (+1/+1), zweihander (+1/+3, −1 defense), wooden staff (+1 parry, +1 Heal,
@@ -239,7 +268,8 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
 - **STA is the second death-track**: attacks spend it, it carries across rooms,
   and hitting 0 mid-fight leaves you Spent (see Core mechanics), which against
-  fresh enemies usually kills. Recovery is **between fights only**, a
+  fresh enemies usually kills. Recovery is **between fights only** (bar what a
+  pause action buys — see Core mechanics), a
   **sawtooth trending down**:
   `STA_RECOVERY_AFTER_FIGHT` (1) when a fight ends, `STA_RECOVERY_BETWEEN_ROOMS`
   (3) per short rest (from 0, fight-end +1 plus a short rest = 4 — *just* clears
@@ -340,23 +370,24 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
 
 **A tuning principle (2026-07): the sims understate the player.** The batch
-policies rest on a fixed schedule and drink potions on crude thresholds; a
-real player paces rests, reads the STA math before every door, and retreats
-(once that exists). So sim clear rates run *below* played clear rates, and
+policies rest on a fixed schedule, drink potions on crude thresholds, and
+answer pauses with one-number rules (`sim_pause_policy`); a real player paces
+rests, reads the STA math before every door, and times retreats. So sim clear
+rates run *below* played clear rates, and
 harsher sim numbers than "feels fair" are acceptable — tune for the felt
 game, and let rooms 1-2 of a site threaten in the sims, not just the last one.
 
-Post-graze-floor + dying-swing (2026-07 — both changes raise incoming chip
-damage on purpose; the party can now be wounded *before* its stamina
-collapses), at the barrow's `[3, 3, 4]` over 20k runs at rank 0:
-~**14% / 1% / 85%** (none / one / both slain), **clear ~15%**. Per
-`bench_training.py` (5k/rank), the barrow clears **15% -> 42% -> 71% -> 90%**
+Post-pause/retreat (2026-07 — the interrupt layer softens "running dry is how
+parties die" on purpose; parting blows, a fatal-adjacent failed break, and
+re-fought rooms are the counterweights), at the barrow's `[3, 3, 4]` over 20k
+runs at rank 0: ~**20% / 4% / 75%** (none / one / both slain), **clear ~22%**,
+~14% of runs retreat at least once, avg ~1.04 days per run. Per
+`bench_training.py` (5k/rank), the barrow clears **22% -> 51% -> 79% -> 95%**
 across training ranks 0-3, and the starter hideout
-**82% -> 95% -> 99% -> 100%** (rank-0 wipe there ~18% — the starter site has
-real teeth now, not just its last room). Gear is the other axis: a katana +
-zweihander loadout lifts the fresh barrow clear to ~**45%** — quality steel
-is now worth about one training rank (down from ~two pre-floor; dying swings
-punish wading into swarms regardless of blade). The intended arc is
+**89% -> 98% -> 100% -> 100%** (rank-0 wipe there ~10% — softer than the
+pre-pause ~18%; watch it in play before re-tightening). Gear is the other
+axis: a katana + zweihander loadout lifts the fresh barrow clear to ~**49%**
+— quality steel is still worth about one training rank. The intended arc is
 unchanged: clear the hideout fresh, level up *and buy steel*, take the
 barrow trained and armed. Most barrow deaths still come from running dry —
 training helps by ending fights in fewer swings, so the STA budget
@@ -366,7 +397,10 @@ first lever; for the barrow, `DUNGEON_ROOMS`.
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
 survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,
 `SPENT_PENALTY`, `STA_RECOVERY_AFTER_FIGHT`, `STA_RECOVERY_BETWEEN_ROOMS`,
-`SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then weapons (the `WEAPONS`
+`SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then the pause/retreat layer
+(`PAUSE_STA_TRIGGER`, `PAUSE_HP_FRACTION`, `PAUSE_ACTION_DEF_PENALTY`,
+`FLEE_BONUS`, `BERSERK_HP_COST`/`BERSERK_STA_GAIN`,
+`WAR_BREATH_POWER_COST`/`WAR_BREATH_STA_GAIN`), then weapons (the `WEAPONS`
 catalog profiles, `BREAK_CHANCE_PER_GAP_SQ`, the starting-weapon chances,
 `PROFICIENCY_MAX`), then economy/progression (`POTION_PRICE`, weapon values,
 drop chances, quest rewards, `XP_LEVEL_STEP`, training cap), then
@@ -391,7 +425,9 @@ The between-fights layer is now substantially player choice: gold/XP flow,
 skill points are a real allocation (combat training vs weapon proficiency —
 nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
 shopping real decisions, and which site to run (starter hideout vs 3x-paying
-barrow) is the first "pick your fights" choice. Still missing: masterwork/
+barrow) is the first "pick your fights" choice. The mid-fight layer exists
+too now: the pause (drink / Berserk / War-Breath / retreat & chase, with
+fled rooms persisting). Still missing: masterwork/
 legendary weapon *instances* placed in the world (the tiers exist, no named
 items do yet), guns + ammo, armor (tier-shift), magic/INT, raising stats
 toward an archetype, and composing the party so builds cover each other. See

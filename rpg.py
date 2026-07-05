@@ -5,6 +5,18 @@ the first slice of Progression). A fight takes no input once it starts; it
 produces an outcome and a narrative log. Generalized from a 1v1 exchange to a
 group melee so a party can be swarmed (numbers are the skeletons' whole threat).
 
+One exception to "no input once it starts": the PAUSE (the interrupt
+primitive). With pause_triggers on, group_combat stops at the end of a round
+in which a hero crossed STA <= 2 or half HP (each trigger once per fight) and
+returns a Pause; the caller -- the DM in session play, sim_pause_policy in the
+batch sims -- decides: fight on, a pause action per hero (drink a stamina
+draught mid-fight, Berserk HP->STA, War-Breath Power->STA; each costs that
+round's attack and defends at -2), or attempt_retreat (parting blows from
+every foe fit to swing, then ONE opposed group chase roll -- the barrow's
+undead never pursue past the door). A fled room's survivors persist
+(refresh_foes_after_retreat): foe STA refills, the living heal over a day,
+dead bone stays hacked.
+
 Survival layer: HP carries across the whole run (only a minimal catch-breath
 between rooms, never a per-fight reset); 0 HP is Down (out of this fight, stands
 back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
@@ -283,6 +295,44 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 # weekly rate (~max_hp / 7 per night -> roughly a week to fully heal).
 SHORT_RESTS_PER_DAY = 2          # short-rest slots available each day
 
+# --- The mid-fight pause (the interrupt primitive) --------------------------- #
+# group_combat can PAUSE at a trigger and resume: the "do I fight on?" decision
+# surfaced BEFORE Spent, where play never had it. Triggers watch the party side
+# only, at the end of a round, and each kind fires at most once per fight (no
+# pause spam). At the pause the choices are: fight on (resume), a pause ACTION
+# per hero -- drink a stamina draught mid-fight, or one of the resource
+# conversions below -- or retreat. Every pause action costs that round's
+# attack and the hero defends at a penalty while occupied: vulnerable, not
+# helpless. Mid-fight drinking un-Spends at 0 STA -- the one exception to
+# "no in-fight STA recovery", bought at a real price.
+PAUSE_STA_TRIGGER = 2       # a hero at/below this STA at round end -> pause
+PAUSE_HP_FRACTION = 0.5     # a hero at/below this fraction of max HP -> pause
+PAUSE_ACTION_DEF_PENALTY = 2    # the busy hero's defense penalty that round
+
+# Retreat & chase. Deliberately ONE roll -- no multi-message chase scenes.
+# Breaking contact: every foe fit to swing (alive, not Winded, not Spent) gets
+# one free parting blow at the fleeing party (defended at
+# -PAUSE_ACTION_DEF_PENALTY; free like the dying swing -- no STA cost). Then
+# ONE opposed group contest -- 2d6 + side-average DEX weighted by current STA
+# -- decides the break; the fleeing side adds FLEE_BONUS (the runner picks the
+# moment and the ground). Success = clean escape; failure = rare and
+# catastrophic (the fight resumes with the parting-blow damage already taken).
+# Entities with pursues=False (the barrow's undead -- bound to the grave)
+# still swing at the door but never give chase: retreat from the barrow
+# always succeeds once past it.
+FLEE_BONUS = 2
+
+# --- Resource conversions (they ride the same pause) ------------------------- #
+# STA is the scarce, dynamic track; HP and Power mostly sit idle. Both
+# conversions are pause-menu actions with the drink's exact shape (skip the
+# attack, defend at -PAUSE_ACTION_DEF_PENALTY that round). Numbers are
+# provisional, sim-tuned like every other constant.
+BERSERK_HP_COST = 2         # Berserk: bleed HP for STA. The HP loss also
+BERSERK_STA_GAIN = 4        # deepens the wound spiral -- the real price.
+WAR_BREATH_POWER_COST = 2   # War-Breath: spend Power for STA -- a fighter's
+WAR_BREATH_STA_GAIN = 3     # breath discipline, not wizardry.
+PAUSE_ACTIONS = ("drink", "berserk", "war-breath")
+
 # The universal graze floor: win the exchange by at least this margin and the
 # hit always draws blood (min. a graze), no matter the soak. Without it a
 # high-STR frame is unwoundable by weak foes until fatigue collapses its tempo
@@ -352,6 +402,9 @@ class TempoRoll:
                             # parry bonus on defense, or the broken-weapon malus)
     weapon_label: str = ""  # e.g. "rapier" / "broken club"
     prof: int = 0           # proficiency rank with the wielded weapon (attack only)
+    misc: int = 0           # circumstance term (e.g. -2 drinking mid-fight,
+                            # -2 fleeing under a parting blow)
+    misc_label: str = ""
 
     def breakdown(self, name: str) -> str:
         parts = [f"2d6={self.dice}", f"+{self.dex} DEX"]
@@ -365,6 +418,8 @@ class TempoRoll:
             parts.append(f"-{self.wound_pen} wounds")
         if self.fatigue_pen:
             parts.append(f"-{self.fatigue_pen} {self.fatigue_label}")
+        if self.misc:
+            parts.append(f"{self.misc:+d} {self.misc_label}")
         return f"{name}: {self.total} ({', '.join(parts)})"
 
 
@@ -405,6 +460,10 @@ class Entity:
                                          # wound_penalty)
     tireless: bool = False              # never spends STA, never Winded/Spent
                                          # (the undead don't tire; you do)
+    pursues: bool = True                # gives chase when the party retreats;
+                                         # False for the barrow's undead (bound
+                                         # to the grave -- they swing at the
+                                         # door but never follow past it)
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
@@ -498,7 +557,8 @@ class Entity:
         return mods
 
     def tempo(self, rng: random.Random, attacking: bool = False,
-              wound_pen: int | None = None) -> TempoRoll:
+              wound_pen: int | None = None, misc: int = 0,
+              misc_label: str = "") -> TempoRoll:
         # wound_pen overrides the live wound penalty -- used for the dying
         # swing (group_combat): a fighter felled mid-round still gets their
         # blow in, rolled with the wounds they had at ROUND START, not the
@@ -528,13 +588,13 @@ class Entity:
             elif not self.weapon_broken and self.weapon.def_tempo:
                 weapon_mod = self.weapon.def_tempo
                 weapon_label = self.weapon.name
-        total = (dice + self.dex + self.training + weapon_mod + prof
+        total = (dice + self.dex + self.training + weapon_mod + prof + misc
                  - pen - fatigue_pen)
         return TempoRoll(total=total, dice=dice, dex=self.dex,
                          training=self.training, wound_pen=pen,
                          fatigue_pen=fatigue_pen, fatigue_label=fatigue_label,
                          weapon_mod=weapon_mod, weapon_label=weapon_label,
-                         prof=prof)
+                         prof=prof, misc=misc, misc_label=misc_label)
 
 
 # --------------------------------------------------------------------------- #
@@ -587,7 +647,8 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
 
 
 def _attack(attacker: Entity, defender: Entity, rng: random.Random,
-            log: list[str], atk_wound_pen: int | None = None) -> None:
+            log: list[str], atk_wound_pen: int | None = None,
+            def_mod: int = 0, def_label: str = "") -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a killing blow); a Power save
@@ -595,13 +656,15 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     landed. Death only happens when a raw killing blow is not saved.
 
     `atk_wound_pen` overrides the attacker's wound penalty (the dying swing --
-    see group_combat's round-start snapshot).
+    see group_combat's round-start snapshot). `def_mod`/`def_label` is a
+    circumstance penalty on the defense roll (a hero drinking at the pause, or
+    fleeing under a parting blow, defends at -PAUSE_ACTION_DEF_PENALTY).
 
     Every exchange logs two layers: an interpretive headline first, then the
     raw numbers (dice, each modifier and its source) indented beneath it.
     """
     atk = attacker.tempo(rng, attacking=True, wound_pen=atk_wound_pen)
-    dfn = defender.tempo(rng)
+    dfn = defender.tempo(rng, misc=def_mod, misc_label=def_label)
     tempo_line = (f"        tempo: {atk.breakdown(attacker.name)} vs "
                   f"{dfn.breakdown(defender.name)}")
 
@@ -741,9 +804,109 @@ def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
     return line
 
 
+@dataclass
+class Pause:
+    """group_combat stopped at a trigger mid-fight (the interrupt primitive).
+    The fight is NOT over: call group_combat again with the same `fired` set,
+    first_round=round+1, and any pause actions to resume -- or attempt_retreat
+    to break away. `crossings` is what tripped the pause: (kind, hero) pairs,
+    kind in ("stamina", "wounds")."""
+    round: int
+    crossings: list[tuple[str, Entity]]
+
+
+def _check_pause_triggers(party: list[Entity], foes: list[Entity],
+                          fired: set[str]) -> list[tuple[str, Entity]]:
+    """The pause triggers, checked at the end of a round: a hero at STA <=
+    PAUSE_STA_TRIGGER, or at HP <= half. Party side only (the pause is the
+    player's), each kind at most once per fight (`fired` is mutated), and only
+    while both sides still stand -- a decided fight has nothing to decide."""
+    if not (any(e.alive for e in party) and any(e.alive for e in foes)):
+        return []
+    crossings = []
+    if "stamina" not in fired:
+        for h in party:
+            if (h.alive and not h.tireless
+                    and h.cur_sta <= PAUSE_STA_TRIGGER):
+                fired.add("stamina")
+                crossings.append(("stamina", h))
+                break
+    if "wounds" not in fired:
+        for h in party:
+            if h.alive and h.hp <= h.max_hp * PAUSE_HP_FRACTION:
+                fired.add("wounds")
+                crossings.append(("wounds", h))
+                break
+    return crossings
+
+
+def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
+    """Execute one pause-menu action at the top of the resumed round: drink a
+    stamina draught, or a resource conversion (Berserk / War-Breath). Returns
+    True if it took effect -- the hero is then BUSY this round: no attack, and
+    -PAUSE_ACTION_DEF_PENALTY on defense (vulnerable, not helpless). A failed
+    action (nothing to drink, not enough Power) logs and the hero just fights."""
+    if not h.alive:
+        return False
+    if action == "drink":
+        if h.items.get("stamina", 0) <= 0:
+            log.append(f"    {h.name} gropes for a stamina draught -- "
+                       f"none left! They fight on.")
+            return False
+        h.items["stamina"] -= 1
+        before = h.cur_sta
+        h.cur_sta = min(h.sta, h.cur_sta + STAMINA_DRAUGHT_RESTORE)
+        log.append(f"    {h.name} downs a stamina draught mid-fight "
+                   f"(STA {before} -> {h.cur_sta}/{h.sta}; "
+                   f"{h.items['stamina']} left) -- no attack this round, "
+                   f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
+        return True
+    if action == "berserk":
+        if h.hp <= BERSERK_HP_COST:
+            log.append(f"    {h.name} is too torn up to go Berserk "
+                       f"(HP {h.hp}/{h.max_hp}). They fight on.")
+            return False
+        before = h.cur_sta
+        h.hp -= BERSERK_HP_COST
+        h.cur_sta = min(h.sta, h.cur_sta + BERSERK_STA_GAIN)
+        log.append(f"    {h.name} goes BERSERK -- strength torn from their "
+                   f"own flesh (-{BERSERK_HP_COST} HP -> {h.hp}/{h.max_hp}, "
+                   f"now -{h.wound_penalty} to rolls; STA {before} -> "
+                   f"{h.cur_sta}/{h.sta}) -- no attack this round, "
+                   f"-{PAUSE_ACTION_DEF_PENALTY} defending")
+        return True
+    if action == "war-breath":
+        if h.cur_power < WAR_BREATH_POWER_COST:
+            log.append(f"    {h.name} lacks the Power for War-Breath "
+                       f"({h.cur_power}/{WAR_BREATH_POWER_COST}). "
+                       f"They fight on.")
+            return False
+        before = h.cur_sta
+        h.cur_power -= WAR_BREATH_POWER_COST
+        h.cur_sta = min(h.sta, h.cur_sta + WAR_BREATH_STA_GAIN)
+        log.append(f"    {h.name} centers their breath -- War-Breath! "
+                   f"(-{WAR_BREATH_POWER_COST} Power -> {h.cur_power}; "
+                   f"STA {before} -> {h.cur_sta}/{h.sta}) -- no attack this "
+                   f"round, -{PAUSE_ACTION_DEF_PENALTY} defending")
+        return True
+    raise ValueError(f"unknown pause action: {action}")
+
+
+def _catch_breath(survivors: list[Entity], log: list[str]) -> None:
+    """The fight is over for these heroes (won it or fled it clean): they
+    catch their breath (+STA_RECOVERY_AFTER_FIGHT)."""
+    for h in survivors:
+        h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_AFTER_FIGHT)
+    log.append(f"    The party catches its breath "
+               f"(+{STA_RECOVERY_AFTER_FIGHT} STA)")
+
+
 def group_combat(party: list[Entity], foes: list[Entity],
                  rng: random.Random, log: list[str],
-                 max_rounds: int = 40) -> None:
+                 max_rounds: int = 40,
+                 pause_triggers: bool = False, fired: set[str] | None = None,
+                 first_round: int = 1,
+                 actions: dict[Entity, str] | None = None) -> Pause | None:
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
 
     Exchanges resolve *sequentially* -- party in list order first, then foes --
@@ -756,17 +919,36 @@ def group_combat(party: list[Entity], foes: list[Entity],
     it acts*, so nobody wastes a swing on a corpse.
 
     Stamina: an attack costs the attacker `swing_cost` STA -- set by the
-    wielded weapon (defense is free); tireless entities pay nothing. An entity that hits 0 STA is SPENT: it
-    still swings (desperation is free) but takes -SPENT_PENALTY to all rolls,
-    attack and defense alike, with no in-fight recovery. Against fresh foes
+    wielded weapon (defense is free); tireless entities pay nothing. An entity
+    that hits 0 STA is SPENT: it still swings (desperation is free) but takes
+    -SPENT_PENALTY to all rolls, attack and defense alike, with no in-fight
+    recovery (short of a stamina draught drunk at a pause). Against fresh foes
     that is a death sentence; two spent sides cancel each other's penalties
     and the wound spiral still finishes the fight -- so melees resolve instead
     of stalling (max_rounds is only a safety valve). When the fight ends the
     survivors catch their breath (+STA_RECOVERY_AFTER_FIGHT).
+
+    The pause (the interrupt primitive): with pause_triggers=True the fight
+    PAUSES at the end of a round in which a hero crossed STA <=
+    PAUSE_STA_TRIGGER or HP <= half (each trigger once per fight -- `fired`
+    carries the used ones across a resume). Returns a Pause instead of
+    finishing; the caller decides (fight on / pause actions / retreat) and
+    calls again with fired, first_round=pause.round+1, and `actions`
+    ({hero: "drink" | "berserk" | "war-breath"}, executed at the top of the
+    resumed round: the hero skips that attack and defends at
+    -PAUSE_ACTION_DEF_PENALTY). Returns None when the melee actually ended.
     """
     party_set = set(party)
-    spent_logged: set[Entity] = set()
-    rnd = 0
+    if fired is None:
+        fired = set()
+    # On a resume, entities already Spent have had their !! line; don't repeat.
+    spent_logged: set[Entity] = (
+        {e for e in party + foes if e.alive and e.spent}
+        if first_round > 1 else set())
+    busy_label = {"drink": "drinking", "berserk": "berserk",
+                  "war-breath": "war-breath"}
+    busy: dict[Entity, str] = {}
+    rnd = first_round - 1
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
         if rnd > max_rounds:
@@ -775,12 +957,19 @@ def group_combat(party: list[Entity], foes: list[Entity],
         log.append(f"  Round {rnd}:")
         if rnd == 1:
             _first_blood(party, foes, rng, log)
+        if actions and rnd == first_round:
+            # The pause actions happen now, in the teeth of the melee.
+            for h, act in actions.items():
+                if _do_pause_action(h, act, log):
+                    busy[h] = act
 
         # Round-start snapshot: everyone alive NOW acts this round, even if
         # felled before their turn comes -- the dying swing (see docstring).
         actors = [e for e in party + foes if e.alive]
         start_pens = {e: e.wound_penalty for e in actors}
         for attacker in actors:
+            if attacker in busy:
+                continue    # occupied with their draught/conversion this round
             dying = not attacker.alive      # felled earlier this round
             targets = foes if attacker in party_set else party
             if not any(t.alive for t in targets):
@@ -809,7 +998,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 log.append(f"    ({attacker.name} strikes even as they fall)")
             was_alive = defender.alive
             _attack(attacker, defender, rng, log,
-                    atk_wound_pen=start_pens[attacker] if dying else None)
+                    atk_wound_pen=start_pens[attacker] if dying else None,
+                    def_mod=(-PAUSE_ACTION_DEF_PENALTY
+                             if defender in busy else 0),
+                    def_label=busy_label.get(busy.get(defender, ""), ""))
             if was_alive and not defender.alive:
                 if defender.dead:
                     log.append(f"    *** {defender.name} is SLAIN. ***")
@@ -818,15 +1010,123 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                f"out of the fight.")
                 else:
                     log.append(f"    *** {defender.name} falls. ***")
+        busy.clear()
         log.append(_stamina_line(party, foes))
+
+        if pause_triggers:
+            crossings = _check_pause_triggers(party, foes, fired)
+            if crossings:
+                for kind, h in crossings:
+                    if kind == "stamina":
+                        log.append(f"    == {h.name} is nearly out of breath "
+                                   f"(STA {h.cur_sta}/{h.sta}) -- "
+                                   f"the fight hangs for a heartbeat. ==")
+                    else:
+                        log.append(f"    == {h.name} is badly cut up "
+                                   f"(HP {h.hp}/{h.max_hp}) -- "
+                                   f"the fight hangs for a heartbeat. ==")
+                return Pause(round=rnd, crossings=crossings)
 
     # The dust settles: whoever is still standing catches their breath.
     survivors = [h for h in party if h.alive]
     if survivors:
-        for h in survivors:
-            h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_AFTER_FIGHT)
-        log.append(f"    The party catches its breath "
-                   f"(+{STA_RECOVERY_AFTER_FIGHT} STA)")
+        _catch_breath(survivors, log)
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# Retreat & chase (the other exit from a paused fight)
+# --------------------------------------------------------------------------- #
+
+def _chase_dex(group: list[Entity]) -> float:
+    """A side's speed in the break contest: average DEX weighted by current
+    STA -- fresher legs count for more (tireless entities always weigh in at
+    full). A side entirely out of breath falls back to a plain average."""
+    total_weight = sum(max(0, e.cur_sta) for e in group)
+    if total_weight == 0:
+        return sum(e.dex for e in group) / len(group)
+    return sum(e.dex * max(0, e.cur_sta) for e in group) / total_weight
+
+
+def attempt_retreat(party: list[Entity], foes: list[Entity],
+                    rng: random.Random, log: list[str]) -> bool:
+    """Break away from a paused fight. The procedure (deliberately ONE roll,
+    no chase scenes): every foe fit to swing (alive, not Winded, not Spent)
+    gets one free parting blow -- free like the dying swing, no STA cost --
+    at a random fleeing hero, who defends at -PAUSE_ACTION_DEF_PENALTY. Then
+    one opposed group contest (2d6 + STA-weighted side-average DEX, the
+    fleeing side at +FLEE_BONUS) decides the break -- but only foes that
+    `pursues` give chase: the barrow's undead swing at the door and stop
+    (bound to the grave), so retreat from the barrow always succeeds once
+    past it.
+
+    Returns True on a clean escape (the runners catch their breath -- the
+    fight is over for them); False means the party is run down and the caller
+    must resume the fight, the parting-blow damage already taken. Either way
+    heroes can go Down or die here: check party_wiped afterward.
+    """
+    log.append("  The party breaks for safety!")
+    swingers = [f for f in foes if f.alive and not f.winded and not f.spent]
+    for f in swingers:
+        targets = [h for h in party if h.alive]
+        if not targets:
+            break               # everyone is down mid-flight; nothing to chase
+        h = rng.choice(targets)
+        _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                def_label="fleeing")
+        if not h.alive:
+            if h.dead:
+                log.append(f"    *** {h.name} is SLAIN. ***")
+            else:
+                log.append(f"    {h.name} goes down, out of the fight.")
+
+    runners = [h for h in party if h.alive]
+    if not runners:
+        return False    # cut down at the door -- the caller sees the wipe
+
+    pursuers = [f for f in swingers if f.alive and f.pursues]
+    if not pursuers:
+        if any(f.alive and not f.pursues for f in foes):
+            log.append("    The dead do not follow beyond their ground -- "
+                       "clean escape.")
+        else:
+            log.append("    No one is fit to give chase -- clean escape.")
+        _catch_breath(runners, log)
+        return True
+
+    flee_dex = _chase_dex(runners)
+    hunt_dex = _chase_dex(pursuers)
+    flee_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    hunt_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    flee_total = flee_dice + flee_dex + FLEE_BONUS
+    hunt_total = hunt_dice + hunt_dex
+    log.append(f"    the chase: flight {flee_total:.1f} (2d6={flee_dice}, "
+               f"+{flee_dex:.1f} DEX STA-weighted, +{FLEE_BONUS} head start) "
+               f"vs pursuit {hunt_total:.1f} (2d6={hunt_dice}, "
+               f"+{hunt_dex:.1f} DEX STA-weighted)")
+    if flee_total >= hunt_total:
+        log.append("    They break away -- clean escape.")
+        _catch_breath(runners, log)
+        return True
+    log.append("    *** RUN DOWN -- the pursuers catch them, and the fight "
+               "resumes with their backs to it. ***")
+    return False
+
+
+def refresh_foes_after_retreat(foes: list[Entity],
+                               days_passed: int) -> list[Entity]:
+    """The room the party fled from, readied for a return trip (encounter
+    persistence). The dead stay dead. Foe STA refills the moment the party
+    leaves (they rest too). LIVING foes heal their wounds once a day has
+    passed; the undead stay hacked -- dead bone doesn't knit, which is exactly
+    the asymmetry that rewards a return trip to the barrow."""
+    survivors = [f for f in foes if not f.dead]
+    for f in survivors:
+        f.cur_sta = f.sta
+        if days_passed > 0 and not f.undead:
+            f.hp = f.max_hp
+            f.down = False
+    return survivors
 
 
 # --------------------------------------------------------------------------- #
@@ -906,8 +1206,12 @@ def make_skeleton(rng: random.Random, n: int) -> Entity:
     # They swing corroded grave-steel (durability 1): against a party carrying
     # quality weapons the rusted blades start snapping -- the barrow gets
     # *visibly* easier with better gear, not just numerically.
+    # pursues=False: bound to the grave -- they swing at a fleeing party's
+    # backs but never follow past the door, which is what makes "come back
+    # tomorrow and finish it" a real plan instead of a death sentence.
     return Entity(name=f"Skeleton {n}", dex=3, str_=2, sta=8, max_hp=5,
-                  sta_cost=0, undead=True, tireless=True, weapon=RUSTED_BLADE)
+                  sta_cost=0, undead=True, tireless=True, pursues=False,
+                  weapon=RUSTED_BLADE)
 
 
 # --------------------------------------------------------------------------- #
@@ -1327,35 +1631,131 @@ def party_wiped(party: list[Entity], log: list[str]) -> bool:
     return True
 
 
+# The batch sims' pause policy. Crude thresholds on purpose -- the sims
+# UNDERSTATE the player (see CLAUDE.md "Balance / tuning"): a real player
+# reads the whole board at a pause; this reads one number per crossing.
+SIM_MAX_ROOM_ATTEMPTS = 2   # a fled room gets ONE return trip in the sims,
+                            # then the run is abandoned (a determined but
+                            # finite party; real play has no such cap)
+
+
+def sim_pause_policy(crossings: list[tuple[str, Entity]]
+                     ) -> str | dict[Entity, str]:
+    """Decide a paused fight for the batch sims: "retreat", or {hero: action}
+    (empty dict = fight on). Per crossing:
+      stamina -> drink a carried draught; else War-Breath if the Power is
+                 there (a Bulwark hero keeps one save in reserve); else
+                 Berserk on a still-healthy body; else vote retreat.
+      wounds  -> fight on while a healing potion is carried for afterward or
+                 the wound is shallow; a deep cut with no buffer votes retreat.
+    Any retreat vote carries -- the party leaves together."""
+    actions: dict[Entity, str] = {}
+    for kind, hero in crossings:
+        if kind == "stamina":
+            if hero.items.get("stamina", 0) > 0:
+                actions[hero] = "drink"
+            elif hero.cur_power >= WAR_BREATH_POWER_COST + (
+                    SAVE_COST if hero.ability == "bulwark" else 0):
+                actions[hero] = "war-breath"
+            elif hero.hp > BERSERK_HP_COST * 3:
+                actions[hero] = "berserk"
+            else:
+                return "retreat"
+        else:   # wounds
+            if (hero.items.get("healing", 0) == 0
+                    and hero.hp * 3 <= hero.max_hp):
+                return "retreat"
+    return actions
+
+
+def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
+              log: list[str]) -> str:
+    """One encounter under the batch-sim pause policy (drink / convert /
+    retreat -- sim_pause_policy). Returns "resolved" (the melee ended; read
+    the outcome off the entities) or "fled" (a clean escape; foes survive).
+    The scenario loops (run_dungeon / run_hideout) and session play share the
+    same engine; only WHO answers the pause differs -- here a policy, there
+    the player."""
+    fired: set[str] = set()
+    actions: dict[Entity, str] | None = None
+    first_round = 1
+    while True:
+        pause = group_combat(living, foes, rng, log, pause_triggers=True,
+                             fired=fired, first_round=first_round,
+                             actions=actions)
+        actions = None
+        if pause is None:
+            return "resolved"
+        first_round = pause.round + 1
+        decision = sim_pause_policy(pause.crossings)
+        if decision == "retreat":
+            if attempt_retreat(living, foes, rng, log):
+                return "fled"
+            if not any(h.alive for h in living):
+                return "resolved"   # cut down at the door
+            continue                # run down: the fight resumes
+        actions = decision or None
+
+
 def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
                 rng: random.Random, log: list[str]) -> None:
     skel_count = 0
     cleared_all = True
-    for i, n_skel in enumerate(DUNGEON_ROOMS, start=1):
+    room_i = 0
+    attempts = 0
+    held_over: list[Entity] | None = None   # survivors of a room the party fled
+    while room_i < len(DUNGEON_ROOMS):
+        n_skel = DUNGEON_ROOMS[room_i]
         living = [h for h in party if not h.dead]
         if not living:
             cleared_all = False
             break
 
         log.append("")
-        log.append(f"=== Room {i}: {n_skel} skeletons rise from the bones ===")
+        if held_over is None:
+            attempts = 1
+            log.append(f"=== Room {room_i + 1}: {n_skel} skeletons rise "
+                       f"from the bones ===")
+            skeletons = []
+            for _ in range(n_skel):
+                skel_count += 1
+                skeletons.append(make_skeleton(rng, skel_count))
+            s = skeletons[0]
+            log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  "
+                       f"STR {s.str_}  HP {s.max_hp} each "
+                       f"(undead: no pain, tireless; rusted blades)")
+        else:
+            attempts += 1
+            skeletons = held_over
+            held_over = None
+            standing = sum(1 for s in skeletons if s.alive)
+            log.append(f"=== Room {room_i + 1}, again: "
+                       f"{standing} skeleton(s) still stand among "
+                       f"the hacked bones ===")
         for h in living:
             start_fight(h, log)
 
-        skeletons = []
-        for _ in range(n_skel):
-            skel_count += 1
-            skeletons.append(make_skeleton(rng, skel_count))
-        s = skeletons[0]
-        log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
-                   f"HP {s.max_hp} each (undead: no pain, tireless; "
-                   f"rusted blades)")
-
-        group_combat(living, skeletons, rng, log)
+        result = sim_fight(living, skeletons, rng, log)
 
         if party_wiped(party, log):
             cleared_all = False
             break
+        if result == "fled":
+            if attempts >= SIM_MAX_ROOM_ATTEMPTS:
+                log.append("  The party has had enough -- "
+                           "the barrow is abandoned.")
+                cleared_all = False
+                break
+            # Rest up and go back in (the sims' determined-player policy):
+            # a short rest if a slot is left today, else camp overnight.
+            day_before = clock.day
+            survivors = [h for h in party if h.alive]
+            if not short_rest(survivors, clock, log):
+                long_rest(party, clock, log)
+            auto_use_potions_on_rest([h for h in party if h.alive], log)
+            held_over = refresh_foes_after_retreat(
+                skeletons, clock.day - day_before)
+            continue    # the same room, again
         if any(s.alive for s in skeletons):
             # Unresolved (the fight staggered apart): no award, no clear.
             log.append("  The room is not cleared -- the party pulls back.")
@@ -1370,6 +1770,7 @@ def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
             log.append(f"  Room cleared. {len(survivors)} still standing.")
             short_rest(survivors, clock, log)
             auto_use_potions_on_rest(survivors, log)  # one-shot sim: sensible party
+        room_i += 1
 
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, BARROW_QUEST_GOLD, BARROW_QUEST_XP,

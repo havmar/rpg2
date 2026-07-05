@@ -13,11 +13,12 @@ the barrow pays 3x. `--training N` starts the party pre-trained.
 import argparse
 import random
 
-from rpg import (Entity, Clock, Purse, make_party, group_combat, stat_line,
-                 outcome, start_fight, short_rest, party_wiped, award_xp,
-                 award_quest, roll_loot, auto_use_potions_on_rest,
+from rpg import (Entity, Clock, Purse, make_party, stat_line,
+                 outcome, start_fight, short_rest, long_rest, party_wiped,
+                 award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
                  train_combat, random_common_weapon,
-                 ENCOUNTER_XP, QUEST_XP, QUEST_GOLD)
+                 sim_fight, refresh_foes_after_retreat,
+                 ENCOUNTER_XP, QUEST_XP, QUEST_GOLD, SIM_MAX_ROOM_ATTEMPTS)
 
 # The starter site pays the base rate (the barrow pays 3x -- see rpg.py).
 BANDIT_ENCOUNTER_XP = ENCOUNTER_XP
@@ -57,34 +58,63 @@ def bandit_line(e: Entity) -> str:
 def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
                 rng: random.Random, log: list[str],
                 verbose_rosters: bool = True) -> None:
-    """The hideout run, mirroring rpg.run_dungeon (kept in sync with its flow).
+    """The hideout run, mirroring rpg.run_dungeon (kept in sync with its flow,
+    including the pause/retreat policy -- unlike the barrow's grave-bound
+    skeletons, bandits DO give chase, so a hideout retreat can fail).
     Importable so bench_training.py can batch it."""
     count = 0
     cleared_all = True
-    for i, (room_name, roster) in enumerate(HIDEOUT_ROOMS, start=1):
+    room_i = 0
+    attempts = 0
+    held_over = None    # survivors of a room the party fled
+    while room_i < len(HIDEOUT_ROOMS):
+        room_name, roster = HIDEOUT_ROOMS[room_i]
         living = [h for h in party if not h.dead]
         if not living:
             cleared_all = False
             break
 
         log.append("")
-        log.append(f"=== Room {i}: {room_name} ({len(roster)} bandits) ===")
+        if held_over is None:
+            attempts = 1
+            log.append(f"=== Room {room_i + 1}: {room_name} "
+                       f"({len(roster)} bandits) ===")
+            bandits = []
+            for kind in roster:
+                count += 1
+                bandits.append(make_bandit(kind, count, rng))
+            if verbose_rosters:
+                for b in bandits:
+                    log.append("  " + bandit_line(b))
+        else:
+            attempts += 1
+            bandits = held_over
+            held_over = None
+            standing = sum(1 for b in bandits if b.alive)
+            log.append(f"=== Room {room_i + 1}: {room_name}, again -- "
+                       f"{standing} bandit(s) still hold it ===")
         for h in living:
             start_fight(h, log)
 
-        bandits = []
-        for kind in roster:
-            count += 1
-            bandits.append(make_bandit(kind, count, rng))
-        if verbose_rosters:
-            for b in bandits:
-                log.append("  " + bandit_line(b))
-
-        group_combat(living, bandits, rng, log)
+        result = sim_fight(living, bandits, rng, log)
 
         if party_wiped(party, log):
             cleared_all = False
             break
+        if result == "fled":
+            if attempts >= SIM_MAX_ROOM_ATTEMPTS:
+                log.append("  The party has had enough -- "
+                           "the hideout is left be.")
+                cleared_all = False
+                break
+            day_before = clock.day
+            survivors = [h for h in party if h.alive]
+            if not short_rest(survivors, clock, log):
+                long_rest(party, clock, log)
+            auto_use_potions_on_rest([h for h in party if h.alive], log)
+            held_over = refresh_foes_after_retreat(
+                bandits, clock.day - day_before)
+            continue    # the same room, again
         if any(b.alive for b in bandits):
             # Unresolved (the fight staggered apart): no award, no clear.
             log.append("  The room is not cleared -- the party pulls back.")
@@ -99,6 +129,7 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
             log.append(f"  Room cleared. {len(survivors)} still standing.")
             short_rest(survivors, clock, log)
             auto_use_potions_on_rest(survivors, log)  # batch sim: sensible party
+        room_i += 1
 
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, BANDIT_QUEST_GOLD, BANDIT_QUEST_XP,
