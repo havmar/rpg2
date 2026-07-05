@@ -72,11 +72,11 @@ Each round, every combatant takes one attack in turn (party first, then foes;
 each attacker picks a **living** target when its turn comes, so no one strikes
 a corpse or swings posthumously):
 
-1. **Pay for the swing.** Attacking costs STA (`sta_cost`: 1 for a living
-   fighter — the pool is a swing budget). Defending is free — guarding is
-   reflexive, swinging is the exertion. **Tireless** entities (the undead)
-   never spend STA at all. At **STA ≤ 3** a fighter is **Winded** (−2 to all
-   rolls) — the warning zone.
+1. **Pay for the swing.** Attacking costs STA (`swing_cost`, set by the
+   wielded weapon — currently 1 for everything living; the pool is a swing
+   budget). Defending is free — guarding is reflexive, swinging is the
+   exertion. **Tireless** entities (the undead) never spend STA at all. At
+   **STA ≤ 3** a fighter is **Winded** (−2 to all rolls) — the warning zone.
 2. **Spent.** At **0 STA** a fighter is **Spent**: still swinging every round
    (desperation is free), but at **−6 to all rolls**, attack and defense alike
    (replacing the Winded −2; wound penalties still stack on top). There is
@@ -88,16 +88,20 @@ a corpse or swings posthumously):
    that is the point. (A drawn standstill survives only as a rare safety-valve
    outcome via the round cap — no award, no clear.)
 3. **Tempo roll.** Attacker and defender each roll
-   `2d6 + DEX − (wound penalty) − (2 if Winded)`.
+   `2d6 + DEX + training − (wound penalty) − (2 if Winded / 6 if Spent)`,
+   **plus the weapon's tempo term**: the attacker adds their weapon's attack
+   bonus and proficiency rank; the defender adds the weapon's defense mod
+   (usually 0 — the staff parries at +1, the zweihander guards at −1, a
+   broken weapon attacks at −2).
 4. **Who lands.** Higher total connects this round. `margin` = the difference.
    (A tie is a clash — no one lands; if the defender wins, the attack is
-   *parried*.)
-5. **Severity.** `severity = margin + attacker STR − defender STR`.
+   *parried*. Both are weapon contact: see *Durability* under Weapons.)
+5. **Severity.** `severity = margin + attacker STR + weapon severity mods
+   (weapon + proficiency) − defender STR`.
 6. **Wound.** Map severity to a tier; the defender loses that much HP.
+   (The rapier's graze floor applies here: a landed thrust is never fully
+   deflected.)
 7. Repeat until one side has no one standing (**0 HP** = Down/dead).
-
-The per-swing STA cost is also the planned weapon knob (Phase 4): a greatsword
-burns more per swing than a rapier, wanting a deep STA pool behind it.
 
 ### Wound tiers
 
@@ -126,6 +130,107 @@ system, undead break its rules):
 
 ---
 
+## Weapons (Phase 4 first slice)
+
+Every fighter wields **one weapon** — no inventory (heroic tone: swaps are
+narrative, DM-arbitrated). A weapon is an **offense package**: it never makes
+you harder to hit (that's DEX and training), it changes what your attacks are.
+
+**The knobs** (chosen so no weapon double-dips — tempo already feeds severity
+through the margin):
+
+| Knob | What it does | Who uses it |
+|------|--------------|-------------|
+| Attack tempo | Added to the attack roll only | The rapier's axis |
+| Severity | Flat bonus to hits that land | The zweihander's axis |
+| Defense tempo | Guard mod (usually 0) | Staff +1, zweihander −1 |
+| STA per swing | The burst/sustain clock | 1 for everything, for now (see note) |
+| Durability | Breakage ladder, 1–6 | See *Durability* below |
+
+> **The 2-STA heavy swing was tried and rejected (for now).** The plan was for
+> heavy weapons to burn the clock faster. The sims veto it: with Spent lethal,
+> halving the swing budget loses far more than any severity bonus buys back —
+> every 2-STA zweihander variant was strictly worst-in-class
+> (`bench_weapons.py`). The knob stays in the schema for a future with deeper
+> STA pools; the zweihander's burst identity lives in the guard penalty
+> instead.
+
+### The quality four (the cool weapons)
+
+Culturally significant, high status, and actual quality steel. Never dropped
+by low common enemies; plain ones are shoppable at 60 g.
+
+| Weapon | Atk | Sev | Def | Special | Identity |
+|--------|-----|-----|-----|---------|----------|
+| **Rapier** | +2 | −1 | — | **Graze floor**: a landed thrust is never fully deflected (min. 1 HP) | The duelist. Lands constantly, always draws blood, wins by the spiral. Laughs at heavy soak. |
+| **Katana** | +1 | +1 | — | — | The all-rounder: consistently near-best everywhere, best almost nowhere. |
+| **Zweihander** | +1 | +3 | **−1** | — | The crowd-breaker: mooks die in one blow, but there's no parrying a girder. Wants STR/soak behind it. |
+| **Wooden staff** | 0 | −1 | **+1** | **+1 HP per Heal** through it | The healer's weapon — deliberately poor steel, priced in support. |
+
+Benchmark (`bench_weapons.py`, duel vs swarm win rates per stat frame):
+**suited, not ranked** — the rapier is the best duelist on nearly every frame
+(by a hair over the katana), the zweihander sweeps every swarm column, the
+katana is the reliable second everywhere, and the staff trails everywhere on
+purpose. No weapon tops every cell.
+
+### Common weapons
+
+Trash-to-functional arms — always a *specific named weapon* in play, never "a
+crude weapon". Three stat lines, many names:
+
+| Line | Atk/Sev/STA | Durability | Weapons | Value |
+|------|-------------|-----------|---------|-------|
+| Crude (`cheap`) | 0 / −1 / 1 | 1 | club, dagger, whip, light hammer | 1–2 g |
+| Soldier's arms (`military`) | 0 / 0 / 1 | 2 | shortsword, scimitar, spear, mace, flail, morningstar | 5–8 g |
+| Heavy arms (`military`) | 0 / +1 / 1 | 2 | longsword, battleaxe, warhammer, halberd | 15 g |
+
+Soldier's arms are the engine's old implicit baseline (0/0/1), so the
+pre-weapons balance is the soldier's-arms balance. **Starting weapons**
+(heroes and bandits alike): 50% crude / 45% soldier's arms / 5% heavy; a
+heal-ability hero has a 50% chance to carry the wooden staff instead.
+Skeletons swing **rusted blades** (0/0, durability 1 — grave-steel that snaps
+on honest metal).
+
+### Craftsmanship tiers
+
+`plain` / `masterwork` / `legendary` — and **plain is never spoken**: a weapon
+is just "a rapier"; special ones are "a masterwork rapier" or a named
+legendary blade. Masterwork (+1 on the weapon's signature axis, durability 5)
+and legendary (hand-authored, stat-transcending, durability 6) are
+**found or quested, never shopped**; only plain weapons are for sale. No
+level requirements — authored placement is the gate.
+
+### Durability & breakage
+
+When steel meets steel — a **parry** or a **Clash** (high-dice tie) — the
+**lower-durability** weapon risks shattering:
+`P(break) = 0.25% × (durability gap)²` per contact; equal durability never
+breaks. Ladder: crude/rusted 1, military steel 2, wooden staff 3 (quality,
+but wood), quality steel 4, masterwork 5, legendary 6.
+
+Calibrated per-fight rates (measured): a club against legendary steel snaps
+in ~24% of fights; against a quality katana ~10%; quality steel against one
+step better ~1%. Against a quality-armed party, a skeleton's rusted blade
+snaps in ~10% of rooms — the barrow *visibly* easing as the party's gear
+improves, which is the point: the asymmetry favors the player without
+inflating a single number, and a `*** CRACK ***` line is the most narratable
+event in the system.
+
+A fighter whose weapon breaks fights on with what's left: **−2 attack tempo,
+−2 severity**, no proficiency, no weapon specials, and nothing left to break.
+Re-arming (loot a fallen foe's blade, buy a new one) is a between-fights DM
+beat.
+
+### Flavor properties (stored, mechanically inert)
+
+`bulk` (carry weight — no encumbrance in the heroic tone; STR's future
+secondary role if that changes), `tags` (`cheap` / `military` / `ancient`,
+later `orcish`... — generation flavor), `value` (gold), and `description`
+(the mechanical role in plain words, so nobody has to math out what a weapon
+is for).
+
+---
+
 ## Reading the combat log
 
 The log is written for two readers at once — the human player and the AI DM —
@@ -145,13 +250,15 @@ so every exchange prints **two layers**:
 
 Notable events get their own lines: `!! X is Winded` when the STA threshold is
 crossed, `First Blood!` on the opening strike, a Bulwark *flare* on a saved
-blow (raw tier stated first — narrate the averted death), and the `***` lines
-for falls, slayings, and level-ups.
+blow (raw tier stated first — narrate the averted death),
+`*** CRACK -- X's club shatters on Y's blade ***` when a weapon breaks, and
+the `***` lines for falls, slayings, and level-ups.
 
 **2. The raw mechanics**, indented under each headline: the actual `2d6`
-result, every modifier with its source (`+DEX`, `+training`, `-wounds`,
-`-winded`), both totals (formatted `Name: total (parts)`), then the full
-severity arithmetic (`severity = margin + STR - soak -> tier`).
+result, every modifier with its source (`+DEX`, `+training`, `+rapier`,
+`+proficiency`, `-wounds`, `-winded`), both totals (formatted
+`Name: total (parts)`), then the full severity arithmetic
+(`severity = margin + STR + weapon mods - soak -> tier`).
 
 A `stamina:` readout prints every round — the clock is visible ticking — with
 `*` marking the Winded and `!!` the Spent; tireless entities are
@@ -200,11 +307,14 @@ Endurance beats Power measurably, ~52/48 at equal points), and in the swarm
 fights that fill actual play, per-swing damage decides whether you clear the
 room before you run dry.
 
-The rest of the intended counter-loop ("Power beats Precision") arrives with
-Phase 4 weapons, which hang extra severity and per-swing STA cost on STR
-frames. If the gap still feels wrong before then, the next lever is weighting
-STR heavier in the severity formula (a `margin + 2×(STR−soak)` variant) — 
-rejected for now because it soak-locks low-STR swarm enemies out of the game.
+Phase 4 weapons now carry part of that counterweight: the zweihander hangs
+flat severity on a STR frame (and its guard penalty leans on STR's soak), so
+a brute with war steel one-shots what a fencer has to carve at. The original
+plan — heavy weapons costing more STA per swing — was sim-rejected (see the
+Weapons section note). If the gap still feels wrong, the next lever is
+weighting STR heavier in the severity formula (a `margin + 2×(STR−soak)`
+variant) — rejected for now because it soak-locks low-STR swarm enemies out
+of the game.
 
 ---
 
@@ -278,7 +388,8 @@ serve:
 
 - **Allocate / raise stats** toward an archetype, or toward countering what's
   ahead.
-- **Equip gear** that shifts stats, soaks severity, or adds STA.
+- **Equip gear** that shifts stats, soaks severity, or adds STA. *(Live now:
+  weapons — buy plain quality steel, loot commons, drill proficiency.)*
 - **Pick your fights** — knowing the loop, choose opponents your build counters
   and avoid your counters. *(Live now: farm the skeleton barrow to afford the
   bandit hideout.)*
@@ -558,13 +669,27 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- It is the **only skill for now**, so the scenarios auto-spend points on it;
-  once more skills exist, spending becomes a real between-fights choice.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-Spent): the
-  skeleton barrow (tough site) clears **27% → 55% → 82% → 95%** across ranks
-  0–3 (a rank-0 party wipes ~73% of the time); the bandit hideout (starter)
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-weapons): the
+  skeleton barrow (tough site) clears **21% → 49% → 76% → 94%** across ranks
+  0–3 (a rank-0 party wipes ~79% of the time); the bandit hideout (starter)
   clears **86% → 96% → 99% → 100%** (rank-0 wipe ~14%). Each rank is a *felt*
   jump — Phase 3's test criterion.
+
+## Weapon proficiency — the second skill
+
+Per **weapon type** (the rapier, not this rapier): each rank gives **+1 attack
+tempo AND +1 severity with that weapon**. Rank *n* costs *n* points; **cap:
+rank 3**. Deliberately stronger per rank than combat training because it's
+narrower — offense only, one weapon — while training helps attack, defense,
+and any weapon you pick up. Switching weapons keeps your training but drops
+the proficiency layer until you drill the new type: that loss is the
+commitment cost that makes a build a build. A broken weapon grants no
+proficiency (you're swinging a stump).
+
+**With two sinks, skill points are a real choice now**: nothing auto-spends in
+session play (`session.py train HERO combat|weapon` — points bank until the
+player spends them). Only the batch sims (`run_dungeon` / `run_hideout`)
+auto-spend on combat training, so tune/bench numbers stay comparable.
 
 ## Gold and the potion economy
 
@@ -577,5 +702,15 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Sink:** any potion costs **10 g**. `buy_potion` is a deliberate,
   DM-called, between-adventures purchase — nothing in the engine buys or
   refills automatically. A quest reward is worth 1–2 potions (the hideout, 4+).
-- **Starting stock:** two *random* potions at creation. That's the whole kit;
-  from then on the stock only moves through drops, purchases, and use.
+- **Weapons are the second sink** (`buy_weapon`, same DM-called shape): plain
+  quality weapons cost **60 g** — a real saving goal (roughly four hideout
+  clears of quest gold + drops); commons are shop-trivial (1–15 g).
+  Masterwork/legendary are **never** for sale. This deliberately softens the
+  old "gold never buys power" rule (see plan.md): a plain rapier is modest
+  permanent power, and worth it — sim-measured, a katana + zweihander loadout
+  lifts a fresh party's barrow clear rate from ~21% to ~62%, about the value
+  of two training ranks. The intended arc: clear the hideout fresh, level up
+  *and shop*, then take the barrow.
+- **Starting stock:** two *random* potions at creation (plus the rolled
+  starting weapon). That's the whole kit; from then on the stock only moves
+  through drops, purchases, and use.

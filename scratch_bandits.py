@@ -16,6 +16,7 @@ import random
 from rpg import (Entity, Clock, Purse, make_party, group_combat, stat_line,
                  outcome, start_fight, short_rest, party_wiped, award_xp,
                  award_quest, roll_loot, auto_use_potions_on_rest,
+                 train_combat, random_common_weapon,
                  ENCOUNTER_XP, QUEST_XP, QUEST_GOLD)
 
 # The starter site pays the base rate (the barrow pays 3x -- see rpg.py).
@@ -38,15 +39,19 @@ HIDEOUT_ROOMS = [
 ]
 
 
-def make_bandit(kind: str, n: int) -> Entity:
+def make_bandit(kind: str, n: int, rng: random.Random) -> Entity:
+    # Bandits arm from the same common-weapon table as starting heroes
+    # (50% crude / 45% soldier's arms / 5% heavy) -- always a specific named
+    # weapon, so the logs read "Cutthroat 2's dagger", never "a crude weapon".
     dex, str_, sta, hp = BANDIT_TYPES[kind]
     return Entity(name=f"{kind.capitalize()} {n}", dex=dex, str_=str_,
-                  sta=sta, max_hp=hp)
+                  sta=sta, max_hp=hp, weapon=random_common_weapon(rng))
 
 
 def bandit_line(e: Entity) -> str:
+    wpn = e.weapon.name if e.weapon else "unarmed"
     return (f"{e.name}: DEX {e.dex}  STR {e.str_}  STA {e.sta}  "
-            f"HP {e.hp}/{e.max_hp}")
+            f"HP {e.hp}/{e.max_hp}  ({wpn})")
 
 
 def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
@@ -70,7 +75,7 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
         bandits = []
         for kind in roster:
             count += 1
-            bandits.append(make_bandit(kind, count))
+            bandits.append(make_bandit(kind, count, rng))
         if verbose_rosters:
             for b in bandits:
                 log.append("  " + bandit_line(b))
@@ -98,6 +103,9 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, BANDIT_QUEST_GOLD, BANDIT_QUEST_XP,
                     log, "the hideout is broken")
+        for h in party:
+            if not h.dead:
+                train_combat(h, log)    # sim policy: auto-spend on training
 
 
 def main() -> None:

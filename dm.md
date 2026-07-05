@@ -36,12 +36,18 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   choice stays theirs.
 - **Player decisions -- suggest, never decide:** drinking a potion (`use`),
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
-  (`camp`), buying (`buy`), which site to run, whether to press on or pull
-  back. Recommend a move when it's smart ("Veld is at 2 HP -- drink the
-  healing potion?"), then wait for the player's call.
+  (`camp`), buying potions or weapons (`buy`), **spending skill points**
+  (`train HERO combat|weapon` -- points bank on level-up and NOTHING
+  auto-spends; always tell the player when they have unspent points), which
+  site to run, whether to press on or pull back. Recommend a move when it's
+  smart ("Veld is at 2 HP -- drink the healing potion?"), then wait for the
+  player's call.
 - **DM decisions:** quest rewards on a site clear (`quest 15 55 ...` for the
-  hideout, `quest 45 165 ...` for the barrow) and general pacing -- but pacing
-  choices that spend player resources (rests, camping) belong to the player.
+  hideout, `quest 45 165 ...` for the barrow), granting found/looted weapons
+  (`give HERO WEAPON` -- e.g. the fallen bruiser's longsword; commons are
+  trivial loot, quality steel is a real find, masterwork/legendary are story
+  events), and general pacing -- but pacing choices that spend player
+  resources (rests, camping) belong to the player.
 - **The two sites are SET encounters** -- balanced during development, never
   improvised at the table. Run them room-by-room with `hideout ROOM` and
   `barrow ROOM` (1-3 each; fixed foe counts/rosters). `fight N
@@ -78,7 +84,24 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   go Spent too) -- hideout logs read with no special cases.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved killing blow. Total party knockout = the Down are finished off.
+- **Weapons:** everyone wields exactly one (no inventory; swaps are narrative
+  or `give`/`buy`). The quality four: rapier (+2 attack, -1 severity, always
+  draws blood on a landed hit), katana (+1/+1, the all-rounder), zweihander
+  (+1/+3 but -1 on defense -- the crowd-breaker), wooden staff (+1 parry,
+  +1 HP per Heal, weak steel -- the healer's weapon). Commons are named trash
+  (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
+  halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
+  ~2 training ranks at the barrow; masterwork/legendary are never for sale.
+- **Weapon breaks are story beats.** On a parry or clash the flimsier weapon
+  can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2 attack /
+  -2 severity until re-armed (`give` them a fallen foe's blade between
+  fights). Skeleton rust-blades snap on good steel ~1 room in 10 -- narrate
+  the party's steel earning its price. Equal-quality steel almost never
+  breaks; a hero clinging to a club against real weapons risks losing it.
+- Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
+  tempo & +1 severity per rank, cap 3, rank n costs n points). It stays with
+  the weapon type -- switching weapons drops the bonus until re-drilled.
 - Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
   first clear = level 2); skeleton barrow = TOUGH, pays 3x (45/encounter,
-  45 g + 165 XP) -- train up first (rank 2+ strongly recommended; a fresh
-  party wipes there ~3 times in 4).
+  45 g + 165 XP) -- train up AND arm up first (rank 2+ or quality steel
+  strongly recommended; a fresh party wipes there ~4 times in 5).

@@ -27,7 +27,10 @@ during the fight or around it?* During → lean simulation. Around → lean game
 
 The rule that keeps the economy from going flat: **gold buys staying power, not
 power.** Permanent ability is XP-only; meaningful weapons and stat boosts are
-found/quested, not shopped.
+found/quested, not shopped. *Softened by decision (2026-07): this is a
+guideline, not a law — the real intent is just that XP and gold shouldn't feel
+like the same currency. Plain-tier quality weapons may be shopped for gold;
+masterwork/legendary stay found/quested.*
 
 ### Stats — five, all fixed at creation
 
@@ -43,6 +46,37 @@ push a stat past its natural value — the membrane in action.
 | **STA** | Combat | The involuntary clock; drives the burst/sustain matchup loop. |
 | **INT** | Magic | Scales/gates magic, the way STR scales weapons. |
 | **CHA** | Meta/party | Companions, recruitment, the disengage/rest/quest layer. Never acts inside a fight. |
+
+### Tone — heroic, not gritty (for now)
+
+The current vision is **heroic adventure**, not survival realism: like Lord of
+the Rings, you travel with a backpack and no bookkeeping. Concretely ruled out
+for now: inventory management, hunger, disease, lifestyle upkeep costs, weapon
+maintenance meters. (This may change later — survival/adventure simulation
+could suit the format — but it is a deliberate future pivot, not drift.)
+Weapons carry a combined weight/bulk property that is *stored but inert*; if
+carrying ever matters, it becomes a natural secondary role for STR.
+
+The same tone permits **wacky, non-serious mechanics** once the basics are
+solid (e.g. a magic sword that generates gold by killing). The mechanics
+should be sturdy first, but the game is not oh-so-serious about its own
+economy rules — see the note under the currency table.
+
+### Legibility — a core design challenge
+
+Most of the mechanics are invisible at the table: the player experiences the
+game through chat narration, not character sheets. This cuts two ways:
+
+- **Prefer mechanics whose fiction is self-explaining.** A weapon snapping
+  mid-fight is instantly understood and narratable; an invisible +1 is not.
+  When choosing between two designs of equal depth, take the one a spectator
+  could follow. (This is what motivates weapon durability/breakage.)
+- **Logging and DM display rules help but don't solve it.** Later: explicit
+  instructions for the DM on which stats/log excerpts to copy directly into
+  chat so the player can see the state that matters.
+- **Future mechanics chosen for legibility:** enemy morale and surrender;
+  recruiting defeated/met NPCs into the party; characters with flaws, needs,
+  and personalities rolled from spark tables. All parked, not designed.
 
 ### Progression — free allocation, never use-based
 
@@ -62,40 +96,46 @@ opening of the brainstorm):
 
 - **General competence** — broad fighting/magic skills; a flat bonus that says
   "you know how to do this at all." The veteran-vs-conscript axis.
-- **Weapon proficiency** — per-individual-weapon (only five exist, so no need for
-  classes). Stacks on top of general competence. Switching to an unfamiliar
-  weapon keeps your general skill but drops the proficiency layer — that loss is
-  the commitment cost that makes a build a build.
+- **Weapon proficiency** *(built)* — per weapon **type** (rapier ranks apply to
+  any rapier; no weapon classes needed). Stacks on top of general competence.
+  Switching to an unfamiliar weapon keeps your general skill but drops the
+  proficiency layer — that loss is the commitment cost that makes a build a
+  build.
 - Skills may include niche/non-combat ones (e.g. explosives, lore) for character
   identity.
 
-### Weapons — build expression, not a power ladder
+### Weapons — build expression, not a power ladder *(first slice built)*
 
 Each weapon weights the three combat stats *differently*, so a weapon is *suited
-or unsuited to a build*, never simply better. Knobs (all from the existing
-system):
+or unsuited to a build*, never simply better. The shipped knobs (see rules.md
+"Weapons" for the full spec): **attack tempo** (the rapier), **flat severity**
+(the zweihander), **defense tempo** (staff +1, zweihander −1), **durability**
+(breakage — see below), plus flavor fields (`bulk` inert, `tags`, `value`,
+`description`).
 
-- **Tempo weighting** — DEX-favouring (rapier) vs STR-contributing (greatsword).
-- **Severity profile** — flat bonus vs STR-scaling.
-- **STA cost per swing** — heavy weapons burn the clock faster (a burst weapon
-  *mechanically*, wanting a high-STA frame behind it). *The engine hook already
-  exists*: `Entity.sta_cost` is the per-swing STA price (attacks spend STA,
-  defense is free, 0 STA = Spent — still swinging but −6 to everything, until
-  the fight ends) — weapons just need to set it. With running dry lethal, a
-  heavy weapon is a real gamble: fewer, harder swings against your own
-  death-clock.
-- **Reach** — survives as a small first-exchange modifier even though range isn't
-  tracked.
+Two planned knobs changed on contact with the sims:
 
-**Shortlist (taste-curated; no spears/shields/axes):**
+- **STA cost per swing** — the intended heavy-weapon burst mechanic — is
+  **sim-rejected for now**: with Spent lethal, halving the swing budget loses
+  more than any severity bonus buys back (every 2-STA zweihander variant was
+  strictly worst-in-class, `bench_weapons.py`). The schema keeps the knob at 1
+  for a future with deeper STA pools; the zweihander's burst identity ships as
+  the guard penalty instead.
+- **Reach** (a small first-exchange modifier) — still unbuilt, parked.
 
-| Weapon | Likely identity |
-|--------|-----------------|
-| Wooden staff | INT/caster weapon — bridges martial and magic. |
-| Greatsword | STR burst — high severity, high STA cost. |
-| Rapier | DEX precision — tempo-favouring, low severity. |
-| Katana | Balanced/finesse — the all-rounder. |
-| Dungeonpunk guns | Ranged; consumes **ammo** (gold sink, balancing lever). |
+**The quality four (taste-curated; no spears/shields/axes):** rapier (+2 atk,
+−1 sev, graze floor — a landed thrust always draws blood), katana (+1/+1, the
+all-rounder), zweihander (+1/+3, −1 defense, the crowd-breaker), wooden staff
+(healer's weapon: +1 parry, +1 HP per Heal, poor steel on purpose). Commons
+(the "uncool" list) collapse to three lines: crude 0/−1 (durability 1),
+soldier's arms 0/0, heavy arms 0/+1. **Durability & breakage** shipped: on a
+parry or Clash the lower-durability weapon can shatter (0.25% × gap² per
+contact — a club vs legendary steel snaps in ~24% of fights, quality vs better
+~1%); broken = −2 atk/−2 sev until re-armed. Craftsmanship tiers:
+plain (unlabeled in play) / masterwork / legendary — only plain is shoppable.
+
+**Dungeonpunk guns** (ranged; consume **ammo** as a gold sink) — deliberately
+excluded from the first slice; a later phase.
 
 ### Loot — weapons as narrative elements, not realistic drops
 
@@ -195,11 +235,21 @@ clear rate climbs 27% → 55% → 82% → 95% across training ranks 0–3. Each 
 is a felt jump: training ends fights in fewer swings, which is what stretches
 the (now lethal) STA budget.
 
-**Phase 4 — Weapons & proficiency**
-Build: the five weapons with distinct tempo/severity/STA profiles; per-weapon
-proficiency; guns + ammo.
-Test: each weapon is build-*suited* rather than ranked (no single best); the
-proficiency switching cost is real.
+**Phase 4 — Weapons & proficiency** *(first slice built — `rpg.py`; guns deferred)*
+Build: the quality four with distinct tempo/severity/defense profiles + the
+common-weapon table (14 named commons in three stat lines) + durability/
+breakage + per-weapon-type proficiency (+1 atk tempo & +1 severity per rank,
+rank *n* costs *n*, cap 3 — making skill points a real choice vs combat
+training; nothing auto-spends in session play anymore). Guns + ammo: deferred
+to a later phase.
+Test: *passed* (`bench_weapons.py`) — suited, not ranked: the rapier is the
+best duelist on nearly every frame, the zweihander sweeps every swarm cell,
+the katana is the reliable second everywhere, the staff trails on purpose; no
+weapon tops every cell. Gear is a felt jump (`tune`-style check: katana +
+zweihander lift a fresh party's barrow clear from ~21% to ~62%, worth ~2
+training ranks). The proficiency switching cost is structural (per weapon
+type). Note: the planned 2-STA heavy swing was sim-rejected — see the weapons
+section above.
 
 **Phase 5 — Loot & items** *(trash-tier slice built: gold/potion encounter
 drops + a quest-gold + potion-shop economy, and potion *use* is now a
@@ -242,3 +292,22 @@ Test: the prose layer is flavour-only and never alters mechanical outcomes.
 - **Untested numbers** — every constant (Power totals, potion restore, STA threshold,
   severity breakpoints, level curve) is provisional and tuned via batch sims, not
   hand-designed.
+- **Weapon ideas deferred from the Phase 4 design round (2026-07):**
+  - *Level requirements on masterwork/legendary weapons* — rejected for now:
+    authored placement by the DM already gates when they appear; a hard level
+    lock is redundant bookkeeping. Revisit only if strong gear leaks to
+    low-level parties in practice.
+  - *Per-weapon tempo dice* (e.g. a weapon rolling 1d12 instead of 2d6 for a
+    swingier profile) — fun, but 2d6 is deliberately the single global
+    variance dial; don't fork it before the numbers earn trust.
+  - *Rapier anti-soak floor* — **shipped** in the first slice (the
+    `graze_floor` flag): it turned out to be exactly what the rapier needed
+    to reward the low-STR precise frame instead of merely patching clumsy ones.
+  - *Guns + ammo* — explicitly out of the first weapons slice; moved to a
+    later phase.
+  - *Weapon reach* (a small first-exchange modifier) — parked, unbuilt.
+  - *The 2-STA heavy swing* — sim-rejected while Spent is lethal; revisit if
+    STA pools ever deepen (the `sta_cost` knob remains in the Weapon schema).
+- **Legibility-driven mechanics parked** (see the design-spine section):
+  enemy morale/surrender, recruitment, spark-table personalities/flaws/needs,
+  DM display rules for surfacing stats in chat.

@@ -28,7 +28,18 @@ Run:  python session.py new [--seed N]              # new party, resets state
       python session.py rest                          # short rest (spends a slot)
       python session.py camp                          # long rest (advance a day)
       python session.py quest GOLD XP NAME             # award a site-clear quest
-      python session.py buy HERO KIND                  # buy a potion from the purse
+      python session.py buy HERO THING                  # buy a potion OR a weapon from
+                                                        # the purse (weapons are equipped
+                                                        # on the spot; plain tier only)
+      python session.py give HERO WEAPON                # DM-granted loot: wield a weapon
+                                                        # for free (quest rewards, a sword
+                                                        # looted off a bandit, ...)
+      python session.py train HERO combat|weapon        # spend a banked skill point:
+                                                        # combat training (+1 all tempo)
+                                                        # or proficiency with the WIELDED
+                                                        # weapon (+1 atk tempo & +1 severity
+                                                        # with it). Player choice -- nothing
+                                                        # auto-spends in session play.
       python session.py use HERO KIND                  # drink a carried potion (instant, between fights)
       python session.py heal HEALER TARGET              # Heal ability, between fights
 """
@@ -40,14 +51,17 @@ import random
 from pathlib import Path
 
 from rpg import (
-    Clock, Purse, POTION_KINDS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
+    Clock, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
     BARROW_ROOMS,
     make_party, make_skeleton, stat_line,
     start_fight, group_combat, party_wiped,
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
     buy_potion as _buy_potion, use_heal as _use_heal,
-    use_potion as _use_potion,
+    use_potion as _use_potion, buy_weapon as _buy_weapon,
+    equip_weapon as _equip_weapon,
+    train_combat_once as _train_combat_once,
+    train_proficiency as _train_proficiency,
 )
 from scratch_bandits import (make_bandit, bandit_line, HIDEOUT_ROOMS,
                              BANDIT_TYPES, BANDIT_ENCOUNTER_XP)
@@ -56,7 +70,7 @@ STATE_PATH = Path(__file__).parent / ".session_state.pkl"
 
 
 def _make_random_bandit(rng, n):
-    return make_bandit(rng.choice(sorted(BANDIT_TYPES)), n)
+    return make_bandit(rng.choice(sorted(BANDIT_TYPES)), n, rng)
 
 
 FOE_MAKERS = {"skeleton": make_skeleton, "bandit": _make_random_bandit}
@@ -168,7 +182,7 @@ def report_game_over(party: list, wiped: bool) -> None:
 
 def cmd_hideout(args: argparse.Namespace) -> None:
     state = load()
-    party = state["party"]
+    party, rng = state["party"], state["rng"]
     log: list[str] = []
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
@@ -178,7 +192,7 @@ def cmd_hideout(args: argparse.Namespace) -> None:
     bandits = []
     for kind in roster:
         state["foe_count"] += 1
-        bandits.append(make_bandit(kind, state["foe_count"]))
+        bandits.append(make_bandit(kind, state["foe_count"], rng))
     for b in bandits:
         log.append("  " + bandit_line(b))
 
@@ -217,7 +231,43 @@ def cmd_buy(args: argparse.Namespace) -> None:
     party, purse = state["party"], state["purse"]
     log: list[str] = []
     hero = next(h for h in party if args.hero.lower() in h.name.lower())
-    _buy_potion(hero, purse, args.kind, log)
+    thing = " ".join(args.thing).lower()
+    if thing in POTION_KINDS:
+        _buy_potion(hero, purse, thing, log)
+    elif thing in WEAPONS:
+        _buy_weapon(hero, purse, thing, log)
+    else:
+        print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
+              f"Weapons: {', '.join(sorted(WEAPONS))}.")
+        return
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_give(args: argparse.Namespace) -> None:
+    state = load()
+    party = state["party"]
+    log: list[str] = []
+    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    name = " ".join(args.weapon).lower()
+    weapon = WEAPONS.get(name)
+    if weapon is None:
+        print(f"Unknown weapon: {name!r}. Weapons: {', '.join(sorted(WEAPONS))}.")
+        return
+    _equip_weapon(hero, weapon, log)
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_train(args: argparse.Namespace) -> None:
+    state = load()
+    party = state["party"]
+    log: list[str] = []
+    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    if args.what == "combat":
+        _train_combat_once(hero, log)
+    else:
+        _train_proficiency(hero, log)
     print("\n".join(log))
     save(state)
 
@@ -289,10 +339,34 @@ def main() -> None:
     p.add_argument("name")
     p.set_defaults(func=cmd_quest)
 
-    p = sub.add_parser("buy", help="spend gold on a potion for one hero")
+    p = sub.add_parser(
+        "buy",
+        help="spend gold on a potion or a weapon for one hero (weapons are "
+             "equipped on the spot; plain tier only -- masterwork/legendary "
+             "are never shopped)")
     p.add_argument("hero")
-    p.add_argument("kind", choices=list(POTION_KINDS))
+    p.add_argument("thing", nargs="+",
+                   help="a potion kind or a weapon name (e.g. rapier, "
+                        "wooden staff)")
     p.set_defaults(func=cmd_buy)
+
+    p = sub.add_parser(
+        "give",
+        help="DM-granted loot: a hero wields a weapon for free (quest "
+             "rewards, a blade looted off a bandit, ...)")
+    p.add_argument("hero")
+    p.add_argument("weapon", nargs="+", help="weapon name (e.g. wooden staff)")
+    p.set_defaults(func=cmd_give)
+
+    p = sub.add_parser(
+        "train",
+        help="spend a banked skill point: 'combat' = +1 to all tempo rolls "
+             "per rank (cap 5); 'weapon' = proficiency with the WIELDED "
+             "weapon, +1 attack tempo & +1 severity per rank (cap 3). "
+             "Rank n costs n points. A player choice -- nothing auto-spends.")
+    p.add_argument("hero")
+    p.add_argument("what", choices=["combat", "weapon"])
+    p.set_defaults(func=cmd_train)
 
     p = sub.add_parser(
         "use",

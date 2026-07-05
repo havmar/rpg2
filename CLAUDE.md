@@ -67,6 +67,12 @@ fiction.
   combat-training ranks 0-3 and prints wipe/clear rates per rank ("does a
   level-up feel noticeable against a fixed enemy"). Run:
   `python bench_training.py`.
+- `bench_weapons.py` — Phase 4 benchmark: the "suited, not ranked" test. Each
+  stat frame (precise/powerful/steady/balanced) wielding each quality weapon,
+  in two situations (1v1 duel vs a shortsword reference; 1v3 skeleton swarm);
+  prints win% per cell. Also the doc of record for WHY the zweihander does
+  not cost 2 STA per swing (sim-rejected: with Spent lethal, half the swing
+  budget loses more than severity buys back). Run: `python bench_weapons.py`.
 - `session.py` — **the DM driver used to actually play the game.** A thin CLI
   over `rpg.py`'s primitives that persists party/clock/purse state to
   `.session_state.pkl` (gitignored -- a save file, not source) between
@@ -85,7 +91,13 @@ fiction.
   `fight N [--type skeleton|bandit]` is the *off-script* escape hatch (spawns
   N foes) for improvised scenes only -- a road ambush, a one-off scrap --
   never a substitute for running a site's rooms. Then `rest`, `camp`,
-  `quest GOLD XP NAME`, `buy HERO KIND`,
+  `quest GOLD XP NAME`, `buy HERO THING` (a potion OR a weapon -- weapons are
+  equipped on the spot; plain tier only, quality 60g / commons 1-15g),
+  `give HERO WEAPON` (DM-granted loot: wield a weapon for free -- quest
+  rewards, a blade looted off a bandit), `train HERO combat|weapon` (spend a
+  banked skill point on combat training or on proficiency with the wielded
+  weapon -- **nothing auto-spends in session play**; that choice is the
+  player's now),
   `use HERO KIND` (drink a *carried* potion between fights -- DM-called, never
   automatic; instant top-up -- healing restores HP, stamina/power restore now),
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
@@ -113,6 +125,7 @@ python session.py new    # start an actual DM-driven playthrough (see session.py
 python scratch_bandits.py --seed 3   # the starter site, one-shot
 python tune.py           # outcome-distribution sweep over layouts
 python bench_training.py # wipe/clear rates per combat-training rank
+python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -125,21 +138,35 @@ is intentionally ASCII-only, so plain runs are usually fine.
   **Spent** at 0) — plus an **HP** wound pool. The identity split:
   *DEX = swings that connect, STR = swings that count, STA = how many good
   swings you get.*
-- Each round is an opposed `2d6 + DEX + training − (wound penalty) − (fatigue)`
-  exchange (fatigue: 2 Winded / 6 Spent, never stacked). Higher roll lands;
-  `severity = margin + atkSTR − defSTR` maps to a wound tier
-  (deflected/graze/wound/grievous/killing blow). **The wound penalty
+- Each round is an opposed `2d6 + DEX + training + weapon − (wound penalty)
+  − (fatigue)` exchange (fatigue: 2 Winded / 6 Spent, never stacked; the
+  weapon term is attack-side only — atk bonus + proficiency — except the
+  staff's +1 / zweihander's −1 defense mod). Higher roll lands;
+  `severity = margin + atkSTR + weapon severity mods − defSTR` maps to a
+  wound tier (deflected/graze/wound/grievous/killing blow; the rapier's graze
+  floor keeps a landed thrust from full deflection). **The wound penalty
   (= HP lost; halved, integer, for the undead — they feel no pain) is the death
   spiral, which is the whole point.**
-- **Attacking costs STA** (`Entity.sta_cost`: 1 for the living; the undead are
-  **tireless** and never spend any); defending is free. **At 0 STA an entity
+- **Attacking costs STA** (`Entity.swing_cost`, set by the wielded weapon —
+  currently 1 for everything living; the undead are **tireless** and never
+  spend any); defending is free. **At 0 STA an entity
   is SPENT**: it still swings (desperation is free) but takes −6 to *all*
   rolls, with **no in-fight recovery** — against fresh foes that's a death
   sentence; two spent sides cancel each other's penalties and the wound
   spiral still ends the fight, so melees always resolve (draws exist only via
   the `max_rounds` safety valve). STA recovers only between fights. People
-  die of exhaustion now; that is the point. (The per-swing cost is the
-  planned Phase-4 weapon knob — greatsword heavy, rapier light.)
+  die of exhaustion now; that is the point. (The planned 2-STA heavy swing
+  was sim-rejected — see `bench_weapons.py` / rules.md "Weapons".)
+- **Weapons (Phase 4 first slice)** — one wielded weapon per fighter, no
+  inventory. Quality four: rapier (+2 atk, −1 sev, graze floor), katana
+  (+1/+1), zweihander (+1/+3, −1 defense), wooden staff (+1 parry, +1 Heal,
+  −1 sev). Commons in three lines: crude 0/−1 (durability 1), soldier's arms
+  0/0 (the old implicit baseline), heavy arms 0/+1. **Breakage:** on a parry
+  or Clash the lower-durability weapon can shatter (0.25% × gap² per contact;
+  broken = −2 atk/−2 sev until re-armed). Tiers plain/masterwork/legendary —
+  only plain is shoppable (quality 60 g). Starting roll (heroes & bandits):
+  50% crude / 45% soldier / 5% heavy; healers 50% wooden staff. Skeletons
+  swing durability-1 rusted blades that snap on good steel.
 - `group_combat` resolves a melee **sequentially** — party in list order first
   (PC acts first), then foes; every attacker picks a *living* target at the
   moment it acts, so a foe slain mid-round is neither attacked again nor swings
@@ -209,22 +236,29 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   finished off (marked Dead) and the run stops — a game over. So a double-Down is
   no longer a recoverable state; it ends the run.
 
-## Progression & economy (Phase 3 first slice — see `rules.md` add-on)
+## Progression & economy (Phases 3 + 4 — see `rules.md` add-on)
 
 - **XP:** every not-dead hero earns the full award — 15/encounter + 55/quest at
   the bandit hideout (the starter site), 3x at the skeleton barrow (45/165, the
   tough site). Level `L -> L+1` costs `100 * L` (`xp_to_next`), so the *first
   hideout clear is exactly a level-up*.
   `award_xp` handles level-ups and banks skill points (1/level).
-- **Combat training** (`train_combat`) — the only skill so far: +1 to all tempo
-  rolls per rank, rank *n* costs *n* points, cap 5. Since it's the only sink,
-  scenarios auto-spend after quest awards; when more skills exist this becomes
-  a real player choice.
+- **Two skill sinks now — points are a real choice.** Combat training: +1 to
+  all tempo rolls per rank, rank *n* costs *n* points, cap 5. Weapon
+  proficiency (`train_proficiency`): +1 attack tempo AND +1 severity with the
+  wielded weapon type per rank, rank *n* costs *n*, cap 3 — narrower, so
+  stronger per rank; switching weapons drops the layer (the commitment cost).
+  **Session play banks points** (`train HERO combat|weapon`); only the batch
+  sims auto-spend on training (`train_combat`, greedy) so tune/bench stay
+  comparable.
 - **Gold** lives in a shared `Purse`. Income: quest rewards (15 g hideout / 45 g
   barrow) + per-encounter drops (20% -> 5 g, 10% -> a random potion to a random
-  hero, `roll_loot`). Sink: `buy_potion(hero, purse, kind, log)` at
-  `POTION_PRICE = 10` — a **DM-called between-adventures purchase**, the first
-  real player shopping decision. Nothing refills automatically.
+  hero, `roll_loot`). Sinks: `buy_potion(hero, purse, kind, log)` at
+  `POTION_PRICE = 10`, and `buy_weapon(hero, purse, name, log)` — plain
+  quality steel at 60 g is the first real saving goal (sim-measured: katana +
+  zweihander lift a fresh party's barrow clear ~21% -> ~62%, worth ~2 training
+  ranks). Both are **DM-called between-adventures purchases**. Nothing
+  refills automatically.
 
 ## The current prototype scenario
 
@@ -238,11 +272,14 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   `randint(3, 6)`, STA `randint(5, 8)` (its own higher range — STA is the swing
   budget / second death-track, so its floor matters like HP's floor), HP
   `randint(8, 12)`, Power `randint(3, 6)`, a random ability (`heal` / `bulwark`
-  / `first_blood`), two random potions, and an epithet from the highest stat
-  (precise/powerful/steady; STA normalized down 2 for the comparison).
+  / `first_blood`), two random potions, a rolled starting weapon (50% crude /
+  45% soldier's arms / 5% heavy; heal-ability heroes 50% wooden staff), and an
+  epithet from the highest stat (precise/powerful/steady; STA normalized down
+  2 for the comparison).
 - **The starter site:** the bandit hideout (`scratch_bandits.py`,
-  `HIDEOUT_ROOMS`: 2/2/2 living bandits). Same rules as the party — its logs
-  teach the system. Base pay; first clear = level 2.
+  `HIDEOUT_ROOMS`: 1/2/2 living bandits). Same rules as the party — its logs
+  teach the system; bandits arm from the same common-weapon table. Base pay;
+  first clear = level 2.
 - **The tough site:** rooms of skeletons, `BARROW_ROOMS` (named rooms, counts
   `DUNGEON_ROOMS = [3, 3, 4]`; one "day"; 3x pay). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
@@ -253,18 +290,25 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   chip damage and First Blood's spiral bite less here) and **tireless** (never
   spend STA, never Winded/Spent) — the threat is *numbers* pressing a party
   whose stamina is a death-track: they don't have to beat you, just outlast
-  you. The exception enemies, met second on purpose (living foes first).
+  you. They swing durability-1 **rusted blades** that occasionally snap on
+  good steel (~10% of rooms vs a quality-armed party — the barrow visibly
+  eases as gear improves). The exception enemies, met second on purpose
+  (living foes first).
 
 ## Balance / tuning
 
 `tune.py` reports attrition alongside the death split, plus clear rate and gold.
-Post-Spent (STA a lethal second death-track), at the barrow's `[3, 3, 4]`
-over 20k runs at rank 0: ~**25% / 2% / 73%** (none / one / both slain),
-**clear ~26%** — a fresh party that walks into the barrow dies; that is the
-design (it pays 3x). Per `bench_training.py` (5k/rank), the barrow clears
-**27% -> 55% -> 82% -> 95%** across training ranks 0-3, and the starter
-hideout **86% -> 96% -> 99% -> 100%** (rank-0 wipe there is ~14%). The
-intended arc: clear the hideout fresh, level up, take the barrow trained.
+Post-weapons (heroes and bandits roll the common table, so half start crude),
+at the barrow's `[3, 3, 4]` over 20k runs at rank 0: ~**20% / 2% / 78%**
+(none / one / both slain), **clear ~21%** — a fresh party that walks into the
+barrow dies; that is the design (it pays 3x). Per `bench_training.py`
+(5k/rank), the barrow clears **21% -> 49% -> 76% -> 94%** across training
+ranks 0-3, and the starter hideout **86% -> 96% -> 99% -> 100%** (rank-0 wipe
+there is ~14% — unchanged by weapons, since bandits roll the same table).
+Gear is the other axis (`bench_weapons.py` / gear check): a katana +
+zweihander loadout lifts the fresh barrow clear to ~**62%** — quality steel
+is worth about two training ranks. The intended arc: clear the hideout
+fresh, level up *and buy steel*, take the barrow trained and armed.
 Note that most barrow deaths come from running dry — training helps by ending
 fights in fewer swings, so the STA budget stretches. If the rank-0 opening
 needs adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow,
@@ -273,12 +317,15 @@ needs adjusting, `HIDEOUT_ROOMS` is the first lever; for the barrow,
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
 survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,
 `SPENT_PENALTY`, `STA_RECOVERY_AFTER_FIGHT`, `STA_RECOVERY_BETWEEN_ROOMS`,
-`SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then economy/progression
-(`POTION_PRICE`, drop chances, quest rewards, `XP_LEVEL_STEP`, training cap),
-then skeleton/bandit stats, then the hero roll ranges (`HERO_STAT_RANGE`,
+`SHORT_RESTS_PER_DAY`, `STARTING_POTIONS`), then weapons (the `WEAPONS`
+catalog profiles, `BREAK_CHANCE_PER_GAP_SQ`, the starting-weapon chances,
+`PROFICIENCY_MAX`), then economy/progression (`POTION_PRICE`, weapon values,
+drop chances, quest rewards, `XP_LEVEL_STEP`, training cap), then
+skeleton/bandit stats, then the hero roll ranges (`HERO_STAT_RANGE`,
 `HERO_STA_RANGE`, `HERO_HP_RANGE`, `HERO_POWER_RANGE`).
-**Always re-run `tune.py` and `bench_training.py` after touching any of
-these** — small changes swing both lethality and the attrition curve.
+**Always re-run `tune.py`, `bench_training.py`, and `bench_weapons.py` after
+touching any of these** — small changes swing lethality, the attrition curve,
+and the weapon matchup matrix.
 
 ## Conventions
 
@@ -291,11 +338,14 @@ these** — small changes swing both lethality and the attrition curve.
 
 ## Not yet built (the point of the design)
 
-The between-fights layer is now *partly* player choice: gold/XP flow, combat
-training is bought with levels, and `buy_potion` makes stocking up a real
-decision (which site to run — starter hideout vs 3x-paying barrow — is the
-first "pick your fights" choice). Still missing: more skills + weapon
-proficiencies (so skill points become an allocation, not an auto-spend), gear
-that shifts stats / soaks severity / adds STA, raising stats toward an
-archetype, and composing the party so builds cover each other. See the
-"Between-fights layer" and the add-on sections in `rules.md`.
+The between-fights layer is now substantially player choice: gold/XP flow,
+skill points are a real allocation (combat training vs weapon proficiency —
+nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
+shopping real decisions, and which site to run (starter hideout vs 3x-paying
+barrow) is the first "pick your fights" choice. Still missing: masterwork/
+legendary weapon *instances* placed in the world (the tiers exist, no named
+items do yet), guns + ammo, armor (tier-shift), magic/INT, raising stats
+toward an archetype, and composing the party so builds cover each other. See
+the "Between-fights layer" and the add-on sections in `rules.md`, and
+plan.md's parked ideas (morale/surrender, recruitment, spark-table
+personalities, weapon reach, the 2-STA heavy swing).
