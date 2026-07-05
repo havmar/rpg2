@@ -58,6 +58,56 @@ by lopsidedness — each one a different tactical puzzle.
 
 ---
 
+## Design spine (the principles above the mechanics)
+
+*(Moved here from plan.md, 2026-07 — plan.md is now roadmap-only.)*
+
+**The one principle: simulate inside the fight; go gamey between fights.**
+Magic is the membrane that lets gamey effects reach into the simulated body.
+Decision rule for any "realistic or gamey?" question: *does it happen during
+the fight or around it?* During → lean simulation. Around → lean game.
+
+**The three currencies (non-overlapping on purpose):**
+
+| Currency | Source | Buys | Never buys |
+|----------|--------|------|------------|
+| **XP / Levels** | Winning encounters | Permanent ability: skills, weapon proficiencies (free allocation) | Stats |
+| **Gold** | Loot, quests, selling trash | Staying power: consumables, ammo, trash gear, rest/services | Named weapons |
+| **Loot & Quests** | Authored rewards | Power spikes: the cool/Named weapons, stat-transcending items | (n/a) |
+
+The rule that keeps the economy from going flat: **gold buys staying power,
+not power** — softened by decision (2026-07) to a guideline: the real intent
+is that XP and gold shouldn't feel like the same currency. Plain-tier quality
+weapons may be shopped for gold; masterwork/legendary stay found/quested.
+
+**Stats are the simulated body, fixed at creation** — never raised by
+levelling. A genetic cap defines each stat's ceiling; only magic and rare
+items can push a stat past its natural value (the membrane in action). The
+planned full set is five: DEX/STR/STA (combat, built), **INT** (magic —
+scales/gates spells the way STR scales weapons), **CHA** (the meta/party
+layer — companions, recruitment; never acts inside a fight).
+
+**Progression is free allocation, never use-based.** Levels grant points
+spent on skills and proficiencies, a la Fallout — *what you are*, not *what
+you've done*. A character can be the explosives specialist whose skill never
+comes up; that's identity, valued for flavor.
+
+**Tone: heroic, not gritty (for now).** Travel with a backpack and no
+bookkeeping — no inventory management, hunger, disease, upkeep, or
+maintenance meters. Weapons carry an inert `bulk` field; if carrying ever
+matters it becomes STR's secondary role. The same tone permits wacky
+mechanics once the basics are solid; the game is not oh-so-serious about its
+own economy rules.
+
+**Legibility is a core design constraint.** The player experiences the game
+through chat narration, not character sheets — so prefer mechanics whose
+fiction is self-explaining (a weapon snapping mid-fight over an invisible
++1), and lean on the log/DM display rules for the rest. Future mechanics
+chosen for legibility: enemy morale and surrender, recruiting defeated NPCs,
+spark-table personalities (all parked, see plan.md).
+
+---
+
 ## Stats
 
 Every entity has three stats and a wound pool.
@@ -90,11 +140,10 @@ gets no dying swing.
    **STA ≤ 3** a fighter is **Winded** (−2 to all rolls) — the warning zone.
 2. **Spent.** At **0 STA** a fighter is **Spent**: still swinging every round
    (desperation is free), but at **−6 to all rolls**, attack and defense alike
-   (replacing the Winded −2; wound penalties still stack on top). There is
-   **no in-fight recovery** short of a stamina draught drunk at a pause (see
-   the add-on — bought at the price of a round's attack and a −2 guard, and
-   the pause usually fires *before* Spent) — otherwise Spent lasts until the
-   fight ends. Against fresh
+   (replacing the Winded −2; wound penalties still stack on top), until the
+   fight ends. Mid-fight, only a pause action buys STA back (see the add-on —
+   a draught, Berserk, or War-Breath, each at the price of a round's attack
+   and a −2 guard; the pause usually fires *before* Spent). Against fresh
    enemies it is a death sentence: you can't land and you get carved. But two
    spent sides *cancel each other's penalties* in the opposed roll and brawl
    on at even odds — the wound spiral still finishes the fight, so melees
@@ -253,7 +302,14 @@ is for).
 ## Reading the combat log
 
 The log is written for two readers at once — the human player and the AI DM —
-so every exchange prints **two layers**:
+and since 2026-07 it comes in **two simultaneous levels** (`CombatLog` in
+`rpg.py`): the **full log** (the DM/debug layer — everything below) and a
+parallel **player log** (`CombatLog.player`) built at the same time, designed
+to be pasted into the chat as-is. Combat lines in both levels use **short
+names** ("Inga", never "Inga the precise" — the epithet is stat-sheet flavor,
+shown at party creation and in `status`, not in the exchanges).
+
+Within the full log, every exchange prints **two layers**:
 
 **1. An interpretive headline** — a catchy label a spectator would use:
 
@@ -281,9 +337,26 @@ result, every modifier with its source (`+DEX`, `+training`, `+rapier`,
 
 A `stamina:` readout prints every round — the clock is visible ticking — with
 `*` marking the Winded and `!!` the Spent; tireless entities are
-summarized (`3 tireless`) since their clock never moves. This is deliberately
-the *complete* version; a terser mode can come later once the numbers have
-earned trust.
+summarized (`3 tireless`) since their clock never moves. This full version is
+deliberately complete: it is how the numbers earn trust, and the DM reads it.
+
+**The player log** is the terser mode, kept in lockstep: headlines only, with
+the HP loss folded into the wound phrase and the roll-penalty bookkeeping
+dropped —
+
+```
+Round 2:
+  Rhea outmaneuvers Cutthroat 2 -- a grievous injury (-4 HP)! [Cutthroat 2: 3/7 HP]
+  Tomas edges past Cutthroat 2 -- a graze (-1 HP)! [Cutthroat 2: 2/7 HP]
+  !! Cutthroat 2 is Winded -- -2 to all rolls
+```
+
+No pressure/severity arithmetic, no per-round stamina readout (the `!!`
+Winded/Spent crossings and the pause menu carry the clock), no chase math.
+Falls, slayings, weapon breaks, First Blood, Bulwark flares, XP, and loot
+lines all appear in both levels. `session.py` prints the player log as a
+`--- PLAYER LOG ---` block after the full log; the DM pastes it into chat
+so the player gets the mechanical shape of the fight without the dice.
 
 ---
 
@@ -410,8 +483,8 @@ serve:
 - **Equip gear** that shifts stats, soaks severity, or adds STA. *(Live now:
   weapons — buy plain quality steel, loot commons, drill proficiency.)*
 - **Pick your fights** — knowing the loop, choose opponents your build counters
-  and avoid your counters. *(Live now: farm the skeleton barrow to afford the
-  bandit hideout.)*
+  and avoid your counters. *(Live now: farm the bandit hideout to train and
+  arm for the 3x-paying barrow.)*
 - **Compose the party** — a PC plus a companion (same stat framework) whose
   builds cover each other's weak matchup.
 
@@ -470,8 +543,8 @@ These are the only edits to the existing rules:
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
-| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. **Never recovers mid-fight** — except bought at a pause (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
-| **Power** | Per day | Rest, gold, world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, and Heal's between-fights HP restore. |
+| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
+| **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, First Blood's opener, War-Breath, and Heal's between-fights HP restore. |
 | **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
 
 Give each character their **own** Power and item stock, not a shared pool — it
@@ -548,8 +621,15 @@ question; message 2 = `resume ...` (or `retreat`) to conclusion.
 **Triggers** (party side only; each fires at most **once per fight** — no
 pause spam; checked at the end of a round, and only while both sides still
 stand):
-- a hero at **STA ≤ 2** — about to run dry;
-- a hero at **HP ≤ half** — being cut apart.
+- a hero **crossing STA ≤ 2** — about to run dry;
+- a hero **crossing HP ≤ half** — being cut apart.
+
+**Crossing-only (2026-07):** a trigger whose condition already holds when the
+fight starts is marked spent silently. Entering a fight wounded past half or
+nearly out of breath was the player's informed choice at the door — the pause
+exists to surface *new* information (the fight going worse than it looked),
+not to re-ask a question the player just answered. Before this gate, a
+wounded party re-tripped the wounds pause at round 1 of every fight all day.
 
 **At the pause, the options** (pause *actions* are per-hero, at most one each;
 every action costs that round's attack and the hero defends at **−2** while
@@ -558,7 +638,7 @@ occupied — vulnerable, not helpless):
 | Option | Cost | Effect |
 |--------|------|--------|
 | **Fight on** | — | Resume; that trigger won't pause again. |
-| **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight. The one exception to "no in-fight STA recovery" — it even un-Spends a fighter at 0. (Healing potions stay between-fights until HP pressure proves otherwise.) |
+| **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight — it even un-Spends a fighter at 0. (Healing potions stay between-fights until HP pressure proves otherwise.) |
 | **Berserk** | 2 HP; the round's attack; −2 guard | +4 STA. Bleed for breath — and the HP loss deepens the wound spiral immediately, which is the real price. |
 | **War-Breath** | 2 Power; the round's attack; −2 guard | +3 STA. A fighter's breath discipline (battle trance), explicitly not wizardry. |
 | **Retreat** | see below | Break away from the fight. |
@@ -647,19 +727,22 @@ HP.
 **Two tiers of rest, keyed to time:**
 
 - A **short rest** (~an hour or two of narrative time) is a limited within-day
-  resource — a handful of slots per day. It gives a real breather (+3 STA, a
-  sliver of HP) but never a reset: with the +1 a fight's end already gives,
+  resource — **one slot per day** (cut from two in the 2026-07 lethality
+  retune: one breather, then you press on depleted or pay the day). It gives
+  a real breather (+3 STA, a sliver of HP, +1 Power) but never a reset: with
+  the +1 a fight's end already gives,
   a rest from empty lands you *just* past the Winded line. The day's shape is
   a sawtooth trending down — the fights exhaust the characters faster than the
   breaks give back. Drinking potions is a *separate* deliberate act
   (see "In advance" above / `use_potion`), not folded into the rest. When the
-  slots run out there is no more mid-day recovery: the party pushes on depleted
+  slot is spent there is no more mid-day recovery: the party pushes on depleted
   or makes camp.
-- A **long rest** (overnight, making camp) is the real recovery: **STA recharges
+- A **long rest** (overnight, making camp) is the real recovery: **STA and
+  Power recharge
   fully** and **HP knits back at a weekly rate** (a character's nightly heal is
   scaled to their HP pool, so a full bar returns over roughly a week regardless of
   size — a big pool doesn't take proportionally longer). A long rest advances the
-  day and refills the short-rest slots.
+  day and refills the short-rest slot.
 
 **Nothing forces the day to end.** Ending the day is a *choice* — the DM (Claude)
 decides when the party camps and takes the long rest; the mechanics never
@@ -700,23 +783,27 @@ On top of the existing build/allocation choices:
 ## Implementation notes (how `rpg.py` realizes this)
 
 - **Time is a `Clock`** (a `day` counter plus a per-day budget of short-rest
-  slots, `SHORT_RESTS_PER_DAY`). A dungeon run is a slice of a day. **HP and STA
+  slots, `SHORT_RESTS_PER_DAY` = 1). A dungeon run is a slice of a day. **HP
+  and STA
   both carry across rooms** (never a per-fight reset). STA moves as a sawtooth:
   attacks spend it (`sta_cost`, 1 per swing), the end of a fight gives
-  `STA_RECOVERY_AFTER_FIGHT` (1) back, a `short_rest` spends a slot for
-  `STA_RECOVERY_BETWEEN_ROOMS` (3) + a sliver of HP, and `long_rest` makes camp
-  for the full STA recharge + the weekly HP tick (`hp_regen_per_night =
-  max(1, round(max_hp / 7))`). **There is no mid-fight STA recovery** except
-  what a pause action buys (`_do_pause_action`: a drunk draught, Berserk, or
+  `STA_RECOVERY_AFTER_FIGHT` (1) back, a `short_rest` spends the slot for
+  `STA_RECOVERY_BETWEEN_ROOMS` (3) + a sliver of HP + 1 Power, and `long_rest`
+  makes camp
+  for the full STA + Power recharge + the weekly HP tick (`hp_regen_per_night
+  = max(1, round(max_hp / 7))`). Mid-fight, STA comes back only through a
+  pause action (`_do_pause_action`: a drunk draught, Berserk, or
   War-Breath): an entity at 0 is otherwise Spent (`SPENT_PENALTY` = 6 to all
   rolls; it still attacks) until the fight ends, so fights always resolve;
   only the round-cap safety valve (`max_rounds`) can leave a fight
   unresolved, in which case the scenario treats the room as not cleared.
-  Power and items are per-day stocks that deplete across the run.
+  Items are a carried stock that depletes across the run.
 - **The pause is engine-level.** `group_combat(pause_triggers=True, ...)`
   returns a `Pause` (round + what tripped it) instead of finishing; the caller
   resumes with the same `fired` set, `first_round=round+1`, and optional
-  per-hero `actions`. `attempt_retreat` runs the parting blows + the one
+  per-hero `actions`. At fight start, triggers whose condition already holds
+  are pre-marked fired (the crossing-only gate). `attempt_retreat` runs the
+  parting blows + the one
   chase contest (`FLEE_BONUS`, STA-weighted DEX; `pursues=False` foes never
   chase); `refresh_foes_after_retreat` readies a fled room's survivors.
   Session play persists a paused fight in the save (`session.py resume` /
@@ -785,13 +872,15 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-pause/retreat
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-lethality-retune
   2026-07): the skeleton barrow (tough site) clears
-  **22% → 51% → 79% → 95%** across ranks 0–3 (a rank-0 party wipes ~75% of
-  the time); the bandit hideout (starter) clears **89% → 98% → 100% → 100%**
-  (rank-0 wipe ~10%). Each rank is a *felt* jump — Phase 3's test criterion.
-  (The pause/retreat layer lifted every cell ~5–8 points over the
-  graze-floor-era numbers; accepted under "the sims understate the player.")
+  **2% → 12% → 37% → 65%** across ranks 0–3 (a rank-0 party wipes ~96% of
+  the time — a fresh party simply should not be there); the bandit hideout
+  (starter) clears **57% → 81% → 95% → 99%**
+  (rank-0 wipe ~41%). Each rank is a *felt* jump — the progression test
+  criterion —
+  and gear stacks on top (training 2 + quality steel takes the barrow to
+  ~66%, training 3 + steel to ~89%).
 
 ## Weapon proficiency — the second skill
 
@@ -824,11 +913,15 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   quality weapons cost **60 g** — a real saving goal (roughly four hideout
   clears of quest gold + drops); commons are shop-trivial (1–15 g).
   Masterwork/legendary are **never** for sale. This deliberately softens the
-  old "gold never buys power" rule (see plan.md): a plain rapier is modest
-  permanent power, and worth it — sim-measured (post-pause/retreat), a katana
-  + zweihander loadout lifts a fresh party's barrow clear rate from ~22% to
-  ~49%, about the value of one training rank. The intended arc: clear the
-  hideout fresh, level up *and shop*, then take the barrow.
+  old "gold never buys power" rule (see the design spine): a plain rapier is
+  modest
+  permanent power, and worth it — sim-measured (post-lethality-retune), a
+  katana
+  + zweihander loadout lifts a fresh party's barrow clear rate from ~2% to
+  ~11% (a 5x jump, though the barrow stays suicide until trained: the real
+  unlock is the combination — training 2 + steel ~66%). The intended arc:
+  fight the hideout at rank 0, level up *and shop* over a few clears, then
+  take the barrow trained and armed.
 - **Starting stock:** two *random* potions at creation (healing or stamina —
   the two circulating kinds), plus the rolled starting weapon. That's the
   whole kit; from then on the stock only moves through drops, purchases,

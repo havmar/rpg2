@@ -60,6 +60,12 @@ his own design back to him.
 - **When transcribing his chat notes into docs, rewrite them.** Present the
   intent in clean prose; don't paste raw brainstorm wording into rules.md /
   plan.md / this file.
+- **Dev communication is the place to be thorough.** Post-implementation
+  summaries, tuning reports, and design discussions should be genuinely
+  verbose: what changed, where, why, what the measured numbers were before
+  and after, what was tried and rejected. Conciseness is a virtue of DM
+  *narration*, not of dev reports — an over-terse summary that forces the
+  designer to ask follow-ups costs more than a long one.
 
 ## Files
 
@@ -69,21 +75,28 @@ his own design back to him.
   sync when play-facing rules change.
 - `rules.md` — the ruleset. The source of truth for *mechanics intent* (the
   "why" behind the numbers). Read this before changing mechanics.
-- `plan.md` — the high-concept design record and phased build roadmap that sits
-  *above* `rules.md` (design spine, currencies, systems, the phase-by-phase
-  feature plan). Read this for direction / what to build next.
+- `plan.md` — **the roadmap: planned features only**, in build order (next up:
+  the encounter & quest system), plus the parked-ideas list. Broad design
+  principles live in `rules.md` (the design spine) and this file; anything
+  already implemented is documented in `rules.md`/code, not here. Read this
+  for what to build next.
 - `rpg.py` — the implementation: combat engine, random party generation, and the
   skeleton dungeon. Self-contained, stdlib only.
 - `tune.py` — Monte Carlo sweep over room layouts; prints the none/one/both
-  death distribution plus attrition, clear%, flee% (runs with a retreat), and
-  avg days. Use it to re-check balance after any mechanics change.
+  death distribution plus attrition, clear%, flee% (runs with a retreat),
+  early% (rooms 1-2 forced a pause/Down/potion — the per-encounter threat
+  criterion), and avg days, then the **resource-pressure check**: both sites
+  with the usual sim policy vs "reckless" (no pauses, no potions — the
+  no-resource baseline, whose wipe rate is what ignoring your resources
+  costs). Use it to re-check balance after any mechanics change.
 - `scratch_bandits.py` — scenario: a *bandit hideout* (living fighters who play
   by exactly the party's rules: real DEX/STR, they spend STA, go Winded, and
   are Spent at 0). Imports the engine from `rpg.py` and mirrors the survival
   flow (`start_fight` -> `group_combat` -> `short_rest`), exposing
   `run_hideout()` for batch use. **This is the STARTER site**: base pay (a
-  full clear = exactly the L1->2 XP cost), ~86% clear / ~14% wipe at rank 0,
-  and its logs teach the system with no special-case enemies. The skeleton
+  full clear = exactly the L1->2 XP cost), ~57% clear / ~41% wipe at rank 0
+  (the 2026-07 lethality retune — a real fight now, not a tutorial), and its
+  logs teach the system with no special-case enemies. The skeleton
   barrow (in `rpg.py`) is the TOUGH site you train up for. `--seed N` for
   repro, `--training N` to start the party pre-trained. Keep it in sync with
   the `rpg.py` API.
@@ -120,7 +133,9 @@ his own design back to him.
   `fight N [--type skeleton|bandit]` is the *off-script* escape hatch (spawns
   N foes) for improvised scenes only -- a road ambush, a one-off scrap --
   never a substitute for running a site's rooms. **A fight can PAUSE**
-  (a hero crosses STA <= 2 or half HP; once each per fight): the paused melee
+  (a hero crosses STA <= 2 or half HP; once each per fight, and crossing-only
+  -- a condition already true at fight start never fires, so entering wounded
+  or winded doesn't re-ask the question): the paused melee
   is saved, every between-fights command refuses until it's settled, and the
   player answers with `resume [--drink HERO] [--berserk HERO] [--warbreath
   HERO]` (pause actions: skip that round's attack, defend at -2; drink =
@@ -141,7 +156,10 @@ his own design back to him.
   automatic; instant top-up -- healing restores HP, stamina restores STA),
   `heal HEALER TARGET` (Heal ability, between fights only -- see below).
   After a cleared encounter it prints a `Left among the dead:` loot line
-  (fallen foes' weapons with stats) for the DM to offer. Keep it in sync
+  (fallen foes' weapons with stats) for the DM to offer. Every encounter
+  command prints the full (debug) log and then a `--- PLAYER LOG ---` block
+  -- the simplified version the DM pastes into chat as-is (see rules.md,
+  "Reading the combat log"). Keep it in sync
   with the `rpg.py` API whenever primitives change shape.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
@@ -149,11 +167,14 @@ his own design back to him.
 > scenario, tool, or module), add it to this **Files** list with a one-line note
 > on what it is and how it's run. Keep this list the index of what exists.
 
-> **Keeping the docs current:** `rules.md` (mechanics) and `plan.md` (design +
-> roadmap) are living documents — keep them in sync with the code automatically,
+> **Keeping the docs current:** `rules.md` (mechanics + design spine) and
+> `plan.md` (the roadmap) are living documents — keep them in sync with the
+> code automatically,
 > as part of the same change, not as a follow-up. When you change a mechanic,
-> update `rules.md` to match; when you finish, defer, or re-scope a roadmap
-> feature, update `plan.md`'s phase status. If a code change contradicts either
+> update `rules.md` to match; when a roadmap feature ships, **delete it from
+> `plan.md`** (implemented things are documented in rules.md, not the
+> roadmap); when one is deferred or re-scoped, move/update its entry. If a
+> code change contradicts either
 > doc, the doc is stale — fix it in the same commit. Flag any conflict you notice
 > between them rather than leaving it.
 
@@ -195,7 +216,8 @@ is intentionally ASCII-only, so plain runs are usually fine.
   currently 1 for everything living; the undead are **tireless** and never
   spend any); defending is free. **At 0 STA an entity
   is SPENT**: it still swings (desperation is free) but takes −6 to *all*
-  rolls, with **no in-fight recovery** (short of a pause action, below) —
+  rolls until the fight ends (only a pause action, below, buys STA back
+  mid-fight) —
   against fresh foes that's a death
   sentence; two spent sides cancel each other's penalties and the wound
   spiral still ends the fight, so melees always resolve (draws exist only via
@@ -204,11 +226,14 @@ is intentionally ASCII-only, so plain runs are usually fine.
   swing was sim-rejected — see `bench_weapons.py` / rules.md "Weapons".)
 - **The pause (interrupt primitive)** — with `pause_triggers=True`,
   `group_combat` stops at the end of a round in which a hero crossed
-  **STA ≤ 2** or **half HP** (each trigger once per fight) and returns a
+  **STA ≤ 2** or **half HP** (each trigger once per fight, and
+  **crossing-only**: a condition already true at fight start is gated off
+  silently — entering low was the player's informed choice at the door) and
+  returns a
   `Pause`; re-call with the same `fired` set / `first_round=round+1` to
   resume. Options at the pause: fight on; per-hero **pause actions** (cost
   that round's attack, defend at −2): drink a stamina draught mid-fight
-  (+4 STA — the one exception to "no in-fight STA recovery"), **Berserk**
+  (+4 STA — even un-Spends a fighter at 0), **Berserk**
   (2 HP → +4 STA, the spiral deepens), **War-Breath** (2 Power → +3 STA); or
   `attempt_retreat` — parting blows from every foe fit to swing, then ONE
   group chase contest (2d6 + STA-weighted avg DEX, fleeing side
@@ -235,15 +260,22 @@ is intentionally ASCII-only, so plain runs are usually fine.
   attacker picks a target *living at the moment it acts*, so no swing is
   wasted on a corpse. A foe dropped by First Blood (pre-round) gets no dying
   swing. Heroes focus-fire the weakest foe; foes target at random.
-- **The combat log is two-layered** (see `rules.md`, "Reading the combat log"):
+- **The combat log has two simultaneous levels** (`CombatLog`; see `rules.md`,
+  "Reading the combat log"). The **full log** (the list itself — DM/debug):
   every exchange prints an interpretive headline (Clash / Lull / parried /
   edges past / outmaneuvers / overwhelms, wound phrases with the target's
   `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
   actual 2d6, every modifier and its source, the full severity arithmetic;
-  pressure lines read `Name: total (parts)`).
-  Winded and Spent crossings get `!!` lines and a `stamina:` readout prints
-  every round (`*` Winded, `!!` Spent, tireless entities summarized).
-  Deliberately verbose for now — simplify only once the numbers have earned trust.
+  pressure lines read `Name: total (parts)`), plus `!!` Winded/Spent crossing
+  lines and a per-round `stamina:` readout (`*` Winded, `!!` Spent, tireless
+  summarized). The **player log** (`CombatLog.player`, printed by session.py
+  as a `--- PLAYER LOG ---` block): headlines only, HP loss folded in
+  (`a solid wound (-2 HP)! [Skeleton 1: 3/5 HP]`), simplified `!!` lines, no
+  dice math, no stamina readout — built to be pasted into chat as-is.
+  Combat lines use short names ("Inga", never "Inga the precise" — the
+  epithet is stat-sheet flavor only). Engine code emits via the
+  `_debug`/`_play` helpers so plain `list[str]` logs still work (they get
+  the full level).
 
 ## Survival & Resources add-on (now implemented)
 
@@ -268,8 +300,8 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   HP on self or an ally. Same shape as `buy_potion`: DM-called, never automatic.
 - **STA is the second death-track**: attacks spend it, it carries across rooms,
   and hitting 0 mid-fight leaves you Spent (see Core mechanics), which against
-  fresh enemies usually kills. Recovery is **between fights only** (bar what a
-  pause action buys — see Core mechanics), a
+  fresh enemies usually kills. It recovers **between fights** (mid-fight, only
+  a pause action buys any back — see Core mechanics), a
   **sawtooth trending down**:
   `STA_RECOVERY_AFTER_FIGHT` (1) when a fight ends, `STA_RECOVERY_BETWEEN_ROOMS`
   (3) per short rest (from 0, fight-end +1 plus a short rest = 4 — *just* clears
@@ -278,11 +310,14 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   a player rarely *chooses* to enter a room low; the danger is misjudging
   what the room will cost.
 - **Time economy (`Clock`):** a `day` counter plus a per-day budget of
-  `SHORT_RESTS_PER_DAY` (2) short-rest slots. `short_rest(party, clock, log)` (~an
-  hour or two of narrative time) spends a slot for a small catch-breath + potion
-  use, and refuses once the slots are gone. `long_rest(party, clock, log)` makes
-  camp: full STA, the weekly HP tick, Down heroes back up, `day += 1`, slots
-  refill. **There is no auto-night** — `long_rest` is a function Claude calls on
+  `SHORT_RESTS_PER_DAY` (**1** — cut from 2 in the 2026-07 lethality retune)
+  short-rest slots. `short_rest(party, clock, log)` (~an
+  hour or two of narrative time) spends the slot for a small catch-breath
+  (+3 STA, +1 HP, +1 Power — `POWER_RECOVERY_BETWEEN_ROOMS`)
+  and refuses once it's gone. `long_rest(party, clock, log)` makes
+  camp: full STA **and Power**, the weekly HP tick, Down heroes back up,
+  `day += 1`, the slot
+  refills. **There is no auto-night** — `long_rest` is a function Claude calls on
   purpose; nothing forces the day to end (see "The feel we're going for").
 - **Items** are a carried stock that **never auto-refills**: heroes start with
   **two random potions** (`random_kit`) and restock only via drops or
@@ -325,9 +360,11 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   barrow) + per-encounter drops (20% -> 5 g, 10% -> a random potion to a random
   hero, `roll_loot`). Sinks: `buy_potion(hero, purse, kind, log)` at
   `POTION_PRICE = 10`, and `buy_weapon(hero, purse, name, log)` — plain
-  quality steel at 60 g is the first real saving goal (sim-measured: katana +
-  zweihander lift a fresh party's barrow clear ~21% -> ~62%, worth ~2 training
-  ranks). Both are **DM-called between-adventures purchases**. Nothing
+  quality steel at 60 g is the first real saving goal (sim-measured after the
+  2026-07 retune: katana + zweihander lift a fresh party's barrow clear
+  ~2% -> ~11% — a 5x jump but still suicide alone; it's the *combination*
+  that unlocks the barrow: training 2 + steel clears ~66%, training 3 + steel
+  ~89%). Both are **DM-called between-adventures purchases**. Nothing
   refills automatically.
 
 ## The current prototype scenario
@@ -348,14 +385,16 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   2 for the comparison).
 - **The starter site:** the bandit hideout (`scratch_bandits.py`,
   `HIDEOUT_ROOMS`: 1/2/2 living bandits). Same rules as the party — its logs
-  teach the system; bandits arm from the same common-weapon table. Base pay;
-  first clear = level 2.
+  teach the system; bandits arm from the same common-weapon table but run a
+  point of DEX hot (cutthroat/archer DEX 5, bruiser 4 — the retune's "who
+  hits is DEX" lever). Base pay; first clear = level 2, and a real fight now
+  (~57% clear / ~41% wipe fresh at rank 0).
 - **The tough site:** rooms of skeletons, `BARROW_ROOMS` (named rooms, counts
   `DUNGEON_ROOMS = [3, 3, 4]`; one "day"; 3x pay). HP,
   STA, and the resource stock all carry across rooms (only minimal catch-breaths);
   wounds persist for the run. Clearing all rooms completes the quest
   (gold + XP lump).
-- **Skeletons:** brittle, weak individual hitters (DEX 3 / STR 2 / HP 5), no
+- **Skeletons:** brittle, weak individual hitters (DEX 4 / STR 2 / HP 5), no
   Power/kit, but **undead**: half wound penalty (`hp_lost // 2` — no pain, so
   chip damage and First Blood's spiral bite less here) and **tireless** (never
   spend STA, never Winded/Spent) — the threat is *numbers* pressing a party
@@ -367,7 +406,9 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
 
 ## Balance / tuning
 
-`tune.py` reports attrition alongside the death split, plus clear rate and gold.
+`tune.py` reports attrition alongside the death split, plus clear rate, gold,
+early pressure (rooms 1-2 forcing a pause/Down/potion), and the
+resource-pressure check (sim policy vs the reckless no-resource baseline).
 
 **A tuning principle (2026-07): the sims understate the player.** The batch
 policies rest on a fixed schedule, drink potions on crude thresholds, and
@@ -377,22 +418,35 @@ rates run *below* played clear rates, and
 harsher sim numbers than "feels fair" are acceptable — tune for the felt
 game, and let rooms 1-2 of a site threaten in the sims, not just the last one.
 
-Post-pause/retreat (2026-07 — the interrupt layer softens "running dry is how
-parties die" on purpose; parting blows, a fatal-adjacent failed break, and
-re-fought rooms are the counterweights), at the barrow's `[3, 3, 4]` over 20k
-runs at rank 0: ~**20% / 4% / 75%** (none / one / both slain), **clear ~22%**,
-~14% of runs retreat at least once, avg ~1.04 days per run. Per
-`bench_training.py` (5k/rank), the barrow clears **22% -> 51% -> 79% -> 95%**
-across training ranks 0-3, and the starter hideout
-**89% -> 98% -> 100% -> 100%** (rank-0 wipe there ~10% — softer than the
-pre-pause ~18%; watch it in play before re-tightening). Gear is the other
-axis: a katana + zweihander loadout lifts the fresh barrow clear to ~**49%**
-— quality steel is still worth about one training rank. The intended arc is
-unchanged: clear the hideout fresh, level up *and buy steel*, take the
-barrow trained and armed. Most barrow deaths still come from running dry —
-training helps by ending fights in fewer swings, so the STA budget
-stretches. If the rank-0 opening needs adjusting, `HIDEOUT_ROOMS` is the
-first lever; for the barrow, `DUNGEON_ROOMS`.
+**The lethality retune (2026-07, second pass): danger lives in the encounter,
+not the grind.** The felt game had gone easy — the player can camp after any
+encounter, so a site that only threatens via attrition doesn't threaten at
+all. Targets set by the designer: the starter hideout at rank 0 clears ~55%
+with someone hitting the floor in about half the runs, and **not using
+resources should mostly mean death**. The levers pulled: enemy DEX +1 across
+the board (skeletons 3 -> 4, cutthroat/archer 4 -> 5, bruiser 3 -> 4 — who
+hits is DEX's job), and `SHORT_RESTS_PER_DAY` 2 -> 1. Measured after (10-20k
+runs, rank 0): **hideout** clear ~57% / wipe ~41% / Down in ~39% of runs with
+the full sim policy, vs **68% wipe reckless** (no pauses, no potions) — the
+resources are worth ~28 points of survival; **barrow** `[3, 3, 4]` clear
+~2% / wipe ~96%, early pressure ~94% (rooms 1-2 force a resource) — a fresh
+party simply should not be there. Per `bench_training.py` (5k/rank): barrow
+clears **2% -> 12% -> 37% -> 65%** over ranks 0-3, hideout
+**57% -> 81% -> 95% -> 99%**. Gear is the other axis: katana + zweihander
+alone lift the fresh barrow to only ~**11%**; the arc is the *combination* —
+**training 2 + quality steel clears ~66%** (Down ~32%), training 3 + steel
+~89%. The intended arc sharpened: fight the hideout at rank 0 (and expect
+retreats and downs), level up *and* buy steel over ~2-3 clears, take the
+barrow at rank 2+ armed. Most deaths still trace to STA misjudgment;
+skeleton DEX 4 means the bones also cut you while they outlast you.
+If the opening needs softening, `HIDEOUT_ROOMS` is the first lever; for the
+barrow, `DUNGEON_ROOMS`; enemy DEX is the sharpest knife — a single point
+moves clear rates by tens of percent.
+(Side effect worth knowing: `bench_weapons.py`'s 1v3-skeleton swarm column
+collapsed to low single digits for every weapon — a lone fighter vs three
+DEX-4 tireless skeletons is near-hopeless. The column still ranks the
+zweihander first, but its discriminating power is thin; the duel column
+does the work now.)
 
 Difficulty levers, easiest first: edit `DUNGEON_ROOMS` / `HIDEOUT_ROOMS`, then
 survival tunables (`SAVE_COST`, `HEALING_POTION_RESTORE`, `STA_ATTACK_COST`,
@@ -432,10 +486,10 @@ nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
 shopping real decisions, and which site to run (starter hideout vs 3x-paying
 barrow) is the first "pick your fights" choice. The mid-fight layer exists
 too now: the pause (drink / Berserk / War-Breath / retreat & chase, with
-fled rooms persisting). Still missing: masterwork/
-legendary weapon *instances* placed in the world (the tiers exist, no named
-items do yet), guns + ammo, armor (tier-shift), magic/INT, raising stats
-toward an archetype, and composing the party so builds cover each other. See
-the "Between-fights layer" and the add-on sections in `rules.md`, and
-plan.md's parked ideas (morale/surrender, recruitment, spark-table
-personalities, weapon reach, the 2-STA heavy swing).
+fled rooms persisting). **The next big feature is the encounter & quest
+system** (see `plan.md`): player and encounter levels, the whole power
+curve, a monster/opponent catalog spanning it, and DM tools to build foes,
+encounters, and dungeons from a level number plus the narrative — the two
+hand-built sites become instances of a general system. After that: magic/
+INT, armor, guns + ammo, named weapon instances, party composition. See
+plan.md for the full roadmap and the parked-ideas list.

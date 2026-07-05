@@ -26,11 +26,13 @@ BANDIT_QUEST_XP = QUEST_XP
 BANDIT_QUEST_GOLD = QUEST_GOLD
 
 # Bandit roster: name, dex, str, sta, hp. No Power/ability/kit -- raw fighters
-# who tire and go Spent exactly like the heroes do.
+# who tire and go Spent exactly like the heroes do. DEX runs a point above the
+# old table (2026-07 lethality retune): who hits is DEX's job, and the danger
+# has to live in each encounter itself -- the party can always camp after it.
 BANDIT_TYPES = {
-    "cutthroat": (4, 3, 5, 7),   # nimble knife-work
-    "bruiser":   (3, 5, 5, 9),   # slow, heavy, durable
-    "archer":    (4, 2, 5, 6),   # lands often, soft
+    "cutthroat": (5, 3, 5, 7),   # nimble knife-work
+    "bruiser":   (4, 5, 5, 9),   # heavy and durable, quicker than he looks
+    "archer":    (5, 2, 5, 6),   # lands often, soft
 }
 
 HIDEOUT_ROOMS = [
@@ -57,11 +59,12 @@ def bandit_line(e: Entity) -> str:
 
 def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
                 rng: random.Random, log: list[str],
-                verbose_rosters: bool = True) -> None:
+                verbose_rosters: bool = True, reckless: bool = False) -> None:
     """The hideout run, mirroring rpg.run_dungeon (kept in sync with its flow,
     including the pause/retreat policy -- unlike the barrow's grave-bound
     skeletons, bandits DO give chase, so a hideout retreat can fail).
-    Importable so bench_training.py can batch it."""
+    Importable so bench_training.py can batch it. reckless=True is the
+    no-resource baseline (no pauses, no potions -- see rpg.sim_fight)."""
     count = 0
     cleared_all = True
     room_i = 0
@@ -96,7 +99,7 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
         for h in living:
             start_fight(h, log)
 
-        result = sim_fight(living, bandits, rng, log)
+        result = sim_fight(living, bandits, rng, log, reckless=reckless)
 
         if party_wiped(party, log):
             cleared_all = False
@@ -128,7 +131,8 @@ def run_hideout(party: list[Entity], clock: Clock, purse: Purse,
         if survivors:
             log.append(f"  Room cleared. {len(survivors)} still standing.")
             short_rest(survivors, clock, log)
-            auto_use_potions_on_rest(survivors, log)  # batch sim: sensible party
+            if not reckless:
+                auto_use_potions_on_rest(survivors, log)  # sim: sensible party
         room_i += 1
 
     if cleared_all and any(not h.dead for h in party):

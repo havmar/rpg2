@@ -70,7 +70,8 @@ import random
 from pathlib import Path
 
 from rpg import (
-    Clock, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP, BARROW_ENCOUNTER_XP,
+    Clock, CombatLog, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP,
+    BARROW_ENCOUNTER_XP,
     BARROW_ROOMS, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
@@ -123,6 +124,17 @@ def find_hero(party: list, name: str):
     print(f"No hero matches {name!r}. Party: "
           + ", ".join(h.name for h in party))
     return None
+
+
+def print_combat(log: CombatLog) -> None:
+    """Print the full (DM/debug) log, then the simplified player-facing block
+    -- the piece meant to be pasted into the chat as-is (see rules.md,
+    "Reading the combat log")."""
+    print("\n".join(log))
+    if log.player:
+        print()
+        print("--- PLAYER LOG (paste into chat as-is) ---")
+        print("\n".join(log.player))
 
 
 def require_no_pending(state: dict) -> bool:
@@ -264,7 +276,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
         }
-        print("\n".join(log))
+        print_combat(log)
         print()
         print_pause_menu(state)
         save(state)
@@ -288,7 +300,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         if weapons_left:
             log.append(weapons_left)
 
-    print("\n".join(log))
+    print_combat(log)
     save(state)
     report_game_over(party, wiped)
 
@@ -298,7 +310,7 @@ def cmd_fight(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
-    log: list[str] = []
+    log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -333,7 +345,7 @@ def cmd_barrow(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
-    log: list[str] = []
+    log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -374,7 +386,7 @@ def cmd_hideout(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
-    log: list[str] = []
+    log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -440,7 +452,7 @@ def cmd_resume(args: argparse.Namespace) -> None:
                 return
             actions[hero] = action
 
-    log: list[str] = []
+    log = CombatLog()
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
@@ -448,7 +460,7 @@ def cmd_resume(args: argparse.Namespace) -> None:
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
-        print("\n".join(log))
+        print_combat(log)
         print()
         print_pause_menu(state)
         save(state)
@@ -470,7 +482,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         return
     party, rng, clock = state["party"], state["rng"], state["clock"]
     living = [h for h in party if not h.dead]
-    log: list[str] = []
+    log = CombatLog()
 
     escaped = attempt_retreat(living, pending["foes"], rng, log)
     wiped = party_wiped(party, log)
@@ -487,7 +499,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             else:
                 log.append("  (the foes scatter -- an off-script encounter "
                            "is not kept)")
-        print("\n".join(log))
+        print_combat(log)
         save(state)
         report_game_over(party, wiped)
         return
@@ -499,7 +511,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
-        print("\n".join(log))
+        print_combat(log)
         print()
         print_pause_menu(state)
         save(state)

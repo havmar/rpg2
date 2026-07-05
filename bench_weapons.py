@@ -1,6 +1,6 @@
-"""Phase 4 benchmark: are the quality weapons SUITED rather than RANKED?
+"""Weapons benchmark: are the quality weapons SUITED rather than RANKED?
 
-plan.md's Phase 4 test criterion: each weapon should be build-*suited*, never
+The weapons test criterion (rules.md, "Weapons"): each weapon should be build-*suited*, never
 simply better -- no single weapon may top every build in every situation.
 Two situations per frame, because the weapons split along that axis too:
 

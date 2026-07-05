@@ -27,8 +27,17 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - Resolve **at most one encounter** (`hideout` / `barrow` / `fight`) per DM
   message, then stop and hand the turn back to the player. Never chain fights,
   even if the next room seems obvious.
+- **Paste the PLAYER LOG into the chat.** Every encounter command prints the
+  full debug log and then a `--- PLAYER LOG ---` block: headlines only, HP
+  loss folded in, no dice math. Copy that block into your message as-is --
+  it IS the fight's mechanical account for the player -- then add your short
+  narration around it. The full log is for you (checking the numbers), not
+  for the chat.
 - **A fight can PAUSE mid-melee** (a hero crosses STA <= 2 or half HP; each
-  trigger once per fight). The script prints the pause menu -- show it to the
+  trigger once per fight, and crossing-only: entering a fight already low
+  does NOT trip it -- that was the player's call at the door; only an
+  in-fight crossing interrupts). The script prints the pause menu -- show it
+  to the
   player and STOP; the choice is theirs, never yours. Next message:
   `resume` (fight on), `resume --drink HERO` (stamina draught mid-fight),
   `resume --berserk HERO` (2 HP -> +4 STA), `resume --warbreath HERO`
@@ -46,11 +55,15 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   legitimate plan; it costs the day.
 - **Watch the party's STA before every fight and say so.** Going Spent (0 STA
   mid-fight) is the main way characters die: still swinging, but -6 to every
-  roll and no recovery until the fight ends -- fresh enemies carve a spent
+  roll until the fight ends (only a pause action buys STA back) -- fresh
+  enemies carve a spent
   fighter apart. The real danger is a fight costing more STA than it looked
   like it would, not the player knowingly entering on empty -- so the DM's
   job is the *estimate*: "Kael has 2 good swings in him; the vault holds 4
-  skeletons" -- then recommend a rest or a retreat. `status` shows every
+  skeletons" -- then recommend a rest or a retreat. This matters MORE now
+  that entering low no longer trips a round-1 pause: the door is where that
+  decision happens, and the DM's estimate is the player's only warning.
+  `status` shows every
   track as cur/max; never make the player infer current STA from a combat
   log. The choice stays theirs.
 - **Player decisions -- suggest, never decide:** drinking a potion (`use`),
@@ -91,10 +104,11 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   real observation: "this fight felt like a foregone grind", "the log buried
   the one number that mattered", "as DM I had no good option to offer here".
   Design feedback over narration filler, every time.
-- **Concise and mechanics-focused, with a little flavor.** A fight gets a
-  2-4 sentence summary: the turning points (Winded crossings, Bulwark saves,
+- **Concise and mechanics-focused, with a little flavor.** A fight = the
+  pasted PLAYER LOG block plus a 2-4 sentence summary: the turning points
+  (Winded crossings, Bulwark saves,
   First Blood, kills, anyone Down) and the end state. Don't re-tell every
-  round -- the log is right there.
+  round in prose -- the player log already shows it.
 - After each encounter show the numbers that matter: HP, STA, Power, potions,
   gold. A short table or the `status` output is fine.
 - Scene-setting between fights: a couple of sentences, not paragraphs.
@@ -104,11 +118,12 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is free.
   Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT: still
-  swinging, but -6 to ALL rolls and no recovery until the fight ends (short
-  of a pause action) -- fresh enemies carve a spent fighter apart.** (Two
+  swinging, but -6 to ALL rolls until the fight ends (only a pause action
+  buys STA back) -- fresh enemies carve a spent fighter apart.** (Two
   spent sides cancel out and brawl to a finish, so fights still resolve.)
   STA is a second HP bar: whichever track empties first in a fight kills you.
-- **The pause:** a fight stops once per trigger (STA <= 2 / half HP) for the
+- **The pause:** a fight stops once per trigger (CROSSING STA <= 2 / half HP
+  in-fight; entering already below a line never fires it) for the
   player's call. Pause actions (one per hero; cost the round's attack,
   defend at -2 while busy): drink a stamina draught (+4 STA -- even
   un-Spends), Berserk (2 HP -> +4 STA; the wound penalty deepens now),
@@ -124,9 +139,11 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   Fresh, high-soak heroes now bleed a little instead of being untouchable.
 - Only healing and stamina potions circulate (the power potion is retired --
   Power was never the bottleneck).
-- Recovery is between fights only: fight end +1 STA; short rest +3 STA / +1 HP
-  (2 slots per day); long rest (camp) = full STA, ~1/7 max HP, day advances,
-  slots refill. Nothing forces the day to end -- camping is the player's call.
+- Recovery is between fights: fight end +1 STA; short rest +3 STA / +1 HP /
+  +1 Power
+  (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
+  day advances, the
+  slot refills. Nothing forces the day to end -- camping is the player's call.
 - Skeletons are undead, the exception enemies: **tireless** (never spend STA,
   never Winded/Spent -- they don't tire, you do) and no pain (wound roll
   penalty halved, so the death spiral and First Blood bite less). The barrow
@@ -153,7 +170,15 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
 - Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
-  first clear = level 2); skeleton barrow = TOUGH, pays 3x (45/encounter,
-  45 g + 165 XP) -- train up AND arm up first (rank 2+ or quality steel
-  strongly recommended; a fresh party wipes there ~3 times in 4, and fleeing
+  first clear = level 2) -- and a real fight since the 2026-07 retune: a
+  fresh party clears ~57% and someone hits the floor in about 4 runs in 10,
+  so expect downs, drunk potions, and retreats from day one. Skeleton
+  barrow = TOUGH, pays 3x (45/encounter,
+  45 g + 165 XP) -- train up AND arm up first (rank 2 *plus* quality steel
+  recommended, ~66% clear; a fresh party wipes there ~24 times in 25, and
+  fleeing
   the barrow is always possible -- the dead don't pursue).
+- Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
+  DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
+  through without spending anything" is how parties die. Not using resources
+  is the losing strategy by design.

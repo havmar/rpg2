@@ -1,5 +1,6 @@
-"""Phase 3 benchmark: does a level of combat training NOTICEABLY change the
-outcome against a fixed enemy? (plan.md Phase 3's test criterion.)
+"""Progression benchmark: does a level of combat training NOTICEABLY change
+the outcome against a fixed enemy? (The progression test criterion -- see
+rules.md, "Combat training".)
 
 Runs the skeleton barrow (the TOUGH site: tireless undead) and the bandit
 hideout (the STARTER site) with the party pre-set to each training rank, and
