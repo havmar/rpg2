@@ -240,7 +240,7 @@ is intentionally ASCII-only, so plain runs are usually fine.
   edges past / outmaneuvers / overwhelms, wound phrases with the target's
   `-n to rolls` spiral penalty) with the raw numbers indented beneath it (the
   actual 2d6, every modifier and its source, the full severity arithmetic;
-  tempo lines read `Name: total (parts)`).
+  pressure lines read `Name: total (parts)`).
   Winded and Spent crossings get `!!` lines and a `stamina:` readout prints
   every round (`*` Winded, `!!` Spent, tireless entities summarized).
   Deliberately verbose for now — simplify only once the numbers have earned trust.
@@ -314,8 +314,8 @@ See the add-on section in `rules.md` for intent. In `rpg.py`:
   hideout clear is exactly a level-up*.
   `award_xp` handles level-ups and banks skill points (1/level).
 - **Two skill sinks now — points are a real choice.** Combat training: +1 to
-  all tempo rolls per rank, rank *n* costs *n* points, cap 5. Weapon
-  proficiency (`train_proficiency`): +1 attack tempo AND +1 severity with the
+  all pressure rolls per rank, rank *n* costs *n* points, cap 5. Weapon
+  proficiency (`train_proficiency`): +1 attack pressure AND +1 severity with the
   wielded weapon type per rank, rank *n* costs *n*, cap 3 — narrower, so
   stronger per rank; switching weapons drops the layer (the commitment cost).
   **Session play banks points** (`train HERO combat|weapon`); only the batch
@@ -418,6 +418,11 @@ and the weapon matchup matrix.
   combat sets) — don't switch it back to value equality.
 - Two layers, kept separate: thin mechanics in code, rich flavor added by the DM
   over the log. Don't bake prose into the engine beyond terse event lines.
+- **Zero backwards compatibility.** This is an early prototype: never spend
+  effort keeping saves or schemas loadable across changes. Rename and
+  restructure freely; any `.session_state.pkl` is disposable — when a change
+  breaks it, delete it and start a fresh game rather than writing migrations
+  or compat shims.
 
 ## Not yet built (the point of the design)
 

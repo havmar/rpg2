@@ -101,9 +101,9 @@ gets no dying swing.
    **resolve** instead of stalling. People absolutely die of tiredness now:
    that is the point. (A drawn standstill survives only as a rare safety-valve
    outcome via the round cap — no award, no clear.)
-3. **Tempo roll.** Attacker and defender each roll
+3. **Pressure roll.** Attacker and defender each roll
    `2d6 + DEX + training − (wound penalty) − (2 if Winded / 6 if Spent)`,
-   **plus the weapon's tempo term**: the attacker adds their weapon's attack
+   **plus the weapon's pressure term**: the attacker adds their weapon's attack
    bonus and proficiency rank; the defender adds the weapon's defense mod
    (usually 0 — the staff parries at +1, the zweihander guards at −1, a
    broken weapon attacks at −2).
@@ -155,14 +155,14 @@ Every fighter wields **one weapon** — no inventory (heroic tone: swaps are
 narrative, DM-arbitrated). A weapon is an **offense package**: it never makes
 you harder to hit (that's DEX and training), it changes what your attacks are.
 
-**The knobs** (chosen so no weapon double-dips — tempo already feeds severity
+**The knobs** (chosen so no weapon double-dips — pressure already feeds severity
 through the margin):
 
 | Knob | What it does | Who uses it |
 |------|--------------|-------------|
-| Attack tempo | Added to the attack roll only | The rapier's axis |
+| Attack pressure | Added to the attack roll only | The rapier's axis |
 | Severity | Flat bonus to hits that land | The zweihander's axis |
-| Defense tempo | Guard mod (usually 0) | Staff +1, zweihander −1 |
+| Defense pressure | Guard mod (usually 0) | Staff +1, zweihander −1 |
 | STA per swing | The burst/sustain clock | 1 for everything, for now (see note) |
 | Durability | Breakage ladder, 1–6 | See *Durability* below |
 
@@ -235,7 +235,7 @@ improves, which is the point: the asymmetry favors the player without
 inflating a single number, and a `*** CRACK ***` line is the most narratable
 event in the system.
 
-A fighter whose weapon breaks fights on with what's left: **−2 attack tempo,
+A fighter whose weapon breaks fights on with what's left: **−2 attack pressure,
 −2 severity**, no proficiency, no weapon specials, and nothing left to break.
 Re-arming (loot a fallen foe's blade, buy a new one) is a between-fights DM
 beat.
@@ -259,8 +259,8 @@ so every exchange prints **two layers**:
 
 | Situation | Label |
 |-----------|-------|
-| Tempo tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
-| Tempo tie, low dice | **Lull** — they circle, probing for an opening |
+| Pressure tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
+| Pressure tie, low dice | **Lull** — they circle, probing for an opening |
 | Attacker loses the exchange | *parried* |
 | A fighter hits 0 STA | `!! X is SPENT — running on empty (-6 to all rolls until the fight ends)` |
 | Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
@@ -778,7 +778,7 @@ gold buys staying power** — never the reverse.
 
 The veteran-vs-novice axis: *"you know how to fight."*
 
-- **Effect:** +1 to **all tempo rolls** per rank. Because severity = margin +
+- **Effect:** +1 to **all pressure rolls** per rank. Because severity = margin +
   STR difference, training quietly improves *everything*: you land more, get
   hit less, and the hits you land cut deeper. One number, three effects — which
   is why it stays cheap-per-rank but caps hard.
@@ -796,7 +796,7 @@ The veteran-vs-novice axis: *"you know how to fight."*
 ## Weapon proficiency — the second skill
 
 Per **weapon type** (the rapier, not this rapier): each rank gives **+1 attack
-tempo AND +1 severity with that weapon**. Rank *n* costs *n* points; **cap:
+pressure AND +1 severity with that weapon**. Rank *n* costs *n* points; **cap:
 rank 3**. Deliberately stronger per rank than combat training because it's
 narrower — offense only, one weapon — while training helps attack, defense,
 and any weapon you pick up. Switching weapons keeps your training but drops

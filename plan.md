@@ -42,7 +42,7 @@ push a stat past its natural value — the membrane in action.
 | Stat | Layer | Role |
 |------|-------|------|
 | **STR** | Combat | Wound severity; soaks incoming wounds; scales heavy weapons. |
-| **DEX** | Combat | Lands/avoids hits; the tempo roll; scales light weapons. |
+| **DEX** | Combat | Lands/avoids hits; the pressure roll; scales light weapons. |
 | **STA** | Combat | The involuntary clock; drives the burst/sustain matchup loop. |
 | **INT** | Magic | Scales/gates magic, the way STR scales weapons. |
 | **CHA** | Meta/party | Companions, recruitment, the disengage/rest/quest layer. Never acts inside a fight. |
@@ -108,8 +108,8 @@ opening of the brainstorm):
 
 Each weapon weights the three combat stats *differently*, so a weapon is *suited
 or unsuited to a build*, never simply better. The shipped knobs (see rules.md
-"Weapons" for the full spec): **attack tempo** (the rapier), **flat severity**
-(the zweihander), **defense tempo** (staff +1, zweihander −1), **durability**
+"Weapons" for the full spec): **attack pressure** (the rapier), **flat severity**
+(the zweihander), **defense pressure** (staff +1, zweihander −1), **durability**
 (breakage — see below), plus flavor fields (`bulk` inert, `tags`, `value`,
 `description`).
 
@@ -200,7 +200,7 @@ Each phase names what to build and what to *observe in batch sims*, since the
 autobattler is the test harness.
 
 **Phase 0 — Core combat** *(built — `rpg.py`)*
-Build: STR/DEX/STA, tempo roll, wound tiers, death spiral, STA clock.
+Build: STR/DEX/STA, pressure roll, wound tiers, death spiral, STA clock.
 Test: a fight resolves to win/lose; the burst/sustain/control loop is visible
 when archetypes meet (run the rock-paper-scissors matrix).
 
@@ -227,7 +227,7 @@ forces retreat.
 
 **Phase 3 — Progression** *(first slice built — `rpg.py`)*
 Build: XP (per encounter + quest lump), levels (`100 × L` to next), skill
-points, and **general combat training** (+1 tempo/rank, rank *n* costs *n*
+points, and **general combat training** (+1 pressure/rank, rank *n* costs *n*
 points, cap 5) — the one skill so far; stats stay fixed. Weapon proficiencies
 remain Phase 4; with a single skill the allocation is auto-spent for now.
 Test: *passed* — against the skeleton-barrow benchmark (`bench_training.py`;
@@ -238,9 +238,9 @@ training ends fights in fewer swings, which is what stretches the (now
 lethal) STA budget.
 
 **Phase 4 — Weapons & proficiency** *(first slice built — `rpg.py`; guns deferred)*
-Build: the quality four with distinct tempo/severity/defense profiles + the
+Build: the quality four with distinct pressure/severity/defense profiles + the
 common-weapon table (14 named commons in three stat lines) + durability/
-breakage + per-weapon-type proficiency (+1 atk tempo & +1 severity per rank,
+breakage + per-weapon-type proficiency (+1 atk pressure & +1 severity per rank,
 rank *n* costs *n*, cap 3 — making skill points a real choice vs combat
 training; nothing auto-spends in session play anymore). Guns + ammo: deferred
 to a later phase.
@@ -403,7 +403,7 @@ retired power potion can circulate again (rules.md, two-buffer split).
     authored placement by the DM already gates when they appear; a hard level
     lock is redundant bookkeeping. Revisit only if strong gear leaks to
     low-level parties in practice.
-  - *Per-weapon tempo dice* (e.g. a weapon rolling 1d12 instead of 2d6 for a
+  - *Per-weapon pressure dice* (e.g. a weapon rolling 1d12 instead of 2d6 for a
     swingier profile) — fun, but 2d6 is deliberately the single global
     variance dial; don't fork it before the numbers earn trust.
   - *Rapier anti-soak floor* — **shipped** in the first slice (the

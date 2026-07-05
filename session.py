@@ -54,9 +54,9 @@ Run:  python session.py new [--seed N]              # new party, resets state
                                                         # for free (quest rewards, a sword
                                                         # looted off a bandit, ...)
       python session.py train HERO combat|weapon        # spend a banked skill point:
-                                                        # combat training (+1 all tempo)
+                                                        # combat training (+1 all pressure)
                                                         # or proficiency with the WIELDED
-                                                        # weapon (+1 atk tempo & +1 severity
+                                                        # weapon (+1 atk pressure & +1 severity
                                                         # with it). Player choice -- nothing
                                                         # auto-spends in session play.
       python session.py use HERO KIND                  # drink a carried potion (instant, between fights)
@@ -213,7 +213,7 @@ def cmd_levelup(args: argparse.Namespace) -> None:
         first = h.name.split()[0]
         print(f"{h.name} -- L{h.level}, {h.skill_points} skill point(s) banked "
               f"(XP {h.xp}/{xp_to_next(h.level)} to L{h.level + 1})")
-        # Sink 1: combat training (+1 to ALL tempo rolls per rank).
+        # Sink 1: combat training (+1 to ALL pressure rolls per rank).
         if h.training >= TRAINING_MAX:
             print(f"  combat training      rank {h.training} -- CAPPED")
         else:
@@ -221,7 +221,7 @@ def cmd_levelup(args: argparse.Namespace) -> None:
             mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
             print(f"  combat training      rank {h.training} -> "
                   f"{h.training + 1}  costs {cost}  [{mark}]  "
-                  f"(+1 to ALL tempo rolls per rank, cap {TRAINING_MAX})"
+                  f"(+1 to ALL pressure rolls per rank, cap {TRAINING_MAX})"
                   f"  -> train {first} combat")
         # Sink 2: proficiency with the WIELDED weapon.
         if h.weapon is None or h.weapon_broken:
@@ -236,7 +236,7 @@ def cmd_levelup(args: argparse.Namespace) -> None:
                         else "can't afford yet")
                 print(f"  {h.weapon.name} proficiency  rank {rank} -> "
                       f"{rank + 1}  costs {cost}  [{mark}]  "
-                      f"(+1 atk tempo & +1 severity with it, cap "
+                      f"(+1 atk pressure & +1 severity with it, cap "
                       f"{PROFICIENCY_MAX}; lost on weapon switch)"
                       f"  -> train {first} weapon")
         other = {n: r for n, r in h.proficiency.items()
@@ -709,9 +709,9 @@ def main() -> None:
 
     p = sub.add_parser(
         "train",
-        help="spend a banked skill point: 'combat' = +1 to all tempo rolls "
+        help="spend a banked skill point: 'combat' = +1 to all pressure rolls "
              "per rank (cap 5); 'weapon' = proficiency with the WIELDED "
-             "weapon, +1 attack tempo & +1 severity per rank (cap 3). "
+             "weapon, +1 attack pressure & +1 severity per rank (cap 3). "
              "Rank n costs n points. A player choice -- nothing auto-spends.")
     p.add_argument("hero")
     p.add_argument("what", choices=["combat", "weapon"])

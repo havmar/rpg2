@@ -150,7 +150,7 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   the party's steel earning its price. Equal-quality steel almost never
   breaks; a hero clinging to a club against real weapons risks losing it.
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
-  tempo & +1 severity per rank, cap 3, rank n costs n points). It stays with
+  pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
 - Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
   first clear = level 2); skeleton barrow = TOUGH, pays 3x (45/encounter,

@@ -39,8 +39,8 @@ its source -- indented beneath it, plus a per-round stamina readout.
 
 Progression & economy: heroes earn XP per encounter won and a lump for clearing
 a whole site (the quest); levels grant skill points spent on combat training
-(a flat tempo bonus, the veteran-vs-novice axis) or per-weapon proficiency
-(+1 attack tempo and +1 severity with that weapon per rank). Gold accrues in a
+(a flat pressure bonus, the veteran-vs-novice axis) or per-weapon proficiency
+(+1 attack pressure and +1 severity with that weapon per rank). Gold accrues in a
 shared party purse from quest rewards and occasional encounter drops; potions
 are bought with gold (buy_potion is a between-adventures call the DM makes),
 never auto-refilled. Heroes start with just two random potions. Potions are also
@@ -48,7 +48,7 @@ never auto-refilled. Heroes start with just two random potions. Potions are also
 the one-shot/sim paths model a sensible party via auto_use_potions_*.
 
 Weapons (Phase 4 first slice): every fighter wields one weapon -- an offense
-package (attack tempo mod, severity mod, STA per swing) plus flavor (tags,
+package (attack pressure mod, severity mod, STA per swing) plus flavor (tags,
 bulk, value). Commons (crude / soldier's arms / heavy arms) are the mook and
 starter table; the quality four (rapier, katana, zweihander, wooden staff)
 each suit a build. Weapon-on-weapon contact (a parry or a Clash) can SHATTER
@@ -114,7 +114,7 @@ REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 # takes two clears (or one run at the 3x-paying barrow).
 XP_LEVEL_STEP = 100
 SKILL_POINTS_PER_LEVEL = 1
-TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to tempo rolls
+TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to pressure rolls
                         # (rank n costs n skill points: cheap to start, dear to max)
 
 # --- Gold & the potion economy ---------------------------------------------- #
@@ -145,21 +145,21 @@ BARROW_QUEST_XP = QUEST_XP * BARROW_REWARD_MULT
 BARROW_QUEST_GOLD = QUEST_GOLD * BARROW_REWARD_MULT
 
 # --- Weapons (Phase 4 first slice) ------------------------------------------ #
-# A weapon is an OFFENSE package: it modifies the attack tempo roll, the
+# A weapon is an OFFENSE package: it modifies the attack pressure roll, the
 # severity of hits that land, and the STA cost per swing. Defense stays the
-# body's job (DEX + training) except one deliberate knob (def_tempo: the
-# staff's parry, the zweihander's unwieldiness). The design constraint: tempo
-# already double-dips (margin feeds severity), so flat attack tempo is the
+# body's job (DEX + training) except one deliberate knob (def_pressure: the
+# staff's parry, the zweihander's unwieldiness). The design constraint: pressure
+# already double-dips (margin feeds severity), so flat attack pressure is the
 # rapier's axis and flat severity the zweihander's. NOTE on the sta_cost
 # knob: a 2-STA heavy swing was the planned burst mechanic, but the sims
 # rejected it -- with Spent lethal, halving the swing budget loses more than
 # any severity buys back (see bench_weapons.py / rules.md). It stays in the
 # schema at 1 for everything living, for a future with deeper STA pools.
 PROFICIENCY_MAX = 3     # per-weapon-type proficiency cap (rank n costs n skill
-                        # points): +1 attack tempo AND +1 severity with that
+                        # points): +1 attack pressure AND +1 severity with that
                         # weapon per rank -- narrower than combat training
                         # (offense only, one weapon), so stronger per rank
-BROKEN_ATK_TEMPO = -2   # fighting with the stump of a shattered weapon
+BROKEN_ATK_PRESSURE = -2   # fighting with the stump of a shattered weapon
 BROKEN_SEVERITY = -2
 BREAK_CHANCE_PER_GAP_SQ = 0.0025    # per weapon contact (a parry or a Clash):
                                     # P(break) = this * (durability gap)^2 for
@@ -184,13 +184,13 @@ class Weapon:
     (heroic tone, no encumbrance -- see plan.md; if carrying ever matters it
     becomes STR's secondary role). `tags` drive generation flavor."""
     name: str
-    atk_tempo: int          # attack tempo roll modifier (attack only, never defense)
+    atk_pressure: int          # attack pressure roll modifier (attack only, never defense)
     severity: int           # flat severity modifier on hits that land
     sta_cost: int           # STA per swing (the burst/sustain knob)
     durability: int         # 1 crude .. 6 legendary; the lower may shatter on contact
     quality: bool = False
     tier: str = "plain"     # plain | masterwork | legendary (plain is unlabeled in play)
-    def_tempo: int = 0      # defense tempo modifier (the staff's parry niche;
+    def_pressure: int = 0      # defense pressure modifier (the staff's parry niche;
                             # negative for the zweihander -- no parrying a girder)
     graze_floor: bool = False   # the rapier: a landed hit is never fully
                                 # deflected -- the point finds a seam (min. a
@@ -248,13 +248,13 @@ WEAPONS = {w.name: w for w in [
     Weapon("katana", 1, 1, 1, durability=4, quality=True, bulk=2, value=60,
            description="The balanced blade: lands a little more, cuts a little "
                        "deeper. At home in any strong hand."),
-    Weapon("zweihander", 1, 3, 1, durability=4, quality=True, def_tempo=-1,
+    Weapon("zweihander", 1, 3, 1, durability=4, quality=True, def_pressure=-1,
            bulk=4, value=60,
            description="Two-handed war steel: every hit lands a tier harder "
                        "and mooks die in one blow, but there is no parrying "
                        "with a girder (-1 on defense). Wants STR and soak "
                        "behind it; the crowd-breaker."),
-    Weapon("wooden staff", 0, -1, 1, durability=3, quality=True, def_tempo=1,
+    Weapon("wooden staff", 0, -1, 1, durability=3, quality=True, def_pressure=1,
            heal_bonus=1, bulk=2, value=60,
            description="A healer's iron-shod staff: poor on the attack, +1 to "
                        "the parry, and Heals through it restore +1 HP."),
@@ -335,7 +335,7 @@ PAUSE_ACTIONS = ("drink", "berserk", "war-breath")
 
 # The universal graze floor: win the exchange by at least this margin and the
 # hit always draws blood (min. a graze), no matter the soak. Without it a
-# high-STR frame is unwoundable by weak foes until fatigue collapses its tempo
+# high-STR frame is unwoundable by weak foes until fatigue collapses its pressure
 # -- the party literally could not be injured before its stamina broke, which
 # made HP dead weight (design note, 2026-07). Soak still gates the REAL wound
 # tiers; this only stops chip damage from being zeroed on a clean win. The
@@ -353,7 +353,7 @@ TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "killing blow"
 TIER_PHRASE = {"graze": "a graze", "wound": "a solid wound",
                "grievous": "a grievous injury", "killing blow": "a killing blow"}
 
-# Tie on the tempo roll: high dice = furious contact, low dice = cagey circling.
+# Tie on the pressure roll: high dice = furious contact, low dice = cagey circling.
 TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "Lull"
 
 
@@ -387,8 +387,8 @@ def reduce_tier(tier: str) -> tuple[str, int]:
 
 
 @dataclass
-class TempoRoll:
-    """One tempo roll with its full breakdown, so the log can expose every
+class PressureRoll:
+    """One pressure roll with its full breakdown, so the log can expose every
     modifier and its source (the mechanics layer of the two-layer log)."""
     total: int
     dice: int           # the raw 2d6 sum
@@ -398,7 +398,7 @@ class TempoRoll:
     fatigue_pen: int    # SPENT_PENALTY at 0 STA, else WINDED_PENALTY if
                         # Winded, else 0 (the two never stack)
     fatigue_label: str  # "spent" / "winded" / ""
-    weapon_mod: int = 0     # the weapon's tempo term (attack bonus, the staff's
+    weapon_mod: int = 0     # the weapon's pressure term (attack bonus, the staff's
                             # parry bonus on defense, or the broken-weapon malus)
     weapon_label: str = ""  # e.g. "rapier" / "broken club"
     prof: int = 0           # proficiency rank with the wielded weapon (attack only)
@@ -471,7 +471,7 @@ class Entity:
     dead: bool = field(default=False)   # truly slain (unsaved killing blow)
     items: dict[str, int] = field(default_factory=dict)
     hp_regen_per_night: int = field(default=0)  # HP knit back per long rest (derived)
-    # Progression. Training is the veteran-vs-novice axis: a flat tempo bonus,
+    # Progression. Training is the veteran-vs-novice axis: a flat pressure bonus,
     # so it improves landing, avoiding, AND severity (margin feeds severity).
     level: int = field(default=1)
     xp: int = field(default=0)          # progress toward the NEXT level only
@@ -556,9 +556,9 @@ class Entity:
             mods.append((self.prof_rank, "proficiency"))
         return mods
 
-    def tempo(self, rng: random.Random, attacking: bool = False,
+    def pressure(self, rng: random.Random, attacking: bool = False,
               wound_pen: int | None = None, misc: int = 0,
-              misc_label: str = "") -> TempoRoll:
+              misc_label: str = "") -> PressureRoll:
         # wound_pen overrides the live wound penalty -- used for the dying
         # swing (group_combat): a fighter felled mid-round still gets their
         # blow in, rolled with the wounds they had at ROUND START, not the
@@ -571,26 +571,26 @@ class Entity:
             fatigue_pen, fatigue_label = WINDED_PENALTY, "winded"
         else:
             fatigue_pen, fatigue_label = 0, ""
-        # The weapon is an offense package: its tempo bonus (and proficiency)
+        # The weapon is an offense package: its pressure bonus (and proficiency)
         # apply to the ATTACK roll only. Defense is the body -- DEX and
-        # training -- except the staff's deliberate parry knob (def_tempo).
+        # training -- except the staff's deliberate parry knob (def_pressure).
         # A broken weapon drags the attack down instead.
         weapon_mod, weapon_label, prof = 0, "", 0
         if self.weapon is not None:
             if attacking:
                 if self.weapon_broken:
-                    weapon_mod = BROKEN_ATK_TEMPO
+                    weapon_mod = BROKEN_ATK_PRESSURE
                     weapon_label = f"broken {self.weapon.name}"
                 else:
-                    weapon_mod = self.weapon.atk_tempo
+                    weapon_mod = self.weapon.atk_pressure
                     weapon_label = self.weapon.name
                     prof = self.prof_rank
-            elif not self.weapon_broken and self.weapon.def_tempo:
-                weapon_mod = self.weapon.def_tempo
+            elif not self.weapon_broken and self.weapon.def_pressure:
+                weapon_mod = self.weapon.def_pressure
                 weapon_label = self.weapon.name
         total = (dice + self.dex + self.training + weapon_mod + prof + misc
                  - pen - fatigue_pen)
-        return TempoRoll(total=total, dice=dice, dex=self.dex,
+        return PressureRoll(total=total, dice=dice, dex=self.dex,
                          training=self.training, wound_pen=pen,
                          fatigue_pen=fatigue_pen, fatigue_label=fatigue_label,
                          weapon_mod=weapon_mod, weapon_label=weapon_label,
@@ -642,7 +642,7 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
     loser.weapon_broken = True
     log.append(f"    *** CRACK -- {loser.name}'s {loser.weapon.name} shatters "
                f"on {other.name}'s {stronger.name}! They fight on with what's "
-               f"left ({BROKEN_ATK_TEMPO} attack tempo, "
+               f"left ({BROKEN_ATK_PRESSURE} attack pressure, "
                f"{BROKEN_SEVERITY} severity). ***")
 
 
@@ -663,9 +663,9 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     Every exchange logs two layers: an interpretive headline first, then the
     raw numbers (dice, each modifier and its source) indented beneath it.
     """
-    atk = attacker.tempo(rng, attacking=True, wound_pen=atk_wound_pen)
-    dfn = defender.tempo(rng, misc=def_mod, misc_label=def_label)
-    tempo_line = (f"        tempo: {atk.breakdown(attacker.name)} vs "
+    atk = attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen)
+    dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
+    pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
                   f"{dfn.breakdown(defender.name)}")
 
     if atk.total == dfn.total:
@@ -677,14 +677,14 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             label = "Lull. They circle, probing for an opening"
             contact = False     # no contact, nothing to break
         log.append(f"    {attacker.name} and {defender.name} -- {label}.")
-        log.append(tempo_line)
+        log.append(pressure_line)
         if contact:
             _check_weapon_break(attacker, defender, rng, log)
         return
 
     if atk.total < dfn.total:
         log.append(f"    {attacker.name} attacks {defender.name} -- parried.")
-        log.append(tempo_line)
+        log.append(pressure_line)
         _check_weapon_break(attacker, defender, rng, log)
         return
 
@@ -713,7 +713,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         else:
             log.append(f"    {attacker.name} {margin_verb(margin)} "
                        f"{defender.name}, but the blow glances off -- deflected.")
-            log.append(tempo_line)
+            log.append(pressure_line)
             log.append(sev_line)
             return
 
@@ -737,7 +737,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     else:
         log.append(f"    {attacker.name} {margin_verb(margin)} {defender.name}"
                    f" -- {TIER_PHRASE[tier]}! [{state}]")
-    log.append(tempo_line)
+    log.append(pressure_line)
     log.append(sev_line)
 
     if raw_tier == "killing blow" and not saved:
@@ -1286,7 +1286,7 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
     bits = []
     for name, (w, count) in drops.items():
         n = f"{count}x " if count > 1 else "a "
-        bits.append(f"{n}{name} ({w.atk_tempo:+d} atk/{w.severity:+d} sev, "
+        bits.append(f"{n}{name} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
                     f"{w.value}g)")
     return "  Left among the dead: " + ", ".join(bits) + "."
 
@@ -1321,7 +1321,7 @@ def award_xp(party: list[Entity], amount: int, log: list[str],
 
 def train_combat_once(h: Entity, log: list[str]) -> bool:
     """Spend skill points on ONE rank of combat training (rank n costs n,
-    +1 to ALL tempo rolls per rank, cap TRAINING_MAX). The session-play shape:
+    +1 to ALL pressure rolls per rank, cap TRAINING_MAX). The session-play shape:
     with proficiency as a second sink, each point is a real player choice now
     (session.py `train`), so nothing auto-spends in real play."""
     if h.training >= TRAINING_MAX:
@@ -1336,14 +1336,14 @@ def train_combat_once(h: Entity, log: list[str]) -> bool:
     h.skill_points -= cost
     h.training += 1
     log.append(f"    {h.name} trains: combat training rank {h.training} "
-               f"(+{h.training} to all tempo rolls) "
+               f"(+{h.training} to all pressure rolls) "
                f"[{h.skill_points} point(s) left]")
     return True
 
 
 def train_proficiency(h: Entity, log: list[str]) -> bool:
     """Spend skill points on ONE rank of proficiency with the WIELDED weapon
-    (+1 attack tempo AND +1 severity with that weapon per rank; rank n costs
+    (+1 attack pressure AND +1 severity with that weapon per rank; rank n costs
     n; cap PROFICIENCY_MAX). Narrower than combat training -- offense only,
     one weapon type -- so it's stronger per rank. Per weapon TYPE: a
     replacement rapier keeps your rapier ranks; switching weapons drops the
@@ -1370,7 +1370,7 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
     h.skill_points -= cost
     h.proficiency[name] = rank + 1
     log.append(f"    {h.name} drills with the {name}: proficiency rank "
-               f"{rank + 1} (+{rank + 1} attack tempo and +{rank + 1} "
+               f"{rank + 1} (+{rank + 1} attack pressure and +{rank + 1} "
                f"severity with it) [{h.skill_points} point(s) left]")
     return True
 
@@ -1386,7 +1386,7 @@ def train_combat(h: Entity, log: list[str]) -> bool:
         h.training += 1
         trained = True
         log.append(f"    {h.name} trains: combat training rank {h.training} "
-                   f"(+{h.training} to all tempo rolls)")
+                   f"(+{h.training} to all pressure rolls)")
     return trained
 
 
