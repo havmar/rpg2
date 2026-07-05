@@ -1,73 +1,22 @@
-"""Combat Sim - combat engine, random party, and a skeleton dungeon.
+"""Combat Sim - the mechanics engine.
 
-Implements the ruleset in rules.md (core + the Survival & Resources add-on +
-the first slice of Progression). A fight takes no input once it starts; it
-produces an outcome and a narrative log. Generalized from a 1v1 exchange to a
-group melee so a party can be swarmed (numbers are the skeletons' whole threat).
+Implements the ruleset in rules.md (the source of truth for mechanics intent):
+the group melee (group_combat), the pause/retreat interrupt layer, weapons and
+breakage, the survival tracks (HP/STA/Power, rests, the clock), progression
+(XP, training, proficiency), the economy (purse, potions, weapons), random
+party generation, and the batch-sim policies (sim_fight, sim_pause_policy).
 
-One exception to "no input once it starts": the PAUSE (the interrupt
-primitive). With pause_triggers on, group_combat stops at the end of a round
-in which a hero CROSSED STA <= 2 or half HP (each trigger once per fight, and
-crossing-only: a condition already true at fight start is gated off -- the
-player chose to enter low) and
-returns a Pause; the caller -- the DM in session play, sim_pause_policy in the
-batch sims -- decides: fight on, a pause action per hero (drink a stamina
-draught mid-fight, Berserk HP->STA, War-Breath Power->STA; each costs that
-round's attack and defends at -2), or attempt_retreat (parting blows from
-every foe fit to swing, then ONE opposed group chase roll -- the barrow's
-undead never pursue past the door). A fled room's survivors persist
-(refresh_foes_after_retreat): foe STA refills, the living heal over a day,
-dead bone stays hacked.
+What you FIGHT and WHERE lives in sites.py (the foe catalog and the two
+hand-built sites); how a playthrough is DRIVEN lives in session.py. This file
+stays stdlib-only and self-contained -- everything else imports it.
 
-Survival layer: HP carries across the whole run (only a minimal catch-breath
-between rooms, never a per-fight reset); 0 HP is Down (out of this fight, stands
-back up minimally next room), not Dead; Bulwark buys off killing/grievous blows
-in the moment; First Blood opens the fight with a guaranteed graze on the
-focused foe (the aggressive third ability -- its value is the death spiral, not
-the point of damage); Heal instead mends HP on self or an ally between fights
-(all cost Power); STA is the second death-track -- attacks spend it (defense is
-free), and an entity that hits 0 STA is SPENT: still swinging, but at a huge
-penalty to every roll until the fight ends (only a pause action buys STA back
-mid-fight). Running dry near a fresh
-enemy is how you die (two spent sides cancel out and brawl to a real finish,
-so fights resolve). STA otherwise sawtooths back up between fights
-(+1 after a fight, +3 per short rest, full overnight) across the run;
-healing potions restore HP instantly, drunk between fights. A character only
-truly dies when a killing blow lands and the saves have run dry.
-
-The combat log has two LEVELS now (see rules.md "Reading the combat log" and
-the CombatLog class): the FULL log -- every exchange's interpretive headline
-(Clash / Lull / edges past / outmaneuvers / overwhelms ...) with the raw
-numbers (dice, every modifier and its source) indented beneath it, plus a
-per-round stamina readout -- and a parallel PLAYER log (CombatLog.player):
-just the headlines with the HP loss folded in, built to be pasted into the
-chat as-is.
-
-Progression & economy: heroes earn XP per encounter won and a lump for clearing
-a whole site (the quest); levels grant skill points spent on combat training
-(a flat pressure bonus, the veteran-vs-novice axis) or per-weapon proficiency
-(+1 attack pressure and +1 severity with that weapon per rank). Gold accrues in a
-shared party purse from quest rewards and occasional encounter drops; potions
-are bought with gold (buy_potion is a between-adventures call the DM makes),
-never auto-refilled. Heroes start with just two random potions. Potions are also
-*used* by deliberate DM call (use_potion), between fights -- never automatically;
-the one-shot/sim paths model a sensible party via auto_use_potions_*.
-
-Weapons (Phase 4 first slice): every fighter wields one weapon -- an offense
-package (attack pressure mod, severity mod, STA per swing) plus flavor (tags,
-bulk, value). Commons (crude / soldier's arms / heavy arms) are the mook and
-starter table; the quality four (rapier, katana, zweihander, wooden staff)
-each suit a build. Weapon-on-weapon contact (a parry or a Clash) can SHATTER
-the lower-durability weapon -- rusted mook steel snapping on a hero's quality
-blade is the intended, narratable asymmetry.
-
-Run:  python rpg.py            -> generate a party, run the dungeon, print log
-      python rpg.py --seed 7   -> reproducible run
+Run:  python rpg.py [--site hideout] [--seed N]   -> one-shot site run
+      (delegates to sites.py, which owns the content; `python sites.py`
+      is the same thing)
 """
 
 from __future__ import annotations
 
-import argparse
 import random
 from dataclasses import dataclass, field
 
@@ -141,7 +90,7 @@ DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
 
-# Site rewards. The bandit hideout (scratch_bandits.py) is the STARTER site
+# Site rewards. The bandit hideout (sites.py) is the STARTER site
 # and pays the base rate -- a full clear (3 encounters + quest) is exactly the
 # level-1 -> 2 XP cost, so the first clear is a level-up. The skeleton barrow
 # is the TOUGH site (tireless undead in numbers) and pays 3x: farm the bandits
@@ -310,8 +259,9 @@ SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
 # --- The mid-fight pause (the interrupt primitive) --------------------------- #
 # group_combat can PAUSE at a trigger and resume: the "do I fight on?" decision
 # surfaced BEFORE Spent, where play never had it. Triggers watch the party side
-# only, at the end of a round, and each kind fires at most once per fight (no
-# pause spam). CROSSING-ONLY (2026-07): a trigger whose condition already
+# only, at the end of a round, and each (kind, hero) pair fires at most once
+# per fight (no pause spam; per hero, so one hero's crisis never consumes the
+# other's warning). CROSSING-ONLY (2026-07): a trigger whose condition already
 # holds when the fight starts is marked spent silently -- entering low was the
 # player's informed choice at the door, so only an IN-FIGHT crossing
 # interrupts (a wounded day no longer re-asks the same question every fight).
@@ -899,30 +849,32 @@ class Pause:
 
 
 def _check_pause_triggers(party: list[Entity], foes: list[Entity],
-                          fired: set[str]) -> list[tuple[str, Entity]]:
+                          fired: set[tuple[str, Entity]]
+                          ) -> list[tuple[str, Entity]]:
     """The pause triggers, checked at the end of a round: a hero at STA <=
     PAUSE_STA_TRIGGER, or at HP <= half. Party side only (the pause is the
-    player's), each kind at most once per fight (`fired` is mutated), and only
-    while both sides still stand -- a decided fight has nothing to decide.
+    player's), each (kind, hero) pair at most once per fight (`fired` is
+    mutated) -- PER HERO, so one hero's crisis never silences the other's
+    (2026-07: `fired` used to be keyed by kind alone, and a hero entering
+    wounded gated the wounds trigger for the whole party) -- and only while
+    both sides still stand: a decided fight has nothing to decide.
     group_combat also calls this once at fight start with the crossings
     discarded: the crossing-only gate (a condition already true at the door
     never fires -- see the pause comment block)."""
     if not (any(e.alive for e in party) and any(e.alive for e in foes)):
         return []
     crossings = []
-    if "stamina" not in fired:
-        for h in party:
-            if (h.alive and not h.tireless
-                    and h.cur_sta <= PAUSE_STA_TRIGGER):
-                fired.add("stamina")
-                crossings.append(("stamina", h))
-                break
-    if "wounds" not in fired:
-        for h in party:
-            if h.alive and h.hp <= h.max_hp * PAUSE_HP_FRACTION:
-                fired.add("wounds")
-                crossings.append(("wounds", h))
-                break
+    for h in party:
+        if not h.alive:
+            continue
+        if (("stamina", h) not in fired and not h.tireless
+                and h.cur_sta <= PAUSE_STA_TRIGGER):
+            fired.add(("stamina", h))
+            crossings.append(("stamina", h))
+        if (("wounds", h) not in fired
+                and h.hp <= h.max_hp * PAUSE_HP_FRACTION):
+            fired.add(("wounds", h))
+            crossings.append(("wounds", h))
     return crossings
 
 
@@ -990,7 +942,8 @@ def _catch_breath(survivors: list[Entity], log: list[str]) -> None:
 def group_combat(party: list[Entity], foes: list[Entity],
                  rng: random.Random, log: list[str],
                  max_rounds: int = 40,
-                 pause_triggers: bool = False, fired: set[str] | None = None,
+                 pause_triggers: bool = False,
+                 fired: set[tuple[str, Entity]] | None = None,
                  first_round: int = 1,
                  actions: dict[Entity, str] | None = None) -> Pause | None:
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
@@ -1016,9 +969,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
 
     The pause (the interrupt primitive): with pause_triggers=True the fight
     PAUSES at the end of a round in which a hero CROSSED STA <=
-    PAUSE_STA_TRIGGER or HP <= half (each trigger once per fight -- `fired`
-    carries the used ones across a resume; a condition already true at fight
-    start is gated off, crossing-only). Returns a Pause instead of
+    PAUSE_STA_TRIGGER or HP <= half (each trigger once per hero per fight --
+    `fired` carries the used (kind, hero) pairs across a resume; a condition
+    already true at fight start is gated off, crossing-only). Returns a Pause
+    instead of
     finishing; the caller decides (fight on / pause actions / retreat) and
     calls again with fired, first_round=pause.round+1, and `actions`
     ({hero: "drink" | "berserk" | "war-breath"}, executed at the top of the
@@ -1055,6 +1009,9 @@ def group_combat(party: list[Entity], foes: list[Entity],
             for h, act in actions.items():
                 if _do_pause_action(h, act, log):
                     busy[h] = act
+            # A drink can un-Spend a fighter at 0: drop them from the
+            # already-logged set so running dry AGAIN earns a fresh !! line.
+            spent_logged = {e for e in spent_logged if e.spent}
 
         # Round-start snapshot: everyone alive NOW acts this round, even if
         # felled before their turn comes -- the dying swing (see docstring).
@@ -1296,48 +1253,6 @@ def make_party(rng: random.Random) -> list[Entity]:
     return [make_human(rng, names[0]), make_human(rng, names[1])]
 
 
-def make_skeleton(rng: random.Random, n: int) -> Entity:
-    # Brittle and a weak individual hitter (low STR -> low severity), but
-    # undead: no pain (wound roll penalty halved -- a graze costs it nothing,
-    # which also blunts First Blood's spiral here) and TIRELESS (never spends
-    # STA, never Winded or Spent -- they don't tire; you do). No Power, no
-    # saves, no kit. The threat is numbers pressing a party whose stamina is a
-    # death-track: the bones don't have to beat you, just outlast you.
-    # They swing corroded grave-steel (durability 1): against a party carrying
-    # quality weapons the rusted blades start snapping -- the barrow gets
-    # *visibly* easier with better gear, not just numerically.
-    # pursues=False: bound to the grave -- they swing at a fleeing party's
-    # backs but never follow past the door, which is what makes "come back
-    # tomorrow and finish it" a real plan instead of a death sentence.
-    # DEX 4 (up from 3, 2026-07 lethality retune): the bones land often
-    # enough that every room draws real blood -- who hits is DEX's job, and
-    # danger has to live in the encounter itself, since the party can always
-    # camp after it.
-    return Entity(name=f"Skeleton {n}", dex=4, str_=2, sta=8, max_hp=5,
-                  sta_cost=0, undead=True, tireless=True, pursues=False,
-                  weapon=RUSTED_BLADE)
-
-
-# --------------------------------------------------------------------------- #
-# The dungeon (one "day")
-# --------------------------------------------------------------------------- #
-
-# Rooms of skeletons -- the TOUGH site (pays 3x; train up at the bandit hideout
-# first). HP and STA both carry across the whole run with only a brief
-# catch-breath between rooms (no per-fight reset); HP wounds and the STA
-# death-track both bind, and the skeletons are tireless -- numbers grinding a
-# party dry is the whole threat. Power and items deplete.
-# BARROW_ROOMS is the SET encounter list for the site (name, skeleton count) --
-# session play (`session.py barrow ROOM`) and the one-shot run both use it, so
-# the layout tune.py/bench_training.py balance is the layout actually played.
-BARROW_ROOMS = [
-    ("the collapsed entry", 3),
-    ("the ossuary", 3),
-    ("the burial vault", 4),
-]
-DUNGEON_ROOMS = [n for _, n in BARROW_ROOMS]  # counts only (tune.py sweeps this)
-
-
 def weapon_tag(e: Entity) -> str:
     """Short wielded-weapon readout for stat lines: name, BROKEN flag, and the
     proficiency rank with it (if any)."""
@@ -1482,8 +1397,8 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
 
 
 def train_combat(h: Entity, log: list[str]) -> bool:
-    """Greedy auto-spend on combat training -- the SIM policy only (run_dungeon
-    / run_hideout call it after quest awards so tune.py / bench_training.py
+    """Greedy auto-spend on combat training -- the SIM policy only
+    (sites.run_site calls it after quest awards so tune.py / bench_training.py
     model a party that spends its points). Real play never auto-spends:
     session.py banks the points and the player chooses via `train`."""
     trained = False
@@ -1653,7 +1568,7 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
 
 def auto_use_potions_on_rest(survivors: list[Entity], log: list[str]) -> None:
     """The 'sensible party' rest-time policy for the sim / one-shot paths only
-    (run_dungeon, scratch_bandits) -- NOT for real play, which leaves every
+    (sites.run_site) -- NOT for real play, which leaves every
     potion to the DM via use_potion(). Drinks a healing potion when badly hurt,
     a stamina draught when winded, and a power potion when the save budget is
     nearly gone -- so tune.py / bench_training.py still model a party that uses
@@ -1784,7 +1699,7 @@ def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
     """One encounter under the batch-sim pause policy (drink / convert /
     retreat -- sim_pause_policy). Returns "resolved" (the melee ended; read
     the outcome off the entities) or "fled" (a clean escape; foes survive).
-    The scenario loops (run_dungeon / run_hideout) and session play share the
+    The site loop (sites.run_site) and session play share the
     same engine; only WHO answers the pause differs -- here a policy, there
     the player.
 
@@ -1816,94 +1731,6 @@ def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
         actions = decision or None
 
 
-def run_dungeon(party: list[Entity], clock: Clock, purse: Purse,
-                rng: random.Random, log: list[str],
-                reckless: bool = False) -> None:
-    """The one-shot / batch barrow run. reckless=True is the no-resource
-    baseline: no pauses (so no drinks/conversions/retreats) and no potions
-    drunk at rests -- short rests still happen (pacing, not a consumable)."""
-    skel_count = 0
-    cleared_all = True
-    room_i = 0
-    attempts = 0
-    held_over: list[Entity] | None = None   # survivors of a room the party fled
-    while room_i < len(DUNGEON_ROOMS):
-        n_skel = DUNGEON_ROOMS[room_i]
-        living = [h for h in party if not h.dead]
-        if not living:
-            cleared_all = False
-            break
-
-        log.append("")
-        if held_over is None:
-            attempts = 1
-            log.append(f"=== Room {room_i + 1}: {n_skel} skeletons rise "
-                       f"from the bones ===")
-            skeletons = []
-            for _ in range(n_skel):
-                skel_count += 1
-                skeletons.append(make_skeleton(rng, skel_count))
-            s = skeletons[0]
-            log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  "
-                       f"STR {s.str_}  HP {s.max_hp} each "
-                       f"(undead: no pain, tireless; rusted blades)")
-        else:
-            attempts += 1
-            skeletons = held_over
-            held_over = None
-            standing = sum(1 for s in skeletons if s.alive)
-            log.append(f"=== Room {room_i + 1}, again: "
-                       f"{standing} skeleton(s) still stand among "
-                       f"the hacked bones ===")
-        for h in living:
-            start_fight(h, log)
-
-        result = sim_fight(living, skeletons, rng, log, reckless=reckless)
-
-        if party_wiped(party, log):
-            cleared_all = False
-            break
-        if result == "fled":
-            if attempts >= SIM_MAX_ROOM_ATTEMPTS:
-                log.append("  The party has had enough -- "
-                           "the barrow is abandoned.")
-                cleared_all = False
-                break
-            # Rest up and go back in (the sims' determined-player policy):
-            # a short rest if a slot is left today, else camp overnight.
-            day_before = clock.day
-            survivors = [h for h in party if h.alive]
-            if not short_rest(survivors, clock, log):
-                long_rest(party, clock, log)
-            auto_use_potions_on_rest([h for h in party if h.alive], log)
-            held_over = refresh_foes_after_retreat(
-                skeletons, clock.day - day_before)
-            continue    # the same room, again
-        if any(s.alive for s in skeletons):
-            # Unresolved (the fight staggered apart): no award, no clear.
-            log.append("  The room is not cleared -- the party pulls back.")
-            cleared_all = False
-            break
-
-        award_xp(party, BARROW_ENCOUNTER_XP, log, "encounter")
-        roll_loot(party, purse, rng, log)
-
-        survivors = [h for h in party if h.alive]
-        if survivors:
-            log.append(f"  Room cleared. {len(survivors)} still standing.")
-            short_rest(survivors, clock, log)
-            if not reckless:
-                auto_use_potions_on_rest(survivors, log)  # sim: sensible party
-        room_i += 1
-
-    if cleared_all and any(not h.dead for h in party):
-        award_quest(party, purse, BARROW_QUEST_GOLD, BARROW_QUEST_XP,
-                    log, "the barrow is cleansed")
-        for h in party:
-            if not h.dead:
-                train_combat(h, log)    # sim policy: auto-spend on training
-
-
 def outcome(party: list[Entity]) -> str:
     """How many were truly slain (Down does not count -- it recovers)."""
     dead = sum(1 for h in party if h.dead)
@@ -1915,36 +1742,10 @@ def outcome(party: list[Entity]) -> str:
 # --------------------------------------------------------------------------- #
 
 def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--seed", type=int, default=None)
-    args = ap.parse_args()
-    rng = random.Random(args.seed)
-
-    party = make_party(rng)
-    clock = Clock()
-    purse = Purse()
-    log: list[str] = []
-    log.append(f"Day {clock.day}. The party descends into the barrow:")
-    for h in party:
-        log.append("  " + stat_line(h))
-
-    run_dungeon(party, clock, purse, rng, log)
-    # No auto-night: making camp (long_rest) is a deliberate call Claude makes
-    # between adventuring days, not something the dungeon does on its own.
-
-    log.append("")
-    dead = [h for h in party if h.dead]
-    alive = [h for h in party if not h.dead]
-    log.append(f"OUTCOME: {outcome(party)} of the party died. "
-               f"Purse: {purse.gold} gold.")
-    if dead:
-        log.append("  Fallen:   " + ", ".join(h.name for h in dead))
-    if alive:
-        log.append("  Survived: " + ", ".join(
-            f"{h.name} (L{h.level}, Power {h.cur_power}/{h.power}, "
-            f"STA {h.cur_sta}/{h.sta})" for h in alive))
-
-    print("\n".join(log))
+    # The one-shot runner lives with the content now (sites.py); this stub
+    # keeps `python rpg.py [--site ...] [--seed N]` working as documented.
+    from sites import main as run_sites
+    run_sites()
 
 
 if __name__ == "__main__":

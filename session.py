@@ -4,63 +4,22 @@ rpg.py's primitives (start_fight, group_combat, short_rest, long_rest, ...)
 are meant to be called on purpose, in whatever order the story wants (see
 CLAUDE.md, "The feel we're going for"). But each terminal call is a fresh
 Python process, so something has to hold party/clock/purse state *between*
-calls. That's all this file does: a thin CLI over rpg.py's functions, with
-state pickled to .session_state.pkl (gitignored -- it's a save file, not
-source) between invocations. It adds no game logic of its own.
+calls. That's all this file does: a thin CLI over rpg.py's functions and
+sites.py's content, with state pickled to .session_state.pkl (gitignored --
+a save file, not source) between invocations. It adds no game logic of its
+own; `python session.py --help` lists every subcommand, and each
+subcommand's --help carries its full rules. The play protocol (who decides
+what, one encounter per message, narration style) lives in dm.md.
 
 The first hero rolled (party[0]) is the PLAYER CHARACTER; the rest are
-companions. PC death ends the game even if a companion stands (see dm.md --
-the DM protocol for actually playing lives there).
+companions. PC death ends the game even if a companion stands.
 
-Run:  python session.py new [--seed N]              # new party, resets state
-      python session.py status                       # show party/clock/purse (all
-                                                        # tracks cur/max + XP/points)
-      python session.py levelup                       # the skill-point spending menu
-      python session.py hideout ROOM                  # resolve one hideout room (1-3,
-                                                        # SET roster per room -- the STARTER
-                                                        # site: living foes, base pay)
-      python session.py barrow ROOM                   # resolve one barrow room (1-3,
-                                                        # SET skeleton count per room from
-                                                        # rpg.BARROW_ROOMS -- the TOUGH site:
-                                                        # tireless undead, 3x pay)
-      python session.py fight N [--type skeleton|bandit]  # OFF-SCRIPT encounter: spawn N foes
-                                                        # (road ambushes and other improvised
-                                                        # scenes only -- the two sites are set
-                                                        # encounters, use barrow/hideout)
-      python session.py resume [--drink HERO] [--berserk HERO] [--warbreath HERO]
-                                                        # continue a PAUSED fight. A fight
-                                                        # pauses when a hero crosses STA <= 2
-                                                        # or half HP (once each per fight);
-                                                        # each flag is a pause action for one
-                                                        # hero (skip that round's attack,
-                                                        # defend at -2): drink = stamina
-                                                        # draught mid-fight, berserk =
-                                                        # HP -> STA, warbreath = Power -> STA.
-                                                        # Plain resume = fight on.
-      python session.py retreat                         # break away from a PAUSED fight:
-                                                        # parting blows, then ONE group chase
-                                                        # roll (the barrow's undead never
-                                                        # pursue). A fled room's survivors
-                                                        # persist -- re-run the room to face
-                                                        # them again (STA refreshed; living
-                                                        # foes heal over a day, bones don't).
-      python session.py rest                          # short rest (spends a slot)
-      python session.py camp                          # long rest (advance a day)
-      python session.py quest GOLD XP NAME             # award a site-clear quest
-      python session.py buy HERO THING                  # buy a potion OR a weapon from
-                                                        # the purse (weapons are equipped
-                                                        # on the spot; plain tier only)
-      python session.py give HERO WEAPON                # DM-granted loot: wield a weapon
-                                                        # for free (quest rewards, a sword
-                                                        # looted off a bandit, ...)
-      python session.py train HERO combat|weapon        # spend a banked skill point:
-                                                        # combat training (+1 all pressure)
-                                                        # or proficiency with the WIELDED
-                                                        # weapon (+1 atk pressure & +1 severity
-                                                        # with it). Player choice -- nothing
-                                                        # auto-spends in session play.
-      python session.py use HERO KIND                  # drink a carried potion (instant, between fights)
-      python session.py heal HEALER TARGET              # Heal ability, between fights
+The shape of a playthrough:
+  new / status / levelup                    -- rolling and reading the party
+  hideout ROOM / barrow ROOM / fight N      -- one encounter (may PAUSE)
+  resume [...] / retreat                    -- settle a paused fight
+  rest / camp / quest / buy / give / train / use / heal
+                                            -- the between-fights layer
 """
 from __future__ import annotations
 
@@ -71,12 +30,11 @@ from pathlib import Path
 
 from rpg import (
     Clock, CombatLog, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP,
-    BARROW_ENCOUNTER_XP,
-    BARROW_ROOMS, TRAINING_MAX, PROFICIENCY_MAX,
+    TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
-    make_party, make_skeleton, stat_line, progress_line, fallen_weapons_line,
+    make_party, stat_line, progress_line, fallen_weapons_line,
     xp_to_next,
     start_fight, group_combat, party_wiped,
     attempt_retreat, refresh_foes_after_retreat,
@@ -88,17 +46,19 @@ from rpg import (
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
 )
-from scratch_bandits import (make_bandit, bandit_line, HIDEOUT_ROOMS,
-                             BANDIT_TYPES, BANDIT_ENCOUNTER_XP)
+from sites import SITES, FOES, BANDIT_KINDS, make_foe, roster_lines
 
 STATE_PATH = Path(__file__).parent / ".session_state.pkl"
 
+# Off-script foe kinds (`fight N --type ...`): any catalog kind by name, or
+# "bandit" for a random living foe from the bandit pool.
+FIGHT_TYPES = ("bandit",) + tuple(sorted(FOES))
 
-def _make_random_bandit(rng, n):
-    return make_bandit(rng.choice(sorted(BANDIT_TYPES)), n, rng)
 
-
-FOE_MAKERS = {"skeleton": make_skeleton, "bandit": _make_random_bandit}
+def _spawn_foe(kind: str, rng, n: int):
+    if kind == "bandit":
+        kind = rng.choice(BANDIT_KINDS)
+    return make_foe(kind, n, rng)
 
 
 def save(state: dict) -> None:
@@ -281,11 +241,12 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         print_pause_menu(state)
         save(state)
         return
-    finish_encounter(state, log, foes, encounter_xp)
+    finish_encounter(state, log, foes, encounter_xp, site=site, room=room)
 
 
 def finish_encounter(state: dict, log: list[str], foes: list,
-                     encounter_xp: int) -> None:
+                     encounter_xp: int, site: str | None = None,
+                     room: int | None = None) -> None:
     """The melee actually ended: wipe check, awards, loot, persist."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     state["pending"] = None
@@ -293,6 +254,14 @@ def finish_encounter(state: dict, log: list[str], foes: list,
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
         log.append("  The encounter is not cleared -- the foes still stand.")
+        if site is not None:
+            # A site room keeps its survivors (same rule as a retreat) --
+            # re-running the room faces them again, not a fresh spawn.
+            state.setdefault("rooms", {})[(site, room)] = {
+                "foes": foes, "day": state["clock"].day}
+            standing = sum(1 for f in foes if f.alive)
+            log.append(f"  ({site} room {room} is left to its {standing} "
+                       f"standing foe(s) -- it will remember)")
     elif not wiped:
         award_xp(party, encounter_xp, log, "encounter")
         roll_loot(party, purse, rng, log)
@@ -314,12 +283,15 @@ def cmd_fight(args: argparse.Namespace) -> None:
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
-    maker = FOE_MAKERS[args.type]
     foes = []
     for _ in range(args.n):
         state["foe_count"] += 1
-        foes.append(maker(rng, state["foe_count"]))
+        foes.append(_spawn_foe(args.type, rng, state["foe_count"]))
+    for line in roster_lines(foes):
+        log.append("  " + line)
 
+    # Off-script fights pay the base (starter-site) rate regardless of foe --
+    # the DM adjusts via `quest` if a scene deserves more.
     resolve_encounter(state, log, foes, ENCOUNTER_XP)
 
 
@@ -340,34 +312,40 @@ def reclaim_room(state: dict, site: str, room: int) -> tuple[list, str] | None:
     return foes, note
 
 
-def cmd_barrow(args: argparse.Namespace) -> None:
+def cmd_site(args: argparse.Namespace) -> None:
+    """Resolve one room of a SET site (hideout/barrow -- args.site carries
+    the key). Fresh rooms spawn the authored roster; a room the party fled
+    (or left standing) is re-fought against its recorded survivors."""
     state = load()
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
+    site = SITES[args.site]
     log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
-    room_name, n_skel = BARROW_ROOMS[args.room - 1]
-    held = reclaim_room(state, "barrow", args.room)
+    room_name, roster = site.rooms[args.room - 1]
+    held = reclaim_room(state, site.key, args.room)
+    banner = f"=== {site.key.capitalize()} room {args.room}: {room_name}"
     if held is None:
-        log.append(f"=== Barrow room {args.room}: {room_name} "
-                   f"({n_skel} skeletons rise from the bones) ===")
-        skeletons = []
-        for _ in range(n_skel):
+        spawn = site.spawn_phrase.format(n=len(roster))
+        log.append(f"{banner} ({spawn}) ===")
+        foes = []
+        for kind in roster:
             state["foe_count"] += 1
-            skeletons.append(make_skeleton(rng, state["foe_count"]))
-        s = skeletons[0]
-        log.append(f"  {len(skeletons)} skeletons: DEX {s.dex}  STR {s.str_}  "
-                   f"HP {s.max_hp} each (undead: no pain, tireless)")
+            foes.append(make_foe(kind, state["foe_count"], rng))
+        for line in roster_lines(foes):
+            log.append("  " + line)
     else:
-        skeletons, note = held
-        log.append(f"=== Barrow room {args.room}: {room_name}, again ===")
+        foes, note = held
+        log.append(f"{banner}, again ===")
         log.append(note)
+        for line in roster_lines([f for f in foes if f.alive]):
+            log.append("  " + line)
 
-    resolve_encounter(state, log, skeletons, BARROW_ENCOUNTER_XP,
-                      site="barrow", room=args.room)
+    resolve_encounter(state, log, foes, site.encounter_xp,
+                      site=site.key, room=args.room)
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -379,38 +357,6 @@ def report_game_over(party: list, wiped: bool) -> None:
     elif party[0].dead:
         print(f"\n*** {party[0].name} -- the player character -- is slain. "
               f"GAME OVER. ***")
-
-
-def cmd_hideout(args: argparse.Namespace) -> None:
-    state = load()
-    if not require_no_pending(state):
-        return
-    party, rng = state["party"], state["rng"]
-    log = CombatLog()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
-
-    room_name, roster = HIDEOUT_ROOMS[args.room - 1]
-    held = reclaim_room(state, "hideout", args.room)
-    if held is None:
-        log.append(f"=== Room {args.room}: {room_name} "
-                   f"({len(roster)} bandits) ===")
-        bandits = []
-        for kind in roster:
-            state["foe_count"] += 1
-            bandits.append(make_bandit(kind, state["foe_count"], rng))
-        for b in bandits:
-            log.append("  " + bandit_line(b))
-    else:
-        bandits, note = held
-        log.append(f"=== Room {args.room}: {room_name}, again ===")
-        log.append(note)
-        for b in bandits:
-            if b.alive:
-                log.append("  " + bandit_line(b))
-
-    resolve_encounter(state, log, bandits, BANDIT_ENCOUNTER_XP,
-                      site="hideout", room=args.room)
 
 
 def cmd_resume(args: argparse.Namespace) -> None:
@@ -465,7 +411,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
         print_pause_menu(state)
         save(state)
         return
-    finish_encounter(state, log, pending["foes"], pending["xp"])
+    finish_encounter(state, log, pending["foes"], pending["xp"],
+                     site=pending["site"], room=pending["room"])
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -516,7 +463,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         print_pause_menu(state)
         save(state)
         return
-    finish_encounter(state, log, pending["foes"], pending["xp"])
+    finish_encounter(state, log, pending["foes"], pending["xp"],
+                     site=pending["site"], room=pending["room"])
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -558,7 +506,9 @@ def cmd_buy(args: argparse.Namespace) -> None:
         return
     party, purse = state["party"], state["purse"]
     log: list[str] = []
-    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
     thing = " ".join(args.thing).lower()
     if thing in POTION_KINDS:
         _buy_potion(hero, purse, thing, log)
@@ -578,7 +528,9 @@ def cmd_give(args: argparse.Namespace) -> None:
         return
     party = state["party"]
     log: list[str] = []
-    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
     name = " ".join(args.weapon).lower()
     weapon = WEAPONS.get(name)
     if weapon is None:
@@ -595,7 +547,9 @@ def cmd_train(args: argparse.Namespace) -> None:
         return
     party = state["party"]
     log: list[str] = []
-    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
     if args.what == "combat":
         _train_combat_once(hero, log)
     else:
@@ -610,7 +564,9 @@ def cmd_use(args: argparse.Namespace) -> None:
         return
     party = state["party"]
     log: list[str] = []
-    hero = next(h for h in party if args.hero.lower() in h.name.lower())
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
     _use_potion(hero, args.kind, log)
     print("\n".join(log))
     save(state)
@@ -622,8 +578,12 @@ def cmd_heal(args: argparse.Namespace) -> None:
         return
     party, rng = state["party"], state["rng"]
     log: list[str] = []
-    healer = next(h for h in party if args.healer.lower() in h.name.lower())
-    target = next(h for h in party if args.target.lower() in h.name.lower())
+    healer = find_hero(party, args.healer)
+    if healer is None:
+        return
+    target = find_hero(party, args.target)
+    if target is None:
+        return
     _use_heal(healer, target, rng, log)
     print("\n".join(log))
     save(state)
@@ -650,24 +610,30 @@ def main() -> None:
 
     p = sub.add_parser(
         "barrow",
-        help="resolve one skeleton-barrow room (SET skeleton count per room, "
-             "from rpg.BARROW_ROOMS -- the TOUGH site, 3x pay)")
-    p.add_argument("room", type=int, choices=range(1, len(BARROW_ROOMS) + 1))
-    p.set_defaults(func=cmd_barrow)
+        help="resolve one skeleton-barrow room (SET rooms from "
+             "sites.BARROW_ROOMS -- the TOUGH site, 3x pay)")
+    p.add_argument("room", type=int,
+                   choices=range(1, len(SITES["barrow"].rooms) + 1))
+    p.set_defaults(func=cmd_site, site="barrow")
 
     p = sub.add_parser(
         "hideout",
-        help="resolve one bandit-hideout room (SET roster per room -- "
-             "the STARTER site)")
-    p.add_argument("room", type=int, choices=range(1, len(HIDEOUT_ROOMS) + 1))
-    p.set_defaults(func=cmd_hideout)
+        help="resolve one bandit-hideout room (SET rooms from "
+             "sites.HIDEOUT_ROOMS -- the STARTER site)")
+    p.add_argument("room", type=int,
+                   choices=range(1, len(SITES["hideout"].rooms) + 1))
+    p.set_defaults(func=cmd_site, site="hideout")
 
     p = sub.add_parser(
         "fight",
         help="OFF-SCRIPT encounter: spawn N foes (improvised scenes like road "
-             "ambushes only -- the two sites are set encounters, use barrow/hideout)")
+             "ambushes only -- the two sites are set encounters, use "
+             "barrow/hideout). Pays the base 15 XP regardless of foe; award "
+             "extra via `quest` if the scene deserves it.")
     p.add_argument("n", type=int, help="how many foes to spawn for this encounter")
-    p.add_argument("--type", default="skeleton", choices=list(FOE_MAKERS))
+    p.add_argument("--type", default="skeleton", choices=list(FIGHT_TYPES),
+                   help="a catalog foe kind, or 'bandit' for a random "
+                        "living foe")
     p.set_defaults(func=cmd_fight)
 
     p = sub.add_parser(

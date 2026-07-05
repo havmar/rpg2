@@ -10,11 +10,11 @@ decisions happen *between* fights. Three stats, one wound track, one loop.
 **1. Autobattler, not a combat minigame.** A fight takes no input once it starts.
 The simulation produces an outcome (who won, in what shape) and a narrative log.
 All player agency lives *between* fights — with one deliberate exception: the
-**pause** (see the Survival add-on). At most twice a fight, the simulation
-stops at a trigger and asks one player-shaped question ("fight on, buy breath,
-or run?"), then resumes to conclusion. That is an interrupt, not a combat
-minigame: the fight still plays itself; the player only chooses *whether* it
-continues.
+**pause** (see the Survival add-on). A handful of times a fight at most (each
+trigger fires once per hero), the simulation stops at a trigger and asks one
+player-shaped question ("fight on, buy breath, or run?"), then resumes to
+conclusion. That is an interrupt, not a combat minigame: the fight still
+plays itself; the player only chooses *whether* it continues.
 
 **2. The strategy is the build, made in advance.** Between fights the player
 allocates stats, picks gear, chooses which opponents to take, and composes the
@@ -236,10 +236,11 @@ by low common enemies; plain ones are shoppable at 60 g.
 | **Wooden staff** | 0 | −1 | **+1** | **+1 HP per Heal** through it | The healer's weapon — deliberately poor steel, priced in support. |
 
 Benchmark (`bench_weapons.py`, duel vs swarm win rates per stat frame):
-**suited, not ranked** — the rapier is the best duelist on nearly every frame
-(by a hair over the katana), the zweihander sweeps every swarm column, the
-katana is the reliable second everywhere, and the staff trails everywhere on
-purpose. No weapon tops every cell.
+**suited, not ranked** — the rapier is the best duelist on three of four
+frames (on the precise frame it's a coin flip with the zweihander), the
+zweihander sweeps every swarm column, the katana is the reliable second
+everywhere, and the staff trails everywhere on purpose. No weapon tops every
+cell.
 
 ### Common weapons
 
@@ -364,9 +365,11 @@ so the player gets the mechanical shape of the fight without the dice.
 
 - A **Power** build lands rarely (low DEX) but devastatingly, and is durable —
   but wants to win early, before the flat swing cost empties its pool. (The
-  "big frames burn fuel faster" idea now lives in the per-swing STA cost knob:
-  today it's flat per entity type; Phase 4 makes heavy weapons cost more per
-  swing, which is what makes a STR build a burst build mechanically.)
+  "big frames burn fuel faster" idea — heavy weapons costing more STA per
+  swing — was sim-rejected while Spent is lethal; see the Weapons note. The
+  STR build's burst identity lives in the zweihander's flat severity and
+  guard penalty instead, and the `sta_cost` knob waits in the schema for
+  deeper STA pools.)
 - A **Precision** build lands often but softly, and is fragile — it wins by
   chipping and evading over time.
 - An **Endurance** build is middling but stays sharp longest — it survives the
@@ -618,18 +621,25 @@ finally lives — *before* Spent, which is where play never had it. In chat it
 fits exactly two messages: message 1 = the fight up to the pause plus the DM's
 question; message 2 = `resume ...` (or `retreat`) to conclusion.
 
-**Triggers** (party side only; each fires at most **once per fight** — no
-pause spam; checked at the end of a round, and only while both sides still
+**Triggers** (party side only; each fires at most **once per hero per
+fight** — no pause spam, but one hero's crisis never uses up the other's
+warning; checked at the end of a round, and only while both sides still
 stand):
 - a hero **crossing STA ≤ 2** — about to run dry;
 - a hero **crossing HP ≤ half** — being cut apart.
 
+Two heroes crossing in the same round share one pause (both crossings are
+reported; both triggers are spent).
+
 **Crossing-only (2026-07):** a trigger whose condition already holds when the
-fight starts is marked spent silently. Entering a fight wounded past half or
-nearly out of breath was the player's informed choice at the door — the pause
-exists to surface *new* information (the fight going worse than it looked),
-not to re-ask a question the player just answered. Before this gate, a
-wounded party re-tripped the wounds pause at round 1 of every fight all day.
+fight starts is marked spent silently — for that hero only. Entering a fight
+wounded past half or nearly out of breath was the player's informed choice at
+the door — the pause exists to surface *new* information (the fight going
+worse than it looked), not to re-ask a question the player just answered.
+Before this gate, a wounded party re-tripped the wounds pause at round 1 of
+every fight all day. (And before the per-hero keying, a hero entering wounded
+silently consumed the whole party's wounds trigger — the other hero could be
+cut to ribbons mid-fight without a pause.)
 
 **At the pause, the options** (pause *actions* are per-hero, at most one each;
 every action costs that round's attack and the hero defends at **−2** while
@@ -660,11 +670,12 @@ Deliberately **one roll** — no multi-message chase sequences.
 2. **The chase:** ONE opposed group contest —
    `2d6 + side-average DEX weighted by current STA` (fresher legs count for
    more), the fleeing side at **+2** (the runner picks the moment and the
-   ground). Only foes that *pursue* roll: **the barrow's undead are bound to
-   the grave** — they swing at the door but never follow past it, so retreat
-   from the barrow always succeeds once past the door. Fiction and mechanics
-   agree, and "come back tomorrow and finish it" is a real plan instead of a
-   death sentence from tireless pursuers.
+   ground). Only foes *fit to swing* give chase — a Winded or Spent foe
+   watches you go — and only foes that *pursue* roll: **the barrow's undead
+   are bound to the grave** — they swing at the door but never follow past
+   it, so retreat from the barrow always succeeds once past the door. Fiction
+   and mechanics agree, and "come back tomorrow and finish it" is a real plan
+   instead of a death sentence from tireless pursuers.
 3. **Success** = clean escape (the runners catch their fight-end breath).
    **Failure** = rare and catastrophic: the fight resumes on the spot, the
    parting-blow damage already taken.
@@ -829,7 +840,7 @@ On top of the existing build/allocation choices:
   restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA. Only those
   two kinds circulate (`STOCKED_POTION_KINDS`; the power potion is retired --
   see the two-buffer split above). Nothing in the engine drinks on its own.
-  The one-shot / sim paths (`run_dungeon`, `scratch_bandits`) model a sensible
+  The one-shot / sim paths (`sites.run_site`) model a sensible
   party via `auto_use_potions_on_rest` (heal when badly hurt, drink stamina
   when winded), so `tune.py` / `bench_training.py` still reflect a party that
   drinks when it should.
@@ -872,15 +883,15 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, post-lethality-retune
-  2026-07): the skeleton barrow (tough site) clears
-  **2% → 12% → 37% → 65%** across ranks 0–3 (a rank-0 party wipes ~96% of
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-06 after the
+  per-hero pause fix): the skeleton barrow (tough site) clears
+  **3% → 17% → 44% → 74%** across ranks 0–3 (a rank-0 party wipes ~95% of
   the time — a fresh party simply should not be there); the bandit hideout
-  (starter) clears **57% → 81% → 95% → 99%**
-  (rank-0 wipe ~41%). Each rank is a *felt* jump — the progression test
+  (starter) clears **64% → 86% → 96% → 99%**
+  (rank-0 wipe ~33%). Each rank is a *felt* jump — the progression test
   criterion —
   and gear stacks on top (training 2 + quality steel takes the barrow to
-  ~66%, training 3 + steel to ~89%).
+  ~70%, training 3 + steel to ~90%).
 
 ## Weapon proficiency — the second skill
 
@@ -895,7 +906,7 @@ proficiency (you're swinging a stump).
 
 **With two sinks, skill points are a real choice now**: nothing auto-spends in
 session play (`session.py train HERO combat|weapon` — points bank until the
-player spends them). Only the batch sims (`run_dungeon` / `run_hideout`)
+player spends them). Only the batch sims (`sites.run_site`)
 auto-spend on combat training, so tune/bench numbers stay comparable.
 
 ## Gold and the potion economy
@@ -915,11 +926,10 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   Masterwork/legendary are **never** for sale. This deliberately softens the
   old "gold never buys power" rule (see the design spine): a plain rapier is
   modest
-  permanent power, and worth it — sim-measured (post-lethality-retune), a
-  katana
-  + zweihander loadout lifts a fresh party's barrow clear rate from ~2% to
-  ~11% (a 5x jump, though the barrow stays suicide until trained: the real
-  unlock is the combination — training 2 + steel ~66%). The intended arc:
+  permanent power, and worth it — sim-measured (2026-07-06), a katana
+  + zweihander loadout lifts a fresh party's barrow clear rate from ~3.5% to
+  ~13% (though the barrow stays suicide until trained: the real
+  unlock is the combination — training 2 + steel ~70%). The intended arc:
   fight the hideout at rank 0, level up *and shop* over a few clears, then
   take the barrow trained and armed.
 - **Starting stock:** two *random* potions at creation (healing or stamina —

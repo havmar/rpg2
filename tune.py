@@ -13,8 +13,9 @@ lethality retune tunes FOR:
   takes a pause action, never retreats should MOSTLY DIE. If it doesn't, the
   resources aren't being forced, they're decoration.
 
-Sweeps barrow room layouts and reports all of it, then prints the resource-
-pressure check (policy vs reckless) for both sites.
+Sweeps barrow room layouts (run_site's `rooms` override) and reports all of
+it, then prints the resource-pressure check (policy vs reckless) for both
+sites.
 """
 
 import random
@@ -22,73 +23,69 @@ import re
 from collections import Counter
 
 import rpg
-import scratch_bandits
+from sites import SITES, run_site
 
-ROOM_BANNER = re.compile(r"=== (?:Barrow r|R)oom (\d+)")
+ROOM_BANNER = re.compile(r"=== Room (\d+)")
 
-# Log markers meaning "this room forced something": a pause fired, a hero hit
-# the floor or the bottom of the tank, or a potion had to go down.
-PRESSURE_MARKS = ("hangs for a heartbeat", "goes down", "is SPENT",
+# Log markers meaning "this room forced something" -- all of them party-only
+# lines. A hero going SPENT counts too, but its `!!` line prints for foes as
+# well (bandits run dry constantly), so it's matched per hero name below.
+PRESSURE_MARKS = ("hangs for a heartbeat", "goes down",
                   "downs a stamina draught", "drinks a healing potion")
 
 
-def early_pressure(log) -> bool:
-    """Did rooms 1-2 already force a pause / Down / Spent / potion? (The
-    retune's per-encounter threat criterion: threat in the opening rooms,
-    not just the last one.)"""
+def early_pressure(log, heroes) -> bool:
+    """Did rooms 1-2 already force a pause / Down / Spent / potion on the
+    PARTY? (The retune's per-encounter threat criterion: threat in the
+    opening rooms, not just the last one. Foes going Spent don't count.)"""
+    spent_marks = tuple(f"!! {name} is SPENT" for name in heroes)
     for line in log:
         m = ROOM_BANNER.search(line)
         if m and int(m.group(1)) >= 3:
             return False
-        if any(mark in line for mark in PRESSURE_MARKS):
+        if (any(mark in line for mark in PRESSURE_MARKS)
+                or any(mark in line for mark in spent_marks)):
             return True
     return False
 
 
-def simulate(site, trials=20000, rooms=None, reckless=False):
-    """One batch. site: "barrow" (rooms = layout) or "hideout" (set rosters).
-    Returns (death Counter, stats dict)."""
+def simulate(site_key, trials=20000, rooms=None, reckless=False):
+    """One batch. site_key: "barrow" or "hideout". `rooms` = a barrow layout
+    to sweep (a list of skeleton counts); None = the site's set rooms.
+    Returns (death Counter, stats dict, trials)."""
+    site = SITES[site_key]
+    layout = None if rooms is None else tuple(
+        (f"room {i + 1}", ("skeleton",) * n) for i, n in enumerate(rooms))
     counts = Counter()
     downed_runs = cleared_runs = fled_runs = early_runs = 0
     days = 0
     pow_left = sta_left = heal_left = gold = 0.0
     pow_max = sta_max = 0.0
     rng = random.Random(12345)
-    saved = rpg.DUNGEON_ROOMS
-    if rooms is not None:
-        rpg.DUNGEON_ROOMS = rooms
-    try:
-        for _ in range(trials):
-            party = rpg.make_party(rng)
-            purse = rpg.Purse()
-            clock = rpg.Clock()
-            log = []
-            if site == "hideout":
-                scratch_bandits.run_hideout(party, clock, purse, rng, log,
-                                            verbose_rosters=False,
-                                            reckless=reckless)
-            else:
-                rpg.run_dungeon(party, clock, purse, rng, log,
-                                reckless=reckless)
-            counts[rpg.outcome(party)] += 1
-            if any("goes down" in line for line in log):
-                downed_runs += 1
-            if any("QUEST COMPLETE" in line for line in log):
-                cleared_runs += 1
-            if any("breaks for safety" in line for line in log):
-                fled_runs += 1
-            if early_pressure(log):
-                early_runs += 1
-            days += clock.day
-            gold += purse.gold
-            for h in party:
-                pow_left += h.cur_power
-                sta_left += h.cur_sta
-                heal_left += h.items.get("healing", 0)
-                pow_max += h.power
-                sta_max += h.sta
-    finally:
-        rpg.DUNGEON_ROOMS = saved
+    for _ in range(trials):
+        party = rpg.make_party(rng)
+        purse = rpg.Purse()
+        clock = rpg.Clock()
+        log = []
+        run_site(site, party, clock, purse, rng, log,
+                 verbose_rosters=False, reckless=reckless, rooms=layout)
+        counts[rpg.outcome(party)] += 1
+        if any("goes down" in line for line in log):
+            downed_runs += 1
+        if any("QUEST COMPLETE" in line for line in log):
+            cleared_runs += 1
+        if any("breaks for safety" in line for line in log):
+            fled_runs += 1
+        if early_pressure(log, [h.name for h in party]):
+            early_runs += 1
+        days += clock.day
+        gold += purse.gold
+        for h in party:
+            pow_left += h.cur_power
+            sta_left += h.cur_sta
+            heal_left += h.items.get("healing", 0)
+            pow_max += h.power
+            sta_max += h.sta
     n = trials * 2  # two heroes per run
     stats = {
         "down_pct": 100 * downed_runs / trials,
@@ -142,10 +139,10 @@ def main():
           "usual; reckless = none of it):")
     print(f"{'site':<24}{'policy wipe%':>14}{'policy clear%':>15}"
           f"{'reckless wipe%':>16}{'reckless clear%':>17}")
-    for site, label in (("hideout", "hideout (starter)"),
-                        ("barrow", "barrow [3,3,4]")):
-        _, pol, _ = simulate(site, trials=10000)
-        _, rek, _ = simulate(site, trials=10000, reckless=True)
+    for site_key, label in (("hideout", "hideout (starter)"),
+                            ("barrow", "barrow [3,3,4]")):
+        _, pol, _ = simulate(site_key, trials=10000)
+        _, rek, _ = simulate(site_key, trials=10000, reckless=True)
         print(f"{label:<24}{pol['wipe_pct']:>13.1f}%{pol['clear_pct']:>14.1f}%"
               f"{rek['wipe_pct']:>15.1f}%{rek['clear_pct']:>16.1f}%")
 

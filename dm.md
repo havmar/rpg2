@@ -34,8 +34,9 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   narration around it. The full log is for you (checking the numbers), not
   for the chat.
 - **A fight can PAUSE mid-melee** (a hero crosses STA <= 2 or half HP; each
-  trigger once per fight, and crossing-only: entering a fight already low
-  does NOT trip it -- that was the player's call at the door; only an
+  trigger once per HERO per fight -- one hero's crisis doesn't use up the
+  other's warning -- and crossing-only: entering a fight already low does
+  NOT trip it for that hero; that was the player's call at the door; only an
   in-fight crossing interrupts). The script prints the pause menu -- show it
   to the
   player and STOP; the choice is theirs, never yours. Next message:
@@ -122,8 +123,9 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   buys STA back) -- fresh enemies carve a spent fighter apart.** (Two
   spent sides cancel out and brawl to a finish, so fights still resolve.)
   STA is a second HP bar: whichever track empties first in a fight kills you.
-- **The pause:** a fight stops once per trigger (CROSSING STA <= 2 / half HP
-  in-fight; entering already below a line never fires it) for the
+- **The pause:** a fight stops at a trigger (CROSSING STA <= 2 / half HP
+  in-fight; once per hero per trigger, and entering already below a line
+  never fires it for that hero) for the
   player's call. Pause actions (one per hero; cost the round's attack,
   defend at -2 while busy): drink a stamina draught (+4 STA -- even
   un-Spends), Berserk (2 HP -> +4 STA; the wound penalty deepens now),
@@ -171,11 +173,11 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   the weapon type -- switching weapons drops the bonus until re-drilled.
 - Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
   first clear = level 2) -- and a real fight since the 2026-07 retune: a
-  fresh party clears ~57% and someone hits the floor in about 4 runs in 10,
-  so expect downs, drunk potions, and retreats from day one. Skeleton
+  fresh party clears ~64% and someone hits the floor in about a third of
+  runs, so expect downs, drunk potions, and retreats from day one. Skeleton
   barrow = TOUGH, pays 3x (45/encounter,
   45 g + 165 XP) -- train up AND arm up first (rank 2 *plus* quality steel
-  recommended, ~66% clear; a fresh party wipes there ~24 times in 25, and
+  recommended, ~70% clear; a fresh party wipes there ~19 times in 20, and
   fleeing
   the barrow is always possible -- the dead don't pursue).
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers

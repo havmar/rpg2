@@ -13,7 +13,7 @@ import random
 from collections import Counter
 
 import rpg
-from scratch_bandits import run_hideout
+from sites import SITES, run_site
 
 
 def simulate(site, trials=5000, max_training=3):
@@ -30,11 +30,8 @@ def simulate(site, trials=5000, max_training=3):
                 h.training = training
             purse = rpg.Purse()
             log = []
-            if site == "hideout":
-                run_hideout(party, rpg.Clock(), purse, rng, log,
-                            verbose_rosters=False)
-            else:
-                rpg.run_dungeon(party, rpg.Clock(), purse, rng, log)
+            run_site(SITES[site], party, rpg.Clock(), purse, rng, log,
+                     verbose_rosters=False)
             counts[rpg.outcome(party)] += 1
             if any("goes down" in line for line in log):
                 downed += 1

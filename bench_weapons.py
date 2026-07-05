@@ -24,7 +24,8 @@ Run:  python bench_weapons.py [--trials N]
 import argparse
 import random
 
-from rpg import Entity, WEAPONS, group_combat, make_skeleton
+from rpg import Entity, WEAPONS, group_combat
+from sites import make_foe
 
 # Stat frames spanning the hero roll ranges (DEX/STR 3-6, STA 5-8; STA's range
 # sits 2 higher -- see rules.md). HP fixed so only stats and steel differ.
@@ -56,7 +57,7 @@ def duel(frame: dict, weapon_name: str, rng: random.Random) -> bool:
 def swarm(frame: dict, weapon_name: str, rng: random.Random) -> bool:
     """One fighter vs SWARM_SIZE fresh skeletons. True if all fall."""
     a = Entity(name="A", max_hp=HP, weapon=WEAPONS[weapon_name], **frame)
-    foes = [make_skeleton(rng, i + 1) for i in range(SWARM_SIZE)]
+    foes = [make_foe("skeleton", i + 1, rng) for i in range(SWARM_SIZE)]
     group_combat([a], foes, rng, log=[])
     return a.alive and not any(f.alive for f in foes)
 
