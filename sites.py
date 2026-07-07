@@ -15,9 +15,10 @@ The two sites, by design:
   system with no special cases. Base pay: a full clear (3 encounters + quest)
   is exactly the level-1 -> 2 XP cost.
 - The skeleton BARROW is the TOUGH site (3x pay). Skeletons are the exception
-  enemies: undead (half wound penalty -- no pain) and tireless (never spend
-  STA, never Winded/Spent), so the threat is numbers outlasting a party whose
-  stamina is a death-track. Met second on purpose: living foes first.
+  enemies: undead, slow to pain (pain 2 -- wound penalty halved) and tireless
+  (never spend STA, never Winded/Spent), so the threat is numbers outlasting
+  a party whose stamina is a death-track. Met second on purpose: living foes
+  first.
 
 Run:  python sites.py                        # one-shot barrow run, full log
       python sites.py --site hideout         # one-shot starter-site run
@@ -31,7 +32,7 @@ import argparse
 import random
 from dataclasses import dataclass
 
-from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE,
+from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  make_party, stat_line, outcome, start_fight,
                  short_rest, long_rest, party_wiped,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
@@ -48,45 +49,182 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE,
 
 @dataclass(frozen=True)
 class FoeSpec:
-    """One foe stat block. The seed of the monster/opponent catalog (plan.md):
-    every foe in the game is a row here, and make_foe() is the one place a
-    stat block becomes a fighting Entity."""
+    """One foe stat block. The monster/opponent catalog (the seed of the
+    encounter & quest system, plan.md): every foe in the game is a row here,
+    and make_foe() is the one place a stat block becomes a fighting Entity.
+
+    `level` is the catalog's difficulty annotation: the party level (at the
+    TWO-hero baseline the game is balanced for) for which this row's
+    reference encounter -- `ref_pack` of these, benched in bench_bestiary.py
+    -- is a fair, still-scary fight. The future encounter generator builds
+    from these annotations; they are guidance, not engine input."""
     display: str            # log name stem ("Skeleton" -> "Skeleton 3")
+    level: int              # difficulty annotation (duo baseline; see above)
     dex: int
     str_: int
     sta: int
     hp: int
-    undead: bool = False    # no pain: wound roll penalty halved
+    ref_pack: int = 1       # how many of these make the reference encounter
+                            # at `level` (wolves hunt in packs; a troll is
+                            # a fight alone)
+    undead: bool = False    # dead flesh: wounds never knit back on their own
+    pain: int = 1           # wound penalty divisor (1 feels everything;
+                            # 2 undead/brutes; 3-4 the apex monsters)
     tireless: bool = False  # never spends STA, never Winded/Spent
     pursues: bool = True    # gives chase when the party retreats
+    power: int = 0          # ability fuel (dragonfire is paid for)
+    crowd_cap: int = CROWD_CAP  # attackers that can press it at once
+                                # (big monsters take 3-4: boss fights
+                                # stay full-party under the press)
+    regen: int = 0          # HP knit per round while up (the troll)
+    sweep: int = 1          # max targets per attack (the giant's sweep,
+                            # dragonfire); 1 = normal single attacks
+    sweep_cost_power: int = 0   # Power per multi-target use; 0 = free
+    sweep_label: str = ""   # log flavor for the multi-target blow
     weapon: Weapon | None = None    # fixed armament (the skeletons' rusted
-                                    # blades); None = roll the common table
-                                    # like a starting hero
+                                    # blades, a wolf's fangs); None = roll
+                                    # the common table like a starting hero
 
+
+# Natural weapons -- fangs, claws, tusks: part of the body. They never break,
+# never break steel (breakage is a steel-on-steel event), and are never left
+# as loot. Profiles stay small on purpose: a monster's severity lives in its
+# STR; the natural weapon just shades it.
+NATURAL_WEAPONS = {w.name: w for w in [
+    Weapon("fangs", 0, 0, 1, durability=3, natural=True,
+           description="Teeth made for smaller prey than you. Quick, shallow work."),
+    Weapon("heavy claws", 0, 1, 1, durability=3, natural=True,
+           description="Claws that open a man like a latch."),
+    Weapon("tusks", 0, 1, 1, durability=3, natural=True,
+           description="A boar's gore: low, sudden, and deeper than it looks."),
+    Weapon("grave claws", 0, 0, 1, durability=3, natural=True,
+           description="Cold fingers ending in cracked black nails."),
+    Weapon("ogre club", 0, 2, 1, durability=3, natural=True,
+           description="A torn-up sapling in a fist the size of a keg."),
+    Weapon("giant's club", 0, 2, 1, durability=3, natural=True,
+           description="A whole tree, swung. There is no parrying the weather."),
+    Weapon("venomous sting", 0, 2, 1, durability=3, natural=True,
+           description="A tail-lash that hits like a spear thrust."),
+    Weapon("fang and claw", 0, 1, 1, durability=3, natural=True,
+           description="An armory that walks: teeth, talons, and tail."),
+    Weapon("fang and fury", 0, 2, 1, durability=3, natural=True,
+           description="A dragon at arm's length. Every part of it kills."),
+]}
+
+# The wight's grave-steel is REAL steel -- a chieftain was buried with his
+# blade, and it has kept its edge (and is worth looting, unlike the
+# skeletons' corroded rubbish).
+BARROW_BLADE = Weapon("barrow blade", 0, 1, 1, durability=2, tags=("ancient",),
+                      value=15,
+                      description="A chieftain's burial sword, still true. "
+                                  "Heavy-arms steel with a dead man's name.")
 
 # Enemy DEX runs hot across the board (2026-07 lethality retune): who hits is
 # DEX's job, and danger has to live in each encounter itself -- the party can
 # always camp after it. A single point of foe DEX moves clear rates by tens
 # of percent; it is the sharpest tuning knife in this table.
+#
+# THE BESTIARY (2026-07). Six monster families span the 1-20 curve; humanoids
+# (the bandit rows here, soldiers, champions...) run parallel across every
+# level, and the tier ABOVE the dragon is humanoid on purpose -- demons,
+# demigods, liches are authored one-offs built on the hero tables (rules.md),
+# never catalog rows. Each family introduces at most one mechanic and each
+# row is a puzzle with a hole (rules.md: lopsidedness); the dragon is a boss
+# precisely because it has none. Levels are bench-calibrated
+# (bench_bestiary.py) at the two-hero baseline; `ref_pack` says what the
+# benched encounter is (3 wolves, ONE troll).
 FOES = {
-    # The bandits: raw living fighters, no Power/ability/kit. They arm from
-    # the same common-weapon table as starting heroes (50% crude / 45%
-    # soldier's arms / 5% heavy) -- always a specific named weapon, so the
-    # logs read "Cutthroat 2's dagger", never "a crude weapon".
-    "cutthroat": FoeSpec("Cutthroat", dex=5, str_=3, sta=5, hp=7),  # nimble knife-work
-    "bruiser":   FoeSpec("Bruiser",   dex=4, str_=5, sta=5, hp=9),  # heavy and durable, quicker than he looks
-    "archer":    FoeSpec("Archer",    dex=5, str_=2, sta=5, hp=6),  # lands often, soft
+    # --- Humanoids: the bandits (levels 1-2). Raw living fighters, no
+    # Power/ability/kit. They arm from the same common-weapon table as
+    # starting heroes (50% crude / 45% soldier's arms / 5% heavy) -- always a
+    # specific named weapon, so the logs read "Cutthroat 2's dagger", never
+    # "a crude weapon".
+    "cutthroat": FoeSpec("Cutthroat", level=1, dex=5, str_=3, sta=5, hp=7,
+                         ref_pack=3),   # nimble knife-work
+    "bruiser":   FoeSpec("Bruiser",   level=2, dex=4, str_=5, sta=5, hp=9,
+                         ref_pack=3),   # heavy and durable, quicker than he looks
+    "archer":    FoeSpec("Archer",    level=1, dex=5, str_=2, sta=5, hp=6,
+                         ref_pack=3),   # lands often, soft
+    # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
+    # broken on purpose (living foes teach the system; undead break it).
     # The skeleton: brittle and a weak individual hitter (low STR -> low
-    # severity), but undead and TIRELESS -- the stamina war is one-sided; the
-    # bones don't have to beat you, just outlast you. pursues=False: bound to
-    # the grave -- they swing at a fleeing party's backs but never follow
-    # past the door, which is what makes "come back tomorrow and finish it" a
-    # real plan instead of a death sentence. Their corroded grave-steel
-    # (durability 1) snaps on good steel -- the barrow visibly eases as the
-    # party's gear improves.
-    "skeleton":  FoeSpec("Skeleton",  dex=4, str_=2, sta=8, hp=5,
-                         undead=True, tireless=True, pursues=False,
-                         weapon=RUSTED_BLADE),
+    # severity), but the stamina war is one-sided; the bones don't have to
+    # beat you, just outlast you. pursues=False: bound to the grave -- they
+    # swing at a fleeing party's backs but never follow past the door, which
+    # is what makes "come back tomorrow and finish it" a real plan instead of
+    # a death sentence. Their corroded grave-steel (durability 1) snaps on
+    # good steel -- the barrow visibly eases as the party's gear improves.
+    "skeleton":  FoeSpec("Skeleton",  level=2, dex=4, str_=2, sta=8, hp=5,
+                         ref_pack=3, undead=True, pain=2, tireless=True,
+                         pursues=False, weapon=RUSTED_BLADE),
+    # The ghoul: the skeleton's upgrade with the barrow's one mercy removed --
+    # hunger FOLLOWS (pursues). Meat on the bones: more HP, real claws.
+    "ghoul":     FoeSpec("Ghoul",     level=4, dex=5, str_=3, sta=8, hp=8,
+                         ref_pack=3, undead=True, pain=2, tireless=True,
+                         weapon=NATURAL_WEAPONS["grave claws"]),
+    # The wight: the tireless DUELIST -- a barrow-lord with a champion's DEX
+    # and his burial blade (real, lootable steel). Grave-bound like his
+    # soldiers. The puzzle: skill that never tires; your clock runs, his
+    # doesn't.
+    "wight":     FoeSpec("Wight",     level=8, dex=7, str_=5, sta=8, hp=16,
+                         ref_pack=2, undead=True, pain=2, tireless=True,
+                         pursues=False, weapon=BARROW_BLADE),
+    # --- The wolves (levels 1-4): the pack. Fast, fragile, and they set the
+    # pace -- and they PURSUE: retreating from wolves is how heroes die tired.
+    "wolf":      FoeSpec("Wolf",      level=1, dex=4, str_=2, sta=8, hp=4,
+                         ref_pack=4, weapon=NATURAL_WEAPONS["fangs"]),
+    "dire wolf": FoeSpec("Dire Wolf", level=3, dex=6, str_=3, sta=10, hp=9,
+                         ref_pack=2, weapon=NATURAL_WEAPONS["fangs"]),
+    # --- The beasts (levels 2-5): the soak wall. Low DEX, heavy STR both
+    # ways, slow to pain -- the first foes chip damage struggles against.
+    "boar":      FoeSpec("Boar",      level=2, dex=3, str_=5, sta=6, hp=9,
+                         ref_pack=2, pain=2,
+                         weapon=NATURAL_WEAPONS["tusks"]),
+    "bear":      FoeSpec("Bear",      level=4, dex=5, str_=7, sta=8, hp=22,
+                         ref_pack=1, pain=2, crowd_cap=3, sweep=2,
+                         sweep_label="a mauling swipe",
+                         weapon=NATURAL_WEAPONS["heavy claws"]),
+    # --- Vermin grown large (level 3): the ambusher -- lands often, folds
+    # fast. (Venom is parked with the conditions system, plan.md; the bite
+    # itself carries the row for now.)
+    "great spider": FoeSpec("Great Spider", level=3, dex=6, str_=2, sta=7,
+                            hp=6, ref_pack=3,
+                            weapon=NATURAL_WEAPONS["fangs"]),
+    # --- Giant-kin (levels 6-12): the severity cliff. Every landed blow is a
+    # tier the party can't afford; the hole is a DEX that rarely lands it.
+    "ogre":      FoeSpec("Ogre",      level=5, dex=6, str_=8, sta=8, hp=24,
+                         ref_pack=1, pain=2, crowd_cap=3,
+                         weapon=NATURAL_WEAPONS["ogre club"]),
+    # The troll: REGENERATION -- the anti-attrition puzzle. Chip damage and
+    # camp-and-return both fail (a fled troll is a healed troll); you must
+    # out-damage the knitting or lose to it.
+    "troll":     FoeSpec("Troll",     level=8, dex=6, str_=7, sta=10, hp=22,
+                         ref_pack=1, pain=2, regen=3, crowd_cap=3,
+                         weapon=NATURAL_WEAPONS["heavy claws"]),
+    # The giant: the cliff at full height, and the first SWEEP -- one blow,
+    # two heroes. (The sweep is also the top end's party-size counterweight:
+    # more swords in the line means more swords under the club.)
+    "giant":     FoeSpec("Giant",     level=12, dex=6, str_=9, sta=10, hp=26,
+                         ref_pack=1, pain=3, crowd_cap=4, sweep=2,
+                         sweep_label="a great sweeping blow",
+                         weapon=NATURAL_WEAPONS["giant's club"]),
+    # --- The drakes (levels 10-20): the apex family. Real DEX on a monster
+    # frame -- the wyvern is the gate, the drake adds fire, the dragon has
+    # no hole at all.
+    "wyvern":    FoeSpec("Wyvern",    level=10, dex=8, str_=7, sta=10, hp=26,
+                         ref_pack=1, pain=2, crowd_cap=3, sweep=2,
+                         sweep_label="a lashing tail",
+                         weapon=NATURAL_WEAPONS["venomous sting"]),
+    "drake":     FoeSpec("Drake",     level=14, dex=8, str_=7, sta=10, hp=30,
+                         ref_pack=1, pain=3, power=6, crowd_cap=4,
+                         sweep=3, sweep_cost_power=2,
+                         sweep_label="a gout of fire",
+                         weapon=NATURAL_WEAPONS["fang and claw"]),
+    "dragon":    FoeSpec("Dragon",    level=18, dex=8, str_=9, sta=12, hp=50,
+                         ref_pack=1, pain=4, power=12, crowd_cap=4,
+                         sweep=4, sweep_cost_power=3,
+                         sweep_label="a torrent of dragonfire",
+                         weapon=NATURAL_WEAPONS["fang and fury"]),
 }
 
 BANDIT_KINDS = ("archer", "bruiser", "cutthroat")   # the living-foe pool
@@ -98,7 +236,11 @@ def make_foe(kind: str, n: int, rng: random.Random) -> Entity:
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
     return Entity(name=f"{spec.display} {n}", dex=spec.dex, str_=spec.str_,
                   sta=spec.sta, max_hp=spec.hp, undead=spec.undead,
-                  tireless=spec.tireless, pursues=spec.pursues, weapon=weapon)
+                  pain=spec.pain, tireless=spec.tireless,
+                  pursues=spec.pursues, power=spec.power,
+                  crowd_cap=spec.crowd_cap, regen=spec.regen,
+                  sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
+                  sweep_label=spec.sweep_label, weapon=weapon)
 
 
 def roster_lines(foes: list[Entity]) -> list[str]:
@@ -109,9 +251,17 @@ def roster_lines(foes: list[Entity]) -> list[str]:
         wpn = e.weapon.name if e.weapon else "unarmed"
         tags = []
         if e.undead:
-            tags.append("undead: no pain")
+            tags.append("undead")
+        if e.pain == 2:
+            tags.append("feels little pain")
+        elif e.pain >= 3:
+            tags.append("barely feels pain")
         if e.tireless:
             tags.append("tireless")
+        if e.regen:
+            tags.append(f"wounds knit +{e.regen}/round")
+        if e.sweep > 1:
+            tags.append(e.sweep_label or "sweeping blows")
         tag = f"; {', '.join(tags)}" if tags else ""
         sta = "" if e.tireless else f"STA {e.sta}  "
         return (f"DEX {e.dex}  STR {e.str_}  {sta}HP {e.hp}/{e.max_hp}  "

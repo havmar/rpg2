@@ -108,6 +108,44 @@ spark-table personalities (all parked, see plan.md).
 
 ---
 
+## Balanced for two (party size 1-4)
+
+The game is playable by a party of **one to four** heroes, and every award,
+site, and catalog level annotation is quoted at the **two-hero baseline** --
+encounters are **never** rebalanced to the head count. Numbers are a real
+advantage (they should be: recruiting a companion must be worth something),
+but a raw one is enormous -- action economy compounds (N heroes deal N times
+the damage *and* spread the incoming across N pools), so an untreated
+four-hero party trivializes duo content (measured: the rank-0 hideout clears
+~15% solo, ~64% duo, ~93% trio, ~99% four-up). Three quiet counterweights
+drag on numbers instead of any per-size tuning:
+
+1. **Income is flat.** The purse is shared and quests pay fixed gold (four
+   heroes buy four swords from the same reward), and **XP pays the job, not
+   the head**: each member earns `award x 2 / party size`. A duo gets the
+   listed numbers; four swords split the wages and level at half speed; a
+   solo earns double. Invisible in any one fight, compounding across a
+   campaign -- a big party is always a training rank or two behind where a
+   duo would be.
+2. **The press.** At most **2 attackers** can press one man-sized target in
+   a round (`CROWD_CAP`); anyone crowded out *circles* -- no swing, no STA
+   spent. You cannot get four swords around one man. Symmetric on purpose:
+   it trims a big party's mob-the-mook economy *and* shields a lone hero
+   from being swarmed -- both ends of the party-size range move toward the
+   middle. Big monsters take more attackers (`crowd_cap` 3-4: a giant can be
+   pressed from all sides), so boss fights stay full-party.
+3. **Sweeps at the top.** The big monsters' multi-target attacks (below) hit
+   several heroes per swing -- four heroes standing in the dragonfire take
+   four times the total damage a solo would. The apex tier is naturally
+   party-size-neutral.
+
+The residual is accepted: 4 > 2 > 1 in raw power, and a solo player's real
+lever is the oldest one in the game -- pick your fights (roughly two
+encounter levels below a duo of the same level; a four-party can reach two
+above).
+
+---
+
 ## Stats
 
 Every entity has three stats and a wound pool.
@@ -133,11 +171,22 @@ every attacker picks a target *living at the moment it acts*, so no one wastes
 a swing on a corpse. A foe dropped by First Blood (before the lines meet)
 gets no dying swing.
 
+0. **Find room to swing — the press.** At most `crowd_cap` attackers (2 for
+   anything man-sized; 3-4 for the big monsters) can press one target in a
+   round. An attacker with no open target **circles** instead: no swing, no
+   STA — circling is free, like defending. (The party-size counterweight;
+   see *Balanced for two*.) Sweeps ignore the press both ways.
 1. **Pay for the swing.** Attacking costs STA (`swing_cost`, set by the
    wielded weapon — currently 1 for everything living; the pool is a swing
    budget). Defending is free — guarding is reflexive, swinging is the
    exertion. **Tireless** entities (the undead) never spend STA at all. At
    **STA ≤ 3** a fighter is **Winded** (−2 to all rolls) — the warning zone.
+   A **sweep** (a monster with `sweep` > 1: the giant's arc, the bear's
+   swipe, dragonfire) still costs one swing — one great blow, several
+   defenders: ONE attacker roll, each caught defender rolling its own
+   defense, severity resolved per target. A *fueled* sweep
+   (`sweep_cost_power` — dragonfire) burns Power per use and falls back to
+   single attacks when the fuel is dry.
 2. **Spent.** At **0 STA** a fighter is **Spent**: still swinging every round
    (desperation is free), but at **−6 to all rolls**, attack and defense alike
    (replacing the Winded −2; wound penalties still stack on top), until the
@@ -169,7 +218,13 @@ gets no dying swing.
    rapier's own stricter floor makes *any* landed thrust draw blood. Soak
    still gates the real wound tiers; the floors only stop chip damage from
    being zeroed on a cleanly won exchange.
-7. Repeat until one side has no one standing (**0 HP** = Down/dead).
+7. **End of round: regeneration.** A regenerator still on its feet (the
+   troll: `regen`) knits that many HP back — and its wound penalty falls
+   with the healing. Chip damage loses to it; you out-cut the knitting or
+   you lose. At 0 HP it stays down: dead-or-down flesh doesn't knit
+   mid-fight. (And a *fled* troll is a *healed* troll — the camp-and-return
+   loop does not work on one.)
+8. Repeat until one side has no one standing (**0 HP** = Down/dead).
 
 ### Wound tiers
 
@@ -186,15 +241,31 @@ you've lost, so the first solid hit tilts every later round against you and the
 fight accelerates to a conclusion. There is no slow attrition to zero — one
 grievous hit can decide it.
 
-**Undead are the exception enemies** (deliberately — living foes teach the
-system, undead break its rules):
-- **They feel no pain:** their wound penalty is *halved* (integer —
-  `HP lost // 2`, so a graze costs them nothing on the roll). Chip damage and
-  spiral-based tricks (First Blood) bite less against them; you have to
-  actually break the bones.
-- **They are tireless:** they never spend STA, never go Winded, never go
-  Spent. Against the undead the stamina war is entirely one-sided — they
-  don't have to beat you, just outlast you. That is their whole threat.
+**The pain divisor** (2026-07; generalizes the old undead-only halving):
+every entity has a `pain` value and its wound penalty is `HP lost // pain`.
+The ladder:
+
+| Pain | Who | What it means |
+|------|-----|---------------|
+| 1 | Humans, heroes, small beasts | Feels everything — the spiral at full force. |
+| 2 | Undead, brutes (boar, bear, ogre, troll) | *Slow to pain*: penalty halved (integer — a graze costs nothing on the roll). Chip damage and First Blood bite less; break the bones. |
+| 3–4 | The apex monsters (giant, drake; dragon 4) | *Barely feels pain.* **This is what makes a deep HP pool carryable at all**: at human pain a 50-HP dragon would be rolling at −20 while still half alive — a helpless grind, not a boss. The divisor keeps it dangerous deep into its pool, then it folds fast. |
+
+**Undead are still the exception enemies** (deliberately — living foes teach
+the system, undead break its rules): pain 2, **and tireless** — they never
+spend STA, never go Winded, never go Spent. Against the undead the stamina
+war is entirely one-sided; they don't have to beat you, just outlast you.
+That is their whole threat. (Undead flesh also never heals on its own — a
+hacked skeleton stays hacked across days, which is what rewards the return
+trip to the barrow.)
+
+**A severity design note (the cap on monster STR).** Severity 7+ is a
+killing blow — 6 HP, flat — so monster STR past `hero soak + ~7` buys
+nothing: a giant at STR 9 already caps every landed blow. Monster threat
+scales past that point through DEX (landing at all), sweeps, and pool depth,
+never through more STR. If the 14-20 band ever needs landed blows to
+differentiate again, the parked fix is one tier above killing blow
+("obliterating", see plan.md) — not bigger STR numbers.
 
 ---
 
@@ -275,7 +346,10 @@ When steel meets steel — a **parry** or a **Clash** (high-dice tie) — the
 **lower-durability** weapon risks shattering:
 `P(break) = 0.25% × (durability gap)²` per contact; equal durability never
 breaks. Ladder: crude/rusted 1, military steel 2, wooden staff 3 (quality,
-but wood), quality steel 4, masterwork 5, legendary 6.
+but wood), quality steel 4, masterwork 5, legendary 6. **Natural weapons**
+(fangs, claws — the monsters' armament) sit outside the ladder entirely:
+breakage is a steel-on-steel event, so a claw neither shatters nor shatters
+the blade that parries it.
 
 Calibrated per-fight rates (measured): a club against legendary steel snaps
 in ~24% of fights; against a quality katana ~10%; quality steel against one
@@ -327,7 +401,11 @@ Within the full log, every exchange prints **two layers**:
 Notable events get their own lines: `!! X is Winded` when the STA threshold is
 crossed, `First Blood!` on the opening strike, a Bulwark *flare* on a saved
 blow (raw tier stated first — narrate the averted death),
-`*** CRACK -- X's club shatters on Y's blade ***` when a weapon breaks, and
+`*** CRACK -- X's club shatters on Y's blade ***` when a weapon breaks,
+`X circles, crowded out of the press` when the crowding cap bites,
+`X unleashes a great sweeping blow -- Y, Z are caught in it!` announcing a
+multi-target attack (then each defender's exchange resolves under it),
+`X's wounds knit closed` on a regenerator's end-of-round heal, and
 the `***` lines for falls, slayings, and level-ups.
 
 **2. The raw mechanics**, indented under each headline: the actual `2d6`
@@ -445,10 +523,42 @@ First Blood), and two random potions. A hero's epithet ("the precise" / "the
 powerful" / "the steady") is derived from their highest stat, with STA
 normalized back to the DEX/STR scale for the comparison.
 
-### Heroes — stats 6–10, HP 12–20
+### The ceilings, and what levels grow (the 1–20 doctrine)
+
+The game runs **levels 1–20** (`100 × L` XP per level, 1 skill point each —
+so level 20 banks 19 points: almost exactly maxed combat training (15) plus
+one mastered weapon (6); the caps and the ceiling were made for each other).
+
+**The frame is talent; the engine is training.** DEX and STR are the body
+you were born with — **fixed at creation, never raised by levels**. The
+natural human cap is **6**: 5 is the career elite (the veteran row above),
+6 the generational talent (the top of the hero roll). What a career grows is
+everything trainable: **levels pour into the pools** — the planned curve
+(plan.md) is **+1 HP, +1 STA, +1 Power per two levels** — plus the capped
+skills (training +5, proficiency +3). This split is also the balance-safe
+one: DEX double-dips (landing *and* severity through the margin), so
+per-exchange dominance stays behind the capped skills while levels buy
+staying power.
+
+Note the spiral caps useful HP depth for anything at pain 1: penalty equals
+HP lost, so a human past ~22 HP is buying corpse-phase, not survival — the
+pool curve is deliberately shallow.
+
+**Only magic and legendary gear transcend the caps** — up to roughly
+*double* (DEX/STR 10–12), which is exactly the monster-apex band (dragon
+DEX 8, giant STR 9): transcendence is what lets a mortal step into the
+monster band, and the Heroes table below IS that band. One warning stands
+for the magic phase: a +DEX item is worth several training ranks in one
+slot (enemy DEX moves clear rates by tens of percent per point) — +STR and
++pool items can circulate an order of magnitude more freely than +DEX ones.
+
+### Heroes — stats 6–10, HP 12–20 (the max-level destination)
 Superhuman because they **break the mortal tradeoff**: a hero can be high in
 *two or three* stats at once, which no human can. That impossible combination is
-the heroic feeling.
+the heroic feeling. Read this table as **where the 1–20 ladder ends**: a
+level-20 human with maxed training, a mastered masterwork blade, and grown
+pools has exactly this table's effective numbers — the Legend row is the
+character sheet of the endgame.
 
 | Type | DEX | STR | STA | HP |
 |------|-----|-----|-----|----|
@@ -456,22 +566,40 @@ the heroic feeling.
 | Champion | 7 | 8 | 8 | 18 |
 | Legend | 8 | 8 | 8 | 20 |
 
-### Monsters — flavor comes from lopsidedness, not big numbers everywhere
-Each monster is a puzzle defined by its hole (or, for bosses, its lack of one).
-HP is scaled to threat — a big monster needs a deep pool or it spirals as fast
-as anyone.
+### The bestiary — flavor comes from lopsidedness, not big numbers everywhere
+Each monster is a puzzle defined by its hole (or, for bosses, its lack of
+one). The catalog lives in `sites.py` (`FOES`, with per-row **level
+annotations** at the duo baseline, bench-calibrated by `bench_bestiary.py`);
+**six families** span levels 1–20, each family introducing at most one
+mechanic. Humanoids (bandits, soldiers, champions…) run parallel across
+every level and fill the gaps between bands, and the tier ABOVE the dragon
+is humanoid on purpose: demons, demigods, liches are **authored one-offs
+built on the Heroes table** — heroes on the wrong side, no mortal tradeoffs,
+Power fueling authored abilities — never catalog rows. The dragon is the
+mightiest *beast*; the mightiest *enemies* are persons.
 
-| Monster | DEX | STR | STA | HP | The puzzle |
-|---------|-----|-----|-----|----|-----------|
-| Goblin | 2 | 2 | 3 | 4 | Trivial alone; dangerous in numbers. |
-| Dire wolf | 8 | 4 | 9 | 12 | Fast and tireless — it dictates the pace; you can't out-chip it. |
-| Giant | 1 | 12 | 9 | 35 | One landed blow is grievous+. Survive its swings and let it tire. |
-| Dragon | 9 | 10 | 9 | 60 | A boss precisely because it has no exploitable hole. |
+| Family | Rows (level) | The puzzle | Mechanic introduced |
+|--------|--------------|------------|---------------------|
+| **Wolves** | wolf (1), dire wolf (3) | The pack: fast, fragile, sets the pace — and PURSUES; retreating from wolves is how heroes die tired | — |
+| **Beasts** | boar (2), bear (4) | The soak wall: low DEX, heavy STR both ways, slow to pain — chip damage struggles | (bear: a mauling swipe, sweep 2) |
+| **Vermin** | great spider (3) | The ambusher: lands often, folds fast (venom parked with conditions, plan.md) | — |
+| **Restless dead** | skeleton (2), ghoul (4), wight (8) | Tireless + slow to pain; the ghoul HUNGERS (it pursues, unlike the grave-bound); the wight is the tireless *duelist* with real DEX and lootable grave-steel | — (the exception rules) |
+| **Giant-kin** | ogre (5), troll (8), giant (12) | The severity cliff — every landed blow caps; the hole is a DEX low *for its band*. The troll REGENERATES (out-damage it or lose; fleeing it resets it); the giant SWEEPS | regeneration; the sweep |
+| **Drakes** | wyvern (10), drake (14), dragon (18) | Real DEX on a monster frame. The drake adds fire (fueled sweep); the dragon is a boss precisely because it has no hole at all | the fueled sweep (Power-paid breath) |
 
-**Two scaling notes.** Pool depth tunes the spiral: a human at 8 HP collapses
-after one grievous; a giant at 35 fights clean until very deep, then folds fast —
-a free narrative arc. And a monster's STR difference makes it terrifying through
-the severity formula even before its HP matters.
+Natural weapons (fangs, claws, tusks, dragonfire — `NATURAL_WEAPONS` in
+`sites.py`) are part of the body: they never break, never break steel
+(breakage is a steel-on-steel event), and are never left as loot. The one
+exception is the wight's **barrow blade** — real, lootable heavy-arms steel
+with a dead man's name.
+
+**Two scaling notes.** Pool depth *with a pain divisor* tunes the spiral: a
+human at 8 HP collapses after one grievous; a dragon at 50 HP and pain 4
+fights nearly clean until very deep, then folds fast — a free narrative arc
+(without the divisor the deep pool would be a helpless grind instead; see
+the pain ladder above). And a monster's STR difference makes it terrifying
+through the severity formula even before its HP matters — up to the killing
+blow cap (the severity design note above).
 
 ---
 
@@ -691,6 +819,9 @@ day stamp) and wait:
   them still hurt.
 - **Skeletons stay hacked** — dead bone doesn't knit. This is exactly the
   asymmetry that rewards the return trip to the barrow.
+- **A fled regenerator is a healed one** — the troll is whole again the
+  moment you're out the door, same day or not. The camp-and-return loop
+  does not work on it; that is its puzzle.
 
 **The honest cost of this whole layer:** it softens "running dry is how
 parties die," which the balance leans on. The counterweights: the parting
@@ -859,9 +990,14 @@ gold buys staying power** — never the reverse.
 
 ## XP and levels
 
-- **Earning.** Every hero who is not truly dead earns the *full* award (no
-  splitting; the party levels together): a small amount per **encounter won**
-  and a lump for **completing a quest** (clearing a whole site).
+- **Earning.** XP pays the **job, not the head** (the party-size
+  counterweight — see *Balanced for two*): awards are quoted at the two-hero
+  baseline and every hero who is not truly dead earns
+  `award × 2 / party size` — the same number to each, so the party still
+  levels together (the divisor counts the dead too: no XP windfall for
+  losing a companion mid-run). A duo gets the listed numbers unchanged; a
+  solo earns double; four split the wages. Awarded per **encounter won**
+  plus a lump for **completing a quest** (clearing a whole site).
 - **The curve.** Level L → L+1 costs `100 × L` XP. Anchors:
   - Bandit hideout (the **starter** site — living foes who play by the
     party's rules): **15 XP** per encounter, **55 XP** for the quest — a full

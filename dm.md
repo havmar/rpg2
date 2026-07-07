@@ -93,8 +93,13 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - **The two sites are SET encounters** -- balanced during development, never
   improvised at the table. Run them room-by-room with `hideout ROOM` and
   `barrow ROOM` (1-3 each; fixed foe counts/rosters). `fight N
-  [--type skeleton|bandit]` is only for off-script scenes the story invents
-  (a road ambush), not for the sites.
+  [--type wolf|troll|...]` is only for off-script scenes the story invents
+  (a road ambush, a beast on the trail), not for the sites. Every bestiary
+  row is spawnable this way -- **check its level annotation first**
+  (`sites.FOES`; quoted for a duo AT that level, and the reference pack
+  size matters: 4 wolves is the level-1 fight, ONE troll the level-8 one).
+  Off-script monsters far above the party's level are a narrative tool
+  ("you are not winning this; run"), not an encounter.
 
 ## Narration style
 
@@ -147,11 +152,24 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   day advances, the
   slot refills. Nothing forces the day to end -- camping is the player's call.
 - Skeletons are undead, the exception enemies: **tireless** (never spend STA,
-  never Winded/Spent -- they don't tire, you do) and no pain (wound roll
+  never Winded/Spent -- they don't tire, you do) and slow to pain (wound roll
   penalty halved, so the death spiral and First Blood bite less). The barrow
   is an endurance war you can lose by simply running dry.
 - Bandits are living fighters under exactly the party's rules (they tire and
   go Spent too) -- hideout logs read with no special cases.
+- **The press:** at most 2 attackers can press one man-sized target in a
+  round; anyone crowded out "circles" (free -- no swing, no STA). It cuts
+  both ways: a lone hero is never mobbed by more than 2 at once. Big
+  monsters can be pressed by 3-4 -- the log's `circles, crowded out` line is
+  the tell.
+- **Monsters** (the bestiary, `sites.FOES` -- each row a puzzle): brutes and
+  undead are *slow to pain* (halved wound penalty), apex monsters *barely
+  feel* it; trolls **regenerate** every round AND heal fully if fled from
+  (out-damage them or don't fight them); bears/giants/drakes hit several
+  heroes with one **sweeping blow** (one attack roll, everyone defends);
+  dragonfire is a Power-fueled sweep that dries up. Natural weapons (fangs,
+  claws) never break and drop no loot -- the wight's barrow blade is the
+  exception worth taking.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved killing blow. Total party knockout = the Down are finished off.
 - **Weapons:** everyone wields exactly one (no inventory; swaps are narrative
