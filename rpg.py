@@ -47,6 +47,18 @@ STA_ATTACK_COST = 1         # STA per swing (the pool is a swing budget now;
                             # a hero gets ~5-8 full-strength swings, not 2-3)
 STA_RECOVERY_AFTER_FIGHT = 1  # survivors catch their breath when a fight ends
 
+# --- The press (the crowding cap; 2026-07 party-size counterweight) --------- #
+# At most this many attackers can press one man-sized target in a round;
+# anyone crowded out CIRCLES instead (no swing, no STA -- circling is free,
+# like defending). You cannot get four swords around one man. This is the
+# in-fight party-size counterweight (the game is balanced for a party of TWO;
+# see rules.md "Balanced for two"): it trims the mob-the-mook action economy
+# of a big party AND shields a lone hero from being swarmed -- both ends of
+# the 1-4 party range move toward the middle with one symmetric rule. Big
+# monsters override it per-entity (Entity.crowd_cap: a giant can be pressed
+# from all sides), so boss fights stay full-party.
+CROWD_CAP = 2
+
 # Survival add-on tunables.
 SAVE_COST = 2           # Power spent to reduce one wound tier (Bulwark's mid-fight save)
 HEAL_COST = 3           # Power spent on the Heal ability (between fights, see use_heal)
@@ -72,6 +84,14 @@ REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 # quest at the bandit hideout) is exactly one level-1 level-up; the next level
 # takes two clears (or one run at the 3x-paying barrow).
 XP_LEVEL_STEP = 100
+# XP pays the JOB, not the head (2026-07 party-size counterweight): awards are
+# quoted at the two-hero baseline and each member earns amount * BASELINE /
+# party size. A duo gets the listed numbers unchanged; four swords split the
+# wages (level at half speed); a solo who overcomes the same work earns
+# double. The economic drag on big parties -- invisible in any one fight,
+# compounding across a campaign. Gold already works this way for free (the
+# purse is shared, quests pay flat).
+XP_PARTY_BASELINE = 2
 SKILL_POINTS_PER_LEVEL = 1
 TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to pressure rolls
                         # (rank n costs n skill points: cheap to start, dear to max)
@@ -154,6 +174,10 @@ class Weapon:
     graze_floor: bool = False   # the rapier: a landed hit is never fully
                                 # deflected -- the point finds a seam (min. a
                                 # graze), so soak can't zero the chip damage
+    natural: bool = False   # fangs, claws, tusks -- part of the body: never
+                            # breaks, never breaks steel (breakage is a
+                            # steel-on-steel event; see _check_weapon_break),
+                            # never left as loot
     heal_bonus: int = 0     # extra HP per Heal ability use (the staff)
     bulk: int = 1           # carry weight/bulk -- stored, unused for now
     tags: tuple[str, ...] = ()
@@ -469,14 +493,42 @@ class Entity:
                                          # fights HP restore, see use_heal); None = neither
     sta_cost: int = STA_ATTACK_COST     # STA spent per attack (defense is free);
                                          # Phase 4 hangs weapon weight on this knob
-    undead: bool = False                # no pain: wound roll penalty halved (see
-                                         # wound_penalty)
+    undead: bool = False                # dead flesh: wounds never knit back on
+                                         # their own (refresh_foes_after_retreat)
+    pain: int = 1                       # the pain divisor: wound roll penalty =
+                                         # HP lost // pain. 1 = feels everything
+                                         # (humans, small beasts); 2 = slow to
+                                         # pain (undead, brutes); 3-4 = the apex
+                                         # monsters, whose deep HP pools would
+                                         # otherwise be nullified by the spiral
+                                         # (a 60-HP dragon at -20 to rolls is a
+                                         # grind, not a boss)
     tireless: bool = False              # never spends STA, never Winded/Spent
                                          # (the undead don't tire; you do)
     pursues: bool = True                # gives chase when the party retreats;
                                          # False for the barrow's undead (bound
                                          # to the grave -- they swing at the
                                          # door but never follow past it)
+    crowd_cap: int = CROWD_CAP          # how many attackers can press THIS
+                                         # target at once (the press, see
+                                         # CROWD_CAP); big monsters take 3-4 --
+                                         # a giant can be attacked from all
+                                         # sides, so boss fights stay full-party
+    regen: int = 0                      # HP knit back at the end of each round
+                                         # while up (trolls) -- the anti-attrition
+                                         # puzzle: out-damage it or lose to it.
+                                         # A fled regenerator is a healed one
+                                         # (refresh_foes_after_retreat).
+    sweep: int = 1                      # max targets per attack (one attacker
+                                         # roll, each defender rolls separately
+                                         # -- the giant's sweeping blow, the
+                                         # dragon's breath). 1 = normal.
+    sweep_cost_power: int = 0           # Power per multi-target use (dragonfire
+                                         # is fueled); 0 = free (a club sweep).
+                                         # Out of Power -> single attacks.
+    sweep_label: str = ""               # log flavor for the multi-target blow
+                                         # ("a great sweeping blow", "a gout of
+                                         # dragonfire")
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
@@ -535,9 +587,12 @@ class Entity:
 
     @property
     def wound_penalty(self) -> int:
-        # The death spiral. Undead feel no pain: it bites at half strength
-        # (integer halves -- a graze costs them nothing).
-        return self.hp_lost // 2 if self.undead else self.hp_lost
+        # The death spiral, geared down by the pain divisor (integer floor --
+        # at pain 2 a graze costs nothing on the roll). pain 1 feels
+        # everything; undead and brutes take 2; the apex monsters 3-4, which
+        # is what makes their deep HP pools survivable to CARRY (a big pool
+        # with human pain collapses into a helpless grind long before zero).
+        return self.hp_lost // self.pain
 
     @property
     def prof_rank(self) -> int:
@@ -650,6 +705,9 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
     wb = b.weapon if b.weapon is not None and not b.weapon_broken else None
     if wa is None or wb is None or wa.durability == wb.durability:
         return
+    if wa.natural or wb.natural:
+        return      # breakage is a steel-on-steel event: a claw neither
+                    # shatters nor shatters the blade that parries it
     loser, stronger = (a, wb) if wa.durability < wb.durability else (b, wa)
     other = b if loser is a else a
     gap = abs(wa.durability - wb.durability)
@@ -664,7 +722,8 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
 
 def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             log: list[str], atk_wound_pen: int | None = None,
-            def_mod: int = 0, def_label: str = "") -> None:
+            def_mod: int = 0, def_label: str = "",
+            atk_roll: PressureRoll | None = None) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a killing blow); a Power save
@@ -675,13 +734,16 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     see group_combat's round-start snapshot). `def_mod`/`def_label` is a
     circumstance penalty on the defense roll (a hero drinking at the pause, or
     fleeing under a parting blow, defends at -PAUSE_ACTION_DEF_PENALTY).
+    `atk_roll` reuses a pre-rolled attack (a SWEEP: one great blow, one
+    attacker roll, resolved against each caught defender's own defense).
 
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
     penalty), then the raw numbers (dice, each modifier and its source)
     indented beneath it -- full log only.
     """
-    atk = attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen)
+    atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen)
+           if atk_roll is None else atk_roll)
     dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
     pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
                   f"{dfn.breakdown(defender.name)}")
@@ -773,9 +835,17 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         defender.down = True
 
 
-def _pick_target(targets: list[Entity], rng: random.Random,
-                 focus: bool) -> Entity:
+def _pick_target(targets: list[Entity], rng: random.Random, focus: bool,
+                 engaged: dict[Entity, int] | None = None) -> Entity | None:
+    """Pick a living target. With `engaged` (this round's single-attack counts
+    per defender), only targets with press room (fewer than their crowd_cap
+    attackers so far) are eligible -- returns None when every living target is
+    already crowded, and the attacker circles the round away instead."""
     living = [e for e in targets if e.alive]
+    if engaged is not None:
+        living = [e for e in living if engaged.get(e, 0) < e.crowd_cap]
+        if not living:
+            return None
     if focus:
         # Focus fire the weakest target to thin the enemy line fastest.
         return min(living, key=lambda e: e.hp)
@@ -957,6 +1027,15 @@ def group_combat(party: list[Entity], foes: list[Entity],
     Targeting stays live: every attacker picks a target *living at the moment
     it acts*, so nobody wastes a swing on a corpse.
 
+    The press (CROWD_CAP): at most crowd_cap attackers can press one target
+    in a round (2 for anything man-sized; big monsters take more); an
+    attacker with no open target circles instead -- free, no STA. Sweeps
+    (Entity.sweep > 1) hit several defenders with ONE attacker roll, each
+    defender rolling its own defense, and ignore the press both ways;
+    a fueled sweep (sweep_cost_power) falls back to single attacks when the
+    Power runs out. Regenerators knit `regen` HP at the end of every round
+    they are still up.
+
     Stamina: an attack costs the attacker `swing_cost` STA -- set by the
     wielded weapon (defense is free); tireless entities pay nothing. An entity
     that hits 0 STA is SPENT: it still swings (desperation is free) but takes
@@ -1017,15 +1096,45 @@ def group_combat(party: list[Entity], foes: list[Entity],
         # felled before their turn comes -- the dying swing (see docstring).
         actors = [e for e in party + foes if e.alive]
         start_pens = {e: e.wound_penalty for e in actors}
+        engaged: dict[Entity, int] = {}     # the press: single-attack counts
+                                            # per defender this round
         for attacker in actors:
             if attacker in busy:
                 continue    # occupied with their draught/conversion this round
             dying = not attacker.alive      # felled earlier this round
             targets = foes if attacker in party_set else party
-            if not any(t.alive for t in targets):
+            living_targets = [t for t in targets if t.alive]
+            if not living_targets:
                 continue        # nobody left on the other side for THIS
                                 # attacker; a dying foe later in the order
                                 # may still owe the party its last blow
+
+            # A multi-target blow (the giant's sweep, the dragon's breath):
+            # one attacker roll, resolved against each caught defender's own
+            # defense. Sweeps don't queue for press room -- a wall of fire
+            # doesn't care how crowded the line is -- and a fueled one
+            # (sweep_cost_power) needs the Power, else it falls back to
+            # single attacks.
+            sweeping = (attacker.sweep > 1 and len(living_targets) > 1
+                        and (attacker.sweep_cost_power == 0
+                             or attacker.cur_power
+                             >= attacker.sweep_cost_power))
+            if sweeping:
+                victims = rng.sample(living_targets,
+                                     min(attacker.sweep, len(living_targets)))
+            else:
+                defender = _pick_target(targets, rng,
+                                        focus=attacker in party_set,
+                                        engaged=engaged)
+                if defender is None:
+                    # Crowded out of the press: circle the round away instead
+                    # (free, like defending -- no swing, no STA).
+                    log.append(f"    {attacker.name} circles, crowded out "
+                               f"of the press.")
+                    continue
+                engaged[defender] = engaged.get(defender, 0) + 1
+                victims = [defender]
+
             if not attacker.tireless and not dying:
                 # The dying swing is free -- desperation costs nothing.
                 was_winded = attacker.winded
@@ -1048,25 +1157,57 @@ def group_combat(party: list[Entity], foes: list[Entity],
                           f"until the fight ends)",
                           f"    !! {attacker.name} is SPENT -- "
                           f"-{SPENT_PENALTY} to all rolls")
-            defender = _pick_target(targets, rng,
-                                    focus=attacker in party_set)
             if dying:
                 log.append(f"    ({attacker.name} strikes even as they fall)")
-            was_alive = defender.alive
-            _attack(attacker, defender, rng, log,
-                    atk_wound_pen=start_pens[attacker] if dying else None,
-                    def_mod=(-PAUSE_ACTION_DEF_PENALTY
-                             if defender in busy else 0),
-                    def_label=busy_label.get(busy.get(defender, ""), ""))
-            if was_alive and not defender.alive:
-                if defender.dead:
-                    log.append(f"    *** {defender.name} is SLAIN. ***")
-                elif defender in party_set:
-                    log.append(f"    {defender.name} goes down, "
-                               f"out of the fight.")
-                else:
-                    log.append(f"    *** {defender.name} falls. ***")
+
+            atk_roll = None
+            if sweeping:
+                if attacker.sweep_cost_power:
+                    attacker.cur_power -= attacker.sweep_cost_power
+                label = attacker.sweep_label or "a great sweeping blow"
+                names = ", ".join(v.name for v in victims)
+                fuel = (f" [{attacker.sweep_cost_power} Power spent, "
+                        f"{attacker.cur_power} left]"
+                        if attacker.sweep_cost_power else "")
+                _play(log,
+                      f"    {attacker.name} unleashes {label} -- "
+                      f"{names} are caught in it!{fuel}",
+                      f"    {attacker.name} unleashes {label} -- "
+                      f"{names} are caught in it!")
+                atk_roll = attacker.pressure(
+                    rng, attacking=True,
+                    wound_pen=start_pens[attacker] if dying else None)
+            for defender in victims:
+                was_alive = defender.alive
+                _attack(attacker, defender, rng, log,
+                        atk_wound_pen=start_pens[attacker] if dying else None,
+                        def_mod=(-PAUSE_ACTION_DEF_PENALTY
+                                 if defender in busy else 0),
+                        def_label=busy_label.get(busy.get(defender, ""), ""),
+                        atk_roll=atk_roll)
+                if was_alive and not defender.alive:
+                    if defender.dead:
+                        log.append(f"    *** {defender.name} is SLAIN. ***")
+                    elif defender in party_set:
+                        log.append(f"    {defender.name} goes down, "
+                                   f"out of the fight.")
+                    else:
+                        log.append(f"    *** {defender.name} falls. ***")
         busy.clear()
+        # Regeneration (the troll's puzzle): wounds knit at the end of every
+        # round the regenerator is still up -- out-damage it or lose to it.
+        # At 0 HP it stays down: dead-or-down flesh doesn't knit mid-fight.
+        for e in actors:
+            if e.alive and e.regen and e.hp < e.max_hp:
+                before = e.hp
+                e.hp = min(e.max_hp, e.hp + e.regen)
+                _play(log,
+                      f"    {e.name}'s wounds knit closed before their eyes "
+                      f"(+{e.hp - before} HP -> {e.hp}/{e.max_hp}, "
+                      f"-{e.wound_penalty} to rolls)",
+                      f"    {e.name}'s wounds knit closed "
+                      f"(+{e.hp - before} HP) [{e.name}: "
+                      f"{e.hp}/{e.max_hp} HP]")
         _debug(log, _stamina_line(party, foes))
 
         if pause_triggers:
@@ -1109,7 +1250,9 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     """Break away from a paused fight. The procedure (deliberately ONE roll,
     no chase scenes): every foe fit to swing (alive, not Winded, not Spent)
     gets one free parting blow -- free like the dying swing, no STA cost --
-    at a random fleeing hero, who defends at -PAUSE_ACTION_DEF_PENALTY. Then
+    at a random fleeing hero, who defends at -PAUSE_ACTION_DEF_PENALTY.
+    Parting blows ignore the press (CROWD_CAP is melee geometry; strikes at
+    backs running past the line are not a press). Then
     one opposed group contest (2d6 + STA-weighted side-average DEX, the
     fleeing side at +FLEE_BONUS) decides the break -- but only foes that
     `pursues` give chase: the barrow's undead swing at the door and stop
@@ -1179,7 +1322,9 @@ def refresh_foes_after_retreat(foes: list[Entity],
     survivors = [f for f in foes if not f.dead]
     for f in survivors:
         f.cur_sta = f.sta
-        if days_passed > 0 and not f.undead:
+        if f.regen or (days_passed > 0 and not f.undead):
+            # A fled regenerator is a healed one, same day or not -- the
+            # camp-and-return loop does not work on a troll.
             f.hp = f.max_hp
             f.down = False
     return survivors
@@ -1322,14 +1467,21 @@ def xp_to_next(level: int) -> int:
 
 def award_xp(party: list[Entity], amount: int, log: list[str],
              reason: str = "") -> None:
-    """Every hero who is not truly dead earns the full amount (no splitting --
-    the party levels together). Handles level-ups and banks skill points."""
+    """XP pays the JOB, not the head (the party-size counterweight): awards
+    are quoted at the two-hero baseline and every hero who is not truly dead
+    earns amount * XP_PARTY_BASELINE / party size -- the same number to each,
+    so the party still levels together. A duo gets the listed award unchanged;
+    four swords split the wages; a solo who overcame the same work earns
+    double. The divisor is the party as constituted (the dead still count --
+    no XP windfall for losing a companion mid-run). Handles level-ups and
+    banks skill points."""
+    share = max(1, round(amount * XP_PARTY_BASELINE / len(party)))
     note = f" ({reason})" if reason else ""
     for h in party:
         if h.dead:
             continue
-        h.xp += amount
-        log.append(f"    {h.name} gains {amount} XP{note} "
+        h.xp += share
+        log.append(f"    {h.name} gains {share} XP{note} "
                    f"[{h.xp}/{xp_to_next(h.level)}]")
         while h.xp >= xp_to_next(h.level):
             h.xp -= xp_to_next(h.level)
@@ -1732,9 +1884,14 @@ def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
 
 
 def outcome(party: list[Entity]) -> str:
-    """How many were truly slain (Down does not count -- it recovers)."""
+    """How many were truly slain (Down does not count -- it recovers).
+    Works for any party size 1-4; the classic duo keeps its "both"."""
     dead = sum(1 for h in party if h.dead)
-    return {0: "none", 1: "one", 2: "both"}[dead]
+    if dead == 0:
+        return "none"
+    if dead == len(party):
+        return "both" if len(party) == 2 else "all"
+    return "one" if dead == 1 else str(dead)
 
 
 # --------------------------------------------------------------------------- #

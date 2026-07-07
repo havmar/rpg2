@@ -113,6 +113,16 @@ a pointer: what the file is, how it's run, where its docs are.
   frame x each quality weapon, duel and swarm. Also the doc of record for WHY
   the zweihander does not cost 2 STA per swing (sim-rejected while Spent is
   lethal).
+- `bench_bestiary.py` — the bestiary calibration: each catalog row's
+  reference encounter (`ref_pack` of it) vs reference duos at the annotated
+  level and two levels either side; win/fled/wipe/stall/down rates. The
+  reference party applies the planned per-level pool growth by hand (see
+  plan.md) — re-check this file when the engine grows pools itself.
+  `python bench_bestiary.py [--trials N] [--kind wolf]`.
+- `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
+  two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
+  Re-run after touching the press or the melee loop.
+  `python bench_party.py [--trials N]`.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -141,6 +151,8 @@ python rpg.py            # same one-shot (delegates to sites.py)
 python tune.py           # outcome-distribution sweep + resource-pressure check
 python bench_training.py # wipe/clear rates per combat-training rank
 python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
+python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
+python bench_party.py    # party-size sweep (the "Balanced for two" check)
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -160,13 +172,19 @@ mechanic *does* and *why* is rules.md's job.
   (`GRAZE_FLOOR_MARGIN`), wound tiers (`TIER_HP`), progression
   (`XP_LEVEL_STEP`, `TRAINING_MAX`, `PROFICIENCY_MAX`), economy
   (`POTION_PRICE`, drop chances, quest rewards), weapons (the `WEAPONS`
-  catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances), and hero roll
-  ranges (`HERO_*_RANGE`).
+  catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances), hero roll
+  ranges (`HERO_*_RANGE`), and the party-size counterweights (`CROWD_CAP`
+  — the press; `XP_PARTY_BASELINE` — awards quoted at the duo, paid
+  `x 2 / party size`).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
 - **The melee** — `group_combat`: round-start actor snapshot (the dying
-  swing), live targeting, STA spend, Winded/Spent crossings, pause triggers.
+  swing), live targeting under the press (`_pick_target` + per-round
+  `engaged` counts vs each defender's `crowd_cap`; a crowded-out attacker
+  circles free), sweeps (`Entity.sweep` targets off ONE attacker roll,
+  optional `sweep_cost_power` fuel), end-of-round regeneration
+  (`Entity.regen`), STA spend, Winded/Spent crossings, pause triggers.
   Returns a `Pause` mid-fight when `pause_triggers=True`; resume by calling
   again with the same `fired` set (keyed by `(kind, hero)` — each trigger
   once per hero per fight, crossing-only), `first_round=round+1`, and
@@ -181,8 +199,11 @@ mechanic *does* and *why* is rules.md's job.
   via `train_combat`), `party_wiped`, `start_fight` (revive-only).
 - **The log** — `CombatLog` (full + `.player` levels; `_debug` / `_play`
   emit helpers so plain lists still work).
-- **Content** — `sites.py`: `FOES` (stat blocks), `make_foe`, `SITES`,
-  `HIDEOUT_ROOMS` / `BARROW_ROOMS`, `run_site` (the sim loop), `roster_lines`.
+- **Content** — `sites.py`: `FOES` (the bestiary: 17 stat blocks in six
+  families, each row with a bench-calibrated `level` annotation and
+  `ref_pack`), `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
+  `make_foe`, `SITES`, `HIDEOUT_ROOMS` / `BARROW_ROOMS`, `run_site` (the
+  sim loop), `roster_lines`.
 - **Session state** — `session.py`: one pickled dict (party, clock, purse,
   rng, `pending` paused-fight record, `rooms` fled-room records). A paused
   fight blocks every between-fights command until settled.
@@ -233,15 +254,48 @@ The intended arc is unchanged: fight the hideout at rank 0 (expect retreats
 and downs), level up *and* buy steel over ~2-3 clears, take the barrow at
 rank 2+ armed. Most deaths still trace to STA misjudgment.
 
+**Measured numbers (2026-07-07, after the party-size counterweights + the
+bestiary).** The press (`CROWD_CAP`), the pain divisor, sweeps, regen, and
+XP-per-head landed; both existing sites re-measured essentially UNCHANGED
+(the press only binds at 3+ attackers on one target, which the duo-tuned
+rooms rarely produce): hideout rank 0 clear ~64.5 / wipe ~33 (reckless wipe
+~68), barrow ~3.6 / ~95 (reckless ~99); training ladder barrow 4 -> 17 ->
+44 -> 75, hideout 64 -> 86 -> 96 -> 99. Details worth knowing:
+
+- **Party size** (rank 0, 5k/size; the reason "Balanced for two" exists):
+  hideout clears **15% / 64% / 93% / 99%** for sizes 1-4, barrow **0.1% /
+  3.6% / 25% / 59%** — in-fight, numbers still dominate every other
+  progression axis. The press barely moves these on current duo-scale
+  rosters; the drag that bites is **XP x 2/N** (a four-party levels at half
+  speed, i.e. runs 1-2 training ranks behind — worth ~20-30 clear points
+  against a fixed site) plus flat gold, and it compounds instead of showing
+  up in a single-run sweep. Expect the press + sweeps to matter more once
+  the encounter generator builds bigger rosters.
+- **Weapons matrix**: the story holds (rapier best duelist on three of four
+  frames, coin flip with the zweihander on precise; zweihander sweeps every
+  swarm column; staff trails on purpose). Swarm survival is a few points
+  HIGHER across the board — the press shields a lone fighter from 3
+  skeletons (only 2 swing per round): e.g. zweihander swarm on the balanced
+  frame ~27% (was ~20).
+- **Bestiary at-level win rates** (`bench_bestiary.py`, 2k/row, reference
+  duo at the annotated level vs `ref_pack`): wolf 61, cutthroat 75,
+  archer 88, boar 89, bruiser 84, skeleton 74, dire wolf 85, spider 82,
+  bear 82, ghoul 85, ogre 88, troll 87, wight 76, wyvern 81, giant 85,
+  drake 86, dragon 73 — packs (site components, meant to chain with
+  attrition) sit high-70s-to-high-80s, solo bosses (the whole outing)
+  mid-70s-to-high-80s, and every row's -2 column is a real wall (dragon at
+  L16: 48%). Provisional by design: final assembly tuning belongs to the
+  encounter generator.
+
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`), then survival tunables, then
 the pause/retreat layer, then weapons, then economy/progression, then the foe
 stat blocks (`sites.FOES` — **enemy DEX is the sharpest knife**: a single
 point moves clear rates by tens of percent), then the hero roll ranges
 (all constants: see the dev map above). **Always re-run `tune.py`,
-`bench_training.py`, and `bench_weapons.py` after touching any of these** —
-small changes swing lethality, the attrition curve, and the weapon matchup
-matrix.
+`bench_training.py`, `bench_weapons.py`, and `bench_bestiary.py` after
+touching any of these** — small changes swing lethality, the attrition
+curve, the weapon matchup matrix, and the bestiary's level annotations.
 
 ## Conventions
 

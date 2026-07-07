@@ -16,25 +16,28 @@ the skeleton barrow), balanced by hand against a level-1-ish party. The next
 big feature turns that pair into *instances of a general system* that covers
 the whole game:
 
-- **Levels as the shared difficulty language.** Player levels exist (XP,
-  `100 × L` to next); give encounters and opponents levels in the same
-  currency, so "a level-3 encounter" and "a level-3 party" are commensurable.
-  Rough out the **whole power curve** end to end — what changes per level for
-  the party (training ranks, proficiency, gear tiers) and for the opposition
-  (stats, numbers, abilities) — even if most of it ships as tables and
-  guidance before it ships as code.
-- **A monster/opponent catalog spanning the full range.** Humanoids span any
-  level; monsters and animals get **level ranges** that make each kind
-  distinct (the lopsidedness principle from `rules.md`: each monster is a
-  puzzle defined by its hole; bosses by the lack of one). The catalog should
-  cover the curve from a goblin to a dragon with no dead zones — every band
-  of levels has things to fight that feel different from the last band.
+*(2026-07: the first slice shipped — the **bestiary**: 17 catalog rows in
+six monster families spanning levels 1-18 with bench-calibrated level
+annotations (`sites.FOES` + `bench_bestiary.py`), the mechanics they needed
+(pain divisor, sweeps, regeneration, natural weapons), and the party-size
+counterweights (`rules.md` "Balanced for two"). What remains here is the
+GENERATION layer.)*
+
+- **Per-level pool growth.** The decided curve (rules.md, the 1-20
+  doctrine): DEX/STR fixed at creation forever; **+1 HP, +1 STA, +1 Power
+  per two levels** on level-up. Decided but NOT yet in the engine —
+  `bench_bestiary.py` applies it by hand to its reference parties, so
+  implementing it is mostly moving that block into `award_xp`'s level-up
+  path (and re-running every harness). The natural next step.
 - **DM tools for authoring opponents and dungeons.** Given a target level and
   a narrative brief ("a wolf-den for a level-2 party", "a cursed chapel,
   tough side of fair"), the DM should be able to generate or assemble foes,
   rooms, and rewards *without hand-tuning against the sims each time* —
   the system encodes what the two hand-built sites taught us about pacing
-  (set encounters, room counts, attrition budget, reward scale).
+  (set encounters, room counts, attrition budget, reward scale), drawing
+  foes from the bestiary by its level annotations. Level-band gaps between
+  catalog rows (6-7, 15-17, 19-20) are filled by scaled humanoid rosters and
+  pack-size/mixed-pack assembly, not new monster rows.
 - **Quests as the frame.** The player picks work at a level and risk of their
   choosing — usually a choice of easier vs harder quests — with gold/XP
   rewards scaled by the encounter system, so "which fight do I take" stays
@@ -44,7 +47,7 @@ the whole game:
 player can learn to *feel*; a DM-assembled dungeon at level L lands in the
 intended clear-rate band without bespoke tuning; advancement against a fixed
 benchmark stays a noticeable jump (the `bench_training.py` criterion,
-generalized).
+generalized — `bench_bestiary.py`'s three-level columns are its seed).
 
 Everything below waits until this exists — magic, armor, and guns all need
 the level/power curve to hang their numbers on.
@@ -55,8 +58,13 @@ the level/power curve to hang their numbers on.
 
 1. **Magic & INT** — magic skills, INT scaling/gating (the way STR scales
    weapons), the stat-transcendence path (magic is the membrane that lets
-   gamey effects into the simulated body). Test: an INT build is viable;
-   magic feels like the sanctioned rule-breaker.
+   gamey effects into the simulated body; ceiling: up to ~double the natural
+   DEX/STR cap of 6, and +DEX items an order of magnitude rarer than
+   +STR/+pool — see rules.md, the 1-20 doctrine). Test: an INT build is
+   viable; magic feels like the sanctioned rule-breaker. **The wraith
+   belongs here**: the immaterial undead ("mundane steel barely bites") only
+   works once magic exists to be the answer — it's the magic phase's
+   signature enemy, deliberately left out of the bestiary until then.
 2. **Armor** — provisional design: armor **shifts the incoming wound tier
    down** (Grievous → Wound, ...) at the cost of a DEX penalty and higher STA
    drain — protection traded for speed and clock. Optional anti-armor weapons
@@ -70,10 +78,14 @@ the level/power curve to hang their numbers on.
    weapons carry authored provenance (a famous smith, a famous wielder, a
    mythic dungeon) and are story beats, never drops. Test: a named weapon
    reads as an event; no power inflation from common loot.
-5. **Party composition & the CHA layer** — parties of 2–4 built so builds
+5. **Party composition & the CHA layer** — parties of 1–4 built so builds
    cover each other's weak matchups; recruitment; richer companion mechanics
-   (currently the PC/companion split is run by DM protocol alone). CHA
-   itself is underdefined — detail deferred until this layer is next up.
+   (currently the PC/companion split is run by DM protocol alone). The
+   engine side shipped 2026-07 (any size 1–4 works; the counterweights —
+   flat income, the press, sweeps — are in; see rules.md "Balanced for
+   two"); what remains is the CHA/recruitment fiction and pricing a
+   companion. CHA itself is underdefined — detail deferred until this
+   layer is next up.
 
 ---
 
@@ -100,6 +112,13 @@ the level/power curve to hang their numbers on.
 - **Level requirements on masterwork/legendary weapons** — rejected: authored
   placement already gates them; revisit only if strong gear leaks downward.
 - **Weapon-granted abilities** — e.g. Berserk tied to the zweihander.
+- **The "obliterating" wound tier** — one tier above killing blow (severity
+  10+, ~9 HP, maybe pierces one Bulwark step) so landed blows differentiate
+  again in the 14-20 band; parked because monster STR past `soak + 7` buys
+  nothing under the current table (rules.md, the severity design note) and
+  the killing-blow cap is scary enough until the top band is authored.
+- **Venom / conditions** — the great spider's poison (and disease, bleeds…)
+  is a whole system; the bite carries the row until conditions exist.
 - **Survival/adventure-sim pivot** (hunger, upkeep, inventory) — a deliberate
   possible future pivot away from the heroic tone, not drift.
 - **Power potion re-stock** — retired 2026-07; re-circulate the kind if
@@ -111,11 +130,11 @@ the level/power curve to hang their numbers on.
 
 - **Armor:** adopt, simplify, or defer (see above) — the least-developed
   system.
-- **Can stats ever be raised?** The design spine (`rules.md`) says stats are
-  fixed at creation and only magic/items transcend them; older notes also
-  mention "raising stats toward an archetype" as a between-fights choice.
-  Unresolved — decide when the encounter system makes the power curve
-  concrete.
+- ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,
+  the engine is training — DEX/STR stay fixed at creation (natural human cap
+  6; only magic/items transcend, to ~double); levels grow the POOLS (+1
+  HP/STA/Power per two levels, pending implementation — see "Next up").
+  Doctrine lives in rules.md ("The ceilings, and what levels grow").
 - **CHA / party mechanics** — underdefined by design; detail when that layer
   is next up.
 - Every constant is provisional and sim-tuned, never hand-designed — the

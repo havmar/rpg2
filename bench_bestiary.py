@@ -1,0 +1,131 @@
+"""Bestiary benchmark: is each catalog row's LEVEL annotation honest?
+
+For every monster in sites.FOES, runs its reference encounter (`ref_pack` of
+the row) against reference DUOS -- the two-hero baseline the game is balanced
+for -- at the annotated level and two levels either side, and prints win /
+fled / wipe / down rates. The calibration target: the AT-LEVEL duo wins
+roughly 55-75% of the time (a fair, still-scary single encounter -- one
+fight, not a site: no attrition, so it can sit above a site's clear target),
+with the -2 column visibly worse and the +2 column visibly safer. That is
+what makes `level` a difficulty language the future encounter generator (and
+the player) can trust.
+
+The reference duo is PROVISIONAL, built to the rules.md progression doctrine:
+  - rolled like any hero (make_human), then leveled to L;
+  - skill points (L-1) spent training-first, leftovers into proficiency with
+    the wielded weapon (the sims' greedy policy, plus the second sink);
+  - quality steel from level 4 (katana -- the reliable all-rounder);
+  - the DOCTRINE POOL GROWTH, +1 HP / +1 STA / +1 Power per two levels --
+    this is the planned per-level curve (plan.md) applied by hand here, since
+    the engine does not auto-grow pools yet. Re-check this file when it does.
+
+Run:  python bench_bestiary.py [--trials N] [--kind wolf]
+"""
+
+import argparse
+import random
+from collections import Counter
+
+import rpg
+from sites import FOES, make_foe
+
+
+def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
+    """A hero of the given level under the provisional progression doctrine
+    (see module docstring): greedy training, leftover proficiency, quality
+    steel from L4, +1 HP/STA/Power per two levels."""
+    h = rpg.make_human(rng, name)
+    h.level = level
+    points = level - 1
+
+    # Monotone allocation (training to 3, proficiency to 3, training to 5):
+    # a straight greedy training-first spend makes an L16 build WEAKER than
+    # L14 (training 5 + prof 0 loses to training 4 + prof 2), and a bench
+    # reference must never get worse with levels.
+    def buy_training(cap: int) -> None:
+        nonlocal points
+        while h.training < cap and points >= h.training + 1:
+            points -= h.training + 1
+            h.training += 1
+
+    buy_training(3)
+    if level >= 4:
+        h.weapon = rpg.WEAPONS["katana"]
+    rank = 0
+    while rank < rpg.PROFICIENCY_MAX and points >= rank + 1:
+        points -= rank + 1
+        rank += 1
+    if rank:
+        h.proficiency[h.weapon.name] = rank
+    buy_training(rpg.TRAINING_MAX)
+    grow = (level - 1) // 2
+    h.max_hp += grow
+    h.hp = h.max_hp
+    h.sta += grow
+    h.cur_sta = h.sta
+    h.power += grow
+    h.cur_power = h.power
+    h.hp_regen_per_night = max(1, round(h.max_hp / 7))
+    return h
+
+
+def run_encounter(kind: str, level: int, rng: random.Random) -> tuple[str, bool]:
+    """One reference fight: a fresh reference duo vs the row's ref_pack.
+    Returns (result, someone_downed): result in win / fled / wipe / stall
+    (stall = the round cap fired with both sides up -- a regen wall the
+    party can't out-cut is a failed encounter, not a win)."""
+    spec = FOES[kind]
+    names = rng.sample(rpg.NAMES, 2)
+    party = [reference_hero(rng, n, level) for n in names]
+    foes = [make_foe(kind, i + 1, rng) for i in range(spec.ref_pack)]
+    log: list[str] = []
+    result = rpg.sim_fight(party, foes, rng, log)
+    downed = any("goes down" in line for line in log)
+    if result == "fled":
+        return "fled", downed
+    if not any(h.alive for h in party):
+        return "wipe", downed
+    if any(f.alive for f in foes):
+        return "stall", downed
+    return "win", downed
+
+
+def bench(kind: str, trials: int) -> None:
+    spec = FOES[kind]
+    pack = f"{spec.ref_pack}x " if spec.ref_pack > 1 else ""
+    print(f"\n--- {pack}{spec.display} (annotated level {spec.level}, "
+          f"{trials} trials per column) ---")
+    print(f"{'party L':<10}{'win%':>8}{'fled%':>8}{'wipe%':>8}{'stall%':>8}"
+          f"{'down%':>8}")
+    for level in (spec.level - 2, spec.level, spec.level + 2):
+        if level < 1:
+            continue
+        rng = random.Random(4242)
+        counts: Counter[str] = Counter()
+        downs = 0
+        for _ in range(trials):
+            result, downed = run_encounter(kind, level, rng)
+            counts[result] += 1
+            downs += downed
+        mark = " <- annotated" if level == spec.level else ""
+        print(f"{level:<10}{100 * counts['win'] / trials:>7.1f}%"
+              f"{100 * counts['fled'] / trials:>7.1f}%"
+              f"{100 * counts['wipe'] / trials:>7.1f}%"
+              f"{100 * counts['stall'] / trials:>7.1f}%"
+              f"{100 * downs / trials:>7.1f}%{mark}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--trials", type=int, default=2000)
+    ap.add_argument("--kind", choices=sorted(FOES), default=None,
+                    help="bench a single row (default: the whole catalog)")
+    args = ap.parse_args()
+    kinds = [args.kind] if args.kind else sorted(
+        FOES, key=lambda k: (FOES[k].level, k))
+    for kind in kinds:
+        bench(kind, args.trials)
+
+
+if __name__ == "__main__":
+    main()
