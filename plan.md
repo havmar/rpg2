@@ -9,48 +9,43 @@ file rather than marking it done.
 
 ---
 
-## Next up — the encounter & quest system
+## Next up — major questlines & the world's story layer
 
-The game currently has exactly two hand-built sites (the bandit hideout and
-the skeleton barrow), balanced by hand against a level-1-ish party. The next
-big feature turns that pair into *instances of a general system* that covers
-the whole game:
+*(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
+engine, the humanoid ladder (soldier→warlord), the generation layer
+(`quests.py`: threat math, room/site/quest builders, seeded worldgen with
+asserted XP coverage, race reskinning), the quest board in session play
+(`board`/`take`/`room`/`forge`), the JSON save, and `bench_quests.py` with
+the career sim. Mechanics now documented in rules.md's Quest System add-on;
+measured numbers in CLAUDE.md. What remains of the original vision is the
+STORY layer:)*
 
-*(2026-07: the first slice shipped — the **bestiary**: 17 catalog rows in
-six monster families spanning levels 1-18 with bench-calibrated level
-annotations (`sites.FOES` + `bench_bestiary.py`), the mechanics they needed
-(pain divisor, sweeps, regeneration, natural weapons), and the party-size
-counterweights (`rules.md` "Balanced for two"). What remains here is the
-GENERATION layer.)*
+- **The mundane-conqueror questline** (deferred from the first quest slice
+  by design call): the first major questline — ~6 authored quests pinned at
+  fixed levels (roughly 3/6/9/12/15/18) forming the game's difficulty
+  spine, running on the humanoid ladder (reskinned soldiery = the
+  conqueror's armies). Local quests then pick up "local effect of the main
+  quest" template tags.
+- **The hellish-forces questline** — parked until the tier above the dragon
+  exists: its payoff enemies (demons) are authored one-offs on the Heroes
+  table, which wants the magic phase. Early cells (cults = humanoids,
+  summoned beasts) could ship sooner as flavor.
+- **Progression frames** (guild advancement, the legendary-smith arc) —
+  narrative wrappers around the same combat quests; a line of world-building
+  each, no mechanics. Cheap once questlines exist as a concept.
+- **Leveled quest boards** — the long-term shape: ~5 level-banded quest sets
+  per settlement so every party level finds work; today's boards roll levels
+  randomly in one band per settlement kind (that randomness is v1's
+  placeholder, kept on purpose).
 
-- **Per-level pool growth.** The decided curve (rules.md, the 1-20
-  doctrine): DEX/STR fixed at creation forever; **+1 HP, +1 STA, +1 Power
-  per two levels** on level-up. Decided but NOT yet in the engine —
-  `bench_bestiary.py` applies it by hand to its reference parties, so
-  implementing it is mostly moving that block into `award_xp`'s level-up
-  path (and re-running every harness). The natural next step.
-- **DM tools for authoring opponents and dungeons.** Given a target level and
-  a narrative brief ("a wolf-den for a level-2 party", "a cursed chapel,
-  tough side of fair"), the DM should be able to generate or assemble foes,
-  rooms, and rewards *without hand-tuning against the sims each time* —
-  the system encodes what the two hand-built sites taught us about pacing
-  (set encounters, room counts, attrition budget, reward scale), drawing
-  foes from the bestiary by its level annotations. Level-band gaps between
-  catalog rows (6-7, 15-17, 19-20) are filled by scaled humanoid rosters and
-  pack-size/mixed-pack assembly, not new monster rows.
-- **Quests as the frame.** The player picks work at a level and risk of their
-  choosing — usually a choice of easier vs harder quests — with gold/XP
-  rewards scaled by the encounter system, so "which fight do I take" stays
-  the core between-fights decision as the game grows past two sites.
-
-**Test criteria:** "N foes of level L" maps to a predictable difficulty the
-player can learn to *feel*; a DM-assembled dungeon at level L lands in the
-intended clear-rate band without bespoke tuning; advancement against a fixed
-benchmark stays a noticeable jump (the `bench_training.py` criterion,
-generalized — `bench_bestiary.py`'s three-level columns are its seed).
-
-Everything below waits until this exists — magic, armor, and guns all need
-the level/power curve to hang their numbers on.
+**A career finding to design against** (bench_quests, 2026-07-08): under sim
+policy a full 1-20 career is roguelike-lethal — L5 46% / L11 14% / L20 ~0%,
+half the deaths at the rank-0 front door, and past ~L13 outleveling content
+stops working because the party saturates (skills capped, pools only) while
+the bestiary keeps climbing. The top band's missing player power is exactly
+the next systems below: masterwork gear, armor, magic. Decide eventually:
+is a playthrough a roguelike run (death = new party, the world persists) or
+should the curve soften?
 
 ---
 
@@ -133,7 +128,7 @@ the level/power curve to hang their numbers on.
 - ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,
   the engine is training — DEX/STR stay fixed at creation (natural human cap
   6; only magic/items transcend, to ~double); levels grow the POOLS (+1
-  HP/STA/Power per two levels, pending implementation — see "Next up").
+  HP/STA/Power per two levels — in the engine since 2026-07).
   Doctrine lives in rules.md ("The ceilings, and what levels grow").
 - **CHA / party mechanics** — underdefined by design; detail when that layer
   is next up.

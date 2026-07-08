@@ -84,6 +84,8 @@ REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 # quest at the bandit hideout) is exactly one level-1 level-up; the next level
 # takes two clears (or one run at the 3x-paying barrow).
 XP_LEVEL_STEP = 100
+LEVEL_CAP = 20          # the game runs levels 1-20 (rules.md, the doctrine);
+                        # XP past the cap accumulates to no effect
 # XP pays the JOB, not the head (2026-07 party-size counterweight): awards are
 # quoted at the two-hero baseline and each member earns amount * BASELINE /
 # party size. A duo gets the listed numbers unchanged; four swords split the
@@ -93,6 +95,12 @@ XP_LEVEL_STEP = 100
 # purse is shared, quests pay flat).
 XP_PARTY_BASELINE = 2
 SKILL_POINTS_PER_LEVEL = 1
+# Levels pour into the POOLS (the 1-20 doctrine, rules.md): DEX/STR stay
+# fixed at creation forever; each POOL_GROWTH_LEVELS levels add +1 HP, +1 STA,
+# +1 Power. Total growth at level L is (L-1) // 2 -- the odd levels (3, 5,
+# 7...) each add one -- which is exactly the curve bench_bestiary.py's
+# reference parties were calibrated with when it was still applied by hand.
+POOL_GROWTH_LEVELS = 2
 TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to pressure rolls
                         # (rank n costs n skill points: cheap to start, dear to max)
 
@@ -110,18 +118,50 @@ DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
 
-# Site rewards. The bandit hideout (sites.py) is the STARTER site
-# and pays the base rate -- a full clear (3 encounters + quest) is exactly the
-# level-1 -> 2 XP cost, so the first clear is a level-up. The skeleton barrow
-# is the TOUGH site (tireless undead in numbers) and pays 3x: farm the bandits
-# for training first, then take the barrow for real wages.
-ENCOUNTER_XP = 15       # base per-encounter award (starter-site scale)
-QUEST_XP = 55
-QUEST_GOLD = 15
-BARROW_REWARD_MULT = 3  # the barrow is the tough site
-BARROW_ENCOUNTER_XP = ENCOUNTER_XP * BARROW_REWARD_MULT
-BARROW_QUEST_XP = QUEST_XP * BARROW_REWARD_MULT
-BARROW_QUEST_GOLD = QUEST_GOLD * BARROW_REWARD_MULT
+# Site rewards scale with the SITE'S LEVEL, not with which site it happens to
+# be (2026-07, the quest system): the level on the board IS the pay grade, so
+# beating work above your level pays above your weight class by construction,
+# and easy work pays less -- no separate under/over-level bonus needed. The
+# anchor: a level-1 site (the bandit hideout: 3 encounters + quest) pays
+# exactly the level-1 -> 2 XP cost, so a fresh duo's first clear is a
+# level-up. From there pay grows by HALF the anchor per level --
+# site_xp_total(L) = SITE_XP_PER_LEVEL * (L + 1) -- while the level cost
+# grows by the full step, so leveling SLOWS with rank: one at-level site per
+# level at the start, settling toward two. (~35 at-level site clears from 1
+# to 20; see bench_quests.py for the measured career pace.)
+# Inside a site the hideout's split is kept: ~ENCOUNTER_XP_SHARE of the XP is
+# paid room by room as encounters fall, the rest as the site-clear lump.
+SITE_XP_PER_LEVEL = 50
+ENCOUNTER_XP_SHARE = 0.45   # fraction of a site's XP paid per-encounter
+GOLD_PER_SITE_LEVEL = 15    # a level-L site pays this * L gold on completion
+ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- equals
+                        # a level-1 three-room site's per-encounter award
+QUEST_XP = 55           # the level-1 site-clear lump (the hideout's quest pay)
+QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
+
+
+def site_xp_total(level: int) -> int:
+    """Total XP a level-L site pays (encounters + site-clear lump), quoted at
+    the duo baseline like every award."""
+    return SITE_XP_PER_LEVEL * (level + 1)
+
+
+def site_encounter_xp(level: int, rooms: int) -> int:
+    """The per-encounter share of a level-L site's pay, split over its rooms.
+    L1 x 3 rooms = 15, the hideout's historic rate."""
+    return max(1, round(site_xp_total(level) * ENCOUNTER_XP_SHARE / rooms))
+
+
+def site_clear_xp(level: int, rooms: int) -> int:
+    """The site-clear (quest) XP lump: whatever the encounter shares left.
+    L1 x 3 rooms = 55, the hideout's historic rate."""
+    return site_xp_total(level) - rooms * site_encounter_xp(level, rooms)
+
+
+def site_gold(level: int) -> int:
+    """Gold a level-L site pays on completion (flat to the party purse).
+    L1 = 15 and L3 = 45: both hand-built sites' historic rates."""
+    return GOLD_PER_SITE_LEVEL * level
 
 # --- Weapons (Phase 4 first slice) ------------------------------------------ #
 # A weapon is an OFFENSE package: it modifies the attack pressure roll, the
@@ -1465,6 +1505,27 @@ def xp_to_next(level: int) -> int:
     return XP_LEVEL_STEP * level
 
 
+def pool_growth_due(level: int) -> bool:
+    """Does REACHING `level` grant the pool growth? +1 HP/STA/Power per
+    POOL_GROWTH_LEVELS levels: the odd levels (3, 5, 7...) each add one,
+    so total growth at level L is (L-1) // 2."""
+    return level > 1 and (level - 1) % POOL_GROWTH_LEVELS == 0
+
+
+def grow_pools(h: Entity) -> None:
+    """One step of the level pool growth: +1 max HP, STA, and Power, the
+    current pools rising with their maxima (training hardens the living body,
+    it doesn't heal wounds -- a Down hero's HP stays where it fell)."""
+    h.max_hp += 1
+    if h.hp > 0:
+        h.hp += 1
+    h.sta += 1
+    h.cur_sta += 1
+    h.power += 1
+    h.cur_power += 1
+    h.hp_regen_per_night = max(1, round(h.max_hp / 7))
+
+
 def award_xp(party: list[Entity], amount: int, log: list[str],
              reason: str = "") -> None:
     """XP pays the JOB, not the head (the party-size counterweight): awards
@@ -1483,13 +1544,19 @@ def award_xp(party: list[Entity], amount: int, log: list[str],
         h.xp += share
         log.append(f"    {h.name} gains {share} XP{note} "
                    f"[{h.xp}/{xp_to_next(h.level)}]")
-        while h.xp >= xp_to_next(h.level):
+        while h.level < LEVEL_CAP and h.xp >= xp_to_next(h.level):
             h.xp -= xp_to_next(h.level)
             h.level += 1
             h.skill_points += SKILL_POINTS_PER_LEVEL
+            grown = ""
+            if pool_growth_due(h.level):
+                grow_pools(h)
+                grown = (f" Pools grow: HP {h.hp}/{h.max_hp}, "
+                         f"STA {h.cur_sta}/{h.sta}, "
+                         f"Power {h.cur_power}/{h.power}.")
             log.append(f"    *** {h.name} reaches level {h.level}! "
                        f"(+{SKILL_POINTS_PER_LEVEL} skill point, "
-                       f"{h.skill_points} unspent) ***")
+                       f"{h.skill_points} unspent){grown} ***")
 
 
 def train_combat_once(h: Entity, log: list[str]) -> bool:
@@ -1583,13 +1650,15 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
 
 
 def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
-                log: list[str], name: str) -> None:
-    """Clearing a whole site completes its quest: gold to the purse and an XP
-    lump to everyone still alive. Skill points are BANKED, not auto-spent --
+                log: list[str], name: str,
+                banner: str = "QUEST COMPLETE") -> None:
+    """Clearing a whole site pays its lump: gold to the purse and an XP lump
+    to everyone still alive (`banner` reads SITE CLEARED for the non-final
+    sites of a multi-site quest). Skill points are BANKED, not auto-spent --
     with two sinks now (combat training vs weapon proficiency) spending is a
     real player choice (session.py `train`); only the sim paths auto-train."""
     log.append("")
-    log.append(f"  *** QUEST COMPLETE: {name}. Reward: {gold} gold. ***")
+    log.append(f"  *** {banner}: {name}. Reward: {gold} gold. ***")
     purse.gold += gold
     log.append(f"    The party purse holds {purse.gold} gold.")
     award_xp(party, xp, log, "quest")

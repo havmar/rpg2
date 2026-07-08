@@ -4,38 +4,51 @@ rpg.py's primitives (start_fight, group_combat, short_rest, long_rest, ...)
 are meant to be called on purpose, in whatever order the story wants (see
 CLAUDE.md, "The feel we're going for"). But each terminal call is a fresh
 Python process, so something has to hold party/clock/purse state *between*
-calls. That's all this file does: a thin CLI over rpg.py's functions and
-sites.py's content, with state pickled to .session_state.pkl (gitignored --
-a save file, not source) between invocations. It adds no game logic of its
-own; `python session.py --help` lists every subcommand, and each
-subcommand's --help carries its full rules. The play protocol (who decides
-what, one encounter per message, narration style) lives in dm.md.
+calls. That's all this file does: a thin CLI over rpg.py's functions,
+sites.py's content, and quests.py's generated world, with state written to
+save.json between invocations. It adds no game logic of its own;
+`python session.py --help` lists every subcommand, and each subcommand's
+--help carries its full rules. The play protocol (who decides what, one
+encounter per message, narration style) lives in dm.md.
+
+THE SAVE IS A PLAIN JSON FILE (save.json, beside this script) on purpose:
+  - it survives sessions and machines -- commit it and the playthrough
+    travels with the repo;
+  - it is the DM's OVERRIDE SURFACE: when the story needs what no command
+    provides (grant gold, mend a wound, invent a foe's aftermath), edit the
+    file directly between commands -- every command reloads it fresh.
+    Weapons are stored by catalog name ("weapon": "katana"); everything
+    else is the literal field. The "rng" blob is the one part not meant
+    for hands.
 
 The first hero rolled (party[0]) is the PLAYER CHARACTER; the rest are
 companions. PC death ends the game even if a companion stands.
 
 The shape of a playthrough:
   new / status / levelup                    -- rolling and reading the party
-  hideout ROOM / barrow ROOM / fight N      -- one encounter (may PAUSE)
+  board / show QID / take QID / room        -- the quest board (the game)
+  hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
   resume [...] / retreat                    -- settle a paused fight
-  rest / camp / quest / buy / give / train / use / heal
+  rest / camp / award / buy / give / train / use / heal
                                             -- the between-fights layer
+  forge                                     -- DM-built quest, off the board
 """
 from __future__ import annotations
 
 import argparse
-import pickle
+import dataclasses
+import json
 import random
 from pathlib import Path
 
 from rpg import (
-    Clock, CombatLog, Purse, POTION_KINDS, WEAPONS, ENCOUNTER_XP,
-    TRAINING_MAX, PROFICIENCY_MAX,
+    Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
+    ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
     make_party, stat_line, progress_line, fallen_weapons_line,
-    xp_to_next,
+    xp_to_next, site_encounter_xp, site_clear_xp, site_gold,
     start_fight, group_combat, party_wiped,
     attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
@@ -46,9 +59,11 @@ from rpg import (
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
 )
-from sites import SITES, FOES, BANDIT_KINDS, make_foe, roster_lines
+from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
+from quests import (generate_world, forge_quest, board_lines,
+                    quest_detail_lines, quest_line)
 
-STATE_PATH = Path(__file__).parent / ".session_state.pkl"
+STATE_PATH = Path(__file__).parent / "save.json"
 
 # Off-script foe kinds (`fight N --type ...`): any catalog kind by name, or
 # "bandit" for a random living foe from the bandit pool.
@@ -61,14 +76,125 @@ def _spawn_foe(kind: str, rng, n: int):
     return make_foe(kind, n, rng)
 
 
+# --------------------------------------------------------------------------- #
+# The save file (JSON in, JSON out; see the module docstring)
+# --------------------------------------------------------------------------- #
+
+def _weapon_ref(w: Weapon | None):
+    """A weapon serializes as its catalog name when it IS the catalog entry
+    (the hand-editable normal case); a one-off instance serializes whole."""
+    if w is None:
+        return None
+    if WEAPON_INDEX.get(w.name) == w:
+        return w.name
+    return dataclasses.asdict(w)
+
+
+def _weapon_from(ref) -> Weapon | None:
+    if ref is None:
+        return None
+    if isinstance(ref, str):
+        return WEAPON_INDEX[ref]
+    ref = dict(ref)
+    ref["tags"] = tuple(ref.get("tags", ()))
+    return Weapon(**ref)
+
+
+def _entity_to_dict(e: Entity) -> dict:
+    d = dataclasses.asdict(e)
+    d["weapon"] = _weapon_ref(e.weapon)
+    return d
+
+
+def _entity_from_dict(d: dict) -> Entity:
+    d = dict(d)
+    d["weapon"] = _weapon_from(d["weapon"])
+    e = Entity(**d)
+    # __post_init__ resets the live tracks to full; restore the saved state.
+    e.hp = d["hp"]
+    e.cur_sta = d["cur_sta"]
+    e.cur_power = d["cur_power"]
+    return e
+
+
+def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
+    if pending is None:
+        return None
+    return {
+        "foes": [_entity_to_dict(f) for f in pending["foes"]],
+        "fired": [[kind, h.name] for kind, h in pending["fired"]],
+        "round": pending["round"],
+        "crossings": [list(c) for c in pending["crossings"]],
+        "xp": pending["xp"],
+        "site": pending["site"],
+        "room": pending["room"],
+        "quest": pending.get("quest"),
+    }
+
+
+def _pending_from_dict(d: dict | None, party: list) -> dict | None:
+    if d is None:
+        return None
+    by_name = {h.name: h for h in party}
+    return {
+        "foes": [_entity_from_dict(f) for f in d["foes"]],
+        "fired": {(kind, by_name[name]) for kind, name in d["fired"]},
+        "round": d["round"],
+        "crossings": [tuple(c) for c in d["crossings"]],
+        "xp": d["xp"],
+        "site": d["site"],
+        "room": d["room"],
+        "quest": d.get("quest"),
+    }
+
+
 def save(state: dict) -> None:
-    with open(STATE_PATH, "wb") as f:
-        pickle.dump(state, f)
+    party = state["party"]
+    rng_version, rng_internal, rng_gauss = state["rng"].getstate()
+    doc = {
+        "party": [_entity_to_dict(h) for h in party],
+        "clock": {"day": state["clock"].day,
+                  "short_rests_used": state["clock"].short_rests_used},
+        "purse": {"gold": state["purse"].gold},
+        "foe_count": state["foe_count"],
+        "active_quest": state.get("active_quest"),
+        "world": state.get("world"),
+        "pending": _pending_to_dict(state.get("pending"), party),
+        "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
+                                              for f in rec["foes"]],
+                                     "day": rec["day"]}
+                  for (site, room), rec in state.get("rooms", {}).items()},
+        "rng": [rng_version, list(rng_internal), rng_gauss],
+    }
+    with open(STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(doc, f, indent=1)
+        f.write("\n")
 
 
 def load() -> dict:
-    with open(STATE_PATH, "rb") as f:
-        return pickle.load(f)
+    with open(STATE_PATH, encoding="utf-8") as f:
+        doc = json.load(f)
+    party = [_entity_from_dict(d) for d in doc["party"]]
+    rng = random.Random()
+    v, internal, gauss = doc["rng"]
+    rng.setstate((v, tuple(internal), gauss))
+    rooms = {}
+    for key, rec in doc.get("rooms", {}).items():
+        site, room = key.rsplit("#", 1)
+        rooms[(site, int(room))] = {
+            "foes": [_entity_from_dict(f) for f in rec["foes"]],
+            "day": rec["day"]}
+    return {
+        "party": party,
+        "clock": Clock(**doc["clock"]),
+        "purse": Purse(**doc["purse"]),
+        "rng": rng,
+        "foe_count": doc["foe_count"],
+        "active_quest": doc.get("active_quest"),
+        "world": doc.get("world"),
+        "pending": _pending_from_dict(doc.get("pending"), party),
+        "rooms": rooms,
+    }
 
 
 def role_tag(party: list, h) -> str:
@@ -110,13 +236,21 @@ def require_no_pending(state: dict) -> bool:
 def cmd_new(args: argparse.Namespace) -> None:
     rng = random.Random(args.seed)
     party = make_party(rng)
+    world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
+                                            # whole playthrough, world and all
+    world = generate_world(world_seed)
     state = {"party": party, "clock": Clock(), "purse": Purse(), "rng": rng,
-              "foe_count": 0, "pending": None, "rooms": {}}
+             "foe_count": 0, "pending": None, "rooms": {},
+             "world": world, "active_quest": None}
     save(state)
     print(f"New party rolled (seed={args.seed}):")
     for h in party:
         print(f"  {role_tag(party, h)} " + stat_line(h))
     print(f"The player character is {party[0].name} -- if they die, game over.")
+    names = ", ".join(f"{s['name']} ({s['race']} {s['kind']})"
+                      for s in world["settlements"])
+    print(f"The world holds {len(world['quests'])} posted quests across: "
+          f"{names}. See them with `board`.")
 
 
 def cmd_status(args: argparse.Namespace) -> None:
@@ -128,6 +262,24 @@ def cmd_status(args: argparse.Namespace) -> None:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
         print(" " * 14 + progress_line(h))
+    world = state.get("world")
+    if world:
+        open_q = sum(1 for q in world["quests"].values()
+                     if q["status"] == "open")
+        print(f"  Board: {open_q} open quest(s) across "
+              f"{len(world['settlements'])} settlement(s) -- see `board`.")
+    qid = state.get("active_quest")
+    if qid:
+        q = world["quests"][qid]
+        if q["status"] == "done":
+            print(f"  Active quest [{qid}] {q['name']} is COMPLETE -- "
+                  f"take a new one.")
+        else:
+            cur = q["next"]
+            s = q["sites"][cur["site"]]
+            print(f"  Active quest: [{qid}] L{q['level']} {q['name']} -- "
+                  f"next: {s['name']} (L{s['level']}), room "
+                  f"{cur['room'] + 1}/{len(s['rooms'])}. Fight it with `room`.")
     for (site, room), rec in sorted(state.get("rooms", {}).items()):
         standing = sum(1 for f in rec["foes"] if not f.dead)
         print(f"  Unfinished: {site} room {room} -- {standing} foe(s) still "
@@ -220,11 +372,13 @@ def cmd_levelup(args: argparse.Namespace) -> None:
 
 def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
-                      room: int | None = None) -> None:
+                      room: int | None = None,
+                      quest: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE at a trigger (STA <= 2 / half HP, once each) -- then award and
     persist. On a pause the fight is saved as `pending` and the turn goes
-    back to the player (resume / retreat next message)."""
+    back to the player (resume / retreat next message). `quest` ties the
+    encounter to a board quest: clearing the room advances its cursor."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     fired: set[str] = set()
@@ -233,7 +387,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
-            "fired": fired, "round": pause.round,
+            "quest": quest, "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
         }
         print_combat(log)
@@ -241,12 +395,41 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         print_pause_menu(state)
         save(state)
         return
-    finish_encounter(state, log, foes, encounter_xp, site=site, room=room)
+    finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
+                     quest=quest)
+
+
+def advance_quest(state: dict, log: list[str], qid: str) -> None:
+    """The active quest's cleared room: move the cursor. Finishing a site
+    pays its clear lump + gold (each site pays its own way -- the level IS
+    the pay grade); finishing the last site closes the quest."""
+    quest = state["world"]["quests"][qid]
+    party, purse = state["party"], state["purse"]
+    cur = quest["next"]
+    site = quest["sites"][cur["site"]]
+    cur["room"] += 1
+    if cur["room"] < len(site["rooms"]):
+        return
+    n_rooms = len(site["rooms"])
+    last_site = cur["site"] == len(quest["sites"]) - 1
+    banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
+    award_quest(party, purse, site_gold(site["level"]),
+                site_clear_xp(site["level"], n_rooms), log,
+                f"{quest['name']} -- {site['name']}", banner=banner)
+    cur["site"] += 1
+    cur["room"] = 0
+    if last_site:
+        quest["status"] = "done"
+    else:
+        nxt = quest["sites"][cur["site"]]
+        log.append(f"  (next: {nxt['name']}, L{nxt['level']}, "
+                   f"{len(nxt['rooms'])} encounter(s))")
 
 
 def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
-                     room: int | None = None) -> None:
+                     room: int | None = None,
+                     quest: str | None = None) -> None:
     """The melee actually ended: wipe check, awards, loot, persist."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     state["pending"] = None
@@ -268,6 +451,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
             log.append(weapons_left)
+        if quest is not None:
+            advance_quest(state, log, quest)
 
     print_combat(log)
     save(state)
@@ -348,6 +533,153 @@ def cmd_site(args: argparse.Namespace) -> None:
                       site=site.key, room=args.room)
 
 
+def _get_quest(world: dict, ref: str) -> dict | None:
+    """Quest lookup by id, forgiving about the exact spelling (q7 / q07 / 7)."""
+    ref = ref.lower().lstrip("q")
+    for qid, quest in world["quests"].items():
+        if qid.lstrip("q").lstrip("0") == ref.lstrip("0"):
+            return quest
+    print(f"No quest {ref!r} on the board. See `board`.")
+    return None
+
+
+def cmd_board(args: argparse.Namespace) -> None:
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    key = None
+    if args.settlement:
+        want = args.settlement.lower()
+        match = [s for s in world["settlements"] if want in s["key"]]
+        if not match:
+            print(f"No settlement matches {args.settlement!r}. Settlements: "
+                  + ", ".join(s["name"] for s in world["settlements"]))
+            return
+        key = match[0]["key"]
+    for line in board_lines(world, key):
+        print(line)
+    if state.get("active_quest"):
+        print(f"(active quest: {state['active_quest']})")
+
+
+def cmd_show(args: argparse.Namespace) -> None:
+    state = load()
+    quest = _get_quest(state["world"], args.quest)
+    if quest is None:
+        return
+    for line in quest_detail_lines(quest):
+        print(line)
+
+
+def cmd_take(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    quest = _get_quest(state["world"], args.quest)
+    if quest is None:
+        return
+    if quest["status"] == "done":
+        print(f"[{quest['id']}] {quest['name']} is already complete.")
+        return
+    state["active_quest"] = quest["id"]
+    save(state)
+    print(f"The party takes the job: {quest_line(quest)}")
+    for line in quest_detail_lines(quest)[1:]:
+        print(line)
+    print("Fight the next room with `room`. Switching quests later keeps "
+          "this one's progress.")
+
+
+def cmd_room(args: argparse.Namespace) -> None:
+    """Resolve the active quest's next encounter (the board-quest sibling of
+    `hideout ROOM` / `barrow ROOM`). Rooms come in order -- the cursor is the
+    quest's memory; a room the party fled is re-fought against its recorded
+    survivors, same rule as the set sites."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    qid = state.get("active_quest")
+    if not qid:
+        print("No active quest. Pick one: `board`, then `take QID`.")
+        return
+    quest = state["world"]["quests"][qid]
+    if quest["status"] == "done":
+        print(f"[{qid}] {quest['name']} is complete -- take a new quest.")
+        return
+    party, rng = state["party"], state["rng"]
+    cur = quest["next"]
+    site = quest["sites"][cur["site"]]
+    room_i = cur["room"]
+    room_name, kinds = site["rooms"][room_i]
+    site_key = f"{qid}/s{cur['site'] + 1}"
+
+    log = CombatLog()
+    for h in [h for h in party if not h.dead]:
+        start_fight(h, log)
+
+    held = reclaim_room(state, site_key, room_i + 1)
+    banner = (f"=== {quest['name']} -- {site['name']} (L{site['level']}), "
+              f"room {room_i + 1}/{len(site['rooms'])}: {room_name}")
+    if held is None:
+        log.append(banner + " ===")
+        foes = []
+        for kind in kinds:
+            state["foe_count"] += 1
+            foes.append(make_foe(kind, state["foe_count"], rng,
+                                 display=quest["skins"].get(kind)))
+        for line in roster_lines(foes):
+            log.append("  " + line)
+    else:
+        foes, note = held
+        log.append(banner + ", again ===")
+        log.append(note)
+        for line in roster_lines([f for f in foes if f.alive]):
+            log.append("  " + line)
+
+    resolve_encounter(state, log, foes,
+                      site_encounter_xp(site["level"], len(site["rooms"])),
+                      site=site_key, room=room_i + 1, quest=qid)
+
+
+def cmd_forge(args: argparse.Namespace) -> None:
+    """The DM's quest creator: build a quest by the generator's own rules
+    (level in, rosters out) for scenes the board doesn't cover, and post it
+    to a settlement's board like any other quest."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    kinds = tuple(k.strip() for k in args.kinds.split(","))
+    unknown = [k for k in kinds if k not in FOES]
+    if unknown:
+        print(f"Unknown foe kind(s): {', '.join(unknown)}. "
+              f"Catalog: {', '.join(sorted(FOES))}.")
+        return
+    settlement = world["settlements"][0]
+    if args.settlement:
+        want = args.settlement.lower()
+        match = [s for s in world["settlements"] if want in s["key"]]
+        if not match:
+            print(f"No settlement matches {args.settlement!r}.")
+            return
+        settlement = match[0]
+    qid = f"q{len(world['quests']) + 1:02d}"
+    quest = forge_quest(qid, args.level, args.sites, args.rooms, kinds,
+                        args.name, state["rng"],
+                        settlement_key=settlement["key"])
+    world["quests"][qid] = quest
+    settlement["quests"].append(qid)
+    save(state)
+    print(f"Forged and posted at {settlement['name']}:")
+    for line in quest_detail_lines(quest):
+        print(line)
+
+
 def report_game_over(party: list, wiped: bool) -> None:
     """The two run-ending states: a total wipe, or the player character slain
     (party[0] is the PC -- see dm.md; the companion surviving doesn't save the
@@ -412,7 +744,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
         save(state)
         return
     finish_encounter(state, log, pending["foes"], pending["xp"],
-                     site=pending["site"], room=pending["room"])
+                     site=pending["site"], room=pending["room"],
+                     quest=pending.get("quest"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -464,7 +797,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         save(state)
         return
     finish_encounter(state, log, pending["foes"], pending["xp"],
-                     site=pending["site"], room=pending["room"])
+                     site=pending["site"], room=pending["room"],
+                     quest=pending.get("quest"))
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -489,7 +823,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
     save(state)
 
 
-def cmd_quest(args: argparse.Namespace) -> None:
+def cmd_award(args: argparse.Namespace) -> None:
     state = load()
     if not require_no_pending(state):
         return
@@ -660,11 +994,61 @@ def main() -> None:
     p = sub.add_parser("camp", help="long rest: full STA, weekly HP tick, advances a day")
     p.set_defaults(func=cmd_camp)
 
-    p = sub.add_parser("quest", help="award a site-clear quest bonus (gold + XP lump)")
+    p = sub.add_parser(
+        "board",
+        help="the quest board: every settlement's posted quests with level "
+             "(shown straight -- too easy and too hard both happen), shape, "
+             "and pay. Optionally filter to one settlement.")
+    p.add_argument("settlement", nargs="?", default=None)
+    p.set_defaults(func=cmd_board)
+
+    p = sub.add_parser(
+        "show",
+        help="one quest in full: description, sites, rooms, and what holds "
+             "each room (by skinned display name)")
+    p.add_argument("quest", help="quest id (q07, or just 7)")
+    p.set_defaults(func=cmd_show)
+
+    p = sub.add_parser(
+        "take",
+        help="make a board quest the ACTIVE quest; `room` then fights its "
+             "encounters in order. Switching quests keeps the old one's "
+             "progress -- come back to it whenever.")
+    p.add_argument("quest", help="quest id (q07, or just 7)")
+    p.set_defaults(func=cmd_take)
+
+    p = sub.add_parser(
+        "room",
+        help="resolve the ACTIVE quest's next encounter (the board-quest "
+             "sibling of `hideout ROOM`). Clearing a site pays its lump; "
+             "clearing the last site completes the quest. A fled room is "
+             "re-fought against its recorded survivors.")
+    p.set_defaults(func=cmd_room)
+
+    p = sub.add_parser(
+        "forge",
+        help="DM quest creator: generate a quest at a level/shape/foe-mix of "
+             "your choosing (same builder as worldgen) and post it to a "
+             "settlement's board. For scenes the board doesn't cover.")
+    p.add_argument("--level", type=int, required=True)
+    p.add_argument("--sites", type=int, default=1, choices=(1, 2, 3))
+    p.add_argument("--rooms", type=int, default=2, choices=(1, 2, 3),
+                   help="rooms per site")
+    p.add_argument("--kinds", required=True,
+                   help="comma-separated catalog foe kinds (the quest's pool)")
+    p.add_argument("--name", required=True)
+    p.add_argument("--settlement", default=None,
+                   help="where to post it (default: the capital)")
+    p.set_defaults(func=cmd_forge)
+
+    p = sub.add_parser(
+        "award",
+        help="off-script bonus: award gold + an XP lump by hand (board "
+             "quests pay themselves -- this is for improvised scenes)")
     p.add_argument("gold", type=int)
     p.add_argument("xp", type=int)
     p.add_argument("name")
-    p.set_defaults(func=cmd_quest)
+    p.set_defaults(func=cmd_award)
 
     p = sub.add_parser(
         "buy",

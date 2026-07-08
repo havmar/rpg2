@@ -23,9 +23,10 @@ open-ended and player-driven. The engine owns the numbers; the DM owns the
 fiction.
 
 **How play is driven:** the game is *two halves working together*.
-- **The scripts (`rpg.py`, `sites.py`)** are a library of mechanics primitives
-  and content — `start_fight`, `group_combat`, `short_rest`, `long_rest`,
-  `party_wiped`, the foe catalog, the set sites.
+- **The scripts (`rpg.py`, `sites.py`, `quests.py`)** are a library of
+  mechanics primitives and content — `start_fight`, `group_combat`,
+  `short_rest`, `long_rest`, `party_wiped`, the foe catalog, the set sites,
+  the quest generator and its world.
 - **Claude (as DM)** calls those primitives *on purpose*, in whatever order the
   story wants, and narrates over the result. There is deliberately **no
   autopilot** for pacing: e.g. nothing forces the day to end — Claude decides
@@ -80,27 +81,39 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the roadmap: planned features only**, in build order (next
-  up: the encounter & quest system), plus parked ideas and open questions.
+  up: major questlines & the story layer), plus parked ideas and open
+  questions.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and rests, progression,
   economy, random party generation, and the batch-sim policies
   (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
   everything else imports it. All tunable constants sit at the top.
-- `sites.py` — **the content.** The foe catalog (`FOES`, `make_foe`), the two
-  set sites (`SITES`: the bandit **hideout** = the starter, base pay; the
-  skeleton **barrow** = the tough site, 3x pay; room layouts in
-  `HIDEOUT_ROOMS` / `BARROW_ROOMS`), and `run_site`, the one site loop the
-  one-shot run and the batch sims share. **Both sites are set encounters —
-  the DM never invents their rosters.** The seed of the encounter & quest
-  system. One-shot: `python sites.py [--site hideout] [--seed N]
-  [--training N]`.
+- `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
+  `make_foe` — six monster families plus the humanoid ladder, every row
+  bench-calibrated; `make_foe(display=...)` is the reskin hook), the two
+  set sites (`SITES`: the bandit **hideout** = the starter, level 1; the
+  skeleton **barrow** = the tough site, level 3; room layouts in
+  `HIDEOUT_ROOMS` / `BARROW_ROOMS`; pay derives from `Site.level` via
+  rpg.py's site formulas), and `run_site`, the one site loop the one-shot
+  run and the batch sims share. **Both sites are set encounters — the DM
+  never invents their rosters.** One-shot: `python sites.py [--site
+  hideout] [--seed N] [--training N]`.
+- `quests.py` — **the quest & encounter generator** (rules.md, the Quest
+  System add-on): the threat math (all constants at the top, calibrated by
+  `bench_quests.py`), the room/site/quest builders, per-race quest
+  templates with reskin tables, and seeded worldgen with asserted XP
+  coverage to the level cap. `python quests.py [--seed N] [--demo]` prints
+  a generated world's board.
 - `session.py` — **the DM driver used to actually play.** A thin CLI over
-  rpg.py/sites.py that pickles party/clock/purse state to
-  `.session_state.pkl` (gitignored — a save file) between invocations, so
-  pacing decisions stay real turn-by-turn choices. Adds no game logic of its
-  own. `python session.py --help` lists every subcommand with its rules;
-  dm.md says which decisions belong to the player. Encounter commands print
-  the full log then the `--- PLAYER LOG ---` block the DM pastes into chat.
+  rpg.py/sites.py/quests.py that keeps party/clock/purse/world state in
+  **`save.json`** (plain JSON: committable, so a playthrough can travel
+  with the repo, and hand-editable — the DM's override surface, see dm.md)
+  between invocations, so pacing decisions stay real turn-by-turn choices.
+  Adds no game logic of its own. `python session.py --help` lists every
+  subcommand with its rules; dm.md says which decisions belong to the
+  player. Quest play: `board` / `show QID` / `take QID` / `room`, plus
+  `forge` (the DM quest creator). Encounter commands print the full log
+  then the `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -116,13 +129,21 @@ a pointer: what the file is, how it's run, where its docs are.
 - `bench_bestiary.py` — the bestiary calibration: each catalog row's
   reference encounter (`ref_pack` of it) vs reference duos at the annotated
   level and two levels either side; win/fled/wipe/stall/down rates. The
-  reference party applies the planned per-level pool growth by hand (see
-  plan.md) — re-check this file when the engine grows pools itself.
+  reference party grows its pools through the engine curve
+  (`rpg.grow_pools`) and buys training/proficiency monotonically.
   `python bench_bestiary.py [--trials N] [--kind wolf]`.
 - `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
   Re-run after touching the press or the melee loop.
   `python bench_party.py [--trials N]`.
+- `bench_quests.py` — the quest-generator calibration AND the career sim:
+  (1) generated at-level rooms vs the reference duo across levels 1-20,
+  (2) generated whole sites likewise, (3) full careers — fresh duo, fresh
+  world, play the board to the level cap or the grave; reports the
+  reached-level distribution, pace (days/quests), and board coverage.
+  **Re-run after touching quests.py's threat math, the bestiary, or the
+  reward formulas.** `python bench_quests.py [--trials N] [--careers N]
+  [--part enc|site|career]`.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -145,6 +166,7 @@ a pointer: what the file is, how it's run, where its docs are.
 
 ```
 python session.py new    # start an actual DM-driven playthrough (see dm.md)
+python quests.py --seed 1 --demo   # print a generated world's quest board
 python sites.py          # one-shot barrow run, full narrative log
 python sites.py --site hideout --seed 3   # one-shot starter site, reproducible
 python rpg.py            # same one-shot (delegates to sites.py)
@@ -153,6 +175,7 @@ python bench_training.py # wipe/clear rates per combat-training rank
 python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
+python bench_quests.py   # generated rooms/sites honesty + the career sim
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -170,12 +193,17 @@ mechanic *does* and *why* is rules.md's job.
   (`PAUSE_STA_TRIGGER`, `PAUSE_HP_FRACTION`, `PAUSE_ACTION_DEF_PENALTY`,
   `FLEE_BONUS`, `BERSERK_*`, `WAR_BREATH_*`), the graze floor
   (`GRAZE_FLOOR_MARGIN`), wound tiers (`TIER_HP`), progression
-  (`XP_LEVEL_STEP`, `TRAINING_MAX`, `PROFICIENCY_MAX`), economy
-  (`POTION_PRICE`, drop chances, quest rewards), weapons (the `WEAPONS`
-  catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances), hero roll
-  ranges (`HERO_*_RANGE`), and the party-size counterweights (`CROWD_CAP`
-  — the press; `XP_PARTY_BASELINE` — awards quoted at the duo, paid
-  `x 2 / party size`).
+  (`XP_LEVEL_STEP`, `LEVEL_CAP`, `POOL_GROWTH_LEVELS`, `TRAINING_MAX`,
+  `PROFICIENCY_MAX`), economy (`POTION_PRICE`, drop chances, and the
+  level-pay formulas `site_xp_total` / `site_encounter_xp` /
+  `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
+  `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
+  `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
+  hero roll ranges (`HERO_*_RANGE`), and the party-size counterweights
+  (`CROWD_CAP` — the press; `XP_PARTY_BASELINE` — awards quoted at the
+  duo, paid `x 2 / party size`). The quest generator's own knobs sit at
+  the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
+  `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -199,14 +227,25 @@ mechanic *does* and *why* is rules.md's job.
   via `train_combat`), `party_wiped`, `start_fight` (revive-only).
 - **The log** — `CombatLog` (full + `.player` levels; `_debug` / `_play`
   emit helpers so plain lists still work).
-- **Content** — `sites.py`: `FOES` (the bestiary: 17 stat blocks in six
-  families, each row with a bench-calibrated `level` annotation and
-  `ref_pack`), `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
-  `make_foe`, `SITES`, `HIDEOUT_ROOMS` / `BARROW_ROOMS`, `run_site` (the
-  sim loop), `roster_lines`.
-- **Session state** — `session.py`: one pickled dict (party, clock, purse,
-  rng, `pending` paused-fight record, `rooms` fled-room records). A paused
-  fight blocks every between-fights command until settled.
+- **Content** — `sites.py`: `FOES` (the bestiary: 22 stat blocks — six
+  monster families + the humanoid ladder — each row with a bench-calibrated
+  `level` annotation, `ref_pack`, and for the drilled soldiery a `training`
+  rank), `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
+  `make_foe` (+ the `display` reskin hook), `SITES`, `HIDEOUT_ROOMS` /
+  `BARROW_ROOMS`, `run_site` (the sim loop), `roster_lines`,
+  `WEAPON_INDEX` (name -> Weapon, the save file's reference table).
+- **Generation** — `quests.py`: `threat_value` / `build_room` /
+  `build_site_rooms` (the threat math), `TEMPLATES` / `EPIC_TEMPLATES`
+  (the per-race quest tables + reskins), `build_quest` / `forge_quest`,
+  `generate_world` (+ the coverage top-up), `quest_to_sites` (generated
+  quest -> `Site` instances for the sims), the board readout helpers.
+- **Session state** — `session.py`: one JSON document in `save.json`
+  (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
+  record, `rooms` fled-room records; entities/weapons via the
+  `_entity_*`/`_weapon_*` serializers). A paused fight blocks every
+  between-fights command until settled. Quest progress lives on each quest
+  (`next` cursor, `status`); `advance_quest` pays site lumps and closes
+  quests.
 
 ## Balance / tuning
 
@@ -287,15 +326,54 @@ rooms rarely produce): hideout rank 0 clear ~64.5 / wipe ~33 (reckless wipe
   L16: 48%). Provisional by design: final assembly tuning belongs to the
   encounter generator.
 
+**Measured numbers (2026-07-08, the quest system: pool growth + humanoid
+ladder + level-pay + the generator).** Full suite re-run; the tuned game is
+UNDISTURBED — hideout rank 0 clear 64.5 / wipe 32.6 (reckless 67.9), barrow
+3.6 / 94.5 (reckless 99.3), training ladder and party sweep identical, the
+weapons story holds (rapier/zweihander coin flip on precise, zweihander owns
+every swarm column, staff trails). Barrow PAY changed with the level
+formulas: 30 XP/encounter + 110 XP & 45 g on the clear (was 45/165/45 under
+the old 3x rule) — XP down a third, gold unchanged. New numbers:
+
+- **The humanoid ladder** (`bench_bestiary.py`, at-level win vs reference
+  duo): soldier L3 **81**, veteran L6 **63**, champion L10 **66**,
+  blademaster L15 **57**, warlord L19 **59** — deliberately the scary end
+  of the catalog band (elite duelists), each -2 column a wall until the
+  top band, where the +-2 gradient flattens for every row (the party
+  saturates: skills capped ~L13, pools only after — the pre-magic,
+  pre-masterwork band).
+- **Generated encounters** (`bench_quests.py`, at-level room at share 1.0):
+  win 55-93% across the whole 1-20 line — inside the calibrated catalog
+  band. The three rules that got it there (linear unit pricing measured
+  rooms ~15 levels hot): the crowding surcharge, the ~1.4-pack room cap,
+  and solo-boss rows fighting alone (all documented in rules.md's Quest
+  System add-on; knobs at the top of quests.py).
+- **Generated sites**: at-level clear ~66-78% at L1-5 (bracketing the
+  hideout's 64), ~42-62% mid-band, ~32-48% at 15-20; -2 a real wall.
+- **Careers** (fresh duo, fresh world, grind-below-level policy, camps
+  between rooms): reach **L5 46% / L8 29% / L11 14% / L14 5% / L20 ~0.3%**;
+  median death at L3-4 (the rank-0 front door claims ~a third of careers);
+  a capped career took ~167 days / ~31 quests. Per-quest death at the top
+  band stays 15-25% however you pick — the missing player power up there
+  is masterwork/armor/magic (see plan.md, "a career finding to design
+  against").
+- **A world posts ~26k XP** (1.35x the 19,000 a duo needs to reach L20),
+  asserted at generation; ~35-45 quests across ~6 settlements.
+
 **Difficulty levers, easiest first:** the room layouts
-(`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`), then survival tunables, then
-the pause/retreat layer, then weapons, then economy/progression, then the foe
-stat blocks (`sites.FOES` — **enemy DEX is the sharpest knife**: a single
-point moves clear rates by tens of percent), then the hero roll ranges
-(all constants: see the dev map above). **Always re-run `tune.py`,
-`bench_training.py`, `bench_weapons.py`, and `bench_bestiary.py` after
+(`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
+budget knobs (`quests.ROOM_SHARES`, `PACK_CAP`, `DUP_COST` — these move
+every generated site at once), then survival tunables, then the
+pause/retreat layer, then weapons, then economy/progression (the level-pay
+formulas set the whole game's pace now), then the foe stat blocks
+(`sites.FOES` — **enemy DEX is the sharpest knife**: a single point moves
+clear rates by tens of percent; the soldiery's `training` is the same knife
+for the ladder), then the hero roll ranges (all constants: see the dev map
+above). **Always re-run `tune.py`, `bench_training.py`,
+`bench_weapons.py`, `bench_bestiary.py`, and `bench_quests.py` after
 touching any of these** — small changes swing lethality, the attrition
-curve, the weapon matchup matrix, and the bestiary's level annotations.
+curve, the weapon matchup matrix, the level annotations, and the career
+curve.
 
 ## Conventions
 
@@ -309,27 +387,30 @@ curve, the weapon matchup matrix, and the bestiary's level annotations.
   over the log. Don't bake prose into the engine beyond terse event lines.
 - **Zero backwards compatibility.** This is an early prototype: never spend
   effort keeping saves or schemas loadable across changes. Rename and
-  restructure freely; any `.session_state.pkl` is disposable — when a change
-  breaks it, delete it and start a fresh game rather than writing migrations
-  or compat shims.
+  restructure freely; any `save.json` is disposable — when a change breaks
+  it, delete it and start a fresh game rather than writing migrations or
+  compat shims.
 - **Saves are disposable during development too.** Don't spend effort
-  preserving, backing up, or restoring `.session_state.pkl` while developing
-  or tuning: run `session.py new`, wreck the state with test games, move on.
+  preserving, backing up, or restoring `save.json` while developing or
+  tuning: run `session.py new`, wreck the state with test games, move on.
   A playthrough worth keeping is the exception the designer will name
-  explicitly, not the default to protect.
+  explicitly (commit its `save.json` — the format is plain JSON precisely
+  so a kept playthrough can travel with the repo), not the default to
+  protect.
 
 ## Not yet built (the point of the design)
 
 The between-fights layer is now substantially player choice: gold/XP flow,
 skill points are a real allocation (combat training vs weapon proficiency —
 nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
-shopping real decisions, and which site to run (starter hideout vs 3x-paying
-barrow) is the first "pick your fights" choice. The mid-fight layer exists
-too: the pause (drink / Berserk / War-Breath / retreat & chase, with fled
-rooms persisting). **The next big feature is the encounter & quest system**
-(see `plan.md`): player and encounter levels, the whole power curve, a
-monster/opponent catalog spanning it, and DM tools to build foes, encounters,
-and dungeons from a level number plus the narrative — the two hand-built
-sites become instances of a general system (`sites.py` is its seed). After
-that: magic/INT, armor, guns + ammo, named weapon instances, party
-composition. See plan.md for the full roadmap and the parked-ideas list.
+shopping real decisions, and **the quest board is the "pick your fights"
+layer at full size** — a generated world of leveled quests, levels shown
+straight, pay scaling with them. The mid-fight layer exists too: the pause
+(drink / Berserk / War-Breath / retreat & chase, with fled rooms
+persisting). **Next up: the story layer over the board** (see `plan.md`) —
+the mundane-conqueror questline as the authored difficulty spine, then
+progression frames (guilds, the legendary smith). After that: magic/INT,
+armor, guns + ammo, named weapon instances, party composition — and the
+career sim's finding that the 14-20 band lacks its player power until
+masterwork/armor/magic land. See plan.md for the full roadmap and the
+parked-ideas list.
