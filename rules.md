@@ -533,9 +533,10 @@ one mastered weapon (6); the caps and the ceiling were made for each other).
 you were born with — **fixed at creation, never raised by levels**. The
 natural human cap is **6**: 5 is the career elite (the veteran row above),
 6 the generational talent (the top of the hero roll). What a career grows is
-everything trainable: **levels pour into the pools** — the planned curve
-(plan.md) is **+1 HP, +1 STA, +1 Power per two levels** — plus the capped
-skills (training +5, proficiency +3). This split is also the balance-safe
+everything trainable: **levels pour into the pools** — **+1 HP, +1 STA, +1
+Power per two levels** (in the engine since 2026-07: `award_xp` grants the
+growth on each odd level) — plus the capped skills (training +5,
+proficiency +3). This split is also the balance-safe
 one: DEX double-dips (landing *and* severity through the margin), so
 per-exchange dominance stays behind the capped skills while levels buy
 staying power.
@@ -586,6 +587,7 @@ mightiest *beast*; the mightiest *enemies* are persons.
 | **Restless dead** | skeleton (2), ghoul (4), wight (8) | Tireless + slow to pain; the ghoul HUNGERS (it pursues, unlike the grave-bound); the wight is the tireless *duelist* with real DEX and lootable grave-steel | — (the exception rules) |
 | **Giant-kin** | ogre (5), troll (8), giant (12) | The severity cliff — every landed blow caps; the hole is a DEX low *for its band*. The troll REGENERATES (out-damage it or lose; fleeing it resets it); the giant SWEEPS | regeneration; the sweep |
 | **Drakes** | wyvern (10), drake (14), dragon (18) | Real DEX on a monster frame. The drake adds fire (fueled sweep); the dragon is a boss precisely because it has no hole at all | the fueled sweep (Power-paid breath) |
+| **The soldiery** | soldier (3), veteran (6), champion (10), blademaster (15), warlord (19) | The humanoid LADDER (2026-07): living fighters under exactly the party's rules at every band — no mechanic, no hole but their humanity. Fixed military steel rising to lootable quality blades; the top ranks are *drilled* (real combat training, the `drilled +N` roster tag — how a champion outfences you without a monster's DEX). The warlord is roughly the Legend row on the wrong side | — (training, the party's own bonus) |
 
 Natural weapons (fangs, claws, tusks, dragonfire — `NATURAL_WEAPONS` in
 `sites.py`) are part of the body: they never break, never break steel
@@ -614,8 +616,8 @@ serve:
 - **Equip gear** that shifts stats, soaks severity, or adds STA. *(Live now:
   weapons — buy plain quality steel, loot commons, drill proficiency.)*
 - **Pick your fights** — knowing the loop, choose opponents your build counters
-  and avoid your counters. *(Live now: farm the bandit hideout to train and
-  arm for the 3x-paying barrow.)*
+  and avoid your counters. *(Live now: the whole quest board — levels shown
+  straight, pay scaling with them; see the Quest System add-on.)*
 - **Compose the party** — a PC plus a companion (same stat framework) whose
   builds cover each other's weak matchup.
 
@@ -998,15 +1000,31 @@ gold buys staying power** — never the reverse.
   losing a companion mid-run). A duo gets the listed numbers unchanged; a
   solo earns double; four split the wages. Awarded per **encounter won**
   plus a lump for **completing a quest** (clearing a whole site).
-- **The curve.** Level L → L+1 costs `100 × L` XP. Anchors:
-  - Bandit hideout (the **starter** site — living foes who play by the
-    party's rules): **15 XP** per encounter, **55 XP** for the quest — a full
-    clear (3 rooms) is exactly 100 XP, so the *first clear is a level-up*; the
-    second level takes two clears.
-  - The skeleton barrow (the **tough** site — tireless undead in numbers)
-    pays **3×** (45 / 165) — brutal fights, real wages.
+- **The curve.** Level L → L+1 costs `100 × L` XP, capped at **level 20**
+  (the 1–20 doctrine below).
+- **Pay scales with the site's level** (2026-07, the quest system): a
+  level-L site pays `site_xp_total(L) = 50 × (L + 1)` XP — ~45% split
+  evenly per encounter as rooms fall, the rest as the site-clear lump — and
+  `15 × L` gold. The two rates this generalizes from:
+  - Bandit hideout (the **starter**, a level-1 site — living foes who play
+    by the party's rules): 15 XP per encounter, 55 XP + 15 g for the clear —
+    a full clear (3 rooms) is exactly 100 XP, so the *first clear is a
+    level-up*.
+  - The skeleton barrow (the **tough** site, level 3): 30 / 110 + 45 g.
+
+  The shape is deliberate: pay grows by *half* the level-1 anchor per level
+  while the level cost grows by the full step, so **leveling slows with
+  rank** — one at-level site per level at the start, settling toward two
+  (~35 at-level site clears from 1 to 20). And because pay follows the
+  SITE'S level, not the party's, punching up pays above your weight class
+  and easy work pays less — no separate under/over-level bonus exists or is
+  needed.
 - **Level-ups grant skill points** (1 per level), spent on skills — free
   allocation, never use-based (the Fallout principle from the design record).
+- **Level-ups grow the pools** (the doctrine's curve, in the engine since
+  2026-07): reaching each odd level (3, 5, 7, ...) adds **+1 max HP, +1 max
+  STA, +1 max Power** — `(L-1)//2` total growth at level L. DEX and STR
+  never move (see *The ceilings*).
 
 ## Combat training — the general fighting skill
 
@@ -1049,7 +1067,8 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
 
 - **The purse is shared** (party-level); potions are per-hero.
 - **Income:**
-  - **Quests:** bandit hideout (starter) **15 g**, skeleton barrow (tough) **45 g**.
+  - **Quests:** a level-L site pays **15 × L gold** on the clear (the
+    hideout's 15 g and the barrow's 45 g are the L1 and L3 rates).
   - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
     potion) and **10%** chance of a stray potion (random kind, to a random
     hero). Trash-tier on purpose — drops season the run, quests fund it.
@@ -1072,3 +1091,78 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   the two circulating kinds), plus the rolled starting weapon. That's the
   whole kit; from then on the stock only moves through drops, purchases,
   and use.
+
+---
+
+# The Quest System — Add-on (2026-07)
+
+The generation layer over the bestiary: a generated **world** of settlements
+posting combat **quests** (1–3 sites of 1–3 encounters), every roster
+assembled from the catalog by its level annotations. `quests.py` owns it;
+`bench_quests.py` is its calibration harness. The two hand-built sites stay
+hand-built — they are the anchors the formulas were fitted to.
+
+## The shape
+
+- **Quest = description + encounters, nothing more.** Deliberately dreamlike:
+  the system provides the fights and one line of premise; the DM invents the
+  telling. Local quests are formulaic placeholders (a race stereotype × a
+  themed foe pool), not authored content.
+- **Hierarchy:** a quest has 1–3 **sites** (weighted toward fewer); a site
+  has 1–3 **rooms** (encounters). Multi-site quests escalate: earlier sites
+  run at level −1, −2 from the quest's level. A site pays its own lump (XP +
+  gold, the level formulas) when cleared; the last site completes the quest.
+- **The world is generated once per playthrough, seeded** (`session.py new`),
+  and lives in the save: one capital, three towns (distinct races), villages
+  — quest levels rolled uniformly in a settlement band (village 1–8, town
+  1–14, capital 1–20) and **displayed straight**: too easy and too hard both
+  appear, reading the board is the decision. Worldgen tops the board up
+  until it posts **1.35× the XP a duo needs to reach level 20** — coverage
+  is asserted at generation, and the surplus is grind room (a party that
+  only took at-level work would die compounding the risk).
+- **Five races, one catalog: reskinning.** Display name is fiction, the stat
+  row is mechanics — a goblin "Scrap-Hound" is the wolf row, a dwarf
+  "Hold-Lord" the wight. Balance never forks on a skin.
+
+## The threat math (dumb on purpose, sim-verified)
+
+All of it lives in `quests.py` as tuned constants; `bench_quests.py` is the
+proof. One catalog level ≈ **×1.5 threat**; a member of a row is worth
+`1.5^level / ref_pack` units; a **site's whole roster is ~2 at-level
+reference encounters' worth**, split over its rooms in rising shares (the
+rule the hand-built sites turned out to already follow). Three hard lessons
+the bench taught, now rules:
+
+- **Crowding surcharge:** room members are priced by pack-equivalents — a
+  body bought while N whole packs already stand costs `2^N` its base value
+  (a 4th skeleton is cheap; anything joining a dragon is not). Action
+  economy against a duo scales super-linearly; linear pricing measured
+  rooms ~15 levels hot.
+- **A room never exceeds ~1.4 pack-equivalents**, whatever the pricing — a
+  reference pack plus a shade is all the bestiary bench ever validated.
+- **Solo-boss rows (ref_pack 1) fight alone.** Their fairness against a duo
+  IS the party's action-economy advantage; a second apex body deletes it.
+
+The final room of a site may carry an anchor up to ~1.35× its budget — the
+boss rule: the ogre quest ends with the ogre.
+
+**Measured honesty** (`bench_quests.py`, 200/cell): generated at-level rooms
+win 55–93% against the reference duo across the whole 1–20 line — the same
+band the calibrated catalog rows sit in — and generated at-level sites clear
+~66–78% at levels 1–5 (bracketing the hideout's ~64%), harsher above. The
+−2 column is a real wall everywhere below the top band; past ~level 13 the
+±2 gradient flattens because the *party* saturates (skills capped, pools
+only) — the known pre-magic, pre-masterwork top band.
+
+## What careers measure (the finding, 2026-07-08)
+
+The career sim (fresh duo, fresh world, grind-below-level policy, camps
+between rooms) reaches **L5 46% / L8 29% / L11 14% / L14 5% / L20 ~0%**;
+median death at level 3-4. Two causes, both design facts rather than
+generator bugs: the rank-0 front door (the hideout's own ~33% wipe rate,
+compounded once per career) and the top band, where outleveling content
+stops working and per-quest death stays 15–25% however you pick. A capped
+career took ~167 days and ~31 quests. The sims understate the player — but
+a full 1–20 career under current systems is roguelike-lethal, and the top
+band waits on masterwork gear, armor, and magic (plan.md) for its missing
+player power.

@@ -15,9 +15,8 @@ The reference duo is PROVISIONAL, built to the rules.md progression doctrine:
   - skill points (L-1) spent training-first, leftovers into proficiency with
     the wielded weapon (the sims' greedy policy, plus the second sink);
   - quality steel from level 4 (katana -- the reliable all-rounder);
-  - the DOCTRINE POOL GROWTH, +1 HP / +1 STA / +1 Power per two levels --
-    this is the planned per-level curve (plan.md) applied by hand here, since
-    the engine does not auto-grow pools yet. Re-check this file when it does.
+  - the engine's pool growth (+1 HP / +1 STA / +1 Power per two levels --
+    rpg.grow_pools, the same curve award_xp applies on level-up).
 
 Run:  python bench_bestiary.py [--trials N] [--kind wolf]
 """
@@ -58,14 +57,10 @@ def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
     if rank:
         h.proficiency[h.weapon.name] = rank
     buy_training(rpg.TRAINING_MAX)
-    grow = (level - 1) // 2
-    h.max_hp += grow
-    h.hp = h.max_hp
-    h.sta += grow
-    h.cur_sta = h.sta
-    h.power += grow
-    h.cur_power = h.power
-    h.hp_regen_per_night = max(1, round(h.max_hp / 7))
+    for lvl in range(2, level + 1):
+        if rpg.pool_growth_due(lvl):
+            rpg.grow_pools(h)      # the engine curve (+1 HP/STA/Power per
+                                   # two levels), applied level by level
     return h
 
 

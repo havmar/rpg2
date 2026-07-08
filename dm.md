@@ -6,10 +6,44 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Starting and continuing
 
-- New game: `python session.py new` (add `--seed N` for a reproducible party).
+- New game: `python session.py new` (add `--seed N` for a reproducible party
+  AND world -- `new` also generates the playthrough's whole quest world).
 - Continuing: `python session.py status` to see where things stand.
-- State persists in `.session_state.pkl` between terminal calls; every
-  subcommand is listed in `session.py --help`.
+- State persists in **`save.json`** between terminal calls; every subcommand
+  is listed in `session.py --help`. The save is plain JSON on purpose:
+  commit it and the playthrough travels with the repo.
+- **Editing `save.json` by hand is the DM's override.** When the story needs
+  what no command provides -- grant gold, mend a wound, hand out a potion,
+  resurrect a companion the fiction says survived -- edit the file between
+  commands; every command reloads it fresh. Weapons are stored by catalog
+  name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use it for
+  story, not convenience: the numbers are the game.
+
+## The quest board (the game's spine)
+
+The world holds a generated board of combat quests -- settlements, each
+posting jobs at a rolled level, 1-3 sites of 1-3 encounters each. **Which
+quest to take is the player's core decision**, and the board gives them the
+numbers to make it:
+
+- `board` (or `board SETTLEMENT`) lists every quest: **the level is shown
+  straight and rewards scale with it** -- too easy and too hard both appear
+  on purpose. Reading the board IS the decision; a quest ~2 levels above the
+  party is a wall, ~2 below is safe wages. Advise honestly ("L9 against you
+  at 4 is death, not drama"), then let them pick.
+- `show QID` details one quest: description, sites, and what holds each room.
+- `take QID` makes it active; `room` fights its next encounter (same pause /
+  retreat machinery as the set sites). Progress is remembered per quest --
+  switching quests and coming back later is fine.
+- Sites pay themselves: each cleared site pays its lump (gold + XP) and the
+  last one completes the quest -- no manual award needed. `award GOLD XP
+  NAME` remains for off-script scenes only.
+- `forge --level L --sites N --rooms N --kinds a,b,c --name "..."` builds a
+  quest by the generator's rules for scenes the board doesn't cover, and
+  posts it like any other. Prefer it over improvising rosters by hand.
+- The quest descriptions are one-line prompts, not stories -- **the fiction
+  around the fights is yours to invent** (deliberately so: the system
+  provides the combat; the DM provides the quest's telling).
 
 ## The player character
 
@@ -24,9 +58,9 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Turn protocol -- ONE encounter per message
 
-- Resolve **at most one encounter** (`hideout` / `barrow` / `fight`) per DM
-  message, then stop and hand the turn back to the player. Never chain fights,
-  even if the next room seems obvious.
+- Resolve **at most one encounter** (`room` / `hideout` / `barrow` / `fight`)
+  per DM message, then stop and hand the turn back to the player. Never chain
+  fights, even if the next room seems obvious.
 - **Paste the PLAYER LOG into the chat.** Every encounter command prints the
   full debug log and then a `--- PLAYER LOG ---` block: headlines only, HP
   loss folded in, no dice math. Copy that block into your message as-is --
@@ -84,22 +118,22 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   most of it is trash and one clause is enough ("a shortsword among the
   bodies, better than your club if you want it"); a quality blade is a real
   find and deserves a beat. `give HERO WEAPON` hands one over.
-- **DM decisions:** quest rewards on a site clear (`quest 15 55 ...` for the
-  hideout, `quest 45 165 ...` for the barrow), granting found/looted weapons
+- **DM decisions:** off-script bonuses (`award GOLD XP NAME` -- board quests
+  and the two set sites pay themselves now), granting found/looted weapons
   (`give HERO WEAPON` -- e.g. the fallen bruiser's longsword; commons are
   trivial loot, quality steel is a real find, masterwork/legendary are story
   events), and general pacing -- but pacing choices that spend player
   resources (rests, camping) belong to the player.
-- **The two sites are SET encounters** -- balanced during development, never
-  improvised at the table. Run them room-by-room with `hideout ROOM` and
-  `barrow ROOM` (1-3 each; fixed foe counts/rosters). `fight N
-  [--type wolf|troll|...]` is only for off-script scenes the story invents
-  (a road ambush, a beast on the trail), not for the sites. Every bestiary
-  row is spawnable this way -- **check its level annotation first**
-  (`sites.FOES`; quoted for a duo AT that level, and the reference pack
-  size matters: 4 wolves is the level-1 fight, ONE troll the level-8 one).
-  Off-script monsters far above the party's level are a narrative tool
-  ("you are not winning this; run"), not an encounter.
+- **Set content stays set.** Board quests (`room`) and the two hand-built
+  sites (`hideout ROOM` / `barrow ROOM`) have fixed rosters -- never
+  improvise their contents. `fight N [--type wolf|troll|...]` is only for
+  off-script scenes the story invents (a road ambush, a beast on the trail);
+  for anything bigger, `forge` a quest instead. Every bestiary row is
+  spawnable -- **check its level annotation first** (`sites.FOES`; quoted
+  for a duo AT that level, and the reference pack size matters: 4 wolves is
+  the level-1 fight, ONE troll the level-8 one). Off-script monsters far
+  above the party's level are a narrative tool ("you are not winning this;
+  run"), not an encounter.
 
 ## Narration style
 
@@ -170,6 +204,13 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   dragonfire is a Power-fueled sweep that dries up. Natural weapons (fangs,
   claws) never break and drop no loot -- the wight's barrow blade is the
   exception worth taking.
+- **The humanoid ladder** (soldier L3, veteran L6, champion L10, blademaster
+  L15, warlord L19) runs parallel to the monster families: living fighters
+  under the party's exact rules, the top ranks *drilled* (their `drilled +N`
+  roster tag = real combat training) and carrying lootable steel. **Board
+  quests reskin rows for local fiction** -- a goblin "Scrap-Hound" is the
+  wolf row, an orc "Deathblade" the blademaster; the display name is flavor,
+  the stats never change with the costume. Narrate the skin, trust the row.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved killing blow. Total party knockout = the Down are finished off.
 - **Weapons:** everyone wields exactly one (no inventory; swaps are narrative
@@ -189,15 +230,19 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
-- Sites: bandit hideout = the STARTER (15 XP/encounter, 15 g + 55 XP quest;
-  first clear = level 2) -- and a real fight since the 2026-07 retune: a
-  fresh party clears ~64% and someone hits the floor in about a third of
-  runs, so expect downs, drunk potions, and retreats from day one. Skeleton
-  barrow = TOUGH, pays 3x (45/encounter,
-  45 g + 165 XP) -- train up AND arm up first (rank 2 *plus* quality steel
+- **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
+  and `15*L` gold, split rooms-then-lump): punching up pays above your
+  weight class by construction, easy work pays less. Levels also grow the
+  body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...), on
+  top of the banked skill point per level.
+- Set sites: bandit hideout = the STARTER, a level-1 site (15 XP/encounter,
+  15 g + 55 XP clear; first clear = level 2) -- and a real fight since the
+  2026-07 retune: a fresh party clears ~64% and someone hits the floor in
+  about a third of runs, so expect downs, drunk potions, and retreats from
+  day one. Skeleton barrow = TOUGH, a level-3 site (30/encounter, 45 g +
+  110 XP clear) -- train up AND arm up first (rank 2 *plus* quality steel
   recommended, ~70% clear; a fresh party wipes there ~19 times in 20, and
-  fleeing
-  the barrow is always possible -- the dead don't pursue).
+  fleeing the barrow is always possible -- the dead don't pursue).
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
   DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
   through without spending anything" is how parties die. Not using resources

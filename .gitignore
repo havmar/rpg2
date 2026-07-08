@@ -3,4 +3,3 @@ __pycache__/
 *.pyo
 .notes.txt
 scratch/
-.session_state.pkl

@@ -12,9 +12,10 @@ The two sites, by design:
 - The bandit HIDEOUT is the STARTER site. Bandits are living fighters who
   play by exactly the party's rules: real DEX/STR, they spend STA to swing,
   go Winded, and are SPENT at 0 like anyone alive -- its logs teach the
-  system with no special cases. Base pay: a full clear (3 encounters + quest)
-  is exactly the level-1 -> 2 XP cost.
-- The skeleton BARROW is the TOUGH site (3x pay). Skeletons are the exception
+  system with no special cases. A level-1 site: a full clear (3 encounters +
+  quest) is exactly the level-1 -> 2 XP cost.
+- The skeleton BARROW is the TOUGH site (level 3 -- double XP, triple gold,
+  by the level formulas like every site). Skeletons are the exception
   enemies: undead, slow to pain (pain 2 -- wound penalty halved) and tireless
   (never spend STA, never Winded/Spent), so the threat is numbers outlasting
   a party whose stamina is a death-track. Met second on purpose: living foes
@@ -33,13 +34,12 @@ import random
 from dataclasses import dataclass
 
 from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
-                 make_party, stat_line, outcome, start_fight,
+                 WEAPONS, make_party, stat_line, outcome, start_fight,
                  short_rest, long_rest, party_wiped,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
                  train_combat, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
-                 ENCOUNTER_XP, QUEST_XP, QUEST_GOLD,
-                 BARROW_ENCOUNTER_XP, BARROW_QUEST_XP, BARROW_QUEST_GOLD,
+                 site_encounter_xp, site_clear_xp, site_gold,
                  SIM_MAX_ROOM_ATTEMPTS)
 
 
@@ -67,6 +67,11 @@ class FoeSpec:
     ref_pack: int = 1       # how many of these make the reference encounter
                             # at `level` (wolves hunt in packs; a troll is
                             # a fight alone)
+    training: int = 0       # combat training rank (the party's own +1/rank
+                            # to all pressure rolls) -- the elite-humanoid
+                            # lever: how a champion outfences you without a
+                            # monster's DEX. 0 for everything that isn't a
+                            # drilled fighter.
     undead: bool = False    # dead flesh: wounds never knit back on their own
     pain: int = 1           # wound penalty divisor (1 feels everything;
                             # 2 undead/brutes; 3-4 the apex monsters)
@@ -145,6 +150,31 @@ FOES = {
                          ref_pack=3),   # heavy and durable, quicker than he looks
     "archer":    FoeSpec("Archer",    level=1, dex=5, str_=2, sta=5, hp=6,
                          ref_pack=3),   # lands often, soft
+    # --- The soldiery (levels 3-19): the humanoid LADDER. Living fighters
+    # who play by exactly the party's rules at every band -- no mechanic, no
+    # hole but their humanity: they tire, they bleed, they feel every wound
+    # (pain 1). They exist so the level line has humanoids parallel to the
+    # monster families (plan.md prescribed them to fill the catalog's level
+    # gaps: 6-7, 15-17, 19-20), and so the encounter generator always has a
+    # reskinnable fallback for any race's fiction ("rival warband",
+    # "grave-robbers", "press-gang"...). Fixed military steel -- a soldier
+    # does not roll on the mook table -- rising with rank; the top ranks
+    # carry lootable quality blades (a story beat by then, not an economy
+    # break). Statlines climb toward rules.md's Heroes table: the warlord IS
+    # roughly the Legend row on the wrong side.
+    "soldier":     FoeSpec("Soldier",     level=3,  dex=5, str_=4, sta=6,
+                           hp=10, ref_pack=3, weapon=WEAPONS["spear"]),
+    "veteran":     FoeSpec("Veteran",     level=6,  dex=6, str_=5, sta=7,
+                           hp=13, ref_pack=3, weapon=WEAPONS["longsword"]),
+    "champion":    FoeSpec("Champion",    level=10, dex=7, str_=6, sta=8,
+                           hp=17, ref_pack=2, training=2,
+                           weapon=WEAPONS["longsword"]),
+    "blademaster": FoeSpec("Blademaster", level=15, dex=8, str_=6, sta=8,
+                           hp=16, ref_pack=2, training=2,
+                           weapon=WEAPONS["katana"]),
+    "warlord":     FoeSpec("Warlord",     level=19, dex=8, str_=8, sta=9,
+                           hp=20, ref_pack=2, training=2,
+                           weapon=WEAPONS["zweihander"]),
     # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
     # broken on purpose (living foes teach the system; undead break it).
     # The skeleton: brittle and a weak individual hitter (low STR -> low
@@ -230,12 +260,19 @@ FOES = {
 BANDIT_KINDS = ("archer", "bruiser", "cutthroat")   # the living-foe pool
 
 
-def make_foe(kind: str, n: int, rng: random.Random) -> Entity:
-    """Stat block -> fighting Entity, numbered for the log ("Cutthroat 2")."""
+def make_foe(kind: str, n: int, rng: random.Random,
+             display: str | None = None) -> Entity:
+    """Stat block -> fighting Entity, numbered for the log ("Cutthroat 2").
+
+    `display` reskins the row for the log ("Scrap-Hound 2" over the wolf
+    block): display name is FICTION, the stat row is MECHANICS -- the quest
+    generator's one trick for making 5 races out of one calibrated catalog
+    (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
-    return Entity(name=f"{spec.display} {n}", dex=spec.dex, str_=spec.str_,
-                  sta=spec.sta, max_hp=spec.hp, undead=spec.undead,
+    return Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
+                  sta=spec.sta, max_hp=spec.hp, training=spec.training,
+                  undead=spec.undead,
                   pain=spec.pain, tireless=spec.tireless,
                   pursues=spec.pursues, power=spec.power,
                   crowd_cap=spec.crowd_cap, regen=spec.regen,
@@ -250,6 +287,8 @@ def roster_lines(foes: list[Entity]) -> list[str]:
     def body(e: Entity) -> str:
         wpn = e.weapon.name if e.weapon else "unarmed"
         tags = []
+        if e.training:
+            tags.append(f"drilled +{e.training}")
         if e.undead:
             tags.append("undead")
         if e.pain == 2:
@@ -292,19 +331,32 @@ def roster_lines(foes: list[Entity]) -> list[str]:
 
 @dataclass(frozen=True)
 class Site:
-    """One authored site: set rooms, set rosters, set pay. The sites are
-    balanced during development and never improvised at the table -- the DM
-    runs them room-by-room (session.py `hideout ROOM` / `barrow ROOM`);
-    `fight N` is the off-script escape hatch for improvised scenes only."""
+    """One authored site: set rooms, set rosters, level-set pay. The sites
+    are balanced during development and never improvised at the table -- the
+    DM runs them room-by-room (session.py `hideout ROOM` / `barrow ROOM`);
+    `fight N` is the off-script escape hatch for improvised scenes only.
+    Pay derives from `level` (rpg.site_encounter_xp / site_clear_xp /
+    site_gold): the level IS the pay grade, for these two exactly as for
+    every generated site (quests.py)."""
     key: str                # save-file / CLI identity ("hideout", "barrow")
+    level: int              # the site's difficulty/pay level
     rooms: tuple[tuple[str, tuple[str, ...]], ...]  # (room name, foe kinds)
-    encounter_xp: int
-    quest_xp: int
-    quest_gold: int
     quest_line: str         # the QUEST COMPLETE banner
     spawn_phrase: str       # room banner flavor; {n} = foe count
     abandon_line: str       # the sims' walk-away line
     intro: str              # the one-shot opening line
+
+    @property
+    def encounter_xp(self) -> int:
+        return site_encounter_xp(self.level, len(self.rooms))
+
+    @property
+    def quest_xp(self) -> int:
+        return site_clear_xp(self.level, len(self.rooms))
+
+    @property
+    def quest_gold(self) -> int:
+        return site_gold(self.level)
 
 
 # The set room layouts -- the first difficulty lever (CLAUDE.md "Balance /
@@ -324,10 +376,8 @@ BARROW_ROOMS = (
 SITES = {
     "hideout": Site(
         key="hideout",
+        level=1,        # the starter site: a clear is exactly the L1->2 cost
         rooms=HIDEOUT_ROOMS,
-        encounter_xp=ENCOUNTER_XP,
-        quest_xp=QUEST_XP,
-        quest_gold=QUEST_GOLD,
         quest_line="the hideout is broken",
         spawn_phrase="{n} bandits",
         abandon_line="the hideout is left be.",
@@ -335,15 +385,23 @@ SITES = {
     ),
     "barrow": Site(
         key="barrow",
+        level=3,        # the tough site: level-3 pay a fresh party can see
+                        # on the board and reach for anyway
         rooms=BARROW_ROOMS,
-        encounter_xp=BARROW_ENCOUNTER_XP,
-        quest_xp=BARROW_QUEST_XP,
-        quest_gold=BARROW_QUEST_GOLD,
         quest_line="the barrow is cleansed",
         spawn_phrase="{n} skeletons rise from the bones",
         abandon_line="the barrow is abandoned.",
         intro="The party descends into the barrow:",
     ),
+}
+
+# Every fixed Weapon instance by name -- the save file (session.py) stores a
+# hero's or foe's armament as a name reference into this index, so save.json
+# stays hand-editable ("weapon": "katana"). Rolled/authored one-off weapons
+# would serialize in full; nothing creates those yet.
+WEAPON_INDEX: dict[str, Weapon] = {
+    **WEAPONS, **NATURAL_WEAPONS,
+    RUSTED_BLADE.name: RUSTED_BLADE, BARROW_BLADE.name: BARROW_BLADE,
 }
 
 
@@ -354,7 +412,7 @@ SITES = {
 def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
              rng: random.Random, log: list[str], *,
              verbose_rosters: bool = True, reckless: bool = False,
-             rooms=None) -> None:
+             rooms=None, auto_train: bool = True) -> None:
     """Run a site start to finish under the batch-sim policies (sim_fight
     answers pauses via sim_pause_policy; a fled room gets one return trip).
     Session play shares the same engine and tables but the PLAYER answers the
@@ -363,7 +421,10 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
     `rooms` overrides the site's layout (tune.py's sweep knob).
     reckless=True is the no-resource baseline: no pauses (so no drinks,
     conversions, or retreats) and no potions drunk at rests -- short rests
-    still happen (pacing, not a consumable)."""
+    still happen (pacing, not a consumable).
+    auto_train=False leaves banked skill points alone (bench_quests's career
+    sim allocates them itself, reference-style, instead of the greedy
+    training-only spend)."""
     rooms = site.rooms if rooms is None else rooms
     count = 0
     cleared_all = True
@@ -439,9 +500,10 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
     if cleared_all and any(not h.dead for h in party):
         award_quest(party, purse, site.quest_gold, site.quest_xp,
                     log, site.quest_line)
-        for h in party:
-            if not h.dead:
-                train_combat(h, log)    # sim policy: auto-spend on training
+        if auto_train:
+            for h in party:
+                if not h.dead:
+                    train_combat(h, log)    # sim policy: auto-spend on training
 
 
 # --------------------------------------------------------------------------- #
