@@ -18,8 +18,8 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 6,
-   "cur_sta": 4,
+   "hp": 2,
+   "cur_sta": 5,
    "cur_power": 3,
    "down": false,
    "dead": false,
@@ -55,8 +55,8 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 5,
+   "hp": 6,
+   "cur_sta": 6,
    "cur_power": 6,
    "down": false,
    "dead": false,
@@ -2183,95 +2183,7 @@
    }
   }
  },
- "pending": {
-  "foes": [
-   {
-    "name": "Bruiser 7",
-    "dex": 4,
-    "str_": 5,
-    "sta": 5,
-    "max_hp": 9,
-    "power": 0,
-    "ability": null,
-    "sta_cost": 1,
-    "undead": false,
-    "pain": 1,
-    "tireless": false,
-    "pursues": true,
-    "crowd_cap": 2,
-    "regen": 0,
-    "sweep": 1,
-    "sweep_cost_power": 0,
-    "sweep_label": "",
-    "hp": 9,
-    "cur_sta": 4,
-    "cur_power": 0,
-    "down": false,
-    "dead": false,
-    "items": {},
-    "hp_regen_per_night": 1,
-    "level": 1,
-    "xp": 0,
-    "skill_points": 0,
-    "training": 0,
-    "weapon": "shortsword",
-    "weapon_broken": false,
-    "proficiency": {},
-    "epithet": ""
-   },
-   {
-    "name": "Cutthroat 8",
-    "dex": 5,
-    "str_": 3,
-    "sta": 5,
-    "max_hp": 7,
-    "power": 0,
-    "ability": null,
-    "sta_cost": 1,
-    "undead": false,
-    "pain": 1,
-    "tireless": false,
-    "pursues": true,
-    "crowd_cap": 2,
-    "regen": 0,
-    "sweep": 1,
-    "sweep_cost_power": 0,
-    "sweep_label": "",
-    "hp": 7,
-    "cur_sta": 4,
-    "cur_power": 0,
-    "down": false,
-    "dead": false,
-    "items": {},
-    "hp_regen_per_night": 1,
-    "level": 1,
-    "xp": 0,
-    "skill_points": 0,
-    "training": 0,
-    "weapon": "whip",
-    "weapon_broken": false,
-    "proficiency": {},
-    "epithet": ""
-   }
-  ],
-  "fired": [
-   [
-    "wounds",
-    "Sela"
-   ]
-  ],
-  "round": 1,
-  "crossings": [
-   [
-    "wounds",
-    "Sela"
-   ]
-  ],
-  "xp": 15,
-  "site": "hideout",
-  "room": 3,
-  "quest": null
- },
+ "pending": null,
  "rooms": {
   "q37/s1#1": {
    "foes": [
@@ -2379,6 +2291,79 @@
     }
    ],
    "day": 1
+  },
+  "hideout#3": {
+   "foes": [
+    {
+     "name": "Bruiser 7",
+     "dex": 4,
+     "str_": 5,
+     "sta": 5,
+     "max_hp": 9,
+     "power": 0,
+     "ability": null,
+     "sta_cost": 1,
+     "undead": false,
+     "pain": 1,
+     "tireless": false,
+     "pursues": true,
+     "crowd_cap": 2,
+     "regen": 0,
+     "sweep": 1,
+     "sweep_cost_power": 0,
+     "sweep_label": "",
+     "hp": 9,
+     "cur_sta": 4,
+     "cur_power": 0,
+     "down": false,
+     "dead": false,
+     "items": {},
+     "hp_regen_per_night": 1,
+     "level": 1,
+     "xp": 0,
+     "skill_points": 0,
+     "training": 0,
+     "weapon": "shortsword",
+     "weapon_broken": false,
+     "proficiency": {},
+     "epithet": ""
+    },
+    {
+     "name": "Cutthroat 8",
+     "dex": 5,
+     "str_": 3,
+     "sta": 5,
+     "max_hp": 7,
+     "power": 0,
+     "ability": null,
+     "sta_cost": 1,
+     "undead": false,
+     "pain": 1,
+     "tireless": false,
+     "pursues": true,
+     "crowd_cap": 2,
+     "regen": 0,
+     "sweep": 1,
+     "sweep_cost_power": 0,
+     "sweep_label": "",
+     "hp": 7,
+     "cur_sta": 4,
+     "cur_power": 0,
+     "down": false,
+     "dead": false,
+     "items": {},
+     "hp_regen_per_night": 1,
+     "level": 1,
+     "xp": 0,
+     "skill_points": 0,
+     "training": 0,
+     "weapon": "whip",
+     "weapon_broken": false,
+     "proficiency": {},
+     "epithet": ""
+    }
+   ],
+   "day": 9
   }
  },
  "rng": [
@@ -3008,7 +2993,7 @@
    828786813,
    115335676,
    3488604277,
-   569
+   585
   ],
   null
  ]
