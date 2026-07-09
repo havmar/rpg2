@@ -9,7 +9,43 @@ file rather than marking it done.
 
 ---
 
-## Next up — major questlines & the world's story layer
+## Next up — the world map & navigation layer
+
+*(2026-07-09 design session: quests are currently global — `board` lists the
+whole world and nothing anchors the party anywhere. The fix is a light
+navigation layer over the existing worldgen, list-shaped, not spatial. All
+numbers below are provisional until simmed/played.)*
+
+- **Location state & local boards.** The save gains a current-location; the
+  party is always *somewhere* (a settlement, or traveling/afield). `board`
+  shows only the local settlement's quests, and taking a quest means being
+  there. The world stops being globally available.
+- **The map is a list, not a grid.** ~5 lands (one per race), each holding
+  its settlements and wilderness — no coordinates. Travel inside a land
+  takes 1 day, to another land 2 days; the world can grow later if that
+  feels small. Travel days are camp nights, so healing en route falls out
+  of the existing recovery ticks — no new mechanic.
+- **Travel encounters.** Each travel day risks a combat encounter
+  (~10-20%). Any level can appear, weighted strongly toward low — the rare
+  high tail is how the world above the party's level stays real. Needs an
+  **avoidability valve**: an encounter well above the party should usually
+  be spotted first (avoid, or attempt to slip past) so the tail signals
+  danger instead of executing the party on a die roll.
+- **The explore move.** Spend a day to discover a place in the current land
+  you haven't seen; pays XP for the discovery, at a higher encounter chance
+  (~30%). Discovered places persist in the save.
+- **A farm loop that never runs dry.** Wilderness hunting/patrol: generated
+  encounters at the local band paying the flat encounter rate, so grinding
+  gold/XP is always possible even with the board's finite XP.
+- **Difficulty geography.** Lands/areas carry level *bands* — ranges, 3-5
+  across the world, never 20 micro-tiers — posted independent of the party
+  (the OSR stance; the settlement bands already work this way, this gives
+  them geography). The open question below on the viable level band decides
+  how the bands are spaced.
+
+---
+
+## Then — major questlines & the world's story layer
 
 *(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
 engine, the humanoid ladder (soldier→warlord), the generation layer
@@ -118,11 +154,72 @@ should the curve soften?
   possible future pivot away from the heroic tone, not drift.
 - **Power potion re-stock** — retired 2026-07; re-circulate the kind if
   War-Breath ever makes Power genuinely scarce in play.
+- **Show the wound penalty in the player log** — the full log prints
+  `-n to rolls` on every wound line; the player log prints HP only, so the
+  death spiral is invisible to the player. Low-hanging legibility fix; do
+  it before touching spiral *mechanics*, so any tuning reacts to a spiral
+  the player can actually see.
+- **Rename the "killing blow" tier** — it is 6 flat HP and only kills at
+  0 HP unsaved, but the name reads as an instant kill in play (a testing
+  session tripped on it). Pure renaming ("mortal strike", "crippling
+  blow"...); the mechanic is fine.
+- **Crit/fumble on the 2d6** (snake-eyes auto-fail, boxcars auto-success or
+  a guaranteed graze) — un-deadens hopeless exchanges: a DEX-4 attacker at
+  -4 wounds and Spent currently rolls pressure that mathematically cannot
+  win. ~2.8% per tail, but it fattens BOTH tails of EVERY exchange, not
+  just the hopeless corner — the whole bench suite must be re-run before
+  judging it. Note the counter-position first: a spent, near-dead fighter
+  *being* helpless is partly the design working (that is what the pause,
+  potions, and retreat are for).
+- **Party members as lives** — on a wipe the PC alone survives (at 1 HP),
+  companions die, and the PC loses a level and possibly possessions. Turns
+  companions into a graded life-resource and softens the career sim's
+  roguelike lethality (see the career finding above) without making death
+  free. Interacts with the recruitment/CHA layer.
+- **Overfill potions** — drinking in advance tops HP/STA above max
+  temporarily (pre-battle preparation as a real decision, and a use for
+  potions at full health).
+- **Alchemist ability** — a hero who periodically produces potions for
+  free; an economy faucet, so priced carefully.
+- **Quest history readout** — completed quests already persist in the world
+  with their status; a `history` subcommand listing what the party has done
+  (and when) is cheap and gives the save a memoir.
+- **Site persistence / repopulation** — cleared-so-far rooms refill after a
+  day or two, so a site cannot be done piecemeal with a camp between every
+  door. The enforcement half of the resource-horizon question below; only
+  worth building if that question resolves toward budgeting HP across a
+  site.
 
 ---
 
 ## Open questions
 
+- **The resource horizon** (2026-07-09, the current big question). Camping
+  after any encounter makes HP cheap — healing, potions, and defense only
+  become valuable if resources are budgeted over a *site*, not one fight.
+  The candidate package (its pieces reinforce each other and should be
+  judged together): sites done in one go (via repopulation and/or travel
+  friction), **larger HP pools**, and a **geared-down hero death spiral**
+  (a hero pain divisor, or a cap on the wound penalty) so "low on HP" is
+  tension rather than helplessness. This *conflicts* with the 2026-07
+  lethality retune, which put the danger in the single encounter precisely
+  because camping was free — pick one horizon and retune; don't run both
+  screws tight at once. The far end of this dial — flat combat, no STA, no
+  wound penalty — is recorded as considered and resisted: the pause,
+  retreat, potion, and Bulwark decisions all hang off fatigue and the
+  spiral, and removing them removes most of the game's decisions. First
+  step either way: make the spiral visible in the player log (parked idea
+  above) before tuning it.
+- **How wide is the viable level band?** The goal of all difficulties
+  existing on the map at once pushes against deadly at-level combat: the
+  benches say -2 levels is a real wall, so the felt band today is roughly
+  [-something small, +2]. If leveled areas should be *choices* (farm low,
+  challenge high, Shamus Young's self-regulating difficulty), the band may
+  need widening — which is the same lever as the resource-horizon question
+  (bigger pools, gentler spiral). If instead the band stays narrow, the
+  map's high bands are honest signage ("come back at 14"), which is the
+  OSR answer and already how the barrow works. Decide which game it is
+  before tuning the navigation layer's bands.
 - **Armor:** adopt, simplify, or defer (see above) — the least-developed
   system.
 - ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,
