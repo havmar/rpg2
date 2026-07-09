@@ -869,10 +869,15 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     _debug(log, pressure_line)
     _debug(log, sev_line)
 
-    if raw_tier == "killing blow" and not saved:
-        defender.dead = True
-    elif defender.hp <= 0:
-        defender.down = True
+    # Death is a 0-HP state (see the `alive` property): a blow only kills if it
+    # actually drops you. At 0 HP an unsaved killing blow is a death; any other
+    # tier that took you there is a Down. A killing blow that doesn't reach 0 is
+    # just its damage -- you can't die at 4 HP.
+    if defender.hp <= 0:
+        if raw_tier == "killing blow" and not saved:
+            defender.dead = True
+        else:
+            defender.down = True
 
 
 def _pick_target(targets: list[Entity], rng: random.Random, focus: bool,
