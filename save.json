@@ -18,7 +18,7 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 12,
+   "hp": 11,
    "cur_sta": 5,
    "cur_power": 3,
    "down": false,
@@ -29,7 +29,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "halberd",
@@ -66,7 +66,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "flail",
@@ -82,7 +82,7 @@
  "purse": {
   "gold": 0
  },
- "foe_count": 3,
+ "foe_count": 4,
  "active_quest": "q37",
  "world": {
   "seed": 17106899,
@@ -2920,7 +2920,7 @@
    828786813,
    115335676,
    3488604277,
-   160
+   183
   ],
   null
  ]
