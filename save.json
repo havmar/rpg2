@@ -18,7 +18,7 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 2,
+   "hp": 12,
    "cur_sta": 5,
    "cur_power": 3,
    "down": false,
@@ -55,7 +55,7 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 6,
+   "hp": 12,
    "cur_sta": 6,
    "cur_power": 6,
    "down": false,
@@ -73,10 +73,47 @@
    "weapon_broken": false,
    "proficiency": {},
    "epithet": "steady"
+  },
+  {
+   "name": "Yssa",
+   "dex": 4,
+   "str_": 3,
+   "sta": 7,
+   "max_hp": 10,
+   "power": 6,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 1,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "hp": 10,
+   "cur_sta": 7,
+   "cur_power": 6,
+   "down": false,
+   "dead": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "mace",
+   "weapon_broken": false,
+   "proficiency": {},
+   "epithet": "steady"
   }
  ],
  "clock": {
-  "day": 9,
+  "day": 12,
   "short_rests_used": 0
  },
  "purse": {
@@ -2993,7 +3030,7 @@
    828786813,
    115335676,
    3488604277,
-   585
+   591
   ],
   null
  ]
