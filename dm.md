@@ -19,22 +19,34 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use it for
   story, not convenience: the numbers are the game.
 
-## The quest board (the game's spine)
+## The world and the quest board (the game's spine)
 
-The world holds a generated board of combat quests -- settlements, each
-posting jobs at a rolled level, 1-3 sites of 1-3 encounters each. **Which
-quest to take is the player's core decision**, and the board gives them the
-numbers to make it:
+The world holds ~5 race LANDS, each with settlements posting combat quests
+at rolled levels (1-3 sites of 1-3 encounters each), plus its wilderness.
+**The party is always somewhere, and quests are LOCAL**: the board you can
+read and the jobs you can take are the current settlement's. **Which quest
+to take -- and whether it's worth the road to a better board -- is the
+player's core decision:**
 
-- `board` (or `board SETTLEMENT`) lists every quest: **the level is shown
+- `map` shows the known world: lands, settlements (with open-quest counts),
+  discovered wild places, and where the party stands.
+- `board` lists the LOCAL settlement's quests: **the level is shown
   straight and rewards scale with it** -- too easy and too hard both appear
-  on purpose. Reading the board IS the decision; a quest ~2 levels above the
-  party is a wall, ~2 below is safe wages. Advise honestly ("L9 against you
-  at 4 is death, not drama"), then let them pick.
+  on purpose. Reading the board IS the decision; a quest a couple of levels
+  up is a hard, paying fight (no longer a sheer wall since the 2026-07-09
+  regear), well below is safe wages. Advise honestly, then let them pick.
+  (`board all` / `board NAME` is YOUR overview for pacing -- the player
+  only reads boards where the party stands.)
+- `travel PLACE` moves them: 1 day inside a land, 2 days to another land.
+  Travel days are camp nights (full overnight recovery -- travel heals) and
+  each trip risks ONE road encounter (~15%/day compounded; see the wilds
+  section below). Travel also RESETS the site momentum streak -- leaving a
+  half-cleared site costs its escalating pay.
 - `show QID` details one quest: description, sites, and what holds each room.
-- `take QID` makes it active; `room` fights its next encounter (same pause /
-  retreat machinery as the set sites). Progress is remembered per quest --
-  switching quests and coming back later is fine.
+- `take QID` makes it active (must be AT its settlement); `room` fights its
+  next encounter (same pause / retreat machinery as the set sites).
+  Progress is remembered per quest -- switching quests and coming back
+  later is fine, but working it means being there.
 - Sites pay themselves: each cleared site pays its lump (gold + XP) and the
   last one completes the quest -- no manual award needed. `award GOLD XP
   NAME` remains for off-script scenes only.
@@ -44,6 +56,32 @@ numbers to make it:
 - The quest descriptions are one-line prompts, not stories -- **the fiction
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
+
+## The wilds (travel encounters, explore, hunt)
+
+- **The road's table ignores the party** (the OSR stance): any level can
+  appear, the higher the rarer. Meeting something far above the party is
+  the feature, not a bug -- it is how the world above their level stays
+  real. The valve: anything 3+ levels over the party is usually **spotted
+  at range** -- the script prints the sighting and stops. Present it as a
+  fact of the landscape ("smoke, and something big circling the crag"),
+  and the choice is the player's: move on (any move lets it drift off) or
+  `engage` (their own deliberate overreach). **A quarter of the time it
+  finds them first -- an AMBUSH.** Then the fight is simply on, and your
+  job is to say plainly that running is the answer: the first pause is the
+  exit, `retreat` is the move, and surviving an ambush by something
+  unbeatable IS the story.
+- `explore` spends a day ranging the current land: discovers a new named
+  place (persists on `map`, pays a little XP), camps rough overnight, and
+  runs a higher encounter risk (~30%). Discovered places are yours to hang
+  fiction on -- `forge` a quest there when the story wants one.
+- `hunt` is the always-available farm: an immediate encounter at-or-below
+  the party's level (their chosen prey), paying wild rates (below board
+  work on purpose) plus normal loot rolls. When the player wants to grind
+  gold or XP between quests, this is the sanctioned loop -- no day cost,
+  but no free recovery either. NOTE: what roams a land is that race's
+  template pools -- in some lands the cheapest prey is a level-3 dire
+  wolf, and a fresh duo should hear about it before the pounce.
 
 ## The player character
 
@@ -103,10 +141,13 @@ numbers to make it:
   log. The choice stays theirs.
 - **Player decisions -- suggest, never decide:** drinking a potion (`use`),
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
-  (`camp`), buying potions or weapons (`buy`), **spending skill points**
-  (`train HERO combat|weapon` -- points bank on level-up and NOTHING
-  auto-spends), which site to run, whether to press on or pull back, and
-  **every pause decision** (fight on / drink / Berserk / War-Breath /
+  (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
+  streak: pressing on pays escalating XP per room, camping trades that pay
+  for safety; say the trade out loud), buying potions or weapons (`buy`),
+  **spending skill points** (`train HERO combat|weapon` -- points bank on
+  level-up and NOTHING auto-spends), where to `travel` and which site to
+  run, whether to `engage` a sighting, whether to press on or pull back,
+  and **every pause decision** (fight on / drink / Berserk / War-Breath /
   retreat).
   Recommend a move when it's smart ("Veld is at 2 HP -- drink the healing
   potion?"), then wait for the player's call.
@@ -185,9 +226,14 @@ numbers to make it:
   (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
   day advances, the
   slot refills. Nothing forces the day to end -- camping is the player's call.
+- **The death spiral is geared for trained fighters** (2026-07-09): heroes
+  and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor),
+  and the player log now prints the penalty on every wound line -- quote it
+  when it matters ("Sela is at -3; every exchange leans wrong now"). Small
+  beasts (wolves, spiders) still feel every point; apex monsters divide by
+  3-4.
 - Skeletons are undead, the exception enemies: **tireless** (never spend STA,
-  never Winded/Spent -- they don't tire, you do) and slow to pain (wound roll
-  penalty halved, so the death spiral and First Blood bite less). The barrow
+  never Winded/Spent -- they don't tire, you do). The barrow
   is an endurance war you can lose by simply running dry.
 - Bandits are living fighters under exactly the party's rules (they tire and
   go Spent too) -- hideout logs read with no special cases.
@@ -196,9 +242,9 @@ numbers to make it:
   both ways: a lone hero is never mobbed by more than 2 at once. Big
   monsters can be pressed by 3-4 -- the log's `circles, crowded out` line is
   the tell.
-- **Monsters** (the bestiary, `sites.FOES` -- each row a puzzle): brutes and
-  undead are *slow to pain* (halved wound penalty), apex monsters *barely
-  feel* it; trolls **regenerate** every round AND heal fully if fled from
+- **Monsters** (the bestiary, `sites.FOES` -- each row a puzzle): apex
+  monsters *barely feel pain* (divisor 3-4 -- their deep pools stay
+  dangerous); trolls **regenerate** every round AND heal fully if fled from
   (out-damage them or don't fight them); bears/giants/drakes hit several
   heroes with one **sweeping blow** (one attack roll, everyone defends);
   dragonfire is a Power-fueled sweep that dries up. Natural weapons (fangs,
@@ -232,17 +278,23 @@ numbers to make it:
   the weapon type -- switching weapons drops the bonus until re-drilled.
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
-  weight class by construction, easy work pays less. Levels also grow the
-  body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...), on
-  top of the banked skill point per level.
-- Set sites: bandit hideout = the STARTER, a level-1 site (15 XP/encounter,
-  15 g + 55 XP clear; first clear = level 2) -- and a real fight since the
-  2026-07 retune: a fresh party clears ~64% and someone hits the floor in
-  about a third of runs, so expect downs, drunk potions, and retreats from
-  day one. Skeleton barrow = TOUGH, a level-3 site (30/encounter, 45 g +
-  110 XP clear) -- train up AND arm up first (rank 2 *plus* quality steel
-  recommended, ~70% clear; a fresh party wipes there ~19 times in 20, and
-  fleeing the barrow is always possible -- the dead don't pursue).
+  weight class by construction, easy work pays less. **Per-encounter pay
+  rides the momentum streak** (2026-07-09): the k-th consecutive encounter
+  in the same site without a night's camp pays k x base -- the hideout's
+  rooms pay 8/15/22 in one go but 8/8/8 camped-between (the clear lump is
+  unchanged either way). Levels also grow the body: +1 max HP/STA/Power on
+  reaching every odd level (3, 5, 7...), on top of the banked skill point
+  per level.
+- Set sites (both a short march from the STARTING settlement -- travel
+  there first): bandit hideout = the STARTER, a level-1 site (8/15/22
+  XP by room in one go, 15 g + 55 XP clear; a one-go first clear = level
+  2) -- a real fight: a fresh party clears ~58% and someone hits the floor
+  in about half the runs, so expect downs, drunk potions, and retreats
+  from day one. Skeleton barrow = TOUGH, a level-3 site (15/30/45 by room,
+  45 g + 110 XP clear) -- train up AND arm up first (a fresh party clears
+  ~13% and wipes ~6 times in 7; rank 2 clears about two-thirds, rank 2
+  plus steel comfortably more; fleeing the barrow is always possible --
+  the dead don't pursue).
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
   DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
   through without spending anything" is how parties die. Not using resources

@@ -236,24 +236,36 @@ gets no dying swing.
 | 5–6 | Grievous | 4 |
 | 7+  | Killing blow | 6 |
 
-**The death spiral is the whole point.** Your **wound penalty** equals the HP
-you've lost, so the first solid hit tilts every later round against you and the
-fight accelerates to a conclusion. There is no slow attrition to zero — one
-grievous hit can decide it.
+**The death spiral drives fights to a conclusion — geared down (2026-07-09).**
+Your **wound penalty** is the HP you've lost divided by your pain divisor, so
+a solid hit tilts every later round against you and the fight accelerates
+instead of grinding. At the original full force (penalty = every HP lost)
+the spiral overshot: the first decisive exchange decided the whole fight, so
+encounters split into "took no damage" and "died" with almost nothing
+between — wounded fighters (both sides) were helpless, and a bandit room
+either blanked the party or killed it. The regear puts trained fighters at
+**pain 2** (below), halving the spiral: wounds still bend a fight, but a
+hero at half HP is *in trouble*, not already dead. Measured effect: the
+share of cleared starter-site runs ending in the 10–70% HP-lost middle went
+from thin to ~4 in 5 — "I'm low on HP" is now a state you play in, not a
+death sentence you watch. The spiral is also **visible to the player** now:
+the player log prints `-n to rolls` on every wound line, same as the full
+log — a number the player budgets around must be a number the player sees.
 
 **The pain divisor** (2026-07; generalizes the old undead-only halving):
 every entity has a `pain` value and its wound penalty is `HP lost // pain`.
-The ladder:
+The ladder (rebased 2026-07-09: **2 is the trained-fighter norm**):
 
 | Pain | Who | What it means |
 |------|-----|---------------|
-| 1 | Humans, heroes, small beasts | Feels everything — the spiral at full force. |
-| 2 | Undead, brutes (boar, bear, ogre, troll) | *Slow to pain*: penalty halved (integer — a graze costs nothing on the roll). Chip damage and First Blood bite less; break the bones. |
-| 3–4 | The apex monsters (giant, drake; dragon 4) | *Barely feels pain.* **This is what makes a deep HP pool carryable at all**: at human pain a 50-HP dragon would be rolling at −20 while still half alive — a helpless grind, not a boss. The divisor keeps it dangerous deep into its pool, then it folds fast. |
+| 1 | Small beasts, untrained flesh (wolf, spider) | Feels everything — the spiral at full force. They fold fast once cut; that's their nature. |
+| 2 | **Heroes and humanoid foes** (the trained norm), undead, brutes (boar, bear, ogre, troll) | Penalty halved (integer — a graze costs nothing on the roll). A drilled fighter grits through wounds; fights between them last long enough for both sides to bleed. |
+| 3–4 | The apex monsters (giant, drake; dragon 4) | *Barely feels pain.* **This is what makes a deep HP pool carryable at all**: at pain 1 a 50-HP dragon would be rolling at −20 while still half alive — a helpless grind, not a boss. The divisor keeps it dangerous deep into its pool, then it folds fast. |
 
 **Undead are still the exception enemies** (deliberately — living foes teach
-the system, undead break its rules): pain 2, **and tireless** — they never
-spend STA, never go Winded, never go Spent. Against the undead the stamina
+the system, undead break its rules): since the pain rebase their divisor (2)
+matches the trained norm, so their rule-break is now purely that they are
+**tireless** — they never spend STA, never go Winded, never go Spent. Against the undead the stamina
 war is entirely one-sided; they don't have to beat you, just outlast you.
 That is their whole threat. (Undead flesh also never heals on its own — a
 hacked skeleton stays hacked across days, which is what rewards the return
@@ -1003,14 +1015,15 @@ gold buys staying power** — never the reverse.
 - **The curve.** Level L → L+1 costs `100 × L` XP, capped at **level 20**
   (the 1–20 doctrine below).
 - **Pay scales with the site's level** (2026-07, the quest system): a
-  level-L site pays `site_xp_total(L) = 50 × (L + 1)` XP — ~45% split
-  evenly per encounter as rooms fall, the rest as the site-clear lump — and
-  `15 × L` gold. The two rates this generalizes from:
+  level-L site pays `site_xp_total(L) = 50 × (L + 1)` XP — ~45% paid per
+  encounter as rooms fall (on the momentum streak below), the rest as the
+  site-clear lump — and `15 × L` gold. The two rates this generalizes from:
   - Bandit hideout (the **starter**, a level-1 site — living foes who play
-    by the party's rules): 15 XP per encounter, 55 XP + 15 g for the clear —
-    a full clear (3 rooms) is exactly 100 XP, so the *first clear is a
-    level-up*.
-  - The skeleton barrow (the **tough** site, level 3): 30 / 110 + 45 g.
+    by the party's rules): 8/15/22 XP across its three rooms in one go,
+    55 XP + 15 g for the clear — a full one-go clear is exactly 100 XP, so
+    the *first clear is a level-up*.
+  - The skeleton barrow (the **tough** site, level 3): 15/30/45 per room in
+    one go, 110 + 45 g for the clear.
 
   The shape is deliberate: pay grows by *half* the level-1 anchor per level
   while the level cost grows by the full step, so **leveling slows with
@@ -1019,6 +1032,19 @@ gold buys staying power** — never the reverse.
   SITE'S level, not the party's, punching up pays above your weight class
   and easy work pays less — no separate under/over-level bonus exists or is
   needed.
+- **The momentum streak** (2026-07-09). The per-encounter share is paid on
+  a rising multiplier: the k-th consecutive encounter cleared **in the same
+  site without a night's camp between** pays `k ×` the base (STREAK_STEP =
+  1). The base is sized so a full one-go run collects exactly the ~45%
+  encounter share; **camping mid-site resets the streak to base**, so a
+  camp-after-every-door clear collects roughly three-quarters of the site's
+  total pay. *Why:* the party can always retreat to camp, and a full night
+  heals — so HP was cheap and healing, potions, and defense had little to
+  buy. The streak makes pressing on the paying line — budgeting HP and STA
+  across a whole site — while leaving the camp available at a price, and
+  the site-clear lump (the bigger share) still demands the site actually
+  fall. Off-script fights, road encounters, and hunts never streak; a
+  retreat or an unresolved room doesn't reset it (only the night does).
 - **Level-ups grant skill points** (1 per level), spent on skills — free
   allocation, never use-based (the Fallout principle from the design record).
 - **Level-ups grow the pools** (the doctrine's curve, in the engine since
@@ -1146,23 +1172,97 @@ the bench taught, now rules:
 The final room of a site may carry an anchor up to ~1.35× its budget — the
 boss rule: the ogre quest ends with the ogre.
 
-**Measured honesty** (`bench_quests.py`, 200/cell): generated at-level rooms
-win 55–93% against the reference duo across the whole 1–20 line — the same
-band the calibrated catalog rows sit in — and generated at-level sites clear
-~66–78% at levels 1–5 (bracketing the hideout's ~64%), harsher above. The
-−2 column is a real wall everywhere below the top band; past ~level 13 the
-±2 gradient flattens because the *party* saturates (skills capped, pools
-only) — the known pre-magic, pre-masterwork top band.
+**Measured honesty** (`bench_quests.py`, 300/cell, after the 2026-07-09
+pain regear): generated at-level rooms win 61–93% against the reference duo
+across the whole 1–20 line and generated at-level sites clear ~80–87% at
+levels 1–5, sliding to ~34–55% at 15–20. The −2 column (fighting two levels
+over your head) is now a **coin flip to a hard fight (~30–80%) rather than
+a wall** — a deliberate consequence of the regear: the viable level band
+widened, so punching up is a real choice and being overleveled for a quest
+is comfortable, which is what a leveled open world needs to be playable.
+Current numbers live in CLAUDE.md ("Balance / tuning").
 
-## What careers measure (the finding, 2026-07-08)
+## What careers measure (updated 2026-07-09)
 
 The career sim (fresh duo, fresh world, grind-below-level policy, camps
-between rooms) reaches **L5 46% / L8 29% / L11 14% / L14 5% / L20 ~0%**;
-median death at level 3-4. Two causes, both design facts rather than
-generator bugs: the rank-0 front door (the hideout's own ~33% wipe rate,
-compounded once per career) and the top band, where outleveling content
-stops working and per-quest death stays 15–25% however you pick. A capped
-career took ~167 days and ~31 quests. The sims understate the player — but
-a full 1–20 career under current systems is roguelike-lethal, and the top
-band waits on masterwork gear, armor, and magic (plan.md) for its missing
-player power.
+between rooms — so it mostly earns the piecemeal streak rate) reaches
+**L5 68% / L8 56% / L11 38% / L14 20% / L20 6%**; median death at level 8.
+The pain regear moved every number sharply survival-ward from 2026-07-08's
+roguelike curve (L5 46 / L11 14 / L20 ~0, median death L3-4): the rank-0
+front door now claims far fewer careers, and a capped career takes ~148
+days / ~37 quests. The top band is still the hard edge (per-quest wipe
+40–65% at 15–20 at level) and still waits on masterwork gear, armor, and
+magic (plan.md) for its missing player power — but a full 1–20 career is
+now merely harsh, not a lottery.
+
+---
+
+# The World & Navigation — Add-on (2026-07-09)
+
+The geography over the quest system: the party is always **somewhere**, and
+where they are decides what work they can see and take. Deliberately
+list-shaped, not spatial — no coordinates, no hex map. `quests.py` owns the
+constants and tables (top of file); `session.py` owns the state and moves.
+
+## The map
+
+- **Lands.** Each race's land holds its settlements and its wilderness; a
+  land exists exactly when its race has at least one settlement. `map`
+  lists them all — the world is known in outline from day one; what's *in*
+  the wilds is not.
+- **Location.** The save carries where the party stands: a settlement, or a
+  discovered wilderness place. The two hand-built set sites (hideout,
+  barrow) lie outside the **starting settlement** (the first one worldgen
+  made).
+- **Quests are local.** `board` shows the CURRENT settlement's quests only,
+  and taking or working a quest means being at the settlement that posted
+  it. The world stops being globally available: going where the work is
+  costs travel days, which is what makes "which quest" a routing decision
+  too. (`board all` remains as the DM's overview — not what the player
+  reads.)
+
+## Travel
+
+- **1 day** between settlements of the same land, **2 days** crossing into
+  another land. Every travel day is a camp night: the ordinary overnight
+  recovery applies, so *travel heals* — and every night on the road resets
+  the momentum streak, so leaving a half-cleared site costs its pay
+  escalation.
+- **The road rolls one encounter check per trip** (~15%/day, compounded).
+  The road's level table is **party-independent** (the OSR stance): any
+  level can appear, geometrically weighted toward the low end — the rare
+  high tail is how the world above the party's level stays real, met on the
+  road rather than read about.
+- **The avoidability valve.** An encounter at or below party level +2 is
+  simply met. Anything **3+ levels above the party is usually spotted at
+  range** — the sighting persists until the party moves on (it drifts
+  away) or chooses `engage`: climbing into an over-their-weight fight is
+  always the player's own act, never the dice's. **A quarter of the time
+  the tall thing finds them first** (ambush) — then the fight is on, the
+  pause is the exit, and running away is the correct and intended answer.
+  Deadly-but-avoidable is the contract: death by random table is not.
+
+## The explore move & the hunt
+
+- **`explore`** spends a day ranging the current land's wilds: discovers a
+  new named place (persists on the map, travelable later, XP for the
+  discovery), camps rough (overnight recovery, streak reset), and beats
+  more bushes than the road (~30% encounter chance, same table and valve).
+  Discovered places are hooks — the DM can `forge` content onto them.
+- **`hunt`** is the always-available farm loop: stalk prey in the current
+  land NOW (no day cost). The party chooses this fight, so unlike the road
+  the level rolls at-or-below the party's (down to −2) — grinding XP, loot
+  rolls, and drops is always possible. It pays **wild rates** (a site's
+  mid-streak room rate, no clear lump), deliberately below board work: the
+  wilds are the farm, the board is the game. What actually roams a land is
+  the union of its race's template pools — a land whose cheapest fauna is
+  a dire wolf has rough hunting, and that is flavor, not a bug.
+
+## Why this shape
+
+Everything-everywhere made the board a menu, not a world. This layer prices
+distance in days (the one currency the survival game already respects),
+lets difficulty live in *places* without scaling anything to the party, and
+gives the "world above your level" a face the party can walk away from.
+The bands stay honest: settlement kinds set quest levels exactly as before;
+the road table ignores the party entirely.

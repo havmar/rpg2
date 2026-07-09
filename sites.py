@@ -16,10 +16,9 @@ The two sites, by design:
   quest) is exactly the level-1 -> 2 XP cost.
 - The skeleton BARROW is the TOUGH site (level 3 -- double XP, triple gold,
   by the level formulas like every site). Skeletons are the exception
-  enemies: undead, slow to pain (pain 2 -- wound penalty halved) and tireless
-  (never spend STA, never Winded/Spent), so the threat is numbers outlasting
-  a party whose stamina is a death-track. Met second on purpose: living foes
-  first.
+  enemies: undead and tireless (never spend STA, never Winded/Spent), so
+  the threat is numbers outlasting a party whose stamina is a death-track.
+  Met second on purpose: living foes first.
 
 Run:  python sites.py                        # one-shot barrow run, full log
       python sites.py --site hideout         # one-shot starter-site run
@@ -73,8 +72,10 @@ class FoeSpec:
                             # monster's DEX. 0 for everything that isn't a
                             # drilled fighter.
     undead: bool = False    # dead flesh: wounds never knit back on their own
-    pain: int = 1           # wound penalty divisor (1 feels everything;
-                            # 2 undead/brutes; 3-4 the apex monsters)
+    pain: int = 1           # wound penalty divisor (1 feels everything --
+                            # small critters; 2 the trained-fighter norm,
+                            # matching HERO_PAIN, plus undead/brutes; 3-4
+                            # the apex monsters)
     tireless: bool = False  # never spends STA, never Winded/Spent
     pursues: bool = True    # gives chase when the party retreats
     power: int = 0          # ability fuel (dragonfire is paid for)
@@ -145,15 +146,16 @@ FOES = {
     # specific named weapon, so the logs read "Cutthroat 2's dagger", never
     # "a crude weapon".
     "cutthroat": FoeSpec("Cutthroat", level=1, dex=5, str_=3, sta=5, hp=7,
-                         ref_pack=3),   # nimble knife-work
+                         ref_pack=3, pain=2),   # nimble knife-work
     "bruiser":   FoeSpec("Bruiser",   level=2, dex=4, str_=5, sta=5, hp=9,
-                         ref_pack=3),   # heavy and durable, quicker than he looks
+                         ref_pack=3, pain=2),   # heavy and durable, quicker
+                                                # than he looks
     "archer":    FoeSpec("Archer",    level=1, dex=5, str_=2, sta=5, hp=6,
-                         ref_pack=3),   # lands often, soft
+                         ref_pack=3, pain=2),   # lands often, soft
     # --- The soldiery (levels 3-19): the humanoid LADDER. Living fighters
     # who play by exactly the party's rules at every band -- no mechanic, no
-    # hole but their humanity: they tire, they bleed, they feel every wound
-    # (pain 1). They exist so the level line has humanoids parallel to the
+    # hole but their humanity: they tire, they bleed, and they grit through
+    # pain like any drilled fighter (pain 2, the human-combatant norm). They exist so the level line has humanoids parallel to the
     # monster families (plan.md prescribed them to fill the catalog's level
     # gaps: 6-7, 15-17, 19-20), and so the encounter generator always has a
     # reskinnable fallback for any race's fiction ("rival warband",
@@ -163,17 +165,18 @@ FOES = {
     # break). Statlines climb toward rules.md's Heroes table: the warlord IS
     # roughly the Legend row on the wrong side.
     "soldier":     FoeSpec("Soldier",     level=3,  dex=5, str_=4, sta=6,
-                           hp=10, ref_pack=3, weapon=WEAPONS["spear"]),
+                           hp=10, ref_pack=3, pain=2, weapon=WEAPONS["spear"]),
     "veteran":     FoeSpec("Veteran",     level=6,  dex=6, str_=5, sta=7,
-                           hp=13, ref_pack=3, weapon=WEAPONS["longsword"]),
+                           hp=13, ref_pack=3, pain=2,
+                           weapon=WEAPONS["longsword"]),
     "champion":    FoeSpec("Champion",    level=10, dex=7, str_=6, sta=8,
-                           hp=17, ref_pack=2, training=2,
+                           hp=17, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["longsword"]),
     "blademaster": FoeSpec("Blademaster", level=15, dex=8, str_=6, sta=8,
-                           hp=16, ref_pack=2, training=2,
+                           hp=16, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["katana"]),
     "warlord":     FoeSpec("Warlord",     level=19, dex=8, str_=8, sta=9,
-                           hp=20, ref_pack=2, training=2,
+                           hp=20, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["zweihander"]),
     # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
     # broken on purpose (living foes teach the system; undead break it).
@@ -291,9 +294,9 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append(f"drilled +{e.training}")
         if e.undead:
             tags.append("undead")
-        if e.pain == 2:
-            tags.append("feels little pain")
-        elif e.pain >= 3:
+        # pain 2 is the trained-fighter norm now (heroes included), so only
+        # the apex divisors rate a tag.
+        if e.pain >= 3:
             tags.append("barely feels pain")
         if e.tireless:
             tags.append("tireless")
@@ -346,9 +349,11 @@ class Site:
     abandon_line: str       # the sims' walk-away line
     intro: str              # the one-shot opening line
 
-    @property
-    def encounter_xp(self) -> int:
-        return site_encounter_xp(self.level, len(self.rooms))
+    def encounter_xp(self, streak: int = 1) -> int:
+        """Per-encounter pay at streak position k (rpg.site_encounter_xp:
+        consecutive same-site encounters without a camp pay on a rising
+        multiplier; a camp resets to base)."""
+        return site_encounter_xp(self.level, len(self.rooms), streak)
 
     @property
     def quest_xp(self) -> int:
@@ -362,10 +367,15 @@ class Site:
 # The set room layouts -- the first difficulty lever (CLAUDE.md "Balance /
 # tuning"). Edit these here; every consumer (one-shot, session, tune, bench)
 # reads the same tables.
+# 2026-07-09: an archer joined the den (5 -> 6 bandits). The pain-2 regear
+# (heroes and humanoids alike feel wounds at half rate -- see rpg.HERO_PAIN)
+# made the old layout ~72% clear; the sixth bandit puts the starter back on
+# the designer's ~55-60% target with someone hitting the floor in about half
+# the runs.
 HIDEOUT_ROOMS = (
     ("the lookout post", ("cutthroat",)),
     ("the common room", ("cutthroat", "archer")),
-    ("the boss's den", ("bruiser", "cutthroat")),
+    ("the boss's den", ("bruiser", "cutthroat", "archer")),
 )
 BARROW_ROOMS = (
     ("the collapsed entry", ("skeleton",) * 3),
@@ -430,6 +440,8 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
     cleared_all = True
     room_i = 0
     attempts = 0
+    streak = 0      # encounters cleared here since the last night's camp
+                    # (the momentum multiplier's k; long_rest resets it)
     held_over: list[Entity] | None = None   # survivors of a room the party fled
     while room_i < len(rooms):
         room_name, roster = rooms[room_i]
@@ -476,6 +488,7 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
             survivors = [h for h in party if h.alive]
             if not short_rest(survivors, clock, log):
                 long_rest(party, clock, log)
+                streak = 0      # a night's camp breaks the momentum streak
             auto_use_potions_on_rest([h for h in party if h.alive], log)
             held_over = refresh_foes_after_retreat(foes,
                                                    clock.day - day_before)
@@ -486,7 +499,9 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
             cleared_all = False
             break
 
-        award_xp(party, site.encounter_xp, log, "encounter")
+        streak += 1
+        award_xp(party, site.encounter_xp(streak), log,
+                 "encounter" if streak == 1 else f"encounter, streak {streak}")
         roll_loot(party, purse, rng, log)
 
         survivors = [h for h in party if h.alive]

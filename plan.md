@@ -9,43 +9,15 @@ file rather than marking it done.
 
 ---
 
-## Next up — the world map & navigation layer
+*(2026-07-09: the world map & navigation layer SHIPPED — location state,
+local boards, list-shaped lands, travel/explore/hunt/engage, the road's
+party-independent encounter table with the spotted/ambush valve, and with
+it the momentum-streak XP and the pain-2 spiral regear. Mechanics in
+rules.md — the World & Navigation add-on and the updated wound-tier /
+XP sections; measured numbers in CLAUDE.md. What remains from that design
+session lives in the open questions and parked ideas below.)*
 
-*(2026-07-09 design session: quests are currently global — `board` lists the
-whole world and nothing anchors the party anywhere. The fix is a light
-navigation layer over the existing worldgen, list-shaped, not spatial. All
-numbers below are provisional until simmed/played.)*
-
-- **Location state & local boards.** The save gains a current-location; the
-  party is always *somewhere* (a settlement, or traveling/afield). `board`
-  shows only the local settlement's quests, and taking a quest means being
-  there. The world stops being globally available.
-- **The map is a list, not a grid.** ~5 lands (one per race), each holding
-  its settlements and wilderness — no coordinates. Travel inside a land
-  takes 1 day, to another land 2 days; the world can grow later if that
-  feels small. Travel days are camp nights, so healing en route falls out
-  of the existing recovery ticks — no new mechanic.
-- **Travel encounters.** Each travel day risks a combat encounter
-  (~10-20%). Any level can appear, weighted strongly toward low — the rare
-  high tail is how the world above the party's level stays real. Needs an
-  **avoidability valve**: an encounter well above the party should usually
-  be spotted first (avoid, or attempt to slip past) so the tail signals
-  danger instead of executing the party on a die roll.
-- **The explore move.** Spend a day to discover a place in the current land
-  you haven't seen; pays XP for the discovery, at a higher encounter chance
-  (~30%). Discovered places persist in the save.
-- **A farm loop that never runs dry.** Wilderness hunting/patrol: generated
-  encounters at the local band paying the flat encounter rate, so grinding
-  gold/XP is always possible even with the board's finite XP.
-- **Difficulty geography.** Lands/areas carry level *bands* — ranges, 3-5
-  across the world, never 20 micro-tiers — posted independent of the party
-  (the OSR stance; the settlement bands already work this way, this gives
-  them geography). The open question below on the viable level band decides
-  how the bands are spaced.
-
----
-
-## Then — major questlines & the world's story layer
+## Next up — major questlines & the world's story layer
 
 *(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
 engine, the humanoid ladder (soldier→warlord), the generation layer
@@ -74,14 +46,14 @@ STORY layer:)*
   randomly in one band per settlement kind (that randomness is v1's
   placeholder, kept on purpose).
 
-**A career finding to design against** (bench_quests, 2026-07-08): under sim
-policy a full 1-20 career is roguelike-lethal — L5 46% / L11 14% / L20 ~0%,
-half the deaths at the rank-0 front door, and past ~L13 outleveling content
-stops working because the party saturates (skills capped, pools only) while
-the bestiary keeps climbing. The top band's missing player power is exactly
-the next systems below: masterwork gear, armor, magic. Decide eventually:
-is a playthrough a roguelike run (death = new party, the world persists) or
-should the curve soften?
+**A career finding to design against** (updated 2026-07-09): the pain-2
+regear answered most of 2026-07-08's roguelike-lethality — careers now
+reach L5 68% / L11 38% / L20 6% (median death L8, was L3-4). What remains
+of the finding: the top band (15-20) is still the hard edge (per-quest
+wipe 40-65% at level) and still waits on masterwork gear, armor, and magic
+for its missing player power. The "is a playthrough a roguelike run?"
+question is softened but not closed — the party-members-as-lives idea
+(parked below) is the standing candidate answer.
 
 ---
 
@@ -154,11 +126,6 @@ should the curve soften?
   possible future pivot away from the heroic tone, not drift.
 - **Power potion re-stock** — retired 2026-07; re-circulate the kind if
   War-Breath ever makes Power genuinely scarce in play.
-- **Show the wound penalty in the player log** — the full log prints
-  `-n to rolls` on every wound line; the player log prints HP only, so the
-  death spiral is invisible to the player. Low-hanging legibility fix; do
-  it before touching spiral *mechanics*, so any tuning reacts to a spiral
-  the player can actually see.
 - **Rename the "killing blow" tier** — it is 6 flat HP and only kills at
   0 HP unsaved, but the name reads as an instant kill in play (a testing
   session tripped on it). Pure renaming ("mortal strike", "crippling
@@ -185,41 +152,42 @@ should the curve soften?
   with their status; a `history` subcommand listing what the party has done
   (and when) is cheap and gives the save a memoir.
 - **Site persistence / repopulation** — cleared-so-far rooms refill after a
-  day or two, so a site cannot be done piecemeal with a camp between every
-  door. The enforcement half of the resource-horizon question below; only
-  worth building if that question resolves toward budgeting HP across a
-  site.
+  day or two, the STICK version of one-go sites. The carrot version (the
+  momentum streak) shipped 2026-07-09; revisit the stick only if play shows
+  the streak isn't pressure enough.
+- **Give the rapier its niche back** — the 2026-07-09 pain regear halved
+  the value of chip grazes, which was the rapier's whole edge (graze-floor
+  thrusts feeding the spiral): it now duels a close second everywhere
+  instead of best-on-three-frames (bench_weapons). Candidate fixes if the
+  designer wants the old story back: rapier ignores the pain divisor
+  (precision finds the nerve), or +1 atk. Do nothing until it's felt in
+  play.
+- **Re-annotate the bestiary for the pain-2 party** — at-level win rates
+  drifted up ~5-10 points for the monster families (heroes toughened,
+  monsters kept their pain; the humanoid ladder got the same buff and
+  stayed put). The catalog still orders correctly and the generator's
+  at-level band is honest, so this is calibration polish, not a fire —
+  a dedicated bench session when the numbers start feeling mushy.
 
 ---
 
 ## Open questions
 
-- **The resource horizon** (2026-07-09, the current big question). Camping
-  after any encounter makes HP cheap — healing, potions, and defense only
-  become valuable if resources are budgeted over a *site*, not one fight.
-  The candidate package (its pieces reinforce each other and should be
-  judged together): sites done in one go (via repopulation and/or travel
-  friction), **larger HP pools**, and a **geared-down hero death spiral**
-  (a hero pain divisor, or a cap on the wound penalty) so "low on HP" is
-  tension rather than helplessness. This *conflicts* with the 2026-07
-  lethality retune, which put the danger in the single encounter precisely
-  because camping was free — pick one horizon and retune; don't run both
-  screws tight at once. The far end of this dial — flat combat, no STA, no
-  wound penalty — is recorded as considered and resisted: the pause,
-  retreat, potion, and Bulwark decisions all hang off fatigue and the
-  spiral, and removing them removes most of the game's decisions. First
-  step either way: make the spiral visible in the player log (parked idea
-  above) before tuning it.
-- **How wide is the viable level band?** The goal of all difficulties
-  existing on the map at once pushes against deadly at-level combat: the
-  benches say -2 levels is a real wall, so the felt band today is roughly
-  [-something small, +2]. If leveled areas should be *choices* (farm low,
-  challenge high, Shamus Young's self-regulating difficulty), the band may
-  need widening — which is the same lever as the resource-horizon question
-  (bigger pools, gentler spiral). If instead the band stays narrow, the
-  map's high bands are honest signage ("come back at 14"), which is the
-  OSR answer and already how the barrow works. Decide which game it is
-  before tuning the navigation layer's bands.
+- ~~The resource horizon~~ **Resolved (2026-07-09):** the carrot was chosen
+  over the stick — the momentum streak backloads per-encounter XP into
+  one-go site runs (camping stays available, at a pay cost), and the
+  spiral was geared down via the pain divisor (trained fighters at pain 2,
+  both sides) instead of a penalty cap or flat combat. Measured: cleared
+  runs now spread ~20/50/25/3 across the <10 / 10-40 / 40-70 / 70%+
+  HP-lost buckets (the middle exists), reckless play still wipes ~70%.
+  The flat-combat temptation stays recorded-and-resisted. Re-open only if
+  play shows camping still trivializes HP despite the streak.
+- ~~How wide is the viable level band?~~ **Resolved by the same regear
+  (2026-07-09):** punching up 2 levels went from "a real wall" to a
+  30-80% fight depending on band — leveled areas are now real choices
+  (farm low / challenge high), while the road's party-independent table
+  and straight-shown board levels keep the OSR stance. The felt width in
+  actual play is still to be confirmed at the table.
 - **Armor:** adopt, simplify, or defer (see above) — the least-developed
   system.
 - ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,

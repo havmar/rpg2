@@ -250,10 +250,17 @@ def _rest_up(party, clock, log) -> None:
 def career_run_site(site, party, clock, purse, rng, log) -> bool:
     """One site, room by room, camping up before every door (see _rest_up).
     A fled room gets one rested return trip, then the site is abandoned.
-    Returns True on a full clear (pays the site's lump like run_site)."""
+    Returns True on a full clear (pays the site's lump like run_site).
+    The momentum streak applies honestly: this policy's camps reset it, so
+    a career duo mostly earns the piecemeal (base) encounter rate -- the
+    price of its cautious pacing, same as it would be for a player's."""
     foe_n = 0
+    streak = 0
     for room_i, (room_name, roster) in enumerate(site.rooms):
+        day_before_rest = clock.day
         _rest_up(party, clock, log)
+        if clock.day != day_before_rest:
+            streak = 0
         attempts = 0
         foes = None
         while True:
@@ -274,13 +281,16 @@ def career_run_site(site, party, clock, purse, rng, log) -> bool:
                 if attempts >= rpg.SIM_MAX_ROOM_ATTEMPTS:
                     return False        # abandoned
                 _rest_up(party, clock, log)
+                if clock.day != day_before:
+                    streak = 0
                 rpg.auto_use_potions_on_rest(
                     [h for h in party if h.alive], log)
                 foes = rpg.refresh_foes_after_retreat(
                     foes, clock.day - day_before)
                 continue
             break
-        rpg.award_xp(party, site.encounter_xp, log, "encounter")
+        streak += 1
+        rpg.award_xp(party, site.encounter_xp(streak), log, "encounter")
         rpg.roll_loot(party, purse, rng, log)
     rpg.award_quest(party, purse, site.quest_gold, site.quest_xp,
                     log, site.quest_line)
