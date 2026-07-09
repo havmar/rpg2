@@ -426,6 +426,28 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
                    f"{len(nxt['rooms'])} encounter(s))")
 
 
+def pay_set_site_clear(state: dict, log: list[str], site_key: str,
+                       room: int) -> None:
+    """A SET site (hideout/barrow) has no quest cursor, so track its cleared
+    rooms here and pay the site-clear lump the first time every room is down --
+    the same gold + XP lump board quests pay via advance_quest, and the sims
+    pay via sites.run_site (dm.md: 'both set sites pay themselves now'). The
+    play driver was the one path that skipped it. Order-independent (rooms may
+    be run in any order) and paid once per site."""
+    site = SITES.get(site_key)
+    if site is None:
+        return
+    rec = state.setdefault("site_clears", {}).setdefault(
+        site_key, {"rooms": [], "paid": False})
+    if room not in rec["rooms"]:
+        rec["rooms"].append(room)
+    if rec["paid"] or len(rec["rooms"]) < len(site.rooms):
+        return
+    rec["paid"] = True
+    award_quest(state["party"], state["purse"], site.quest_gold,
+                site.quest_xp, log, site.quest_line, banner="SITE CLEARED")
+
+
 def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
@@ -453,6 +475,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             log.append(weapons_left)
         if quest is not None:
             advance_quest(state, log, quest)
+        elif site is not None:
+            pay_set_site_clear(state, log, site, room)
 
     print_combat(log)
     save(state)
