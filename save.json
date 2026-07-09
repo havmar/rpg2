@@ -18,8 +18,8 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 5,
+   "hp": 7,
+   "cur_sta": 2,
    "cur_power": 3,
    "down": false,
    "dead": false,
@@ -55,8 +55,8 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 6,
+   "hp": 10,
+   "cur_sta": 3,
    "cur_power": 6,
    "down": false,
    "dead": false,
@@ -82,8 +82,8 @@
  "purse": {
   "gold": 0
  },
- "foe_count": 0,
- "active_quest": null,
+ "foe_count": 3,
+ "active_quest": "q37",
  "world": {
   "seed": 17106899,
   "settlements": [
@@ -2183,7 +2183,129 @@
    }
   }
  },
- "pending": null,
+ "pending": {
+  "foes": [
+   {
+    "name": "Press-Ganger 1",
+    "dex": 5,
+    "str_": 3,
+    "sta": 5,
+    "max_hp": 7,
+    "power": 0,
+    "ability": null,
+    "sta_cost": 1,
+    "undead": false,
+    "pain": 1,
+    "tireless": false,
+    "pursues": true,
+    "crowd_cap": 2,
+    "regen": 0,
+    "sweep": 1,
+    "sweep_cost_power": 0,
+    "sweep_label": "",
+    "hp": 0,
+    "cur_sta": 5,
+    "cur_power": 0,
+    "down": false,
+    "dead": true,
+    "items": {},
+    "hp_regen_per_night": 1,
+    "level": 1,
+    "xp": 0,
+    "skill_points": 0,
+    "training": 0,
+    "weapon": "light hammer",
+    "weapon_broken": false,
+    "proficiency": {},
+    "epithet": ""
+   },
+   {
+    "name": "Wrench-Guard 2",
+    "dex": 5,
+    "str_": 4,
+    "sta": 6,
+    "max_hp": 10,
+    "power": 0,
+    "ability": null,
+    "sta_cost": 1,
+    "undead": false,
+    "pain": 1,
+    "tireless": false,
+    "pursues": true,
+    "crowd_cap": 2,
+    "regen": 0,
+    "sweep": 1,
+    "sweep_cost_power": 0,
+    "sweep_label": "",
+    "hp": 10,
+    "cur_sta": 3,
+    "cur_power": 0,
+    "down": false,
+    "dead": false,
+    "items": {},
+    "hp_regen_per_night": 1,
+    "level": 1,
+    "xp": 0,
+    "skill_points": 0,
+    "training": 0,
+    "weapon": "spear",
+    "weapon_broken": false,
+    "proficiency": {},
+    "epithet": ""
+   },
+   {
+    "name": "Wrench-Guard 3",
+    "dex": 5,
+    "str_": 4,
+    "sta": 6,
+    "max_hp": 10,
+    "power": 0,
+    "ability": null,
+    "sta_cost": 1,
+    "undead": false,
+    "pain": 1,
+    "tireless": false,
+    "pursues": true,
+    "crowd_cap": 2,
+    "regen": 0,
+    "sweep": 1,
+    "sweep_cost_power": 0,
+    "sweep_label": "",
+    "hp": 10,
+    "cur_sta": 3,
+    "cur_power": 0,
+    "down": false,
+    "dead": false,
+    "items": {},
+    "hp_regen_per_night": 1,
+    "level": 1,
+    "xp": 0,
+    "skill_points": 0,
+    "training": 0,
+    "weapon": "spear",
+    "weapon_broken": false,
+    "proficiency": {},
+    "epithet": ""
+   }
+  ],
+  "fired": [
+   [
+    "stamina",
+    "Sela"
+   ]
+  ],
+  "round": 3,
+  "crossings": [
+   [
+    "stamina",
+    "Sela"
+   ]
+  ],
+  "xp": 68,
+  "site": "q37/s1",
+  "room": 1,
+  "quest": "q37"
+ },
  "rooms": {},
  "rng": [
   3,
@@ -2812,7 +2934,7 @@
    828786813,
    115335676,
    3488604277,
-   53
+   137
   ],
   null
  ]
