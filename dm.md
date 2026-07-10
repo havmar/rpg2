@@ -47,6 +47,13 @@ player's core decision:**
   next encounter (same pause / retreat machinery as the set sites).
   Progress is remembered per quest -- switching quests and coming back
   later is fine, but working it means being there.
+- **Check where the party stands BEFORE framing a scene.** Quests are
+  local, and the scripts enforce it: `room`/`take` refuse with a "travel
+  there first" line when the party is elsewhere. Don't narrate the arrival
+  at the night market and then have the script contradict you -- glance at
+  `status` (the `At:` field) or the active-quest line first; if the job's
+  settlement is elsewhere, the road IS the next scene: narrate setting
+  out, run `travel`, then frame the arrival.
 - Sites pay themselves: each cleared site pays its lump (gold + XP) and the
   last one completes the quest -- no manual award needed. `award GOLD XP
   NAME` remains for off-script scenes only.
@@ -71,6 +78,13 @@ player's core decision:**
   job is to say plainly that running is the answer: the first pause is the
   exit, `retreat` is the move, and surviving an ambush by something
   unbeatable IS the story.
+- **Ordinary trouble is spotted first ~25% of the time too** (2026-07-10):
+  the script prints `Spotted first -- L2: 3x Wolf...` and stops. Same
+  protocol as the big sightings -- present it as landscape ("shapes
+  circling a carcass, downwind of you"), then the player's call: `engage`
+  to attack, any other move slips past. It's a free pass on a fight they
+  didn't order OR free initiative on one they want -- don't editorialize
+  which; the level readout speaks for itself.
 - `explore` spends a day ranging the current land: discovers a new named
   place (persists on `map`, pays a little XP), camps rough overnight, and
   runs a higher encounter risk (~30%). Discovered places are yours to hang
@@ -82,6 +96,22 @@ player's core decision:**
   but no free recovery either. NOTE: what roams a land is that race's
   template pools -- in some lands the cheapest prey is a level-3 dire
   wolf, and a fresh duo should hear about it before the pounce.
+  **~10% of hunts the hunter is the hunted** (2026-07-10): an AMBUSH off
+  the road's any-level table, met blade-first (the script prints it). The
+  farm is never entirely safe -- warn a player who treats `hunt` as a
+  zero-risk button, and when the ambush is far over their weight, running
+  is the answer, as on the road.
+- **Nights have geography now** (2026-07-10). `camp` in the WILDS risks a
+  night visitor (~10%, the road's table, spotted/ambush valves apply --
+  rolled after the night's recovery, so the party at least wakes fresh);
+  behind settlement walls `camp` is safe and free. `tavern` (settlements
+  only, 1g per living member) buys the same night PLUS a one-day
+  OVERCHARGE: everyone wakes with HP and STA ~10% of max (min +1) ABOVE
+  their caps ("13/12 HP"). The excess can't be topped back up once spent
+  and fades at the next night's rest -- it's a buffer for tomorrow's
+  door, best bought the evening before a hard site. Whether to pay is the
+  player's call, like every rest decision; both taverns and camps reset
+  the momentum streak (any night does).
 
 ## The player character
 
@@ -89,6 +119,16 @@ player's core decision:**
   the PC in second person: "you". `session.py` marks them `(YOU)`.
 - **If the PC dies, the game is over** -- even if a companion still stands
   (`session.py` prints the GAME OVER line for you).
+- **Fate's bargain guards the PC (2026-07-10).** A blow that would kill the
+  PC is commuted to a Down while a companion still draws breath -- the log
+  announces it ("Fate has spared them; its price comes due if this fight
+  is won"). If the party WINS that fight, the last foe's dying blow kills
+  one RANDOM companion: the trade is a companion's life for the player's,
+  and the engine prints it. If the party loses anyway, it's still a wipe
+  and GAME OVER; a clean retreat waives the debt (nothing owed, nothing
+  won). Play it with weight: the reprieve is a huge beat, and the
+  post-spare choice -- press on and pay a companion, or flee with the
+  downed PC -- belongs to the player. Never soften the price by fiat.
 - The other hero is an **NPC companion**: the DM animates them (voice, small
   decisions, flavor), but the player directs them *tactically* -- who they
   focus, when they drink a potion, whether they Heal. (Richer intra-party
@@ -119,7 +159,10 @@ player's core decision:**
   until it's settled. So a fight with a pause spans two (rarely three)
   messages: fight-to-pause + question, then the answer to conclusion.
 - **Retreat is a real option now -- offer it.** Parting blows from every foe
-  still fit to swing, then ONE group chase roll (the barrow's undead never
+  still fit to swing -- softened ONE wound tier since 2026-07-10 (a hasty
+  swing at a fleeing back: it can still Down a hero, but never lands the
+  crippling tier, so breaking off when low is no longer a guaranteed
+  mauling) -- then ONE group chase roll (the barrow's undead never
   pursue past the door -- fleeing the barrow always succeeds once outside;
   bandits DO give chase, and a failed break resumes the fight on the spot).
   A fled site room keeps its survivors (shown in `status`): re-running the
@@ -143,7 +186,8 @@ player's core decision:**
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
   (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
   streak: pressing on pays escalating XP per room, camping trades that pay
-  for safety; say the trade out loud), buying potions or weapons (`buy`),
+  for safety; say the trade out loud), paying for the tavern instead of
+  camping free (`tavern`), buying potions or weapons (`buy`),
   **spending skill points** (`train HERO combat|weapon` -- points bank on
   level-up and NOTHING auto-spends), where to `travel` and which site to
   run, whether to `engage` a sighting, whether to press on or pull back,
@@ -226,6 +270,9 @@ player's core decision:**
   (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
   day advances, the
   slot refills. Nothing forces the day to end -- camping is the player's call.
+  A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
+  +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
+  visitor (see The wilds above).
 - **The death spiral is geared for trained fighters** (2026-07-09): heroes
   and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor),
   and the player log now prints the penalty on every wound line -- quote it
@@ -258,7 +305,10 @@ player's core decision:**
   wolf row, an orc "Deathblade" the blademaster; the display name is flavor,
   the stats never change with the costume. Narrate the skin, trust the row.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
-  an unsaved killing blow. Total party knockout = the Down are finished off.
+  an unsaved crippling blow (renamed from "killing blow" 2026-07-10 -- same
+  mechanic). Total party knockout = the Down are finished off. The PC's
+  death is intercepted by fate's bargain when a companion lives (see The
+  player character above).
 - **Weapons:** everyone wields exactly one (no inventory; swaps are narrative
   or `give`/`buy`). The quality four: rapier (+2 attack, -1 severity, always
   draws blood on a landed hit), katana (+1/+1, the all-rounder), zweihander
@@ -279,18 +329,23 @@ player's core decision:**
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
   weight class by construction, easy work pays less. **Per-encounter pay
-  rides the momentum streak** (2026-07-09): the k-th consecutive encounter
-  in the same site without a night's camp pays k x base -- the hideout's
-  rooms pay 8/15/22 in one go but 8/8/8 camped-between (the clear lump is
-  unchanged either way). Levels also grow the body: +1 max HP/STA/Power on
-  reaching every odd level (3, 5, 7...), on top of the banked skill point
-  per level.
+  rides the momentum streak** (steepened 2026-07-10): the k-th consecutive
+  encounter in the same site without a night's camp pays (1 + 2(k-1)) x
+  base -- x1/x3/x5, so the hideout's rooms pay 5/15/25 in one go but 5/5/5
+  camped-between (the clear lump is unchanged either way; piecemeal
+  collects ~70% of the site total, and the last room of a one-go run plus
+  the lump carries ~80% of it). Doing the whole site in one push IS the
+  paying line -- say the trade out loud at every mid-site camp decision.
+  Multi-site quests streak per site (each site ramps and pays on its own;
+  nothing forces marathoning a whole quest in one day). Levels also grow
+  the body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...),
+  on top of the banked skill point per level.
 - Set sites (both a short march from the STARTING settlement -- travel
-  there first): bandit hideout = the STARTER, a level-1 site (8/15/22
+  there first): bandit hideout = the STARTER, a level-1 site (5/15/25
   XP by room in one go, 15 g + 55 XP clear; a one-go first clear = level
   2) -- a real fight: a fresh party clears ~58% and someone hits the floor
   in about half the runs, so expect downs, drunk potions, and retreats
-  from day one. Skeleton barrow = TOUGH, a level-3 site (15/30/45 by room,
+  from day one. Skeleton barrow = TOUGH, a level-3 site (10/30/50 by room,
   45 g + 110 XP clear) -- train up AND arm up first (a fresh party clears
   ~13% and wipes ~6 times in 7; rank 2 clears about two-thirds, rank 2
   plus steel comfortably more; fleeing the barrow is always possible --

@@ -52,8 +52,9 @@ reach L5 68% / L11 38% / L20 6% (median death L8, was L3-4). What remains
 of the finding: the top band (15-20) is still the hard edge (per-quest
 wipe 40-65% at level) and still waits on masterwork gear, armor, and magic
 for its missing player power. The "is a playthrough a roguelike run?"
-question is softened but not closed — the party-members-as-lives idea
-(parked below) is the standing candidate answer.
+question is softened but not closed — fate's bargain (shipped 2026-07-10:
+the PC's death trades for a random companion's, rules.md) answers the
+in-fight half; the wipe version stays parked below.
 
 ---
 
@@ -115,21 +116,18 @@ question is softened but not closed — the party-members-as-lives idea
 - **Level requirements on masterwork/legendary weapons** — rejected: authored
   placement already gates them; revisit only if strong gear leaks downward.
 - **Weapon-granted abilities** — e.g. Berserk tied to the zweihander.
-- **The "obliterating" wound tier** — one tier above killing blow (severity
-  10+, ~9 HP, maybe pierces one Bulwark step) so landed blows differentiate
-  again in the 14-20 band; parked because monster STR past `soak + 7` buys
-  nothing under the current table (rules.md, the severity design note) and
-  the killing-blow cap is scary enough until the top band is authored.
+- **The "obliterating" wound tier** — one tier above the crippling blow
+  (severity 10+, ~9 HP, maybe pierces one Bulwark step) so landed blows
+  differentiate again in the 14-20 band; parked because monster STR past
+  `soak + 7` buys nothing under the current table (rules.md, the severity
+  design note) and the crippling-blow cap is scary enough until the top
+  band is authored.
 - **Venom / conditions** — the great spider's poison (and disease, bleeds…)
   is a whole system; the bite carries the row until conditions exist.
 - **Survival/adventure-sim pivot** (hunger, upkeep, inventory) — a deliberate
   possible future pivot away from the heroic tone, not drift.
 - **Power potion re-stock** — retired 2026-07; re-circulate the kind if
   War-Breath ever makes Power genuinely scarce in play.
-- **Rename the "killing blow" tier** — it is 6 flat HP and only kills at
-  0 HP unsaved, but the name reads as an instant kill in play (a testing
-  session tripped on it). Pure renaming ("mortal strike", "crippling
-  blow"...); the mechanic is fine.
 - **Crit/fumble on the 2d6** (snake-eyes auto-fail, boxcars auto-success or
   a guaranteed graze) — un-deadens hopeless exchanges: a DEX-4 attacker at
   -4 wounds and Spent currently rolls pressure that mathematically cannot
@@ -138,11 +136,13 @@ question is softened but not closed — the party-members-as-lives idea
   judging it. Note the counter-position first: a spent, near-dead fighter
   *being* helpless is partly the design working (that is what the pause,
   potions, and retreat are for).
-- **Party members as lives** — on a wipe the PC alone survives (at 1 HP),
-  companions die, and the PC loses a level and possibly possessions. Turns
-  companions into a graded life-resource and softens the career sim's
-  roguelike lethality (see the career finding above) without making death
-  free. Interacts with the recruitment/CHA layer.
+- **Party members as lives, the wipe version** — the in-fight half shipped
+  2026-07-10 as **fate's bargain** (rules.md: the PC's death commutes to a
+  Down; winning the fight then costs a random companion's life). What
+  remains parked is the WIPE version: on a total party knockout the PC
+  alone crawls away (at 1 HP), losing a level and possibly possessions.
+  Revisit once fate's bargain has been felt in play; interacts with the
+  recruitment/CHA layer.
 - **Overfill potions** — drinking in advance tops HP/STA above max
   temporarily (pre-battle preparation as a real decision, and a use for
   potions at full health).

@@ -550,8 +550,20 @@ WILD_LEVEL_DECAY = 0.75      # P(road encounter is level L) ~ DECAY**L
 SPOTTED_MARGIN = 3           # foes this many levels above the party are
                              # spotted at range instead of met blade-first...
 AMBUSH_CHANCE = 0.25         # ...except this often, when they find YOU
+WILD_SPOTTED_CHANCE = 0.25   # ...and encounters BELOW that margin are spotted
+                             # first this often (2026-07-10): ordinary trouble
+                             # seen before it sees the party -- attack
+                             # (`engage`) or slip past, the player's call
 HUNT_LEVEL_REACH = 2         # a hunt stalks prey up to this far below the
                              # party's level (never above it)
+HUNT_AMBUSH_CHANCE = 0.10    # ...but this often the hunter is the hunted
+                             # (2026-07-10): the ambusher rolls off the ROAD's
+                             # party-independent table (roll_wild_level -- any
+                             # level, the higher the rarer), met blade-first
+CAMP_ENCOUNTER_CHANCE = 0.10  # a night camped in the WILDS (not at a
+                              # settlement) risks a visitor (2026-07-10):
+                              # rolled after the night's recovery, same road
+                              # table and spotted/ambush valves
 
 # Wilderness place names, discovered by the explore move (race-neutral;
 # the land's race colors the fiction, the DM colors the rest).

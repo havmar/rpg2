@@ -115,8 +115,11 @@ a pointer: what the file is, how it's run, where its docs are.
   `show QID` / `take QID` / `room`, plus `forge` (the DM quest creator).
   World play (2026-07-09): `map` / `travel` / `explore` / `hunt` /
   `engage` — location state, local boards, road encounters, the momentum
-  streak. Encounter commands print the full log then the
-  `--- PLAYER LOG ---` block the DM pastes into chat.
+  streak; since 2026-07-10 also `tavern` (the paid settlement night with
+  the one-day HP/STA overcharge), wilderness `camp` night encounters, the
+  ordinary-encounter spotted valve, and the hunt ambush. Encounter
+  commands print the full log then the `--- PLAYER LOG ---` block the DM
+  pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -206,7 +209,10 @@ mechanic *does* and *why* is rules.md's job.
   — trained fighters, both sides, take `hp_lost // 2` as the wound
   penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
   `streak_multiplier` — consecutive same-site encounters without a camp
-  pay rising XP; a full one-go run collects exactly the encounter share),
+  pay rising XP; a full one-go run collects exactly the encounter share;
+  2.0 since 2026-07-10: x1/x3/x5 across three rooms), the tavern night
+  (`TAVERN_COST_PER_HERO`, `TAVERN_OVERCHARGE` — the one-day above-max
+  HP/STA edge; `recover()` is the clamp that makes the excess spent-only),
   and the party-size counterweights
   (`CROWD_CAP` — the press; `XP_PARTY_BASELINE` — awards quoted at the
   duo, paid `x 2 / party size`). The quest generator's own knobs sit at
@@ -214,7 +220,8 @@ mechanic *does* and *why* is rules.md's job.
   `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands), and
   so do the navigation layer's (`TRAVEL_DAYS_*`, `TRAVEL_ENCOUNTER_CHANCE`,
   `EXPLORE_*`, `WILD_LEVEL_DECAY`, `SPOTTED_MARGIN`, `AMBUSH_CHANCE`,
-  `HUNT_LEVEL_REACH`).
+  `WILD_SPOTTED_CHANCE`, `HUNT_LEVEL_REACH`, `HUNT_AMBUSH_CHANCE`,
+  `CAMP_ENCOUNTER_CHANCE`).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -227,10 +234,15 @@ mechanic *does* and *why* is rules.md's job.
   Returns a `Pause` mid-fight when `pause_triggers=True`; resume by calling
   again with the same `fired` set (keyed by `(kind, hero)` — each trigger
   once per hero per fight, crossing-only), `first_round=round+1`, and
-  per-hero `actions`.
-- **Retreat** — `attempt_retreat` (parting blows + ONE group chase roll;
-  `pursues=False` foes never chase), `refresh_foes_after_retreat` (fled-room
-  persistence).
+  per-hero `actions`. Fate's bargain (2026-07-10) lives here too: the fall
+  handler commutes a protagonist's death to a Down (`Entity.protagonist` /
+  `fate_debt`; session marks `party[0]`), `_settle_fate_debt` collects the
+  companion's life at victory.
+- **Retreat** — `attempt_retreat` (parting blows — softened one wound tier
+  since 2026-07-10 (`_attack(soften=True)`): the door maims, never kills
+  outright — + ONE group chase roll; `pursues=False` foes never chase; a
+  clean escape waives any fate debt), `refresh_foes_after_retreat`
+  (fled-room persistence).
 - **Between fights** — `short_rest` / `long_rest` (the `Clock`), `use_potion`,
   `use_heal`, `buy_potion` / `buy_weapon` (the `Purse`), `equip_weapon`,
   `award_xp` / `award_quest` / `roll_loot`, `train_combat_once` /
@@ -443,6 +455,59 @@ on cleared runs). The full suite, re-run:
   added 2026-07-08) was never persisted to save.json, so the hideout/barrow
   lump could never actually pay across separate CLI invocations. It
   persists now.
+
+**Measured numbers (2026-07-10, the play-feedback batch: crippling-blow
+rename + softened parting blows + fate's bargain + the wilds valves +
+tavern/camp nights + streak x1/x3/x5).** Mechanics in rules.md (fate's
+bargain, the tavern, the retreat softening) and dm.md. The full suite
+re-run; **the tuned game is UNDISTURBED** — by design, most of the batch is
+session-layer (fate's bargain needs `Entity.protagonist`, which only
+session play sets; the wilds valves live in `session.py`; the tavern is a
+command) and the one engine change the sims do see (parting blows softened
+one tier) barely moves site outcomes, because deaths AT the door were
+already rare — the lethal retreat failure is the chase, and that is
+untouched:
+
+- **Hideout** (rank 0, 10k): clear **58.6** / wipe **36.5** / Down ~49 —
+  same as 2026-07-09. **Barrow** `[3,3,4]`: clear **13.2** / wipe **83.5**
+  (was 13/85). Cleared-run HP-lost spread 17/48/31/3 (hideout) and
+  19/52/25/4 (barrow) — the middle is still where wins live.
+- **Correction while re-measuring:** reckless (no-resource) hideout wipe
+  measures **80%** on BOTH the previous commit and this one — the ~70% in
+  the 2026-07-09 entry was stale (quoted from a pre-6-bandit-layout run).
+  The resource gap is even wider than documented: 36.5% wipe with
+  resources vs 80% without. Barrow reckless 98.7%.
+- **Training ladder** (5k/rank): barrow **14 -> 38 -> 69 -> 89**, hideout
+  **58 -> 83 -> 95 -> 99**. **Party size** (5k/size): hideout
+  **13 / 58 / 89 / 96**, barrow **0.6 / 14 / 51 / 82** — all within a
+  point or two of 2026-07-09.
+- **Weapons matrix**: unchanged story (zweihander best duel on
+  precise/steady, katana on powerful/balanced, zweihander owns every swarm
+  column, staff trails). **Bestiary**: every row within noise of the
+  2026-07-09 numbers (archer 94, wolf 81, skeleton 86 ... dragon 84.5,
+  warlord 55.5); ordering intact.
+- **Careers** (200, camps-between-rooms policy): reach **L5 67% / L8 54% /
+  L11 37% / L14 19% / L20 4.5%**, median death L8, capped career ~141
+  days / ~38 quests — statistically the same curve as 2026-07-09. The
+  steeper streak doesn't slow the career sim because its policy camps
+  between rooms and always earned base rate; what it changes is the
+  PLAYED game's incentive: piecemeal now collects ~70% of a site's total
+  (was ~78%), and the last room of a one-go run plus the lump carries
+  ~80% of the site's pay.
+- **New streak anchors** (exact by construction): a 3-room site pays
+  `base x 1/3/5` in one go — hideout 5/15/25 + 55 lump = 100, barrow
+  10/30/50 + 110 lump = 200 — and `base x 1/1/1` camped-between. The
+  MIDDLE rate is invariant under the step change, so wild/road/hunt pay
+  (that mid rate; 15 at L1) and the off-script `ENCOUNTER_XP = 15` are
+  untouched.
+- **Fate's bargain measured at the engine level** (rigged 400-fight probe,
+  not the tuned sims): the spare converts a PC death into a Down and, on
+  victory, one random companion's death; a clean retreat after the spare
+  waives it. In the sims (`protagonist` never set) nothing fires — bench
+  numbers can't drift from it. Expect PLAYED campaigns to lose fewer PCs
+  and more companions; no sim models that yet (the career sim has no
+  protagonist either — a future "PC-centric career" variant is the
+  natural check if this needs numbers).
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

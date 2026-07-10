@@ -30,7 +30,7 @@ The shape of a playthrough:
   board / show QID / take QID / room        -- the LOCAL quest board (the game)
   hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
   resume [...] / retreat                    -- settle a paused fight
-  rest / camp / award / buy / give / train / use / heal
+  rest / camp / tavern / award / buy / give / train / use / heal
                                             -- the between-fights layer
   forge                                     -- DM-built quest, off the board
 """
@@ -46,6 +46,7 @@ from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
+    TAVERN_COST_PER_HERO, TAVERN_OVERCHARGE,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
     make_party, stat_line, progress_line, fallen_weapons_line,
@@ -54,6 +55,7 @@ from rpg import (
     attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
+    tavern_rest as _tavern_rest,
     buy_potion as _buy_potion, use_heal as _use_heal,
     use_potion as _use_potion, buy_weapon as _buy_weapon,
     equip_weapon as _equip_weapon,
@@ -68,6 +70,8 @@ from quests import (generate_world, forge_quest, board_lines,
                     TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
                     TRAVEL_ENCOUNTER_CHANCE, EXPLORE_ENCOUNTER_CHANCE,
                     EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
+                    WILD_SPOTTED_CHANCE, HUNT_AMBUSH_CHANCE,
+                    CAMP_ENCOUNTER_CHANCE,
                     HUNT_LEVEL_REACH, WILD_NAME_PARTS)
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -269,6 +273,10 @@ def load() -> dict:
     with open(STATE_PATH, encoding="utf-8") as f:
         doc = json.load(f)
     party = [_entity_from_dict(d) for d in doc["party"]]
+    if party:
+        # party[0] IS the PC by definition (dm.md) -- assert it positionally
+        # on every load so fate's bargain also covers pre-flag saves.
+        party[0].protagonist = True
     rng = random.Random()
     v, internal, gauss = doc["rng"]
     rng.setstate((v, tuple(internal), gauss))
@@ -340,6 +348,7 @@ def require_no_pending(state: dict) -> bool:
 def cmd_new(args: argparse.Namespace) -> None:
     rng = random.Random(args.seed)
     party = make_party(rng)
+    party[0].protagonist = True     # fate's bargain guards the PC (rpg.Entity)
     world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
                                             # whole playthrough, world and all
     world = generate_world(world_seed)
@@ -891,9 +900,10 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
 
 def wild_event(state: dict, chance: float, banner: str) -> bool:
     """Roll the wilds once: nothing, a FIGHT (returns True; the encounter
-    machinery has taken over and saved), or a SIGHTING (foes well above the
-    party are usually spotted at range -- avoid or `engage`, the player's
-    call -- unless they ambush first)."""
+    machinery has taken over and saved), or a SIGHTING. Foes well above the
+    party are usually spotted at range (unless they ambush first), and even
+    ordinary trouble is spotted first WILD_SPOTTED_CHANCE of the time
+    (2026-07-10) -- either way avoid or `engage` is the player's call."""
     rng = state["rng"]
     if rng.random() >= chance:
         return False
@@ -901,16 +911,22 @@ def wild_event(state: dict, chance: float, banner: str) -> bool:
     land = state["location"]["land"]
     kinds = build_wild_encounter(level, land, rng)
     party_level = max(h.level for h in state["party"] if not h.dead)
-    if (level >= party_level + SPOTTED_MARGIN
-            and rng.random() >= AMBUSH_CHANCE):
+    towering = level >= party_level + SPOTTED_MARGIN
+    spotted = (rng.random() >= AMBUSH_CHANCE if towering
+               else rng.random() < WILD_SPOTTED_CHANCE)
+    if spotted:
         line = f"L{level}: {roster_kinds_line(kinds, {})}"
         state["sighting"] = {"kinds": list(kinds), "level": level,
                              "day": state["clock"].day, "line": line}
-        print(f"  Sighted at a distance -- {line}. Well above the party's "
-              f"weight; they haven't noticed you. `engage` to close with "
-              f"them; any other move slips away.")
+        if towering:
+            print(f"  Sighted at a distance -- {line}. Well above the "
+                  f"party's weight; they haven't noticed you. `engage` to "
+                  f"close with them; any other move slips away.")
+        else:
+            print(f"  Spotted first -- {line}. They haven't noticed the "
+                  f"party. `engage` to attack; any other move slips past.")
         return False
-    if level >= party_level + SPOTTED_MARGIN:
+    if towering:
         print(f"  AMBUSH -- they found the party first, and they are far "
               f"beyond it. Running away is a pause action (retreat).")
     fight_wild_encounter(state, kinds, level, banner)
@@ -1014,10 +1030,22 @@ def cmd_hunt(args: argparse.Namespace) -> None:
         return
     clear_sighting(state)
     party, rng = state["party"], state["rng"]
+    land = state["location"]["land"]
+    if rng.random() < HUNT_AMBUSH_CHANCE:
+        # The hunter is the hunted (2026-07-10): stalking means going where
+        # the predators are, and this often something off the ROAD's table
+        # (any level, the higher the rarer) finds the party first. Met
+        # blade-first -- an ambush never grants the sighting choice.
+        level = roll_wild_level(rng)
+        kinds = build_wild_encounter(level, land, rng)
+        print(f"  The hunter is the hunted -- something found the party "
+              f"first. AMBUSH!")
+        fight_wild_encounter(state, kinds, level,
+                             f"Ambushed on the hunt in the {land} wilds")
+        return
     party_level = max(h.level for h in party if not h.dead)
     level = rng.randint(max(1, party_level - HUNT_LEVEL_REACH),
                         max(1, party_level))
-    land = state["location"]["land"]
     kinds = build_wild_encounter(level, land, rng)
     fight_wild_encounter(state, kinds, level,
                          f"The hunt in the {land} wilds")
@@ -1213,6 +1241,36 @@ def cmd_camp(args: argparse.Namespace) -> None:
     reset_streak(state)
     clear_sighting(state)
     print("\n".join(log))
+    if state.get("world") and state["location"]["kind"] != "settlement":
+        # A night in the wilds is not a night behind walls (2026-07-10):
+        # the fire can draw a visitor. Rolled after the night's recovery.
+        if wild_event(state, CAMP_ENCOUNTER_CHANCE,
+                      f"In the night at {state['location']['name']}"):
+            return
+    save(state)
+
+
+def cmd_tavern(args: argparse.Namespace) -> None:
+    """A paid night at the inn (settlements only): long rest plus the one-day
+    HP/STA overcharge (rpg.tavern_rest). Resets the streak like any night."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    if local_settlement(state) is None:
+        print(f"No tavern out here -- the party is at {location_line(state)}."
+              f" Beds are settlement comfort; in the wilds it's `camp`.")
+        return
+    log: list[str] = []
+    if not _tavern_rest(state["party"], state["clock"], state["purse"], log):
+        print("\n".join(log))
+        return
+    streak = state.get("streak") or {"site": None, "count": 0}
+    if streak["count"]:
+        log.append(f"    (the night breaks the momentum at {streak['site']} "
+                   f"-- the next encounter pays base XP again)")
+    reset_streak(state)
+    clear_sighting(state)
+    print("\n".join(log))
     save(state)
 
 
@@ -1389,8 +1447,20 @@ def main() -> None:
         help="long rest: full STA, weekly HP tick, advances a day -- and "
              "RESETS the same-site momentum streak (consecutive same-site "
              "encounters without a camp pay rising XP; camping mid-site "
-             "trades that pay for safety)")
+             "trades that pay for safety). A night camped in the WILDS "
+             f"(not at a settlement) risks a visitor "
+             f"(~{int(CAMP_ENCOUNTER_CHANCE * 100)}%%, the road's table)")
     p.set_defaults(func=cmd_camp)
+
+    p = sub.add_parser(
+        "tavern",
+        help=f"a paid night at the inn (settlements only, "
+             f"{TAVERN_COST_PER_HERO}g per living member): a full long rest "
+             f"plus a ONE-DAY OVERCHARGE -- everyone wakes with HP and STA "
+             f"+{int(TAVERN_OVERCHARGE * 100)}%% of max (min 1) ABOVE their "
+             f"caps; the excess can't be healed back and fades at the next "
+             f"night's rest. Resets the momentum streak like any night.")
+    p.set_defaults(func=cmd_tavern)
 
     p = sub.add_parser(
         "board",
@@ -1418,7 +1488,9 @@ def main() -> None:
              f"momentum streak) and risks a road encounter "
              f"(~{int(TRAVEL_ENCOUNTER_CHANCE * 100)}%%/day, ANY level -- "
              f"the higher the rarer; foes far above the party are usually "
-             f"spotted at range first, but can ambush)")
+             f"spotted at range first, but can ambush, and even ordinary "
+             f"trouble is spotted first ~{int(WILD_SPOTTED_CHANCE * 100)}%% "
+             f"of the time)")
     p.add_argument("dest", nargs="+", help="settlement or place (substring)")
     p.set_defaults(func=cmd_travel)
 
@@ -1436,7 +1508,9 @@ def main() -> None:
         help="stalk prey in the current land's wilds NOW (no day cost): a "
              "guaranteed encounter at-or-below the party's level -- the "
              "always-available farm loop, paying wild (below-board) XP "
-             "rates plus normal loot rolls")
+             "rates plus normal loot rolls. But "
+             f"~{int(HUNT_AMBUSH_CHANCE * 100)}%% of hunts the hunter is "
+             f"the hunted: an AMBUSH off the road's any-level table")
     p.set_defaults(func=cmd_hunt)
 
     p = sub.add_parser(
