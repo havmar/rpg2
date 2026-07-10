@@ -18,11 +18,11 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 4,
+   "hp": 0,
    "cur_sta": 3,
    "cur_power": 1,
    "down": false,
-   "dead": false,
+   "dead": true,
    "items": {
     "healing": 2,
     "stamina": 0
@@ -55,8 +55,8 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 4,
+   "hp": 6,
+   "cur_sta": 2,
    "cur_power": 6,
    "down": false,
    "dead": false,
@@ -92,10 +92,10 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 8,
-   "cur_sta": 5,
+   "hp": 0,
+   "cur_sta": 4,
    "cur_power": 3,
-   "down": false,
+   "down": true,
    "dead": false,
    "items": {
     "healing": 1,
@@ -2254,7 +2254,7 @@
     "sweep_cost_power": 0,
     "sweep_label": "",
     "hp": 9,
-    "cur_sta": 4,
+    "cur_sta": 2,
     "cur_power": 0,
     "down": false,
     "dead": false,
@@ -2288,7 +2288,7 @@
     "sweep_cost_power": 0,
     "sweep_label": "",
     "hp": 10,
-    "cur_sta": 4,
+    "cur_sta": 2,
     "cur_power": 0,
     "down": false,
     "dead": false,
@@ -2307,14 +2307,26 @@
   "fired": [
    [
     "wounds",
-    "Sela"
-   ]
-  ],
-  "round": 2,
-  "crossings": [
+    "Rhea"
+   ],
    [
     "wounds",
     "Sela"
+   ],
+   [
+    "stamina",
+    "Rhea"
+   ]
+  ],
+  "round": 4,
+  "crossings": [
+   [
+    "stamina",
+    "Rhea"
+   ],
+   [
+    "wounds",
+    "Rhea"
    ]
   ],
   "xp": 68,
@@ -2951,7 +2963,7 @@
    3053072133,
    1521525548,
    263906929,
-   137
+   204
   ],
   null
  ]
