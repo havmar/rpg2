@@ -20,7 +20,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 3,
-   "cur_sta": 4,
+   "cur_sta": 2,
    "cur_power": 1,
    "down": false,
    "dead": false,
@@ -58,15 +58,15 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 9,
-   "cur_sta": 2,
+   "hp": 8,
+   "cur_sta": 4,
    "cur_power": 4,
    "down": false,
    "dead": false,
    "fate_debt": false,
    "items": {
     "healing": 0,
-    "stamina": 2
+    "stamina": 1
    },
    "hp_regen_per_night": 2,
    "level": 1,
@@ -2696,10 +2696,10 @@
     "sweep_cost_power": 0,
     "sweep_label": "",
     "protagonist": false,
-    "hp": 2,
-    "cur_sta": 5,
+    "hp": 0,
+    "cur_sta": 4,
     "cur_power": 0,
-    "down": false,
+    "down": true,
     "dead": false,
     "fate_debt": false,
     "items": {},
@@ -2733,7 +2733,7 @@
     "sweep_label": "",
     "protagonist": false,
     "hp": 4,
-    "cur_sta": 5,
+    "cur_sta": 3,
     "cur_power": 0,
     "down": false,
     "dead": false,
@@ -2752,6 +2752,10 @@
   ],
   "fired": [
    [
+    "stamina",
+    "Brand"
+   ],
+   [
     "wounds",
     "Brand"
    ],
@@ -2760,15 +2764,11 @@
     "Rhea"
    ]
   ],
-  "round": 3,
+  "round": 5,
   "crossings": [
    [
-    "wounds",
-    "Brand"
-   ],
-   [
     "stamina",
-    "Rhea"
+    "Brand"
    ]
   ],
   "xp": 45,
@@ -3405,7 +3405,7 @@
    2129299772,
    376916585,
    3242860236,
-   143
+   184
   ],
   null
  ]
