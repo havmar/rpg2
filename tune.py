@@ -61,6 +61,10 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
     days = 0
     pow_left = sta_left = heal_left = gold = 0.0
     pow_max = sta_max = 0.0
+    hp_hist = Counter()     # cleared runs only: party HP lost, bucketed --
+                            # the "less binary outcomes" criterion (2026-07-09):
+                            # the 25% and 75% middle should be reachable, not
+                            # just walk-away-clean and the grave
     rng = random.Random(12345)
     for _ in range(trials):
         party = rpg.make_party(rng)
@@ -74,6 +78,11 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
             downed_runs += 1
         if any("QUEST COMPLETE" in line for line in log):
             cleared_runs += 1
+            lost = sum(h.max_hp - h.hp for h in party)
+            frac = lost / sum(h.max_hp for h in party)
+            hp_hist["<10%" if frac < 0.10 else
+                    "10-40%" if frac < 0.40 else
+                    "40-70%" if frac < 0.70 else ">=70%"] += 1
         if any("breaks for safety" in line for line in log):
             fled_runs += 1
         if early_pressure(log, [h.name for h in party]):
@@ -88,6 +97,7 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
             sta_max += h.sta
     n = trials * 2  # two heroes per run
     stats = {
+        "hp_hist": hp_hist,
         "down_pct": 100 * downed_runs / trials,
         "clear_pct": 100 * cleared_runs / trials,
         "flee_pct": 100 * fled_runs / trials,
@@ -139,12 +149,27 @@ def main():
           "usual; reckless = none of it):")
     print(f"{'site':<24}{'policy wipe%':>14}{'policy clear%':>15}"
           f"{'reckless wipe%':>16}{'reckless clear%':>17}")
+    hp_rows = []
     for site_key, label in (("hideout", "hideout (starter)"),
                             ("barrow", "barrow [3,3,4]")):
         _, pol, _ = simulate(site_key, trials=10000)
         _, rek, _ = simulate(site_key, trials=10000, reckless=True)
         print(f"{label:<24}{pol['wipe_pct']:>13.1f}%{pol['clear_pct']:>14.1f}%"
               f"{rek['wipe_pct']:>15.1f}%{rek['clear_pct']:>16.1f}%")
+        hp_rows.append((label, pol["hp_hist"]))
+
+    # The outcome-shape check (2026-07-09): among CLEARED runs, how much HP
+    # the party walked out short -- the "less binary" criterion wants the
+    # middle buckets populated, not a spike at clean and a cliff at dead.
+    print()
+    print("HP lost on CLEARED runs (walk-away wounds; deaths are the "
+          "wipe% above):")
+    buckets = ("<10%", "10-40%", "40-70%", ">=70%")
+    print(f"{'site':<24}" + "".join(f"{b:>9}" for b in buckets))
+    for label, hist in hp_rows:
+        total = sum(hist.values()) or 1
+        print(f"{label:<24}" + "".join(
+            f"{100 * hist[b] / total:>8.1f}%" for b in buckets))
 
 
 if __name__ == "__main__":

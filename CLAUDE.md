@@ -111,9 +111,12 @@ a pointer: what the file is, how it's run, where its docs are.
   between invocations, so pacing decisions stay real turn-by-turn choices.
   Adds no game logic of its own. `python session.py --help` lists every
   subcommand with its rules; dm.md says which decisions belong to the
-  player. Quest play: `board` / `show QID` / `take QID` / `room`, plus
-  `forge` (the DM quest creator). Encounter commands print the full log
-  then the `--- PLAYER LOG ---` block the DM pastes into chat.
+  player. Quest play: `board` (LOCAL by default since 2026-07-09) /
+  `show QID` / `take QID` / `room`, plus `forge` (the DM quest creator).
+  World play (2026-07-09): `map` / `travel` / `explore` / `hunt` /
+  `engage` — location state, local boards, road encounters, the momentum
+  streak. Encounter commands print the full log then the
+  `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -199,11 +202,19 @@ mechanic *does* and *why* is rules.md's job.
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
   `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
-  hero roll ranges (`HERO_*_RANGE`), and the party-size counterweights
+  hero roll ranges (`HERO_*_RANGE`) and the hero spiral gear (`HERO_PAIN`
+  — trained fighters, both sides, take `hp_lost // 2` as the wound
+  penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
+  `streak_multiplier` — consecutive same-site encounters without a camp
+  pay rising XP; a full one-go run collects exactly the encounter share),
+  and the party-size counterweights
   (`CROWD_CAP` — the press; `XP_PARTY_BASELINE` — awards quoted at the
   duo, paid `x 2 / party size`). The quest generator's own knobs sit at
   the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
-  `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands).
+  `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands), and
+  so do the navigation layer's (`TRAVEL_DAYS_*`, `TRAVEL_ENCOUNTER_CHANCE`,
+  `EXPLORE_*`, `WILD_LEVEL_DECAY`, `SPOTTED_MARGIN`, `AMBUSH_CHANCE`,
+  `HUNT_LEVEL_REACH`).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -239,13 +250,24 @@ mechanic *does* and *why* is rules.md's job.
   (the per-race quest tables + reskins), `build_quest` / `forge_quest`,
   `generate_world` (+ the coverage top-up), `quest_to_sites` (generated
   quest -> `Site` instances for the sims), the board readout helpers.
+- **The world & navigation** (2026-07-09) — `quests.py`: `lands` (race ->
+  settlements; the map IS this grouping, no coordinates), `wild_pool`
+  (what roams a land = the union of its race's template pools),
+  `roll_wild_level` (the road's party-independent geometric level table),
+  `build_wild_encounter`, `wild_encounter_xp`. `session.py`: the location
+  helpers (`_settlement_location` / `local_settlement` /
+  `at_quest_settlement` — board/take/room/hideout/barrow are gated on
+  being there), `wild_event` (the one roll: nothing / fight / sighting,
+  with the spotted-vs-ambush valve), and `cmd_travel` / `cmd_explore` /
+  `cmd_hunt` / `cmd_engage` / `cmd_map`.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
-  record, `rooms` fled-room records; entities/weapons via the
-  `_entity_*`/`_weapon_*` serializers). A paused fight blocks every
-  between-fights command until settled. Quest progress lives on each quest
-  (`next` cursor, `status`); `advance_quest` pays site lumps and closes
-  quests.
+  record, `rooms` fled-room records, `location`, `places` discovered wilds,
+  `sighting`, `streak` momentum record, `site_clears` set-site pay
+  tracking; entities/weapons via the `_entity_*`/`_weapon_*` serializers).
+  A paused fight blocks every between-fights command until settled. Quest
+  progress lives on each quest (`next` cursor, `status`); `advance_quest`
+  pays site lumps and closes quests.
 
 ## Balance / tuning
 
@@ -359,6 +381,68 @@ the old 3x rule) — XP down a third, gold unchanged. New numbers:
   against").
 - **A world posts ~26k XP** (1.35x the 19,000 a duo needs to reach L20),
   asserted at generation; ~35-45 quests across ~6 settlements.
+
+**Measured numbers (2026-07-09, the pain-2 regear + momentum streak +
+navigation).** The spiral was geared down for ALL trained fighters (heroes
+via `HERO_PAIN = 2`; the bandit rows and the soldiery got `pain=2` in
+sites.FOES — symmetric on purpose), the hideout's den gained an archer
+(5 -> 6 bandits) to hold the starter on target, per-encounter XP moved onto
+the momentum streak, and `tune.py` gained the outcome-shape check (HP lost
+on cleared runs). The full suite, re-run:
+
+- **The regear's target — less binary outcomes — landed:** cleared hideout
+  runs now spread **22% / 50% / 25% / 3%** across the <10 / 10-40 / 40-70 /
+  70%+ HP-lost buckets (barrow clears: 19/52/26/3). Losing a quarter or
+  three-quarters of the party's blood and *walking out* is now the common
+  texture of a win; before the regear the middle barely existed (whoever
+  bled first spiraled into helplessness — also why bandit rooms used to
+  deal 0 damage or kill).
+- **Hideout** (rank 0, new 6-bandit layout, 10k runs): clear **~58%** /
+  wipe **~37%** / Down in **~49%** of runs — back on the designer's ~55%
+  target — vs **~70% wipe reckless**: ignoring resources still costs most
+  of a party's life expectancy.
+- **Barrow** `[3, 3, 4]` (rank 0): clear **~13%** / wipe **~85%** (was
+  3.6/95): still a death trap fresh, no longer a near-certainty. Training
+  ladder (5k/rank): barrow **13 -> 37 -> 67 -> 89**; hideout
+  **58 -> 83 -> 95 -> 99** — a rank still feels like a rank.
+- **Party size** (rank 0, 5k/size): hideout **14 / 58 / 89 / 97**, barrow
+  **0.5 / 13 / 49 / 82** for sizes 1-4 — numbers still dominate; the free
+  3rd/4th member remains the intended crutch, paid for by XP x 2/N.
+- **Weapons: the rapier lost its duelist crown** (bench_weapons, now run
+  at hero pain): its edge was graze-chip feeding the full-force spiral, so
+  halving the spiral halved the niche. Best duel is now zweihander on
+  precise/steady and katana on powerful/balanced, rapier a close second
+  everywhere, zweihander still owns every swarm column (up to 44% on
+  balanced), staff still trails. "No weapon tops every cell" still holds;
+  a rapier re-niche idea is parked in plan.md.
+- **Bestiary at-level win rates drifted up ~5-10 points** for the monster
+  families (archer 94, cutthroat 84, wolf 81, skeleton 86, dire wolf 94,
+  ghoul 94, ogre 94, troll 92, wight 87, wyvern 91, giant 92, drake 95,
+  dragon 85); the elite-humanoid ladder — which got the same pain buff the
+  heroes did — stayed put or hardened (soldier 89, veteran 72, champion
+  63, blademaster 54, warlord 54). Ordering intact; re-annotation parked
+  in plan.md as calibration polish.
+- **Generated content** (bench_quests, 300/cell): at-level rooms win
+  61-93% across 1-20; at-level sites clear ~80-87% at L1-5 sliding to
+  ~34-55% at 15-20. **The -2 column stopped being a wall** (30-80%
+  depending on band) — punching up two levels is now a real, paying
+  choice, which is what the leveled-world direction wanted.
+- **Careers softened sharply** (200 careers, camps-between-rooms policy —
+  which under the streak earns mostly base-rate encounter XP): reach
+  **L5 68% / L8 56% / L11 38% / L14 20% / L20 6%**, median death **L8**
+  (was L5 46 / L11 14 / L20 ~0.3, median death L3-4). A capped career:
+  ~148 days / ~37 quests. The top band (15-20) is still the hard edge
+  (per-quest wipe 40-65% at level) and still waits on masterwork/armor/
+  magic for its player power.
+- **Streak anchors** (exact by construction): a level-L 3-room site pays
+  its rooms `base x 1/2/3` in one go — hideout 8/15/22 + 55 lump = 100,
+  barrow 15/30/45 + 110 lump = 200 — and `base x 1/1/1` camped-between
+  (~78% of total collected). Wild/road/hunt fights pay the site's
+  mid-streak rate at their level (15 at L1) and never streak.
+- Also fixed in passing: `site_clears` (the set sites' clear-lump tracking,
+  added 2026-07-08) was never persisted to save.json, so the hideout/barrow
+  lump could never actually pay across separate CLI invocations. It
+  persists now.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

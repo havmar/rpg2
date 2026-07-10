@@ -131,11 +131,22 @@ DROP_GOLD_AMOUNT = POTION_PRICE // 2
 # to 20; see bench_quests.py for the measured career pace.)
 # Inside a site the hideout's split is kept: ~ENCOUNTER_XP_SHARE of the XP is
 # paid room by room as encounters fall, the rest as the site-clear lump.
+# THE MOMENTUM STREAK (2026-07-09): the per-encounter share is paid on a
+# rising multiplier -- the k-th consecutive encounter cleared IN THE SAME
+# SITE without a night's camp between pays (1 + STREAK_STEP*(k-1)) x the
+# base. A full one-go run collects exactly ENCOUNTER_XP_SHARE of the site
+# total (the anchor is preserved); camping mid-site resets the streak to
+# base, so a piecemeal clear pays noticeably less. This is the carrot that
+# makes "do the site in one go and budget HP across it" the paying line
+# without forbidding the camp -- the site-clear lump (the majority share)
+# still requires beating the site either way.
 SITE_XP_PER_LEVEL = 50
 ENCOUNTER_XP_SHARE = 0.45   # fraction of a site's XP paid per-encounter
+STREAK_STEP = 1.0           # per-consecutive-encounter multiplier growth
+                            # (x1, x2, x3 across a 3-room site in one go)
 GOLD_PER_SITE_LEVEL = 15    # a level-L site pays this * L gold on completion
 ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- equals
-                        # a level-1 three-room site's per-encounter award
+                        # a level-1 three-room site's MIDDLE (streak-2) award
 QUEST_XP = 55           # the level-1 site-clear lump (the hideout's quest pay)
 QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
 
@@ -146,16 +157,28 @@ def site_xp_total(level: int) -> int:
     return SITE_XP_PER_LEVEL * (level + 1)
 
 
-def site_encounter_xp(level: int, rooms: int) -> int:
-    """The per-encounter share of a level-L site's pay, split over its rooms.
-    L1 x 3 rooms = 15, the hideout's historic rate."""
-    return max(1, round(site_xp_total(level) * ENCOUNTER_XP_SHARE / rooms))
+def streak_multiplier(streak: int) -> float:
+    """The momentum multiplier for the k-th consecutive encounter cleared in
+    the same site without a camp between (k >= 1)."""
+    return 1.0 + STREAK_STEP * (max(1, streak) - 1)
+
+
+def site_encounter_xp(level: int, rooms: int, streak: int = 1) -> int:
+    """The per-encounter pay of a level-L site at streak position k: the
+    base is sized so a FULL streak (1..rooms in one go) collects exactly
+    ENCOUNTER_XP_SHARE of the site total. L1 x 3 rooms pays 8/15/22 in one
+    go (sum 45, the hideout's historic share) and 8 per room piecemeal."""
+    weights = sum(streak_multiplier(k) for k in range(1, rooms + 1))
+    base = site_xp_total(level) * ENCOUNTER_XP_SHARE / weights
+    return max(1, round(base * streak_multiplier(streak)))
 
 
 def site_clear_xp(level: int, rooms: int) -> int:
-    """The site-clear (quest) XP lump: whatever the encounter shares left.
-    L1 x 3 rooms = 55, the hideout's historic rate."""
-    return site_xp_total(level) - rooms * site_encounter_xp(level, rooms)
+    """The site-clear (quest) XP lump: whatever a full-streak run's encounter
+    awards leave of the site total. L1 x 3 rooms = 55, the hideout's
+    historic rate."""
+    return site_xp_total(level) - sum(site_encounter_xp(level, rooms, k)
+                                      for k in range(1, rooms + 1))
 
 
 def site_gold(level: int) -> int:
@@ -537,8 +560,11 @@ class Entity:
                                          # their own (refresh_foes_after_retreat)
     pain: int = 1                       # the pain divisor: wound roll penalty =
                                          # HP lost // pain. 1 = feels everything
-                                         # (humans, small beasts); 2 = slow to
-                                         # pain (undead, brutes); 3-4 = the apex
+                                         # (small beasts, untrained flesh);
+                                         # 2 = the trained-fighter norm, HEROES
+                                         # AND humanoid foes alike (the 2026-07-09
+                                         # spiral regear -- see HERO_PAIN) plus
+                                         # undead/brutes; 3-4 = the apex
                                          # monsters, whose deep HP pools would
                                          # otherwise be nullified by the spiral
                                          # (a 60-HP dragon at -20 to rolls is a
@@ -848,7 +874,12 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     defender.hp = max(0, defender.hp - dmg)
     state = (f"{defender.name}: {defender.hp}/{defender.max_hp} HP, "
              f"-{defender.wound_penalty} to rolls")
+    # The death spiral is a real number the player budgets around, so the
+    # player log shows it too (2026-07-09: it used to be full-log-only, which
+    # made wounded fights read as inexplicable losing).
     player_state = f"{defender.name}: {defender.hp}/{defender.max_hp} HP"
+    if defender.wound_penalty:
+        player_state += f", -{defender.wound_penalty} to rolls"
 
     if saved:
         _play(log,
@@ -1382,6 +1413,15 @@ def refresh_foes_after_retreat(foes: list[Entity],
 # Rolled ranges for a starting hero. 3-6 straddles the human bands in rules.md:
 # a 3 is trained-soldier grade, a 6 nudges past elite-veteran. HP 8-12 likewise.
 HERO_STAT_RANGE = (3, 6)      # DEX / STR
+# The hero death spiral, geared down (2026-07-09, the "less binary outcomes"
+# retune): trained fighters are pain 2 -- wound penalty = HP lost // 2 -- and
+# so are the humanoid FOES (sites.py rows), symmetrically. At pain 1 the
+# first decisive exchange decided everything: whoever bled first spiraled
+# into helplessness, so encounters split into "took 0 damage" and "died"
+# with nothing in between. Halving the spiral (both sides) keeps wounded
+# fighters dangerous, which is what populates the 25-75%-HP-lost middle.
+# pain 1 is now the SOFT tier (small critters that feel everything).
+HERO_PAIN = 2
 # STA gets its own, higher range: it is the second death-track (the swing
 # budget; running dry mid-fight is usually fatal), so its floor matters like
 # HP's floor -- a 4-STA hero is a 4-swing hero, and the batch sims show those
@@ -1433,6 +1473,7 @@ def make_human(rng: random.Random, name: str) -> Entity:
         max_hp=rng.randint(*HERO_HP_RANGE),
         power=rng.randint(*HERO_POWER_RANGE),
         ability=ability,
+        pain=HERO_PAIN,
         weapon=weapon,
         items=random_kit(rng),
     )

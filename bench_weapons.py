@@ -24,7 +24,7 @@ Run:  python bench_weapons.py [--trials N]
 import argparse
 import random
 
-from rpg import Entity, WEAPONS, group_combat
+from rpg import Entity, WEAPONS, HERO_PAIN, group_combat
 from sites import make_foe
 
 # Stat frames spanning the hero roll ranges (DEX/STR 3-6, STA 5-8; STA's range
@@ -47,16 +47,18 @@ SWARM_SIZE = 3
 def duel(frame: dict, weapon_name: str, rng: random.Random) -> bool:
     """One 1v1 to the finish. True if the frame's fighter wins (reference
     down or dead; a standstill counts as no win)."""
-    a = Entity(name="A", max_hp=HP, weapon=WEAPONS[weapon_name], **frame)
-    b = Entity(name="B", max_hp=HP, weapon=WEAPONS[REFERENCE_WEAPON],
-               **REFERENCE)
+    a = Entity(name="A", max_hp=HP, pain=HERO_PAIN,
+               weapon=WEAPONS[weapon_name], **frame)
+    b = Entity(name="B", max_hp=HP, pain=HERO_PAIN,
+               weapon=WEAPONS[REFERENCE_WEAPON], **REFERENCE)
     group_combat([a], [b], rng, log=[])
     return a.alive and not b.alive
 
 
 def swarm(frame: dict, weapon_name: str, rng: random.Random) -> bool:
     """One fighter vs SWARM_SIZE fresh skeletons. True if all fall."""
-    a = Entity(name="A", max_hp=HP, weapon=WEAPONS[weapon_name], **frame)
+    a = Entity(name="A", max_hp=HP, pain=HERO_PAIN,
+               weapon=WEAPONS[weapon_name], **frame)
     foes = [make_foe("skeleton", i + 1, rng) for i in range(SWARM_SIZE)]
     group_combat([a], foes, rng, log=[])
     return a.alive and not any(f.alive for f in foes)

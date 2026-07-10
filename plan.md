@@ -9,6 +9,14 @@ file rather than marking it done.
 
 ---
 
+*(2026-07-09: the world map & navigation layer SHIPPED — location state,
+local boards, list-shaped lands, travel/explore/hunt/engage, the road's
+party-independent encounter table with the spotted/ambush valve, and with
+it the momentum-streak XP and the pain-2 spiral regear. Mechanics in
+rules.md — the World & Navigation add-on and the updated wound-tier /
+XP sections; measured numbers in CLAUDE.md. What remains from that design
+session lives in the open questions and parked ideas below.)*
+
 ## Next up — major questlines & the world's story layer
 
 *(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
@@ -38,14 +46,14 @@ STORY layer:)*
   randomly in one band per settlement kind (that randomness is v1's
   placeholder, kept on purpose).
 
-**A career finding to design against** (bench_quests, 2026-07-08): under sim
-policy a full 1-20 career is roguelike-lethal — L5 46% / L11 14% / L20 ~0%,
-half the deaths at the rank-0 front door, and past ~L13 outleveling content
-stops working because the party saturates (skills capped, pools only) while
-the bestiary keeps climbing. The top band's missing player power is exactly
-the next systems below: masterwork gear, armor, magic. Decide eventually:
-is a playthrough a roguelike run (death = new party, the world persists) or
-should the curve soften?
+**A career finding to design against** (updated 2026-07-09): the pain-2
+regear answered most of 2026-07-08's roguelike-lethality — careers now
+reach L5 68% / L11 38% / L20 6% (median death L8, was L3-4). What remains
+of the finding: the top band (15-20) is still the hard edge (per-quest
+wipe 40-65% at level) and still waits on masterwork gear, armor, and magic
+for its missing player power. The "is a playthrough a roguelike run?"
+question is softened but not closed — the party-members-as-lives idea
+(parked below) is the standing candidate answer.
 
 ---
 
@@ -118,11 +126,68 @@ should the curve soften?
   possible future pivot away from the heroic tone, not drift.
 - **Power potion re-stock** — retired 2026-07; re-circulate the kind if
   War-Breath ever makes Power genuinely scarce in play.
+- **Rename the "killing blow" tier** — it is 6 flat HP and only kills at
+  0 HP unsaved, but the name reads as an instant kill in play (a testing
+  session tripped on it). Pure renaming ("mortal strike", "crippling
+  blow"...); the mechanic is fine.
+- **Crit/fumble on the 2d6** (snake-eyes auto-fail, boxcars auto-success or
+  a guaranteed graze) — un-deadens hopeless exchanges: a DEX-4 attacker at
+  -4 wounds and Spent currently rolls pressure that mathematically cannot
+  win. ~2.8% per tail, but it fattens BOTH tails of EVERY exchange, not
+  just the hopeless corner — the whole bench suite must be re-run before
+  judging it. Note the counter-position first: a spent, near-dead fighter
+  *being* helpless is partly the design working (that is what the pause,
+  potions, and retreat are for).
+- **Party members as lives** — on a wipe the PC alone survives (at 1 HP),
+  companions die, and the PC loses a level and possibly possessions. Turns
+  companions into a graded life-resource and softens the career sim's
+  roguelike lethality (see the career finding above) without making death
+  free. Interacts with the recruitment/CHA layer.
+- **Overfill potions** — drinking in advance tops HP/STA above max
+  temporarily (pre-battle preparation as a real decision, and a use for
+  potions at full health).
+- **Alchemist ability** — a hero who periodically produces potions for
+  free; an economy faucet, so priced carefully.
+- **Quest history readout** — completed quests already persist in the world
+  with their status; a `history` subcommand listing what the party has done
+  (and when) is cheap and gives the save a memoir.
+- **Site persistence / repopulation** — cleared-so-far rooms refill after a
+  day or two, the STICK version of one-go sites. The carrot version (the
+  momentum streak) shipped 2026-07-09; revisit the stick only if play shows
+  the streak isn't pressure enough.
+- **Give the rapier its niche back** — the 2026-07-09 pain regear halved
+  the value of chip grazes, which was the rapier's whole edge (graze-floor
+  thrusts feeding the spiral): it now duels a close second everywhere
+  instead of best-on-three-frames (bench_weapons). Candidate fixes if the
+  designer wants the old story back: rapier ignores the pain divisor
+  (precision finds the nerve), or +1 atk. Do nothing until it's felt in
+  play.
+- **Re-annotate the bestiary for the pain-2 party** — at-level win rates
+  drifted up ~5-10 points for the monster families (heroes toughened,
+  monsters kept their pain; the humanoid ladder got the same buff and
+  stayed put). The catalog still orders correctly and the generator's
+  at-level band is honest, so this is calibration polish, not a fire —
+  a dedicated bench session when the numbers start feeling mushy.
 
 ---
 
 ## Open questions
 
+- ~~The resource horizon~~ **Resolved (2026-07-09):** the carrot was chosen
+  over the stick — the momentum streak backloads per-encounter XP into
+  one-go site runs (camping stays available, at a pay cost), and the
+  spiral was geared down via the pain divisor (trained fighters at pain 2,
+  both sides) instead of a penalty cap or flat combat. Measured: cleared
+  runs now spread ~20/50/25/3 across the <10 / 10-40 / 40-70 / 70%+
+  HP-lost buckets (the middle exists), reckless play still wipes ~70%.
+  The flat-combat temptation stays recorded-and-resisted. Re-open only if
+  play shows camping still trivializes HP despite the streak.
+- ~~How wide is the viable level band?~~ **Resolved by the same regear
+  (2026-07-09):** punching up 2 levels went from "a real wall" to a
+  30-80% fight depending on band — leveled areas are now real choices
+  (farm low / challenge high), while the road's party-independent table
+  and straight-shown board levels keep the OSR stance. The felt width in
+  actual play is still to be confirmed at the table.
 - **Armor:** adopt, simplify, or defer (see above) — the least-developed
   system.
 - ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,

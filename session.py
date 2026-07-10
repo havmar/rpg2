@@ -26,7 +26,8 @@ companions. PC death ends the game even if a companion stands.
 
 The shape of a playthrough:
   new / status / levelup                    -- rolling and reading the party
-  board / show QID / take QID / room        -- the quest board (the game)
+  map / travel / explore / hunt / engage    -- the world & the wilds
+  board / show QID / take QID / room        -- the LOCAL quest board (the game)
   hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
   resume [...] / retreat                    -- settle a paused fight
   rest / camp / award / buy / give / train / use / heal
@@ -61,7 +62,13 @@ from rpg import (
 )
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
-                    quest_detail_lines, quest_line)
+                    quest_detail_lines, quest_line, roster_kinds_line,
+                    lands, roll_wild_level, build_wild_encounter,
+                    wild_encounter_xp,
+                    TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
+                    TRAVEL_ENCOUNTER_CHANCE, EXPLORE_ENCOUNTER_CHANCE,
+                    EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
+                    HUNT_LEVEL_REACH, WILD_NAME_PARTS)
 
 STATE_PATH = Path(__file__).parent / "save.json"
 
@@ -74,6 +81,86 @@ def _spawn_foe(kind: str, rng, n: int):
     if kind == "bandit":
         kind = rng.choice(BANDIT_KINDS)
     return make_foe(kind, n, rng)
+
+
+# --------------------------------------------------------------------------- #
+# Location (the navigation layer, 2026-07-09)
+# --------------------------------------------------------------------------- #
+# The party is always SOMEWHERE: at a settlement (its board is the local
+# board; its surrounding sites are in reach) or at a discovered wilderness
+# place. A location is {"place": key, "name": display, "land": race,
+# "kind": "settlement" | "wild"}. The two hand-built set sites (hideout /
+# barrow) lie outside the STARTING settlement (the first one worldgen made).
+
+def _settlement_location(s: dict) -> dict:
+    return {"place": s["key"], "name": s["name"], "land": s["race"],
+            "kind": "settlement"}
+
+
+def location_line(state: dict) -> str:
+    loc = state["location"]
+    return f"{loc['name']} ({loc['land']} lands, {loc['kind']})"
+
+
+def local_settlement(state: dict) -> dict | None:
+    """The settlement the party is AT, or None out in the wilds."""
+    loc = state["location"]
+    if loc["kind"] != "settlement":
+        return None
+    for s in state["world"]["settlements"]:
+        if s["key"] == loc["place"]:
+            return s
+    return None
+
+
+def home_settlement(state: dict) -> dict:
+    """The starting settlement -- the two hand-built set sites lie outside it."""
+    return state["world"]["settlements"][0]
+
+
+def clear_sighting(state: dict, quiet: bool = False) -> None:
+    """Spotted foes don't wait around: any move (travel, explore, hunt, camp)
+    lets them drift on. `engage` is the only way to fight a sighting."""
+    if state.get("sighting"):
+        if not quiet:
+            print("(The foes sighted earlier have moved on.)")
+        state["sighting"] = None
+
+
+def reset_streak(state: dict) -> None:
+    """A night's camp breaks the same-site momentum streak (see rpg.py,
+    STREAK_STEP): the next encounter pays base rate again."""
+    state["streak"] = {"site": None, "count": 0}
+
+
+def streak_pos_for(state: dict, site_key: str) -> int:
+    """The momentum position the NEXT cleared encounter at this site would
+    hold: one past the recorded run, or 1 after a camp / at another site."""
+    streak = state.get("streak") or {"site": None, "count": 0}
+    return streak["count"] + 1 if streak["site"] == site_key else 1
+
+
+def _settlement_by_key(world: dict, key: str) -> dict | None:
+    for s in world["settlements"]:
+        if s["key"] == key:
+            return s
+    return None
+
+
+def at_quest_settlement(state: dict, quest: dict) -> bool:
+    """Quests are LOCAL: taking one and working its sites means being at the
+    settlement that posted it (its region holds the sites). Prints the way
+    there when the party isn't."""
+    key = quest.get("settlement")
+    if not key:
+        return True     # a placeless forged quest works anywhere
+    if state["location"]["place"] == key:
+        return True
+    s = _settlement_by_key(state["world"], key)
+    name = s["name"] if s else key
+    print(f"[{quest['id']}] {quest['name']} is {name}'s business -- the "
+          f"party is at {location_line(state)}. `travel {key}` first.")
+    return False
 
 
 # --------------------------------------------------------------------------- #
@@ -129,6 +216,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "site": pending["site"],
         "room": pending["room"],
         "quest": pending.get("quest"),
+        "streak_pos": pending.get("streak_pos"),
     }
 
 
@@ -145,6 +233,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "site": d["site"],
         "room": d["room"],
         "quest": d.get("quest"),
+        "streak_pos": d.get("streak_pos"),
     }
 
 
@@ -159,6 +248,11 @@ def save(state: dict) -> None:
         "foe_count": state["foe_count"],
         "active_quest": state.get("active_quest"),
         "world": state.get("world"),
+        "location": state.get("location"),
+        "places": state.get("places", []),
+        "sighting": state.get("sighting"),
+        "streak": state.get("streak", {"site": None, "count": 0}),
+        "site_clears": state.get("site_clears", {}),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -184,6 +278,11 @@ def load() -> dict:
         rooms[(site, int(room))] = {
             "foes": [_entity_from_dict(f) for f in rec["foes"]],
             "day": rec["day"]}
+    world = doc.get("world")
+    location = doc.get("location")
+    if location is None and world:
+        # A save from before the navigation layer: the party is at home.
+        location = _settlement_location(world["settlements"][0])
     return {
         "party": party,
         "clock": Clock(**doc["clock"]),
@@ -191,7 +290,12 @@ def load() -> dict:
         "rng": rng,
         "foe_count": doc["foe_count"],
         "active_quest": doc.get("active_quest"),
-        "world": doc.get("world"),
+        "world": world,
+        "location": location,
+        "places": doc.get("places", []),
+        "sighting": doc.get("sighting"),
+        "streak": doc.get("streak", {"site": None, "count": 0}),
+        "site_clears": doc.get("site_clears", {}),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -241,7 +345,10 @@ def cmd_new(args: argparse.Namespace) -> None:
     world = generate_world(world_seed)
     state = {"party": party, "clock": Clock(), "purse": Purse(), "rng": rng,
              "foe_count": 0, "pending": None, "rooms": {},
-             "world": world, "active_quest": None}
+             "world": world, "active_quest": None,
+             "location": _settlement_location(world["settlements"][0]),
+             "places": [], "sighting": None,
+             "streak": {"site": None, "count": 0}, "site_clears": {}}
     save(state)
     print(f"New party rolled (seed={args.seed}):")
     for h in party:
@@ -250,14 +357,17 @@ def cmd_new(args: argparse.Namespace) -> None:
     names = ", ".join(f"{s['name']} ({s['race']} {s['kind']})"
                       for s in world["settlements"])
     print(f"The world holds {len(world['quests'])} posted quests across: "
-          f"{names}. See them with `board`.")
+          f"{names}.")
+    print(f"The party stands at {location_line(state)} -- the local board is "
+          f"`board`; the wider world is `map` and `travel`. The old hideout "
+          f"and barrow lie outside {world['settlements'][0]['name']}.")
 
 
 def cmd_status(args: argparse.Namespace) -> None:
     state = load()
     party, clock, purse = state["party"], state["clock"], state["purse"]
     print(f"Day {clock.day}, {clock.short_rests_left} short rest(s) left today. "
-          f"Purse: {purse.gold}g.")
+          f"Purse: {purse.gold}g. At: {location_line(state)}.")
     for h in party:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
@@ -280,6 +390,15 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"  Active quest: [{qid}] L{q['level']} {q['name']} -- "
                   f"next: {s['name']} (L{s['level']}), room "
                   f"{cur['room'] + 1}/{len(s['rooms'])}. Fight it with `room`.")
+    streak = state.get("streak") or {"site": None, "count": 0}
+    if streak["count"]:
+        print(f"  Momentum: {streak['count']} encounter(s) cleared at "
+              f"{streak['site']} since the last camp -- the next pays more "
+              f"(a camp resets it).")
+    if state.get("sighting"):
+        s = state["sighting"]
+        print(f"  Sighted (day {s['day']}): {s['line']} -- `engage` to fight "
+              f"it; any move lets it drift on.")
     for (site, room), rec in sorted(state.get("rooms", {}).items()):
         standing = sum(1 for f in rec["foes"] if not f.dead)
         print(f"  Unfinished: {site} room {room} -- {standing} foe(s) still "
@@ -373,12 +492,15 @@ def cmd_levelup(args: argparse.Namespace) -> None:
 def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
                       room: int | None = None,
-                      quest: str | None = None) -> None:
+                      quest: str | None = None,
+                      streak_pos: int | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE at a trigger (STA <= 2 / half HP, once each) -- then award and
     persist. On a pause the fight is saved as `pending` and the turn goes
     back to the player (resume / retreat next message). `quest` ties the
-    encounter to a board quest: clearing the room advances its cursor."""
+    encounter to a board quest: clearing the room advances its cursor.
+    `streak_pos` is the momentum position this encounter's XP was quoted at
+    (site encounters only) -- recorded on victory so the NEXT one pays more."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     fired: set[str] = set()
@@ -389,6 +511,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
             "quest": quest, "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
+            "streak_pos": streak_pos,
         }
         print_combat(log)
         print()
@@ -396,7 +519,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         save(state)
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
-                     quest=quest)
+                     quest=quest, streak_pos=streak_pos)
 
 
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
@@ -451,7 +574,8 @@ def pay_set_site_clear(state: dict, log: list[str], site_key: str,
 def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
-                     quest: str | None = None) -> None:
+                     quest: str | None = None,
+                     streak_pos: int | None = None) -> None:
     """The melee actually ended: wipe check, awards, loot, persist."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     state["pending"] = None
@@ -468,7 +592,14 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             log.append(f"  ({site} room {room} is left to its {standing} "
                        f"standing foe(s) -- it will remember)")
     elif not wiped:
-        award_xp(party, encounter_xp, log, "encounter")
+        reason = "encounter"
+        if streak_pos is not None and streak_pos > 1:
+            reason = f"encounter, streak {streak_pos}"
+        award_xp(party, encounter_xp, log, reason)
+        if site is not None and streak_pos is not None:
+            # Momentum recorded: the next same-site encounter without a camp
+            # between pays the next multiplier up.
+            state["streak"] = {"site": site, "count": streak_pos}
         roll_loot(party, purse, rng, log)
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
@@ -530,6 +661,13 @@ def cmd_site(args: argparse.Namespace) -> None:
         return
     party, rng = state["party"], state["rng"]
     site = SITES[args.site]
+    if state.get("world"):
+        home = home_settlement(state)
+        if state["location"]["place"] != home["key"]:
+            print(f"The {site.key} lies outside {home['name']} -- the party "
+                  f"is at {location_line(state)}. `travel {home['key']}` "
+                  f"first.")
+            return
     log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
@@ -553,8 +691,9 @@ def cmd_site(args: argparse.Namespace) -> None:
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
-    resolve_encounter(state, log, foes, site.encounter_xp,
-                      site=site.key, room=args.room)
+    k = streak_pos_for(state, site.key)
+    resolve_encounter(state, log, foes, site.encounter_xp(k),
+                      site=site.key, room=args.room, streak_pos=k)
 
 
 def _get_quest(world: dict, ref: str) -> dict | None:
@@ -575,13 +714,25 @@ def cmd_board(args: argparse.Namespace) -> None:
         return
     key = None
     if args.settlement:
-        want = args.settlement.lower()
-        match = [s for s in world["settlements"] if want in s["key"]]
-        if not match:
-            print(f"No settlement matches {args.settlement!r}. Settlements: "
-                  + ", ".join(s["name"] for s in world["settlements"]))
+        # An explicit settlement (or 'all') is the DM's overview; what the
+        # PLAYER gets to read is the local board below (dm.md).
+        if args.settlement.lower() != "all":
+            want = args.settlement.lower()
+            match = [s for s in world["settlements"] if want in s["key"]]
+            if not match:
+                print(f"No settlement matches {args.settlement!r}. "
+                      "Settlements: "
+                      + ", ".join(s["name"] for s in world["settlements"]))
+                return
+            key = match[0]["key"]
+    else:
+        here = local_settlement(state)
+        if here is None:
+            print(f"No board out here -- the party is at "
+                  f"{location_line(state)}. Boards hang in settlements "
+                  f"(`map` lists them; `board all` is the DM overview).")
             return
-        key = match[0]["key"]
+        key = here["key"]
     for line in board_lines(world, key):
         print(line)
     if state.get("active_quest"):
@@ -607,6 +758,8 @@ def cmd_take(args: argparse.Namespace) -> None:
     if quest["status"] == "done":
         print(f"[{quest['id']}] {quest['name']} is already complete.")
         return
+    if not at_quest_settlement(state, quest):
+        return
     state["active_quest"] = quest["id"]
     save(state)
     print(f"The party takes the job: {quest_line(quest)}")
@@ -631,6 +784,8 @@ def cmd_room(args: argparse.Namespace) -> None:
     quest = state["world"]["quests"][qid]
     if quest["status"] == "done":
         print(f"[{qid}] {quest['name']} is complete -- take a new quest.")
+        return
+    if not at_quest_settlement(state, quest):
         return
     party, rng = state["party"], state["rng"]
     cur = quest["next"]
@@ -662,9 +817,11 @@ def cmd_room(args: argparse.Namespace) -> None:
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
+    k = streak_pos_for(state, site_key)
     resolve_encounter(state, log, foes,
-                      site_encounter_xp(site["level"], len(site["rooms"])),
-                      site=site_key, room=room_i + 1, quest=qid)
+                      site_encounter_xp(site["level"], len(site["rooms"]), k),
+                      site=site_key, room=room_i + 1, quest=qid,
+                      streak_pos=k)
 
 
 def cmd_forge(args: argparse.Namespace) -> None:
@@ -702,6 +859,210 @@ def cmd_forge(args: argparse.Namespace) -> None:
     print(f"Forged and posted at {settlement['name']}:")
     for line in quest_detail_lines(quest):
         print(line)
+
+
+# --------------------------------------------------------------------------- #
+# The wilds: travel / explore / hunt / engage (the navigation layer)
+# --------------------------------------------------------------------------- #
+
+def _spawn_wild_foes(state: dict, kinds: list[str]) -> list:
+    rng = state["rng"]
+    foes = []
+    for kind in kinds:
+        state["foe_count"] += 1
+        foes.append(make_foe(kind, state["foe_count"], rng))
+    return foes
+
+
+def fight_wild_encounter(state: dict, kinds: list[str], level: int,
+                         banner: str) -> None:
+    """Run a wilderness encounter through the same machinery as any other
+    (it can pause; retreat scatters it -- the road is not a room)."""
+    party = state["party"]
+    log = CombatLog()
+    for h in [h for h in party if not h.dead]:
+        start_fight(h, log)
+    log.append(f"=== {banner} (a level-{level} encounter) ===")
+    foes = _spawn_wild_foes(state, kinds)
+    for line in roster_lines(foes):
+        log.append("  " + line)
+    resolve_encounter(state, log, foes, wild_encounter_xp(level))
+
+
+def wild_event(state: dict, chance: float, banner: str) -> bool:
+    """Roll the wilds once: nothing, a FIGHT (returns True; the encounter
+    machinery has taken over and saved), or a SIGHTING (foes well above the
+    party are usually spotted at range -- avoid or `engage`, the player's
+    call -- unless they ambush first)."""
+    rng = state["rng"]
+    if rng.random() >= chance:
+        return False
+    level = roll_wild_level(rng)
+    land = state["location"]["land"]
+    kinds = build_wild_encounter(level, land, rng)
+    party_level = max(h.level for h in state["party"] if not h.dead)
+    if (level >= party_level + SPOTTED_MARGIN
+            and rng.random() >= AMBUSH_CHANCE):
+        line = f"L{level}: {roster_kinds_line(kinds, {})}"
+        state["sighting"] = {"kinds": list(kinds), "level": level,
+                             "day": state["clock"].day, "line": line}
+        print(f"  Sighted at a distance -- {line}. Well above the party's "
+              f"weight; they haven't noticed you. `engage` to close with "
+              f"them; any other move slips away.")
+        return False
+    if level >= party_level + SPOTTED_MARGIN:
+        print(f"  AMBUSH -- they found the party first, and they are far "
+              f"beyond it. Running away is a pause action (retreat).")
+    fight_wild_encounter(state, kinds, level, banner)
+    return True
+
+
+def cmd_travel(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    want = " ".join(args.dest).lower()
+    target = None
+    for s in world["settlements"]:
+        if want in s["key"]:
+            target = _settlement_location(s)
+            break
+    if target is None:
+        for p in state.get("places", []):
+            if want in p["name"].lower():
+                target = {"place": p["name"].lower(), "name": p["name"],
+                          "land": p["land"], "kind": "wild"}
+                break
+    if target is None:
+        known = [s["name"] for s in world["settlements"]]
+        known += [p["name"] for p in state.get("places", [])]
+        print(f"No known place matches {want!r}. Known: {', '.join(known)}.")
+        return
+    if target["place"] == state["location"]["place"]:
+        print(f"The party is already at {target['name']}.")
+        return
+    days = (TRAVEL_DAYS_IN_LAND
+            if target["land"] == state["location"]["land"]
+            else TRAVEL_DAYS_CROSS)
+    clear_sighting(state)
+    print(f"The party sets out for {target['name']} -- {days} day(s) on "
+          f"the road, camping as they go.")
+    log: list[str] = []
+    for _ in range(days):
+        _long_rest(state["party"], state["clock"], log)
+    reset_streak(state)
+    print("\n".join(log))
+    state["location"] = target
+    print(f"The party arrives at {location_line(state)}.")
+    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
+    if not wild_event(state, chance, f"On the road to {target['name']}"):
+        save(state)
+
+
+def cmd_explore(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    clear_sighting(state)
+    party, clock, rng = state["party"], state["clock"], state["rng"]
+    land = state["location"]["land"]
+    print(f"The party ranges out into the {land} wilds -- a day afield, "
+          f"camping rough.")
+    log: list[str] = []
+    _long_rest(party, clock, log)
+    reset_streak(state)
+    print("\n".join(log))
+    used = {p["name"] for p in state.get("places", [])}
+    pre, suf = WILD_NAME_PARTS
+    name = None
+    for _ in range(60):
+        name = rng.choice(pre) + rng.choice(suf)
+        if name not in used:
+            break
+    state.setdefault("places", []).append(
+        {"name": name, "land": land, "day": clock.day})
+    state["location"] = {"place": name.lower(), "name": name, "land": land,
+                         "kind": "wild"}
+    log = []
+    award_xp(party, EXPLORE_XP, log, "discovery")
+    print(f"They find a place no map of theirs holds: {name}.")
+    print("\n".join(log))
+    if not wild_event(state, EXPLORE_ENCOUNTER_CHANCE,
+                      f"In the wilds at {name}"):
+        save(state)
+
+
+def cmd_hunt(args: argparse.Namespace) -> None:
+    """The farm loop: stalk prey in the current land's wilds. The party
+    CHOOSES this fight, so unlike the road table it rolls at-or-below the
+    party's level -- grinding XP and loot is always available, at wild
+    (below-board) rates."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    clear_sighting(state)
+    party, rng = state["party"], state["rng"]
+    party_level = max(h.level for h in party if not h.dead)
+    level = rng.randint(max(1, party_level - HUNT_LEVEL_REACH),
+                        max(1, party_level))
+    land = state["location"]["land"]
+    kinds = build_wild_encounter(level, land, rng)
+    fight_wild_encounter(state, kinds, level,
+                         f"The hunt in the {land} wilds")
+
+
+def cmd_engage(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    sighting = state.get("sighting")
+    if not sighting:
+        print("Nothing sighted to engage. (Sightings appear on the road and "
+              "afield; see `status`.)")
+        return
+    state["sighting"] = None
+    print(f"The party closes with the sighted foes -- {sighting['line']}.")
+    fight_wild_encounter(state, sighting["kinds"], sighting["level"],
+                         "The party picks this fight")
+
+
+def cmd_map(args: argparse.Namespace) -> None:
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    loc = state["location"]
+    print(f"The party stands at {location_line(state)}.")
+    print(f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
+          f"{TRAVEL_DAYS_CROSS} days to another land; every travel day "
+          f"risks a road encounter)")
+    for race, settlements in lands(world).items():
+        mark = "  <- here" if race == loc["land"] else ""
+        print(f"the {race} lands:{mark}")
+        for s in settlements:
+            open_q = sum(1 for qid in s["quests"]
+                         if world["quests"][qid]["status"] == "open")
+            here = "  <- the party" if s["key"] == loc["place"] else ""
+            print(f"  {s['name']} ({s['kind']}) -- {open_q} open "
+                  f"quest(s){here}")
+        for p in state.get("places", []):
+            if p["land"] == race:
+                here = ("  <- the party"
+                        if p["name"].lower() == loc["place"] else "")
+                print(f"  {p['name']} (wilds, found day {p['day']}){here}")
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -769,7 +1130,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
         return
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
-                     quest=pending.get("quest"))
+                     quest=pending.get("quest"),
+                     streak_pos=pending.get("streak_pos"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -822,7 +1184,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         return
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
-                     quest=pending.get("quest"))
+                     quest=pending.get("quest"),
+                     streak_pos=pending.get("streak_pos"))
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -843,6 +1206,12 @@ def cmd_camp(args: argparse.Namespace) -> None:
     party, clock = state["party"], state["clock"]
     log: list[str] = []
     _long_rest(party, clock, log)
+    streak = state.get("streak") or {"site": None, "count": 0}
+    if streak["count"]:
+        log.append(f"    (the night breaks the momentum at {streak['site']} "
+                   f"-- the next encounter pays base XP again)")
+    reset_streak(state)
+    clear_sighting(state)
     print("\n".join(log))
     save(state)
 
@@ -1015,16 +1384,67 @@ def main() -> None:
     p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
     p.set_defaults(func=cmd_rest)
 
-    p = sub.add_parser("camp", help="long rest: full STA, weekly HP tick, advances a day")
+    p = sub.add_parser(
+        "camp",
+        help="long rest: full STA, weekly HP tick, advances a day -- and "
+             "RESETS the same-site momentum streak (consecutive same-site "
+             "encounters without a camp pay rising XP; camping mid-site "
+             "trades that pay for safety)")
     p.set_defaults(func=cmd_camp)
 
     p = sub.add_parser(
         "board",
-        help="the quest board: every settlement's posted quests with level "
-             "(shown straight -- too easy and too hard both happen), shape, "
-             "and pay. Optionally filter to one settlement.")
+        help="the LOCAL quest board: the current settlement's posted quests "
+             "with level (shown straight -- too easy and too hard both "
+             "happen), shape, and pay. Quests are local: only this board's "
+             "jobs can be taken here. `board all` / `board NAME` is the DM "
+             "overview, not what the player reads.")
     p.add_argument("settlement", nargs="?", default=None)
     p.set_defaults(func=cmd_board)
+
+    p = sub.add_parser(
+        "map",
+        help="the known world: the race lands, their settlements (with open "
+             "quest counts), discovered wild places, and where the party "
+             "stands")
+    p.set_defaults(func=cmd_map)
+
+    p = sub.add_parser(
+        "travel",
+        help=f"move to a settlement or discovered place: "
+             f"{TRAVEL_DAYS_IN_LAND} day within a land, {TRAVEL_DAYS_CROSS} "
+             f"days to another land. Every travel day is a camp night "
+             f"(overnight recovery -- travel heals; it also resets the "
+             f"momentum streak) and risks a road encounter "
+             f"(~{int(TRAVEL_ENCOUNTER_CHANCE * 100)}%%/day, ANY level -- "
+             f"the higher the rarer; foes far above the party are usually "
+             f"spotted at range first, but can ambush)")
+    p.add_argument("dest", nargs="+", help="settlement or place (substring)")
+    p.set_defaults(func=cmd_travel)
+
+    p = sub.add_parser(
+        "explore",
+        help=f"a day ranging the current land's wilds: discovers a new "
+             f"place (pays {EXPLORE_XP} XP, persists on the map), camps "
+             f"rough (overnight recovery, streak reset), and beats more "
+             f"bushes than the road "
+             f"({int(EXPLORE_ENCOUNTER_CHANCE * 100)}%% encounter chance)")
+    p.set_defaults(func=cmd_explore)
+
+    p = sub.add_parser(
+        "hunt",
+        help="stalk prey in the current land's wilds NOW (no day cost): a "
+             "guaranteed encounter at-or-below the party's level -- the "
+             "always-available farm loop, paying wild (below-board) XP "
+             "rates plus normal loot rolls")
+    p.set_defaults(func=cmd_hunt)
+
+    p = sub.add_parser(
+        "engage",
+        help="close with the foes SIGHTED on the road or afield (see "
+             "status) -- the player picking the over-their-weight fight on "
+             "purpose. Any other move lets the sighting drift on.")
+    p.set_defaults(func=cmd_engage)
 
     p = sub.add_parser(
         "show",
@@ -1035,9 +1455,10 @@ def main() -> None:
 
     p = sub.add_parser(
         "take",
-        help="make a board quest the ACTIVE quest; `room` then fights its "
-             "encounters in order. Switching quests keeps the old one's "
-             "progress -- come back to it whenever.")
+        help="make a board quest the ACTIVE quest (the party must be AT the "
+             "settlement that posted it); `room` then fights its encounters "
+             "in order. Switching quests keeps the old one's progress -- "
+             "come back to it whenever.")
     p.add_argument("quest", help="quest id (q07, or just 7)")
     p.set_defaults(func=cmd_take)
 

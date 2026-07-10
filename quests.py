@@ -39,7 +39,8 @@ from __future__ import annotations
 import argparse
 import random
 
-from rpg import (LEVEL_CAP, xp_to_next, site_xp_total, site_gold)
+from rpg import (LEVEL_CAP, xp_to_next, site_xp_total, site_encounter_xp,
+                 site_gold)
 from sites import FOES, Site
 
 # --------------------------------------------------------------------------- #
@@ -521,6 +522,85 @@ def generate_world(seed: int | None = None) -> dict:
            and len(world["quests"]) < WORLD_MAX_QUESTS):
         _post_quest(world, rng.choice(world["settlements"]), rng)
     return world
+
+
+# --------------------------------------------------------------------------- #
+# The world map & navigation layer (2026-07-09)
+# --------------------------------------------------------------------------- #
+# The map is a LIST, not a grid: each race's LAND holds its settlements and
+# its wilderness -- no coordinates. Travel inside a land takes
+# TRAVEL_DAYS_IN_LAND day(s), to another land TRAVEL_DAYS_CROSS; every travel
+# day is a camp night (the existing overnight recovery, so healing en route
+# falls out for free) with a chance of a road encounter. The road's threat
+# table is party-INDEPENDENT (the OSR stance: the world does not scale to
+# you): any level can appear, weighted hard toward the low end
+# (WILD_LEVEL_DECAY) -- the rare high tail is how the world above the
+# party's level stays real. An encounter well above the party is usually
+# SPOTTED at range (avoid it or engage it: the player's call); an
+# AMBUSH_CHANCE of the time it finds them first, and what's left is the
+# pause-and-retreat machinery. Hunting is the exception to the OSR table:
+# the party CHOOSES its prey, so the hunt rolls relative to its level.
+
+TRAVEL_DAYS_IN_LAND = 1      # settlement to settlement inside one land
+TRAVEL_DAYS_CROSS = 2        # crossing into another race's land
+TRAVEL_ENCOUNTER_CHANCE = 0.15   # per travel day (compounded over a trip)
+EXPLORE_ENCOUNTER_CHANCE = 0.30  # the explore move beats more bushes
+EXPLORE_XP = 15                  # discovering a new place pays this flat
+WILD_LEVEL_DECAY = 0.75      # P(road encounter is level L) ~ DECAY**L
+SPOTTED_MARGIN = 3           # foes this many levels above the party are
+                             # spotted at range instead of met blade-first...
+AMBUSH_CHANCE = 0.25         # ...except this often, when they find YOU
+HUNT_LEVEL_REACH = 2         # a hunt stalks prey up to this far below the
+                             # party's level (never above it)
+
+# Wilderness place names, discovered by the explore move (race-neutral;
+# the land's race colors the fiction, the DM colors the rest).
+WILD_NAME_PARTS = (("Black", "Red", "Mist", "Thorn", "Crow", "Elk",
+                    "Adder", "Howling", "Broken", "Old"),
+                   ("fen", "hollow", "ridge", "wood", "moor", "caves",
+                    "falls", "barrens", "tarn", "cairns"))
+
+
+def lands(world: dict) -> dict[str, list[dict]]:
+    """The map: race -> that land's settlements, in worldgen order. A land
+    exists exactly when its race holds at least one settlement."""
+    out: dict[str, list[dict]] = {}
+    for s in world["settlements"]:
+        out.setdefault(s["race"], []).append(s)
+    return out
+
+
+def wild_pool(race: str) -> tuple[str, ...]:
+    """What roams a land's wilderness: the union of every foe pool the
+    race's quest templates draw from, deduplicated, level-sorted."""
+    kinds: set[str] = set()
+    for tpl in TEMPLATES[race]:
+        kinds.update(tpl["pool"])
+    return tuple(sorted(kinds, key=lambda k: FOES[k].level))
+
+
+def roll_wild_level(rng: random.Random) -> int:
+    """The road's level table: geometric decay over 1..LEVEL_CAP -- any
+    level can appear, the higher the rarer (party-independent)."""
+    levels = range(1, LEVEL_CAP + 1)
+    weights = [WILD_LEVEL_DECAY ** l for l in levels]
+    return rng.choices(list(levels), weights=weights)[0]
+
+
+def build_wild_encounter(level: int, race: str,
+                         rng: random.Random) -> list[str]:
+    """One wilderness encounter at `level` from the land's pool: a full
+    reference-encounter budget (share 1.0), boss allowance on -- the road
+    fight is a whole outing, not a room share."""
+    return build_room(room_budget(level, 1.0), wild_pool(race), rng,
+                      final=True)
+
+
+def wild_encounter_xp(level: int) -> int:
+    """What a won road/hunt encounter pays: a level-L site's MIDDLE
+    (streak-2) room rate -- 15 at L1, the historic off-script flat. Below
+    quest work on purpose: the wilds are the farm, the board is the game."""
+    return site_encounter_xp(level, 3, 2)
 
 
 def quest_to_sites(quest: dict) -> list[Site]:
