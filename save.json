@@ -1,90 +1,16 @@
 {
  "party": [
   {
-   "name": "Sela",
-   "dex": 4,
-   "str_": 4,
-   "sta": 5,
-   "max_hp": 12,
-   "power": 3,
-   "ability": "bulwark",
-   "sta_cost": 1,
-   "undead": false,
-   "pain": 1,
-   "tireless": false,
-   "pursues": true,
-   "crowd_cap": 2,
-   "regen": 0,
-   "sweep": 1,
-   "sweep_cost_power": 0,
-   "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 3,
-   "cur_power": 3,
-   "down": false,
-   "dead": false,
-   "items": {
-    "healing": 2,
-    "stamina": 0
-   },
-   "hp_regen_per_night": 2,
-   "level": 1,
-   "xp": 77,
-   "skill_points": 0,
-   "training": 0,
-   "weapon": "halberd",
-   "weapon_broken": false,
-   "proficiency": {},
-   "epithet": "precise"
-  },
-  {
-   "name": "Rhea",
-   "dex": 3,
-   "str_": 3,
-   "sta": 6,
-   "max_hp": 12,
-   "power": 6,
-   "ability": "heal",
-   "sta_cost": 1,
-   "undead": false,
-   "pain": 1,
-   "tireless": false,
-   "pursues": true,
-   "crowd_cap": 2,
-   "regen": 0,
-   "sweep": 1,
-   "sweep_cost_power": 0,
-   "sweep_label": "",
-   "hp": 12,
-   "cur_sta": 4,
-   "cur_power": 6,
-   "down": false,
-   "dead": false,
-   "items": {
-    "healing": 1,
-    "stamina": 0
-   },
-   "hp_regen_per_night": 2,
-   "level": 1,
-   "xp": 77,
-   "skill_points": 0,
-   "training": 0,
-   "weapon": "flail",
-   "weapon_broken": false,
-   "proficiency": {},
-   "epithet": "steady"
-  },
-  {
-   "name": "Yssa",
-   "dex": 4,
+   "name": "Brand",
+   "dex": 6,
    "str_": 3,
    "sta": 7,
-   "max_hp": 10,
-   "power": 6,
+   "max_hp": 9,
+   "power": 3,
    "ability": "first_blood",
    "sta_cost": 1,
    "undead": false,
-   "pain": 1,
+   "pain": 2,
    "tireless": false,
    "pursues": true,
    "crowd_cap": 2,
@@ -92,42 +18,83 @@
    "sweep": 1,
    "sweep_cost_power": 0,
    "sweep_label": "",
-   "hp": 10,
+   "protagonist": true,
+   "hp": 9,
    "cur_sta": 7,
-   "cur_power": 4,
+   "cur_power": 3,
    "down": false,
    "dead": false,
+   "fate_debt": false,
    "items": {
     "healing": 1,
     "stamina": 1
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 47,
+   "xp": 0,
    "skill_points": 0,
    "training": 0,
-   "weapon": "mace",
+   "weapon": "whip",
    "weapon_broken": false,
    "proficiency": {},
-   "epithet": "steady"
+   "epithet": "precise"
+  },
+  {
+   "name": "Rhea",
+   "dex": 4,
+   "str_": 6,
+   "sta": 5,
+   "max_hp": 11,
+   "power": 4,
+   "ability": "bulwark",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 11,
+   "cur_sta": 5,
+   "cur_power": 4,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 0,
+    "stamina": 2
+   },
+   "hp_regen_per_night": 2,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "club",
+   "weapon_broken": false,
+   "proficiency": {},
+   "epithet": "powerful"
   }
  ],
  "clock": {
-  "day": 12,
+  "day": 1,
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 20
+  "gold": 0
  },
- "foe_count": 8,
- "active_quest": "q37",
+ "foe_count": 0,
+ "active_quest": null,
  "world": {
-  "seed": 17106899,
+  "seed": 1038583225,
   "settlements": [
    {
-    "key": "whispersong",
-    "name": "Whispersong",
-    "race": "elf",
+    "key": "greasesprawl",
+    "name": "Greasesprawl",
+    "race": "goblin",
     "kind": "capital",
     "quests": [
      "q01",
@@ -135,109 +102,112 @@
      "q03",
      "q04",
      "q05",
+     "q24",
      "q26",
-     "q28",
-     "q38",
-     "q39"
+     "q40",
+     "q41",
+     "q42"
     ]
    },
    {
-    "key": "sprocketsprawl",
-    "name": "Sprocketsprawl",
-    "race": "goblin",
+    "key": "karakforge",
+    "name": "Karakforge",
+    "race": "dwarf",
     "kind": "town",
     "quests": [
      "q06",
      "q07",
      "q08",
      "q09",
-     "q24",
-     "q25",
-     "q27",
-     "q30",
-     "q36"
+     "q36",
+     "q38",
+     "q43"
     ]
    },
    {
-    "key": "alderford",
-    "name": "Alderford",
-    "race": "human",
+    "key": "silverglade",
+    "name": "Silverglade",
+    "race": "elf",
     "kind": "town",
     "quests": [
      "q10",
      "q11",
      "q12",
      "q13",
-     "q32",
-     "q35",
-     "q40"
-    ]
-   },
-   {
-    "key": "grimhelm",
-    "name": "Grimhelm",
-    "race": "dwarf",
-    "kind": "town",
-    "quests": [
-     "q14",
-     "q15",
-     "q16",
-     "q17",
      "q22",
-     "q31"
+     "q28",
+     "q33",
+     "q39"
     ]
    },
    {
     "key": "blackmaw",
     "name": "Blackmaw",
     "race": "orc",
+    "kind": "town",
+    "quests": [
+     "q14",
+     "q15",
+     "q16",
+     "q17",
+     "q23",
+     "q25",
+     "q27",
+     "q32"
+    ]
+   },
+   {
+    "key": "marshbridge",
+    "name": "Marshbridge",
+    "race": "human",
     "kind": "village",
     "quests": [
      "q18",
      "q19",
-     "q23"
+     "q29",
+     "q30",
+     "q31",
+     "q34",
+     "q35",
+     "q37"
     ]
    },
    {
-    "key": "geartown",
-    "name": "Geartown",
-    "race": "goblin",
+    "key": "karakvault",
+    "name": "Karakvault",
+    "race": "dwarf",
     "kind": "village",
     "quests": [
      "q20",
-     "q21",
-     "q29",
-     "q33",
-     "q34",
-     "q37"
+     "q21"
     ]
    }
   ],
   "quests": {
    "q01": {
     "id": "q01",
-    "name": "Wardens Gone Rogue",
-    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
-    "settlement": "whispersong",
-    "level": 8,
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "greasesprawl",
+    "level": 5,
     "skins": {
-     "archer": "Rogue Warden",
-     "cutthroat": "Rogue Scout",
-     "soldier": "Rogue Warden",
-     "veteran": "Warden-Captain",
-     "champion": "Blade of the Wild"
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
     },
     "sites": [
      {
-      "name": "the forest road",
-      "level": 7,
+      "name": "the night market",
+      "level": 4,
       "rooms": [
        [
         "the approach",
         [
-         "soldier",
-         "veteran",
-         "veteran",
          "veteran"
         ]
        ],
@@ -245,39 +215,22 @@
         "the heart of it",
         [
          "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
+         "veteran"
         ]
        ]
       ]
      },
      {
-      "name": "the rogue lodge",
-      "level": 8,
+      "name": "the press-gang den",
+      "level": 5,
       "rooms": [
        [
-        "the approach",
-        [
-         "bruiser",
-         "soldier",
-         "veteran",
-         "veteran"
-        ]
-       ],
-       [
-        "the way in",
+        "the heart of it",
         [
          "soldier",
          "soldier",
          "soldier",
          "soldier"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "champion"
         ]
        ]
       ]
@@ -291,26 +244,52 @@
    },
    "q02": {
     "id": "q02",
-    "name": "The Dragon's Tithe",
-    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
-    "settlement": "whispersong",
-    "level": 15,
-    "skins": {},
+    "name": "Scrap-Hounds Loose in the Works",
+    "desc": "The bosses' hound-pack slipped its chains and dens in the gearworks. Pay docked for every eaten shift-worker.",
+    "settlement": "greasesprawl",
+    "level": 1,
+    "skins": {
+     "wolf": "Scrap-Hound",
+     "dire wolf": "Boiler Hound"
+    },
     "sites": [
      {
-      "name": "the burned tithe-barns",
-      "level": 15,
+      "name": "the scrapyard",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the gearworks floor",
+      "level": 1,
       "rooms": [
        [
         "the approach",
         [
-         "drake"
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
         ]
        ],
        [
         "the heart of it",
         [
-         "drake"
+         "dire wolf"
         ]
        ]
       ]
@@ -324,35 +303,38 @@
    },
    "q03": {
     "id": "q03",
-    "name": "Beasts Maddened by the Blight",
-    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
-    "settlement": "whispersong",
-    "level": 2,
-    "skins": {
-     "boar": "Blight-Boar",
-     "bear": "Blight-Bear"
-    },
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "greasesprawl",
+    "level": 14,
+    "skins": {},
     "sites": [
      {
-      "name": "the torn grove",
-      "level": 2,
+      "name": "the flattened fort",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the march camps",
+      "level": 14,
       "rooms": [
        [
         "the approach",
         [
-         "boar"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "boar"
+         "giant"
         ]
        ],
        [
         "the heart of it",
         [
-         "boar"
+         "troll"
         ]
        ]
       ]
@@ -366,26 +348,42 @@
    },
    "q04": {
     "id": "q04",
-    "name": "The Dragon's Tithe",
-    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
-    "settlement": "whispersong",
-    "level": 15,
-    "skins": {},
+    "name": "The Engine Gone Feral",
+    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
+    "settlement": "greasesprawl",
+    "level": 14,
+    "skins": {
+     "ogre": "Breaker-Engine",
+     "troll": "Furnace Hulk",
+     "giant": "The Great Machine"
+    },
     "sites": [
      {
-      "name": "the burned tithe-barns",
-      "level": 15,
+      "name": "the lower works",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the furnace hall",
+      "level": 14,
       "rooms": [
        [
         "the approach",
         [
-         "drake"
+         "giant"
         ]
        ],
        [
         "the heart of it",
         [
-         "wyvern"
+         "troll"
         ]
        ]
       ]
@@ -399,38 +397,32 @@
    },
    "q05": {
     "id": "q05",
-    "name": "The Giant of the Border Marches",
-    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
-    "settlement": "whispersong",
-    "level": 11,
-    "skins": {},
+    "name": "Spiders in the Undercity",
+    "desc": "The vent shafts are webbed shut and the air below is going bad. Small pay, small heroes welcome.",
+    "settlement": "greasesprawl",
+    "level": 4,
+    "skins": {
+     "great spider": "Vent Crawler"
+    },
     "sites": [
      {
-      "name": "the flattened fort",
-      "level": 10,
+      "name": "the vent shafts",
+      "level": 4,
       "rooms": [
        [
         "the approach",
         [
-         "ogre"
+         "great spider",
+         "great spider",
+         "great spider"
         ]
        ],
        [
         "the heart of it",
         [
-         "troll"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the march camps",
-      "level": 11,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "giant"
+         "great spider",
+         "great spider",
+         "great spider"
         ]
        ]
       ]
@@ -444,36 +436,47 @@
    },
    "q06": {
     "id": "q06",
-    "name": "The Engine Gone Feral",
-    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "sprocketsprawl",
-    "level": 7,
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "karakforge",
+    "level": 14,
     "skins": {
-     "ogre": "Breaker-Engine",
-     "troll": "Furnace Hulk",
-     "giant": "The Great Machine"
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
     },
     "sites": [
      {
-      "name": "the lower works",
-      "level": 7,
+      "name": "the worked seam",
+      "level": 13,
       "rooms": [
        [
         "the approach",
         [
-         "ogre"
+         "troll"
         ]
        ],
        [
         "the way in",
         [
-         "ogre"
+         "troll"
         ]
        ],
        [
         "the heart of it",
         [
-         "ogre"
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the broken gallery",
+      "level": 14,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "troll"
         ]
        ]
       ]
@@ -487,37 +490,69 @@
    },
    "q07": {
     "id": "q07",
-    "name": "Press-Gang Trouble",
-    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "sprocketsprawl",
-    "level": 14,
+    "name": "Things in the Deep Roads",
+    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
+    "settlement": "karakforge",
+    "level": 2,
     "skins": {
-     "cutthroat": "Press-Ganger",
-     "archer": "Sling-Runt",
-     "bruiser": "Pit Boss",
-     "soldier": "Wrench-Guard",
-     "veteran": "Shift-Breaker",
-     "champion": "Under-Boss",
-     "blademaster": "Knife-King",
-     "warlord": "The Big Boss"
+     "great spider": "Deep Creeper",
+     "wolf": "Tunnel Hound",
+     "dire wolf": "Tunnel Stalker"
     },
     "sites": [
      {
-      "name": "the night market",
-      "level": 14,
+      "name": "the toll gate",
+      "level": 1,
       "rooms": [
        [
         "the approach",
         [
-         "veteran",
-         "champion",
-         "champion"
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
         ]
        ],
        [
         "the heart of it",
         [
-         "blademaster"
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deep road",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
         ]
        ]
       ]
@@ -531,36 +566,54 @@
    },
    "q08": {
     "id": "q08",
-    "name": "The Engine Gone Feral",
-    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "sprocketsprawl",
-    "level": 12,
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "karakforge",
+    "level": 4,
     "skins": {
-     "ogre": "Breaker-Engine",
-     "troll": "Furnace Hulk",
-     "giant": "The Great Machine"
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
     },
     "sites": [
      {
-      "name": "the lower works",
-      "level": 12,
+      "name": "the cracked gate",
+      "level": 3,
       "rooms": [
        [
         "the approach",
         [
-         "troll"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "troll"
+         "skeleton",
+         "ghoul"
         ]
        ],
        [
         "the heart of it",
         [
-         "troll"
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the drowned galleries",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul"
         ]
        ]
       ]
@@ -574,62 +627,37 @@
    },
    "q09": {
     "id": "q09",
-    "name": "Press-Gang Trouble",
-    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "sprocketsprawl",
-    "level": 8,
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "karakforge",
+    "level": 10,
     "skins": {
-     "cutthroat": "Press-Ganger",
-     "archer": "Sling-Runt",
-     "bruiser": "Pit Boss",
-     "soldier": "Wrench-Guard",
-     "veteran": "Shift-Breaker",
-     "champion": "Under-Boss",
-     "blademaster": "Knife-King",
-     "warlord": "The Big Boss"
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
     },
     "sites": [
      {
-      "name": "the night market",
-      "level": 7,
+      "name": "the contested gate",
+      "level": 10,
       "rooms": [
        [
         "the approach",
         [
-         "cutthroat",
          "soldier",
-         "soldier",
-         "soldier"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
+         "veteran",
+         "veteran",
+         "veteran"
         ]
        ],
        [
         "the heart of it",
         [
-         "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the press-gang den",
-      "level": 8,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "soldier",
+         "veteran",
          "veteran",
          "veteran",
          "veteran"
@@ -646,22 +674,49 @@
    },
    "q10": {
     "id": "q10",
-    "name": "Wolves at the Folds",
-    "desc": "Sheep gone, then a shepherd. The commons want the pack dug out of the hills.",
-    "settlement": "alderford",
-    "level": 5,
-    "skins": {},
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
+    "level": 3,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
     "sites": [
      {
-      "name": "the high pasture",
-      "level": 5,
+      "name": "the forest road",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 3,
       "rooms": [
        [
         "the heart of it",
         [
-         "wolf",
-         "dire wolf",
-         "dire wolf"
+         "soldier",
+         "soldier",
+         "soldier"
         ]
        ]
       ]
@@ -675,23 +730,26 @@
    },
    "q11": {
     "id": "q11",
-    "name": "Deserters Turned Raiders",
-    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
-    "settlement": "alderford",
-    "level": 9,
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
+    "level": 11,
     "skins": {
-     "soldier": "Deserter",
-     "veteran": "Deserter Sergeant"
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
     },
     "sites": [
      {
-      "name": "the burned farmstead",
-      "level": 9,
+      "name": "the forest road",
+      "level": 11,
       "rooms": [
        [
         "the approach",
         [
-         "veteran",
+         "bruiser",
          "veteran",
          "veteran",
          "veteran"
@@ -700,10 +758,9 @@
        [
         "the heart of it",
         [
-         "bruiser",
          "veteran",
-         "veteran",
-         "veteran"
+         "champion",
+         "champion"
         ]
        ]
       ]
@@ -717,20 +774,54 @@
    },
    "q12": {
     "id": "q12",
-    "name": "Bandits on the King's Road",
-    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
-    "settlement": "alderford",
-    "level": 12,
-    "skins": {},
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "silverglade",
+    "level": 6,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
     "sites": [
      {
-      "name": "the roadside camp",
-      "level": 12,
+      "name": "the torn grove",
+      "level": 5,
       "rooms": [
+       [
+        "the approach",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bear"
+        ]
+       ],
        [
         "the heart of it",
         [
-         "blademaster"
+         "bear"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bear"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bear"
         ]
        ]
       ]
@@ -744,88 +835,20 @@
    },
    "q13": {
     "id": "q13",
-    "name": "The Restless Crypt",
-    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
-    "settlement": "alderford",
-    "level": 3,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the churchyard",
-      "level": 2,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "skeleton"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "skeleton",
-         "skeleton"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ghoul"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the crypt below",
-      "level": 3,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "skeleton",
-         "skeleton"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "ghoul"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "skeleton",
-         "ghoul"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q14": {
-    "id": "q14",
-    "name": "The Grudge War",
-    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
-    "settlement": "grimhelm",
-    "level": 13,
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
+    "level": 14,
     "skins": {
-     "cutthroat": "Grudge-Sworn",
-     "archer": "Grudge-Sworn",
-     "bruiser": "Grudge-Sworn",
-     "soldier": "Grudge-Sworn",
-     "veteran": "Oathbreaker",
-     "champion": "Grudge-Captain",
-     "blademaster": "Grudge-Lord"
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
     },
     "sites": [
      {
-      "name": "the contested gate",
+      "name": "the forest road",
       "level": 13,
       "rooms": [
        [
@@ -840,6 +863,35 @@
         "the way in",
         [
          "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
          "champion",
          "champion"
         ]
@@ -859,29 +911,151 @@
     },
     "status": "open"
    },
-   "q15": {
-    "id": "q15",
-    "name": "Things in the Deep Roads",
-    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
-    "settlement": "grimhelm",
-    "level": 3,
-    "skins": {
-     "great spider": "Deep Creeper",
-     "wolf": "Tunnel Hound",
-     "dire wolf": "Tunnel Stalker"
-    },
+   "q14": {
+    "id": "q14",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "blackmaw",
+    "level": 2,
+    "skins": {},
     "sites": [
      {
-      "name": "the toll gate",
-      "level": 3,
+      "name": "the hunting ground",
+      "level": 1,
       "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
        [
         "the heart of it",
         [
-         "wolf",
-         "great spider",
-         "great spider",
-         "great spider"
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's lair",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q15": {
+    "id": "q15",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "blackmaw",
+    "level": 2,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "cutthroat"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier"
         ]
        ]
       ]
@@ -895,18 +1069,15 @@
    },
    "q16": {
     "id": "q16",
-    "name": "The Breaker in the Dark",
-    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
-    "settlement": "grimhelm",
-    "level": 4,
-    "skins": {
-     "ogre": "Deep Ogre",
-     "troll": "Stone Troll"
-    },
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "blackmaw",
+    "level": 9,
+    "skins": {},
     "sites": [
      {
-      "name": "the worked seam",
-      "level": 3,
+      "name": "the boulder field",
+      "level": 9,
       "rooms": [
        [
         "the approach",
@@ -914,24 +1085,6 @@
          "ogre"
         ]
        ],
-       [
-        "the way in",
-        [
-         "ogre"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ogre"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the broken gallery",
-      "level": 4,
-      "rooms": [
        [
         "the heart of it",
         [
@@ -949,66 +1102,6 @@
    },
    "q17": {
     "id": "q17",
-    "name": "The Flooded Hold",
-    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
-    "settlement": "grimhelm",
-    "level": 2,
-    "skins": {
-     "skeleton": "Drowned Delver",
-     "ghoul": "Pale Delver",
-     "wight": "Hold-Lord"
-    },
-    "sites": [
-     {
-      "name": "the cracked gate",
-      "level": 2,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "skeleton",
-         "skeleton",
-         "skeleton"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q18": {
-    "id": "q18",
-    "name": "The Proving Hunt",
-    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
-    "settlement": "blackmaw",
-    "level": 6,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the hunting ground",
-      "level": 6,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "bear"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q19": {
-    "id": "q19",
     "name": "Rival Warband",
     "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
     "settlement": "blackmaw",
@@ -1026,12 +1119,40 @@
     "sites": [
      {
       "name": "the raided trail",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "cutthroat",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
       "level": 3,
       "rooms": [
        [
         "the approach",
         [
          "archer",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
          "bruiser",
          "bruiser"
         ]
@@ -1039,6 +1160,102 @@
        [
         "the heart of it",
         [
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q18": {
+    "id": "q18",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "marshbridge",
+    "level": 4,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 3,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crypt below",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q19": {
+    "id": "q19",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "marshbridge",
+    "level": 4,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
          "soldier",
          "soldier",
          "soldier"
@@ -1055,126 +1272,9 @@
    },
    "q20": {
     "id": "q20",
-    "name": "Spiders in the Undercity",
-    "desc": "The vent shafts are webbed shut and the air below is going bad. Small pay, small heroes welcome.",
-    "settlement": "geartown",
-    "level": 3,
-    "skins": {
-     "great spider": "Vent Crawler"
-    },
-    "sites": [
-     {
-      "name": "the vent shafts",
-      "level": 2,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "great spider"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "great spider"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "great spider"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the web-choked cistern",
-      "level": 3,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "great spider"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "great spider",
-         "great spider"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "great spider",
-         "great spider"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q21": {
-    "id": "q21",
-    "name": "Scrap-Hounds Loose in the Works",
-    "desc": "The bosses' hound-pack slipped its chains and dens in the gearworks. Pay docked for every eaten shift-worker.",
-    "settlement": "geartown",
-    "level": 2,
-    "skins": {
-     "wolf": "Scrap-Hound",
-     "dire wolf": "Boiler Hound"
-    },
-    "sites": [
-     {
-      "name": "the scrapyard",
-      "level": 2,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wolf",
-         "wolf",
-         "wolf"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "wolf",
-         "wolf",
-         "wolf",
-         "wolf"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wolf",
-         "wolf",
-         "wolf",
-         "wolf"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q22": {
-    "id": "q22",
     "name": "Things in the Deep Roads",
     "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
-    "settlement": "grimhelm",
+    "settlement": "karakvault",
     "level": 4,
     "skins": {
      "great spider": "Deep Creeper",
@@ -1199,9 +1299,100 @@
         "the heart of it",
         [
          "wolf",
-         "great spider",
-         "great spider",
-         "great spider"
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q21": {
+    "id": "q21",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "karakvault",
+    "level": 4,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton",
+         "skeleton",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q22": {
+    "id": "q22",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
+    "level": 12,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
         ]
        ]
       ]
@@ -1218,12 +1409,12 @@
     "name": "The Troll Under the Pass",
     "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
     "settlement": "blackmaw",
-    "level": 6,
+    "level": 8,
     "skins": {},
     "sites": [
      {
       "name": "the boulder field",
-      "level": 6,
+      "level": 8,
       "rooms": [
        [
         "the approach",
@@ -1254,42 +1445,20 @@
    },
    "q24": {
     "id": "q24",
-    "name": "The Engine Gone Feral",
-    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "sprocketsprawl",
-    "level": 9,
-    "skins": {
-     "ogre": "Breaker-Engine",
-     "troll": "Furnace Hulk",
-     "giant": "The Great Machine"
-    },
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "greasesprawl",
+    "level": 15,
+    "skins": {},
     "sites": [
      {
-      "name": "the lower works",
-      "level": 8,
+      "name": "the burned tithe-barns",
+      "level": 15,
       "rooms": [
        [
         "the heart of it",
         [
-         "troll"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the furnace hall",
-      "level": 9,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "ogre"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ogre"
+         "wyvern"
         ]
        ]
       ]
@@ -1303,48 +1472,52 @@
    },
    "q25": {
     "id": "q25",
-    "name": "The Engine Gone Feral",
-    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "sprocketsprawl",
-    "level": 6,
-    "skins": {
-     "ogre": "Breaker-Engine",
-     "troll": "Furnace Hulk",
-     "giant": "The Great Machine"
-    },
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "blackmaw",
+    "level": 3,
+    "skins": {},
     "sites": [
      {
-      "name": "the lower works",
-      "level": 5,
+      "name": "the hunting ground",
+      "level": 2,
       "rooms": [
        [
         "the approach",
         [
-         "ogre"
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
         ]
        ],
        [
         "the heart of it",
         [
-         "ogre"
+         "boar"
         ]
        ]
       ]
      },
      {
-      "name": "the furnace hall",
-      "level": 6,
+      "name": "the beast's lair",
+      "level": 3,
       "rooms": [
        [
         "the approach",
         [
-         "ogre"
+         "boar",
+         "dire wolf"
         ]
        ],
        [
         "the heart of it",
         [
-         "ogre"
+         "boar",
+         "boar"
         ]
        ]
       ]
@@ -1358,51 +1531,9 @@
    },
    "q26": {
     "id": "q26",
-    "name": "Wardens Gone Rogue",
-    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
-    "settlement": "whispersong",
-    "level": 13,
-    "skins": {
-     "archer": "Rogue Warden",
-     "cutthroat": "Rogue Scout",
-     "soldier": "Rogue Warden",
-     "veteran": "Warden-Captain",
-     "champion": "Blade of the Wild"
-    },
-    "sites": [
-     {
-      "name": "the forest road",
-      "level": 13,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "soldier",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "blademaster"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q27": {
-    "id": "q27",
     "name": "The Engine Gone Feral",
     "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "sprocketsprawl",
+    "settlement": "greasesprawl",
     "level": 8,
     "skins": {
      "ogre": "Breaker-Engine",
@@ -1421,12 +1552,6 @@
         ]
        ],
        [
-        "the way in",
-        [
-         "ogre"
-        ]
-       ],
-       [
         "the heart of it",
         [
          "ogre"
@@ -1438,6 +1563,12 @@
       "name": "the furnace hall",
       "level": 8,
       "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
        [
         "the heart of it",
         [
@@ -1453,36 +1584,96 @@
     },
     "status": "open"
    },
-   "q28": {
-    "id": "q28",
-    "name": "The Blighted Glade",
-    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
-    "settlement": "whispersong",
-    "level": 5,
+   "q27": {
+    "id": "q27",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "blackmaw",
+    "level": 2,
     "skins": {
-     "great spider": "Gloomweaver",
-     "wolf": "Blight-Wolf",
-     "dire wolf": "Blight-Alpha"
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
     },
     "sites": [
      {
-      "name": "the glade's edge",
-      "level": 5,
+      "name": "the raided trail",
+      "level": 1,
       "rooms": [
        [
         "the approach",
         [
-         "wolf",
-         "dire wolf",
-         "dire wolf"
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "cutthroat"
         ]
        ],
        [
         "the heart of it",
         [
-         "wolf",
-         "dire wolf",
-         "dire wolf"
+         "archer",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser"
         ]
        ]
       ]
@@ -1494,31 +1685,46 @@
     },
     "status": "open"
    },
-   "q29": {
-    "id": "q29",
-    "name": "Press-Gang Trouble",
-    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "geartown",
+   "q28": {
+    "id": "q28",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
     "level": 8,
     "skins": {
-     "cutthroat": "Press-Ganger",
-     "archer": "Sling-Runt",
-     "bruiser": "Pit Boss",
-     "soldier": "Wrench-Guard",
-     "veteran": "Shift-Breaker",
-     "champion": "Under-Boss",
-     "blademaster": "Knife-King",
-     "warlord": "The Big Boss"
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
     },
     "sites": [
      {
-      "name": "the night market",
+      "name": "the forest road",
       "level": 7,
       "rooms": [
        [
+        "the approach",
+        [
+         "bruiser",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
         "the heart of it",
         [
-         "veteran",
+         "bruiser",
          "veteran",
          "veteran",
          "veteran"
@@ -1527,11 +1733,20 @@
       ]
      },
      {
-      "name": "the press-gang den",
+      "name": "the rogue lodge",
       "level": 8,
       "rooms": [
        [
         "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
         [
          "soldier",
          "soldier",
@@ -1554,64 +1769,100 @@
     },
     "status": "open"
    },
-   "q30": {
-    "id": "q30",
-    "name": "Press-Gang Trouble",
-    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "sprocketsprawl",
-    "level": 13,
-    "skins": {
-     "cutthroat": "Press-Ganger",
-     "archer": "Sling-Runt",
-     "bruiser": "Pit Boss",
-     "soldier": "Wrench-Guard",
-     "veteran": "Shift-Breaker",
-     "champion": "Under-Boss",
-     "blademaster": "Knife-King",
-     "warlord": "The Big Boss"
-    },
+   "q29": {
+    "id": "q29",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "marshbridge",
+    "level": 6,
+    "skins": {},
     "sites": [
      {
-      "name": "the night market",
-      "level": 12,
+      "name": "the roadside camp",
+      "level": 6,
       "rooms": [
        [
         "the approach",
         [
+         "soldier",
          "veteran",
-         "champion",
-         "champion"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "veteran",
-         "champion",
-         "champion"
+         "veteran"
         ]
        ],
        [
         "the heart of it",
         [
-         "bruiser",
          "veteran",
          "veteran",
          "veteran"
         ]
        ]
       ]
-     },
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q30": {
+    "id": "q30",
+    "name": "Wolves at the Folds",
+    "desc": "Sheep gone, then a shepherd. The commons want the pack dug out of the hills.",
+    "settlement": "marshbridge",
+    "level": 3,
+    "skins": {},
+    "sites": [
      {
-      "name": "the press-gang den",
-      "level": 13,
+      "name": "the high pasture",
+      "level": 2,
       "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
        [
         "the heart of it",
         [
-         "veteran",
-         "champion",
-         "champion"
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the den in the hills",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
         ]
        ]
       ]
@@ -1625,70 +1876,30 @@
    },
    "q31": {
     "id": "q31",
-    "name": "The Grudge War",
-    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
-    "settlement": "grimhelm",
-    "level": 12,
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "marshbridge",
+    "level": 1,
     "skins": {
-     "cutthroat": "Grudge-Sworn",
-     "archer": "Grudge-Sworn",
-     "bruiser": "Grudge-Sworn",
-     "soldier": "Grudge-Sworn",
-     "veteran": "Oathbreaker",
-     "champion": "Grudge-Captain",
-     "blademaster": "Grudge-Lord"
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
     },
     "sites": [
      {
-      "name": "the contested gate",
-      "level": 11,
+      "name": "the burned farmstead",
+      "level": 1,
       "rooms": [
        [
         "the approach",
         [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "champion",
-         "champion"
+         "soldier"
         ]
        ],
        [
         "the heart of it",
         [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the rival delving",
-      "level": 12,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "veteran",
-         "champion",
-         "champion"
+         "cutthroat",
+         "soldier"
         ]
        ]
       ]
@@ -1702,29 +1913,38 @@
    },
    "q32": {
     "id": "q32",
-    "name": "The Restless Crypt",
-    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
-    "settlement": "alderford",
-    "level": 7,
-    "skins": {},
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "blackmaw",
+    "level": 8,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
     "sites": [
      {
-      "name": "the churchyard",
-      "level": 7,
+      "name": "the raided trail",
+      "level": 8,
       "rooms": [
        [
         "the approach",
         [
-         "ghoul",
-         "wight"
+         "soldier",
+         "soldier",
+         "soldier",
+         "veteran"
         ]
        ],
        [
         "the heart of it",
         [
-         "ghoul",
-         "ghoul",
-         "wight"
+         "champion"
         ]
        ]
       ]
@@ -1738,10 +1958,387 @@
    },
    "q33": {
     "id": "q33",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "silverglade",
+    "level": 9,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 9,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q34": {
+    "id": "q34",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "marshbridge",
+    "level": 7,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton",
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wight"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crypt below",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q35": {
+    "id": "q35",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "marshbridge",
+    "level": 4,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q36": {
+    "id": "q36",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "karakforge",
+    "level": 8,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q37": {
+    "id": "q37",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "marshbridge",
+    "level": 8,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q38": {
+    "id": "q38",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "karakforge",
+    "level": 14,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q39": {
+    "id": "q39",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "silverglade",
+    "level": 2,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q40": {
+    "id": "q40",
     "name": "The Engine Gone Feral",
     "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
-    "settlement": "geartown",
-    "level": 8,
+    "settlement": "greasesprawl",
+    "level": 11,
     "skins": {
      "ogre": "Breaker-Engine",
      "troll": "Furnace Hulk",
@@ -1750,12 +2347,87 @@
     "sites": [
      {
       "name": "the lower works",
-      "level": 7,
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the furnace hall",
+      "level": 11,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q41": {
+    "id": "q41",
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "greasesprawl",
+    "level": 10,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the flattened fort",
+      "level": 8,
       "rooms": [
        [
         "the approach",
         [
          "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the march camps",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
         ]
        ],
        [
@@ -1767,8 +2439,8 @@
       ]
      },
      {
-      "name": "the furnace hall",
-      "level": 8,
+      "name": "the high steading",
+      "level": 10,
       "rooms": [
        [
         "the approach",
@@ -1797,12 +2469,12 @@
     },
     "status": "open"
    },
-   "q34": {
-    "id": "q34",
+   "q42": {
+    "id": "q42",
     "name": "Press-Gang Trouble",
     "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "geartown",
-    "level": 7,
+    "settlement": "greasesprawl",
+    "level": 6,
     "skins": {
      "cutthroat": "Press-Ganger",
      "archer": "Sling-Runt",
@@ -1816,20 +2488,21 @@
     "sites": [
      {
       "name": "the night market",
-      "level": 6,
+      "level": 5,
       "rooms": [
        [
         "the approach",
         [
+         "archer",
+         "cutthroat",
          "soldier",
-         "soldier",
-         "veteran"
+         "soldier"
         ]
        ],
        [
         "the way in",
         [
-         "veteran",
+         "soldier",
          "veteran"
         ]
        ],
@@ -1846,367 +2519,64 @@
      },
      {
       "name": "the press-gang den",
-      "level": 7,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q35": {
-    "id": "q35",
-    "name": "The Restless Crypt",
-    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
-    "settlement": "alderford",
-    "level": 6,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the churchyard",
-      "level": 5,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "skeleton",
-         "ghoul",
-         "ghoul"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "skeleton",
-         "skeleton",
-         "skeleton",
-         "ghoul"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ghoul",
-         "ghoul",
-         "ghoul"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the crypt below",
       "level": 6,
       "rooms": [
        [
         "the approach",
         [
-         "ghoul",
-         "ghoul",
-         "ghoul",
-         "ghoul"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ghoul",
-         "ghoul",
-         "ghoul",
-         "ghoul"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q36": {
-    "id": "q36",
-    "name": "Scrap-Hounds Loose in the Works",
-    "desc": "The bosses' hound-pack slipped its chains and dens in the gearworks. Pay docked for every eaten shift-worker.",
-    "settlement": "sprocketsprawl",
-    "level": 4,
-    "skins": {
-     "wolf": "Scrap-Hound",
-     "dire wolf": "Boiler Hound"
-    },
-    "sites": [
-     {
-      "name": "the scrapyard",
-      "level": 4,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wolf",
-         "dire wolf",
-         "dire wolf"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wolf",
-         "dire wolf",
-         "dire wolf"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q37": {
-    "id": "q37",
-    "name": "Press-Gang Trouble",
-    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
-    "settlement": "geartown",
-    "level": 2,
-    "skins": {
-     "cutthroat": "Press-Ganger",
-     "archer": "Sling-Runt",
-     "bruiser": "Pit Boss",
-     "soldier": "Wrench-Guard",
-     "veteran": "Shift-Breaker",
-     "champion": "Under-Boss",
-     "blademaster": "Knife-King",
-     "warlord": "The Big Boss"
-    },
-    "sites": [
-     {
-      "name": "the night market",
-      "level": 2,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "cutthroat",
-         "soldier",
-         "soldier"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q38": {
-    "id": "q38",
-    "name": "The Dragon's Tithe",
-    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
-    "settlement": "whispersong",
-    "level": 12,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the burned tithe-barns",
-      "level": 10,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wyvern"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "wyvern"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wyvern"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the mountain approach",
-      "level": 11,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wyvern"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wyvern"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the hoard-cave",
-      "level": 12,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wyvern"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wyvern"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q39": {
-    "id": "q39",
-    "name": "The Dragon's Tithe",
-    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
-    "settlement": "whispersong",
-    "level": 17,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the burned tithe-barns",
-      "level": 16,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "wyvern"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "wyvern"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the mountain approach",
-      "level": 17,
-      "rooms": [
-       [
-        "the heart of it",
-        [
-         "dragon"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open"
-   },
-   "q40": {
-    "id": "q40",
-    "name": "Deserters Turned Raiders",
-    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
-    "settlement": "alderford",
-    "level": 9,
-    "skins": {
-     "soldier": "Deserter",
-     "veteran": "Deserter Sergeant"
-    },
-    "sites": [
-     {
-      "name": "the burned farmstead",
-      "level": 8,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the deserters' camp",
-      "level": 9,
-      "rooms": [
-       [
-        "the approach",
-        [
          "bruiser",
-         "soldier",
-         "soldier",
-         "soldier"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "soldier",
-         "soldier",
-         "soldier",
-         "soldier"
+         "veteran",
+         "veteran"
         ]
        ],
        [
         "the heart of it",
         [
-         "veteran",
-         "veteran",
-         "veteran",
-         "veteran"
+         "archer",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q43": {
+    "id": "q43",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "karakforge",
+    "level": 14,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
         ]
        ]
       ]
@@ -2220,744 +2590,649 @@
    }
   }
  },
- "pending": null,
- "rooms": {
-  "q37/s1#1": {
-   "foes": [
-    {
-     "name": "Press-Ganger 1",
-     "dex": 5,
-     "str_": 3,
-     "sta": 5,
-     "max_hp": 7,
-     "power": 0,
-     "ability": null,
-     "sta_cost": 1,
-     "undead": false,
-     "pain": 1,
-     "tireless": false,
-     "pursues": true,
-     "crowd_cap": 2,
-     "regen": 0,
-     "sweep": 1,
-     "sweep_cost_power": 0,
-     "sweep_label": "",
-     "hp": 0,
-     "cur_sta": 5,
-     "cur_power": 0,
-     "down": false,
-     "dead": true,
-     "items": {},
-     "hp_regen_per_night": 1,
-     "level": 1,
-     "xp": 0,
-     "skill_points": 0,
-     "training": 0,
-     "weapon": "light hammer",
-     "weapon_broken": false,
-     "proficiency": {},
-     "epithet": ""
-    },
-    {
-     "name": "Wrench-Guard 2",
-     "dex": 5,
-     "str_": 4,
-     "sta": 6,
-     "max_hp": 10,
-     "power": 0,
-     "ability": null,
-     "sta_cost": 1,
-     "undead": false,
-     "pain": 1,
-     "tireless": false,
-     "pursues": true,
-     "crowd_cap": 2,
-     "regen": 0,
-     "sweep": 1,
-     "sweep_cost_power": 0,
-     "sweep_label": "",
-     "hp": 10,
-     "cur_sta": 2,
-     "cur_power": 0,
-     "down": false,
-     "dead": false,
-     "items": {},
-     "hp_regen_per_night": 1,
-     "level": 1,
-     "xp": 0,
-     "skill_points": 0,
-     "training": 0,
-     "weapon": "spear",
-     "weapon_broken": false,
-     "proficiency": {},
-     "epithet": ""
-    },
-    {
-     "name": "Wrench-Guard 3",
-     "dex": 5,
-     "str_": 4,
-     "sta": 6,
-     "max_hp": 10,
-     "power": 0,
-     "ability": null,
-     "sta_cost": 1,
-     "undead": false,
-     "pain": 1,
-     "tireless": false,
-     "pursues": true,
-     "crowd_cap": 2,
-     "regen": 0,
-     "sweep": 1,
-     "sweep_cost_power": 0,
-     "sweep_label": "",
-     "hp": 10,
-     "cur_sta": 2,
-     "cur_power": 0,
-     "down": false,
-     "dead": false,
-     "items": {},
-     "hp_regen_per_night": 1,
-     "level": 1,
-     "xp": 0,
-     "skill_points": 0,
-     "training": 0,
-     "weapon": "spear",
-     "weapon_broken": false,
-     "proficiency": {},
-     "epithet": ""
-    }
-   ],
-   "day": 1
-  }
+ "location": {
+  "place": "greasesprawl",
+  "name": "Greasesprawl",
+  "land": "goblin",
+  "kind": "settlement"
  },
+ "places": [],
+ "sighting": null,
+ "streak": {
+  "site": null,
+  "count": 0
+ },
+ "site_clears": {},
+ "pending": null,
+ "rooms": {},
  "rng": [
   3,
   [
-   813874119,
-   2791046400,
-   1299269919,
-   1497289890,
-   3253578319,
-   971209103,
-   3360761712,
-   1285391318,
-   1508077895,
-   1533690538,
-   3181113202,
-   888919099,
-   71558540,
-   1966811800,
-   2431934631,
-   2130485702,
-   3765926280,
-   1556282761,
-   3382763627,
-   4109502216,
-   3457311370,
-   3313726349,
-   1305875052,
-   3898120259,
-   217085557,
-   405569537,
-   2281568257,
-   3391530946,
-   1801860870,
-   3767778635,
-   3881506776,
-   3283025778,
-   2158235436,
-   1469468756,
-   4124726440,
-   2839295490,
-   693874957,
-   2422073599,
-   2602173504,
-   837296147,
-   426032731,
-   2902722105,
-   4113227273,
-   4131690531,
-   3126192429,
-   2378975629,
-   3941937921,
-   1993205421,
-   3358649111,
-   2687058021,
-   2178257285,
-   169983662,
-   874515657,
-   789551046,
-   4085676170,
-   3640777376,
-   3798798598,
-   616212915,
-   1046800302,
-   11248558,
-   333380098,
-   3421399355,
-   968458674,
-   835014183,
-   3684027666,
-   3352907612,
-   3761117698,
-   4277597476,
-   953376375,
-   1094094570,
-   2098366042,
-   789947888,
-   4061833603,
-   1256707313,
-   2360726290,
-   3470046055,
-   2375204099,
-   989894016,
-   3372964130,
-   2381504561,
-   3485661373,
-   2066500464,
-   616758088,
-   3686971691,
-   234176021,
-   1319642419,
-   4269210238,
-   1122253359,
-   684779345,
-   96581966,
-   1332333910,
-   2913174541,
-   242947844,
-   3099732333,
-   1059816808,
-   141305154,
-   3719625700,
-   371665163,
-   775844780,
-   513764920,
-   512882534,
-   825336088,
-   786420135,
-   2864592183,
-   542446864,
-   4064288613,
-   1625599194,
-   347555566,
-   3775872479,
-   2576862704,
-   235482304,
-   486289481,
-   3215310268,
-   4226162386,
-   1778794621,
-   2284090999,
-   326926365,
-   769414921,
-   3394258107,
-   929911999,
-   3795698079,
-   943169825,
-   4034949809,
-   3725184444,
-   1719573175,
-   3905187516,
-   1511479314,
-   267075671,
-   2933105964,
-   2809514210,
-   680827700,
-   3252089153,
-   1851182478,
-   4256747475,
-   239355868,
-   3894456570,
-   2934043293,
-   789236863,
-   4103221039,
-   965034501,
-   251339197,
-   3778430007,
-   434426254,
-   1145521801,
-   643652013,
-   1727748446,
-   1914620105,
-   3467242537,
-   409646593,
-   3201112979,
-   1046841502,
-   2906108305,
-   1436369831,
-   4150569726,
-   1487600114,
-   3081381370,
-   895954118,
-   4291216558,
-   357604558,
-   2204046658,
-   211923335,
-   2669316672,
-   173544303,
-   426519507,
-   3179910499,
-   3874875150,
-   2497913721,
-   923768662,
-   3874058219,
-   2253002225,
-   855651494,
-   3680800582,
-   3746971073,
-   1479477711,
-   963131954,
-   3939312271,
-   3406313875,
-   3666796516,
-   1474631559,
-   2229413926,
-   3360117719,
-   726711363,
-   2755492192,
-   4125490369,
-   3374856758,
-   665945691,
-   1873388303,
-   296475936,
-   822876525,
-   3707452957,
-   2819595361,
-   2415380905,
-   318173549,
-   2254187452,
-   1088718811,
-   2821160589,
-   3887149091,
-   2546725546,
-   1059467302,
-   4202773774,
-   1744883486,
-   2714374537,
-   4215987441,
-   2587849898,
-   1122594360,
-   1783795018,
-   747568379,
-   3870169832,
-   1296833173,
-   3632047690,
-   2277689306,
-   1113495814,
-   3183226170,
-   2577293684,
-   2697727253,
-   3212592239,
-   2205329279,
-   3538046654,
-   1543665928,
-   3971793143,
-   3065956908,
-   4017968555,
-   4211442929,
-   1424546494,
-   856755482,
-   401031582,
-   832900450,
-   3600293764,
-   3870245691,
-   3617884046,
-   2186571148,
-   687625300,
-   1405324327,
-   3652548236,
-   3321993195,
-   806661028,
-   2997593965,
-   384640099,
-   320529443,
-   3902967785,
-   443748157,
-   2920470873,
-   1869302478,
-   1681222808,
-   676284557,
-   2770707805,
-   1397962901,
-   354036435,
-   1987435510,
-   3966493722,
-   136146895,
-   2950299876,
-   1977783182,
-   2321690882,
-   374681402,
-   2185974777,
-   2017648128,
-   2419169502,
-   2943399758,
-   478831431,
-   626571912,
-   1378489597,
-   324497959,
-   379856048,
-   1207339908,
-   8199253,
-   606740764,
-   2268372773,
-   1296570359,
-   3331739418,
-   420327241,
-   3839025236,
-   332828193,
-   2078280063,
-   3660867478,
-   1372007032,
-   146170259,
-   2504567496,
-   2346692708,
-   3519415011,
-   1013612032,
-   2999395735,
-   2494282732,
-   3527891557,
-   598765086,
-   2524757131,
-   2793995521,
-   1097250991,
-   3432659511,
-   782795765,
-   2069640624,
-   480203242,
-   2642465056,
-   2475457945,
-   2637329291,
-   3872230748,
-   1447281195,
-   3927885791,
-   4068678563,
-   200167045,
-   157095169,
-   3798151732,
-   3547552453,
-   2385524485,
-   4117549765,
-   160331807,
-   1039442981,
-   1439424299,
-   1792854625,
-   572250904,
-   2890541925,
-   736625385,
-   3804126974,
-   3874408873,
-   3185357892,
-   2457446467,
-   1494027242,
-   1183617984,
-   1192425424,
-   727024982,
-   4234053319,
-   872349227,
-   1965245658,
-   1710893,
-   3209715933,
-   2555474549,
-   51478443,
-   2167364876,
-   978821862,
-   963365724,
-   1889889991,
-   2155723289,
-   2148148253,
-   3052024243,
-   2138745868,
-   1210789409,
-   524510271,
-   3050500543,
-   1801160976,
-   2370976894,
-   2840967514,
-   2504229518,
-   745978622,
-   3414329252,
-   2324372964,
-   2479684184,
-   637924982,
-   2839197471,
-   908239932,
-   1889453298,
-   2614039738,
-   1705161661,
-   136609396,
-   2308716195,
-   1127529809,
-   3890436439,
-   2618651538,
-   2855485049,
-   4138289184,
-   583723638,
-   2933029522,
-   4236605947,
-   762544817,
-   6556496,
-   1076451553,
-   926279385,
-   4281648107,
-   844297722,
-   1268371137,
-   2135927628,
-   3880444109,
-   970252822,
-   2142659106,
-   682226726,
-   2683663108,
-   370919026,
-   2705920817,
-   55903829,
-   3857643304,
-   2934464947,
-   833286700,
-   1541066399,
-   2460685714,
-   1474343271,
-   1657914656,
-   3006216307,
-   1926673543,
-   2406554474,
-   3800170207,
-   3060627777,
-   378597874,
-   3167431657,
-   2719627587,
-   3586724038,
-   3063275515,
-   3830440905,
-   3472034637,
-   998048650,
-   1602605548,
-   2720320818,
-   2109854903,
-   1321887134,
-   2269139288,
-   3026595834,
-   3713246545,
-   310324464,
-   3651125853,
-   3372998114,
-   4060098443,
-   4180607789,
-   2883263706,
-   706350490,
-   743548612,
-   819240145,
-   2959508612,
-   1957230757,
-   24447030,
-   3179797921,
-   4142025959,
-   1652034105,
-   241984857,
-   4113952030,
-   2509131500,
-   433572416,
-   809234606,
-   3906430970,
-   532104089,
-   568753200,
-   3195460375,
-   777055100,
-   3499059810,
-   3345297578,
-   920084054,
-   2319214525,
-   2385913020,
-   1234431940,
-   1082086127,
-   3516389422,
-   3153791770,
-   3243755443,
-   3876986426,
-   2151797332,
-   1041855898,
-   4097530825,
-   795673365,
-   3908600624,
-   2152566783,
-   3603148709,
-   1422432335,
-   675075538,
-   3921995520,
-   140128130,
-   4140008957,
-   2381101086,
-   1088003874,
-   19493005,
-   1002094214,
-   140119462,
-   3999835176,
-   81000007,
-   2862790563,
-   470625700,
-   3589222453,
-   1077773651,
-   1060073685,
-   2837129034,
-   1084461270,
-   3858782247,
-   2999433359,
-   3847577887,
-   1123092407,
-   2022269318,
-   766349640,
-   291959026,
-   519832258,
-   677620872,
-   2752775245,
-   228077427,
-   57214702,
-   4021544189,
-   3928315525,
-   3098438834,
-   3176655741,
-   415218565,
-   2506537444,
-   272688543,
-   271474753,
-   282779471,
-   3364366659,
-   496080219,
-   2389132446,
-   1701267695,
-   1699101169,
-   3946548938,
-   2150887935,
-   2266801799,
-   683770119,
-   1605514302,
-   851282394,
-   990514087,
-   2261423968,
-   1276835996,
-   2081922034,
-   2025386895,
-   177092017,
-   1559030428,
-   3117485459,
-   1356329681,
-   3660193708,
-   3090846641,
-   1903949427,
-   1430516118,
-   2896538837,
-   3669710630,
-   1777298734,
-   1551953916,
-   2776714088,
-   1914093277,
-   1995855493,
-   28580314,
-   1893276847,
-   415560929,
-   198984877,
-   2330712958,
-   2196994238,
-   2636333631,
-   3712479689,
-   2390680074,
-   267228242,
-   1897916372,
-   1214413004,
-   513454428,
-   1548333725,
-   389127125,
-   145464474,
-   2227852845,
-   3322638303,
-   1600672676,
-   1365137006,
-   1738547204,
-   1680660724,
-   1313549819,
-   3639531334,
-   3969126770,
-   2155659071,
-   2431842080,
-   936313186,
-   1880627383,
-   267547898,
-   431035896,
-   3594880681,
-   3592677107,
-   177160606,
-   3935782881,
-   1696410690,
-   939129689,
-   1638618061,
-   2767222734,
-   1896643046,
-   1207313919,
-   2442267344,
-   1496877181,
-   2935555233,
-   3805770396,
-   1688331873,
-   498616659,
-   3210617694,
-   2617921034,
-   774237984,
-   3718146358,
-   3842598326,
-   1998433784,
-   521998210,
-   2322696060,
-   1048954627,
-   955529878,
-   4007325978,
-   753218344,
-   2294765002,
-   2913554423,
-   4095002644,
-   2614071137,
-   1861027684,
-   901298498,
-   3612339048,
-   3487202793,
-   2771903595,
-   1313717635,
-   2209392214,
-   1033115492,
-   1240951023,
-   2505557139,
-   952607296,
-   3594936590,
-   3573312723,
-   1133581103,
-   2693649781,
-   1191695824,
-   3922114062,
-   1602633159,
-   3652321360,
-   231217334,
-   15000343,
-   4193527397,
-   3636351545,
-   585982701,
-   3748596075,
-   4033592513,
-   2129707280,
-   1769052504,
-   825997729,
-   3012954144,
-   2930744670,
-   2773160694,
-   4222320614,
-   2933114669,
-   2682692286,
-   3827376410,
-   3151239217,
-   1833871324,
-   343049255,
-   3053072133,
-   1521525548,
-   263906929,
-   27
+   3001353112,
+   3147155923,
+   1633639433,
+   2784048601,
+   3519474215,
+   124810543,
+   4206692097,
+   190675787,
+   1098129852,
+   981623412,
+   593400264,
+   4216200300,
+   816807351,
+   1677632153,
+   3180213958,
+   714706013,
+   3047519511,
+   1770905693,
+   2995728761,
+   2914754571,
+   1072634576,
+   4077077626,
+   2345782655,
+   901484841,
+   77447686,
+   3701047571,
+   2467180129,
+   3770829304,
+   3720472610,
+   2203352809,
+   3734733273,
+   3417831530,
+   1788088661,
+   1667847231,
+   3184898393,
+   782117807,
+   1963714819,
+   3120870805,
+   2882766029,
+   1524102105,
+   69601548,
+   317471665,
+   3644656211,
+   4066593142,
+   4274599265,
+   4028175907,
+   1541323584,
+   519907346,
+   1742288909,
+   950261073,
+   2269165816,
+   3750598076,
+   2684071532,
+   1522910404,
+   3806561691,
+   574145557,
+   4202350269,
+   4130825529,
+   4242049276,
+   4162951156,
+   1248717608,
+   1185447738,
+   2467426772,
+   2174377181,
+   2524607985,
+   387399282,
+   896954350,
+   3695014388,
+   824325532,
+   3575301505,
+   2497096592,
+   601484406,
+   90006233,
+   2732840632,
+   3454287544,
+   1425022685,
+   3562143634,
+   3656659329,
+   1336069092,
+   2956168723,
+   2685522654,
+   889667966,
+   1105766621,
+   1442411705,
+   2141813921,
+   1477090731,
+   4219182015,
+   2426541986,
+   4146713366,
+   2347701996,
+   1806776751,
+   1385794610,
+   2538719906,
+   1985059195,
+   1540595974,
+   1473598554,
+   1113842640,
+   4284788012,
+   1171400310,
+   3094474546,
+   1132287910,
+   961153287,
+   3966117437,
+   3154544337,
+   4070772835,
+   3735993287,
+   793900452,
+   820376063,
+   2432803225,
+   4105540699,
+   2519131717,
+   3032009075,
+   2693830835,
+   4009717649,
+   434744496,
+   1513875221,
+   985794481,
+   1601822554,
+   4256442188,
+   3905048909,
+   1995651894,
+   3785028259,
+   2703655629,
+   1726681916,
+   1212289932,
+   2529451320,
+   1580566912,
+   1777872409,
+   1414367806,
+   2039270486,
+   2995438605,
+   905357873,
+   1960756700,
+   2093128725,
+   1099026156,
+   256070517,
+   279056404,
+   2471880107,
+   3477347782,
+   2235559475,
+   700421622,
+   3616847180,
+   1110628988,
+   528922433,
+   4172443175,
+   917114718,
+   3837132034,
+   715366931,
+   2988534698,
+   812160427,
+   3414492702,
+   3308727838,
+   570404654,
+   952780500,
+   3472793220,
+   891342215,
+   3479518881,
+   2991489742,
+   146102644,
+   2662776509,
+   1510376201,
+   3568326892,
+   2761566634,
+   2745919468,
+   2954206901,
+   1864674798,
+   3859048195,
+   1906706692,
+   2025739445,
+   3077899482,
+   1875037560,
+   529071421,
+   4143974832,
+   1917624589,
+   4096415550,
+   1326042015,
+   283241500,
+   2322375212,
+   308687083,
+   2596637524,
+   814684817,
+   357333728,
+   2148775067,
+   3879386237,
+   1399814310,
+   2815824697,
+   3188334753,
+   3056619638,
+   2375749845,
+   435245434,
+   628155219,
+   1244190038,
+   2411018475,
+   789973435,
+   1423130909,
+   2562011500,
+   2613962410,
+   319979508,
+   3028859142,
+   3092624989,
+   3557729179,
+   3249179826,
+   2496578418,
+   1971418567,
+   4273230040,
+   944236856,
+   2110612418,
+   2741482601,
+   701276604,
+   2170564547,
+   2965744368,
+   3209098775,
+   963202302,
+   4242356367,
+   3632502197,
+   1736831563,
+   3545736283,
+   397391054,
+   990575386,
+   3294258773,
+   733100532,
+   2688699289,
+   563062421,
+   2039739136,
+   2118583819,
+   3258437996,
+   3149890535,
+   2695470560,
+   2549922839,
+   346150030,
+   2261356473,
+   900480180,
+   735862049,
+   2462009436,
+   2354474649,
+   2237743895,
+   2991882587,
+   2186334723,
+   550479235,
+   415402938,
+   3508353616,
+   720164776,
+   2267352472,
+   1686886020,
+   797522071,
+   2760947723,
+   1889153993,
+   119484699,
+   943698705,
+   3974897035,
+   1291376062,
+   3399901659,
+   1370950193,
+   1865242331,
+   336724744,
+   337721245,
+   2484673181,
+   1941506824,
+   625467465,
+   732502464,
+   303254631,
+   2342613342,
+   2187489901,
+   408788404,
+   1040740147,
+   3346433763,
+   1839371313,
+   1203741142,
+   3738983817,
+   3422414136,
+   319898953,
+   971093822,
+   2517050787,
+   442028496,
+   3673280910,
+   2873460789,
+   3411554262,
+   3528212234,
+   757796149,
+   4003120834,
+   1749958257,
+   1686133555,
+   427108038,
+   3887231586,
+   3058070116,
+   1557148690,
+   3102813198,
+   3238306149,
+   2744850484,
+   1424764913,
+   4192168123,
+   1383651248,
+   2951954854,
+   1956675185,
+   3113697707,
+   1162817309,
+   1385516364,
+   1258919615,
+   1967759859,
+   1360856678,
+   1033861253,
+   2102133955,
+   191028463,
+   2576248340,
+   1501194677,
+   3122156466,
+   1184858233,
+   2736767420,
+   1741732311,
+   3075090175,
+   3103012355,
+   1608537036,
+   182432226,
+   1610947868,
+   2719145897,
+   3428388946,
+   272066492,
+   2665641373,
+   914129627,
+   2190245782,
+   3781934280,
+   581438697,
+   4007360998,
+   1951490382,
+   3582269059,
+   1796715310,
+   2053269473,
+   3188144085,
+   3010480156,
+   3164448579,
+   649994265,
+   2852692347,
+   690413207,
+   3544800375,
+   434499422,
+   3514688148,
+   987331366,
+   408093281,
+   1700416837,
+   4168356250,
+   3724984097,
+   3272884493,
+   1014215480,
+   4291433432,
+   2626259654,
+   1441884893,
+   2297420046,
+   3914322401,
+   209915783,
+   4184175025,
+   900402026,
+   2011371738,
+   2191569263,
+   3044464177,
+   3268009427,
+   501518922,
+   4123060667,
+   2749792835,
+   1560995598,
+   210465402,
+   1141332459,
+   3242434092,
+   3797158340,
+   2040998442,
+   2023643996,
+   312351819,
+   3284410252,
+   748452337,
+   1644851454,
+   3377835967,
+   2627891129,
+   3561205870,
+   1184938550,
+   1978999890,
+   2523877812,
+   2424408341,
+   3088834738,
+   3333758613,
+   3410414652,
+   911997352,
+   1658879812,
+   74251344,
+   4091520413,
+   28683748,
+   18716785,
+   3161074207,
+   3595767650,
+   612557677,
+   2698972925,
+   822411911,
+   1238579721,
+   3008800738,
+   3773251701,
+   1194025144,
+   1398824196,
+   3590191255,
+   3627589376,
+   3176764388,
+   1455357360,
+   2405370885,
+   1635992256,
+   1777055822,
+   3717739189,
+   2304132480,
+   1088292094,
+   2550579600,
+   3850422983,
+   102308483,
+   3453347223,
+   1303168299,
+   1453727524,
+   4117707144,
+   3565723177,
+   1787880222,
+   3120425006,
+   427260483,
+   3146733470,
+   3624406032,
+   1590685263,
+   1222621876,
+   1647577674,
+   4181513432,
+   4246354398,
+   4118565268,
+   1936037114,
+   901922962,
+   3939238300,
+   929017021,
+   1606315583,
+   3298507305,
+   205682876,
+   3634773928,
+   2298512101,
+   65621377,
+   2141118114,
+   3301475014,
+   2494464722,
+   1890750555,
+   25502200,
+   2649271683,
+   2732206527,
+   1127020780,
+   2631298384,
+   1963952946,
+   238647965,
+   2579492606,
+   508312845,
+   2592434079,
+   966414650,
+   1325033906,
+   795783146,
+   2668899951,
+   984868965,
+   2525339208,
+   16563870,
+   1480283389,
+   3946502262,
+   955261308,
+   3096818211,
+   1891661811,
+   1886041891,
+   26281077,
+   1321810361,
+   309337833,
+   1750325033,
+   2363730778,
+   35972817,
+   2954900012,
+   1427763977,
+   1853226101,
+   1717829579,
+   25059413,
+   2072902564,
+   528059923,
+   434359789,
+   3432611479,
+   2089944856,
+   546267992,
+   2535199,
+   1537510175,
+   4058131141,
+   1516032270,
+   804742967,
+   2304558932,
+   2987313933,
+   2615775496,
+   3417224330,
+   121656568,
+   625884539,
+   1977505665,
+   1934610873,
+   915996571,
+   3643871742,
+   50913963,
+   902985341,
+   1285112435,
+   1257437829,
+   2818407519,
+   365989402,
+   1280557639,
+   1845954570,
+   1242672727,
+   91763265,
+   3663113334,
+   3212098188,
+   2676120686,
+   206067541,
+   311248038,
+   2384029390,
+   3230367018,
+   2090861960,
+   401437963,
+   3170051169,
+   3862285486,
+   2118353960,
+   1550662379,
+   359137819,
+   2872635519,
+   353325590,
+   1249211349,
+   631182563,
+   2935300569,
+   1086313169,
+   2791309828,
+   3420769454,
+   1599297880,
+   2383467123,
+   2591951819,
+   3762627837,
+   2612144359,
+   3959061898,
+   2534685382,
+   4201429890,
+   3177582413,
+   726135379,
+   2711754257,
+   808313349,
+   3049148799,
+   1171645003,
+   816367412,
+   2599034177,
+   4281332316,
+   1166645140,
+   1178132021,
+   2696031786,
+   1158254195,
+   2103392274,
+   4077967308,
+   1866889048,
+   3923767832,
+   930203513,
+   1871848870,
+   3795860640,
+   1563520739,
+   3054198284,
+   3754623339,
+   700095535,
+   2501275358,
+   3690677906,
+   1487140782,
+   2414676075,
+   3866970439,
+   52825247,
+   3450566554,
+   3851573062,
+   1803989910,
+   540329328,
+   79075011,
+   2291481522,
+   1770617525,
+   2694950570,
+   1741851326,
+   1093226614,
+   3145332969,
+   1106105931,
+   2330179116,
+   795345586,
+   3485601292,
+   4194112573,
+   2806359941,
+   3453659969,
+   1782678893,
+   2870996322,
+   837036181,
+   3216436309,
+   2128374814,
+   1921790646,
+   2133048691,
+   4284413165,
+   1057120901,
+   1563833423,
+   1335202338,
+   4035680,
+   3806678626,
+   2375894110,
+   4282389299,
+   3621357130,
+   946024005,
+   28366710,
+   2575091419,
+   531853573,
+   1099280486,
+   334342836,
+   338896321,
+   1918814282,
+   2190490219,
+   1302578276,
+   4094035044,
+   3638826927,
+   2592648853,
+   820436434,
+   2783031056,
+   1534532308,
+   1563874231,
+   2428189472,
+   3638235627,
+   1610853746,
+   86404117,
+   2747686434,
+   968672405,
+   486597930,
+   2129299772,
+   376916585,
+   3242860236,
+   46
   ],
   null
  ]
