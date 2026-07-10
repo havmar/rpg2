@@ -1,6 +1,6 @@
 """Monte Carlo tuner for the sites, post survival add-on.
 
-Deaths are the rare tail (a killing blow with the saves run dry), so the
+Deaths are the rare tail (a crippling blow with the saves run dry), so the
 none/one/both death split is no longer the whole story. What the 2026-07
 lethality retune tunes FOR:
 

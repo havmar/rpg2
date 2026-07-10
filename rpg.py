@@ -142,8 +142,14 @@ DROP_GOLD_AMOUNT = POTION_PRICE // 2
 # still requires beating the site either way.
 SITE_XP_PER_LEVEL = 50
 ENCOUNTER_XP_SHARE = 0.45   # fraction of a site's XP paid per-encounter
-STREAK_STEP = 1.0           # per-consecutive-encounter multiplier growth
-                            # (x1, x2, x3 across a 3-room site in one go)
+STREAK_STEP = 2.0           # per-consecutive-encounter multiplier growth
+                            # (x1, x3, x5 across a 3-room site in one go;
+                            # raised from 1.0 on 2026-07-10 -- the designer
+                            # wanted one-go clears to FEEL like the paying
+                            # line: piecemeal now collects ~70% of a site's
+                            # total instead of ~78%, and the middle room's
+                            # rate -- the wild/off-script anchor, 15 at L1 --
+                            # is unchanged by construction)
 GOLD_PER_SITE_LEVEL = 15    # a level-L site pays this * L gold on completion
 ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- equals
                         # a level-1 three-room site's MIDDLE (streak-2) award
@@ -166,8 +172,8 @@ def streak_multiplier(streak: int) -> float:
 def site_encounter_xp(level: int, rooms: int, streak: int = 1) -> int:
     """The per-encounter pay of a level-L site at streak position k: the
     base is sized so a FULL streak (1..rooms in one go) collects exactly
-    ENCOUNTER_XP_SHARE of the site total. L1 x 3 rooms pays 8/15/22 in one
-    go (sum 45, the hideout's historic share) and 8 per room piecemeal."""
+    ENCOUNTER_XP_SHARE of the site total. L1 x 3 rooms pays 5/15/25 in one
+    go (sum 45, the hideout's historic share) and 5 per room piecemeal."""
     weights = sum(streak_multiplier(k) for k in range(1, rooms + 1))
     base = site_xp_total(level) * ENCOUNTER_XP_SHARE / weights
     return max(1, round(base * streak_multiplier(streak)))
@@ -343,6 +349,18 @@ SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
                                  # 2 in the 2026-07 lethality retune: one
                                  # breather a day, then you press on or camp)
 
+# --- The tavern night (2026-07-10) ------------------------------------------ #
+# A settlement's paid alternative to the free camp: a long rest plus a hot
+# meal and a real bed. The party wakes OVERCHARGED -- current HP and STA a
+# fraction ABOVE their maxima ("13/12 HP") -- a one-day edge for the door
+# they walk through tomorrow. The excess is spent normally and can never be
+# recovered (every recovery path tops up TOWARD max, never past it -- see
+# recover()); whatever is left is clamped away by the next long rest. Session
+# play gates it to settlements (`tavern`); camping in the wilds is free but
+# risks a night encounter (quests.CAMP_ENCOUNTER_CHANCE).
+TAVERN_COST_PER_HERO = 1    # gold per living member, per night
+TAVERN_OVERCHARGE = 0.10    # overcharge fraction of each maximum (min +1)
+
 # --- The mid-fight pause (the interrupt primitive) --------------------------- #
 # group_combat can PAUSE at a trigger and resume: the "do I fight on?" decision
 # surfaced BEFORE Spent, where play never had it. Triggers watch the party side
@@ -395,15 +413,18 @@ PAUSE_ACTIONS = ("drink", "berserk", "war-breath")
 GRAZE_FLOOR_MARGIN = 3
 
 # Wound tiers as an ordered ladder, so a save can step a blow down one notch.
-TIER_ORDER = ["deflected", "graze", "wound", "grievous", "killing blow"]
-TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "killing blow": 6}
+# The top tier was renamed "killing blow" -> "crippling blow" (2026-07-10):
+# it is 6 flat HP and only kills when it drops you to 0 unsaved, but the old
+# name read as an instant kill at the table. Same mechanic, honest name.
+TIER_ORDER = ["deflected", "graze", "wound", "grievous", "crippling blow"]
+TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "crippling blow": 6}
 
 # --- Log vocabulary (the interpretive layer) -------------------------------- #
 # Every exchange logs two layers: a catchy headline (what a watcher would say)
 # and the raw numbers beneath it (every die, modifier, and source). See
 # rules.md "Reading the combat log".
 TIER_PHRASE = {"graze": "a graze", "wound": "a solid wound",
-               "grievous": "a grievous injury", "killing blow": "a killing blow"}
+               "grievous": "a grievous injury", "crippling blow": "a crippling blow"}
 
 # Tie on the pressure roll: high dice = furious contact, low dice = cagey circling.
 TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "Lull"
@@ -473,7 +494,7 @@ def wound_tier(severity: int) -> tuple[str, int]:
         return ("wound", TIER_HP["wound"])
     if severity <= 6:
         return ("grievous", TIER_HP["grievous"])
-    return ("killing blow", TIER_HP["killing blow"])
+    return ("crippling blow", TIER_HP["crippling blow"])
 
 
 def reduce_tier(tier: str) -> tuple[str, int]:
@@ -481,6 +502,16 @@ def reduce_tier(tier: str) -> tuple[str, int]:
     i = TIER_ORDER.index(tier)
     new = TIER_ORDER[max(0, i - 1)]
     return new, TIER_HP[new]
+
+
+def recover(cur: int, gain: int, cap: int) -> int:
+    """The one recovery clamp: gain toward cap, never DOWN to it. A pool
+    already at/over its max (the tavern's overcharge) keeps its excess --
+    recovery just can't add to it. Every top-up path (rests, potions, pause
+    drinks, conversions) goes through this so overcharge is spent-only."""
+    if cur >= cap:
+        return cur
+    return min(cap, cur + gain)
 
 
 @dataclass
@@ -595,11 +626,26 @@ class Entity:
     sweep_label: str = ""               # log flavor for the multi-target blow
                                          # ("a great sweeping blow", "a gout of
                                          # dragonfire")
+    protagonist: bool = False           # the PLAYER CHARACTER (session play
+                                         # marks party[0]; the sims never set
+                                         # it). Fate's bargain applies: a blow
+                                         # that would kill them is commuted to
+                                         # a Down while a companion still
+                                         # draws breath -- and if the fight is
+                                         # then WON, the last foe's dying blow
+                                         # kills one random companion. The
+                                         # party is a life-resource, spent one
+                                         # member at a time; a party that
+                                         # cannot win anyway still wipes.
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
-    dead: bool = field(default=False)   # truly slain (unsaved killing blow)
+    dead: bool = field(default=False)   # truly slain (unsaved crippling blow)
+    fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
+                                             # price (a companion's life) is
+                                             # collected at victory, waived on
+                                             # a fled or lost fight
     items: dict[str, int] = field(default_factory=dict)
     hp_regen_per_night: int = field(default=0)  # HP knit back per long rest (derived)
     # Progression. Training is the veteran-vs-novice axis: a flat pressure bonus,
@@ -658,7 +704,9 @@ class Entity:
         # everything; undead and brutes take 2; the apex monsters 3-4, which
         # is what makes their deep HP pools survivable to CARRY (a big pool
         # with human pain collapses into a helpless grind long before zero).
-        return self.hp_lost // self.pain
+        # Floored at 0: tavern-overcharged HP (hp > max_hp) is a buffer, not
+        # a bonus to rolls.
+        return max(0, self.hp_lost) // self.pain
 
     @property
     def prof_rank(self) -> int:
@@ -744,15 +792,16 @@ def _try_save(defender: Entity, tier: str, dmg: int) -> bool:
     Bulwark only -- Heal has no in-fight role; it mends HP between fights
     instead (see use_heal).
 
-    Policy (conservative, death-first): always buy off a *killing* blow if Power
-    allows; buy off a *grievous* that would put us Down only when a reserve is
-    left for a later death-save. Mutates Power. Returns True if a save fired.
+    Policy (conservative, death-first): always buy off a *crippling* blow if
+    Power allows; buy off a *grievous* that would put us Down only when a
+    reserve is left for a later death-save. Mutates Power. Returns True if a
+    save fired.
     """
     if defender.ability != "bulwark" or defender.cur_power < SAVE_COST:
         return False
-    if tier not in ("grievous", "killing blow"):
+    if tier not in ("grievous", "crippling blow"):
         return False
-    lethal = tier == "killing blow"
+    lethal = tier == "crippling blow"
     would_down = (defender.hp - dmg) <= 0
     if lethal or (would_down and defender.cur_power >= SAVE_COST * 2):
         defender.cur_power -= SAVE_COST
@@ -789,12 +838,13 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
 def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             log: list[str], atk_wound_pen: int | None = None,
             def_mod: int = 0, def_label: str = "",
-            atk_roll: PressureRoll | None = None) -> None:
+            atk_roll: PressureRoll | None = None,
+            soften: bool = False) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
-    The *raw* result is computed first (it may be a killing blow); a Power save
-    can then step it down one tier. The log states the blow that would have
-    landed. Death only happens when a raw killing blow is not saved.
+    The *raw* result is computed first (it may be a crippling blow); a Power
+    save can then step it down one tier. The log states the blow that would
+    have landed. Death only happens when a raw crippling blow is not saved.
 
     `atk_wound_pen` overrides the attacker's wound penalty (the dying swing --
     see group_combat's round-start snapshot). `def_mod`/`def_label` is a
@@ -802,6 +852,14 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     fleeing under a parting blow, defends at -PAUSE_ACTION_DEF_PENALTY).
     `atk_roll` reuses a pre-rolled attack (a SWEEP: one great blow, one
     attacker roll, resolved against each caught defender's own defense).
+    `soften=True` steps the landed wound down ONE tier (after the graze
+    floors, before any save): the parting blow at a fleeing back (2026-07-10)
+    -- a hasty swing at a moving target, not a set-piece kill. A retreating
+    party stacks -2 fleeing on top of its wounds and fatigue, so at low HP
+    every parting blow was landing grievous-or-worse and retreat-when-low
+    (exactly when you retreat) was a guaranteed mauling; softened, a parting
+    blow can still Down a hero but never lands the crippling tier, so the
+    door can maim but not kill outright.
 
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
@@ -863,6 +921,20 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             _debug(log, sev_line)
             return
 
+    if soften and dmg > 0:
+        # The parting blow at a fleeing back lands one tier lighter (see the
+        # docstring) -- softened BEFORE the save, so its raw tier can never
+        # be crippling and a retreat is never an outright death at the door.
+        raw_tier, dmg = reduce_tier(raw_tier)
+        sev_line += f" -> a hurried blow at a fleeing back: {raw_tier}"
+        if dmg == 0:
+            log.append(f"    {attacker.name} {margin_verb(margin)} "
+                       f"{defender.name}, but the hurried blow at a fleeing "
+                       f"back glances off -- deflected.")
+            _debug(log, pressure_line)
+            _debug(log, sev_line)
+            return
+
     tier = raw_tier
     saved = _try_save(defender, tier, dmg)
     if saved:
@@ -900,12 +972,12 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     _debug(log, pressure_line)
     _debug(log, sev_line)
 
-    # Death is a 0-HP state (see the `alive` property): a blow only kills if it
-    # actually drops you. At 0 HP an unsaved killing blow is a death; any other
-    # tier that took you there is a Down. A killing blow that doesn't reach 0 is
-    # just its damage -- you can't die at 4 HP.
+    # Death is a 0-HP state (see the `alive` property): a blow only kills if
+    # it actually drops you. At 0 HP an unsaved crippling blow is a death; any
+    # other tier that took you there is a Down. A crippling blow that doesn't
+    # reach 0 is just its damage -- you can't die at 4 HP.
     if defender.hp <= 0:
-        if raw_tier == "killing blow" and not saved:
+        if raw_tier == "crippling blow" and not saved:
             defender.dead = True
         else:
             defender.down = True
@@ -1039,7 +1111,7 @@ def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
             return False
         h.items["stamina"] -= 1
         before = h.cur_sta
-        h.cur_sta = min(h.sta, h.cur_sta + STAMINA_DRAUGHT_RESTORE)
+        h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
         log.append(f"    {h.name} downs a stamina draught mid-fight "
                    f"(STA {before} -> {h.cur_sta}/{h.sta}; "
                    f"{h.items['stamina']} left) -- no attack this round, "
@@ -1052,7 +1124,7 @@ def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
             return False
         before = h.cur_sta
         h.hp -= BERSERK_HP_COST
-        h.cur_sta = min(h.sta, h.cur_sta + BERSERK_STA_GAIN)
+        h.cur_sta = recover(h.cur_sta, BERSERK_STA_GAIN, h.sta)
         log.append(f"    {h.name} goes BERSERK -- strength torn from their "
                    f"own flesh (-{BERSERK_HP_COST} HP -> {h.hp}/{h.max_hp}, "
                    f"now -{h.wound_penalty} to rolls; STA {before} -> "
@@ -1067,7 +1139,7 @@ def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
             return False
         before = h.cur_sta
         h.cur_power -= WAR_BREATH_POWER_COST
-        h.cur_sta = min(h.sta, h.cur_sta + WAR_BREATH_STA_GAIN)
+        h.cur_sta = recover(h.cur_sta, WAR_BREATH_STA_GAIN, h.sta)
         log.append(f"    {h.name} centers their breath -- War-Breath! "
                    f"(-{WAR_BREATH_POWER_COST} Power -> {h.cur_power}; "
                    f"STA {before} -> {h.cur_sta}/{h.sta}) -- no attack this "
@@ -1080,7 +1152,7 @@ def _catch_breath(survivors: list[Entity], log: list[str]) -> None:
     """The fight is over for these heroes (won it or fled it clean): they
     catch their breath (+STA_RECOVERY_AFTER_FIGHT)."""
     for h in survivors:
-        h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_AFTER_FIGHT)
+        h.cur_sta = recover(h.cur_sta, STA_RECOVERY_AFTER_FIGHT, h.sta)
     log.append(f"    The party catches its breath "
                f"(+{STA_RECOVERY_AFTER_FIGHT} STA)")
 
@@ -1262,7 +1334,26 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         def_label=busy_label.get(busy.get(defender, ""), ""),
                         atk_roll=atk_roll)
                 if was_alive and not defender.alive:
-                    if defender.dead:
+                    if (defender.dead and defender.protagonist
+                            and not defender.fate_debt
+                            and any(h is not defender and not h.dead
+                                    for h in party)):
+                        # Fate's bargain (2026-07-10): the protagonist's
+                        # death is commuted to a Down while a companion
+                        # still draws breath. The price is collected at
+                        # victory (_settle_fate_debt) -- one random
+                        # companion for the protagonist's life. A fight the
+                        # rest can't win is still a wipe.
+                        defender.dead = False
+                        defender.down = True
+                        defender.fate_debt = True
+                        log.append(f"    *** The blow should be "
+                                   f"{defender.name}'s death -- and is not. "
+                                   f"Fate has spared them; its price comes "
+                                   f"due if this fight is won. ***")
+                        log.append(f"    {defender.name} goes down, "
+                                   f"out of the fight.")
+                    elif defender.dead:
                         log.append(f"    *** {defender.name} is SLAIN. ***")
                     elif defender in party_set:
                         log.append(f"    {defender.name} goes down, "
@@ -1300,11 +1391,42 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                    f"the fight hangs for a heartbeat. ==")
                 return Pause(round=rnd, crossings=crossings)
 
-    # The dust settles: whoever is still standing catches their breath.
+    # The dust settles: fate collects first, then whoever is still standing
+    # catches their breath.
+    _settle_fate_debt(party, foes, rng, log)
     survivors = [h for h in party if h.alive]
     if survivors:
         _catch_breath(survivors, log)
     return None
+
+
+def _settle_fate_debt(party: list[Entity], foes: list[Entity],
+                      rng: random.Random, log: list[str]) -> None:
+    """Collect fate's price at the end of a melee (the protagonist bargain --
+    see Entity.protagonist). Debts are cleared whatever happened; the price is
+    only PAID on a victory: the last foe's dying strength kills one random
+    companion (Down or standing -- fate is not particular). A lost or
+    staggered-apart fight collects nothing (the wipe or the foes still
+    standing are punishment enough), and a clean retreat waives the debt in
+    attempt_retreat."""
+    debtors = [h for h in party if h.fate_debt]
+    if not debtors:
+        return
+    for h in debtors:
+        h.fate_debt = False
+    if any(f.alive for f in foes):
+        return
+    victims = [h for h in party if not h.dead and not h.protagonist]
+    if not victims:
+        return
+    victim = rng.choice(victims)
+    victim.hp = 0
+    victim.down = False
+    victim.dead = True
+    log.append(f"    *** The last foe spends its dying strength on one final "
+               f"blow -- fate's price for {debtors[0].name}'s life. It finds "
+               f"{victim.name}. ***")
+    log.append(f"    *** {victim.name} is SLAIN. ***")
 
 
 # --------------------------------------------------------------------------- #
@@ -1347,8 +1469,10 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         if not targets:
             break               # everyone is down mid-flight; nothing to chase
         h = rng.choice(targets)
+        # Parting blows are softened one tier (see _attack): a swing at a
+        # fleeing back can maim, never land the crippling tier.
         _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
-                def_label="fleeing")
+                def_label="fleeing", soften=True)
         if not h.alive:
             if h.dead:
                 log.append(f"    *** {h.name} is SLAIN. ***")
@@ -1366,6 +1490,8 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
                        "clean escape.")
         else:
             log.append("    No one is fit to give chase -- clean escape.")
+        for h in party:
+            h.fate_debt = False     # a fled fight is not a won one: waived
         _catch_breath(runners, log)
         return True
 
@@ -1381,6 +1507,8 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
                 f"+{hunt_dex:.1f} DEX STA-weighted)")
     if flee_total >= hunt_total:
         log.append("    They break away -- clean escape.")
+        for h in party:
+            h.fate_debt = False     # a fled fight is not a won one: waived
         _catch_breath(runners, log)
         return True
     log.append("    *** RUN DOWN -- the pursuers catch them, and the fight "
@@ -1815,19 +1943,19 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
     h.items[kind] -= 1
     if kind == "healing":
         before = h.hp
-        h.hp = min(h.max_hp, max(h.hp, 0) + HEALING_POTION_RESTORE)
+        h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.max_hp)
         if h.hp > 0:
             h.down = False
         log.append(f"    {h.name} drinks a healing potion "
                    f"(HP {before} -> {h.hp}/{h.max_hp}; {h.items['healing']} left)")
     elif kind == "stamina":
         before = h.cur_sta
-        h.cur_sta = min(h.sta, h.cur_sta + STAMINA_DRAUGHT_RESTORE)
+        h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
         log.append(f"    {h.name} downs a stamina draught "
                    f"(STA {before} -> {h.cur_sta}; {h.items['stamina']} left)")
     else:  # power
         before = h.cur_power
-        h.cur_power = min(h.power, h.cur_power + POWER_POTION_RESTORE)
+        h.cur_power = recover(h.cur_power, POWER_POTION_RESTORE, h.power)
         log.append(f"    {h.name} drinks a power potion "
                    f"(Power {before} -> {h.cur_power}; {h.items['power']} left)")
     return True
@@ -1874,23 +2002,25 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
                f"({clock.short_rests_left} left today).")
     for h in survivors:
         # STA is the per-day clock: only a slow catch-breath, never a full reset.
-        h.cur_sta = min(h.sta, h.cur_sta + STA_RECOVERY_BETWEEN_ROOMS)
+        h.cur_sta = recover(h.cur_sta, STA_RECOVERY_BETWEEN_ROOMS, h.sta)
         # HP carries across rooms too: only a minimal catch-breath, not a reset.
-        h.hp = min(h.max_hp, h.hp + HP_RECOVERY_BETWEEN_ROOMS)
+        h.hp = recover(h.hp, HP_RECOVERY_BETWEEN_ROOMS, h.max_hp)
         # Power trickles back with rest too (2026-07): the budget refills like
         # the condition does, slowly by day and fully overnight.
-        h.cur_power = min(h.power, h.cur_power + POWER_RECOVERY_BETWEEN_ROOMS)
+        h.cur_power = recover(h.cur_power, POWER_RECOVERY_BETWEEN_ROOMS, h.power)
     return True
 
 
-def long_rest(party: list[Entity], clock: Clock, log: list[str]) -> None:
+def long_rest(party: list[Entity], clock: Clock, log: list[str],
+              banner: str = "The party makes camp.") -> None:
     """Make camp for the night. A deliberate, Claude-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
-    advances and the short-rest slots refill. Only the truly Dead stay down."""
+    advances and the short-rest slots refill. Only the truly Dead stay down.
+    `banner` reflavors the night line (the tavern sleeps under a roof)."""
     clock.day += 1
     clock.short_rests_used = 0
-    log.append(f"  --- The party makes camp. Night passes; day {clock.day} dawns. ---")
+    log.append(f"  --- {banner} Night passes; day {clock.day} dawns. ---")
     for h in party:
         if h.dead:
             continue
@@ -1901,11 +2031,49 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str]) -> None:
         h.hp = min(h.max_hp, max(h.hp, 0) + h.hp_regen_per_night)
         note = f"STA and Power full ({h.cur_sta}/{h.sta}, "
         note += f"{h.cur_power}/{h.power})"
-        if h.hp != before:
+        if h.hp > before:
             note += f", +{h.hp - before} HP -> {h.hp}/{h.max_hp}"
+        elif h.hp < before:
+            # The tavern's overcharge expiring: the night clamps the excess.
+            note += f", the overcharge fades -> {h.hp}/{h.max_hp} HP"
         else:
             note += ", HP full"
         log.append(f"    {h.name}: {note}")
+
+
+def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
+                log: list[str]) -> bool:
+    """A night at the inn (session play gates it to settlements): a long rest
+    plus a hot meal and a real bed, TAVERN_COST_PER_HERO gold per living
+    member from the purse. The party wakes OVERCHARGED: current HP and STA
+    gain TAVERN_OVERCHARGE of their maximum (min 1) ON TOP of the overnight
+    recovery, and may sit above max ("13/12 HP"). The excess is a one-day
+    edge: recovery never adds past max (see recover()), so it is spent-only,
+    and whatever survives the day is clamped away by the next long rest.
+    Returns False (nothing happens, no rest) when the purse can't pay --
+    camping is always free."""
+    boarders = [h for h in party if not h.dead]
+    cost = TAVERN_COST_PER_HERO * len(boarders)
+    if purse.gold < cost:
+        log.append(f"    Not enough gold for beds ({purse.gold}g / {cost}g "
+                   f"at {TAVERN_COST_PER_HERO}g a head) -- the party can "
+                   f"still camp for free.")
+        return False
+    purse.gold -= cost
+    log.append(f"  The party takes beds at the tavern ({cost}g -- purse: "
+               f"{purse.gold}g).")
+    long_rest(party, clock, log,
+              banner="The party sleeps warm under a roof.")
+    for h in boarders:
+        hp_bonus = max(1, round(h.max_hp * TAVERN_OVERCHARGE))
+        sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))
+        h.hp += hp_bonus
+        h.cur_sta += sta_bonus
+        log.append(f"    {h.name} wakes overcharged: +{hp_bonus} HP -> "
+                   f"{h.hp}/{h.max_hp}, +{sta_bonus} STA -> "
+                   f"{h.cur_sta}/{h.sta} (a one-day edge -- it fades at the "
+                   f"next night's rest)")
+    return True
 
 
 def party_wiped(party: list[Entity], log: list[str]) -> bool:

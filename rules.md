@@ -234,7 +234,11 @@ gets no dying swing.
 | 1–2 | Graze | 1 |
 | 3–4 | Wound | 2 |
 | 5–6 | Grievous | 4 |
-| 7+  | Killing blow | 6 |
+| 7+  | Crippling blow | 6 |
+
+*(The top tier was renamed from "killing blow" on 2026-07-10: it is 6 flat HP
+and only kills when it drops you to 0 unsaved, but the old name read as an
+instant kill at the table. Same mechanic, honest name.)*
 
 **The death spiral drives fights to a conclusion — geared down (2026-07-09).**
 Your **wound penalty** is the HP you've lost divided by your pain divisor, so
@@ -272,11 +276,11 @@ hacked skeleton stays hacked across days, which is what rewards the return
 trip to the barrow.)
 
 **A severity design note (the cap on monster STR).** Severity 7+ is a
-killing blow — 6 HP, flat — so monster STR past `hero soak + ~7` buys
+crippling blow — 6 HP, flat — so monster STR past `hero soak + ~7` buys
 nothing: a giant at STR 9 already caps every landed blow. Monster threat
 scales past that point through DEX (landing at all), sweeps, and pool depth,
 never through more STR. If the 14-20 band ever needs landed blows to
-differentiate again, the parked fix is one tier above killing blow
+differentiate again, the parked fix is one tier above crippling blow
 ("obliterating", see plan.md) — not bigger STR numbers.
 
 ---
@@ -408,7 +412,7 @@ Within the full log, every exchange prints **two layers**:
 | A fighter hits 0 STA | `!! X is SPENT — running on empty (-6 to all rolls until the fight ends)` |
 | Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
 | Hit lands but soak zeroes the severity | *deflected* — the blow glances off |
-| Wound tiers | *a graze / a solid wound / a grievous injury / a killing blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
+| Wound tiers | *a graze / a solid wound / a grievous injury / a crippling blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
 
 Notable events get their own lines: `!! X is Winded` when the STA threshold is
 crossed, `First Blood!` on the opening strike, a Bulwark *flare* on a saved
@@ -669,8 +673,8 @@ These are the only edits to the existing rules:
 ## Design intent
 
 - **Lethality is real, then padded — not removed.** Compute the *raw* result
-  first (which may be a killing blow), then let resources buy it off. The log
-  always states the death that *would* have happened.
+  first (which may be a crippling blow), then let resources buy it off. The
+  log always states the death that *would* have happened.
 - **Single fights are survivable; the campaign is the challenge.** A well-stocked
   party should win a given encounter; the fail state is attrition — running the
   buffers dry across a run of fights.
@@ -807,8 +811,17 @@ Deliberately **one roll** — no multi-message chase sequences.
 
 1. **Breaking contact:** every foe fit to swing (alive, not Winded, not
    Spent) gets one **free parting blow** (free like the dying swing — no STA
-   cost) at a random fleeing hero, who defends at −2. This has teeth: heroes
-   can go Down or die at the door.
+   cost) at a random fleeing hero, who defends at −2 — but the blow lands
+   **one wound tier lighter** than the exchange says (2026-07-10): a hasty
+   swing at a moving back, not a set-piece kill. This still has teeth —
+   heroes go Down at the door — but a parting blow can never land the
+   crippling tier, so retreat is never an *outright death* at the door.
+   *Why:* you retreat exactly when you're low, and a low hero's defense
+   stacks wounds + Winded + the −2 flee penalty — before the softening,
+   every parting blow against the hero who most needed to leave was a
+   guaranteed grievous-or-worse, which punished the retreat call the game
+   wants to be real. (Deaths in a failed retreat still happen — the chase
+   failure resumes the full fight.)
 2. **The chase:** ONE opposed group contest —
    `2d6 + side-average DEX weighted by current STA` (fresher legs count for
    more), the fleeing side at **+2** (the runner picks the moment and the
@@ -854,9 +867,38 @@ one return trip per fled room — `sim_pause_policy` / `sim_fight`), so
 - **No mid-fight revival.** Recovery is a rest event: between fights the Down get
   back on their feet, but only *minimally* (a sliver of HP) — the wound itself
   heals slowly, over days of long rest, not instantly for the next encounter.
-- **Death happens only when the saves run dry** — a killing blow lands with no
-  Power for Bulwark/Heal and no buffer left. Loss is rare, earned, and specific
-  to whoever was over-extended.
+- **Death happens only when the saves run dry** — a crippling blow lands with
+  no Power for Bulwark/Heal and no buffer left. Loss is rare, earned, and
+  specific to whoever was over-extended.
+
+---
+
+## Fate's bargain — the player character's death trade (2026-07-10)
+
+Session play marks the PC (`party[0]`) as the **protagonist**, and one rule
+guards them: **a blow that would kill the PC is commuted to a Down while at
+least one companion still draws breath.** The log announces the reprieve and
+its terms (*"Fate has spared them; its price comes due if this fight is
+won"*). Then:
+
+- **If the party goes on to WIN that fight**, the last foe's dying strength
+  lands one final blow — and it kills **one random companion** (Down or
+  standing; fate is not particular). The trade is explicit: a companion's
+  life for the player's.
+- **If the party loses anyway** (everyone Down/dead), it is still a wipe and
+  still GAME OVER — fate spares no party that cannot win.
+- **If the party retreats instead**, a clean escape **waives the debt**: no
+  one died, nothing is owed — but the fight was given up, not won. (This is
+  a real post-spare decision: press on and pay a companion, or flee with the
+  downed PC and pay in progress.)
+
+The spare only intercepts actual deaths (an unsaved crippling blow at 0 HP);
+ordinary Downs are unchanged. A solo PC has nothing to trade and dies like
+anyone. The sims never set the flag, so tuning numbers are untouched — this
+is a session-play rule for why a *fragile PC build is viable at all*: the
+party is the PC's real HP bar, spent one member at a time. (It also
+implements the spirit of the parked "party members as lives" idea, without
+the level loss.)
 
 ---
 
@@ -899,6 +941,23 @@ HP.
   scaled to their HP pool, so a full bar returns over roughly a week regardless of
   size — a big pool doesn't take proportionally longer). A long rest advances the
   day and refills the short-rest slot.
+- **Where the night is spent matters (2026-07-10):**
+  - **Camping in the wilds** (anywhere that isn't a settlement) risks a
+    **night visitor** (~10%, rolled after the night's recovery, off the
+    road's party-independent table with the same spotted/ambush valves).
+    Behind settlement walls the night is safe and free. (Only the
+    deliberate `camp` rolls this; travel and explore nights already price
+    their own encounter risk — no double-dipping.)
+  - **The tavern** (settlements only, `tavern`) is the paid upgrade: **1 g
+    per living member** for the same long rest plus a **one-day
+    overcharge** — everyone wakes with current HP *and* STA at +10% of
+    their maximum (min +1), sitting *above* the cap (`13/12 HP`). The
+    excess is spent-only: no rest, potion, or Heal tops a pool past its
+    max (they only fill *toward* it), and whatever excess survives the day
+    is clamped away by the next long rest. Mechanically it is a small
+    pre-bought buffer for tomorrow's door — and it gives gold a drip-feed
+    survival use and settlements a comfort identity. (Overcharged HP never
+    grants a *negative* wound penalty; the spiral floors at 0.)
 
 **Nothing forces the day to end.** Ending the day is a *choice* — the DM (Claude)
 decides when the party camps and takes the long rest; the mechanics never
@@ -969,8 +1028,8 @@ On top of the existing build/allocation choices:
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
 - **Saves are automatic and conservative.** A Bulwark-ability character spends
-  Power to buy off a *killing* blow whenever it can (Killing -> Grievous), and
-  to buy off a *grievous* that would put it Down only when it can keep a
+  Power to buy off a *crippling* blow whenever it can (Crippling -> Grievous),
+  and to buy off a *grievous* that would put it Down only when it can keep a
   reserve. Both the raw and the bought-down result are logged. **First Blood is
   likewise automatic** — it fires at the start of every fight while the Power
   lasts (`FIRST_BLOOD_COST` = 2 for a guaranteed 1-HP graze on the focused
@@ -990,7 +1049,7 @@ On top of the existing build/allocation choices:
   when winded), so `tune.py` / `bench_training.py` still reflect a party that
   drinks when it should.
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
-  killing blow), which is rare. The everyday cost is **Down** counts and the
+  crippling blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
 
 ---
@@ -1019,10 +1078,10 @@ gold buys staying power** — never the reverse.
   encounter as rooms fall (on the momentum streak below), the rest as the
   site-clear lump — and `15 × L` gold. The two rates this generalizes from:
   - Bandit hideout (the **starter**, a level-1 site — living foes who play
-    by the party's rules): 8/15/22 XP across its three rooms in one go,
+    by the party's rules): 5/15/25 XP across its three rooms in one go,
     55 XP + 15 g for the clear — a full one-go clear is exactly 100 XP, so
     the *first clear is a level-up*.
-  - The skeleton barrow (the **tough** site, level 3): 15/30/45 per room in
+  - The skeleton barrow (the **tough** site, level 3): 10/30/50 per room in
     one go, 110 + 45 g for the clear.
 
   The shape is deliberate: pay grows by *half* the level-1 anchor per level
@@ -1032,19 +1091,28 @@ gold buys staying power** — never the reverse.
   SITE'S level, not the party's, punching up pays above your weight class
   and easy work pays less — no separate under/over-level bonus exists or is
   needed.
-- **The momentum streak** (2026-07-09). The per-encounter share is paid on
-  a rising multiplier: the k-th consecutive encounter cleared **in the same
-  site without a night's camp between** pays `k ×` the base (STREAK_STEP =
-  1). The base is sized so a full one-go run collects exactly the ~45%
-  encounter share; **camping mid-site resets the streak to base**, so a
-  camp-after-every-door clear collects roughly three-quarters of the site's
-  total pay. *Why:* the party can always retreat to camp, and a full night
-  heals — so HP was cheap and healing, potions, and defense had little to
-  buy. The streak makes pressing on the paying line — budgeting HP and STA
-  across a whole site — while leaving the camp available at a price, and
-  the site-clear lump (the bigger share) still demands the site actually
-  fall. Off-script fights, road encounters, and hunts never streak; a
-  retreat or an unresolved room doesn't reset it (only the night does).
+- **The momentum streak** (2026-07-09; steepened 2026-07-10). The
+  per-encounter share is paid on a rising multiplier: the k-th consecutive
+  encounter cleared **in the same site without a night's camp between**
+  pays `(1 + 2(k−1)) ×` the base (STREAK_STEP = 2: ×1 / ×3 / ×5 across a
+  three-room site). The base is sized so a full one-go run collects exactly
+  the ~45% encounter share; **camping mid-site resets the streak to base**,
+  so a camp-after-every-door clear collects **~70%** of the site's total
+  pay (it was ~78% at the original step of 1 — the designer wanted one-go
+  clears to *feel* like the paying line). *Why:* the party can always
+  retreat to camp, and a full night heals — so HP was cheap and healing,
+  potions, and defense had little to buy. The streak makes pressing on the
+  paying line — budgeting HP and STA across a whole site — while leaving
+  the camp available at a price, and with the clear lump (55%) gated behind
+  the site actually falling plus the top multiplier landing on the last
+  room, **the final encounter of a one-go run carries ~80% of the site's
+  total pay**. Off-script fights, road encounters, and hunts never streak
+  (they pay a site's *middle* room rate, which the step change deliberately
+  leaves unmoved); a retreat or an unresolved room doesn't reset the
+  streak (only the night does). **Multi-site quests streak per site**: each
+  site ramps ×1/×3/×5 on its own and pays its own lump — the streak never
+  carries across sites, so "one site per day" is the natural paying rhythm
+  and nothing forces marathoning a whole quest.
 - **Level-ups grant skill points** (1 per level), spent on skills — free
   allocation, never use-based (the Fallout principle from the design record).
 - **Level-ups grow the pools** (the doctrine's curve, in the engine since
@@ -1233,14 +1301,18 @@ constants and tables (top of file); `session.py` owns the state and moves.
   level can appear, geometrically weighted toward the low end — the rare
   high tail is how the world above the party's level stays real, met on the
   road rather than read about.
-- **The avoidability valve.** An encounter at or below party level +2 is
-  simply met. Anything **3+ levels above the party is usually spotted at
-  range** — the sighting persists until the party moves on (it drifts
-  away) or chooses `engage`: climbing into an over-their-weight fight is
-  always the player's own act, never the dice's. **A quarter of the time
-  the tall thing finds them first** (ambush) — then the fight is on, the
-  pause is the exit, and running away is the correct and intended answer.
-  Deadly-but-avoidable is the contract: death by random table is not.
+- **The avoidability valve.** Anything **3+ levels above the party is
+  usually spotted at range** — the sighting persists until the party moves
+  on (it drifts away) or chooses `engage`: climbing into an
+  over-their-weight fight is always the player's own act, never the dice's.
+  **A quarter of the time the tall thing finds them first** (ambush) — then
+  the fight is on, the pause is the exit, and running away is the correct
+  and intended answer. Deadly-but-avoidable is the contract: death by
+  random table is not. And since 2026-07-10 even **ordinary encounters
+  (below that margin) are spotted first ~25% of the time** — the party
+  sees the wolves before the wolves see them, and attacking (`engage`) or
+  slipping past is the player's call. A quarter of the road's trouble is
+  now optional trouble; the rest is simply met.
 
 ## The explore move & the hunt
 
@@ -1257,6 +1329,12 @@ constants and tables (top of file); `session.py` owns the state and moves.
   wilds are the farm, the board is the game. What actually roams a land is
   the union of its race's template pools — a land whose cheapest fauna is
   a dire wolf has rough hunting, and that is flavor, not a bug.
+  **The farm has a tax (2026-07-10): ~10% of hunts, the hunter is the
+  hunted** — an AMBUSH off the road's party-independent table (any level,
+  geometrically rare at the top), met blade-first with no sighting choice.
+  Stalking means going where the predators are; the grind loop stays
+  available but is never entirely safe, and the road's "world above your
+  level" can find you on a hunt too.
 
 ## Why this shape
 
