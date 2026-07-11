@@ -82,24 +82,27 @@ in-fight half; the wipe version stays parked below.
    weapons carry authored provenance (a famous smith, a famous wielder, a
    mythic dungeon) and are story beats, never drops. Test: a named weapon
    reads as an event; no power inflation from common loot.
-5. **Party composition & the CHA layer** — parties of 1–4 built so builds
-   cover each other's weak matchups; recruitment; richer companion mechanics
-   (currently the PC/companion split is run by DM protocol alone). The
-   engine side shipped 2026-07 (any size 1–4 works; the counterweights —
-   flat income, the press, sweeps — are in; see rules.md "Balanced for
-   two"); what remains is the CHA/recruitment fiction and pricing a
-   companion. CHA itself is underdefined — detail deferred until this
-   layer is next up.
+5. ~~Party composition & the CHA layer~~ **SHIPPED (2026-07-11)** — CHA as
+   the fourth stat (capacity hard cap 0–3, the gold-only negotiation
+   bonus), tavern recruitment (pick-of-3 PC creation, leveled candidates,
+   bonded pairs), companion satisfaction with departures and the purse
+   head-split, races/sex/age/traits generation (`people.py`), and
+   `downtime`. Mechanics in rules.md's Party, Charisma & Satisfaction
+   add-on. What remains for later passes: **companion CHA gameplay** (the
+   stat is rolled and shown, mechanically inert), a **nickname system**
+   (schema slot exists), and "builds cover each other's weak matchups" as
+   a deliberate recruit-pool shaping idea.
 
 ---
 
 ## Parked ideas (agreed to exist, not scheduled)
 
 - **Morale & surrender** — enemies breaking, yielding, bargaining; natural
-  attachment point: the retreat/pursuit logic.
-- **Recruitment** — defeated or met NPCs joining the party (legibility pick).
-- **Spark-table personalities** — flaws/needs/quirks rolled at creation
-  (legibility pick).
+  attachment point: the retreat/pursuit logic. (Distinct from companion
+  satisfaction, which shipped 2026-07-11 — this is the ENEMY side.)
+- **Story recruitment** — defeated or met NPCs joining the party outside
+  the tavern surface (the tavern layer shipped 2026-07-11; this is the
+  "the ogre yields and joins you" version, DM-driven).
 - **Weapon reach** — a small first-exchange modifier; unbuilt.
 - **The 2-STA heavy swing** — sim-rejected while Spent is lethal (halving the
   swing budget loses more than severity buys back — `bench_weapons.py` is the
@@ -141,8 +144,16 @@ in-fight half; the wipe version stays parked below.
   Down; winning the fight then costs a random companion's life). What
   remains parked is the WIPE version: on a total party knockout the PC
   alone crawls away (at 1 HP), losing a level and possibly possessions.
-  Revisit once fate's bargain has been felt in play; interacts with the
-  recruitment/CHA layer.
+  Revisit once fate's bargain has been felt in play. The recruitment layer
+  (shipped 2026-07-11) makes the life-resource RENEWABLE — replacements
+  cost gold, capacity, and a tavern trip — and gives the spent companion a
+  face (traits, maybe a grieving bond partner who walks); watch in play
+  whether that renewal softens the death rule too much.
+- **A PC-centric career sim** — the career bench plays an even duo with no
+  protagonist, so neither fate's bargain nor the CHA/satisfaction layer is
+  modeled in any career number. If played campaigns start feeling easier
+  (or churn-ier) than the bench says, a career variant with a protagonist,
+  hired companions, and satisfaction-driven turnover is the natural check.
 - **Overfill potions** — drinking in advance tops HP/STA above max
   temporarily (pre-battle preparation as a real decision, and a use for
   potions at full health).
@@ -189,13 +200,22 @@ in-fight half; the wipe version stays parked below.
   and straight-shown board levels keep the OSR stance. The felt width in
   actual play is still to be confirmed at the table.
 - **Armor:** adopt, simplify, or defer (see above) — the least-developed
-  system.
+  system. Note the designer's lean (2026-07-11, from the trait discussion):
+  armor should probably NOT be an important system, so that looks/dress
+  stay varied — the "armored" trait's +1 defense may be most of what armor
+  ever is.
 - ~~Can stats ever be raised?~~ **Resolved (2026-07):** the frame is talent,
   the engine is training — DEX/STR stay fixed at creation (natural human cap
   6; only magic/items transcend, to ~double); levels grow the POOLS (+1
   HP/STA/Power per two levels — in the engine since 2026-07).
   Doctrine lives in rules.md ("The ceilings, and what levels grow").
-- **CHA / party mechanics** — underdefined by design; detail when that layer
-  is next up.
+- ~~CHA / party mechanics~~ **Resolved (2026-07-11):** shipped as the
+  Party, Charisma & Satisfaction add-on (rules.md) — capacity hard cap,
+  gold-only negotiation, tavern recruiting with pairs, satisfaction with
+  departures, races/traits generation. Deliberately cut in the design
+  round: paying companions to stay (logical but complicated and unfun) and
+  luxurious-dress-attracts-bandits. Open to feel out in play: whether
+  satisfaction events are tuned right, and whether recruit renewal softens
+  fate's bargain (see the parked wipe-version note).
 - Every constant is provisional and sim-tuned, never hand-designed — the
   current numbers live in `CLAUDE.md` ("Balance / tuning").

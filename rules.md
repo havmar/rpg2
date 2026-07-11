@@ -397,8 +397,10 @@ and since 2026-07 it comes in **two simultaneous levels** (`CombatLog` in
 `rpg.py`): the **full log** (the DM/debug layer — everything below) and a
 parallel **player log** (`CombatLog.player`) built at the same time, designed
 to be pasted into the chat as-is. Combat lines in both levels use **short
-names** ("Inga", never "Inga the precise" — the epithet is stat-sheet flavor,
-shown at party creation and in `status`, not in the exchanges).
+names** ("Inga", nothing appended — a character's race, age, and traits are
+sheet flavor, shown at creation and in `status`, never in the exchanges;
+the old highest-stat epithet, "the precise", was removed 2026-07-11 — it
+was a stat-tell in costume, and the trait system does its job better).
 
 Within the full log, every exchange prints **two layers**:
 
@@ -530,14 +532,16 @@ The band where tradeoffs are real: you cannot be good at everything.
 | Trained soldier | 3 | 3 | 3 | 7 |
 | Elite veteran | 4–5 | 4–5 | 4–5 | 8–10 |
 
-**Rolled party heroes** span this band and nudge past it: DEX/STR `randint(3, 6)`,
-STA `randint(5, 8)` (its own, higher range: STA is the second death-track —
-the swing budget — so its floor matters like HP's floor; a 4-STA hero is a
-4-swing hero, and the batch sims showed those parties are the wipes), HP
-`randint(8, 12)`, Power `randint(3, 6)`, a random ability (Heal, Bulwark, or
-First Blood), and two random potions. A hero's epithet ("the precise" / "the
-powerful" / "the steady") is derived from their highest stat, with STA
-normalized back to the DEX/STR scale for the comparison.
+**Rolled party heroes** span this band and nudge past it: DEX/STR/CHA
+`randint(3, 6)` (CHA is the fourth hero stat — see the Party, Charisma &
+Satisfaction add-on), STA `randint(5, 8)` (its own, higher range: STA is
+the second death-track — the swing budget — so its floor matters like HP's
+floor; a 4-STA hero is a 4-swing hero, and the batch sims showed those
+parties are the wipes), HP `randint(8, 12)`, Power `randint(3, 6)`, a
+random ability (Heal, Bulwark, or First Blood), and two random potions.
+Racial modifiers and a couple of physical traits shift a roll's **floor up
+or ceiling down, never the ceiling up** (an orc's STR rolls 4–6), so the
+natural cap 6 below holds for every race.
 
 ### The ceilings, and what levels grow (the 1–20 doctrine)
 
@@ -1344,3 +1348,145 @@ lets difficulty live in *places* without scaling anything to the party, and
 gives the "world above your level" a face the party can walk away from.
 The bands stay honest: settlement kinds set quest levels exactly as before;
 the road table ignores the party entirely.
+
+---
+
+# Party, Charisma & Satisfaction — Add-on (2026-07-11)
+
+The character layer: who the heroes *are* (race, sex, age, traits), what
+holds a party together (the PC's CHA), and what pulls it apart (companion
+satisfaction). Engine constants and helpers live in `rpg.py`; the content
+(races, names, trait tables, the generator) in `people.py`; the play
+surface (`new`/`pick`, `recruit`/`hire`, `downtime`, departures) in
+`session.py`. **None of it touches the melee or the sims**: `group_combat`
+never reads a trait or a satisfaction number, sim entities never set
+`cha`/`protagonist`/`satisfaction`, so every bench number is untouched by
+construction (re-measured 2026-07-11 — see CLAUDE.md).
+
+## CHA — the fourth stat
+
+Rolled at creation like DEX/STR (`randint(3, 6)`; elves' floor is 4) and
+**fixed forever**, like the other frame stats. Its two jobs:
+
+- **Party capacity** (the PC's CHA only): `capacity = CHA − 3`, clamped
+  0–3. A hard cap, not a price — no one follows a leader they don't
+  believe in. CHA 3 travels **alone** (fate's bargain never fires solo;
+  the game says so at creation), CHA 6 can lead a full party of four.
+  Capacity is checked **per head**: a bonded pair needs two free slots.
+  The counterweight is already in the engine: more companions = XP ×2/N —
+  capacity buys safety at leveling speed.
+- **Negotiation** (the PC's CHA only): quest/site gold lumps pay
+  **+10% per CHA point above 3, capped at +30%** (`cha_gold_bonus`, applied
+  in `award_quest`). **Gold only, never XP** — a compounding XP bonus would
+  make CHA the best stat in the game; as gold it's an economy stat.
+
+Companions roll CHA too (it shows on their sheet) but it does nothing yet
+— hooks for later.
+
+## The player character — pick one of three
+
+`new` rolls **three PC candidates** (male, by designer fiat for now) with
+full sheets and shows each one's capacity; `pick` chooses. This mirrors the
+tavern's hiring surface and turns the capacity-0 CHA roll from a 1-in-4
+blind ambush into a rare (~1.6%), semi-chosen fate — solo play at the
+"Balanced for two" numbers is a premise you accept with open eyes, not a
+punishment roll. A wealthy/luxurious PC starts with his trait gold in the
+purse.
+
+## Character generation (recruits, and NPCs with DM edits)
+
+`people.make_character(rng, level, ...)` builds a person at **any level**:
+
+- **Race**: one of the world's five (`quests.RACES`). Racial stat modifiers
+  raise a roll's **floor**, never its ceiling — orc STR 4–6, goblin DEX
+  4–6, elf CHA 4–6, dwarf HP 9–13, human plain. Deliberately unequal in
+  combat terms (goblin is the combat pick, elf the economy pick): races
+  differ along different axes.
+- **Sex**: random m/f (names come from 25+25 per-race pools, `people.NAMES`
+  — no epithets anywhere). A `nickname` schema slot exists, empty — no
+  nickname system yet.
+- **Age**: 2d20+10 (the Cairn roll, 12–50). Twelve-year-old sellswords
+  happen; anime logic, designer-blessed.
+- **Traits — a sketch, not a census**: ONE behavior category (temperament /
+  quirk / interest / weakness / background) + TWO presentation categories
+  (speech / voice / dress / looks), one trait each. What isn't described is
+  typical for the archetype; the DM edits any generated contradiction
+  before presenting. Most traits are DM-performed fiction; the mechanical
+  few:
+  - **loyal** — leaves at −3 instead of 0; **cowardly** — injury-side
+    satisfaction losses ×2; **brave** — halved (toward zero).
+  - **armored** (dress) — +1 defense pressure (`Entity.def_bonus`).
+    Deliberately minor: armor-the-system stays a roadmap item, and the
+    designer wants armor unimportant enough that looks stay varied.
+  - **wealthy** (+25g) / **luxurious** (+10g) — joining gift to the purse.
+  - **big** / **short** — +1 STR floor / −1 STR ceiling at creation.
+  - **needs meds** — a dose every 10 days (20g, **capitals only**, `buy
+    HERO meds`) or satisfaction drains 1/night until dosed.
+  - **patriotic / religious / interests** — downtime targeting (below).
+  - **has a child / has an enemy** (quirks) — generated inline as a name
+    and a line (the enemy at level+2, for the DM to `forge` when the story
+    wants it). **No recursion**: side-people never get traits of their own.
+- **Level**: grown by the reference progression doctrine
+  (`rpg.develop_hero`, the same curve `bench_bestiary`'s duo calibrates
+  with): points spent monotonically (training 3 → proficiency → training
+  cap), quality steel from L4 **suited to the frame** (STR→zweihander,
+  DEX→rapier, balanced→katana, healers keep the staff), engine pool
+  growth. Points arrive mostly **pre-spent** — choosing between candidates
+  IS the customization — with at most a point or two banked.
+
+## Recruiting — the tavern's second service
+
+Candidates appear **only at a paid `tavern` night** (plus the free
+game-start evening): as many **options** as the PC's capacity, each leveled
+to the PC ±1, full sheets shown (`recruit`) — transparency over realism,
+the same stance as straight-shown board levels. The night's cost and day
+are the reroll gate. **A quarter of options are bonded pairs** (parent and
+child, a married couple, mentor and mentee, two old friends — ages fixed up
+so the relationship reads): one option slot, **two heads against capacity**,
+joining and leaving together — better value per slot, correlated risk.
+`hire NAME` signs them on at **satisfaction 7/10**.
+
+## Satisfaction — the retention track
+
+Companions only (never the PC), 0–10, floor −3. **The counter-pressure to
+the momentum streak**: the streak pays you to push on; satisfaction pays
+you to stop, sleep warm, and take days off.
+
+| Event | Δ |
+|-------|---|
+| Site/quest lump paid out (`award_quest`) | +1 |
+| Tavern night | +1 |
+| Downtime day (`downtime`, settlements only) | +1 |
+| Downtime day matching a trait (interest where it thrives — villages for plants/animals/hunting, capitals for art/history/fashion, towns+capitals for food/music; patriotic in their race's land; religious at a capital's temples) | +2 |
+| Fled a fight * | −1 |
+| Ended a fight below half HP * | −1 |
+| Went Down * | −2 |
+| Watched a party member die this fight * | −2 |
+| "Needs meds", overdue, per night | −1 |
+| A bond partner's death | → 0, wherever it was |
+
+\* = injury-side: cowardly ×2, brave ×½ (toward zero). Down supersedes
+bloodied. Plain camps and long rests are **0** — recovery is comfort, not
+routine. There is deliberately **no pay-to-raise mechanic** (vetted and
+cut: logical but complicated and unfun).
+
+**Legibility**: satisfaction shows in `stat_line`/`status`; crossing 3
+prints a "gone quiet" warning; crossing the leave threshold prints the
+notice. At **0** (loyal: **−3**) the companion **quits at the next
+settlement** — the check runs on settlement arrival and at tavern/downtime
+nights, so anything that lifts them above the line before then (a paid-out
+job, a warm bed) genuinely saves them.
+
+## Departures — the purse split
+
+The purse stays communal in play (unchanged); personal shares exist only
+at the moment of leaving: a departing companion takes **an equal head-split
+of the current purse** (`purse // living members`) plus their carried
+weapon and potions. Bond partners walk together, whatever the partner's own
+number. Dead companions are **laid to rest at the next settlement** — from
+then on the party as constituted is smaller (XP shares included; between
+the death and the walls the dead still count, so there is no mid-run XP
+windfall). Fate's bargain thus has a face and a second-order cost now: the
+companion it kills was hired, has traits, and may leave a grieving partner
+who walks.
+

@@ -361,6 +361,64 @@ SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
 TAVERN_COST_PER_HERO = 1    # gold per living member, per night
 TAVERN_OVERCHARGE = 0.10    # overcharge fraction of each maximum (min +1)
 
+# --- Charisma & the party cap (2026-07-11) ----------------------------------- #
+# CHA is the fourth hero stat, rolled on the DEX/STR band. Its two jobs:
+# it gates how many companions the party can HOLD (capacity = CHA - 3,
+# clamped 0..3: a minimum roll travels alone -- a hard cap, not a price),
+# and the PC's CHA talks quest pay up (gold only, never XP -- a compounding
+# XP bonus would make CHA the best stat in the game, and levels already
+# dominate everything). Sims never roll heroes through the people layer and
+# never set `protagonist`, so neither knob moves a single bench number.
+HERO_CHA_RANGE = (3, 6)         # rolled like DEX/STR; racial mods raise the
+                                # FLOOR of this range, never the ceiling
+                                # (people.py -- the natural cap 6 holds)
+PARTY_CAPACITY_BASE_CHA = 3     # capacity = CHA - this, clamped to 0..3
+PARTY_CAPACITY_MAX = 3          # the party tops out at 4 swords (PC + 3)
+CHA_GOLD_BONUS_PER_POINT = 0.10  # +10% quest gold per PC CHA point above the
+CHA_GOLD_BONUS_CAP = 0.30        # capacity base, capped at +30% (CHA 6)
+
+
+def party_capacity(cha: int) -> int:
+    """How many companions a leader with this CHA can hold (and how many
+    candidates a tavern evening turns up)."""
+    return max(0, min(PARTY_CAPACITY_MAX, cha - PARTY_CAPACITY_BASE_CHA))
+
+
+# --- Companion satisfaction (2026-07-11) -------------------------------------- #
+# Every hired companion carries a satisfaction track (0..10, PC excluded --
+# Entity.satisfaction stays None for the PC, foes, and every sim entity, so
+# the engine benches never see it). It rises with success and comfort, falls
+# with blood and fear, and at 0 the companion quits at the next settlement,
+# walking off with an equal head-split of the purse. This is the
+# counter-pressure to the momentum streak: the streak pays the party to push
+# on; satisfaction pays it to stop, sleep warm, and spend days off. There is
+# deliberately NO pay-to-raise knob (designer call, 2026-07-11: logical but
+# unfun) -- success, tavern nights, and downtime to a companion's liking are
+# the levers.
+SATISFACTION_MAX = 10
+SATISFACTION_START = 7          # a fresh hire: content, not devoted
+SATISFACTION_WARN = 3           # at/below: the "gone quiet" warning fires
+SATISFACTION_FLOOR = -3         # the track's hard floor; also where a LOYAL
+                                # companion finally leaves (others leave at 0)
+SAT_SITE_CLEAR = 1              # a site/quest lump paid out (award_quest)
+SAT_TAVERN = 1                  # a warm bed and a hot meal (tavern night)
+SAT_DOWNTIME = 1                # a day off in a settlement...
+SAT_DOWNTIME_MATCH = 2          # ...doubled-ish when it suits their traits
+                                # (interest/patriotic/religious -- people.py)
+SAT_FLED = -1                   # the party ran (injury-scaled: see below)
+SAT_BLOODIED = -1               # ended a fight below half HP
+SAT_DOWN = -2                   # hit the floor
+SAT_DEATH_WITNESS = -2          # watched a party member die this fight
+# The injury-side events scale with temperament: COWARDLY doubles them,
+# BRAVE halves them (rounding toward zero -- a brave companion shrugs off
+# a -1 entirely). Applied in adjust_satisfaction(injury=True).
+
+# The "needs meds" weakness (people.py rolls it): a dose must be bought in a
+# CAPITAL every MEDS_INTERVAL_DAYS days (session `buy HERO meds`, tracked on
+# Entity.last_dose_day) or the companion's satisfaction drains 1 per night.
+MEDS_INTERVAL_DAYS = 10
+MEDS_PRICE = 20                 # deliberately dear (two potions a dose)
+
 # --- The mid-fight pause (the interrupt primitive) --------------------------- #
 # group_combat can PAUSE at a trigger and resume: the "do I fight on?" decision
 # surfaced BEFORE Spent, where play never had it. Triggers watch the party side
@@ -530,6 +588,8 @@ class PressureRoll:
                             # parry bonus on defense, or the broken-weapon malus)
     weapon_label: str = ""  # e.g. "rapier" / "broken club"
     prof: int = 0           # proficiency rank with the wielded weapon (attack only)
+    armor: int = 0          # the entity's def_bonus (defense only -- the
+                            # "armored" dress trait; a body knob, not a weapon)
     misc: int = 0           # circumstance term (e.g. -2 drinking mid-fight,
                             # -2 fleeing under a parting blow)
     misc_label: str = ""
@@ -542,6 +602,8 @@ class PressureRoll:
             parts.append(f"{self.weapon_mod:+d} {self.weapon_label}")
         if self.prof:
             parts.append(f"+{self.prof} proficiency")
+        if self.armor:
+            parts.append(f"+{self.armor} armor")
         if self.wound_pen:
             parts.append(f"-{self.wound_pen} wounds")
         if self.fatigue_pen:
@@ -574,10 +636,10 @@ class Purse:
 
 @dataclass(eq=False)
 class Entity:
-    name: str               # short (combat-log) name -- "Inga", never
-                            # "Inga the precise"; the epithet is stat-sheet
-                            # flavor only (see stat_line), kept out of the
-                            # per-exchange lines so both log levels stay terse
+    name: str               # short (combat-log) name -- "Inga", nothing
+                            # appended: sheet flavor (race, traits) stays out
+                            # of the per-exchange lines so both log levels
+                            # stay terse
     dex: int
     str_: int
     sta: int
@@ -661,8 +723,38 @@ class Entity:
     weapon_broken: bool = field(default=False)  # shattered in combat; fights
                                                 # on as a stump until re-armed
     proficiency: dict[str, int] = field(default_factory=dict)  # name -> rank
-    epithet: str = field(default="")    # "precise" / "powerful" / "steady" --
-                                        # flavor for stat sheets and intros only
+    # The person behind the numbers (2026-07-11, the character layer --
+    # people.py rolls these; foes and sim entities keep the defaults, so
+    # nothing here moves a bench number).
+    cha: int = 0                        # the fourth hero stat: party capacity
+                                        # (party_capacity) and the PC's quest-
+                                        # gold negotiation (award_quest).
+                                        # 0 = never rolled (foes, old paths)
+    def_bonus: int = 0                  # flat DEFENSE pressure (the "armored"
+                                        # dress trait; armor-the-system is a
+                                        # separate roadmap item)
+    race: str = ""                      # human / elf / orc / dwarf / goblin
+    sex: str = ""                       # "m" / "f" (flavor)
+    age: int = 0                        # 2d20+10 at creation (flavor)
+    nickname: str = ""                  # schema slot only -- no nickname
+                                        # system yet (designer note 2026-07-11)
+    traits: dict[str, str] = field(default_factory=dict)   # category -> trait
+                                        # ("temperament": "loyal", ...); the
+                                        # few mechanical ones are checked by
+                                        # NAME via has_trait -- everything
+                                        # else is DM-performed fiction
+    satisfaction: int | None = field(default=None)  # the companion morale
+                                        # track (0..10; see the SAT_*
+                                        # constants). None = not tracked:
+                                        # the PC, foes, candidates not yet
+                                        # hired, and every sim entity
+    bond: str = ""                      # pair recruits: the partner's name --
+                                        # they join and leave TOGETHER, and a
+                                        # partner's death breaks the survivor
+    bond_kind: str = ""                 # "a married couple" / "parent and
+                                        # child" / "mentor and mentee" / ...
+    last_dose_day: int = 0              # "needs meds" bookkeeping: the clock
+                                        # day of the last dose bought
 
     def __post_init__(self) -> None:
         self.hp = self.max_hp
@@ -773,13 +865,17 @@ class Entity:
             elif not self.weapon_broken and self.weapon.def_pressure:
                 weapon_mod = self.weapon.def_pressure
                 weapon_label = self.weapon.name
-        total = (dice + self.dex + self.training + weapon_mod + prof + misc
-                 - pen - fatigue_pen)
+        # def_bonus is a body knob (the "armored" trait): defense only, like
+        # the staff's parry but worn instead of wielded.
+        armor = 0 if attacking else self.def_bonus
+        total = (dice + self.dex + self.training + weapon_mod + prof + armor
+                 + misc - pen - fatigue_pen)
         return PressureRoll(total=total, dice=dice, dex=self.dex,
                          training=self.training, wound_pen=pen,
                          fatigue_pen=fatigue_pen, fatigue_label=fatigue_label,
                          weapon_mod=weapon_mod, weapon_label=weapon_label,
-                         prof=prof, misc=misc, misc_label=misc_label)
+                         prof=prof, armor=armor, misc=misc,
+                         misc_label=misc_label)
 
 
 # --------------------------------------------------------------------------- #
@@ -1559,9 +1655,10 @@ HERO_STA_RANGE = (5, 8)
 HERO_HP_RANGE = (8, 12)
 HERO_POWER_RANGE = (3, 6)
 
-# Flavor epithet from the highest stat (ties resolve in this order).
-EPITHETS = {"dex": "precise", "str": "powerful", "sta": "steady"}
-
+# The sims' throwaway name pool (the played game draws from people.py's
+# per-race pools instead). The old stat epithet ("the precise") is GONE
+# (2026-07-11): it was a stat-tell in costume, and the trait system does its
+# one job -- flavor at introduction -- better.
 NAMES = ["Brand", "Sela", "Corvin", "Mira", "Doran", "Yssa", "Kael", "Rhea",
          "Tomas", "Inga", "Veld", "Nessa"]
 
@@ -1575,17 +1672,32 @@ def random_kit(rng: random.Random) -> dict[str, int]:
     return kit
 
 
-def make_human(rng: random.Random, name: str) -> Entity:
-    """Fully random generation: DEX/STR 3-6, STA 5-8, HP 8-12, Power 3-6, a random
-    ability (heal / bulwark / first_blood -- mend, mitigate, or open aggressively),
-    two random potions, and a starting weapon (the common table: 50% crude /
-    45% soldier's arms / 5% heavy; healers often carry the wooden staff)."""
-    stats = {k: rng.randint(*HERO_STAT_RANGE) for k in ("dex", "str")}
-    stats["sta"] = rng.randint(*HERO_STA_RANGE)
-    # Epithet from the highest stat, with STA normalized back to the DEX/STR
-    # scale (its rolled range sits 2 higher) so "steady" doesn't win every tie.
-    ranked = dict(stats, sta=stats["sta"] - (HERO_STA_RANGE[0] - HERO_STAT_RANGE[0]))
-    epithet = EPITHETS[max(ranked, key=ranked.get)]
+def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
+                    ceiling_down: int = 0) -> tuple[int, int]:
+    """Racial/trait stat modifiers move a roll's FLOOR up (never the ceiling
+    -- the natural cap 6 holds, see rules.md's 1-20 doctrine) or its CEILING
+    down; stacked adjustments can never invert the range."""
+    lo, hi = base[0] + floor_up, base[1] - ceiling_down
+    return (min(lo, hi), hi) if lo > hi else (lo, hi)
+
+
+def make_human(rng: random.Random, name: str,
+               floors: dict[str, int] | None = None,
+               ceilings: dict[str, int] | None = None) -> Entity:
+    """Fully random generation: DEX/STR/CHA 3-6, STA 5-8, HP 8-12, Power 3-6,
+    a random ability (heal / bulwark / first_blood -- mend, mitigate, or open
+    aggressively), two random potions, and a starting weapon (the common
+    table: 50% crude / 45% soldier's arms / 5% heavy; healers often carry the
+    wooden staff). `floors`/`ceilings` shift the roll ranges per key ("dex",
+    "str", "cha", "hp") -- the racial-modifier hook (people.py: an orc's STR
+    rolls 4-6; the "short" trait caps STR at 5)."""
+    floors = floors or {}
+    ceilings = ceilings or {}
+
+    def roll(key: str, base: tuple[int, int]) -> int:
+        return rng.randint(*_adjusted_range(base, floors.get(key, 0),
+                                            ceilings.get(key, 0)))
+
     ability = rng.choice(["heal", "bulwark", "first_blood"])
     if ability == "heal" and rng.random() < HEALER_STAFF_CHANCE:
         weapon = WEAPONS["wooden staff"]    # the caster-bridge weapon at home
@@ -1593,13 +1705,13 @@ def make_human(rng: random.Random, name: str) -> Entity:
     else:
         weapon = random_common_weapon(rng)
     return Entity(
-        name=name,          # short name in combat; the epithet is sheet flavor
-        epithet=epithet,
-        dex=stats["dex"],
-        str_=stats["str"],
-        sta=stats["sta"],
-        max_hp=rng.randint(*HERO_HP_RANGE),
+        name=name,
+        dex=roll("dex", HERO_STAT_RANGE),
+        str_=roll("str", HERO_STAT_RANGE),
+        sta=rng.randint(*HERO_STA_RANGE),
+        max_hp=roll("hp", HERO_HP_RANGE),
         power=rng.randint(*HERO_POWER_RANGE),
+        cha=roll("cha", HERO_CHA_RANGE),
         ability=ability,
         pain=HERO_PAIN,
         weapon=weapon,
@@ -1628,13 +1740,18 @@ def stat_line(e: Entity) -> str:
     """One-line body readout. Every drainable track shows cur/max -- current
     STA is THE number the play protocol turns on (dm.md: check it before
     every fight), so it must never have to be scraped off a combat log.
-    The epithet lives here (and only here): sheet flavor, not log noise."""
+    CHA appears only where it was rolled (heroes); satisfaction only where
+    it is tracked (hired companions) -- both are play-critical numbers
+    (capacity / who is about to quit), never combat-log noise."""
     kit = ", ".join(f"{k}x{v}" for k, v in e.items.items() if v) or "no kit"
-    flavor = f" the {e.epithet}" if e.epithet else ""
-    return (f"{e.name}{flavor} (L{e.level}, training {e.training}): "
+    cha = f"CHA {e.cha}  " if e.cha else ""
+    line = (f"{e.name} (L{e.level}, training {e.training}): "
             f"DEX {e.dex}  STR {e.str_}  STA {e.cur_sta}/{e.sta}  "
-            f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  "
+            f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  {cha}"
             f"({e.ability or 'no save'}; {weapon_tag(e)}; {kit})")
+    if e.satisfaction is not None:
+        line += f"  [satisfaction {e.satisfaction}/{SATISFACTION_MAX}]"
+    return line
 
 
 def progress_line(e: Entity) -> str:
@@ -1698,6 +1815,160 @@ def grow_pools(h: Entity) -> None:
     h.power += 1
     h.cur_power += 1
     h.hp_regen_per_night = max(1, round(h.max_hp / 7))
+
+
+HERO_QUALITY_LEVEL = 4      # levels from which a generated character carries
+                            # quality steel (the reference-progression
+                            # doctrine -- see bench_bestiary.py's duo)
+
+
+def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
+    """Grow a fresh level-1 roll into a level-`level` character in place --
+    the generator for recruits and leveled NPCs (people.make_character calls
+    it). Follows the reference-progression doctrine bench_bestiary.py's duo
+    was calibrated with: monotone spend (training to 3, then proficiency,
+    then training to the cap -- a build must never get WEAKER with levels),
+    quality steel from HERO_QUALITY_LEVEL, the engine pool curve. Points the
+    monotone spend can't afford stay banked (a hired recruit arrives with
+    their history mostly spent -- choosing between candidates IS the
+    customization -- but may carry a point or two to allocate).
+
+    The one divergence from the bench reference: the quality weapon SUITS
+    the frame instead of always being the katana -- a healer keeps the
+    staff, a STR frame takes the zweihander, a DEX frame the rapier."""
+    h.level = level
+    points = level - 1
+
+    def buy_training(cap: int) -> None:
+        nonlocal points
+        while h.training < cap and points >= h.training + 1:
+            points -= h.training + 1
+            h.training += 1
+
+    buy_training(3)
+    if level >= HERO_QUALITY_LEVEL:
+        if (h.ability == "heal" and h.weapon is not None
+                and h.weapon.name == "wooden staff"):
+            pass                                    # the staff IS quality
+        elif h.str_ > h.dex:
+            h.weapon = WEAPONS["zweihander"]
+        elif h.dex > h.str_:
+            h.weapon = WEAPONS["rapier"]
+        else:
+            h.weapon = WEAPONS["katana"]
+    if h.weapon is not None:
+        rank = h.proficiency.get(h.weapon.name, 0)
+        while rank < PROFICIENCY_MAX and points >= rank + 1:
+            points -= rank + 1
+            rank += 1
+        if rank:
+            h.proficiency[h.weapon.name] = rank
+    buy_training(TRAINING_MAX)
+    h.skill_points = points
+    for lvl in range(2, level + 1):
+        if pool_growth_due(lvl):
+            grow_pools(h)
+    return h
+
+
+# --------------------------------------------------------------------------- #
+# Companion satisfaction (the retention layer -- session play only)
+# --------------------------------------------------------------------------- #
+
+def has_trait(e: Entity, name: str) -> bool:
+    """Trait check by canonical name; detail in parentheses is ignored
+    ("has a child (Timo, age 9)" carries the trait "has a child")."""
+    return any(v.split(" (")[0] == name for v in e.traits.values())
+
+
+def satisfaction_tracked(e: Entity) -> bool:
+    return e.satisfaction is not None and not e.protagonist
+
+
+def leave_threshold(e: Entity) -> int:
+    """Where this companion quits: 0 for most, the hard floor for the LOYAL
+    (they stay past the breaking point -- to a point)."""
+    return SATISFACTION_FLOOR if has_trait(e, "loyal") else 0
+
+
+def wants_to_leave(e: Entity) -> bool:
+    return (satisfaction_tracked(e) and not e.dead
+            and e.satisfaction <= leave_threshold(e))
+
+
+def adjust_satisfaction(e: Entity, delta: int, log: list[str], reason: str,
+                        injury: bool = False) -> None:
+    """Move a companion's satisfaction, with the temperament scaling on
+    injury-side losses (COWARDLY doubles, BRAVE halves toward zero) and the
+    two legibility crossings logged: the warning at SATISFACTION_WARN and
+    the notice at the leave threshold. No-op for untracked entities."""
+    if not satisfaction_tracked(e) or delta == 0:
+        return
+    if injury and delta < 0:
+        if has_trait(e, "cowardly"):
+            delta *= 2
+        elif has_trait(e, "brave"):
+            delta = -(-delta // 2)      # halved, rounded toward zero: a
+                                        # brave companion shrugs off a -1
+    if delta == 0:
+        return
+    old = e.satisfaction
+    e.satisfaction = max(SATISFACTION_FLOOR,
+                         min(SATISFACTION_MAX, old + delta))
+    if e.satisfaction == old:
+        return
+    log.append(f"    {e.name}: satisfaction {old} -> "
+               f"{e.satisfaction}/{SATISFACTION_MAX} ({reason})")
+    threshold = leave_threshold(e)
+    if old > threshold >= e.satisfaction:
+        log.append(f"    *** {e.name} has had enough -- they will leave the "
+                   f"party at the next settlement (unless something lifts "
+                   f"their spirits first). ***")
+    elif (threshold < 0 and old > 0 >= e.satisfaction):
+        log.append(f"    {e.name} is past caring, but loyalty holds them -- "
+                   f"for now.")
+    elif old > SATISFACTION_WARN >= e.satisfaction:
+        log.append(f"    ({e.name} has gone quiet -- their patience is "
+                   f"wearing thin.)")
+
+
+def satisfaction_after_fight(party: list[Entity], dead_before: list[str],
+                             log: list[str], fled: bool = False) -> None:
+    """The post-fight morale pass (session play calls it after every settled
+    encounter; the sims never do -- no sim entity is tracked). Blood and
+    fear, per surviving tracked companion: fled, Down, bloodied (below half
+    HP -- Down supersedes it), and having watched a party member die this
+    fight (`dead_before` names who was already dead when it started). A dead
+    companion's bond partner takes it hardest: whatever their satisfaction
+    was, the heart goes out of them."""
+    new_dead = [h for h in party if h.dead and h.name not in dead_before]
+    dead_names = ", ".join(h.name for h in new_dead)
+    for h in party:
+        if not satisfaction_tracked(h) or h.dead:
+            continue
+        if fled:
+            adjust_satisfaction(h, SAT_FLED, log, "the party fled",
+                                injury=True)
+        if h.down:
+            adjust_satisfaction(h, SAT_DOWN, log, "beaten to the floor",
+                                injury=True)
+        elif h.hp * 2 <= h.max_hp:
+            adjust_satisfaction(h, SAT_BLOODIED, log, "badly bloodied",
+                                injury=True)
+        if new_dead:
+            adjust_satisfaction(h, SAT_DEATH_WITNESS, log,
+                                f"watched {dead_names} die", injury=True)
+    for d in new_dead:
+        if not d.bond:
+            continue
+        partner = next((h for h in party if h.name == d.bond
+                        and not h.dead), None)
+        if partner is None or not satisfaction_tracked(partner):
+            continue
+        if partner.satisfaction > 0:
+            adjust_satisfaction(partner, -partner.satisfaction, log,
+                                f"{d.name} is dead -- the heart goes out "
+                                f"of them")
 
 
 def award_xp(party: list[Entity], amount: int, log: list[str],
@@ -1823,6 +2094,20 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
                    f"({kind} x{h.items[kind]}).")
 
 
+def cha_gold_bonus(party: list[Entity], gold: int) -> int:
+    """The PC's negotiation edge: +CHA_GOLD_BONUS_PER_POINT of the quoted
+    gold per CHA point above the capacity base, capped at CHA_GOLD_BONUS_CAP.
+    GOLD ONLY, never XP (an XP bonus would compound into CHA being the best
+    stat in the game). Zero when no protagonist is flagged -- i.e. in every
+    sim path -- so the benches never see it."""
+    pc = next((h for h in party if h.protagonist and not h.dead), None)
+    if pc is None or pc.cha <= PARTY_CAPACITY_BASE_CHA:
+        return 0
+    frac = min(CHA_GOLD_BONUS_CAP,
+               CHA_GOLD_BONUS_PER_POINT * (pc.cha - PARTY_CAPACITY_BASE_CHA))
+    return round(gold * frac)
+
+
 def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
                 log: list[str], name: str,
                 banner: str = "QUEST COMPLETE") -> None:
@@ -1830,12 +2115,23 @@ def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
     to everyone still alive (`banner` reads SITE CLEARED for the non-final
     sites of a multi-site quest). Skill points are BANKED, not auto-spent --
     with two sinks now (combat training vs weapon proficiency) spending is a
-    real player choice (session.py `train`); only the sim paths auto-train."""
+    real player choice (session.py `train`); only the sim paths auto-train.
+    A charismatic PC talks the gold up (cha_gold_bonus), and a paid-out job
+    is the one thing that RAISES companion satisfaction on the road."""
     log.append("")
     log.append(f"  *** {banner}: {name}. Reward: {gold} gold. ***")
+    bonus = cha_gold_bonus(party, gold)
+    if bonus:
+        pc = next(h for h in party if h.protagonist and not h.dead)
+        gold += bonus
+        log.append(f"    {pc.name} talks the pay up: +{bonus}g "
+                   f"(CHA {pc.cha} -- {gold}g in all).")
     purse.gold += gold
     log.append(f"    The party purse holds {purse.gold} gold.")
     award_xp(party, xp, log, "quest")
+    for h in party:
+        if not h.dead:
+            adjust_satisfaction(h, SAT_SITE_CLEAR, log, "a job paid out")
 
 
 def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
@@ -2073,6 +2369,8 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                    f"{h.hp}/{h.max_hp}, +{sta_bonus} STA -> "
                    f"{h.cur_sta}/{h.sta} (a one-day edge -- it fades at the "
                    f"next night's rest)")
+    for h in boarders:
+        adjust_satisfaction(h, SAT_TAVERN, log, "a warm bed and a hot meal")
     return True
 
 

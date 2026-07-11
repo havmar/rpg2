@@ -21,16 +21,20 @@ THE SAVE IS A PLAIN JSON FILE (save.json, beside this script) on purpose:
     else is the literal field. The "rng" blob is the one part not meant
     for hands.
 
-The first hero rolled (party[0]) is the PLAYER CHARACTER; the rest are
-companions. PC death ends the game even if a companion stands.
+party[0] is the PLAYER CHARACTER (chosen from three at `new`/`pick`; the
+rest are hired companions). PC death ends the game even if a companion
+stands. CHA gates how many companions the party can hold; every companion
+carries a satisfaction track and quits (with a head-split of the purse) if
+it hits bottom -- see rules.md's Party, Charisma & Satisfaction add-on.
 
 The shape of a playthrough:
-  new / status / levelup                    -- rolling and reading the party
+  new / pick / status / levelup             -- choosing and reading the party
+  recruit / hire NAME                       -- the tavern's hiring layer
   map / travel / explore / hunt / engage    -- the world & the wilds
   board / show QID / take QID / room        -- the LOCAL quest board (the game)
   hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
   resume [...] / retreat                    -- settle a paused fight
-  rest / camp / tavern / award / buy / give / train / use / heal
+  rest / camp / tavern / downtime / award / buy / give / train / use / heal
                                             -- the between-fights layer
   forge                                     -- DM-built quest, off the board
 """
@@ -49,7 +53,11 @@ from rpg import (
     TAVERN_COST_PER_HERO, TAVERN_OVERCHARGE,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
-    make_party, stat_line, progress_line, fallen_weapons_line,
+    SATISFACTION_START, SAT_DOWNTIME, SAT_DOWNTIME_MATCH,
+    MEDS_INTERVAL_DAYS, MEDS_PRICE,
+    party_capacity, has_trait, satisfaction_tracked, wants_to_leave,
+    adjust_satisfaction, satisfaction_after_fight,
+    stat_line, progress_line, fallen_weapons_line,
     xp_to_next, site_encounter_xp, site_clear_xp, site_gold,
     start_fight, group_combat, party_wiped,
     attempt_retreat, refresh_foes_after_retreat,
@@ -62,6 +70,8 @@ from rpg import (
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
 )
+from people import (make_character, make_pair, character_sheet, person_line,
+                    downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
                     quest_detail_lines, quest_line, roster_kinds_line,
@@ -221,6 +231,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "room": pending["room"],
         "quest": pending.get("quest"),
         "streak_pos": pending.get("streak_pos"),
+        "dead_before": pending.get("dead_before", []),
     }
 
 
@@ -238,6 +249,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "room": d["room"],
         "quest": d.get("quest"),
         "streak_pos": d.get("streak_pos"),
+        "dead_before": d.get("dead_before", []),
     }
 
 
@@ -257,6 +269,8 @@ def save(state: dict) -> None:
         "sighting": state.get("sighting"),
         "streak": state.get("streak", {"site": None, "count": 0}),
         "site_clears": state.get("site_clears", {}),
+        "pc_candidates": state.get("pc_candidates"),
+        "recruits": state.get("recruits"),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -304,6 +318,8 @@ def load() -> dict:
         "sighting": doc.get("sighting"),
         "streak": doc.get("streak", {"site": None, "count": 0}),
         "site_clears": doc.get("site_clears", {}),
+        "pc_candidates": doc.get("pc_candidates"),
+        "recruits": doc.get("recruits"),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -336,7 +352,14 @@ def print_combat(log: CombatLog) -> None:
 
 
 def require_no_pending(state: dict) -> bool:
-    """Most commands are between-fights actions; refuse them mid-melee."""
+    """Most commands are between-fights actions; refuse them mid-melee --
+    and refuse them before the game has a party at all (a fresh `new` waits
+    on `pick`)."""
+    if not state["party"]:
+        print("No party yet -- choose your character first (`pick N`; "
+              "`status` shows the candidates), then hire companions "
+              "(`recruit` / `hire NAME`).")
+        return False
     if state.get("pending"):
         print("A fight is PAUSED -- the party is mid-melee. Resolve it "
               "first: resume [--drink HERO] [--berserk HERO] "
@@ -345,42 +368,314 @@ def require_no_pending(state: dict) -> bool:
     return True
 
 
+def print_pc_candidates(state: dict) -> None:
+    cands = [_entity_from_dict(d) for d in state["pc_candidates"]]
+    print("Three men stand ready -- choose your character "
+          "(`pick N` or `pick NAME`):")
+    for i, c in enumerate(cands, 1):
+        print(f"[{i}]")
+        for line in character_sheet(c):
+            print("  " + line)
+        cap = party_capacity(c.cha)
+        crowd = (f"could lead {cap} companion(s)" if cap
+                 else "would travel ALONE -- no one follows a leader this "
+                      "charmless (a near-hopeless game)")
+        print(f"    presence: CHA {c.cha} -- {crowd}")
+
+
 def cmd_new(args: argparse.Namespace) -> None:
     rng = random.Random(args.seed)
-    party = make_party(rng)
-    party[0].protagonist = True     # fate's bargain guards the PC (rpg.Entity)
+    used: set[str] = set()
+    # The PC is chosen from THREE rolled men (male by designer fiat for now;
+    # picking from candidates mirrors the tavern's hiring surface and keeps
+    # a capacity-0 CHA roll a rare, semi-chosen fate instead of a 1-in-4
+    # ambush -- see rules.md, the Party & Charisma add-on).
+    candidates = [make_character(rng, level=1, sex="m", used_names=used)
+                  for _ in range(3)]
     world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
                                             # whole playthrough, world and all
     world = generate_world(world_seed)
-    state = {"party": party, "clock": Clock(), "purse": Purse(), "rng": rng,
+    state = {"party": [], "clock": Clock(), "purse": Purse(), "rng": rng,
              "foe_count": 0, "pending": None, "rooms": {},
              "world": world, "active_quest": None,
              "location": _settlement_location(world["settlements"][0]),
              "places": [], "sighting": None,
-             "streak": {"site": None, "count": 0}, "site_clears": {}}
+             "streak": {"site": None, "count": 0}, "site_clears": {},
+             "pc_candidates": [_entity_to_dict(c) for c in candidates],
+             "recruits": None}
     save(state)
-    print(f"New party rolled (seed={args.seed}):")
-    for h in party:
-        print(f"  {role_tag(party, h)} " + stat_line(h))
-    print(f"The player character is {party[0].name} -- if they die, game over.")
+    print(f"New game (seed={args.seed}).")
+    print_pc_candidates(state)
     names = ", ".join(f"{s['name']} ({s['race']} {s['kind']})"
                       for s in world["settlements"])
     print(f"The world holds {len(world['quests'])} posted quests across: "
           f"{names}.")
-    print(f"The party stands at {location_line(state)} -- the local board is "
-          f"`board`; the wider world is `map` and `travel`. The old hideout "
-          f"and barrow lie outside {world['settlements'][0]['name']}.")
+
+
+def cmd_pick(args: argparse.Namespace) -> None:
+    state = load()
+    cands = state.get("pc_candidates")
+    if not cands:
+        print("No character choice pending -- `new` starts a game.")
+        return
+    want = " ".join(args.who).lower()
+    chosen = None
+    if want.isdigit() and 1 <= int(want) <= len(cands):
+        chosen = cands[int(want) - 1]
+    else:
+        for d in cands:
+            if want in d["name"].lower():
+                chosen = d
+                break
+    if chosen is None:
+        print(f"No candidate matches {want!r}. Candidates: "
+              + ", ".join(d["name"] for d in cands))
+        return
+    pc = _entity_from_dict(chosen)
+    pc.protagonist = True   # fate's bargain guards the PC (rpg.Entity)
+    state["party"] = [pc]
+    state["pc_candidates"] = None
+    print(f"You are {pc.name}.")
+    print("  " + person_line(pc))
+    print("  " + stat_line(pc))
+    gold = joining_gold(pc)
+    if gold:
+        state["purse"].gold += gold
+        print(f"  {pc.name} starts with {gold}g of his own -- the purse "
+              f"holds {state['purse'].gold}g.")
+    cap = party_capacity(pc.cha)
+    if cap == 0:
+        print(f"  CHA {pc.cha}: no one will follow {pc.name}. This game is "
+              f"played ALONE -- if he dies, it ends, and no fate's bargain "
+              f"softens it.")
+    else:
+        print(f"  CHA {pc.cha}: the party can hold {cap} companion(s).")
+        roll_recruits(state)
+        print(f"The common room at {state['location']['name']} holds "
+              f"tonight's introductions (free, this once):")
+        for line in recruit_summary_lines(state):
+            print(line)
+        print("See them in full with `recruit`; sign one with `hire NAME`. "
+              "A later `tavern` night gathers new faces.")
+    print(f"The party stands at {location_line(state)} -- the local board "
+          f"is `board`; the wider world is `map` and `travel`. The old "
+          f"hideout and barrow lie outside "
+          f"{state['world']['settlements'][0]['name']}.")
+    save(state)
+
+
+# --------------------------------------------------------------------------- #
+# Recruiting, departures, and the nightly upkeep (the companion layer)
+# --------------------------------------------------------------------------- #
+
+def roll_recruits(state: dict) -> None:
+    """Roll a settlement evening's recruit candidates: as many OPTIONS as
+    the PC's CHA capacity (three choices even if only one slot is free --
+    seeing the market is part of the pitch), each leveled to the PC +-1,
+    a quarter of them bonded pairs (one option, two heads). Rolled once per
+    paid tavern night (plus the free game-start evening) -- the night's cost
+    and day are the reroll gate."""
+    party, rng, clock = state["party"], state["rng"], state["clock"]
+    here = local_settlement(state)
+    pc = party[0]
+    cap = party_capacity(pc.cha)
+    if here is None or cap == 0:
+        state["recruits"] = None
+        return
+    used = {h.name for h in party}
+    options = []
+    for _ in range(cap):
+        level = max(1, pc.level + rng.randint(-1, 1))
+        if rng.random() < PAIR_CHANCE:
+            kind, members = make_pair(rng, level, used_names=used)
+        else:
+            kind, members = None, [make_character(rng, level,
+                                                  used_names=used)]
+        options.append({"kind": kind,
+                        "members": [_entity_to_dict(m) for m in members]})
+    state["recruits"] = {"place": here["key"], "day": clock.day,
+                         "options": options}
+
+
+def recruit_summary_lines(state: dict) -> list[str]:
+    """The compact one-line-per-option readout (tavern nights); `recruit`
+    prints the full sheets."""
+    rec = state.get("recruits")
+    if not rec or not rec["options"]:
+        return []
+    lines = []
+    for i, opt in enumerate(rec["options"], 1):
+        names = " & ".join(f"{m['name']} ({m['race']} {m['sex']}, "
+                           f"L{m['level']})" for m in opt["members"])
+        pair = f" -- {opt['kind']} (one option, two heads)" if opt["kind"] else ""
+        lines.append(f"  [{i}] {names}{pair}")
+    return lines
+
+
+def local_recruits(state: dict) -> dict | None:
+    """The candidate pool waiting where the party stands, if any."""
+    rec = state.get("recruits")
+    here = local_settlement(state)
+    if not rec or here is None or rec["place"] != here["key"]:
+        return None
+    return rec if rec["options"] else None
+
+
+def cmd_recruit(args: argparse.Namespace) -> None:
+    state = load()
+    party = state["party"]
+    if not party:
+        print("No party yet -- `pick` your character first.")
+        return
+    pc = party[0]
+    cap = party_capacity(pc.cha)
+    companions = [h for h in party[1:] if not h.dead]
+    print(f"{pc.name}'s presence (CHA {pc.cha}) can hold {cap} "
+          f"companion(s); the party has {len(companions)}.")
+    if cap == 0:
+        print("No one would sign on -- this party is a party of one.")
+        return
+    rec = local_recruits(state)
+    if rec is None:
+        print("No candidates gathered here -- a `tavern` night draws them "
+              "(the evening's company is part of what the coin buys).")
+        return
+    for i, opt in enumerate(rec["options"], 1):
+        header = f"[{i}]"
+        if opt["kind"]:
+            header += (f" {opt['kind']} -- one option, two heads against "
+                       f"the capacity, joining and leaving together")
+        print(header)
+        for m in opt["members"]:
+            for line in character_sheet(_entity_from_dict(m)):
+                print("  " + line)
+    print("`hire NAME` signs them on (a pair signs together).")
+
+
+def cmd_hire(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    party, purse, clock = state["party"], state["purse"], state["clock"]
+    rec = local_recruits(state)
+    if rec is None:
+        print("No candidates here to hire -- see `recruit`.")
+        return
+    want = " ".join(args.name).lower()
+    match = None
+    for opt in rec["options"]:
+        if any(want in m["name"].lower() for m in opt["members"]):
+            match = opt
+            break
+    if match is None:
+        names = ", ".join(m["name"] for opt in rec["options"]
+                          for m in opt["members"])
+        print(f"No candidate matches {want!r}. Candidates: {names}.")
+        return
+    pc = party[0]
+    cap = party_capacity(pc.cha)
+    companions = [h for h in party[1:] if not h.dead]
+    heads = len(match["members"])
+    if len(companions) + heads > cap:
+        pair = " (a pair signs together -- two heads)" if heads > 1 else ""
+        print(f"The party is full: CHA {pc.cha} holds {cap} companion(s) "
+              f"and it has {len(companions)}{pair}. No one leaves a leader "
+              f"they still follow -- capacity is a hard cap.")
+        return
+    log: list[str] = []
+    for d in match["members"]:
+        m = _entity_from_dict(d)
+        m.satisfaction = SATISFACTION_START
+        if has_trait(m, "needs meds"):
+            m.last_dose_day = clock.day
+        gold = joining_gold(m)
+        if gold:
+            purse.gold += gold
+            log.append(f"    {m.name} adds {gold}g to the party purse "
+                       f"({purse.gold}g).")
+        party.append(m)
+        bond = f" -- with {m.bond} ({m.bond_kind})" if m.bond else ""
+        log.append(f"  {m.name} joins the party{bond}.")
+        log.append("    " + stat_line(m))
+    rec["options"].remove(match)
+    print("\n".join(log))
+    save(state)
+
+
+def night_upkeep(state: dict, log: list[str]) -> None:
+    """Once per night slept, wherever it was: the 'needs meds' drain -- a
+    companion whose last dose is older than MEDS_INTERVAL_DAYS loses 1
+    satisfaction per night until a dose is bought (`buy HERO meds`, capitals
+    only)."""
+    clock = state["clock"]
+    for h in state["party"][1:]:
+        if h.dead or not satisfaction_tracked(h):
+            continue
+        if (has_trait(h, "needs meds")
+                and clock.day - h.last_dose_day > MEDS_INTERVAL_DAYS):
+            adjust_satisfaction(h, -1, log, "out of their medicine")
+
+
+def process_departures(state: dict, log: list[str]) -> None:
+    """Settle the party's books at a settlement: dead companions are laid to
+    rest (the party as constituted shrinks -- XP shares reflect it from here
+    on), and anyone at/below their leave threshold quits, taking an equal
+    head-split of the purse (and their carried weapon and potions) with
+    them. Bond partners leave together. Called on settlement arrival and at
+    the end of tavern/downtime nights."""
+    if local_settlement(state) is None:
+        return
+    party, purse = state["party"], state["purse"]
+    place = state["location"]["name"]
+    for h in [h for h in party[1:] if h.dead]:
+        party.remove(h)
+        log.append(f"  {h.name} is laid to rest at {place}.")
+    leavers = [h for h in party[1:] if wants_to_leave(h)]
+    pulled: list = []
+    for h in list(leavers):
+        if h.bond:
+            partner = next((p for p in party[1:]
+                            if p.name == h.bond and not p.dead
+                            and p not in leavers and p not in pulled), None)
+            if partner is not None:
+                pulled.append(partner)
+    if not leavers:
+        return
+    living = [h for h in party if not h.dead]
+    share = purse.gold // len(living) if living else 0
+    for h in leavers + pulled:
+        purse.gold -= share
+        party.remove(h)
+        why = (f"leaves with {h.bond} ({h.bond_kind})" if h in pulled
+               else "has had enough and quits the party")
+        log.append(f"  *** {h.name} {why} at {place} -- taking their share "
+                   f"of the purse ({share}g) and their gear. ***")
+    log.append(f"    The purse holds {purse.gold}g.")
 
 
 def cmd_status(args: argparse.Namespace) -> None:
     state = load()
     party, clock, purse = state["party"], state["clock"], state["purse"]
+    if not party and state.get("pc_candidates"):
+        print_pc_candidates(state)
+        return
     print(f"Day {clock.day}, {clock.short_rests_left} short rest(s) left today. "
           f"Purse: {purse.gold}g. At: {location_line(state)}.")
+    pc = party[0] if party else None
+    if pc is not None and pc.cha:
+        companions = sum(1 for h in party[1:] if not h.dead)
+        print(f"  Party: {companions}/{party_capacity(pc.cha)} companion "
+              f"slot(s) filled (CHA {pc.cha}).")
     for h in party:
         tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
+        if wants_to_leave(h):
+            tag += " [QUITTING at the next settlement]"
         print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
+        if h.race:
+            print(" " * 14 + person_line(h))
         print(" " * 14 + progress_line(h))
+    if local_recruits(state):
+        print("  Candidates wait at the tavern -- `recruit` shows them.")
     world = state.get("world")
     if world:
         open_q = sum(1 for q in world["quests"].values()
@@ -512,6 +807,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     (site encounters only) -- recorded on victory so the NEXT one pays more."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
+    dead_before = [h.name for h in party if h.dead]    # so the post-fight
+                                                       # morale pass knows
+                                                       # who died in THIS one
     fired: set[str] = set()
     pause = group_combat(living, foes, rng, log, pause_triggers=True,
                          fired=fired)
@@ -521,6 +819,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "quest": quest, "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
             "streak_pos": streak_pos,
+            "dead_before": dead_before,
         }
         print_combat(log)
         print()
@@ -528,7 +827,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         save(state)
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
-                     quest=quest, streak_pos=streak_pos)
+                     quest=quest, streak_pos=streak_pos,
+                     dead_before=dead_before)
 
 
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
@@ -584,8 +884,10 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
                      quest: str | None = None,
-                     streak_pos: int | None = None) -> None:
-    """The melee actually ended: wipe check, awards, loot, persist."""
+                     streak_pos: int | None = None,
+                     dead_before: list[str] | None = None) -> None:
+    """The melee actually ended: wipe check, awards, loot, the companion
+    morale pass, persist."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     state["pending"] = None
     wiped = party_wiped(party, log)
@@ -618,6 +920,10 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         elif site is not None:
             pay_set_site_clear(state, log, site, room)
 
+    if not wiped:
+        # The companion morale pass: blood and fear, whatever the outcome
+        # (a game over needs no bookkeeping).
+        satisfaction_after_fight(party, dead_before or [], log)
     print_combat(log)
     save(state)
     report_game_over(party, wiped)
@@ -970,10 +1276,17 @@ def cmd_travel(args: argparse.Namespace) -> None:
     log: list[str] = []
     for _ in range(days):
         _long_rest(state["party"], state["clock"], log)
+        night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
     state["location"] = target
     print(f"The party arrives at {location_line(state)}.")
+    # Settling the books at the walls: the dead are buried, anyone done with
+    # this party walks (with their head-split of the purse).
+    log = []
+    process_departures(state, log)
+    if log:
+        print("\n".join(log))
     chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
     if not wild_event(state, chance, f"On the road to {target['name']}"):
         save(state)
@@ -994,6 +1307,7 @@ def cmd_explore(args: argparse.Namespace) -> None:
           f"camping rough.")
     log: list[str] = []
     _long_rest(party, clock, log)
+    night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
     used = {p["name"] for p in state.get("places", [])}
@@ -1159,7 +1473,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
-                     streak_pos=pending.get("streak_pos"))
+                     streak_pos=pending.get("streak_pos"),
+                     dead_before=pending.get("dead_before"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -1193,6 +1508,9 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             else:
                 log.append("  (the foes scatter -- an off-script encounter "
                            "is not kept)")
+        if not wiped:
+            satisfaction_after_fight(party, pending.get("dead_before") or [],
+                                     log, fled=True)
         print_combat(log)
         save(state)
         report_game_over(party, wiped)
@@ -1213,7 +1531,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
-                     streak_pos=pending.get("streak_pos"))
+                     streak_pos=pending.get("streak_pos"),
+                     dead_before=pending.get("dead_before"))
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -1234,6 +1553,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
     party, clock = state["party"], state["clock"]
     log: list[str] = []
     _long_rest(party, clock, log)
+    night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
         log.append(f"    (the night breaks the momentum at {streak['site']} "
@@ -1252,7 +1572,10 @@ def cmd_camp(args: argparse.Namespace) -> None:
 
 def cmd_tavern(args: argparse.Namespace) -> None:
     """A paid night at the inn (settlements only): long rest plus the one-day
-    HP/STA overcharge (rpg.tavern_rest). Resets the streak like any night."""
+    HP/STA overcharge (rpg.tavern_rest), +1 companion satisfaction, and the
+    evening's company -- a fresh set of recruit candidates (the hiring
+    surface: rolled once per paid night). Resets the streak like any night;
+    anyone at the end of their patience walks at the morning."""
     state = load()
     if not require_no_pending(state):
         return
@@ -1264,12 +1587,57 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     if not _tavern_rest(state["party"], state["clock"], state["purse"], log):
         print("\n".join(log))
         return
+    night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
         log.append(f"    (the night breaks the momentum at {streak['site']} "
                    f"-- the next encounter pays base XP again)")
     reset_streak(state)
     clear_sighting(state)
+    process_departures(state, log)
+    roll_recruits(state)
+    summary = recruit_summary_lines(state)
+    if summary:
+        log.append("  In the common room tonight (see `recruit`, sign with "
+                   "`hire NAME`):")
+        log.extend(summary)
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_downtime(args: argparse.Namespace) -> None:
+    """A full day off in a settlement (the satisfaction lever the player
+    controls): every companion gains SAT_DOWNTIME, or SAT_DOWNTIME_MATCH
+    when the place suits a trait (an interest where it thrives, patriotic
+    ground, a capital's temples for the religious). Ends in a free
+    settlement night (long rest, streak reset, day advances)."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    here = local_settlement(state)
+    if here is None:
+        print(f"A day off wants walls and company -- the party is at "
+              f"{location_line(state)}. In the wilds the night is `camp`.")
+        return
+    party, clock = state["party"], state["clock"]
+    log: list[str] = [f"  The party takes a day off at {here['name']}."]
+    for h in party[1:]:
+        if h.dead or not satisfaction_tracked(h):
+            continue
+        why = downtime_match(h, here)
+        if why:
+            adjust_satisfaction(h, SAT_DOWNTIME_MATCH, log, why)
+        else:
+            adjust_satisfaction(h, SAT_DOWNTIME, log, "a day off their feet")
+    _long_rest(party, clock, log)
+    night_upkeep(state, log)
+    streak = state.get("streak") or {"site": None, "count": 0}
+    if streak["count"]:
+        log.append(f"    (the day breaks the momentum at {streak['site']} "
+                   f"-- the next encounter pays base XP again)")
+    reset_streak(state)
+    clear_sighting(state)
+    process_departures(state, log)
     print("\n".join(log))
     save(state)
 
@@ -1299,9 +1667,30 @@ def cmd_buy(args: argparse.Namespace) -> None:
         _buy_potion(hero, purse, thing, log)
     elif thing in WEAPONS:
         _buy_weapon(hero, purse, thing, log)
+    elif thing == "meds":
+        # The "needs meds" weakness: a dose every MEDS_INTERVAL_DAYS days,
+        # compounded only in a capital, or the nightly drain sets in.
+        if not has_trait(hero, "needs meds"):
+            print(f"{hero.name} has no need of medicine.")
+            return
+        here = local_settlement(state)
+        if here is None or here["kind"] != "capital":
+            print(f"Doses are compounded only in a capital -- the party is "
+                  f"at {location_line(state)}.")
+            return
+        if purse.gold < MEDS_PRICE:
+            print(f"Not enough gold for a dose ({purse.gold}g / "
+                  f"{MEDS_PRICE}g).")
+            return
+        purse.gold -= MEDS_PRICE
+        hero.last_dose_day = state["clock"].day
+        log.append(f"    {hero.name} buys a dose of their medicine for "
+                   f"{MEDS_PRICE}g (good for {MEDS_INTERVAL_DAYS} days; "
+                   f"purse: {purse.gold}g).")
+        adjust_satisfaction(hero, 1, log, "the shakes ease")
     else:
         print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
-              f"Weapons: {', '.join(sorted(WEAPONS))}.")
+              f"Weapons: {', '.join(sorted(WEAPONS))}. Also: meds.")
         return
     print("\n".join(log))
     save(state)
@@ -1379,9 +1768,39 @@ def main() -> None:
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("new", help="start a fresh party/clock/purse (overwrites save)")
+    p = sub.add_parser(
+        "new",
+        help="start a fresh game (overwrites save): rolls the world and "
+             "THREE player-character candidates -- choose with `pick`")
     p.add_argument("--seed", type=int, default=None)
     p.set_defaults(func=cmd_new)
+
+    p = sub.add_parser(
+        "pick",
+        help="choose the player character from `new`'s three candidates "
+             "(by number or name). His CHA sets the party's companion "
+             "capacity for the whole game; the first evening's recruit "
+             "introductions follow for free.")
+    p.add_argument("who", nargs="+", help="candidate number (1-3) or name")
+    p.set_defaults(func=cmd_pick)
+
+    p = sub.add_parser(
+        "recruit",
+        help="the full sheets of the candidates gathered at this "
+             "settlement's tavern (rolled at each paid `tavern` night, "
+             "leveled to the PC +-1; a quarter are bonded pairs -- one "
+             "option, two heads). Everything is shown: transparency over "
+             "realism, like the board's straight levels.")
+    p.set_defaults(func=cmd_recruit)
+
+    p = sub.add_parser(
+        "hire",
+        help="sign a candidate on (a pair signs together). Hard-capped by "
+             "the PC's CHA (capacity = CHA - 3, up to 3); a fresh hire "
+             "starts at satisfaction 7/10 and any joining gold (wealthy/"
+             "luxurious) goes to the purse.")
+    p.add_argument("name", nargs="+", help="candidate name (substring)")
+    p.set_defaults(func=cmd_hire)
 
     p = sub.add_parser("status", help="show the persisted party/clock/purse")
     p.set_defaults(func=cmd_status)
@@ -1459,8 +1878,20 @@ def main() -> None:
              f"plus a ONE-DAY OVERCHARGE -- everyone wakes with HP and STA "
              f"+{int(TAVERN_OVERCHARGE * 100)}%% of max (min 1) ABOVE their "
              f"caps; the excess can't be healed back and fades at the next "
-             f"night's rest. Resets the momentum streak like any night.")
+             f"night's rest. Also +1 companion satisfaction, and the "
+             f"evening gathers a fresh set of recruit candidates. Resets "
+             f"the momentum streak like any night.")
     p.set_defaults(func=cmd_tavern)
+
+    p = sub.add_parser(
+        "downtime",
+        help="a full day off in a settlement: +1 satisfaction to every "
+             "companion (+2 where the place suits a trait -- an interest "
+             "where it thrives, patriotic ground, a capital's temples), "
+             "then a free night (long rest, day advances, streak resets). "
+             "The deliberate morale lever -- it costs a day the streak "
+             "economy would rather spend fighting.")
+    p.set_defaults(func=cmd_downtime)
 
     p = sub.add_parser(
         "board",
@@ -1571,13 +2002,13 @@ def main() -> None:
 
     p = sub.add_parser(
         "buy",
-        help="spend gold on a potion or a weapon for one hero (weapons are "
-             "equipped on the spot; plain tier only -- masterwork/legendary "
-             "are never shopped)")
+        help="spend gold on a potion, a weapon, or (in a capital) a dose of "
+             "meds for one hero (weapons are equipped on the spot; plain "
+             "tier only -- masterwork/legendary are never shopped)")
     p.add_argument("hero")
     p.add_argument("thing", nargs="+",
-                   help="a potion kind or a weapon name (e.g. rapier, "
-                        "wooden staff)")
+                   help="a potion kind, a weapon name (e.g. rapier, "
+                        "wooden staff), or 'meds'")
     p.set_defaults(func=cmd_buy)
 
     p = sub.add_parser(

@@ -23,10 +23,11 @@ open-ended and player-driven. The engine owns the numbers; the DM owns the
 fiction.
 
 **How play is driven:** the game is *two halves working together*.
-- **The scripts (`rpg.py`, `sites.py`, `quests.py`)** are a library of
-  mechanics primitives and content — `start_fight`, `group_combat`,
-  `short_rest`, `long_rest`, `party_wiped`, the foe catalog, the set sites,
-  the quest generator and its world.
+- **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
+  library of mechanics primitives and content — `start_fight`,
+  `group_combat`, `short_rest`, `long_rest`, `party_wiped`, the foe
+  catalog, the set sites, the quest generator and its world, the
+  character generator and its races/traits.
 - **Claude (as DM)** calls those primitives *on purpose*, in whatever order the
   story wants, and narrates over the result. There is deliberately **no
   autopilot** for pacing: e.g. nothing forces the day to end — Claude decides
@@ -104,6 +105,16 @@ a pointer: what the file is, how it's run, where its docs are.
   templates with reskin tables, and seeded worldgen with asserted XP
   coverage to the level cap. `python quests.py [--seed N] [--demo]` prints
   a generated world's board.
+- `people.py` — **the character layer** (2026-07-11, rules.md's Party,
+  Charisma & Satisfaction add-on): the five races' stat modifiers
+  (floor-raise, never ceiling), the 25+25 per-race name pools, the trait
+  tables (1 behavior + 2 presentation categories per character; the
+  mechanical few annotated in `TRAIT_NOTES`), `make_character` (any
+  level, via rpg.develop_hero), `make_pair` (bonded recruit pairs), the
+  candidate sheets, and the downtime-matching rules. Content only — the
+  satisfaction/CHA mechanics it hangs on live in rpg.py; the sims never
+  import it. `python people.py [--seed N] [--level L]` prints a sample
+  (the DM's eyeball check).
 - `session.py` — **the DM driver used to actually play.** A thin CLI over
   rpg.py/sites.py/quests.py that keeps party/clock/purse/world state in
   **`save.json`** (plain JSON: committable, so a playthrough can travel
@@ -117,9 +128,13 @@ a pointer: what the file is, how it's run, where its docs are.
   `engage` — location state, local boards, road encounters, the momentum
   streak; since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
-  ordinary-encounter spotted valve, and the hunt ambush. Encounter
-  commands print the full log then the `--- PLAYER LOG ---` block the DM
-  pastes into chat.
+  ordinary-encounter spotted valve, and the hunt ambush. Since 2026-07-11
+  also the party layer: `new`/`pick` (three PC candidates), `recruit` /
+  `hire` (tavern candidates, CHA-capped), `downtime` (the morale day),
+  `buy HERO meds`, and the satisfaction bookkeeping (post-fight morale
+  pass, nightly meds drain, settlement departures with the purse
+  head-split). Encounter commands print the full log then the
+  `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -215,8 +230,14 @@ mechanic *does* and *why* is rules.md's job.
   HP/STA edge; `recover()` is the clamp that makes the excess spent-only),
   and the party-size counterweights
   (`CROWD_CAP` — the press; `XP_PARTY_BASELINE` — awards quoted at the
-  duo, paid `x 2 / party size`). The quest generator's own knobs sit at
-  the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
+  duo, paid `x 2 / party size`), the CHA layer (`HERO_CHA_RANGE`,
+  `party_capacity` = CHA−3 clamped 0..3, `CHA_GOLD_BONUS_PER_POINT` /
+  `_CAP` — gold only, never XP), and companion satisfaction (the
+  `SATISFACTION_*` bounds and `SAT_*` event deltas, plus
+  `MEDS_INTERVAL_DAYS` / `MEDS_PRICE`). The character layer's content
+  knobs (racial `RACE_MODS`, `PAIR_CHANCE`, `ARMORED_DEF_BONUS`,
+  `TRAIT_GOLD`, `INTEREST_PLACES`) sit at the top of `people.py`. The
+  quest generator's own knobs sit at the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
   `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands), and
   so do the navigation layer's (`TRAVEL_DAYS_*`, `TRAVEL_ENCOUNTER_CHANCE`,
   `EXPLORE_*`, `WILD_LEVEL_DECAY`, `SPOTTED_MARGIN`, `AMBUSH_CHANCE`,
@@ -245,9 +266,23 @@ mechanic *does* and *why* is rules.md's job.
   (fled-room persistence).
 - **Between fights** — `short_rest` / `long_rest` (the `Clock`), `use_potion`,
   `use_heal`, `buy_potion` / `buy_weapon` (the `Purse`), `equip_weapon`,
-  `award_xp` / `award_quest` / `roll_loot`, `train_combat_once` /
+  `award_xp` / `award_quest` / `roll_loot` (`award_quest` also applies the
+  PC's `cha_gold_bonus` and the +1 satisfaction lump), `train_combat_once` /
   `train_proficiency` (session play banks points; only the sims auto-spend
   via `train_combat`), `party_wiped`, `start_fight` (revive-only).
+- **The party layer** (2026-07-11) — `rpg.py`: the satisfaction helpers
+  (`adjust_satisfaction` with the cowardly/brave injury scaling,
+  `satisfaction_after_fight`, `wants_to_leave` / `leave_threshold`,
+  `has_trait`), `party_capacity`, `develop_hero` (the leveled-character
+  factory, mirroring bench_bestiary's reference doctrine), `Entity`'s
+  person fields (`cha`, `race`, `sex`, `age`, `traits`, `satisfaction`,
+  `bond`/`bond_kind`, `last_dose_day`, `def_bonus`, `nickname`; the
+  `epithet` field is GONE). `people.py`: generation + sheets (see Files).
+  `session.py`: `roll_recruits` / `cmd_hire` (per-head capacity check),
+  `process_departures` (burials + the purse head-split, run at settlement
+  arrivals and tavern/downtime nights), `night_upkeep` (meds drain),
+  `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
+  post-fight morale pass knows who died in *this* fight.
 - **The log** — `CombatLog` (full + `.player` levels; `_debug` / `_play`
   emit helpers so plain lists still work).
 - **Content** — `sites.py`: `FOES` (the bestiary: 22 stat blocks — six
@@ -276,7 +311,9 @@ mechanic *does* and *why* is rules.md's job.
   (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
   record, `rooms` fled-room records, `location`, `places` discovered wilds,
   `sighting`, `streak` momentum record, `site_clears` set-site pay
-  tracking; entities/weapons via the `_entity_*`/`_weapon_*` serializers).
+  tracking, `pc_candidates` (the unpicked PC sheets) and `recruits` (the
+  tavern candidate pool, keyed to its settlement and night); entities/
+  weapons via the `_entity_*`/`_weapon_*` serializers).
   A paused fight blocks every between-fights command until settled. Quest
   progress lives on each quest (`next` cursor, `status`); `advance_quest`
   pays site lumps and closes quests.
@@ -509,6 +546,38 @@ untouched:
   protagonist either — a future "PC-centric career" variant is the
   natural check if this needs numbers).
 
+**Measured numbers (2026-07-11, the character & party layer: CHA capacity +
+satisfaction + recruiting + races/traits).** The layer is session-side by
+construction — `group_combat` never reads a trait or a satisfaction number,
+and the sims never set `cha`/`protagonist`/`satisfaction`, so no bench CAN
+move from the mechanics; the full suite was re-run anyway because
+`make_human` now rolls CHA (every seeded RNG stream shifted, so every
+number re-measured through fresh randomness — a distribution-level
+no-change check). It held, everything within noise of 2026-07-10:
+
+- **Hideout** (rank 0, 10k): clear **58.0** / wipe **37.2** / Down ~50
+  (was 58.6/36.5); reckless wipe **81.2** (was 80). **Barrow** `[3,3,4]`:
+  clear **13.5** / wipe **83.3** (was 13.2/83.5), reckless 98.6.
+  Cleared-run HP-lost spread 16/49/31/4 and 18/52/27/3 — the middle holds.
+- **Training ladder** (5k/rank): barrow **14 -> 38 -> 68 -> 90**, hideout
+  **58 -> 82 -> 95 -> 99**. **Party size** (5k/size): hideout
+  **13 / 58 / 89 / 97**, barrow **0.6 / 14 / 51 / 83** — identical story.
+- **Weapons matrix**: unchanged (zweihander best duel on precise/steady,
+  katana on powerful/balanced, zweihander owns every swarm column, staff
+  trails). **Bestiary**: every row within a point or three (archer 92,
+  wolf 80, skeleton 87 ... dragon 86, warlord 54); ordering intact.
+  **Generated content**: at-level rooms win 61-96 across 1-20, sites
+  ~81-88 at L1-5 sliding to ~37-57 at 15-20. **Careers** (200): reach
+  L5 63% / L8 53% / L11 34% / L14 20% / L20 5.5%, median death L8.
+- **What the layer changes in PLAYED games, not sims**: the party starts
+  as PC + hires instead of a hardcoded duo (the "Balanced for two" baseline
+  is now the typical capacity-1-or-2 outcome, not a constant); quest gold
+  runs up to +30% at CHA 6; and satisfaction is a new upkeep economy
+  (tavern nights and downtime days vs the streak's push-on pay). No sim
+  models satisfaction churn or the CHA gold — the career sim plays an even
+  duo with no protagonist (parked note in plan.md: a PC-centric career
+  variant is the natural check if played campaigns drift from the bench).
+
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
 budget knobs (`quests.ROOM_SHARES`, `PACK_CAP`, `DUP_COST` — these move
@@ -552,14 +621,16 @@ curve.
 The between-fights layer is now substantially player choice: gold/XP flow,
 skill points are a real allocation (combat training vs weapon proficiency —
 nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
-shopping real decisions, and **the quest board is the "pick your fights"
+shopping real decisions, **the quest board is the "pick your fights"
 layer at full size** — a generated world of leveled quests, levels shown
-straight, pay scaling with them. The mid-fight layer exists too: the pause
-(drink / Berserk / War-Breath / retreat & chase, with fled rooms
-persisting). **Next up: the story layer over the board** (see `plan.md`) —
-the mundane-conqueror questline as the authored difficulty spine, then
-progression frames (guilds, the legendary smith). After that: magic/INT,
-armor, guns + ammo, named weapon instances, party composition — and the
-career sim's finding that the 14-20 band lacks its player power until
-masterwork/armor/magic land. See plan.md for the full roadmap and the
-parked-ideas list.
+straight, pay scaling with them — and **the party itself is player choice
+now** (2026-07-11): who to pick, who to hire, whose patience to spend, when
+to buy it back with a tavern night or a downtime day. The mid-fight layer
+exists too: the pause (drink / Berserk / War-Breath / retreat & chase, with
+fled rooms persisting). **Next up: the story layer over the board** (see
+`plan.md`) — the mundane-conqueror questline as the authored difficulty
+spine, then progression frames (guilds, the legendary smith). After that:
+magic/INT, armor (note the designer's lean: probably never important),
+guns + ammo, named weapon instances — and the career sim's finding that
+the 14-20 band lacks its player power until masterwork/magic land. See
+plan.md for the full roadmap and the parked-ideas list.
