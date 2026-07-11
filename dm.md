@@ -6,8 +6,12 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 
 ## Starting and continuing
 
-- New game: `python session.py new` (add `--seed N` for a reproducible party
-  AND world -- `new` also generates the playthrough's whole quest world).
+- New game: `python session.py new` (add `--seed N` for a reproducible game
+  -- `new` also generates the playthrough's whole quest world). It rolls
+  THREE player-character candidates; show the player all three sheets
+  (including each one's CHA capacity line) and let THEM `pick`. Then run
+  the free first-evening introductions: `recruit` shows the companion
+  candidates, `hire NAME` signs the player's choices (see The party below).
 - Continuing: `python session.py status` to see where things stand.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
@@ -129,10 +133,49 @@ player's core decision:**
   won). Play it with weight: the reprieve is a huge beat, and the
   post-spare choice -- press on and pay a companion, or flee with the
   downed PC -- belongs to the player. Never soften the price by fiat.
-- The other hero is an **NPC companion**: the DM animates them (voice, small
-  decisions, flavor), but the player directs them *tactically* -- who they
-  focus, when they drink a potion, whether they Heal. (Richer intra-party
-  mechanics are planned; for now this split is run by the DM.)
+- The other heroes are **NPC companions**: the DM animates them (voice,
+  small decisions, flavor -- their TRAITS are the material: a poetic
+  whisperer and a swearing loudmouth should not read alike), but the player
+  directs them *tactically* -- who they focus, when they drink a potion,
+  whether they Heal.
+
+## The party -- recruiting, satisfaction, departures (2026-07-11)
+
+- **Capacity is the PC's CHA, and it is a hard cap** (CHA-3, 0..3 -- the
+  scripts enforce it). A capacity-0 PC plays alone; say plainly at creation
+  what that means (no fate's bargain, the solo numbers are brutal).
+- **Recruiting happens at tavern nights.** Each paid `tavern` night rolls a
+  fresh set of candidates (as many options as capacity, leveled to the PC
+  +-1; ~a quarter are bonded pairs -- one option, TWO heads, they join and
+  leave together). `recruit` prints full sheets -- show them to the player
+  as-is (full transparency is the design, like straight board levels), then
+  narrate the introductions over it. WHO to hire is the player's call,
+  always. The DM's job is the fiction of the meeting and editing any
+  generated contradiction on a sheet BEFORE presenting it.
+- **Satisfaction is each companion's patience** (0-10 in `status`; the PC
+  has none). Up: paid-out jobs +1, tavern nights +1, `downtime` days +1
+  (+2 where the place suits a trait -- interests, patriotic ground,
+  temples). Down: fleeing -1, ending a fight below half HP -1, going Down
+  -2, watching a party member die -2 (cowardly doubles these, brave
+  halves); an unmedicated "needs meds" companion drains 1/night. The
+  script logs every change and prints the warnings -- NARRATE them (the
+  gone-quiet line at 3 is a scene hook, not bookkeeping).
+- **At 0 they quit at the next settlement** (loyal: at -3), taking an equal
+  head-split of the purse and their gear; bond partners walk together; the
+  dead are laid to rest at the walls. Play departures with weight -- a
+  companion walking out with a quarter of the party's gold IS a story beat.
+  Anything that lifts them above the line before the walls (a quest lump, a
+  tavern bed) genuinely saves them -- say so when it's close.
+- **`downtime` is the deliberate morale lever**: a day off in a settlement,
+  best spent where a companion's trait points (Meriele loves animals ->
+  a village day pays double). It costs a day and breaks the streak -- the
+  trade is real; put it in the player's hands, don't spend it for them.
+- **Meds**: a "needs meds" companion needs a 20g dose in a CAPITAL every
+  10 days (`buy HERO meds`). Track it out loud when the party plans a long
+  stretch in the wilds.
+- **CHA also talks pay up** (+10%/point above 3, max +30%, gold only) --
+  the script prints the negotiation line; give it a sentence of fiction
+  when it fires.
 
 ## Turn protocol -- ONE encounter per message
 
@@ -187,7 +230,9 @@ player's core decision:**
   (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
   streak: pressing on pays escalating XP per room, camping trades that pay
   for safety; say the trade out loud), paying for the tavern instead of
-  camping free (`tavern`), buying potions or weapons (`buy`),
+  camping free (`tavern`), buying potions, weapons, or meds (`buy`),
+  **who to hire and whether to hire at all** (`hire` -- and which PC to
+  `pick` at creation), spending a day on companion morale (`downtime`),
   **spending skill points** (`train HERO combat|weapon` -- points bank on
   level-up and NOTHING auto-spends), where to `travel` and which site to
   run, whether to `engage` a sighting, whether to press on or pull back,
@@ -284,6 +329,14 @@ player's core decision:**
   is an endurance war you can lose by simply running dry.
 - Bandits are living fighters under exactly the party's rules (they tire and
   go Spent too) -- hideout logs read with no special cases.
+- **CHA & the party** (2026-07-11): capacity = PC's CHA - 3 (hard cap,
+  0..3); quest gold +10%/CHA point above 3 (max +30%, never XP). Companion
+  satisfaction 0-10: +1 job lumps / tavern nights / downtime days (+2 when
+  the place suits a trait), -1 fled or bloodied, -2 Down or a death
+  witnessed (cowardly x2, brave x1/2), quits at 0 (loyal -3) at the next
+  settlement with a head-split of the purse. Pairs (25% of recruit options)
+  count two heads and leave together. "Needs meds": 20g/dose, capitals,
+  every 10 days, else -1/night.
 - **The press:** at most 2 attackers can press one man-sized target in a
   round; anyone crowded out "circles" (free -- no swing, no STA). It cuts
   both ways: a lone hero is never mobbed by more than 2 at once. Big
