@@ -10,11 +10,13 @@ decisions happen *between* fights. Three stats, one wound track, one loop.
 **1. Autobattler, not a combat minigame.** A fight takes no input once it starts.
 The simulation produces an outcome (who won, in what shape) and a narrative log.
 All player agency lives *between* fights — with one deliberate exception: the
-**pause** (see the Survival add-on). A handful of times a fight at most (each
-trigger fires once per hero), the simulation stops at a trigger and asks one
-player-shaped question ("fight on, buy breath, or run?"), then resumes to
-conclusion. That is an interrupt, not a combat minigame: the fight still
-plays itself; the player only chooses *whether* it continues.
+**pause** (see "The pause" below). **At most once per encounter** (2026-07-11),
+at the fight's first wounds crossing, the simulation stops and asks one
+player-shaped question ("fight on, patch up, or run?"), then resumes to
+conclusion — every later crisis is answered by the party's **standing
+orders** (they drink and convert on their own, at the same price). That is
+an interrupt, not a combat minigame: the fight still plays itself; the
+player only chooses *whether* it continues.
 
 **2. The strategy is the build, made in advance.** Between fights the player
 allocates stats, picks gear, chooses which opponents to take, and composes the
@@ -698,7 +700,7 @@ These are the only edits to the existing rules:
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, First Blood's opener, War-Breath, and Heal's between-fights HP restore. |
-| **Items** | Carried stock | Bought with gold, found in world | The *between-fights* buffer: drunk in the lull for an instant top-up. |
+| **Items** | Carried stock | The **kit restocks itself** — every long rest tops each hero back up to 1 healing + 1 stamina (2026-07-11); anything above that line is bought with gold or found in world | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
 keeps build identity alive and makes "who am I about to lose" specific.
@@ -709,15 +711,29 @@ keeps build identity alive and makes "who am I about to lose" specific.
 
 **Between fights (items — slow to reach for, instant once drunk):**
 - **Healing potion** — drunk in the lull between fights, restores HP instantly
-  (`HEALING_POTION_RESTORE`, currently 5). **Cannot** be used mid-fight — no time
-  in an exchange this fast; you top up in the breather, then wade back in.
-- **Stamina draught** — restores STA. Deliberately **rare and expensive**,
+  (`HEALING_POTION_RESTORE`, currently 5). Since 2026-07-11 it also has *a
+  mid-fight mode*: at a **pause** (or by standing order — see "The pause"
+  below) a hero can down one in the teeth of the melee, at the cost of that
+  round's attack and a −2 guard. The wound penalty lightens immediately —
+  fighting the death spiral is the point, and it was the wounds trigger's
+  only missing answer (its menu used to be "ignore it, bleed MORE for
+  stamina, or run"). The old "between fights only" rule carried an explicit
+  sunset clause — "until HP pressure proves otherwise" — and play proved
+  otherwise.
+- **Stamina draught** — restores STA. Deliberately **thin on the ground**,
   because STA is the un-buyable clock; cheap refills would collapse the matchup
-  loop. STA otherwise recovers only slowly across a day. *The one item with a
-  mid-fight mode:* at a **pause** (see "The pause" below) a hero can drink one
-  in the teeth of the melee — at the cost of that round's attack and a −2
-  guard while drinking. Between-fights drinking stays available; it just isn't
-  the only mode anymore.
+  loop. STA otherwise recovers only slowly across a day. *Mid-fight mode:* at
+  a pause or by standing order, at the same price as the healing potion
+  (the round's attack, −2 guard). Between-fights drinking stays available.
+- **The traveling kit (2026-07-11)** — basic potions replenish themselves:
+  **every long rest tops each living hero back up to 1 healing + 1 stamina**
+  (herbs brewed at the camp fire; a vial scrounged or bought with pocket
+  change in town). Design call: shopping for the baseline potion was
+  friction, not a choice — the felt game skipped it. The kit is deliberately
+  thin: ONE of each per hero per day is the free line, so a second draught
+  for the same fight is still something you bought (`buy`, `POTION_PRICE`),
+  looted, or saved. Drops and purchases stack above the kit and are not
+  clamped by it.
 - **Power potion** — *retired from circulation (2026-07)*: Power was never
   the bottleneck in play, so the slot was dead weight in every kit. The kind
   still exists in the schema (an old save can drink one), but creation rolls,
@@ -771,15 +787,24 @@ finally lives — *before* Spent, which is where play never had it. In chat it
 fits exactly two messages: message 1 = the fight up to the pause plus the DM's
 question; message 2 = `resume ...` (or `retreat`) to conclusion.
 
+**One pause per encounter (2026-07-11).** The party layer broke the old
+per-hero interrupt: with 3–4 members each carrying two triggers, a long
+fight stopped up to 2N times, each stop a full chat round-trip. The
+designer's call: **an encounter pauses at most ONCE** — at the fight's
+**first wounds crossing** (any member's), because "someone is being cut
+apart, do we retreat?" is the one question that genuinely belongs to the
+player. Every other crossing — every stamina crossing, and wounds crossings
+after the pause is spent — is answered by the party's **standing orders**
+(below) without stopping the fight. The engine still detects every crossing
+per hero exactly as before (`standing_orders` is a session-side dispatch on
+top; the batch sims run the old every-crossing pause with their policy, so
+the benches answer the same questions they always did).
+
 **Triggers** (party side only; each fires at most **once per hero per
-fight** — no pause spam, but one hero's crisis never uses up the other's
-warning; checked at the end of a round, and only while both sides still
-stand):
+fight**, so one hero's crisis never uses up the other's warning; checked at
+the end of a round, and only while both sides still stand):
 - a hero **crossing STA ≤ 2** — about to run dry;
 - a hero **crossing HP ≤ half** — being cut apart.
-
-Two heroes crossing in the same round share one pause (both crossings are
-reported; both triggers are spent).
 
 **Crossing-only (2026-07):** a trigger whose condition already holds when the
 fight starts is marked spent silently — for that hero only. Entering a fight
@@ -791,14 +816,30 @@ every fight all day. (And before the per-hero keying, a hero entering wounded
 silently consumed the whole party's wounds trigger — the other hero could be
 cut to ribbons mid-fight without a pause.)
 
+**Standing orders (2026-07-11).** A crossing that doesn't interrupt is
+handled by the hero, on their own, at the top of the next round — at the
+full pause-action price (the round's attack, −2 guard). The default order
+mirrors the sims' conversion ladder, minus the retreat vote (retreat is the
+player's, at the pause):
+- *first, the read:* if the fight is already **winding down** — every living
+  foe below half HP or Spent — do nothing; nobody burns a potion on a won
+  fight (designer call: "if the enemy is low and spiralling, no potion is
+  needed");
+- *stamina crossing:* drink a carried stamina draught; else War-Breath if
+  the Power is there (a Bulwark hero keeps one save in reserve); else
+  Berserk on a still-healthy body; else fight on;
+- *wounds crossing (the pause already spent):* drink a carried healing
+  potion.
+
 **At the pause, the options** (pause *actions* are per-hero, at most one each;
 every action costs that round's attack and the hero defends at **−2** while
 occupied — vulnerable, not helpless):
 
 | Option | Cost | Effect |
 |--------|------|--------|
-| **Fight on** | — | Resume; that trigger won't pause again. |
-| **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight — it even un-Spends a fighter at 0. (Healing potions stay between-fights until HP pressure proves otherwise.) |
+| **Fight on** | — | Resume; the fight then runs to its end on standing orders. |
+| **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight — it even un-Spends a fighter at 0. |
+| **Heal** | a carried healing potion; the round's attack; −2 guard | +5 HP now, mid-fight — the wound penalty lightens immediately (2026-07-11: the wounds trigger finally has an answer that addresses wounds; the old "between-fights until HP pressure proves otherwise" clause resolved in play). |
 | **Berserk** | 2 HP; the round's attack; −2 guard | +4 STA. Bleed for breath — and the HP loss deepens the wound spiral immediately, which is the real price. |
 | **War-Breath** | 2 Power; the round's attack; −2 guard | +3 STA. A fighter's breath discipline (battle trance), explicitly not wizardry. |
 | **Retreat** | see below | Break away from the fight. |
@@ -1135,15 +1176,16 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-06 after the
-  per-hero pause fix): the skeleton barrow (tough site) clears
-  **3% → 17% → 44% → 74%** across ranks 0–3 (a rank-0 party wipes ~95% of
-  the time — a fresh party simply should not be there); the bandit hideout
-  (starter) clears **64% → 86% → 96% → 99%**
-  (rank-0 wipe ~33%). Each rank is a *felt* jump — the progression test
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-11 after
+  the mid-fight heal + kit): the skeleton barrow (tough site) clears
+  **19% → 47% → 74% → 93%** across ranks 0–3 (a rank-0 duo still wipes ~3
+  times in 4 — a fresh party should not be there); the bandit hideout
+  (starter) clears **72% → 91% → 98% → 99.8%**
+  (rank-0 wipe ~25%). Each rank is a *felt* jump — the progression test
   criterion —
-  and gear stacks on top (training 2 + quality steel takes the barrow to
-  ~70%, training 3 + steel to ~90%).
+  and gear stacks on top. (History: 3/17/44/74 and 64/86/96/99 at the
+  2026-07-06 measure; the 2026-07-09 pain regear and the 2026-07-11 heal
+  batch each lifted the whole ladder — CLAUDE.md holds the ledger.)
 
 ## Weapon proficiency — the second skill
 
@@ -1170,9 +1212,13 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
     potion) and **10%** chance of a stray potion (random kind, to a random
     hero). Trash-tier on purpose — drops season the run, quests fund it.
-- **Sink:** any potion costs **10 g**. `buy_potion` is a deliberate,
-  DM-called, between-adventures purchase — nothing in the engine buys or
-  refills automatically. A quest reward is worth 1–2 potions (the hideout, 4+).
+- **Sink:** any potion costs **10 g** — but since 2026-07-11 gold only buys
+  potions **above the self-restocking kit line** (every long rest tops each
+  hero back up to 1 healing + 1 stamina free — see "The two-buffer split").
+  `buy_potion` remains the deliberate, DM-called purchase for stocking a
+  planned push; the routine baseline restock is no longer a gold sink (the
+  designer's call: it was friction, not a choice). Weapons and meds carry
+  the economy's sink weight now.
 - **Weapons are the second sink** (`buy_weapon`, same DM-called shape): plain
   quality weapons cost **60 g** — a real saving goal (roughly four hideout
   clears of quest gold + drops); commons are shop-trivial (1–15 g).
@@ -1186,9 +1232,9 @@ auto-spend on combat training, so tune/bench numbers stay comparable.
   fight the hideout at rank 0, level up *and shop* over a few clears, then
   take the barrow trained and armed.
 - **Starting stock:** two *random* potions at creation (healing or stamina —
-  the two circulating kinds), plus the rolled starting weapon. That's the
-  whole kit; from then on the stock only moves through drops, purchases,
-  and use.
+  the two circulating kinds), plus the rolled starting weapon. From then on
+  the stock moves through drops, purchases, use — and the kit's nightly
+  top-up to 1+1 (2026-07-11).
 
 ---
 
@@ -1286,12 +1332,15 @@ constants and tables (top of file); `session.py` owns the state and moves.
   discovered wilderness place. The two hand-built set sites (hideout,
   barrow) lie outside the **starting settlement** (the first one worldgen
   made).
-- **Quests are local.** `board` shows the CURRENT settlement's quests only,
-  and taking or working a quest means being at the settlement that posted
-  it. The world stops being globally available: going where the work is
-  costs travel days, which is what makes "which quest" a routing decision
-  too. (`board all` remains as the DM's overview — not what the player
-  reads.)
+- **Quests are local — but word travels (2026-07-11).** `board` shows the
+  CURRENT settlement's full board, and taking or working a quest still
+  means being at the settlement that posted it. But the player now also
+  KNOWS every other open quest **in the current land** — name, level,
+  where — as a "word from around the land" rumor list under the local
+  board. Same stance as straight-shown levels: travel should be an
+  informed routing decision, not a blind hop. Crossing into another land
+  still means going to look. (`board all` remains as the DM's overview —
+  not what the player reads.)
 
 ## Travel
 
@@ -1393,6 +1442,14 @@ blind ambush into a rare (~1.6%), semi-chosen fate — solo play at the
 punishment roll. A wealthy/luxurious PC starts with his trait gold in the
 purse.
 
+**The starter ally (2026-07-11).** If the PC's capacity holds anyone at
+all, one random level-1 companion joins **at pick, for free** — an **old
+ally** of the PC's (never family or a mentor; that read too restrictive),
+on a hire's normal terms (satisfaction 7, joining gold to the purse,
+bond-linked to the PC as flavor). The game starts PLAYABLE — a duo can walk
+straight out the gate — while the tavern's introductions still fill the
+remaining slots, so choosing the rest of the party stays a real decision.
+
 ## Character generation (recruits, and NPCs with DM edits)
 
 `people.make_character(rng, level, ...)` builds a person at **any level**:
@@ -1489,4 +1546,12 @@ the death and the walls the dead still count, so there is no mid-run XP
 windfall). Fate's bargain thus has a face and a second-order cost now: the
 companion it kills was hired, has traits, and may leave a grieving partner
 who walks.
+
+**Dismissal (2026-07-11).** The player can also end it: `dismiss NAME`
+(settlements only) lets a companion go on **the quitter's exact terms** —
+the equal head-split of the purse, their carried gear, the bond partner
+walking with them. Symmetric on purpose: severance priced at zero would
+make hire-use-dump-before-payday the optimal churn, and the retention
+economy a revolving door. Swapping the party out at the tavern is thus a
+real move (dismiss, then hire into the freed capacity) with a real price.
 

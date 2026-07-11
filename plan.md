@@ -19,6 +19,17 @@ session lives in the open questions and parked ideas below.)*
 
 ## Next up — major questlines & the world's story layer
 
+*(2026-07-11: designer confirmed this as the next major feature, framed as
+"soften the combat-only gameplay" — systems and prompting for more story,
+flavor, and NPC interaction. The concrete decomposition agreed in that
+session: **named quest-givers** (reuse `people.py` — a quest gets a face
+with race/traits, roleplayed at take/turn-in), **quest epilogues /
+consequences** (a line of aftermath per template), **recurring NPCs** (a
+few persistent world figures in the save), **settlement flavor** (a
+generated line or two per settlement for the DM to riff on), and the
+**authored questline spine** below. Roughly half dm.md protocol, half
+light content generation; very little engine.)*
+
 *(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
 engine, the humanoid ladder (soldier→warlord), the generation layer
 (`quests.py`: threat math, room/site/quest builders, seeded worldgen with
@@ -112,8 +123,17 @@ in-fight half; the wipe version stays parked below.
   don't fork the variance dial while lethality changes are still settling.
 - **Asymmetric Spent** — keep −6 on defense, soften attack to −3
   ("desperation swings") if spent-vs-fresh grinds ever feel wrong in play.
-- **Auto-drink thresholds for healing potions** — only if statistically
-  worth it; drinking stays a deliberate act until then.
+- **A PC happiness stat** — discussed and kept OFF (2026-07-11): the PC's
+  satisfaction is untracked by design (the player embodies the PC's
+  morale), and a mood-to-rolls coupling would build a second death spiral
+  on top of the wound spiral the pain-2 regear just softened. Revisit only
+  when there is a system to hang it on (the story layer); the zero-effect
+  display-only version is the most it should ever be without one.
+- **Prey depletion (the hunt-spam lever)** — hunting as a farm loop is
+  deliberately viable and currently fenced by pay rates, the 10% ambush
+  tax, satisfaction bleed, and recovery time; a solo PC is the one party
+  shape those fences don't fully govern. If play shows hunt-spam
+  degenerate, deplete a land's prey per day before restricting anything.
 - **Per-weapon pressure dice** (a d12 weapon) — rejected: 2d6 stays the
   single global variance dial.
 - **Level requirements on masterwork/legendary weapons** — rejected: authored

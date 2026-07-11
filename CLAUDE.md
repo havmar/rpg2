@@ -2,8 +2,10 @@
 
 A combat simulator for a fantasy RPG, intended to be played through Claude Code
 with Claude as DM. Fights resolve on their own (no input once a fight starts,
-except the **pause**: a trigger stops the melee for one "fight on / drink /
-convert / retreat?" question, then it runs to conclusion) and produce an
+except the **pause**: at most ONCE per encounter, the first wounds crossing
+stops the melee for one "fight on / drink / heal / convert / retreat?"
+question, then it runs to conclusion on the party's standing orders) and
+produce an
 outcome plus a narrative log; the DM narrates *over* that log. The player's
 real decisions happen *between* fights — and at the pause.
 
@@ -129,11 +131,19 @@ a pointer: what the file is, how it's run, where its docs are.
   streak; since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
   ordinary-encounter spotted valve, and the hunt ambush. Since 2026-07-11
-  also the party layer: `new`/`pick` (three PC candidates), `recruit` /
-  `hire` (tavern candidates, CHA-capped), `downtime` (the morale day),
+  also the party layer: `new`/`pick` (three PC candidates; `pick`
+  auto-joins the starter ally when CHA holds anyone), `recruit` /
+  `hire` (tavern candidates, CHA-capped), `dismiss` (voluntary departure,
+  the quitter's head-split terms), `downtime` (the morale day),
   `buy HERO meds`, and the satisfaction bookkeeping (post-fight morale
   pass, nightly meds drain, settlement departures with the purse
-  head-split). Encounter commands print the full log then the
+  head-split) — plus the same day's play-feedback batch: `play_orders`
+  (the one-pause-per-encounter dispatch over the engine's standing-orders
+  hook), `camp N` / `camp --heal` (multi-night camping, cut short by a
+  wilds visitor), the board's land-wide rumor section, and **`party.txt`**,
+  the full party info sheet rewritten on every save and auto-committed
+  (that one file, best-effort subprocess git — never fatal to the game
+  loop). Encounter commands print the full log then the
   `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
@@ -210,9 +220,15 @@ mechanic *does* and *why* is rules.md's job.
 - **Tunable constants** — all at the top of `rpg.py`, grouped and commented:
   fatigue (`WINDED_STA`, `SPENT_PENALTY`, `STA_ATTACK_COST`), survival
   (`SAVE_COST`, `HEAL_COST`, `FIRST_BLOOD_*`, potion restores, the
-  `*_RECOVERY_*` family, `REVIVE_HP`, `SHORT_RESTS_PER_DAY`), the pause layer
+  `*_RECOVERY_*` family, `REVIVE_HP`, `SHORT_RESTS_PER_DAY`, and the
+  self-restocking kit `KIT_HEALING` / `KIT_STAMINA` — 2026-07-11, every
+  long rest tops each hero back up to the kit line), the pause layer
   (`PAUSE_STA_TRIGGER`, `PAUSE_HP_FRACTION`, `PAUSE_ACTION_DEF_PENALTY`,
-  `FLEE_BONUS`, `BERSERK_*`, `WAR_BREATH_*`), the graze floor
+  `FLEE_BONUS`, `BERSERK_*`, `WAR_BREATH_*`; since 2026-07-11 the
+  standing-orders hook — `group_combat(standing_orders=...)`,
+  `rpg.standing_order` the default ladder, `fight_winding_down` the
+  don't-waste-a-potion check, "heal" the fourth pause action), the graze
+  floor
   (`GRAZE_FLOOR_MARGIN`), wound tiers (`TIER_HP`), progression
   (`XP_LEVEL_STEP`, `LEVEL_CAP`, `POOL_GROWTH_LEVELS`, `TRAINING_MAX`,
   `PROFICIENCY_MAX`), economy (`POTION_PRICE`, drop chances, and the
@@ -255,7 +271,13 @@ mechanic *does* and *why* is rules.md's job.
   Returns a `Pause` mid-fight when `pause_triggers=True`; resume by calling
   again with the same `fired` set (keyed by `(kind, hero)` — each trigger
   once per hero per fight, crossing-only), `first_round=round+1`, and
-  per-hero `actions`. Fate's bargain (2026-07-10) lives here too: the fall
+  per-hero `actions`. Since 2026-07-11 the `standing_orders` callback
+  decides each crossing (interrupt / auto-act next round / fight on;
+  None = every crossing pauses, the sims' path — `session.play_orders` is
+  the played dispatch: first wounds crossing pauses, everything else runs
+  `rpg.standing_order`; auto crossings sharing a round with an interrupt
+  are re-armed, not silently spent). Fate's bargain (2026-07-10) lives
+  here too: the fall
   handler commutes a protagonist's death to a Down (`Entity.protagonist` /
   `fate_debt`; session marks `party[0]`), `_settle_fate_debt` collects the
   companion's life at victory.
@@ -279,6 +301,8 @@ mechanic *does* and *why* is rules.md's job.
   `bond`/`bond_kind`, `last_dose_day`, `def_bonus`, `nickname`; the
   `epithet` field is GONE). `people.py`: generation + sheets (see Files).
   `session.py`: `roll_recruits` / `cmd_hire` (per-head capacity check),
+  `cmd_dismiss` (voluntary departure, the quitter's head-split terms, bond
+  partner walks), the starter ally in `cmd_pick`,
   `process_departures` (burials + the purse head-split, run at settlement
   arrivals and tavern/downtime nights), `night_upkeep` (meds drain),
   `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
@@ -577,6 +601,62 @@ no-change check). It held, everything within noise of 2026-07-10:
   models satisfaction churn or the CHA gold — the career sim plays an even
   duo with no protagonist (parked note in plan.md: a PC-centric career
   variant is the natural check if played campaigns drift from the bench).
+
+**Measured numbers (2026-07-11b, the pause & potion batch: one pause per
+encounter + standing orders + the mid-fight healing potion + the
+self-restocking kit; also the starter ally, `dismiss`, land-wide board
+rumors, `camp N`/`--heal`, and party.txt).** Two of the changes are
+sim-visible and the full suite was re-run: `sim_pause_policy` now answers a
+wounds crossing by DRINKING a carried healing potion mid-fight (the new
+"heal" action), and `long_rest` restocks the kit. The standing-orders
+engine hook itself moves nothing (the sims pass no callback and keep the
+old every-crossing pause). **The game got a full notch easier — the
+designer's ~55% hideout target is now overshot by ~19 points — flagged
+below, levers deliberately untouched this session:**
+
+- **Hideout** (rank 0, 10k): clear **73.6** / wipe **23.2** / Down ~35
+  (was 58.0/37.2/~50). **Barrow** `[3,3,4]`: clear **19.2** / wipe **77.3**
+  (was 13.5/83.3). Attribution probe (tune re-run with the sim heal
+  reverted, kit kept): the KIT alone is hideout 62.2/34.8 — so ~+4 points
+  come from the kit and ~+11 from the mid-fight heal. **Reckless wipe is
+  UNCHANGED (81.2 hideout / 98.6 barrow)** — "not using resources mostly
+  means death" still holds in full; what changed is how much using them
+  now buys (a 58-point survival gap, was ~44). Cleared-run HP-lost spread
+  20/54/24/3 and 23/54/20/3 — the middle holds.
+- **Training ladder** (5k/rank): barrow **19 -> 47 -> 74 -> 93**, hideout
+  **72 -> 91 -> 98 -> 99.8** (was 14/38/68/90 and 58/82/95/99) — a rank
+  still reads as a rank, shifted up.
+- **Party size** (5k/size): hideout **20 / 72 / 96 / 99**, barrow
+  **1.5 / 19 / 60 / 88** (was 13/58/89/97 and 0.6/14/51/83). Note the
+  full party of four now clears the starter at 99% — in-fight safety by
+  headcount is stronger than ever; XP x 2/N remains the counterweight.
+- **Weapons matrix**: the story is intact (zweihander best duel on
+  precise/steady, katana on powerful/balanced, zweihander owns every swarm
+  column, staff trails; no weapon tops every cell).
+- **Bestiary**: monster families drifted up a few points (wolf 87, skeleton
+  87, dire wolf 97, dragon 90); the elite-humanoid ladder softened MOST
+  (veteran 80 was 72, champion 76 was 63, blademaster 67 was 54, warlord
+  63 was 54) — long duels against wound-spiral fighters are exactly where
+  a mid-fight heal shines. Ordering intact; the parked re-annotation pass
+  is now genuinely due when the numbers next feel mushy.
+- **Generated content**: at-level rooms win 70-97 across 1-20; at-level
+  sites ~86-92 at L1-5 sliding to ~38-58 at 15-20; -2 columns 35-86.
+  **Careers** (200): reach **L5 80% / L8 68% / L11 49% / L14 26% /
+  L20 9.5%**, median death **L9** (was 63/53/34/20/5.5, median L8) — the
+  career curve softened sharply; the kit compounds across a career's many
+  nights (a career sim party never buys potions and now never runs out of
+  the baseline).
+- **The flag for the designer:** the hideout at rank 0 now sits ~19 points
+  above the 2026-07 retune target (~55 clear), and the floor-hit rate
+  dropped below it too (Down ~35%, target ~half of runs) — the mid-fight
+  heal prevents exactly the falls the target counted. Both moves were
+  explicit design calls made knowing the direction (the wounds pause
+  finally has an answer that addresses wounds; nobody shops for the
+  baseline potion), and the felt game had been running harsh. If the new
+  level is too soft, the counter-levers in ascending disruption: gulp-size
+  mid-fight heal (restore 3, not the full 5), a thinner kit (healing only,
+  or top-up every OTHER night), enemy DEX (the usual knife, but it moves
+  every annotation). Recommend feeling it in play before pulling any.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

@@ -9,13 +9,25 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 - New game: `python session.py new` (add `--seed N` for a reproducible game
   -- `new` also generates the playthrough's whole quest world). It rolls
   THREE player-character candidates; show the player all three sheets
-  (including each one's CHA capacity line) and let THEM `pick`. Then run
-  the free first-evening introductions: `recruit` shows the companion
-  candidates, `hire NAME` signs the player's choices (see The party below).
+  (including each one's CHA capacity line) and let THEM `pick`. If his CHA
+  holds anyone, **an old ally joins automatically at pick** (the script
+  prints the sheet -- introduce them warmly; they're the PC's history, not
+  a stranger), and the free first-evening introductions follow: `recruit`
+  shows the companion candidates, `hire NAME` signs the player's choices
+  (see The party below).
+- **Open with the options, then hand over.** After `pick`, the first real
+  message should lay out what the party can DO, in one short menu: the
+  local board's level-appropriate quests (plus the old hideout outside the
+  starting settlement -- the level-1 starter), a `hunt` in the wilds, or a
+  `tavern` night to round out the party first. The player drives from the
+  first turn; don't railroad an opening quest.
 - Continuing: `python session.py status` to see where things stand.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
-  commit it and the playthrough travels with the repo.
+  commit it and the playthrough travels with the repo. Every save also
+  rewrites **`party.txt`** (the full party info sheet) and auto-commits
+  that one file -- the designer follows the playthrough through it; you
+  never need to maintain it.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between
@@ -39,8 +51,12 @@ player's core decision:**
   on purpose. Reading the board IS the decision; a quest a couple of levels
   up is a hard, paying fight (no longer a sheer wall since the 2026-07-09
   regear), well below is safe wages. Advise honestly, then let them pick.
-  (`board all` / `board NAME` is YOUR overview for pacing -- the player
-  only reads boards where the party stands.)
+  Since 2026-07-11 the board also prints **word from around the land** --
+  every other settlement's open quests in the current land, with levels
+  and where -- and that list is PLAYER-KNOWN: relay it, so travel is an
+  informed choice. (`board all` / `board NAME` is YOUR overview for pacing
+  -- the player reads the local board and the land's rumors, not other
+  lands' boards.)
 - `travel PLACE` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
@@ -170,6 +186,12 @@ player's core decision:**
   best spent where a companion's trait points (Meriele loves animals ->
   a village day pays double). It costs a day and breaks the streak -- the
   trade is real; put it in the player's hands, don't spend it for them.
+- **The player can let companions go**: `dismiss NAME` (settlements only)
+  -- the companion leaves on the quitter's terms (equal head-split of the
+  purse, their gear; a bond partner walks too). Swapping the party out at
+  a tavern is dismiss + hire, and the severance makes it a priced move,
+  not free churn. Play a dismissal as a scene; the traits say how they
+  take it.
 - **Meds**: a "needs meds" companion needs a 20g dose in a CAPITAL every
   10 days (`buy HERO meds`). Track it out loud when the party plans a long
   stretch in the wilds.
@@ -188,19 +210,25 @@ player's core decision:**
   it IS the fight's mechanical account for the player -- then add your short
   narration around it. The full log is for you (checking the numbers), not
   for the chat.
-- **A fight can PAUSE mid-melee** (a hero crosses STA <= 2 or half HP; each
-  trigger once per HERO per fight -- one hero's crisis doesn't use up the
-  other's warning -- and crossing-only: entering a fight already low does
-  NOT trip it for that hero; that was the player's call at the door; only an
-  in-fight crossing interrupts). The script prints the pause menu -- show it
-  to the
-  player and STOP; the choice is theirs, never yours. Next message:
-  `resume` (fight on), `resume --drink HERO` (stamina draught mid-fight),
-  `resume --berserk HERO` (2 HP -> +4 STA), `resume --warbreath HERO`
+- **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
+  crossing (any member dropping past half HP mid-fight; crossing-only:
+  entering a fight already low does NOT trip it -- that was the player's
+  call at the door). That one pause is the retreat question; treat it so.
+  The script prints the pause menu -- show it to the player and STOP; the
+  choice is theirs, never yours. Next message: `resume` (fight on),
+  `resume --drink HERO` (stamina draught mid-fight), `resume --heal HERO`
+  (healing potion mid-fight, +5 HP -- the wounds answer), `resume
+  --berserk HERO` (2 HP -> +4 STA), `resume --warbreath HERO`
   (2 Power -> +3 STA) -- pause actions cost that round's attack and defend
   at -2 -- or `retreat`. A paused fight blocks every between-fights command
-  until it's settled. So a fight with a pause spans two (rarely three)
-  messages: fight-to-pause + question, then the answer to conclusion.
+  until it's settled. So a fight spans at most two messages, guaranteed:
+  fight-to-pause + question, then the answer to conclusion.
+- **Every other crisis runs on STANDING ORDERS** -- heroes low on breath
+  drink their own draughts (or convert), a wounded hero after the pause
+  drinks their own healing potion, and nobody wastes one when the enemy is
+  already spiralling (all logged: `downs a ... mid-fight`). Narrate these
+  as the party fighting smart; they are not decision points and the fight
+  does not stop for them.
 - **Retreat is a real option now -- offer it.** Parting blows from every foe
   still fit to swing -- softened ONE wound tier since 2026-07-10 (a hasty
   swing at a fleeing back: it can still Down a hero, but never lands the
@@ -232,14 +260,24 @@ player's core decision:**
   for safety; say the trade out loud), paying for the tavern instead of
   camping free (`tavern`), buying potions, weapons, or meds (`buy`),
   **who to hire and whether to hire at all** (`hire` -- and which PC to
-  `pick` at creation), spending a day on companion morale (`downtime`),
+  `pick` at creation), **who to let go** (`dismiss`), spending a day on
+  companion morale (`downtime`),
   **spending skill points** (`train HERO combat|weapon` -- points bank on
   level-up and NOTHING auto-spends), where to `travel` and which site to
   run, whether to `engage` a sighting, whether to press on or pull back,
-  and **every pause decision** (fight on / drink / Berserk / War-Breath /
-  retreat).
+  and **the pause decision** (fight on / drink / heal / Berserk /
+  War-Breath / retreat).
   Recommend a move when it's smart ("Veld is at 2 HP -- drink the healing
   potion?"), then wait for the player's call.
+- **The default night is "camp until whole" (2026-07-11).** When there is
+  HP to heal and the player hasn't said otherwise, assume the party camps
+  to full -- `camp --heal` runs the nights in one go and reports the days
+  passed (HP knits at ~max/7 a night, so it's often several). One night
+  only is the EXCEPTION the player asks for, not the default. The carve-out
+  is the WILDS: each night out there rolls its own ~10% visitor, so a long
+  convalescence in the open is a real gamble -- put THAT choice to the
+  player ("limp back to town, or risk the nights here?") instead of
+  auto-looping it.
 - **On any level-up, run `python session.py levelup` and show the player the
   menu** -- banked points, both sinks, costs, effects. Don't paraphrase the
   training rules from memory; the script prints the real numbers.
@@ -292,15 +330,17 @@ player's core decision:**
   buys STA back) -- fresh enemies carve a spent fighter apart.** (Two
   spent sides cancel out and brawl to a finish, so fights still resolve.)
   STA is a second HP bar: whichever track empties first in a fight kills you.
-- **The pause:** a fight stops at a trigger (CROSSING STA <= 2 / half HP
-  in-fight; once per hero per trigger, and entering already below a line
-  never fires it for that hero) for the
-  player's call. Pause actions (one per hero; cost the round's attack,
-  defend at -2 while busy): drink a stamina draught (+4 STA -- even
-  un-Spends), Berserk (2 HP -> +4 STA; the wound penalty deepens now),
+- **The pause:** a fight stops AT MOST ONCE, at its first WOUNDS crossing
+  (someone dropping past half HP in-fight; entering already low never
+  fires it) for the player's call. Pause actions (one per hero; cost the
+  round's attack, defend at -2 while busy): drink a stamina draught
+  (+4 STA -- even un-Spends), heal (a healing potion, +5 HP -- the wound
+  penalty lightens), Berserk (2 HP -> +4 STA; the wound penalty deepens),
   War-Breath (2 Power -> +3 STA). Retreat: parting blows, one chase roll
   (flight gets +2, DEX weighted by current STA); undead never chase past
-  their ground. Failed break = the fight resumes at once.
+  their ground. Failed break = the fight resumes at once. **Standing
+  orders handle every other crossing** -- heroes drink/convert on their
+  own (same price, logged), skipped when the enemy is already spiralling.
 - **The dying swing:** everyone alive at round start gets their one attack,
   even if slain before their turn -- the blows cross in the air. Killing a
   foe doesn't cancel the blow it was already delivering; expect chip damage
@@ -309,15 +349,21 @@ player's core decision:**
   least grazes, whatever the soak (the rapier grazes on ANY landed hit).
   Fresh, high-soak heroes now bleed a little instead of being untouchable.
 - Only healing and stamina potions circulate (the power potion is retired --
-  Power was never the bottleneck).
+  Power was never the bottleneck). **The kit restocks itself (2026-07-11):**
+  every long rest tops each hero back up to 1 healing + 1 stamina, free
+  (brewed at the fire, scrounged in town -- the log prints it). `buy` is
+  for stocking ABOVE that line before a hard push; nobody shops for the
+  baseline.
 - Recovery is between fights: fight end +1 STA; short rest +3 STA / +1 HP /
   +1 Power
   (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
   day advances, the
-  slot refills. Nothing forces the day to end -- camping is the player's call.
+  slot refills. Nothing forces the day to end -- camping is the player's call,
+  and the played default is `camp --heal` (camp until whole) when nothing
+  presses -- see the turn protocol.
   A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
-  visitor (see The wilds above).
+  visitor PER NIGHT (see The wilds above).
 - **The death spiral is geared for trained fighters** (2026-07-09): heroes
   and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor),
   and the player log now prints the penalty on every wound line -- quote it
@@ -396,11 +442,12 @@ player's core decision:**
 - Set sites (both a short march from the STARTING settlement -- travel
   there first): bandit hideout = the STARTER, a level-1 site (5/15/25
   XP by room in one go, 15 g + 55 XP clear; a one-go first clear = level
-  2) -- a real fight: a fresh party clears ~58% and someone hits the floor
-  in about half the runs, so expect downs, drunk potions, and retreats
+  2) -- a real fight: a fresh duo clears ~72% (up from ~58 since the
+  2026-07-11 mid-fight heal + kit) and someone still hits the floor in
+  about a third of runs, so expect downs, drunk potions, and retreats
   from day one. Skeleton barrow = TOUGH, a level-3 site (10/30/50 by room,
-  45 g + 110 XP clear) -- train up AND arm up first (a fresh party clears
-  ~13% and wipes ~6 times in 7; rank 2 clears about two-thirds, rank 2
+  45 g + 110 XP clear) -- train up AND arm up first (a fresh duo clears
+  ~19% and wipes ~3 times in 4; rank 2 clears ~74%, rank 2
   plus steel comfortably more; fleeing the barrow is always possible --
   the dead don't pursue).
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers

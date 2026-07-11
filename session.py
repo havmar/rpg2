@@ -29,7 +29,7 @@ it hits bottom -- see rules.md's Party, Charisma & Satisfaction add-on.
 
 The shape of a playthrough:
   new / pick / status / levelup             -- choosing and reading the party
-  recruit / hire NAME                       -- the tavern's hiring layer
+  recruit / hire NAME / dismiss NAME        -- the tavern's hiring layer
   map / travel / explore / hunt / engage    -- the world & the wilds
   board / show QID / take QID / room        -- the LOCAL quest board (the game)
   hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
@@ -44,15 +44,19 @@ import argparse
 import dataclasses
 import json
 import random
+import subprocess
 from pathlib import Path
 
 from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
-    STAMINA_DRAUGHT_RESTORE, PAUSE_ACTION_DEF_PENALTY,
+    STAMINA_DRAUGHT_RESTORE, HEALING_POTION_RESTORE,
+    PAUSE_ACTION_DEF_PENALTY,
+    KIT_HEALING, KIT_STAMINA,
     TAVERN_COST_PER_HERO, TAVERN_OVERCHARGE,
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
+    standing_order,
     SATISFACTION_START, SAT_DOWNTIME, SAT_DOWNTIME_MATCH,
     MEDS_INTERVAL_DAYS, MEDS_PRICE,
     party_capacity, has_trait, satisfaction_tracked, wants_to_leave,
@@ -253,6 +257,88 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     }
 
 
+PARTY_SHEET_PATH = Path(__file__).parent / "party.txt"
+
+
+def party_sheet_lines(state: dict) -> list[str]:
+    """The full-party info sheet written to party.txt on every save: the
+    whole between-fights board in one plain file (the designer reads it in
+    Claude Code on the web via the auto-commit; the DM never has to
+    reassemble it from logs)."""
+    party, clock, purse = state["party"], state["clock"], state["purse"]
+    loc = location_line(state) if state.get("location") else "nowhere yet"
+    lines = [f"RPG2 PARTY SHEET -- day {clock.day}, at {loc}",
+             f"purse: {purse.gold}g | short rests left today: "
+             f"{clock.short_rests_left}"]
+    if not party:
+        lines.append("(no party yet -- `pick` a character)")
+        return lines
+    pc = party[0]
+    if pc.cha:
+        companions = sum(1 for h in party[1:] if not h.dead)
+        lines.append(f"party: {companions}/{party_capacity(pc.cha)} "
+                     f"companion slot(s) filled (CHA {pc.cha})")
+    for h in party:
+        tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
+        if wants_to_leave(h):
+            tag += " [QUITTING at the next settlement]"
+        lines.append("")
+        lines.append(f"{role_tag(party, h)} {stat_line(h)}{tag}")
+        if h.race:
+            lines.append(" " * 12 + person_line(h))
+        lines.append(" " * 12 + progress_line(h))
+    lines.append("")
+    world = state.get("world")
+    qid = state.get("active_quest")
+    if world and qid:
+        q = world["quests"][qid]
+        if q["status"] == "done":
+            lines.append(f"active quest [{qid}] {q['name']} is COMPLETE")
+        else:
+            cur = q["next"]
+            s = q["sites"][cur["site"]]
+            lines.append(f"active quest: [{qid}] L{q['level']} {q['name']} "
+                         f"-- next: {s['name']} (L{s['level']}), room "
+                         f"{cur['room'] + 1}/{len(s['rooms'])}")
+    streak = state.get("streak") or {"site": None, "count": 0}
+    if streak["count"]:
+        lines.append(f"momentum: {streak['count']} encounter(s) at "
+                     f"{streak['site']} since the last camp")
+    if state.get("sighting"):
+        lines.append(f"sighted: {state['sighting']['line']}")
+    for (site, room), rec in sorted(state.get("rooms", {}).items()):
+        standing = sum(1 for f in rec["foes"] if not f.dead)
+        lines.append(f"unfinished: {site} room {room} -- {standing} foe(s) "
+                     f"still hold it (fled day {rec['day']})")
+    if state.get("pending"):
+        lines.append("*** A FIGHT IS PAUSED -- resume or retreat ***")
+    return lines
+
+
+def _write_party_sheet(state: dict) -> None:
+    """Write party.txt and best-effort commit it (that one file only; the
+    designer follows the playthrough from the repo). NEVER raises: a broken
+    git state must not take the game loop down with it."""
+    try:
+        PARTY_SHEET_PATH.write_text(
+            "\n".join(party_sheet_lines(state)) + "\n", encoding="utf-8")
+    except Exception:
+        return
+    try:
+        root = Path(__file__).parent
+        day = state["clock"].day
+        where = (state["location"]["name"]
+                 if state.get("location") else "nowhere")
+        subprocess.run(["git", "add", "party.txt"], cwd=root, check=False,
+                       capture_output=True, timeout=15)
+        subprocess.run(["git", "commit", "--quiet",
+                        "-m", f"party sheet: day {day} at {where}",
+                        "--", "party.txt"],
+                       cwd=root, check=False, capture_output=True, timeout=15)
+    except Exception:
+        pass
+
+
 def save(state: dict) -> None:
     party = state["party"]
     rng_version, rng_internal, rng_gauss = state["rng"].getstate()
@@ -281,6 +367,7 @@ def save(state: dict) -> None:
     with open(STATE_PATH, "w", encoding="utf-8") as f:
         json.dump(doc, f, indent=1)
         f.write("\n")
+    _write_party_sheet(state)
 
 
 def load() -> dict:
@@ -362,7 +449,7 @@ def require_no_pending(state: dict) -> bool:
         return False
     if state.get("pending"):
         print("A fight is PAUSED -- the party is mid-melee. Resolve it "
-              "first: resume [--drink HERO] [--berserk HERO] "
+              "first: resume [--drink HERO] [--heal HERO] [--berserk HERO] "
               "[--warbreath HERO], or retreat.")
         return False
     return True
@@ -450,13 +537,41 @@ def cmd_pick(args: argparse.Namespace) -> None:
               f"softens it.")
     else:
         print(f"  CHA {pc.cha}: the party can hold {cap} companion(s).")
+        # The starter companion (2026-07-11, designer call: the game should
+        # start PLAYABLE): one random companion joins for free at pick --
+        # an old ALLY of the PC's, never family or a mentor (that read too
+        # restrictive), leveled with him, arriving on the same terms as a
+        # hire (satisfaction 7, joining gold to the purse). Any remaining
+        # capacity is still the tavern's to fill -- choosing the rest of
+        # the party stays a real decision.
+        rng = state["rng"]
+        used = {h.name for h in state["party"]}
+        ally = make_character(rng, level=1, used_names=used)
+        ally.satisfaction = SATISFACTION_START
+        ally.bond, ally.bond_kind = pc.name, "old ally"
+        if has_trait(ally, "needs meds"):
+            ally.last_dose_day = state["clock"].day
+        state["party"].append(ally)
+        print(f"An old ally answers {pc.name}'s call and joins for the road:")
+        for line in character_sheet(ally):
+            print("  " + line)
+        gold = joining_gold(ally)
+        if gold:
+            state["purse"].gold += gold
+            print(f"  {ally.name} adds {gold}g to the party purse "
+                  f"({state['purse'].gold}g).")
         roll_recruits(state)
         print(f"The common room at {state['location']['name']} holds "
               f"tonight's introductions (free, this once):")
         for line in recruit_summary_lines(state):
             print(line)
-        print("See them in full with `recruit`; sign one with `hire NAME`. "
-              "A later `tavern` night gathers new faces.")
+        if cap > 1:
+            print("See them in full with `recruit`; sign one with "
+                  "`hire NAME`. A later `tavern` night gathers new faces.")
+        else:
+            print(f"(With {ally.name} along the party is at its CHA "
+                  f"capacity -- these faces just drink here. `dismiss` "
+                  f"frees a slot; a later `tavern` night gathers new ones.)")
     print(f"The party stands at {location_line(state)} -- the local board "
           f"is `board`; the wider world is `map` and `travel`. The old "
           f"hideout and barrow lie outside "
@@ -602,6 +717,54 @@ def cmd_hire(args: argparse.Namespace) -> None:
     save(state)
 
 
+def cmd_dismiss(args: argparse.Namespace) -> None:
+    """Let a companion go (2026-07-11): the player's side of the departure
+    coin. Settlement-gated like every parting of ways, and the severance is
+    the QUITTER'S deal on purpose -- an equal head-split of the purse plus
+    their carried gear -- so swapping the party out isn't free (hire, use,
+    dump before payday would otherwise be the optimal churn). Bond partners
+    walk together, same as a quit."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    if local_settlement(state) is None:
+        print(f"Partings happen at a settlement -- the party is at "
+              f"{location_line(state)}. No one walks into the wilds alone.")
+        return
+    party, purse = state["party"], state["purse"]
+    hero = find_hero(party, " ".join(args.name))
+    if hero is None:
+        return
+    if hero is party[0]:
+        print(f"{hero.name} IS the party -- the player character can't be "
+              f"dismissed.")
+        return
+    if hero.dead:
+        print(f"{hero.name} is dead -- the dead are laid to rest on "
+              f"arrival, not dismissed.")
+        return
+    leavers = [hero]
+    partner = next((p for p in party[1:]
+                    if hero.bond and p.name == hero.bond and not p.dead),
+                   None)
+    if partner is not None:
+        leavers.append(partner)
+    place = state["location"]["name"]
+    living = [h for h in party if not h.dead]
+    share = purse.gold // len(living) if living else 0
+    log: list[str] = []
+    for h in leavers:
+        purse.gold -= share
+        party.remove(h)
+        why = (f"leaves with {h.name if h is hero else hero.name}"
+               f" ({h.bond_kind})" if h is not hero else "is let go")
+        log.append(f"  {h.name} {why} at {place} -- taking their share "
+                   f"of the purse ({share}g) and their gear.")
+    log.append(f"    The purse holds {purse.gold}g.")
+    print("\n".join(log))
+    save(state)
+
+
 def night_upkeep(state: dict, log: list[str]) -> None:
     """Once per night slept, wherever it was: the 'needs meds' drain -- a
     companion whose last dose is older than MEDS_INTERVAL_DAYS loses 1
@@ -722,6 +885,8 @@ def print_pause_menu(state: dict) -> None:
     trips = "; ".join(f"{name} {what[kind]}"
                       for kind, name in pending["crossings"])
     print(f"*** FIGHT PAUSED (after round {pending['round']}): {trips}. ***")
+    print("  (the encounter's ONE pause -- after this it runs to its end, "
+          "the party acting on its standing orders)")
     standing = [f for f in pending["foes"] if f.alive]
     print("  Facing: " + ", ".join(
         f"{f.name} {f.hp}/{f.max_hp} HP" for f in standing))
@@ -731,12 +896,15 @@ def print_pause_menu(state: dict) -> None:
         tag = " [DOWN]" if h.down else ""
         print(f"  {h.name}{tag}: STA {h.cur_sta}/{h.sta}  HP {h.hp}/{h.max_hp}"
               f"  Power {h.cur_power}/{h.power}  "
-              f"stamina draughts x{h.items.get('stamina', 0)}")
+              f"healing x{h.items.get('healing', 0)}  "
+              f"stamina x{h.items.get('stamina', 0)}")
     print("  The player's call (pause actions cost that round's attack and "
           f"defend at -{PAUSE_ACTION_DEF_PENALTY}):")
     print("    resume                    -- fight on")
     print(f"    resume --drink HERO       -- stamina draught, "
           f"+{STAMINA_DRAUGHT_RESTORE} STA now")
+    print(f"    resume --heal HERO        -- healing potion, "
+          f"+{HEALING_POTION_RESTORE} HP now (the wound penalty lightens)")
     print(f"    resume --berserk HERO     -- {BERSERK_HP_COST} HP -> "
           f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens)")
     print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} Power -> "
@@ -793,13 +961,30 @@ def cmd_levelup(args: argparse.Namespace) -> None:
             print(f"  (drilled but not in hand: {dormant})")
 
 
+def play_orders(already_paused: bool):
+    """Session play's crossing dispatch (rpg.group_combat's standing_orders):
+    the FIRST wounds crossing of the fight interrupts -- the one "someone is
+    being cut apart, do we retreat?" pause, the player's -- and every other
+    crossing runs the default standing order (rpg.standing_order: drink /
+    heal / convert on their own, skipped when the fight is winding down).
+    At most ONE pause per encounter (designer call, 2026-07-11): a fight
+    with a `pending` record has had its pause, so resumes pass
+    already_paused=True and never stop again."""
+    def orders(kind, hero, party, foes):
+        if kind == "wounds" and not already_paused:
+            return "pause"
+        return standing_order(kind, hero, foes)
+    return orders
+
+
 def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
                       room: int | None = None,
                       quest: str | None = None,
                       streak_pos: int | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
-    PAUSE at a trigger (STA <= 2 / half HP, once each) -- then award and
+    PAUSE once, at the fight's first wounds crossing (see play_orders) --
+    then award and
     persist. On a pause the fight is saved as `pending` and the turn goes
     back to the player (resume / retreat next message). `quest` ties the
     encounter to a board quest: clearing the room advances its cursor.
@@ -812,7 +997,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                                                        # who died in THIS one
     fired: set[str] = set()
     pause = group_combat(living, foes, rng, log, pause_triggers=True,
-                         fired=fired)
+                         fired=fired, standing_orders=play_orders(False))
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
@@ -1050,6 +1235,27 @@ def cmd_board(args: argparse.Namespace) -> None:
         key = here["key"]
     for line in board_lines(world, key):
         print(line)
+    if not args.settlement:
+        # Word travels within a land (2026-07-11, designer call): the
+        # player KNOWS every open quest in the current land -- name, level,
+        # where -- so travel is an informed choice, not a blind hop. Levels
+        # shown straight, like the local board; details and `take` still
+        # want the party AT the posting settlement.
+        land = state["location"]["land"]
+        rumors = []
+        for s in lands(world).get(land, []):
+            if s["key"] == key:
+                continue
+            for qid in s["quests"]:
+                q = world["quests"][qid]
+                if q["status"] == "open":
+                    rumors.append(f"  [{q['id']}] L{q['level']:<2} "
+                                  f"{q['name']} -- at {s['name']}")
+        if rumors:
+            print(f"Word from around the {land} lands (travel there to "
+                  f"take one; `show QID` for what's known):")
+            for line in rumors:
+                print(line)
     if state.get("active_quest"):
         print(f"(active quest: {state['active_quest']})")
 
@@ -1432,7 +1638,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
     living = [h for h in party if not h.dead]
 
     actions: dict = {}
-    for flag, action in (("drink", "drink"), ("berserk", "berserk"),
+    for flag, action in (("drink", "drink"), ("heal", "heal"),
+                         ("berserk", "berserk"),
                          ("warbreath", "war-breath")):
         for name in getattr(args, flag) or []:
             hero = find_hero(party, name)
@@ -1446,6 +1653,9 @@ def cmd_resume(args: argparse.Namespace) -> None:
                 return
             if action == "drink" and hero.items.get("stamina", 0) <= 0:
                 print(f"{hero.name} carries no stamina draught.")
+                return
+            if action == "heal" and hero.items.get("healing", 0) <= 0:
+                print(f"{hero.name} carries no healing potion.")
                 return
             if action == "berserk" and hero.hp <= BERSERK_HP_COST:
                 print(f"{hero.name} is too torn up to Berserk "
@@ -1461,7 +1671,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
-                         actions=actions or None)
+                         actions=actions or None,
+                         standing_orders=play_orders(True))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -1519,7 +1730,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     # Run down: the fight resumes at once, the parting damage already taken.
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
-                         first_round=pending["round"] + 1)
+                         first_round=pending["round"] + 1,
+                         standing_orders=play_orders(True))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -1546,27 +1758,45 @@ def cmd_rest(args: argparse.Namespace) -> None:
     save(state)
 
 
+MAX_HEAL_CAMP_NIGHTS = 14   # `camp --heal` safety valve: HP knits at
+                            # ~max_hp/7 a night, so a week-and-change always
+                            # reaches full from anywhere
+
+
 def cmd_camp(args: argparse.Namespace) -> None:
+    """One night by default; `camp N` strings several together and `camp
+    --heal` camps until every living hero's HP is full (2026-07-11 -- the
+    played default is camping until whole, see dm.md). Each WILDS night
+    rolls its own visitor and a fight interrupts the stay on the spot --
+    a long convalescence in the open is a real gamble, days x risk."""
     state = load()
     if not require_no_pending(state):
         return
     party, clock = state["party"], state["clock"]
-    log: list[str] = []
-    _long_rest(party, clock, log)
-    night_upkeep(state, log)
+    nights = MAX_HEAL_CAMP_NIGHTS if args.heal else max(1, args.nights)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
-        log.append(f"    (the night breaks the momentum at {streak['site']} "
-                   f"-- the next encounter pays base XP again)")
+        print(f"    (the night breaks the momentum at {streak['site']} "
+              f"-- the next encounter pays base XP again)")
     reset_streak(state)
     clear_sighting(state)
-    print("\n".join(log))
-    if state.get("world") and state["location"]["kind"] != "settlement":
-        # A night in the wilds is not a night behind walls (2026-07-10):
-        # the fire can draw a visitor. Rolled after the night's recovery.
-        if wild_event(state, CAMP_ENCOUNTER_CHANCE,
-                      f"In the night at {state['location']['name']}"):
-            return
+    for _ in range(nights):
+        log: list[str] = []
+        _long_rest(party, clock, log)
+        night_upkeep(state, log)
+        print("\n".join(log))
+        if state.get("world") and state["location"]["kind"] != "settlement":
+            # A night in the wilds is not a night behind walls (2026-07-10):
+            # the fire can draw a visitor. Rolled after the night's recovery;
+            # a fight cuts the stay short -- what remains of it is the
+            # player's call again afterward.
+            if wild_event(state, CAMP_ENCOUNTER_CHANCE,
+                          f"In the night at {state['location']['name']}"):
+                return
+        if args.heal and all(h.dead or h.hp >= h.max_hp for h in party):
+            break
+    if args.heal:
+        print(f"  The party breaks camp whole on day {clock.day}.")
     save(state)
 
 
@@ -1779,8 +2009,9 @@ def main() -> None:
         "pick",
         help="choose the player character from `new`'s three candidates "
              "(by number or name). His CHA sets the party's companion "
-             "capacity for the whole game; the first evening's recruit "
-             "introductions follow for free.")
+             "capacity for the whole game; if it holds anyone at all, an "
+             "old ally joins on the spot (a random level-1 companion, free) "
+             "and the first evening's recruit introductions follow.")
     p.add_argument("who", nargs="+", help="candidate number (1-3) or name")
     p.set_defaults(func=cmd_pick)
 
@@ -1801,6 +2032,15 @@ def main() -> None:
              "luxurious) goes to the purse.")
     p.add_argument("name", nargs="+", help="candidate name (substring)")
     p.set_defaults(func=cmd_hire)
+
+    p = sub.add_parser(
+        "dismiss",
+        help="let a companion go (settlements only): they take the same "
+             "equal head-split of the purse a quitter takes, plus their "
+             "carried gear; a bond partner walks with them. Swapping the "
+             "party out is deliberately not free.")
+    p.add_argument("name", nargs="+", help="companion name (substring)")
+    p.set_defaults(func=cmd_dismiss)
 
     p = sub.add_parser("status", help="show the persisted party/clock/purse")
     p.set_defaults(func=cmd_status)
@@ -1844,9 +2084,15 @@ def main() -> None:
         "resume",
         help="continue a PAUSED fight, optionally with pause actions (one "
              "per hero; each costs that round's attack and defends at -2): "
-             "--drink HERO (stamina draught), --berserk HERO (HP -> STA), "
-             "--warbreath HERO (Power -> STA). Plain resume = fight on.")
+             "--drink HERO (stamina draught), --heal HERO (healing potion), "
+             "--berserk HERO (HP -> STA), "
+             "--warbreath HERO (Power -> STA). Plain resume = fight on. "
+             "The fight then runs to its END -- an encounter pauses at most "
+             "once (its first wounds crossing); every later crossing is "
+             "answered by the party's standing orders (drink/heal/convert "
+             "on their own, skipped when the fight is already winding down).")
     p.add_argument("--drink", action="append", metavar="HERO")
+    p.add_argument("--heal", action="append", metavar="HERO")
     p.add_argument("--berserk", action="append", metavar="HERO")
     p.add_argument("--warbreath", action="append", metavar="HERO")
     p.set_defaults(func=cmd_resume)
@@ -1866,9 +2112,16 @@ def main() -> None:
         help="long rest: full STA, weekly HP tick, advances a day -- and "
              "RESETS the same-site momentum streak (consecutive same-site "
              "encounters without a camp pay rising XP; camping mid-site "
-             "trades that pay for safety). A night camped in the WILDS "
-             f"(not at a settlement) risks a visitor "
-             f"(~{int(CAMP_ENCOUNTER_CHANCE * 100)}%%, the road's table)")
+             "trades that pay for safety). `camp N` strings N nights "
+             "together; `camp --heal` camps until every living hero's HP "
+             "is full (the played default -- see dm.md). A night camped in "
+             "the WILDS (not at a settlement) risks a visitor "
+             f"(~{int(CAMP_ENCOUNTER_CHANCE * 100)}%% PER NIGHT, the "
+             f"road's table) and a fight cuts the stay short.")
+    p.add_argument("nights", type=int, nargs="?", default=1,
+                   help="how many nights (default 1)")
+    p.add_argument("--heal", action="store_true",
+                   help="camp until every living hero's HP is full")
     p.set_defaults(func=cmd_camp)
 
     p = sub.add_parser(
@@ -1897,9 +2150,11 @@ def main() -> None:
         "board",
         help="the LOCAL quest board: the current settlement's posted quests "
              "with level (shown straight -- too easy and too hard both "
-             "happen), shape, and pay. Quests are local: only this board's "
-             "jobs can be taken here. `board all` / `board NAME` is the DM "
-             "overview, not what the player reads.")
+             "happen), shape, and pay -- plus WORD FROM AROUND THE LAND: "
+             "every other open quest in the current land (name, level, "
+             "where), so travel is an informed choice. Only the local "
+             "board's jobs can be taken here. `board all` / `board NAME` "
+             "is the DM overview, not what the player reads.")
     p.add_argument("settlement", nargs="?", default=None)
     p.set_defaults(func=cmd_board)
 
@@ -2004,7 +2259,10 @@ def main() -> None:
         "buy",
         help="spend gold on a potion, a weapon, or (in a capital) a dose of "
              "meds for one hero (weapons are equipped on the spot; plain "
-             "tier only -- masterwork/legendary are never shopped)")
+             "tier only -- masterwork/legendary are never shopped). Note "
+             f"the kit restocks itself: every long rest tops each hero "
+             f"back up to {KIT_HEALING} healing + {KIT_STAMINA} stamina "
+             f"free -- buying is for stocking ABOVE that line.")
     p.add_argument("hero")
     p.add_argument("thing", nargs="+",
                    help="a potion kind, a weapon name (e.g. rapier, "
