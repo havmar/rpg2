@@ -20,7 +20,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 8,
-   "cur_sta": 5,
+   "cur_sta": 4,
    "cur_power": 4,
    "down": false,
    "dead": false,
@@ -31,7 +31,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 0,
+   "xp": 6,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 0,
+   "xp": 6,
    "skill_points": 0,
    "training": 1,
    "weapon": "scimitar",
@@ -127,7 +127,7 @@
    "protagonist": false,
    "hp": 9,
    "cur_sta": 7,
-   "cur_power": 4,
+   "cur_power": 2,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 0,
+   "xp": 6,
    "skill_points": 0,
    "training": 1,
    "weapon": "whip",
@@ -180,7 +180,7 @@
    "protagonist": false,
    "hp": 12,
    "cur_sta": 6,
-   "cur_power": 3,
+   "cur_power": 1,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -190,7 +190,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 6,
    "skill_points": 0,
    "training": 0,
    "weapon": "club",
@@ -218,10 +218,10 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 25
+  "gold": 30
  },
- "foe_count": 0,
- "active_quest": null,
+ "foe_count": 1,
+ "active_quest": "q05",
  "world": {
   "seed": 969862415,
   "settlements": [
@@ -491,7 +491,7 @@
     ],
     "next": {
      "site": 0,
-     "room": 0
+     "room": 1
     },
     "status": "open"
    },
@@ -2558,8 +2558,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "q05/s1",
+  "count": 1
  },
  "site_clears": {},
  "pc_candidates": null,
@@ -3256,7 +3256,7 @@
    1567838545,
    1641265667,
    238943627,
-   261
+   298
   ],
   null
  ]
