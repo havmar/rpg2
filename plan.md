@@ -17,115 +17,46 @@ rules.md — the World & Navigation add-on and the updated wound-tier /
 XP sections; measured numbers in CLAUDE.md. What remains from that design
 session lives in the open questions and parked ideas below.)*
 
-## Next up — the story layer, in implementable shape (2026-07-12)
+## Next up — the banded quest inventory (worldgen reframed)
 
-*(Design round 2026-07-12: the designer's story/world/NPC notes brought to
-build order. The conquest questline is the authored spine; the scaffolding
-batch ships first because every questline beat stands on it. **Pacing
-anchors for all story writing**, measured by an instrumented career probe
-(80 careers, the cautious camps-between-rooms policy): median **L5 at day
-~25, L8 at ~47, L10 at ~64, L20 at ~148**; ~61 fights / 17 quests to L10,
-~131 fights / 38 quests to L20. A streak-playing party collects ~100% of
-site XP instead of the policy's ~70%, so played campaigns run ~25-30%
-faster: call it **L10 around in-game day 45-65, L20 around day 110-150**.
+*(2026-07-12b: batches 1-2 of the story layer SHIPPED — quest givers and
+the ask-around funnel (no board in the fiction), quest epilogues with day
+stamps, the targeted NPC generator (`people.make_npc`), the per-land
+central cast, the surfaced in-game day, the `chatter` flavor seed, and
+the whole conquest questline (`story.py`): four aggressor variants, waves
+at L2/5/8/10 with the named lieutenants/conqueror as budget-honest
+reskins, level-plus-completion wave gating, the scripted wave-3 fall with
+occupation, wave-4 liberation. Mechanics in rules.md's Story Layer &
+Conquest add-on; play protocol in dm.md (the funnel, the war, the flavor
+beats). The career bench was re-run after the worldgen RNG shift: within
+noise. NOT built from that round, still good and cheap once wanted in
+play: **war-flavored reskins on local quests in threatened lands** ("the
+local effect of the main quest" tags) and a **rescued recruit** as an
+extra wave-3 tangible.)*
+
+*(Pacing anchors, measured 2026-07-12 by an instrumented career probe —
+80 careers, the cautious camps-between-rooms policy: median **L5 at day
+~25, L8 at ~47, L10 at ~64, L20 at ~148**; ~61 fights / 17 quests to
+L10, ~131 fights / 38 quests to L20. A streak-playing party collects
+~100% of site XP instead of the policy's ~70%, so played campaigns run
+~25-30% faster: **L10 around in-game day 45-65, L20 around day 110-150**.
 In real chat time at ~5 min/turn, L10 is a **~10-12 hour** campaign and
-L20 **~25-30 hours**. Story consequence: the conquest arc (L2-10) spans
-about **two in-game months** — write it as one fast campaign season, not a
-decade of war.)*
+L20 **~25-30 hours**. The conquest arc (L2-10) spans about two in-game
+months — one fast campaign season.)*
 
-### Batch 1 — story scaffolding (cheap, ships first)
+Story items that survive on the shelf (after the inventory rework):
 
-- **Quest givers & the diegetic funnel — the quest board presentation goes
-  away.** Every quest gets a `giver` at worldgen: name from people.py's
-  pools, role implied by the template (reeve, constable, elder, guild
-  clerk...), personality from the targeted generator below. In play there
-  is no board: the party asks around (the tavern keeper knows, any local
-  points the way) and ONE message funnels to the giver — "the mayor sends
-  you to the chief constable, who lays out the job." Taking the quest is
-  talking to the giver; the giver stays talkable while it runs and
-  receives the turn-in. Engine side: a `giver` field on quests; `board`
-  survives as a DM-facing inventory readout only. The funnel itself is
-  dm.md protocol.
-- **Quest epilogues.** One authored aftermath line per template (reskin
-  slots allowed), delivered at turn-in and day-stamped into the quest
-  record — which also gives the parked history readout its content.
-  Designer's call: small change, high impact.
-- **Targeted NPC generation** (`people.make_npc`): the caller fixes race,
-  role, sex, and age band (the DM already knows the constable is a
-  middle-aged local; no twelve-year-olds in random clothes), the
-  generator rolls personality from the existing trait tables, a name, and
-  a sheet line. Clothes/presentation stay rollable for any role (gaudy or
-  tasteful constables both exist). Stats only for NPCs who might fight
-  (develop_hero). Party generation stays fully random; NPCs are *cast* to
-  fit. Personality categories can grow richer later (manner of speech,
-  motivation, a want and a fear).
-- **The central cast (recurring NPCs).** Per land, generated at worldgen,
-  persisted in the save: a **ruler** (the war-wave questgiver), a
-  **knowledge figure** (scholar or wizard — exposition, foreshadowing,
-  "find the enemy's weakness" hooks), and one **wildcard** from a small
-  role table (spymaster, mercenary captain, master smith, priest, war
-  profiteer, refugee leader). The trick for roles beyond questgiver:
-  attach each NPC to a system that already exists — recruiting (the
-  captain brings hires), training (a retired blademaster as mentor),
-  shopping (the smith), rumor (the spymaster) — instead of inventing new
-  mechanics per NPC. The enemy side gets faces too: the conqueror plus
-  1-2 lieutenants who recur across waves (a lieutenant killed in wave 2
-  is mourned by the conqueror in wave 4 — recurring villains are the
-  cheapest continuity device in the game).
-- **The in-game day, surfaced.** The Clock already counts days; print
-  "Day N" on board/map/party.txt headers and stamp quest completions and
-  story beats with it. Trivial, and the epilogue/history layer wants it.
-- **The flavor protocol (dm.md), alongside this batch:** two beats the DM
-  provides regularly, always brief — a 2-3 line atmospheric visual on
-  every scene change (what's seen, what stands out), and party chatter
-  (what companions are preoccupied with, seeded from their traits and
-  current satisfaction). A tiny `chatter` seed helper — pick a companion,
-  pick a topic from their trait sheet — lets the DM riff instead of
-  inventing from nothing.
-
-### Batch 2 — the conquest questline (the L2-10 spine)
-
-- **One aggressor per playthrough**, chosen at worldgen or by the DM at
-  `new` — four variants for replayability: **elves** (fascist perfection —
-  so cultured they should rule everyone; beautiful, efficient,
-  magic-fuelled steampunk industry), **goblins** (chaotic evil tech —
-  robots, bombs, bioweapons, zany genetic experiments), **humans** (the
-  deathless kingdom — a crown corrupted by an evil god; necromancy as
-  conscription that does not end at death), **orcs** (a khan unites the
-  clans — might is right, war is glorious). Dwarves are never the
-  aggressor (no theme found; they are the stalwart victim/ally land).
-- **Four waves pinned at levels 2 / 5 / 8 / 10**, each one multi-site
-  quest (2-3 sites) — `build_quest`'s existing shape already runs earlier
-  sites at lower levels, so "first sites easier" is free. The beats:
-  first skirmishes before open war (L2); a land attacked and successfully
-  defended (L5); a land defended *and lost anyway* (L8 — the fall is
-  scripted; quest success buys the epilogue, not the outcome, and must
-  pay something real so it doesn't read as a cheat: the evacuation, a
-  rescued recruit, a lieutenant's head); the conqueror defeated for good
-  (L10).
-- **Rosters**: the humanoid ladder + existing pools reskinned per
-  aggressor via `make_foe(display=...)` — zero new stat blocks in v1
-  (elf: gilded automata, aether-riflemen; goblin: scrap-golems,
-  bomb-lobbers, vat-beasts on the beast rows; human: the undead pool plus
-  living cultist soldiery; orc: the ladder worn straight). Wave 4's boss
-  is the warlord row reskinned as the conqueror.
-- **Story state in the save** (`story`: aggressor, wave cursor, day
-  stamps). The next wave POSTS when the party reaches its level — a
-  messenger or rumor scene, day-stamped (level-gating, not day-gating, so
-  the party can't outlevel or underlevel the war). Local quests in
-  threatened lands pick up war-flavored reskins ("local effect of the
-  main quest" tags).
-- **The hellish-forces / apocalypse questline becomes the SECOND spine
-  (L12-20)** — this replaces the old single 3/6/9/12/15/18 conqueror
-  plan: conquest carries the first half of the game, the apocalypse the
-  second. Still parked until the magic tier exists (its payoff enemies
-  are demons above the dragon row); early cells (cults = humanoids,
-  summoned beasts) can ship sooner as flavor.
+- **The apocalypse questline — the L12-20 second spine** (replacing the
+  old single 3/6/9/12/15/18 conqueror plan: conquest carries the first
+  half of the game, the apocalypse the second). Parked until the magic
+  tier exists (its payoff enemies are demons above the dragon row);
+  early cells (cults = humanoids, summoned beasts) can ship sooner as
+  flavor.
 - **Progression frames** (guild advancement, the legendary-smith arc) —
   narrative wrappers around the same combat quests; a line of
-  world-building each, no mechanics. Cheap once questlines exist.
+  world-building each, no mechanics. Cheap now that questlines exist.
 
-### Batch 3 — the banded quest inventory (worldgen reframed)
+### The rework itself
 
 - The designer's vision made concrete: **a land always has work at every
   band, plus objective high-level problems that exist independent of the

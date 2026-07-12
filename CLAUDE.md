@@ -104,18 +104,36 @@ a pointer: what the file is, how it's run, where its docs are.
 - `quests.py` — **the quest & encounter generator** (rules.md, the Quest
   System add-on): the threat math (all constants at the top, calibrated by
   `bench_quests.py`), the room/site/quest builders, per-race quest
-  templates with reskin tables, and seeded worldgen with asserted XP
-  coverage to the level cap. `python quests.py [--seed N] [--demo]` prints
-  a generated world's board.
+  templates with reskin tables (since 2026-07-12 each also authors a
+  `giver` role and an `epilogue` line), and seeded worldgen with asserted
+  XP coverage to the level cap — which since 2026-07-12 also attaches a
+  generated giver face to every quest (`attach_giver`) and casts each
+  land's three persistent notables (`RULER_TITLES` / `SAGE_ROLES` /
+  `WILDCARD_ROLES`, `world["npcs"]`). `python quests.py [--seed N]
+  [--demo]` prints a generated world's board and cast.
+- `story.py` — **the authored story layer: the conquest questline**
+  (2026-07-12, rules.md's Story Layer & Conquest add-on). Four aggressor
+  variants (elf/goblin/human/orc — content dicts at the top: creeds,
+  reskins, waves, heralds, epilogues), the named faces (conqueror + two
+  lieutenants as display names over budget-honest rosters), waves pinned
+  at L2/5/8/10 built by quests.py's own threat math, wave gating
+  (previous wave done + party at level), the wave-3 scripted fall with
+  occupation, and the war readouts. State lives in the session save
+  (`story` key); the sims never import it. `python story.py [--seed N]
+  [--aggressor R]` dumps one rolled conquest, all waves force-posted.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): the five races' stat modifiers
   (floor-raise, never ceiling), the 25+25 per-race name pools, the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`), `make_character` (any
   level, via rpg.develop_hero), `make_pair` (bonded recruit pairs), the
-  candidate sheets, and the downtime-matching rules. Content only — the
-  satisfaction/CHA mechanics it hangs on live in rpg.py; the sims never
-  import it. `python people.py [--seed N] [--level L]` prints a sample
+  candidate sheets, and the downtime-matching rules; since 2026-07-12
+  also `make_npc` / `npc_line` (the TARGETED generator: the caller fixes
+  race/role/sex/age, the dice roll name + personality — dict NPCs, no
+  stat blocks, `NPC_MIN_AGE` floors anyone with a job title). Content
+  only — the satisfaction/CHA mechanics it hangs on live in rpg.py; the
+  sims import it only through worldgen's giver/cast generation.
+  `python people.py [--seed N] [--level L]` prints a sample
   (the DM's eyeball check).
 - `session.py` — **the DM driver used to actually play.** A thin CLI over
   rpg.py/sites.py/quests.py that keeps party/clock/purse/world state in
@@ -143,7 +161,15 @@ a pointer: what the file is, how it's run, where its docs are.
   wilds visitor), the board's land-wide rumor section, and **`party.txt`**,
   the full party info sheet rewritten on every save and auto-committed
   (that one file, best-effort subprocess git — never fatal to the game
-  loop). Encounter commands print the full log then the
+  loop). Since 2026-07-12 also the story layer's play surface: `board` is
+  the DM inventory (rows carry givers; in play quests come from their
+  GIVERS via the one-message ask-around funnel, dm.md), quest turn-ins
+  print the day-stamped EPILOGUE + giver prompt, `chatter` (the party-
+  flavor seed: unseeded rng, no state change), day headers on board/map,
+  local notables on the board, and the war plumbing (`maybe_post_wave` at
+  boards/arrivals/nights/payouts, `occupied_here` gates on
+  board/take/tavern/downtime, the boss-name spawn in `room`, `story` in
+  the save). Encounter commands print the full log then the
   `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
@@ -321,6 +347,16 @@ mechanic *does* and *why* is rules.md's job.
   (the per-race quest tables + reskins), `build_quest` / `forge_quest`,
   `generate_world` (+ the coverage top-up), `quest_to_sites` (generated
   quest -> `Site` instances for the sims), the board readout helpers.
+- **The story layer** (2026-07-12) — `quests.py`: template `giver`/
+  `epilogue` fields, `attach_giver`, the central cast
+  (`_cast_the_land` + the role tables, `world["npcs"]`). `people.py`:
+  `make_npc` / `npc_line` / `NPC_MIN_AGE` (the targeted generator).
+  `story.py`: `CONQUESTS` (the four variants' content), `WAVE_LEVELS` /
+  `WAVE_ROOMS`, `init_story` / `next_wave_due` / `post_wave` /
+  `on_wave_done` / `occupied` / `war_status_lines`. `session.py`:
+  `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
+  `done_day` stamp in `advance_quest`, the boss-name spawn in `cmd_room`,
+  `cmd_chatter` + `CHATTER_PROMPTS`.
 - **The world & navigation** (2026-07-09) — `quests.py`: `lands` (race ->
   settlements; the map IS this grouping, no coordinates), `wild_pool`
   (what roams a land = the union of its race's template pools),
@@ -657,6 +693,25 @@ below, levers deliberately untouched this session:**
   mid-fight heal (restore 3, not the full 5), a thinner kit (healing only,
   or top-up every OTHER night), enemy DEX (the usual knife, but it moves
   every annotation). Recommend feeling it in play before pulling any.
+
+**Measured numbers (2026-07-12, the story layer: givers + central cast +
+epilogues + the conquest questline).** The layer is content and session
+plumbing — the engine is untouched and the sims pass no story state — but
+worldgen now draws giver faces and the cast from its seeded rng, so every
+generated world differs from 2026-07-11b's at equal seeds. The one bench
+that consumes worldgen (`bench_quests --part career`, 200 careers) was
+re-run as the distribution-level no-change check, and held: reach
+**L5 77% / L8 68% / L11 50% / L14 26% / L20 12.5%**, median death L9,
+capped career median 161 days / 39 quests (was 80/68/49/26/9.5, median
+L9 — all within noise at n=200). Nothing else re-run on purpose:
+tune/bench_training/bench_weapons/bench_bestiary/bench_party import
+neither quests.py nor the new files. Pacing anchors measured this session
+(the instrumented career probe) live in plan.md's Next-up note: played
+campaigns reach L10 around in-game day 45-65 (~10-12 chat hours) and L20
+around day 110-150 (~25-30 hours). **The war adds ~3,700 quoted XP at
+pinned levels 2/5/8/10** on top of the world's ~27k — rich by design
+(punching at level in multi-site quests); watch in play whether pressing
+the war front-loads leveling too hard.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

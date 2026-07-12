@@ -31,7 +31,11 @@ The shape of a playthrough:
   new / pick / status / levelup             -- choosing and reading the party
   recruit / hire NAME / dismiss NAME        -- the tavern's hiring layer
   map / travel / explore / hunt / engage    -- the world & the wilds
-  board / show QID / take QID / room        -- the LOCAL quest board (the game)
+  board / show QID / take QID / room        -- the LOCAL jobs (the game;
+                                               board = the DM inventory,
+                                               in play quests come from
+                                               their GIVERS -- dm.md)
+  chatter                                   -- a party-flavor seed (dm.md)
   hideout ROOM / barrow ROOM / fight N      -- the set sites & off-script
   resume [...] / retreat                    -- settle a paused fight
   rest / camp / tavern / downtime / award / buy / give / train / use / heal
@@ -74,8 +78,9 @@ from rpg import (
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
 )
+import story
 from people import (make_character, make_pair, character_sheet, person_line,
-                    downtime_match, joining_gold, PAIR_CHANCE)
+                    npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
                     quest_detail_lines, quest_line, roster_kinds_line,
@@ -310,6 +315,8 @@ def party_sheet_lines(state: dict) -> list[str]:
         standing = sum(1 for f in rec["foes"] if not f.dead)
         lines.append(f"unfinished: {site} room {room} -- {standing} foe(s) "
                      f"still hold it (fled day {rec['day']})")
+    if world:
+        lines.extend(story.war_status_lines(world, state.get("story")))
     if state.get("pending"):
         lines.append("*** A FIGHT IS PAUSED -- resume or retreat ***")
     return lines
@@ -350,6 +357,7 @@ def save(state: dict) -> None:
         "foe_count": state["foe_count"],
         "active_quest": state.get("active_quest"),
         "world": state.get("world"),
+        "story": state.get("story"),
         "location": state.get("location"),
         "places": state.get("places", []),
         "sighting": state.get("sighting"),
@@ -400,6 +408,7 @@ def load() -> dict:
         "foe_count": doc["foe_count"],
         "active_quest": doc.get("active_quest"),
         "world": world,
+        "story": doc.get("story"),
         "location": location,
         "places": doc.get("places", []),
         "sighting": doc.get("sighting"),
@@ -485,6 +494,7 @@ def cmd_new(args: argparse.Namespace) -> None:
     state = {"party": [], "clock": Clock(), "purse": Purse(), "rng": rng,
              "foe_count": 0, "pending": None, "rooms": {},
              "world": world, "active_quest": None,
+             "story": story.init_story(world, rng),
              "location": _settlement_location(world["settlements"][0]),
              "places": [], "sighting": None,
              "streak": {"site": None, "count": 0}, "site_clears": {},
@@ -492,6 +502,8 @@ def cmd_new(args: argparse.Namespace) -> None:
              "recruits": None}
     save(state)
     print(f"New game (seed={args.seed}).")
+    print("(The story layer is armed: a war is seeded in this world and "
+          "its first word finds a level-2 party. DM: see dm.md, The war.)")
     print_pc_candidates(state)
     names = ", ".join(f"{s['name']} ({s['race']} {s['kind']})"
                       for s in world["settlements"])
@@ -1019,7 +1031,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
     """The active quest's cleared room: move the cursor. Finishing a site
     pays its clear lump + gold (each site pays its own way -- the level IS
-    the pay grade); finishing the last site closes the quest."""
+    the pay grade); finishing the last site closes the quest, day-stamps
+    it, and delivers the EPILOGUE (2026-07-12: the authored aftermath line
+    the giver's turn-in scene is narrated over -- dm.md)."""
     quest = state["world"]["quests"][qid]
     party, purse = state["party"], state["purse"]
     cur = quest["next"]
@@ -1037,10 +1051,61 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
     cur["room"] = 0
     if last_site:
         quest["status"] = "done"
+        quest["done_day"] = state["clock"].day
+        g = quest.get("giver")
+        if g:
+            log.append(f"  (turn in to {g['name']}, {g['role']} -- "
+                       f"narrate the scene)")
+        if quest.get("epilogue"):
+            log.append(f"  EPILOGUE (day {state['clock'].day}): "
+                       f"{quest['epilogue']}")
+        if quest.get("story_wave") is not None and state.get("story"):
+            for line in story.on_wave_done(state["story"], quest,
+                                           state["clock"].day):
+                log.append("  " + line)
     else:
         nxt = quest["sites"][cur["site"]]
         log.append(f"  (next: {nxt['name']}, L{nxt['level']}, "
                    f"{len(nxt['rooms'])} encounter(s))")
+
+
+def maybe_post_wave(state: dict, log: list | None = None) -> bool:
+    """The war's clock (story.py): post the next wave when it is due --
+    the previous wave DONE and the party at the wave's level (2/5/8/10).
+    Checked at the natural news-reaches-you points: the board, arrivals,
+    settlement nights, and right after a quest pays out. Prints (or
+    appends) the messenger scene; every call site saves afterward."""
+    st = state.get("story")
+    living = [h for h in state["party"] if not h.dead]
+    if not st or not living:
+        return False
+    if story.next_wave_due(st, max(h.level for h in living)) is None:
+        return False
+    quest, lines = story.post_wave(state["world"], st, state["rng"],
+                                   state["clock"].day)
+    lines.append(f"(details: `show {quest['id']}`; it is taken AT its "
+                 f"settlement, like any quest)")
+    if log is None:
+        print("\n".join(lines))
+    else:
+        log.extend(lines)
+    return True
+
+
+def occupied_here(state: dict) -> dict | None:
+    """The local settlement when it lies in the war's fallen land (the
+    post-wave-3 occupation), else None."""
+    here = local_settlement(state)
+    if here is not None and story.occupied(state.get("story"), here):
+        return here
+    return None
+
+
+def occupation_line(state: dict, settlement: dict) -> str:
+    return (f"{settlement['name']} lies under the "
+            f"{state['story']['aggressor']} yoke -- no board, no tavern, "
+            f"no hiring, no idle days in an occupied town. The roads "
+            f"still pass through, and the war can still turn.")
 
 
 def pay_set_site_clear(state: dict, log: list[str], site_key: str,
@@ -1109,6 +1174,9 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # The companion morale pass: blood and fear, whatever the outcome
         # (a game over needs no bookkeeping).
         satisfaction_after_fight(party, dead_before or [], log)
+        # The war's clock: a fight that leveled the party (or closed a
+        # wave) can bring the next messenger on the spot.
+        maybe_post_wave(state, log)
     print_combat(log)
     save(state)
     report_game_over(party, wiped)
@@ -1212,10 +1280,13 @@ def cmd_board(args: argparse.Namespace) -> None:
     if not world:
         print("No world in this save -- start one with `new`.")
         return
+    if state["party"] and maybe_post_wave(state):
+        save(state)     # persist the posting BEFORE the readout: a broken
+                        # pipe mid-print must not lose the wave
     key = None
     if args.settlement:
         # An explicit settlement (or 'all') is the DM's overview; what the
-        # PLAYER gets to read is the local board below (dm.md).
+        # PLAYER gets is the ask-around funnel over the local list (dm.md).
         if args.settlement.lower() != "all":
             want = args.settlement.lower()
             match = [s for s in world["settlements"] if want in s["key"]]
@@ -1228,13 +1299,25 @@ def cmd_board(args: argparse.Namespace) -> None:
     else:
         here = local_settlement(state)
         if here is None:
-            print(f"No board out here -- the party is at "
-                  f"{location_line(state)}. Boards hang in settlements "
+            print(f"No jobs to ask after out here -- the party is at "
+                  f"{location_line(state)}. Work is found in settlements "
                   f"(`map` lists them; `board all` is the DM overview).")
             return
+        if occupied_here(state):
+            print(occupation_line(state, here))
+            return
         key = here["key"]
+        print(f"Day {state['clock'].day}. Asking around {here['name']} "
+              f"(the DM's inventory -- in play, each job is its GIVER's; "
+              f"funnel to them in one message, dm.md):")
     for line in board_lines(world, key):
         print(line)
+    if not args.settlement:
+        cast = [n for n in world.get("npcs", []) if n["seat"] == key]
+        if cast:
+            print("Notables in town (the recurring cast -- see dm.md):")
+            for n in cast:
+                print("  " + npc_line(n))
     if not args.settlement:
         # Word travels within a land (2026-07-11, designer call): the
         # player KNOWS every open quest in the current land -- name, level,
@@ -1256,6 +1339,8 @@ def cmd_board(args: argparse.Namespace) -> None:
                   f"take one; `show QID` for what's known):")
             for line in rumors:
                 print(line)
+    for line in story.war_status_lines(world, state.get("story")):
+        print(line)
     if state.get("active_quest"):
         print(f"(active quest: {state['active_quest']})")
 
@@ -1281,8 +1366,16 @@ def cmd_take(args: argparse.Namespace) -> None:
         return
     if not at_quest_settlement(state, quest):
         return
+    here = occupied_here(state)
+    if here is not None:
+        print(occupation_line(state, here))
+        return
     state["active_quest"] = quest["id"]
     save(state)
+    g = quest.get("giver")
+    if g:
+        print(f"The job is taken from its giver -- narrate the scene "
+              f"(dm.md): {npc_line(g)}")
     print(f"The party takes the job: {quest_line(quest)}")
     for line in quest_detail_lines(quest)[1:]:
         print(line)
@@ -1324,11 +1417,22 @@ def cmd_room(args: argparse.Namespace) -> None:
               f"room {room_i + 1}/{len(site['rooms'])}: {room_name}")
     if held is None:
         log.append(banner + " ===")
+        # A named villain (the conquest's lieutenants/conqueror) caps the
+        # site's last room: the strongest roster slot wears the name --
+        # display only, the stat row never forks (story.py).
+        boss = site.get("boss")
+        boss_at = None
+        if boss and room_i == len(site["rooms"]) - 1:
+            hits = [i for i, k in enumerate(kinds) if k == boss["kind"]]
+            boss_at = hits[-1] if hits else None
         foes = []
-        for kind in kinds:
+        for i, kind in enumerate(kinds):
             state["foe_count"] += 1
-            foes.append(make_foe(kind, state["foe_count"], rng,
-                                 display=quest["skins"].get(kind)))
+            foe = make_foe(kind, state["foe_count"], rng,
+                           display=quest["skins"].get(kind))
+            if i == boss_at:
+                foe.name = boss["display"]
+            foes.append(foe)
         for line in roster_lines(foes):
             log.append("  " + line)
     else:
@@ -1486,13 +1590,18 @@ def cmd_travel(args: argparse.Namespace) -> None:
     reset_streak(state)
     print("\n".join(log))
     state["location"] = target
-    print(f"The party arrives at {location_line(state)}.")
+    print(f"The party arrives at {location_line(state)} (day "
+          f"{state['clock'].day}).")
+    here = occupied_here(state)
+    if here is not None:
+        print(occupation_line(state, here))
     # Settling the books at the walls: the dead are buried, anyone done with
     # this party walks (with their head-split of the purse).
     log = []
     process_departures(state, log)
     if log:
         print("\n".join(log))
+    maybe_post_wave(state)      # news travels; arrivals are where it lands
     chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
     if not wild_event(state, chance, f"On the road to {target['name']}"):
         save(state)
@@ -1593,12 +1702,16 @@ def cmd_map(args: argparse.Namespace) -> None:
         print("No world in this save -- start one with `new`.")
         return
     loc = state["location"]
-    print(f"The party stands at {location_line(state)}.")
+    st = state.get("story")
+    print(f"Day {state['clock'].day}. The party stands at "
+          f"{location_line(state)}.")
     print(f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
           f"{TRAVEL_DAYS_CROSS} days to another land; every travel day "
           f"risks a road encounter)")
     for race, settlements in lands(world).items():
         mark = "  <- here" if race == loc["land"] else ""
+        if st and st.get("fallen") == race:
+            mark += "  [UNDER THE YOKE]"
         print(f"the {race} lands:{mark}")
         for s in settlements:
             open_q = sum(1 for qid in s["quests"]
@@ -1606,11 +1719,18 @@ def cmd_map(args: argparse.Namespace) -> None:
             here = "  <- the party" if s["key"] == loc["place"] else ""
             print(f"  {s['name']} ({s['kind']}) -- {open_q} open "
                   f"quest(s){here}")
+        cast = [n for n in world.get("npcs", []) if n["land"] == race]
+        if cast:
+            print("  notables: " + "; ".join(f"{n['name']} ({n['role']}, "
+                                             f"at {n['seat']})"
+                                             for n in cast))
         for p in state.get("places", []):
             if p["land"] == race:
                 here = ("  <- the party"
                         if p["name"].lower() == loc["place"] else "")
                 print(f"  {p['name']} (wilds, found day {p['day']}){here}")
+    for line in story.war_status_lines(world, st):
+        print(line)
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -1813,6 +1933,10 @@ def cmd_tavern(args: argparse.Namespace) -> None:
         print(f"No tavern out here -- the party is at {location_line(state)}."
               f" Beds are settlement comfort; in the wilds it's `camp`.")
         return
+    here = occupied_here(state)
+    if here is not None:
+        print(occupation_line(state, here))
+        return
     log: list[str] = []
     if not _tavern_rest(state["party"], state["clock"], state["purse"], log):
         print("\n".join(log))
@@ -1831,6 +1955,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
         log.append("  In the common room tonight (see `recruit`, sign with "
                    "`hire NAME`):")
         log.extend(summary)
+    maybe_post_wave(state, log)     # tavern talk is where war news lands
     print("\n".join(log))
     save(state)
 
@@ -1848,6 +1973,9 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     if here is None:
         print(f"A day off wants walls and company -- the party is at "
               f"{location_line(state)}. In the wilds the night is `camp`.")
+        return
+    if occupied_here(state) is not None:
+        print(occupation_line(state, here))
         return
     party, clock = state["party"], state["clock"]
     log: list[str] = [f"  The party takes a day off at {here['name']}."]
@@ -1868,8 +1996,51 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     reset_streak(state)
     clear_sighting(state)
     process_departures(state, log)
+    maybe_post_wave(state, log)
     print("\n".join(log))
     save(state)
+
+
+CHATTER_PROMPTS = {
+    "temperament": "their {v} streak colors the evening",
+    "quirk": "the old preoccupation surfaces: {v}",
+    "interest": "talk drifts to {v} -- their favorite subject",
+    "weakness": "the {v} itch is acting up",
+    "background": "a story from their {v} days comes out",
+    "speech": "holding forth, {v} as ever",
+    "voice": "that {v} voice carries over the fire",
+    "dress": "fussing over their {v} clothes",
+    "looks": "someone needles them about their looks ({v}); they answer",
+}
+
+
+def cmd_chatter(args: argparse.Namespace) -> None:
+    """A chatter seed for the DM's party-flavor beat (dm.md): who is
+    preoccupied with what, drawn from traits + current satisfaction. Uses
+    an UNSEEDED rng on purpose -- flavor must never perturb the game's
+    dice -- and changes no state (nothing is saved)."""
+    state = load()
+    party = state["party"]
+    companions = [h for h in party[1:] if not h.dead]
+    if not companions:
+        print("No companions along -- the road is quiet.")
+        return
+    rng = random.Random()
+    print("CHATTER SEED (riff briefly -- a line or three of party talk):")
+    for h in rng.sample(companions, min(2, len(companions))):
+        mood = ""
+        if satisfaction_tracked(h):
+            if wants_to_leave(h):
+                mood = "; one boot already out the door"
+            elif h.satisfaction <= 3:
+                mood = f"; sullen and gone quiet (satisfaction "\
+                       f"{h.satisfaction})"
+            elif h.satisfaction >= 9:
+                mood = "; in high spirits"
+        cat, val = rng.choice(sorted(h.traits.items()))
+        prompt = CHATTER_PROMPTS[cat].format(v=val)
+        print(f"  {h.name} ({h.race} {h.sex}, {cat}: {val}{mood}) -- "
+              f"{prompt}.")
 
 
 def cmd_award(args: argparse.Namespace) -> None:
@@ -2148,15 +2319,23 @@ def main() -> None:
 
     p = sub.add_parser(
         "board",
-        help="the LOCAL quest board: the current settlement's posted quests "
-             "with level (shown straight -- too easy and too hard both "
-             "happen), shape, and pay -- plus WORD FROM AROUND THE LAND: "
-             "every other open quest in the current land (name, level, "
-             "where), so travel is an informed choice. Only the local "
-             "board's jobs can be taken here. `board all` / `board NAME` "
-             "is the DM overview, not what the player reads.")
+        help="the DM's LOCAL quest inventory (2026-07-12: in play there is "
+             "no board -- each job belongs to its GIVER, and asking around "
+             "funnels to that person in one message, see dm.md). Rows show "
+             "level (straight), shape, pay, and the giver; plus notables "
+             "in town, WORD FROM AROUND THE LAND (other open jobs in this "
+             "land), and the war's status. Only local jobs can be taken "
+             "here. `board all` / `board NAME` is the wider DM overview.")
     p.add_argument("settlement", nargs="?", default=None)
     p.set_defaults(func=cmd_board)
+
+    p = sub.add_parser(
+        "chatter",
+        help="a party-chatter seed for the DM's flavor beat: 1-2 "
+             "companions, what they're preoccupied with (traits + "
+             "satisfaction). Unseeded rng, no state change -- pure "
+             "flavor, safe to call any time.")
+    p.set_defaults(func=cmd_chatter)
 
     p = sub.add_parser(
         "map",
