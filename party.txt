@@ -1,21 +1,20 @@
-RPG2 PARTY SHEET -- day 1, at Stonemarket (human lands, settlement)
-purse: 19g | short rests left today: 1
+RPG2 PARTY SHEET -- day 2, at Stonemarket (human lands, settlement)
+purse: 15g | short rests left today: 1
 party: 3/3 companion slot(s) filled (CHA 6)
 
-(YOU)       Krusk (L1, training 0): DEX 6  STR 5  STA 6/7  HP 8/9  Power 0/4  CHA 6  (first_blood; spear; healingx1)
+(YOU)       Krusk (L1, training 0): DEX 6  STR 5  STA 8/7  HP 10/9  Power 4/4  CHA 6  (first_blood; spear; healingx1, staminax1)
             Krusk -- orc m, age 23; weakness: needs meds; speech: verbose; dress: elegant
             XP 50/100 to L2 | skill points: 0
 
-(companion) Muzgash (L1, training 0): DEX 5  STR 5  STA 3/7  HP 10/10  Power 6/6  CHA 6  (heal; wooden staff; healingx2)  [satisfaction 8/10]
+(companion) Muzgash (L1, training 0): DEX 5  STR 5  STA 8/7  HP 11/10  Power 6/6  CHA 6  (heal; wooden staff; healingx2, staminax1)  [satisfaction 9/10]
             Muzgash -- orc m, age 29; background: peasant; voice: whispering; dress: ascetic
             XP 50/100 to L2 | skill points: 0
 
-(companion) Jorik (L1, training 0): DEX 6  STR 6  STA 5/8  HP 12/12  Power 6/6  CHA 3  (heal; battleaxe; staminax2)  [satisfaction 8/10]
+(companion) Jorik (L1, training 0): DEX 6  STR 6  STA 9/8  HP 13/12  Power 6/6  CHA 3  (heal; battleaxe; healingx1, staminax2)  [satisfaction 9/10]
             Jorik -- human m, age 41; temperament: mean; dress: flamboyant; looks: big
             XP 50/100 to L2 | skill points: 0
 
-(companion) Fizzet (L2, training 1): DEX 5  STR 4  STA 5/5  HP 12/12  Power 0/4  CHA 3  (first_blood; scimitar; staminax1)  [satisfaction 8/10]
+(companion) Fizzet (L2, training 1): DEX 5  STR 4  STA 6/5  HP 13/12  Power 4/4  CHA 3  (first_blood; scimitar; healingx1, staminax1)  [satisfaction 9/10]
             Fizzet -- goblin f, age 30; quirk: has an enemy (Thoradin, a dwarf mercenary captain, level 4, out there somewhere); speech: poetic; dress: mismatched
             XP 50/200 to L3 | skill points: 0
 
-momentum: 3 encounter(s) at hideout since the last camp
