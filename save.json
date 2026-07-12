@@ -20,7 +20,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 5,
+   "cur_sta": 3,
    "cur_power": 4,
    "down": false,
    "dead": false,
@@ -31,7 +31,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 15,
+   "xp": 75,
    "skill_points": 0,
    "training": 0,
    "weapon": "morningstar",
@@ -73,7 +73,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 10,
-   "cur_sta": 6,
+   "cur_sta": 5,
    "cur_power": 1,
    "down": false,
    "dead": false,
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 15,
+   "xp": 75,
    "skill_points": 0,
    "training": 0,
    "weapon": "spear",
@@ -101,7 +101,7 @@
     "dress": "mismatched",
     "voice": "whispering"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "Zizzer",
    "bond_kind": "old ally",
    "last_dose_day": 0
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 15,
+   "xp": 75,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -154,7 +154,7 @@
     "voice": "melodious",
     "dress": "ascetic"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -190,7 +190,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 15,
+   "xp": 75,
    "skill_points": 0,
    "training": 0,
    "weapon": "club",
@@ -207,7 +207,7 @@
     "voice": "melodious",
     "speech": "formal"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -218,9 +218,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 10
+  "gold": 49
  },
- "foe_count": 2,
+ "foe_count": 3,
  "active_quest": "q29",
  "world": {
   "seed": 593671033,
@@ -2312,10 +2312,10 @@
      }
     ],
     "next": {
-     "site": 0,
-     "room": 2
+     "site": 1,
+     "room": 0
     },
-    "status": "open",
+    "status": "done",
     "epilogue": "Air moves in the undercity again; small pay, but the vent-warden's word is now good in every burrow.",
     "giver": {
      "name": "Boilo",
@@ -2328,7 +2328,8 @@
       "speech": "formal",
       "dress": "elegant"
      }
-    }
+    },
+    "done_day": 1
    },
    "q30": {
     "id": "q30",
@@ -3180,7 +3181,7 @@
  "sighting": null,
  "streak": {
   "site": "q29/s1",
-  "count": 2
+  "count": 3
  },
  "site_clears": {},
  "pc_candidates": null,
@@ -3930,7 +3931,7 @@
    4010468458,
    819337607,
    2956695332,
-   451
+   505
   ],
   null
  ]
