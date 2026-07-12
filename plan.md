@@ -30,6 +30,11 @@ generated line or two per settlement for the DM to riff on), and the
 **authored questline spine** below. Roughly half dm.md protocol, half
 light content generation; very little engine.)*
 
+*(Tone constraint on all story content, settled 2026-07-12: every premise
+must pass the **heroism-sufficient test** — see CLAUDE.md, "The feel we're
+going for". No grimdark, no grim realism; villains legible and theatrical;
+stakes escalate by scale, not darkness.)*
+
 *(2026-07-08: the encounter & quest system SHIPPED — pool growth in the
 engine, the humanoid ladder (soldier→warlord), the generation layer
 (`quests.py`: threat math, room/site/quest builders, seeded worldgen with
@@ -111,6 +116,28 @@ in-fight half; the wipe version stays parked below.
 - **Morale & surrender** — enemies breaking, yielding, bargaining; natural
   attachment point: the retreat/pursuit logic. (Distinct from companion
   satisfaction, which shipped 2026-07-11 — this is the ENEMY side.)
+- **The recurring nemesis** — a named enemy who flees the fight at low HP
+  (the enemy-side retreat above is the natural mechanism) and returns
+  later, leveled, with a grudge. One small mechanic, a large amount of
+  free story: pulp villainy is legible and theatrical, and a foe who
+  ESCAPES is the cheapest way to buy a personal arc without gray-morality
+  writing. Fits the story layer's recurring-NPCs slot once enemy retreat
+  exists.
+- **Encounter objectives (fight shapes)** — variety inside the autocombat
+  itself, orthogonal to the bestiary: kill-the-summoner-first, the totem
+  that heals its pack, protect-the-wagon, reinforcement waves, terrain.
+  Under autocombat every gimmick must resolve through pre-fight decisions,
+  standing orders, or the pause — which is exactly the standing-orders
+  hook's shape (a target-priority order is the obvious first cell). The
+  most mechanics-centered variety lever available: it multiplies the
+  existing catalog without new rows, and it's what the press/sweep
+  machinery is waiting for.
+- **The collection layer** — bestiary completion, trophies from notable
+  kills, titles/deeds; cheap acquisitive wish-fulfillment (the
+  Skyrim/WoW loop) that turns content already built into content twice.
+  Named weapons (roadmap #4) are the anchor piece; a `history` readout
+  (parked below) is halfway to a deeds page. Display-first: none of it
+  needs mechanics to start paying.
 - **Story recruitment** — defeated or met NPCs joining the party outside
   the tavern surface (the tavern layer shipped 2026-07-11; this is the
   "the ogre yields and joins you" version, DM-driven).

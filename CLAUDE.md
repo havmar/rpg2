@@ -24,6 +24,22 @@ instead of grinding through every roll by hand — but the world around it stays
 open-ended and player-driven. The engine owns the numbers; the DM owns the
 fiction.
 
+**Tone (settled 2026-07-12): heroic power fantasy — comfort food, colorful
+and pulpy, never grimdark and never grimly realistic.** Two working rules
+keep it there without going bland:
+- **Grimness lives in the numbers, color in the prose.** The mechanics
+  already carry all the bite this game needs (STA misjudgment kills,
+  companions die, fate's bargain collects). Because the danger is
+  mechanical, the fiction is free to stay bright — never write suffering
+  into quest premises or narration to create stakes the engine already
+  provides.
+- **The heroism-sufficient test** for any quest premise or content idea:
+  *is the wrong fully rightable by heroism?* "Trolls took the pass" passes;
+  incurable sickness and trusted-friend betrayal fail. Black-and-white
+  morality means *legible*, not bland — villains scheme theatrically and
+  obviously (the evil vizier, the rival crew), and problems escalate by
+  getting BIGGER, not darker.
+
 **How play is driven:** the game is *two halves working together*.
 - **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
   library of mechanics primitives and content — `start_fight`,
@@ -683,6 +699,13 @@ curve.
   equality.
 - Two layers, kept separate: thin mechanics in code, rich flavor added by the DM
   over the log. Don't bake prose into the engine beyond terse event lines.
+- **New systems must touch the shared state** (gold, the clock, XP,
+  satisfaction, location, the board) — the toybox/sandbox feel the game
+  wants comes from orthogonal systems interacting through common state
+  (that's what makes powermaxxing, goofing, and emergent subversion
+  possible), so a subsystem that lives in its own pocket is a minigame,
+  not a toy. The shipped layers all obey this (the streak, CHA gold,
+  satisfaction, tavern nights interlock); keep it true as the box grows.
 - **Zero backwards compatibility.** This is an early prototype: never spend
   effort keeping saves or schemas loadable across changes. Rename and
   restructure freely; any `save.json` is disposable — when a change breaks
