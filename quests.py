@@ -27,8 +27,11 @@ bestiary by its bench-calibrated level annotations. The design (2026-07):
   "enough structured content to max out" is asserted, not hoped.
 
 Local quests are FORMULAIC ON PURPOSE (placeholders, not authored content):
-a stereotype of the settlement's race x a themed foe pool. Major questlines
-(the conqueror, the hellish invasion) are deferred -- see plan.md.
+a stereotype of the settlement's race x a themed foe pool. The authored
+questline layer lives in story.py (the conquest, 2026-07-12); since the
+same date every quest also carries a GIVER (the face behind the job) and
+an EPILOGUE, and each land a small persistent cast -- see rules.md's
+Story Layer add-on.
 
 Run:  python quests.py [--seed N]     # print a generated world's board
       python quests.py --demo         # also dump one quest's full rosters
@@ -183,6 +186,10 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 # kind -> display name). A template's usable level range derives from its
 # pool (template_band), so the wolf quest never rolls at level 18 and the
 # drake never at level 2. `sites` are name stems for the quest's 1-3 sites.
+# Since 2026-07-12 each template also carries `giver` (the ROLE of the
+# person behind the job -- worldgen puts a generated face on it, see
+# attach_giver; in play there is no board, quests come from these people)
+# and `epilogue` (one authored line of aftermath, delivered at turn-in).
 
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
@@ -200,23 +207,35 @@ TEMPLATES: dict[str, list[dict]] = {
              desc="Wagons stripped, a toll of blood at the fords. The reeve "
                   "pays for the road made safe.",
              pool=LADDER_POOL, skins={},
-             sites=("the roadside camp", "the toll bridge", "the old fort")),
+             sites=("the roadside camp", "the toll bridge", "the old fort"),
+             giver="the king's reeve",
+             epilogue="The fords run quiet again; carters raise a cup to "
+                      "the party at every wayhouse on the road."),
         dict(title="Wolves at the Folds",
              desc="Sheep gone, then a shepherd. The commons want the pack "
                   "dug out of the hills.",
              pool=WOLF_POOL, skins={},
-             sites=("the high pasture", "the den in the hills")),
+             sites=("the high pasture", "the den in the hills"),
+             giver="the shepherds' elder",
+             epilogue="Lambing season passes without a beast lost; the "
+                      "elder salts the den's earth as the old rites ask."),
         dict(title="The Restless Crypt",
              desc="The churchyard dead are not staying put. The parish "
                   "purse opens for whoever settles them.",
              pool=UNDEAD_POOL, skins={},
-             sites=("the churchyard", "the crypt below")),
+             sites=("the churchyard", "the crypt below"),
+             giver="the parish priest",
+             epilogue="The graves are re-consecrated at dusk; the parish "
+                      "sleeps its first whole night in weeks."),
         dict(title="Deserters Turned Raiders",
              desc="Soldiers who kept their steel and lost their oaths, "
                   "living off the villages they once guarded.",
              pool=LADDER_POOL, skins={"soldier": "Deserter",
                                       "veteran": "Deserter Sergeant"},
-             sites=("the burned farmstead", "the deserters' camp")),
+             sites=("the burned farmstead", "the deserters' camp"),
+             giver="the garrison captain",
+             epilogue="The recovered blades go back to the armory; the "
+                      "villages post no watch tonight."),
     ],
     "elf": [
         dict(title="The Blighted Glade",
@@ -225,18 +244,28 @@ TEMPLATES: dict[str, list[dict]] = {
              pool=SPIDER_POOL + WOLF_POOL,
              skins={"great spider": "Gloomweaver",
                     "wolf": "Blight-Wolf", "dire wolf": "Blight-Alpha"},
-             sites=("the glade's edge", "the heartwood")),
+             sites=("the glade's edge", "the heartwood"),
+             giver="the warden-council's voice",
+             epilogue="Green returns to the glade's edge within the "
+                      "season; what soured the heartwood is burned and "
+                      "sung over."),
         dict(title="Webs in the Canopy",
              desc="The high walkways are silked over and the wardens who "
                   "went up have not come down.",
              pool=SPIDER_POOL, skins={"great spider": "Canopy Weaver"},
-             sites=("the lower boughs", "the silked walkways")),
+             sites=("the lower boughs", "the silked walkways"),
+             giver="the master of the high walkways",
+             epilogue="The silk is cut away and the walkways rehung; the "
+                      "lost wardens are carried down for their rites."),
         dict(title="Beasts Maddened by the Blight",
              desc="Boar and bear alike gone wrong-eyed, tearing through "
                   "the outlying groves.",
              pool=BEAST_POOL, skins={"boar": "Blight-Boar",
                                      "bear": "Blight-Bear"},
-             sites=("the torn grove", "the beast's harbor")),
+             sites=("the torn grove", "the beast's harbor"),
+             giver="the grove-keeper",
+             epilogue="The groves go quiet again; the keeper plants a "
+                      "sapling for every beast that had to die."),
         dict(title="Wardens Gone Rogue",
              desc="A warden-band that answers to no council now, taxing "
                   "the forest roads at arrowpoint.",
@@ -244,14 +273,21 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"archer": "Rogue Warden", "cutthroat": "Rogue Scout",
                     "soldier": "Rogue Warden", "veteran": "Warden-Captain",
                     "champion": "Blade of the Wild"},
-             sites=("the forest road", "the rogue lodge")),
+             sites=("the forest road", "the rogue lodge"),
+             giver="the council's justiciar",
+             epilogue="The rogue lodge is unroofed and left to the moss; "
+                      "the forest roads charge no toll but weather."),
     ],
     "orc": [
         dict(title="The Proving Hunt",
              desc="The clan sets a beast worth a name. Bring back its hide "
                   "and the clan pays in iron and standing.",
              pool=BEAST_POOL + ("dire wolf",), skins={},
-             sites=("the hunting ground", "the beast's lair")),
+             sites=("the hunting ground", "the beast's lair"),
+             giver="the clan's huntmaster",
+             epilogue="The hide hangs in the long-tent and the party's "
+                      "name is spoken at the fire -- iron and standing, "
+                      "paid in full."),
         dict(title="Rival Warband",
              desc="A rival clan's raiders cut the herd trails. The warchief "
                   "pays for them driven off or dead.",
@@ -260,17 +296,26 @@ TEMPLATES: dict[str, list[dict]] = {
                     "bruiser": "Orc Breaker", "soldier": "Orc Raider",
                     "veteran": "Orc Blooded", "champion": "Orc Warchief",
                     "blademaster": "Orc Deathblade", "warlord": "Orc Overlord"},
-             sites=("the raided trail", "the rival camp", "the war-tent")),
+             sites=("the raided trail", "the rival camp", "the war-tent"),
+             giver="the warchief",
+             epilogue="The rival clan sends a peace-gift of salt and "
+                      "knives; the herd trails run open."),
         dict(title="The Troll Under the Pass",
              desc="The mountain road pays tribute in carts and drivers. "
                   "The clans want the pass opened.",
              pool=GIANTKIN_POOL, skins={},
-             sites=("the boulder field", "the cave under the pass")),
+             sites=("the boulder field", "the cave under the pass"),
+             giver="the toll-keeper of the pass",
+             epilogue="Carts roll the pass by the next moon; drivers "
+                      "still spit at the cave mouth for luck."),
         dict(title="Wyvern on the Crags",
              desc="A shadow over the herds, and herders who point at the "
                   "high crags and will not climb.",
              pool=DRAKE_POOL, skins={},
-             sites=("the scree slopes", "the crag eyrie")),
+             sites=("the scree slopes", "the crag eyrie"),
+             giver="the herd-elder",
+             epilogue="The herders climb again; the skull goes up on a "
+                      "spear above the trail, warning and boast at once."),
     ],
     "dwarf": [
         dict(title="Things in the Deep Roads",
@@ -279,7 +324,10 @@ TEMPLATES: dict[str, list[dict]] = {
              pool=SPIDER_POOL + WOLF_POOL,
              skins={"great spider": "Deep Creeper", "wolf": "Tunnel Hound",
                     "dire wolf": "Tunnel Stalker"},
-             sites=("the toll gate", "the deep road", "the junction vault")),
+             sites=("the toll gate", "the deep road", "the junction vault"),
+             giver="the toll-guild's factor",
+             epilogue="The under-way reopens by the cleared mile, tolls "
+                      "half-price for a season in the party's honor."),
         dict(title="The Flooded Hold",
              desc="An old hold, lost and lately dry again. What was buried "
                   "with it did not stay buried.",
@@ -287,13 +335,19 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"skeleton": "Drowned Delver", "ghoul": "Pale Delver",
                     "wight": "Hold-Lord"},
              sites=("the cracked gate", "the drowned galleries",
-                    "the hold's heart")),
+                    "the hold's heart"),
+             giver="the hold's last heir",
+             epilogue="The heir walks the dry galleries once, dry-eyed, "
+                      "and seals the hold behind -- some doors are better "
+                      "shut."),
         dict(title="The Breaker in the Dark",
              desc="Something big moved into the worked seams and it does "
                   "not share. The mine masters want their tunnels back.",
              pool=GIANTKIN_POOL, skins={"ogre": "Deep Ogre",
                                         "troll": "Stone Troll"},
-             sites=("the worked seam", "the broken gallery")),
+             sites=("the worked seam", "the broken gallery"),
+             giver="the mine-masters' speaker",
+             epilogue="The seams ring with picks again by week's end."),
         dict(title="The Grudge War",
              desc="A rival clan pressed an old grudge with new axes. The "
                   "ledger wants balancing.",
@@ -302,7 +356,11 @@ TEMPLATES: dict[str, list[dict]] = {
                     "bruiser": "Grudge-Sworn", "soldier": "Grudge-Sworn",
                     "veteran": "Oathbreaker", "champion": "Grudge-Captain",
                     "blademaster": "Grudge-Lord"},
-             sites=("the contested gate", "the rival delving")),
+             sites=("the contested gate", "the rival delving"),
+             giver="the clan's grudge-keeper",
+             epilogue="The ledger line is struck through in both clans' "
+                      "books -- balanced, the keeper says, for a "
+                      "generation at least."),
     ],
     "goblin": [
         dict(title="Scrap-Hounds Loose in the Works",
@@ -310,7 +368,10 @@ TEMPLATES: dict[str, list[dict]] = {
                   "the gearworks. Pay docked for every eaten shift-worker.",
              pool=WOLF_POOL, skins={"wolf": "Scrap-Hound",
                                     "dire wolf": "Boiler Hound"},
-             sites=("the scrapyard", "the gearworks floor")),
+             sites=("the scrapyard", "the gearworks floor"),
+             giver="the shift foreman",
+             epilogue="The works run a full shift without a scream; the "
+                      "foreman docks nobody, this once."),
         dict(title="Press-Gang Trouble",
              desc="A rival boss's press-gang is stealing crews off the "
                   "night shift. The foreman pays for it stopped, no "
@@ -321,19 +382,31 @@ TEMPLATES: dict[str, list[dict]] = {
                     "veteran": "Shift-Breaker", "champion": "Under-Boss",
                     "blademaster": "Knife-King", "warlord": "The Big Boss"},
              sites=("the night market", "the press-gang den",
-                    "the boss's tower")),
+                    "the boss's tower"),
+             giver="the night-shift foreman",
+             epilogue="The night crews walk home unescorted; the rival "
+                      "boss's tower stands quiet -- under new management "
+                      "within the week."),
         dict(title="The Engine Gone Feral",
              desc="They built it too big and fed it too well, and now the "
                   "lower works belong to it.",
              pool=GIANTKIN_POOL,
              skins={"ogre": "Breaker-Engine", "troll": "Furnace Hulk",
                     "giant": "The Great Machine"},
-             sites=("the lower works", "the furnace hall")),
+             sites=("the lower works", "the furnace hall"),
+             giver="the works overseer",
+             epilogue="The lower works are re-lit gallery by gallery; the "
+                      "bosses are already arguing about building it "
+                      "again, bigger."),
         dict(title="Spiders in the Undercity",
              desc="The vent shafts are webbed shut and the air below is "
                   "going bad. Small pay, small heroes welcome.",
              pool=SPIDER_POOL, skins={"great spider": "Vent Crawler"},
-             sites=("the vent shafts", "the web-choked cistern")),
+             sites=("the vent shafts", "the web-choked cistern"),
+             giver="the vent-warden",
+             epilogue="Air moves in the undercity again; small pay, but "
+                      "the vent-warden's word is now good in every "
+                      "burrow."),
     ],
 }
 
@@ -345,12 +418,19 @@ EPIC_TEMPLATES: list[dict] = [
               "crown calls it rebellion with wings.",
          pool=DRAKE_POOL, skins={},
          sites=("the burned tithe-barns", "the mountain approach",
-                "the hoard-cave")),
+                "the hoard-cave"),
+         giver="the crown's marshal",
+         epilogue="The valley keeps its harvest for the first year in "
+                  "living memory; the tithe-barns are rebuilt as "
+                  "granaries."),
     dict(title="The Giant of the Border Marches",
          desc="Border forts flattened, garrisons walking home weaponless. "
               "The marshal wants the marches quiet again.",
          pool=GIANTKIN_POOL, skins={},
-         sites=("the flattened fort", "the march camps", "the high steading")),
+         sites=("the flattened fort", "the march camps", "the high steading"),
+         giver="the march-warden",
+         epilogue="The forts are re-garrisoned; the marches go quiet, "
+                  "and stay so."),
 ]
 
 # Villages post the same race tables, just fewer and lower-leveled: samey on
@@ -427,7 +507,23 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
         "sites": sites,
         "next": {"site": 0, "room": 0},     # the progress cursor
         "status": "open",
+        "epilogue": tpl.get("epilogue", ""),
     }
+
+
+def attach_giver(quest: dict, race: str, rng: random.Random,
+                 role: str | None = None,
+                 used_names: set[str] | None = None) -> None:
+    """Put a face on a quest (2026-07-12): the person behind the job. In
+    play there is NO board -- asking around funnels to this person in one
+    message (dm.md), taking the quest is talking to them, and they receive
+    the turn-in. Role comes from the template; the face is a targeted NPC
+    (people.make_npc: race/role fixed, personality rolled). Stored as a
+    plain dict on the quest, so it rides the save like everything else."""
+    from people import make_npc     # runtime import: people imports quests
+                                    # (RACES), so top-level would be a cycle
+    quest["giver"] = make_npc(rng, race, role or "the local patron",
+                              level=quest["level"], used_names=used_names)
 
 
 def forge_quest(qid: str, level: int, n_sites: int, n_rooms: int,
@@ -454,6 +550,45 @@ def forge_quest(qid: str, level: int, n_sites: int, n_rooms: int,
 # --------------------------------------------------------------------------- #
 # Worldgen
 # --------------------------------------------------------------------------- #
+# The central cast (2026-07-12): every land gets three persistent figures,
+# generated at worldgen and carried in the save -- a RULER (the war-wave
+# questgiver once the conquest questline runs), a KNOWLEDGE figure (the
+# exposition and foreshadowing voice), and one WILDCARD from a small role
+# table. The design trick for roles beyond questgiver: each wildcard hangs
+# on a system that already exists (recruiting, shopping, rumor, training)
+# instead of asking for new mechanics. They are dict NPCs (people.make_npc):
+# no stat blocks; if one must fight, forge the encounter.
+
+RULER_TITLES = {
+    "human":  {"m": "king", "f": "queen"},
+    "elf":    {"m": "speaker of the high council",
+               "f": "speaker of the high council"},
+    "orc":    {"m": "great chief of the clans",
+               "f": "great chief of the clans"},
+    "dwarf":  {"m": "high thane", "f": "high thane"},
+    "goblin": {"m": "chief overboss", "f": "chief overboss"},
+}
+SAGE_ROLES = ("loremaster", "court wizard", "keeper of records",
+              "temple scholar", "star-reader")
+WILDCARD_ROLES = ("spymaster", "mercenary captain", "master smith",
+                  "high priest", "war profiteer", "guild factor")
+
+
+def _cast_the_land(world: dict, race: str, seat: dict, rng: random.Random,
+                   used_people: set[str]) -> None:
+    from people import make_npc, SEXES     # runtime import (cycle: RACES)
+    sex = rng.choice(SEXES)
+    for role, post in ((RULER_TITLES[race][sex], "ruler"),
+                       (rng.choice(SAGE_ROLES), "sage"),
+                       (rng.choice(WILDCARD_ROLES), "wildcard")):
+        # Rulers and sages skew old (a 20-year-old king every world read
+        # wrong); the wildcard keeps the working-age roll.
+        age = rng.randint(35, 70) if post in ("ruler", "sage") else None
+        npc = make_npc(rng, race, role, sex=sex if post == "ruler" else None,
+                       age=age, used_names=used_people)
+        npc.update(land=race, seat=seat["key"], post=post)
+        world["npcs"].append(npc)
+
 
 def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
     pre, suf = NAME_PARTS[race]
@@ -467,7 +602,8 @@ def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
     return name
 
 
-def _post_quest(world: dict, settlement: dict, rng: random.Random) -> dict:
+def _post_quest(world: dict, settlement: dict, rng: random.Random,
+                used_people: set[str] | None = None) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the race's table (the capital also draws the epics)
@@ -490,6 +626,8 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random) -> dict:
     tpl = rng.choice(fresh or fitting)
     qid = f"q{len(world['quests']) + 1:02d}"
     quest = build_quest(qid, tpl, settlement["key"], level, rng)
+    attach_giver(quest, settlement["race"], rng, role=tpl.get("giver"),
+                 used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
     return quest
@@ -503,7 +641,9 @@ def generate_world(seed: int | None = None) -> dict:
     world provably holds a full career of at-level work."""
     rng = random.Random(seed)
     used_names: set[str] = set()
-    world: dict = {"seed": seed, "settlements": [], "quests": {}}
+    used_people: set[str] = set()   # one namespace for givers AND the cast:
+                                    # two Ruriks in one town read as a bug
+    world: dict = {"seed": seed, "settlements": [], "quests": {}, "npcs": []}
 
     races = list(RACES)
     rng.shuffle(races)
@@ -515,12 +655,16 @@ def generate_world(seed: int | None = None) -> dict:
                       "kind": kind, "quests": []}
         world["settlements"].append(settlement)
         for _ in range(SETTLEMENT_KINDS[kind][0]):
-            _post_quest(world, settlement, rng)
+            _post_quest(world, settlement, rng, used_people)
+
+    for race, setts in lands(world).items():
+        _cast_the_land(world, race, setts[0], rng, used_people)
 
     target = WORLD_XP_MARGIN * xp_to_cap(1)
     while (sum(quest_xp_total(q) for q in world["quests"].values()) < target
            and len(world["quests"]) < WORLD_MAX_QUESTS):
-        _post_quest(world, rng.choice(world["settlements"]), rng)
+        _post_quest(world, rng.choice(world["settlements"]), rng,
+                    used_people)
     return world
 
 
@@ -654,13 +798,19 @@ def quest_line(quest: dict) -> str:
 
 
 def board_lines(world: dict, settlement_key: str | None = None) -> list[str]:
+    """The DM's quest inventory per settlement (2026-07-12: in play there
+    is no board -- each row shows WHOSE job it is, and the ask-around
+    funnel leads to that person, see dm.md)."""
     lines = []
     for s in world["settlements"]:
         if settlement_key and s["key"] != settlement_key:
             continue
         lines.append(f"{s['name']} ({s['race']} {s['kind']}):")
         for qid in s["quests"]:
-            lines.append("  " + quest_line(world["quests"][qid]))
+            q = world["quests"][qid]
+            g = q.get("giver")
+            who = f"    ({g['name']}, {g['role']})" if g else ""
+            lines.append("  " + quest_line(q) + who)
     return lines
 
 
@@ -673,15 +823,24 @@ def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
 
 def quest_detail_lines(quest: dict) -> list[str]:
     lines = [quest_line(quest), f"    {quest['desc']}"]
+    g = quest.get("giver")
+    if g:
+        traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
+        lines.append(f"    giver: {g['name']}, {g['role']} ({g['race']} "
+                     f"{g['sex']}, age {g['age']}; {traits})")
     for i, s in enumerate(quest["sites"]):
         cur = quest["next"]
         for j, (rname, kinds) in enumerate(s["rooms"]):
             here = (quest["status"] == "open"
                     and cur["site"] == i and cur["room"] == j)
             mark = "  <- next" if here else ""
+            boss = s.get("boss")
+            led = (f" -- led by {boss['display']}"
+                   if boss and j == len(s["rooms"]) - 1 else "")
             lines.append(f"    site {i + 1} '{s['name']}' (L{s['level']}) "
                          f"room {j + 1}: {rname} -- "
-                         f"{roster_kinds_line(kinds, quest['skins'])}{mark}")
+                         f"{roster_kinds_line(kinds, quest['skins'])}"
+                         f"{led}{mark}")
     return lines
 
 
@@ -699,6 +858,11 @@ def main() -> None:
     print()
     for line in board_lines(world):
         print(line)
+    print()
+    print("The central cast:")
+    from people import npc_line
+    for npc in world["npcs"]:
+        print(f"  [{npc['land']} lands, at {npc['seat']}] {npc_line(npc)}")
     if args.demo:
         for q in world["quests"].values():
             print()

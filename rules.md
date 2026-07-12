@@ -1555,3 +1555,131 @@ make hire-use-dump-before-payday the optimal churn, and the retention
 economy a revolving door. Swapping the party out at the tavern is thus a
 real move (dismiss, then hire into the freed capacity) with a real price.
 
+---
+
+# The Story Layer & the Conquest — Add-on (2026-07-12)
+
+The quest system gave the game its work; this layer gives the work faces,
+aftermath, and a spine. Design stance: **story is people and consequences,
+not new combat mechanics** — everything here rides the existing quest
+schema, threat math, and pay formulas. The engine (`rpg.py`) is untouched;
+the sims never see any of it.
+
+## Quest givers & the funnel (there is no board)
+
+Every quest carries a **giver**: a generated face (name, race, sex, age,
+personality traits) whose ROLE the template authors (the reeve, the
+grudge-keeper, the vent-warden). The board survives only as the **DM's
+inventory readout** (`board` — each row shows whose job it is); in the
+fiction there is no board at all. The protocol is the **one-message
+funnel**: the party asks around — the tavern keeper knows, any local
+points the way — and a single message lands them in front of the giver,
+who lays out the job ("the mayor sends you to the chief constable...").
+Taking the quest IS talking to the giver; the giver remains talkable while
+it runs; the turn-in goes back to them. Faces come from the targeted
+generator (below); worldgen attaches them, so a playthrough's givers are
+permanent and learnable like everything else in its world.
+
+## Epilogues & the day stamp
+
+Every template authors one **epilogue** line — what happened after the
+job was done — delivered at the QUEST COMPLETE banner along with a
+turn-in prompt naming the giver. Completions are **day-stamped**
+(`done_day`), and the in-game day now prints on the board, the map, and
+the party sheet: the campaign has an official calendar, and the record of
+what the party did (and when) accretes in the save — the future `history`
+readout's raw material. Small mechanism, large effect: quests end as
+events in a world instead of pay lines.
+
+## The targeted NPC generator (`people.make_npc`)
+
+Party members are rolled whole — race, background, everything — because
+the dice casting the person IS the recruiting game. NPCs are the
+opposite: the DM already knows the constable is a middle-aged local, so
+the caller **fixes race, role, and optionally sex/age**, and the dice
+roll only the name and the personality (the same 1-behavior +
+2-presentation trait sketch companions get; presentation deliberately
+stays fully random — a flamboyantly dressed constable is a feature).
+NPCs are plain dicts with **no stat block**: if one must fight, forge the
+encounter or borrow a leveled body from `make_character`. `NPC_MIN_AGE`
+(20) floors the age roll for anyone with a job title.
+
+## The central cast
+
+Each land gets three persistent figures at worldgen, in the save for the
+whole playthrough: a **ruler** (race-titled: king/queen, high thane,
+speaker of the high council, great chief, chief overboss — the war-wave
+questgiver), a **sage** (loremaster, court wizard... — the exposition and
+foreshadowing voice), and a **wildcard** from a small role table
+(spymaster, mercenary captain, master smith, high priest, war profiteer,
+guild factor). The design rule for giving them life: **attach each to a
+system that already exists** — the captain to recruiting, the smith to
+shopping, the spymaster to rumor — rather than inventing mechanics per
+NPC. They print with the board (local notables) and the map.
+
+## Party chatter (`chatter`)
+
+The DM's second flavor beat (dm.md owns the protocol): a seed generator
+that picks 1-2 living companions and surfaces what they're preoccupied
+with — a trait, plus their satisfaction state when it's loud (sullen at
+<= 3, one boot out the door when quitting). Deliberately **unseeded and
+stateless**: flavor must never perturb the game's dice, so `chatter`
+draws from a throwaway rng and saves nothing.
+
+## The conquest — the first questline (levels 2-10)
+
+One aggressor race per playthrough rolls at worldgen and starts a war;
+four **waves**, each an ordinary multi-site quest pinned at levels
+**2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
+are always the easier ones). The variants:
+
+- **Elves — the Radiant Ascendancy.** Fascist perfection: so cultured
+  they should rule everyone. Magic-fuelled steampunk — everything they
+  field is beautiful, efficient, well designed (automata, aether-rifles,
+  colossus engines).
+- **Goblins — the Thousand Workshops.** Chaotic evil tech: robots,
+  bombs, bioweapons, vat-grown zany experiments.
+- **Humans — the Deathless Crown.** A king corrupted by a hungry god;
+  necromancy as conscription that does not end at death (the undead pool
+  plus living cultist soldiery).
+- **Orcs — the Iron Sky Horde.** A khagan unites the clans: might is
+  right, war is glorious, everything under the iron sky is theirs.
+- **Dwarves are never the aggressor** — the stalwart victim/ally land.
+
+The mechanics, all of them reuses:
+
+- **Rosters are reskins.** Every war body is an existing bench-calibrated
+  row wearing a themed display name (`make_foe(display=...)`); v1 adds
+  zero stat blocks. The **named villains** — the conqueror and two
+  lieutenants, generated faces with titles — cap waves 2/3/4 as a display
+  name on the strongest slot the threat math put in the final room:
+  the boss fight is exactly as hard as an honest room of that level.
+- **Wave gating**: wave N+1 posts when wave N's quest is DONE **and** the
+  party has reached the wave's level — checked at boards, arrivals,
+  settlement nights, and quest payouts, delivered as a day-stamped
+  messenger scene (herald line + the ruler raising the call). The war can
+  neither outrun the party nor lag it; a fresh party hears nothing until
+  its first level-up.
+- **Targets**: waves 1-2 press one victim land (skirmishes, then an
+  invasion beaten back); wave 3 takes a second land — chosen never to be
+  the capital's; wave 4 is raised from the capital against the
+  conqueror's own seat.
+- **Wave 3 is scripted loss.** The land falls regardless of the quest's
+  outcome — success buys the evacuation (the epilogue), full quest pay,
+  and the lieutenant's head, never the walls. The design point: the
+  player must get something REAL out of a won quest inside a lost battle,
+  or the script reads as a cheat.
+- **Occupation** is light but mechanical: the fallen land's settlements
+  refuse `board`/`take`/`tavern`/`downtime` (and with the tavern, all
+  hiring) with one line; travel through is allowed; the map marks the
+  land `[UNDER THE YOKE]`. Wave 4's victory lifts it.
+- **Pay is the standard formulas** at the pinned levels — war work is
+  rich because punching at your own level in 2-3-site quests is rich
+  (~250/750/1200/1500 quoted XP across the four waves; the whole war
+  roughly levels a party from 2 to ~10-11 on its own if pressed).
+
+Story state (aggressor, faces, targets, wave cursors, day-stamped event
+log, occupation) lives in the save under `story`. The **apocalypse
+questline** — the L12-20 second spine — stays parked on the magic tier
+(plan.md).
+

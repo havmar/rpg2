@@ -17,10 +17,11 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   (see The party below).
 - **Open with the options, then hand over.** After `pick`, the first real
   message should lay out what the party can DO, in one short menu: the
-  local board's level-appropriate quests (plus the old hideout outside the
-  starting settlement -- the level-1 starter), a `hunt` in the wilds, or a
-  `tavern` night to round out the party first. The player drives from the
-  first turn; don't railroad an opening quest.
+  level-appropriate local jobs (via the ask-around funnel -- see The world
+  and the quests below; plus the old hideout outside the starting
+  settlement -- the level-1 starter), a `hunt` in the wilds, or a `tavern`
+  night to round out the party first. The player drives from the first
+  turn; don't railroad an opening quest.
 - Continuing: `python session.py status` to see where things stand.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
@@ -35,28 +36,39 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
   name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use it for
   story, not convenience: the numbers are the game.
 
-## The world and the quest board (the game's spine)
+## The world and the quests (the game's spine)
 
 The world holds ~5 race LANDS, each with settlements posting combat quests
 at rolled levels (1-3 sites of 1-3 encounters each), plus its wilderness.
-**The party is always somewhere, and quests are LOCAL**: the board you can
-read and the jobs you can take are the current settlement's. **Which quest
-to take -- and whether it's worth the road to a better board -- is the
-player's core decision:**
+**The party is always somewhere, and quests are LOCAL**: the jobs you can
+take are the current settlement's. **Which quest to take -- and whether
+it's worth the road to a better town -- is the player's core decision:**
 
 - `map` shows the known world: lands, settlements (with open-quest counts),
-  discovered wild places, and where the party stands.
-- `board` lists the LOCAL settlement's quests: **the level is shown
-  straight and rewards scale with it** -- too easy and too hard both appear
-  on purpose. Reading the board IS the decision; a quest a couple of levels
-  up is a hard, paying fight (no longer a sheer wall since the 2026-07-09
-  regear), well below is safe wages. Advise honestly, then let them pick.
-  Since 2026-07-11 the board also prints **word from around the land** --
-  every other settlement's open quests in the current land, with levels
-  and where -- and that list is PLAYER-KNOWN: relay it, so travel is an
-  informed choice. (`board all` / `board NAME` is YOUR overview for pacing
-  -- the player reads the local board and the land's rumors, not other
-  lands' boards.)
+  notables, discovered wild places, the war's status, and where the party
+  stands -- plus the in-game day.
+- **There is NO quest board in the fiction (2026-07-12): quests come from
+  PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
+  its level (straight; too easy and too hard both appear on purpose), pay,
+  and WHOSE job it is (every quest has a generated giver: name, role,
+  personality). In play, run the **one-message funnel**: the party asks
+  around -- the tavern keeper knows, any local points the way -- and ONE
+  message lands them in front of the giver, who lays out the job ("you
+  ask at the taproom; the mayor waves you on to the chief constable, a
+  loud woman in flamboyant dress, who tells you about the crypt").
+  Roleplay the giver from their trait line (edit any contradiction before
+  presenting); they stay talkable while the quest runs, and the turn-in
+  is THEIR scene. Present 2-3 jobs per ask unless the player wants the
+  full slate; relay levels and pay straight, advise honestly, then let
+  them pick. The board also lists **word from around the land** (other
+  settlements' open jobs -- PLAYER-KNOWN, relay it) and **notables in
+  town** -- the land's recurring cast (ruler, sage, wildcard): use them
+  for color, rumor, and war scenes; they persist all campaign.
+  (`board all` / `board NAME` is your wider overview for pacing.)
+- **Turn-ins pay an EPILOGUE**: the QUEST COMPLETE banner prints a
+  day-stamped aftermath line and a turn-in prompt naming the giver.
+  Narrate the turn-in scene over both -- the epilogue is what the world
+  now looks like because the party worked; don't skip it, don't pad it.
 - `travel PLACE` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
@@ -198,6 +210,57 @@ player's core decision:**
 - **CHA also talks pay up** (+10%/point above 3, max +30%, gold only) --
   the script prints the negotiation line; give it a sentence of fiction
   when it fires.
+
+## The war -- the conquest questline (2026-07-12)
+
+Every world seeds ONE war at `new`: an aggressor race (elf steampunk
+fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
+-- rolled; dwarves never aggress) and four wave quests pinned at levels
+**2 / 5 / 8 / 10**. The scripts run the clock; your job is the telling:
+
+- **Waves post themselves** when the previous wave is done and the party
+  hits the level -- the script prints a `*** WORD OF THE WAR ***` block
+  (herald line + the ruler raising the call) at boards, arrivals,
+  settlement nights, or right after the fight that leveled the party.
+  **Deliver it as a scene** -- a rider, a bell, a refugee column -- not
+  as a system message. Wave 1 doubles as the war's reveal: give the
+  creed line its moment.
+- **Wave quests are quests**: taken from their giver (the target land's
+  ruler) AT their settlement, fought with `room`, paid by the formulas.
+  The named villains (two lieutenants, then the conqueror) cap waves
+  2/3/4 -- the log carries their names; give them a line of dialogue
+  and a death worth the title. Their stats are an honest room of the
+  wave's level: narrate the name, trust the row.
+- **Wave 3 is a scripted fall -- play it straight.** The land falls even
+  if the quest is cleared: success buys the evacuation, the pay, and the
+  lieutenant's head, never the walls. Say so in the fiction (the quest
+  is framed as holding the road out, not saving the city) so the player
+  is never told they failed when they won. The fallen land's settlements
+  then refuse boards/taverns/hiring/downtime (the script prints the
+  occupation line; travel through is allowed) until wave 4 wins the war
+  and frees them.
+- Between waves, the war is BACKDROP: color local scenes with it
+  (levies, prices, refugees) but don't invent extra war quests -- the
+  next wave will come when the party is ready. `status`/`map`/`board`
+  print the war's current line; the player may always ignore the war
+  and do local work -- the war waits.
+
+## Flavor beats -- two per session rhythm, always brief (2026-07-12)
+
+The game is combat-centered; these two beats are how the world stays
+bigger than the fights WITHOUT pages of narration:
+
+- **The visual block**: on every scene change (arrival, a site's door, a
+  new room chain, a camp), 2-3 lines of what is SEEN -- one wide shot,
+  one detail that stands out, done. No lore dumps; the detail can carry
+  the war, the race, or the season.
+- **Party chatter**: `python session.py chatter` prints a seed -- 1-2
+  companions and what they're preoccupied with (a trait, their mood from
+  satisfaction). Riff it into a line or three of talk around the fire or
+  on the road, then hand the turn back. Use it between fights, at camps,
+  and on travel days -- roughly once a settlement-to-settlement leg, not
+  every message. It is also your early-warning surface: a companion gone
+  quiet at satisfaction 3 SHOULD be heard going quiet.
 
 ## Turn protocol -- ONE encounter per message
 

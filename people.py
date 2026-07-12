@@ -310,6 +310,49 @@ def make_pair(rng: random.Random, level: int,
 
 
 # --------------------------------------------------------------------------- #
+# Targeted NPC generation (2026-07-12) -- the DM casts, the dice flesh out
+# --------------------------------------------------------------------------- #
+# An NPC is a plain dict, not an Entity: quest givers, rulers, sages, and
+# shopkeepers carry no stat block. If the story ever needs one to FIGHT,
+# forge the encounter (a reskinned catalog row) or make_character a leveled
+# body and borrow the face. The split from make_character is deliberate: for
+# PARTY members race and background are random (the dice cast the whole
+# person); for NPCs the DM already knows the race, the job, and roughly the
+# age -- the caller FIXES those and the dice roll only the personality (the
+# same three-trait sketch companions get) and the name. Presentation stays
+# fully random on purpose: a constable in flamboyant dress is a feature, a
+# twelve-year-old constable is not (NPC_MIN_AGE).
+
+NPC_MIN_AGE = 20    # roll_age (2d20+10) floored here for NPCs with a JOB;
+                    # callers pass an exact age when the fiction knows better
+
+
+def make_npc(rng: random.Random, race: str, role: str,
+             sex: str | None = None, age: int | None = None,
+             level: int = 1, used_names: set[str] | None = None) -> dict:
+    """One cast NPC: fixed race/role (and optionally sex/age) in, rolled
+    name + personality out. `level` only colors the has-an-enemy quirk."""
+    sex = sex or rng.choice(SEXES)
+    name = pick_name(rng, race, sex, used_names)
+    traits = roll_traits(rng, race, level, used_names)
+    if age is None:
+        age = max(NPC_MIN_AGE, roll_age(rng))
+    return {"name": name, "race": race, "sex": sex, "age": age,
+            "role": role, "traits": traits}
+
+
+def npc_line(npc: dict) -> str:
+    """One line of who this NPC is -- the person_line sibling for dict NPCs
+    (quest givers, the central cast). The DM riffs the scene off it."""
+    bits = [f"{npc['race']} {npc['sex']}, age {npc['age']}"]
+    for cat in ("temperament", "quirk", "interest", "weakness", "background",
+                "speech", "voice", "dress", "looks"):
+        if cat in npc["traits"]:
+            bits.append(f"{cat}: {npc['traits'][cat]}")
+    return f"{npc['name']} ({npc['role']}) -- " + "; ".join(bits)
+
+
+# --------------------------------------------------------------------------- #
 # Readouts (candidate sheets, the status person-line)
 # --------------------------------------------------------------------------- #
 
@@ -396,6 +439,10 @@ def main() -> None:
         for line in character_sheet(e):
             print(line)
         print()
+    print("--- two cast NPCs (targeted: the DM fixes race/role) ---")
+    print(npc_line(make_npc(rng, "human", "chief constable", used_names=used)))
+    print(npc_line(make_npc(rng, "dwarf", "mine-masters' speaker",
+                            used_names=used)))
 
 
 if __name__ == "__main__":
