@@ -19,7 +19,7 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": true,
-   "hp": 9,
+   "hp": 8,
    "cur_sta": 6,
    "cur_power": 0,
    "down": false,
@@ -27,11 +27,11 @@
    "fate_debt": false,
    "items": {
     "healing": 1,
-    "stamina": 1
+    "stamina": 0
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 10,
+   "xp": 50,
    "skill_points": 0,
    "training": 0,
    "weapon": "spear",
@@ -73,7 +73,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 10,
-   "cur_sta": 7,
+   "cur_sta": 3,
    "cur_power": 6,
    "down": false,
    "dead": false,
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 10,
+   "xp": 50,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -101,7 +101,7 @@
     "voice": "whispering",
     "dress": "ascetic"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "Krusk",
    "bond_kind": "old ally",
    "last_dose_day": 0
@@ -126,7 +126,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 12,
-   "cur_sta": 8,
+   "cur_sta": 5,
    "cur_power": 6,
    "down": false,
    "dead": false,
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 10,
+   "xp": 50,
    "skill_points": 0,
    "training": 0,
    "weapon": "shortsword",
@@ -154,7 +154,7 @@
     "dress": "flamboyant",
     "looks": "big"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -186,11 +186,11 @@
    "fate_debt": false,
    "items": {
     "healing": 0,
-    "stamina": 2
+    "stamina": 1
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 10,
+   "xp": 50,
    "skill_points": 0,
    "training": 1,
    "weapon": "scimitar",
@@ -207,7 +207,7 @@
     "dress": "mismatched",
     "speech": "poetic"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -218,9 +218,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 0
+  "gold": 19
  },
- "foe_count": 3,
+ "foe_count": 6,
  "active_quest": null,
  "world": {
   "seed": 907975946,
@@ -2424,15 +2424,16 @@
  "sighting": null,
  "streak": {
   "site": "hideout",
-  "count": 2
+  "count": 3
  },
  "site_clears": {
   "hideout": {
    "rooms": [
     1,
-    2
+    2,
+    3
    ],
-   "paid": false
+   "paid": true
   }
  },
  "pc_candidates": null,
@@ -3129,7 +3130,7 @@
    3309680704,
    1719132187,
    209323121,
-   372
+   581
   ],
   null
  ]
