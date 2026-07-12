@@ -20,8 +20,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 9,
-   "cur_sta": 7,
-   "cur_power": 4,
+   "cur_sta": 6,
+   "cur_power": 2,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -31,7 +31,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 0,
+   "xp": 2,
    "skill_points": 0,
    "training": 0,
    "weapon": "spear",
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 0,
+   "xp": 2,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 2,
    "skill_points": 0,
    "training": 0,
    "weapon": "club",
@@ -180,7 +180,7 @@
    "protagonist": false,
    "hp": 12,
    "cur_sta": 5,
-   "cur_power": 4,
+   "cur_power": 2,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -190,7 +190,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 0,
+   "xp": 2,
    "skill_points": 0,
    "training": 1,
    "weapon": "scimitar",
@@ -220,7 +220,7 @@
  "purse": {
   "gold": 0
  },
- "foe_count": 0,
+ "foe_count": 1,
  "active_quest": null,
  "world": {
   "seed": 907975946,
@@ -2423,10 +2423,17 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "hideout",
+  "count": 1
  },
- "site_clears": {},
+ "site_clears": {
+  "hideout": {
+   "rooms": [
+    1
+   ],
+   "paid": false
+  }
+ },
  "pc_candidates": null,
  "recruits": {
   "place": "stonemarket",
@@ -3121,7 +3128,7 @@
    3309680704,
    1719132187,
    209323121,
-   280
+   321
   ],
   null
  ]
