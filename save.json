@@ -20,7 +20,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 6,
+   "cur_sta": 5,
    "cur_power": 4,
    "down": false,
    "dead": false,
@@ -31,7 +31,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 4,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "morningstar",
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 4,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "spear",
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 4,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -180,7 +180,7 @@
    "protagonist": false,
    "hp": 11,
    "cur_sta": 7,
-   "cur_power": 2,
+   "cur_power": 0,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -190,7 +190,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 4,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "club",
@@ -220,7 +220,7 @@
  "purse": {
   "gold": 10
  },
- "foe_count": 1,
+ "foe_count": 2,
  "active_quest": "q29",
  "world": {
   "seed": 593671033,
@@ -2313,7 +2313,7 @@
     ],
     "next": {
      "site": 0,
-     "room": 1
+     "room": 2
     },
     "status": "open",
     "epilogue": "Air moves in the undercity again; small pay, but the vent-warden's word is now good in every burrow.",
@@ -3180,7 +3180,7 @@
  "sighting": null,
  "streak": {
   "site": "q29/s1",
-  "count": 1
+  "count": 2
  },
  "site_clears": {},
  "pc_candidates": null,
@@ -3930,7 +3930,7 @@
    4010468458,
    819337607,
    2956695332,
-   416
+   451
   ],
   null
  ]
