@@ -1,0 +1,3768 @@
+{
+ "party": [],
+ "clock": {
+  "day": 1,
+  "short_rests_used": 0
+ },
+ "purse": {
+  "gold": 0
+ },
+ "foe_count": 0,
+ "active_quest": null,
+ "world": {
+  "seed": 593671033,
+  "settlements": [
+   {
+    "key": "sprocketpit",
+    "name": "Sprocketpit",
+    "race": "goblin",
+    "kind": "capital",
+    "quests": [
+     "q01",
+     "q02",
+     "q03",
+     "q04",
+     "q05",
+     "q27",
+     "q29"
+    ]
+   },
+   {
+    "key": "marshfield",
+    "name": "Marshfield",
+    "race": "human",
+    "kind": "town",
+    "quests": [
+     "q06",
+     "q07",
+     "q08",
+     "q09",
+     "q33",
+     "q35"
+    ]
+   },
+   {
+    "key": "dawnspire",
+    "name": "Dawnspire",
+    "race": "elf",
+    "kind": "town",
+    "quests": [
+     "q10",
+     "q11",
+     "q12",
+     "q13",
+     "q22",
+     "q24",
+     "q26",
+     "q37"
+    ]
+   },
+   {
+    "key": "bonespear",
+    "name": "Bonespear",
+    "race": "orc",
+    "kind": "town",
+    "quests": [
+     "q14",
+     "q15",
+     "q16",
+     "q17",
+     "q23",
+     "q25",
+     "q28",
+     "q32"
+    ]
+   },
+   {
+    "key": "gearworks",
+    "name": "Gearworks",
+    "race": "goblin",
+    "kind": "village",
+    "quests": [
+     "q18",
+     "q19",
+     "q34",
+     "q36"
+    ]
+   },
+   {
+    "key": "whisperhollow",
+    "name": "Whisperhollow",
+    "race": "elf",
+    "kind": "village",
+    "quests": [
+     "q20",
+     "q21",
+     "q30",
+     "q31"
+    ]
+   }
+  ],
+  "quests": {
+   "q01": {
+    "id": "q01",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "sprocketpit",
+    "level": 17,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 17,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "drake"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The valley keeps its harvest for the first year in living memory; the tithe-barns are rebuilt as granaries.",
+    "giver": {
+     "name": "Cogg",
+     "race": "goblin",
+     "sex": "m",
+     "age": 33,
+     "role": "the crown's marshal",
+     "traits": {
+      "interest": "fashion",
+      "dress": "elegant",
+      "speech": "swears a lot"
+     }
+    }
+   },
+   "q02": {
+    "id": "q02",
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "sprocketpit",
+    "level": 5,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the flattened fort",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the march camps",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The forts are re-garrisoned; the marches go quiet, and stay so.",
+    "giver": {
+     "name": "Tinket",
+     "race": "goblin",
+     "sex": "m",
+     "age": 20,
+     "role": "the march-warden",
+     "traits": {
+      "background": "scholar",
+      "speech": "poetic",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q03": {
+    "id": "q03",
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "sprocketpit",
+    "level": 9,
+    "skins": {
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
+    },
+    "sites": [
+     {
+      "name": "the night market",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The night crews walk home unescorted; the rival boss's tower stands quiet -- under new management within the week.",
+    "giver": {
+     "name": "Nutta",
+     "race": "goblin",
+     "sex": "f",
+     "age": 20,
+     "role": "the night-shift foreman",
+     "traits": {
+      "background": "priest or monk",
+      "looks": "big",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q04": {
+    "id": "q04",
+    "name": "The Engine Gone Feral",
+    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
+    "settlement": "sprocketpit",
+    "level": 10,
+    "skins": {
+     "ogre": "Breaker-Engine",
+     "troll": "Furnace Hulk",
+     "giant": "The Great Machine"
+    },
+    "sites": [
+     {
+      "name": "the lower works",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The lower works are re-lit gallery by gallery; the bosses are already arguing about building it again, bigger.",
+    "giver": {
+     "name": "Klanker",
+     "race": "goblin",
+     "sex": "m",
+     "age": 20,
+     "role": "the works overseer",
+     "traits": {
+      "quirk": "has a child (with them: Rivet, age 12)",
+      "dress": "luxurious",
+      "looks": "ugly"
+     }
+    }
+   },
+   "q05": {
+    "id": "q05",
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "sprocketpit",
+    "level": 13,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the flattened fort",
+      "level": 12,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the march camps",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "giant"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The forts are re-garrisoned; the marches go quiet, and stay so.",
+    "giver": {
+     "name": "Cindra",
+     "race": "goblin",
+     "sex": "f",
+     "age": 42,
+     "role": "the march-warden",
+     "traits": {
+      "interest": "hunting",
+      "voice": "melodious",
+      "dress": "flamboyant"
+     }
+    }
+   },
+   "q06": {
+    "id": "q06",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "marshfield",
+    "level": 11,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the toll bridge",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the old fort",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The fords run quiet again; carters raise a cup to the party at every wayhouse on the road.",
+    "giver": {
+     "name": "Maud",
+     "race": "human",
+     "sex": "f",
+     "age": 34,
+     "role": "the king's reeve",
+     "traits": {
+      "quirk": "has a child (with them: Veld, age 8)",
+      "dress": "professional",
+      "looks": "short"
+     }
+    }
+   },
+   "q07": {
+    "id": "q07",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "marshfield",
+    "level": 7,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crypt below",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The graves are re-consecrated at dusk; the parish sleeps its first whole night in weeks.",
+    "giver": {
+     "name": "Isolde",
+     "race": "human",
+     "sex": "f",
+     "age": 25,
+     "role": "the parish priest",
+     "traits": {
+      "temperament": "gloomy",
+      "speech": "formal",
+      "dress": "elegant"
+     }
+    }
+   },
+   "q08": {
+    "id": "q08",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "marshfield",
+    "level": 2,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "archer",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "archer",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The recovered blades go back to the armory; the villages post no watch tonight.",
+    "giver": {
+     "name": "Brand",
+     "race": "human",
+     "sex": "m",
+     "age": 27,
+     "role": "the garrison captain",
+     "traits": {
+      "temperament": "friendly",
+      "looks": "short",
+      "voice": "loud"
+     }
+    }
+   },
+   "q09": {
+    "id": "q09",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "marshfield",
+    "level": 8,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wight",
+         "wight"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The graves are re-consecrated at dusk; the parish sleeps its first whole night in weeks.",
+    "giver": {
+     "name": "Hilde",
+     "race": "human",
+     "sex": "f",
+     "age": 22,
+     "role": "the parish priest",
+     "traits": {
+      "temperament": "gloomy",
+      "dress": "armored",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q10": {
+    "id": "q10",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 11,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Mindartis",
+     "race": "elf",
+     "sex": "m",
+     "age": 32,
+     "role": "the council's justiciar",
+     "traits": {
+      "background": "poverty",
+      "dress": "colorful",
+      "voice": "melodious"
+     }
+    }
+   },
+   "q11": {
+    "id": "q11",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "dawnspire",
+    "level": 5,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Green returns to the glade's edge within the season; what soured the heartwood is burned and sung over.",
+    "giver": {
+     "name": "Aelar",
+     "race": "elf",
+     "sex": "m",
+     "age": 24,
+     "role": "the warden-council's voice",
+     "traits": {
+      "quirk": "has a child (with them: Heian, age 12)",
+      "looks": "big",
+      "speech": "formal"
+     }
+    }
+   },
+   "q12": {
+    "id": "q12",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 11,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Enna",
+     "race": "elf",
+     "sex": "f",
+     "age": 32,
+     "role": "the council's justiciar",
+     "traits": {
+      "weakness": "needs meds",
+      "voice": "melodious",
+      "looks": "big"
+     }
+    }
+   },
+   "q13": {
+    "id": "q13",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "dawnspire",
+    "level": 3,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The groves go quiet again; the keeper plants a sapling for every beast that had to die.",
+    "giver": {
+     "name": "Lia",
+     "race": "elf",
+     "sex": "f",
+     "age": 25,
+     "role": "the grove-keeper",
+     "traits": {
+      "weakness": "gambling",
+      "dress": "ascetic",
+      "voice": "whispering"
+     }
+    }
+   },
+   "q14": {
+    "id": "q14",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "bonespear",
+    "level": 11,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Carts roll the pass by the next moon; drivers still spit at the cave mouth for luck.",
+    "giver": {
+     "name": "Henk",
+     "race": "orc",
+     "sex": "m",
+     "age": 25,
+     "role": "the toll-keeper of the pass",
+     "traits": {
+      "interest": "art",
+      "dress": "armored",
+      "voice": "whispering"
+     }
+    }
+   },
+   "q15": {
+    "id": "q15",
+    "name": "Wyvern on the Crags",
+    "desc": "A shadow over the herds, and herders who point at the high crags and will not climb.",
+    "settlement": "bonespear",
+    "level": 13,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the scree slopes",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crag eyrie",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The herders climb again; the skull goes up on a spear above the trail, warning and boast at once.",
+    "giver": {
+     "name": "Drog",
+     "race": "orc",
+     "sex": "m",
+     "age": 33,
+     "role": "the herd-elder",
+     "traits": {
+      "background": "military",
+      "voice": "whispering",
+      "looks": "beautiful"
+     }
+    }
+   },
+   "q16": {
+    "id": "q16",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "bonespear",
+    "level": 4,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's lair",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The hide hangs in the long-tent and the party's name is spoken at the fire -- iron and standing, paid in full.",
+    "giver": {
+     "name": "Gell",
+     "race": "orc",
+     "sex": "m",
+     "age": 33,
+     "role": "the clan's huntmaster",
+     "traits": {
+      "interest": "hunting",
+      "dress": "mismatched",
+      "looks": "big"
+     }
+    }
+   },
+   "q17": {
+    "id": "q17",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "bonespear",
+    "level": 8,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Ghor",
+     "race": "orc",
+     "sex": "m",
+     "age": 24,
+     "role": "the warchief",
+     "traits": {
+      "weakness": "smoker",
+      "looks": "big",
+      "dress": "armored"
+     }
+    }
+   },
+   "q18": {
+    "id": "q18",
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "gearworks",
+    "level": 3,
+    "skins": {
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
+    },
+    "sites": [
+     {
+      "name": "the night market",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the press-gang den",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The night crews walk home unescorted; the rival boss's tower stands quiet -- under new management within the week.",
+    "giver": {
+     "name": "Brixa",
+     "race": "goblin",
+     "sex": "f",
+     "age": 37,
+     "role": "the night-shift foreman",
+     "traits": {
+      "background": "tribesman",
+      "looks": "ugly",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q19": {
+    "id": "q19",
+    "name": "Scrap-Hounds Loose in the Works",
+    "desc": "The bosses' hound-pack slipped its chains and dens in the gearworks. Pay docked for every eaten shift-worker.",
+    "settlement": "gearworks",
+    "level": 1,
+    "skins": {
+     "wolf": "Scrap-Hound",
+     "dire wolf": "Boiler Hound"
+    },
+    "sites": [
+     {
+      "name": "the scrapyard",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the gearworks floor",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The works run a full shift without a scream; the foreman docks nobody, this once.",
+    "giver": {
+     "name": "Hexa",
+     "race": "goblin",
+     "sex": "f",
+     "age": 29,
+     "role": "the shift foreman",
+     "traits": {
+      "interest": "hunting",
+      "looks": "ugly",
+      "voice": "whispering"
+     }
+    }
+   },
+   "q20": {
+    "id": "q20",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "whisperhollow",
+    "level": 2,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the heartwood",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Green returns to the glade's edge within the season; what soured the heartwood is burned and sung over.",
+    "giver": {
+     "name": "Soveliss",
+     "race": "elf",
+     "sex": "m",
+     "age": 24,
+     "role": "the warden-council's voice",
+     "traits": {
+      "quirk": "has a child (with them: Naal, age 11)",
+      "speech": "verbose",
+      "dress": "colorful"
+     }
+    }
+   },
+   "q21": {
+    "id": "q21",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "whisperhollow",
+    "level": 2,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the silked walkways",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The silk is cut away and the walkways rehung; the lost wardens are carried down for their rites.",
+    "giver": {
+     "name": "Thamior",
+     "race": "elf",
+     "sex": "m",
+     "age": 47,
+     "role": "the master of the high walkways",
+     "traits": {
+      "interest": "music",
+      "dress": "tattered",
+      "speech": "swears a lot"
+     }
+    }
+   },
+   "q22": {
+    "id": "q22",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "dawnspire",
+    "level": 6,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "boar",
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bear"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bear"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The groves go quiet again; the keeper plants a sapling for every beast that had to die.",
+    "giver": {
+     "name": "Orrian",
+     "race": "elf",
+     "sex": "m",
+     "age": 33,
+     "role": "the grove-keeper",
+     "traits": {
+      "temperament": "cowardly",
+      "voice": "melodious",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q23": {
+    "id": "q23",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "bonespear",
+    "level": 9,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Carts roll the pass by the next moon; drivers still spit at the cave mouth for luck.",
+    "giver": {
+     "name": "Ruk",
+     "race": "orc",
+     "sex": "m",
+     "age": 29,
+     "role": "the toll-keeper of the pass",
+     "traits": {
+      "quirk": "has an enemy (Karg, a orc rival adventurer, level 11, out there somewhere)",
+      "dress": "colorful",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q24": {
+    "id": "q24",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 8,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 8,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Jelenneth",
+     "race": "elf",
+     "sex": "f",
+     "age": 38,
+     "role": "the council's justiciar",
+     "traits": {
+      "weakness": "needs meds",
+      "dress": "luxurious",
+      "speech": "swears a lot"
+     }
+    }
+   },
+   "q25": {
+    "id": "q25",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "bonespear",
+    "level": 5,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Myev",
+     "race": "orc",
+     "sex": "f",
+     "age": 44,
+     "role": "the warchief",
+     "traits": {
+      "weakness": "gambling",
+      "speech": "formal",
+      "looks": "short"
+     }
+    }
+   },
+   "q26": {
+    "id": "q26",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 13,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Sariel",
+     "race": "elf",
+     "sex": "f",
+     "age": 29,
+     "role": "the council's justiciar",
+     "traits": {
+      "background": "priest or monk",
+      "dress": "luxurious",
+      "looks": "short"
+     }
+    }
+   },
+   "q27": {
+    "id": "q27",
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "sprocketpit",
+    "level": 17,
+    "skins": {
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
+    },
+    "sites": [
+     {
+      "name": "the night market",
+      "level": 15,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the press-gang den",
+      "level": 16,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the boss's tower",
+      "level": 17,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The night crews walk home unescorted; the rival boss's tower stands quiet -- under new management within the week.",
+    "giver": {
+     "name": "Zeena",
+     "race": "goblin",
+     "sex": "f",
+     "age": 49,
+     "role": "the night-shift foreman",
+     "traits": {
+      "weakness": "smoker",
+      "speech": "swears a lot",
+      "looks": "beautiful"
+     }
+    }
+   },
+   "q28": {
+    "id": "q28",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "bonespear",
+    "level": 1,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Ketha",
+     "race": "orc",
+     "sex": "f",
+     "age": 38,
+     "role": "the warchief",
+     "traits": {
+      "temperament": "brave",
+      "speech": "verbose",
+      "voice": "whispering"
+     }
+    }
+   },
+   "q29": {
+    "id": "q29",
+    "name": "Spiders in the Undercity",
+    "desc": "The vent shafts are webbed shut and the air below is going bad. Small pay, small heroes welcome.",
+    "settlement": "sprocketpit",
+    "level": 2,
+    "skins": {
+     "great spider": "Vent Crawler"
+    },
+    "sites": [
+     {
+      "name": "the vent shafts",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Air moves in the undercity again; small pay, but the vent-warden's word is now good in every burrow.",
+    "giver": {
+     "name": "Boilo",
+     "race": "goblin",
+     "sex": "m",
+     "age": 20,
+     "role": "the vent-warden",
+     "traits": {
+      "weakness": "smoker",
+      "speech": "formal",
+      "dress": "elegant"
+     }
+    }
+   },
+   "q30": {
+    "id": "q30",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "whisperhollow",
+    "level": 6,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bear"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bear"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 6,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "bear"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The groves go quiet again; the keeper plants a sapling for every beast that had to die.",
+    "giver": {
+     "name": "Laucian",
+     "race": "elf",
+     "sex": "m",
+     "age": 25,
+     "role": "the grove-keeper",
+     "traits": {
+      "temperament": "mean",
+      "speech": "formal",
+      "voice": "loud"
+     }
+    }
+   },
+   "q31": {
+    "id": "q31",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "whisperhollow",
+    "level": 4,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Ielenia",
+     "race": "elf",
+     "sex": "f",
+     "age": 42,
+     "role": "the council's justiciar",
+     "traits": {
+      "interest": "fashion",
+      "dress": "ascetic",
+      "voice": "loud"
+     }
+    }
+   },
+   "q32": {
+    "id": "q32",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "bonespear",
+    "level": 10,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Urzag",
+     "race": "orc",
+     "sex": "m",
+     "age": 29,
+     "role": "the warchief",
+     "traits": {
+      "interest": "plants",
+      "dress": "flamboyant",
+      "looks": "short"
+     }
+    }
+   },
+   "q33": {
+    "id": "q33",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "marshfield",
+    "level": 14,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 12,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the toll bridge",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the old fort",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The fords run quiet again; carters raise a cup to the party at every wayhouse on the road.",
+    "giver": {
+     "name": "Walt",
+     "race": "human",
+     "sex": "m",
+     "age": 20,
+     "role": "the king's reeve",
+     "traits": {
+      "background": "craftsman",
+      "looks": "sickly",
+      "speech": "formal"
+     }
+    }
+   },
+   "q34": {
+    "id": "q34",
+    "name": "The Engine Gone Feral",
+    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
+    "settlement": "gearworks",
+    "level": 6,
+    "skins": {
+     "ogre": "Breaker-Engine",
+     "troll": "Furnace Hulk",
+     "giant": "The Great Machine"
+    },
+    "sites": [
+     {
+      "name": "the lower works",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The lower works are re-lit gallery by gallery; the bosses are already arguing about building it again, bigger.",
+    "giver": {
+     "name": "Nix",
+     "race": "goblin",
+     "sex": "f",
+     "age": 29,
+     "role": "the works overseer",
+     "traits": {
+      "weakness": "needs meds",
+      "speech": "formal",
+      "looks": "beautiful"
+     }
+    }
+   },
+   "q35": {
+    "id": "q35",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "marshfield",
+    "level": 9,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "soldier",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The recovered blades go back to the armory; the villages post no watch tonight.",
+    "giver": {
+     "name": "Osric",
+     "race": "human",
+     "sex": "m",
+     "age": 20,
+     "role": "the garrison captain",
+     "traits": {
+      "temperament": "cheerful",
+      "dress": "luxurious",
+      "looks": "sickly"
+     }
+    }
+   },
+   "q36": {
+    "id": "q36",
+    "name": "Spiders in the Undercity",
+    "desc": "The vent shafts are webbed shut and the air below is going bad. Small pay, small heroes welcome.",
+    "settlement": "gearworks",
+    "level": 4,
+    "skins": {
+     "great spider": "Vent Crawler"
+    },
+    "sites": [
+     {
+      "name": "the vent shafts",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the web-choked cistern",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Air moves in the undercity again; small pay, but the vent-warden's word is now good in every burrow.",
+    "giver": {
+     "name": "Fizzet",
+     "race": "goblin",
+     "sex": "f",
+     "age": 29,
+     "role": "the vent-warden",
+     "traits": {
+      "interest": "animals",
+      "dress": "tattered",
+      "speech": "formal"
+     }
+    }
+   },
+   "q37": {
+    "id": "q37",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 14,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 14,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Althaea",
+     "race": "elf",
+     "sex": "f",
+     "age": 20,
+     "role": "the council's justiciar",
+     "traits": {
+      "quirk": "religious",
+      "voice": "melodious",
+      "looks": "ugly"
+     }
+    }
+   }
+  },
+  "npcs": [
+   {
+    "name": "Grix",
+    "race": "goblin",
+    "sex": "m",
+    "age": 57,
+    "role": "chief overboss",
+    "traits": {
+     "interest": "fashion",
+     "speech": "verbose",
+     "looks": "ugly"
+    },
+    "land": "goblin",
+    "seat": "sprocketpit",
+    "post": "ruler"
+   },
+   {
+    "name": "Pox",
+    "race": "goblin",
+    "sex": "m",
+    "age": 39,
+    "role": "star-reader",
+    "traits": {
+     "background": "craftsman",
+     "voice": "melodious",
+     "speech": "verbose"
+    },
+    "land": "goblin",
+    "seat": "sprocketpit",
+    "post": "sage"
+   },
+   {
+    "name": "Dizzy",
+    "race": "goblin",
+    "sex": "f",
+    "age": 38,
+    "role": "high priest",
+    "traits": {
+     "interest": "animals",
+     "speech": "verbose",
+     "voice": "melodious"
+    },
+    "land": "goblin",
+    "seat": "sprocketpit",
+    "post": "wildcard"
+   },
+   {
+    "name": "Aldric",
+    "race": "human",
+    "sex": "m",
+    "age": 50,
+    "role": "king",
+    "traits": {
+     "weakness": "needs meds",
+     "looks": "big",
+     "dress": "elegant"
+    },
+    "land": "human",
+    "seat": "marshfield",
+    "post": "ruler"
+   },
+   {
+    "name": "Elsbeth",
+    "race": "human",
+    "sex": "f",
+    "age": 62,
+    "role": "court wizard",
+    "traits": {
+     "weakness": "smoker",
+     "voice": "whispering",
+     "dress": "professional"
+    },
+    "land": "human",
+    "seat": "marshfield",
+    "post": "sage"
+   },
+   {
+    "name": "Berrick",
+    "race": "human",
+    "sex": "m",
+    "age": 22,
+    "role": "master smith",
+    "traits": {
+     "background": "craftsman",
+     "dress": "ascetic",
+     "looks": "sickly"
+    },
+    "land": "human",
+    "seat": "marshfield",
+    "post": "wildcard"
+   },
+   {
+    "name": "Faelar",
+    "race": "elf",
+    "sex": "m",
+    "age": 66,
+    "role": "speaker of the high council",
+    "traits": {
+     "quirk": "has a child (with them: Aramil, age 12)",
+     "looks": "big",
+     "voice": "mumbling"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "ruler"
+   },
+   {
+    "name": "Paelias",
+    "race": "elf",
+    "sex": "m",
+    "age": 50,
+    "role": "keeper of records",
+    "traits": {
+     "weakness": "gambling",
+     "dress": "elegant",
+     "looks": "ugly"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "sage"
+   },
+   {
+    "name": "Carric",
+    "race": "elf",
+    "sex": "m",
+    "age": 20,
+    "role": "spymaster",
+    "traits": {
+     "quirk": "has an enemy (Mialee, a elf rival adventurer, level 3, out there somewhere)",
+     "voice": "mumbling",
+     "looks": "ugly"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "wildcard"
+   },
+   {
+    "name": "Sharn",
+    "race": "orc",
+    "sex": "f",
+    "age": 38,
+    "role": "great chief of the clans",
+    "traits": {
+     "temperament": "mean",
+     "voice": "melodious",
+     "dress": "colorful"
+    },
+    "land": "orc",
+    "seat": "bonespear",
+    "post": "ruler"
+   },
+   {
+    "name": "Zasha",
+    "race": "orc",
+    "sex": "f",
+    "age": 45,
+    "role": "keeper of records",
+    "traits": {
+     "interest": "music",
+     "dress": "elegant",
+     "looks": "sickly"
+    },
+    "land": "orc",
+    "seat": "bonespear",
+    "post": "sage"
+   },
+   {
+    "name": "Volen",
+    "race": "orc",
+    "sex": "f",
+    "age": 33,
+    "role": "spymaster",
+    "traits": {
+     "interest": "plants",
+     "looks": "short",
+     "voice": "whispering"
+    },
+    "land": "orc",
+    "seat": "bonespear",
+    "post": "wildcard"
+   }
+  ]
+ },
+ "story": {
+  "aggressor": "goblin",
+  "conqueror": {
+   "name": "Vrix",
+   "race": "goblin",
+   "sex": "m",
+   "age": 38,
+   "role": "Grand Tinkerer",
+   "traits": {
+    "temperament": "friendly",
+    "looks": "big",
+    "voice": "loud"
+   }
+  },
+  "lieutenants": [
+   {
+    "name": "Klix",
+    "race": "goblin",
+    "sex": "f",
+    "age": 28,
+    "role": "Bomb-Marshal",
+    "traits": {
+     "background": "scholar",
+     "voice": "mumbling",
+     "looks": "beautiful"
+    }
+   },
+   {
+    "name": "Spanner",
+    "race": "goblin",
+    "sex": "m",
+    "age": 26,
+    "role": "Chief Fleshwright",
+    "traits": {
+     "interest": "animals",
+     "looks": "sickly",
+     "voice": "whispering"
+    }
+   }
+  ],
+  "targets": [
+   "human",
+   "orc"
+  ],
+  "wave_posted": 0,
+  "wave_done": 0,
+  "quests": [],
+  "fallen": null,
+  "over": false,
+  "events": []
+ },
+ "location": {
+  "place": "sprocketpit",
+  "name": "Sprocketpit",
+  "land": "goblin",
+  "kind": "settlement"
+ },
+ "places": [],
+ "sighting": null,
+ "streak": {
+  "site": null,
+  "count": 0
+ },
+ "site_clears": {},
+ "pc_candidates": [
+  {
+   "name": "Zizzer",
+   "dex": 6,
+   "str_": 6,
+   "sta": 6,
+   "max_hp": 10,
+   "power": 4,
+   "ability": "heal",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 10,
+   "cur_sta": 6,
+   "cur_power": 4,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "morningstar",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 6,
+   "def_bonus": 0,
+   "race": "goblin",
+   "sex": "m",
+   "age": 35,
+   "nickname": "",
+   "traits": {
+    "interest": "plants",
+    "looks": "beautiful",
+    "dress": "luxurious"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Naal",
+   "dex": 6,
+   "str_": 6,
+   "sta": 7,
+   "max_hp": 8,
+   "power": 3,
+   "ability": "heal",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 8,
+   "cur_sta": 7,
+   "cur_power": 3,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 0,
+    "stamina": 2
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "wooden staff",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 4,
+   "def_bonus": 0,
+   "race": "elf",
+   "sex": "m",
+   "age": 31,
+   "nickname": "",
+   "traits": {
+    "quirk": "has an enemy (Bess, a human outlaw, level 3, out there somewhere)",
+    "looks": "beautiful",
+    "voice": "mumbling"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Fizzle",
+   "dex": 5,
+   "str_": 4,
+   "sta": 6,
+   "max_hp": 10,
+   "power": 3,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 10,
+   "cur_sta": 6,
+   "cur_power": 3,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 2,
+    "stamina": 0
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "halberd",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 3,
+   "def_bonus": 0,
+   "race": "goblin",
+   "sex": "m",
+   "age": 32,
+   "nickname": "",
+   "traits": {
+    "quirk": "has a child (with them: Klix, age 11)",
+    "voice": "mumbling",
+    "speech": "swears a lot"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  }
+ ],
+ "recruits": null,
+ "pending": null,
+ "rooms": {},
+ "rng": [
+  3,
+  [
+   73226843,
+   2237004933,
+   658420977,
+   4119759602,
+   416502823,
+   940473739,
+   1247511798,
+   1983355169,
+   2848404610,
+   2417456315,
+   2714863707,
+   3297456124,
+   579825113,
+   1924222911,
+   4105750875,
+   2095067887,
+   1601064261,
+   1789715472,
+   4244023528,
+   2417120802,
+   1760617599,
+   3329527424,
+   1791127841,
+   978856419,
+   2975411531,
+   2863592067,
+   2604079005,
+   3656736785,
+   3951540582,
+   546135022,
+   526858239,
+   4116365813,
+   1479596820,
+   919738118,
+   3981909168,
+   1875472280,
+   2974971618,
+   3185810780,
+   3568543712,
+   1563474476,
+   827641118,
+   1734188804,
+   3773150364,
+   878131964,
+   685487994,
+   1341527536,
+   2742861002,
+   1148048793,
+   2808625263,
+   1564711606,
+   1697216597,
+   1618167302,
+   786062415,
+   1369756937,
+   2183567443,
+   3019595897,
+   113502872,
+   3416860989,
+   3520507482,
+   3712305069,
+   519541798,
+   1948188543,
+   536867208,
+   2070556045,
+   806996715,
+   4227403434,
+   683017664,
+   3183682001,
+   2047606737,
+   3085001258,
+   3595711325,
+   1267714271,
+   1022796803,
+   843841680,
+   1342881707,
+   3319596772,
+   2140735370,
+   1989518829,
+   357006462,
+   2108750278,
+   1376898691,
+   1703333525,
+   4159668446,
+   1077239917,
+   3442960651,
+   3390374526,
+   3259288732,
+   3481025096,
+   588725384,
+   3346832645,
+   2193026233,
+   288617900,
+   3896786145,
+   70105079,
+   1796850360,
+   3561782186,
+   3246020570,
+   2605333774,
+   2998604304,
+   2041214070,
+   4166157936,
+   1652826666,
+   1374340922,
+   668924968,
+   3063288390,
+   4170830347,
+   357840163,
+   2288999225,
+   4044483839,
+   1429991282,
+   876949361,
+   2179451154,
+   1051797033,
+   320546642,
+   3448304149,
+   2876725245,
+   3695639299,
+   1551053657,
+   4012440096,
+   3298229755,
+   1128759676,
+   2765389246,
+   2087936619,
+   1898373352,
+   4010762865,
+   3779007049,
+   1755453884,
+   1385878951,
+   4134437355,
+   2238304631,
+   3640721633,
+   836422298,
+   2036488969,
+   863181215,
+   2298495400,
+   2816954872,
+   420367551,
+   3645750074,
+   2149739871,
+   372248679,
+   951657679,
+   3181930937,
+   3847711663,
+   2176535336,
+   3797258766,
+   3080740324,
+   3301815893,
+   1424111669,
+   2929177235,
+   3974419341,
+   2948297271,
+   2505238555,
+   3961339803,
+   38894806,
+   3407597888,
+   240079715,
+   1405575692,
+   2177935477,
+   3707020026,
+   1883284736,
+   1285658338,
+   101636227,
+   4113913392,
+   3054763987,
+   3150187451,
+   2289726584,
+   144508977,
+   2553106536,
+   4093031436,
+   2305801890,
+   1582484131,
+   2407889378,
+   724728156,
+   813119708,
+   3282866250,
+   2468273538,
+   1325365376,
+   1806793249,
+   2847002643,
+   2070982571,
+   1546534693,
+   3747881439,
+   995249310,
+   1906105808,
+   909442160,
+   2548369510,
+   2364784189,
+   3038595537,
+   2563931598,
+   846476621,
+   2774910630,
+   4056761953,
+   497211735,
+   2194967661,
+   2082772942,
+   2689537934,
+   2753081180,
+   3224021914,
+   1683306016,
+   1303962322,
+   3367027388,
+   3075012998,
+   2110791181,
+   4186069894,
+   3989559585,
+   3545295217,
+   344700766,
+   3263532892,
+   1372249237,
+   1368643219,
+   4038413824,
+   282266020,
+   1784197588,
+   505975566,
+   2289185237,
+   3486834817,
+   4235729905,
+   1814131818,
+   349857396,
+   1212951138,
+   1397685394,
+   2327561895,
+   3721879404,
+   832500792,
+   1739768230,
+   3898669949,
+   4082574996,
+   1284114854,
+   1913497199,
+   3104977413,
+   1088959337,
+   2935205874,
+   2682392663,
+   967419873,
+   3385905487,
+   968617775,
+   1675170549,
+   3350386115,
+   2314644971,
+   2767946403,
+   1824839776,
+   4023026477,
+   3656336796,
+   1215169421,
+   941363459,
+   2711394785,
+   797940023,
+   4026739214,
+   3407574309,
+   2789372499,
+   4061527671,
+   2267316919,
+   2973505269,
+   1132538884,
+   2166517592,
+   3068632945,
+   4106646916,
+   2891142438,
+   1014540483,
+   1523207393,
+   129418226,
+   861399436,
+   3500366196,
+   1726134227,
+   3083578269,
+   4040051033,
+   3722691034,
+   2343653077,
+   3873893379,
+   2954063836,
+   3097096691,
+   1433583220,
+   262291634,
+   3188284492,
+   697256809,
+   322155359,
+   914890139,
+   2287398985,
+   1962821116,
+   2782195627,
+   631625783,
+   1524098512,
+   3330320254,
+   3685709819,
+   1570726347,
+   3896123292,
+   3122916291,
+   4133821170,
+   108789453,
+   2680251266,
+   360485652,
+   4221453068,
+   2311376716,
+   3192902640,
+   785055900,
+   3050012237,
+   1350160688,
+   2038975883,
+   3377952405,
+   2240158227,
+   406006149,
+   1712369541,
+   302744424,
+   1882189053,
+   3677435186,
+   2679500919,
+   2615297115,
+   4290550655,
+   3575375205,
+   3579971676,
+   1184383145,
+   3090566974,
+   3131653357,
+   1955980975,
+   2294347457,
+   2499895399,
+   1913167754,
+   3676179343,
+   1560742940,
+   2572526780,
+   1305503797,
+   342624694,
+   2046384037,
+   2521186667,
+   3881024267,
+   3986178270,
+   3842128806,
+   2524190933,
+   3664614185,
+   675932025,
+   1573714953,
+   3080272556,
+   1631391662,
+   198126673,
+   4117765705,
+   1095275556,
+   1778542227,
+   1416555315,
+   731960019,
+   1706472756,
+   2439463121,
+   646371224,
+   3081200563,
+   3084757442,
+   1229549540,
+   1533383393,
+   3952602376,
+   1561080244,
+   3147267609,
+   1710481351,
+   51115116,
+   3527269314,
+   2274523194,
+   2999469665,
+   2691225515,
+   154611164,
+   3768614795,
+   2148831662,
+   2323901378,
+   1927567454,
+   1106055551,
+   2618047366,
+   1006576326,
+   1979119771,
+   2957220399,
+   1571918365,
+   1359482402,
+   3029877993,
+   1325055592,
+   731116197,
+   1499240066,
+   642930520,
+   1226505303,
+   2781704726,
+   718710678,
+   417034360,
+   3175082266,
+   1522208121,
+   1764461185,
+   521954611,
+   395635480,
+   2605529844,
+   3317133835,
+   3480065370,
+   3817384926,
+   3907834362,
+   938996187,
+   1475850773,
+   611730084,
+   4166548474,
+   265609566,
+   1609200730,
+   393800332,
+   2535428129,
+   3008665397,
+   1314961208,
+   723356374,
+   3859879871,
+   1151098432,
+   2671113267,
+   1244429655,
+   1983386231,
+   3002317020,
+   507906316,
+   73795983,
+   1084117581,
+   2847602584,
+   1757492885,
+   4004152037,
+   1905201237,
+   3846389358,
+   3248939278,
+   96005458,
+   2061972237,
+   1536404367,
+   4022943649,
+   1966823027,
+   2539891550,
+   3464447931,
+   668044165,
+   2200049546,
+   1618140801,
+   1124743497,
+   3270539504,
+   3246016086,
+   3450425324,
+   2276040548,
+   3994091744,
+   2100405712,
+   3174756734,
+   351794426,
+   3291997265,
+   2419035664,
+   293299545,
+   4029227352,
+   2387540147,
+   3615063622,
+   851423976,
+   4286848343,
+   2698013778,
+   2294262604,
+   2895527343,
+   2893564762,
+   640831375,
+   287056363,
+   3355870826,
+   3091224845,
+   3040049217,
+   941960300,
+   726607704,
+   1105336849,
+   2021036309,
+   4213166830,
+   3248519800,
+   1696175812,
+   2008426855,
+   3100693630,
+   21011113,
+   1319961970,
+   2845358451,
+   3890808423,
+   2270548201,
+   3704996788,
+   2345299890,
+   1503403755,
+   2407508617,
+   3377285423,
+   4127286227,
+   3533883121,
+   3366146891,
+   3096067248,
+   1644567287,
+   2737783461,
+   4083483825,
+   2521097780,
+   4128217120,
+   3718821869,
+   614580503,
+   2874021392,
+   2117733716,
+   251626548,
+   87456398,
+   2114247802,
+   3877734869,
+   1590530843,
+   4031620531,
+   3875608609,
+   428553584,
+   2180912188,
+   974038362,
+   3844311025,
+   3517813507,
+   1489217370,
+   719158117,
+   3089799847,
+   4015460969,
+   4181227129,
+   1925389367,
+   1060394483,
+   3627781057,
+   2413658780,
+   4142130754,
+   7315294,
+   1526745617,
+   2336077333,
+   1468495617,
+   3816328110,
+   386472482,
+   296032146,
+   1852486546,
+   3091478973,
+   2893299207,
+   1631608754,
+   4020680002,
+   3839497446,
+   1585033345,
+   126440455,
+   804577104,
+   283596746,
+   1149695215,
+   886826968,
+   3428960783,
+   3188554204,
+   354398075,
+   1350409365,
+   968617944,
+   2116309346,
+   2306803261,
+   4248574375,
+   2055576875,
+   159185893,
+   3515720562,
+   2597572223,
+   2893921078,
+   3044748777,
+   201810405,
+   3156577078,
+   176962829,
+   3192646276,
+   1564192892,
+   3709768517,
+   3727695263,
+   1458182093,
+   1892167638,
+   349147698,
+   1819525471,
+   4222259162,
+   2268701679,
+   152660356,
+   4118325915,
+   3635554150,
+   3662618722,
+   1409517926,
+   2990161490,
+   2654306052,
+   1328841861,
+   2210467738,
+   3546593319,
+   1710280246,
+   1243090901,
+   1490756436,
+   3994273560,
+   3545730528,
+   3386335734,
+   3144649766,
+   2077979871,
+   3916417365,
+   1879401411,
+   3439072480,
+   3398220192,
+   1767841790,
+   3164767987,
+   85631815,
+   399002010,
+   301774827,
+   699802958,
+   357058788,
+   1414131717,
+   3688690188,
+   475193819,
+   3695904877,
+   3636103783,
+   2181148830,
+   819672575,
+   2122159046,
+   1777685404,
+   1282386899,
+   1270386790,
+   716565052,
+   4068307617,
+   4118085529,
+   3590915024,
+   3832439203,
+   3717398784,
+   3404800523,
+   2388457099,
+   2415142127,
+   4138450343,
+   3377244840,
+   147269341,
+   3116319838,
+   2042183894,
+   869553336,
+   3415571273,
+   2880910466,
+   253515332,
+   851384099,
+   3244006368,
+   1691998306,
+   4149550473,
+   2318622202,
+   3174978260,
+   963052220,
+   3679140181,
+   4146370343,
+   2493987271,
+   175683729,
+   3443284480,
+   3084607618,
+   3949438564,
+   2992080952,
+   4010468458,
+   819337607,
+   2956695332,
+   176
+  ],
+  null
+ ]
+}
