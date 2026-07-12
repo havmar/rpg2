@@ -2,7 +2,7 @@ RPG2 PARTY SHEET -- day 2, at Sprocketpit (goblin lands, settlement)
 purse: 45g | short rests left today: 1
 party: 3/3 companion slot(s) filled (CHA 6)
 
-(YOU)       Zizzer (L1, training 0): DEX 6  STR 6  STA 7/6  HP 11/10  Power 4/4  CHA 6  (heal; morningstar; healingx1, staminax1)
+(YOU)       Zizzer (L1, training 0): DEX 6  STR 6  STA 7/6  HP 11/10  Power 4/4  CHA 6  (heal; zweihander; healingx1, staminax1)
             Zizzer -- goblin m, age 35; interest: plants; dress: luxurious; looks: beautiful
             XP 83/100 to L2 | skill points: 0
 
