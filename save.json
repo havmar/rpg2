@@ -1,0 +1,3012 @@
+{
+ "party": [],
+ "clock": {
+  "day": 1,
+  "short_rests_used": 0
+ },
+ "purse": {
+  "gold": 0
+ },
+ "foe_count": 0,
+ "active_quest": null,
+ "world": {
+  "seed": 907975946,
+  "settlements": [
+   {
+    "key": "stonemarket",
+    "name": "Stonemarket",
+    "race": "human",
+    "kind": "capital",
+    "quests": [
+     "q01",
+     "q02",
+     "q03",
+     "q04",
+     "q05",
+     "q27",
+     "q33",
+     "q35"
+    ]
+   },
+   {
+    "key": "scrapmarket",
+    "name": "Scrapmarket",
+    "race": "goblin",
+    "kind": "town",
+    "quests": [
+     "q06",
+     "q07",
+     "q08",
+     "q09",
+     "q28"
+    ]
+   },
+   {
+    "key": "ashridge",
+    "name": "Ashridge",
+    "race": "orc",
+    "kind": "town",
+    "quests": [
+     "q10",
+     "q11",
+     "q12",
+     "q13",
+     "q22",
+     "q23",
+     "q24",
+     "q26",
+     "q36",
+     "q38"
+    ]
+   },
+   {
+    "key": "hammerhall",
+    "name": "Hammerhall",
+    "race": "dwarf",
+    "kind": "town",
+    "quests": [
+     "q14",
+     "q15",
+     "q16",
+     "q17",
+     "q29",
+     "q34",
+     "q39"
+    ]
+   },
+   {
+    "key": "starreach",
+    "name": "Starreach",
+    "race": "elf",
+    "kind": "village",
+    "quests": [
+     "q18",
+     "q19",
+     "q32",
+     "q37"
+    ]
+   },
+   {
+    "key": "ironcamp",
+    "name": "Ironcamp",
+    "race": "orc",
+    "kind": "village",
+    "quests": [
+     "q20",
+     "q21",
+     "q25",
+     "q30",
+     "q31",
+     "q40"
+    ]
+   }
+  ],
+  "quests": {
+   "q01": {
+    "id": "q01",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "stonemarket",
+    "level": 20,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 20,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q02": {
+    "id": "q02",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "stonemarket",
+    "level": 9,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the mountain approach",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q03": {
+    "id": "q03",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "stonemarket",
+    "level": 7,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q04": {
+    "id": "q04",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "stonemarket",
+    "level": 19,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 19,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "dragon"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dragon"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q05": {
+    "id": "q05",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "stonemarket",
+    "level": 20,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 19,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster",
+         "warlord"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 20,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q06": {
+    "id": "q06",
+    "name": "The Engine Gone Feral",
+    "desc": "They built it too big and fed it too well, and now the lower works belong to it.",
+    "settlement": "scrapmarket",
+    "level": 9,
+    "skins": {
+     "ogre": "Breaker-Engine",
+     "troll": "Furnace Hulk",
+     "giant": "The Great Machine"
+    },
+    "sites": [
+     {
+      "name": "the lower works",
+      "level": 9,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q07": {
+    "id": "q07",
+    "name": "Spiders in the Undercity",
+    "desc": "The vent shafts are webbed shut and the air below is going bad. Small pay, small heroes welcome.",
+    "settlement": "scrapmarket",
+    "level": 2,
+    "skins": {
+     "great spider": "Vent Crawler"
+    },
+    "sites": [
+     {
+      "name": "the vent shafts",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the web-choked cistern",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q08": {
+    "id": "q08",
+    "name": "Scrap-Hounds Loose in the Works",
+    "desc": "The bosses' hound-pack slipped its chains and dens in the gearworks. Pay docked for every eaten shift-worker.",
+    "settlement": "scrapmarket",
+    "level": 1,
+    "skins": {
+     "wolf": "Scrap-Hound",
+     "dire wolf": "Boiler Hound"
+    },
+    "sites": [
+     {
+      "name": "the scrapyard",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q09": {
+    "id": "q09",
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "scrapmarket",
+    "level": 6,
+    "skins": {
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
+    },
+    "sites": [
+     {
+      "name": "the night market",
+      "level": 6,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q10": {
+    "id": "q10",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "ashridge",
+    "level": 12,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 11,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q11": {
+    "id": "q11",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "ashridge",
+    "level": 6,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the cave under the pass",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q12": {
+    "id": "q12",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ashridge",
+    "level": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q13": {
+    "id": "q13",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "ashridge",
+    "level": 7,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 6,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the cave under the pass",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q14": {
+    "id": "q14",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "hammerhall",
+    "level": 10,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ghoul",
+         "wight",
+         "wight"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q15": {
+    "id": "q15",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "hammerhall",
+    "level": 4,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 4,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q16": {
+    "id": "q16",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "hammerhall",
+    "level": 6,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "soldier",
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q17": {
+    "id": "q17",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "hammerhall",
+    "level": 8,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 7,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival delving",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q18": {
+    "id": "q18",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "starreach",
+    "level": 4,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q19": {
+    "id": "q19",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "starreach",
+    "level": 7,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "soldier",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q20": {
+    "id": "q20",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "ironcamp",
+    "level": 6,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q21": {
+    "id": "q21",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ironcamp",
+    "level": 5,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "dire wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bear"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q22": {
+    "id": "q22",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ashridge",
+    "level": 3,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's lair",
+      "level": 3,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q23": {
+    "id": "q23",
+    "name": "Wyvern on the Crags",
+    "desc": "A shadow over the herds, and herders who point at the high crags and will not climb.",
+    "settlement": "ashridge",
+    "level": 10,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the scree slopes",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crag eyrie",
+      "level": 10,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q24": {
+    "id": "q24",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "ashridge",
+    "level": 9,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q25": {
+    "id": "q25",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "ironcamp",
+    "level": 5,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q26": {
+    "id": "q26",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "ashridge",
+    "level": 9,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the cave under the pass",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q27": {
+    "id": "q27",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "stonemarket",
+    "level": 5,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 4,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crypt below",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q28": {
+    "id": "q28",
+    "name": "Press-Gang Trouble",
+    "desc": "A rival boss's press-gang is stealing crews off the night shift. The foreman pays for it stopped, no questions on the how.",
+    "settlement": "scrapmarket",
+    "level": 5,
+    "skins": {
+     "cutthroat": "Press-Ganger",
+     "archer": "Sling-Runt",
+     "bruiser": "Pit Boss",
+     "soldier": "Wrench-Guard",
+     "veteran": "Shift-Breaker",
+     "champion": "Under-Boss",
+     "blademaster": "Knife-King",
+     "warlord": "The Big Boss"
+    },
+    "sites": [
+     {
+      "name": "the night market",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q29": {
+    "id": "q29",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "hammerhall",
+    "level": 13,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the broken gallery",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q30": {
+    "id": "q30",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ironcamp",
+    "level": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q31": {
+    "id": "q31",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "ironcamp",
+    "level": 7,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the war-tent",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q32": {
+    "id": "q32",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "starreach",
+    "level": 1,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q33": {
+    "id": "q33",
+    "name": "Wolves at the Folds",
+    "desc": "Sheep gone, then a shepherd. The commons want the pack dug out of the hills.",
+    "settlement": "stonemarket",
+    "level": 3,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the high pasture",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the den in the hills",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q34": {
+    "id": "q34",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "hammerhall",
+    "level": 14,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q35": {
+    "id": "q35",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "stonemarket",
+    "level": 16,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 15,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 16,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q36": {
+    "id": "q36",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ashridge",
+    "level": 5,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bear"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bear"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q37": {
+    "id": "q37",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "starreach",
+    "level": 3,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the heartwood",
+      "level": 3,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q38": {
+    "id": "q38",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ashridge",
+    "level": 3,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q39": {
+    "id": "q39",
+    "name": "Things in the Deep Roads",
+    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
+    "settlement": "hammerhall",
+    "level": 5,
+    "skins": {
+     "great spider": "Deep Creeper",
+     "wolf": "Tunnel Hound",
+     "dire wolf": "Tunnel Stalker"
+    },
+    "sites": [
+     {
+      "name": "the toll gate",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deep road",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "great spider",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the junction vault",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "dire wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q40": {
+    "id": "q40",
+    "name": "The Proving Hunt",
+    "desc": "The clan sets a beast worth a name. Bring back its hide and the clan pays in iron and standing.",
+    "settlement": "ironcamp",
+    "level": 5,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the hunting ground",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bear"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's lair",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "dire wolf",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   }
+  }
+ },
+ "location": {
+  "place": "stonemarket",
+  "name": "Stonemarket",
+  "land": "human",
+  "kind": "settlement"
+ },
+ "places": [],
+ "sighting": null,
+ "streak": {
+  "site": null,
+  "count": 0
+ },
+ "site_clears": {},
+ "pc_candidates": [
+  {
+   "name": "Krusk",
+   "dex": 6,
+   "str_": 5,
+   "sta": 7,
+   "max_hp": 9,
+   "power": 4,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 9,
+   "cur_sta": 7,
+   "cur_power": 4,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "spear",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 6,
+   "def_bonus": 0,
+   "race": "orc",
+   "sex": "m",
+   "age": 23,
+   "nickname": "",
+   "traits": {
+    "weakness": "needs meds",
+    "speech": "verbose",
+    "dress": "elegant"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Krag",
+   "dex": 5,
+   "str_": 6,
+   "sta": 8,
+   "max_hp": 8,
+   "power": 4,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 8,
+   "cur_sta": 8,
+   "cur_power": 4,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "club",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 3,
+   "def_bonus": 0,
+   "race": "orc",
+   "sex": "m",
+   "age": 28,
+   "nickname": "",
+   "traits": {
+    "interest": "music",
+    "dress": "flamboyant",
+    "speech": "verbose"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Uthemar",
+   "dex": 4,
+   "str_": 5,
+   "sta": 8,
+   "max_hp": 12,
+   "power": 6,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 12,
+   "cur_sta": 8,
+   "cur_power": 6,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 2,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "light hammer",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 4,
+   "def_bonus": 0,
+   "race": "elf",
+   "sex": "m",
+   "age": 33,
+   "nickname": "",
+   "traits": {
+    "background": "craftsman",
+    "dress": "ascetic",
+    "looks": "short"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  }
+ ],
+ "recruits": null,
+ "pending": null,
+ "rooms": {},
+ "rng": [
+  3,
+  [
+   2187308903,
+   889918033,
+   1520338778,
+   161950593,
+   2286657806,
+   1448003062,
+   2706912436,
+   3433508287,
+   51029060,
+   3867555091,
+   260829472,
+   2356967066,
+   3308750501,
+   1560063957,
+   2455621646,
+   4001624800,
+   4287369993,
+   210122929,
+   42640745,
+   1542984878,
+   3773321797,
+   1350568645,
+   3946524882,
+   955224621,
+   792274734,
+   1791879816,
+   1170219471,
+   3471775762,
+   2046634906,
+   3582939249,
+   3442048812,
+   3264945246,
+   963357115,
+   2724854307,
+   4247541267,
+   1301180870,
+   2157503898,
+   3434908415,
+   3384913482,
+   380072934,
+   4213797332,
+   3040192915,
+   940654193,
+   1375621087,
+   3180987841,
+   71708857,
+   3922444611,
+   2738175480,
+   295257042,
+   3225713445,
+   1845503430,
+   1564689158,
+   2764009546,
+   707283513,
+   2163867344,
+   1728100922,
+   490858136,
+   3499864620,
+   4247146366,
+   1653482456,
+   3999511408,
+   31719645,
+   3680844436,
+   3175456585,
+   2050877317,
+   4122234585,
+   1301334797,
+   806506201,
+   1474241641,
+   3666237187,
+   1321026631,
+   2453986291,
+   1801162921,
+   157054811,
+   503084584,
+   940384814,
+   1470427703,
+   1146674157,
+   884870071,
+   890821217,
+   173464357,
+   637731611,
+   1200502256,
+   2751085708,
+   678999575,
+   2899849599,
+   1851146361,
+   4239889681,
+   526711676,
+   2934277389,
+   4068826617,
+   1527740539,
+   1242492124,
+   452578767,
+   4232076626,
+   991289167,
+   680620930,
+   24086673,
+   227263313,
+   881118969,
+   716718272,
+   3367357519,
+   4037489148,
+   3494190217,
+   3638945521,
+   1814881854,
+   3481026014,
+   4008405306,
+   2583816409,
+   278501105,
+   2060343996,
+   2166196685,
+   168454525,
+   3141489031,
+   3865960034,
+   1015792751,
+   3430521456,
+   2738621209,
+   4176611416,
+   1725433279,
+   2457235182,
+   2850374731,
+   2824634516,
+   370624984,
+   481271071,
+   108816672,
+   3775381947,
+   1991080638,
+   2423514873,
+   342764399,
+   2130174067,
+   1315110559,
+   752184727,
+   3605825757,
+   4253163943,
+   3770231836,
+   37532880,
+   2553671598,
+   105506513,
+   2907149429,
+   2171240437,
+   89680801,
+   1405474917,
+   4103831788,
+   1867828279,
+   1207881343,
+   1910605458,
+   2110410530,
+   3900212106,
+   2964688110,
+   3396173243,
+   2459852355,
+   3166442494,
+   4258230544,
+   2783958485,
+   3878832816,
+   865842614,
+   979332657,
+   328182952,
+   1789926422,
+   3293406110,
+   3850312392,
+   1718240510,
+   3929156057,
+   3009297520,
+   3498073896,
+   4040690446,
+   829885536,
+   1070206364,
+   4144176139,
+   2730271027,
+   2463677019,
+   1322675225,
+   649229917,
+   2872197526,
+   800413871,
+   2994136690,
+   4186767566,
+   2540545098,
+   3421753423,
+   1970799427,
+   3048104129,
+   2357742374,
+   715943595,
+   3539110004,
+   4252375380,
+   337326176,
+   143134902,
+   3048095114,
+   3583575050,
+   2687412912,
+   352039232,
+   1916883221,
+   80475384,
+   2248449558,
+   340536231,
+   2012869144,
+   3888809833,
+   3001598003,
+   832590508,
+   3337197333,
+   3054017717,
+   1498933165,
+   3144846089,
+   2577603366,
+   2002168453,
+   285510179,
+   1896005854,
+   2089956833,
+   3393253069,
+   902062042,
+   1678042857,
+   2545674831,
+   317166530,
+   2099175986,
+   2726046773,
+   4292816704,
+   3903266758,
+   307979409,
+   3918231344,
+   195240159,
+   2541958031,
+   365274540,
+   2124345382,
+   4142603402,
+   3603334705,
+   1633899715,
+   3327330620,
+   2851133142,
+   2261901089,
+   1032312526,
+   911908762,
+   4191257594,
+   4241657299,
+   647519858,
+   1174355130,
+   1933782678,
+   2795483591,
+   2812412160,
+   902961349,
+   2157286168,
+   882162465,
+   3235133725,
+   4045991252,
+   2400199283,
+   1632116325,
+   879848808,
+   1071719904,
+   2657499182,
+   845355307,
+   2799666462,
+   1154718047,
+   320688137,
+   3261873414,
+   3410713588,
+   551434949,
+   2615000601,
+   2336804819,
+   1427382646,
+   4003585747,
+   1705560908,
+   4183379571,
+   3754252217,
+   1617813511,
+   2523688675,
+   2874102977,
+   3330495695,
+   4007940861,
+   2946565193,
+   372848674,
+   3013275315,
+   1925838270,
+   3388610248,
+   2323734163,
+   1655891298,
+   1720404874,
+   2428048287,
+   1272437664,
+   2987806945,
+   4193160213,
+   1328382863,
+   2352721726,
+   2636354314,
+   1869574099,
+   4081850346,
+   752317630,
+   3209437762,
+   2597394179,
+   3231467884,
+   2519623903,
+   133971070,
+   4059073777,
+   96612662,
+   670500033,
+   1400493913,
+   1007606946,
+   180617460,
+   227573338,
+   1578321458,
+   136622246,
+   2273163009,
+   2535700181,
+   1341105395,
+   1151481613,
+   373980358,
+   1793640072,
+   2983157940,
+   2941887907,
+   3413912189,
+   10856140,
+   3022382185,
+   3500896453,
+   332141848,
+   1129775307,
+   2861072732,
+   1201126283,
+   3492070643,
+   1907970944,
+   348749011,
+   688195345,
+   1164358875,
+   3362505968,
+   2326607792,
+   2923846733,
+   2709107415,
+   1541871474,
+   1768546061,
+   2416245223,
+   1109383265,
+   2847339854,
+   3718163129,
+   965316671,
+   3289075591,
+   62023086,
+   3881762508,
+   770881914,
+   42988318,
+   2195055221,
+   188882983,
+   2818726349,
+   3195606775,
+   1308361590,
+   3638197892,
+   1707988876,
+   2974408188,
+   4176804262,
+   767723246,
+   1424881651,
+   85239140,
+   4169709503,
+   3128467948,
+   2241195602,
+   1683464424,
+   1638986915,
+   681393801,
+   3855389885,
+   1544266262,
+   2241382527,
+   1613788498,
+   3188125393,
+   3865882726,
+   332863959,
+   2409392334,
+   2611163125,
+   2843568822,
+   2115972419,
+   2284868540,
+   1311107176,
+   540904079,
+   1877963925,
+   3639246122,
+   2603877100,
+   1170625286,
+   1889267128,
+   64569805,
+   3561871374,
+   1428585214,
+   1367653887,
+   2737410732,
+   1558844380,
+   3216005110,
+   4269128666,
+   3126360945,
+   985763190,
+   4055714266,
+   1052381655,
+   1467078314,
+   2362314446,
+   2295828809,
+   1331590897,
+   2115170047,
+   1278618958,
+   1319230542,
+   549823206,
+   641510695,
+   1736723555,
+   2489148189,
+   2048248121,
+   3572127675,
+   991128080,
+   3212440655,
+   947229352,
+   1142620532,
+   1938953182,
+   3751912075,
+   2053228599,
+   1084408229,
+   2571320516,
+   3591767569,
+   1637183194,
+   3759836386,
+   2210521245,
+   1458737221,
+   3485100311,
+   392919750,
+   3014862151,
+   1684208952,
+   503551027,
+   3085465769,
+   971162491,
+   1259294622,
+   3231928186,
+   1473264410,
+   3144554976,
+   1909449347,
+   3916836336,
+   3391868853,
+   2931765830,
+   3119986908,
+   2232217224,
+   1751305316,
+   1512580944,
+   4021200331,
+   4070305187,
+   1840690128,
+   3978953851,
+   3632941524,
+   2134273583,
+   1223531512,
+   1299687036,
+   3676396162,
+   1630088751,
+   2661842747,
+   3035709467,
+   4136067869,
+   363485237,
+   1243984832,
+   1725887672,
+   3316627968,
+   3381250825,
+   3509909465,
+   3302543441,
+   3168569700,
+   2599670208,
+   3928479114,
+   3877149760,
+   3185926549,
+   1059787248,
+   3987291245,
+   1895767093,
+   653912476,
+   558474041,
+   366054937,
+   2304895084,
+   2814324365,
+   3321208617,
+   1167234595,
+   12154335,
+   1865380826,
+   1489770751,
+   2623496198,
+   179308120,
+   3426027617,
+   790808153,
+   787500057,
+   537016733,
+   3919240612,
+   497346604,
+   2423948736,
+   3149122409,
+   2435312265,
+   458851176,
+   2602231780,
+   512957031,
+   3346847512,
+   3135229857,
+   3322810484,
+   4152168537,
+   2111518934,
+   1464379566,
+   1157085587,
+   2621907500,
+   66469770,
+   2345903123,
+   2556532231,
+   537339316,
+   3930683437,
+   3277739769,
+   875181378,
+   415783502,
+   2382320342,
+   2983000989,
+   3067071590,
+   81277585,
+   2066439817,
+   591510887,
+   2064619739,
+   925189853,
+   3590700105,
+   2686986473,
+   2606504311,
+   1190346382,
+   1879433880,
+   1565453021,
+   48121136,
+   2195342968,
+   2531348470,
+   1681990083,
+   3924313803,
+   1953613665,
+   740153534,
+   2373773049,
+   1504543842,
+   2763918643,
+   3215511289,
+   638510410,
+   3897984104,
+   1550617682,
+   2888278371,
+   4141764479,
+   2329538795,
+   4039882838,
+   2528461524,
+   3959368928,
+   3014680882,
+   129526248,
+   3467561919,
+   3499606261,
+   118843135,
+   1332355299,
+   3817540517,
+   875432146,
+   3639532764,
+   3874401061,
+   3755057254,
+   3032635222,
+   3343955314,
+   1866672972,
+   4065375292,
+   2937456850,
+   1676452978,
+   2550073353,
+   3117579761,
+   3834231002,
+   2003414466,
+   3913325150,
+   1848971198,
+   1438252990,
+   1027820640,
+   1183267091,
+   1652517159,
+   2449818277,
+   3768812754,
+   1729770928,
+   2226069350,
+   4050615847,
+   3063333393,
+   1306862923,
+   1397836228,
+   3727809267,
+   3333383401,
+   2497846820,
+   88977966,
+   331730822,
+   4106504020,
+   3712265444,
+   647677572,
+   3419413624,
+   3622549953,
+   1575944951,
+   1676383317,
+   519241157,
+   1604679857,
+   1850205053,
+   3715691235,
+   783876810,
+   1806648286,
+   1066519094,
+   367078511,
+   852060092,
+   702061446,
+   3953968202,
+   3862191729,
+   303212640,
+   163503691,
+   2368776024,
+   3767826755,
+   1539301710,
+   1028279114,
+   1593126099,
+   403194770,
+   1667485128,
+   2163988808,
+   1900591711,
+   2373400350,
+   464934734,
+   2769563159,
+   1311188061,
+   48792542,
+   80218353,
+   1053678122,
+   3889728275,
+   1249059069,
+   2114638294,
+   830875735,
+   4123675752,
+   1379209436,
+   2224818893,
+   2230170179,
+   3641409659,
+   1490721181,
+   3309680704,
+   1719132187,
+   209323121,
+   103
+  ],
+  null
+ ]
+}
