@@ -10,9 +10,9 @@ party: 3/3 companion slot(s) filled (CHA 6)
             Muzgash -- orc m, age 29; background: peasant; voice: whispering; dress: ascetic
             XP 25/200 to L3 | skill points: 0
 
-(companion) Jorik (L2, training 0): DEX 6  STR 6  STA 8/8  HP 13/12  Power 6/6  CHA 3  (heal; battleaxe; healingx2, staminax2)  [satisfaction 10/10]
+(companion) Jorik (L2, training 1): DEX 6  STR 6  STA 8/8  HP 13/12  Power 6/6  CHA 3  (heal; battleaxe; healingx2, staminax2)  [satisfaction 10/10]
             Jorik -- human m, age 41; temperament: mean; dress: flamboyant; looks: big
-            XP 25/200 to L3 | skill points: 1
+            XP 25/200 to L3 | skill points: 0
 
 (companion) Fizzet (L2, training 1): DEX 5  STR 4  STA 5/5  HP 13/12  Power 0/4  CHA 3  (first_blood; scimitar; healingx1, staminax1)  [satisfaction 10/10]
             Fizzet -- goblin f, age 30; quirk: has an enemy (Thoradin, a dwarf mercenary captain, level 4, out there somewhere); speech: poetic; dress: mismatched
