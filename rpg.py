@@ -114,6 +114,15 @@ STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and shop
                         # kind here if Power ever becomes scarce.
 POTION_PRICE = 10       # gold per potion, any kind
 STARTING_POTIONS = 2    # random potions rolled at character creation
+# The traveling kit (2026-07-11): basic potions replenish THEMSELVES -- every
+# long rest tops each living hero back up to the kit line (herbs brewed at the
+# camp fire; a vial scrounged or bought with pocket change in town). Design
+# call: shopping for the baseline potion was friction, not a choice -- the
+# felt game skipped it. `buy` still stocks ABOVE the kit line for a planned
+# push; drops still add on top. The kit is deliberately thin (one of each):
+# a second draught for the same fight is still something you paid or bled for.
+KIT_HEALING = 1         # healing potions each hero wakes with, minimum
+KIT_STAMINA = 1         # stamina draughts each hero wakes with, minimum
 DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
@@ -423,16 +432,30 @@ MEDS_PRICE = 20                 # deliberately dear (two potions a dose)
 # group_combat can PAUSE at a trigger and resume: the "do I fight on?" decision
 # surfaced BEFORE Spent, where play never had it. Triggers watch the party side
 # only, at the end of a round, and each (kind, hero) pair fires at most once
-# per fight (no pause spam; per hero, so one hero's crisis never consumes the
-# other's warning). CROSSING-ONLY (2026-07): a trigger whose condition already
+# per fight (per hero, so one hero's crisis never consumes the other's
+# warning). CROSSING-ONLY (2026-07): a trigger whose condition already
 # holds when the fight starts is marked spent silently -- entering low was the
 # player's informed choice at the door, so only an IN-FIGHT crossing
 # interrupts (a wounded day no longer re-asks the same question every fight).
 # At the pause the choices are: fight on (resume), a pause ACTION per hero --
-# drink a stamina draught mid-fight, or one of the resource conversions below
-# -- or retreat. Every pause action costs that round's attack and the hero
-# defends at a penalty while occupied: vulnerable, not helpless. Mid-fight
-# drinking un-Spends a fighter at 0 STA -- bought at a real price.
+# drink a stamina draught or healing potion mid-fight, or one of the resource
+# conversions below -- or retreat. Every pause action costs that round's
+# attack and the hero defends at a penalty while occupied: vulnerable, not
+# helpless. Mid-fight drinking un-Spends a fighter at 0 STA -- bought at a
+# real price.
+#
+# STANDING ORDERS (2026-07-11): with 3-4 party members the per-hero triggers
+# made a long fight stop up to 2N times, each a full chat round-trip -- the
+# designer wants AT MOST ONE pause per encounter. The engine now takes a
+# `standing_orders` callback deciding each crossing: interrupt ("pause"),
+# auto-act (a pause-action string, executed at the top of the next round at
+# the usual price), or fight on (None). Session play interrupts only on the
+# FIRST wounds crossing of the fight -- the "someone is being cut apart, do
+# we retreat?" question, which belongs to the player -- and answers every
+# other crossing with the standing order (drink / convert, skipped when the
+# fight is already winding down -- see fight_winding_down). The sims pass no
+# callback and keep the old every-crossing pause, so sim_pause_policy answers
+# exactly what it always answered.
 PAUSE_STA_TRIGGER = 2       # a hero at/below this STA at round end -> pause
 PAUSE_HP_FRACTION = 0.5     # a hero at/below this fraction of max HP -> pause
 PAUSE_ACTION_DEF_PENALTY = 2    # the busy hero's defense penalty that round
@@ -459,7 +482,7 @@ BERSERK_HP_COST = 2         # Berserk: bleed HP for STA. The HP loss also
 BERSERK_STA_GAIN = 4        # deepens the wound spiral -- the real price.
 WAR_BREATH_POWER_COST = 2   # War-Breath: spend Power for STA -- a fighter's
 WAR_BREATH_STA_GAIN = 3     # breath discipline, not wizardry.
-PAUSE_ACTIONS = ("drink", "berserk", "war-breath")
+PAUSE_ACTIONS = ("drink", "heal", "berserk", "war-breath")
 
 # The universal graze floor: win the exchange by at least this margin and the
 # hit always draws blood (min. a graze), no matter the soak. Without it a
@@ -1192,9 +1215,43 @@ def _check_pause_triggers(party: list[Entity], foes: list[Entity],
     return crossings
 
 
+def fight_winding_down(foes: list[Entity]) -> bool:
+    """Is this fight already decided in the party's favor? True when every
+    living foe is below half HP or Spent -- low, spiralling, losing force.
+    The standing orders check this before spending a potion or a conversion
+    on a fight that no longer needs one (designer call, 2026-07-11)."""
+    return all(f.hp * 2 < f.max_hp or f.spent for f in foes if f.alive)
+
+
+def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
+    """The default mid-fight standing order for a hero whose crossing does
+    NOT interrupt (see the pause comment block): what they do on their own,
+    at the pause-action price, when they run low. Mirrors sim_pause_policy's
+    conversion ladder minus the retreat vote (retreating is the player's,
+    at the one wounds pause):
+      stamina -> nothing if the fight is winding down; else drink a carried
+                 draught, else War-Breath (a Bulwark hero keeps one save in
+                 reserve), else Berserk on a still-healthy body.
+      wounds  -> a carried healing potion, unless the fight is winding down.
+    Returns a pause-action string or None (fight on)."""
+    if fight_winding_down(foes):
+        return None
+    if kind == "wounds":
+        return "heal" if hero.items.get("healing", 0) > 0 else None
+    if hero.items.get("stamina", 0) > 0:
+        return "drink"
+    if hero.cur_power >= WAR_BREATH_POWER_COST + (
+            SAVE_COST if hero.ability == "bulwark" else 0):
+        return "war-breath"
+    if hero.hp > BERSERK_HP_COST * 3:
+        return "berserk"
+    return None
+
+
 def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
     """Execute one pause-menu action at the top of the resumed round: drink a
-    stamina draught, or a resource conversion (Berserk / War-Breath). Returns
+    stamina draught or healing potion, or a resource conversion (Berserk /
+    War-Breath). Returns
     True if it took effect -- the hero is then BUSY this round: no attack, and
     -PAUSE_ACTION_DEF_PENALTY on defense (vulnerable, not helpless). A failed
     action (nothing to drink, not enough Power) logs and the hero just fights."""
@@ -1211,6 +1268,24 @@ def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
         log.append(f"    {h.name} downs a stamina draught mid-fight "
                    f"(STA {before} -> {h.cur_sta}/{h.sta}; "
                    f"{h.items['stamina']} left) -- no attack this round, "
+                   f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
+        return True
+    if action == "heal":
+        # The wounds trigger's own answer (2026-07-11; rules.md's "until HP
+        # pressure proves otherwise" clause resolved in play): a healing
+        # potion at the drink's exact price. It lightens the wound penalty
+        # immediately -- fighting the spiral is the point.
+        if h.items.get("healing", 0) <= 0:
+            log.append(f"    {h.name} gropes for a healing potion -- "
+                       f"none left! They fight on.")
+            return False
+        h.items["healing"] -= 1
+        before = h.hp
+        h.hp = recover(h.hp, HEALING_POTION_RESTORE, h.max_hp)
+        log.append(f"    {h.name} downs a healing potion mid-fight "
+                   f"(HP {before} -> {h.hp}/{h.max_hp}, now "
+                   f"-{h.wound_penalty} to rolls; "
+                   f"{h.items['healing']} left) -- no attack this round, "
                    f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
         return True
     if action == "berserk":
@@ -1259,7 +1334,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
                  pause_triggers: bool = False,
                  fired: set[tuple[str, Entity]] | None = None,
                  first_round: int = 1,
-                 actions: dict[Entity, str] | None = None) -> Pause | None:
+                 actions: dict[Entity, str] | None = None,
+                 standing_orders=None) -> Pause | None:
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
 
     Exchanges resolve *sequentially* -- party in list order first, then foes --
@@ -1298,9 +1374,19 @@ def group_combat(party: list[Entity], foes: list[Entity],
     instead of
     finishing; the caller decides (fight on / pause actions / retreat) and
     calls again with fired, first_round=pause.round+1, and `actions`
-    ({hero: "drink" | "berserk" | "war-breath"}, executed at the top of the
-    resumed round: the hero skips that attack and defends at
+    ({hero: "drink" | "heal" | "berserk" | "war-breath"}, executed at the top
+    of the resumed round: the hero skips that attack and defends at
     -PAUSE_ACTION_DEF_PENALTY). Returns None when the melee actually ended.
+
+    Standing orders (2026-07-11): `standing_orders(kind, hero, party, foes)`
+    decides each crossing instead of the every-crossing pause -- return
+    "pause" to interrupt, a pause-action string to have the hero act on
+    their own at the top of the next round (the usual price), or None to
+    fight on. With standing_orders=None (the sims' default) every crossing
+    pauses, exactly the pre-2026-07-11 behavior. When a round yields both an
+    interrupt and auto-orders, the auto crossings are RE-ARMED (removed from
+    `fired`) instead of acted on, so the order isn't lost across the
+    save/resume boundary -- they re-trip after the resume.
     """
     party_set = set(party)
     if fired is None:
@@ -1315,9 +1401,13 @@ def group_combat(party: list[Entity], foes: list[Entity],
     spent_logged: set[Entity] = (
         {e for e in party + foes if e.alive and e.spent}
         if first_round > 1 else set())
-    busy_label = {"drink": "drinking", "berserk": "berserk",
-                  "war-breath": "war-breath"}
+    busy_label = {"drink": "drinking", "heal": "drinking",
+                  "berserk": "berserk", "war-breath": "war-breath"}
     busy: dict[Entity, str] = {}
+    # Actions waiting to execute at the top of the next round: the caller's
+    # pause answers on a resume, plus any standing orders issued at a
+    # crossing (both pay the same price when they fire).
+    queued: dict[Entity, str] = dict(actions) if actions else {}
     rnd = first_round - 1
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
@@ -1327,11 +1417,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
         log.append(f"  Round {rnd}:")
         if rnd == 1:
             _first_blood(party, foes, rng, log)
-        if actions and rnd == first_round:
+        if queued:
             # The pause actions happen now, in the teeth of the melee.
-            for h, act in actions.items():
+            for h, act in queued.items():
                 if _do_pause_action(h, act, log):
                     busy[h] = act
+            queued = {}
             # A drink can un-Spend a fighter at 0: drop them from the
             # already-logged set so running dry AGAIN earns a fresh !! line.
             spent_logged = {e for e in spent_logged if e.spent}
@@ -1476,16 +1567,36 @@ def group_combat(party: list[Entity], foes: list[Entity],
         if pause_triggers:
             crossings = _check_pause_triggers(party, foes, fired)
             if crossings:
+                interrupts: list[tuple[str, Entity]] = []
+                autos: list[tuple[str, Entity, str]] = []
                 for kind, h in crossings:
-                    if kind == "stamina":
-                        log.append(f"    == {h.name} is nearly out of breath "
-                                   f"(STA {h.cur_sta}/{h.sta}) -- "
-                                   f"the fight hangs for a heartbeat. ==")
-                    else:
-                        log.append(f"    == {h.name} is badly cut up "
-                                   f"(HP {h.hp}/{h.max_hp}) -- "
-                                   f"the fight hangs for a heartbeat. ==")
-                return Pause(round=rnd, crossings=crossings)
+                    order = ("pause" if standing_orders is None
+                             else standing_orders(kind, h, party, foes))
+                    if order == "pause":
+                        interrupts.append((kind, h))
+                    elif order is not None:
+                        autos.append((kind, h, order))
+                if interrupts:
+                    for kind, h in interrupts:
+                        if kind == "stamina":
+                            log.append(f"    == {h.name} is nearly out of "
+                                       f"breath (STA {h.cur_sta}/{h.sta}) -- "
+                                       f"the fight hangs for a heartbeat. ==")
+                        else:
+                            log.append(f"    == {h.name} is badly cut up "
+                                       f"(HP {h.hp}/{h.max_hp}) -- "
+                                       f"the fight hangs for a heartbeat. ==")
+                    # Re-arm the auto crossings instead of acting: an order
+                    # queued now would be lost across the caller's
+                    # save/resume boundary. Their condition still holds, so
+                    # they re-trip at the end of the first resumed round.
+                    for kind, h, _ in autos:
+                        fired.discard((kind, h))
+                    return Pause(round=rnd, crossings=interrupts)
+                for kind, h, order in autos:
+                    # One action per hero per round: a hero crossing both
+                    # tracks at once acts on the later (wounds) order.
+                    queued[h] = order
 
     # The dust settles: fate collects first, then whoever is still standing
     # catches their breath.
@@ -2335,6 +2446,23 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
         else:
             note += ", HP full"
         log.append(f"    {h.name}: {note}")
+    # The traveling kit replenishes itself (2026-07-11, see KIT_*): herbs
+    # brewed at the camp fire, a vial scrounged in town -- nobody shops for
+    # the baseline potion. `buy` still stocks above the kit line.
+    restocked = 0
+    for h in party:
+        if h.dead:
+            continue
+        for kind, floor_n in (("healing", KIT_HEALING),
+                              ("stamina", KIT_STAMINA)):
+            have = h.items.get(kind, 0)
+            if have < floor_n:
+                h.items[kind] = floor_n
+                restocked += floor_n - have
+    if restocked:
+        log.append(f"    The kit is restocked overnight (+{restocked} "
+                   f"potion(s) brewed or scrounged -- everyone carries at "
+                   f"least {KIT_HEALING} healing, {KIT_STAMINA} stamina)")
 
 
 def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
@@ -2405,8 +2533,9 @@ def sim_pause_policy(crossings: list[tuple[str, Entity]]
       stamina -> drink a carried draught; else War-Breath if the Power is
                  there (a Bulwark hero keeps one save in reserve); else
                  Berserk on a still-healthy body; else vote retreat.
-      wounds  -> fight on while a healing potion is carried for afterward or
-                 the wound is shallow; a deep cut with no buffer votes retreat.
+      wounds  -> drink a carried healing potion mid-fight (2026-07-11, the
+                 pause's "heal" action); a deep cut with no potion votes
+                 retreat; a shallow one with no potion fights on.
     Any retreat vote carries -- the party leaves together."""
     actions: dict[Entity, str] = {}
     for kind, hero in crossings:
@@ -2421,8 +2550,9 @@ def sim_pause_policy(crossings: list[tuple[str, Entity]]
             else:
                 return "retreat"
         else:   # wounds
-            if (hero.items.get("healing", 0) == 0
-                    and hero.hp * 3 <= hero.max_hp):
+            if hero.items.get("healing", 0) > 0:
+                actions[hero] = "heal"
+            elif hero.hp * 3 <= hero.max_hp:
                 return "retreat"
     return actions
 
