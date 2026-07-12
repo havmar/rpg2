@@ -1,22 +1,22 @@
 RPG2 PARTY SHEET -- day 2, at Stonemarket (human lands, settlement)
-purse: 15g | short rests left today: 1
+purse: 54g | short rests left today: 1
 party: 3/3 companion slot(s) filled (CHA 6)
 
-(YOU)       Krusk (L1, training 0): DEX 6  STR 5  STA 6/7  HP 10/9  Power 2/4  CHA 6  (first_blood; spear; healingx1, staminax1)
+(YOU)       Krusk (L2, training 0): DEX 6  STR 5  STA 5/7  HP 10/9  Power 0/4  CHA 6  (first_blood; spear; healingx1, staminax1)
             Krusk -- orc m, age 23; weakness: needs meds; speech: verbose; dress: elegant
-            XP 58/100 to L2 | skill points: 0
+            XP 25/200 to L3 | skill points: 1
 
-(companion) Muzgash (L1, training 0): DEX 5  STR 5  STA 7/7  HP 11/10  Power 6/6  CHA 6  (heal; wooden staff; healingx2, staminax1)  [satisfaction 9/10]
+(companion) Muzgash (L2, training 0): DEX 5  STR 5  STA 7/7  HP 11/10  Power 6/6  CHA 6  (heal; wooden staff; healingx2, staminax1)  [satisfaction 10/10]
             Muzgash -- orc m, age 29; background: peasant; voice: whispering; dress: ascetic
-            XP 58/100 to L2 | skill points: 0
+            XP 25/200 to L3 | skill points: 1
 
-(companion) Jorik (L1, training 0): DEX 6  STR 6  STA 8/8  HP 13/12  Power 6/6  CHA 3  (heal; battleaxe; healingx1, staminax2)  [satisfaction 9/10]
+(companion) Jorik (L2, training 0): DEX 6  STR 6  STA 8/8  HP 13/12  Power 6/6  CHA 3  (heal; battleaxe; healingx2, staminax2)  [satisfaction 10/10]
             Jorik -- human m, age 41; temperament: mean; dress: flamboyant; looks: big
-            XP 58/100 to L2 | skill points: 0
+            XP 25/200 to L3 | skill points: 1
 
-(companion) Fizzet (L2, training 1): DEX 5  STR 4  STA 5/5  HP 13/12  Power 2/4  CHA 3  (first_blood; scimitar; healingx1, staminax1)  [satisfaction 9/10]
+(companion) Fizzet (L2, training 1): DEX 5  STR 4  STA 5/5  HP 13/12  Power 0/4  CHA 3  (first_blood; scimitar; healingx1, staminax1)  [satisfaction 10/10]
             Fizzet -- goblin f, age 30; quirk: has an enemy (Thoradin, a dwarf mercenary captain, level 4, out there somewhere); speech: poetic; dress: mismatched
-            XP 58/200 to L3 | skill points: 0
+            XP 125/200 to L3 | skill points: 0
 
-active quest: [q33] L3 Wolves at the Folds -- next: the high pasture (L2), room 2/2
-momentum: 1 encounter(s) at q33/s1 since the last camp
+active quest: [q33] L3 Wolves at the Folds -- next: the den in the hills (L3), room 1/3
+momentum: 2 encounter(s) at q33/s1 since the last camp
