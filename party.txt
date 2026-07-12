@@ -18,3 +18,4 @@ party: 3/3 companion slot(s) filled (CHA 6)
             Fizzet -- goblin f, age 30; quirk: has an enemy (Thoradin, a dwarf mercenary captain, level 4, out there somewhere); speech: poetic; dress: mismatched
             XP 50/200 to L3 | skill points: 0
 
+active quest: [q33] L3 Wolves at the Folds -- next: the high pasture (L2), room 1/2
