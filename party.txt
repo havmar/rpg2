@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 3, at Sprocketpit (goblin lands, settlement)
 purse: 41g | short rests left today: 1
-party: 2/3 companion slot(s) filled (CHA 6)
+party: 3/3 companion slot(s) filled (CHA 6)
 
 (YOU)       Zizzer (L2, training 1): DEX 6  STR 6  STA 7/6  HP 11/10  Power 4/4  CHA 6  (heal; zweihander; healingx1, staminax1)
             Zizzer -- goblin m, age 35; interest: plants; dress: luxurious; looks: beautiful
@@ -13,6 +13,10 @@ party: 2/3 companion slot(s) filled (CHA 6)
 (companion) Anneth (L2, training 1): DEX 4  STR 5  STA 8/7  HP 12/11  Power 4/4  CHA 3  (first_blood; club; healingx1, staminax1)  [satisfaction 9/10]
             Anneth -- human f, age 17; interest: animals; speech: formal; voice: melodious
             XP 83/200 to L3 | skill points: 0
+
+(companion) Varg (L3, training 1): DEX 5  STR 4  STA 9/9  HP 9/9  Power 4/4  CHA 6  (first_blood; scimitar, prof 1; healingx1, staminax1)  [satisfaction 7/10]
+            Varg -- orc m, age 25; quirk: has an enemy (Torgga, a dwarf mercenary captain, level 5, out there somewhere); speech: poetic; dress: professional
+            XP 0/300 to L4 | skill points: 0 | proficiency: scimitar 1
 
 active quest [q29] Spiders in the Undercity is COMPLETE
 THE WAR: [w1] L2 Strange Salvage -- raised at Marshfield.
