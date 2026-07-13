@@ -2,21 +2,22 @@ RPG2 PARTY SHEET -- day 5, at Marshfield (human lands, settlement)
 purse: 41g | short rests left today: 1
 party: 3/3 companion slot(s) filled (CHA 6)
 
-(YOU)       Zizzer (L2, training 1): DEX 6  STR 6  STA 6/6  HP 10/10  Power 4/4  CHA 6  (heal; zweihander; healingx1, staminax1)
+(YOU)       Zizzer (L2, training 1): DEX 6  STR 6  STA 5/6  HP 10/10  Power 4/4  CHA 6  (heal; zweihander; healingx1, staminax1)
             Zizzer -- goblin m, age 35; interest: plants; dress: luxurious; looks: beautiful
-            XP 83/200 to L3 | skill points: 0
+            XP 89/200 to L3 | skill points: 0
 
 (companion) Krix (L2, training 1): DEX 5  STR 6  STA 7/7  HP 9/9  Power 4/4  CHA 6  (bulwark; light hammer; healingx1, staminax2)  [satisfaction 9/10]
             Krix -- goblin m, age 21; quirk: has an enemy (Snagg, a orc outlaw, level 3, out there somewhere); voice: melodious; dress: ascetic
-            XP 83/200 to L3 | skill points: 0
+            XP 89/200 to L3 | skill points: 0
 
-(companion) Anneth (L2, training 1): DEX 4  STR 5  STA 7/7  HP 11/11  Power 4/4  CHA 3  (first_blood; club; healingx1, staminax1)  [satisfaction 9/10]
+(companion) Anneth (L2, training 1): DEX 4  STR 5  STA 7/7  HP 11/11  Power 2/4  CHA 3  (first_blood; club; healingx1, staminax1)  [satisfaction 9/10]
             Anneth -- human f, age 17; interest: animals; speech: formal; voice: melodious
-            XP 83/200 to L3 | skill points: 0
+            XP 89/200 to L3 | skill points: 0
 
-(companion) Varg (L3, training 1): DEX 5  STR 4  STA 9/9  HP 9/9  Power 4/4  CHA 6  (first_blood; scimitar, prof 1; healingx1, staminax1)  [satisfaction 7/10]
+(companion) Varg (L3, training 1): DEX 5  STR 4  STA 9/9  HP 8/9  Power 2/4  CHA 6  (first_blood; scimitar, prof 1; healingx1, staminax1)  [satisfaction 7/10]
             Varg -- orc m, age 25; quirk: has an enemy (Torgga, a dwarf mercenary captain, level 5, out there somewhere); speech: poetic; dress: professional
-            XP 0/300 to L4 | skill points: 0 | proficiency: scimitar 1
+            XP 6/300 to L4 | skill points: 0 | proficiency: scimitar 1
 
-active quest: [w1] L2 Strange Salvage -- next: the picked-clean farmstead (L1), room 1/2
+active quest: [w1] L2 Strange Salvage -- next: the picked-clean farmstead (L1), room 2/2
+momentum: 1 encounter(s) at w1/s1 since the last camp
 THE WAR: [w1] L2 Strange Salvage -- raised at Marshfield.
