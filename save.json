@@ -20,7 +20,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 6,
+   "cur_sta": 5,
    "cur_power": 4,
    "down": false,
    "dead": false,
@@ -31,7 +31,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 83,
+   "xp": 89,
    "skill_points": 0,
    "training": 1,
    "weapon": "zweihander",
@@ -84,7 +84,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 83,
+   "xp": 89,
    "skill_points": 0,
    "training": 1,
    "weapon": "light hammer",
@@ -127,7 +127,7 @@
    "protagonist": false,
    "hp": 11,
    "cur_sta": 7,
-   "cur_power": 4,
+   "cur_power": 2,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -137,7 +137,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 83,
+   "xp": 89,
    "skill_points": 0,
    "training": 1,
    "weapon": "club",
@@ -178,9 +178,9 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 9,
+   "hp": 8,
    "cur_sta": 9,
-   "cur_power": 4,
+   "cur_power": 2,
    "down": false,
    "dead": false,
    "fate_debt": false,
@@ -190,7 +190,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 3,
-   "xp": 0,
+   "xp": 6,
    "skill_points": 0,
    "training": 1,
    "weapon": "scimitar",
@@ -222,7 +222,7 @@
  "purse": {
   "gold": 41
  },
- "foe_count": 14,
+ "foe_count": 16,
  "active_quest": "w1",
  "world": {
   "seed": 593671033,
@@ -3002,7 +3002,7 @@
     ],
     "next": {
      "site": 0,
-     "room": 0
+     "room": 1
     },
     "status": "open",
     "epilogue": "The burrow is collapsed onto its own bomb stores; the crater smokes for a week and the livestock stop vanishing.",
@@ -3274,8 +3274,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "w1/s1",
+  "count": 1
  },
  "site_clears": {
   "barrow": {
@@ -4039,7 +4039,7 @@
    1690775968,
    855614839,
    3415706442,
-   559
+   616
   ],
   null
  ]
