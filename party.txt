@@ -18,5 +18,5 @@ party: 3/3 companion slot(s) filled (CHA 6)
             Varg -- orc m, age 25; quirk: has an enemy (Torgga, a dwarf mercenary captain, level 5, out there somewhere); speech: poetic; dress: professional
             XP 0/300 to L4 | skill points: 0 | proficiency: scimitar 1
 
-active quest [q29] Spiders in the Undercity is COMPLETE
+active quest: [w1] L2 Strange Salvage -- next: the picked-clean farmstead (L1), room 1/2
 THE WAR: [w1] L2 Strange Salvage -- raised at Marshfield.
