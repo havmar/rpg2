@@ -91,7 +91,35 @@ in-fight half; the wipe version stays parked below.
 
 ## After that (in rough order)
 
-1. **Magic & INT** — magic skills, INT scaling/gating (the way STR scales
+1. **Placeholder magic — from LEVEL 1, next session** (corrected
+   2026-07-13: magic was never meant to be high-level-only content; when
+   designed, it works from level 1. The full INT/stat-transcendence layer
+   below stays later; this placeholder ships first, as its own session).
+   The designer-approved sketch:
+   - **Wizard = POWER is the character's strictly highest stat** at
+     creation (party members, recruits, and select enemies alike).
+   - **Magic bolts**: attack pressure rolls off POWER instead of DEX;
+     each cast costs **1 Power** (the Power pool is the mana pool — the
+     Heal/War-Breath economy already lives there).
+   - **Two schools**: **fire** — the STR analogue, higher severity;
+     **ice** — low damage, and a landed hit **debuffs the target's DEX**
+     (stacking, floored) for the fight.
+   - **The levellable axis**: school proficiency, reusing the
+     weapon-proficiency rank system wholesale (a school is a "weapon
+     type": rank n costs n points, +1 pressure/+1 severity, cap 3) — the
+     fighting-skill analogue with zero new mechanics.
+   - Enemy casters: 2-3 new bestiary rows plus reskins. The calibration
+     tail (bench_bestiary re-annotation, generator pricing for caster
+     rows) is why this is a session of its own.
+2. **Cross-land quests** (designer, 2026-07-13) — jobs that send the
+   party to ANOTHER land, one-way: deliveries, escorts, accompany-the-
+   caravan. Simple shape: a site-less quest whose cursor is "arrive" —
+   given here, paid at a named settlement in another land, one guaranteed
+   road encounter en route, pay scaled by travel days; a couple per world
+   at worldgen. Needs its own small schema (quest without rooms), so not
+   bolted onto the 2026-07-13 batch.
+3. **Magic & INT, the full layer** — magic skills, INT scaling/gating (the
+   way STR scales
    weapons), the stat-transcendence path (magic is the membrane that lets
    gamey effects into the simulated body; ceiling: up to ~double the natural
    DEX/STR cap of 6, and +DEX items an order of magnitude rarer than
@@ -100,26 +128,30 @@ in-fight half; the wipe version stays parked below.
    belongs here**: the immaterial undead ("mundane steel barely bites") only
    works once magic exists to be the answer — it's the magic phase's
    signature enemy, deliberately left out of the bestiary until then.
-2. **Armor** — provisional design: armor **shifts the incoming wound tier
+4. **Armor** — provisional design: armor **shifts the incoming wound tier
    down** (Grievous → Wound, ...) at the cost of a DEX penalty and higher STA
    drain — protection traded for speed and clock. Optional anti-armor weapons
    ignore the tier-shift (gear-counters-gear). *Status: adopt, simplify, or
    defer.* Test: heavy armor changes a fight's *character* (pushes it toward
    attrition/contact), not just its numbers.
-3. **Guns + ammo** — dungeonpunk ranged weapons; ammo as the recurring gold
+5. **Guns + ammo** — dungeonpunk ranged weapons; ammo as the recurring gold
    sink. Deliberately excluded from the first weapons slice.
-4. **Named & masterwork weapon instances** — the tiers exist in the schema;
+6. **Named & masterwork weapon instances** — the tiers exist in the schema;
    no actual masterwork/legendary items are placed in the world yet. Named
    weapons carry authored provenance (a famous smith, a famous wielder, a
    mythic dungeon) and are story beats, never drops. Test: a named weapon
-   reads as an event; no power inflation from common loot.
-5. ~~Party composition & the CHA layer~~ **SHIPPED (2026-07-11)** — CHA as
+   reads as an event; no power inflation from common loot. (The DM-side
+   *reskin* shipped 2026-07-13: `give --as` grants catalog stats under a
+   display name.)
+7. ~~Party composition & the CHA layer~~ **SHIPPED (2026-07-11)** — CHA as
    the fourth stat (capacity hard cap 0–3, the gold-only negotiation
-   bonus), tavern recruitment (pick-of-3 PC creation, leveled candidates,
+   bonus), tavern recruitment (leveled candidates,
    bonded pairs), companion satisfaction with departures and the purse
    head-split, races/sex/age/traits generation (`people.py`), and
    `downtime`. Mechanics in rules.md's Party, Charisma & Satisfaction
-   add-on. What remains for later passes: **companion CHA gameplay** (the
+   add-on (reworked 2026-07-13: generated PC, recruit-on-request,
+   companion autolevel, the fixed stat budget). What remains for later
+   passes: **companion CHA gameplay** (the
    stat is rolled and shown, mechanically inert), a **nickname system**
    (schema slot exists), and "builds cover each other's weak matchups" as
    a deliberate recruit-pool shaping idea.
