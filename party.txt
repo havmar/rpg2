@@ -10,9 +10,9 @@ party: 2/3 companion slot(s) filled (CHA 6)
             Nessa -- human f, age 19; background: poverty; voice: whispering; dress: mismatched
             XP 88/100 to L2 | skill points: 0
 
-(companion) Krix (L2, training 0): DEX 5  STR 6  STA 7/7  HP 9/9  Power 4/4  CHA 6  (bulwark; light hammer; healingx1, staminax2)  [satisfaction 7/10]
+(companion) Krix (L2, training 1): DEX 5  STR 6  STA 7/7  HP 9/9  Power 4/4  CHA 6  (bulwark; light hammer; healingx1, staminax2)  [satisfaction 7/10]
             Krix -- goblin m, age 21; quirk: has an enemy (Snagg, a orc outlaw, level 3, out there somewhere); voice: melodious; dress: ascetic
-            XP 3/200 to L3 | skill points: 1
+            XP 3/200 to L3 | skill points: 0
 
 (companion) Anneth (L2, training 0): DEX 4  STR 5  STA 7/7  HP 11/11  Power 0/4  CHA 3  (first_blood; club; healingx1, staminax1)  [satisfaction 7/10]
             Anneth -- human f, age 17; interest: animals; speech: formal; voice: melodious
