@@ -20,20 +20,20 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 11,
-   "cur_sta": 5,
+   "cur_sta": 6,
    "cur_power": 4,
    "down": false,
    "dead": false,
    "fate_debt": false,
    "items": {
     "healing": 1,
-    "stamina": 1
+    "stamina": 0
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 3,
-   "skill_points": 1,
-   "training": 0,
+   "xp": 83,
+   "skill_points": 0,
+   "training": 1,
    "weapon": "zweihander",
    "weapon_broken": false,
    "proficiency": {},
@@ -125,8 +125,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 9,
-   "cur_sta": 7,
+   "hp": 8,
+   "cur_sta": 4,
    "cur_power": 4,
    "down": false,
    "dead": false,
@@ -137,9 +137,9 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 3,
-   "skill_points": 1,
-   "training": 0,
+   "xp": 83,
+   "skill_points": 0,
+   "training": 1,
    "weapon": "light hammer",
    "weapon_broken": false,
    "proficiency": {},
@@ -154,7 +154,7 @@
     "voice": "melodious",
     "dress": "ascetic"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -179,7 +179,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 11,
-   "cur_sta": 7,
+   "cur_sta": 5,
    "cur_power": 0,
    "down": false,
    "dead": false,
@@ -190,9 +190,9 @@
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 3,
-   "skill_points": 1,
-   "training": 0,
+   "xp": 83,
+   "skill_points": 0,
+   "training": 1,
    "weapon": "club",
    "weapon_broken": false,
    "proficiency": {},
@@ -207,7 +207,7 @@
     "voice": "melodious",
     "speech": "formal"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "",
    "bond_kind": "",
    "last_dose_day": 0
@@ -218,9 +218,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 0
+  "gold": 59
  },
- "foe_count": 10,
+ "foe_count": 14,
  "active_quest": "q29",
  "world": {
   "seed": 593671033,
@@ -3273,15 +3273,16 @@
  "sighting": null,
  "streak": {
   "site": "barrow",
-  "count": 2
+  "count": 3
  },
  "site_clears": {
   "barrow": {
    "rooms": [
     1,
-    2
+    2,
+    3
    ],
-   "paid": false
+   "paid": true
   }
  },
  "pc_candidates": null,
@@ -4200,7 +4201,7 @@
    1690775968,
    855614839,
    3415706442,
-   291
+   424
   ],
   null
  ]
