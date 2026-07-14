@@ -536,10 +536,13 @@ bigger than the fights WITHOUT pages of narration:
   Defense stays the body: wizards are squishy by statline. `train HERO
   magic` drills the school (the caster's proficiency lane; companions
   autolevel into it). **Enemy casters** (hexer = ice, pyromancer = fire,
-  magus = the solo boss) ride the warband pools: their Power is both
-  accuracy and ammo, so the play against them is close fast or bleed at
-  range -- an emptied caster is a robed conscript with a knife. Narrate
-  bolts as the school's fiction; the log already says who's casting what.
+  magus = the solo boss) are CONTAINED content: each race has one caster
+  quest (coven/ash-callers/rune-fire/boiler-cult/hedge-wizards) plus the
+  Renegade Magus epic -- ordinary warbands never field them, so a caster
+  fight is one the player read on the board and chose. Their Power is
+  both accuracy and ammo: close fast or bleed at range -- an emptied
+  caster is a robed conscript with a knife. Narrate bolts as the school's
+  fiction; the log already says who's casting what.
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
   weight class by construction, easy work pays less. **Per-encounter pay

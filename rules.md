@@ -1273,7 +1273,8 @@ layer stays on the roadmap (plan.md).
 out of the comparison (social, not combat). Rolled in `rpg.make_human`, so
 wizards appear everywhere characters are generated: the PC, companions,
 recruits, the sims' parties — and select enemy rows (below). Under the
-fixed stat budget roughly a fifth of characters roll wizard.
+fixed stat budget roughly a quarter of characters roll wizard (measured
+24% over 20k rolls).
 
 **The school replaces the ability.** A wizard rolls **fire** or **ice**
 (50/50) instead of heal/bulwark/first_blood — one Power pool, one spender.
@@ -1329,10 +1330,20 @@ debuff showcase), the **pyromancer** (fire), and the **magus** (the solo
 tower fight: drilled, deep Power, real steel after). A caster row's
 `power` is double-duty — the bolt's pressure stat AND the ammo count — so
 the family's shape is one puzzle: dangerous at range until the Power runs
-dry, then a robed conscript with a knife. Close fast or bleed. The hexer
-and pyromancer ride `LADDER_POOL` (any warband template can field one,
-reskinned per race); the magus anchors the capital epic "The Renegade
-Magus". Levels are bench-annotated like every row (`bench_bestiary.py`).
+dry, then a robed conscript with a knife. Close fast or bleed. Levels are
+bench-annotated like every row (`bench_bestiary.py`).
+
+**Casters are contained content: every race has ONE caster quest** (the
+witchfinder's hedge-wizards, the coven, the ash-callers, the rune-fire,
+the boiler-cult — reskins per race), plus the capital epic "The Renegade
+Magus". They deliberately do NOT ride the common warband pool: the first
+cut put them there and the career sim collapsed (reach-L11 47% → 18%,
+median death L10 → L8) — the rows are band-fair alone, but at half of all
+warband rooms their ranged chip bled parties across chained rooms (rooms
+measured fine at level; sites dropped 15–25 points mid-band). Contained,
+the danger is identifiable: the board names the coven, the player chooses
+to walk in. (They still roam their land's wilds via the template pool
+union, as rare road trouble.)
 
 ---
 

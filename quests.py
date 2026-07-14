@@ -192,12 +192,19 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 # and `epilogue` (one authored line of aftermath, delivered at turn-in).
 
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
-LADDER_POOL = BANDIT_POOL + ("soldier", "hexer", "veteran", "pyromancer",
-                             "champion", "blademaster", "warlord")
-# The casters ride the ladder (placeholder magic, 2026-07-14): any warband
-# template can now field a hexer or pyromancer beside its soldiery, and the
-# magus anchors his own epic below.
-CASTER_POOL = ("hexer", "pyromancer", "magus")
+LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
+                             "blademaster", "warlord")
+# The casters get their OWN quests (placeholder magic, 2026-07-14): one
+# caster template per race below plus the magus epic -- NOT the ladder
+# pool. The first cut seeded hexer/pyromancer into LADDER_POOL and the
+# career sim collapsed (L11 47% -> 18%, capped 7.5% -> 3.5%): individually
+# band-fair rows, but at 50-77% of all warband rooms their ranged chip
+# bled the duo across chained rooms (rooms measured fine at level; SITES
+# dropped 15-25 points mid-band). Contained instead: caster danger is
+# identifiable content the board names, not an ambient tax on every
+# warband.
+CASTER_POOL = ("hexer", "pyromancer")
+MAGUS_POOL = CASTER_POOL + ("magus",)
 WOLF_POOL = ("wolf", "dire wolf")
 BEAST_POOL = ("boar", "bear")
 UNDEAD_POOL = ("skeleton", "ghoul", "wight")
@@ -240,6 +247,15 @@ TEMPLATES: dict[str, list[dict]] = {
              giver="the garrison captain",
              epilogue="The recovered blades go back to the armory; the "
                       "villages post no watch tonight."),
+        dict(title="The Hedge-Wizards' Toll",
+             desc="Renegade hedge-wizards tax the road in fire and frost. "
+                  "The witchfinder pays for the tollhouse dark.",
+             pool=CASTER_POOL, skins={},
+             sites=("the tollhouse road", "the burned chapterhouse"),
+             giver="the bishop's witchfinder",
+             epilogue="Carters use the road again by week's end; the "
+                      "witchfinder burns the confiscated grimoires in the "
+                      "market square, twice, for the crowd."),
     ],
     "elf": [
         dict(title="The Blighted Glade",
@@ -276,12 +292,21 @@ TEMPLATES: dict[str, list[dict]] = {
              pool=LADDER_POOL,
              skins={"archer": "Rogue Warden", "cutthroat": "Rogue Scout",
                     "soldier": "Rogue Warden", "veteran": "Warden-Captain",
-                    "champion": "Blade of the Wild",
-                    "hexer": "Frost-Singer", "pyromancer": "Flame-Singer"},
+                    "champion": "Blade of the Wild"},
              sites=("the forest road", "the rogue lodge"),
              giver="the council's justiciar",
              epilogue="The rogue lodge is unroofed and left to the moss; "
                       "the forest roads charge no toll but weather."),
+        dict(title="The Coven in the Mists",
+             desc="Singers who left the circle and took the old songs with "
+                  "them. The mists over the hollow are not weather.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Mist-Singer", "pyromancer": "Ember-Singer"},
+             sites=("the mist-hung hollow", "the singing stones"),
+             giver="the circle's censor",
+             epilogue="The mists lift over the hollow; the censor seals "
+                      "the stolen songs back into the circle's keeping, "
+                      "and does not say thank you."),
     ],
     "orc": [
         dict(title="The Proving Hunt",
@@ -300,9 +325,7 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"cutthroat": "Orc Raider", "archer": "Orc Skirmisher",
                     "bruiser": "Orc Breaker", "soldier": "Orc Raider",
                     "veteran": "Orc Blooded", "champion": "Orc Warchief",
-                    "blademaster": "Orc Deathblade", "warlord": "Orc Overlord",
-                    "hexer": "Orc Hex-Caller",
-                    "pyromancer": "Orc Flame-Caller"},
+                    "blademaster": "Orc Deathblade", "warlord": "Orc Overlord"},
              sites=("the raided trail", "the rival camp", "the war-tent"),
              giver="the warchief",
              epilogue="The rival clan sends a peace-gift of salt and "
@@ -323,6 +346,16 @@ TEMPLATES: dict[str, list[dict]] = {
              giver="the herd-elder",
              epilogue="The herders climb again; the skull goes up on a "
                       "spear above the trail, warning and boast at once."),
+        dict(title="The Ash-Callers' Rebellion",
+             desc="Shamans who traded the clan's fire for their own. The "
+                  "true shaman pays iron for them silenced.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Frost-Caller", "pyromancer": "Ash-Caller"},
+             sites=("the scorched steppe", "the ash-callers' circle"),
+             giver="the clan's true shaman",
+             epilogue="The circle's ashes are scattered on running water; "
+                      "the clan's fire burns in one pit again, where it "
+                      "belongs."),
     ],
     "dwarf": [
         dict(title="Things in the Deep Roads",
@@ -362,13 +395,23 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"cutthroat": "Grudge-Sworn", "archer": "Grudge-Sworn",
                     "bruiser": "Grudge-Sworn", "soldier": "Grudge-Sworn",
                     "veteran": "Oathbreaker", "champion": "Grudge-Captain",
-                    "blademaster": "Grudge-Lord",
-                    "hexer": "Grudge-Chanter", "pyromancer": "Rune-Burner"},
+                    "blademaster": "Grudge-Lord"},
              sites=("the contested gate", "the rival delving"),
              giver="the clan's grudge-keeper",
              epilogue="The ledger line is struck through in both clans' "
                       "books -- balanced, the keeper says, for a "
                       "generation at least."),
+        dict(title="The Rune-Fire Below",
+             desc="Chanters feeding forbidden runes in a sealed gallery. "
+                  "The runesmiths want the fire out before the stone "
+                  "learns it.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Cold-Chanter", "pyromancer": "Rune-Burner"},
+             sites=("the sealed gallery", "the rune-fire vault"),
+             giver="the runesmiths' warden",
+             epilogue="The vault is re-sealed under three locks and a "
+                      "new rune; the warden files the party's names under "
+                      "'safe hands'."),
     ],
     "goblin": [
         dict(title="Scrap-Hounds Loose in the Works",
@@ -388,8 +431,7 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"cutthroat": "Press-Ganger", "archer": "Sling-Runt",
                     "bruiser": "Pit Boss", "soldier": "Wrench-Guard",
                     "veteran": "Shift-Breaker", "champion": "Under-Boss",
-                    "blademaster": "Knife-King", "warlord": "The Big Boss",
-                    "hexer": "Frost-Tinker", "pyromancer": "Boiler-Mage"},
+                    "blademaster": "Knife-King", "warlord": "The Big Boss"},
              sites=("the night market", "the press-gang den",
                     "the boss's tower"),
              giver="the night-shift foreman",
@@ -416,6 +458,17 @@ TEMPLATES: dict[str, list[dict]] = {
              epilogue="Air moves in the undercity again; small pay, but "
                       "the vent-warden's word is now good in every "
                       "burrow."),
+        dict(title="The Boiler-Cult",
+             desc="A cult that worships the works' oldest boiler and "
+                  "feeds it what it asks for. It has started asking for "
+                  "shift-workers.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Frost-Tinker", "pyromancer": "Boiler-Mage"},
+             sites=("the cult's stacks", "the overheated shrine"),
+             giver="the works inspector",
+             epilogue="The old boiler is decommissioned with full "
+                      "honors and sold for scrap; the inspector stamps "
+                      "the paperwork DONE with visible pleasure."),
     ],
 }
 
@@ -443,7 +496,7 @@ EPIC_TEMPLATES: list[dict] = [
     dict(title="The Renegade Magus",
          desc="A court wizard who stopped asking leave. The crown pays "
               "for the tower dark and the fires out.",
-         pool=CASTER_POOL, skins={},
+         pool=MAGUS_POOL, skins={},
          sites=("the scorched approach", "the tower of the magus"),
          giver="the crown's own sage",
          epilogue="The tower stands dark and cold; the crown's sage "
