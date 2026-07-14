@@ -21,8 +21,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 11,
-   "cur_sta": 5,
-   "cur_power": 4,
+   "cur_sta": 3,
+   "cur_power": 2,
    "power_stat": 4,
    "dex_debuff": 0,
    "down": false,
@@ -34,7 +34,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 8,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -77,8 +77,8 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 10,
-   "cur_sta": 5,
-   "cur_power": 4,
+   "cur_sta": 3,
+   "cur_power": 2,
    "power_stat": 4,
    "dex_debuff": 0,
    "down": false,
@@ -90,7 +90,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 0,
+   "xp": 8,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -120,8 +120,8 @@
  "purse": {
   "gold": 0
  },
- "foe_count": 0,
- "active_quest": null,
+ "foe_count": 1,
+ "active_quest": "q06",
  "world": {
   "seed": 593864485,
   "settlements": [
@@ -635,7 +635,7 @@
     ],
     "next": {
      "site": 0,
-     "room": 0
+     "room": 1
     },
     "status": "open",
     "epilogue": "The night crews walk home unescorted; the rival boss's tower stands quiet -- under new management within the week.",
@@ -2860,8 +2860,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "q06/s1",
+  "count": 1
  },
  "site_clears": {},
  "recruits": null,
@@ -3494,7 +3494,7 @@
    1030930235,
    372672511,
    1106959260,
-   188
+   247
   ],
   null
  ]
