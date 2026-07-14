@@ -1765,6 +1765,15 @@ HERO_PAIN = 2
 HERO_STA_RANGE = (5, 8)
 HERO_HP_RANGE = (8, 12)
 HERO_POWER_RANGE = (3, 6)
+# Fixed-budget generation (2026-07-13, designer call): every character gets
+# the same number of surplus points above the range floors, dealt out by a
+# randomly-ordered stat PRIORITY (weighted toward the front of the order), so
+# builds differ in SHAPE, never in total -- recruiting compares tradeoffs
+# instead of point sums. 9 = the old independent rolls' mean surplus (9.5),
+# rounded down. Racial floor mods (people.RACE_MODS) raise a stat's floor
+# UNDER the budget, so they stay a genuine net extra: races remain unequal
+# on purpose.
+HERO_STAT_BUDGET = 9
 
 # The sims' throwaway name pool (the played game draws from people.py's
 # per-race pools instead). The old stat epithet ("the precise") is GONE
@@ -1795,19 +1804,36 @@ def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
 def make_human(rng: random.Random, name: str,
                floors: dict[str, int] | None = None,
                ceilings: dict[str, int] | None = None) -> Entity:
-    """Fully random generation: DEX/STR/CHA 3-6, STA 5-8, HP 8-12, Power 3-6,
-    a random ability (heal / bulwark / first_blood -- mend, mitigate, or open
-    aggressively), two random potions, and a starting weapon (the common
-    table: 50% crude / 45% soldier's arms / 5% heavy; healers often carry the
-    wooden staff). `floors`/`ceilings` shift the roll ranges per key ("dex",
-    "str", "cha", "hp") -- the racial-modifier hook (people.py: an orc's STR
-    rolls 4-6; the "short" trait caps STR at 5)."""
+    """Fixed-budget generation (2026-07-13): ranges DEX/STR/POWER/CHA 3-6,
+    STA 5-8, HP 8-12; every character starts at the floors and receives
+    exactly HERO_STAT_BUDGET surplus points, dealt by a randomly-shuffled
+    stat priority (linear weights down the order, each stat capped at its
+    ceiling) -- equal totals, different shapes. Plus a random ability
+    (heal / bulwark / first_blood), two random potions, and a starting
+    weapon (the common table: 50% crude / 45% soldier's arms / 5% heavy;
+    healers often carry the wooden staff). `floors`/`ceilings` shift the
+    ranges per key ("dex", "str", "cha", "hp") -- the racial/trait hook
+    (people.py: an orc's STR floor is 4 and the point is a NET extra under
+    the budget; the "short" trait caps STR at 5)."""
     floors = floors or {}
     ceilings = ceilings or {}
-
-    def roll(key: str, base: tuple[int, int]) -> int:
-        return rng.randint(*_adjusted_range(base, floors.get(key, 0),
-                                            ceilings.get(key, 0)))
+    ranges = {"dex": HERO_STAT_RANGE, "str": HERO_STAT_RANGE,
+              "sta": HERO_STA_RANGE, "hp": HERO_HP_RANGE,
+              "power": HERO_POWER_RANGE, "cha": HERO_CHA_RANGE}
+    lo, hi, stats = {}, {}, {}
+    for key, base in ranges.items():
+        lo[key], hi[key] = _adjusted_range(base, floors.get(key, 0),
+                                           ceilings.get(key, 0))
+        stats[key] = lo[key]
+    order = list(ranges)
+    rng.shuffle(order)                      # the build's priority spine
+    weight = {key: len(order) - i for i, key in enumerate(order)}
+    for _ in range(HERO_STAT_BUDGET):
+        open_keys = [k for k in order if stats[k] < hi[k]]
+        if not open_keys:
+            break
+        k = rng.choices(open_keys, [weight[k] for k in open_keys])[0]
+        stats[k] += 1
 
     ability = rng.choice(["heal", "bulwark", "first_blood"])
     if ability == "heal" and rng.random() < HEALER_STAFF_CHANCE:
@@ -1817,12 +1843,12 @@ def make_human(rng: random.Random, name: str,
         weapon = random_common_weapon(rng)
     return Entity(
         name=name,
-        dex=roll("dex", HERO_STAT_RANGE),
-        str_=roll("str", HERO_STAT_RANGE),
-        sta=rng.randint(*HERO_STA_RANGE),
-        max_hp=roll("hp", HERO_HP_RANGE),
-        power=rng.randint(*HERO_POWER_RANGE),
-        cha=roll("cha", HERO_CHA_RANGE),
+        dex=stats["dex"],
+        str_=stats["str"],
+        sta=stats["sta"],
+        max_hp=stats["hp"],
+        power=stats["power"],
+        cha=stats["cha"],
         ability=ability,
         pain=HERO_PAIN,
         weapon=weapon,
@@ -2169,6 +2195,34 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
                f"{rank + 1} (+{rank + 1} attack pressure and +{rank + 1} "
                f"severity with it) [{h.skill_points} point(s) left]")
     return True
+
+
+def autospend_points(h: Entity, log: list[str]) -> bool:
+    """COMPANION self-improvement (2026-07-13): spend a companion's banked
+    points on the reference doctrine develop_hero uses -- combat training to
+    rank 3, then proficiency IF the carried weapon is quality steel (nobody
+    drills a club), then training to the cap. session.py runs this for
+    party[1:] after every fight's awards (and at hire); the PC's points are
+    never touched -- spending them stays the player's decision. Returns
+    whether anything was bought (the train_* calls log each purchase)."""
+    bought = False
+
+    def training_to(cap: int) -> None:
+        nonlocal bought
+        while (h.training < cap
+               and h.skill_points >= h.training + 1
+               and train_combat_once(h, log)):
+            bought = True
+
+    training_to(3)
+    if (h.weapon is not None and h.weapon.quality
+            and not h.weapon_broken):
+        while (h.skill_points >= h.proficiency.get(h.weapon.name, 0) + 1
+               and h.proficiency.get(h.weapon.name, 0) < PROFICIENCY_MAX
+               and train_proficiency(h, log)):
+            bought = True
+    training_to(TRAINING_MAX)
+    return bought
 
 
 def train_combat(h: Entity, log: list[str]) -> bool:

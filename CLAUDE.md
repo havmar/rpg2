@@ -99,7 +99,10 @@ a pointer: what the file is, how it's run, where its docs are.
   `HIDEOUT_ROOMS` / `BARROW_ROOMS`; pay derives from `Site.level` via
   rpg.py's site formulas), and `run_site`, the one site loop the one-shot
   run and the batch sims share. **Both sites are set encounters — the DM
-  never invents their rosters.** One-shot: `python sites.py [--site
+  never invents their rosters — and since 2026-07-13 they are DEV/TEST
+  calibration content only, no longer part of a played campaign** (the
+  generated board covers the band; the benches still run them).
+  One-shot: `python sites.py [--site
   hideout] [--seed N] [--training N]`.
 - `quests.py` — **the quest & encounter generator** (rules.md, the Quest
   System add-on): the threat math (all constants at the top, calibrated by
@@ -117,16 +120,22 @@ a pointer: what the file is, how it's run, where its docs are.
   reskins, waves, heralds, epilogues), the named faces (conqueror + two
   lieutenants as display names over budget-honest rosters), waves pinned
   at L2/5/8/10 built by quests.py's own threat math, wave gating
-  (previous wave done + party at level), the wave-3 scripted fall with
+  (previous wave done + party at level + party at a settlement since
+  2026-07-13; the aggressor roll excludes the PC's race), the
+  wave-3 scripted fall with
   occupation, and the war readouts. State lives in the session save
   (`story` key); the sims never import it. `python story.py [--seed N]
   [--aggressor R]` dumps one rolled conquest, all waves force-posted.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): the five races' stat modifiers
-  (floor-raise, never ceiling), the 25+25 per-race name pools, the trait
+  (floor-raise `RACE_MODS`; since 2026-07-13 also the goblin STR ceiling
+  drop `RACE_MODS_CEIL` and the race trait substitutions
+  `RACE_TRAIT_SUBS`), the 25+25 per-race name pools, the trait
   tables (1 behavior + 2 presentation categories per character; the
-  mechanical few annotated in `TRAIT_NOTES`), `make_character` (any
-  level, via rpg.develop_hero), `make_pair` (bonded recruit pairs), the
+  mechanical few annotated in `TRAIT_NOTES`; looks pool widened
+  2026-07-13), `make_character` (any
+  level, via rpg.develop_hero; `no_family=True` is the PC switch),
+  `make_pair` (bonded recruit pairs), the
   candidate sheets, and the downtime-matching rules; since 2026-07-12
   also `make_npc` / `npc_line` (the TARGETED generator: the caller fixes
   race/role/sex/age, the dice roll name + personality — dict NPCs, no
@@ -149,27 +158,37 @@ a pointer: what the file is, how it's run, where its docs are.
   streak; since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
   ordinary-encounter spotted valve, and the hunt ambush. Since 2026-07-11
-  also the party layer: `new`/`pick` (three PC candidates; `pick`
-  auto-joins the starter ally when CHA holds anyone), `recruit` /
-  `hire` (tavern candidates, CHA-capped), `dismiss` (voluntary departure,
+  also the party layer: `recruit` /
+  `hire` (candidates, CHA-capped), `dismiss` (voluntary departure,
   the quitter's head-split terms), `downtime` (the morale day),
   `buy HERO meds`, and the satisfaction bookkeeping (post-fight morale
   pass, nightly meds drain, settlement departures with the purse
   head-split) — plus the same day's play-feedback batch: `play_orders`
   (the one-pause-per-encounter dispatch over the engine's standing-orders
   hook), `camp N` / `camp --heal` (multi-night camping, cut short by a
-  wilds visitor), the board's land-wide rumor section, and **`party.txt`**,
-  the full party info sheet rewritten on every save and auto-committed
-  (that one file, best-effort subprocess git — never fatal to the game
-  loop). Since 2026-07-12 also the story layer's play surface: `board` is
+  wilds visitor), and the board's land-wide rumor section.
+  Since 2026-07-12 also the story layer's play surface: `board` is
   the DM inventory (rows carry givers; in play quests come from their
   GIVERS via the one-message ask-around funnel, dm.md), quest turn-ins
   print the day-stamped EPILOGUE + giver prompt, `chatter` (the party-
   flavor seed: unseeded rng, no state change), day headers on board/map,
-  local notables on the board, and the war plumbing (`maybe_post_wave` at
-  boards/arrivals/nights/payouts, `occupied_here` gates on
+  local notables on the board, and the war plumbing (`maybe_post_wave`,
+  `occupied_here` gates on
   board/take/tavern/downtime, the boss-name spawn in `room`, `story` in
-  the save). Encounter commands print the full log then the
+  the save). Reworked 2026-07-13 (the streamlining batch): `new`
+  GENERATES the PC (no `pick`; min capacity 1, no family quirks, the
+  long-time companion, the OPENING HOOK at the lowest-level-quest
+  settlement, aggressor excludes the PC race), `recruit` rolls candidates
+  ON REQUEST (once per settlement/day; the tavern stopped popping them),
+  companions AUTOLEVEL after fights/hire (`rpg.autospend_points`) while
+  the PC's level-up auto-prints the `levelup` menu, `maybe_post_wave` is
+  settlement-gated (no war news mid-wilds), a dead companion's quality
+  weapon stays with the party, `give --as` reskins weapons, ALL output
+  (and `party.txt`) is hard-wrapped at `WRAP_WIDTH` = 40 for the
+  designer's phone, and **`party.txt`** is rewritten on every save but
+  committed only by **`sheet`** — the end-of-every-DM-message command
+  (one commit per message; best-effort git, never fatal).
+  Encounter commands print the full log then the
   `--- PLAYER LOG ---` block the DM pastes into chat.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
@@ -262,7 +281,9 @@ mechanic *does* and *why* is rules.md's job.
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
   `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
-  hero roll ranges (`HERO_*_RANGE`) and the hero spiral gear (`HERO_PAIN`
+  hero stat generation (`HERO_*_RANGE` + `HERO_STAT_BUDGET` — since
+  2026-07-13 a fixed surplus budget dealt by a shuffled priority order,
+  not independent rolls) and the hero spiral gear (`HERO_PAIN`
   — trained fighters, both sides, take `hp_lost // 2` as the wound
   penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
   `streak_multiplier` — consecutive same-site encounters without a camp
@@ -326,9 +347,10 @@ mechanic *does* and *why* is rules.md's job.
   person fields (`cha`, `race`, `sex`, `age`, `traits`, `satisfaction`,
   `bond`/`bond_kind`, `last_dose_day`, `def_bonus`, `nickname`; the
   `epithet` field is GONE). `people.py`: generation + sheets (see Files).
-  `session.py`: `roll_recruits` / `cmd_hire` (per-head capacity check),
+  `session.py`: `roll_recruits` / `cmd_hire` (per-head capacity check;
+  candidates rolled on request in `cmd_recruit` since 2026-07-13),
   `cmd_dismiss` (voluntary departure, the quitter's head-split terms, bond
-  partner walks), the starter ally in `cmd_pick`,
+  partner walks), the generated PC + long-time companion in `cmd_new`,
   `process_departures` (burials + the purse head-split, run at settlement
   arrivals and tavern/downtime nights), `night_upkeep` (meds drain),
   `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
@@ -371,8 +393,8 @@ mechanic *does* and *why* is rules.md's job.
   (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
   record, `rooms` fled-room records, `location`, `places` discovered wilds,
   `sighting`, `streak` momentum record, `site_clears` set-site pay
-  tracking, `pc_candidates` (the unpicked PC sheets) and `recruits` (the
-  tavern candidate pool, keyed to its settlement and night); entities/
+  tracking, and `recruits` (the on-request candidate pool, keyed to its
+  settlement and day); entities/
   weapons via the `_entity_*`/`_weapon_*` serializers).
   A paused fight blocks every between-fights command until settled. Quest
   progress lives on each quest (`next` cursor, `status`); `advance_quest`
@@ -712,6 +734,53 @@ around day 110-150 (~25-30 hours). **The war adds ~3,700 quoted XP at
 pinned levels 2/5/8/10** on top of the world's ~27k — rich by design
 (punching at level in multi-site quests); watch in play whether pressing
 the war front-loads leveling too hard.
+
+**Measured numbers (2026-07-13, the streamlining & QoL batch: fixed-budget
+stats + generated PC start + recruit-on-request + companion autolevel +
+wave gating + phone wrapping).** The one sim-visible change is
+`make_human`: independent stat rolls became a FIXED 9-point surplus budget
+dealt by a shuffled priority order (equal totals, different shapes — the
+recruiting-comparison fix; racial floors stay net extras). Every seeded
+stream shifted AND the hero distribution genuinely changed (no more
+god-rolls or gutter-rolls), so the full suite was re-run. **The tuned game
+is essentially UNDISTURBED** — variance narrowed exactly where the old
+tails lived:
+
+- **Hideout** (rank 0, 10k): clear **74.1** / wipe **22.8** / Down ~33
+  (was 73.6/23.2/~35). **Barrow** `[3,3,4]`: clear **17.0** / wipe
+  **79.6** (was 19.2/77.3). Cleared-run HP-lost spread 16/57/24/3 and
+  22/55/20/2 — the middle holds. **Reckless wipe rose to 86.9 hideout /
+  99.6 barrow** (was 81.2/98.6): with god-rolled parties gone, ignoring
+  resources has even fewer lucky escapes — "not using resources mostly
+  means death" is at its strongest measure yet (a 64-point survival gap).
+- **Training ladder** (5k/rank): barrow **17 -> 45 -> 76 -> 94**, hideout
+  **74 -> 93 -> 99 -> 99.9** (was 19/47/74/93 and 72/91/98/99.8) — a rank
+  still reads as a rank.
+- **Party size** (5k/size): hideout **17 / 74 / 97 / 99.5**, barrow
+  **0.8 / 17 / 58 / 88** (was 20/72/96/99 and 1.5/19/60/88) — numbers
+  still dominate; note the SOLO columns dropped a few points (the budget
+  means no solo hero rolls hot everywhere, which is fine: the generated PC
+  now always has a companion).
+- **Weapons matrix**: the story is intact — zweihander best duel on
+  precise/steady, katana on powerful/balanced, zweihander owns every
+  swarm column, staff trails, no weapon tops every cell.
+- **Bestiary**: low-band packs drifted up a few points (archer 97,
+  cutthroat 90, wolf 88, skeleton 89, dire wolf 97.5, soldier 94, ghoul
+  96, troll 94, wight 91), the top band held (champion 73, blademaster
+  66, dragon 89, warlord 61); ordering intact. The parked re-annotation
+  pass remains due when the numbers next feel mushy in play.
+- **Generated content** (300/cell): at-level rooms win **68-99** across
+  1-20; at-level sites clear **~93 at L1-5** sliding to **~38-52 at
+  15-20**; the -2 columns 35-85 — same shape as 2026-07-11b.
+- **Careers** (200): reach **L5 80% / L8 74% / L11 47% / L14 22% /
+  L20 7.5%**, median death **L10**, capped career median 160 days / 39
+  quests (was 77/68/50/26/12.5, median L9 — within noise at n=200).
+- **What the batch changes in PLAYED games, not sims**: the sims pass no
+  standing-orders callback, never set `protagonist`, and use `rpg.
+  make_party` (no races/traits), so recruit-on-request, autolevel (the
+  sims' own `train_combat` policy is unchanged), the wave gate, and the
+  start refactor cannot move a bench by construction — only the
+  `make_human` budget could, and the numbers above say it barely did.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

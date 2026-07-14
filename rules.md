@@ -118,8 +118,9 @@ encounters are **never** rebalanced to the head count. Numbers are a real
 advantage (they should be: recruiting a companion must be worth something),
 but a raw one is enormous -- action economy compounds (N heroes deal N times
 the damage *and* spread the incoming across N pools), so an untreated
-four-hero party trivializes duo content (measured: the rank-0 hideout clears
-~15% solo, ~64% duo, ~93% trio, ~99% four-up). Three quiet counterweights
+four-hero party trivializes duo content (measured 2026-07-13: the rank-0
+hideout clears
+~17% solo, ~74% duo, ~97% trio, ~99% four-up). Three quiet counterweights
 drag on numbers instead of any per-size tuning:
 
 1. **Income is flat.** The purse is shared and quests pay fixed gold (four
@@ -358,6 +359,14 @@ and legendary (hand-authored, stat-transcending, durability 6) are
 **found or quested, never shopped**; only plain weapons are for sale. No
 level requirements — authored placement is the gate.
 
+**Weapon reskins (2026-07-13).** The DM can grant any catalog profile
+under a display name (`give HERO club --as "shock prod"`) — the same
+doctrine as foe reskins: the name is fiction, the stats never change with
+the costume. For when a reskinned foe's drop would break the fiction (gun
+robots leaving "a whip"). The instance serializes whole in the save;
+proficiency follows the *name*, so reskin looted flavor, not a drilled
+blade.
+
 ### Durability & breakage
 
 When steel meets steel — a **parry** or a **Clash** (high-dice tie) — the
@@ -534,15 +543,19 @@ The band where tradeoffs are real: you cannot be good at everything.
 | Trained soldier | 3 | 3 | 3 | 7 |
 | Elite veteran | 4–5 | 4–5 | 4–5 | 8–10 |
 
-**Rolled party heroes** span this band and nudge past it: DEX/STR/CHA
-`randint(3, 6)` (CHA is the fourth hero stat — see the Party, Charisma &
-Satisfaction add-on), STA `randint(5, 8)` (its own, higher range: STA is
-the second death-track — the swing budget — so its floor matters like HP's
-floor; a 4-STA hero is a 4-swing hero, and the batch sims showed those
-parties are the wipes), HP `randint(8, 12)`, Power `randint(3, 6)`, a
-random ability (Heal, Bulwark, or First Blood), and two random potions.
-Racial modifiers and a couple of physical traits shift a roll's **floor up
-or ceiling down, never the ceiling up** (an orc's STR rolls 4–6), so the
+**Rolled party heroes** span this band and nudge past it, on the **fixed
+budget** (2026-07-13, replacing independent rolls): ranges DEX/STR/POWER/
+CHA 3–6 (CHA is the fourth hero stat — see the Party, Charisma &
+Satisfaction add-on), STA 5–8 (its own, higher range: STA is the second
+death-track — the swing budget — so its floor matters like HP's floor; a
+4-STA hero is a 4-swing hero, and the batch sims showed those parties are
+the wipes), HP 8–12 — every character starts at the floors and receives
+exactly **9 surplus points** dealt by a randomly-shuffled stat priority
+(see the Party add-on's Character generation: equal totals, different
+shapes). Plus a random ability (Heal, Bulwark, or First Blood) and two
+random potions.
+Racial modifiers and a couple of physical traits shift a range's **floor up
+or ceiling down, never the ceiling up** (an orc's STR spans 4–6), so the
 natural cap 6 below holds for every race.
 
 ### The ceilings, and what levels grow (the 1–20 doctrine)
@@ -1176,12 +1189,12 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-11 after
-  the mid-fight heal + kit): the skeleton barrow (tough site) clears
-  **19% → 47% → 74% → 93%** across ranks 0–3 (a rank-0 duo still wipes ~3
-  times in 4 — a fresh party should not be there); the bandit hideout
-  (starter) clears **72% → 91% → 98% → 99.8%**
-  (rank-0 wipe ~25%). Each rank is a *felt* jump — the progression test
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-13 after
+  the fixed stat budget): the skeleton barrow (tough site) clears
+  **17% → 45% → 76% → 94%** across ranks 0–3 (a rank-0 duo still wipes ~4
+  times in 5 — a fresh party should not be there); the bandit hideout
+  (starter) clears **74% → 93% → 99% → 99.9%**
+  (rank-0 wipe ~23%). Each rank is a *felt* jump — the progression test
   criterion —
   and gear stacks on top. (History: 3/17/44/74 and 64/86/96/99 at the
   2026-07-06 measure; the 2026-07-09 pain regear and the 2026-07-11 heal
@@ -1198,10 +1211,17 @@ the proficiency layer until you drill the new type: that loss is the
 commitment cost that makes a build a build. A broken weapon grants no
 proficiency (you're swinging a stump).
 
-**With two sinks, skill points are a real choice now**: nothing auto-spends in
-session play (`session.py train HERO combat|weapon` — points bank until the
-player spends them). Only the batch sims (`sites.run_site`)
-auto-spend on combat training, so tune/bench numbers stay comparable.
+**With two sinks, the PC's skill points are a real choice**: his points
+bank on level-up (`session.py train HERO combat|weapon`) and his level-up
+**prints the spending menu automatically** (2026-07-13) so the choice is
+always put in front of the player. **Companions autolevel** (2026-07-13,
+`rpg.autospend_points`, run after every fight's awards and at hire): the
+reference doctrine — combat training to rank 3, then proficiency once they
+carry a **quality** weapon (nobody drills a club), then training to the
+cap. Managing three companions' menus was bookkeeping, not choice; the
+player's build decisions are the PC's. The batch sims still auto-spend on
+combat training only (`sites.run_site`), so tune/bench numbers stay
+comparable.
 
 ## Gold and the potion economy
 
@@ -1329,9 +1349,13 @@ constants and tables (top of file); `session.py` owns the state and moves.
   lists them all — the world is known in outline from day one; what's *in*
   the wilds is not.
 - **Location.** The save carries where the party stands: a settlement, or a
-  discovered wilderness place. The two hand-built set sites (hideout,
-  barrow) lie outside the **starting settlement** (the first one worldgen
-  made).
+  discovered wilderness place. A new game starts at the settlement posting
+  the world's lowest-level open quest (2026-07-13 — the opening hook must
+  be takeable). The two hand-built set sites (hideout, barrow) lie outside
+  the **capital** (the first settlement worldgen made) and are **DEV/TEST
+  calibration content only** since 2026-07-13 — presented alongside
+  generated quests they confused the board's fiction, and the generator
+  covers the level band; the benches still run them.
 - **Quests are local — but word travels (2026-07-11).** `board` shows the
   CURRENT settlement's full board, and taking or working a quest still
   means being at the settlement that posted it. But the player now also
@@ -1414,7 +1438,8 @@ construction (re-measured 2026-07-11 — see CLAUDE.md).
 
 ## CHA — the fourth stat
 
-Rolled at creation like DEX/STR (`randint(3, 6)`; elves' floor is 4) and
+Set at creation like DEX/STR (range 3–6, filled from the fixed stat
+budget since 2026-07-13; elves' floor is 4) and
 **fixed forever**, like the other frame stats. Its two jobs:
 
 - **Party capacity** (the PC's CHA only): `capacity = CHA − 3`, clamped
@@ -1432,33 +1457,59 @@ Rolled at creation like DEX/STR (`randint(3, 6)`; elves' floor is 4) and
 Companions roll CHA too (it shows on their sheet) but it does nothing yet
 — hooks for later.
 
-## The player character — pick one of three
+## The player character — generated, not chosen (2026-07-13)
 
-`new` rolls **three PC candidates** (male, by designer fiat for now) with
-full sheets and shows each one's capacity; `pick` chooses. This mirrors the
-tavern's hiring surface and turns the capacity-0 CHA roll from a 1-in-4
-blind ambush into a rare (~1.6%), semi-chosen fate — solo play at the
-"Balanced for two" numbers is a premise you accept with open eyes, not a
-punishment roll. A wealthy/luxurious PC starts with his trait gold in the
+`new` **generates ONE PC** (male, by designer fiat for now) — the old
+three-candidate pick is gone (streamlining: the real choices are the
+party's jobs and hires, not a stat-sheet beauty contest). Two guarantees
+replace the pick's safety valves:
+
+- **Minimum capacity 1**: the roll rerolls until the PC's CHA holds at
+  least one companion. The capacity-0 solo game was a trap dressed as a
+  choice; it no longer occurs.
+- **No relatives**: the PC never rolls the family-generating quirks
+  ("has a child"); a lone sword with a kid in tow was the wrong opening
+  premise. "Has an enemy" stays — an enemy is story fuel, not luggage.
+
+His sheet prints **without the satisfaction-mechanics annotations** (he
+has no satisfaction track; the notes baited mechanics talk into his
+introduction). A wealthy/luxurious PC starts with his trait gold in the
 purse.
 
-**The starter ally (2026-07-11).** If the PC's capacity holds anyone at
-all, one random level-1 companion joins **at pick, for free** — an **old
-ally** of the PC's (never family or a mentor; that read too restrictive),
-on a hire's normal terms (satisfaction 7, joining gold to the purse,
-bond-linked to the PC as flavor). The game starts PLAYABLE — a duo can walk
-straight out the gate — while the tavern's introductions still fill the
-remaining slots, so choosing the rest of the party stays a real decision.
+**The long-time companion (2026-07-13 reframe of the starter ally).** One
+random level-1 companion is generated WITH the PC and presented as having
+been **at his side for years** — nobody "joins" in the first scene. Hire's
+normal terms otherwise (satisfaction 7, joining gold to the purse,
+bond-linked to the PC). The game starts PLAYABLE — a duo walks straight
+out the gate — while recruiting still fills the remaining slots.
+
+**The opening (2026-07-13).** A new game starts at the settlement posting
+the world's **lowest-level open quest**, and `new` prints that job as the
+**OPENING HOOK** — the game opens at a combat quest's doorstep (giver
+mid-pitch), not in a tavern. Taking it stays the player's call; the hook
+is a doorstep, not a railroad.
 
 ## Character generation (recruits, and NPCs with DM edits)
 
 `people.make_character(rng, level, ...)` builds a person at **any level**:
 
+- **Stats — the fixed budget (2026-07-13)**: every character starts at
+  the range floors (DEX/STR/POWER/CHA 3, STA 5, HP 8) and receives exactly
+  **`HERO_STAT_BUDGET` = 9 surplus points**, dealt by a randomly-shuffled
+  stat **priority order** (linear weights down the order, each stat capped
+  at its ceiling). Equal totals, different shapes: recruiting compares
+  builds — the tank, the duelist, the leader — instead of point sums,
+  which under independent rolls made "highest total wins" the only hiring
+  logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
 - **Race**: one of the world's five (`quests.RACES`). Racial stat modifiers
-  raise a roll's **floor**, never its ceiling — orc STR 4–6, goblin DEX
-  4–6, elf CHA 4–6, dwarf HP 9–13, human plain. Deliberately unequal in
-  combat terms (goblin is the combat pick, elf the economy pick): races
-  differ along different axes.
+  raise a roll's **floor** (orc STR 4–6, goblin DEX 4–6, elf CHA 4–6,
+  dwarf HP 9–13, human plain) — and under the fixed budget a floor raise
+  stays a genuine **net extra**: races remain unequal on purpose (goblin
+  is the combat pick, elf the economy pick). Goblins also carry the one
+  **ceiling drop**: STR 3–5 (wiry, not strong — a goblin frame lands on
+  the rapier, never naturally on the zweihander), and their trait rolls
+  substitute race flavor ("beautiful" → "sharp-toothed", "melodious" →
+  "high, cackling").
 - **Sex**: random m/f (names come from 25+25 per-race pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.
@@ -1491,17 +1542,21 @@ remaining slots, so choosing the rest of the party stays a real decision.
   growth. Points arrive mostly **pre-spent** — choosing between candidates
   IS the customization — with at most a point or two banked.
 
-## Recruiting — the tavern's second service
+## Recruiting — on request (2026-07-13)
 
-Candidates appear **only at a paid `tavern` night** (plus the free
-game-start evening): as many **options** as the PC's capacity, each leveled
-to the PC ±1, full sheets shown (`recruit`) — transparency over realism,
-the same stance as straight-shown board levels. The night's cost and day
-are the reroll gate. **A quarter of options are bonded pairs** (parent and
-child, a married couple, mentor and mentee, two old friends — ages fixed up
-so the relationship reads): one option slot, **two heads against capacity**,
-joining and leaving together — better value per slot, correlated risk.
-`hire NAME` signs them on at **satisfaction 7/10**.
+Candidates are gathered **when the player asks** (`recruit`, settlements
+only, once per settlement per day — the day is the reroll gate): as many
+**options** as the PC's capacity, each leveled to the PC ±1, full sheets
+shown — transparency over realism, the same stance as straight-shown board
+levels. The tavern **never pops candidates unasked** (it used to; the
+pregens-every-night surface read as noise): a paid night is a bed and a
+meal, and hiring is its own deliberate move. **A quarter of options are
+bonded pairs** (parent and child, a married couple, mentor and mentee, two
+old friends — ages fixed up so the relationship reads): one option slot,
+**two heads against capacity**, joining and leaving together — better
+value per slot, correlated risk. `hire NAME` signs them on at
+**satisfaction 7/10**; any banked arrival points are spent on the spot
+(companions manage their own points — see the Progression add-on).
 
 ## Satisfaction — the retention track
 
@@ -1543,7 +1598,11 @@ weapon and potions. Bond partners walk together, whatever the partner's own
 number. Dead companions are **laid to rest at the next settlement** — from
 then on the party as constituted is smaller (XP shares included; between
 the death and the walls the dead still count, so there is no mid-run XP
-windfall). Fate's bargain thus has a face and a second-order cost now: the
+windfall). **Quality steel outlives its bearer (2026-07-13)**: a dead
+companion's quality weapon stays with the party (the fight's log prints
+the recovery; `give` re-arms a living hand) — commons are buried with
+them, and a QUITTER still takes all their gear (that's the severance).
+Fate's bargain thus has a face and a second-order cost now: the
 companion it kills was hired, has traits, and may leave a grieving partner
 who walks.
 
@@ -1628,8 +1687,10 @@ draws from a throwaway rng and saves nothing.
 
 ## The conquest — the first questline (levels 2-10)
 
-One aggressor race per playthrough rolls at worldgen and starts a war;
-four **waves**, each an ordinary multi-site quest pinned at levels
+One aggressor race per playthrough rolls at worldgen and starts a war —
+**never the PC's own race** (2026-07-13: the player fighting his own
+people's war of conquest read wrong; the roll excludes it). Four
+**waves**, each an ordinary multi-site quest pinned at levels
 **2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
 are always the easier ones). The variants:
 
@@ -1654,12 +1715,14 @@ The mechanics, all of them reuses:
   lieutenants, generated faces with titles — cap waves 2/3/4 as a display
   name on the strongest slot the threat math put in the final room:
   the boss fight is exactly as hard as an honest room of that level.
-- **Wave gating**: wave N+1 posts when wave N's quest is DONE **and** the
-  party has reached the wave's level — checked at boards, arrivals,
-  settlement nights, and quest payouts, delivered as a day-stamped
-  messenger scene (herald line + the ruler raising the call). The war can
-  neither outrun the party nor lag it; a fresh party hears nothing until
-  its first level-up.
+- **Wave gating**: wave N+1 posts when wave N's quest is DONE, the
+  party has reached the wave's level, **and the party is at a
+  settlement** (2026-07-13: the messenger no longer finds them mid-quest
+  in the middle of nowhere — a level-up in the field keeps until the next
+  town) — checked at boards, arrivals, and settlement nights, delivered
+  as a day-stamped messenger scene (herald line + the ruler raising the
+  call). The war can neither outrun the party nor lag it; a fresh party
+  hears nothing until its first level-up.
 - **Targets**: waves 1-2 press one victim land (skirmishes, then an
   invasion beaten back); wave 3 takes a second land — chosen never to be
   the capital's; wave 4 is raised from the capital against the

@@ -368,14 +368,18 @@ def _names(story: dict) -> dict:
             "lt2": f"{l2['name']}, the {l2['role']}"}
 
 
-def init_story(world: dict, rng: random.Random) -> dict:
+def init_story(world: dict, rng: random.Random,
+               pc_race: str | None = None) -> dict:
     """Roll the playthrough's war at game start: the aggressor, the named
     faces, and the two victim lands. Nothing posts until the party earns
-    wave 1 (level 2)."""
+    wave 1 (level 2). `pc_race` is excluded from the aggressor roll
+    (2026-07-13, designer call: the PC never fights his own people's war
+    of conquest)."""
     from people import make_npc    # runtime import (people imports quests)
     present = list(lands(world))
     capital_land = world["settlements"][0]["race"]
-    aggressor = rng.choice(AGGRESSORS)
+    pool = [r for r in AGGRESSORS if r != pc_race] or list(AGGRESSORS)
+    aggressor = rng.choice(pool)
     victims = [r for r in present if r != aggressor]
     # The land that FALLS (wave 3) must not host the capital -- wave 4 is
     # raised from the capital, which occupation would gate shut.

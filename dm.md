@@ -7,28 +7,27 @@ depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for pla
 ## Starting and continuing
 
 - New game: `python session.py new` (add `--seed N` for a reproducible game
-  -- `new` also generates the playthrough's whole quest world). It rolls
-  THREE player-character candidates; show the player all three sheets
-  (including each one's CHA capacity line) and let THEM `pick`. If his CHA
-  holds anyone, **an old ally joins automatically at pick** (the script
-  prints the sheet -- introduce them warmly; they're the PC's history, not
-  a stranger), and the free first-evening introductions follow: `recruit`
-  shows the companion candidates, `hire NAME` signs the player's choices
-  (see The party below).
-- **Open with the options, then hand over.** After `pick`, the first real
-  message should lay out what the party can DO, in one short menu: the
-  level-appropriate local jobs (via the ask-around funnel -- see The world
-  and the quests below; plus the old hideout outside the starting
-  settlement -- the level-1 starter), a `hunt` in the wilds, or a `tavern`
-  night to round out the party first. The player drives from the first
-  turn; don't railroad an opening quest.
+  -- `new` also generates the playthrough's whole quest world). Since
+  2026-07-13 the PC is **GENERATED, not chosen**: one character (his CHA
+  always holds at least one companion), with a **long-time companion
+  already at his side** -- introduce them as shared history ("X has
+  watched your back for years"), never as someone joining in scene one.
+  Present the PC's sheet without mechanics chatter (see The player
+  character below).
+- **Open at the hook.** `new` prints an OPENING HOOK: the most
+  level-appropriate local job and its giver. Frame the first scene at that
+  job's doorstep -- the giver mid-pitch, the trouble already concrete --
+  then hand over: the player can take it or walk away and do anything
+  else (`board`, `hunt`, `travel`). The hook is a doorstep, not a
+  railroad; no tavern opening, no recruitment pitch.
 - Continuing: `python session.py status` to see where things stand.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
   commit it and the playthrough travels with the repo. Every save also
-  rewrites **`party.txt`** (the full party info sheet) and auto-commits
-  that one file -- the designer follows the playthrough through it; you
-  never need to maintain it.
+  rewrites **`party.txt`** (the full party info sheet); **end EVERY DM
+  message with `python session.py sheet`**, which commits that one file --
+  one commit per message, the designer follows the playthrough as
+  message-sized diffs. Unchanged sheets are a no-op; run it anyway.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between
@@ -149,6 +148,11 @@ it's worth the road to a better town -- is the player's core decision:**
 
 - **The first hero rolled (`party[0]`) is the player character (PC).** Narrate
   the PC in second person: "you". `session.py` marks them `(YOU)`.
+- **Never narrate mechanics at the PC's traits.** The PC has NO
+  satisfaction track -- lines like "his love of music raises satisfaction"
+  are wrong twice (wrong character, wrong register). Traits are performed
+  in the fiction, for everyone; the numbers stay in the readouts. The PC's
+  sheet already suppresses the satisfaction annotations.
 - **If the PC dies, the game is over** -- even if a companion still stands
   (`session.py` prints the GAME OVER line for you).
 - **Fate's bargain guards the PC (2026-07-10).** A blow that would kill the
@@ -172,14 +176,17 @@ it's worth the road to a better town -- is the player's core decision:**
 - **Capacity is the PC's CHA, and it is a hard cap** (CHA-3, 0..3 -- the
   scripts enforce it). A capacity-0 PC plays alone; say plainly at creation
   what that means (no fate's bargain, the solo numbers are brutal).
-- **Recruiting happens at tavern nights.** Each paid `tavern` night rolls a
-  fresh set of candidates (as many options as capacity, leveled to the PC
-  +-1; ~a quarter are bonded pairs -- one option, TWO heads, they join and
-  leave together). `recruit` prints full sheets -- show them to the player
-  as-is (full transparency is the design, like straight board levels), then
-  narrate the introductions over it. WHO to hire is the player's call,
-  always. The DM's job is the fiction of the meeting and editing any
-  generated contradiction on a sheet BEFORE presenting it.
+- **Recruiting happens ON REQUEST (2026-07-13).** When the player is at a
+  settlement and SAYS they want to hire, `recruit` gathers the day's
+  candidates (as many options as capacity, leveled to the PC +-1; ~a
+  quarter are bonded pairs -- one option, TWO heads, they join and leave
+  together) and prints full sheets -- show them as-is (full transparency
+  is the design, like straight board levels), then narrate the
+  introductions over it. **Never pop pregenerated faces unasked** -- a
+  tavern night is a bed and a meal, not a hiring fair, unless the player
+  makes it one. WHO to hire is the player's call, always. The DM's job is
+  the fiction of the meeting and editing any generated contradiction on a
+  sheet BEFORE presenting it.
 - **Satisfaction is each companion's patience** (0-10 in `status`; the PC
   has none). Up: paid-out jobs +1, tavern nights +1, `downtime` days +1
   (+2 where the place suits a trait -- interests, patriotic ground,
@@ -194,6 +201,15 @@ it's worth the road to a better town -- is the player's core decision:**
   companion walking out with a quarter of the party's gold IS a story beat.
   Anything that lifts them above the line before the walls (a quest lump, a
   tavern bed) genuinely saves them -- say so when it's close.
+- **Deaths in the party are NORMAL attrition (2026-07-13) -- downplay
+  them.** The mechanics price a death (the morale hit, the burial, the
+  empty slot); the narration doesn't pile tragedy on top: report it
+  plainly in a line or two, give the burial one respectful sentence at
+  the walls, and move on. No eulogy paragraphs, no dwelling -- the
+  companions' satisfaction numbers already say how the party took it.
+- **A dead companion's quality weapon stays with the party** -- the log
+  prints the recovery line; `give HERO WEAPON` puts it in a living hand.
+  Commons are buried with them.
 - **`downtime` is the deliberate morale lever**: a day off in a settlement,
   best spent where a companion's trait points (Meriele loves animals ->
   a village day pays double). It costs a day and breaks the streak -- the
@@ -218,13 +234,17 @@ fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
 -- rolled; dwarves never aggress) and four wave quests pinned at levels
 **2 / 5 / 8 / 10**. The scripts run the clock; your job is the telling:
 
-- **Waves post themselves** when the previous wave is done and the party
-  hits the level -- the script prints a `*** WORD OF THE WAR ***` block
-  (herald line + the ruler raising the call) at boards, arrivals,
-  settlement nights, or right after the fight that leveled the party.
+- **Waves post themselves** when the previous wave is done, the party
+  hits the level, AND the party is in a settlement (2026-07-13: war news
+  never finds them mid-quest in the middle of nowhere) -- the script
+  prints a `*** WORD OF THE WAR ***` block (herald line + the ruler
+  raising the call) at boards, arrivals, and settlement nights.
   **Deliver it as a scene** -- a rider, a bell, a refugee column -- not
   as a system message. Wave 1 doubles as the war's reveal: give the
-  creed line its moment.
+  creed line its moment. **Don't foreshadow a due wave in the field**:
+  if the party levels past a threshold out in the wilds, say nothing (at
+  most, if asked, that word of the wider war waits in town).
+- The aggressor is never the PC's own race (rolled at `new`).
 - **Wave quests are quests**: taken from their giver (the target land's
   ruler) AT their settlement, fought with `room`, paid by the formulas.
   The named villains (two lieutenants, then the conqueror) cap waves
@@ -264,9 +284,14 @@ bigger than the fights WITHOUT pages of narration:
 
 ## Turn protocol -- ONE encounter per message
 
-- Resolve **at most one encounter** (`room` / `hideout` / `barrow` / `fight`)
+- Resolve **at most one encounter** (`room` / `fight`)
   per DM message, then stop and hand the turn back to the player. Never chain
-  fights, even if the next room seems obvious.
+  fights, even if the next room seems obvious. **The one exception
+  (2026-07-13, quality of life):** if the encounter ends with the party
+  essentially untouched -- at most 1 HP and 1 STA missing per member, no
+  pause spent, no level-up pending -- run the NEXT room of the same job in
+  the same message. A walkover isn't a decision point; don't make the
+  player say "go on" after a fight that cost nothing.
 - **Paste the PLAYER LOG into the chat.** Every encounter command prints the
   full debug log and then a `--- PLAYER LOG ---` block: headlines only, HP
   loss folded in, no dice math. Copy that block into your message as-is --
@@ -322,11 +347,12 @@ bigger than the fights WITHOUT pages of narration:
   streak: pressing on pays escalating XP per room, camping trades that pay
   for safety; say the trade out loud), paying for the tavern instead of
   camping free (`tavern`), buying potions, weapons, or meds (`buy`),
-  **who to hire and whether to hire at all** (`hire` -- and which PC to
-  `pick` at creation), **who to let go** (`dismiss`), spending a day on
+  **who to hire and whether to hire at all** (`hire`),
+  **who to let go** (`dismiss`), spending a day on
   companion morale (`downtime`),
-  **spending skill points** (`train HERO combat|weapon` -- points bank on
-  level-up and NOTHING auto-spends), where to `travel` and which site to
+  **spending the PC's skill points** (`train HERO combat|weapon` -- the
+  PC's points bank on level-up; companions spend their own, see below),
+  where to `travel` and which site to
   run, whether to `engage` a sighting, whether to press on or pull back,
   and **the pause decision** (fight on / drink / heal / Berserk /
   War-Breath / retreat).
@@ -341,30 +367,40 @@ bigger than the fights WITHOUT pages of narration:
   convalescence in the open is a real gamble -- put THAT choice to the
   player ("limp back to town, or risk the nights here?") instead of
   auto-looping it.
-- **On any level-up, run `python session.py levelup` and show the player the
-  menu** -- banked points, both sinks, costs, effects. Don't paraphrase the
-  training rules from memory; the script prints the real numbers.
+- **Level-ups run themselves (2026-07-13).** The PC's level-up prints the
+  spending menu automatically right after the fight -- SHOW it to the
+  player and wait for their `train` call; don't paraphrase the rules from
+  memory (`levelup` re-prints it). **Companions autolevel** on the
+  standard doctrine (training first, proficiency once they carry quality
+  steel) -- the log shows the purchase; mention it in passing ("Zonk has
+  been drilling"), never as a decision.
 - **Offer loot.** A cleared fight prints a `Left among the dead:` line with
   the fallen foes' weapons and stats. Mention it in one short sentence --
   most of it is trash and one clause is enough ("a shortsword among the
   bodies, better than your club if you want it"); a quality blade is a real
   find and deserves a beat. `give HERO WEAPON` hands one over.
 - **DM decisions:** off-script bonuses (`award GOLD XP NAME` -- board quests
-  and the two set sites pay themselves now), granting found/looted weapons
+  pay themselves), granting found/looted weapons
   (`give HERO WEAPON` -- e.g. the fallen bruiser's longsword; commons are
   trivial loot, quality steel is a real find, masterwork/legendary are story
   events), and general pacing -- but pacing choices that spend player
-  resources (rests, camping) belong to the player.
-- **Set content stays set.** Board quests (`room`) and the two hand-built
-  sites (`hideout ROOM` / `barrow ROOM`) have fixed rosters -- never
-  improvise their contents. `fight N [--type wolf|troll|...]` is only for
-  off-script scenes the story invents (a road ambush, a beast on the trail);
-  for anything bigger, `forge` a quest instead. Every bestiary row is
-  spawnable -- **check its level annotation first** (`sites.FOES`; quoted
-  for a duo AT that level, and the reference pack size matters: 4 wolves is
-  the level-1 fight, ONE troll the level-8 one). Off-script monsters far
-  above the party's level are a narrative tool ("you are not winning this;
-  run"), not an encounter.
+  resources (rests, camping) belong to the player. **Reskinned drops
+  (2026-07-13):** when a reskinned foe's loot line breaks the fiction (gun
+  robots dropping "a whip"), `give HERO WEAPON --as "NAME"` grants the
+  catalog profile under a fitting name -- the display is fiction, the
+  stats never change with the costume, same doctrine as foe reskins.
+- **Set content stays set.** Board quests (`room`) have fixed rosters --
+  never improvise their contents. `fight N [--type wolf|troll|...]` is only
+  for off-script scenes the story invents (a road ambush, a beast on the
+  trail); for anything bigger, `forge` a quest instead. Every bestiary row
+  is spawnable -- **check its level annotation first** (`sites.FOES`;
+  quoted for a duo AT that level, and the reference pack size matters: 4
+  wolves is the level-1 fight, ONE troll the level-8 one). Off-script
+  monsters far above the party's level are a narrative tool ("you are not
+  winning this; run"), not an encounter. **The two hand-built sites
+  (`hideout` / `barrow`) are DEV/TEST content since 2026-07-13** -- the
+  benches calibrate on them, but they are NOT part of a played campaign;
+  don't offer them alongside board quests.
 
 ## Narration style
 
@@ -502,17 +538,10 @@ bigger than the fights WITHOUT pages of narration:
   nothing forces marathoning a whole quest in one day). Levels also grow
   the body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...),
   on top of the banked skill point per level.
-- Set sites (both a short march from the STARTING settlement -- travel
-  there first): bandit hideout = the STARTER, a level-1 site (5/15/25
-  XP by room in one go, 15 g + 55 XP clear; a one-go first clear = level
-  2) -- a real fight: a fresh duo clears ~72% (up from ~58 since the
-  2026-07-11 mid-fight heal + kit) and someone still hits the floor in
-  about a third of runs, so expect downs, drunk potions, and retreats
-  from day one. Skeleton barrow = TOUGH, a level-3 site (10/30/50 by room,
-  45 g + 110 XP clear) -- train up AND arm up first (a fresh duo clears
-  ~19% and wipes ~3 times in 4; rank 2 clears ~74%, rank 2
-  plus steel comfortably more; fleeing the barrow is always possible --
-  the dead don't pursue).
+- The set sites (bandit hideout, skeleton barrow -- outside the capital)
+  are **DEV/TEST calibration content since 2026-07-13**, not part of a
+  played campaign: the board's generated quests are the game. Their
+  numbers live in CLAUDE.md.
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
   DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
   through without spending anything" is how parties die. Not using resources
