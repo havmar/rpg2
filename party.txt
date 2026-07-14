@@ -1,0 +1,31 @@
+RPG2 PARTY SHEET -- day 1, at Stormcamp
+  (orc lands, settlement)
+purse: 0g | short rests left today: 1
+party: 1/1 companion slot(s) filled (CHA
+  4)
+
+(YOU)       Delg (L1, training 0): DEX 4
+  STR 3  STA 8/8  HP 12/12  Power 4/4
+  CHA 4  (bulwark; flail; healingx1,
+  staminax1)
+            Delg -- dwarf m, age 27;
+              quirk: has an enemy
+              (Brakkun, a dwarf
+              disgraced soldier, level
+              3, out there somewhere);
+              speech: poetic; looks:
+              scarred
+            XP 0/100 to L2 | skill
+              points: 0
+
+(companion) Torbera (L1, training 0):
+  DEX 5  STR 5  STA 6/6  HP 10/10  Power
+  5/5  CHA 4  (bulwark; flail;
+  healingx2)  [satisfaction 7/10]
+            Torbera -- dwarf f, age 25;
+              background: peasant;
+              speech: verbose; looks:
+              fat
+            XP 0/100 to L2 | skill
+              points: 0
+
