@@ -1,35 +1,34 @@
 RPG2 PARTY SHEET -- day 1, at Greasepit
   (goblin lands, settlement)
-purse: 0g | short rests left today: 1
+purse: 39g | short rests left today: 0
 party: 1/3 companion slot(s) filled (CHA
   6)
 
-(YOU)       Ulric (L1, training 0): DEX
-  4  STR 4  STA 1/5  HP 7/11  Power 0/4
+(YOU)       Ulric (L2, training 0): DEX
+  4  STR 4  STA 1/5  HP 4/11  Power 1/4
   CHA 6  (first_blood; light hammer;
-  healingx2)
+  healingx1)
             Ulric -- human m, age 26;
               quirk: patriotic; speech:
               formal; voice: loud
-            XP 30/100 to L2 | skill
-              points: 0
+            XP 50/200 to L3 | skill
+              points: 1
 
-(companion) Meriele (L1, training 0):
+(companion) Meriele (L2, training 1):
   DEX 6  STR 5  STA 1/5  HP 8/10  Power
-  0/4  CHA 5  (first_blood; light
-  hammer; healingx1, staminax1)
-  [satisfaction 7/10]
+  1/4  CHA 5  (first_blood; light
+  hammer; no kit)  [satisfaction 8/10]
             Meriele -- elf f, age 30;
               quirk: has an enemy
               (Birel, a elf outlaw,
               level 3, out there
               somewhere); dress:
               ascetic; looks: ugly
-            XP 30/100 to L2 | skill
+            XP 50/200 to L3 | skill
               points: 0
 
 active quest: [q06] L3 Press-Gang
-  Trouble -- next: the night market
-  (L2), room 3/3
-momentum: 2 encounter(s) at q06/s1 since
+  Trouble -- next: the press-gang den
+  (L3), room 1/3
+momentum: 3 encounter(s) at q06/s1 since
   the last camp
