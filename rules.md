@@ -1217,8 +1217,9 @@ bank on level-up (`session.py train HERO combat|weapon`) and his level-up
 always put in front of the player. **Companions autolevel** (2026-07-13,
 `rpg.autospend_points`, run after every fight's awards and at hire): the
 reference doctrine — combat training to rank 3, then proficiency once they
-carry a **quality** weapon (nobody drills a club), then training to the
-cap. Managing three companions' menus was bookkeeping, not choice; the
+carry a **quality** weapon (nobody drills a club) — a wizard companion
+drills their **school** instead (Placeholder Magic add-on) — then training
+to the cap. Managing three companions' menus was bookkeeping, not choice; the
 player's build decisions are the PC's. The batch sims still auto-spend on
 combat training only (`sites.run_site`), so tune/bench numbers stay
 comparable.
@@ -1255,6 +1256,94 @@ comparable.
   the two circulating kinds), plus the rolled starting weapon. From then on
   the stock moves through drops, purchases, use — and the kit's nightly
   top-up to 1+1 (2026-07-11).
+
+---
+
+# Placeholder Magic — Add-on (2026-07-14)
+
+Magic exists **from level 1** (designer call: it was never meant to be
+high-level-only content). This is the PLACEHOLDER slice — bolts and two
+schools riding entirely on systems that already exist (the Power pool, the
+pressure roll, the proficiency ranks); the full INT/stat-transcendence
+layer stays on the roadmap (plan.md).
+
+## Who is a wizard
+
+**POWER strictly highest of POWER/DEX/STR at creation = wizard.** CHA stays
+out of the comparison (social, not combat). Rolled in `rpg.make_human`, so
+wizards appear everywhere characters are generated: the PC, companions,
+recruits, the sims' parties — and select enemy rows (below). Under the
+fixed stat budget roughly a quarter of characters roll wizard (measured
+24% over 20k rolls).
+
+**The school replaces the ability.** A wizard rolls **fire** or **ice**
+(50/50) instead of heal/bulwark/first_blood — one Power pool, one spender.
+Wizards often start with the wooden staff (50%, like healers).
+
+## Bolts
+
+A wizard's attack is a **bolt** whenever they have the Power for it; out of
+Power they swing the weapon in hand like anyone, on whatever STA the
+casting left.
+
+- **Cost: the normal swing STA + 1 Power.** Casting tires like fighting —
+  Power is ammo ON TOP of stamina, never a second endurance pool (the
+  designer's double-stamina question, settled 2026-07-14). Winded/Spent
+  drag casting rolls like everything else, and a parried cast still burns
+  its Power.
+- **Attack pressure = 2d6 + creation POWER + training + school
+  proficiency.** The weapon's attack bonus stays out of it, and the stat
+  is **pinned at its creation value** (`Entity.power_stat`): the 1-20
+  doctrine holds for wizards too — stats are fixed at creation, levels
+  grow the POOLS — so pool growth (+1 Power per 2 levels) deepens a
+  wizard's *ammo*, never their aim. (The first bench run let the growing
+  pool double as the attack stat: every top-band row's win rate drifted
+  up 5–9 points as high-level reference wizards hit at +17-and-up. Pinned
+  the same day.)
+- **Severity = margin + the school's flat − soak.** The caster's STR and
+  weapon are out of it:
+  - **Fire: +5** — the STR analogue: hits like a solid fighter swinging
+    military steel.
+  - **Ice: +2** — weak on purpose; every landed ice bolt **rimes** the
+    target: a stacking **−1 DEX** (attack, defense, and the chase's legs)
+    for the rest of the fight, floored at 0. The rime melts when the melee
+    ends or either side breaks away — it never crosses fights.
+- **Defense is unchanged**: the body (DEX + training + the weapon's parry
+  knob), so a wizard defends normally — squishiness comes from the
+  statline, not a rule. Bolts neither test durability nor risk the
+  caster's weapon (breakage stays a steel-on-steel event).
+
+## School proficiency — the levellable axis
+
+The weapon-proficiency system wholesale, keyed `"fire magic"` /
+`"ice magic"` in the same proficiency dict: **rank n costs n points, +1
+bolt pressure AND +1 bolt severity per rank, cap 3** (`train HERO magic`;
+the levelup menu shows the sink). The school never breaks and never
+switches — it is the caster's whole progression lane, so wizard companions
+autolevel into it (school ranks instead of weapon ranks;
+`rpg.develop_hero` and the bench reference duo follow the same doctrine).
+
+## Enemy casters
+
+Three catalog rows (`sites.FOES`), all humanoid: the **hexer** (ice — the
+debuff showcase), the **pyromancer** (fire), and the **magus** (the solo
+tower fight: drilled, deep Power, real steel after). A caster row's
+`power` is double-duty — the bolt's pressure stat AND the ammo count — so
+the family's shape is one puzzle: dangerous at range until the Power runs
+dry, then a robed conscript with a knife. Close fast or bleed. Levels are
+bench-annotated like every row (`bench_bestiary.py`).
+
+**Casters are contained content: every race has ONE caster quest** (the
+witchfinder's hedge-wizards, the coven, the ash-callers, the rune-fire,
+the boiler-cult — reskins per race), plus the capital epic "The Renegade
+Magus". They deliberately do NOT ride the common warband pool: the first
+cut put them there and the career sim collapsed (reach-L11 47% → 18%,
+median death L10 → L8) — the rows are band-fair alone, but at half of all
+warband rooms their ranged chip bled parties across chained rooms (rooms
+measured fine at level; sites dropped 15–25 points mid-band). Contained,
+the danger is identifiable: the board names the coven, the player chooses
+to walk in. (They still roam their land's wilds via the template pool
+union, as rare road trouble.)
 
 ---
 
@@ -1332,6 +1421,32 @@ days / ~37 quests. The top band is still the hard edge (per-quest wipe
 40–65% at 15–20 at level) and still waits on masterwork gear, armor, and
 magic (plan.md) for its missing player power — but a full 1–20 career is
 now merely harsh, not a lottery.
+
+## Cross-land deliveries (2026-07-14)
+
+The quest kind that sends the party **travelling**: taken at its origin
+settlement, paid at a named settlement in another land. No sites — the
+road is the content:
+
+- **Pay scales with the trip**: 20 g + 25 XP per one-way travel day (the
+  standard cross-land run is 2 days: 40 g + 50 XP). Gold-rich for the
+  effort — the courier premium — and XP-light next to site work: walking
+  isn't fighting. The CHA negotiation bonus applies like any quest gold.
+- **One guaranteed interception** on the travel leg that reaches the
+  destination: a road-table event at chance 1 — the road's own
+  party-independent level table, spotted/ambush valves included, paying
+  its own wild XP. It cannot un-deliver: winning it, fleeing it, or
+  slipping past a sighting all still end at the gates.
+- **Arriving IS the turn-in** (the site-less quest's cursor is "arrive"):
+  the hand-off fires whenever the party stands at the destination with
+  the quest active — at travel arrivals, or when a fight there settles.
+  Every delivery carries a giver face at the origin AND a **recipient**
+  face at the destination (the turn-in scene), plus an epilogue. An
+  occupied destination cannot pay — the delivery waits on the war.
+- **A couple per world** at worldgen (2), posted ON TOP of the XP coverage
+  target (courier work is travel pay, not the climb). On the board a
+  delivery shows **DELIVERY** where a level would go: the road's danger
+  is the road's table, not a site level.
 
 ---
 

@@ -50,12 +50,15 @@ def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
     buy_training(3)
     if level >= 4:
         h.weapon = rpg.WEAPONS["katana"]
+    # A rolled wizard drills the SCHOOL (their real offense), like
+    # develop_hero: katana ranks would be dead points on a caster.
+    prof_key = h.school_prof_key if h.school else h.weapon.name
     rank = 0
     while rank < rpg.PROFICIENCY_MAX and points >= rank + 1:
         points -= rank + 1
         rank += 1
     if rank:
-        h.proficiency[h.weapon.name] = rank
+        h.proficiency[prof_key] = rank
     buy_training(rpg.TRAINING_MAX)
     for lvl in range(2, level + 1):
         if rpg.pool_growth_due(lvl):

@@ -524,6 +524,25 @@ bigger than the fights WITHOUT pages of narration:
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
+- **Wizards (placeholder magic, 2026-07-14):** POWER strictly highest of
+  POWER/DEX/STR at creation = a wizard -- a SCHOOL (fire or ice) instead
+  of an ability, rolled for PC, companions, and recruits alike. They hurl
+  BOLTS while the Power lasts (normal swing STA + 1 Power per cast;
+  pressure off POWER + training + school prof; a parried cast still burns
+  the Power), then fight on with the weapon in hand. Fire bolts hit like
+  heavy steel (+5 severity flat, no STR); ice bolts barely cut (+2) but
+  every landed one RIMES the target -- stacking -1 DEX for the fight (it
+  shows as `-N chilled` in the rolls and slows the chase's legs too).
+  Defense stays the body: wizards are squishy by statline. `train HERO
+  magic` drills the school (the caster's proficiency lane; companions
+  autolevel into it). **Enemy casters** (hexer = ice, pyromancer = fire,
+  magus = the solo boss) are CONTAINED content: each race has one caster
+  quest (coven/ash-callers/rune-fire/boiler-cult/hedge-wizards) plus the
+  Renegade Magus epic -- ordinary warbands never field them, so a caster
+  fight is one the player read on the board and chose. Their Power is
+  both accuracy and ammo: close fast or bleed at range -- an emptied
+  caster is a robed conscript with a knife. Narrate bolts as the school's
+  fiction; the log already says who's casting what.
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
   weight class by construction, easy work pays less. **Per-encounter pay
@@ -538,6 +557,16 @@ bigger than the fights WITHOUT pages of narration:
   nothing forces marathoning a whole quest in one day). Levels also grow
   the body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...),
   on top of the banked skill point per level.
+- **Deliveries (2026-07-14):** the board's DELIVERY rows are cross-land
+  courier jobs -- taken from their giver at the origin, paid by a named
+  RECIPIENT at a settlement in another land (both faces are on the quest;
+  narrate the hand-off like a turn-in). No rooms: `take`, then `travel`
+  to the destination -- the leg that arrives is ALWAYS intercepted once
+  (a road-table event, so it can be a sighting to slip or an ambush; it
+  pays wild XP and cannot un-deliver). Arriving completes the quest on
+  the spot: pay (20g + 25 XP per road day; CHA talks it up), recipient
+  prompt, epilogue. Frame the cargo as the fiction demands -- the
+  templates say what it is.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their

@@ -220,7 +220,9 @@ def _pick_quest(world, done: set[str], party_level: int):
     If nothing sits below, the lowest-level quest posted. Returns
     (quest, forced_up)."""
     open_q = [q for q in world["quests"].values()
-              if q["status"] == "open" and q["id"] not in done]
+              if q["status"] == "open" and q["id"] not in done
+              and q.get("kind") != "delivery"]   # the career sim has no
+                                                 # travel layer to carry one
     if not open_q:
         return None, False
     for depth in (2, 1):        # grind two below when the board allows it,

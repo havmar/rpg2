@@ -92,6 +92,7 @@ from rpg import (
     equip_weapon as _equip_weapon,
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
+    train_school as _train_school,
     autospend_points,
 )
 import story
@@ -349,6 +350,10 @@ def party_sheet_lines(state: dict) -> list[str]:
         q = world["quests"][qid]
         if q["status"] == "done":
             lines.append(f"active quest [{qid}] {q['name']} is COMPLETE")
+        elif q.get("kind") == "delivery":
+            lines.append(f"active quest: [{qid}] DELIVERY {q['name']} -- "
+                         f"carry {q['cargo']} to {q['dest_name']} "
+                         f"(travel {q['dest']})")
         else:
             cur = q["next"]
             s = q["sites"][cur["site"]]
@@ -549,8 +554,9 @@ def opening_hook(state: dict) -> list[str]:
     if here is None:
         return []
     open_q = [world["quests"][qid] for qid in here["quests"]
-              if world["quests"][qid]["status"] == "open"]
-    if not open_q:
+              if world["quests"][qid]["status"] == "open"
+              and world["quests"][qid].get("kind") != "delivery"]
+    if not open_q:      # (a delivery never opens the game -- combat does)
         return []
     q = min(open_q, key=lambda q: (q["level"], q["id"]))
     lines = [f"OPENING HOOK -- frame the first scene at this job's "
@@ -893,6 +899,10 @@ def cmd_status(args: argparse.Namespace) -> None:
         if q["status"] == "done":
             print(f"  Active quest [{qid}] {q['name']} is COMPLETE -- "
                   f"take a new one.")
+        elif q.get("kind") == "delivery":
+            print(f"  Active quest: [{qid}] DELIVERY {q['name']} -- carry "
+                  f"{q['cargo']} to {q['dest_name']} "
+                  f"(`travel {q['dest']}`; arriving is the turn-in).")
         else:
             cur = q["next"]
             s = q["sites"][cur["site"]]
@@ -979,7 +989,22 @@ def print_levelup_menu(heroes: list) -> None:
                   f"{h.training + 1}  costs {cost}  [{mark}]  "
                   f"(+1 to ALL pressure rolls per rank, cap {TRAINING_MAX})"
                   f"  -> train {first} combat")
-        # Sink 2: proficiency with the WIELDED weapon.
+        # Sink 2 (wizards): SCHOOL proficiency -- the caster's real offense
+        # lane (the weapon below is their out-of-Power fallback).
+        if h.school:
+            key = h.school_prof_key
+            rank = h.school_prof
+            if rank >= PROFICIENCY_MAX:
+                print(f"  {key} proficiency  rank {rank} -- CAPPED")
+            else:
+                cost = rank + 1
+                mark = ("CAN BUY" if h.skill_points >= cost
+                        else "can't afford yet")
+                print(f"  {key} proficiency  rank {rank} -> "
+                      f"{rank + 1}  costs {cost}  [{mark}]  "
+                      f"(+1 bolt pressure & +1 bolt severity, cap "
+                      f"{PROFICIENCY_MAX})  -> train {first} magic")
+        # Sink 3: proficiency with the WIELDED weapon.
         if h.weapon is None or h.weapon_broken:
             print("  weapon proficiency   (no whole weapon in hand to drill)")
         else:
@@ -996,7 +1021,8 @@ def print_levelup_menu(heroes: list) -> None:
                       f"{PROFICIENCY_MAX}; lost on weapon switch)"
                       f"  -> train {first} weapon")
         other = {n: r for n, r in h.proficiency.items()
-                 if r and (h.weapon is None or n != h.weapon.name)}
+                 if r and (h.weapon is None or n != h.weapon.name)
+                 and (not h.school or n != h.school_prof_key)}
         if other:
             dormant = ", ".join(f"{n} {r}" for n, r in sorted(other.items()))
             print(f"  (drilled but not in hand: {dormant})")
@@ -1103,6 +1129,50 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
         nxt = quest["sites"][cur["site"]]
         log.append(f"  (next: {nxt['name']}, L{nxt['level']}, "
                    f"{len(nxt['rooms'])} encounter(s))")
+
+
+def active_delivery(state: dict) -> dict | None:
+    """The active quest when it is an OPEN delivery (the cross-land courier
+    kind, 2026-07-14), else None."""
+    qid = state.get("active_quest")
+    world = state.get("world")
+    if not qid or not world:
+        return None
+    q = world["quests"].get(qid)
+    if q is not None and q.get("kind") == "delivery" and q["status"] == "open":
+        return q
+    return None
+
+
+def deliver_if_arrived(state: dict, log: list[str]) -> bool:
+    """The delivery hand-off: fires whenever the active quest is an open
+    delivery and the party stands at its destination settlement -- checked
+    at travel arrivals and after any fight settles (the guaranteed
+    interception may pause, so the pay must be able to land after a resume
+    or a retreat too). Idempotent: pays once, flips the quest done. An
+    occupied destination cannot pay -- the delivery waits on the war."""
+    q = active_delivery(state)
+    if q is None:
+        return False
+    here = local_settlement(state)
+    if here is None or here["key"] != q["dest"]:
+        return False
+    if occupied_here(state) is not None:
+        log.append(f"  ({q['name']}: {here['name']} lies under the yoke -- "
+                   f"no one here can receive {q['cargo']} or pay for it. "
+                   f"The delivery waits on the war.)")
+        return False
+    award_quest(state["party"], state["purse"], q["gold"], q["xp"], log,
+                q["name"], banner="DELIVERY COMPLETE")
+    q["status"] = "done"
+    q["done_day"] = state["clock"].day
+    r = q.get("recipient")
+    if r:
+        log.append(f"  (hand {q['cargo']} to the recipient -- narrate the "
+                   f"scene: {npc_line(r)})")
+    if q.get("epilogue"):
+        log.append(f"  EPILOGUE (day {state['clock'].day}): {q['epilogue']}")
+    return True
 
 
 def maybe_post_wave(state: dict, log: list | None = None) -> bool:
@@ -1230,6 +1300,10 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # The companion morale pass: blood and fear, whatever the outcome
         # (a game over needs no bookkeeping).
         satisfaction_after_fight(party, dead_before or [], log)
+        # A delivery's hand-off can come due here: the guaranteed
+        # interception (or any other fight at the destination's gates)
+        # settling with the party at the destination IS the arrival.
+        deliver_if_arrived(state, log)
         # (War news no longer arrives at fight's end -- it waits for the
         # next settlement scene: board, arrival, tavern, downtime.)
     print_combat(log)
@@ -1393,7 +1467,9 @@ def cmd_board(args: argparse.Namespace) -> None:
             for qid in s["quests"]:
                 q = world["quests"][qid]
                 if q["status"] == "open":
-                    rumors.append(f"  [{q['id']}] L{q['level']:<2} "
+                    grade = ("DELIVERY" if q.get("kind") == "delivery"
+                             else f"L{q['level']:<2}")
+                    rumors.append(f"  [{q['id']}] {grade} "
                                   f"{q['name']} -- at {s['name']}")
         if rumors:
             print(f"Word from around the {land} lands (travel there to "
@@ -1440,8 +1516,13 @@ def cmd_take(args: argparse.Namespace) -> None:
     print(f"The party takes the job: {quest_line(quest)}")
     for line in quest_detail_lines(quest)[1:]:
         print(line)
-    print("Fight the next room with `room`. Switching quests later keeps "
-          "this one's progress.")
+    if quest.get("kind") == "delivery":
+        print(f"The road is the job: `travel {quest['dest']}` "
+              f"({quest['days']} day(s)) and expect trouble en route -- "
+              f"arriving is the turn-in.")
+    else:
+        print("Fight the next room with `room`. Switching quests later keeps "
+              "this one's progress.")
 
 
 def cmd_room(args: argparse.Namespace) -> None:
@@ -1459,6 +1540,10 @@ def cmd_room(args: argparse.Namespace) -> None:
     quest = state["world"]["quests"][qid]
     if quest["status"] == "done":
         print(f"[{qid}] {quest['name']} is complete -- take a new quest.")
+        return
+    if quest.get("kind") == "delivery":
+        print(f"[{qid}] {quest['name']} is a road job -- no rooms to fight. "
+              f"`travel {quest['dest']}` to carry it.")
         return
     if not at_quest_settlement(state, quest):
         return
@@ -1664,8 +1749,26 @@ def cmd_travel(args: argparse.Namespace) -> None:
         print("\n".join(log))
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
-    if not wild_event(state, chance, f"On the road to {target['name']}"):
-        save(state)
+    dq = active_delivery(state)
+    if (dq is not None and target["place"] == dq["dest"]
+            and not dq.get("intercepted")):
+        # The delivery's guaranteed encounter: the leg that reaches the
+        # destination is watched. Rolled off the road's own table like any
+        # travel event (spotted/ambush valves included), just at chance 1.
+        dq["intercepted"] = True
+        print(f"  Word of {dq['cargo']} travelled faster than the party -- "
+              f"the road is watched.")
+        if wild_event(state, 1.0,
+                      f"Intercepted on the road to {target['name']}"):
+            return      # the fight machinery saved; if it paused, the
+                        # hand-off lands when the fight settles
+                        # (deliver_if_arrived in finish_encounter/retreat)
+    elif wild_event(state, chance, f"On the road to {target['name']}"):
+        return
+    log = []
+    if deliver_if_arrived(state, log):
+        print("\n".join(log))
+    save(state)
 
 
 def cmd_explore(args: argparse.Namespace) -> None:
@@ -1903,6 +2006,9 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         if not wiped:
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
+            # Fleeing the delivery's interception doesn't un-deliver: if the
+            # party stands at the destination, the hand-off happens.
+            deliver_if_arrived(state, log)
         print_combat(log)
         save(state)
         report_game_over(party, wiped)
@@ -2202,6 +2308,8 @@ def cmd_train(args: argparse.Namespace) -> None:
         return
     if args.what == "combat":
         _train_combat_once(hero, log)
+    elif args.what == "magic":
+        _train_school(hero, log)
     else:
         _train_proficiency(hero, log)
     print("\n".join(log))
@@ -2541,12 +2649,14 @@ def main() -> None:
         "train",
         help="spend a banked skill point: 'combat' = +1 to all pressure rolls "
              "per rank (cap 5); 'weapon' = proficiency with the WIELDED "
-             "weapon, +1 attack pressure & +1 severity per rank (cap 3). "
+             "weapon, +1 attack pressure & +1 severity per rank (cap 3); "
+             "'magic' = a wizard's SCHOOL proficiency, +1 bolt pressure & "
+             "+1 bolt severity per rank (cap 3, wizards only). "
              "Rank n costs n points. The PC's points are the player's "
              "choice (companions autolevel on the doctrine since "
              "2026-07-13).")
     p.add_argument("hero")
-    p.add_argument("what", choices=["combat", "weapon"])
+    p.add_argument("what", choices=["combat", "weapon", "magic"])
     p.set_defaults(func=cmd_train)
 
     p = sub.add_parser(

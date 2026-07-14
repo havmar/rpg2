@@ -78,7 +78,20 @@ class FoeSpec:
                             # the apex monsters)
     tireless: bool = False  # never spends STA, never Winded/Spent
     pursues: bool = True    # gives chase when the party retreats
-    power: int = 0          # ability fuel (dragonfire is paid for)
+    power: int = 0          # ability fuel (dragonfire is paid for). For a
+                            # CASTER row it is double-duty: the bolt's
+                            # pressure stat AND the ammo pool (a power-6
+                            # caster throws 6 bolts at +6), exactly like a
+                            # hero wizard's POWER
+    school: str = ""        # placeholder magic: "fire"/"ice" makes the row
+                            # a caster -- bolts while the power lasts, then
+                            # the carried weapon (rpg.Entity.school)
+    school_prof: int = 0    # the caster row's school proficiency rank (+1
+                            # bolt pressure AND +1 bolt severity per rank)
+                            # -- the same ranks heroes drill, and the
+                            # severity lever enemy casters need (BOLT_SEVERITY
+                            # is global: buffing it would buff hero wizards
+                            # too)
     crowd_cap: int = CROWD_CAP  # attackers that can press it at once
                                 # (big monsters take 3-4: boss fights
                                 # stay full-party under the press)
@@ -178,6 +191,25 @@ FOES = {
     "warlord":     FoeSpec("Warlord",     level=19, dex=8, str_=8, sta=9,
                            hp=20, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["zweihander"]),
+    # --- The casters (placeholder magic, 2026-07-14): humanoid wizards, the
+    # enemy mirror of the party's own. Bolts roll off POWER (double-duty:
+    # stat AND ammo -- see FoeSpec.power) and IGNORE the caster's soft body,
+    # which is the family's whole shape: dangerous until the Power runs dry,
+    # then a robed conscript with a knife. Close fast or bleed at range.
+    # The hexer's ice bolts barely cut but RIME (-1 DEX per landed bolt,
+    # stacking, all fight) -- the debuff showcase; the pyromancer's fire
+    # bolts hit like heavy steel off a stat no wound slows as fast. The
+    # magus is the solo tower fight: drilled, deep Power, real steel after.
+    "hexer":      FoeSpec("Hexer",      level=3,  dex=4, str_=2, sta=6,
+                          hp=10, ref_pack=2, pain=2, power=8, school="ice",
+                          school_prof=2, weapon=WEAPONS["dagger"]),
+    "pyromancer": FoeSpec("Pyromancer", level=6,  dex=4, str_=2, sta=7,
+                          hp=12, ref_pack=2, pain=2, power=8, school="fire",
+                          school_prof=2, weapon=WEAPONS["dagger"]),
+    "magus":      FoeSpec("Magus",      level=10, dex=6, str_=4, sta=9,
+                          hp=24, ref_pack=1, training=3, pain=2, power=11,
+                          school="fire", school_prof=3,
+                          weapon=WEAPONS["longsword"]),
     # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
     # broken on purpose (living foes teach the system; undead break it).
     # The skeleton: brittle and a weak individual hitter (low STR -> low
@@ -273,14 +305,17 @@ def make_foe(kind: str, n: int, rng: random.Random,
     (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
-    return Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
-                  sta=spec.sta, max_hp=spec.hp, training=spec.training,
-                  undead=spec.undead,
-                  pain=spec.pain, tireless=spec.tireless,
-                  pursues=spec.pursues, power=spec.power,
-                  crowd_cap=spec.crowd_cap, regen=spec.regen,
-                  sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
-                  sweep_label=spec.sweep_label, weapon=weapon)
+    e = Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
+               sta=spec.sta, max_hp=spec.hp, training=spec.training,
+               undead=spec.undead,
+               pain=spec.pain, tireless=spec.tireless,
+               pursues=spec.pursues, power=spec.power, school=spec.school,
+               crowd_cap=spec.crowd_cap, regen=spec.regen,
+               sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
+               sweep_label=spec.sweep_label, weapon=weapon)
+    if spec.school and spec.school_prof:
+        e.proficiency[e.school_prof_key] = spec.school_prof
+    return e
 
 
 def roster_lines(foes: list[Entity]) -> list[str]:
@@ -302,6 +337,9 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append("tireless")
         if e.regen:
             tags.append(f"wounds knit +{e.regen}/round")
+        if e.school:
+            prof = f" +{e.school_prof}" if e.school_prof else ""
+            tags.append(f"{e.school} magic{prof}, {e.power} Power")
         if e.sweep > 1:
             tags.append(e.sweep_label or "sweeping blows")
         tag = f"; {', '.join(tags)}" if tags else ""

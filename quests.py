@@ -194,6 +194,17 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
                              "blademaster", "warlord")
+# The casters get their OWN quests (placeholder magic, 2026-07-14): one
+# caster template per race below plus the magus epic -- NOT the ladder
+# pool. The first cut seeded hexer/pyromancer into LADDER_POOL and the
+# career sim collapsed (L11 47% -> 18%, capped 7.5% -> 3.5%): individually
+# band-fair rows, but at 50-77% of all warband rooms their ranged chip
+# bled the duo across chained rooms (rooms measured fine at level; SITES
+# dropped 15-25 points mid-band). Contained instead: caster danger is
+# identifiable content the board names, not an ambient tax on every
+# warband.
+CASTER_POOL = ("hexer", "pyromancer")
+MAGUS_POOL = CASTER_POOL + ("magus",)
 WOLF_POOL = ("wolf", "dire wolf")
 BEAST_POOL = ("boar", "bear")
 UNDEAD_POOL = ("skeleton", "ghoul", "wight")
@@ -236,6 +247,15 @@ TEMPLATES: dict[str, list[dict]] = {
              giver="the garrison captain",
              epilogue="The recovered blades go back to the armory; the "
                       "villages post no watch tonight."),
+        dict(title="The Hedge-Wizards' Toll",
+             desc="Renegade hedge-wizards tax the road in fire and frost. "
+                  "The witchfinder pays for the tollhouse dark.",
+             pool=CASTER_POOL, skins={},
+             sites=("the tollhouse road", "the burned chapterhouse"),
+             giver="the bishop's witchfinder",
+             epilogue="Carters use the road again by week's end; the "
+                      "witchfinder burns the confiscated grimoires in the "
+                      "market square, twice, for the crowd."),
     ],
     "elf": [
         dict(title="The Blighted Glade",
@@ -277,6 +297,16 @@ TEMPLATES: dict[str, list[dict]] = {
              giver="the council's justiciar",
              epilogue="The rogue lodge is unroofed and left to the moss; "
                       "the forest roads charge no toll but weather."),
+        dict(title="The Coven in the Mists",
+             desc="Singers who left the circle and took the old songs with "
+                  "them. The mists over the hollow are not weather.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Mist-Singer", "pyromancer": "Ember-Singer"},
+             sites=("the mist-hung hollow", "the singing stones"),
+             giver="the circle's censor",
+             epilogue="The mists lift over the hollow; the censor seals "
+                      "the stolen songs back into the circle's keeping, "
+                      "and does not say thank you."),
     ],
     "orc": [
         dict(title="The Proving Hunt",
@@ -316,6 +346,16 @@ TEMPLATES: dict[str, list[dict]] = {
              giver="the herd-elder",
              epilogue="The herders climb again; the skull goes up on a "
                       "spear above the trail, warning and boast at once."),
+        dict(title="The Ash-Callers' Rebellion",
+             desc="Shamans who traded the clan's fire for their own. The "
+                  "true shaman pays iron for them silenced.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Frost-Caller", "pyromancer": "Ash-Caller"},
+             sites=("the scorched steppe", "the ash-callers' circle"),
+             giver="the clan's true shaman",
+             epilogue="The circle's ashes are scattered on running water; "
+                      "the clan's fire burns in one pit again, where it "
+                      "belongs."),
     ],
     "dwarf": [
         dict(title="Things in the Deep Roads",
@@ -361,6 +401,17 @@ TEMPLATES: dict[str, list[dict]] = {
              epilogue="The ledger line is struck through in both clans' "
                       "books -- balanced, the keeper says, for a "
                       "generation at least."),
+        dict(title="The Rune-Fire Below",
+             desc="Chanters feeding forbidden runes in a sealed gallery. "
+                  "The runesmiths want the fire out before the stone "
+                  "learns it.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Cold-Chanter", "pyromancer": "Rune-Burner"},
+             sites=("the sealed gallery", "the rune-fire vault"),
+             giver="the runesmiths' warden",
+             epilogue="The vault is re-sealed under three locks and a "
+                      "new rune; the warden files the party's names under "
+                      "'safe hands'."),
     ],
     "goblin": [
         dict(title="Scrap-Hounds Loose in the Works",
@@ -407,6 +458,17 @@ TEMPLATES: dict[str, list[dict]] = {
              epilogue="Air moves in the undercity again; small pay, but "
                       "the vent-warden's word is now good in every "
                       "burrow."),
+        dict(title="The Boiler-Cult",
+             desc="A cult that worships the works' oldest boiler and "
+                  "feeds it what it asks for. It has started asking for "
+                  "shift-workers.",
+             pool=CASTER_POOL,
+             skins={"hexer": "Frost-Tinker", "pyromancer": "Boiler-Mage"},
+             sites=("the cult's stacks", "the overheated shrine"),
+             giver="the works inspector",
+             epilogue="The old boiler is decommissioned with full "
+                      "honors and sold for scrap; the inspector stamps "
+                      "the paperwork DONE with visible pleasure."),
     ],
 }
 
@@ -431,10 +493,78 @@ EPIC_TEMPLATES: list[dict] = [
          giver="the march-warden",
          epilogue="The forts are re-garrisoned; the marches go quiet, "
                   "and stay so."),
+    dict(title="The Renegade Magus",
+         desc="A court wizard who stopped asking leave. The crown pays "
+              "for the tower dark and the fires out.",
+         pool=MAGUS_POOL, skins={},
+         sites=("the scorched approach", "the tower of the magus"),
+         giver="the crown's own sage",
+         epilogue="The tower stands dark and cold; the crown's sage "
+                  "carries the renegade's books away under seal."),
 ]
 
 # Villages post the same race tables, just fewer and lower-leveled: samey on
 # purpose -- placeholders for authored content, not competition for it.
+
+# --------------------------------------------------------------------------- #
+# Cross-land deliveries (2026-07-14)
+# --------------------------------------------------------------------------- #
+# The quest kind that sends the party TRAVELLING: taken at its origin
+# settlement, paid at a named settlement in ANOTHER land. No sites -- the
+# road is the content: ONE guaranteed interception en route (session.py
+# forces a road-table event on the travel leg that reaches the destination;
+# spotted/ambush valves apply as ever), and the pay scales with the trip's
+# travel days. The hand-off itself is the turn-in: arriving at the
+# destination with the quest active completes it (session.deliver_if_arrived).
+# A couple per world at worldgen, race-agnostic templates.
+DELIVERIES_PER_WORLD = 2
+DELIVERY_GOLD_PER_DAY = 20  # the courier premium: gold-rich for the effort...
+DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
+                            # run pays 50 XP, half a level-1 site) -- walking
+                            # isn't fighting, and the interception pays its
+                            # own wild XP on top
+
+DELIVERY_TEMPLATES: list[dict] = [
+    dict(title="The Sealed Dispatch", cargo="a sealed dispatch",
+         desc="Court business under wax, and a rider who never arrived. "
+              "Someone would rather it never does.",
+         giver="the courier-master", recipient="the resident envoy",
+         epilogue="The seal is broken behind a shut door; whatever it "
+                  "says, couriers ride the same road twice as guarded "
+                  "within the week."),
+    dict(title="A Coffer Under Seal", cargo="a locked coffer",
+         desc="A counting-house settles a debt abroad. The coffer is "
+              "heavy, the road long, and the ledger says nothing else.",
+         giver="the counting-house factor", recipient="the receiving factor",
+         epilogue="The coffer's weight is counted twice and found true; "
+                  "the party's name goes in the ledger under 'reliable'."),
+    dict(title="Medicine for the Outbreak", cargo="a crate of medicine",
+         desc="A sickness across the border, and the cure sitting here in "
+              "a stockroom. Every day on the road is counted in graves.",
+         giver="the settlement's healer", recipient="the plague-warden",
+         epilogue="The crate is empty within two days and the burial "
+                  "details stand down; the warden keeps the party's "
+                  "names for the record of the outbreak."),
+    dict(title="The Master-Smith's Commission", cargo="a wrapped blade",
+         desc="A commissioned piece, finished at last, and a patron in "
+              "another land who paid in advance and waits badly.",
+         giver="the master smith", recipient="the commissioning patron",
+         epilogue="The wrapping comes off to a long silence, which from "
+                  "this patron is the highest praise on record."),
+    dict(title="Ashes Going Home", cargo="a sealed urn",
+         desc="One of theirs died far from home. The family wants the "
+              "ashes carried the whole way, and carried right.",
+         giver="the bereaved family's elder", recipient="the family's kin",
+         epilogue="The urn goes into the ground beside its people; the "
+                  "kin set a place at the table for the party that night."),
+    dict(title="The Prisoner's Ransom", cargo="a strongbox of ransom gold",
+         desc="A magistrate buys a hostage back from across the border. "
+              "The gold must arrive uncounted and unopened.",
+         giver="the magistrate", recipient="the ransom-broker",
+         epilogue="The hostage walks free at the next new moon; the "
+                  "broker, professionally offended by honesty, pays out "
+                  "to the coin."),
+]
 
 RACES = tuple(TEMPLATES)
 
@@ -474,10 +604,14 @@ def xp_to_cap(level: int = 1) -> int:
 
 
 def quest_xp_total(quest: dict) -> int:
+    if quest.get("kind") == "delivery":
+        return quest["xp"]
     return sum(site_xp_total(s["level"]) for s in quest["sites"])
 
 
 def quest_gold_total(quest: dict) -> int:
+    if quest.get("kind") == "delivery":
+        return quest["gold"]
     return sum(site_gold(s["level"]) for s in quest["sites"])
 
 
@@ -524,6 +658,39 @@ def attach_giver(quest: dict, race: str, rng: random.Random,
                                     # (RACES), so top-level would be a cycle
     quest["giver"] = make_npc(rng, race, role or "the local patron",
                               level=quest["level"], used_names=used_names)
+
+
+def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
+                         rng: random.Random) -> dict:
+    """One cross-land delivery: origin posts it, `dest` (another land's
+    settlement) pays it. Pay derives from the trip's one-way travel days --
+    the road IS the pay grade here, not a site level (`level` stays 0: no
+    rooms, no threat math; the guaranteed interception rolls off the road's
+    own party-independent table like any travel event)."""
+    days = (TRAVEL_DAYS_IN_LAND if origin["race"] == dest["race"]
+            else TRAVEL_DAYS_CROSS)
+    return {
+        "id": qid,
+        "kind": "delivery",
+        "name": tpl["title"],
+        "desc": tpl["desc"],
+        "cargo": tpl["cargo"],
+        "settlement": origin["key"],
+        "dest": dest["key"],
+        "dest_name": dest["name"],
+        "days": days,
+        "gold": DELIVERY_GOLD_PER_DAY * days,
+        "xp": DELIVERY_XP_PER_DAY * days,
+        "level": 0,             # deliveries have no site level; readouts
+                                # print DELIVERY where a level would go
+        "skins": {},
+        "sites": [],
+        "next": {"site": 0, "room": 0},
+        "intercepted": False,   # the guaranteed road event, spent on the
+                                # travel leg that reaches the destination
+        "status": "open",
+        "epilogue": tpl.get("epilogue", ""),
+    }
 
 
 def forge_quest(qid: str, level: int, n_sites: int, n_rooms: int,
@@ -665,7 +832,37 @@ def generate_world(seed: int | None = None) -> dict:
            and len(world["quests"]) < WORLD_MAX_QUESTS):
         _post_quest(world, rng.choice(world["settlements"]), rng,
                     used_people)
+
+    # The deliveries go on last, ON TOP of the coverage target (courier work
+    # is travel pay, not the climb's XP).
+    for _ in range(DELIVERIES_PER_WORLD):
+        _post_delivery(world, rng, used_people)
     return world
+
+
+def _post_delivery(world: dict, rng: random.Random,
+                   used_people: set[str] | None = None) -> dict:
+    """Roll one cross-land delivery onto a random settlement's board: a
+    destination in another land, a fresh template if one is left, a giver
+    face at the origin and a RECIPIENT face at the destination (the
+    hand-off is the turn-in scene)."""
+    from people import make_npc     # runtime import (cycle: RACES)
+    origin = rng.choice(world["settlements"])
+    dests = [s for s in world["settlements"] if s["race"] != origin["race"]]
+    dest = rng.choice(dests)
+    posted = {q["name"] for q in world["quests"].values()
+              if q.get("kind") == "delivery"}
+    fresh = [t for t in DELIVERY_TEMPLATES if t["title"] not in posted]
+    tpl = rng.choice(fresh or DELIVERY_TEMPLATES)
+    qid = f"q{len(world['quests']) + 1:02d}"
+    quest = build_delivery_quest(qid, tpl, origin, dest, rng)
+    attach_giver(quest, origin["race"], rng, role=tpl.get("giver"),
+                 used_names=used_people)
+    quest["recipient"] = make_npc(rng, dest["race"], tpl["recipient"],
+                                  used_names=used_people)
+    world["quests"][qid] = quest
+    origin["quests"].append(qid)
+    return quest
 
 
 # --------------------------------------------------------------------------- #
@@ -763,7 +960,8 @@ def quest_to_sites(quest: dict) -> list[Site]:
     """A quest's sites as sites.Site instances, so the batch sims can run a
     generated quest through the very same run_site loop the hand-built sites
     (and tune.py) use. Session play doesn't need this -- it fights rooms
-    one command at a time."""
+    one command at a time. A delivery has no sites: empty list (the career
+    sim and any other site iterator just walks past it)."""
     out = []
     for i, s in enumerate(quest["sites"]):
         out.append(Site(
@@ -783,6 +981,9 @@ def quest_to_sites(quest: dict) -> list[Site]:
 # --------------------------------------------------------------------------- #
 
 def quest_shape(quest: dict) -> str:
+    if quest.get("kind") == "delivery":
+        return (f"a road delivery, {quest['days']} "
+                f"day{'s' if quest['days'] > 1 else ''} out")
     rooms = sum(len(s["rooms"]) for s in quest["sites"])
     n = len(quest["sites"])
     return (f"{n} site{'s' if n > 1 else ''}, "
@@ -790,8 +991,14 @@ def quest_shape(quest: dict) -> str:
 
 def quest_line(quest: dict) -> str:
     """One board row: id, level (straight -- reading it is the decision),
-    shape, pay, status."""
+    shape, pay, status. A delivery has no site level: DELIVERY stands where
+    the level would (the road's danger is the road's own table)."""
     mark = {"open": "", "done": "  [DONE]"}[quest["status"]]
+    if quest.get("kind") == "delivery":
+        return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
+                f"{quest['dest_name']}, {quest_shape(quest)}; pays "
+                f"{quest_gold_total(quest)}g, "
+                f"{quest_xp_total(quest)} XP{mark}")
     return (f"[{quest['id']}] L{quest['level']:<2} {quest['name']} -- "
             f"{quest_shape(quest)}; pays {quest_gold_total(quest)}g, "
             f"{quest_xp_total(quest)} XP{mark}")
@@ -828,6 +1035,18 @@ def quest_detail_lines(quest: dict) -> list[str]:
         traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
         lines.append(f"    giver: {g['name']}, {g['role']} ({g['race']} "
                      f"{g['sex']}, age {g['age']}; {traits})")
+    if quest.get("kind") == "delivery":
+        lines.append(f"    the job: carry {quest['cargo']} to "
+                     f"{quest['dest_name']} ({quest['days']} day(s) on the "
+                     f"road) -- expect ONE interception en route; arriving "
+                     f"is the turn-in")
+        r = quest.get("recipient")
+        if r:
+            traits = "; ".join(f"{k}: {v}" for k, v in r["traits"].items())
+            lines.append(f"    recipient: {r['name']}, {r['role']} "
+                         f"({r['race']} {r['sex']}, age {r['age']}; "
+                         f"{traits})")
+        return lines
     for i, s in enumerate(quest["sites"]):
         cur = quest["next"]
         for j, (rname, kinds) in enumerate(s["rooms"]):

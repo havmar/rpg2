@@ -88,11 +88,14 @@ a pointer: what the file is, how it's run, where its docs are.
   questions.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and rests, progression,
-  economy, random party generation, and the batch-sim policies
+  economy, random party generation, the placeholder magic layer
+  (2026-07-14: wizards, bolts, schools, school proficiency — rules.md's
+  Placeholder Magic add-on), and the batch-sim policies
   (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
   everything else imports it. All tunable constants sit at the top.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
-  `make_foe` — six monster families plus the humanoid ladder, every row
+  `make_foe` — six monster families plus the humanoid ladder and, since
+  2026-07-14, the three caster rows (hexer/pyromancer/magus), every row
   bench-calibrated; `make_foe(display=...)` is the reskin hook), the two
   set sites (`SITES`: the bandit **hideout** = the starter, level 1; the
   skeleton **barrow** = the tough site, level 3; room layouts in
@@ -112,8 +115,11 @@ a pointer: what the file is, how it's run, where its docs are.
   XP coverage to the level cap — which since 2026-07-12 also attaches a
   generated giver face to every quest (`attach_giver`) and casts each
   land's three persistent notables (`RULER_TITLES` / `SAGE_ROLES` /
-  `WILDCARD_ROLES`, `world["npcs"]`). `python quests.py [--seed N]
-  [--demo]` prints a generated world's board and cast.
+  `WILDCARD_ROLES`, `world["npcs"]`). Since 2026-07-14 also the
+  cross-land deliveries (`DELIVERY_TEMPLATES`, `build_delivery_quest`,
+  `_post_delivery` — the site-less courier kind, two per world; rules.md's
+  Quest System add-on, "Cross-land deliveries"). `python quests.py
+  [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Four aggressor
   variants (elf/goblin/human/orc — content dicts at the top: creeds,
@@ -288,7 +294,11 @@ mechanic *does* and *why* is rules.md's job.
   penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
   `streak_multiplier` — consecutive same-site encounters without a camp
   pay rising XP; a full one-go run collects exactly the encounter share;
-  2.0 since 2026-07-10: x1/x3/x5 across three rooms), the tavern night
+  2.0 since 2026-07-10: x1/x3/x5 across three rooms), placeholder magic
+  (2026-07-14: `BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`,
+  `ICE_DEX_DEBUFF`, `WIZARD_STAFF_CHANCE`; the delivery pay knobs
+  `DELIVERY_GOLD_PER_DAY` / `DELIVERY_XP_PER_DAY` /
+  `DELIVERIES_PER_WORLD` sit at the top of quests.py), the tavern night
   (`TAVERN_COST_PER_HERO`, `TAVERN_OVERCHARGE` — the one-day above-max
   HP/STA edge; `recover()` is the clamp that makes the excess spent-only),
   and the party-size counterweights
@@ -357,8 +367,9 @@ mechanic *does* and *why* is rules.md's job.
   post-fight morale pass knows who died in *this* fight.
 - **The log** — `CombatLog` (full + `.player` levels; `_debug` / `_play`
   emit helpers so plain lists still work).
-- **Content** — `sites.py`: `FOES` (the bestiary: 22 stat blocks — six
-  monster families + the humanoid ladder — each row with a bench-calibrated
+- **Content** — `sites.py`: `FOES` (the bestiary: 25 stat blocks — six
+  monster families + the humanoid ladder + the three casters — each row
+  with a bench-calibrated
   `level` annotation, `ref_pack`, and for the drilled soldiery a `training`
   rank), `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
   `make_foe` (+ the `display` reskin hook), `SITES`, `HIDEOUT_ROOMS` /
@@ -379,6 +390,27 @@ mechanic *does* and *why* is rules.md's job.
   `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
   `done_day` stamp in `advance_quest`, the boss-name spawn in `cmd_room`,
   `cmd_chatter` + `CHATTER_PROMPTS`.
+- **Placeholder magic** (2026-07-14) — `rpg.py`: the constants block
+  (`BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`, `ICE_DEX_DEBUFF`,
+  `WIZARD_STAFF_CHANCE`), `Entity.school` / `dex_debuff` /
+  `casting_next` / `school_prof` / `bolt_severity_mods`, the bolt branch
+  in `_attack` + `pressure(bolt=...)` (stat swap to POWER, the `chilled`
+  term), `_clear_frost` (fight end / clean escape /
+  `refresh_foes_after_retreat`), the wizard roll in `make_human`,
+  `train_school`, and the school branches in `develop_hero` /
+  `autospend_points`. `sites.py`: `FoeSpec.school` / `school_prof` + the
+  hexer/pyromancer/magus rows and the roster tag. `quests.py`:
+  `CASTER_POOL` — one contained caster template per race (NOT the warband
+  ladder; see rules.md on the career collapse that decided it) plus the
+  "Renegade Magus" epic. `session.py`: `train HERO magic`, the levelup
+  menu's school sink.
+- **Cross-land deliveries** (2026-07-14) — `quests.py`:
+  `DELIVERY_TEMPLATES` / `build_delivery_quest` / `_post_delivery` and
+  the kind-aware readout helpers. `session.py`: `active_delivery` /
+  `deliver_if_arrived` (called at travel arrivals, in `finish_encounter`,
+  and after a retreat's clean escape), the forced interception in
+  `cmd_travel`, and the delivery guards in take/room/status/sheet/
+  opening-hook/board-rumors.
 - **The world & navigation** (2026-07-09) — `quests.py`: `lands` (race ->
   settlements; the map IS this grouping, no coordinates), `wild_pool`
   (what roams a land = the union of its race's template pools),
@@ -782,6 +814,86 @@ tails lived:
   start refactor cannot move a bench by construction — only the
   `make_human` budget could, and the numbers above say it barely did.
 
+**Measured numbers (2026-07-14, placeholder magic + cross-land
+deliveries).** `make_human` now rolls a WIZARD on 24% of characters
+(POWER strictly highest; measured over 20k rolls), so every seeded stream
+shifted AND a genuinely new hero shape entered every sim. The suite was
+re-run THREE times this session, and the middle runs did real work:
+
+- **Run 1 caught a scaling break.** With the growing Power pool doubling
+  as the bolt's attack stat, high-level reference wizards cast at +17-up
+  and every top-band row drifted 5-9 points easier (dragon 89 -> 94.6,
+  troll 94 -> 98). Fixed the same day: `Entity.power_stat` pins a
+  wizard's aim at creation POWER — pool growth deepens the AMMO, never
+  the aim (the 1-20 doctrine holds for wizards too).
+- **Run 2 caught a content break.** The first caster rows measured
+  toothless (97-100% duo win two levels UNDER their annotations); after
+  re-statting them into the catalog band, sitting in `LADDER_POOL` they
+  appeared in 46-77% of ALL warband rooms and the career curve COLLAPSED
+  (reach-L11 47% -> 16%, capped 7.5% -> 3%). Attribution probes (200
+  careers each): wizard HEROES alone ≈ baseline (L11 45%) — the collapse
+  was caster foes saturating the most common content. Rooms measured
+  fine at level; SITES dropped 15-25 points mid-band — ranged chip
+  bleeds a duo across chained rooms even when each room is fair.
+- **The shipped shape: casters are contained content.** One caster quest
+  per race + the Renegade Magus capital epic, out of the warband pool
+  entirely (rules.md, Enemy casters). Final numbers below.
+
+The tuned game, final (run 3 where worldgen matters, run 2 elsewhere):
+
+- **Hideout** (rank 0, 10k): clear **77.7** / wipe **19.7** (was
+  74.1/22.8); reckless wipe **84.5** (was 86.9). **Barrow** `[3,3,4]`:
+  clear **20.3** / wipe **76.0** (was 17.0/79.6), reckless 99.5.
+  Cleared-run HP-lost spread 17/58/22/3 and 23/58/17/3 — the middle
+  holds. A wizard in the party is a mild net buff at the low band.
+- **Training ladder** (5k/rank): barrow **20 -> 52 -> 80 -> 96**, hideout
+  **78 -> 95 -> 99 -> 99.9** (was 17/45/76/94 and 74/93/99/99.9) — a rank
+  still reads as a rank.
+- **Party size** (5k/size): hideout **17 / 78 / 98 / 99.8**, barrow
+  **0.8 / 20 / 67 / 94** (was 17/74/97/99.5 and 0.8/17/58/88) — numbers
+  still dominate, and the 3-4-size columns rose a few points (more
+  bodies = more wizard rolls).
+- **Weapons matrix**: the story is intact — zweihander best duel on
+  precise/steady, katana on powerful/balanced, zweihander owns every
+  swarm column, staff trails, no weapon tops every cell (the frames are
+  fixed non-casters, so magic can't touch this bench by construction).
+- **Bestiary**: the monster families drifted UP +1-6 even after the pin
+  (skeleton 95 was 89, wolf 91, troll 97, dragon 91) — a wizard in the
+  reference duo is a real buff against low-soak and undead rows (fire
+  bolts ignore the caster's STR, never test steel, and never tire the
+  arm the way the swing budget bites vs tireless bones). The elite
+  ladder held (champion 72, blademaster 64.5, warlord 59). **New rows,
+  bench-annotated:** hexer **81** at L3 (its -2 column 28 — a real
+  wall), pyromancer **89** at L6 (-2: 75), magus **91** solo at L10
+  (-2: 75) — calibrated by an 800-trial probe sweep (dex/power/
+  school_prof), landed inside the band on the 2k-trial bench.
+- **Generated content** (300/cell): at-level rooms win **69-99** across
+  1-20; at-level sites **~90-92 at L1-3** sliding to **~37-54 at
+  15-20**. The caster quests are the new hard -2s at the LOW band
+  (site clear-2 41-49 at L3-5): grinding two-below into a coven is the
+  one below-level pick that still bites.
+- **Careers** (200): reach **L5 80% / L8 54% / L11 30% / L14 14% /
+  L20 4.5%**, median death **L8**, capped median 168 days / 38 quests —
+  **HARDER than 2026-07-13's 80/74/47/22/7.5, median L10. This is the
+  flag for the designer.** Attribution is clean: pinned wizard heroes
+  cost ~nothing (the no-caster probe reads L11 45%); the residual is
+  the caster quests themselves (~1 in 5 board quests), which the career
+  sim walks into blind at its grind-2-below policy. A PLAYER reads "2x
+  Mist-Singer" on the quest detail and preps, skips, or punches at
+  level — exactly the sims-understate-the-player gap, but it is wide
+  here. Levers if play agrees it's too hot, in ascending disruption: a
+  posting-weight knob for caster templates, `school_prof` 2 -> 1 on the
+  hexer/pyromancer rows (drops them a band), floor caster templates at
+  L4+ so the fresh-party band never meets them. Levers untouched this
+  session — feel it in play first.
+- **What the batch changes in PLAYED games beyond the sims**: a quarter
+  of rolled characters (PC included) are wizards whose skill points want
+  the school lane; enemy casters are board-legible set pieces; and
+  deliveries add a no-combat income lane (2/world, 40g + 50 XP the
+  standard cross-land run) whose guaranteed interception rolls the road
+  table. The career sim skips deliveries (no travel layer), so career
+  numbers carry no delivery income.
+
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
 budget knobs (`quests.ROOM_SHARES`, `PACK_CAP`, `DUP_COST` — these move
@@ -831,10 +943,11 @@ straight, pay scaling with them — and **the party itself is player choice
 now** (2026-07-11): who to pick, who to hire, whose patience to spend, when
 to buy it back with a tavern night or a downtime day. The mid-fight layer
 exists too: the pause (drink / Berserk / War-Breath / retreat & chase, with
-fled rooms persisting). **Next up: the story layer over the board** (see
-`plan.md`) — the mundane-conqueror questline as the authored difficulty
-spine, then progression frames (guilds, the legendary smith). After that:
-magic/INT, armor (note the designer's lean: probably never important),
-guns + ammo, named weapon instances — and the career sim's finding that
-the 14-20 band lacks its player power until masterwork/magic land. See
-plan.md for the full roadmap and the parked-ideas list.
+fled rooms persisting). **Placeholder magic is in (2026-07-14)** — wizards from
+level 1 (POWER-highest, fire/ice bolts, school proficiency, the caster
+bestiary rows) and **cross-land deliveries** send the party travelling.
+Next: the FULL magic/INT layer (stat transcendence, the wraith), armor
+(note the designer's lean: probably never important), guns + ammo, named
+weapon instances — and the career sim's finding that the 14-20 band lacks
+its player power until masterwork/magic land. See plan.md for the full
+roadmap and the parked-ideas list.
