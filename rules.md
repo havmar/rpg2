@@ -118,8 +118,9 @@ encounters are **never** rebalanced to the head count. Numbers are a real
 advantage (they should be: recruiting a companion must be worth something),
 but a raw one is enormous -- action economy compounds (N heroes deal N times
 the damage *and* spread the incoming across N pools), so an untreated
-four-hero party trivializes duo content (measured: the rank-0 hideout clears
-~15% solo, ~64% duo, ~93% trio, ~99% four-up). Three quiet counterweights
+four-hero party trivializes duo content (measured 2026-07-13: the rank-0
+hideout clears
+~17% solo, ~74% duo, ~97% trio, ~99% four-up). Three quiet counterweights
 drag on numbers instead of any per-size tuning:
 
 1. **Income is flat.** The purse is shared and quests pay fixed gold (four
@@ -1188,12 +1189,12 @@ The veteran-vs-novice axis: *"you know how to fight."*
 - **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
   level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
   level 11, rank 5 at level 16. Cheap to start, expensive to max.
-- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-11 after
-  the mid-fight heal + kit): the skeleton barrow (tough site) clears
-  **19% → 47% → 74% → 93%** across ranks 0–3 (a rank-0 duo still wipes ~3
-  times in 4 — a fresh party should not be there); the bandit hideout
-  (starter) clears **72% → 91% → 98% → 99.8%**
-  (rank-0 wipe ~25%). Each rank is a *felt* jump — the progression test
+- **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-13 after
+  the fixed stat budget): the skeleton barrow (tough site) clears
+  **17% → 45% → 76% → 94%** across ranks 0–3 (a rank-0 duo still wipes ~4
+  times in 5 — a fresh party should not be there); the bandit hideout
+  (starter) clears **74% → 93% → 99% → 99.9%**
+  (rank-0 wipe ~23%). Each rank is a *felt* jump — the progression test
   criterion —
   and gear stacks on top. (History: 3/17/44/74 and 64/86/96/99 at the
   2026-07-06 measure; the 2026-07-09 pain regear and the 2026-07-11 heal

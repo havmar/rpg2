@@ -735,6 +735,53 @@ pinned levels 2/5/8/10** on top of the world's ~27k — rich by design
 (punching at level in multi-site quests); watch in play whether pressing
 the war front-loads leveling too hard.
 
+**Measured numbers (2026-07-13, the streamlining & QoL batch: fixed-budget
+stats + generated PC start + recruit-on-request + companion autolevel +
+wave gating + phone wrapping).** The one sim-visible change is
+`make_human`: independent stat rolls became a FIXED 9-point surplus budget
+dealt by a shuffled priority order (equal totals, different shapes — the
+recruiting-comparison fix; racial floors stay net extras). Every seeded
+stream shifted AND the hero distribution genuinely changed (no more
+god-rolls or gutter-rolls), so the full suite was re-run. **The tuned game
+is essentially UNDISTURBED** — variance narrowed exactly where the old
+tails lived:
+
+- **Hideout** (rank 0, 10k): clear **74.1** / wipe **22.8** / Down ~33
+  (was 73.6/23.2/~35). **Barrow** `[3,3,4]`: clear **17.0** / wipe
+  **79.6** (was 19.2/77.3). Cleared-run HP-lost spread 16/57/24/3 and
+  22/55/20/2 — the middle holds. **Reckless wipe rose to 86.9 hideout /
+  99.6 barrow** (was 81.2/98.6): with god-rolled parties gone, ignoring
+  resources has even fewer lucky escapes — "not using resources mostly
+  means death" is at its strongest measure yet (a 64-point survival gap).
+- **Training ladder** (5k/rank): barrow **17 -> 45 -> 76 -> 94**, hideout
+  **74 -> 93 -> 99 -> 99.9** (was 19/47/74/93 and 72/91/98/99.8) — a rank
+  still reads as a rank.
+- **Party size** (5k/size): hideout **17 / 74 / 97 / 99.5**, barrow
+  **0.8 / 17 / 58 / 88** (was 20/72/96/99 and 1.5/19/60/88) — numbers
+  still dominate; note the SOLO columns dropped a few points (the budget
+  means no solo hero rolls hot everywhere, which is fine: the generated PC
+  now always has a companion).
+- **Weapons matrix**: the story is intact — zweihander best duel on
+  precise/steady, katana on powerful/balanced, zweihander owns every
+  swarm column, staff trails, no weapon tops every cell.
+- **Bestiary**: low-band packs drifted up a few points (archer 97,
+  cutthroat 90, wolf 88, skeleton 89, dire wolf 97.5, soldier 94, ghoul
+  96, troll 94, wight 91), the top band held (champion 73, blademaster
+  66, dragon 89, warlord 61); ordering intact. The parked re-annotation
+  pass remains due when the numbers next feel mushy in play.
+- **Generated content** (300/cell): at-level rooms win **68-99** across
+  1-20; at-level sites clear **~93 at L1-5** sliding to **~38-52 at
+  15-20**; the -2 columns 35-85 — same shape as 2026-07-11b.
+- **Careers** (200): reach **L5 80% / L8 74% / L11 47% / L14 22% /
+  L20 7.5%**, median death **L10**, capped career median 160 days / 39
+  quests (was 77/68/50/26/12.5, median L9 — within noise at n=200).
+- **What the batch changes in PLAYED games, not sims**: the sims pass no
+  standing-orders callback, never set `protagonist`, and use `rpg.
+  make_party` (no races/traits), so recruit-on-request, autolevel (the
+  sims' own `train_combat` policy is unchanged), the wave gate, and the
+  start refactor cannot move a bench by construction — only the
+  `make_human` budget could, and the numbers above say it barely did.
+
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
 budget knobs (`quests.ROOM_SHARES`, `PACK_CAP`, `DUP_COST` — these move
