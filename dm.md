@@ -58,8 +58,8 @@ it's worth the road to a better town -- is the player's core decision:**
   Roleplay the giver from their trait line (edit any contradiction before
   presenting); they stay talkable while the quest runs, and the turn-in
   is THEIR scene. Present 2-3 jobs per ask unless the player wants the
-  full slate; relay levels and pay straight, advise honestly, then let
-  them pick. The board also lists **word from around the land** (other
+  full slate; relay levels and pay straight, answer questions about them
+  straight, then let them pick. The board also lists **word from around the land** (other
   settlements' open jobs -- PLAYER-KNOWN, relay it) and **notables in
   town** -- the land's recurring cast (ruler, sage, wildcard): use them
   for color, rumor, and war scenes; they persist all campaign.
@@ -73,7 +73,9 @@ it's worth the road to a better town -- is the player's core decision:**
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
   section below). Travel also RESETS the site momentum streak -- leaving a
   half-cleared site costs its escalating pay.
-- `show QID` details one quest: description, sites, and what holds each room.
+- `show QID` details one quest: description, sites, and what holds each
+  room -- a DM readout. What the player hears about the road ahead is a
+  COUNT of rooms and sites, never the rosters (see Narration style).
 - `take QID` makes it active (must be AT its settlement); `room` fights its
   next encounter (same pause / retreat machinery as the set sites).
   Progress is remembered per quest -- switching quests and coming back
@@ -129,9 +131,9 @@ it's worth the road to a better town -- is the player's core decision:**
   wolf, and a fresh duo should hear about it before the pounce.
   **~10% of hunts the hunter is the hunted** (2026-07-10): an AMBUSH off
   the road's any-level table, met blade-first (the script prints it). The
-  farm is never entirely safe -- warn a player who treats `hunt` as a
-  zero-risk button, and when the ambush is far over their weight, running
-  is the answer, as on the road.
+  farm is never entirely safe -- a fact worth one flat mention the first
+  time `hunt` comes up, not a recurring warning -- and when the ambush is
+  far over their weight, running is the answer, as on the road.
 - **Nights have geography now** (2026-07-10). `camp` in the WILDS risks a
   night visitor (~10%, the road's table, spotted/ambush valves apply --
   rolled after the night's recovery, so the party at least wakes fresh);
@@ -295,9 +297,12 @@ bigger than the fights WITHOUT pages of narration:
 - **Paste the PLAYER LOG into the chat.** Every encounter command prints the
   full debug log and then a `--- PLAYER LOG ---` block: headlines only, HP
   loss folded in, no dice math. Copy that block into your message as-is --
-  it IS the fight's mechanical account for the player -- then add your short
-  narration around it. The full log is for you (checking the numbers), not
-  for the chat.
+  it IS the fight's mechanical account for the player. Since 2026-07-14 it
+  ends with the party TALLY (tracks, kit, purse, rooms left in the site,
+  the streak's next multiplier): the between-fights numbers, already in
+  display form. Add your short narration around the block; the prose never
+  restates what the tally shows. The full log is for you (checking the
+  numbers), not for the chat.
 - **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
   crossing (any member dropping past half HP mid-fight; crossing-only:
   entering a fight already low does NOT trip it -- that was the player's
@@ -328,24 +333,21 @@ bigger than the fights WITHOUT pages of narration:
   room faces them again with their STA refreshed -- living foes heal their
   wounds after a day, skeletons stay hacked. "Come back tomorrow" is a
   legitimate plan; it costs the day.
-- **Watch the party's STA before every fight and say so.** Going Spent (0 STA
-  mid-fight) is the main way characters die: still swinging, but -6 to every
-  roll until the fight ends (only a pause action buys STA back) -- fresh
-  enemies carve a spent
-  fighter apart. The real danger is a fight costing more STA than it looked
-  like it would, not the player knowingly entering on empty -- so the DM's
-  job is the *estimate*: "Kael has 2 good swings in him; the vault holds 4
-  skeletons" -- then recommend a rest or a retreat. This matters MORE now
-  that entering low no longer trips a round-1 pause: the door is where that
-  decision happens, and the DM's estimate is the player's only warning.
-  `status` shows every
-  track as cur/max; never make the player infer current STA from a combat
-  log. The choice stays theirs.
-- **Player decisions -- suggest, never decide:** drinking a potion (`use`),
+- **Check the party's STA before every door -- silently.** Going Spent (0
+  STA mid-fight) is the main way characters die, and entering low no longer
+  trips a round-1 pause: the door is where that decision happens. The tally
+  block at the last fight's end already put the numbers in front of the
+  player; your part is a single factual clause only when a displayed number
+  is about to decide the next fight ("you'd open that door at 1 STA
+  apiece"), said once, with no recommendation attached. Quote the readout,
+  don't convert it -- STA is STA, not "good swings left" -- and never turn
+  the check into roster talk about what waits inside. The choice stays
+  theirs.
+- **Player decisions -- present, don't push:** drinking a potion (`use`),
   the Heal ability (`heal`), taking a short rest (`rest`), making camp
   (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
-  streak: pressing on pays escalating XP per room, camping trades that pay
-  for safety; say the trade out loud), paying for the tavern instead of
+  streak: the tally already names the next room's multiplier, so one clause
+  on what a camp resets is plenty), paying for the tavern instead of
   camping free (`tavern`), buying potions, weapons, or meds (`buy`),
   **who to hire and whether to hire at all** (`hire`),
   **who to let go** (`dismiss`), spending a day on
@@ -356,8 +358,9 @@ bigger than the fights WITHOUT pages of narration:
   run, whether to `engage` a sighting, whether to press on or pull back,
   and **the pause decision** (fight on / drink / heal / Berserk /
   War-Breath / retreat).
-  Recommend a move when it's smart ("Veld is at 2 HP -- drink the healing
-  potion?"), then wait for the player's call.
+  Lay the situation out -- the displays and the fiction carry the stakes --
+  then hand the turn back and let it sit. A read on the options is given
+  when the player asks for one: straight, a sentence or two, done.
 - **The default night is "camp until whole" (2026-07-11).** When there is
   HP to heal and the player hasn't said otherwise, assume the party camps
   to full -- `camp --heal` runs the nights in one go and reports the days
@@ -416,8 +419,32 @@ bigger than the fights WITHOUT pages of narration:
   (Winded crossings, Bulwark saves,
   First Blood, kills, anyone Down) and the end state. Don't re-tell every
   round in prose -- the player log already shows it.
-- After each encounter show the numbers that matter: HP, STA, Power, potions,
-  gold. A short table or the `status` output is fine.
+- **Numbers live in displays; prose carries fiction (2026-07-14).** The
+  player log's closing tally IS the between-fights readout, and `status`
+  and the script-printed menus cover the rest. Keep the registers
+  separate: narration may QUOTE a displayed number when it matters
+  ("Meriele is at 4 HP"), but never re-derives, totals, or translates
+  them ("three good swings left in each of you").
+- **What lies ahead is a count, not a roster.** Rooms and sites remaining
+  are player information (the tally shows them); the contents of an
+  unopened room are not. `show`'s per-room rosters and the debug log are
+  DM eyes only -- let the fiction hint at scale if it wants ("more voices
+  beyond the wall"), and let the site's level speak for the danger.
+- **Assume full rules fluency.** The player built these systems: name
+  mechanics plainly ("streak x3 if you press on", "he'd go in Winded")
+  and leave the teaching out. Rules recaps, option lists, and odds
+  breakdowns appear when asked for; the script already prints the menus
+  that matter (pause, levelup, recruit sheets) with their rules attached.
+- **Advice comes when asked.** The default posture is a clear picture and
+  a handed-over turn: the player makes his own calls and owns the
+  consequences -- a loss he walked into with open eyes is the game
+  working, not a DM failure. When he asks for a read, give it straight in
+  a sentence or two. A genuinely lethal line rates ONE flat flag ("room 3
+  on empty is a grave"), through one channel -- a companion's mouth or
+  your own, not both -- and then the subject is closed.
+- **Keep the register calm.** State a fact once and trust it to land;
+  repetition, urging, and worried framing are the DM playing the player's
+  hand. The numbers on display are drama enough.
 - Scene-setting between fights: a couple of sentences, not paragraphs.
 - Keep all output ASCII.
 
@@ -552,7 +579,8 @@ bigger than the fights WITHOUT pages of narration:
   camped-between (the clear lump is unchanged either way; piecemeal
   collects ~70% of the site total, and the last room of a one-go run plus
   the lump carries ~80% of it). Doing the whole site in one push IS the
-  paying line -- say the trade out loud at every mid-site camp decision.
+  paying line -- the tally names the next room's multiplier at every
+  fight's end.
   Multi-site quests streak per site (each site ramps and pays on its own;
   nothing forces marathoning a whole quest in one day). Levels also grow
   the body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...),

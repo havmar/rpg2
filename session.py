@@ -82,6 +82,7 @@ from rpg import (
     adjust_satisfaction, satisfaction_after_fight,
     stat_line, progress_line, fallen_weapons_line,
     xp_to_next, site_encounter_xp, site_clear_xp, site_gold,
+    streak_multiplier,
     start_fight, group_combat, party_wiped,
     attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
@@ -516,6 +517,53 @@ def print_combat(log: CombatLog) -> None:
         print()
         print("--- PLAYER LOG (paste into chat as-is) ---")
         print("\n".join(log.player))
+
+
+def tally_lines(state: dict) -> list[str]:
+    """The standard after-the-fight DISPLAY block, appended to every
+    encounter's player log: the party's tracks and kit, the purse, the
+    day's rests, and -- for an active site -- how many rooms are LEFT
+    plus the streak's next multiplier. The numbers are SHOWN here so the
+    DM's prose never has to carry them (dm.md, narration style); ahead of
+    the party it gives a count only, never a roster -- upcoming room
+    contents are DM eyes only."""
+    party, clock, purse = state["party"], state["clock"], state["purse"]
+    lines = ["", "-- the party --"]
+    for h in party:
+        if h.dead:
+            continue
+        tag = " [DOWN]" if h.down else ""
+        kit = ", ".join(f"{k} x{v}" for k, v in h.items.items() if v)
+        lines.append(f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp}  "
+                     f"STA {h.cur_sta}/{h.sta}  "
+                     f"Power {h.cur_power}/{h.power}{tag}")
+        lines.append(f"  ({kit or 'no kit'})")
+    lines.append(f"Purse {purse.gold}g; {clock.short_rests_left} short "
+                 f"rest(s) left today.")
+    qid = state.get("active_quest")
+    world = state.get("world")
+    if qid and world:
+        q = world["quests"][qid]
+        if q["status"] == "open" and q.get("kind") != "delivery":
+            cur = q["next"]
+            s = q["sites"][cur["site"]]
+            left = len(s["rooms"]) - cur["room"]
+            sites_after = len(q["sites"]) - cur["site"] - 1
+            ahead = f"Ahead: {left} room(s) in {s['name']}"
+            if sites_after:
+                ahead += f", then {sites_after} more site(s)"
+            site_key = f"{qid}/s{cur['site'] + 1}"
+            mult = streak_multiplier(streak_pos_for(state, site_key))
+            lines.append(f"{ahead}; the next pays x{mult:g}.")
+    return lines
+
+
+def append_tally(state: dict, log: CombatLog) -> None:
+    """Close a survived encounter's player log with the tally block."""
+    party = state["party"]
+    if party and not party[0].dead:
+        for line in tally_lines(state):
+            log.append(line)
 
 
 def require_no_pending(state: dict) -> bool:
@@ -1306,6 +1354,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         deliver_if_arrived(state, log)
         # (War news no longer arrives at fight's end -- it waits for the
         # next settlement scene: board, arrival, tavern, downtime.)
+        append_tally(state, log)
     print_combat(log)
     save(state)
     if (not wiped and pc is not None and not pc.dead
@@ -2009,6 +2058,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             # Fleeing the delivery's interception doesn't un-deliver: if the
             # party stands at the destination, the hand-off happens.
             deliver_if_arrived(state, log)
+            append_tally(state, log)
         print_combat(log)
         save(state)
         report_game_over(party, wiped)
