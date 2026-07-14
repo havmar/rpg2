@@ -20,9 +20,9 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": true,
-   "hp": 11,
-   "cur_sta": 3,
-   "cur_power": 2,
+   "hp": 7,
+   "cur_sta": 1,
+   "cur_power": 0,
    "power_stat": 4,
    "dex_debuff": 0,
    "down": false,
@@ -34,7 +34,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 8,
+   "xp": 30,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -76,9 +76,9 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 10,
-   "cur_sta": 3,
-   "cur_power": 2,
+   "hp": 8,
+   "cur_sta": 1,
+   "cur_power": 0,
    "power_stat": 4,
    "dex_debuff": 0,
    "down": false,
@@ -90,7 +90,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 8,
+   "xp": 30,
    "skill_points": 0,
    "training": 0,
    "weapon": "light hammer",
@@ -120,7 +120,7 @@
  "purse": {
   "gold": 0
  },
- "foe_count": 1,
+ "foe_count": 2,
  "active_quest": "q06",
  "world": {
   "seed": 593864485,
@@ -635,7 +635,7 @@
     ],
     "next": {
      "site": 0,
-     "room": 1
+     "room": 2
     },
     "status": "open",
     "epilogue": "The night crews walk home unescorted; the rival boss's tower stands quiet -- under new management within the week.",
@@ -2861,7 +2861,7 @@
  "sighting": null,
  "streak": {
   "site": "q06/s1",
-  "count": 1
+  "count": 2
  },
  "site_clears": {},
  "recruits": null,
@@ -3494,7 +3494,7 @@
    1030930235,
    372672511,
    1106959260,
-   247
+   319
   ],
   null
  ]
