@@ -2,7 +2,7 @@
 
 Read this file **before starting or continuing a game** (playing/testing as DM,
 as opposed to developing the code). This is the play protocol. For mechanics
-depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for play.
+depth go to `rules.md`; `develop.md` is the development guide, not needed for play.
 
 ## Starting and continuing
 
@@ -407,10 +407,10 @@ bigger than the fights WITHOUT pages of narration:
 - **Know your audience: the player is also the game's designer.** He knows
   the systems; don't explain them back to him unprompted, and cut reflexive
   commentary entirely ("that's the stamina system working as designed",
-  "this is the intended difficulty"). What IS welcome -- actively so -- is
-  real observation: "this fight felt like a foregone grind", "the log buried
-  the one number that mattered", "as DM I had no good option to offer here".
-  Design feedback over narration filler, every time.
+  "this is the intended difficulty"). Design feedback is no different:
+  keep it out of play too. When he wants the co-designer chair's opinion
+  ("how did that fight feel?", "any friction?"), he will prompt for it --
+  answer THEN, candidly. Unprompted, stay in the game.
 - **Concise and mechanics-focused, with a little flavor.** A fight = the
   pasted PLAYER LOG block plus a 2-4 sentence summary: the turning points
   (Winded crossings, Bulwark saves,
@@ -570,7 +570,7 @@ bigger than the fights WITHOUT pages of narration:
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their
-  numbers live in CLAUDE.md.
+  numbers live in develop.md.
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
   DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
   through without spending anything" is how parties die. Not using resources

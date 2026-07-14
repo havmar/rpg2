@@ -2,7 +2,7 @@
 
 rpg.py's primitives (start_fight, group_combat, short_rest, long_rest, ...)
 are meant to be called on purpose, in whatever order the story wants (see
-CLAUDE.md, "The feel we're going for"). But each terminal call is a fresh
+develop.md, "The feel we're going for"). But each terminal call is a fresh
 Python process, so something has to hold party/clock/purse state *between*
 calls. That's all this file does: a thin CLI over rpg.py's functions,
 sites.py's content, and quests.py's generated world, with state written to

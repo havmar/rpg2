@@ -382,7 +382,7 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 # SHORT rests -- each ~ an hour or two of narrative time -- between fights; when
 # those run out there is no more mid-day recovery and the party must make camp
 # for a LONG rest (overnight). Nothing forces the day's end: long_rest() is a
-# function Claude calls on purpose (see the module docstring / CLAUDE.md), never
+# function Claude calls on purpose (see the module docstring / develop.md), never
 # automatic. A long rest recharges STA and Power fully and knits HP back at a
 # per-character weekly rate (~max_hp / 7 per night -> roughly a week to heal).
 SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
@@ -2781,7 +2781,7 @@ def party_wiped(party: list[Entity], log: list[str]) -> bool:
 
 
 # The batch sims' pause policy. Crude thresholds on purpose -- the sims
-# UNDERSTATE the player (see CLAUDE.md "Balance / tuning"): a real player
+# UNDERSTATE the player (see develop.md "Balance / tuning"): a real player
 # reads the whole board at a pause; this reads one number per crossing.
 SIM_MAX_ROOM_ATTEMPTS = 2   # a fled room gets ONE return trip in the sims,
                             # then the run is abandoned (a determined but
