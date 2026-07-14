@@ -86,6 +86,12 @@ class FoeSpec:
     school: str = ""        # placeholder magic: "fire"/"ice" makes the row
                             # a caster -- bolts while the power lasts, then
                             # the carried weapon (rpg.Entity.school)
+    school_prof: int = 0    # the caster row's school proficiency rank (+1
+                            # bolt pressure AND +1 bolt severity per rank)
+                            # -- the same ranks heroes drill, and the
+                            # severity lever enemy casters need (BOLT_SEVERITY
+                            # is global: buffing it would buff hero wizards
+                            # too)
     crowd_cap: int = CROWD_CAP  # attackers that can press it at once
                                 # (big monsters take 3-4: boss fights
                                 # stay full-party under the press)
@@ -195,14 +201,15 @@ FOES = {
     # bolts hit like heavy steel off a stat no wound slows as fast. The
     # magus is the solo tower fight: drilled, deep Power, real steel after.
     "hexer":      FoeSpec("Hexer",      level=3,  dex=4, str_=2, sta=6,
-                          hp=8,  ref_pack=2, pain=2, power=5, school="ice",
-                          weapon=WEAPONS["dagger"]),
+                          hp=10, ref_pack=2, pain=2, power=8, school="ice",
+                          school_prof=2, weapon=WEAPONS["dagger"]),
     "pyromancer": FoeSpec("Pyromancer", level=6,  dex=4, str_=2, sta=7,
-                          hp=11, ref_pack=2, pain=2, power=7, school="fire",
-                          weapon=WEAPONS["dagger"]),
-    "magus":      FoeSpec("Magus",      level=10, dex=5, str_=3, sta=8,
-                          hp=18, ref_pack=1, training=2, pain=2, power=9,
-                          school="fire", weapon=WEAPONS["longsword"]),
+                          hp=12, ref_pack=2, pain=2, power=8, school="fire",
+                          school_prof=2, weapon=WEAPONS["dagger"]),
+    "magus":      FoeSpec("Magus",      level=10, dex=6, str_=4, sta=9,
+                          hp=24, ref_pack=1, training=3, pain=2, power=11,
+                          school="fire", school_prof=3,
+                          weapon=WEAPONS["longsword"]),
     # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
     # broken on purpose (living foes teach the system; undead break it).
     # The skeleton: brittle and a weak individual hitter (low STR -> low
@@ -298,14 +305,17 @@ def make_foe(kind: str, n: int, rng: random.Random,
     (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
-    return Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
-                  sta=spec.sta, max_hp=spec.hp, training=spec.training,
-                  undead=spec.undead,
-                  pain=spec.pain, tireless=spec.tireless,
-                  pursues=spec.pursues, power=spec.power, school=spec.school,
-                  crowd_cap=spec.crowd_cap, regen=spec.regen,
-                  sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
-                  sweep_label=spec.sweep_label, weapon=weapon)
+    e = Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
+               sta=spec.sta, max_hp=spec.hp, training=spec.training,
+               undead=spec.undead,
+               pain=spec.pain, tireless=spec.tireless,
+               pursues=spec.pursues, power=spec.power, school=spec.school,
+               crowd_cap=spec.crowd_cap, regen=spec.regen,
+               sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
+               sweep_label=spec.sweep_label, weapon=weapon)
+    if spec.school and spec.school_prof:
+        e.proficiency[e.school_prof_key] = spec.school_prof
+    return e
 
 
 def roster_lines(foes: list[Entity]) -> list[str]:
@@ -328,7 +338,8 @@ def roster_lines(foes: list[Entity]) -> list[str]:
         if e.regen:
             tags.append(f"wounds knit +{e.regen}/round")
         if e.school:
-            tags.append(f"{e.school} magic, {e.power} Power")
+            prof = f" +{e.school_prof}" if e.school_prof else ""
+            tags.append(f"{e.school} magic{prof}, {e.power} Power")
         if e.sweep > 1:
             tags.append(e.sweep_label or "sweeping blows")
         tag = f"; {', '.join(tags)}" if tags else ""

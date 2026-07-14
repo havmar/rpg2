@@ -766,6 +766,17 @@ class Entity:
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
+    power_stat: int = field(default=0)  # the bolt's PRESSURE stat: creation
+                                         # POWER, pinned (0 = set from power
+                                         # in __post_init__). The 1-20
+                                         # doctrine holds for wizards too --
+                                         # stats are fixed at creation,
+                                         # levels grow the POOLS -- so pool
+                                         # growth deepens a wizard's ammo,
+                                         # never their aim (letting the
+                                         # growing pool double as the attack
+                                         # stat measurably broke the top
+                                         # band's calibration upward)
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
@@ -827,6 +838,8 @@ class Entity:
         self.hp = self.max_hp
         self.cur_sta = self.sta
         self.cur_power = self.power
+        if not self.power_stat:
+            self.power_stat = self.power
         # HP returns over ~a week. Derived from max_hp so a big pool doesn't take
         # forever (a flat 1/night would leave a 20-HP tank down for 20 nights).
         self.hp_regen_per_night = max(1, round(self.max_hp / 7))
@@ -964,7 +977,8 @@ class Entity:
         # The stat term: DEX for everything bodily, POWER for a bolt cast.
         # Frost (landed ice bolts) slows the BODY: it drags every DEX-based
         # roll, never a bolt's POWER roll, and can't push the term below 0.
-        stat, stat_label = (self.power, "POWER") if bolt else (self.dex, "DEX")
+        stat, stat_label = ((self.power_stat, "POWER") if bolt
+                            else (self.dex, "DEX"))
         chill = 0 if bolt else min(self.dex, self.dex_debuff)
         total = (dice + stat - chill + self.training + weapon_mod + prof
                  + armor + misc - pen - fatigue_pen)

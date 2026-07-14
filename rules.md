@@ -1290,11 +1290,15 @@ casting left.
   designer's double-stamina question, settled 2026-07-14). Winded/Spent
   drag casting rolls like everything else, and a parried cast still burns
   its Power.
-- **Attack pressure = 2d6 + POWER + training + school proficiency.** The
-  weapon's attack bonus stays out of it. (Watch item: pool growth — +1
-  Power per 2 levels — therefore grows a wizard's *attack stat* with
-  level, unlike a fighter's creation-fixed DEX. Accepted for the
-  placeholder; the benches carry it.)
+- **Attack pressure = 2d6 + creation POWER + training + school
+  proficiency.** The weapon's attack bonus stays out of it, and the stat
+  is **pinned at its creation value** (`Entity.power_stat`): the 1-20
+  doctrine holds for wizards too — stats are fixed at creation, levels
+  grow the POOLS — so pool growth (+1 Power per 2 levels) deepens a
+  wizard's *ammo*, never their aim. (The first bench run let the growing
+  pool double as the attack stat: every top-band row's win rate drifted
+  up 5–9 points as high-level reference wizards hit at +17-and-up. Pinned
+  the same day.)
 - **Severity = margin + the school's flat − soak.** The caster's STR and
   weapon are out of it:
   - **Fire: +5** — the STR analogue: hits like a solid fighter swinging
