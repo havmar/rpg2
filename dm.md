@@ -407,10 +407,10 @@ bigger than the fights WITHOUT pages of narration:
 - **Know your audience: the player is also the game's designer.** He knows
   the systems; don't explain them back to him unprompted, and cut reflexive
   commentary entirely ("that's the stamina system working as designed",
-  "this is the intended difficulty"). What IS welcome -- actively so -- is
-  real observation: "this fight felt like a foregone grind", "the log buried
-  the one number that mattered", "as DM I had no good option to offer here".
-  Design feedback over narration filler, every time.
+  "this is the intended difficulty"). Design feedback is no different:
+  keep it out of play too. When he wants the co-designer chair's opinion
+  ("how did that fight feel?", "any friction?"), he will prompt for it --
+  answer THEN, candidly. Unprompted, stay in the game.
 - **Concise and mechanics-focused, with a little flavor.** A fight = the
   pasted PLAYER LOG block plus a 2-4 sentence summary: the turning points
   (Winded crossings, Bulwark saves,
