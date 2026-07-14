@@ -155,14 +155,25 @@ belongs at the end.
 
 **Foundations — do early, other items ride on them:**
 
-- **Full magic (item 2 above)** is the keystone: it unlocks magic ITEMS,
-  the wraith and the demon tier (and with them the apocalypse spine), and
-  the INT build. Most of the wishlist gets cheaper after it.
 - **The ranged combat model** — the engine has no distance or positioning,
   so "guns" is really two features: first the combat-model change (how
   shooting, closing, and being shot at work inside the abstract melee),
   then guns as content (item 4). Decide the model early — every later
-  enemy, weapon, and bench rides on it — and author ranged content after.
+  enemy, weapon, and bench rides on it, **and so do attack spells**
+  (designer, 2026-07-14): a firebolt, an arrow, and a musket shot are the
+  same fictional thing and must follow the same delivery rules, so the
+  ranged model precedes the full magic layer's attack-spell catalog. The
+  shipped placeholder bolts — which live inside the plain melee exchange —
+  are the live test case to migrate. Plausible cheap outcome: ranged as a
+  modifier layer on the existing exchange (an opening-volley phase,
+  closing rules — the parked weapon-reach idea points the same way)
+  rather than a distance sim, in which case bolts inherit it nearly for
+  free. Either way, decide before authoring the spell list.
+- **Full magic (item 2 above)** is the keystone: it unlocks magic ITEMS,
+  the wraith and the demon tier (and with them the apocalypse spine), and
+  the INT build. Most of the wishlist gets cheaper after it. Sequencing
+  inside it: the attack-spell catalog waits on the ranged model (above);
+  the INT/transcendence/skills half depends on nothing and can go first.
 - **The levelling framework (skills / abilities / moves / perks)** —
   decides what "player power" means, which is exactly the known 14-20
   gap; enemy and item authoring want to know its shape first.
