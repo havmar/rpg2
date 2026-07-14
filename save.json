@@ -21,7 +21,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 12,
-   "cur_sta": 7,
+   "cur_sta": 6,
    "cur_power": 4,
    "power_stat": 4,
    "dex_debuff": 0,
@@ -33,9 +33,9 @@
     "stamina": 1
    },
    "hp_regen_per_night": 2,
-   "level": 1,
-   "xp": 20,
-   "skill_points": 0,
+   "level": 2,
+   "xp": 0,
+   "skill_points": 1,
    "training": 0,
    "weapon": "flail",
    "weapon_broken": false,
@@ -76,8 +76,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 8,
-   "cur_sta": 6,
+   "hp": 2,
+   "cur_sta": 5,
    "cur_power": 5,
    "power_stat": 5,
    "dex_debuff": 0,
@@ -89,10 +89,10 @@
     "stamina": 0
    },
    "hp_regen_per_night": 1,
-   "level": 1,
-   "xp": 20,
+   "level": 2,
+   "xp": 0,
    "skill_points": 0,
-   "training": 0,
+   "training": 1,
    "weapon": "flail",
    "weapon_broken": false,
    "proficiency": {},
@@ -118,9 +118,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 5
+  "gold": 22
  },
- "foe_count": 2,
+ "foe_count": 3,
  "active_quest": "q36",
  "world": {
   "seed": 49887940,
@@ -2643,8 +2643,8 @@
      }
     ],
     "next": {
-     "site": 0,
-     "room": 2
+     "site": 1,
+     "room": 0
     },
     "status": "open",
     "epilogue": "The circle's ashes are scattered on running water; the clan's fire burns in one pit again, where it belongs.",
@@ -3497,7 +3497,7 @@
  "sighting": null,
  "streak": {
   "site": "q36/s1",
-  "count": 2
+  "count": 3
  },
  "site_clears": {},
  "recruits": null,
@@ -4130,7 +4130,7 @@
    225923578,
    699443231,
    3957125157,
-   242
+   289
   ],
   null
  ]
