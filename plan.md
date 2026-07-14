@@ -3,7 +3,7 @@
 What is left to build, in order. This file is **planned features only**:
 design principles (the design spine, the three currencies, tone, legibility)
 live in `rules.md`; the play protocol in `dm.md`; dev conventions and current
-balance numbers in `CLAUDE.md`. Anything already implemented is documented in
+balance numbers in `develop.md`. Anything already implemented is documented in
 `rules.md` and the code, not here — when a feature ships, delete it from this
 file rather than marking it done.
 
@@ -14,7 +14,7 @@ local boards, list-shaped lands, travel/explore/hunt/engage, the road's
 party-independent encounter table with the spotted/ambush valve, and with
 it the momentum-streak XP and the pain-2 spiral regear. Mechanics in
 rules.md — the World & Navigation add-on and the updated wound-tier /
-XP sections; measured numbers in CLAUDE.md. What remains from that design
+XP sections; measured numbers in benchlog.md. What remains from that design
 session lives in the open questions and parked ideas below.)*
 
 ## Next up — the banded quest inventory (worldgen reframed)
@@ -293,4 +293,4 @@ in-fight half; the wipe version stays parked below.
   satisfaction events are tuned right, and whether recruit renewal softens
   fate's bargain (see the parked wipe-version note).
 - Every constant is provisional and sim-tuned, never hand-designed — the
-  current numbers live in `CLAUDE.md` ("Balance / tuning").
+  current numbers live in `develop.md` ("Balance / tuning").

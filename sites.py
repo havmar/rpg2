@@ -402,7 +402,7 @@ class Site:
         return site_gold(self.level)
 
 
-# The set room layouts -- the first difficulty lever (CLAUDE.md "Balance /
+# The set room layouts -- the first difficulty lever (develop.md "Balance /
 # tuning"). Edit these here; every consumer (one-shot, session, tune, bench)
 # reads the same tables.
 # 2026-07-09: an archer joined the den (5 -> 6 bandits). The pain-2 regear

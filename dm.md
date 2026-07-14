@@ -2,7 +2,7 @@
 
 Read this file **before starting or continuing a game** (playing/testing as DM,
 as opposed to developing the code). This is the play protocol. For mechanics
-depth go to `rules.md`; `CLAUDE.md` is the development guide, not needed for play.
+depth go to `rules.md`; `develop.md` is the development guide, not needed for play.
 
 ## Starting and continuing
 
@@ -570,7 +570,7 @@ bigger than the fights WITHOUT pages of narration:
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their
-  numbers live in CLAUDE.md.
+  numbers live in develop.md.
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers
   DEX 5, bruisers DEX 4): every room draws blood, and "we can just push
   through without spending anything" is how parties die. Not using resources

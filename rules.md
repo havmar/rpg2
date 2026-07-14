@@ -1198,7 +1198,7 @@ The veteran-vs-novice axis: *"you know how to fight."*
   criterion —
   and gear stacks on top. (History: 3/17/44/74 and 64/86/96/99 at the
   2026-07-06 measure; the 2026-07-09 pain regear and the 2026-07-11 heal
-  batch each lifted the whole ladder — CLAUDE.md holds the ledger.)
+  batch each lifted the whole ladder — benchlog.md holds the ledger.)
 
 ## Weapon proficiency — the second skill
 
@@ -1407,7 +1407,7 @@ over your head) is now a **coin flip to a hard fight (~30–80%) rather than
 a wall** — a deliberate consequence of the regear: the viable level band
 widened, so punching up is a real choice and being overleveled for a quest
 is comfortable, which is what a leveled open world needs to be playable.
-Current numbers live in CLAUDE.md ("Balance / tuning").
+Current numbers live in develop.md ("Balance / tuning").
 
 ## What careers measure (updated 2026-07-09)
 
@@ -1549,7 +1549,7 @@ surface (`new`/`pick`, `recruit`/`hire`, `downtime`, departures) in
 `session.py`. **None of it touches the melee or the sims**: `group_combat`
 never reads a trait or a satisfaction number, sim entities never set
 `cha`/`protagonist`/`satisfaction`, so every bench number is untouched by
-construction (re-measured 2026-07-11 — see CLAUDE.md).
+construction (re-measured 2026-07-11 — see benchlog.md).
 
 ## CHA — the fourth stat
 
