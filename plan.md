@@ -142,6 +142,68 @@ in-fight half; the wipe version stays parked below.
 
 ---
 
+## The major-feature shortlist (2026-07-14) — ordering notes
+
+A high-level planning pass over the designer's major-feature wishlist:
+ordering and dependencies only, nothing below is designed. Items the
+roadmap above already schedules (full magic = 2, guns = 4,
+named/masterwork weapons = 5, quest variety = the banded inventory
+rework) keep their entries; this section places the rest. The short
+answer to "can these be done in any order?": mostly yes — but four of
+them are foundations that make everything after them cheaper, and one
+belongs at the end.
+
+**Foundations — do early, other items ride on them:**
+
+- **Full magic (item 2 above)** is the keystone: it unlocks magic ITEMS,
+  the wraith and the demon tier (and with them the apocalypse spine), and
+  the INT build. Most of the wishlist gets cheaper after it.
+- **The ranged combat model** — the engine has no distance or positioning,
+  so "guns" is really two features: first the combat-model change (how
+  shooting, closing, and being shot at work inside the abstract melee),
+  then guns as content (item 4). Decide the model early — every later
+  enemy, weapon, and bench rides on it — and author ranged content after.
+- **The levelling framework (skills / abilities / moves / perks)** —
+  decides what "player power" means, which is exactly the known 14-20
+  gap; enemy and item authoring want to know its shape first.
+  Berserk/War-Breath and school proficiency are the seeds it grows from.
+- **Conditions** (poison, bleed, disease — the parked venom note) — the
+  missing enabler behind "more varied enemies": without conditions, enemy
+  variety is mostly stat rearrangement, and varied magic wants them too.
+  Flagged as the big gap in the shortlist itself.
+
+**Order-free — can slot in anywhere:**
+
+- **Free-play facilitation / overriding the mechanics** — mostly dm.md
+  doctrine plus session override surfaces (`forge`, `give --as`, the
+  hand-editable save exist already). Cheap, and worth doing EARLY anyway:
+  a good override story de-risks every missing system, because the DM can
+  improvise what isn't built yet.
+- **Professions** — a between-fights layer hanging off downtime and the
+  economy; independent of everything, and the natural feeder for domain
+  play.
+- **Intraparty mechanics & prominent main NPCs** — deepens shipped layers
+  (satisfaction, the central cast); mostly content. Its big multiplier is
+  the parked off-screen event simulation — that is what makes NPCs feel
+  alive between meetings.
+- **Region detail & exploration depth** — navigation shipped 2026-07-09;
+  what remains is content (settlement flavor, landmark problems) plus the
+  same off-screen tick.
+
+**Late by nature:**
+
+- **Domain play** — the endgame layer (holdings, followers, rulership).
+  Wants region detail, professions/economy at scale, and the off-screen
+  simulation before it can feel alive — and it is the natural answer to
+  "what is gold FOR at L15+", so don't solve that question separately.
+- **The content passes** (more quests, more weapons & magic items, more
+  varied enemies) — deliberately last within their threads: content is
+  cheapest once the systems it varies exist (quests after the banded
+  inventory rework; magic items after the magic layer; enemies after
+  conditions / magic / the ranged model).
+
+---
+
 ## Parked ideas (agreed to exist, not scheduled)
 
 - **Opt-out tutorial register** (2026-07-14) — a new-player mode where
