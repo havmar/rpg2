@@ -88,11 +88,14 @@ a pointer: what the file is, how it's run, where its docs are.
   questions.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and rests, progression,
-  economy, random party generation, and the batch-sim policies
+  economy, random party generation, the placeholder magic layer
+  (2026-07-14: wizards, bolts, schools, school proficiency — rules.md's
+  Placeholder Magic add-on), and the batch-sim policies
   (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
   everything else imports it. All tunable constants sit at the top.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
-  `make_foe` — six monster families plus the humanoid ladder, every row
+  `make_foe` — six monster families plus the humanoid ladder and, since
+  2026-07-14, the three caster rows (hexer/pyromancer/magus), every row
   bench-calibrated; `make_foe(display=...)` is the reskin hook), the two
   set sites (`SITES`: the bandit **hideout** = the starter, level 1; the
   skeleton **barrow** = the tough site, level 3; room layouts in
@@ -112,8 +115,11 @@ a pointer: what the file is, how it's run, where its docs are.
   XP coverage to the level cap — which since 2026-07-12 also attaches a
   generated giver face to every quest (`attach_giver`) and casts each
   land's three persistent notables (`RULER_TITLES` / `SAGE_ROLES` /
-  `WILDCARD_ROLES`, `world["npcs"]`). `python quests.py [--seed N]
-  [--demo]` prints a generated world's board and cast.
+  `WILDCARD_ROLES`, `world["npcs"]`). Since 2026-07-14 also the
+  cross-land deliveries (`DELIVERY_TEMPLATES`, `build_delivery_quest`,
+  `_post_delivery` — the site-less courier kind, two per world; rules.md's
+  Quest System add-on, "Cross-land deliveries"). `python quests.py
+  [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Four aggressor
   variants (elf/goblin/human/orc — content dicts at the top: creeds,
@@ -288,7 +294,11 @@ mechanic *does* and *why* is rules.md's job.
   penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
   `streak_multiplier` — consecutive same-site encounters without a camp
   pay rising XP; a full one-go run collects exactly the encounter share;
-  2.0 since 2026-07-10: x1/x3/x5 across three rooms), the tavern night
+  2.0 since 2026-07-10: x1/x3/x5 across three rooms), placeholder magic
+  (2026-07-14: `BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`,
+  `ICE_DEX_DEBUFF`, `WIZARD_STAFF_CHANCE`; the delivery pay knobs
+  `DELIVERY_GOLD_PER_DAY` / `DELIVERY_XP_PER_DAY` /
+  `DELIVERIES_PER_WORLD` sit at the top of quests.py), the tavern night
   (`TAVERN_COST_PER_HERO`, `TAVERN_OVERCHARGE` — the one-day above-max
   HP/STA edge; `recover()` is the clamp that makes the excess spent-only),
   and the party-size counterweights
@@ -379,6 +389,25 @@ mechanic *does* and *why* is rules.md's job.
   `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
   `done_day` stamp in `advance_quest`, the boss-name spawn in `cmd_room`,
   `cmd_chatter` + `CHATTER_PROMPTS`.
+- **Placeholder magic** (2026-07-14) — `rpg.py`: the constants block
+  (`BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`, `ICE_DEX_DEBUFF`,
+  `WIZARD_STAFF_CHANCE`), `Entity.school` / `dex_debuff` /
+  `casting_next` / `school_prof` / `bolt_severity_mods`, the bolt branch
+  in `_attack` + `pressure(bolt=...)` (stat swap to POWER, the `chilled`
+  term), `_clear_frost` (fight end / clean escape /
+  `refresh_foes_after_retreat`), the wizard roll in `make_human`,
+  `train_school`, and the school branches in `develop_hero` /
+  `autospend_points`. `sites.py`: `FoeSpec.school` + the
+  hexer/pyromancer/magus rows and the roster tag. `quests.py`: casters in
+  `LADDER_POOL` (+ per-race skins) and the "Renegade Magus" epic.
+  `session.py`: `train HERO magic`, the levelup menu's school sink.
+- **Cross-land deliveries** (2026-07-14) — `quests.py`:
+  `DELIVERY_TEMPLATES` / `build_delivery_quest` / `_post_delivery` and
+  the kind-aware readout helpers. `session.py`: `active_delivery` /
+  `deliver_if_arrived` (called at travel arrivals, in `finish_encounter`,
+  and after a retreat's clean escape), the forced interception in
+  `cmd_travel`, and the delivery guards in take/room/status/sheet/
+  opening-hook/board-rumors.
 - **The world & navigation** (2026-07-09) — `quests.py`: `lands` (race ->
   settlements; the map IS this grouping, no coordinates), `wild_pool`
   (what roams a land = the union of its race's template pools),
@@ -831,10 +860,11 @@ straight, pay scaling with them — and **the party itself is player choice
 now** (2026-07-11): who to pick, who to hire, whose patience to spend, when
 to buy it back with a tavern night or a downtime day. The mid-fight layer
 exists too: the pause (drink / Berserk / War-Breath / retreat & chase, with
-fled rooms persisting). **Next up: the story layer over the board** (see
-`plan.md`) — the mundane-conqueror questline as the authored difficulty
-spine, then progression frames (guilds, the legendary smith). After that:
-magic/INT, armor (note the designer's lean: probably never important),
-guns + ammo, named weapon instances — and the career sim's finding that
-the 14-20 band lacks its player power until masterwork/magic land. See
-plan.md for the full roadmap and the parked-ideas list.
+fled rooms persisting). **Placeholder magic is in (2026-07-14)** — wizards from
+level 1 (POWER-highest, fire/ice bolts, school proficiency, the caster
+bestiary rows) and **cross-land deliveries** send the party travelling.
+Next: the FULL magic/INT layer (stat transcendence, the wraith), armor
+(note the designer's lean: probably never important), guns + ammo, named
+weapon instances — and the career sim's finding that the 14-20 band lacks
+its player power until masterwork/magic land. See plan.md for the full
+roadmap and the parked-ideas list.

@@ -4,7 +4,8 @@ Implements the ruleset in rules.md (the source of truth for mechanics intent):
 the group melee (group_combat), the pause/retreat interrupt layer, weapons and
 breakage, the survival tracks (HP/STA/Power, rests, the clock), progression
 (XP, training, proficiency), the economy (purse, potions, weapons), random
-party generation, and the batch-sim policies (sim_fight, sim_pause_policy).
+party generation, placeholder magic (wizards, bolts, the two schools), and
+the batch-sim policies (sim_fight, sim_pause_policy).
 
 What you FIGHT and WHERE lives in sites.py (the foe catalog and the two
 hand-built sites); how a playthrough is DRIVEN lives in session.py. This file
@@ -67,6 +68,36 @@ FIRST_BLOOD_HP = 1      # First Blood inflicts a guaranteed graze -- light on pu
                         # (its real value is the death spiral: -1 to the foe's rolls
                         # all fight), never a free kill
 HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
+
+# --- Placeholder magic (2026-07-14) ------------------------------------------ #
+# Wizards exist from level 1 (designer call: magic is never a high-level-only
+# system). A character whose POWER is STRICTLY the highest of the three
+# creation stats POWER/DEX/STR is a WIZARD (CHA stays social and doesn't
+# compete); a wizard rolls a SCHOOL instead of an ability -- the school
+# REPLACES the heal/bulwark/first_blood slot, so the Power pool has one
+# spender. A wizard attacks by hurling BOLTS while the Power lasts: a cast
+# costs the normal swing STA (casting tires like fighting -- Power is ammo on
+# top, NOT a second endurance pool) plus BOLT_POWER_COST Power, and the attack
+# pressure rolls off POWER instead of DEX (training still applies; the wielded
+# weapon's attack bonus does not). Severity is the school's flat instead of
+# STR: FIRE is the STR-analogue (higher damage), ICE is low damage but every
+# landed bolt RIMES the target -- a stacking -1 DEX (attack and defense) for
+# the rest of the fight, floored at 0. Out of Power the wizard fights on with
+# the weapon in hand, on whatever STA the casting left -- and defends normally
+# with the body all along (squishiness comes from the statline, not a rule).
+# The levellable axis is SCHOOL PROFICIENCY: the weapon-proficiency system
+# wholesale (rank n costs n points, +1 bolt pressure and +1 bolt severity per
+# rank, cap PROFICIENCY_MAX), keyed as "fire magic"/"ice magic" in the same
+# proficiency dict (train_school; session `train HERO magic`).
+BOLT_POWER_COST = 1
+SCHOOLS = ("fire", "ice")
+BOLT_SEVERITY = {"fire": 5, "ice": 2}   # the flat that replaces STR + weapon
+                                        # severity on a bolt: fire ~ a solid
+                                        # fighter with military steel, ice
+                                        # deliberately weak -- the debuff is
+                                        # the point
+ICE_DEX_DEBUFF = 1          # stacking DEX loss per landed ice bolt (per fight)
+WIZARD_STAFF_CHANCE = 0.50  # wizards often start with the wooden staff
 HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
@@ -601,7 +632,8 @@ class PressureRoll:
     modifier and its source (the mechanics layer of the two-layer log)."""
     total: int
     dice: int           # the raw 2d6 sum
-    dex: int
+    dex: int            # the stat term: DEX normally, POWER on a bolt cast
+                        # (stat_label says which)
     training: int
     wound_pen: int      # HP lost so far (the death spiral)
     fatigue_pen: int    # SPENT_PENALTY at 0 STA, else WINDED_PENALTY if
@@ -616,9 +648,13 @@ class PressureRoll:
     misc: int = 0           # circumstance term (e.g. -2 drinking mid-fight,
                             # -2 fleeing under a parting blow)
     misc_label: str = ""
+    stat_label: str = "DEX"  # "POWER" on a bolt cast (placeholder magic)
+    chill: int = 0          # DEX lost to landed ice bolts this fight
 
     def breakdown(self, name: str) -> str:
-        parts = [f"2d6={self.dice}", f"+{self.dex} DEX"]
+        parts = [f"2d6={self.dice}", f"+{self.dex} {self.stat_label}"]
+        if self.chill:
+            parts.append(f"-{self.chill} chilled")
         if self.training:
             parts.append(f"+{self.training} training")
         if self.weapon_mod:
@@ -670,6 +706,11 @@ class Entity:
     power: int = 0
     ability: str | None = None          # "bulwark" (mid-fight save) or "heal" (between-
                                          # fights HP restore, see use_heal); None = neither
+    school: str = ""                    # placeholder magic: "fire" / "ice" makes
+                                         # this a WIZARD (bolts while Power lasts;
+                                         # see the magic constants block). Replaces
+                                         # the ability slot -- a wizard's ability
+                                         # is None.
     sta_cost: int = STA_ATTACK_COST     # STA spent per attack (defense is free);
                                          # Phase 4 hangs weapon weight on this knob
     undead: bool = False                # dead flesh: wounds never knit back on
@@ -725,6 +766,9 @@ class Entity:
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
+    dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
+                                         # the fight (cleared when the melee
+                                         # ends or the party breaks away)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
     dead: bool = field(default=False)   # truly slain (unsaved crippling blow)
     fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
@@ -842,6 +886,28 @@ class Entity:
             return self.weapon.sta_cost
         return self.sta_cost
 
+    # --- placeholder magic ------------------------------------------------ #
+    @property
+    def school_prof_key(self) -> str:
+        return f"{self.school} magic"   # the proficiency-dict key ("fire magic")
+
+    @property
+    def school_prof(self) -> int:
+        return self.proficiency.get(self.school_prof_key, 0) if self.school else 0
+
+    def casting_next(self) -> bool:
+        """Will this entity's next attack be a bolt? A wizard casts whenever
+        the Power is there; out of Power they swing the weapon in hand."""
+        return bool(self.school) and self.cur_power >= BOLT_POWER_COST
+
+    def bolt_severity_mods(self) -> list[tuple[int, str]]:
+        """A bolt's severity terms: the school's flat replaces STR AND the
+        weapon; school proficiency adds like weapon proficiency does."""
+        mods = [(BOLT_SEVERITY[self.school], f"{self.school} bolt")]
+        if self.school_prof:
+            mods.append((self.school_prof, "proficiency"))
+        return mods
+
     def severity_mods(self) -> list[tuple[int, str]]:
         """The wielded weapon's severity terms as (value, label) pairs, kept
         separate so the log can show every source (weapon vs proficiency)."""
@@ -858,7 +924,7 @@ class Entity:
 
     def pressure(self, rng: random.Random, attacking: bool = False,
               wound_pen: int | None = None, misc: int = 0,
-              misc_label: str = "") -> PressureRoll:
+              misc_label: str = "", bolt: bool = False) -> PressureRoll:
         # wound_pen overrides the live wound penalty -- used for the dying
         # swing (group_combat): a fighter felled mid-round still gets their
         # blow in, rolled with the wounds they had at ROUND START, not the
@@ -876,7 +942,11 @@ class Entity:
         # training -- except the staff's deliberate parry knob (def_pressure).
         # A broken weapon drags the attack down instead.
         weapon_mod, weapon_label, prof = 0, "", 0
-        if self.weapon is not None:
+        if bolt:
+            # A bolt cast: the weapon stays out of it -- proficiency is the
+            # SCHOOL's rank instead (placeholder magic).
+            prof = self.school_prof
+        elif self.weapon is not None:
             if attacking:
                 if self.weapon_broken:
                     weapon_mod = BROKEN_ATK_PRESSURE
@@ -891,14 +961,20 @@ class Entity:
         # def_bonus is a body knob (the "armored" trait): defense only, like
         # the staff's parry but worn instead of wielded.
         armor = 0 if attacking else self.def_bonus
-        total = (dice + self.dex + self.training + weapon_mod + prof + armor
-                 + misc - pen - fatigue_pen)
-        return PressureRoll(total=total, dice=dice, dex=self.dex,
+        # The stat term: DEX for everything bodily, POWER for a bolt cast.
+        # Frost (landed ice bolts) slows the BODY: it drags every DEX-based
+        # roll, never a bolt's POWER roll, and can't push the term below 0.
+        stat, stat_label = (self.power, "POWER") if bolt else (self.dex, "DEX")
+        chill = 0 if bolt else min(self.dex, self.dex_debuff)
+        total = (dice + stat - chill + self.training + weapon_mod + prof
+                 + armor + misc - pen - fatigue_pen)
+        return PressureRoll(total=total, dice=dice, dex=stat,
                          training=self.training, wound_pen=pen,
                          fatigue_pen=fatigue_pen, fatigue_label=fatigue_label,
                          weapon_mod=weapon_mod, weapon_label=weapon_label,
                          prof=prof, armor=armor, misc=misc,
-                         misc_label=misc_label)
+                         misc_label=misc_label, stat_label=stat_label,
+                         chill=chill)
 
 
 # --------------------------------------------------------------------------- #
@@ -980,20 +1056,40 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     blow can still Down a hero but never lands the crippling tier, so the
     door can maim but not kill outright.
 
+    Placeholder magic: a wizard attacker with the Power for it CASTS instead
+    of swinging -- the bolt is decided (and its Power spent) here, so every
+    attack path (the melee loop, parting blows) casts by the same rule. A
+    reused sweep roll (`atk_roll`) is never a bolt.
+
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
     penalty), then the raw numbers (dice, each modifier and its source)
     indented beneath it -- full log only.
     """
-    atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen)
+    bolt = atk_roll is None and attacker.casting_next()
+    if bolt:
+        # The cast happens whatever the bolt then does -- parried casts burn
+        # Power too. (The swing's STA was already paid, like any attack.)
+        attacker.cur_power -= BOLT_POWER_COST
+    atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
+                             bolt=bolt)
            if atk_roll is None else atk_roll)
     dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
     pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
                   f"{dfn.breakdown(defender.name)}")
+    if bolt:
+        pressure_line += (f" [{attacker.school} bolt: -{BOLT_POWER_COST} "
+                          f"Power, {attacker.cur_power} left]")
+    # The headline's subject: the caster's bolt does the deed in the log.
+    subject = (f"{attacker.name}'s {attacker.school} bolt" if bolt
+               else attacker.name)
 
     if atk.total == dfn.total:
         # A tie: no one lands. High dice = furious contact, low = circling.
-        if max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
+        if bolt:
+            label = f"the {attacker.school} bolt splashes wide; neither yields"
+            contact = False     # magic on steel tests nothing
+        elif max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
             label = "Clash! Steel rings; neither yields"
             contact = True      # steel met steel -- durability is tested
         else:
@@ -1006,24 +1102,38 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         return
 
     if atk.total < dfn.total:
-        log.append(f"    {attacker.name} attacks {defender.name} -- parried.")
+        if bolt:
+            art = "an" if attacker.school[0] in "aeiou" else "a"
+            log.append(f"    {attacker.name} hurls {art} {attacker.school} "
+                       f"bolt at {defender.name} -- warded off.")
+        else:
+            log.append(f"    {attacker.name} attacks {defender.name} "
+                       f"-- parried.")
         _debug(log, pressure_line)
-        _check_weapon_break(attacker, defender, rng, log)
+        if not bolt:
+            _check_weapon_break(attacker, defender, rng, log)
         return
 
     margin = atk.total - dfn.total
-    sev_mods = attacker.severity_mods()
-    severity = (margin + attacker.str_ + sum(v for v, _ in sev_mods)
+    # A bolt's severity is the school's flat (fire hits hard, ice barely) in
+    # place of BOTH the caster's STR and the weapon; the defender soaks as
+    # ever.
+    sev_mods = attacker.bolt_severity_mods() if bolt else attacker.severity_mods()
+    atk_str = 0 if bolt else attacker.str_
+    severity = (margin + atk_str + sum(v for v, _ in sev_mods)
                 - defender.str_)
     raw_tier, dmg = wound_tier(severity)
-    sev_line = f"        severity: {severity} = margin {margin} +{attacker.str_} STR"
+    sev_line = f"        severity: {severity} = margin {margin}"
+    if not bolt:
+        sev_line += f" +{attacker.str_} STR"
     for v, label in sev_mods:
         sev_line += f" {v:+d} {label}"
     sev_line += f" -{defender.str_} soak -> {raw_tier}"
 
     if dmg == 0:
         # Anti-soak floors -- chip damage soak can't zero, feeding the spiral.
-        if (attacker.weapon is not None and not attacker.weapon_broken
+        if (not bolt and attacker.weapon is not None
+                and not attacker.weapon_broken
                 and attacker.weapon.graze_floor):
             # The rapier's own floor: ANY landed thrust draws blood.
             raw_tier, dmg = "graze", TIER_HP["graze"]
@@ -1034,8 +1144,9 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             raw_tier, dmg = "graze", TIER_HP["graze"]
             sev_line += " -> a clean hit still cuts: graze"
         else:
-            log.append(f"    {attacker.name} {margin_verb(margin)} "
-                       f"{defender.name}, but the blow glances off -- deflected.")
+            what = "the bolt" if bolt else "the blow"
+            log.append(f"    {subject} {margin_verb(margin)} "
+                       f"{defender.name}, but {what} glances off -- deflected.")
             _debug(log, pressure_line)
             _debug(log, sev_line)
             return
@@ -1047,7 +1158,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         raw_tier, dmg = reduce_tier(raw_tier)
         sev_line += f" -> a hurried blow at a fleeing back: {raw_tier}"
         if dmg == 0:
-            log.append(f"    {attacker.name} {margin_verb(margin)} "
+            log.append(f"    {subject} {margin_verb(margin)} "
                        f"{defender.name}, but the hurried blow at a fleeing "
                        f"back glances off -- deflected.")
             _debug(log, pressure_line)
@@ -1074,22 +1185,32 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
     if saved:
         _play(log,
-              f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+              f"    {subject} {margin_verb(margin)} {defender.name}"
               f" -- {TIER_PHRASE[raw_tier]}... {defender.name}'s Bulwark "
               f"flares! Reduced to {tier}. [{state}; "
               f"{defender.cur_power} Power left]",
-              f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+              f"    {subject} {margin_verb(margin)} {defender.name}"
               f" -- {TIER_PHRASE[raw_tier]}... {defender.name}'s Bulwark "
               f"flares! Reduced to {tier} (-{dmg} HP). [{player_state}; "
               f"{defender.cur_power} Power left]")
     else:
         _play(log,
-              f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+              f"    {subject} {margin_verb(margin)} {defender.name}"
               f" -- {TIER_PHRASE[tier]}! [{state}]",
-              f"    {attacker.name} {margin_verb(margin)} {defender.name}"
+              f"    {subject} {margin_verb(margin)} {defender.name}"
               f" -- {TIER_PHRASE[tier]} (-{dmg} HP)! [{player_state}]")
     _debug(log, pressure_line)
     _debug(log, sev_line)
+    if bolt and attacker.school == "ice":
+        # The ice school's whole point: every landed bolt rimes the target --
+        # a stacking DEX loss for the rest of the fight (attack and defense;
+        # the term floors at 0 in `pressure`).
+        defender.dex_debuff += ICE_DEX_DEBUFF
+        _play(log,
+              f"    {defender.name} is rimed with frost "
+              f"(-{defender.dex_debuff} DEX for this fight)",
+              f"    {defender.name} is rimed with frost "
+              f"(-{defender.dex_debuff} DEX for this fight)")
 
     # Death is a 0-HP state (see the `alive` property): a blow only kills if
     # it actually drops you. At 0 HP an unsaved crippling blow is a death; any
@@ -1473,8 +1594,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
             if not attacker.tireless and not dying:
                 # The dying swing is free -- desperation costs nothing.
                 was_winded = attacker.winded
-                # The weapon sets the swing price (zweihander 2, most else 1).
-                attacker.cur_sta = max(0, attacker.cur_sta - attacker.swing_cost)
+                # The weapon sets the swing price (zweihander 2, most else 1);
+                # a cast tires at the base rate -- the arm isn't swinging steel.
+                cost = (STA_ATTACK_COST if attacker.casting_next()
+                        else attacker.swing_cost)
+                attacker.cur_sta = max(0, attacker.cur_sta - cost)
                 if attacker.winded and not was_winded:
                     _play(log,
                           f"    !! {attacker.name} is Winded "
@@ -1599,12 +1723,21 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     queued[h] = order
 
     # The dust settles: fate collects first, then whoever is still standing
-    # catches their breath.
+    # catches their breath. Frost outlasts nothing: the rime melts off both
+    # sides when the melee ends (a retreat clears it in attempt_retreat /
+    # refresh_foes_after_retreat instead).
+    _clear_frost(party + foes)
     _settle_fate_debt(party, foes, rng, log)
     survivors = [h for h in party if h.alive]
     if survivors:
         _catch_breath(survivors, log)
     return None
+
+
+def _clear_frost(entities: list[Entity]) -> None:
+    """End-of-fight cleanup for the ice school's stacking DEX debuff."""
+    for e in entities:
+        e.dex_debuff = 0
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
@@ -1643,11 +1776,14 @@ def _settle_fate_debt(party: list[Entity], foes: list[Entity],
 def _chase_dex(group: list[Entity]) -> float:
     """A side's speed in the break contest: average DEX weighted by current
     STA -- fresher legs count for more (tireless entities always weigh in at
-    full). A side entirely out of breath falls back to a plain average."""
+    full). A side entirely out of breath falls back to a plain average.
+    Frost-rimed legs (the ice school's debuff) run slower here too."""
+    def dex(e: Entity) -> int:
+        return max(0, e.dex - e.dex_debuff)
     total_weight = sum(max(0, e.cur_sta) for e in group)
     if total_weight == 0:
-        return sum(e.dex for e in group) / len(group)
-    return sum(e.dex * max(0, e.cur_sta) for e in group) / total_weight
+        return sum(dex(e) for e in group) / len(group)
+    return sum(dex(e) * max(0, e.cur_sta) for e in group) / total_weight
 
 
 def attempt_retreat(party: list[Entity], foes: list[Entity],
@@ -1699,6 +1835,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
             log.append("    No one is fit to give chase -- clean escape.")
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
+        _clear_frost(party)         # the rime melts on the run
         _catch_breath(runners, log)
         return True
 
@@ -1716,6 +1853,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         log.append("    They break away -- clean escape.")
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
+        _clear_frost(party)         # the rime melts on the run
         _catch_breath(runners, log)
         return True
     log.append("    *** RUN DOWN -- the pursuers catch them, and the fight "
@@ -1731,6 +1869,7 @@ def refresh_foes_after_retreat(foes: list[Entity],
     passed; the undead stay hacked -- dead bone doesn't knit, which is exactly
     the asymmetry that rewards a return trip to the barrow."""
     survivors = [f for f in foes if not f.dead]
+    _clear_frost(survivors)     # the rime melted long before any return trip
     for f in survivors:
         f.cur_sta = f.sta
         if f.regen or (days_passed > 0 and not f.undead):
@@ -1835,10 +1974,18 @@ def make_human(rng: random.Random, name: str,
         k = rng.choices(open_keys, [weight[k] for k in open_keys])[0]
         stats[k] += 1
 
-    ability = rng.choice(["heal", "bulwark", "first_blood"])
-    if ability == "heal" and rng.random() < HEALER_STAFF_CHANCE:
+    # Placeholder magic (2026-07-14): POWER strictly above BOTH other combat
+    # stats makes a WIZARD -- a school instead of an ability (CHA stays out
+    # of the comparison: a charismatic wizard is still a wizard).
+    ability, school = None, ""
+    if stats["power"] > stats["dex"] and stats["power"] > stats["str"]:
+        school = rng.choice(list(SCHOOLS))
+    else:
+        ability = rng.choice(["heal", "bulwark", "first_blood"])
+    if ((ability == "heal" and rng.random() < HEALER_STAFF_CHANCE)
+            or (school and rng.random() < WIZARD_STAFF_CHANCE)):
         weapon = WEAPONS["wooden staff"]    # the caster-bridge weapon at home
-                                            # in a healer's hands (+1 to Heal)
+                                            # in a healer's (or wizard's) hands
     else:
         weapon = random_common_weapon(rng)
     return Entity(
@@ -1850,6 +1997,7 @@ def make_human(rng: random.Random, name: str,
         power=stats["power"],
         cha=stats["cha"],
         ability=ability,
+        school=school,
         pain=HERO_PAIN,
         weapon=weapon,
         items=random_kit(rng),
@@ -1882,10 +2030,16 @@ def stat_line(e: Entity) -> str:
     (capacity / who is about to quit), never combat-log noise."""
     kit = ", ".join(f"{k}x{v}" for k, v in e.items.items() if v) or "no kit"
     cha = f"CHA {e.cha}  " if e.cha else ""
+    if e.school:
+        gift = e.school_prof_key    # "fire magic" / "ice magic"
+        if e.school_prof:
+            gift += f", prof {e.school_prof}"
+    else:
+        gift = e.ability or "no save"
     line = (f"{e.name} (L{e.level}, training {e.training}): "
             f"DEX {e.dex}  STR {e.str_}  STA {e.cur_sta}/{e.sta}  "
             f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  {cha}"
-            f"({e.ability or 'no save'}; {weapon_tag(e)}; {kit})")
+            f"({gift}; {weapon_tag(e)}; {kit})")
     if e.satisfaction is not None:
         line += f"  [satisfaction {e.satisfaction}/{SATISFACTION_MAX}]"
     return line
@@ -1984,7 +2138,7 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
 
     buy_training(3)
     if level >= HERO_QUALITY_LEVEL:
-        if (h.ability == "heal" and h.weapon is not None
+        if ((h.ability == "heal" or h.school) and h.weapon is not None
                 and h.weapon.name == "wooden staff"):
             pass                                    # the staff IS quality
         elif h.str_ > h.dex:
@@ -1993,13 +2147,17 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
             h.weapon = WEAPONS["rapier"]
         else:
             h.weapon = WEAPONS["katana"]
-    if h.weapon is not None:
-        rank = h.proficiency.get(h.weapon.name, 0)
+    # The proficiency sink: a wizard drills the SCHOOL (their real offense);
+    # everyone else drills the wielded weapon.
+    prof_key = h.school_prof_key if h.school else (
+        h.weapon.name if h.weapon is not None else None)
+    if prof_key is not None:
+        rank = h.proficiency.get(prof_key, 0)
         while rank < PROFICIENCY_MAX and points >= rank + 1:
             points -= rank + 1
             rank += 1
         if rank:
-            h.proficiency[h.weapon.name] = rank
+            h.proficiency[prof_key] = rank
     buy_training(TRAINING_MAX)
     h.skill_points = points
     for lvl in range(2, level + 1):
@@ -2197,11 +2355,42 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
     return True
 
 
+def train_school(h: Entity, log: list[str]) -> bool:
+    """Spend skill points on ONE rank of SCHOOL proficiency (placeholder
+    magic) -- the weapon-proficiency system wholesale, keyed "fire magic" /
+    "ice magic" in the same dict: rank n costs n, +1 bolt pressure AND +1
+    bolt severity per rank, cap PROFICIENCY_MAX. Wizards only (session.py
+    `train HERO magic`); the school never breaks and never switches, so it
+    is the caster's whole progression lane."""
+    if not h.school:
+        log.append(f"    {h.name} has no school of magic to drill.")
+        return False
+    key = h.school_prof_key
+    rank = h.school_prof
+    if rank >= PROFICIENCY_MAX:
+        log.append(f"    {h.name} has mastered {key} "
+                   f"(cap {PROFICIENCY_MAX}).")
+        return False
+    cost = rank + 1
+    if h.skill_points < cost:
+        log.append(f"    {h.name} needs {cost} skill point(s) for {key} "
+                   f"rank {rank + 1} (has {h.skill_points}).")
+        return False
+    h.skill_points -= cost
+    h.proficiency[key] = rank + 1
+    log.append(f"    {h.name} drills the {h.school} school: {key} rank "
+               f"{rank + 1} (+{rank + 1} bolt pressure and +{rank + 1} "
+               f"bolt severity) [{h.skill_points} point(s) left]")
+    return True
+
+
 def autospend_points(h: Entity, log: list[str]) -> bool:
     """COMPANION self-improvement (2026-07-13): spend a companion's banked
     points on the reference doctrine develop_hero uses -- combat training to
     rank 3, then proficiency IF the carried weapon is quality steel (nobody
-    drills a club), then training to the cap. session.py runs this for
+    drills a club) -- a wizard companion drills the SCHOOL instead, always
+    (the gift is always worth drilling) -- then training to the cap.
+    session.py runs this for
     party[1:] after every fight's awards (and at hire); the PC's points are
     never touched -- spending them stays the player's decision. Returns
     whether anything was bought (the train_* calls log each purchase)."""
@@ -2215,7 +2404,12 @@ def autospend_points(h: Entity, log: list[str]) -> bool:
             bought = True
 
     training_to(3)
-    if (h.weapon is not None and h.weapon.quality
+    if h.school:
+        while (h.skill_points >= h.school_prof + 1
+               and h.school_prof < PROFICIENCY_MAX
+               and train_school(h, log)):
+            bought = True
+    elif (h.weapon is not None and h.weapon.quality
             and not h.weapon_broken):
         while (h.skill_points >= h.proficiency.get(h.weapon.name, 0) + 1
                and h.proficiency.get(h.weapon.name, 0) < PROFICIENCY_MAX
