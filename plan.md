@@ -144,6 +144,11 @@ in-fight half; the wipe version stays parked below.
 
 ## Parked ideas (agreed to exist, not scheduled)
 
+- **Opt-out tutorial register** (2026-07-14) — a new-player mode where
+  the DM teaches mechanics as they first come up, off by default. dm.md
+  now assumes full rules fluency (the designer is the only player);
+  this becomes relevant only if the game ever gets a second player.
+
 - **Off-screen event simulation** (designer, 2026-07-12: plan only for
   now) — methods to simulate events for entities the player isn't
   interacting with: named NPCs, the lands, and main-quest story progress

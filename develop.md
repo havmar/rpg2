@@ -194,7 +194,11 @@ a pointer: what the file is, how it's run, where its docs are.
   committed only by **`sheet`** — the end-of-every-DM-message command
   (one commit per message; best-effort git, never fatal).
   Encounter commands print the full log then the
-  `--- PLAYER LOG ---` block the DM pastes into chat.
+  `--- PLAYER LOG ---` block the DM pastes into chat -- which since
+  2026-07-14 ends with the party tally (`tally_lines`: tracks/kit/purse,
+  rooms-left count, next streak multiplier), the standard
+  between-encounters numbers display so the DM's prose never has to
+  carry the numbers (dm.md, Narration style).
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your

@@ -466,6 +466,14 @@ lines all appear in both levels. `session.py` prints the player log as a
 `--- PLAYER LOG ---` block after the full log; the DM pastes it into chat
 so the player gets the mechanical shape of the fight without the dice.
 
+Since 2026-07-14 every survived encounter's block closes with the **party
+tally** (`session.tally_lines`): each standing member's HP/STA/Power and
+kit, the purse, the day's remaining short rests, and -- with an active
+site -- the count of rooms left plus the streak's next multiplier. It is
+the standard between-encounters numbers display: the DM narrates around
+it instead of restating it, and it deliberately shows a *count* of what
+lies ahead, never the rosters (dm.md, Narration style).
+
 ---
 
 ## Why three stats produce the loop (no range needed)
