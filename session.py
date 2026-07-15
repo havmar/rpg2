@@ -45,9 +45,10 @@ The shape of a playthrough:
   hideout ROOM / barrow ROOM                -- the two set sites (DEV/TEST
                                                only since 2026-07-13; not
                                                part of a played campaign)
-  resume [...] / retreat                    -- settle a paused fight
+  resume [...] / retreat [--blink]          -- settle a paused fight
   rest / camp / tavern / downtime / award / buy / give / train / use / heal
-                                            -- the between-fights layer
+  cast HERO scry|teleport                   -- the between-fights layer
+                                               (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
   sheet                                     -- commit party.txt (run at the
                                                END of every DM message)
@@ -93,7 +94,11 @@ from rpg import (
     equip_weapon as _equip_weapon,
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
-    train_school as _train_school,
+    train_spell as _train_spell,
+    buy_spellbook as _buy_spellbook,
+    blink_escape, casting_check,
+    SPELLS, SPELL_RANK_MAX, SPELLBOOK_PRICE, VANISH_POWER_COST,
+    SCRY_POWER_COST, TELEPORT_TRAVEL_COST_PER_DAY, TELEPORT_ESCAPE_COST,
     autospend_points,
 )
 import story
@@ -102,6 +107,7 @@ from people import (make_character, make_pair, character_sheet, person_line,
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
                     quest_detail_lines, quest_line, roster_kinds_line,
+                    level_grade, seen_level, mind_precision,
                     lands, roll_wild_level, build_wild_encounter,
                     wild_encounter_xp,
                     TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
@@ -438,6 +444,7 @@ def save(state: dict) -> None:
         "streak": state.get("streak", {"site": None, "count": 0}),
         "site_clears": state.get("site_clears", {}),
         "recruits": state.get("recruits"),
+        "visited": state.get("visited", []),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -488,6 +495,9 @@ def load() -> dict:
         "streak": doc.get("streak", {"site": None, "count": 0}),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
+        "visited": doc.get("visited")
+        or ([location["place"]]
+            if location and location.get("kind") != "wild" else []),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -506,6 +516,13 @@ def find_hero(party: list, name: str):
     print(f"No hero matches {name!r}. Party: "
           + ", ".join(h.name for h in party))
     return None
+
+
+def party_mind(state: dict) -> int:
+    """The party's best living MIND -- the reader of quest levels (quest
+    sight, Magic & Mind): 6 reads exact, 4-5 within one level, 3 and under
+    within two. Hiring the bookish companion sharpens the whole board."""
+    return max((h.mind for h in state["party"] if not h.dead), default=0)
 
 
 def print_combat(log: CombatLog) -> None:
@@ -644,7 +661,10 @@ def cmd_new(args: argparse.Namespace) -> None:
              "location": _settlement_location(_starting_settlement(world)),
              "places": [], "sighting": None,
              "streak": {"site": None, "count": 0}, "site_clears": {},
-             "recruits": None}
+             "recruits": None,
+             # Settlements the party has stood in -- teleport (rank 3)
+             # reaches only KNOWN ground (Magic & Mind).
+             "visited": [_starting_settlement(world)["key"]]}
     if has_trait(ally, "needs meds"):
         ally.last_dose_day = state["clock"].day
     state["purse"].gold += joining_gold(pc) + joining_gold(ally)
@@ -1009,11 +1029,22 @@ def print_pause_menu(state: dict) -> None:
           f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens)")
     print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} Power -> "
           f"+{WAR_BREATH_STA_GAIN} STA")
+    if any(not h.dead and h.spell_rank("invisibility") >= 2 for h in party):
+        print(f"    resume --vanish HERO      -- {VANISH_POWER_COST} Power: "
+              f"fade from the melee (untargetable; the next strike lands "
+              f"as an ambush)")
+    blinker = next((h for h in party
+                    if not h.dead and h.spell_rank("teleport") >= 2), None)
     print("    retreat                   -- parting blows from foes still "
           "fit to swing, then one group chase roll"
           + (" (the dead do not pursue past their ground)"
              if any(f.alive and not f.pursues for f in pending["foes"])
              else ""))
+    if blinker is not None:
+        print(f"    retreat --blink {blinker.name.split()[0]:<10}-- "
+              f"teleport out: NO parting blows, no chase "
+              f"({TELEPORT_ESCAPE_COST} Power; a fizzled door falls "
+              f"back to the honest retreat)")
 
 
 def print_levelup_menu(heroes: list) -> None:
@@ -1037,21 +1068,23 @@ def print_levelup_menu(heroes: list) -> None:
                   f"{h.training + 1}  costs {cost}  [{mark}]  "
                   f"(+1 to ALL pressure rolls per rank, cap {TRAINING_MAX})"
                   f"  -> train {first} combat")
-        # Sink 2 (wizards): SCHOOL proficiency -- the caster's real offense
-        # lane (the weapon below is their out-of-Power fallback).
-        if h.school:
-            key = h.school_prof_key
-            rank = h.school_prof
-            if rank >= PROFICIENCY_MAX:
-                print(f"  {key} proficiency  rank {rank} -- CAPPED")
-            else:
-                cost = rank + 1
-                mark = ("CAN BUY" if h.skill_points >= cost
-                        else "can't afford yet")
-                print(f"  {key} proficiency  rank {rank} -> "
-                      f"{rank + 1}  costs {cost}  [{mark}]  "
-                      f"(+1 bolt pressure & +1 bolt severity, cap "
-                      f"{PROFICIENCY_MAX})  -> train {first} magic")
+        # Sink 2 (wizards): SPELL ranks -- the caster's real offense and
+        # tricks (the weapon below is their out-of-Power fallback).
+        if h.spells:
+            for name, rank in sorted(h.spells.items()):
+                spell = SPELLS[name]
+                if rank >= spell.max_rank:
+                    print(f"  {name}  rank {rank} -- CAPPED")
+                else:
+                    cost = rank + 1
+                    mark = ("CAN BUY" if h.skill_points >= cost
+                            else "can't afford yet")
+                    print(f"  {name}  rank {rank} -> {rank + 1}  costs "
+                          f"{cost}  [{mark}]  (next: {spell.ranks[rank]})"
+                          f"  -> train {first} {name}")
+            print(f"  (NEW spells come from spellbooks -- {SPELLBOOK_PRICE}g "
+                  f"in a capital: buy {first} book SPELL; spells: "
+                  f"{', '.join(sorted(SPELLS))})")
         # Sink 3: proficiency with the WIELDED weapon.
         if h.weapon is None or h.weapon_broken:
             print("  weapon proficiency   (no whole weapon in hand to drill)")
@@ -1069,8 +1102,7 @@ def print_levelup_menu(heroes: list) -> None:
                       f"{PROFICIENCY_MAX}; lost on weapon switch)"
                       f"  -> train {first} weapon")
         other = {n: r for n, r in h.proficiency.items()
-                 if r and (h.weapon is None or n != h.weapon.name)
-                 and (not h.school or n != h.school_prof_key)}
+                 if r and (h.weapon is None or n != h.weapon.name)}
         if other:
             dormant = ", ".join(f"{n} {r}" for n, r in sorted(other.items()))
             print(f"  (drilled but not in hand: {dormant})")
@@ -1494,7 +1526,14 @@ def cmd_board(args: argparse.Namespace) -> None:
         print(f"Day {state['clock'].day}. Asking around {here['name']} "
               f"(the DM's inventory -- in play, each job is its GIVER's; "
               f"funnel to them in one message, dm.md):")
-    for line in board_lines(world, key):
+    # Quest sight: the LOCAL (played) board reads through the party's best
+    # MIND -- L~7 is an estimate, not the truth. The explicit-settlement /
+    # 'all' call is the DM overview and stays true.
+    mind = party_mind(state) if not args.settlement else None
+    if mind is not None and mind_precision(mind) > 0:
+        print(f"(the party's best MIND is {mind}: quest levels marked ~ "
+              f"are read within {mind_precision(mind)} level(s))")
+    for line in board_lines(world, key, mind=mind):
         print(line)
     if not args.settlement:
         cast = [n for n in world.get("npcs", []) if n["seat"] == key]
@@ -1506,8 +1545,8 @@ def cmd_board(args: argparse.Namespace) -> None:
         # Word travels within a land (2026-07-11, designer call): the
         # player KNOWS every open quest in the current land -- name, level,
         # where -- so travel is an informed choice, not a blind hop. Levels
-        # shown straight, like the local board; details and `take` still
-        # want the party AT the posting settlement.
+        # read through the party's MIND like the local board (quest sight);
+        # details and `take` still want the party AT the posting settlement.
         land = state["location"]["land"]
         rumors = []
         for s in lands(world).get(land, []):
@@ -1516,9 +1555,7 @@ def cmd_board(args: argparse.Namespace) -> None:
             for qid in s["quests"]:
                 q = world["quests"][qid]
                 if q["status"] == "open":
-                    grade = ("DELIVERY" if q.get("kind") == "delivery"
-                             else f"L{q['level']:<2}")
-                    rumors.append(f"  [{q['id']}] {grade} "
+                    rumors.append(f"  [{q['id']}] {level_grade(q, mind)} "
                                   f"{q['name']} -- at {s['name']}")
         if rumors:
             print(f"Word from around the {land} lands (travel there to "
@@ -1536,7 +1573,10 @@ def cmd_show(args: argparse.Namespace) -> None:
     quest = _get_quest(state["world"], args.quest)
     if quest is None:
         return
-    for line in quest_detail_lines(quest):
+    # The player-facing view reads through the party's MIND (quest sight);
+    # --dm is the true view for the DM's own planning.
+    mind = None if args.dm else party_mind(state)
+    for line in quest_detail_lines(quest, mind=mind):
         print(line)
 
 
@@ -1562,8 +1602,9 @@ def cmd_take(args: argparse.Namespace) -> None:
     if g:
         print(f"The job is taken from its giver -- narrate the scene "
               f"(dm.md): {npc_line(g)}")
-    print(f"The party takes the job: {quest_line(quest)}")
-    for line in quest_detail_lines(quest)[1:]:
+    mind = party_mind(state)
+    print(f"The party takes the job: {quest_line(quest, mind)}")
+    for line in quest_detail_lines(quest, mind=mind)[1:]:
         print(line)
     if quest.get("kind") == "delivery":
         print(f"The road is the job: `travel {quest['dest']}` "
@@ -1785,6 +1826,10 @@ def cmd_travel(args: argparse.Namespace) -> None:
     reset_streak(state)
     print("\n".join(log))
     state["location"] = target
+    if target.get("kind") != "wild":
+        visited = state.setdefault("visited", [])
+        if target["place"] not in visited:
+            visited.append(target["place"])  # known ground for teleport
     print(f"The party arrives at {location_line(state)} (day "
           f"{state['clock'].day}).")
     here = occupied_here(state)
@@ -1973,7 +2018,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
     actions: dict = {}
     for flag, action in (("drink", "drink"), ("heal", "heal"),
                          ("berserk", "berserk"),
-                         ("warbreath", "war-breath")):
+                         ("warbreath", "war-breath"),
+                         ("vanish", "vanish")):
         for name in getattr(args, flag) or []:
             hero = find_hero(party, name)
             if hero is None:
@@ -1998,6 +2044,15 @@ def cmd_resume(args: argparse.Namespace) -> None:
                 print(f"{hero.name} lacks the Power for War-Breath "
                       f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
                 return
+            if action == "vanish":
+                if hero.spell_rank("invisibility") < 2:
+                    print(f"{hero.name} doesn't know invisibility at rank 2 "
+                          f"(the vanish).")
+                    return
+                if hero.cur_power < VANISH_POWER_COST:
+                    print(f"{hero.name} lacks the Power to vanish "
+                          f"({hero.cur_power}/{VANISH_POWER_COST}).")
+                    return
             actions[hero] = action
 
     log = CombatLog()
@@ -2037,7 +2092,21 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     living = [h for h in party if not h.dead]
     log = CombatLog()
 
-    escaped = attempt_retreat(living, pending["foes"], rng, log)
+    escaped = False
+    if args.blink:
+        # Teleport rank 2, BLINK OUT: the whole party steps through -- no
+        # parting blows, no chase. A fizzled door falls back to the honest
+        # retreat below, blows and all.
+        wizard = find_hero(party, args.blink)
+        if wizard is None:
+            return
+        if not wizard.alive:
+            print(f"{wizard.name} is not on their feet -- no one to tear "
+                  f"the door open.")
+            return
+        escaped = blink_escape(living, pending["foes"], wizard, rng, log)
+    if not escaped:
+        escaped = attempt_retreat(living, pending["foes"], rng, log)
     wiped = party_wiped(party, log)
     if wiped or escaped:
         state["pending"] = None
@@ -2291,6 +2360,21 @@ def cmd_buy(args: argparse.Namespace) -> None:
         _buy_potion(hero, purse, thing, log)
     elif thing in WEAPONS:
         _buy_weapon(hero, purse, thing, log)
+    elif thing.startswith("book"):
+        # `buy HERO book SPELL` -- the spellbook, the gold gate on a
+        # wizard's breadth (Magic & Mind). Sold where scholarship lives:
+        # capitals only, like meds.
+        spell_name = thing[4:].strip()
+        if spell_name not in SPELLS:
+            print(f"No book teaches {spell_name!r}. Spells: "
+                  f"{', '.join(sorted(SPELLS))}.")
+            return
+        here = local_settlement(state)
+        if here is None or here["kind"] != "capital":
+            print(f"Spellbooks are sold only in a capital -- the party is "
+                  f"at {location_line(state)}.")
+            return
+        _buy_spellbook(hero, purse, spell_name, log)
     elif thing == "meds":
         # The "needs meds" weakness: a dose every MEDS_INTERVAL_DAYS days,
         # compounded only in a capital, or the nightly drain sets in.
@@ -2314,7 +2398,8 @@ def cmd_buy(args: argparse.Namespace) -> None:
         adjust_satisfaction(hero, 1, log, "the shakes ease")
     else:
         print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
-              f"Weapons: {', '.join(sorted(WEAPONS))}. Also: meds.")
+              f"Weapons: {', '.join(sorted(WEAPONS))}. Also: meds, "
+              f"book SPELL.")
         return
     print("\n".join(log))
     save(state)
@@ -2356,12 +2441,23 @@ def cmd_train(args: argparse.Namespace) -> None:
     hero = find_hero(party, args.hero)
     if hero is None:
         return
-    if args.what == "combat":
+    what = " ".join(args.what).lower()
+    if what == "combat":
         _train_combat_once(hero, log)
-    elif args.what == "magic":
-        _train_school(hero, log)
-    else:
+    elif what == "weapon":
         _train_proficiency(hero, log)
+    elif what == "magic":
+        # The shorthand: drill the wizard's own school spell.
+        if hero.school:
+            _train_spell(hero, hero.school, log)
+        else:
+            log.append(f"    {hero.name} has no school of magic to drill.")
+    elif what in SPELLS:
+        _train_spell(hero, what, log)
+    else:
+        print(f"Unknown skill: {what!r}. Options: combat, weapon, magic, "
+              f"or a spell name ({', '.join(sorted(SPELLS))}).")
+        return
     print("\n".join(log))
     save(state)
 
@@ -2394,6 +2490,170 @@ def cmd_heal(args: argparse.Namespace) -> None:
         return
     _use_heal(healer, target, rng, log)
     print("\n".join(log))
+    save(state)
+
+
+def _cast_scry(state: dict, hero, log: list[str]) -> None:
+    """Scry, between fights: sight beyond walls. Rank 1 reads the ACTIVE
+    quest's next room; rank 2 the whole current site; rank 3 the whole
+    quest (its TRUE level included -- the far-seeing outranks quest sight)
+    plus whatever DM-adjudicated divination the scene wants (dm.md)."""
+    rng = state["rng"]
+    rank = hero.spell_rank("scry")
+    if rank <= 0:
+        print(f"{hero.name} has not learned scry (a spellbook teaches it).")
+        return
+    cost = SCRY_POWER_COST[rank]
+    if hero.cur_power < cost:
+        print(f"{hero.name} lacks the Power to scry "
+              f"({hero.cur_power}/{cost}).")
+        return
+    qid = state.get("active_quest")
+    world = state.get("world")
+    quest = world["quests"].get(qid) if (qid and world) else None
+    if quest is None or quest["status"] != "open" or not quest.get("sites"):
+        print("Nothing taken to scry at -- an active site quest gives the "
+              "spell a target. (Freeform divination is the DM's to "
+              "adjudicate over a rank-3 casting.)")
+        return
+    hero.cur_power -= cost
+    result = casting_check(hero, "scry", rank, rng, log)
+    seen_rank = rank - 1 if result == "downgrade" else rank
+    if result == "misfire":
+        # rpg's helper handles the backlash bookkeeping consistently.
+        from rpg import _misfire
+        _misfire(hero, "scry", log)
+        return
+    if result == "fizzle" or seen_rank <= 0:
+        log.append(f"    {hero.name} stares into the beyond -- and sees "
+                   f"only fog ({cost} Power wasted).")
+        return
+    if result == "crit":
+        hero.cur_power += cost
+    log.append(f"    {hero.name} scries (-{0 if result == 'crit' else cost} "
+               f"Power -> {hero.cur_power}):")
+    cur = quest["next"]
+    site = quest["sites"][cur["site"]]
+    if seen_rank >= 3:
+        log.append(f"    THE FAR-SEEING -- [{quest['id']}] {quest['name']} "
+                   f"is truly level {quest['level']}:")
+    sites = (quest["sites"] if seen_rank >= 3
+             else [site])
+    for i, s in enumerate(sites):
+        s_i = i if seen_rank >= 3 else cur["site"]
+        rooms = s["rooms"]
+        for j, (rname, kinds) in enumerate(rooms):
+            if seen_rank == 1 and not (s_i == cur["site"]
+                                       and j == cur["room"]):
+                continue
+            if seen_rank == 2 and j < cur["room"] and s_i == cur["site"]:
+                continue
+            log.append(f"      {s['name']} room {j + 1}: {rname} -- "
+                       f"{roster_kinds_line(kinds, quest['skins'])}")
+    if seen_rank >= 3:
+        log.append("      (rank 3 also carries DM-adjudicated divination -- "
+                   "ask the question in the scene, dm.md)")
+
+
+def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
+    """Teleport rank 3, TRAVEL: step to any settlement the party has
+    VISITED -- no days pass, no road, no camp, no interception. The Power
+    pool is the leash: TELEPORT_TRAVEL_COST_PER_DAY per travel day the road
+    would have taken."""
+    rng, world = state["rng"], state["world"]
+    if hero.spell_rank("teleport") < 3:
+        print(f"{hero.name}'s teleport art can't carry the party across "
+              f"the world (rank 3 needed).")
+        return
+    visited = state.get("visited", [])
+    target = None
+    for s in world["settlements"]:
+        if want in s["key"]:
+            target = s
+            break
+    if target is None:
+        print(f"No settlement matches {want!r}. Teleport reaches "
+              f"settlements only (the wilds shift too much to fix).")
+        return
+    if target["key"] not in visited:
+        print(f"The party has never stood in {target['name']} -- teleport "
+              f"reaches only KNOWN ground (travel there once first).")
+        return
+    if target["key"] == state["location"]["place"]:
+        print(f"The party is already at {target['name']}.")
+        return
+    days = (TRAVEL_DAYS_IN_LAND
+            if target["race"] == state["location"]["land"]
+            else TRAVEL_DAYS_CROSS)
+    cost = TELEPORT_TRAVEL_COST_PER_DAY * days
+    if hero.cur_power < cost:
+        print(f"{hero.name} lacks the Power for that distance "
+              f"({hero.cur_power}/{cost} -- {days} road day(s) at "
+              f"{TELEPORT_TRAVEL_COST_PER_DAY}/day).")
+        return
+    hero.cur_power -= cost
+    result = casting_check(hero, "teleport", 3, rng, log)
+    if result == "misfire":
+        from rpg import _misfire
+        _misfire(hero, "teleport", log)
+        print("\n".join(log))
+        return
+    if result == "fizzle":
+        log.append(f"    {hero.name} folds the map -- and it springs back "
+                   f"flat ({cost} Power wasted). The party goes nowhere.")
+        print("\n".join(log))
+        return
+    if result == "crit":
+        hero.cur_power += cost
+    clear_sighting(state, quiet=True)
+    state["location"] = _settlement_location(target)
+    log.append(f"    *** {hero.name} folds the world -- one step, and the "
+               f"party stands in {target['name']} "
+               f"(-{0 if result == 'crit' else cost} Power -> "
+               f"{hero.cur_power}). No road, no nights, no ambush. ***")
+    print("\n".join(log))
+    log2: list[str] = []
+    process_departures(state, log2)
+    if log2:
+        print("\n".join(log2))
+    here = occupied_here(state)
+    if here is not None:
+        print(occupation_line(state, here))
+    maybe_post_wave(state)
+    log3: list[str] = []
+    if deliver_if_arrived(state, log3):
+        print("\n".join(log3))
+
+
+def cmd_cast(args: argparse.Namespace) -> None:
+    """The between-fights utility casts (combat spells cast themselves in
+    the melee -- the autobattler rule): `cast HERO scry`, `cast HERO
+    teleport DEST`. Rank-3 roleplay uses (ghost-walk, far-seeing) are the
+    DM's to adjudicate in the scene (dm.md); this command covers the
+    engine-backed ones."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    party = state["party"]
+    log: list[str] = []
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
+    spell = args.spell.lower()
+    if spell == "scry":
+        _cast_scry(state, hero, log)
+        if log:
+            print("\n".join(log))
+    elif spell == "teleport":
+        if not args.dest:
+            print("cast HERO teleport DEST -- name a visited settlement.")
+            return
+        _cast_teleport(state, hero, " ".join(args.dest).lower(), log)
+    else:
+        print(f"Between fights only scry and teleport are cast by command "
+              f"-- combat spells fire on their own in the melee. "
+              f"({spell!r} given.)")
+        return
     save(state)
 
 
@@ -2498,13 +2758,21 @@ def main() -> None:
     p.add_argument("--heal", action="append", metavar="HERO")
     p.add_argument("--berserk", action="append", metavar="HERO")
     p.add_argument("--warbreath", action="append", metavar="HERO")
+    p.add_argument("--vanish", action="append", metavar="HERO",
+                   help=f"invisibility rank 2: fade from the melee "
+                        f"({VANISH_POWER_COST} Power; untargetable, the "
+                        f"next strike lands as an ambush)")
     p.set_defaults(func=cmd_resume)
 
     p = sub.add_parser(
         "retreat",
         help="break away from a PAUSED fight: parting blows from foes fit "
              "to swing, then ONE group chase roll. A fled site room keeps "
-             "its survivors; re-run the room to face them again.")
+             "its survivors; re-run the room to face them again. "
+             "--blink HERO (teleport rank 2) tears a door instead: no "
+             "parting blows, no chase; a fizzled casting falls back to "
+             "the honest retreat.")
+    p.add_argument("--blink", metavar="HERO", default=None)
     p.set_defaults(func=cmd_retreat)
 
     p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
@@ -2621,8 +2889,12 @@ def main() -> None:
     p = sub.add_parser(
         "show",
         help="one quest in full: description, sites, rooms, and what holds "
-             "each room (by skinned display name)")
+             "each room (by skinned display name). Levels read through the "
+             "party's best MIND (quest sight: L~7 is an estimate); --dm "
+             "prints the true levels for the DM's own planning.")
     p.add_argument("quest", help="quest id (q07, or just 7)")
+    p.add_argument("--dm", action="store_true",
+                   help="true levels (DM view), no quest-sight blur")
     p.set_defaults(func=cmd_show)
 
     p = sub.add_parser(
@@ -2669,8 +2941,10 @@ def main() -> None:
 
     p = sub.add_parser(
         "buy",
-        help="spend gold on a potion, a weapon, or (in a capital) a dose of "
-             "meds for one hero (weapons are equipped on the spot; plain "
+        help="spend gold on a potion, a weapon, or (in a capital) a dose "
+             "of meds or a SPELLBOOK -- `buy HERO book SPELL`, "
+             f"{SPELLBOOK_PRICE}g, teaches a wizard a new spell at rank 1 "
+             "-- for one hero (weapons are equipped on the spot; plain "
              "tier only -- masterwork/legendary are never shopped). Note "
              f"the kit restocks itself: every long rest tops each hero "
              f"back up to {KIT_HEALING} healing + {KIT_STAMINA} stamina "
@@ -2678,7 +2952,7 @@ def main() -> None:
     p.add_argument("hero")
     p.add_argument("thing", nargs="+",
                    help="a potion kind, a weapon name (e.g. rapier, "
-                        "wooden staff), or 'meds'")
+                        "wooden staff), 'meds', or 'book SPELL'")
     p.set_defaults(func=cmd_buy)
 
     p = sub.add_parser(
@@ -2700,13 +2974,17 @@ def main() -> None:
         help="spend a banked skill point: 'combat' = +1 to all pressure rolls "
              "per rank (cap 5); 'weapon' = proficiency with the WIELDED "
              "weapon, +1 attack pressure & +1 severity per rank (cap 3); "
-             "'magic' = a wizard's SCHOOL proficiency, +1 bolt pressure & "
-             "+1 bolt severity per rank (cap 3, wizards only). "
+             "a SPELL NAME = one rank of a known spell (cap 3; attack "
+             "spells gain +1 pressure & +1 severity per rank, rank 3 is "
+             "the signature technique -- see `levelup`); 'magic' = "
+             "shorthand for the wizard's own school spell. "
              "Rank n costs n points. The PC's points are the player's "
              "choice (companions autolevel on the doctrine since "
              "2026-07-13).")
     p.add_argument("hero")
-    p.add_argument("what", choices=["combat", "weapon", "magic"])
+    p.add_argument("what", nargs="+",
+                   help="combat | weapon | magic | a spell name "
+                        "(e.g. 'stop time')")
     p.set_defaults(func=cmd_train)
 
     p = sub.add_parser(
@@ -2721,6 +2999,23 @@ def main() -> None:
     p.add_argument("healer")
     p.add_argument("target")
     p.set_defaults(func=cmd_heal)
+
+    p = sub.add_parser(
+        "cast",
+        help="a wizard's between-fights utility cast (combat spells fire "
+             "on their own in the melee): `cast HERO scry` reads the "
+             "active quest's rooms ahead (rank 1 the next room, 2 the "
+             "site, 3 the whole quest + its TRUE level); `cast HERO "
+             f"teleport DEST` (rank 3) steps to a VISITED settlement, "
+             f"{TELEPORT_TRAVEL_COST_PER_DAY} Power per road day skipped "
+             "-- no days pass, no road encounters, no interception. "
+             "Rank-3 roleplay uses (ghost-walk, freeform divination) are "
+             "DM-adjudicated in the scene (dm.md).")
+    p.add_argument("hero")
+    p.add_argument("spell", help="scry | teleport")
+    p.add_argument("dest", nargs="*",
+                   help="teleport only: the destination settlement")
+    p.set_defaults(func=cmd_cast)
 
     p = sub.add_parser(
         "sheet",

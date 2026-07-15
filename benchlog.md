@@ -454,3 +454,71 @@ The tuned game, final (run 3 where worldgen matters, run 2 elsewhere):
   table. The career sim skips deliveries (no travel layer), so career
   numbers carry no delivery income.
 
+
+**Measured numbers (2026-07-15, the Magic & Mind layer: MIND stat +
+budget 11, the spell system with ranks/openers/casting check, quest
+sight, caster rows re-statted).** Full suite re-run; one mid-session
+recalibration (the caster rows' aim, below).
+
+The change under measurement: MIND joined the creation budget as a
+seventh line (surplus 9 -> 11 to keep the per-stat spread), wizard =
+MIND-highest (was POWER-highest, ~unchanged 23% of rolls), bolt aim
+moved from the flat POWER stat to ceil((MIND+DEX)/2) + spell rank, the
+school proficiency ranks became SPELL ranks (rank 1 free at creation --
+a small early wizard buff), and rank-3 techniques/openers exist (the
+sims' rolled heroes only ever know their school spell, so no opener
+fires in any bench -- openers are book-taught, and books are play-only).
+
+- **The headline: heroes drifted ~4-8 points stronger across every
+  bench** -- the budget bump plus the free rank-1 school. Direction is
+  uniform; no interaction looks broken.
+- **Hideout** (rank 0, 10k): clear **81.5** / wipe **16.5** (was
+  77.7/19.7); reckless wipe **79.4** (was 84.5) -- "not using resources
+  mostly means death" still holds, but the gap narrowed. **Barrow**
+  `[3,3,4]`: clear **24.8** / wipe **71.6** (was 20.3/76.0).
+- **Training ladder** (5k/rank): barrow **24 -> 56 -> 84 -> 97**,
+  hideout **82 -> 96 -> 99.6 -> 100** (was 20/52/80/96 and
+  78/95/99/99.9) -- a rank still reads as a rank.
+- **Party size** (5k/size): hideout **19 / 82 / 98.6 / 99.9**, barrow
+  **1.5 / 24 / 73 / 95** (was 17/78/98/99.8 and 0.8/20/67/94).
+- **Weapons matrix**: unchanged story (fixed non-caster frames by
+  construction) -- zweihander/katana split the duel columns, zweihander
+  owns every swarm, staff trails, no weapon tops every cell.
+- **Bestiary**: the monster families sat still (skeleton 95.8, wolf
+  91.8, troll 97.2, dragon 89.9); the elite ladder rose a touch
+  (champion 73.8, blademaster 66.7, warlord 65 -- was 72/64.5/59).
+  **The caster rows initially COLLAPSED** (hexer 81 -> 93 at level):
+  their aim had ridden the flat power stat 8/8/11, and mind=8 under the
+  new mean-with-DEX formula cost them 2 pressure. Recalibrated the same
+  session: mind 11/11/14 (savant values -- monster rows break the human
+  cap by doctrine, like the dragon's DEX 8) reproduces the old bolt
+  pressure exactly. After the fix: **hexer 81.8 (L3), pyromancer 90.4
+  (L6), magus 92.2 (L10)** -- all within a point of 2026-07-14, the -2
+  columns real walls again (35/79/77). The magus also gained
+  spell_ward 2 (assassin-opener protection; sims never cast openers,
+  so this moved nothing).
+- **New knob, unmeasured by design: spell_ward** (dragon 3, drake 2,
+  magus 2, wight 2, giant 1) -- it only acts against openers and stun
+  riders, which no bench path uses; it exists for played wizards.
+- **Generated content** (300/cell): at-level rooms win **75-99**, sites
+  **~94 at L1-3** sliding to **~36-56 at 15-20** -- same shape, a few
+  points up with the stronger duo.
+- **Careers** (200, after the caster fix): reach **L5 88% / L8 72% /
+  L11 38% / L14 20% / L20 8%**, median death **L9**, capped median 166
+  days / 39 quests. Before the caster fix the curve had rebounded to
+  92/81/52/26/8 (median L9) -- the fix restored roughly half the
+  2026-07-14 hardening; the rest of the ease (vs 80/54/30/14/4.5,
+  median L8) is the hero-side buff itself.
+- **The flag for the designer:** the whole game moved a few points
+  easier, and the hideout now sits ~25 points above the 2026-07
+  retune's ~55% clear target (the 2026-07-11b flag, wider). The
+  cheapest single counter-lever if play agrees: HERO_STAT_BUDGET
+  11 -> 10 (pulls every hero half a stat point); enemy DEX stays the
+  sharper knife if only the low band needs teeth. Levers untouched
+  this session -- feel the wizard game in play first.
+- **What the batch changes in PLAYED games beyond the sims**: openers,
+  techniques, vanish/blink, spellbooks, teleport travel, scry, and
+  quest sight (the board blurs to L~N under a best MIND of 5 or less;
+  pay stays honest) exist only at the table -- no bench models a
+  book-taught wizard. The career sim's board picks still read TRUE
+  levels (the sims pass no mind), so quest sight moved no number.

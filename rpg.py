@@ -3,9 +3,10 @@
 Implements the ruleset in rules.md (the source of truth for mechanics intent):
 the group melee (group_combat), the pause/retreat interrupt layer, weapons and
 breakage, the survival tracks (HP/STA/Power, rests, the clock), progression
-(XP, training, proficiency), the economy (purse, potions, weapons), random
-party generation, placeholder magic (wizards, bolts, the two schools), and
-the batch-sim policies (sim_fight, sim_pause_policy).
+(XP, training, proficiency), the economy (purse, potions, weapons,
+spellbooks), random party generation, the Magic & Mind layer (wizards, the
+MIND stat, the spell catalog with ranks, the casting check, the openers),
+and the batch-sim policies (sim_fight, sim_pause_policy).
 
 What you FIGHT and WHERE lives in sites.py (the foe catalog and the two
 hand-built sites); how a playthrough is DRIVEN lives in session.py. This file
@@ -69,35 +70,195 @@ FIRST_BLOOD_HP = 1      # First Blood inflicts a guaranteed graze -- light on pu
                         # all fight), never a free kill
 HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
 
-# --- Placeholder magic (2026-07-14) ------------------------------------------ #
-# Wizards exist from level 1 (designer call: magic is never a high-level-only
-# system). A character whose POWER is STRICTLY the highest of the three
-# creation stats POWER/DEX/STR is a WIZARD (CHA stays social and doesn't
-# compete); a wizard rolls a SCHOOL instead of an ability -- the school
-# REPLACES the heal/bulwark/first_blood slot, so the Power pool has one
-# spender. A wizard attacks by hurling BOLTS while the Power lasts: a cast
-# costs the normal swing STA (casting tires like fighting -- Power is ammo on
-# top, NOT a second endurance pool) plus BOLT_POWER_COST Power, and the attack
-# pressure rolls off POWER instead of DEX (training still applies; the wielded
-# weapon's attack bonus does not). Severity is the school's flat instead of
-# STR: FIRE is the STR-analogue (higher damage), ICE is low damage but every
-# landed bolt RIMES the target -- a stacking -1 DEX (attack and defense) for
-# the rest of the fight, floored at 0. Out of Power the wizard fights on with
-# the weapon in hand, on whatever STA the casting left -- and defends normally
-# with the body all along (squishiness comes from the statline, not a rule).
-# The levellable axis is SCHOOL PROFICIENCY: the weapon-proficiency system
-# wholesale (rank n costs n points, +1 bolt pressure and +1 bolt severity per
-# rank, cap PROFICIENCY_MAX), keyed as "fire magic"/"ice magic" in the same
-# proficiency dict (train_school; session `train HERO magic`).
+# --- Magic & Mind (2026-07-15; grew out of the 2026-07-14 placeholder) ------- #
+# Wizards exist from level 1. A character whose MIND is STRICTLY the highest
+# of the three creation stats MIND/DEX/STR is a WIZARD (CHA stays social and
+# doesn't compete); a wizard rolls a SCHOOL (fire/ice) instead of an ability
+# and starts knowing that one spell at rank 1. MIND is the casting stat --
+# "the mind", fixed at creation like every stat (the 1-20 doctrine); the
+# POWER pool is the FUEL and stays its own rolled thing (qi, not iq --
+# designer call 2026-07-15: Power never derives from MIND).
+#
+# THE SPELL SYSTEM:
+# - A wizard knows SPELLS at RANKS 1..3 (SPELL_RANK_MAX). Rank n costs n
+#   skill points (train_spell) -- the proficiency chassis wholesale. The
+#   first spell is rolled at creation; every further spell needs a
+#   SPELLBOOK (learn_spell; bought in a capital, SPELLBOOK_PRICE).
+# - AIMED casts (bolts, fireballs, hurled debris) ride the normal exchange:
+#   attack pressure = 2d6 + AIM + training + spell rank, where AIM =
+#   ceil((MIND + DEX) / 2) -- the mind shapes it, the hand throws it. The
+#   defender defends with the body as ever. Severity = margin + the cast's
+#   flat (CAST_SEVERITY) - soak; STR and the weapon stay out of it.
+# - UNAIMED casts (the openers, the utility spells) roll the CASTING CHECK:
+#   2d6 + MIND + rank vs DC = CAST_DC_BASE + CAST_DC_PER_RANK * rank cast.
+#   Degrees by margin: miss by 5+ (or snake-eyes) = MISFIRE (Power lost,
+#   the action lost, MISFIRE_BACKLASH_HP to the caster); miss = FIZZLE
+#   (Power lost, action lost); make it by 0-1 = DOWNGRADE (resolves one
+#   rank lower where the spell has one); make it by 2+ = success; by 7+
+#   (or boxcars) = CRITICAL (the Power is refunded). MASTERY: casting a
+#   technique BELOW your trained rank never rolls -- reliability is what
+#   study buys; risk lives at the edge of your art. Snake-eyes on an aimed
+#   cast's attack dice is likewise a misfire (magic is the volatile art;
+#   steel stays reliable -- the fumble is scoped to casting only).
+# - Casting tires like fighting: a cast costs the normal swing STA, and the
+#   Power is ammo ON TOP -- never a second endurance pool. A parried or
+#   warded cast still burns its Power. Out of Power the wizard swings the
+#   weapon in hand and defends normally all along.
+# - CONTROL effects (possession; the freeze/knockdown riders) respect
+#   SPELL_WARD, the apex monsters' per-row knob (like pain/crowd_cap):
+#   ward raises a possession's DC by 2/point, ward >= 2 is immune to
+#   stun riders, and ANY ward turns an ambush strike into a normal
+#   exchange. The undead/tireless have no living mind: possession-immune.
+# - No magic-resistance stat exists: aimed spells are dodged by the body,
+#   control is resisted through the DC (training + ward), and the rest is
+#   priced in Power. (Design discussion, 2026-07-15.)
 BOLT_POWER_COST = 1
-SCHOOLS = ("fire", "ice")
-BOLT_SEVERITY = {"fire": 5, "ice": 2}   # the flat that replaces STR + weapon
-                                        # severity on a bolt: fire ~ a solid
-                                        # fighter with military steel, ice
-                                        # deliberately weak -- the debuff is
-                                        # the point
+SCHOOLS = ("fire", "ice")   # the creation roll (books teach the rest)
+SPELL_RANK_MAX = 3
+SPELLBOOK_PRICE = 120       # gold; capitals only (session) -- a real saving
+                            # goal (two quality weapons)
+CAST_DC_BASE = 7
+CAST_DC_PER_RANK = 2
+MISFIRE_BACKLASH_HP = 1
+AMBUSH_MARGIN = 6           # an ambush strike (unseen / a blink at the back /
+                            # a stolen moment) auto-wins the exchange at this
+                            # margin -- the severity TABLE is the cap: mooks
+                            # take a crippling blow, bosses soak and survive.
+                            # Any spell_ward turns the ambush into a normal
+                            # exchange instead.
+# Severity flats per aimed cast kind (replacing STR + weapon severity; the
+# spell's rank adds +1 pressure and +1 severity on top, like proficiency).
+# fire ~ a solid fighter with military steel; ice is weak on purpose (the
+# rime is the point); tk hurls debris; freeze/hurl_foe trade damage for the
+# stun rider.
+CAST_SEVERITY = {"fire": 5, "ice": 2, "freeze": 2, "tk": 4, "hurl_foe": 3}
+CAST_POWER_COST = {"fire": BOLT_POWER_COST, "ice": BOLT_POWER_COST,
+                   "freeze": 4, "tk": 2, "hurl_foe": 4, "disarm": 2}
+CAST_SPELL = {"fire": "fire", "ice": "ice", "freeze": "ice",
+              "tk": "telekinesis", "hurl_foe": "telekinesis",
+              "disarm": "telekinesis"}   # cast kind -> the spell whose rank
+                                         # applies
 ICE_DEX_DEBUFF = 1          # stacking DEX loss per landed ice bolt (per fight)
+FREEZE_DEX_DEBUFF = 2       # flash-freeze rimes deeper
+FIREBALL_POWER_COST = 4     # fire rank 3's signature: a hero-side sweep
+FIREBALL_TARGETS = 3        # ...of up to this many foes (cast vs 3+ foes)
+# The openers -- cast at fight start, before the lines meet (First Blood's
+# doctrine: automatic while the Power lasts, skipped when the fight is
+# already winding down). Cost scales with the rank cast.
+OPENER_SPELLS = ("possession", "stop time", "invisibility", "teleport",
+                 "flight")      # auto-cast priority order
+POSSESSION_POWER_COST = 3       # + rank (4/5/6); puppet fights for you
+                                # `rank` rounds. DC + target training
+                                # + 2 x ward; the dead have no mind to seize.
+STOP_TIME_POWER_COST = 3        # + rank (4/5/6); `rank` stolen strikes
+TELEPORT_STRIKE_COST = 3        # the blink at the back (rank 1 technique)
+TELEPORT_ESCAPE_COST = 5        # rank 2: the whole party steps through --
+                                # no parting blows, no chase
+TELEPORT_TRAVEL_COST_PER_DAY = 3  # rank 3: instant travel to a KNOWN
+                                  # settlement (session `cast`)
+INVISIBILITY_POWER_COST = 3     # rank 1: enter unseen; the first attack is
+                                # an ambush and breaks it
+VANISH_POWER_COST = 4           # rank 2: the mid-fight re-vanish (a pause
+                                # action / standing order)
+FLIGHT_POWER_COST = 2           # + rank (3/5): aloft `rank` rounds -- melee
+                                # can't reach; bolts and BREATH still can
+                                # (fueled sweeps); +1 attack pressure aloft
+FLIGHT_ALOFT_ATK = 1
+SCRY_POWER_COST = {1: 2, 2: 3, 3: 4}    # utility (session `cast`): next
+                                        # room's roster / the whole site /
+                                        # the far-seeing (DM-adjudicated)
 WIZARD_STAFF_CHANCE = 0.50  # wizards often start with the wooden staff
+
+
+@dataclass(frozen=True)
+class Spell:
+    """One spell in the catalog: what each rank does (menu/doc text; the
+    behavior itself is engine code keyed by name). `combat` spells act on
+    their own inside the autobattle -- a spell is an OPENER, an attack-
+    school behavior, or a pause/standing-order action, NEVER a new mid-
+    fight decision layer (design rule, 2026-07-15). Utility spells are
+    session/DM calls between fights; rank 3 of several spells is the
+    roleplay tier the DM adjudicates (dm.md)."""
+    name: str
+    kind: str               # "attack" | "opener" | "utility"
+    blurb: str
+    ranks: tuple[str, ...]  # per-rank effect, human-readable
+    max_rank: int = SPELL_RANK_MAX
+
+
+SPELLS = {s.name: s for s in [
+    Spell("fire", "attack",
+          "The damage school: bolts that hit like heavy steel.",
+          (f"firebolt ({CAST_POWER_COST['fire']} Power, severity flat "
+           f"+{CAST_SEVERITY['fire']})",
+           "+1 bolt pressure & severity (the rank bonus)",
+           f"FIREBALL: vs 3+ foes, one roll strikes up to "
+           f"{FIREBALL_TARGETS} of them ({FIREBALL_POWER_COST} Power)")),
+    Spell("ice", "attack",
+          "The control school: weak bolts that RIME (-1 DEX, stacking).",
+          (f"icebolt ({CAST_POWER_COST['ice']} Power, flat "
+           f"+{CAST_SEVERITY['ice']}, rime -{ICE_DEX_DEBUFF} DEX)",
+           "+1 bolt pressure & severity (the rank bonus)",
+           f"FLASH-FREEZE: a wounding bolt also freezes the target out of "
+           f"its next action (rime -{FREEZE_DEX_DEBUFF}; "
+           f"{CAST_POWER_COST['freeze']} Power; ward 2+ is immune)")),
+    Spell("telekinesis", "attack",
+          "Force at a distance: disarm, hurl debris, hurl people.",
+          (f"DISARM: tear an armed foe's weapon away (opposed; "
+           f"{CAST_POWER_COST['disarm']} Power; once per foe)",
+           f"HURL: fling debris as an aimed strike (flat "
+           f"+{CAST_SEVERITY['tk']}, {CAST_POWER_COST['tk']} Power)",
+           f"HURL FOE: slam a body off its feet -- a wounding hit also "
+           f"costs its next action ({CAST_POWER_COST['hurl_foe']} Power; "
+           f"ward 2+ is immune)")),
+    Spell("teleport", "opener",
+          "Step through space: the blink at the back, the way out, the road "
+          "not walked.",
+          (f"BLINK STRIKE: open the fight at a foe's back -- an ambush "
+           f"strike ({TELEPORT_STRIKE_COST} Power)",
+           f"BLINK OUT: retreat with NO parting blows and NO chase "
+           f"(`retreat --blink`; {TELEPORT_ESCAPE_COST} Power)",
+           f"TRAVEL: step to any settlement the party has visited "
+           f"({TELEPORT_TRAVEL_COST_PER_DAY} Power per travel day skipped; "
+           f"no road, no interception)")),
+    Spell("invisibility", "opener",
+          "Unseen until the knife falls. Out of a fight it is the DM's to "
+          "adjudicate (sneak, slip past, vanish from a scene).",
+          (f"UNSEEN ENTRY: start the fight untargetable; the first attack "
+           f"is an ambush strike and breaks it "
+           f"({INVISIBILITY_POWER_COST} Power)",
+           f"VANISH: re-fade mid-fight (a pause action / standing order; "
+           f"{VANISH_POWER_COST} Power)",
+           "GHOST-WALK: unseen for a whole scene out of combat "
+           "(DM-adjudicated roleplay tier)")),
+    Spell("stop time", "opener",
+          "The stolen moment: the world hangs while the wizard works.",
+          (f"one stolen strike -- an ambush before the lines meet "
+           f"({STOP_TIME_POWER_COST + 1} Power)",
+           f"two stolen strikes ({STOP_TIME_POWER_COST + 2} Power)",
+           f"three stolen strikes ({STOP_TIME_POWER_COST + 3} Power)")),
+    Spell("possession", "opener",
+          "Seize a living mind: the puppet fights for the party. The dead "
+          "and the warded resist (DC + training + 2 x ward).",
+          (f"1 round ({POSSESSION_POWER_COST + 1} Power)",
+           f"2 rounds ({POSSESSION_POWER_COST + 2} Power)",
+           f"3 rounds ({POSSESSION_POWER_COST + 3} Power)")),
+    Spell("flight", "opener",
+          "The sky is a place to fight from. The full spell (all day, for "
+          "good) waits on the ranged-combat model -- rank 3 is not yet "
+          "written.",
+          (f"SKY-STEP: aloft round 1 -- melee can't reach; bolts and "
+           f"breath can; +{FLIGHT_ALOFT_ATK} attack pressure aloft "
+           f"({FLIGHT_POWER_COST + 1} Power)",
+           f"aloft rounds 1-2 ({FLIGHT_POWER_COST + 2} Power)"),
+          max_rank=2),
+    Spell("scry", "utility",
+          "Sight beyond walls (session `cast HERO scry`).",
+          (f"the next room's roster ({SCRY_POWER_COST[1]} Power)",
+           f"every room of the active site ({SCRY_POWER_COST[2]} Power)",
+           f"the far-seeing: the active quest whole, and DM-adjudicated "
+           f"divination ({SCRY_POWER_COST[3]} Power)")),
+]}
 HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
@@ -513,7 +674,10 @@ BERSERK_HP_COST = 2         # Berserk: bleed HP for STA. The HP loss also
 BERSERK_STA_GAIN = 4        # deepens the wound spiral -- the real price.
 WAR_BREATH_POWER_COST = 2   # War-Breath: spend Power for STA -- a fighter's
 WAR_BREATH_STA_GAIN = 3     # breath discipline, not wizardry.
-PAUSE_ACTIONS = ("drink", "heal", "berserk", "war-breath")
+PAUSE_ACTIONS = ("drink", "heal", "berserk", "war-breath", "vanish")
+# "vanish" is invisibility rank 2's mid-fight re-fade (VANISH_POWER_COST
+# Power at the same pause-action price): the wizard drops out of every
+# foe's reach until their next attack, which strikes as an ambush.
 
 # The universal graze floor: win the exchange by at least this margin and the
 # hit always draws blood (min. a graze), no matter the soak. Without it a
@@ -587,6 +751,16 @@ def _play(log: list[str], full_line: str, player_line: str) -> None:
         log.append(full_line)
 
 
+CAST_LABEL = {"fire": "fire bolt", "ice": "ice bolt",
+              "freeze": "flash-freeze", "tk": "hurled debris",
+              "hurl_foe": "telekinetic slam", "disarm": "telekinetic grip"}
+
+
+def kind_label(kind: str) -> str:
+    """Log/menu name for an aimed cast kind."""
+    return CAST_LABEL[kind]
+
+
 def margin_verb(margin: int) -> str:
     """How decisively the exchange was won, as a verb for the headline."""
     if margin >= 5:
@@ -632,8 +806,8 @@ class PressureRoll:
     modifier and its source (the mechanics layer of the two-layer log)."""
     total: int
     dice: int           # the raw 2d6 sum
-    dex: int            # the stat term: DEX normally, POWER on a bolt cast
-                        # (stat_label says which)
+    dex: int            # the stat term: DEX normally, AIM (the MIND/DEX
+                        # mean) on a cast (stat_label says which)
     training: int
     wound_pen: int      # HP lost so far (the death spiral)
     fatigue_pen: int    # SPENT_PENALTY at 0 STA, else WINDED_PENALTY if
@@ -646,9 +820,9 @@ class PressureRoll:
     armor: int = 0          # the entity's def_bonus (defense only -- the
                             # "armored" dress trait; a body knob, not a weapon)
     misc: int = 0           # circumstance term (e.g. -2 drinking mid-fight,
-                            # -2 fleeing under a parting blow)
+                            # -2 fleeing under a parting blow, +1 aloft)
     misc_label: str = ""
-    stat_label: str = "DEX"  # "POWER" on a bolt cast (placeholder magic)
+    stat_label: str = "DEX"  # "AIM" on a cast (the Magic & Mind add-on)
     chill: int = 0          # DEX lost to landed ice bolts this fight
 
     def breakdown(self, name: str) -> str:
@@ -704,13 +878,32 @@ class Entity:
     sta: int
     max_hp: int
     power: int = 0
+    mind: int = 0           # MIND, the casting stat (the 1-20 doctrine:
+                            # fixed at creation, natural human cap 6; only
+                            # monsters and future transcendence break it).
+                            # Aim for a thrown cast is ceil((MIND+DEX)/2);
+                            # the casting check rolls off MIND alone. Also
+                            # the party's QUEST SIGHT (quests.py: the best
+                            # MIND reads a job's level precisely). 0 = never
+                            # rolled (pre-magic foes).
     ability: str | None = None          # "bulwark" (mid-fight save) or "heal" (between-
                                          # fights HP restore, see use_heal); None = neither
-    school: str = ""                    # placeholder magic: "fire" / "ice" makes
-                                         # this a WIZARD (bolts while Power lasts;
-                                         # see the magic constants block). Replaces
-                                         # the ability slot -- a wizard's ability
-                                         # is None.
+    school: str = ""                    # the wizard marker: the school rolled
+                                         # at creation ("fire"/"ice"; "" = not
+                                         # a wizard). The identity gate for
+                                         # learning spells; the spells dict
+                                         # below carries what they know.
+    spells: dict[str, int] = field(default_factory=dict)   # spell -> rank
+                                         # (1..SPELL_RANK_MAX; rank n costs n
+                                         # points via train_spell; new spells
+                                         # come from spellbooks, learn_spell)
+    spell_ward: int = 0                 # the apex monsters' resistance knob
+                                         # (a per-row puzzle piece like pain,
+                                         # never a universal stat): +2 x ward
+                                         # to a possession's DC, ward >= 2
+                                         # immune to stun riders, any ward
+                                         # defends normally against ambush
+                                         # strikes
     sta_cost: int = STA_ATTACK_COST     # STA spent per attack (defense is free);
                                          # Phase 4 hangs weapon weight on this knob
     undead: bool = False                # dead flesh: wounds never knit back on
@@ -766,20 +959,30 @@ class Entity:
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
-    power_stat: int = field(default=0)  # the bolt's PRESSURE stat: creation
-                                         # POWER, pinned (0 = set from power
-                                         # in __post_init__). The 1-20
-                                         # doctrine holds for wizards too --
-                                         # stats are fixed at creation,
-                                         # levels grow the POOLS -- so pool
-                                         # growth deepens a wizard's ammo,
-                                         # never their aim (letting the
-                                         # growing pool double as the attack
-                                         # stat measurably broke the top
-                                         # band's calibration upward)
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
+    # Per-fight spell states (all cleared by _clear_fight_states at fight
+    # end / on a break-away -- nothing here crosses fights):
+    unseen: bool = field(default=False)     # invisibility: untargetable; the
+                                            # next attack is an ambush strike
+                                            # and breaks it
+    aloft: int = field(default=0)           # flight: rounds left in the air
+                                            # (melee can't reach; bolts and
+                                            # fueled sweeps -- breath -- can;
+                                            # +FLIGHT_ALOFT_ATK attacking)
+    stunned: int = field(default=0)         # frozen solid / slammed sprawling:
+                                            # loses that many actions (defense
+                                            # is unaffected -- the body still
+                                            # flinches)
+    possessed: int = field(default=0)       # rounds left fighting for the
+                                            # OTHER side (a foe field; the
+                                            # party never gets possessed --
+                                            # enemy wizards cast only bolts
+                                            # for now)
+    disarm_tried: bool = field(default=False)   # telekinetic disarm attempted
+                                                # on this target (once per foe
+                                                # per fight, hit or miss)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
     dead: bool = field(default=False)   # truly slain (unsaved crippling blow)
     fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
@@ -838,8 +1041,6 @@ class Entity:
         self.hp = self.max_hp
         self.cur_sta = self.sta
         self.cur_power = self.power
-        if not self.power_stat:
-            self.power_stat = self.power
         # HP returns over ~a week. Derived from max_hp so a big pool doesn't take
         # forever (a flat 1/night would leave a 20-HP tank down for 20 nights).
         self.hp_regen_per_night = max(1, round(self.max_hp / 7))
@@ -899,26 +1100,90 @@ class Entity:
             return self.weapon.sta_cost
         return self.sta_cost
 
-    # --- placeholder magic ------------------------------------------------ #
+    # --- magic (the Magic & Mind add-on) ---------------------------------- #
     @property
-    def school_prof_key(self) -> str:
-        return f"{self.school} magic"   # the proficiency-dict key ("fire magic")
+    def is_wizard(self) -> bool:
+        return bool(self.school)
 
     @property
-    def school_prof(self) -> int:
-        return self.proficiency.get(self.school_prof_key, 0) if self.school else 0
+    def aim(self) -> int:
+        """The thrown-cast attack stat: ceil((MIND + DEX) / 2) -- the mind
+        shapes it, the hand throws it (designer call, 2026-07-15). Fixed by
+        construction: both parents are creation stats."""
+        return (self.mind + self.dex + 1) // 2
 
-    def casting_next(self) -> bool:
-        """Will this entity's next attack be a bolt? A wizard casts whenever
-        the Power is there; out of Power they swing the weapon in hand."""
-        return bool(self.school) and self.cur_power >= BOLT_POWER_COST
+    def spell_rank(self, name: str) -> int:
+        return self.spells.get(name, 0)
 
-    def bolt_severity_mods(self) -> list[tuple[int, str]]:
-        """A bolt's severity terms: the school's flat replaces STR AND the
-        weapon; school proficiency adds like weapon proficiency does."""
-        mods = [(BOLT_SEVERITY[self.school], f"{self.school} bolt")]
-        if self.school_prof:
-            mods.append((self.school_prof, "proficiency"))
+    @property
+    def attack_school(self) -> str | None:
+        """The wizard's attack lane this fight: the best-drilled attack
+        spell they know (ties prefer the innate school, then fire -- the
+        damage default)."""
+        known = [(self.spells[s], s == self.school, s)
+                 for s in ("fire", "ice", "telekinesis") if s in self.spells]
+        if not known:
+            return None
+        rank, _, best = max(known, key=lambda t: (t[0], t[1], t[2] == "fire"))
+        return best
+
+    def default_cast(self) -> str | None:
+        """The basic attack cast this entity throws when nothing smarter
+        applies (parting blows use exactly this): the attack school's bolt
+        while the Power lasts, else None (swing the weapon)."""
+        school = self.attack_school
+        if school is None:
+            return None
+        kind = {"fire": "fire", "ice": "ice", "telekinesis": "tk"}[school]
+        if kind == "tk" and self.spell_rank("telekinesis") < 2:
+            return None     # rank 1 is only the disarm; nothing to hurl yet
+        return kind if self.cur_power >= CAST_POWER_COST[kind] else None
+
+    def choose_cast(self, defender: "Entity") -> str | None:
+        """The wizard's per-exchange plan (a standing behavior, never a
+        mid-fight decision): telekinetically DISARM an armed foe first
+        (once per foe, hit or miss), spend a rank-3 technique (freeze /
+        hurl_foe) on a still-healthy body, else throw the school's bolt,
+        else swing steel (None)."""
+        if not self.is_wizard:
+            return None
+        if (self.spell_rank("telekinesis") >= 1
+                and self.cur_power >= CAST_POWER_COST["disarm"]
+                and not defender.disarm_tried
+                and defender.weapon is not None
+                and not defender.weapon.natural
+                and not defender.weapon_broken):
+            return "disarm"
+        school = self.attack_school
+        healthy = defender.hp * 2 >= defender.max_hp
+        control_ok = (healthy and not defender.stunned
+                      and defender.spell_ward < 2)
+        if school == "ice":
+            if (self.spell_rank("ice") >= SPELL_RANK_MAX and control_ok
+                    and self.cur_power >= CAST_POWER_COST["freeze"]):
+                return "freeze"
+            if self.cur_power >= CAST_POWER_COST["ice"]:
+                return "ice"
+        elif school == "fire":
+            if self.cur_power >= CAST_POWER_COST["fire"]:
+                return "fire"
+        elif school == "telekinesis":
+            if (self.spell_rank("telekinesis") >= SPELL_RANK_MAX
+                    and control_ok
+                    and self.cur_power >= CAST_POWER_COST["hurl_foe"]):
+                return "hurl_foe"
+            if (self.spell_rank("telekinesis") >= 2
+                    and self.cur_power >= CAST_POWER_COST["tk"]):
+                return "tk"
+        return None
+
+    def cast_severity_mods(self, kind: str) -> list[tuple[int, str]]:
+        """An aimed cast's severity terms: the kind's flat replaces STR AND
+        the weapon; the spell's rank adds like weapon proficiency does."""
+        mods = [(CAST_SEVERITY[kind], f"{kind_label(kind)}")]
+        rank = self.spell_rank(CAST_SPELL[kind])
+        if rank:
+            mods.append((rank, "spell rank"))
         return mods
 
     def severity_mods(self) -> list[tuple[int, str]]:
@@ -937,7 +1202,7 @@ class Entity:
 
     def pressure(self, rng: random.Random, attacking: bool = False,
               wound_pen: int | None = None, misc: int = 0,
-              misc_label: str = "", bolt: bool = False) -> PressureRoll:
+              misc_label: str = "", cast: str | None = None) -> PressureRoll:
         # wound_pen overrides the live wound penalty -- used for the dying
         # swing (group_combat): a fighter felled mid-round still gets their
         # blow in, rolled with the wounds they had at ROUND START, not the
@@ -955,10 +1220,10 @@ class Entity:
         # training -- except the staff's deliberate parry knob (def_pressure).
         # A broken weapon drags the attack down instead.
         weapon_mod, weapon_label, prof = 0, "", 0
-        if bolt:
-            # A bolt cast: the weapon stays out of it -- proficiency is the
-            # SCHOOL's rank instead (placeholder magic).
-            prof = self.school_prof
+        if cast:
+            # An aimed cast: the weapon stays out of it -- the "proficiency"
+            # is the spell's rank instead.
+            prof = self.spell_rank(CAST_SPELL[cast])
         elif self.weapon is not None:
             if attacking:
                 if self.weapon_broken:
@@ -974,12 +1239,15 @@ class Entity:
         # def_bonus is a body knob (the "armored" trait): defense only, like
         # the staff's parry but worn instead of wielded.
         armor = 0 if attacking else self.def_bonus
-        # The stat term: DEX for everything bodily, POWER for a bolt cast.
-        # Frost (landed ice bolts) slows the BODY: it drags every DEX-based
-        # roll, never a bolt's POWER roll, and can't push the term below 0.
-        stat, stat_label = ((self.power_stat, "POWER") if bolt
-                            else (self.dex, "DEX"))
-        chill = 0 if bolt else min(self.dex, self.dex_debuff)
+        # The stat term: DEX for everything bodily, AIM (the MIND/DEX mean)
+        # for a cast. Frost (landed ice) slows the BODY: it drags DEX-based
+        # rolls, never a cast's aim, and can't push the term below 0.
+        stat, stat_label = ((self.aim, "AIM") if cast else (self.dex, "DEX"))
+        chill = 0 if cast else min(self.dex, self.dex_debuff)
+        # Height is an attacker's edge (flight): hard to reach, easy to rain
+        # blows down from.
+        if attacking and self.aloft > 0 and not misc:
+            misc, misc_label = FLIGHT_ALOFT_ATK, "aloft"
         total = (dice + stat - chill + self.training + weapon_mod + prof
                  + armor + misc - pen - fatigue_pen)
         return PressureRoll(total=total, dice=dice, dex=stat,
@@ -1048,7 +1316,8 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             log: list[str], atk_wound_pen: int | None = None,
             def_mod: int = 0, def_label: str = "",
             atk_roll: PressureRoll | None = None,
-            soften: bool = False) -> None:
+            soften: bool = False, cast: str | None = "auto",
+            ambush: bool = False) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a crippling blow); a Power
@@ -1070,83 +1339,160 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     blow can still Down a hero but never lands the crippling tier, so the
     door can maim but not kill outright.
 
-    Placeholder magic: a wizard attacker with the Power for it CASTS instead
-    of swinging -- the bolt is decided (and its Power spent) here, so every
-    attack path (the melee loop, parting blows) casts by the same rule. A
-    reused sweep roll (`atk_roll`) is never a bolt.
+    Magic (the Magic & Mind add-on): `cast` names the aimed cast kind
+    ("fire"/"ice"/"freeze"/"tk"/"hurl_foe"/"disarm"; see CAST_SEVERITY).
+    The default sentinel "auto" lets the attacker decide by its own rule
+    (default_cast: the attack school's bolt while the Power lasts), so every
+    attack path -- the melee loop, parting blows -- casts consistently;
+    group_combat passes an explicit kind when it planned something smarter
+    (a freeze, a disarm, a fireball's reused sweep roll). The cast's Power
+    is charged HERE (a parried cast still burns it) except on a reused
+    sweep roll, which the caller fueled. Snake-eyes on a cast's attack dice
+    is a MISFIRE (the fumble is scoped to casting -- steel stays reliable):
+    the Power and the action are lost and the backlash grazes the caster.
+
+    `ambush=True` (or an unseen attacker) is the assassin strike -- unseen,
+    a blink at the back, a stolen moment: the defender never rolls and the
+    exchange is won at margin AMBUSH_MARGIN. The severity TABLE is the cap
+    (a crippling blow at worst), so mooks drop and bosses soak -- never a
+    literal auto-kill. Any spell_ward turns the ambush into a normal
+    exchange (the moment is not wholly the caster's).
 
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
     penalty), then the raw numbers (dice, each modifier and its source)
     indented beneath it -- full log only.
     """
-    bolt = atk_roll is None and attacker.casting_next()
-    if bolt:
-        # The cast happens whatever the bolt then does -- parried casts burn
-        # Power too. (The swing's STA was already paid, like any attack.)
-        attacker.cur_power -= BOLT_POWER_COST
-    atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
-                             bolt=bolt)
-           if atk_roll is None else atk_roll)
-    dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
-    pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
-                  f"{dfn.breakdown(defender.name)}")
-    if bolt:
-        pressure_line += (f" [{attacker.school} bolt: -{BOLT_POWER_COST} "
-                          f"Power, {attacker.cur_power} left]")
-    # The headline's subject: the caster's bolt does the deed in the log.
-    subject = (f"{attacker.name}'s {attacker.school} bolt" if bolt
-               else attacker.name)
+    if attacker.unseen and atk_roll is None:
+        ambush = True
+        attacker.unseen = False     # the strike breaks the veil, hit or miss
+    if atk_roll is None and cast == "auto":
+        cast = attacker.default_cast()
+    elif cast == "auto":
+        cast = None                 # a reused sweep roll: physical unless the
+                                    # caller said otherwise (a fireball does)
+    if ambush and cast == "disarm":
+        # Nobody breaks an ambush to fumble at a scabbard: the strike from
+        # nowhere is a strike -- fall back to the default attack cast.
+        cast = attacker.default_cast()
+    if cast and atk_roll is None:
+        # The cast happens whatever the exchange then does -- parried and
+        # warded casts burn Power too. (The swing's STA was already paid.)
+        attacker.cur_power -= CAST_POWER_COST[cast]
+    if ambush and defender.spell_ward > 0:
+        ambush = False
+        log.append(f"    {defender.name}'s ward flares -- the ambush is met "
+                   f"as an honest exchange!")
 
-    if atk.total == dfn.total:
-        # A tie: no one lands. High dice = furious contact, low = circling.
-        if bolt:
-            label = f"the {attacker.school} bolt splashes wide; neither yields"
-            contact = False     # magic on steel tests nothing
-        elif max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
-            label = "Clash! Steel rings; neither yields"
-            contact = True      # steel met steel -- durability is tested
-        else:
-            label = "Lull. They circle, probing for an opening"
-            contact = False     # no contact, nothing to break
-        log.append(f"    {attacker.name} and {defender.name} -- {label}.")
-        _debug(log, pressure_line)
-        if contact:
-            _check_weapon_break(attacker, defender, rng, log)
-        return
+    label = kind_label(cast) if cast else None
+    subject = f"{attacker.name}'s {label}" if cast else attacker.name
 
-    if atk.total < dfn.total:
-        if bolt:
-            art = "an" if attacker.school[0] in "aeiou" else "a"
-            log.append(f"    {attacker.name} hurls {art} {attacker.school} "
-                       f"bolt at {defender.name} -- warded off.")
-        else:
-            log.append(f"    {attacker.name} attacks {defender.name} "
-                       f"-- parried.")
-        _debug(log, pressure_line)
-        if not bolt:
-            _check_weapon_break(attacker, defender, rng, log)
-        return
+    if ambush:
+        atk, dfn = None, None
+        margin = AMBUSH_MARGIN
+        pressure_line = (f"        pressure: ambush -- no defense, "
+                         f"margin {AMBUSH_MARGIN}")
+        log.append(f"    {attacker.name} strikes out of nowhere -- "
+                   f"{defender.name} never sees it coming!")
+    else:
+        atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
+                                 cast=cast)
+               if atk_roll is None else atk_roll)
+        dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
+        pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
+                      f"{dfn.breakdown(defender.name)}")
+        if cast and atk_roll is None:
+            pressure_line += (f" [{label}: -{CAST_POWER_COST[cast]} "
+                              f"Power, {attacker.cur_power} left]")
 
-    margin = atk.total - dfn.total
-    # A bolt's severity is the school's flat (fire hits hard, ice barely) in
+        if cast and atk_roll is None and atk.dice == 2:
+            # Snake-eyes on a cast: MISFIRE. Magic is the volatile art --
+            # the spell collapses in the hand; the backlash grazes the
+            # caster (the Power is already gone).
+            attacker.hp = max(0, attacker.hp - MISFIRE_BACKLASH_HP)
+            _play(log,
+                  f"    !! {attacker.name}'s {label} MISFIRES -- the spell "
+                  f"collapses in their hands (-{MISFIRE_BACKLASH_HP} HP -> "
+                  f"{attacker.hp}/{attacker.max_hp}; the Power is wasted)",
+                  f"    !! {attacker.name}'s {label} MISFIRES "
+                  f"(-{MISFIRE_BACKLASH_HP} HP to the caster)")
+            _debug(log, pressure_line)
+            if attacker.hp <= 0:
+                attacker.down = True
+                log.append(f"    {attacker.name} goes down, "
+                           f"out of the fight.")
+            return
+
+        if cast == "disarm":
+            # Telekinesis rank 1: no wound -- the grip tears the weapon
+            # away. Opposed like any exchange; once per foe per fight,
+            # tried is tried.
+            defender.disarm_tried = True
+            _debug(log, pressure_line)
+            if (atk.total > dfn.total and defender.weapon is not None
+                    and not defender.weapon.natural
+                    and not defender.weapon_broken):
+                defender.weapon_broken = True
+                _play(log,
+                      f"    *** {attacker.name}'s telekinetic grip tears the "
+                      f"{defender.weapon.name} from {defender.name}'s hands "
+                      f"-- it clatters away ({BROKEN_ATK_PRESSURE} attack "
+                      f"pressure, {BROKEN_SEVERITY} severity bare-handed). ***",
+                      f"    *** {defender.name} is DISARMED -- the "
+                      f"{defender.weapon.name} is torn away! ***")
+            else:
+                log.append(f"    {attacker.name}'s telekinetic grip closes on "
+                           f"{defender.name}'s weapon -- and is shaken off.")
+            return
+
+        if atk.total == dfn.total:
+            # A tie: no one lands. High dice = furious contact, low = circling.
+            if cast:
+                tie = f"the {label} splashes wide; neither yields"
+                contact = False     # magic on steel tests nothing
+            elif max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
+                tie = "Clash! Steel rings; neither yields"
+                contact = True      # steel met steel -- durability is tested
+            else:
+                tie = "Lull. They circle, probing for an opening"
+                contact = False     # no contact, nothing to break
+            log.append(f"    {attacker.name} and {defender.name} -- {tie}.")
+            _debug(log, pressure_line)
+            if contact:
+                _check_weapon_break(attacker, defender, rng, log)
+            return
+
+        if atk.total < dfn.total:
+            if cast:
+                log.append(f"    {attacker.name} sends {label} "
+                           f"at {defender.name} -- warded off.")
+            else:
+                log.append(f"    {attacker.name} attacks {defender.name} "
+                           f"-- parried.")
+            _debug(log, pressure_line)
+            if not cast:
+                _check_weapon_break(attacker, defender, rng, log)
+            return
+
+        margin = atk.total - dfn.total
+    # A cast's severity is the kind's flat (fire hits hard, ice barely) in
     # place of BOTH the caster's STR and the weapon; the defender soaks as
     # ever.
-    sev_mods = attacker.bolt_severity_mods() if bolt else attacker.severity_mods()
-    atk_str = 0 if bolt else attacker.str_
+    sev_mods = attacker.cast_severity_mods(cast) if cast else attacker.severity_mods()
+    atk_str = 0 if cast else attacker.str_
     severity = (margin + atk_str + sum(v for v, _ in sev_mods)
                 - defender.str_)
     raw_tier, dmg = wound_tier(severity)
     sev_line = f"        severity: {severity} = margin {margin}"
-    if not bolt:
+    if not cast:
         sev_line += f" +{attacker.str_} STR"
-    for v, label in sev_mods:
-        sev_line += f" {v:+d} {label}"
+    for v, mod_label in sev_mods:
+        sev_line += f" {v:+d} {mod_label}"
     sev_line += f" -{defender.str_} soak -> {raw_tier}"
 
     if dmg == 0:
         # Anti-soak floors -- chip damage soak can't zero, feeding the spiral.
-        if (not bolt and attacker.weapon is not None
+        if (not cast and attacker.weapon is not None
                 and not attacker.weapon_broken
                 and attacker.weapon.graze_floor):
             # The rapier's own floor: ANY landed thrust draws blood.
@@ -1158,7 +1504,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             raw_tier, dmg = "graze", TIER_HP["graze"]
             sev_line += " -> a clean hit still cuts: graze"
         else:
-            what = "the bolt" if bolt else "the blow"
+            what = "the " + label if cast else "the blow"
             log.append(f"    {subject} {margin_verb(margin)} "
                        f"{defender.name}, but {what} glances off -- deflected.")
             _debug(log, pressure_line)
@@ -1215,16 +1561,28 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
               f" -- {TIER_PHRASE[tier]} (-{dmg} HP)! [{player_state}]")
     _debug(log, pressure_line)
     _debug(log, sev_line)
-    if bolt and attacker.school == "ice":
+    if cast in ("ice", "freeze"):
         # The ice school's whole point: every landed bolt rimes the target --
         # a stacking DEX loss for the rest of the fight (attack and defense;
-        # the term floors at 0 in `pressure`).
-        defender.dex_debuff += ICE_DEX_DEBUFF
+        # the term floors at 0 in `pressure`). A flash-freeze rimes deeper.
+        defender.dex_debuff += (FREEZE_DEX_DEBUFF if cast == "freeze"
+                                else ICE_DEX_DEBUFF)
         _play(log,
               f"    {defender.name} is rimed with frost "
               f"(-{defender.dex_debuff} DEX for this fight)",
               f"    {defender.name} is rimed with frost "
               f"(-{defender.dex_debuff} DEX for this fight)")
+    if (cast in ("freeze", "hurl_foe") and dmg > 0 and defender.alive
+            and defender.spell_ward < 2):
+        # The control riders: a wounding flash-freeze locks the body, a
+        # wounding slam sprawls it -- either way the target loses its next
+        # action (defense unaffected: the body still flinches). Ward 2+ is
+        # immune; the damage landed regardless.
+        defender.stunned = max(defender.stunned, 1)
+        what = ("frozen fast" if cast == "freeze"
+                else "slammed sprawling")
+        log.append(f"    {defender.name} is {what} -- they lose their "
+                   f"next action!")
 
     # Death is a 0-HP state (see the `alive` property): a blow only kills if
     # it actually drops you. At 0 HP an unsaved crippling blow is a death; any
@@ -1238,16 +1596,26 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
 
 def _pick_target(targets: list[Entity], rng: random.Random, focus: bool,
-                 engaged: dict[Entity, int] | None = None) -> Entity | None:
+                 engaged: dict[Entity, int] | None = None,
+                 attacker: Entity | None = None) -> Entity | None:
     """Pick a living target. With `engaged` (this round's single-attack counts
     per defender), only targets with press room (fewer than their crowd_cap
     attackers so far) are eligible -- returns None when every living target is
-    already crowded, and the attacker circles the round away instead."""
+    already crowded, and the attacker circles the round away instead.
+
+    Spell states (with `attacker` given): an UNSEEN target can't be picked
+    at all; an ALOFT target only by an attacker who can cast at it (bolts
+    reach the sky, steel doesn't). A POSSESSED foe is off the party's list
+    -- nobody cuts down their own puppet."""
     living = [e for e in targets if e.alive]
+    if attacker is not None:
+        living = [e for e in living if not e.unseen and not e.possessed]
+        if not (attacker.default_cast() or attacker.sweep_cost_power):
+            living = [e for e in living if e.aloft <= 0]
     if engaged is not None:
         living = [e for e in living if engaged.get(e, 0) < e.crowd_cap]
-        if not living:
-            return None
+    if not living:
+        return None
     if focus:
         # Focus fire the weakest target to thin the enemy line fastest.
         return min(living, key=lambda e: e.hp)
@@ -1281,6 +1649,228 @@ def _first_blood(party: list[Entity], foes: list[Entity],
             if not target.alive:
                 target.down = True
                 log.append(f"    *** {target.name} falls. ***")
+
+
+def casting_check(caster: Entity, spell: str, rank_cast: int,
+                  rng: random.Random, log: list[str],
+                  dc_extra: int = 0, dc_label: str = "") -> str:
+    """The unaimed-cast roll (openers and utility spells; aimed casts ride
+    the exchange instead): 2d6 + MIND + trained rank vs DC = CAST_DC_BASE +
+    CAST_DC_PER_RANK x the rank being cast (+ dc_extra: a possession
+    target's training and ward). Returns the degree of success:
+      "misfire"   -- miss by 5+, or snake-eyes: Power lost, action lost,
+                     the backlash grazes the caster (the caller applies it
+                     via _misfire)
+      "fizzle"    -- miss: Power lost, action lost, nothing happens
+      "downgrade" -- make it by 0-1: resolves one rank lower (where the
+                     spell has one; rank 1 has nothing to fall to)
+      "success"
+      "crit"      -- beat it by 7+, or boxcars: the Power is refunded
+    MASTERY: casting a technique BELOW the caster's trained rank never
+    rolls (auto-success, no log) -- reliability is what study buys; the
+    risk lives at the edge of the art."""
+    trained = caster.spell_rank(spell)
+    if rank_cast < trained:
+        return "success"
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    dc = CAST_DC_BASE + CAST_DC_PER_RANK * rank_cast + dc_extra
+    total = dice + caster.mind + trained
+    margin = total - dc
+    if dice == 2 or margin <= -5:
+        result = "misfire"
+    elif margin < 0:
+        result = "fizzle"
+    elif margin <= 1:
+        result = "downgrade"
+    elif dice == 12 or margin >= 7:
+        result = "crit"
+    else:
+        result = "success"
+    extra = f" +{dc_extra} {dc_label}" if dc_extra else ""
+    _debug(log, f"        casting: {total} (2d6={dice}, +{caster.mind} MIND, "
+                f"+{trained} rank) vs DC {dc} "
+                f"({CAST_DC_BASE} +{CAST_DC_PER_RANK}x rank {rank_cast}"
+                f"{extra}) -> {result}")
+    return result
+
+
+def _misfire(caster: Entity, spell: str, log: list[str]) -> None:
+    """A misfired unaimed cast: the spell collapses in the hand -- the Power
+    is already gone (the caller charged it), and the backlash grazes the
+    caster."""
+    caster.hp = max(0, caster.hp - MISFIRE_BACKLASH_HP)
+    _play(log,
+          f"    !! {caster.name}'s {spell} MISFIRES -- the spell collapses "
+          f"in their hands (-{MISFIRE_BACKLASH_HP} HP -> "
+          f"{caster.hp}/{caster.max_hp}; the Power is wasted)",
+          f"    !! {caster.name}'s {spell} MISFIRES "
+          f"(-{MISFIRE_BACKLASH_HP} HP to the caster)")
+    if caster.hp <= 0:
+        caster.down = True
+        log.append(f"    {caster.name} goes down, out of the fight.")
+
+
+def _log_foe_fall(defender: Entity, log: list[str]) -> None:
+    if defender.alive:
+        return
+    if defender.dead:
+        log.append(f"    *** {defender.name} is SLAIN. ***")
+    else:
+        log.append(f"    *** {defender.name} falls. ***")
+
+
+def _cast_openers(party: list[Entity], foes: list[Entity],
+                  rng: random.Random, log: list[str]) -> None:
+    """The wizard openers, fired once as the fight begins (First Blood's
+    doctrine: automatic while the Power lasts -- trained art is reflexive --
+    and skipped when the fight is already winding down, so nobody burns the
+    pool on a beaten foe). Each wizard casts at most ONE opener, the first
+    it can afford down the OPENER_SPELLS priority ladder, at its full
+    trained rank; the casting check gates it (at-rank casts roll -- see
+    casting_check)."""
+    if fight_winding_down(foes):
+        return
+    for hero in party:
+        if not hero.alive or not hero.is_wizard or not hero.spells:
+            continue
+        _cast_opener(hero, foes, rng, log)
+
+
+def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
+                 log: list[str]) -> None:
+    for spell in OPENER_SPELLS:
+        rank = hero.spell_rank(spell)
+        if rank <= 0:
+            continue
+        if spell == "possession":
+            cost = POSSESSION_POWER_COST + rank
+            prey = [f for f in foes if f.alive and not f.undead
+                    and not f.tireless]
+            if hero.cur_power < cost or not prey:
+                continue
+            target = max(prey, key=lambda f: f.max_hp)
+            hero.cur_power -= cost
+            result = casting_check(
+                hero, spell, rank, rng, log,
+                dc_extra=target.training + 2 * target.spell_ward,
+                dc_label="the target resists")
+            rounds = rank - 1 if result == "downgrade" else rank
+            if result == "misfire":
+                _misfire(hero, spell, log)
+            elif result == "fizzle" or rounds <= 0:
+                log.append(f"    {hero.name} reaches for {target.name}'s "
+                           f"mind -- and is shut out. The spell fizzles "
+                           f"({cost} Power wasted).")
+            else:
+                if result == "crit":
+                    hero.cur_power += cost
+                target.possessed = rounds
+                left = (f"{hero.cur_power} Power left" if result != "crit"
+                        else "a flawless seizure -- no Power spent")
+                _play(log,
+                      f"    *** {target.name}'s eyes go glassy -- "
+                      f"{hero.name} seizes their mind! The puppet fights "
+                      f"for the party ({rounds} round(s); {left}). ***",
+                      f"    *** {target.name}'s eyes go glassy -- "
+                      f"{hero.name} seizes their mind ({rounds} "
+                      f"round(s))! ***")
+            return
+        if spell == "stop time":
+            cost = STOP_TIME_POWER_COST + rank
+            if hero.cur_power < cost:
+                continue
+            hero.cur_power -= cost
+            result = casting_check(hero, spell, rank, rng, log)
+            strikes = rank - 1 if result == "downgrade" else rank
+            if result == "misfire":
+                _misfire(hero, spell, log)
+            elif result == "fizzle" or strikes <= 0:
+                log.append(f"    {hero.name} reaches for the moment between "
+                           f"moments -- and it slips away ({cost} Power "
+                           f"wasted).")
+            else:
+                if result == "crit":
+                    hero.cur_power += cost
+                log.append(f"    *** Time stutters and HANGS -- {hero.name} "
+                           f"moves alone through the frozen moment "
+                           f"({strikes} stolen strike(s))! ***")
+                for _ in range(strikes):
+                    target = _pick_target(foes, rng, focus=True,
+                                          attacker=hero)
+                    if target is None:
+                        break
+                    was_alive = target.alive
+                    _attack(hero, target, rng, log, ambush=True)
+                    if was_alive and not target.alive:
+                        _log_foe_fall(target, log)
+            return
+        if spell == "teleport":
+            cost = TELEPORT_STRIKE_COST
+            if hero.cur_power < cost:
+                continue
+            target = _pick_target(foes, rng, focus=True, attacker=hero)
+            if target is None:
+                continue
+            hero.cur_power -= cost
+            result = casting_check(hero, spell, 1, rng, log)
+            if result == "misfire":
+                _misfire(hero, spell, log)
+            elif result == "fizzle":
+                log.append(f"    {hero.name} folds space -- and arrives a "
+                           f"step wide of it. The blink fizzles "
+                           f"({cost} Power wasted).")
+            else:
+                if result == "crit":
+                    hero.cur_power += cost
+                log.append(f"    *** {hero.name} BLINKS -- and is behind "
+                           f"{target.name}. ***")
+                was_alive = target.alive
+                _attack(hero, target, rng, log, ambush=True)
+                if was_alive and not target.alive:
+                    _log_foe_fall(target, log)
+            return
+        if spell == "invisibility":
+            cost = INVISIBILITY_POWER_COST
+            if hero.cur_power < cost:
+                continue
+            hero.cur_power -= cost
+            result = casting_check(hero, spell, 1, rng, log)
+            if result == "misfire":
+                _misfire(hero, spell, log)
+            elif result == "fizzle":
+                log.append(f"    {hero.name} gathers the light around "
+                           f"themselves -- and it slides off. The spell "
+                           f"fizzles ({cost} Power wasted).")
+            else:
+                if result == "crit":
+                    hero.cur_power += cost
+                hero.unseen = True
+                log.append(f"    *** {hero.name} is simply NOT THERE -- "
+                           f"unseen until their strike lands. ***")
+            return
+        if spell == "flight":
+            rank = min(rank, SPELLS["flight"].max_rank)
+            cost = FLIGHT_POWER_COST + rank
+            if hero.cur_power < cost:
+                continue
+            hero.cur_power -= cost
+            result = casting_check(hero, spell, rank, rng, log)
+            rounds = rank - 1 if result == "downgrade" else rank
+            if result == "misfire":
+                _misfire(hero, spell, log)
+            elif result == "fizzle" or rounds <= 0:
+                log.append(f"    {hero.name} kicks off the earth -- and "
+                           f"comes right back down. The spell fizzles "
+                           f"({cost} Power wasted).")
+            else:
+                if result == "crit":
+                    hero.cur_power += cost
+                hero.aloft = rounds
+                log.append(f"    *** {hero.name} steps onto the AIR -- "
+                           f"aloft for {rounds} round(s), out of steel's "
+                           f"reach (+{FLIGHT_ALOFT_ATK} attacking; bolts "
+                           f"and breath can still find them). ***")
+            return
 
 
 def _stamina_line(party: list[Entity], foes: list[Entity]) -> str:
@@ -1367,11 +1957,16 @@ def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
       stamina -> nothing if the fight is winding down; else drink a carried
                  draught, else War-Breath (a Bulwark hero keeps one save in
                  reserve), else Berserk on a still-healthy body.
-      wounds  -> a carried healing potion, unless the fight is winding down.
+      wounds  -> VANISH (invisibility rank 2 -- a cut-up wizard fades out
+                 of reach) if they know it and the Power is there; else a
+                 carried healing potion; unless the fight is winding down.
     Returns a pause-action string or None (fight on)."""
     if fight_winding_down(foes):
         return None
     if kind == "wounds":
+        if (hero.spell_rank("invisibility") >= 2
+                and hero.cur_power >= VANISH_POWER_COST):
+            return "vanish"
         return "heal" if hero.items.get("healing", 0) > 0 else None
     if hero.items.get("stamina", 0) > 0:
         return "drink"
@@ -1383,15 +1978,43 @@ def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
     return None
 
 
-def _do_pause_action(h: Entity, action: str, log: list[str]) -> bool:
+def _do_pause_action(h: Entity, action: str, log: list[str],
+                     rng: random.Random) -> bool:
     """Execute one pause-menu action at the top of the resumed round: drink a
-    stamina draught or healing potion, or a resource conversion (Berserk /
-    War-Breath). Returns
+    stamina draught or healing potion, a resource conversion (Berserk /
+    War-Breath), or a wizard's VANISH (invisibility rank 2). Returns
     True if it took effect -- the hero is then BUSY this round: no attack, and
     -PAUSE_ACTION_DEF_PENALTY on defense (vulnerable, not helpless). A failed
     action (nothing to drink, not enough Power) logs and the hero just fights."""
     if not h.alive:
         return False
+    if action == "vanish":
+        if h.spell_rank("invisibility") < 2:
+            log.append(f"    {h.name} knows no vanishing art deep enough "
+                       f"to cast in a melee. They fight on.")
+            return False
+        if h.cur_power < VANISH_POWER_COST:
+            log.append(f"    {h.name} lacks the Power to vanish "
+                       f"({h.cur_power}/{VANISH_POWER_COST}). "
+                       f"They fight on.")
+            return False
+        h.cur_power -= VANISH_POWER_COST
+        result = casting_check(h, "invisibility", 2, rng, log)
+        if result == "misfire":
+            _misfire(h, "invisibility", log)
+        elif result == "fizzle":
+            log.append(f"    {h.name} gathers the light -- and it slides "
+                       f"off ({VANISH_POWER_COST} Power wasted). No attack "
+                       f"this round, -{PAUSE_ACTION_DEF_PENALTY} defending.")
+        else:
+            if result == "crit":
+                h.cur_power += VANISH_POWER_COST
+            h.unseen = True
+            log.append(f"    {h.name} VANISHES from the melee "
+                       f"(-{VANISH_POWER_COST} Power -> {h.cur_power}) -- "
+                       f"out of every foe's reach until their next strike, "
+                       f"which lands as an ambush.")
+        return True
     if action == "drink":
         if h.items.get("stamina", 0) <= 0:
             log.append(f"    {h.name} gropes for a stamina draught -- "
@@ -1537,7 +2160,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
         {e for e in party + foes if e.alive and e.spent}
         if first_round > 1 else set())
     busy_label = {"drink": "drinking", "heal": "drinking",
-                  "berserk": "berserk", "war-breath": "war-breath"}
+                  "berserk": "berserk", "war-breath": "war-breath",
+                  "vanish": "casting"}
     busy: dict[Entity, str] = {}
     # Actions waiting to execute at the top of the next round: the caller's
     # pause answers on a resume, plus any standing orders issued at a
@@ -1551,11 +2175,17 @@ def group_combat(party: list[Entity], foes: list[Entity],
             break
         log.append(f"  Round {rnd}:")
         if rnd == 1:
+            # The wizard openers fire before the lines meet (First Blood's
+            # slot; a resume never re-fires them -- rnd starts past 1).
+            _cast_openers(party, foes, rng, log)
             _first_blood(party, foes, rng, log)
+            if not (any(e.alive for e in party)
+                    and any(e.alive for e in foes)):
+                break   # the openers alone can end a small fight
         if queued:
             # The pause actions happen now, in the teeth of the melee.
             for h, act in queued.items():
-                if _do_pause_action(h, act, log):
+                if _do_pause_action(h, act, log, rng):
                     busy[h] = act
             queued = {}
             # A drink can un-Spend a fighter at 0: drop them from the
@@ -1571,34 +2201,60 @@ def group_combat(party: list[Entity], foes: list[Entity],
         for attacker in actors:
             if attacker in busy:
                 continue    # occupied with their draught/conversion this round
+            if attacker.stunned > 0:
+                # Frozen fast / slammed sprawling (the control riders): the
+                # action is lost -- no swing, no STA; the body still defends.
+                attacker.stunned -= 1
+                log.append(f"    {attacker.name} struggles back to their "
+                           f"footing -- no action this round.")
+                continue
             dying = not attacker.alive      # felled earlier this round
-            targets = foes if attacker in party_set else party
+            if attacker in party_set:
+                targets = foes
+            elif attacker.possessed > 0:
+                # The puppet turns on its own line (possession): it fights
+                # for the party as long as the seizure holds.
+                targets = [f for f in foes if f is not attacker]
+            else:
+                targets = party
             living_targets = [t for t in targets if t.alive]
             if not living_targets:
                 continue        # nobody left on the other side for THIS
                                 # attacker; a dying foe later in the order
                                 # may still owe the party its last blow
+            friendly = attacker in party_set or attacker.possessed > 0
 
             # A multi-target blow (the giant's sweep, the dragon's breath):
             # one attacker roll, resolved against each caught defender's own
             # defense. Sweeps don't queue for press room -- a wall of fire
             # doesn't care how crowded the line is -- and a fueled one
             # (sweep_cost_power) needs the Power, else it falls back to
-            # single attacks.
-            sweeping = (attacker.sweep > 1 and len(living_targets) > 1
+            # single attacks. A wizard at fire rank 3 sweeps too: the
+            # FIREBALL, one roll against up to FIREBALL_TARGETS foes,
+            # thrown whenever 3+ stand (Power-priced, so it self-limits).
+            pool = [t for t in living_targets if not t.unseen]
+            sweeping = (attacker.sweep > 1 and len(pool) > 1
                         and (attacker.sweep_cost_power == 0
                              or attacker.cur_power
                              >= attacker.sweep_cost_power))
-            if sweeping:
-                victims = rng.sample(living_targets,
-                                     min(attacker.sweep, len(living_targets)))
+            if sweeping and attacker.sweep_cost_power == 0:
+                # An arm's arc can't reach the sky; breath (fueled) can.
+                pool = [t for t in pool if t.aloft <= 0]
+                sweeping = len(pool) > 1
+            fireball = (not sweeping
+                        and attacker.spell_rank("fire") >= SPELL_RANK_MAX
+                        and attacker.cur_power >= FIREBALL_POWER_COST
+                        and len(pool) >= FIREBALL_TARGETS)
+            if sweeping or fireball:
+                n = attacker.sweep if sweeping else FIREBALL_TARGETS
+                victims = rng.sample(pool, min(n, len(pool)))
             else:
                 defender = _pick_target(targets, rng,
-                                        focus=attacker in party_set,
-                                        engaged=engaged)
+                                        focus=friendly,
+                                        engaged=engaged, attacker=attacker)
                 if defender is None:
-                    # Crowded out of the press: circle the round away instead
-                    # (free, like defending -- no swing, no STA).
+                    # Crowded out of the press (or nothing in reach): circle
+                    # the round away instead (free, like defending).
                     log.append(f"    {attacker.name} circles, crowded out "
                                f"of the press.")
                     continue
@@ -1610,7 +2266,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 was_winded = attacker.winded
                 # The weapon sets the swing price (zweihander 2, most else 1);
                 # a cast tires at the base rate -- the arm isn't swinging steel.
-                cost = (STA_ATTACK_COST if attacker.casting_next()
+                cost = (STA_ATTACK_COST if attacker.default_cast()
                         else attacker.swing_cost)
                 attacker.cur_sta = max(0, attacker.cur_sta - cost)
                 if attacker.winded and not was_winded:
@@ -1634,30 +2290,43 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 log.append(f"    ({attacker.name} strikes even as they fall)")
 
             atk_roll = None
-            if sweeping:
-                if attacker.sweep_cost_power:
-                    attacker.cur_power -= attacker.sweep_cost_power
-                label = attacker.sweep_label or "a great sweeping blow"
+            sweep_cast = None
+            if sweeping or fireball:
+                if fireball:
+                    attacker.cur_power -= FIREBALL_POWER_COST
+                    sweep_cast = "fire"
+                    label = "a roaring FIREBALL"
+                    fuel_cost = FIREBALL_POWER_COST
+                else:
+                    if attacker.sweep_cost_power:
+                        attacker.cur_power -= attacker.sweep_cost_power
+                    label = attacker.sweep_label or "a great sweeping blow"
+                    fuel_cost = attacker.sweep_cost_power
                 names = ", ".join(v.name for v in victims)
-                fuel = (f" [{attacker.sweep_cost_power} Power spent, "
-                        f"{attacker.cur_power} left]"
-                        if attacker.sweep_cost_power else "")
+                fuel = (f" [{fuel_cost} Power spent, "
+                        f"{attacker.cur_power} left]" if fuel_cost else "")
                 _play(log,
                       f"    {attacker.name} unleashes {label} -- "
                       f"{names} are caught in it!{fuel}",
                       f"    {attacker.name} unleashes {label} -- "
                       f"{names} are caught in it!")
                 atk_roll = attacker.pressure(
-                    rng, attacking=True,
+                    rng, attacking=True, cast=sweep_cast,
                     wound_pen=start_pens[attacker] if dying else None)
             for defender in victims:
                 was_alive = defender.alive
+                # A single attack lets the wizard plan the exchange (disarm /
+                # freeze / hurl / bolt -- choose_cast); a reused sweep roll
+                # already knows what it is.
+                cast_kind = (sweep_cast if atk_roll is not None
+                             else (attacker.choose_cast(defender)
+                                   if attacker.is_wizard else "auto"))
                 _attack(attacker, defender, rng, log,
                         atk_wound_pen=start_pens[attacker] if dying else None,
                         def_mod=(-PAUSE_ACTION_DEF_PENALTY
                                  if defender in busy else 0),
                         def_label=busy_label.get(busy.get(defender, ""), ""),
-                        atk_roll=atk_roll)
+                        atk_roll=atk_roll, cast=cast_kind)
                 if was_alive and not defender.alive:
                     if (defender.dead and defender.protagonist
                             and not defender.fate_debt
@@ -1700,6 +2369,20 @@ def group_combat(party: list[Entity], foes: list[Entity],
                       f"    {e.name}'s wounds knit closed "
                       f"(+{e.hp - before} HP) [{e.name}: "
                       f"{e.hp}/{e.max_hp} HP]")
+        # Spell durations tick at round end: flight sets down, a seized
+        # mind shakes free.
+        for e in actors:
+            if e.aloft > 0:
+                e.aloft -= 1
+                if e.aloft == 0 and e.alive:
+                    log.append(f"    {e.name} alights -- back in "
+                               f"steel's reach.")
+            if e.possessed > 0:
+                e.possessed -= 1
+                if e.possessed == 0 and e.alive:
+                    log.append(f"    *** The light returns to {e.name}'s "
+                               f"eyes -- the puppet is free, and FURIOUS. "
+                               f"***")
         _debug(log, _stamina_line(party, foes))
 
         if pause_triggers:
@@ -1737,10 +2420,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     queued[h] = order
 
     # The dust settles: fate collects first, then whoever is still standing
-    # catches their breath. Frost outlasts nothing: the rime melts off both
-    # sides when the melee ends (a retreat clears it in attempt_retreat /
+    # catches their breath. No spell state outlasts the melee: the rime
+    # melts, fliers land, the unseen resolve, puppets are released (a
+    # retreat clears the same states in attempt_retreat /
     # refresh_foes_after_retreat instead).
-    _clear_frost(party + foes)
+    _clear_fight_states(party + foes)
     _settle_fate_debt(party, foes, rng, log)
     survivors = [h for h in party if h.alive]
     if survivors:
@@ -1748,10 +2432,17 @@ def group_combat(party: list[Entity], foes: list[Entity],
     return None
 
 
-def _clear_frost(entities: list[Entity]) -> None:
-    """End-of-fight cleanup for the ice school's stacking DEX debuff."""
+def _clear_fight_states(entities: list[Entity]) -> None:
+    """End-of-fight cleanup for every per-fight spell state: the ice rime,
+    invisibility, flight, stuns, possession, the per-foe disarm-attempt
+    marker. Nothing magical crosses fights."""
     for e in entities:
         e.dex_debuff = 0
+        e.unseen = False
+        e.aloft = 0
+        e.stunned = 0
+        e.possessed = 0
+        e.disarm_tried = False
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
@@ -1849,7 +2540,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
             log.append("    No one is fit to give chase -- clean escape.")
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
-        _clear_frost(party)         # the rime melts on the run
+        _clear_fight_states(party)  # the spell states drop on the run
         _catch_breath(runners, log)
         return True
 
@@ -1867,12 +2558,53 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         log.append("    They break away -- clean escape.")
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
-        _clear_frost(party)         # the rime melts on the run
+        _clear_fight_states(party)  # the spell states drop on the run
         _catch_breath(runners, log)
         return True
     log.append("    *** RUN DOWN -- the pursuers catch them, and the fight "
                "resumes with their backs to it. ***")
     return False
+
+
+def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
+                 rng: random.Random, log: list[str]) -> bool:
+    """Teleport rank 2, BLINK OUT: the wizard tears a door in the air and
+    the whole party steps through -- NO parting blows, NO chase roll (the
+    two costs the ordinary retreat is priced in). Charges
+    TELEPORT_ESCAPE_COST Power and rolls the casting check at rank 2; a
+    fizzled door leaves the party standing at it -- the caller falls back
+    to an honest retreat (attempt_retreat), blows and all. A clean blink
+    waives any fate debt like any clean escape."""
+    if wizard.spell_rank("teleport") < 2:
+        log.append(f"    {wizard.name}'s teleport art can't carry a party "
+                   f"out of a melee (rank 2 needed).")
+        return False
+    if wizard.cur_power < TELEPORT_ESCAPE_COST:
+        log.append(f"    {wizard.name} lacks the Power to tear the door "
+                   f"open ({wizard.cur_power}/{TELEPORT_ESCAPE_COST}).")
+        return False
+    wizard.cur_power -= TELEPORT_ESCAPE_COST
+    result = casting_check(wizard, "teleport", 2, rng, log)
+    if result == "misfire":
+        _misfire(wizard, "teleport", log)
+        return False
+    if result == "fizzle":
+        log.append(f"    {wizard.name} tears at the air -- and it holds. "
+                   f"The door won't open ({TELEPORT_ESCAPE_COST} Power "
+                   f"wasted); the party must run for it.")
+        return False
+    if result == "crit":
+        wizard.cur_power += TELEPORT_ESCAPE_COST
+    log.append(f"  *** {wizard.name} tears a door in the air -- the party "
+               f"steps through and is GONE. No blade falls, nothing gives "
+               f"chase. ***")
+    for h in party:
+        h.fate_debt = False     # a fled fight is not a won one: waived
+    _clear_fight_states(party)
+    runners = [h for h in party if h.alive]
+    if runners:
+        _catch_breath(runners, log)
+    return True
 
 
 def refresh_foes_after_retreat(foes: list[Entity],
@@ -1883,7 +2615,7 @@ def refresh_foes_after_retreat(foes: list[Entity],
     passed; the undead stay hacked -- dead bone doesn't knit, which is exactly
     the asymmetry that rewards a return trip to the barrow."""
     survivors = [f for f in foes if not f.dead]
-    _clear_frost(survivors)     # the rime melted long before any return trip
+    _clear_fight_states(survivors)  # no spell state survives to a return trip
     for f in survivors:
         f.cur_sta = f.sta
         if f.regen or (days_passed > 0 and not f.undead):
@@ -1922,11 +2654,12 @@ HERO_POWER_RANGE = (3, 6)
 # the same number of surplus points above the range floors, dealt out by a
 # randomly-ordered stat PRIORITY (weighted toward the front of the order), so
 # builds differ in SHAPE, never in total -- recruiting compares tradeoffs
-# instead of point sums. 9 = the old independent rolls' mean surplus (9.5),
-# rounded down. Racial floor mods (people.RACE_MODS) raise a stat's floor
-# UNDER the budget, so they stay a genuine net extra: races remain unequal
-# on purpose.
-HERO_STAT_BUDGET = 9
+# instead of point sums. Racial floor mods (people.RACE_MODS) raise a stat's
+# floor UNDER the budget, so they stay a genuine net extra: races remain
+# unequal on purpose. 9 was the old independent rolls' mean surplus over six
+# stats; MIND (2026-07-15, the Magic & Mind add-on) is a seventh budget
+# line, so the budget rose to 11 to keep the per-stat surplus ~unchanged.
+HERO_STAT_BUDGET = 11
 
 # The sims' throwaway name pool (the played game draws from people.py's
 # per-race pools instead). The old stat epithet ("the precise") is GONE
@@ -1957,8 +2690,8 @@ def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
 def make_human(rng: random.Random, name: str,
                floors: dict[str, int] | None = None,
                ceilings: dict[str, int] | None = None) -> Entity:
-    """Fixed-budget generation (2026-07-13): ranges DEX/STR/POWER/CHA 3-6,
-    STA 5-8, HP 8-12; every character starts at the floors and receives
+    """Fixed-budget generation (2026-07-13): ranges DEX/STR/MIND/POWER/CHA
+    3-6, STA 5-8, HP 8-12; every character starts at the floors and receives
     exactly HERO_STAT_BUDGET surplus points, dealt by a randomly-shuffled
     stat priority (linear weights down the order, each stat capped at its
     ceiling) -- equal totals, different shapes. Plus a random ability
@@ -1967,10 +2700,16 @@ def make_human(rng: random.Random, name: str,
     healers often carry the wooden staff). `floors`/`ceilings` shift the
     ranges per key ("dex", "str", "cha", "hp") -- the racial/trait hook
     (people.py: an orc's STR floor is 4 and the point is a NET extra under
-    the budget; the "short" trait caps STR at 5)."""
+    the budget; the "short" trait caps STR at 5).
+
+    Magic & Mind (2026-07-15): MIND strictly above BOTH other combat stats
+    makes a WIZARD -- a rolled school (fire/ice) known at rank 1 instead of
+    an ability. POWER stays its own rolled pool: the fuel is qi, not iq --
+    it never derives from MIND (designer call)."""
     floors = floors or {}
     ceilings = ceilings or {}
     ranges = {"dex": HERO_STAT_RANGE, "str": HERO_STAT_RANGE,
+              "mind": HERO_STAT_RANGE,
               "sta": HERO_STA_RANGE, "hp": HERO_HP_RANGE,
               "power": HERO_POWER_RANGE, "cha": HERO_CHA_RANGE}
     lo, hi, stats = {}, {}, {}
@@ -1988,11 +2727,11 @@ def make_human(rng: random.Random, name: str,
         k = rng.choices(open_keys, [weight[k] for k in open_keys])[0]
         stats[k] += 1
 
-    # Placeholder magic (2026-07-14): POWER strictly above BOTH other combat
-    # stats makes a WIZARD -- a school instead of an ability (CHA stays out
-    # of the comparison: a charismatic wizard is still a wizard).
+    # MIND strictly above BOTH other combat stats makes a WIZARD -- a
+    # school spell at rank 1 instead of an ability (CHA and POWER stay out
+    # of the comparison: one is social, the other is fuel).
     ability, school = None, ""
-    if stats["power"] > stats["dex"] and stats["power"] > stats["str"]:
+    if stats["mind"] > stats["dex"] and stats["mind"] > stats["str"]:
         school = rng.choice(list(SCHOOLS))
     else:
         ability = rng.choice(["heal", "bulwark", "first_blood"])
@@ -2006,12 +2745,14 @@ def make_human(rng: random.Random, name: str,
         name=name,
         dex=stats["dex"],
         str_=stats["str"],
+        mind=stats["mind"],
         sta=stats["sta"],
         max_hp=stats["hp"],
         power=stats["power"],
         cha=stats["cha"],
         ability=ability,
         school=school,
+        spells={school: 1} if school else {},
         pain=HERO_PAIN,
         weapon=weapon,
         items=random_kit(rng),
@@ -2044,14 +2785,14 @@ def stat_line(e: Entity) -> str:
     (capacity / who is about to quit), never combat-log noise."""
     kit = ", ".join(f"{k}x{v}" for k, v in e.items.items() if v) or "no kit"
     cha = f"CHA {e.cha}  " if e.cha else ""
-    if e.school:
-        gift = e.school_prof_key    # "fire magic" / "ice magic"
-        if e.school_prof:
-            gift += f", prof {e.school_prof}"
+    mind = f"MIND {e.mind}  " if e.mind else ""
+    if e.spells:
+        gift = "spells: " + ", ".join(f"{n} {r}"
+                                      for n, r in sorted(e.spells.items()))
     else:
         gift = e.ability or "no save"
     line = (f"{e.name} (L{e.level}, training {e.training}): "
-            f"DEX {e.dex}  STR {e.str_}  STA {e.cur_sta}/{e.sta}  "
+            f"DEX {e.dex}  STR {e.str_}  {mind}STA {e.cur_sta}/{e.sta}  "
             f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  {cha}"
             f"({gift}; {weapon_tag(e)}; {kit})")
     if e.satisfaction is not None:
@@ -2068,6 +2809,9 @@ def progress_line(e: Entity) -> str:
     profs = ", ".join(f"{n} {r}" for n, r in sorted(e.proficiency.items()) if r)
     if profs:
         parts.append(f"proficiency: {profs}")
+    if e.spells:
+        parts.append("spells: " + ", ".join(
+            f"{n} {r}" for n, r in sorted(e.spells.items())))
     return " | ".join(parts)
 
 
@@ -2161,17 +2905,22 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
             h.weapon = WEAPONS["rapier"]
         else:
             h.weapon = WEAPONS["katana"]
-    # The proficiency sink: a wizard drills the SCHOOL (their real offense);
-    # everyone else drills the wielded weapon.
-    prof_key = h.school_prof_key if h.school else (
-        h.weapon.name if h.weapon is not None else None)
-    if prof_key is not None:
-        rank = h.proficiency.get(prof_key, 0)
+    # The proficiency sink: a wizard drills the SCHOOL SPELL (their real
+    # offense); everyone else drills the wielded weapon.
+    if h.school:
+        rank = h.spells.get(h.school, 1)
+        cap = SPELLS[h.school].max_rank
+        while rank < cap and points >= rank + 1:
+            points -= rank + 1
+            rank += 1
+        h.spells[h.school] = rank
+    elif h.weapon is not None:
+        rank = h.proficiency.get(h.weapon.name, 0)
         while rank < PROFICIENCY_MAX and points >= rank + 1:
             points -= rank + 1
             rank += 1
         if rank:
-            h.proficiency[prof_key] = rank
+            h.proficiency[h.weapon.name] = rank
     buy_training(TRAINING_MAX)
     h.skill_points = points
     for lvl in range(2, level + 1):
@@ -2369,33 +3118,86 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
     return True
 
 
-def train_school(h: Entity, log: list[str]) -> bool:
-    """Spend skill points on ONE rank of SCHOOL proficiency (placeholder
-    magic) -- the weapon-proficiency system wholesale, keyed "fire magic" /
-    "ice magic" in the same dict: rank n costs n, +1 bolt pressure AND +1
-    bolt severity per rank, cap PROFICIENCY_MAX. Wizards only (session.py
-    `train HERO magic`); the school never breaks and never switches, so it
-    is the caster's whole progression lane."""
-    if not h.school:
-        log.append(f"    {h.name} has no school of magic to drill.")
+def train_spell(h: Entity, name: str, log: list[str]) -> bool:
+    """Spend skill points on ONE rank of a KNOWN spell (the Magic & Mind
+    add-on) -- the weapon-proficiency chassis wholesale: rank n costs n,
+    cap the spell's max_rank (usually SPELL_RANK_MAX). What a rank buys is
+    the spell's own ladder (SPELLS[name].ranks): attack spells gain +1
+    pressure AND +1 severity per rank like a drilled weapon, and rank 3 is
+    the signature technique; openers/utility spells deepen in effect.
+    Wizards only, and the spell must already be KNOWN (rolled at creation,
+    or learned from a spellbook -- learn_spell)."""
+    if not h.is_wizard:
+        log.append(f"    {h.name} has no gift for magic to train.")
         return False
-    key = h.school_prof_key
-    rank = h.school_prof
-    if rank >= PROFICIENCY_MAX:
-        log.append(f"    {h.name} has mastered {key} "
-                   f"(cap {PROFICIENCY_MAX}).")
+    spell = SPELLS.get(name)
+    if spell is None:
+        log.append(f"    No such spell: {name!r}. "
+                   f"Spells: {', '.join(sorted(SPELLS))}.")
+        return False
+    rank = h.spells.get(name)
+    if rank is None:
+        log.append(f"    {h.name} has not learned {name} -- a spellbook "
+                   f"teaches it ({SPELLBOOK_PRICE}g, capitals).")
+        return False
+    if rank >= spell.max_rank:
+        log.append(f"    {h.name} has mastered {name} "
+                   f"(cap {spell.max_rank}).")
         return False
     cost = rank + 1
     if h.skill_points < cost:
-        log.append(f"    {h.name} needs {cost} skill point(s) for {key} "
+        log.append(f"    {h.name} needs {cost} skill point(s) for {name} "
                    f"rank {rank + 1} (has {h.skill_points}).")
         return False
     h.skill_points -= cost
-    h.proficiency[key] = rank + 1
-    log.append(f"    {h.name} drills the {h.school} school: {key} rank "
-               f"{rank + 1} (+{rank + 1} bolt pressure and +{rank + 1} "
-               f"bolt severity) [{h.skill_points} point(s) left]")
+    h.spells[name] = rank + 1
+    log.append(f"    {h.name} deepens their {name}: rank {rank + 1} -- "
+               f"{spell.ranks[rank]} [{h.skill_points} point(s) left]")
     return True
+
+
+def learn_spell(h: Entity, name: str, log: list[str]) -> bool:
+    """Learn a NEW spell at rank 1 (the spellbook's teaching -- the gold
+    gate on breadth; ranks past 1 are skill points, train_spell). Wizards
+    only: the gift is rolled at creation, a book can't grant it."""
+    if not h.is_wizard:
+        log.append(f"    {h.name} has no gift for magic -- the book is "
+                   f"just diagrams to them.")
+        return False
+    spell = SPELLS.get(name)
+    if spell is None:
+        log.append(f"    No such spell: {name!r}. "
+                   f"Spells: {', '.join(sorted(SPELLS))}.")
+        return False
+    if name in h.spells:
+        log.append(f"    {h.name} already knows {name} "
+                   f"(rank {h.spells[name]}).")
+        return False
+    h.spells[name] = 1
+    log.append(f"    {h.name} studies the book and learns {name} (rank 1: "
+               f"{spell.ranks[0]}).")
+    return True
+
+
+def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
+    """Buy the spellbook that teaches `name` and learn it on the spot -- a
+    between-adventures DM call (same shape as buy_weapon; session gates it
+    to capitals). SPELLBOOK_PRICE gold from the party purse."""
+    spell = SPELLS.get(name)
+    if spell is None:
+        log.append(f"    No such spell: {name!r}. "
+                   f"Spells: {', '.join(sorted(SPELLS))}.")
+        return False
+    if not h.is_wizard or name in h.spells:
+        return learn_spell(h, name, log)    # emits the right refusal
+    if purse.gold < SPELLBOOK_PRICE:
+        log.append(f"    Not enough gold for the {name} spellbook "
+                   f"({purse.gold}g / {SPELLBOOK_PRICE}g).")
+        return False
+    purse.gold -= SPELLBOOK_PRICE
+    log.append(f"    {h.name} buys the {name} spellbook for "
+               f"{SPELLBOOK_PRICE}g (purse: {purse.gold}g).")
+    return learn_spell(h, name, log)
 
 
 def autospend_points(h: Entity, log: list[str]) -> bool:
@@ -2419,9 +3221,9 @@ def autospend_points(h: Entity, log: list[str]) -> bool:
 
     training_to(3)
     if h.school:
-        while (h.skill_points >= h.school_prof + 1
-               and h.school_prof < PROFICIENCY_MAX
-               and train_school(h, log)):
+        while (h.skill_points >= h.spells.get(h.school, 1) + 1
+               and h.spells.get(h.school, 1) < SPELLS[h.school].max_rank
+               and train_spell(h, h.school, log)):
             bought = True
     elif (h.weapon is not None and h.weapon.quality
             and not h.weapon_broken):

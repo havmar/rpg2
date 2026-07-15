@@ -85,9 +85,11 @@ weapons may be shopped for gold; masterwork/legendary stay found/quested.
 **Stats are the simulated body, fixed at creation** — never raised by
 levelling. A genetic cap defines each stat's ceiling; only magic and rare
 items can push a stat past its natural value (the membrane in action). The
-planned full set is five: DEX/STR/STA (combat, built), **INT** (magic —
-scales/gates spells the way STR scales weapons), **CHA** (the meta/party
-layer — companions, recruitment; never acts inside a fight).
+full set is five, all shipped: DEX/STR/STA (combat, built), **MIND**
+(magic — the planned "INT", renamed: it scales/gates spells the way STR
+scales weapons, and reads quest levels — the Magic & Mind add-on,
+2026-07-15), **CHA** (the meta/party layer — companions, recruitment;
+never acts inside a fight).
 
 **Progression is free allocation, never use-based.** Levels grant points
 spent on skills and proficiencies, a la Fallout — *what you are*, not *what
@@ -1267,91 +1269,217 @@ comparable.
 
 ---
 
-# Placeholder Magic — Add-on (2026-07-14)
+# Magic & Mind — Add-on (2026-07-15)
 
-Magic exists **from level 1** (designer call: it was never meant to be
-high-level-only content). This is the PLACEHOLDER slice — bolts and two
-schools riding entirely on systems that already exist (the Power pool, the
-pressure roll, the proficiency ranks); the full INT/stat-transcendence
-layer stays on the roadmap (plan.md).
+The full wizard layer (designed in the 2026-07-15 session; it grew out of
+and REPLACES the 2026-07-14 placeholder slice — the bolts and the two
+schools survive inside it as the attack spells' bottom rungs). Magic
+exists **from level 1**; the inspiration is Dishonored and
+Morrowind/Oblivion, not the D&D spell list — few spells, each deep.
 
-## Who is a wizard
+## MIND — the casting stat
 
-**POWER strictly highest of POWER/DEX/STR at creation = wizard.** CHA stays
-out of the comparison (social, not combat). Rolled in `rpg.make_human`, so
-wizards appear everywhere characters are generated: the PC, companions,
-recruits, the sims' parties — and select enemy rows (below). Under the
-fixed stat budget roughly a quarter of characters roll wizard (measured
-24% over 20k rolls).
+**MIND is a full creation stat** (the design spine's planned INT; "the
+mind, not the IQ"): rolled 3–6 in the fixed budget beside DEX/STR/CHA
+(the surplus budget rose 9 → 11 to keep the per-stat spread when the
+seventh line joined), **fixed at creation, natural cap 6** — the 1-20
+doctrine holds for wizards too. Its jobs:
 
-**The school replaces the ability.** A wizard rolls **fire** or **ice**
-(50/50) instead of heal/bulwark/first_blood — one Power pool, one spender.
-Wizards often start with the wooden staff (50%, like healers).
+- **The gift: MIND strictly highest of MIND/DEX/STR at creation =
+  wizard** (CHA and POWER stay out of the comparison — one is social,
+  the other is fuel). ~23% of rolls. A wizard rolls a **school** (fire or
+  ice, 50/50) instead of an ability and starts knowing that one spell at
+  rank 1; wizards often carry the wooden staff (50%).
+- **The casting check's stat** (unaimed spells, below).
+- **Half the AIM of a thrown cast** (aimed spells, below).
+- **Quest sight** (its everyday second job, below) — MIND matters to
+  parties with no wizard at all.
 
-## Bolts
+**POWER is fuel, never intellect** (designer call, 2026-07-15: "qi, not
+iq"). It stays its own rolled pool (3–6 + the level growth), spends on
+spells exactly as it spends on Bulwark or War-Breath, and never derives
+from MIND. A deep-pooled dullard and a sharp-minded wisp of a caster are
+both real rolls.
 
-A wizard's attack is a **bolt** whenever they have the Power for it; out of
-Power they swing the weapon in hand like anyone, on whatever STA the
-casting left.
+## Spells, ranks, and what gates them
 
-- **Cost: the normal swing STA + 1 Power.** Casting tires like fighting —
-  Power is ammo ON TOP of stamina, never a second endurance pool (the
-  designer's double-stamina question, settled 2026-07-14). Winded/Spent
-  drag casting rolls like everything else, and a parried cast still burns
-  its Power.
-- **Attack pressure = 2d6 + creation POWER + training + school
-  proficiency.** The weapon's attack bonus stays out of it, and the stat
-  is **pinned at its creation value** (`Entity.power_stat`): the 1-20
-  doctrine holds for wizards too — stats are fixed at creation, levels
-  grow the POOLS — so pool growth (+1 Power per 2 levels) deepens a
-  wizard's *ammo*, never their aim. (The first bench run let the growing
-  pool double as the attack stat: every top-band row's win rate drifted
-  up 5–9 points as high-level reference wizards hit at +17-and-up. Pinned
-  the same day.)
-- **Severity = margin + the school's flat − soak.** The caster's STR and
-  weapon are out of it:
-  - **Fire: +5** — the STR analogue: hits like a solid fighter swinging
-    military steel.
-  - **Ice: +2** — weak on purpose; every landed ice bolt **rimes** the
-    target: a stacking **−1 DEX** (attack, defense, and the chase's legs)
-    for the rest of the fight, floored at 0. The rime melts when the melee
-    ends or either side breaks away — it never crosses fights.
-- **Defense is unchanged**: the body (DEX + training + the weapon's parry
-  knob), so a wizard defends normally — squishiness comes from the
-  statline, not a rule. Bolts neither test durability nor risk the
-  caster's weapon (breakage stays a steel-on-steel event).
+A wizard knows **spells at ranks 1–3** (`Entity.spells`; the catalog is
+`rpg.SPELLS` — nine spells, listed below).
 
-## School proficiency — the levellable axis
+- **Skill points gate DEPTH**: rank n costs n points (`train HERO
+  SPELLNAME`; `train HERO magic` is shorthand for the innate school) —
+  the weapon-proficiency chassis wholesale, cap 3. Rank 3 of an attack
+  spell is its **signature technique** (fireball, flash-freeze, hurl
+  foe); rank 3 of a utility spell is usually the **roleplay tier** the
+  DM adjudicates in the scene.
+- **Spellbooks gate BREADTH**: the first spell is rolled at creation;
+  every further spell needs its book — **`SPELLBOOK_PRICE` (120 g),
+  capitals only** (`buy HERO book SPELL`), teaching the spell at rank 1.
+  Books are shoppable by designer call (the "gold never buys power" rule
+  was already softened to a guideline); masterwork-style *found* tomes
+  can gate a future rank 4 when the 14-20 band gets its content pass.
+- **Power costs gate the BURST** — the designer's core intent: a low-level
+  wizard's big spell eats most of their pool (a rank-1 opener costs 3–4
+  Power against a starting pool of 3–6), one great effect per fight; the
+  pool's level growth (+1 per two levels) slowly turns the same spell
+  routine. No level gates exist anywhere — point scarcity and Power do
+  the pacing (the game's own doctrine: free allocation, authored
+  placement, never level requirements).
+- **Character math**: 19 points by L20 buy two rank-3 spells (12) plus
+  combat training 3 (6) — the balanced wizard — or a third spell for the
+  glass cannon who never learned to parry. "A wizard masters 2-3 spells
+  in a career" falls out of the arithmetic, unlegislated.
 
-The weapon-proficiency system wholesale, keyed `"fire magic"` /
-`"ice magic"` in the same proficiency dict: **rank n costs n points, +1
-bolt pressure AND +1 bolt severity per rank, cap 3** (`train HERO magic`;
-the levelup menu shows the sink). The school never breaks and never
-switches — it is the caster's whole progression lane, so wizard companions
-autolevel into it (school ranks instead of weapon ranks;
-`rpg.develop_hero` and the bench reference duo follow the same doctrine).
+Wizard companions autolevel into their school spell (the doctrine:
+training to 3, school to cap, training on — `rpg.develop_hero`,
+`autospend_points`, and the bench reference duo all follow it).
+
+## How casting works (two shapes, mirroring the game's own split)
+
+**1. AIMED casts** (bolts, the fireball, hurled debris) ride the normal
+exchange — one opposed roll, severity, wound tiers:
+
+- **Attack pressure = 2d6 + AIM + training + spell rank**, where **AIM =
+  ceil((MIND + DEX) / 2)** — the mind shapes it, the hand throws it
+  (designer call: aimed magic uses DEX too; this forks wizard builds
+  into pure-MIND controllers and DEX-touched battle-mages). The weapon
+  stays out of it.
+- **Severity = margin + the cast's flat − soak** (STR and weapon out):
+  fire +5 (the STR analogue), ice +2 (weak on purpose — every landed
+  bolt **rimes**: stacking −1 DEX for the fight, and the chase's legs),
+  hurled debris +4, the control techniques +2/+3. The spell's rank adds
+  +1 pressure AND +1 severity, like weapon proficiency.
+- **Cost: the normal swing STA + the cast's Power** (bolts 1, techniques
+  2–4). Casting tires like fighting — Power is ammo ON TOP of stamina,
+  never a second endurance pool. A parried or warded cast still burns
+  its Power. Out of Power the wizard swings the weapon in hand.
+- **Defense is unchanged**: the body (DEX + training + parry knob) —
+  squishiness comes from the statline, not a rule. Bolts neither test
+  durability nor risk the caster's weapon.
+
+**2. UNAIMED casts** (the openers, the utility spells) roll the
+**casting check**: `2d6 + MIND + trained rank` vs `DC = 7 + 2 × rank
+cast` (+ the target's resistance for control spells, below). Degrees by
+margin — the designer's five:
+
+| Margin vs DC | Result |
+|---|---|
+| miss by 5+, or snake-eyes | **MISFIRE** — Power lost, action lost, the backlash grazes the caster (1 HP) |
+| miss | **fizzle** — Power lost, action lost |
+| make it by 0–1 | **downgrade** — resolves one rank lower (where one exists) |
+| make it by 2+ | **success** |
+| beat it by 7+, or boxcars | **critical** — the Power is refunded |
+
+**Mastery: casting a technique BELOW your trained rank never rolls** —
+reliability is what study buys; risk lives at the edge of the art (so a
+rank-3 fire wizard's rank-1 bolts stay exactly as reliable as the
+placeholder's were). **The fumble is scoped to casting**: snake-eyes on
+an aimed cast's attack dice is likewise a misfire, while steel stays
+reliable — the parked crit/fumble idea shipped magic-only, on purpose,
+touching no melee bench.
+
+## The spell list (nine; `rpg.SPELLS` is the reference)
+
+| Spell | Kind | r1 / r2 / r3 |
+|-------|------|--------------|
+| **fire** | attack | firebolt (1 P) / rank bonus / **FIREBALL**: one roll sweeps up to 3 foes (4 P, thrown when 3+ stand) |
+| **ice** | attack | rime bolt (1 P, −1 DEX stacking) / rank bonus / **FLASH-FREEZE**: a wounding bolt also costs the target its next action (4 P; rime −2) |
+| **telekinesis** | attack | **DISARM**: tear a weapon away — the broken-weapon state, once per foe (2 P) / **HURL** debris (2 P, +4 flat) / **HURL FOE**: a wounding slam costs its next action (4 P) |
+| **teleport** | opener | **BLINK STRIKE**: open at a foe's back — an ambush strike (3 P) / **BLINK OUT**: retreat with NO parting blows and NO chase (`retreat --blink`, 5 P; a fizzled door falls back to the honest retreat) / **TRAVEL**: step to any VISITED settlement, 3 P per road day skipped — no days, no road, no interception (`cast`) |
+| **invisibility** | opener | **UNSEEN ENTRY**: untargetable until the first strike, which lands as an ambush (3 P) / **VANISH**: re-fade mid-fight — a pause action / standing order (4 P) / **GHOST-WALK**: a scene unseen, out of combat (roleplay tier) |
+| **stop time** | opener | 1 / 2 / 3 **stolen strikes** — ambushes before the lines meet (4/5/6 P) |
+| **possession** | opener | seize a living mind: the puppet fights for the party 1 / 2 / 3 rounds (4/5/6 P; DC + target training + 2 × ward; the dead have no mind) |
+| **flight** | opener | **SKY-STEP**: aloft round 1 — melee can't reach, bolts and breath can, +1 attacking (3 P) / aloft rounds 1–2 (5 P) / *not yet written* (see below) |
+| **scry** | utility | the next room's roster (2 P) / the whole site (3 P) / **the far-seeing**: the quest whole, its TRUE level, and DM-adjudicated divination (4 P) — `cast HERO scry` |
+
+**The assassin openers overlap on purpose** (invisibility, stop time,
+teleport all open with a guaranteed strike at rank 1 — the designer's
+almost-lethal-once intent): they diverge with rank (defense / multi-kill /
+mobility), and all three carry roleplay value outside combat, which is
+why all three stayed (designer call, 2026-07-15).
+
+**An ambush strike is never a literal kill**: it auto-wins the exchange
+at margin 6 and the **severity table is the cap** — a 7-HP bandit takes
+a crippling blow and fights on at 1 HP in a deep spiral (functionally
+dead), a boss soaks it and turns around. Any `spell_ward` (below) meets
+an ambush as an honest exchange instead.
+
+## The autocombat doctrine (the design rule that shaped everything)
+
+**A spell is an opener, a sustained state, a pause/retreat option, or a
+standing-order behavior — NEVER a new mid-fight decision layer.** The
+one-pause promise survives untouched; the wizard's play is deciding what
+to walk in under. Concretely:
+
+- **Openers fire automatically** at fight start (First Blood's doctrine:
+  trained art is reflexive, while the Power lasts), one per wizard per
+  fight, best affordable first (possession > stop time > invisibility >
+  teleport > flight), skipped when the fight is already winding down.
+- **Attack spells are standing behavior** (`Entity.choose_cast`): disarm
+  an armed foe once, spend the rank-3 technique on a healthy body, else
+  bolt, else steel.
+- **The pause gains two wizard actions**: `--vanish` (invisibility 2)
+  and `retreat --blink` (teleport 2). The standing orders prefer a
+  vanish over a healing potion on a cut-up wizard who knows it.
+
+## Magic resistance — no new stat (settled 2026-07-15)
+
+Three existing surfaces carry it instead:
+
+1. **Aimed spells are dodged by the body** — DEX + training + soak
+   already resist a fireball for the same reason they resist a spear.
+2. **Control resists through the DC**: a possession adds the target's
+   `training` and `2 × spell_ward` to the casting DC — one roll, no
+   second save. The undead/tireless have no living mind: immune.
+3. **`spell_ward` is a per-row monster knob** (like `pain` and
+   `crowd_cap`, a puzzle piece, never a universal stat): +DC as above,
+   ward ≥ 2 immune to the stun riders, ANY ward meets ambush strikes as
+   honest exchanges. Current wards: dragon 3, drake 2, magus 2, wight 2,
+   giant 1 — the apex keeps its bosshood through the wizard tier.
+
+## Quest sight — MIND's second job
+
+**The party's best living MIND reads quest levels**: 6 reads the board
+exact; 4–5 within one level; 3 and under within two. A blurred read
+shows as `L~7` (board, rumors, `show`, `take`), the error is rolled once
+per quest at worldgen (re-asking never re-rolls), and the site sub-lines
+shift consistently — the truth never leaks through a detail row. **Pay
+always follows the TRUE level** — a canny player can smell a mispriced
+job, which is intended flavor. Scry rank 3 outranks the blur. This
+deliberately spends part of the old levels-shown-straight stance to make
+MIND matter to every party (hiring the bookish companion sharpens the
+whole board); `show --dm` keeps the DM's true view, and the sims read
+true levels, so no bench number moves.
 
 ## Enemy casters
 
-Three catalog rows (`sites.FOES`), all humanoid: the **hexer** (ice — the
-debuff showcase), the **pyromancer** (fire), and the **magus** (the solo
-tower fight: drilled, deep Power, real steel after). A caster row's
-`power` is double-duty — the bolt's pressure stat AND the ammo count — so
-the family's shape is one puzzle: dangerous at range until the Power runs
-dry, then a robed conscript with a knife. Close fast or bleed. Levels are
-bench-annotated like every row (`bench_bestiary.py`).
+The three rows (hexer ice-2, pyromancer fire-2, magus fire-3) carry a
+savant `mind` stat (8/8/11 — monster rows may break the human cap, same
+doctrine as the dragon's DEX 8) and aim like hero wizards; their `power`
+is the ammo pool, so the family's shape is unchanged: dangerous at range
+until it runs dry, then a robed conscript with a knife. The magus adds
+`spell_ward` 2 (no assassinating the tower's master). They keep only
+bolts — enemy openers/techniques are a future pass. **Casters stay
+contained content** (one caster quest per race + the Renegade Magus
+epic; the 2026-07-14 career-collapse lesson stands: reach-L11 47% → 18%
+when they rode the warband pool).
 
-**Casters are contained content: every race has ONE caster quest** (the
-witchfinder's hedge-wizards, the coven, the ash-callers, the rune-fire,
-the boiler-cult — reskins per race), plus the capital epic "The Renegade
-Magus". They deliberately do NOT ride the common warband pool: the first
-cut put them there and the career sim collapsed (reach-L11 47% → 18%,
-median death L10 → L8) — the rows are band-fair alone, but at half of all
-warband rooms their ranged chip bled parties across chained rooms (rooms
-measured fine at level; sites dropped 15–25 points mid-band). Contained,
-the danger is identifiable: the board names the coven, the player chooses
-to walk in. (They still roam their land's wilds via the template pool
-union, as rare road trouble.)
+## Deferred with reasons (the design session's cut list)
+
+- **Flight ranks 3–4 (all day / for good)** — blocked on the ranged
+  combat model (plan.md's foundation): sustained untargetability against
+  a melee-only bestiary is a win button, not a spell. Burst flight ships.
+- **Summoning** — cut for now (designer call): action economy is the
+  measured strongest force in the game (hideout 17/78/98% by party
+  size), so a conjured body needs its own design round. Sketches kept:
+  party cap 4 would count the summon, CHA could be ignored for it,
+  expendable; catalog rows as the summons so the benches already know
+  their worth.
+- **Antimagic** — nothing to counter yet (three bolt rows); it becomes
+  the wizard-duel tech when enemy magic has breadth.
+- **Ward (the tier-shift shield)** — designer pass ("finicky unless very
+  strong"); note it was also the provisional armor design.
+- **Possession shipped instead** (mind control made the designer's cut).
 
 ---
 

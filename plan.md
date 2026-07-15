@@ -102,16 +102,30 @@ in-fight half; the wipe version stays parked below.
    add-on's Cross-land deliveries section. What remains for later passes:
    **escort/caravan variants** of the travel quest (a fragile charge in
    the party is real design work), and the full magic layer below.
-2. **Magic & INT, the full layer** — magic skills, INT scaling/gating (the
-   way STR scales
-   weapons), the stat-transcendence path (magic is the membrane that lets
-   gamey effects into the simulated body; ceiling: up to ~double the natural
-   DEX/STR cap of 6, and +DEX items an order of magnitude rarer than
-   +STR/+pool — see rules.md, the 1-20 doctrine). Test: an INT build is
-   viable; magic feels like the sanctioned rule-breaker. **The wraith
-   belongs here**: the immaterial undead ("mundane steel barely bites") only
-   works once magic exists to be the answer — it's the magic phase's
-   signature enemy, deliberately left out of the bestiary until then.
+2. ~~Magic & MIND, the full layer~~ **SHIPPED (2026-07-15)** — the MIND
+   stat (the planned "INT"; a seventh budget line), MIND-highest wizards,
+   nine spells at ranks 1-3 (points buy depth, spellbooks buy breadth,
+   Power prices the burst), aimed casts on the exchange (AIM =
+   ceil((MIND+DEX)/2)), the casting check with the five degrees, the
+   assassin openers (invisibility / stop time / teleport), telekinesis,
+   possession, flight (burst), scry, teleport travel/escape, the
+   spell_ward knob, and quest sight. Mechanics in rules.md's Magic & Mind
+   add-on; measured numbers in benchlog.md (2026-07-15). **What remains
+   of the old item, still scheduled here:**
+   - **Stat transcendence + magic items** (the membrane: +stats up to
+     ~double the natural cap 6; +DEX an order of magnitude rarer than
+     +STR/+pool) — now the natural payload of the masterwork/legendary
+     content pass, item 5's sibling.
+   - **The wraith** — the immaterial undead ("mundane steel barely
+     bites"): buildable NOW that attack spells exist to be the answer;
+     the magic phase's signature enemy.
+   - **Rank-4 capstones** — authored tomes/mentors permitting a fourth
+     rank (flight-for-good, the firestorm); the 14-20 band's player
+     power, gated like masterwork steel.
+   - **Enemy spell use** — the magus and future authored casters using
+     openers/techniques, not just bolts.
+   - **Flight ranks 3-4** (all day / for good) — blocked on the ranged
+     combat model below; burst flight shipped.
 3. **Armor** — provisional design: armor **shifts the incoming wound tier
    down** (Grievous → Wound, ...) at the cost of a DEX penalty and higher STA
    drain — protection traded for speed and clock. Optional anti-armor weapons
@@ -155,9 +169,10 @@ belongs at the end.
 
 **Foundations — do early, other items ride on them:**
 
-- **Full magic (item 2 above)** is the keystone: it unlocks magic ITEMS,
-  the wraith and the demon tier (and with them the apocalypse spine), and
-  the INT build. Most of the wishlist gets cheaper after it.
+- ~~Full magic (item 2 above)~~ **shipped 2026-07-15** — the keystone is
+  in: magic ITEMS, the wraith, and the demon tier (and with them the
+  apocalypse spine) are now unblocked content passes, and the MIND build
+  exists.
 - **The ranged combat model** — the engine has no distance or positioning,
   so "guns" is really two features: first the combat-model change (how
   shooting, closing, and being shot at work inside the abstract melee),
@@ -206,6 +221,22 @@ belongs at the end.
 
 ## Parked ideas (agreed to exist, not scheduled)
 
+- **Summoning** (2026-07-15, cut from the magic layer by designer call)
+  — a conjured body is worth more than any severity number (action
+  economy is the game's strongest measured force), so it needs its own
+  design round. Sketches from the session: the party cap of 4 counts the
+  summon, CHA could be ignored for it, it's expendable, and catalog rows
+  as the summons mean the benches already price it.
+- **Antimagic** (2026-07-15) — trivial to build, nothing to counter yet
+  (three bolt rows); becomes the wizard-duel tech once enemy magic has
+  breadth (dispel the flier, ground the unseen, mute the magus).
+- **Ward, the tier-shift shield spell** (2026-07-15) — designer pass
+  ("finicky unless very strong and general"); note it doubled as the
+  provisional armor design, so revisiting armor revisits this.
+- **Opener economy in play** (2026-07-15) — openers auto-fire while the
+  Power lasts (First Blood's doctrine). If played wizards resent the
+  pool burning on trash fights, the fix is a session-side hold toggle
+  (`orders HERO opener off`), not engine smarts.
 - **Opt-out tutorial register** (2026-07-14) — a new-player mode where
   the DM teaches mechanics as they first come up, off by default. dm.md
   now assumes full rules fluency (the designer is the only player);

@@ -194,7 +194,8 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
                              "blademaster", "warlord")
-# The casters get their OWN quests (placeholder magic, 2026-07-14): one
+# The casters get their OWN quests (2026-07-14; the Magic & Mind layer
+# kept the containment): one
 # caster template per race below plus the magus epic -- NOT the ladder
 # pool. The first cut seeded hexer/pyromancer into LADDER_POOL and the
 # career sim collapsed (L11 47% -> 18%, capped 7.5% -> 3.5%): individually
@@ -637,6 +638,12 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
         "desc": tpl["desc"],
         "settlement": settlement_key,
         "level": level,
+        "fuzz": rng.randint(-2, 2),     # quest sight (Magic & Mind): the
+                                        # fixed error a dull-witted party
+                                        # READS this job's level with --
+                                        # rolled once so re-asking never
+                                        # re-rolls it; clamped by the
+                                        # party's best MIND (seen_level)
         "skins": dict(tpl["skins"]),
         "sites": sites,
         "next": {"site": 0, "room": 0},     # the progress cursor
@@ -989,25 +996,67 @@ def quest_shape(quest: dict) -> str:
     return (f"{n} site{'s' if n > 1 else ''}, "
             f"{rooms} encounter{'s' if rooms > 1 else ''}")
 
-def quest_line(quest: dict) -> str:
-    """One board row: id, level (straight -- reading it is the decision),
-    shape, pay, status. A delivery has no site level: DELIVERY stands where
-    the level would (the road's danger is the road's own table)."""
+def mind_precision(mind: int) -> int:
+    """Quest sight (Magic & Mind, 2026-07-15): how blurry the party's read
+    of a job's level is. The party's BEST MIND does the reading: 6 = the
+    savant sees it exact; 4-5 = within a level; 3 and under = within two.
+    This deliberately spends part of the old levels-shown-straight stance
+    to make MIND matter to every party (design discussion; pay always
+    follows the TRUE level -- only the READ blurs)."""
+    if mind >= 6:
+        return 0
+    if mind >= 4:
+        return 1
+    return 2
+
+
+def seen_level(quest: dict, mind: int | None) -> tuple[int, bool]:
+    """The level the party READS off a quest: its true level shifted by the
+    quest's stored fuzz, clamped to the reading MIND's precision. Returns
+    (shown level, exact?). mind=None is the DM's true view (and the sims':
+    they never pass a mind, so no bench number moves)."""
+    level = quest["level"]
+    if mind is None or quest.get("kind") == "delivery":
+        return level, True
+    p = mind_precision(mind)
+    if p == 0:
+        return level, True
+    f = max(-p, min(p, quest.get("fuzz", 0)))
+    return max(1, level + f), False
+
+
+def level_grade(quest: dict, mind: int | None = None) -> str:
+    """The level column of a board row: 'L7 ' exact, 'L~7' an estimate
+    (quest sight), 'DELIVERY' for the road jobs."""
+    if quest.get("kind") == "delivery":
+        return "DELIVERY"
+    shown, exact = seen_level(quest, mind)
+    return f"L{shown:<2}" if exact else f"L~{shown}"
+
+
+def quest_line(quest: dict, mind: int | None = None) -> str:
+    """One board row: id, level (exact to a sharp MIND; an estimate --
+    'L~7' -- to a dull one: quest sight), shape, pay, status. A delivery
+    has no site level: DELIVERY stands where the level would (the road's
+    danger is the road's own table)."""
     mark = {"open": "", "done": "  [DONE]"}[quest["status"]]
     if quest.get("kind") == "delivery":
         return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
                 f"{quest['dest_name']}, {quest_shape(quest)}; pays "
                 f"{quest_gold_total(quest)}g, "
                 f"{quest_xp_total(quest)} XP{mark}")
-    return (f"[{quest['id']}] L{quest['level']:<2} {quest['name']} -- "
+    return (f"[{quest['id']}] {level_grade(quest, mind)} {quest['name']} -- "
             f"{quest_shape(quest)}; pays {quest_gold_total(quest)}g, "
             f"{quest_xp_total(quest)} XP{mark}")
 
 
-def board_lines(world: dict, settlement_key: str | None = None) -> list[str]:
+def board_lines(world: dict, settlement_key: str | None = None,
+                mind: int | None = None) -> list[str]:
     """The DM's quest inventory per settlement (2026-07-12: in play there
     is no board -- each row shows WHOSE job it is, and the ask-around
-    funnel leads to that person, see dm.md)."""
+    funnel leads to that person, see dm.md). `mind` is the reading party's
+    best MIND: with it, levels blur to quest sight (L~7); without it (the
+    default -- the DM/demo view) they print true."""
     lines = []
     for s in world["settlements"]:
         if settlement_key and s["key"] != settlement_key:
@@ -1017,7 +1066,7 @@ def board_lines(world: dict, settlement_key: str | None = None) -> list[str]:
             q = world["quests"][qid]
             g = q.get("giver")
             who = f"    ({g['name']}, {g['role']})" if g else ""
-            lines.append("  " + quest_line(q) + who)
+            lines.append("  " + quest_line(q, mind) + who)
     return lines
 
 
@@ -1028,8 +1077,13 @@ def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
     return ", ".join(f"{n}x {d}" if n > 1 else d for d, n in counts.items())
 
 
-def quest_detail_lines(quest: dict) -> list[str]:
-    lines = [quest_line(quest), f"    {quest['desc']}"]
+def quest_detail_lines(quest: dict, mind: int | None = None) -> list[str]:
+    """The full quest view. With `mind` (quest sight) the site levels shift
+    by the same read error as the headline -- a blurred read is blurred
+    consistently, it never leaks the truth through a sub-line."""
+    lines = [quest_line(quest, mind), f"    {quest['desc']}"]
+    shown, exact = seen_level(quest, mind)
+    offset = shown - quest["level"]
     g = quest.get("giver")
     if g:
         traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
@@ -1049,6 +1103,8 @@ def quest_detail_lines(quest: dict) -> list[str]:
         return lines
     for i, s in enumerate(quest["sites"]):
         cur = quest["next"]
+        site_l = (f"L{s['level']}" if exact
+                  else f"L~{max(1, s['level'] + offset)}")
         for j, (rname, kinds) in enumerate(s["rooms"]):
             here = (quest["status"] == "open"
                     and cur["site"] == i and cur["room"] == j)
@@ -1056,7 +1112,7 @@ def quest_detail_lines(quest: dict) -> list[str]:
             boss = s.get("boss")
             led = (f" -- led by {boss['display']}"
                    if boss and j == len(s["rooms"]) - 1 else "")
-            lines.append(f"    site {i + 1} '{s['name']}' (L{s['level']}) "
+            lines.append(f"    site {i + 1} '{s['name']}' ({site_l}) "
                          f"room {j + 1}: {rname} -- "
                          f"{roster_kinds_line(kinds, quest['skins'])}"
                          f"{led}{mark}")
