@@ -48,9 +48,16 @@ it's worth the road to a better town -- is the player's core decision:**
   stands -- plus the in-game day.
 - **There is NO quest board in the fiction (2026-07-12): quests come from
   PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
-  its level (straight; too easy and too hard both appear on purpose), pay,
-  and WHOSE job it is (every quest has a generated giver: name, role,
-  personality). In play, run the **one-message funnel**: the party asks
+  its level, pay, and WHOSE job it is (every quest has a generated giver:
+  name, role, personality). **Levels read through the party's best MIND
+  (quest sight, 2026-07-15):** a best MIND of 6 reads them exact; 4-5
+  within one level; 3 and under within two -- the blurred rows print
+  `L~7` and the board says so. Relay the estimate AS an estimate ("looks
+  like level 7 work, near enough") and never correct it from your own
+  knowledge -- the party finds out the truth by fighting (the door
+  banner prints it) or by scrying. Pay is always honest, so a job that
+  pays too well for its apparent level SMELLS wrong -- let the player
+  notice, don't flag it. `show QID --dm` is your true view for pacing. In play, run the **one-message funnel**: the party asks
   around -- the tavern keeper knows, any local points the way -- and ONE
   message lands them in front of the giver, who lays out the job ("you
   ask at the taproom; the mayor waves you on to the chief constable, a
@@ -315,8 +322,12 @@ bigger than the fights WITHOUT pages of narration:
   `resume --drink HERO` (stamina draught mid-fight), `resume --heal HERO`
   (healing potion mid-fight, +5 HP -- the wounds answer), `resume
   --berserk HERO` (2 HP -> +4 STA), `resume --warbreath HERO`
-  (2 Power -> +3 STA) -- pause actions cost that round's attack and defend
-  at -2 -- or `retreat`. A paused fight blocks every between-fights command
+  (2 Power -> +3 STA), `resume --vanish HERO` (a wizard with
+  invisibility 2: 4 Power to fade untargetable, the next strike an
+  ambush) -- pause actions cost that round's attack and defend
+  at -2 -- or `retreat` (`retreat --blink HERO`, teleport rank 2: no
+  parting blows, no chase; a fizzled door falls back to the honest
+  retreat). A paused fight blocks every between-fights command
   until it's settled. So a fight spans at most two messages, guaranteed:
   fight-to-pause + question, then the answer to conclusion.
 - **Every other crisis runs on STANDING ORDERS** -- heroes low on breath
@@ -355,12 +366,16 @@ bigger than the fights WITHOUT pages of narration:
   **who to hire and whether to hire at all** (`hire`),
   **who to let go** (`dismiss`), spending a day on
   companion morale (`downtime`),
-  **spending the PC's skill points** (`train HERO combat|weapon` -- the
-  PC's points bank on level-up; companions spend their own, see below),
+  **spending the PC's skill points** (`train HERO combat|weapon|SPELL`
+  -- the PC's points bank on level-up; companions spend their own, see
+  below), **buying spellbooks** (`buy HERO book SPELL`, 120g, capitals
+  -- a wizard's breadth is a purse decision), **the utility casts**
+  (`cast HERO scry`, `cast HERO teleport DEST` -- Power spent between
+  fights is Power not carried into one),
   where to `travel` and which site to
   run, whether to `engage` a sighting, whether to press on or pull back,
   and **the pause decision** (fight on / drink / heal / Berserk /
-  War-Breath / retreat).
+  War-Breath / vanish / retreat or blink out).
   Lay the situation out -- the displays and the fiction carry the stakes --
   then hand the turn back and let it sit. When the options need listing,
   list them as a terse display line ("options: heal potion (+5 HP), camp,
@@ -581,25 +596,56 @@ bigger than the fights WITHOUT pages of narration:
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
-- **Wizards (placeholder magic, 2026-07-14):** POWER strictly highest of
-  POWER/DEX/STR at creation = a wizard -- a SCHOOL (fire or ice) instead
-  of an ability, rolled for PC, companions, and recruits alike. They hurl
-  BOLTS while the Power lasts (normal swing STA + 1 Power per cast;
-  pressure off POWER + training + school prof; a parried cast still burns
-  the Power), then fight on with the weapon in hand. Fire bolts hit like
-  heavy steel (+5 severity flat, no STR); ice bolts barely cut (+2) but
-  every landed one RIMES the target -- stacking -1 DEX for the fight (it
-  shows as `-N chilled` in the rolls and slows the chase's legs too).
-  Defense stays the body: wizards are squishy by statline. `train HERO
-  magic` drills the school (the caster's proficiency lane; companions
-  autolevel into it). **Enemy casters** (hexer = ice, pyromancer = fire,
-  magus = the solo boss) are CONTAINED content: each race has one caster
-  quest (coven/ash-callers/rune-fire/boiler-cult/hedge-wizards) plus the
-  Renegade Magus epic -- ordinary warbands never field them, so a caster
-  fight is one the player read on the board and chose. Their Power is
-  both accuracy and ammo: close fast or bleed at range -- an emptied
+- **Wizards (Magic & Mind, 2026-07-15):** MIND strictly highest of
+  MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
+  rank 1 instead of an ability, rolled for PC, companions, and recruits
+  alike. POWER is the fuel (qi, not iq -- it never comes from MIND).
+  Spells rank 1-3: `train HERO SPELL` buys ranks (rank n = n points),
+  `buy HERO book SPELL` (120g, capitals) teaches new spells; rank 3 is
+  an attack spell's signature technique and usually a utility spell's
+  roleplay tier. Nine spells: fire (bolts -> FIREBALL), ice (rime bolts
+  -> FLASH-FREEZE), telekinesis (disarm/hurl/slam), teleport (blink
+  strike / blink out / travel), invisibility (unseen entry / vanish /
+  ghost-walk), stop time (stolen strikes), possession (a foe fights for
+  the party), flight (rounds aloft), scry (rooms ahead). Costs are
+  Power on top of the normal swing STA; a parried or fizzled cast still
+  burns it.
+  **In the melee everything is automatic** -- openers fire as the lines
+  meet (one per wizard, skipped vs beaten foes), attack spells follow
+  the standing behavior (disarm first, technique on a healthy body,
+  else bolt, else steel) -- narrate them as the wizard fighting smart,
+  never as decisions the fight stopped for. The one new mid-fight
+  choice sits at the pause: vanish, or blink the party out. UNAIMED
+  casts roll the casting check (the log prints it): a fizzle wastes the
+  Power, a MISFIRE also grazes the caster -- snake-eyes always
+  misfires, magic is the volatile art. An ambush strike (the assassin
+  openers) auto-wins its exchange but the wound TABLE caps it: mooks
+  drop, bosses soak it and turn around, and anything spell-warded
+  (dragon-kind, the magus, the wight) meets it as an honest exchange.
+- **Magic OUT of combat is DM-adjudicated roleplay** (2026-07-15,
+  designer intent: invisibility, stop time, and teleport are roleplay
+  tools too). Ghost-walking past a checkpoint, a stolen moment to
+  palm a key, blinking over a wall, far-seeing a question: charge the
+  spell's Power by hand (edit the save or narrate the drain), roll the
+  casting check's fiction if drama wants it, and keep the effects
+  scene-sized -- rank 3 is a scene, never a day of consequence-free
+  omnipotence. `cast HERO scry` and `cast HERO teleport DEST` are the
+  two engine-backed utility casts (teleport reaches only settlements
+  the party has VISITED, costs 3 Power per road day skipped, and
+  arrives with no road events -- including a delivery's interception:
+  that is what the Power buys).
+- **Enemy casters** (hexer = ice, pyromancer = fire,
+  magus = the solo warded boss) are CONTAINED content: each race has one
+  caster quest (coven/ash-callers/rune-fire/boiler-cult/hedge-wizards)
+  plus the Renegade Magus epic -- ordinary warbands never field them, so
+  a caster fight is one the player read on the board and chose. Their
+  Power is the ammo: close fast or bleed at range -- an emptied
   caster is a robed conscript with a knife. Narrate bolts as the school's
   fiction; the log already says who's casting what.
+- **Quest sight** (2026-07-15): the party's best MIND reads job levels
+  -- see the board section above. Blurred rows print `L~N`; relay the
+  estimate as an estimate, keep the truth to yourself, and let honest
+  pay be the tell the player may catch.
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
   weight class by construction, easy work pays less. **Per-encounter pay

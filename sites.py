@@ -78,20 +78,23 @@ class FoeSpec:
                             # the apex monsters)
     tireless: bool = False  # never spends STA, never Winded/Spent
     pursues: bool = True    # gives chase when the party retreats
-    power: int = 0          # ability fuel (dragonfire is paid for). For a
-                            # CASTER row it is double-duty: the bolt's
-                            # pressure stat AND the ammo pool (a power-6
-                            # caster throws 6 bolts at +6), exactly like a
-                            # hero wizard's POWER
-    school: str = ""        # placeholder magic: "fire"/"ice" makes the row
-                            # a caster -- bolts while the power lasts, then
-                            # the carried weapon (rpg.Entity.school)
-    school_prof: int = 0    # the caster row's school proficiency rank (+1
+    power: int = 0          # ability fuel (dragonfire is paid for); for a
+                            # CASTER row, the bolt ammo pool
+    mind: int = 0           # the casting stat (Magic & Mind, 2026-07-15): a
+                            # caster row's bolt aim is ceil((MIND + DEX)/2)
+                            # like a hero wizard's -- monster rows may break
+                            # the human cap 6 (savants), same doctrine as
+                            # the dragon's DEX 8
+    school: str = ""        # "fire"/"ice" makes the row a caster -- bolts
+                            # while the power lasts, then the carried weapon
+                            # (rpg.Entity.school)
+    school_rank: int = 0    # the caster row's SPELL RANK in its school (+1
                             # bolt pressure AND +1 bolt severity per rank)
-                            # -- the same ranks heroes drill, and the
-                            # severity lever enemy casters need (BOLT_SEVERITY
-                            # is global: buffing it would buff hero wizards
-                            # too)
+                            # -- the same ranks heroes train (Entity.spells)
+    spell_ward: int = 0     # the apex resistance knob (rpg.Entity.spell_ward):
+                            # +2/pt to a possession's DC, 2+ immune to stun
+                            # riders, any ward meets an ambush strike as an
+                            # honest exchange
     crowd_cap: int = CROWD_CAP  # attackers that can press it at once
                                 # (big monsters take 3-4: boss fights
                                 # stay full-party under the press)
@@ -191,25 +194,33 @@ FOES = {
     "warlord":     FoeSpec("Warlord",     level=19, dex=8, str_=8, sta=9,
                            hp=20, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["zweihander"]),
-    # --- The casters (placeholder magic, 2026-07-14): humanoid wizards, the
-    # enemy mirror of the party's own. Bolts roll off POWER (double-duty:
-    # stat AND ammo -- see FoeSpec.power) and IGNORE the caster's soft body,
-    # which is the family's whole shape: dangerous until the Power runs dry,
-    # then a robed conscript with a knife. Close fast or bleed at range.
-    # The hexer's ice bolts barely cut but RIME (-1 DEX per landed bolt,
-    # stacking, all fight) -- the debuff showcase; the pyromancer's fire
-    # bolts hit like heavy steel off a stat no wound slows as fast. The
-    # magus is the solo tower fight: drilled, deep Power, real steel after.
+    # --- The casters (2026-07-14; re-statted for Magic & Mind 2026-07-15):
+    # humanoid wizards, the enemy mirror of the party's own. Bolts aim off
+    # ceil((MIND+DEX)/2) like a hero's and IGNORE the caster's soft body,
+    # which is the family's whole shape: dangerous until the Power (ammo)
+    # runs dry, then a robed conscript with a knife. Close fast or bleed at
+    # range. The hexer's ice bolts barely cut but RIME (-1 DEX per landed
+    # bolt, stacking, all fight) -- the debuff showcase; the pyromancer's
+    # fire bolts hit like heavy steel. The magus is the solo tower fight:
+    # drilled, deep Power, savant MIND (rows may break the human cap, like
+    # the dragon's DEX), a ward, and real steel after.
+    # MIND values are calibration numbers: aim = ceil((MIND+DEX)/2) must
+    # reproduce the rows' 2026-07-14 bolt pressure (the placeholder aimed
+    # off a flat 8/8/11), or the caster quests stop hardening the career
+    # curve -- measured 2026-07-15: at mind=dex-adjacent values the whole
+    # career curve rebounded to its pre-caster ease (reach-L8 54 -> 81).
     "hexer":      FoeSpec("Hexer",      level=3,  dex=4, str_=2, sta=6,
-                          hp=10, ref_pack=2, pain=2, power=8, school="ice",
-                          school_prof=2, weapon=WEAPONS["dagger"]),
+                          hp=10, ref_pack=2, pain=2, power=8, mind=11,
+                          school="ice", school_rank=2,
+                          weapon=WEAPONS["dagger"]),
     "pyromancer": FoeSpec("Pyromancer", level=6,  dex=4, str_=2, sta=7,
-                          hp=12, ref_pack=2, pain=2, power=8, school="fire",
-                          school_prof=2, weapon=WEAPONS["dagger"]),
+                          hp=12, ref_pack=2, pain=2, power=8, mind=11,
+                          school="fire", school_rank=2,
+                          weapon=WEAPONS["dagger"]),
     "magus":      FoeSpec("Magus",      level=10, dex=6, str_=4, sta=9,
                           hp=24, ref_pack=1, training=3, pain=2, power=11,
-                          school="fire", school_prof=3,
-                          weapon=WEAPONS["longsword"]),
+                          mind=14, school="fire", school_rank=3,
+                          spell_ward=2, weapon=WEAPONS["longsword"]),
     # --- The restless dead (levels 2-8): tireless + slow to pain, the rules
     # broken on purpose (living foes teach the system; undead break it).
     # The skeleton: brittle and a weak individual hitter (low STR -> low
@@ -233,7 +244,10 @@ FOES = {
     # doesn't.
     "wight":     FoeSpec("Wight",     level=8, dex=7, str_=5, sta=8, hp=16,
                          ref_pack=2, undead=True, pain=2, tireless=True,
-                         pursues=False, weapon=BARROW_BLADE),
+                         pursues=False, spell_ward=2,   # grave-cold will:
+                         # no ambushing what does not sleep, no stunning
+                         # what does not feel (Magic & Mind)
+                         weapon=BARROW_BLADE),
     # --- The wolves (levels 1-4): the pack. Fast, fragile, and they set the
     # pace -- and they PURSUE: retreating from wolves is how heroes die tired.
     "wolf":      FoeSpec("Wolf",      level=1, dex=4, str_=2, sta=8, hp=4,
@@ -271,6 +285,7 @@ FOES = {
     # more swords in the line means more swords under the club.)
     "giant":     FoeSpec("Giant",     level=12, dex=6, str_=9, sta=10, hp=26,
                          ref_pack=1, pain=3, crowd_cap=4, sweep=2,
+                         spell_ward=1,  # too much creature to ambush clean
                          sweep_label="a great sweeping blow",
                          weapon=NATURAL_WEAPONS["giant's club"]),
     # --- The drakes (levels 10-20): the apex family. Real DEX on a monster
@@ -282,12 +297,15 @@ FOES = {
                          weapon=NATURAL_WEAPONS["venomous sting"]),
     "drake":     FoeSpec("Drake",     level=14, dex=8, str_=7, sta=10, hp=30,
                          ref_pack=1, pain=3, power=6, crowd_cap=4,
-                         sweep=3, sweep_cost_power=2,
+                         sweep=3, sweep_cost_power=2, spell_ward=2,
                          sweep_label="a gout of fire",
                          weapon=NATURAL_WEAPONS["fang and claw"]),
     "dragon":    FoeSpec("Dragon",    level=18, dex=8, str_=9, sta=12, hp=50,
                          ref_pack=1, pain=4, power=12, crowd_cap=4,
-                         sweep=4, sweep_cost_power=3,
+                         sweep=4, sweep_cost_power=3, spell_ward=3,
+                         # drake-kind is MADE of magic: wards rise with the
+                         # band, and the dragon shrugs at assassin arts --
+                         # its bosshood survives the wizard tier
                          sweep_label="a torrent of dragonfire",
                          weapon=NATURAL_WEAPONS["fang and fury"]),
 }
@@ -309,12 +327,14 @@ def make_foe(kind: str, n: int, rng: random.Random,
                sta=spec.sta, max_hp=spec.hp, training=spec.training,
                undead=spec.undead,
                pain=spec.pain, tireless=spec.tireless,
-               pursues=spec.pursues, power=spec.power, school=spec.school,
+               pursues=spec.pursues, power=spec.power, mind=spec.mind,
+               school=spec.school,
+               spells={spec.school: spec.school_rank or 1}
+               if spec.school else {},
+               spell_ward=spec.spell_ward,
                crowd_cap=spec.crowd_cap, regen=spec.regen,
                sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
                sweep_label=spec.sweep_label, weapon=weapon)
-    if spec.school and spec.school_prof:
-        e.proficiency[e.school_prof_key] = spec.school_prof
     return e
 
 
@@ -337,9 +357,11 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append("tireless")
         if e.regen:
             tags.append(f"wounds knit +{e.regen}/round")
-        if e.school:
-            prof = f" +{e.school_prof}" if e.school_prof else ""
-            tags.append(f"{e.school} magic{prof}, {e.power} Power")
+        if e.spells:
+            ranks = ", ".join(f"{n} {r}" for n, r in sorted(e.spells.items()))
+            tags.append(f"caster: {ranks}; {e.power} Power")
+        if e.spell_ward:
+            tags.append(f"spell-warded {e.spell_ward}")
         if e.sweep > 1:
             tags.append(e.sweep_label or "sweeping blows")
         tag = f"; {', '.join(tags)}" if tags else ""

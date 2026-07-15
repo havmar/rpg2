@@ -87,9 +87,10 @@ a pointer: what the file is, how it's run, where its docs are.
   in this file, play content in dm.md.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and rests, progression,
-  economy, random party generation, the placeholder magic layer
-  (2026-07-14: wizards, bolts, schools, school proficiency — rules.md's
-  Placeholder Magic add-on), and the batch-sim policies
+  economy, random party generation, the Magic & Mind layer
+  (2026-07-15: the MIND stat, the nine-spell catalog with ranks, the
+  casting check, the openers, spellbooks — rules.md's
+  Magic & Mind add-on), and the batch-sim policies
   (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
   everything else imports it. All tunable constants sit at the top.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
@@ -293,14 +294,18 @@ mechanic *does* and *why* is rules.md's job.
   `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
   hero stat generation (`HERO_*_RANGE` + `HERO_STAT_BUDGET` — since
   2026-07-13 a fixed surplus budget dealt by a shuffled priority order,
-  not independent rolls) and the hero spiral gear (`HERO_PAIN`
+  not independent rolls; 11 since 2026-07-15, when MIND joined the
+  budget) and the hero spiral gear (`HERO_PAIN`
   — trained fighters, both sides, take `hp_lost // 2` as the wound
   penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
   `streak_multiplier` — consecutive same-site encounters without a camp
   pay rising XP; a full one-go run collects exactly the encounter share;
-  2.0 since 2026-07-10: x1/x3/x5 across three rooms), placeholder magic
-  (2026-07-14: `BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`,
-  `ICE_DEX_DEBUFF`, `WIZARD_STAFF_CHANCE`; the delivery pay knobs
+  2.0 since 2026-07-10: x1/x3/x5 across three rooms), the magic layer
+  (2026-07-15: the `SPELLS` catalog, `CAST_SEVERITY` / `CAST_POWER_COST`,
+  the casting-check knobs `CAST_DC_BASE` / `CAST_DC_PER_RANK`,
+  `AMBUSH_MARGIN`, the opener costs, `SPELLBOOK_PRICE`,
+  `ICE_DEX_DEBUFF` / `FREEZE_DEX_DEBUFF`, `WIZARD_STAFF_CHANCE`; the
+  delivery pay knobs
   `DELIVERY_GOLD_PER_DAY` / `DELIVERY_XP_PER_DAY` /
   `DELIVERIES_PER_WORLD` sit at the top of quests.py), the tavern night
   (`TAVERN_COST_PER_HERO`, `TAVERN_OVERCHARGE` — the one-day above-max
@@ -394,20 +399,34 @@ mechanic *does* and *why* is rules.md's job.
   `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
   `done_day` stamp in `advance_quest`, the boss-name spawn in `cmd_room`,
   `cmd_chatter` + `CHATTER_PROMPTS`.
-- **Placeholder magic** (2026-07-14) — `rpg.py`: the constants block
-  (`BOLT_POWER_COST`, `SCHOOLS`, `BOLT_SEVERITY`, `ICE_DEX_DEBUFF`,
-  `WIZARD_STAFF_CHANCE`), `Entity.school` / `dex_debuff` /
-  `casting_next` / `school_prof` / `bolt_severity_mods`, the bolt branch
-  in `_attack` + `pressure(bolt=...)` (stat swap to POWER, the `chilled`
-  term), `_clear_frost` (fight end / clean escape /
-  `refresh_foes_after_retreat`), the wizard roll in `make_human`,
-  `train_school`, and the school branches in `develop_hero` /
-  `autospend_points`. `sites.py`: `FoeSpec.school` / `school_prof` + the
-  hexer/pyromancer/magus rows and the roster tag. `quests.py`:
-  `CASTER_POOL` — one contained caster template per race (NOT the warband
-  ladder; see rules.md on the career collapse that decided it) plus the
-  "Renegade Magus" epic. `session.py`: `train HERO magic`, the levelup
-  menu's school sink.
+- **Magic & Mind** (2026-07-15, replacing the 2026-07-14 placeholder) —
+  `rpg.py`: the constants block (the `SPELLS` catalog, cast costs/
+  severities, the DC knobs, opener costs, `SPELLBOOK_PRICE`),
+  `Entity.mind` / `spells` / `spell_ward` and the per-fight states
+  (`unseen`, `aloft`, `stunned`, `possessed`, `disarm_tried`,
+  `dex_debuff`), the magic API (`is_wizard`, `aim`, `spell_rank`,
+  `attack_school`, `default_cast`, `choose_cast`, `cast_severity_mods`),
+  the cast branch in `_attack` + `pressure(cast=...)` (AIM stat swap,
+  ambush strikes, the disarm exchange, the misfire fumble, the stun
+  riders), `casting_check` + `_misfire`, the openers (`_cast_openers` /
+  `_cast_opener`), the hero fireball sweep + stun/possession/aloft
+  handling in `group_combat`, `_clear_fight_states` (fight end / clean
+  escape / `refresh_foes_after_retreat`), `blink_escape`, the "vanish"
+  pause action (`_do_pause_action`, `standing_order`), the wizard roll in
+  `make_human` (MIND-highest), `train_spell` / `learn_spell` /
+  `buy_spellbook`, and the spell branches in `develop_hero` /
+  `autospend_points`. `sites.py`: `FoeSpec.mind` / `school_rank` /
+  `spell_ward` + the hexer/pyromancer/magus rows and the roster tags.
+  `quests.py`: `CASTER_POOL` — one contained caster template per race
+  (NOT the warband ladder; see rules.md on the career collapse that
+  decided it) plus the "Renegade Magus" epic; **quest sight** —
+  `quest["fuzz"]`, `mind_precision` / `seen_level` / `level_grade`, the
+  `mind` param through `quest_line` / `board_lines` /
+  `quest_detail_lines`. `session.py`: `train HERO SPELL`, `buy HERO book
+  SPELL` (capitals), `cast HERO scry|teleport`, `resume --vanish`,
+  `retreat --blink`, `party_mind` + the blurred board/show/take
+  readouts (`show --dm` = the true view), the `visited` save key
+  (teleport's known ground), the levelup menu's spell section.
 - **Cross-land deliveries** (2026-07-14) — `quests.py`:
   `DELIVERY_TEMPLATES` / `build_delivery_quest` / `_post_delivery` and
   the kind-aware readout helpers. `session.py`: `active_delivery` /
@@ -454,40 +473,50 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-14, after placeholder magic + cross-land
-deliveries). The full dated report of every measured re-tuning lives in
-`benchlog.md`; this is only the standing summary — refresh it whenever a
-new entry lands there.**
+**Current state (2026-07-15, after the Magic & Mind layer — MIND in the
+budget at 11 surplus, the spell system, quest sight, caster rows
+re-statted to savant MIND). The full dated report of every measured
+re-tuning lives in `benchlog.md`; this is only the standing summary —
+refresh it whenever a new entry lands there.**
 
-- **Hideout** (rank 0, 10k runs): clear **77.7** / wipe **19.7**; reckless
-  (no-resource) wipe **84.5**. **Barrow** `[3, 3, 4]`: clear **20.3** /
-  wipe **76.0**; reckless 99.5. "Not using resources mostly means death"
-  holds. Cleared-run HP-lost spread 17/58/22/3 (hideout) and 23/58/17/3
-  (barrow) — the middle is where wins live.
-- **Training ladder** (5k/rank): barrow **20 -> 52 -> 80 -> 96**, hideout
-  **78 -> 95 -> 99 -> 99.9** — a rank still reads as a rank.
-- **Party size** (5k/size, sizes 1-4): hideout **17 / 78 / 98 / 99.8**,
-  barrow **0.8 / 20 / 67 / 94** — in-fight, numbers dominate every other
+- **The batch's headline: heroes drifted ~4-8 points stronger across
+  every bench** (the budget bump + the free rank-1 school spell); the
+  monster families themselves sat still.
+- **Hideout** (rank 0, 10k runs): clear **81.5** / wipe **16.5**;
+  reckless (no-resource) wipe **79.4**. **Barrow** `[3, 3, 4]`: clear
+  **24.8** / wipe **71.6**. "Not using resources mostly means death"
+  still holds, narrower than before.
+- **Training ladder** (5k/rank): barrow **24 -> 56 -> 84 -> 97**, hideout
+  **82 -> 96 -> 99.6 -> 100** — a rank still reads as a rank.
+- **Party size** (5k/size, sizes 1-4): hideout **19 / 82 / 98.6 / 99.9**,
+  barrow **1.5 / 24 / 73 / 95** — in-fight, numbers dominate every other
   progression axis; XP x 2/N is the counterweight.
 - **Weapons**: zweihander best duel on precise/steady, katana on
   powerful/balanced, zweihander owns every swarm column, staff trails on
   purpose — no weapon tops every cell.
 - **Bestiary at-level win rates**: the monster families sit high-80s to
-  high-90s (skeleton 95, wolf 91, troll 97, dragon 91); the elite ladder
-  champion 72, blademaster 64.5, warlord 59; the caster rows hexer **81**
-  (L3), pyromancer **89** (L6), magus **91** (L10) — each caster's -2
-  column is a real wall at the low band.
-- **Generated content** (300/cell): at-level rooms win **69-99** across
-  levels 1-20; at-level sites **~90-92 at L1-3** sliding to **~37-54 at
+  high-90s (skeleton 95.8, wolf 91.8, troll 97.2, dragon 89.9); the elite
+  ladder champion 73.8, blademaster 66.7, warlord 65; the caster rows —
+  recalibrated this session (MIND 11/11/14 reproduces their old bolt
+  aim) — hexer **81.8** (L3), pyromancer **90.4** (L6), magus **92.2**
+  (L10), each caster's -2 column a real wall at the low band. The new
+  `spell_ward` knob (dragon 3, drake 2, magus 2, wight 2, giant 1)
+  guards the apex against the assassin openers — play-only by design,
+  no bench path casts an opener.
+- **Generated content** (300/cell): at-level rooms win **75-99** across
+  levels 1-20; at-level sites **~94 at L1-3** sliding to **~36-56 at
   15-20**.
-- **Careers** (200): reach **L5 80% / L8 54% / L11 30% / L14 14% /
-  L20 4.5%**, median death **L8**, capped median 168 days / 38 quests.
+- **Careers** (200): reach **L5 88% / L8 72% / L11 38% / L14 20% /
+  L20 8%**, median death **L9**, capped median 166 days / 39 quests —
+  easier than 2026-07-14 (80/54/30/14/4.5, median L8) by exactly the
+  hero-side buff; the caster-quest hardening itself was preserved by
+  the MIND recalibration.
 - **Open flags for the designer** (levers deliberately untouched — feel
-  it in play first): (1) the career curve HARDENED with the caster
-  quests (~1 in 5 board quests, which the sims walk into blind at their
-  grind-2-below policy — the 2026-07-14 benchlog entry lists the levers);
-  (2) the hideout still sits ~20 points above the 2026-07 retune's ~55%
-  clear target, as flagged in the 2026-07-11b entry.
+  the wizard game in play first): the whole game moved a few points
+  easier, and the hideout now sits ~25 points above the 2026-07 retune's
+  ~55% clear target (the 2026-07-11b flag, wider). Cheapest single
+  counter-lever: `HERO_STAT_BUDGET` 11 -> 10; enemy DEX stays the
+  sharper knife if only one band needs teeth.
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
@@ -541,12 +570,16 @@ layer at full size** — a generated world of leveled quests, levels shown
 straight, pay scaling with them — and **the party itself is player choice
 now** (2026-07-11): who to pick, who to hire, whose patience to spend, when
 to buy it back with a tavern night or a downtime day. The mid-fight layer
-exists too: the pause (drink / Berserk / War-Breath / retreat & chase, with
-fled rooms persisting). **Placeholder magic is in (2026-07-14)** — wizards from
-level 1 (POWER-highest, fire/ice bolts, school proficiency, the caster
-bestiary rows) and **cross-land deliveries** send the party travelling.
-Next: the FULL magic/INT layer (stat transcendence, the wraith), armor
+exists too: the pause (drink / Berserk / War-Breath / vanish / retreat &
+chase — or a blink out — with fled rooms persisting). **The Magic & Mind
+layer is in (2026-07-15)** — MIND-highest wizards from level 1, nine
+spells at ranks 1-3 (skill points buy depth, spellbooks buy breadth,
+Power prices the burst), the casting check with degrees of success, the
+assassin openers, telekinesis, possession, scry, teleport travel, and
+quest sight (the board blurs to the party's best MIND). **Cross-land
+deliveries** (2026-07-14) send the party travelling. Next: stat
+transcendence + the wraith (the rest of the old magic phase), armor
 (note the designer's lean: probably never important), guns + ammo, named
 weapon instances — and the career sim's finding that the 14-20 band lacks
-its player power until masterwork/magic land. See plan.md for the full
-roadmap and the parked-ideas list.
+its player power until masterwork/magic-item content lands. See plan.md
+for the full roadmap and the parked-ideas list.
