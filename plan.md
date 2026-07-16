@@ -124,16 +124,28 @@ in-fight half; the wipe version stays parked below.
      power, gated like masterwork steel.
    - **Enemy spell use** — the magus and future authored casters using
      openers/techniques, not just bolts.
-   - **Flight ranks 3-4** (all day / for good) — blocked on the ranged
-     combat model below; burst flight shipped.
+   - **Flight ranks 3-4** (all day / for good) — UNBLOCKED by the ranged
+     combat model (2026-07-16: the bestiary can shoot back now); ships
+     with the magic content pass.
 3. **Armor** — provisional design: armor **shifts the incoming wound tier
    down** (Grievous → Wound, ...) at the cost of a DEX penalty and higher STA
    drain — protection traded for speed and clock. Optional anti-armor weapons
    ignore the tier-shift (gear-counters-gear). *Status: adopt, simplify, or
    defer.* Test: heavy armor changes a fight's *character* (pushes it toward
    attrition/contact), not just its numbers.
-4. **Guns + ammo** — dungeonpunk ranged weapons; ammo as the recurring gold
-   sink. Deliberately excluded from the first weapons slice.
+4. ~~The ranged combat model / Guns + ammo~~ **SHIPPED (2026-07-16)** —
+   the field model (per-entity advances, movement-as-action, the switch
+   at contact and the arrival volley), shots on the exchange chassis,
+   reload cadence, ammo with field scavenging, seven ranged cards
+   (longbow/blunderbuss/revolver quality; shortbow/crossbow/knives/sling
+   common), four shooter foe rows, cultural arms (elf bows / goblin
+   slings / dwarf powder), and the notice contest replacing the flat
+   spotted roll. Mechanics in rules.md's Ranged Combat & the Field
+   add-on; measured numbers in benchlog.md (2026-07-16). What remains
+   for later passes: the three ranged/anti-ranged ABILITIES (arrow-parry,
+   point-blank mastery, rapid reload — parked below on the levelling
+   framework), kiting/fall-back AI, cover as terrain, friendly fire,
+   ranged pursuit.
 5. **Named & masterwork weapon instances** — the tiers exist in the schema;
    no actual masterwork/legendary items are placed in the world yet. Named
    weapons carry authored provenance (a famous smith, a famous wielder, a
@@ -173,11 +185,9 @@ belongs at the end.
   in: magic ITEMS, the wraith, and the demon tier (and with them the
   apocalypse spine) are now unblocked content passes, and the MIND build
   exists.
-- **The ranged combat model** — the engine has no distance or positioning,
-  so "guns" is really two features: first the combat-model change (how
-  shooting, closing, and being shot at work inside the abstract melee),
-  then guns as content (item 4). Decide the model early — every later
-  enemy, weapon, and bench rides on it — and author ranged content after.
+- ~~The ranged combat model~~ **shipped 2026-07-16** (with guns, item 4)
+  — the field model is in: every later enemy, weapon, and flight rank
+  now has distance to ride on.
 - **The levelling framework (skills / abilities / moves / perks)** —
   decides what "player power" means, which is exactly the known 14-20
   gap; enemy and item authoring want to know its shape first.
@@ -267,7 +277,23 @@ belongs at the end.
 - **Story recruitment** — defeated or met NPCs joining the party outside
   the tavern surface (the tavern layer shipped 2026-07-11; this is the
   "the ogre yields and joins you" version, DM-driven).
-- **Weapon reach** — a small first-exchange modifier; unbuilt.
+- **Weapon reach** — a small first-exchange modifier (spear vs dagger at
+  the moment the lines meet); unbuilt, and distinct from the ranged
+  model's field (which is between-lines ground, not in-exchange reach).
+- **The ranged abilities** (2026-07-16, from the ranged design round;
+  wait on the levelling framework): melee masters **parry arrows**
+  (high-level: a chance to negate incoming missiles, later bullets);
+  **point-blank mastery** (~L10: the ranged card shoots at gap 0, no
+  switch round); **rapid reload** (cadence 0 on a card that has one).
+- **Kiting / the fall-back step** (2026-07-16) — shooters hold ground in
+  v1; a deliberate backward step wants ability framing ("skirmisher's
+  step") or it becomes the default degenerate dance.
+- **Cover & terrain on the field** (2026-07-16) — a defense bonus for
+  shooting at a dug-in target, per-encounter field flavor beyond the one
+  size number; prose until the wilderness gets a terrain pass.
+- **Friendly fire into the press** (2026-07-16) — shooters currently pick
+  freely into a melee; add the miss-hits-a-friend rider only if play
+  shows free focus-fire reading wrong.
 - **The 2-STA heavy swing** — sim-rejected while Spent is lethal (halving the
   swing budget loses more than severity buys back — `bench_weapons.py` is the
   doc of record); the `sta_cost` knob stays in the schema for deeper STA

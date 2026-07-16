@@ -100,6 +100,8 @@ from rpg import (
     SPELLS, SPELL_RANK_MAX, SPELLBOOK_PRICE, VANISH_POWER_COST,
     SCRY_POWER_COST, TELEPORT_TRAVEL_COST_PER_DAY, TELEPORT_ESCAPE_COST,
     autospend_points,
+    ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
+    buy_ammo as _buy_ammo, grant_starter_ammo,
 )
 import story
 from people import (make_character, make_pair, character_sheet, person_line,
@@ -113,9 +115,10 @@ from quests import (generate_world, forge_quest, board_lines,
                     TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
                     TRAVEL_ENCOUNTER_CHANCE, EXPLORE_ENCOUNTER_CHANCE,
                     EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
-                    WILD_SPOTTED_CHANCE, HUNT_AMBUSH_CHANCE,
+                    HUNT_AMBUSH_CHANCE,
                     CAMP_ENCOUNTER_CHANCE,
-                    HUNT_LEVEL_REACH, WILD_NAME_PARTS)
+                    HUNT_LEVEL_REACH, WILD_NAME_PARTS,
+                    notice_contest, foes_preferred_field)
 
 STATE_PATH = Path(__file__).parent / "save.json"
 
@@ -299,6 +302,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "quest": pending.get("quest"),
         "streak_pos": pending.get("streak_pos"),
         "dead_before": pending.get("dead_before", []),
+        "field": pending.get("field", 0),
     }
 
 
@@ -317,6 +321,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "quest": d.get("quest"),
         "streak_pos": d.get("streak_pos"),
         "dead_before": d.get("dead_before", []),
+        "field": d.get("field", 0),
     }
 
 
@@ -1135,7 +1140,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
                       room: int | None = None,
                       quest: str | None = None,
-                      streak_pos: int | None = None) -> None:
+                      streak_pos: int | None = None,
+                      field: int = 0) -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE once, at the fight's first wounds crossing (see play_orders) --
     then award and
@@ -1143,7 +1149,10 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     back to the player (resume / retreat next message). `quest` ties the
     encounter to a board quest: clearing the room advances its cursor.
     `streak_pos` is the momentum position this encounter's XP was quoted at
-    (site encounters only) -- recorded on victory so the NEXT one pays more."""
+    (site encounters only) -- recorded on victory so the NEXT one pays more.
+    `field` is the fight's opening gap (ranged combat: ROOM_FIELD indoors,
+    the engagement's outcome in the wilds) -- persisted with a paused
+    fight so the resume stands on the same ground."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     dead_before = [h.name for h in party if h.dead]    # so the post-fight
@@ -1151,7 +1160,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                                                        # who died in THIS one
     fired: set[str] = set()
     pause = group_combat(living, foes, rng, log, pause_triggers=True,
-                         fired=fired, standing_orders=play_orders(False))
+                         fired=fired, standing_orders=play_orders(False),
+                         field=field)
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
@@ -1159,6 +1169,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "crossings": [(k, h.name) for k, h in pause.crossings],
             "streak_pos": streak_pos,
             "dead_before": dead_before,
+            "field": field,
         }
         print_combat(log)
         print()
@@ -1415,8 +1426,10 @@ def cmd_fight(args: argparse.Namespace) -> None:
         log.append("  " + line)
 
     # Off-script fights pay the base (starter-site) rate regardless of foe --
-    # the DM adjusts via `quest` if a scene deserves more.
-    resolve_encounter(state, log, foes, ENCOUNTER_XP)
+    # the DM adjusts via `quest` if a scene deserves more. `--field N` sets
+    # the opening gap for an outdoor scene (default 0: at the door).
+    resolve_encounter(state, log, foes, ENCOUNTER_XP,
+                      field=max(0, args.field))
 
 
 def reclaim_room(state: dict, site: str, room: int) -> tuple[list, str] | None:
@@ -1477,7 +1490,8 @@ def cmd_site(args: argparse.Namespace) -> None:
 
     k = streak_pos_for(state, site.key)
     resolve_encounter(state, log, foes, site.encounter_xp(k),
-                      site=site.key, room=args.room, streak_pos=k)
+                      site=site.key, room=args.room, streak_pos=k,
+                      field=ROOM_FIELD)
 
 
 def _get_quest(world: dict, ref: str) -> dict | None:
@@ -1682,7 +1696,7 @@ def cmd_room(args: argparse.Namespace) -> None:
     resolve_encounter(state, log, foes,
                       site_encounter_xp(site["level"], len(site["rooms"]), k),
                       site=site_key, room=room_i + 1, quest=qid,
-                      streak_pos=k)
+                      streak_pos=k, field=ROOM_FIELD)
 
 
 def cmd_forge(args: argparse.Namespace) -> None:
@@ -1735,10 +1749,19 @@ def _spawn_wild_foes(state: dict, kinds: list[str]) -> list:
     return foes
 
 
+def party_preferred_field(party: list) -> int:
+    """The gap the PARTY opens at when it picks the engagement (a won
+    sighting, the hunt): its longest ready reach -- a shooter's range, a
+    caster's bolts -- or 0 for an all-steel party that closes to contact
+    quietly (today's fight)."""
+    return max((h.threat_reach for h in party if h.alive), default=0)
+
+
 def fight_wild_encounter(state: dict, kinds: list[str], level: int,
-                         banner: str) -> None:
+                         banner: str, field: int = WILD_FIELD) -> None:
     """Run a wilderness encounter through the same machinery as any other
-    (it can pause; retreat scatters it -- the road is not a room)."""
+    (it can pause; retreat scatters it -- the road is not a room). `field`
+    is the engagement's opening gap (who noticed whom decides it)."""
     party = state["party"]
     log = CombatLog()
     for h in [h for h in party if not h.dead]:
@@ -1747,15 +1770,20 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
     foes = _spawn_wild_foes(state, kinds)
     for line in roster_lines(foes):
         log.append("  " + line)
-    resolve_encounter(state, log, foes, wild_encounter_xp(level))
+    resolve_encounter(state, log, foes, wild_encounter_xp(level),
+                      field=field)
 
 
 def wild_event(state: dict, chance: float, banner: str) -> bool:
     """Roll the wilds once: nothing, a FIGHT (returns True; the encounter
-    machinery has taken over and saved), or a SIGHTING. Foes well above the
-    party are usually spotted at range (unless they ambush first), and even
-    ordinary trouble is spotted first WILD_SPOTTED_CHANCE of the time
-    (2026-07-10) -- either way avoid or `engage` is the player's call."""
+    machinery has taken over and saved), or a SIGHTING. Foes well above
+    the party keep the old contract (usually spotted at range unless they
+    ambush first -- deadly-but-avoidable is a promise, not a roll of the
+    conspicuousness dice). ORDINARY trouble runs the notice contest
+    (quests.notice_contest, 2026-07-16): party MIND vs foe senses over
+    each side's conspicuousness -- seen-first alone = the sighting choice;
+    seeing the party first alone = an AMBUSH at the foes' preferred range;
+    both or neither = met square across the open field (WILD_FIELD)."""
     rng = state["rng"]
     if rng.random() >= chance:
         return False
@@ -1764,8 +1792,12 @@ def wild_event(state: dict, chance: float, banner: str) -> bool:
     kinds = build_wild_encounter(level, land, rng)
     party_level = max(h.level for h in state["party"] if not h.dead)
     towering = level >= party_level + SPOTTED_MARGIN
-    spotted = (rng.random() >= AMBUSH_CHANCE if towering
-               else rng.random() < WILD_SPOTTED_CHANCE)
+    if towering:
+        spotted, ambushed = rng.random() >= AMBUSH_CHANCE, False
+    else:
+        party_sees, foes_see = notice_contest(state["party"], kinds, rng)
+        spotted = party_sees and not foes_see
+        ambushed = foes_see and not party_sees
     if spotted:
         line = f"L{level}: {roster_kinds_line(kinds, {})}"
         state["sighting"] = {"kinds": list(kinds), "level": level,
@@ -1781,7 +1813,14 @@ def wild_event(state: dict, chance: float, banner: str) -> bool:
     if towering:
         print(f"  AMBUSH -- they found the party first, and they are far "
               f"beyond it. Running away is a pause action (retreat).")
-    fight_wild_encounter(state, kinds, level, banner)
+        field = foes_preferred_field(kinds)
+    elif ambushed:
+        field = foes_preferred_field(kinds)
+        how = ("already shooting" if field else "on the party blade-first")
+        print(f"  AMBUSH -- they saw the party first, {how}.")
+    else:
+        field = WILD_FIELD      # met square: both sides cross the open
+    fight_wild_encounter(state, kinds, level, banner, field=field)
     return True
 
 
@@ -1921,21 +1960,25 @@ def cmd_hunt(args: argparse.Namespace) -> None:
     if rng.random() < HUNT_AMBUSH_CHANCE:
         # The hunter is the hunted (2026-07-10): stalking means going where
         # the predators are, and this often something off the ROAD's table
-        # (any level, the higher the rarer) finds the party first. Met
-        # blade-first -- an ambush never grants the sighting choice.
+        # (any level, the higher the rarer) finds the party first. Met at
+        # the AMBUSHER'S preferred range -- never the sighting choice.
         level = roll_wild_level(rng)
         kinds = build_wild_encounter(level, land, rng)
         print(f"  The hunter is the hunted -- something found the party "
               f"first. AMBUSH!")
         fight_wild_encounter(state, kinds, level,
-                             f"Ambushed on the hunt in the {land} wilds")
+                             f"Ambushed on the hunt in the {land} wilds",
+                             field=foes_preferred_field(kinds))
         return
     party_level = max(h.level for h in party if not h.dead)
     level = rng.randint(max(1, party_level - HUNT_LEVEL_REACH),
                         max(1, party_level))
     kinds = build_wild_encounter(level, land, rng)
+    # The party stalks and springs this fight: it opens at ITS preferred
+    # range (the archer's whole reach, or a quiet close to contact).
     fight_wild_encounter(state, kinds, level,
-                         f"The hunt in the {land} wilds")
+                         f"The hunt in the {land} wilds",
+                         field=party_preferred_field(party))
 
 
 def cmd_engage(args: argparse.Namespace) -> None:
@@ -1949,8 +1992,11 @@ def cmd_engage(args: argparse.Namespace) -> None:
         return
     state["sighting"] = None
     print(f"The party closes with the sighted foes -- {sighting['line']}.")
+    # Engaging a sighting is the party's spring: it opens at ITS preferred
+    # range (shooters at their reach, an all-steel party at contact).
     fight_wild_encounter(state, sighting["kinds"], sighting["level"],
-                         "The party picks this fight")
+                         "The party picks this fight",
+                         field=party_preferred_field(state["party"]))
 
 
 def cmd_map(args: argparse.Namespace) -> None:
@@ -2060,7 +2106,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
                          actions=actions or None,
-                         standing_orders=play_orders(True))
+                         standing_orders=play_orders(True),
+                         field=pending.get("field", 0))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -2106,7 +2153,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             return
         escaped = blink_escape(living, pending["foes"], wizard, rng, log)
     if not escaped:
-        escaped = attempt_retreat(living, pending["foes"], rng, log)
+        escaped = attempt_retreat(living, pending["foes"], rng, log,
+                                  field=pending.get("field", 0))
     wiped = party_wiped(party, log)
     if wiped or escaped:
         state["pending"] = None
@@ -2137,7 +2185,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
-                         standing_orders=play_orders(True))
+                         standing_orders=play_orders(True),
+                         field=pending.get("field", 0))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -2358,7 +2407,19 @@ def cmd_buy(args: argparse.Namespace) -> None:
     thing = " ".join(args.thing).lower()
     if thing in POTION_KINDS:
         _buy_potion(hero, purse, thing, log)
+    elif thing in AMMO_LOTS:
+        # Ammo by the lot (ranged combat): arrows/bolts by the sheaf,
+        # shells and knives by the pair, up to the carry cap.
+        _buy_ammo(hero, purse, thing, log)
     elif thing in WEAPONS:
+        if thing == "revolver":
+            # The magic gun is dwarf craft and dwarf commerce: sold only
+            # in dwarven settlements (the L10+ gold sink lives there).
+            here = local_settlement(state)
+            if here is None or here["race"] != "dwarf":
+                print(f"Revolvers are sold only in dwarven settlements -- "
+                      f"the party is at {location_line(state)}.")
+                return
         _buy_weapon(hero, purse, thing, log)
     elif thing.startswith("book"):
         # `buy HERO book SPELL` -- the spellbook, the gold gate on a
@@ -2398,7 +2459,8 @@ def cmd_buy(args: argparse.Namespace) -> None:
         adjust_satisfaction(hero, 1, log, "the shakes ease")
     else:
         print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
-              f"Weapons: {', '.join(sorted(WEAPONS))}. Also: meds, "
+              f"Weapons: {', '.join(sorted(WEAPONS))}. Ammo: "
+              f"{', '.join(sorted(AMMO_LOTS))}. Also: meds, "
               f"book SPELL.")
         return
     print("\n".join(log))
@@ -2428,6 +2490,7 @@ def cmd_give(args: argparse.Namespace) -> None:
         weapon = dataclasses.replace(weapon, name=args.as_name)
         log.append(f"  ({weapon.name}: a reskinned {name} -- catalog stats)")
     _equip_weapon(hero, weapon, log)
+    grant_starter_ammo(hero, log)   # a DM-granted bow comes with a quiver
     print("\n".join(log))
     save(state)
 
@@ -2741,6 +2804,9 @@ def main() -> None:
     p.add_argument("--type", default="skeleton", choices=list(FIGHT_TYPES),
                    help="a catalog foe kind, or 'bandit' for a random "
                         "living foe")
+    p.add_argument("--field", type=int, default=0,
+                   help="opening gap for an open-ground scene (0 = at the "
+                        "door, the default; the wilds use 3)")
     p.set_defaults(func=cmd_fight)
 
     p = sub.add_parser(
@@ -2854,9 +2920,10 @@ def main() -> None:
              f"momentum streak) and risks a road encounter "
              f"(~{int(TRAVEL_ENCOUNTER_CHANCE * 100)}%%/day, ANY level -- "
              f"the higher the rarer; foes far above the party are usually "
-             f"spotted at range first, but can ambush, and even ordinary "
-             f"trouble is spotted first ~{int(WILD_SPOTTED_CHANCE * 100)}%% "
-             f"of the time)")
+             f"spotted at range first, but can ambush, and ordinary "
+             f"trouble runs the NOTICE CONTEST: party MIND vs their "
+             f"senses, over each side's conspicuousness -- spotted, "
+             f"ambushed, or met square on the open field)")
     p.add_argument("dest", nargs="+", help="settlement or place (substring)")
     p.set_defaults(func=cmd_travel)
 

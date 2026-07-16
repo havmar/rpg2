@@ -39,7 +39,7 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  train_combat, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
-                 SIM_MAX_ROOM_ATTEMPTS)
+                 SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD)
 
 
 # --------------------------------------------------------------------------- #
@@ -141,6 +141,19 @@ BARROW_BLADE = Weapon("barrow blade", 0, 1, 1, durability=2, tags=("ancient",),
                       description="A chieftain's burial sword, still true. "
                                   "Heavy-arms steel with a dead man's name.")
 
+# The dwarf gunner's COMMON gun (ranged combat, 2026-07-16): the quality
+# blunderbuss's poor cousin, so a mid-band foe row can shoot dwarf thunder
+# without dropping 90g of quality brass into every fight (the same economy
+# rule that keeps quality blades off low mooks). Crude iron, same doctrine:
+# flat aim, one bound of reach, a hard hit, a clubbing stock.
+HAND_BOMBARD = Weapon("hand bombard", 0, 6, 1, durability=2, bulk=3,
+                      tags=("ranged", "gun"), value=15, range=1, reload=1,
+                      aim="flat", aim_flat=4, ammo="shells",
+                      missile="thundering blast", melee_atk=0, melee_sev=0,
+                      description="A crude iron throat on a stock: dwarf "
+                                  "thunder for the rank and file. Flat aim, "
+                                  "short reach, ruinous up close.")
+
 # Enemy DEX runs hot across the board (2026-07 lethality retune): who hits is
 # DEX's job, and danger has to live in each encounter itself -- the party can
 # always camp after it. A single point of foe DEX moves clear rates by tens
@@ -166,8 +179,29 @@ FOES = {
     "bruiser":   FoeSpec("Bruiser",   level=2, dex=4, str_=5, sta=5, hp=9,
                          ref_pack=3, pain=2),   # heavy and durable, quicker
                                                 # than he looks
+    # The archer is a REAL shooter now (ranged combat, 2026-07-16): a
+    # shortbow behind the line -- a shot or two while the ground is open,
+    # then a poor stave-fighter once contact forces the switch. Soft on
+    # purpose: kill the line, then walk down the bowman.
     "archer":    FoeSpec("Archer",    level=1, dex=5, str_=2, sta=5, hp=6,
-                         ref_pack=3, pain=2),   # lands often, soft
+                         ref_pack=3, pain=2, weapon=WEAPONS["shortbow"]),
+    # The slinger: the archer's poorer cousin -- goblin and mob ranged work
+    # (goblins never draw a bow; the cultural tables in quests.py say who
+    # fields what).
+    "slinger":   FoeSpec("Slinger",   level=1, dex=5, str_=2, sta=5, hp=5,
+                         ref_pack=3, pain=2, weapon=WEAPONS["sling"]),
+    # The hunter: the drilled wood-runner -- the elf lands' ranged mid-band
+    # (a real shot, a real knife-fight after; still shortbow steel, the
+    # quality longbow stays a hero purchase and a story drop).
+    "hunter":    FoeSpec("Hunter",    level=3, dex=6, str_=4, sta=7, hp=11,
+                         ref_pack=2, training=1, pain=2,
+                         weapon=WEAPONS["shortbow"]),
+    # The gunner: dwarf thunder in the mid-band -- one flat-aimed blast a
+    # bound away, then an honest clubbing stock (the hand bombard, the
+    # blunderbuss's common cousin -- see HAND_BOMBARD).
+    "gunner":    FoeSpec("Gunner",    level=4, dex=4, str_=5, sta=7, hp=13,
+                         ref_pack=2, training=1, pain=2,
+                         weapon=HAND_BOMBARD),
     # --- The soldiery (levels 3-19): the humanoid LADDER. Living fighters
     # who play by exactly the party's rules at every band -- no mechanic, no
     # hole but their humanity: they tire, they bleed, and they grit through
@@ -323,6 +357,9 @@ def make_foe(kind: str, n: int, rng: random.Random,
     (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
+    items = {}
+    if weapon.ammo in AMMO_CAPS:
+        items[weapon.ammo] = FOE_AMMO   # a spawned shooter comes loaded
     e = Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
                sta=spec.sta, max_hp=spec.hp, training=spec.training,
                undead=spec.undead,
@@ -334,7 +371,7 @@ def make_foe(kind: str, n: int, rng: random.Random,
                spell_ward=spec.spell_ward,
                crowd_cap=spec.crowd_cap, regen=spec.regen,
                sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
-               sweep_label=spec.sweep_label, weapon=weapon)
+               sweep_label=spec.sweep_label, weapon=weapon, items=items)
     return e
 
 
@@ -345,6 +382,8 @@ def roster_lines(foes: list[Entity]) -> list[str]:
     def body(e: Entity) -> str:
         wpn = e.weapon.name if e.weapon else "unarmed"
         tags = []
+        if e.weapon is not None and e.weapon.range:
+            tags.append(f"shoots to range {e.weapon.range}")
         if e.training:
             tags.append(f"drilled +{e.training}")
         if e.undead:
@@ -472,6 +511,7 @@ SITES = {
 WEAPON_INDEX: dict[str, Weapon] = {
     **WEAPONS, **NATURAL_WEAPONS,
     RUSTED_BLADE.name: RUSTED_BLADE, BARROW_BLADE.name: BARROW_BLADE,
+    HAND_BOMBARD.name: HAND_BOMBARD,
 }
 
 
@@ -532,7 +572,10 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
         for h in living:
             start_fight(h, log)
 
-        result = sim_fight(living, foes, rng, log, reckless=reckless)
+        # Rooms are close quarters (ROOM_FIELD): one approach round, one
+        # shot loosed indoors at most -- the field model's cramped end.
+        result = sim_fight(living, foes, rng, log, reckless=reckless,
+                           field=ROOM_FIELD)
 
         if party_wiped(party, log):
             cleared_all = False

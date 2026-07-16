@@ -51,8 +51,12 @@ long before the spiral bites.
 
 **6. Two layers: thin mechanics, rich flavor.** The mechanical layer is a few
 numbers. The narrative layer is interpreted *over* those numbers — lunges,
-backpedals, a desperate close, the brute heaving for breath. Things like "range"
-exist only as prose color; they are never tracked variables.
+backpedals, a desperate close, the brute heaving for breath. *(Historical
+note: this goal originally read "range exists only as prose color, never a
+tracked variable." The Ranged Combat add-on, 2026-07-16, deliberately
+overturned that — distance is now ONE tracked number per fighter, the
+minimum that makes bows and guns real. The spirit stands: everything finer
+than that number — footwork, cover, the shape of the ground — remains prose.)*
 
 **7. Three entity tiers with distinct identities.** Humans face real tradeoffs.
 Heroes *break* the tradeoff (that's what superhuman means). Monsters are defined
@@ -296,6 +300,11 @@ Every fighter wields **one weapon** — no inventory (heroic tone: swaps are
 narrative, DM-arbitrated). A weapon is an **offense package**: it never makes
 you harder to hit (that's DEX and training), it changes what your attacks are.
 
+*(This section is the MELEE catalog. Ranged weapons — bows, guns, slings,
+their distance model, cadence, and ammo — live in the **Ranged Combat &
+the Field add-on** below, 2026-07-16. The one-weapon rule holds there too:
+a ranged card carries its own melee grip line instead of a sidearm slot.)*
+
 **The knobs** (chosen so no weapon double-dips — pressure already feeds severity
 through the margin):
 
@@ -478,7 +487,11 @@ lies ahead, never the rosters (dm.md, Narration style).
 
 ---
 
-## Why three stats produce the loop (no range needed)
+## Why three stats produce the loop (no range needed in the melee)
+
+*(Written before the Ranged Combat add-on; "range" here means the old
+weapon-reach/bind mechanic inside an exchange, which stays removed. The
+add-on's FIELD is between-lines distance, a different thing.)*
 
 - A **Power** build lands rarely (low DEX) but devastatingly, and is durable —
   but wants to win early, before the flat swing cost empties its pool. (The
@@ -1480,6 +1493,215 @@ when they rode the warband pool).
 - **Ward (the tier-shift shield)** — designer pass ("finicky unless very
   strong"); note it was also the provisional armor design.
 - **Possession shipped instead** (mind control made the designer's cut).
+
+---
+
+# Ranged Combat & the Field — Add-on (2026-07-16)
+
+Bows, guns, and distance (the roadmap's "ranged combat model" foundation +
+"guns & ammo" content, shipped together). The design bar: the minimum
+simulation that makes "the ranged fighter gets free attacks on the melee
+one" true, mixed lines coherent (the archer stays back while the fighters
+close), and cramped ground a real counter — without a battle map and
+without breaking autocombat. Fights with no shooters and no open ground
+play exactly as before.
+
+## The field (the distance model)
+
+- Every fight opens across a **field**: an abstract gap in *bounds* (one
+  round's movement each). **Field 0 = the lines meet at the door** — every
+  pre-ranged fight, unchanged to the digit. Rooms (site and quest
+  encounters) open at **field 2** (a hall's width — one approach round, at
+  most one shot loosed indoors); the road and the wilds at **field 3** (a
+  longbow's whole reach).
+- Each fighter carries one number: **`adv`, steps advanced from its own
+  line**; the gap between two opposing fighters is
+  `field − adv(a) − adv(b)`, floored at 0. One small int per body — no
+  coordinates, no pair matrix — yet mixed lines just work: the fighters
+  advance, the archer holds, and the gap to *each* enemy is its own.
+  *(The single fight-wide counter was rejected in design: the moment one
+  hero carries a bow — the whole point — it either drags the archer into
+  the melee or holds the swords back. Per-pair tracking was rejected as
+  illegible overkill. This is the sweet spot.)*
+- **Moving is your action.** A fighter with no enemy inside its reach
+  advances one bound instead of attacking (free, like circling — no STA).
+  Two closing lines meet in the middle. **Chargers commit first,
+  skirmishers react**: melee movement resolves before shooters decide, so
+  a shooter never blunders into a charge it can see coming. Nobody moves
+  backward — no kiting in v1; leaving the fight is the retreat layer.
+- **Reach:** steel reaches gap 0 only. A ranged card reaches its listed
+  range **but is useless at gap 0**. Aimed casts reach **range 2 at any
+  gap, including 0** — magic doesn't jam at contact (so caster fights that
+  used to trade bolts point-blank still do, and every caster bench stays
+  meaningful).
+- **Contact forces the switch:** an enemy at arm's length makes the shooter
+  spend a round changing to the card's **melee grip** — every ranged card
+  carries its own melee line (a bow swung as a stave is −2/−2, a
+  blunderbuss stock clubs at 0/0), one weapon, two lines, no inventory,
+  no proficiency (you drilled the shot, not the club). **The arrival
+  volley:** the round contact *first* arrives, a still-loaded shooter
+  looses point-blank into the charge before the grip must change — the
+  doorway blast is the blunderbuss's whole life.
+- **The press is melee geometry:** shooters at range neither consume nor
+  respect crowd room. And a melee attacker crowded out of the press on an
+  open field **slips deeper** instead of circling — toward whoever hangs
+  back. The backline is a real position with a real escort problem, found
+  by the engine, not scripted.
+- Round shape stays the round shape: openers and First Blood still fire as
+  the fight begins (a blink strike doesn't care about ground), the pause
+  and standing orders are untouched, and autocombat resolves movement on
+  its own — the one-pause promise survives.
+
+## The shot (how shooting resolves)
+
+A shot rides the normal exchange, the way aimed casts do:
+
+- **Pressure: 2d6 + AIM + training + card attack bonus + proficiency**,
+  where AIM is per card — pure DEX (guns, thrown), **ceil((DEX+STR)/2)**
+  for bows (the draw is strength, the loose is aim — and a deliberate
+  brake on DEX's double-dip), or a **flat number** (the blunderbuss: the
+  spread does the aiming; the low-stat equalizer).
+- **Defense: the body without the weapon** — 2d6 + DEX + training + the
+  armored trait, but no parry knob (you don't parry an arrow with a
+  stick; the staff's +1 and the zweihander's −1 sit out).
+- **Severity = margin + the card's flat − soak, STR out** (the cast rule:
+  the card's flat is the *whole* punch, which is why ranged flats run
+  higher than melee weapon mods — a longbow's 5 next to a fire bolt's 5).
+  The universal margin-3 graze floor applies; no rapier floors, no
+  steel-on-steel breakage, no misfires (the fumble stays scoped to
+  casting — powder and gut-strings are reliable arts).
+- A shot costs the normal **swing STA** (a war draw is work): Winded and
+  Spent drag aim like everything else.
+- **Cadence:** after each shot the card's `reload` rounds must pass —
+  reload ticks on any round the shooter doesn't fire, movement included.
+  Reload 1 = the bow's every-2nd-round nock; the revolver's identity is
+  reload 0. The crossbow's STR gate lives here: STR under 4 cranks a
+  round slower — never in the aim.
+
+## Ammo (the recurring sink, kept heroic-light)
+
+One carried count per kind in the hero's kit line (`arrows` / `bolts` /
+`shells` / `knives`); spent hit or miss. The sling scrounges stones
+(free, always); the **revolver fires the wielder's own Power** (1 a
+shot — the spell-bolt economy in a brass frame). `buy HERO arrows` etc.
+buys by the lot; a bought or granted ranged weapon comes with a starter
+load.
+
+- Caps: 20 arrows / 20 bolts / 10 shells / 6 knives. Lots: 10 arrows or
+  bolts for 5g; 2 shells for 10g; 2 knives for 4g.
+- **A won field is scavenged**: each spent missile recovers at 70% if it
+  hit (stuck in a body) or 40% if it missed (lost in the grass) — knives
+  90/60. A *fled* field is left, arrows and all. Shells burn. Net effect:
+  arrow upkeep is deliberately trivial (the bow's costs are the 60g and
+  the stat demands) while **the blunderbuss shell is the ammo sink with
+  teeth** — the weapon needs no stats, so the ammo carries the price, by
+  design.
+- Foe shooters spawn with 8 rounds and regather them if the party flees
+  the room (encounter persistence: the field is theirs).
+
+## The cards
+
+Quality three (shoppable at plain tier like the melee four; the revolver
+only where dwarves sell):
+
+| Card | Range | Cadence | AIM | Atk | Sev flat | Melee grip | Ammo | Value |
+|------|-------|---------|-----|-----|----------|------------|------|-------|
+| **Longbow** | 3 | every 2nd | (DEX+STR)/2 | +1 | +5 | −2/−2 | arrows | 60g |
+| **Blunderbuss** | 1 | every 2nd | flat 4 | 0 | +7 | 0/0 | shells (5g a shot) | 90g |
+| **Revolver** | 2 | **every round** | DEX | −1 | +5 | −2/−2 | **1 Power/shot** | 250g, dwarven settlements only |
+
+Commons:
+
+| Card | Range | Cadence | AIM | Atk | Sev flat | Melee grip | Ammo | Value |
+|------|-------|---------|-----|-----|----------|------------|------|-------|
+| **Shortbow** | 2 | every 2nd | (DEX+STR)/2 | 0 | +4 | −2/−2 | arrows | 8g |
+| **Crossbow** | 2 | every 2nd (3rd if STR<4) | DEX | −1 | +6 | −2/−2 | bolts | 15g |
+| **Throwing knives** | 1 | every round | DEX | 0 | +3 | **0/−1** (it's a knife) | themselves (90/60 recovery) | 8g |
+| **Sling** | 2 | every 2nd | DEX | −1 | +3 | −2/−2 | stones, free | 2g |
+
+*(The hand bombard — range 1, flat aim, +6, 15g — is the gunner row's
+common gun, so mid-band dwarf foes shoot powder without dropping 90g of
+quality brass into every fight: the same economy rule that keeps quality
+blades off low mooks.)*
+
+The identities: the **longbow** owns the open field (2 shots before any
+contact); the **blunderbuss** is the doorway weapon and the low-stat
+equalizer (its flat 4 aim needs nobody's talent, and is outgrown by real
+archers — correct); the **revolver** is magic-tech sustained fire priced
+in the wielder's own Power and wants high DEX; the **crossbow** punches
+like a lance and forgives nothing; **knives** are a melee-adjacent trick
+(every round, short reach, mostly recovered, still a knife in the fist);
+the **sling** is the peasant's reach — weak, slow, free to feed.
+
+Sim-measured shape (`bench_ranged.py`, the doc of record): reach is an
+EDGE that grows with the field and dies at the door — no ranged card
+approaches the katana in a 1v1 at contact, all of them hold their own in
+the played party shape (shooter + line), and a solo shooter who lets the
+enemy walk in has already made a build mistake. Melee beats ranged at
+contact; ranged beats the slow approach; cramped ground and ambush beat
+ranged. The stat triangle is untouched: AIM reuses DEX/STR, distance is a
+positional axis on top.
+
+## Who notices whom (engagement)
+
+The road's spotted/ambush valve decides *who saw whom first*; ranged
+combat gives its words mechanical teeth (the starting field) and new
+inputs (the notice contest):
+
+- **Towering encounters (3+ levels up) keep the old contract untouched**:
+  usually spotted at range, AMBUSH_CHANCE of the time they find you.
+  Deadly-but-avoidable is a promise, not a roll of the conspicuousness
+  dice.
+- **Ordinary encounters run the notice contest**: each side rolls
+  `2d6 + notice stat` against `8 + the other side's conspicuousness`.
+  **Conspicuousness** = group size + a point per showy trait (armored,
+  loud, colorful, flamboyant, luxurious — the presentation tables'
+  first mechanics) + a clumsy-stealth point per point its *worst* DEX
+  sits under 4 (stealth is a weakest-link property). The party notices
+  with its **best MIND** (the watchful mind — MIND's third everyday job,
+  after casting and quest sight); beasts and foes sense with the sharper
+  of MIND and DEX.
+- Outcomes: seen-first alone = **spotted** (the sighting persists;
+  `engage` or slip past — the player's call, as ever); seeing the party
+  first alone = **AMBUSH at the foes' preferred range** (their shooters
+  open already shooting; an all-steel ambush is simply on you — the old
+  met-blade-first); both or neither = met square across the open field.
+- **Whoever picks the fight picks the ground**: `engage` and the hunt
+  open at the party's preferred range — a shooter's whole reach, or a
+  quiet close to contact for an all-steel party.
+
+## Cultural arms (NPC-side, by designer fiat)
+
+**Elves always shoot bows** (the ladder's archer, plus their own hunter
+row); **goblins never do** (slings — the slinger row); **dwarves shoot
+powder** (the gunner's hand bombard; the blunderbuss and revolver are
+their craft). Enforced where rosters are drawn: each race's warband
+templates use its own ladder variant, and a land's wild pool inherits its
+templates, so the roads shoot culturally too. Humans and orcs field the
+plain ladder. (The war machine's reskins — aether-rifles, rivet-guns —
+stay display names over calibrated rows, doctrine unchanged.) Four
+shooter rows joined the catalog: the **archer** (L1, rearmed with a real
+shortbow), the **slinger** (L1), the **hunter** (L3, drilled), the
+**gunner** (L4) — annotations bench-measured like every row.
+
+## Deferred with reasons (the design round's cut list)
+
+- **Kiting / falling back** — v1 shooters hold ground; a fall-back AI
+  wants the levelling framework's movement abilities to hang on.
+- **Cover as a terrain bonus** — cover is prose for now; the defense roll
+  already carries DEX + armor.
+- **Friendly fire into a melee** — shooters pick freely into the press;
+  parked until it reads wrong in play.
+- **Parting shots at a fleeing party get reach-gated instead of a new
+  system**: steel needs contact, ready shooters loose across the ground,
+  casters bolt within reach, everyone else watches them go. Ranged
+  PURSUIT (shooting during the chase) is out of scope.
+- **The three abilities** (arrow-parry for melee masters, point-blank
+  mastery ~L10, rapid reload) — designed in outline, parked on the
+  levelling framework (plan.md).
+- **Flight ranks 3–4 unblock**: sustained flight vs a bestiary that can
+  now shoot back is designable — scheduled with the magic content pass,
+  not here.
 
 ---
 

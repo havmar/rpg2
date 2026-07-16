@@ -77,13 +77,20 @@ def run_encounter(kind: str, level: int, rng: random.Random) -> tuple[str, bool]
     """One reference fight: a fresh reference duo vs the row's ref_pack.
     Returns (result, someone_downed): result in win / fled / wipe / stall
     (stall = the round cap fired with both sides up -- a regen wall the
-    party can't out-cut is a failed encounter, not a win)."""
+    party can't out-cut is a failed encounter, not a win).
+
+    Ranged rows (2026-07-16) are benched at WILD_FIELD -- their natural
+    engagement (a shooter benched at the door never shoots); melee rows
+    keep field 0, so every pre-ranged annotation is measured exactly as
+    before."""
     spec = FOES[kind]
     names = rng.sample(rpg.NAMES, 2)
     party = [reference_hero(rng, n, level) for n in names]
     foes = [make_foe(kind, i + 1, rng) for i in range(spec.ref_pack)]
+    ranged = spec.weapon is not None and spec.weapon.range > 0
     log: list[str] = []
-    result = rpg.sim_fight(party, foes, rng, log)
+    result = rpg.sim_fight(party, foes, rng, log,
+                           field=rpg.WILD_FIELD if ranged else 0)
     downed = any("goes down" in line for line in log)
     if result == "fled":
         return "fled", downed

@@ -522,3 +522,71 @@ fires in any bench -- openers are book-taught, and books are play-only).
   pay stays honest) exist only at the table -- no bench models a
   book-taught wizard. The career sim's board picks still read TRUE
   levels (the sims pass no mind), so quest sight moved no number.
+
+**Measured numbers (2026-07-16, Ranged Combat & the Field -- the distance
+model, seven ranged cards, the archer rearm + slinger/hunter/gunner rows,
+cultural ladder pools, the notice contest; rooms open at ROOM_FIELD 2, the
+wilds at WILD_FIELD 3, field 0 = the old engine to the digit).** Full
+suite re-run plus the new `bench_ranged.py`. The melee game is
+UNDISTURBED within noise; the one real drift is the mid-band career.
+
+- **Hideout** (rank 0, 10k): clear **80.6** / wipe **16.7** (was
+  81.5/16.5); reckless wipe **79.2** (79.4). The archer rearm was a
+  wash: one shortbow shot at field 2 buys about what its old random
+  melee weapon bought. **Barrow** `[3,3,4]`: clear **26.1** / wipe
+  **71.0** (was 24.8/71.6); early pressure 88.6, walk-away wounds still
+  populate the middle (58% of cleared runs leave 10-40% HP behind).
+- **Training ladder** (5k/rank): barrow **26.7 -> 57.9 -> 83.9 -> 97.4**,
+  hideout **81.1 -> 95.9 -> 99.4 -> 100** (was 24/56/84/97 and
+  82/96/99.6/100).
+- **Party size** (5k/size): hideout **22.2 / 81.1 / 98.8 / 100**, barrow
+  **1.1 / 26.7 / 72.6 / 95.1** (was 19/82/98.6/99.9 and 1.5/24/73/95).
+- **Melee weapons matrix**: unchanged story (field 0 by construction) --
+  zweihander best duel precise/steady, katana powerful/balanced,
+  zweihander every swarm column, staff trails.
+- **Ranged matrix** (`bench_ranged.py`, 4k/cell, the new doc of record):
+  suited-frame duels vs the melee reference at fields 0/2/3 -- longbow
+  **46/49/67**, shortbow 40/31/42, crossbow 8/17/34, blunderbuss
+  13/24/27, revolver 26/45/50, knives 63/40/52, sling 3/3/6; katana 97
+  flat. Escort shape (card + katana partner vs 3 wolves at field 3):
+  91-99 across every card. The criterion holds: reach is an EDGE that
+  grows with the field and dies at the door, no shooter out-duels steel
+  at contact, and the played shape is where shooters earn their keep.
+  TWO MEASUREMENT-DRIVEN ENGINE CALLS made this true and are now
+  doctrine: (1) chargers commit before skirmishers in the movement
+  phase (a shooter no longer walks into a charge and loses its only
+  shot); (2) the ARRIVAL VOLLEY (a loaded shooter looses point-blank
+  the round contact first arrives -- without it the blunderbuss
+  literally never fired beyond field 1). Severity flats were also bumped
+  one step across the board mid-calibration (a shot's flat replaces STR,
+  so the first-draft numbers under-hit by exactly a soak).
+  FLAGGED WART: cadence-1 range-2 cards (shortbow, knives) read a few
+  points worse at field 2 than at field 0 in a pure 1v1 -- one
+  graze-grade shot under-buys its STA and tempo. Party play doesn't
+  show it; levers if it nags: their flats, or a free switch for cards
+  whose melee grip is their own steel (the knives).
+- **Bestiary**: melee rows benched at field 0 -- unchanged by
+  construction. Shooter rows bench at field 3 (a shooter benched at the
+  door never shoots): archer **97.2** (L1), slinger **98.7** (L1),
+  hunter **94.8** (L3; 69.8 at -2), gunner **97.5** (L4; 82.8 at -2).
+  Hunter was authored at L4 and measured down to 3; gunner at L6,
+  measured down through 5 to 4 -- the hand bombard's one flat-4 blast
+  lands too rarely on trained duos to carry a higher band. Soft
+  at-level with real -2 walls is the L1-band norm these join.
+- **Generated content** (300/cell): at-level rooms win **75-97**;
+  at-level sites **96 at L1** sliding to **43-51 at 19-20** -- the
+  pre-ranged shape.
+- **Careers** (200): reach **L5 86 / L8 66 / L11 38 / L14 19 /
+  L20 6.5**, median death **L9**, capped median 175 days / 40 quests
+  (was 88/72/38/20/8, median L9, 166d/39q). The L8 band is ~6 points
+  harder: enemy shooters and casters now collect approach-round shots
+  in rooms and on the road -- the intended price of distance being
+  real, and it partially offsets the Magic & Mind ease.
+- **What no bench models**: hero shooters (the reference duo stays
+  melee -- a played bow party runs EASIER than these numbers,
+  especially outdoors where it opens at its own range), the notice
+  contest (session-side; towering encounters kept the old flat valve as
+  a contract), ammo economy across a day, and the dwarf-shop revolver.
+- **Levers untouched** (feel bows in play first). Standing flag
+  unchanged: the hideout sits ~25 points above the 2026-07 retune's
+  ~55% clear target.
