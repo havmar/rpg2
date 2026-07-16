@@ -121,13 +121,18 @@ it's worth the road to a better town -- is the player's core decision:**
   job is to say plainly that running is the answer: the first pause is the
   exit, `retreat` is the move, and surviving an ambush by something
   unbeatable IS the story.
-- **Ordinary trouble is spotted first ~25% of the time too** (2026-07-10):
-  the script prints `Spotted first -- L2: 3x Wolf...` and stops. Same
-  protocol as the big sightings -- present it as landscape ("shapes
-  circling a carcass, downwind of you"), then the player's call: `engage`
-  to attack, any other move slips past. It's a free pass on a fight they
-  didn't order OR free initiative on one they want -- don't editorialize
-  which; the level readout speaks for itself.
+- **Ordinary trouble runs the NOTICE CONTEST** (2026-07-16, replacing the
+  flat 25%): party best MIND vs the foes' senses, each against the other
+  side's conspicuousness (group size, showy dress, a clumsy low-DEX
+  straggler -- rules.md's Ranged Combat add-on). Three outcomes, all
+  printed by the script: `Spotted first` (same protocol as the big
+  sightings -- landscape, then the player's call: `engage` to attack, any
+  other move slips past), an `AMBUSH` (they saw the party first and open
+  at THEIR preferred range -- foe archers are already shooting; all-steel
+  ambushers are simply on you), or met square across the open field (both
+  sides close, shooters shooting). A loud, armored, torch-bright party
+  gets ambushed more; a sharp-MINDed one sees trouble first -- worth one
+  flat mention when it first bites, not a recurring lecture.
 - `explore` spends a day ranging the current land: discovers a new named
   place (persists on `map`, pays a little XP), camps rough overnight, and
   runs a higher encounter risk (~30%). Discovered places are yours to hang
@@ -587,6 +592,26 @@ bigger than the fights WITHOUT pages of narration:
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
   ~1 training rank at the barrow; masterwork/legendary are never for sale.
+- **Ranged combat & the field (2026-07-16):** fights open across a GAP --
+  rooms at field 2, the road at field 3, `engage`/hunt at the party's
+  preferred range, 0 = at the door. Movement is automatic (moving costs
+  the action; the log prints "the lines close/meet"): melee closes,
+  shooters hold and fire on their card's cadence (a bow shoots every 2nd
+  round; the revolver every round on the wielder's own Power), and casts
+  reach range 2 at ANY gap -- magic doesn't jam at contact. At arm's
+  length a ranged weapon is useless: one round to switch to its melee
+  grip (a bow is a poor stave; a blunderbuss stock clubs honestly) --
+  though a loaded shooter LOOSES POINT-BLANK into the round contact first
+  arrives. Shooters ignore the press, and a foe crowded out of the press
+  SLIPS DEEPER toward the backline -- "they're getting past the line to
+  the archer" is the engine talking; narrate it as exactly that. Ammo is
+  a kit count (arrows/bolts/shells/knives; sling stones free): spent hit
+  or miss, scavenged off a WON field (the log prints the recovery), left
+  behind on a fled one. `buy HERO arrows` restocks; quality reach is the
+  longbow (range 3, 60g), blunderbuss (one brutal doorway blast, 90g +
+  5g a shell), and the revolver (dwarven settlements only, 250g).
+  Cultural arms are real: elves shoot bows, goblins sling, dwarves shoot
+  powder -- the rosters already obey; narrate the culture.
 - **Weapon breaks are story beats.** On a parry or clash the flimsier weapon
   can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2 attack /
   -2 severity until re-armed (`give` them a fallen foe's blade between

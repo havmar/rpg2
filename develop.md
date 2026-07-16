@@ -90,7 +90,10 @@ a pointer: what the file is, how it's run, where its docs are.
   economy, random party generation, the Magic & Mind layer
   (2026-07-15: the MIND stat, the nine-spell catalog with ranks, the
   casting check, the openers, spellbooks — rules.md's
-  Magic & Mind add-on), and the batch-sim policies
+  Magic & Mind add-on), ranged combat & the field (2026-07-16: per-entity
+  advances, the movement phase, shots on the exchange, reload cadence,
+  ammo & scavenging, the seven ranged cards, conspicuousness — rules.md's
+  Ranged Combat add-on), and the batch-sim policies
   (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
   everything else imports it. All tunable constants sit at the top.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
@@ -212,6 +215,13 @@ a pointer: what the file is, how it's run, where its docs are.
   frame x each quality weapon, duel and swarm. Also the doc of record for WHY
   the zweihander does not cost 2 STA per swing (sim-rejected while Spent is
   lethal).
+- `bench_ranged.py` — the ranged matchup matrix (2026-07-16): each ranged
+  card on its suited frame vs the melee reference at fields 0/2/3, plus
+  the played escort shape (shooter + katana line vs a wolf pack). The doc
+  of record for reach-is-an-edge-not-a-win-button, and for WHY the
+  severity flats run higher than melee mods (a shot's flat replaces STR)
+  and why chargers commit before skirmishers in the movement phase.
+  `python bench_ranged.py [--trials N]`.
 - `bench_bestiary.py` — the bestiary calibration: each catalog row's
   reference encounter (`ref_pack` of it) vs reference duos at the annotated
   level and two levels either side; win/fled/wipe/stall/down rates. The
@@ -260,6 +270,7 @@ python rpg.py            # same one-shot (delegates to sites.py)
 python tune.py           # outcome-distribution sweep + resource-pressure check
 python bench_training.py # wipe/clear rates per combat-training rank
 python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
+python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
@@ -427,6 +438,30 @@ mechanic *does* and *why* is rules.md's job.
   `retreat --blink`, `party_mind` + the blurred board/show/take
   readouts (`show --dm` = the true view), the `visited` save key
   (teleport's known ground), the levelup menu's spell section.
+- **Ranged combat & the field** (2026-07-16) — `rpg.py`: the constants
+  block (`ROOM_FIELD` / `WILD_FIELD` / `CAST_RANGE`, ammo caps/lots/
+  recovery rates, `NOTICE_BASE` / `CONSPICUOUS_TRAITS` /
+  `conspicuousness`), the Weapon card's ranged fields (`range`, `reload`,
+  `aim`/`aim_flat`, `heavy_draw`, `ammo`, `missile`, the melee-grip
+  line), the seven ranged cards in `WEAPONS`, `Entity`'s field state
+  (`adv`, `reload_left`, `switched`, the shot tallies) and helpers
+  (`ranged`, `shot_ready`, `threat_reach`, `shot_aim`, `spend_shot`),
+  the shot branch in `_attack` + `pressure(shot=/vs_shot=)`, the
+  movement phase and mode logic in `group_combat` (`field` param, the
+  `_gap` closure, chargers-then-skirmishers, the arrival volley, the
+  slip-past-the-press advance), `_recover_missiles`, reach-gated parting
+  blows in `attempt_retreat(field=)`, foe requiver in
+  `refresh_foes_after_retreat`, `buy_ammo` / `grant_starter_ammo`.
+  `sites.py`: `HAND_BOMBARD`, the archer rearm + the slinger/hunter/
+  gunner rows, foe ammo in `make_foe`, the `shoots to range N` roster
+  tag, `run_site` at `ROOM_FIELD`. `quests.py`: the cultural ladder
+  pools (`GOBLIN_LADDER_POOL` / `DWARF_LADDER_POOL` /
+  `ELF_LADDER_POOL`), `notice_contest`, `foes_preferred_field`.
+  `session.py`: the engagement rework in `wild_event`,
+  `party_preferred_field`, field plumbing through
+  `resolve_encounter`/`pending`/resume/retreat, `fight --field`,
+  `buy HERO arrows|bolts|shells|knives`, the dwarf-settlement revolver
+  gate, starter ammo on `give`.
 - **Cross-land deliveries** (2026-07-14) — `quests.py`:
   `DELIVERY_TEMPLATES` / `build_delivery_quest` / `_post_delivery` and
   the kind-aware readout helpers. `session.py`: `active_delivery` /
@@ -473,50 +508,62 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-15, after the Magic & Mind layer — MIND in the
-budget at 11 surplus, the spell system, quest sight, caster rows
-re-statted to savant MIND). The full dated report of every measured
-re-tuning lives in `benchlog.md`; this is only the standing summary —
-refresh it whenever a new entry lands there.**
+**Current state (2026-07-16, after Ranged Combat & the Field — the
+distance model, seven ranged cards, four shooter foe rows, the notice
+contest; rooms now open at field 2, the wilds at field 3). The full dated
+report of every measured re-tuning lives in `benchlog.md`; this is only
+the standing summary — refresh it whenever a new entry lands there.**
 
-- **The batch's headline: heroes drifted ~4-8 points stronger across
-  every bench** (the budget bump + the free rank-1 school spell); the
-  monster families themselves sat still.
-- **Hideout** (rank 0, 10k runs): clear **81.5** / wipe **16.5**;
-  reckless (no-resource) wipe **79.4**. **Barrow** `[3, 3, 4]`: clear
-  **24.8** / wipe **71.6**. "Not using resources mostly means death"
-  still holds, narrower than before.
-- **Training ladder** (5k/rank): barrow **24 -> 56 -> 84 -> 97**, hideout
-  **82 -> 96 -> 99.6 -> 100** — a rank still reads as a rank.
-- **Party size** (5k/size, sizes 1-4): hideout **19 / 82 / 98.6 / 99.9**,
-  barrow **1.5 / 24 / 73 / 95** — in-fight, numbers dominate every other
-  progression axis; XP x 2/N is the counterweight.
-- **Weapons**: zweihander best duel on precise/steady, katana on
+- **The batch's headline: the melee game is UNDISTURBED within noise.**
+  Field 0 fights are the old engine to the digit by construction, and
+  the room/road fields moved the tuned sites almost nothing (the
+  hideout's archer traded a random melee weapon for one shortbow shot —
+  a wash). The one real drift is the mid-band career (below).
+- **Hideout** (rank 0, 10k runs): clear **80.6** / wipe **16.7**;
+  reckless (no-resource) wipe **79.2**. **Barrow** `[3, 3, 4]`: clear
+  **26.1** / wipe **71.0**. "Not using resources mostly means death"
+  holds.
+- **Training ladder** (5k/rank): barrow **27 -> 58 -> 84 -> 97**, hideout
+  **81 -> 96 -> 99.4 -> 100** — a rank still reads as a rank.
+- **Party size** (5k/size, sizes 1-4): hideout **22 / 81 / 98.8 / 100**,
+  barrow **1.1 / 27 / 73 / 95** — numbers still dominate; XP x 2/N is
+  the counterweight.
+- **Weapons (melee)**: zweihander best duel on precise/steady, katana on
   powerful/balanced, zweihander owns every swarm column, staff trails on
   purpose — no weapon tops every cell.
-- **Bestiary at-level win rates**: the monster families sit high-80s to
-  high-90s (skeleton 95.8, wolf 91.8, troll 97.2, dragon 89.9); the elite
-  ladder champion 73.8, blademaster 66.7, warlord 65; the caster rows —
-  recalibrated this session (MIND 11/11/14 reproduces their old bolt
-  aim) — hexer **81.8** (L3), pyromancer **90.4** (L6), magus **92.2**
-  (L10), each caster's -2 column a real wall at the low band. The new
-  `spell_ward` knob (dragon 3, drake 2, magus 2, wight 2, giant 1)
-  guards the apex against the assassin openers — play-only by design,
-  no bench path casts an opener.
-- **Generated content** (300/cell): at-level rooms win **75-99** across
-  levels 1-20; at-level sites **~94 at L1-3** sliding to **~36-56 at
-  15-20**.
-- **Careers** (200): reach **L5 88% / L8 72% / L11 38% / L14 20% /
-  L20 8%**, median death **L9**, capped median 166 days / 39 quests —
-  easier than 2026-07-14 (80/54/30/14/4.5, median L8) by exactly the
-  hero-side buff; the caster-quest hardening itself was preserved by
-  the MIND recalibration.
-- **Open flags for the designer** (levers deliberately untouched — feel
-  the wizard game in play first): the whole game moved a few points
-  easier, and the hideout now sits ~25 points above the 2026-07 retune's
-  ~55% clear target (the 2026-07-11b flag, wider). Cheapest single
-  counter-lever: `HERO_STAT_BUDGET` 11 -> 10; enemy DEX stays the
-  sharper knife if only one band needs teeth.
+- **Ranged cards** (`bench_ranged.py`, 4k/cell, suited frames vs the
+  melee reference): reach is an edge that grows with the field and dies
+  at the door — longbow **46 / 49 / 67** win% at fields 0/2/3, revolver
+  26/45/50, crossbow 8/17/34, blunderbuss 13/24/27, sling trails
+  everywhere on purpose; the katana wins **97** flat, so no shooter
+  out-duels steel at contact, and every card holds its own in the played
+  escort shape (91-99% with a katana partner vs a wolf pack). Flagged
+  wart: cadence-1 range-2 cards read a few points WORSE at field 2 than
+  at 0 in a pure 1v1 (one graze-grade shot under-buys its STA + tempo) —
+  party play doesn't show it; candidate levers if it nags: severity
+  flats, or a free switch for melee-grip-strong cards.
+- **Bestiary at-level win rates**: melee rows benched at field 0 —
+  unchanged by construction (skeleton 95.8, troll 97.2, dragon 89.9,
+  hexer 81.8...). The shooter rows bench at field 3: archer **97.2**
+  (L1), slinger **98.7** (L1), hunter **94.8** (L3; 69.8 at -2), gunner
+  **97.5** (L4; 82.8 at -2) — soft at level with real -2 walls, the
+  L1-band norm; annotations set this session (hunter 4 -> 3,
+  gunner 6 -> 4 measured down).
+- **Generated content** (300/cell): at-level rooms win **75-97** across
+  levels 1-20; at-level sites **~96 at L1** sliding to **~43-51 at
+  19-20** — the pre-ranged shape.
+- **Careers** (200): reach **L5 86% / L8 66% / L11 38% / L14 19% /
+  L20 6.5%**, median death **L9**, capped median 175 days / 40 quests.
+  The L8 band is ~6 points harder than 2026-07-15 (72 -> 66): enemy
+  shooters and casters now collect approach-round shots in rooms and on
+  the road — the intended price of distance being real. Everything else
+  within noise.
+- **Open flags for the designer** (levers untouched — feel bows in play
+  first): the hideout still sits ~25 points above the 2026-07 retune's
+  ~55% clear target (the standing flag); the career mid-band hardening
+  partially offsets the Magic & Mind ease. NOTE the benches model NO
+  hero shooters (the reference duo stays melee) — a played bow party
+  runs easier than these numbers, especially outdoors.
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
@@ -530,8 +577,13 @@ formulas set the whole game's pace now), then the foe stat blocks
 (`sites.FOES` — **enemy DEX is the sharpest knife**: a single point moves
 clear rates by tens of percent; the soldiery's `training` is the same knife
 for the ladder), then the hero roll ranges (all constants: see the dev map
-above). **Always re-run `tune.py`, `bench_training.py`,
-`bench_weapons.py`, `bench_bestiary.py`, and `bench_quests.py` after
+above). The ranged layer adds its own levers: the field sizes
+(`ROOM_FIELD` / `WILD_FIELD` — one point of field is roughly half a shot
+per fight), the cards' severity flats (they replace STR, so they move in
+bigger steps than melee mods), reload cadence, and `NOTICE_BASE` (the
+spotted/ambushed mix on the road). **Always re-run `tune.py`,
+`bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, and `bench_quests.py` after
 touching any of these** — small changes swing lethality, the attrition
 curve, the weapon matchup matrix, the level annotations, and the career
 curve.
@@ -577,9 +629,12 @@ spells at ranks 1-3 (skill points buy depth, spellbooks buy breadth,
 Power prices the burst), the casting check with degrees of success, the
 assassin openers, telekinesis, possession, scry, teleport travel, and
 quest sight (the board blurs to the party's best MIND). **Cross-land
-deliveries** (2026-07-14) send the party travelling. Next: stat
+deliveries** (2026-07-14) send the party travelling. **Ranged combat &
+guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
+shooter foe rows, cultural arms, and the notice contest (rules.md's
+Ranged Combat & the Field add-on). Next: stat
 transcendence + the wraith (the rest of the old magic phase), armor
-(note the designer's lean: probably never important), guns + ammo, named
+(note the designer's lean: probably never important), named
 weapon instances — and the career sim's finding that the 14-20 band lacks
 its player power until masterwork/magic-item content lands. See plan.md
 for the full roadmap and the parked-ideas list.

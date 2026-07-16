@@ -43,7 +43,7 @@ import argparse
 import random
 
 from rpg import (LEVEL_CAP, xp_to_next, site_xp_total, site_encounter_xp,
-                 site_gold)
+                 site_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
 
 # --------------------------------------------------------------------------- #
@@ -194,6 +194,18 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
                              "blademaster", "warlord")
+# Cultural arms (ranged combat, 2026-07-16) -- NPC-side constraints, per
+# the designer: ELVES always shoot bows (the ladder's archer, plus their
+# own hunter row), GOBLINS never do (slings instead), DWARVES shoot powder
+# (the gunner's hand bombard). Enforced where rosters are drawn: each
+# race's warband templates use its own ladder variant; wild_pool inherits
+# them, so a land's roads shoot culturally too. Humans and orcs field the
+# plain ladder (bows are everyone else's normal).
+GOBLIN_LADDER_POOL = tuple(k for k in LADDER_POOL
+                           if k != "archer") + ("slinger",)
+DWARF_LADDER_POOL = tuple(k for k in LADDER_POOL
+                          if k != "archer") + ("gunner",)
+ELF_LADDER_POOL = LADDER_POOL + ("hunter",)
 # The casters get their OWN quests (2026-07-14; the Magic & Mind layer
 # kept the containment): one
 # caster template per race below plus the magus epic -- NOT the ladder
@@ -290,10 +302,11 @@ TEMPLATES: dict[str, list[dict]] = {
         dict(title="Wardens Gone Rogue",
              desc="A warden-band that answers to no council now, taxing "
                   "the forest roads at arrowpoint.",
-             pool=LADDER_POOL,
+             pool=ELF_LADDER_POOL,
              skins={"archer": "Rogue Warden", "cutthroat": "Rogue Scout",
                     "soldier": "Rogue Warden", "veteran": "Warden-Captain",
-                    "champion": "Blade of the Wild"},
+                    "champion": "Blade of the Wild",
+                    "hunter": "Rogue Huntsman"},
              sites=("the forest road", "the rogue lodge"),
              giver="the council's justiciar",
              epilogue="The rogue lodge is unroofed and left to the moss; "
@@ -392,8 +405,8 @@ TEMPLATES: dict[str, list[dict]] = {
         dict(title="The Grudge War",
              desc="A rival clan pressed an old grudge with new axes. The "
                   "ledger wants balancing.",
-             pool=LADDER_POOL,
-             skins={"cutthroat": "Grudge-Sworn", "archer": "Grudge-Sworn",
+             pool=DWARF_LADDER_POOL,
+             skins={"cutthroat": "Grudge-Sworn", "gunner": "Powder-Sworn",
                     "bruiser": "Grudge-Sworn", "soldier": "Grudge-Sworn",
                     "veteran": "Oathbreaker", "champion": "Grudge-Captain",
                     "blademaster": "Grudge-Lord"},
@@ -428,8 +441,8 @@ TEMPLATES: dict[str, list[dict]] = {
              desc="A rival boss's press-gang is stealing crews off the "
                   "night shift. The foreman pays for it stopped, no "
                   "questions on the how.",
-             pool=LADDER_POOL,
-             skins={"cutthroat": "Press-Ganger", "archer": "Sling-Runt",
+             pool=GOBLIN_LADDER_POOL,
+             skins={"cutthroat": "Press-Ganger", "slinger": "Sling-Runt",
                     "bruiser": "Pit Boss", "soldier": "Wrench-Guard",
                     "veteran": "Shift-Breaker", "champion": "Under-Boss",
                     "blademaster": "Knife-King", "warlord": "The Big Boss"},
@@ -897,11 +910,20 @@ EXPLORE_XP = 15                  # discovering a new place pays this flat
 WILD_LEVEL_DECAY = 0.75      # P(road encounter is level L) ~ DECAY**L
 SPOTTED_MARGIN = 3           # foes this many levels above the party are
                              # spotted at range instead of met blade-first...
-AMBUSH_CHANCE = 0.25         # ...except this often, when they find YOU
-WILD_SPOTTED_CHANCE = 0.25   # ...and encounters BELOW that margin are spotted
-                             # first this often (2026-07-10): ordinary trouble
-                             # seen before it sees the party -- attack
-                             # (`engage`) or slip past, the player's call
+AMBUSH_CHANCE = 0.25         # ...except this often, when they find YOU.
+                             # This towering-encounter valve is a CONTRACT
+                             # (deadly-but-avoidable), so it stays a flat
+                             # roll -- the notice contest below never
+                             # overrides it.
+# Ordinary encounters (below the margin) run the NOTICE CONTEST instead of
+# the old flat 25% spotted roll (ranged combat, 2026-07-16): each side
+# rolls 2d6 + its notice stat against NOTICE_BASE + the OTHER side's
+# conspicuousness (rpg.conspicuousness: group size, showy traits, the
+# worst-DEX stealth term). The party watches with its best MIND (the
+# watchful mind -- MIND's third everyday job); beasts and foes sense with
+# the sharper of MIND and DEX. One side seeing alone = spotted (the
+# sighting choice) or AMBUSHED (they open at their preferred range); both
+# or neither = met square across the open field.
 HUNT_LEVEL_REACH = 2         # a hunt stalks prey up to this far below the
                              # party's level (never above it)
 HUNT_AMBUSH_CHANCE = 0.10    # ...but this often the hunter is the hunted
@@ -945,6 +967,36 @@ def roll_wild_level(rng: random.Random) -> int:
     levels = range(1, LEVEL_CAP + 1)
     weights = [WILD_LEVEL_DECAY ** l for l in levels]
     return rng.choices(list(levels), weights=weights)[0]
+
+
+def notice_contest(party: list, kinds: list[str],
+                   rng: random.Random) -> tuple[bool, bool]:
+    """Who saw whom first (the ordinary band's valve -- see the constants
+    block above): returns (party_sees, foes_see). Each side rolls 2d6 + its
+    notice stat vs NOTICE_BASE + the other side's conspicuousness."""
+    watchers = [h for h in party if not h.dead]
+    specs = [FOES[k] for k in kinds]
+    party_notice = max((h.mind for h in watchers), default=0)
+    foe_notice = max(max(s.mind, s.dex) for s in specs)
+    party_sees = (rng.randint(1, 6) + rng.randint(1, 6) + party_notice
+                  >= NOTICE_BASE + conspicuousness(specs))
+    foes_see = (rng.randint(1, 6) + rng.randint(1, 6) + foe_notice
+                >= NOTICE_BASE + conspicuousness(watchers))
+    return party_sees, foes_see
+
+
+def foes_preferred_field(kinds: list[str]) -> int:
+    """The gap an AMBUSHING roster opens at: its longest reach -- shooters
+    start shooting, casters start casting -- or 0 when it is all steel
+    (melee ambushers are simply ON you, exactly the old met-blade-first)."""
+    best = 0
+    for k in kinds:
+        spec = FOES[k]
+        if spec.weapon is not None and spec.weapon.range:
+            best = max(best, spec.weapon.range)
+        if spec.school:
+            best = max(best, CAST_RANGE)
+    return best
 
 
 def build_wild_encounter(level: int, race: str,

@@ -2,7 +2,9 @@
 
 Implements the ruleset in rules.md (the source of truth for mechanics intent):
 the group melee (group_combat), the pause/retreat interrupt layer, weapons and
-breakage, the survival tracks (HP/STA/Power, rests, the clock), progression
+breakage, ranged combat & the field (distance, shots, cadence, ammo --
+rules.md's Ranged Combat add-on), the survival tracks (HP/STA/Power, rests,
+the clock), progression
 (XP, training, proficiency), the economy (purse, potions, weapons,
 spellbooks), random party generation, the Magic & Mind layer (wizards, the
 MIND stat, the spell catalog with ranks, the casting check, the openers),
@@ -423,6 +425,102 @@ CRUDE_WEAPON_CHANCE = 0.50
 HEAVY_WEAPON_CHANCE = 0.05
 HEALER_STAFF_CHANCE = 0.50  # heal-ability heroes often carry the wooden staff
 
+# --- Ranged combat (2026-07-16) ---------------------------------------------- #
+# The distance model: every fight opens across a FIELD (an abstract gap in
+# "bounds" -- one round's movement each). Each entity carries an `adv`
+# counter, steps taken from its own line; the gap between two OPPOSING
+# entities is max(0, field - a.adv - b.adv) -- one small int per body, no
+# coordinates, no pairs. Field 0 (the default everywhere the caller doesn't
+# say otherwise) is today's fight to the digit: the lines meet at the door.
+#
+# The rules, all riding that one number:
+# - MOVING IS YOUR ACTION. An entity with no enemy inside its reach advances
+#   one step instead of attacking (free, like circling -- no STA). Both
+#   sides advancing close the gap by 2 a round. Nobody falls back (v1: no
+#   kiting -- shooters hold their ground; leaving is the retreat layer).
+# - Melee weapons reach gap 0 only. RANGED weapons reach their card's range
+#   but are USELESS at gap 0: a foe at arm's length forces the shooter to
+#   spend a round switching to the card's melee grip (melee_atk/melee_sev --
+#   one weapon, two lines, no inventory). Aimed CASTS reach CAST_RANGE at
+#   ANY gap including 0 -- magic doesn't jam at contact (this keeps every
+#   caster bench meaningful and pre-ranged fights identical).
+# - A shot rides the normal exchange: 2d6 + AIM + training + weapon atk +
+#   proficiency vs the body's defense WITHOUT the weapon's parry knob (you
+#   don't parry an arrow with a stick; the armored trait still counts).
+#   Severity = margin + the card's flat - soak, STR out (like a cast) --
+#   the bow's STR share lives in its AIM instead. Shots cost the normal
+#   swing STA (a war draw is work); no steel-on-steel breakage, no rapier
+#   floors, and the universal margin-3 graze floor applies.
+# - CADENCE: after each shot the card's `reload` rounds must pass (nocking,
+#   cranking, recharging) before the next -- reload ticks on any round the
+#   shooter doesn't fire, movement included. The revolver's whole identity
+#   is reload 0.
+# - AMMO is a carried count in Entity.items ("arrows"/"bolts"/"shells"/
+#   "knives"); the sling scrounges stones (free) and the revolver fires
+#   Power itself (REVOLVER_POWER_COST a shot -- the spell-bolt economy).
+#   Ammo is spent hit or miss; a WON field is scavenged (recover the spent
+#   missiles at RECOVER_HIT/RECOVER_MISS rates -- a stuck arrow is easier
+#   to find than a lost one); a fled field is left, arrows and all.
+# - The press is melee geometry: shooters at range neither consume nor
+#   respect crowd room -- and a melee attacker crowded out of the press
+#   with the field still open ADVANCES instead of circling, slipping
+#   toward the backline (the archer's escort problem, emergent).
+ROOM_FIELD = 2      # site/quest rooms: close quarters -- a hall's width, one
+                    # approach round, at most one shot loosed indoors
+WILD_FIELD = 3      # the open road: the widest common engagement -- a
+                    # longbow's whole reach, ~2 shots before contact
+CAST_RANGE = 2      # how far every aimed cast carries (bolts, fireballs,
+                    # hurled debris) -- and casts alone also work at gap 0
+REVOLVER_POWER_COST = 1     # the magic gun fires the wielder's own Power
+FOE_AMMO = 8        # what a spawned shooter carries (plenty for one fight)
+AMMO_CAPS = {"arrows": 20, "bolts": 20, "shells": 10, "knives": 6}
+# `buy HERO arrows|bolts|shells|knives`: (lot size, lot price in gold).
+# Arrows are deliberately trivial next to the 60g bow -- the recurring sink
+# with real teeth is the blunderbuss shell (the design's own compensation:
+# the weapon needs no stats, so the ammo carries the price).
+AMMO_LOTS = {"arrows": (10, 5), "bolts": (10, 5),
+             "shells": (2, 10), "knives": (2, 4)}
+RECOVER_HIT = {"arrows": 0.70, "bolts": 0.70, "knives": 0.90}
+RECOVER_MISS = {"arrows": 0.40, "bolts": 0.40, "knives": 0.60}
+# Starter load included with a bought/granted ranged weapon (nobody sells a
+# bow without a quiver); tops UP to this, never past the cap.
+STARTER_AMMO = {"arrows": 10, "bolts": 10, "shells": 2, "knives": 4}
+
+# --- Engagement: who notices whom (2026-07-16) -------------------------------- #
+# The road's spotted/ambush valve (quests.py) decides WHO saw WHOM first;
+# these are its new inputs. A side's CONSPICUOUSNESS is what there is to
+# notice: bodies, glint, noise -- group size, plus a point per showy trait,
+# plus a clumsy-stealth point when its WORST DEX drags (stealth is a
+# weakest-link property). NOTICING is the other side's roll against it:
+# 2d6 + notice stat vs NOTICE_BASE + conspicuousness. The party watches
+# with its best MIND (the watchful mind reads the land -- MIND's third
+# everyday job, after casting and quest sight); beasts and foes sense with
+# the sharper of MIND and DEX. Whoever notices first picks the engagement:
+# shooters open at their range, an unseen melee side closes to contact.
+NOTICE_BASE = 8
+STEALTH_DEX_BASE = 4        # a group's worst DEX below this adds the gap
+                            # to its conspicuousness (someone keeps snapping
+                            # twigs)
+CONSPICUOUS_TRAITS = ("armored", "loud", "colorful", "flamboyant",
+                      "luxurious")   # presentation traits that catch the eye
+                                     # (people.py's dress/voice tables)
+
+
+def conspicuousness(group) -> int:
+    """How much there is to notice about a group: size + showy traits +
+    the clumsy-stealth term off its worst DEX. Duck-typed (needs .dex and
+    .traits or neither) so it prices hero parties and FoeSpec rows alike."""
+    living = [e for e in group if getattr(e, "hp", 1) > 0]
+    if not living:
+        return 0
+    score = len(living)
+    score += max(0, STEALTH_DEX_BASE - min(e.dex for e in living))
+    for e in living:
+        traits = getattr(e, "traits", None) or {}
+        score += sum(1 for t in traits.values()
+                     if t.split(" (")[0] in CONSPICUOUS_TRAITS)
+    return score
+
 
 @dataclass(frozen=True)
 class Weapon:
@@ -449,6 +547,33 @@ class Weapon:
                             # steel-on-steel event; see _check_weapon_break),
                             # never left as loot
     heal_bonus: int = 0     # extra HP per Heal ability use (the staff)
+    # Ranged cards (2026-07-16; see the ranged-combat constants block).
+    # range 0 = a melee weapon (everything above); range N = shoots targets
+    # at gap 1..N and is USELESS at gap 0 (the melee grip below takes over
+    # after a switch round).
+    range: int = 0          # how far the card shoots (in field steps)
+    reload: int = 0         # rounds between shots (0 = every round; 1 = the
+                            # bow's every-2nd-round nock; ticks whenever the
+                            # shooter doesn't fire)
+    aim: str = "dex"        # the shot's attack stat: "dex" (guns, thrown),
+                            # "dex_str" (bows: ceil((DEX+STR)/2) -- the draw
+                            # is strength, the loose is aim), or "flat"
+                            # (the blunderbuss: the spread does the aiming)
+    aim_flat: int = 0       # the "flat" aim's fixed stat term
+    heavy_draw: int = 0     # STR below this cranks slowly: +1 reload (the
+                            # crossbow's strength gate lives in cadence, not
+                            # accuracy)
+    ammo: str = ""          # carried-count key in Entity.items ("arrows" /
+                            # "bolts" / "shells" / "knives"), "power" (the
+                            # revolver fires the wielder's own Power), or
+                            # "" (the sling scrounges stones -- free)
+    missile: str = ""       # what the log says flew ("arrow", "bolt", ...)
+    melee_atk: int = BROKEN_ATK_PRESSURE    # the card's own melee line, used
+    melee_sev: int = BROKEN_SEVERITY        # after the switch at contact --
+                            # a bow swung as a stave is a broken-weapon
+                            # stump; a blunderbuss stock clubs honestly.
+                            # No proficiency applies (you drilled the shot,
+                            # not the club).
     bulk: int = 1           # carry weight/bulk -- stored, unused for now
     tags: tuple[str, ...] = ()
     value: int = 0          # gold
@@ -511,12 +636,67 @@ WEAPONS = {w.name: w for w in [
            heal_bonus=1, bulk=2, value=60,
            description="A healer's iron-shod staff: poor on the attack, +1 to "
                        "the parry, and Heals through it restore +1 HP."),
+    # Ranged commons -- cheap missiles for whoever can't afford real reach.
+    # (Severity flats run higher than melee cards because a shot's severity
+    # replaces STR entirely, like a cast: a card's flat IS the whole punch.)
+    Weapon("sling", -1, 3, 1, durability=1, bulk=1, tags=("cheap", "ranged"),
+           value=2, range=2, reload=1, aim="dex", missile="sling stone",
+           description="A strap and a stone. Weak, slow, free to feed -- "
+                       "stones are everywhere -- and it still outranges a "
+                       "knife."),
+    Weapon("throwing knives", 0, 2, 1, durability=2, bulk=1,
+           tags=("military", "ranged"), value=8, range=1, reload=0,
+           aim="dex", ammo="knives", missile="thrown knife",
+           melee_atk=0, melee_sev=-1,
+           description="A brace of balanced knives: one every round, short "
+                       "reach, shallow cuts -- and most are picked back up "
+                       "after. In a closed fist it is still a knife."),
+    Weapon("shortbow", 0, 4, 1, durability=2, bulk=2,
+           tags=("military", "ranged", "bow"), value=8, range=2, reload=1,
+           aim="dex_str", ammo="arrows", missile="arrow",
+           description="A hunter's bow: honest reach, honest wounds. Draw "
+                       "and aim both count -- AIM is the mean of DEX and "
+                       "STR."),
+    Weapon("crossbow", -1, 6, 1, durability=2, bulk=3,
+           tags=("military", "ranged"), value=15, range=2, reload=1,
+           heavy_draw=4, aim="dex", ammo="bolts", missile="bolt",
+           description="A heavy bolt that punches like a lance when it "
+                       "lands -- and it is easy to miss with. Weak arms "
+                       "(STR under 4) crank it a round slower."),
+    # The quality ranged three -- reach as a build, not a sidearm.
+    Weapon("longbow", 1, 5, 1, durability=4, quality=True, bulk=3,
+           tags=("ranged", "bow"), value=60, range=3, reload=1,
+           aim="dex_str", ammo="arrows", missile="arrow",
+           description="A war bow with the whole field for a killing "
+                       "ground: the longest reach there is (range 3). AIM "
+                       "is the mean of DEX and STR -- the draw is strength, "
+                       "the loose is aim."),
+    Weapon("blunderbuss", 0, 7, 1, durability=4, quality=True, bulk=3,
+           tags=("ranged", "gun"), value=90, range=1, reload=1,
+           aim="flat", aim_flat=4, ammo="shells",
+           missile="thundering blast", melee_atk=0, melee_sev=0,
+           description="Dwarven thunder in a brass throat: the spread does "
+                       "the aiming (a flat 4 -- no stats needed) and what "
+                       "it hits it ruins, one bound away at most. The "
+                       "shells cost real gold, and the stock clubs "
+                       "honestly when they close."),
+    Weapon("revolver", -1, 5, 1, durability=4, quality=True, bulk=1,
+           tags=("ranged", "gun", "dwarven"), value=250, range=2, reload=0,
+           aim="dex", ammo="power", missile="shot",
+           description="A dwarven magic gun: no powder, no reloading -- "
+                       "every round, while the wielder's own Power lasts "
+                       "(1 a shot). Hard to aim (-1) and unforgiving of "
+                       "clumsy hands; wants high DEX. Sold only where "
+                       "dwarves sell."),
 ]}
 
 CRUDE_WEAPONS = ("club", "dagger", "whip", "light hammer")
 SOLDIER_WEAPONS = ("shortsword", "scimitar", "spear", "mace", "flail", "morningstar")
 HEAVY_WEAPONS = ("longsword", "battleaxe", "warhammer", "halberd")
-QUALITY_WEAPONS = ("rapier", "katana", "zweihander", "wooden staff")
+QUALITY_WEAPONS = ("rapier", "katana", "zweihander", "wooden staff",
+                   "longbow", "blunderbuss", "revolver")
+RANGED_WEAPONS = ("sling", "throwing knives", "shortbow", "crossbow",
+                  "longbow", "blunderbuss", "revolver")
 
 # The skeletons' grave-goods: corroded, durability 1 -- they snap on good steel,
 # which is the intended player-favoring asymmetry once the party earns quality.
@@ -761,6 +941,11 @@ def kind_label(kind: str) -> str:
     return CAST_LABEL[kind]
 
 
+def _an(noun: str) -> str:
+    """'an arrow', 'a bolt' -- the log's article helper."""
+    return ("an " if noun[:1].lower() in "aeiou" else "a ") + noun
+
+
 def margin_verb(margin: int) -> str:
     """How decisively the exchange was won, as a verb for the headline."""
     if margin >= 5:
@@ -983,6 +1168,19 @@ class Entity:
     disarm_tried: bool = field(default=False)   # telekinetic disarm attempted
                                                 # on this target (once per foe
                                                 # per fight, hit or miss)
+    # Ranged-combat per-fight state (2026-07-16; cleared with the rest):
+    adv: int = field(default=0)         # steps advanced from this side's
+                                        # line; the gap to an opposing
+                                        # entity is field - adv - their adv
+    reload_left: int = field(default=0)     # rounds until the next shot is
+                                            # ready (ticks on non-firing
+                                            # rounds)
+    switched: bool = field(default=False)   # forced to the ranged card's
+                                            # melee grip by contact (the
+                                            # switch round was paid)
+    shots_hit: int = field(default=0)       # missiles spent this fight, by
+    shots_missed: int = field(default=0)    # outcome -- the scavenge roll's
+                                            # inputs (hits recover better)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
     dead: bool = field(default=False)   # truly slain (unsaved crippling blow)
     fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
@@ -1084,8 +1282,12 @@ class Entity:
     @property
     def prof_rank(self) -> int:
         # Rank with the WIELDED weapon (a broken weapon grants nothing --
-        # you're swinging a stump, not the weapon you drilled with).
+        # you're swinging a stump, not the weapon you drilled with; a
+        # ranged card in the switched melee grip likewise: you drilled the
+        # shot, not the club).
         if self.weapon is None or self.weapon_broken:
+            return 0
+        if self.switched and self.weapon.range:
             return 0
         return self.proficiency.get(self.weapon.name, 0)
 
@@ -1099,6 +1301,91 @@ class Entity:
         if self.weapon is not None and not self.weapon_broken:
             return self.weapon.sta_cost
         return self.sta_cost
+
+    # --- ranged combat (2026-07-16) --------------------------------------- #
+    @property
+    def ranged(self) -> Weapon | None:
+        """The wielded RANGED card while it can still shoot: not broken,
+        not switched to the melee grip. None for every melee weapon."""
+        w = self.weapon
+        if (w is None or self.weapon_broken or w.range <= 0
+                or self.switched):
+            return None
+        return w
+
+    def has_ammo(self) -> bool:
+        """Something left to shoot: a carried count, the revolver's Power,
+        or the sling's anywhere-stones (no ammo key = free)."""
+        w = self.weapon
+        if w is None or not w.range:
+            return False
+        if not w.ammo:
+            return True
+        if w.ammo == "power":
+            return self.cur_power >= REVOLVER_POWER_COST
+        return self.items.get(w.ammo, 0) > 0
+
+    @property
+    def shot_ready(self) -> bool:
+        """Loaded, drawn, and in the shooting grip -- fires this round if a
+        target stands in range."""
+        return (self.ranged is not None and self.reload_left <= 0
+                and self.has_ammo())
+
+    @property
+    def effective_reload(self) -> int:
+        """The card's cadence for THIS wielder: heavy_draw punishes weak
+        arms with an extra cranking round (the crossbow's strength gate)."""
+        w = self.weapon
+        if w is None:
+            return 0
+        extra = 1 if w.heavy_draw and self.str_ < w.heavy_draw else 0
+        return w.reload + extra
+
+    @property
+    def shot_aim(self) -> int:
+        """The shot's attack stat per the card: DEX, the bow's
+        ceil((DEX+STR)/2), or the blunderbuss's flat."""
+        w = self.weapon
+        if w is None:
+            return self.dex
+        if w.aim == "dex_str":
+            return (self.dex + self.str_ + 1) // 2
+        if w.aim == "flat":
+            return w.aim_flat
+        return self.dex
+
+    @property
+    def threat_reach(self) -> int:
+        """How far this entity threatens RIGHT NOW -- what the movement
+        phase holds ground for: the ranged card's range while ammo lasts
+        (mid-reload still counts: they shoot from here), CAST_RANGE for a
+        caster with a bolt to throw, 0 for steel."""
+        r = 0
+        if self.ranged is not None and self.has_ammo():
+            r = self.ranged.range
+        if self.default_cast() is not None:
+            r = max(r, CAST_RANGE)
+        return r
+
+    def shot_severity_mods(self) -> list[tuple[int, str]]:
+        """A shot's severity terms: the card's flat replaces STR entirely
+        (like a cast -- the bow's STR share lives in its AIM), plus
+        proficiency with the card."""
+        w = self.weapon
+        mods = [(w.severity, w.name)]
+        if self.prof_rank:
+            mods.append((self.prof_rank, "proficiency"))
+        return mods
+
+    def spend_shot(self) -> None:
+        """Charge one missile (hit or miss) and start the reload clock."""
+        w = self.weapon
+        if w.ammo == "power":
+            self.cur_power -= REVOLVER_POWER_COST
+        elif w.ammo:
+            self.items[w.ammo] = max(0, self.items.get(w.ammo, 0) - 1)
+        self.reload_left = self.effective_reload
 
     # --- magic (the Magic & Mind add-on) ---------------------------------- #
     @property
@@ -1193,6 +1480,9 @@ class Entity:
             return []
         if self.weapon_broken:
             return [(BROKEN_SEVERITY, f"broken {self.weapon.name}")]
+        if self.switched and self.weapon.range:
+            # The ranged card's melee grip: its own line, no proficiency.
+            return [(self.weapon.melee_sev, f"{self.weapon.name} (in hand)")]
         mods = []
         if self.weapon.severity:
             mods.append((self.weapon.severity, self.weapon.name))
@@ -1202,7 +1492,8 @@ class Entity:
 
     def pressure(self, rng: random.Random, attacking: bool = False,
               wound_pen: int | None = None, misc: int = 0,
-              misc_label: str = "", cast: str | None = None) -> PressureRoll:
+              misc_label: str = "", cast: str | None = None,
+              shot: bool = False, vs_shot: bool = False) -> PressureRoll:
         # wound_pen overrides the live wound penalty -- used for the dying
         # swing (group_combat): a fighter felled mid-round still gets their
         # blow in, rolled with the wounds they had at ROUND START, not the
@@ -1224,26 +1515,51 @@ class Entity:
             # An aimed cast: the weapon stays out of it -- the "proficiency"
             # is the spell's rank instead.
             prof = self.spell_rank(CAST_SPELL[cast])
+        elif shot:
+            # A shot: the card's attack bonus and the drilled proficiency,
+            # like any weapon attack.
+            weapon_mod = self.weapon.atk_pressure
+            weapon_label = self.weapon.name
+            prof = self.prof_rank
         elif self.weapon is not None:
             if attacking:
                 if self.weapon_broken:
                     weapon_mod = BROKEN_ATK_PRESSURE
                     weapon_label = f"broken {self.weapon.name}"
+                elif self.switched and self.weapon.range:
+                    # The ranged card's melee grip (post-switch): its own
+                    # melee line, no proficiency (prof_rank knows).
+                    weapon_mod = self.weapon.melee_atk
+                    weapon_label = f"{self.weapon.name} (in hand)"
                 else:
                     weapon_mod = self.weapon.atk_pressure
                     weapon_label = self.weapon.name
                     prof = self.prof_rank
-            elif not self.weapon_broken and self.weapon.def_pressure:
+            elif (not self.weapon_broken and self.weapon.def_pressure
+                    and not vs_shot):
+                # No parrying an arrow with a stick: the weapon's guard knob
+                # (the staff's +1, the zweihander's -1) is steel-on-steel
+                # geometry and sits out of a defense against missiles.
                 weapon_mod = self.weapon.def_pressure
                 weapon_label = self.weapon.name
         # def_bonus is a body knob (the "armored" trait): defense only, like
-        # the staff's parry but worn instead of wielded.
+        # the staff's parry but worn instead of wielded -- and worn armor
+        # DOES count against arrows (vs_shot keeps it).
         armor = 0 if attacking else self.def_bonus
         # The stat term: DEX for everything bodily, AIM (the MIND/DEX mean)
-        # for a cast. Frost (landed ice) slows the BODY: it drags DEX-based
-        # rolls, never a cast's aim, and can't push the term below 0.
-        stat, stat_label = ((self.aim, "AIM") if cast else (self.dex, "DEX"))
-        chill = 0 if cast else min(self.dex, self.dex_debuff)
+        # for a cast, the card's aim stat for a shot. Frost (landed ice)
+        # slows the BODY: it drags DEX-based rolls, never a cast's aim or
+        # the blunderbuss's flat spread, and can't push the term below 0.
+        if cast:
+            stat, stat_label = self.aim, "AIM"
+            chill = 0
+        elif shot:
+            stat, stat_label = self.shot_aim, "AIM"
+            chill = (0 if self.weapon.aim == "flat"
+                     else min(stat, self.dex_debuff))
+        else:
+            stat, stat_label = self.dex, "DEX"
+            chill = min(self.dex, self.dex_debuff)
         # Height is an attacker's edge (flight): hard to reach, easy to rain
         # blows down from.
         if attacking and self.aloft > 0 and not misc:
@@ -1317,7 +1633,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             def_mod: int = 0, def_label: str = "",
             atk_roll: PressureRoll | None = None,
             soften: bool = False, cast: str | None = "auto",
-            ambush: bool = False) -> None:
+            ambush: bool = False, shot: bool = False) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a crippling blow); a Power
@@ -1358,6 +1674,14 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     literal auto-kill. Any spell_ward turns the ambush into a normal
     exchange (the moment is not wholly the caster's).
 
+    `shot=True` (ranged combat, 2026-07-16) is a missile: pressure off the
+    card's AIM, the defense WITHOUT the weapon's parry knob (vs_shot), the
+    severity off the card's flat with STR out (like a cast). The missile is
+    charged here hit or miss (spend_shot: ammo/Power + the reload clock),
+    and the outcome is tallied on shots_hit/shots_missed for the after-
+    battle scavenge. No steel-on-steel breakage, no misfires -- the fumble
+    stays scoped to casting; powder and gut-strings are reliable arts.
+
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
     penalty), then the raw numbers (dice, each modifier and its source)
@@ -1366,7 +1690,9 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     if attacker.unseen and atk_roll is None:
         ambush = True
         attacker.unseen = False     # the strike breaks the veil, hit or miss
-    if atk_roll is None and cast == "auto":
+    if shot:
+        cast = None                 # a missile is a missile, never a cast
+    elif atk_roll is None and cast == "auto":
         cast = attacker.default_cast()
     elif cast == "auto":
         cast = None                 # a reused sweep roll: physical unless the
@@ -1379,13 +1705,19 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         # The cast happens whatever the exchange then does -- parried and
         # warded casts burn Power too. (The swing's STA was already paid.)
         attacker.cur_power -= CAST_POWER_COST[cast]
+    if shot:
+        # The missile flies whatever the exchange then does: ammo (or the
+        # revolver's Power) is spent hit or miss, and the reload clock
+        # starts now.
+        attacker.spend_shot()
     if ambush and defender.spell_ward > 0:
         ambush = False
         log.append(f"    {defender.name}'s ward flares -- the ambush is met "
                    f"as an honest exchange!")
 
-    label = kind_label(cast) if cast else None
-    subject = f"{attacker.name}'s {label}" if cast else attacker.name
+    label = (kind_label(cast) if cast
+             else attacker.weapon.missile if shot else None)
+    subject = f"{attacker.name}'s {label}" if label else attacker.name
 
     if ambush:
         atk, dfn = None, None
@@ -1396,14 +1728,23 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                    f"{defender.name} never sees it coming!")
     else:
         atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
-                                 cast=cast)
+                                 cast=cast, shot=shot)
                if atk_roll is None else atk_roll)
-        dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label)
+        dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label,
+                                vs_shot=shot)
         pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
                       f"{dfn.breakdown(defender.name)}")
         if cast and atk_roll is None:
             pressure_line += (f" [{label}: -{CAST_POWER_COST[cast]} "
                               f"Power, {attacker.cur_power} left]")
+        elif shot:
+            w = attacker.weapon
+            if w.ammo == "power":
+                pressure_line += (f" [{w.name}: -{REVOLVER_POWER_COST} "
+                                  f"Power, {attacker.cur_power} left]")
+            elif w.ammo:
+                pressure_line += (f" [{w.ammo}: "
+                                  f"{attacker.items.get(w.ammo, 0)} left]")
 
         if cast and atk_roll is None and atk.dice == 2:
             # Snake-eyes on a cast: MISFIRE. Magic is the volatile art --
@@ -1450,6 +1791,9 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             if cast:
                 tie = f"the {label} splashes wide; neither yields"
                 contact = False     # magic on steel tests nothing
+            elif shot:
+                tie = f"the {label} hisses past; neither yields"
+                contact = False     # a missile tests no steel
             elif max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
                 tie = "Clash! Steel rings; neither yields"
                 contact = True      # steel met steel -- durability is tested
@@ -1458,6 +1802,8 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                 contact = False     # no contact, nothing to break
             log.append(f"    {attacker.name} and {defender.name} -- {tie}.")
             _debug(log, pressure_line)
+            if shot:
+                attacker.shots_missed += 1
             if contact:
                 _check_weapon_break(attacker, defender, rng, log)
             return
@@ -1466,25 +1812,35 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             if cast:
                 log.append(f"    {attacker.name} sends {label} "
                            f"at {defender.name} -- warded off.")
+            elif shot:
+                log.append(f"    {attacker.name} sends {_an(label)} "
+                           f"at {defender.name} -- who twists away.")
+                attacker.shots_missed += 1
             else:
                 log.append(f"    {attacker.name} attacks {defender.name} "
                            f"-- parried.")
             _debug(log, pressure_line)
-            if not cast:
+            if not cast and not shot:
                 _check_weapon_break(attacker, defender, rng, log)
             return
 
         margin = atk.total - dfn.total
     # A cast's severity is the kind's flat (fire hits hard, ice barely) in
-    # place of BOTH the caster's STR and the weapon; the defender soaks as
-    # ever.
-    sev_mods = attacker.cast_severity_mods(cast) if cast else attacker.severity_mods()
-    atk_str = 0 if cast else attacker.str_
+    # place of BOTH the caster's STR and the weapon; a shot's is the CARD's
+    # flat likewise (the bow's STR share lives in its AIM); the defender
+    # soaks as ever.
+    if cast:
+        sev_mods = attacker.cast_severity_mods(cast)
+    elif shot:
+        sev_mods = attacker.shot_severity_mods()
+    else:
+        sev_mods = attacker.severity_mods()
+    atk_str = 0 if (cast or shot) else attacker.str_
     severity = (margin + atk_str + sum(v for v, _ in sev_mods)
                 - defender.str_)
     raw_tier, dmg = wound_tier(severity)
     sev_line = f"        severity: {severity} = margin {margin}"
-    if not cast:
+    if not cast and not shot:
         sev_line += f" +{attacker.str_} STR"
     for v, mod_label in sev_mods:
         sev_line += f" {v:+d} {mod_label}"
@@ -1492,7 +1848,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
     if dmg == 0:
         # Anti-soak floors -- chip damage soak can't zero, feeding the spiral.
-        if (not cast and attacker.weapon is not None
+        if (not cast and not shot and attacker.weapon is not None
                 and not attacker.weapon_broken
                 and attacker.weapon.graze_floor):
             # The rapier's own floor: ANY landed thrust draws blood.
@@ -1504,11 +1860,13 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             raw_tier, dmg = "graze", TIER_HP["graze"]
             sev_line += " -> a clean hit still cuts: graze"
         else:
-            what = "the " + label if cast else "the blow"
+            what = "the " + label if (cast or shot) else "the blow"
             log.append(f"    {subject} {margin_verb(margin)} "
                        f"{defender.name}, but {what} glances off -- deflected.")
             _debug(log, pressure_line)
             _debug(log, sev_line)
+            if shot:
+                attacker.shots_missed += 1
             return
 
     if soften and dmg > 0:
@@ -1523,6 +1881,8 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                        f"back glances off -- deflected.")
             _debug(log, pressure_line)
             _debug(log, sev_line)
+            if shot:
+                attacker.shots_missed += 1
             return
 
     tier = raw_tier
@@ -1534,6 +1894,9 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         sev_line += f" (-{dmg} HP)"
 
     defender.hp = max(0, defender.hp - dmg)
+    if shot:
+        attacker.shots_hit += 1     # a missile in a body is found again
+                                    # more often than one in the grass
     state = (f"{defender.name}: {defender.hp}/{defender.max_hp} HP, "
              f"-{defender.wound_penalty} to rolls")
     # The death spiral is a real number the player budgets around, so the
@@ -1597,21 +1960,29 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
 def _pick_target(targets: list[Entity], rng: random.Random, focus: bool,
                  engaged: dict[Entity, int] | None = None,
-                 attacker: Entity | None = None) -> Entity | None:
+                 attacker: Entity | None = None,
+                 reachable=None) -> Entity | None:
     """Pick a living target. With `engaged` (this round's single-attack counts
     per defender), only targets with press room (fewer than their crowd_cap
     attackers so far) are eligible -- returns None when every living target is
     already crowded, and the attacker circles the round away instead.
 
     Spell states (with `attacker` given): an UNSEEN target can't be picked
-    at all; an ALOFT target only by an attacker who can cast at it (bolts
-    reach the sky, steel doesn't). A POSSESSED foe is off the party's list
-    -- nobody cuts down their own puppet."""
+    at all; an ALOFT target only by an attacker who can cast OR SHOOT at it
+    (bolts and arrows reach the sky, steel doesn't). A POSSESSED foe is off
+    the party's list -- nobody cuts down their own puppet.
+
+    `reachable` (ranged combat): a predicate narrowing eligibility to the
+    attacker's reach on the field (gap 0 for steel, the card's range for a
+    shot, CAST_RANGE for a caster) -- group_combat builds it per attack."""
     living = [e for e in targets if e.alive]
     if attacker is not None:
         living = [e for e in living if not e.unseen and not e.possessed]
-        if not (attacker.default_cast() or attacker.sweep_cost_power):
+        if not (attacker.default_cast() or attacker.sweep_cost_power
+                or attacker.shot_ready):
             living = [e for e in living if e.aloft <= 0]
+    if reachable is not None:
+        living = [e for e in living if reachable(e)]
     if engaged is not None:
         living = [e for e in living if engaged.get(e, 0) < e.crowd_cap]
     if not living:
@@ -2093,8 +2464,25 @@ def group_combat(party: list[Entity], foes: list[Entity],
                  fired: set[tuple[str, Entity]] | None = None,
                  first_round: int = 1,
                  actions: dict[Entity, str] | None = None,
-                 standing_orders=None) -> Pause | None:
+                 standing_orders=None,
+                 field: int = 0) -> Pause | None:
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
+
+    THE FIELD (ranged combat, 2026-07-16): `field` is the opening gap
+    between the two lines (0 = today's fight at the door -- every legacy
+    caller unchanged; ROOM_FIELD indoors, WILD_FIELD on the road; a resume
+    must pass the same value). Each entity's `adv` counts its steps from
+    its own line; the pairwise gap is max(0, field - a.adv - b.adv). Each
+    round opens with a movement phase: an entity with no living enemy
+    inside its threat_reach ADVANCES one step instead of attacking (free,
+    like circling; decided on round-start positions, applied together, so
+    two closing lines meet in the middle). Steel reaches gap 0; shots reach
+    the card's range but never gap 0 (contact forces the switch round to
+    the card's melee grip); casts reach CAST_RANGE at any gap including 0.
+    Shooters follow the card's reload cadence and ignore the press both
+    ways; a melee attacker crowded out of an open field slips deeper
+    toward the backline instead of circling. See the ranged-combat
+    constants block for the whole doctrine.
 
     Exchanges resolve *sequentially* -- party in list order first, then foes --
     but the ROSTER of who acts is snapshotted at round start: everyone alive
@@ -2147,6 +2535,25 @@ def group_combat(party: list[Entity], foes: list[Entity],
     save/resume boundary -- they re-trip after the resume.
     """
     party_set = set(party)
+
+    def _gap(a: Entity, b: Entity) -> int:
+        """The ground between two entities. Same-side pairs (and the
+        possessed puppet in its own line) stand together; anyone aloft is
+        'everywhere' -- steel still can't reach them, but that is
+        _pick_target's aloft rule, not distance."""
+        if field <= 0:
+            return 0
+        if (a in party_set) == (b in party_set):
+            return 0
+        if a.aloft > 0 or b.aloft > 0:
+            return 0
+        return max(0, field - a.adv - b.adv)
+
+    def _min_gap() -> int:
+        pairs = [_gap(h, f) for h in party for f in foes
+                 if h.alive and f.alive]
+        return min(pairs) if pairs else 0
+
     if fired is None:
         fired = set()
     if pause_triggers and first_round == 1:
@@ -2198,6 +2605,61 @@ def group_combat(party: list[Entity], foes: list[Entity],
         start_pens = {e: e.wound_penalty for e in actors}
         engaged: dict[Entity, int] = {}     # the press: single-attack counts
                                             # per defender this round
+        fired_shots: set[Entity] = set()    # who shot this round (their
+                                            # reload clock starts fresh, it
+                                            # doesn't also tick)
+
+        # The movement phase (field > 0 only): whoever has nobody inside
+        # their reach closes one step instead of attacking. Two sub-phases
+        # (2026-07-16, bench-driven): CHARGERS COMMIT FIRST -- everyone
+        # with reach 0 decides on round-start positions, applied together,
+        # so two closing lines meet in the middle -- and SKIRMISHERS REACT
+        # to the new ground (a shooter who'd have stepped toward a charger
+        # sees the charge coming and holds instead of walking into it).
+        moved: set[Entity] = set()
+        arrived: set[Entity] = set()    # movers whose step created contact
+                                        # -- the arrival volley's targets
+        if field > 0:
+            gap_before = _min_gap()
+            advancing: list[Entity] = []
+
+            def _may_move(e: Entity) -> bool:
+                return not (e in busy or e in queued or e.stunned > 0
+                            or e.aloft > 0 or e.unseen or e.possessed > 0
+                            or e.adv >= field)
+
+            def _wants_move(e: Entity) -> bool:
+                enemies = foes if e in party_set else party
+                live = [t for t in enemies if t.alive and not t.unseen]
+                return bool(live) and all(_gap(e, t) > e.threat_reach
+                                          for t in live)
+
+            for skirmish_phase in (False, True):
+                deciders = [e for e in actors if _may_move(e)
+                            and (e.threat_reach > 0) == skirmish_phase
+                            and e not in moved]
+                step = [e for e in deciders if _wants_move(e)]
+                for e in step:      # decided together, applied together
+                    e.adv = min(field, e.adv + 1)
+                    moved.add(e)
+                advancing.extend(step)
+            for e in moved:
+                enemies = foes if e in party_set else party
+                if any(_gap(e, t) == 0 for t in enemies if t.alive):
+                    arrived.add(e)
+            if advancing:
+                gap_now = _min_gap()
+                names = ", ".join(e.name for e in advancing)
+                if gap_before > 0 and gap_now == 0:
+                    _play(log,
+                          f"    {names} close the distance -- the lines "
+                          f"meet!",
+                          f"    The lines meet -- steel range.")
+                else:
+                    _play(log,
+                          f"    {names} close the distance "
+                          f"(the gap narrows to {gap_now}).",
+                          f"    The lines close.")
         for attacker in actors:
             if attacker in busy:
                 continue    # occupied with their draught/conversion this round
@@ -2222,6 +2684,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 continue        # nobody left on the other side for THIS
                                 # attacker; a dying foe later in the order
                                 # may still owe the party its last blow
+            if attacker in moved:
+                continue        # closing the distance was the action
             friendly = attacker in party_set or attacker.possessed > 0
 
             # A multi-target blow (the giant's sweep, the dragon's breath):
@@ -2232,34 +2696,136 @@ def group_combat(party: list[Entity], foes: list[Entity],
             # single attacks. A wizard at fire rank 3 sweeps too: the
             # FIREBALL, one roll against up to FIREBALL_TARGETS foes,
             # thrown whenever 3+ stand (Power-priced, so it self-limits).
+            # On an open field an arm's arc reaches gap 0 only; breath and
+            # fireballs carry CAST_RANGE (the dragon breathes on a party
+            # still crossing the ground).
             pool = [t for t in living_targets if not t.unseen]
-            sweeping = (attacker.sweep > 1 and len(pool) > 1
+            near = [t for t in pool if _gap(attacker, t) <= 0]
+            thrown = [t for t in pool if _gap(attacker, t) <= CAST_RANGE]
+            sweep_pool = thrown if attacker.sweep_cost_power else near
+            sweeping = (attacker.sweep > 1 and len(sweep_pool) > 1
                         and (attacker.sweep_cost_power == 0
                              or attacker.cur_power
                              >= attacker.sweep_cost_power))
             if sweeping and attacker.sweep_cost_power == 0:
                 # An arm's arc can't reach the sky; breath (fueled) can.
-                pool = [t for t in pool if t.aloft <= 0]
-                sweeping = len(pool) > 1
+                sweep_pool = [t for t in sweep_pool if t.aloft <= 0]
+                sweeping = len(sweep_pool) > 1
             fireball = (not sweeping
                         and attacker.spell_rank("fire") >= SPELL_RANK_MAX
                         and attacker.cur_power >= FIREBALL_POWER_COST
-                        and len(pool) >= FIREBALL_TARGETS)
+                        and len(thrown) >= FIREBALL_TARGETS)
+            shooting = False
             if sweeping or fireball:
                 n = attacker.sweep if sweeping else FIREBALL_TARGETS
-                victims = rng.sample(pool, min(n, len(pool)))
+                pick_from = sweep_pool if sweeping else thrown
+                victims = rng.sample(pick_from, min(n, len(pick_from)))
             else:
-                defender = _pick_target(targets, rng,
-                                        focus=friendly,
-                                        engaged=engaged, attacker=attacker)
-                if defender is None:
-                    # Crowded out of the press (or nothing in reach): circle
-                    # the round away instead (free, like defending).
-                    log.append(f"    {attacker.name} circles, crowded out "
-                               f"of the press.")
+                # Ranged combat: the wielder of a ranged card fights by its
+                # rules -- shoot while the ground is open, switch to the
+                # melee grip when contact forces it (the switch round is
+                # the action), switch back when room opens again.
+                w = attacker.weapon
+                ranged_card = (w is not None and w.range > 0
+                               and not attacker.weapon_broken)
+                contact = any(_gap(attacker, t) == 0 for t in pool
+                              if t.aloft <= 0)
+                if ranged_card and contact and not attacker.switched:
+                    # THE ARRIVAL VOLLEY: the round contact first arrives,
+                    # a still-loaded shooter looses point-blank into
+                    # whoever just charged in -- THEN the grip must change.
+                    volley = None
+                    if attacker.shot_ready:
+                        volley = _pick_target(
+                            targets, rng, focus=friendly, attacker=attacker,
+                            reachable=lambda t: (t in arrived
+                                                 and _gap(attacker, t) == 0))
+                    if volley is not None:
+                        _play(log,
+                              f"    {attacker.name} looses point-blank "
+                              f"into {volley.name}'s charge!",
+                              f"    {attacker.name} looses point-blank "
+                              f"into the charge!")
+                        victims = [volley]
+                        shooting = True
+                        fired_shots.add(attacker)
+                    else:
+                        attacker.switched = True
+                        _play(log,
+                              f"    {attacker.name} is caught at arm's "
+                              f"length -- they drop the {w.name} to a "
+                              f"fighting grip ({w.melee_atk:+d} atk/"
+                              f"{w.melee_sev:+d} sev, no shooting until "
+                              f"there's room)!",
+                              f"    {attacker.name} is caught at arm's "
+                              f"length -- the {w.name} becomes a poor "
+                              f"melee weapon!")
+                        continue    # the switch is the round (free, like
+                                    # circling -- no STA)
+                if ranged_card and not contact and attacker.switched:
+                    attacker.switched = False
+                    log.append(f"    {attacker.name} finds room to breathe "
+                               f"and brings the {w.name} back up.")
                     continue
-                engaged[defender] = engaged.get(defender, 0) + 1
-                victims = [defender]
+                if attacker.ranged is not None and not contact:
+                    # The shooting grip with open ground: loose, or work
+                    # the reload. Shooters ignore the press both ways.
+                    if attacker.shot_ready:
+                        defender = _pick_target(
+                            targets, rng, focus=friendly, attacker=attacker,
+                            reachable=lambda t: 1 <= _gap(attacker, t)
+                            <= w.range)
+                        if defender is None:
+                            _debug(log, f"    {attacker.name} holds -- "
+                                        f"no target in range.")
+                            continue
+                        victims = [defender]
+                        shooting = True
+                        fired_shots.add(attacker)
+                    elif attacker.reload_left > 0:
+                        _debug(log, f"    {attacker.name} works the "
+                                    f"{w.name}'s reload.")
+                        continue
+                    else:
+                        _debug(log, f"    {attacker.name} is out of "
+                                    f"{w.ammo or 'shots'} -- nothing to "
+                                    f"shoot with.")
+                        continue    # the movement phase will close them in
+                if not shooting:
+                    # Steel reaches gap 0; a caster's bolts reach
+                    # CAST_RANGE at any gap (magic doesn't jam at contact).
+                    can_cast = (attacker.default_cast() is not None
+                                or (attacker.is_wizard
+                                    and attacker.cur_power > 0))
+                    max_reach = CAST_RANGE if can_cast else 0
+                    defender = _pick_target(
+                        targets, rng, focus=friendly,
+                        engaged=engaged, attacker=attacker,
+                        reachable=(None if field <= 0 else
+                                   lambda t: _gap(attacker, t) <= max_reach))
+                    if defender is None:
+                        # Crowded out of the press (or nothing in reach):
+                        # on an open field, slip DEEPER instead -- toward
+                        # whoever is hanging back (the backline's escort
+                        # problem); on a closed one, circle the round away
+                        # (free, like defending).
+                        if (field > 0 and attacker.adv < field
+                                and any(_gap(attacker, t) > 0
+                                        for t in living_targets)):
+                            attacker.adv += 1
+                            _play(log,
+                                  f"    {attacker.name} slips through the "
+                                  f"press, pushing deeper "
+                                  f"(advance {attacker.adv}/{field}).",
+                                  f"    {attacker.name} slips through the "
+                                  f"press, pushing deeper!")
+                        else:
+                            log.append(f"    {attacker.name} circles, "
+                                       f"crowded out of the press.")
+                        continue
+                    if _gap(attacker, defender) == 0:
+                        engaged[defender] = engaged.get(defender, 0) + 1
+                    victims = [defender]
 
             if not attacker.tireless and not dying:
                 # The dying swing is free -- desperation costs nothing.
@@ -2317,16 +2883,29 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 was_alive = defender.alive
                 # A single attack lets the wizard plan the exchange (disarm /
                 # freeze / hurl / bolt -- choose_cast); a reused sweep roll
-                # already knows what it is.
-                cast_kind = (sweep_cast if atk_roll is not None
-                             else (attacker.choose_cast(defender)
-                                   if attacker.is_wizard else "auto"))
+                # already knows what it is; a shot is a shot.
+                if atk_roll is not None:
+                    cast_kind = sweep_cast
+                elif shooting:
+                    cast_kind = None
+                elif attacker.is_wizard:
+                    cast_kind = attacker.choose_cast(defender)
+                else:
+                    cast_kind = "auto"
+                if (not shooting and atk_roll is None
+                        and _gap(attacker, defender) > 0):
+                    # Only magic carries across open ground on this path:
+                    # force a cast, never a steel swing at ten paces.
+                    if cast_kind == "auto":
+                        cast_kind = attacker.default_cast()
+                    if cast_kind is None:
+                        continue    # nothing that reaches -- hold
                 _attack(attacker, defender, rng, log,
                         atk_wound_pen=start_pens[attacker] if dying else None,
                         def_mod=(-PAUSE_ACTION_DEF_PENALTY
                                  if defender in busy else 0),
                         def_label=busy_label.get(busy.get(defender, ""), ""),
-                        atk_roll=atk_roll, cast=cast_kind)
+                        atk_roll=atk_roll, cast=cast_kind, shot=shooting)
                 if was_alive and not defender.alive:
                     if (defender.dead and defender.protagonist
                             and not defender.fate_debt
@@ -2369,6 +2948,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
                       f"    {e.name}'s wounds knit closed "
                       f"(+{e.hp - before} HP) [{e.name}: "
                       f"{e.hp}/{e.max_hp} HP]")
+        # The reload clock ticks on any round the shooter didn't fire --
+        # walking, circling, even switching grips works the nock/crank.
+        for e in actors:
+            if e.reload_left > 0 and e not in fired_shots:
+                e.reload_left -= 1
         # Spell durations tick at round end: flight sets down, a seized
         # mind shakes free.
         for e in actors:
@@ -2420,10 +3004,14 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     queued[h] = order
 
     # The dust settles: fate collects first, then whoever is still standing
-    # catches their breath. No spell state outlasts the melee: the rime
-    # melts, fliers land, the unseen resolve, puppets are released (a
-    # retreat clears the same states in attempt_retreat /
-    # refresh_foes_after_retreat instead).
+    # catches their breath. A WON field is scavenged for spent missiles
+    # before the per-fight states clear (a fled field is left, arrows and
+    # all -- attempt_retreat clears without recovering). No spell state
+    # outlasts the melee: the rime melts, fliers land, the unseen resolve,
+    # puppets are released (a retreat clears the same states in
+    # attempt_retreat / refresh_foes_after_retreat instead).
+    if any(h.alive for h in party) and not any(f.alive for f in foes):
+        _recover_missiles(party, rng, log)
     _clear_fight_states(party + foes)
     _settle_fate_debt(party, foes, rng, log)
     survivors = [h for h in party if h.alive]
@@ -2432,10 +3020,36 @@ def group_combat(party: list[Entity], foes: list[Entity],
     return None
 
 
+def _recover_missiles(party: list[Entity], rng: random.Random,
+                      log: list[str]) -> None:
+    """Walk a WON field for the missiles spent on it: each arrow/bolt/knife
+    recovers at RECOVER_HIT (stuck in a body) or RECOVER_MISS (lost in the
+    grass) odds. Shells burn and stones aren't counted; the counters clear
+    with the other per-fight states either way."""
+    for h in party:
+        w = h.weapon
+        if w is None or w.ammo not in RECOVER_HIT:
+            continue
+        spent = h.shots_hit + h.shots_missed
+        if spent == 0:
+            continue
+        got = sum(1 for _ in range(h.shots_hit)
+                  if rng.random() < RECOVER_HIT[w.ammo])
+        got += sum(1 for _ in range(h.shots_missed)
+                   if rng.random() < RECOVER_MISS[w.ammo])
+        if got:
+            h.items[w.ammo] = min(AMMO_CAPS.get(w.ammo, got),
+                                  h.items.get(w.ammo, 0) + got)
+        log.append(f"    {h.name} walks the field and recovers {got} of "
+                   f"the {spent} {w.ammo} spent "
+                   f"({h.items.get(w.ammo, 0)} carried).")
+
+
 def _clear_fight_states(entities: list[Entity]) -> None:
-    """End-of-fight cleanup for every per-fight spell state: the ice rime,
+    """End-of-fight cleanup for every per-fight state: the ice rime,
     invisibility, flight, stuns, possession, the per-foe disarm-attempt
-    marker. Nothing magical crosses fights."""
+    marker -- and the field state (advances, the reload clock, the melee
+    grip, the shot tallies). Nothing per-fight crosses fights."""
     for e in entities:
         e.dex_debuff = 0
         e.unseen = False
@@ -2443,6 +3057,11 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.stunned = 0
         e.possessed = 0
         e.disarm_tried = False
+        e.adv = 0
+        e.reload_left = 0
+        e.switched = False
+        e.shots_hit = 0
+        e.shots_missed = 0
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
@@ -2492,7 +3111,8 @@ def _chase_dex(group: list[Entity]) -> float:
 
 
 def attempt_retreat(party: list[Entity], foes: list[Entity],
-                    rng: random.Random, log: list[str]) -> bool:
+                    rng: random.Random, log: list[str],
+                    field: int = 0) -> bool:
     """Break away from a paused fight. The procedure (deliberately ONE roll,
     no chase scenes): every foe fit to swing (alive, not Winded, not Spent)
     gets one free parting blow -- free like the dying swing, no STA cost --
@@ -2518,9 +3138,23 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
             break               # everyone is down mid-flight; nothing to chase
         h = rng.choice(targets)
         # Parting blows are softened one tier (see _attack): a swing at a
-        # fleeing back can maim, never land the crippling tier.
-        _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
-                def_label="fleeing", soften=True)
+        # fleeing back can maim, never land the crippling tier. On an open
+        # field (ranged combat) reach gates who gets one at all: steel
+        # needs contact, a ready shooter looses a parting SHOT across the
+        # ground (fleeing crosses the open -- exactly a bow's moment), a
+        # caster bolts within CAST_RANGE, and everyone else watches them go.
+        gap = (max(0, field - f.adv - h.adv) if field > 0 else 0)
+        if gap == 0:
+            _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True)
+        elif f.shot_ready and gap <= f.ranged.range:
+            _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True, shot=True)
+        elif f.default_cast() is not None and gap <= CAST_RANGE:
+            _attack(f, h, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True)
+        else:
+            continue    # out of reach: no blow at this back
         if not h.alive:
             if h.dead:
                 log.append(f"    *** {h.name} is SLAIN. ***")
@@ -2623,6 +3257,11 @@ def refresh_foes_after_retreat(foes: list[Entity],
             # camp-and-return loop does not work on a troll.
             f.hp = f.max_hp
             f.down = False
+        if f.weapon is not None and f.weapon.ammo in AMMO_CAPS:
+            # The field is theirs: its shooters gather their own missiles
+            # back to a full quiver while the party is gone.
+            f.items[f.weapon.ammo] = max(f.items.get(f.weapon.ammo, 0),
+                                         FOE_AMMO)
     return survivors
 
 
@@ -3336,11 +3975,30 @@ def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
     old = h.weapon
     h.weapon = weapon
     h.weapon_broken = False
+    h.switched = False
     was = (f" (setting aside the {old.name})"
            if old is not None and old.name != weapon.name else "")
     rank = h.proficiency.get(weapon.name, 0)
     drilled = f" -- already drilled with it (prof {rank})" if rank else ""
     log.append(f"    {h.name} takes up the {weapon.name}{was}{drilled}.")
+    if weapon.ammo in AMMO_CAPS and h.items.get(weapon.ammo, 0) <= 0:
+        log.append(f"    (it shoots {weapon.ammo} -- `buy` some, or there "
+                   f"is nothing to loose)")
+
+
+def grant_starter_ammo(h: Entity, log: list[str]) -> None:
+    """A bought or DM-granted ranged weapon comes with a starter load
+    (nobody sells a bow without a quiver): tops the matching ammo count UP
+    to STARTER_AMMO, never past, never down."""
+    w = h.weapon
+    if w is None or w.ammo not in STARTER_AMMO:
+        return
+    have = h.items.get(w.ammo, 0)
+    want = STARTER_AMMO[w.ammo]
+    if have < want:
+        h.items[w.ammo] = want
+        log.append(f"    (it comes with {want - have} {w.ammo} -- "
+                   f"{want} carried)")
 
 
 def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
@@ -3361,6 +4019,33 @@ def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
     log.append(f"    {h.name} buys a {name} for {w.value}g "
                f"(purse: {purse.gold}g).")
     equip_weapon(h, w, log)
+    grant_starter_ammo(h, log)
+    return True
+
+
+def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
+    """Buy one LOT of ammo (AMMO_LOTS: arrows/bolts by the sheaf, shells
+    and knives by the pair) from the party purse, up to the carry cap.
+    Sling stones are never bought -- the ground is full of them."""
+    if kind not in AMMO_LOTS:
+        log.append(f"    No shop sells {kind!r}.")
+        return False
+    lot, price = AMMO_LOTS[kind]
+    cap = AMMO_CAPS[kind]
+    have = h.items.get(kind, 0)
+    if have >= cap:
+        log.append(f"    {h.name} already carries a full load of {kind} "
+                   f"({have}/{cap}).")
+        return False
+    if purse.gold < price:
+        log.append(f"    Not enough gold for {lot} {kind} "
+                   f"({purse.gold}g / {price}g).")
+        return False
+    purse.gold -= price
+    h.items[kind] = min(cap, have + lot)
+    log.append(f"    {h.name} buys {h.items[kind] - have} {kind} for "
+               f"{price}g ({h.items[kind]}/{cap} carried; "
+               f"purse: {purse.gold}g).")
     return True
 
 
@@ -3622,7 +4307,8 @@ def sim_pause_policy(crossings: list[tuple[str, Entity]]
 
 
 def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
-              log: list[str], reckless: bool = False) -> str:
+              log: list[str], reckless: bool = False,
+              field: int = 0) -> str:
     """One encounter under the batch-sim pause policy (drink / convert /
     retreat -- sim_pause_policy). Returns "resolved" (the melee ended; read
     the outcome off the entities) or "fled" (a clean escape; foes survive).
@@ -3635,7 +4321,7 @@ def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
     Its wipe rate is what "not using your resources" costs, which the retune
     wants to be most of a party's life expectancy."""
     if reckless:
-        group_combat(living, foes, rng, log)
+        group_combat(living, foes, rng, log, field=field)
         return "resolved"
     fired: set[str] = set()
     actions: dict[Entity, str] | None = None
@@ -3643,14 +4329,14 @@ def sim_fight(living: list[Entity], foes: list[Entity], rng: random.Random,
     while True:
         pause = group_combat(living, foes, rng, log, pause_triggers=True,
                              fired=fired, first_round=first_round,
-                             actions=actions)
+                             actions=actions, field=field)
         actions = None
         if pause is None:
             return "resolved"
         first_round = pause.round + 1
         decision = sim_pause_policy(pause.crossings)
         if decision == "retreat":
-            if attempt_retreat(living, foes, rng, log):
+            if attempt_retreat(living, foes, rng, log, field=field):
                 return "fled"
             if not any(h.alive for h in living):
                 return "resolved"   # cut down at the door
