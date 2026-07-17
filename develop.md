@@ -93,9 +93,15 @@ a pointer: what the file is, how it's run, where its docs are.
   Magic & Mind add-on), ranged combat & the field (2026-07-16: per-entity
   advances, the movement phase, shots on the exchange, reload cadence,
   ammo & scavenging, the seven ranged cards, conspicuousness — rules.md's
-  Ranged Combat add-on), and the batch-sim policies
-  (`sim_fight` / `sim_pause_policy`). Stdlib-only and self-contained;
-  everything else imports it. All tunable constants sit at the top.
+  Ranged Combat add-on), the levelling framework (2026-07-17: the point
+  economy, the ability catalog, the warrior moves, and — session C —
+  ALCHEMY & the potion rework: `train_alchemy`/`brew`, the kit shrink +
+  forage in `long_rest`, `use_potion`'s overcharge and stat-brew branches,
+  the firebomb in `group_combat`, the smoke vial in `attempt_retreat` —
+  rules.md's Alchemy & the Potion Rework add-on), and the batch-sim
+  policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
+  self-contained; everything else imports it. All tunable constants sit at
+  the top.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
   `make_foe` — six monster families plus the humanoid ladder and, since
   2026-07-14, the three caster rows (hexer/pyromancer/magus), every row
@@ -202,7 +208,11 @@ a pointer: what the file is, how it's run, where its docs are.
   2026-07-14 ends with the party tally (`tally_lines`: tracks/kit/purse,
   rooms-left count, next streak multiplier), the standard
   between-encounters numbers display so the DM's prose never has to
-  carry the numbers (dm.md, Narration style).
+  carry the numbers (dm.md, Narration style). Since 2026-07-17 (session C)
+  also the alchemy surface: `brew HERO RECIPE` (once/day), `train HERO
+  alchemy`, `use HERO strength|dexterity` (the stat brews / overcharge),
+  `retreat --smoke HERO`, companion auto-brew at the night paths, and the
+  levelup-menu alchemy sink.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -239,7 +249,11 @@ a pointer: what the file is, how it's run, where its docs are.
   **Session B added** the warrior-moves matchup block (a doctrine duo with
   a GRANTED katana repertoire vs one without, on the room/duel rows — what
   the repertoire buys) and the disarm-move-vs-telekinesis-rank-1 price
-  check. `python bench_abilities.py [--trials N] [--frame 8]`.
+  check. **Session C added** the alchemist career column
+  (`alchemist_matchup`: the L15 alchemist read three ways — the mixed
+  alchemist+fighter duo, the two-fighter reference, and the pure-bomber
+  trap-control — on the room/site/duel rows).
+  `python bench_abilities.py [--trials N] [--frame 8]`.
 - `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
   Re-run after touching the press or the melee loop.
@@ -400,9 +414,29 @@ mechanic *does* and *why* is rules.md's job.
   doctrine v2 — `train_combat` the greedy trainer is gone),
   `storyteller_tale` / `survivalist_camp` (the night abilities; session's
   night paths call them), `party_wiped`, `start_fight` (revive-only).
+- **Alchemy & the potion rework** (2026-07-17, levelling session C —
+  rules.md's Alchemy & the Potion Rework add-on) — `rpg.py`: the alchemy
+  constants block (`ALCHEMY_*`, `BREWED_KINDS`, `POTION_DISPLAY`,
+  `POTION_OVERCHARGE`, `STRENGTH/DEXTERITY_POTION_*`, `BOMB_*`), the
+  `Entity` fields (`alchemy`, `brewed`, `str_buff`, `dex_buff`,
+  `last_brew_day`), `train_alchemy` / `brew` / `auto_brew` /
+  `alchemy_cost` / `brew_stock_cap` / `alchemy_recipes`, the overcharge
+  and stat-brew branches in `use_potion` (`DRINKABLE_KINDS`), the buff
+  peel + the per-party kit floor with the forage roll in `long_rest`
+  (`KIT_HEALING`/`KIT_STAMINA`/`KIT_FORAGE_CHANCE`, `rng` param; mirrored
+  in `tavern_rest`), the FIREBOMB branch in `group_combat` (the fireball
+  sweep chassis, `cast="bomb"` -> `cast_severity_mods`/`pressure`
+  reading `alchemy` for prof + a flat that grows at rank 5), and the
+  SMOKE-vial path in `attempt_retreat` (`smoke=` suppresses parting blows,
+  the chase still rolls). `session.py`: `brew HERO RECIPE` (cmd_brew,
+  once/day via `last_brew_day`), `train HERO alchemy`, `use HERO
+  strength|dexterity`, `retreat --smoke HERO`, `companions_brew` in the
+  night paths (auto-brew for party[1:]), the levelup-menu alchemy sink,
+  the pause-menu smoke hint. `sites.py`/benches: `auto_brew` at run_site's
+  long rests, the `bench_abilities` alchemist career column.
 - **The ability catalog in the engine** (2026-07-17) — `Entity.abilities`
-  (a set; `alchemy` is an inert schema seed for session C);
-  Bulwark in `_try_save`, First Blood in `_first_blood`, the conversions
+  (a set); Bulwark in `_try_save`, First Blood in `_first_blood`,
+  the conversions
   gated in `standing_order` / `sim_pause_policy` / `_do_pause_action`,
   Rage in `pressure` (the +2) + group_combat's kill bookkeeping and the
   exhausted-round skip, Field Medic in `_try_field_medic` (called from
@@ -572,71 +606,74 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-17, after the levelling framework session B —
-the warrior moves system: the eleven-move repertoire, the once-per-fight
-selection rider (fire 50% + 10% x training) with the 1-STA flow refund,
-`learn_move`/`train HERO move NAME`, and leftover-only doctrine move buys.
-Session A's economy (3 points/level, pools bought, training at 2n, the
-ability catalog, healing-as-a-spell) still underlies doctrine v2). The
-full dated report of every measured re-tuning lives in `benchlog.md`; this
-is only the standing summary — refresh it whenever a new entry lands
-there.**
+**Current state (2026-07-17, after the levelling framework session C —
+alchemy & the potion rework: the alchemy skill + the long-rest brew, the
+kit SHRINK (1 healing + 1 stamina per PARTY, was per hero, + a stamina
+forage roll), the overcharge doctrine, the strength/dexterity stat brews,
+the firebomb and the smoke vial. Sessions A/B — the point economy and the
+warrior moves — still underlie doctrine v2). The full dated report of every
+measured re-tuning lives in `benchlog.md`; this is only the standing
+summary — refresh it whenever a new entry lands there.**
 
-- **Session B barely moved the suite, by construction.** The doctrine
-  buys moves only from LEFTOVER points (none at the midgame gate levels),
-  and `_fire_move` makes ZERO rng calls for a move-less party, so only
-  move-users reflow. Below the top band the only move-carriers are the
-  ~20% drilled-seed heroes (one move, now live instead of inert). Rank-0
-  and at-level numbers land within noise of session A.
-- **Hideout** (rank 0, 10k runs): clear **84.7** / wipe **12.0**;
-  reckless (no-resource) wipe **75.8**. **Barrow** `[3, 3, 4]`: clear
-  **46.5** / wipe **45.2**; reckless wipe 98.3. "Not using resources
-  mostly means death" holds.
-- **Training ladder** (5k/rank): barrow **45 -> 78 -> 95 -> 99**,
-  hideout **85 -> 96 -> 99.6 -> 99.9** — a rank still reads as a rank.
-- **Party size** (4k/size, sizes 1-4): hideout **30 / 84.5 / 98.7 /
-  99.7**, barrow **4 / 45 / 89 / 98.7** — numbers still dominate;
-  XP x 2/N is the counterweight.
-- **Weapons (melee)**: zweihander best duel on precise/steady, katana on
-  powerful/balanced, zweihander owns every swarm column, staff trails on
-  purpose. Ranged matrix unchanged (longbow 46/49/67 by field, katana 97
-  flat, escort 98). Both build bare stat frames — untouched by moves.
-- **The equal-cost matrix** (`bench_abilities.py`, 400/cell, frames
-  L4/L8/L14): session A's story unchanged — **all-in pools is a trap**
-  (site 36/5/38 vs medians ~64/45/64), **training-heavy tops the site
-  row** (+16..+19), the saves package poor at L4 / fine from L8. Utility
-  abilities land 72-97% by their stat.
-- **The warrior-moves matchup block** (`bench_abilities`, NEW): a
-  doctrine duo with a GRANTED katana repertoire vs one without — the
-  value ceiling. Room **85->97.5** / duel **79->98.8** at L4; room
-  **76.5->90** / duel **76.5->93** at L8; room **86->85** (noise) / duel
-  **55.5->61** at L14. A strong low-mid edge that fades as base numbers
-  climb; in play the fighter pays for it by shaving a pool or a training
-  rank. Disarm-the-move **86.5%** vs telekinesis-1 **65%** vs plain
-  **77.5%** (the move wounds-and-strips on one hit; tk-1 trades a damage
-  exchange for the strip).
-- **Bestiary at-level win rates** (within noise of session A): cutthroat
-  62@1, soldier 73@3, veteran 80@6, champion 69@10, blademaster 64@15,
-  warlord 61@19, hunter 69@3 at field 3. The soldiery are FOES (no
-  moves); the catalog still orders correctly.
-- **Generated content** (300/cell): at-level rooms win **68-95**; at-level
-  sites **93 at L1** sliding to **~43-48 at 19-20**.
-- **Careers** (200): reach **L5 86% / L8 62% / L11 32% / L14 16% /
-  L20 7%**, median death **L8**, capped median 127 days / 37 quests. The
-  **L8 gate recovered 56% -> 62%** — the flex-premium refund arriving via
-  the drilled seed's now-live move plus high-level leftover moves. It
-  stays below its old ~66% band; the rest of the premium is there for a
-  PLAYED fighter to reclaim by choosing moves (the matchup block's +14 at
-  L8) — and a played party still gets Berserk back for 1 point too. So
-  played careers run easier than these numbers.
-- **Open flags for the designer**: the hideout still sits ~30 points above
-  the 2026-07 retune's ~55% clear target (the standing flag — session C's
-  kit shrink is the scheduled closer; moves are a repertoire, not a
-  difficulty lever); the career L8 gate recovered ~6 points but stays
-  below ~66% (the leftover-only doctrine keeps the reference comparable —
-  a mid-doctrine move buy that shaves a pool is a one-line change if the
-  midgame refund should be baked in rather than left a player choice);
-  all-in pools is a trap the levelup menu should keep steering past.
+- **The kit shrink is a FRESH-DUO lever, not a campaign one.** The old
+  per-hero kit floored a duo to 2 healing + 2 stamina every camp; the
+  `tune.py`/`run_site` sim flees ~72% of rooms (a fixed baseline) and
+  grinds them out on free camp-refilled stamina. Cut that faucet and the
+  rank-0 sim starves — but a leveled CAREER party camps to full STA for
+  free and buys potions, so careers barely feel it. The lever lands
+  exactly where the standing flag lived (the fresh hideout duo) and leaves
+  the campaign arc alone.
+- **Hideout** (rank 0, 6k runs): clear **57.2** / wipe **12.5**; reckless
+  wipe **75.9** — IN the 55-65 retune band (was 84.7), and "not using
+  resources mostly means death" holds. **Barrow** `[3, 3, 4]`: clear
+  **38.1** / wipe **40.6**; reckless **98.3** (was 46.5 / 45.2 — the tough
+  site felt the shrink too, still suicide-until-trained).
+- **The stamina cliff + the forage roll.** The shrink's effect is almost
+  purely a function of the STAMINA floor (a duo needs 2 draughts per
+  retry): stamina-2 clears ~76, stamina-1 ~40 — a hard integer cliff. The
+  floor gained a **forage roll** (`KIT_FORAGE_CHANCE` = 0.5, one extra
+  draught on a good night) to thread the ~0.5-draught-a-night average that
+  lands the band. Healing floor barely moves the number.
+- **Training ladder** (3k/rank): hideout **57.5 -> 74.4 -> 87.2 -> 94.2**,
+  barrow **38.3 -> 71.3 -> 90.2 -> 97.4** — dropped at ranks 0-1 (the
+  shrink bites the fresh party), converges by 2-3 (a trained party doesn't
+  live on the free kit). A rank still reads as a rank; the fresh-vs-drilled
+  gap widened, which is the intent.
+- **Weapons (melee) and ranged**: **unchanged to the cell** — both build
+  bare stat frames and resolve SINGLE fights (no `long_rest`), so neither
+  the kit shrink nor the alchemy layer reaches them. Zweihander/katana/
+  staff and the ranged cards order exactly as before.
+- **The equal-cost matrix** (`bench_abilities.py`, 250/cell, L8): the six
+  columns tell the same story — **all-in pools a trap** (site 4.8 vs
+  median 45), **training/weapon top the site row** (58/62.8), saves fine
+  from L8. The warrior-moves matchup block is unchanged (room 76->90, duel
+  77->90 at L8).
+- **The alchemist career** (`bench_abilities`, NEW; L15, 250/cell): the
+  MIXED duo (alchemist + reference fighter) clears **room 48.8 / site 24.0
+  / duel 32.8** vs the two-fighter reference **67.2 / 53.2 / 63.2**; the
+  PURE-alchemist duo is a trap at **6.4 / 2.8 / 4.0**. The alchemist is a
+  SUPPORT/ECONOMY career, not combat-parity: the firebomb stays a scarce
+  burst (stock cap rank+2) because alchemy is open to ALL — the payoff is
+  the kit it brews (which the shrink makes matter), overcharge, and stat
+  brews, none of which the one-go site row (the FLOOR) captures.
+- **Bestiary at-level**: within noise of session B (the reference duo
+  camps to full STA + buys potions — kit-insensitive; no non-alchemist
+  combat path changed). The catalog still orders correctly.
+- **Generated content** (200/cell): at-level rooms win **67-95** (single
+  fights, untouched); at-level sites the familiar 93-at-L1 -> ~45 shape.
+- **Careers** (150): reach **L5 83% / L8 60% / L11 36% / L14 12% /
+  L20 4%**, median death **L8**, capped median 158 days / 38 quests —
+  **within noise of session B** (86/62/32/16/7). The most important
+  negative result: the kit shrink leaves the beatability curve intact.
+- **Open flags for the designer**: the standing hideout flag is **CLOSED**
+  (57.2, in band, from 84.7); if play feels grim, `KIT_STAMINA` 1->2 or
+  `KIT_FORAGE_CHANCE` up is the gentler dial (open question #3). The
+  alchemist is a support career by the numbers, NOT a bomber-carry — the
+  DEX-potion warning (#5) stands but the pure alchemist never out-fences
+  anyone, so it did not need cutting. The barrow slid to 38 clear
+  (acceptable for the tough site, worth a glance if the 15-20 band ever
+  reads punishing). All-in pools remains a trap the levelup menu steers
+  past.
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
@@ -657,6 +694,14 @@ bigger steps than melee mods), reload cadence, and `NOTICE_BASE` (the
 spotted/ambushed mix on the road). The point economy adds two more
 (2026-07-17): `SKILL_POINTS_PER_LEVEL` and `TRAINING_COST_MULT` — the
 two knobs the levelling design explicitly reserved for the bench rounds.
+And session C's **kit floor is now a real difficulty lever**
+(`KIT_HEALING` / `KIT_STAMINA` — per PARTY now — and `KIT_FORAGE_CHANCE`,
+the stamina forage that threads the integer stamina cliff): it swings the
+FRESH-DUO sim by tens of points (careers barely move — a leveled party
+buys potions and camps to full STA), so it is the sharpest knife for the
+rank-0 starter-site clear rate. The alchemy layer's own knobs
+(`ALCHEMY_*`, `BOMB_*`, `POTION_OVERCHARGE`, the stat-brew magnitudes)
+sit with it at the top of `rpg.py`.
 **Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
 `bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
 `bench_quests.py` after touching any of these** — small changes swing
@@ -710,17 +755,20 @@ quest sight (the board blurs to the party's best MIND). **Cross-land
 deliveries** (2026-07-14) send the party travelling. **Ranged combat &
 guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
 shooter foe rows, cultural arms, and the notice contest (rules.md's
-Ranged Combat & the Field add-on). **The levelling framework's sessions A
-and B are in (2026-07-17)** — session A: the point economy (3 points/
-level, pools on the menu, training at 2n), the eleven-entry ability
+Ranged Combat & the Field add-on). **The levelling framework is COMPLETE
+(sessions A, B, and C, 2026-07-17)** — session A: the point economy (3
+points/level, pools on the menu, training at 2n), the eleven-entry ability
 catalog, healing as the tenth spell, the archetype seed table; session B:
 the warrior moves system (rules.md's Warrior Moves add-on) — `move_tags`,
 the eleven-move repertoire, the engine's once-per-fight selection rider
-with the flow refund, `learn_move` / `train HERO move NAME`, and the
-`bench_abilities` moves matchup block. Next: **levelling session C**
-(alchemy & the potion rework — spec in plan.md), then stat
-transcendence + the wraith (the rest of the old magic phase), armor
-(note the designer's lean: probably never important), named
-weapon instances — and the career sim's finding that the 14-20 band lacks
-its player power until masterwork/magic-item content lands. See plan.md
-for the full roadmap and the parked-ideas list.
+with the flow refund, `learn_move` / `train HERO move NAME`; session C:
+alchemy & the potion rework (rules.md's Alchemy & the Potion Rework
+add-on) — the alchemy skill + the long-rest brew, the kit shrink (per
+party + a forage roll, which CLOSED the standing hideout flag to the
+55-65 band), the overcharge doctrine, the strength/dexterity stat brews,
+the firebomb and the smoke vial, plus the `bench_abilities` alchemist
+column. Next: **stat transcendence + the wraith** (the rest of the old
+magic phase), armor (note the designer's lean: probably never important),
+named weapon instances — and the career sim's finding that the 14-20 band
+lacks its player power until masterwork/magic-item content lands. See
+plan.md for the full roadmap and the parked-ideas list.

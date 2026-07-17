@@ -786,3 +786,96 @@ and the new `bench_abilities` moves matchup block). Full suite re-run.**
   comparable — the alternative (a mid-doctrine move buy that shaves a
   pool) is a one-line change if the designer wants the midgame refund
   baked into the reference rather than left as a player choice.
+
+---
+
+**Measured numbers (2026-07-17, the levelling framework session C — alchemy
+& the potion rework: the alchemy skill + the long-rest brew + the rank
+table, the kit SHRINK (1 healing + 1 stamina per PARTY, was per hero), the
+overcharge doctrine, the strength/dexterity stat brews, the firebomb and
+smoke vial, plus a stamina forage roll on the kit floor. Full suite
+re-run). This session deliberately MOVES numbers — the kit shrink is a
+difficulty lever pulled on purpose (the standing hideout flag's closer) —
+so, unlike B, the aggregate is expected to shift.**
+
+- **The kit shrink's whole bite is on the DETERMINED-CAMPER sim, not on
+  careers.** The old per-hero kit floored a duo to 2 healing + 2 stamina
+  after every camp; the sims' policy (`tune.py`/`run_site`) FLEES ~72% of
+  rooms — a fixed, baseline behavior — and grinds them out on
+  free camp-refilled STAMINA draughts. Cut that faucet and the retries
+  starve: a flat 1+1-per-party dropped the rank-0 hideout from **84.7 to
+  ~40** (the flee rate never moved — only the retry supply did). The
+  effect is an almost-pure function of the STAMINA floor: a duo needs 2
+  draughts per retry, so stamina-2 clears ~76%, stamina-1 ~40% — a hard
+  integer cliff with no point between. To land the plan's **55-65 band**
+  the floor gained a **forage roll** (`KIT_FORAGE_CHANCE` = 0.5: one extra
+  stamina draught on a good night, ~0.5/night average). CAREERS, by
+  contrast, are within noise (below) — a leveled party camps to full STA
+  for free and BUYS potions, so the kit floor barely reaches it. The
+  shrink is a fresh-duo lever, exactly where the flag lived.
+- **tune.py** (6k): hideout clear **57.2** / wipe **12.5** / down 21.2,
+  reckless wipe **75.9** (was 84.7 / 12.0 / — , 75.8) — IN the 55-65
+  retune band, and "not using resources mostly means death" holds
+  (reckless ~76). Barrow `[3,3,4]` clear **38.1** / wipe **40.6** / down
+  45.3, reckless **98.3** (was 46.5 / 45.2 / 98.3) — the tough site's
+  retry loop felt the shrink too (~8 points), still "suicide until
+  trained", reckless unchanged.
+- **Training ladder** (3k/rank): hideout **57.5 -> 74.4 -> 87.2 -> 94.2**,
+  barrow **38.3 -> 71.3 -> 90.2 -> 97.4** (was ~85/96/99.6/99.9 and
+  ~45/78/95/99). The whole ladder dropped at ranks 0-1 (the shrink bites
+  the fresh party) and CONVERGES by rank 2-3 (a trained party doesn't
+  live on the free kit) — a rank still reads as a rank, and the felt
+  difference between "fresh" and "drilled" widened, which is the point.
+- **Weapons (melee)** and **ranged**: **unchanged to the cell** — both
+  benches build bare stat frames and resolve SINGLE fights (`sim_fight`,
+  zero `long_rest` calls), so the kit shrink and the alchemy layer cannot
+  reach them (no bombs in a bare frame). Zweihander/katana/staff and the
+  ranged cards order exactly as session B.
+- **Bestiary** at-level: within noise of session B (the reference duo
+  camps to full STA and buys potions — kit-insensitive; no non-alchemist
+  combat path changed). The catalog still orders correctly.
+- **The equal-cost matrix** (`bench_abilities`, 250/cell, frame L8): the
+  six spending columns tell the same story — all-in **pools still a trap**
+  (site 4.8 vs median 45), **training/weapon top the site row** (58/62.8),
+  saves fine from L8, strikes on the median; 4 flags on the site row, all
+  the established pattern. The **warrior-moves matchup** block is
+  unchanged (room 76->90, duel 77->90 at L8). Alchemy is NOT a matrix
+  column (a whole different career, not an equal-cost reshuffle) — its own
+  block:
+- **The alchemist career** (NEW; `bench_abilities`, 250/cell, L15): read
+  three ways. The MIXED duo (one alchemist + one reference fighter, how
+  it's played) clears **room 48.8 / site 24.0 / duel 32.8**; the two-
+  fighter reference it replaces a slot in clears **67.2 / 53.2 / 63.2**;
+  the PURE-alchemist duo (two bombers) is a hard trap at **6.4 / 2.8 /
+  4.0**. The reading: the alchemist is a SUPPORT/ECONOMY career, not a
+  combat-parity one. The firebomb MUST stay a scarce burst (stock cap
+  rank+2 = 7 at rank 5) because alchemy is open to ALL — a buff big enough
+  to make a pure bomber competitive would make a fighter-WITH-bombs
+  oppressive. The alchemist's real value is the kit it brews for the party
+  (which the shrink makes matter), the overcharge, and the stat brews —
+  none of which the one-go site row (the FLOOR: no camp to rebrew)
+  captures. The pure-bomber trap is the all-in-pools lesson again: commit
+  your whole build to one axis and the fight punishes you.
+- **Careers** (150): reach **L5 83% / L8 60% / L11 36% / L14 12% /
+  L17 5% / L20 4%**, median death **L8**, capped median 158 days / 38
+  quests — **within noise of session B** (86/62/32/16/—/7, median death
+  L8). The kit shrink leaves the real beatability curve intact: the career
+  party's between-fights supply is gold-bought potions and free full-STA
+  camps, not the kit floor. This is the session's most important negative
+  result — the difficulty lever lands on the fresh-duo sim, not on the
+  campaign arc.
+- **Generated content** (200/cell): at-level rooms win **67-95** (win@L),
+  the familiar band — single fights, untouched by the kit change.
+- **Flags for the designer**: (1) the standing hideout flag is CLOSED —
+  57.2 is in the 55-65 band (from 84.7). If play feels too grim, the
+  gentler dial is `KIT_STAMINA` 1 -> 2 or `KIT_FORAGE_CHANCE` up (open
+  question #3). (2) The forage roll is the one non-obvious piece — a flat
+  1+1 per party overshoots to ~40 (below band) because of the stamina
+  cliff; the 0.5-draught-a-night forage is what threads it into band, and
+  it reads in the fiction ("a good forage night"). (3) The alchemist is a
+  support career by the numbers, NOT a bomber-carry — the firebomb stays
+  scarce by design (open-to-all gating); the DEX-potion warning (#5)
+  stands but the pure alchemist never out-fences anyone, so it did not
+  need cutting. (4) Barrow slid to 38 clear — acceptable for the tough
+  site ("suicide until trained"), but worth a glance if the 15-20 band
+  ever feels punishing on top of its known missing player power.

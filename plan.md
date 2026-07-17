@@ -17,178 +17,45 @@ rules.md — the World & Navigation add-on and the updated wound-tier /
 XP sections; measured numbers in benchlog.md. What remains from that design
 session lives in the open questions and parked ideas below.)*
 
-## Next up — the levelling framework (designed 2026-07-16; session C remains)
+## The levelling framework — COMPLETE (designed 2026-07-16; A/B/C shipped 2026-07-17)
 
-The shortlist's "levelling framework" foundation, designed in the
-2026-07-16 session and split into three implementation sessions, each
-ending with a full bench re-run and a benchlog entry. **Sessions A and B
-SHIPPED 2026-07-17.** Session A (the point economy & the ability catalog)
-— 3 points per level, pools on the menu, training at 2n, the eleven-entry
-single-buy catalog, healing as the tenth spell, the staff's +1 Power, the
-five-entry archetype seed table, doctrine v2. Session B (the warrior moves
-system) — `Weapon.move_tags`, the eleven-move repertoire, the engine's
-selection hook (fire chance 50% + 10%/training, once per fight, priority
-tiebreak), the flow refund (1 STA per distinct move, cap 3), `learn_move`
-+ `train HERO move NAME` + the levelup menu, autospend/develop leftover
-move buys, and the `bench_abilities` moves matchup block. Mechanics in
-rules.md (the Progression add-on + the new Warrior Moves add-on), measured
-numbers in benchlog.md (2026-07-17). Terminology settled: **ability** is
-the umbrella word; ranked multi-buy tracks are **skills** (combat
-training, weapon proficiency, spells, alchemy); the warrior repertoire
-entries are **moves**. "Perk" is retired.
+The shortlist's "levelling framework" foundation shipped in three sessions,
+each with a full bench re-run (benchlog.md, 2026-07-17). **Session A** — the
+point economy (3 points/level, pools bought, training at 2n), the eleven-
+entry ability catalog, healing as the tenth spell, the archetype seed table,
+doctrine v2. **Session B** — the warrior moves system (rules.md's Warrior
+Moves add-on): `move_tags`, the eleven-move repertoire, the once-per-fight
+selection rider with the flow refund, `learn_move` / `train HERO move NAME`.
+**Session C** — alchemy & the potion rework (rules.md's Alchemy & the Potion
+Rework add-on): the alchemy skill + the long-rest brew + the rank table, the
+kit shrink (1+1 per PARTY + a forage roll — which closed the standing hideout
+flag to the 55-65 band), the overcharge doctrine, the strength/dexterity stat
+brews, the firebomb and the smoke vial, and the `bench_abilities` alchemist
+column. Terminology settled: **ability** is the umbrella word; ranked
+multi-buy tracks are **skills** (combat training, proficiency, spells,
+alchemy); the warrior repertoire entries are **moves**. "Perk" is retired.
 
-Still coming forward from the parked list: **overfill potions** (ships as
-the overcharge doctrine, session C) and **the alchemist** (the whole
-session-C tree). Already shipped: **kiting** (the skirmisher's step move,
-session B) and **weapon-granted abilities** (superseded — moves are
-weapon-gated by tags, which is that idea grown up).
+Carry-forwards from the framework, parked (not scheduled):
 
-The one-sentence shape (in the engine since session A): **a level grants
-several points, and everything a level can buy — pool growth included —
-is bought with those points, at prices scaled to measured value.** No
-class gates anywhere: the first rank of anything is buyable by anyone
-(the game's own free-allocation doctrine); prerequisites are physical
-only (a move needs a weapon that can do it, spellBOOKS stay
-wizard-gated, alchemy is open to all but rolls off MIND).
+- **Enemy-side moves** (giving the drilled soldiery two moves each) and the
+  **second-wave moves** (guard-break, taunt, battle-cry) — a later content
+  pass with its own bench round (from session B).
+- **The day-stamp spoilage variant** — session C shipped the freshness
+  STOCK CAP (rank + 2 brewed items, one integer) over per-potion spoil
+  timestamps (the heroic tone forbids upkeep meters). If the designer ever
+  wants spoilage FELT, the cheap cuttable variant is one day-stamp per
+  hero's brewed batch (all brewed items expire ~10 days after the newest
+  brew) — noted, not built.
+- **Alchemy conditions** (poisons, oils) — deliberately wait for the
+  conditions system; alchemy is its first customer (the parked venom note).
 
-Session A's remaining schema seed for the session below: `Entity.alchemy`
-(the herbalist archetype grants rank 1) — inert until session C ships the
-brew. (The `Entity.moves` seed is live now — session B.)
-
-### Session B — the moves system (SHIPPED 2026-07-17)
-
-Shipped as designed — the full mechanics now live in rules.md's **Warrior
-Moves add-on** (the eleven-move repertoire, the selection rule, the flow
-refund, the tag gating), the code (rpg.py's warrior-moves block +
-`group_combat` hook; `learn_move` and `train HERO move NAME`), and the
-`bench_abilities` moves matchup block; measured numbers in benchlog.md
-(2026-07-17). The one carry-forward left for a later content pass:
-**enemy-side moves** (giving the drilled soldiery two moves each) and the
-**second-wave moves** (guard-break, taunt, battle-cry) — both noted, not
-scheduled.
-
-### Session C — alchemy & the potion rework
-
-**The kit shrinks** (the "too generous" faucet): the long-rest restock
-drops from 1 healing + 1 stamina PER HERO to **1 + 1 PER PARTY**
-(scrounged herbs; shops unchanged at 10 g). This is a real difficulty
-lever pulled on purpose — it is the natural candidate for finally closing
-the standing hideout flag (measured 84.4% clear after session A vs the
-~55% retune target). The session-C bench round tunes toward the **55-65
-band** and says so in benchlog.
-
-**The brew.** Alchemy is a skill (rank n costs 2n, cap 5, open to all —
-30 points, so a pure alchemist maxes it around L15 with ~12 points left
-for pools, exactly the designer's target career). At each long rest the
-alchemist rolls **2d6 + MIND + rank vs DC 9** (the casting-check chassis;
-MIND advantage as specified): miss = the batch curdled, success = the
-batch, beat by 7+ or boxcars = a double batch. The batch by rank:
-
-| Rank (cost) | Batch | Unlocks |
-|-------------|-------|---------|
-| 1 (2) | 1 potion (healing or stamina, brewer's choice) | — |
-| 2 (4) | 1 | **strength potion** |
-| 3 (6) | 2 | **firebomb** |
-| 4 (8) | 2 | **dexterity potion**, **smoke vial** |
-| 5 (10) | 3 | bombs at +6 / sweep 3 — "mostly rely on potions for damage" |
-
-**Brewed stock cap, not spoilage** (the designer's spoil question,
-answered with a recommendation): a hero carries at most **rank + 2**
-brewed items — the fiction is freshness ("it keeps a week or two"), the
-mechanics are one integer. Per-potion spoil timestamps are exactly the
-inventory bookkeeping the heroic tone forbids (rules.md: no upkeep
-meters), and the cap fences the same degenerate case (a free faucet
-filling a bottomless stockpile). If the designer wants spoilage FELT, the
-cheap variant is one day-stamp per hero's brewed batch (all brewed items
-expire 10 days after the newest brew) — cuttable without touching the
-rest. Brewed potions are also **unsellable** (no guild seal — rotgut to a
-shopkeep): alchemy pays in kit, never gold, so the economy faucet stays
-closed.
-
-**Drinking in advance — the overcharge doctrine** (ships the parked
-overfill idea; the tavern clamp is the chassis): a potion drunk with the
-pool at max grants **+2 above max** (HP or STA by kind), spent-only,
-clamped away at the next long rest. Flat +2 on purpose — legible, no
-half-restore math.
-
-**The stat brews** (the membrane: potions may transcend the fixed body,
-temporarily): **strength potion** +1 STR, **dexterity potion** +1 DEX,
-each until the next long rest. DEX arrives two ranks later and never
-exceeds +1 (the standing warning: a point of DEX is worth several
-training ranks; +STR circulates an order of magnitude more freely).
-
-**The bombs** (the damage career): **firebomb** — thrown on the exchange,
-attack = 2d6 + AIM + alchemy rank, severity flat +4, strikes 2 adjacent
-foes (sweep chassis), consumes the item; at rank 5, +6 and sweep 3 (a
-brewed fireball). **Smoke vial** — a retreat with NO parting blows (the
-blink-out analogue, item-priced; the chase still rolls). Poisons/oils
-deliberately wait for the conditions system (the parked venom note —
-alchemy is its first customer).
-
-**Touch list**: kit constants + `long_rest` restock, the alchemy skill +
-brew roll + rank table, potion kinds (str/dex + bomb/smoke as items),
-`use_potion` overcharge branch + stat-buff fields with long-rest expiry,
-the thrown-bomb branch (AIM chassis), retreat's smoke path, session
-`brew` + shop surface, autospend v2 for an alchemist companion, dm.md +
-rules.md sections, bench + career re-run with the kit-shrink retune.
-
-### Benchmark validation strategy (sessions B and C)
-
-- **`bench_abilities.py` (SHIPPED with session A; grows in B/C)** — the
-  equal-cost matrix the designer asked for: reference frames at L4 / L8 /
-  L14, whole-budget columns, rows = at-level generated room / a site run /
-  a duel vs the soldiery ladder; acceptance band ±10 of the row median,
-  utility buys on their own axis. Session A's findings (benchlog
-  2026-07-17): combat columns mostly in band; all-in pools is a trap
-  build, training-heavy still tops the site row even at 2n (the doubling
-  is a floor, not an overshoot). Perfect balance is explicitly NOT the
-  bar; wildly-different-at-same-price is the failure to catch.
-- **Doctrine v2 keeps the suite comparable** (in the engine since A):
-  `develop_hero` / `autospend_points` / the bench reference duo reproduce
-  the OLD default build in the new currency. Session A's full-suite run
-  isolated the economy change; the drift was measured and attributed
-  (benchlog 2026-07-17).
-- **Per-session gates**: full suite re-run at the end of each. Session B's
-  re-run (benchlog 2026-07-17) held the career curve within noise — the
-  doctrine buys moves only from LEFTOVER points, so the midgame flex
-  premium stands and the refund lands where the budget has room (high
-  levels) and, in play, wherever a fighter chooses a move over a pool.
-  Session C is the exception — the kit shrink deliberately moves numbers,
-  targets: hideout to the 55-65 clear band, reckless wipe stays ≥ ~75%
-  ("not using resources mostly means death" holds), careers re-anchored
-  and written up.
-- **The moves matchup block** shipped in bench_abilities (session B — a
-  doctrine duo with a granted repertoire vs one without, plus the disarm-
-  move-vs-telekinesis-rank-1 price check); **session C adds the alchemist
-  career column** (the L15 maxed alchemist vs the L15 fighter reference).
-
-### Settled here vs. designer decision points
-
-Settled by this design (flagged if the designer wants them reopened):
-melee/ranged stay under ONE combat training (proficiency + the ranged
-abilities carry the split; shooters already pay ammo and cadence), moves
-cost no Power, healing goes to magic with the hedge-healer starter as the
-non-wizard door, Berserk becomes learnable-at-1 alongside War-Breath (the
-designer asked for "other conversions as well"; if standing orders feel
-toothless in play the 1-point price makes Berserk near-universal anyway).
-
-Genuinely open — session A's picks stand unless flipped:
-
-1. ~~Points per level 3 vs 4 (and training 2n)~~ **Session A kept 3 and
-   2n** (the arithmetic anchor maps the old build exactly at L4/L8; the
-   bench read 2n as a floor, not an overshoot). Re-open only if the
-   mid-band feels grim at the table — levers in order: doctrine order
-   (training before pools), then 3 -> 4.
-2. **Spoilage**: the stock cap (recommended) vs the day-stamp variant.
-3. **Kit shrink target**: the 55-65 hideout band, or gentler (per-party
-   2+2) if C's career numbers read too grim.
-4. ~~Move proc chance (50% + 10%/rank) vs always-fire-when-eligible~~
-   **Session B shipped 50% + 10%/rank**, per-move independent (a deeper
-   repertoire fires both more often and more variously). Re-open only if
-   play wants the determinism.
-5. **DEX potion existence at all** — shipped at rank 4/+1 under the
-   standing +DEX warning; delete it if the bench shows a rank-4 alchemist
-   outfencing the fencer.
+Open to feel out in PLAY (the framework's picks stand unless play flips them):
+points-per-level 3 vs 4 and training 2n (session A's anchor; re-open only if
+the mid-band feels grim); the **kit-shrink dial** (55-65 landed via the
+stamina forage — `KIT_STAMINA` 1->2 or a higher `KIT_FORAGE_CHANCE` is the
+gentler dial if play reads too grim); and the **DEX potion** (shipped at rank
+4/+1 under the standing +DEX warning — the bench shows a pure alchemist never
+out-fences a fencer, so it stood, but watch it in play).
 
 ---
 
@@ -363,10 +230,9 @@ belongs at the end.
 - ~~The ranged combat model~~ **shipped 2026-07-16** (with guns, item 4)
   — the field model is in: every later enemy, weapon, and flight rank
   now has distance to ride on.
-- **The levelling framework (skills / abilities / moves)** — **designed
-  2026-07-16, spec above** ("Next up — the levelling framework"): the
-  point economy, the ability catalog, the moves system, the alchemy
-  tree; three implementation sessions scheduled.
+- ~~The levelling framework (skills / abilities / moves)~~ **COMPLETE
+  (A/B/C shipped 2026-07-17, see above)** — the point economy, the ability
+  catalog, the warrior moves, and the alchemy tree are all in.
 - **Conditions** (poison, bleed, disease — the parked venom note) — the
   missing enabler behind "more varied enemies": without conditions, enemy
   variety is mostly stat rearrangement, and varied magic wants them too.

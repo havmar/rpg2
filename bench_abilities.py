@@ -308,6 +308,108 @@ def disarm_pricing(trials: int) -> None:
         print(f"  {label:<16}{100 * wins / trials:>6.1f}% duel win")
 
 
+def _run_site_duo(duo: list, level: int, rng: random.Random) -> bool:
+    pool = rng.choice(pools_for(level))
+    n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
+    rooms = tuple((rn, tuple(kinds)) for rn, kinds
+                  in build_site_rooms(level, n_rooms, pool, rng))
+    site = Site(key="bench", level=level, rooms=rooms,
+                quest_line="site cleared", spawn_phrase="{n} foes",
+                abandon_line="abandoned.", intro="")
+    log: list[str] = []
+    run_site(site, duo, rpg.Clock(), rpg.Purse(), rng, log, auto_train=False)
+    return any("QUEST COMPLETE" in line for line in log)
+
+
+ALCH_LEVEL = 15
+ALCH_DUEL = "blademaster"       # the L15 soldiery ref (blademaster is L15)
+
+
+def _make_alchemist(rng: random.Random, name: str, level: int) -> rpg.Entity:
+    """The pure alchemist career: alchemy to the cap (30 points), the rest
+    into pools (~12 at L15), no combat training -- the damage is the
+    FIREBOMB. Arrives stocked (a few nights' brew), a played alchemist
+    would. MIND floored to 4 so the brew and the bomb's AIM have something
+    to ride (an alchemist invests in the mind)."""
+    h = _base_hero(rng, name, level)
+    h.mind = max(h.mind, 4)
+    while (h.alchemy < rpg.ALCHEMY_MAX
+           and h.skill_points >= rpg.alchemy_cost(h.alchemy)):
+        rpg.train_alchemy(h, _NO_LOG)
+        _NO_LOG.clear()
+    _pools_to(h, rpg.POOL_BUY_CAP)
+    for _ in range(6):                  # arrive with a full bomb pack
+        rpg.auto_brew(h, rng, _NO_LOG)
+        _NO_LOG.clear()
+    return h
+
+
+def _make_fighter(rng: random.Random, name: str, level: int) -> rpg.Entity:
+    """The reference fighter: the doctrine build + its leftover-move
+    repertoire (develop_hero's shape)."""
+    h = _base_hero(rng, name, level)
+    _doctrine(h)
+    rpg.autolearn_moves(h, _NO_LOG)
+    _NO_LOG.clear()
+    return h
+
+
+def _mixed_duo(level: int, rng: random.Random) -> list:
+    """One alchemist alongside one reference fighter -- how the career is
+    actually PLAYED (a bomber + a line-holder), the decision-relevant read:
+    is swapping a fighter for an alchemist a viable party slot?"""
+    n1, n2 = rng.sample(rpg.NAMES, 2)
+    return [_make_alchemist(rng, n1, level), _make_fighter(rng, n2, level)]
+
+
+def _fighter_duo(level: int, rng: random.Random) -> list:
+    n1, n2 = rng.sample(rpg.NAMES, 2)
+    return [_make_fighter(rng, n1, level), _make_fighter(rng, n2, level)]
+
+
+def _pure_alch_duo(level: int, rng: random.Random) -> list:
+    n1, n2 = rng.sample(rpg.NAMES, 2)
+    return [_make_alchemist(rng, n1, level), _make_alchemist(rng, n2, level)]
+
+
+def _run_duel_row(duo: list, level: int, rng: random.Random) -> bool:
+    spec = FOES[ALCH_DUEL]
+    foes = [make_foe(ALCH_DUEL, i + 1, rng) for i in range(spec.ref_pack)]
+    rpg.sim_fight(duo, foes, rng, _NO_LOG)
+    _NO_LOG.clear()
+    return any(h.alive for h in duo) and not any(f.alive for f in foes)
+
+
+def alchemist_matchup(trials: int) -> None:
+    """The alchemist career column (session C): at L15 the maxed alchemist is
+    read three ways on the room / site / duel rows -- the MIXED duo (alchemist
+    + reference fighter, how it's played), the two-fighter reference it would
+    replace a slot in, and the PURE alchemist duo (two bombers, the trap-build
+    control). The firebomb is a scarce burst (stock cap {cap}); the alchemist's
+    standing value is the kit it brews for the party, which the one-go site row
+    understates (no camp to rebrew) -- so read the site row as the FLOOR."""
+    level = ALCH_LEVEL
+    spec = FOES[ALCH_DUEL]
+    print(f"\n--- the alchemist career (L{level}, {trials} trials/cell) ---")
+    print(f"{'row':<8}{'mixed (alch+ftr)':>18}{'2 fighters':>12}"
+          f"{'pure alch duo':>15}")
+    rows = (("room", _run_room), ("site", _run_site_duo),
+            ("duel", _run_duel_row))
+    for row_i, (name, rowfn) in enumerate(rows):
+        cells = []
+        for builder in (_mixed_duo, _fighter_duo, _pure_alch_duo):
+            rng = random.Random(5150 + row_i)
+            wins = sum(rowfn(builder(level, rng), level, rng)
+                       for _ in range(trials))
+            cells.append(100 * wins / trials)
+        print(f"{name:<8}{cells[0]:>17.1f}%{cells[1]:>11.1f}%"
+              f"{cells[2]:>14.1f}%")
+    print(f"  (duel: {spec.ref_pack}x {spec.display} L{spec.level}; firebomb "
+          f"at rank {rpg.ALCHEMY_MAX}: flat +{rpg.BOMB_SEVERITY_R5}, "
+          f"{rpg.BOMB_TARGETS_R5} foes, stock cap {rpg.ALCHEMY_MAX + 2}. "
+          f"Site row is the FLOOR -- one-go, no camp to rebrew.)")
+
+
 def utility_axis() -> None:
     """The utility buys, on their own axis: exact 2d6 odds per stat (they
     buy nights, Power and lives, not clear rate -- plan.md)."""
@@ -342,6 +444,7 @@ def main() -> None:
         bench_frame(level, args.trials)
     moves_matchup(args.trials)
     disarm_pricing(args.trials)
+    alchemist_matchup(args.trials)
     utility_axis()
 
 
