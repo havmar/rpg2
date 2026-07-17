@@ -22,7 +22,7 @@ Run:  python rpg.py [--site hideout] [--seed N]   -> one-shot site run
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 
 # --------------------------------------------------------------------------- #
@@ -696,6 +696,13 @@ class Weapon:
                             # not the club).
     bulk: int = 1           # carry weight/bulk -- stored, unused for now
     tags: tuple[str, ...] = ()
+    move_tags: tuple[str, ...] = ()     # the warrior-moves gate (session B):
+                            # pierce / blade / blunt / heavy for melee steel,
+                            # ranged for missile cards. A move is eligible only
+                            # if the wielded weapon carries one of its tags
+                            # ("some moves don't fit the rapier" falls out of
+                            # the tags -- no per-move exception lists). Assigned
+                            # below via _WEAPON_MOVE_TAGS; see the moves block.
     value: int = 0          # gold
     description: str = ""   # the mechanical role in plain words (DM/player-facing)
 
@@ -811,6 +818,46 @@ WEAPONS = {w.name: w for w in [
                        "dwarves sell."),
 ]}
 
+# --- The warrior-moves weapon gate (session B) ------------------------------ #
+# What each weapon can DO with a move (pierce/blade/blunt/heavy for steel,
+# ranged for the missile cards). Kept as one table instead of a field on every
+# constructor line: "some moves don't fit the rapier" is just the tags it
+# lacks. A weapon absent here carries no move tags (the whip: it stings, it
+# doesn't thrust/cut/crush -- no moves fit it, by design).
+_WEAPON_MOVE_TAGS = {
+    # Crude commons.
+    "club": ("blunt",),
+    "dagger": ("pierce", "blade"),
+    "light hammer": ("blunt",),
+    # Soldier's arms.
+    "shortsword": ("blade", "pierce"),
+    "scimitar": ("blade",),
+    "spear": ("pierce",),
+    "mace": ("blunt",),
+    "flail": ("blunt",),
+    "morningstar": ("blunt",),
+    # Heavy arms.
+    "longsword": ("blade", "pierce"),
+    "battleaxe": ("blade", "heavy"),
+    "warhammer": ("blunt", "heavy"),
+    "halberd": ("pierce", "blade", "heavy"),
+    # The quality four.
+    "rapier": ("pierce", "blade"),
+    "katana": ("blade", "pierce"),
+    "zweihander": ("blade", "heavy"),
+    "wooden staff": ("blunt",),
+    # Every ranged card is a skirmisher's tool (the one ranged move).
+    "sling": ("ranged",),
+    "throwing knives": ("ranged", "pierce"),
+    "shortbow": ("ranged",),
+    "crossbow": ("ranged",),
+    "longbow": ("ranged",),
+    "blunderbuss": ("ranged",),
+    "revolver": ("ranged",),
+}
+WEAPONS = {name: replace(w, move_tags=_WEAPON_MOVE_TAGS.get(name, ()))
+           for name, w in WEAPONS.items()}
+
 CRUDE_WEAPONS = ("club", "dagger", "whip", "light hammer")
 SOLDIER_WEAPONS = ("shortsword", "scimitar", "spear", "mace", "flail", "morningstar")
 HEAVY_WEAPONS = ("longsword", "battleaxe", "warhammer", "halberd")
@@ -824,6 +871,207 @@ RANGED_WEAPONS = ("sling", "throwing knives", "shortbow", "crossbow",
 RUSTED_BLADE = Weapon("rusted blade", 0, 0, 1, durability=1, tags=("ancient",),
                       value=0,
                       description="Grave-steel eaten by centuries. Snaps on honest metal.")
+
+
+# --- Warrior moves (the levelling framework session B, 2026-07-17) ----------- #
+# Spells for warriors, under the autocombat doctrine: a MOVE is a rider on the
+# normal exchange, CHOSEN BY THE ENGINE, never a mid-fight decision (the same
+# rule that shaped magic -- rules.md's autocombat doctrine). `Entity.moves` is
+# a set of catalog keys (learn_move; the "drilled" archetype seeds one). Each
+# ATTACK, every owned move whose condition holds and that hasn't fired yet this
+# fight rolls to fire at MOVE_PROC_BASE + MOVE_PROC_PER_TRAINING * training
+# (training 5 = always -- "higher fighting ability means more moves,"
+# literally); among those that pass, the highest-PRIORITY one rides the
+# exchange. EACH MOVE FIRES AT MOST ONCE PER FIGHT (moves_spent) -- that single
+# rule kills the repeat-penalty bookkeeping (no combo counters) and makes a
+# DEEP repertoire the only way to have a rider every round.
+#
+# THE FLOW REFUND: every DISTINCT move that fires refunds MOVE_STA_REFUND STA
+# (toward max, cap MOVE_REFUND_CAP a fight) -- variety IS the stamina engine, so
+# a two-move fighter gets 2 STA back and a six-move blademaster fights a longer,
+# richer fight. No Power costs anywhere in the system: STA is the warrior's
+# clock, Power stays the spell/ability budget (the split survives intact).
+#
+# WEAPON GATING is by Weapon.move_tags (pierce/blade/blunt/heavy; ranged for
+# the one missile move): the rapier is pierce+blade and simply lacks the tags
+# for the butcher moves. Most riders are small (+2-ish) and near-equivalent --
+# the value is LEGIBILITY (named lines in both log levels; the DM narrates over
+# "Rhea feints -- the cutthroat bites") plus the refund plus the handful of real
+# state riders (disarm, trip, the finishers). Hero-side only in v1 (like potions
+# and standing orders); the drilled soldiery get moves in a later content pass.
+MOVE_PROC_BASE = 0.5
+MOVE_PROC_PER_TRAINING = 0.1    # training 5 -> 1.0 (always fires when eligible)
+MOVE_STA_REFUND = 1
+MOVE_REFUND_CAP = 3             # distinct-move STA refunds a fight
+THRUST_ATK = 2                  # thrust: +2 attack pressure this exchange
+RIPOSTE_ATK = 2                 # riposte: +2 after a parry
+FEINT_ATK = 3                   # feint: sets up +3 on next round's attack
+IAIDO_ATK = 2                   # iaido: +2 attack AND...
+IAIDO_SEV = 3                   # ...+3 severity, then a round stanced (no attack)
+FINISHER_SEV = 3               # the finisher: +3 severity on a foe below 1/3 HP
+POMMEL_SEV = -2                 # pommel: softer blow (-2 sev) that stuns
+OFF_GUARD_PENALTY = 2           # kick/trip: the target defends at -2 (off balance)
+MOVE_LAND_MARGIN = 3            # disarm/trip need a decisive win (margin >= this)
+FINISHER_HP_NUM, FINISHER_HP_DEN = 1, 3     # finisher: target below 1/3 max HP
+POMMEL_HP_NUM, POMMEL_HP_DEN = 2, 3         # pommel: target above 2/3 (unhurt/light)
+
+
+@dataclass(frozen=True)
+class Move:
+    """One entry in the warrior repertoire (rules.md's Warrior Moves add-on).
+    `any_tags` is the weapon gate (the wielded weapon must carry one of them;
+    empty = any melee weapon). `condition` holds the per-exchange eligibility
+    (attacker, defender, near = living foes at contact, rnd). `field_only`
+    marks the skirmisher's step -- a movement reaction, not a melee rider, so
+    it is selected in the field phase, not the exchange. Behavior is engine
+    code keyed by name (build_move_rider / group_combat); `blurb` is menu
+    text."""
+    name: str
+    display: str
+    cost: int
+    any_tags: tuple[str, ...]
+    condition: object                   # callable(attacker, defender, near, rnd)
+    blurb: str
+    field_only: bool = False
+
+    def weapon_ok(self, weapon: "Weapon | None") -> bool:
+        if weapon is None:
+            return False
+        if not self.any_tags:               # "any" melee move: any non-ranged
+            return "ranged" not in weapon.move_tags     # weapon in hand
+        return any(t in weapon.move_tags for t in self.any_tags)
+
+
+def _finisher_ok(weapon: "Weapon | None") -> bool:
+    """The finisher's odd gate: a blade decapitates, a heavy blunt splits the
+    skull -- but a pure pierce (a spear) has no killing arc."""
+    if weapon is None:
+        return False
+    t = weapon.move_tags
+    return "blade" in t or ("heavy" in t and "blunt" in t)
+
+
+def finisher_name(weapon: "Weapon | None") -> str:
+    return ("Decapitate" if weapon is not None and "blade" in weapon.move_tags
+            else "Split Skull")
+
+
+def _below_frac(e: "Entity", num: int, den: int) -> bool:
+    return e.hp * den < e.max_hp * num
+
+
+def _atleast_frac(e: "Entity", num: int, den: int) -> bool:
+    return e.hp * den >= e.max_hp * num
+
+
+MOVES = {m.name: m for m in [
+    Move("thrust", "Thrust", 1, ("pierce",),
+         lambda a, d, near, rnd: True,
+         f"+{THRUST_ATK} attack pressure this exchange"),
+    Move("sweep", "Sweep", 1, ("heavy",),
+         lambda a, d, near, rnd: near >= 2,
+         "with 2+ foes at contact: the swing catches a second of them "
+         "(the hero-side sweep)"),
+    Move("feint", "Feint", 1, ("blade",),
+         lambda a, d, near, rnd: rnd >= 2,
+         f"round 2+: next round's attack on the same foe at +{FEINT_ATK}"),
+    Move("pommel", "Pommel Strike", 1, ("blade", "blunt"),
+         lambda a, d, near, rnd: _atleast_frac(d, POMMEL_HP_NUM, POMMEL_HP_DEN),
+         f"vs an unhurt foe, on a wounding hit: {POMMEL_SEV} severity but the "
+         f"foe loses its next attack (the stun rider)"),
+    Move("disarm", "Disarm", 1, ("blade", "pierce"),
+         lambda a, d, near, rnd: (d.weapon is not None and not d.weapon.natural
+                                  and not d.weapon_broken),
+         f"vs an armed foe, on a decisive hit (margin >= {MOVE_LAND_MARGIN}): "
+         f"the weapon flies (mirrors telekinesis rank 1)"),
+    Move("kick", "Kick", 1, (),
+         lambda a, d, near, rnd: True,
+         f"on a hit: the foe defends at -{OFF_GUARD_PENALTY} next round"),
+    Move("trip", "Trip", 1, (),
+         lambda a, d, near, rnd: rnd >= 2,
+         f"round 2+, on a decisive hit (margin >= {MOVE_LAND_MARGIN}): the foe "
+         f"skips its next attack AND defends at -{OFF_GUARD_PENALTY} (prone)"),
+    Move("riposte", "Riposte", 1, ("blade", "pierce"),
+         lambda a, d, near, rnd: a.parried_last,
+         f"the round after parrying a blow: +{RIPOSTE_ATK} attack pressure"),
+    Move("iaido", "Iaido", 2, ("blade",),      # katana-gated below, in weapon_ok
+         lambda a, d, near, rnd: rnd == 1,
+         f"round 1 (katana only): +{IAIDO_ATK} attack, +{IAIDO_SEV} severity -- "
+         f"then a round stanced (no attack). The katana's signature"),
+    Move("finisher", "Finisher", 2, (),        # special gate, _finisher_ok
+         lambda a, d, near, rnd: _below_frac(d, FINISHER_HP_NUM, FINISHER_HP_DEN),
+         f"vs a foe below 1/3 max HP: +{FINISHER_SEV} severity -- the almost-"
+         f"kill becomes the kill (Decapitate / Split Skull)"),
+    Move("skirmisher_step", "Skirmisher's Step", 1, ("ranged",),
+         lambda a, d, near, rnd: False,        # fired in the field phase
+         "when a charger reaches contact: give ground to reopen the gap "
+         "(once per fight -- kiting, ability-framed)", field_only=True),
+]}
+
+# Iaido is the katana's alone (a name gate on top of the blade tag); the
+# finisher's arc is the blade-or-heavy-blunt gate.
+_MOVE_WEAPON_OK = {
+    "iaido": lambda w: w is not None and w.name == "katana",
+    "finisher": _finisher_ok,
+}
+
+# Priority when several eligible moves pass their proc in one exchange: the
+# decisive ones first (a kill or a disarm beats a chip of pressure). Skirmisher
+# is field-only and never competes here.
+MOVE_PRIORITY = ["finisher", "iaido", "disarm", "sweep", "trip", "pommel",
+                 "kick", "riposte", "feint", "thrust"]
+
+
+def move_weapon_ok(key: str, weapon: "Weapon | None") -> bool:
+    """Can `weapon` perform move `key`? The tag gate, plus the two name/arc
+    special cases (iaido = katana, finisher = blade-or-heavy-blunt)."""
+    special = _MOVE_WEAPON_OK.get(key)
+    if special is not None:
+        return special(weapon)
+    return MOVES[key].weapon_ok(weapon)
+
+
+@dataclass
+class MoveRider:
+    """The chosen move's effect on ONE exchange (built by build_move_rider,
+    applied inside _attack). Numeric riders (atk/sev) fold into the roll; the
+    boolean riders act on the resolved outcome."""
+    key: str
+    display: str
+    atk: int = 0                # extra attack pressure
+    sev: int = 0                # extra severity
+    disarm: bool = False        # decisive hit (margin >= MOVE_LAND_MARGIN):
+                                # the foe's weapon flies
+    trip: bool = False          # decisive hit: the foe is knocked prone
+    kick: bool = False          # any wounding hit: the foe is put off balance
+    stun_on_wound: bool = False  # pommel: a wounding hit costs the foe its
+                                # next attack
+
+
+def build_move_rider(attacker: "Entity", defender: "Entity",
+                     key: str) -> MoveRider:
+    """Translate a fired move key into its per-exchange rider. Feint and the
+    skirmisher's step never reach here (they set state / act in the field)."""
+    m = MOVES[key]
+    r = MoveRider(key=key, display=m.display)
+    if key == "thrust":
+        r.atk = THRUST_ATK
+    elif key == "riposte":
+        r.atk = RIPOSTE_ATK
+    elif key == "iaido":
+        r.atk, r.sev = IAIDO_ATK, IAIDO_SEV
+    elif key == "finisher":
+        r.sev = FINISHER_SEV
+        r.display = finisher_name(attacker.weapon)
+    elif key == "pommel":
+        r.sev, r.stun_on_wound = POMMEL_SEV, True
+    elif key == "disarm":
+        r.disarm = True
+    elif key == "trip":
+        r.trip = True
+    elif key == "kick":
+        r.kick = True
+    return r
 
 
 def random_common_weapon(rng: random.Random) -> Weapon:
@@ -1130,6 +1378,8 @@ class PressureRoll:
     misc_label: str = ""
     stat_label: str = "DEX"  # "AIM" on a cast (the Magic & Mind add-on)
     chill: int = 0          # DEX lost to landed ice bolts this fight
+    move_mod: int = 0       # a warrior move's attack-pressure rider (thrust,
+    move_label: str = ""    # riposte, iaido, the feint payoff -- session B)
 
     def breakdown(self, name: str) -> str:
         parts = [f"2d6={self.dice}", f"+{self.dex} {self.stat_label}"]
@@ -1141,6 +1391,8 @@ class PressureRoll:
             parts.append(f"{self.weapon_mod:+d} {self.weapon_label}")
         if self.prof:
             parts.append(f"+{self.prof} proficiency")
+        if self.move_mod:
+            parts.append(f"{self.move_mod:+d} {self.move_label}")
         if self.armor:
             parts.append(f"+{self.armor} armor")
         if self.wound_pen:
@@ -1316,6 +1568,22 @@ class Entity:
     medic_ready: bool = field(default=True)    # Field Medic: the day's one
                                                 # surgery still unspent
                                                 # (long_rest re-arms it)
+    # Warrior-moves per-fight state (session B; cleared by _clear_fight_states):
+    moves_spent: set[str] = field(default_factory=set)  # moves already fired
+                                                # this fight (each fires once)
+    moves_refunded: int = field(default=0)      # distinct-move STA refunds
+                                                # paid so far (cap MOVE_REFUND_CAP)
+    feint_target: "Entity | None" = field(default=None)  # a feint set this foe
+                                                # up: the hero's NEXT attack on
+                                                # it rides at +FEINT_ATK
+    off_guard: int = field(default=0)           # kicked/tripped: rounds left
+                                                # defending at -OFF_GUARD_PENALTY
+    stanced: int = field(default=0)             # iaido's follow-through: rounds
+                                                # the hero stands stanced (no
+                                                # attack; defense holds)
+    just_parried: bool = field(default=False)   # parried a blow THIS round
+    parried_last: bool = field(default=False)   # ...and LAST round (riposte's
+                                                # window; shifted at round end)
     # Ranged-combat per-fight state (2026-07-16; cleared with the rest):
     adv: int = field(default=0)         # steps advanced from this side's
                                         # line; the gap to an opposing
@@ -1712,6 +1980,12 @@ class Entity:
         else:
             stat, stat_label = self.dex, "DEX"
             chill = min(self.dex, self.dex_debuff)
+        # Off balance (a warrior kick or trip): the target defends worse until
+        # it recovers its footing (defense only -- a body knob like a wound).
+        if not attacking and self.off_guard > 0:
+            misc -= OFF_GUARD_PENALTY
+            misc_label = (f"{misc_label}+off-balance" if misc_label
+                          else "off-balance")
         # Height is an attacker's edge (flight): hard to reach, easy to rain
         # blows down from.
         if attacking and self.aloft > 0 and not misc:
@@ -1810,7 +2084,8 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             def_mod: int = 0, def_label: str = "",
             atk_roll: PressureRoll | None = None,
             soften: bool = False, cast: str | None = "auto",
-            ambush: bool = False, shot: bool = False) -> None:
+            ambush: bool = False, shot: bool = False,
+            move: "MoveRider | None" = None) -> None:
     """One opposed exchange. Higher roll lands; severity sets the wound.
 
     The *raw* result is computed first (it may be a crippling blow); a Power
@@ -1858,6 +2133,13 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     and the outcome is tallied on shots_hit/shots_missed for the after-
     battle scavenge. No steel-on-steel breakage, no misfires -- the fumble
     stays scoped to casting; powder and gut-strings are reliable arts.
+
+    `move` (warrior moves, session B) is a MoveRider riding a bare melee
+    strike: its `atk`/`sev` fold into the roll and the wound, and its boolean
+    riders (disarm/trip/kick/stun_on_wound) act on the resolved outcome (a
+    decisive hit strips a weapon or knocks a foe prone; a wounding pommel
+    costs the foe its next attack). Group_combat selects and builds it; the
+    sweep move and the skirmisher's step never come through here.
 
     Every exchange logs two layers: an interpretive headline first (both log
     levels; the player version folds the HP loss in and drops the roll
@@ -1907,6 +2189,13 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
                                  cast=cast, shot=shot)
                if atk_roll is None else atk_roll)
+        if move is not None and move.atk:
+            # A move's attack-pressure rider (thrust/riposte/iaido/feint
+            # payoff) folds into the roll and shows in the breakdown.
+            atk.move_mod += move.atk
+            atk.move_label = (f"{atk.move_label}+{move.display}"
+                              if atk.move_label else move.display)
+            atk.total += move.atk
         if shot:
             # Arrow-Parry (the ability): a melee grip bats missiles aside.
             parry = _arrow_parry_bonus(defender, attacker)
@@ -2003,6 +2292,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             else:
                 log.append(f"    {attacker.name} attacks {defender.name} "
                            f"-- parried.")
+                defender.just_parried = True    # riposte's opening (session B)
             _debug(log, pressure_line)
             if not cast and not shot:
                 _check_weapon_break(attacker, defender, rng, log)
@@ -2019,6 +2309,10 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         sev_mods = attacker.shot_severity_mods()
     else:
         sev_mods = attacker.severity_mods()
+    if move is not None and move.sev:
+        # A move's severity rider (iaido/finisher deepen the wound, the pommel
+        # softens it) rides alongside the weapon's own terms.
+        sev_mods = sev_mods + [(move.sev, move.display)]
     atk_str = 0 if (cast or shot) else attacker.str_
     severity = (margin + atk_str + sum(v for v, _ in sev_mods)
                 - defender.str_)
@@ -2131,6 +2425,38 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         log.append(f"    {defender.name} is {what} -- they lose their "
                    f"next action!")
 
+    # Warrior-move outcome riders (session B), applied on the landed hit --
+    # a wound already fell above; these add the control on top. Ward 2+ shrugs
+    # off the stuns (a dragon isn't tripped or pommel-stunned), as with the
+    # spell riders.
+    if move is not None and not cast and not shot:
+        decisive = margin >= MOVE_LAND_MARGIN
+        if (move.disarm and decisive and defender.weapon is not None
+                and not defender.weapon.natural and not defender.weapon_broken):
+            defender.weapon_broken = True
+            _play(log,
+                  f"    *** {attacker.name} binds and strips the "
+                  f"{defender.weapon.name} from {defender.name} -- it clatters "
+                  f"away ({BROKEN_ATK_PRESSURE} attack pressure, "
+                  f"{BROKEN_SEVERITY} severity bare-handed). ***",
+                  f"    *** {defender.name} is DISARMED -- the "
+                  f"{defender.weapon.name} is knocked away! ***")
+        if (move.trip and decisive and defender.alive
+                and defender.spell_ward < 2):
+            defender.stunned = max(defender.stunned, 1)
+            defender.off_guard = max(defender.off_guard, 2)
+            log.append(f"    {defender.name} is swept off their feet -- prone: "
+                       f"no next action, and open for the round after!")
+        if move.kick and defender.alive:
+            defender.off_guard = max(defender.off_guard, 2)
+            log.append(f"    {defender.name} is kicked off balance "
+                       f"(-{OFF_GUARD_PENALTY} defense next round).")
+        if (move.stun_on_wound and dmg > 0 and defender.alive
+                and defender.spell_ward < 2):
+            defender.stunned = max(defender.stunned, 1)
+            log.append(f"    {attacker.name}'s pommel rings {defender.name}'s "
+                       f"skull -- they lose their next action!")
+
     # Death is a 0-HP state (see the `alive` property): a blow only kills if
     # it actually drops you. At 0 HP an unsaved crippling blow is a death; any
     # other tier that took you there is a Down. A crippling blow that doesn't
@@ -2204,6 +2530,75 @@ def _first_blood(party: list[Entity], foes: list[Entity],
             if not target.alive:
                 target.down = True
                 log.append(f"    *** {target.name} falls. ***")
+
+
+def _spend_move(attacker: Entity, key: str) -> int:
+    """Mark a move fired (once per fight -- moves_spent) and pay the FLOW
+    refund: a distinct move that fires puts MOVE_STA_REFUND STA back toward
+    max, up to MOVE_REFUND_CAP a fight (variety IS the stamina engine).
+    Returns the STA actually regained (0 if capped or already full)."""
+    attacker.moves_spent.add(key)
+    if attacker.tireless or attacker.moves_refunded >= MOVE_REFUND_CAP:
+        return 0
+    before = attacker.cur_sta
+    attacker.cur_sta = recover(attacker.cur_sta, MOVE_STA_REFUND, attacker.sta)
+    gained = attacker.cur_sta - before
+    if gained > 0:
+        attacker.moves_refunded += 1
+    return gained
+
+
+def _move_fire_text(attacker: Entity, defender: Entity, key: str) -> str:
+    """The named line a fired move logs -- the legibility the whole system is
+    for (the DM narrates over it: 'Rhea feints, the cutthroat bites'). Both
+    log levels get it. Sweep and the skirmisher's step log their own lines in
+    group_combat."""
+    a, d = attacker.name, defender.name
+    if key == "finisher":
+        return (f"    {a} sees the opening and goes for the kill -- "
+                f"{finisher_name(attacker.weapon)}!")
+    lines = {
+        "thrust": f"    {a} lunges into a driving thrust at {d}.",
+        "feint": f"    {a} feints -- {d}'s guard opens for the next pass.",
+        "pommel": f"    {a} rolls a pommel strike into {d}.",
+        "disarm": f"    {a} works to bind and strip {d}'s weapon.",
+        "kick": f"    {a} drives a boot into {d}.",
+        "trip": f"    {a} sweeps low at {d}'s legs.",
+        "riposte": f"    {a} answers the parry with a riposte at {d}.",
+        "iaido": f"    {a} draws in one flowing cut -- iaido!",
+    }
+    return lines.get(key, f"    {a} works a flourish on {d}.")
+
+
+def _fire_move(attacker: Entity, defender: Entity, near: int, rnd: int,
+               rng: random.Random) -> tuple[str | None, int]:
+    """Select and fire one warrior move on a bare melee strike (session B).
+    Returns (key, sta_regained) or (None, 0). Makes ZERO rng calls when the
+    attacker has no eligible move, so move-less parties keep their exact RNG
+    stream (only move-users reflow). The caller builds the rider / reshapes a
+    sweep and logs the named line."""
+    if not attacker.moves:
+        return None, 0
+    w = attacker.weapon
+    if w is None or attacker.weapon_broken:
+        return None, 0
+    chance = min(1.0, MOVE_PROC_BASE
+                 + MOVE_PROC_PER_TRAINING * attacker.training)
+    passers: list[str] = []
+    for key in attacker.moves:
+        if key in attacker.moves_spent:
+            continue
+        m = MOVES.get(key)
+        if m is None or m.field_only or not move_weapon_ok(key, w):
+            continue
+        if not m.condition(attacker, defender, near, rnd):
+            continue
+        if rng.random() < chance:
+            passers.append(key)
+    if not passers:
+        return None, 0
+    key = min(passers, key=MOVE_PRIORITY.index)
+    return key, _spend_move(attacker, key)
 
 
 def _try_field_medic(fallen: Entity, party: list[Entity],
@@ -2911,6 +3306,14 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 log.append(f"    {attacker.name} stands heaving, spent by "
                            f"the rage -- no attack this round.")
                 continue
+            if attacker.stanced > 0:
+                # Iaido's follow-through: the flowing draw-cut leaves the hero
+                # stanced -- a round with the blade sheathed, no attack (the
+                # body still defends).
+                attacker.stanced -= 1
+                log.append(f"    {attacker.name} holds the iaido stance, blade "
+                           f"resettled -- no attack this round.")
+                continue
             dying = not attacker.alive      # felled earlier this round
             if attacker in party_set:
                 targets = foes
@@ -2998,6 +3401,25 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         victims = [volley]
                         shooting = True
                         fired_shots.add(attacker)
+                    elif ("skirmisher_step" in attacker.moves
+                          and "skirmisher_step" not in attacker.moves_spent
+                          and attacker in party_set):
+                        # Skirmisher's Step (the parked kiting, session B):
+                        # rather than be caught and forced to the melee grip,
+                        # the shooter gives ground -- reopening the gap by a
+                        # step. Once per fight, so it can't become the default
+                        # dance; the reload clock ticks as on any non-firing
+                        # round.
+                        gained = _spend_move(attacker, "skirmisher_step")
+                        attacker.adv -= 1
+                        note = (f" (+{gained} STA)" if gained else "")
+                        _play(log,
+                              f"    {attacker.name} skips back out of reach, "
+                              f"keeping the {w.name} up -- the gap reopens."
+                              f"{note}",
+                              f"    {attacker.name} skips back out of reach, "
+                              f"keeping the {w.name} up!")
+                        continue    # the fall-back step is the round's action
                     else:
                         attacker.switched = True
                         _play(log,
@@ -3129,6 +3551,77 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 atk_roll = attacker.pressure(
                     rng, attacking=True, cast=sweep_cast,
                     wound_pen=start_pens[attacker] if dying else None)
+
+            # --- Warrior moves (session B): a rider on a bare melee strike ---
+            # A hero making a single steel swing at a foe in contact may fire
+            # one owned move (highest priority among those that pass their
+            # proc). Sweep reshapes the swing into a two-target arc here; every
+            # other move rides the exchange via a MoveRider passed to _attack.
+            # A feint set up last round pays its +FEINT_ATK on this pass.
+            move_rider = None
+            if (not sweeping and not fireball and not shooting
+                    and atk_roll is None and attacker in party_set
+                    and attacker.moves and len(victims) == 1
+                    and _gap(attacker, victims[0]) == 0):
+                d0 = victims[0]
+                eff = (attacker.choose_cast(d0) if attacker.is_wizard
+                       else "auto")
+                if eff == "auto":
+                    eff = attacker.default_cast()
+                if eff is None:     # a bare melee swing -- moves may ride
+                    near_ct = sum(1 for t in living_targets
+                                  if not t.unseen and _gap(attacker, t) == 0)
+                    feint_bonus = 0
+                    if attacker.feint_target is d0 and d0.alive:
+                        feint_bonus = FEINT_ATK
+                        attacker.feint_target = None
+                    key, gained = _fire_move(attacker, d0, near_ct, rnd, rng)
+                    sta_note = (f" (+{gained} STA)" if gained else "")
+                    if key == "sweep":
+                        extra = [t for t in living_targets if t is not d0
+                                 and not t.unseen and _gap(attacker, t) == 0]
+                        if extra:
+                            victims = [d0, rng.choice(extra)]
+                            atk_roll = attacker.pressure(
+                                rng, attacking=True,
+                                wound_pen=(start_pens[attacker]
+                                           if dying else None))
+                            if feint_bonus:
+                                atk_roll.move_mod += feint_bonus
+                                atk_roll.move_label = "feint opening"
+                                atk_roll.total += feint_bonus
+                            names = ", ".join(v.name for v in victims)
+                            _play(log,
+                                  f"    {attacker.name} sweeps the blade in a "
+                                  f"wide arc -- {names} are both caught!"
+                                  f"{sta_note}",
+                                  f"    {attacker.name} sweeps the blade wide "
+                                  f"-- {names} both caught!")
+                        elif feint_bonus:
+                            move_rider = MoveRider("feint_payoff",
+                                                   "feint opening",
+                                                   atk=feint_bonus)
+                    elif key == "feint":
+                        attacker.feint_target = d0
+                        log.append(_move_fire_text(attacker, d0, "feint")
+                                   + sta_note)
+                        if feint_bonus:
+                            move_rider = MoveRider("feint_payoff",
+                                                   "feint opening",
+                                                   atk=feint_bonus)
+                    elif key:
+                        log.append(_move_fire_text(attacker, d0, key)
+                                   + sta_note)
+                        move_rider = build_move_rider(attacker, d0, key)
+                        if key == "iaido":
+                            attacker.stanced = 1    # a round stanced next round
+                        if feint_bonus:
+                            move_rider.atk += feint_bonus
+                            move_rider.display += "+feint"
+                    elif feint_bonus:
+                        move_rider = MoveRider("feint_payoff", "feint opening",
+                                               atk=feint_bonus)
+
             raged = attacker.rage_primed    # the primed swing resolves now
             slew = False
             struck = False
@@ -3159,7 +3652,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         def_mod=(-PAUSE_ACTION_DEF_PENALTY
                                  if defender in busy else 0),
                         def_label=busy_label.get(busy.get(defender, ""), ""),
-                        atk_roll=atk_roll, cast=cast_kind, shot=shooting)
+                        atk_roll=atk_roll, cast=cast_kind, shot=shooting,
+                        move=move_rider)
                 if was_alive and not defender.alive:
                     slew = True
                     if (defender.dead and defender.protagonist
@@ -3250,6 +3744,17 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     log.append(f"    *** The light returns to {e.name}'s "
                                f"eyes -- the puppet is free, and FURIOUS. "
                                f"***")
+        # Warrior-move states tick at round end (session B): the off-balance
+        # from a kick/trip fades, and each fighter's parry window rolls one
+        # round forward (riposte reads parried_last). A feint aimed at a foe
+        # that has since fallen is forgotten.
+        for e in actors:
+            if e.off_guard > 0:
+                e.off_guard -= 1
+            e.parried_last = e.just_parried
+            e.just_parried = False
+            if e.feint_target is not None and not e.feint_target.alive:
+                e.feint_target = None
         _debug(log, _stamina_line(party, foes))
 
         if pause_triggers:
@@ -3347,6 +3852,13 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.switched = False
         e.shots_hit = 0
         e.shots_missed = 0
+        e.moves_spent = set()
+        e.moves_refunded = 0
+        e.feint_target = None
+        e.off_guard = 0
+        e.stanced = 0
+        e.just_parried = False
+        e.parried_last = False
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
@@ -3611,23 +4123,19 @@ def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
     return (min(lo, hi), hi) if lo > hi else (lo, hi)
 
 
-# The drilled archetype's move by starting weapon -- a NAME-BASED stand-in
-# until session B ships Weapon.move_tags (pierce weapons thrust, heavy ones
-# sweep, everything bladed feints). The move itself is inert until the moves
-# system lands; the seed just travels on the sheet.
-_THRUST_WEAPONS = frozenset(("dagger", "shortsword", "spear", "rapier",
-                             "halberd"))
-_SWEEP_WEAPONS = frozenset(("club", "light hammer", "mace", "flail",
-                            "morningstar", "battleaxe", "warhammer",
-                            "zweihander", "wooden staff"))
+# The drilled archetype's starting move: the first repertoire entry the
+# starting weapon can actually perform (session B: gated by move_tags now,
+# not the old name-based stand-in). Pierce weapons thrust, heavy ones sweep,
+# blades feint, blunts pommel, anything else kicks; a ranged card skirmishes.
+_STARTER_MOVE_PREFS = ("thrust", "sweep", "feint", "pommel", "kick",
+                       "skirmisher_step")
 
 
 def _starter_move(weapon: Weapon) -> str:
-    if weapon.name in _THRUST_WEAPONS:
-        return "thrust"
-    if weapon.name in _SWEEP_WEAPONS:
-        return "sweep"
-    return "feint"
+    for key in _STARTER_MOVE_PREFS:
+        if move_weapon_ok(key, weapon):
+            return key
+    return "kick"
 
 
 def make_human(rng: random.Random, name: str,
@@ -3935,6 +4443,7 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
             h.proficiency[h.weapon.name] = rank
     buy_training(TRAINING_MAX)
     h.skill_points = points
+    autolearn_moves(h, [])              # leftover points -> a repertoire (B)
     return h
 
 
@@ -4166,6 +4675,75 @@ def learn_ability(h: Entity, name: str, log: list[str]) -> bool:
     return True
 
 
+def learn_move(h: Entity, name: str, log: list[str]) -> bool:
+    """Add a warrior move to the repertoire (session B; rpg.MOVES). No class
+    gate (the free-allocation doctrine) -- the prerequisites are PHYSICAL: the
+    repertoire is capped at combat training + 1 (deeper fighting sense holds
+    more techniques), and the move must be one the WIELDED weapon can perform
+    (learn what your steel can do -- iaido wants a katana, the finisher a
+    killing edge). Cost is the move's own (1, iaido and the finisher 2)."""
+    m = MOVES.get(name)
+    if m is None:
+        log.append(f"    No such move: {name!r}. Moves: "
+                   f"{', '.join(sorted(MOVES))}.")
+        return False
+    if name in h.moves:
+        log.append(f"    {h.name} already knows {m.display}.")
+        return False
+    cap = h.training + 1
+    if len(h.moves) >= cap:
+        log.append(f"    {h.name}'s repertoire is full ({len(h.moves)}/{cap}) "
+                   f"-- more moves need a higher combat training rank.")
+        return False
+    if not move_weapon_ok(name, h.weapon):
+        w = h.weapon.name if h.weapon is not None else "bare hands"
+        need = " or ".join(m.any_tags) if m.any_tags else "a melee weapon"
+        if name == "iaido":
+            need = "a katana"
+        elif name == "finisher":
+            need = "a blade, or a heavy blunt"
+        log.append(f"    {m.display} can't be done with {w} -- it needs "
+                   f"{need}.")
+        return False
+    if h.skill_points < m.cost:
+        log.append(f"    {h.name} needs {m.cost} skill point(s) for "
+                   f"{m.display} (has {h.skill_points}).")
+        return False
+    h.skill_points -= m.cost
+    h.moves.add(name)
+    log.append(f"    {h.name} drills a new move -- {m.display}: {m.blurb} "
+               f"[{h.skill_points} point(s) left]")
+    return True
+
+
+# The order a fighter (companion or NPC) fills a repertoire on autospend/
+# develop: a reliable rider and the sweep first, then the kill, then the rest
+# -- suited moves only (the weapon gate filters this list).
+_DOCTRINE_MOVE_ORDER = ("thrust", "sweep", "feint", "pommel", "kick", "trip",
+                        "riposte", "disarm", "finisher", "iaido")
+
+
+def autolearn_moves(h: Entity, log: list[str]) -> bool:
+    """Doctrine move-buying (session B): a MELEE fighter spends LEFTOVER points
+    on a suited repertoire (a reliable rider, then the finisher, then whatever
+    the weapon and the training cap allow). Wizards and pure shooters skip it
+    (they cast/shoot). Leftover-only by construction -- autospend_points and
+    develop_hero call it LAST -- so the core doctrine is unchanged and only the
+    surplus points of the higher levels buy moves: the flex-premium refund,
+    felt where the budget has room."""
+    if h.school or h.weapon is None or h.weapon.range > 0:
+        return False
+    bought = False
+    for name in _DOCTRINE_MOVE_ORDER:
+        if len(h.moves) >= h.training + 1:
+            break
+        if (name not in h.moves and h.skill_points >= MOVES[name].cost
+                and move_weapon_ok(name, h.weapon)
+                and learn_move(h, name, log)):
+            bought = True
+    return bought
+
+
 def train_proficiency(h: Entity, log: list[str]) -> bool:
     """Spend skill points on ONE rank of proficiency with the WIELDED weapon
     (+1 attack pressure AND +1 severity with that weapon per rank; rank n costs
@@ -4322,6 +4900,10 @@ def autospend_points(h: Entity, log: list[str]) -> bool:
                and train_proficiency(h, log)):
             bought = True
     training_to(TRAINING_MAX)
+    # Leftover points buy a warrior a repertoire (session B) -- thrust-or-
+    # sweep, then the finisher, suited to the weapon.
+    if autolearn_moves(h, log):
+        bought = True
     return bought
 
 

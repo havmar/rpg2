@@ -402,13 +402,14 @@ bigger than the fights WITHOUT pages of narration:
   rules from memory (`levelup` re-prints it). A level is 3 points now
   (2026-07-17) and EVERYTHING is on the menu -- pools (+1 max HP/STA/Power
   at 1 each), training (rank n costs 2n), proficiency and spell ranks
-  (n), and the ability catalog (`learn`); nothing grows automatically
-  anymore. **Companions autolevel** on the standard doctrine (pools to
-  the old curve, then training, then proficiency once they carry quality
-  steel) -- the log shows the purchases; mention them in passing ("Zonk
-  has been drilling"), never as a decision. Companions never buy
-  abilities on their own: if the player wants a companion to learn one,
-  `learn` works on anyone with the points banked.
+  (n), the ability catalog (`learn`), and warrior moves (`train HERO move
+  NAME`); nothing grows automatically anymore. **Companions autolevel** on
+  the standard doctrine (pools to the old curve, then training, then
+  proficiency once they carry quality steel, then a suited move or two
+  from any leftover points) -- the log shows the purchases; mention them
+  in passing ("Zonk has been drilling"), never as a decision. Companions
+  never buy the single abilities on their own: if the player wants a
+  companion to `learn` one, that works on anyone with the points banked.
 - **Offer loot.** A cleared fight prints a `Left among the dead:` line with
   the fallen foes' weapons and stats. Mention it in one short sentence --
   most of it is trash and one clause is enough ("a shortsword among the
@@ -632,6 +633,21 @@ bigger than the fights WITHOUT pages of narration:
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
+- **Warrior moves (2026-07-17): spells for fighters, and just as automatic.**
+  A move is a RIDER the engine fires on the normal exchange -- never a
+  decision the fight stops for, exactly like a wizard's casts. `train HERO
+  move NAME` buys them (1 point, iaido/finisher 2; repertoire capped at
+  combat training + 1, gated by the wielded weapon -- the levelup menu lists
+  what fits). Each melee attack, every eligible unspent move rolls to fire at
+  50% + 10% x training (training 5 = always); each fires ONCE per fight, so a
+  deep repertoire is the only way to have a rider most rounds -- and every
+  DISTINCT move that fires hands 1 STA back (cap 3 a fight), so variety keeps
+  a fighter fresh. The log names each one (thrust, feint, kick, trip, disarm,
+  pommel, sweep, riposte, iaido, Decapitate/Split Skull, the skirmisher's
+  step) -- NARRATE OVER IT: "Rhea feints, the cutthroat bites; her thrust
+  finds the gap." Companions pick up a suited move or two from leftover
+  points on their own; the PC's are the player's buys. Hero-side only for
+  now -- enemies don't use moves yet.
 - **Wizards (Magic & Mind, 2026-07-15):** MIND strictly highest of
   MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
   rank 1 instead of an archetype seed, rolled for PC, companions, and
@@ -700,8 +716,8 @@ bigger than the fights WITHOUT pages of narration:
   Multi-site quests streak per site (each site ramps and pays on its own;
   nothing forces marathoning a whole quest in one day). A level banks
   3 skill points and grants NOTHING automatically (2026-07-17): pools,
-  training, proficiency, spell ranks, and abilities are all bought from
-  the same points at the levelup menu.
+  training, proficiency, spell ranks, abilities, and warrior moves are all
+  bought from the same points at the levelup menu.
 - **Deliveries (2026-07-14):** the board's DELIVERY rows are cross-land
   courier jobs -- taken from their giver at the origin, paid by a named
   RECIPIENT at a settlement in another land (both faces are on the quest;

@@ -97,6 +97,7 @@ from rpg import (
     train_spell as _train_spell,
     buy_spellbook as _buy_spellbook,
     buy_pool as _buy_pool, learn_ability as _learn_ability,
+    learn_move as _learn_move, MOVES, move_weapon_ok,
     ABILITIES, ability_tags, training_cost,
     POOL_KINDS, POOL_BUY_CAP, SKILL_POINTS_PER_LEVEL,
     storyteller_tale, survivalist_camp,
@@ -278,9 +279,15 @@ def _weapon_from(ref) -> Weapon | None:
 def _entity_to_dict(e: Entity) -> dict:
     d = dataclasses.asdict(e)
     d["weapon"] = _weapon_ref(e.weapon)
-    # JSON has no sets: abilities and moves travel as sorted lists.
+    # JSON has no sets: abilities, moves, and the per-fight moves_spent travel
+    # as sorted lists.
     d["abilities"] = sorted(e.abilities)
     d["moves"] = sorted(e.moves)
+    d["moves_spent"] = sorted(e.moves_spent)
+    # feint_target is a live Entity reference (a per-fight state); it can't be
+    # serialized by identity, so a feint set up the instant a fight pauses
+    # simply doesn't carry across the save -- a negligible edge.
+    d["feint_target"] = None
     return d
 
 
@@ -289,6 +296,8 @@ def _entity_from_dict(d: dict) -> Entity:
     d["weapon"] = _weapon_from(d["weapon"])
     d["abilities"] = set(d.get("abilities", ()))
     d["moves"] = set(d.get("moves", ()))
+    d["moves_spent"] = set(d.get("moves_spent", ()))
+    d["feint_target"] = None
     e = Entity(**d)
     # __post_init__ resets the live tracks to full; restore the saved state.
     e.hp = d["hp"]
@@ -1146,6 +1155,29 @@ def print_levelup_menu(heroes: list) -> None:
         if buyable:
             print(f"  abilities to learn (cost, * = affordable; "
                   f"learn {first} NAME): {', '.join(buyable)}")
+        # Sink 6: the warrior moves (session B -- riders on the exchange, the
+        # engine fires them; repertoire capped at combat training + 1, gated
+        # by the wielded weapon's move tags).
+        if not h.school:
+            cap = h.training + 1
+            if h.moves:
+                print(f"  moves known ({len(h.moves)}/{cap}): "
+                      f"{', '.join(sorted(h.moves))}")
+            if len(h.moves) >= cap:
+                print(f"  moves: repertoire full ({len(h.moves)}/{cap}) -- "
+                      f"raise combat training for room")
+            else:
+                learnable = []
+                for name, m in MOVES.items():
+                    if name in h.moves or not move_weapon_ok(name, h.weapon):
+                        continue
+                    mark = "*" if h.skill_points >= m.cost else ""
+                    learnable.append(f"{name} {m.cost}{mark}")
+                if learnable:
+                    print(f"  moves to learn (cost, * = affordable; "
+                          f"train {first} move NAME): {', '.join(learnable)}")
+                elif h.weapon is not None:
+                    print(f"  moves: none fit the {h.weapon.name}")
 
 
 def cmd_levelup(args: argparse.Namespace) -> None:
@@ -2579,10 +2611,18 @@ def cmd_train(args: argparse.Namespace) -> None:
             log.append(f"    {hero.name} has no school of magic to drill.")
     elif what in SPELLS:
         _train_spell(hero, what, log)
+    elif what.startswith("move"):
+        # A warrior move (session B): `train HERO move NAME`.
+        name = what[len("move"):].strip().replace("-", " ").replace(" ", "_")
+        if not name:
+            print(f"Which move? Options: {', '.join(sorted(MOVES))}.")
+            return
+        _learn_move(hero, name, log)
     else:
         print(f"Unknown skill: {what!r}. Options: combat, weapon, "
-              f"{'|'.join(POOL_KINDS)}, magic, "
-              f"or a spell name ({', '.join(sorted(SPELLS))}).")
+              f"{'|'.join(POOL_KINDS)}, magic, a spell name "
+              f"({', '.join(sorted(SPELLS))}), or move NAME "
+              f"({', '.join(sorted(MOVES))}).")
         return
     print("\n".join(log))
     save(state)
@@ -3130,14 +3170,17 @@ def main() -> None:
              "+10 per pool a career); a SPELL NAME = one rank of a KNOWN "
              "spell (rank n costs n, cap 3 -- anyone can deepen a spell "
              "they know; books stay wizard-only); 'magic' = shorthand "
-             "for the wizard's own school spell. See `levelup` for the "
-             "whole menu (abilities are `learn`). The PC's points are "
-             "the player's choice (companions autolevel on the "
-             "doctrine).")
+             "for the wizard's own school spell; 'move NAME' = a warrior "
+             "move (session B -- the engine fires it as a rider on the "
+             "exchange; 1 point, iaido/finisher 2; repertoire capped at "
+             "combat training + 1, gated by the wielded weapon). See "
+             "`levelup` for the whole menu (abilities are `learn`). The "
+             "PC's points are the player's choice (companions autolevel "
+             "on the doctrine).")
     p.add_argument("hero")
     p.add_argument("what", nargs="+",
                    help="combat | weapon | hp | sta | power | magic | "
-                        "a spell name (e.g. 'stop time')")
+                        "a spell name (e.g. 'stop time') | move NAME")
     p.set_defaults(func=cmd_train)
 
     p = sub.add_parser(

@@ -1238,7 +1238,7 @@ ability rank needs its base).
 | Weapon proficiency rank n | n (unchanged) | 3 |
 | Spell rank n, for a spell you KNOW | n (unchanged) | 3 |
 | Alchemy rank n (arrives session C) | 2n | 5 |
-| A move (arrives session B) | 1 (iaido and the finishers 2) | repertoire ≤ training + 1 |
+| A warrior move (the repertoire) | 1 (iaido and the finisher 2) | repertoire ≤ training + 1 |
 | Single-buy abilities | 1–3 (the catalog below) | — |
 
 Training doubled in price because it is the measured strongest buy (a rank
@@ -1285,8 +1285,8 @@ HINTS a build without gating one — the **shieldman** (Bulwark), the
 **killer** (First Blood), the **hedge-healer** (healing spell rank 1, plus
 the old staff chance — the only non-wizard door into a spell), the
 **herbalist** (alchemy rank 1, session C's seed), and the **drilled** (one
-move matching the starting weapon, session B's seed; inert until the moves
-system lands).
+warrior move the starting weapon can perform — see the Warrior Moves
+add-on).
 
 **Healing became magic** (the same session): the Heal ability is deleted;
 **healing** is the tenth spell (Magic & Mind add-on — unaimed utility,
@@ -1382,6 +1382,85 @@ of spending get measured.
   the two circulating kinds), plus the rolled starting weapon. From then on
   the stock moves through drops, purchases, use — and the kit's nightly
   top-up to 1+1 (2026-07-11).
+
+---
+
+# Warrior Moves — Add-on (2026-07-17, the levelling framework session B)
+
+**Spells for warriors, under the autocombat doctrine.** A *move* is a rider
+on the normal exchange, **chosen by the engine, never a mid-fight decision**
+— the same design rule that shaped magic (the autocombat doctrine in the
+Magic & Mind add-on below). `Entity.moves` is a set of catalog keys, bought
+with skill points
+(`learn_move`; `train HERO move NAME`). The "drilled" archetype seeds one
+matching the starting weapon.
+
+## Selection & the once-per-fight rule
+
+Each **melee attack**, every owned move whose **condition** holds and that
+**hasn't fired yet this fight** rolls to fire at **50% + 10% × combat
+training** (training 5 = *always* — "a better fighter has more moves,"
+literally). Among the moves that pass in one exchange, the
+highest-**priority** one rides it:
+
+> finisher > iaido > disarm > sweep > trip > pommel > kick > riposte > feint
+> > thrust
+
+**Each move fires at most once per fight.** That one rule kills the
+repeat-penalty bookkeeping the design circled (no combo counters, no
+same-move fail states) and makes a **deep repertoire the only way to have a
+rider most rounds**. Because each eligible move rolls independently, a wider
+repertoire fires *more often* as well as *more variously* — the reward for
+learning many.
+
+## The flow refund (why depth pays)
+
+Every **distinct move that fires refunds 1 STA** (toward the maximum, cap
+**3 a fight**). Variety *is* the stamina engine: a two-move fighter gets two
+riders and 2 STA back; a six-move blademaster fights a longer, richer fight.
+**No Power costs anywhere in the system** — STA is the warrior's clock,
+Power stays the spell/ability budget, and the STA-vs-Power split survives
+intact.
+
+## Weapon gating (by tags, not exception lists)
+
+Each weapon carries `move_tags` (**pierce / blade / blunt / heavy** for
+steel, **ranged** for the missile cards). A move is eligible only if the
+wielded weapon carries one of its tags — so "some moves don't fit the
+rapier" (pierce+blade, no butcher's heft) falls out of the tags, no per-move
+exception lists. Two special gates: **iaido** is the katana's alone, and the
+**finisher** needs a killing arc (a blade, or a heavy blunt — a pure spear
+has none). Learning a move requires a weapon that can perform it, and the
+repertoire is capped at **combat training + 1**.
+
+## The repertoire (v1)
+
+| Move | Cost | Tags | Condition | Rider |
+|------|------|------|-----------|-------|
+| **Thrust** | 1 | pierce | always | +2 attack pressure this exchange |
+| **Sweep** | 1 | heavy | 2+ foes at contact | the swing catches a second foe (the hero-side sweep, one roll each defends) |
+| **Feint** | 1 | blade | round 2+ | the next attack on the same foe rides at +3 |
+| **Pommel Strike** | 1 | blade/blunt | foe unhurt (≥ 2/3 HP) | on a wounding hit: severity −2 but the foe loses its next attack |
+| **Disarm** | 1 | blade/pierce | foe armed | on a decisive hit (margin ≥ 3): the weapon flies (broken-weapon state; mirrors telekinesis rank 1) |
+| **Kick** | 1 | any melee | foe at contact | on a hit: the foe defends at −2 next round |
+| **Trip** | 1 | any melee | round 2+ | on a decisive hit (margin ≥ 3): the foe skips its next attack AND defends −2 (prone) |
+| **Riposte** | 1 | blade/pierce | parried a blow last round | +2 attack pressure this exchange |
+| **Iaido** | 2 | katana only | round 1 | +2 attack, +3 severity — then a round stanced (no attack). The katana's signature |
+| **Finisher** (Decapitate / Split Skull) | 2 | blade / heavy+blunt | foe below 1/3 max HP | +3 severity — stretches the almost-kill into the kill; the log names it |
+| **Skirmisher's Step** | 1 | ranged | a charger reaches contact | give ground to reopen the gap by a step (once per fight — kiting, ability-framed so it can't become the default dance) |
+
+Most riders are deliberately small (~+2) and near-equivalent — the value is
+**legibility** (named lines in both log levels; the DM narrates over "Rhea
+feints — the cutthroat bites"), the **flow refund**, and the handful of real
+**state riders** (disarm, trip, the finisher). The stun/prone riders respect
+`spell_ward ≥ 2` like the magic control riders (a warded apex monster is not
+pommel-stunned or tripped).
+
+**Candidate second-wave moves, NOT in v1:** guard-break (severity ignores 2
+soak — the anti-beast tool), taunt (draw one attacker onto self), battle-cry
+(waits on enemy morale). **Enemy side:** hero-only in v1 (like potions and
+standing orders); giving the drilled soldiery two moves each is a later
+content pass with its own bench round.
 
 ---
 

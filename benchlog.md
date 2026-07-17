@@ -693,3 +693,96 @@ gating — no other content moved.
   defaults on purpose: POINTS_PER_LEVEL 3 (the arithmetic anchor maps
   the old build to the point at L4/L8) and training 2n (the bench shows
   2n is a floor, not an overshoot).
+
+---
+
+**Measured numbers (2026-07-17, the levelling framework session B — the
+warrior moves system: `Weapon.move_tags`, the eleven-move repertoire, the
+engine's once-per-fight selection rider (fire chance 50% + 10% x combat
+training, priority tiebreak) with the flow refund (1 STA per distinct move
+fired, cap 3), `learn_move` + `train HERO move NAME` + the levelup menu,
+`autolearn_moves` on LEFTOVER points in `autospend_points`/`develop_hero`,
+and the new `bench_abilities` moves matchup block). Full suite re-run.**
+
+- **The headline: the suite barely moved, by construction.** Two facts
+  keep session B off the aggregate numbers. (1) The doctrine buys moves
+  only from LEFTOVER points — none exist at the midgame gate levels (the
+  arithmetic anchor spends the L8 budget exactly), so the reference
+  build gets a repertoire only in the high levels where points spill
+  over. (2) `_fire_move` makes ZERO rng calls when the attacker has no
+  eligible move, so a move-LESS party keeps its exact session-A RNG
+  stream — only move-users reflow. In the sims the only move-carriers
+  below the top band are the ~20% of rolled heroes with the "drilled"
+  archetype seed (one move, previously INERT, now live). So rank-0 and
+  at-level numbers land within noise of 2026-07-17 session A everywhere.
+- **tune.py** (10k): hideout clear **84.7** / wipe **12.0**, reckless
+  wipe **75.8** (was 84.4 / 12.4 / 79.8); barrow `[3,3,4]` clear
+  **46.5** / wipe **45.2**, reckless **98.3** (was 44.1 / 46.6 / 98.8).
+  "Not using resources mostly means death" holds — the reckless line
+  dipped ~4 points (a drilled mook's free rider helps even the
+  no-resource baseline), still lethal. HP-lost buckets on cleared
+  hideout runs 39 / 43 / 16 / 1.5 (the middle still exists).
+- **Training ladder** (5k/rank): barrow **45 -> 78 -> 95 -> 99**,
+  hideout **85 -> 96 -> 99.6 -> 99.9** (was 42/76/95/99 and
+  84/97/99.5/100) — a rank still reads as a rank; untouched within noise.
+- **Party size** (4k/size): hideout **30 / 84.5 / 98.7 / 99.7**, barrow
+  **4 / 45 / 89 / 98.7** (was 27/84/98/99.5 and 4/42/88/98) — numbers
+  still dominate.
+- **Weapons (melee)** and **ranged**: unchanged to the cell (both build
+  bare stat frames with no moves) — zweihander best duel on
+  precise/steady, katana on powerful, zweihander every swarm column,
+  staff trails; longbow 46/49/67 by field, escort 98.
+- **Bestiary** at-level, within noise of session A: cutthroat **62@1**,
+  soldier **73@3**, veteran **80@6**, champion **69@10**, blademaster
+  **64@15**, warlord **61@19**; hunter **69@3** (fled 29) at field 3.
+  The drilled soldiery are FOES, so they gain nothing; only the
+  reference duo's ~20%-drilled heroes moved, a point or two. The catalog
+  still orders correctly.
+- **The equal-cost matrix** (`bench_abilities`, 400/cell): the six
+  spending columns tell session A's story unchanged — all-in pools still
+  a trap (site 36/5/38 vs medians ~64/45/64), training-heavy still tops
+  the site row (+16..+19), the saves package poor at L4 / fine from L8,
+  strikes riding the median. Moves are NOT a matrix column (they add
+  cost, not an equal-cost reshuffle); they get their own block:
+- **The warrior-moves matchup block** (NEW; a doctrine duo with a full
+  katana repertoire GRANTED vs one without — the value CEILING, isolated
+  from the point cost): room **85 -> 97.5**, duel **79 -> 98.8** at L4;
+  room **76.5 -> 90**, duel **76.5 -> 93** at L8; room **86 -> 85**
+  (noise), duel **55.5 -> 61** at L14. The repertoire is a strong edge
+  in the low-mid game and fades as base numbers climb (the riders are
+  small and near-equivalent by design — +2 pressure means less against a
+  20-total roll). In PLAY a fighter pays for this by shaving a pool or a
+  training rank (the flex premium); the block says the trade is clearly
+  worth it through L8, marginal by L14.
+- **Disarm-the-move vs telekinesis rank 1** (L8 armed-foe duel): disarm
+  MOVE **86.5%**, telekinesis-1 **65.0%**, plain doctrine **77.5%**. They
+  do NOT price out equal — but instructively: the disarm move is a clean
+  +9 add-on to a full fighter (it WOUNDS and strips on one decisive hit),
+  while telekinesis-1-as-an-identity reads BELOW plain doctrine (the cast
+  disarm trades a damage exchange for the strip, and rank 1 has no bolt).
+  The warrior's whole-fight disarm being the better deal is the right
+  answer; noted, not a flag.
+- **Careers** (200): reach **L5 86% / L8 62% / L11 32% / L14 16% /
+  L20 7%**, median death **L8**, capped median 127 days / 37 quests. The
+  one real mover of the session: the **L8 gate 56% -> 62%** — a ~6-point
+  recovery toward the pre-session-A 66%. This is the flex-premium REFUND
+  arriving, delivered by the drilled seed's now-live move plus the
+  high-level leftover moves (no mid-doctrine move buy was added, so the
+  midgame reference build is otherwise identical to session A). Played
+  parties, which can spend the premium ON moves at the midgame (the
+  matchup block's +14 at L8), should run easier still than this number.
+- **Generated content** (300/cell): at-level rooms win **68-95** (win@L
+  column; the L9/L15 dips are the doctrine's rank-boundary lags, as
+  before); at-level sites **93 at L1** sliding to **~43-48 at 19-20** —
+  the familiar shape, within noise.
+- **Flags for the designer**: the hideout still sits ~30 points above the
+  2026-07 retune's ~55% target (the standing flag; session C's kit shrink
+  remains the scheduled closer — session B is a repertoire, not a
+  difficulty lever). The career L8 gate recovered ~6 points but stays
+  below its old +-5 band around 66% — the rest of the premium is still
+  out there for a played fighter to reclaim by CHOOSING moves. Design
+  decision left standing: moves cost no Power (STA is the warrior's
+  clock), and the doctrine buys them leftover-only so the suite stays
+  comparable — the alternative (a mid-doctrine move buy that shaves a
+  pool) is a one-line change if the designer wants the midgame refund
+  baked into the reference rather than left as a player choice.

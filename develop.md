@@ -230,13 +230,16 @@ a pointer: what the file is, how it's run, where its docs are.
   training at 2n, proficiency, monotone).
   `python bench_bestiary.py [--trials N] [--kind wolf]`.
 - `bench_abilities.py` — the equal-cost matrix (2026-07-17, levelling
-  session A; grows in B/C): frames at L4/L8/L14, each column one
+  session A; grown in B): frames at L4/L8/L14, each column one
   whole-budget way to spend the same points (reference doctrine /
   training-heavy / pools-heavy / proficiency-heavy / the saves package /
   the strikes package), rows = at-level generated room, generated site,
   soldiery-ladder duel; acceptance band +-10 of the row median, flags
   printed. Utility abilities get an exact-odds table on their own axis.
-  `python bench_abilities.py [--trials N] [--frame 8]`.
+  **Session B added** the warrior-moves matchup block (a doctrine duo with
+  a GRANTED katana repertoire vs one without, on the room/duel rows — what
+  the repertoire buys) and the disarm-move-vs-telekinesis-rank-1 price
+  check. `python bench_abilities.py [--trials N] [--frame 8]`.
 - `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
   Re-run after touching the press or the melee loop.
@@ -315,7 +318,12 @@ mechanic *does* and *why* is rules.md's job.
   `FIELD_MEDIC_DC`, `STORYTELLER_DC` / `STORYTELLER_POWER_BONUS`,
   `SURVIVALIST_DC`, `ARROW_PARRY_DEF` / `_2`; the healing spell's
   `HEALING_CAST_COST` / `HEALING_MEND` / `HEALING_REVIVE_HP` sit in the
-  magic block), economy (`POTION_PRICE`, drop chances, and the
+  magic block), the warrior moves (2026-07-17, session B: the `MOVES`
+  catalog + `learn_move` + `_WEAPON_MOVE_TAGS`; the knobs `MOVE_PROC_BASE`
+  / `MOVE_PROC_PER_TRAINING`, `MOVE_STA_REFUND` / `MOVE_REFUND_CAP`, the
+  rider magnitudes `THRUST_ATK` / `FEINT_ATK` / `RIPOSTE_ATK` / `IAIDO_*`
+  / `FINISHER_SEV` / `POMMEL_SEV` / `OFF_GUARD_PENALTY`, and
+  `MOVE_LAND_MARGIN`), economy (`POTION_PRICE`, drop chances, and the
   level-pay formulas `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
@@ -393,7 +401,7 @@ mechanic *does* and *why* is rules.md's job.
   `storyteller_tale` / `survivalist_camp` (the night abilities; session's
   night paths call them), `party_wiped`, `start_fight` (revive-only).
 - **The ability catalog in the engine** (2026-07-17) — `Entity.abilities`
-  (a set; `alchemy` and `moves` are inert schema seeds for sessions C/B);
+  (a set; `alchemy` is an inert schema seed for session C);
   Bulwark in `_try_save`, First Blood in `_first_blood`, the conversions
   gated in `standing_order` / `sim_pause_policy` / `_do_pause_action`,
   Rage in `pressure` (the +2) + group_combat's kill bookkeeping and the
@@ -403,8 +411,28 @@ mechanic *does* and *why* is rules.md's job.
   defense), Point-Blank Mastery in group_combat's contact/shooting
   branches, Rapid Reload in `Entity.effective_reload`, the night pair in
   `storyteller_tale` / `survivalist_camp`. The archetype seed table lives
-  in `make_human` (`_starter_move` is the session-B stand-in for weapon
-  move tags).
+  in `make_human` (`_starter_move` picks the drilled seed's move by the
+  weapon's tags).
+- **Warrior moves** (2026-07-17, levelling session B — rules.md's Warrior
+  Moves add-on) — `rpg.py`: the moves constants block + the `Move`/`MOVES`
+  catalog + `MOVE_PRIORITY` + `MoveRider`/`build_move_rider` +
+  `move_weapon_ok`/`_finisher_ok`/`finisher_name` (just after the WEAPONS
+  catalog, which now carries `Weapon.move_tags` via `_WEAPON_MOVE_TAGS`);
+  `Entity`'s per-fight move state (`moves_spent`, `moves_refunded`,
+  `feint_target`, `off_guard`, `stanced`, `just_parried`/`parried_last`,
+  cleared in `_clear_fight_states`); the selection hook `_fire_move` +
+  `_spend_move` + `_move_fire_text`, called from `group_combat`'s bare-
+  melee-strike branch (sweep reshapes the swing there; the skirmisher's
+  step lives in the arrival-volley branch); the riders inside `_attack`
+  (the atk/sev folds + the disarm/trip/kick/pommel-stun outcome block;
+  `just_parried` set on a melee parry) and the `off_guard` defense penalty
+  in `pressure`; the round-end tick (off_guard/parried_last/feint cleanup)
+  and the `stanced` skip in group_combat. Learned via `learn_move`
+  (repertoire ≤ training + 1, weapon-gated); `autolearn_moves` spends
+  LEFTOVER points on a suited repertoire (called last in `autospend_points`
+  and `develop_hero`). `session.py`: `train HERO move NAME` (cmd_train),
+  the levelup menu's moves section, `MOVES`/`move_weapon_ok`/`learn_move`
+  imports, and the `moves_spent`/`feint_target` serializer handling.
 - **The party layer** (2026-07-11) — `rpg.py`: the satisfaction helpers
   (`adjust_satisfaction` with the cowardly/brave injury scaling,
   `satisfaction_after_fight`, `wants_to_leave` / `leave_threshold`,
@@ -544,68 +572,71 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-17, after the levelling framework session A —
-the point economy (3 points/level, pools bought, training at 2n), the
-ability catalog (the conversions are LEARNED now), healing-as-a-spell,
-the staff's +1 Power, the archetype seed table; doctrine v2 keeps every
-sim on the old default build priced in the new currency). The full dated
-report of every measured re-tuning lives in `benchlog.md`; this is only
-the standing summary — refresh it whenever a new entry lands there.**
+**Current state (2026-07-17, after the levelling framework session B —
+the warrior moves system: the eleven-move repertoire, the once-per-fight
+selection rider (fire 50% + 10% x training) with the 1-STA flow refund,
+`learn_move`/`train HERO move NAME`, and leftover-only doctrine move buys.
+Session A's economy (3 points/level, pools bought, training at 2n, the
+ability catalog, healing-as-a-spell) still underlies doctrine v2). The
+full dated report of every measured re-tuning lives in `benchlog.md`; this
+is only the standing summary — refresh it whenever a new entry lands
+there.**
 
-- **The batch's headline pair.** Single-site sims got SAFER but
-  flee-happier (the gated conversions make the sim policy retreat where
-  it used to convert, and with the return-trip loop that is better
-  play); the CAREER mid-band paid the economy's flex premium. Melee and
-  ranged weapon matrices are untouched within noise.
-- **Hideout** (rank 0, 10k runs): clear **84.4** / wipe **12.4**;
-  reckless (no-resource) wipe **79.8**. **Barrow** `[3, 3, 4]`: clear
-  **44.1** / wipe **46.6**; reckless wipe 98.8. "Not using resources
+- **Session B barely moved the suite, by construction.** The doctrine
+  buys moves only from LEFTOVER points (none at the midgame gate levels),
+  and `_fire_move` makes ZERO rng calls for a move-less party, so only
+  move-users reflow. Below the top band the only move-carriers are the
+  ~20% drilled-seed heroes (one move, now live instead of inert). Rank-0
+  and at-level numbers land within noise of session A.
+- **Hideout** (rank 0, 10k runs): clear **84.7** / wipe **12.0**;
+  reckless (no-resource) wipe **75.8**. **Barrow** `[3, 3, 4]`: clear
+  **46.5** / wipe **45.2**; reckless wipe 98.3. "Not using resources
   mostly means death" holds.
-- **Training ladder** (5k/rank): barrow **42 -> 76 -> 95 -> 99**,
-  hideout **84 -> 97 -> 99.5 -> 100** — a rank still reads as a rank
-  (the whole ladder rode the retreat-happier policy up).
-- **Party size** (5k/size, sizes 1-4): hideout **27 / 84 / 98 / 99.5**,
-  barrow **4 / 42 / 88 / 98** — numbers still dominate; XP x 2/N is
-  the counterweight.
+- **Training ladder** (5k/rank): barrow **45 -> 78 -> 95 -> 99**,
+  hideout **85 -> 96 -> 99.6 -> 99.9** — a rank still reads as a rank.
+- **Party size** (4k/size, sizes 1-4): hideout **30 / 84.5 / 98.7 /
+  99.7**, barrow **4 / 45 / 89 / 98.7** — numbers still dominate;
+  XP x 2/N is the counterweight.
 - **Weapons (melee)**: zweihander best duel on precise/steady, katana on
   powerful/balanced, zweihander owns every swarm column, staff trails on
-  purpose — no weapon tops every cell. Ranged matrix unchanged (longbow
-  46/49/67 by field, katana 97 flat, escort 91-99; the cadence-1 wart
-  stands as flagged 2026-07-16).
+  purpose. Ranged matrix unchanged (longbow 46/49/67 by field, katana 97
+  flat, escort 98). Both build bare stat frames — untouched by moves.
 - **The equal-cost matrix** (`bench_abilities.py`, 400/cell, frames
-  L4/L8/L14): combat columns mostly land within +-10 of the row median.
-  Two structural findings: **all-in pools is a trap build** (site clears
-  36/5/38 vs medians 64/45/64 — pools without training buy corpse-phase),
-  and **training-heavy still tops the site row even at 2n** (+16..+19) —
-  the doubling is a floor, not an overshoot. The saves package is poor
-  on a 9-point L4 budget, fine from L8; the strikes package rides the
-  median. Utility abilities land 72-97% by their stat (exact odds, own
-  axis).
-- **Bestiary at-level win rates**: drifted DOWN a band with doctrine
-  v2's training lag and no free conversions (cutthroat 62@1, soldier
-  72@3, veteran 81@6, champion 69@10, blademaster 65@15, warlord 63@19,
-  hunter 66@3 at field 3) — deeper into the 55-75 target band, which
-  mostly re-absorbs the pain-2 upward drift flagged earlier; the catalog
-  still orders correctly.
-- **Generated content** (300/cell): at-level rooms win **68-94** (the
-  L9/L15-16 dips are the doctrine's rank-boundary lags); at-level sites
-  **~94 at L1** sliding to **~47 at 19-20**.
-- **Careers** (200): reach **L5 86% / L8 56% / L11 30% / L14 17% /
-  L20 6%**, median death **L8**, capped median 171 days / 41 quests.
-  The L8 gate broke its ~5-point band (66 -> 56): the attribution probe
-  (conversions grafted back universally) reads 58%, so ~2 points are
-  the gating and ~8 are the flex premium — the doctrine build reaches
-  training 3 at L8 (was L7) and rank 4 near L13 (was L11). The premium
-  is DESIGNED and currently buys nothing back; sessions B (moves) and C
-  (alchemy) are the refund — re-judge the gate when they land. NOTE no
-  sim buys the new abilities and a played party gets Berserk back for 1
-  point, so played careers run easier than these numbers.
-- **Open flags for the designer**: the hideout sits ~29 points above the
-  2026-07 retune's ~55% clear target (the standing flag, wider — session
-  C's kit shrink remains the scheduled closer); the career L8 dip as
-  attributed above (levers if the table feels it before B: doctrine
-  order training-before-pools, then POINTS 3 -> 4); all-in pools is a
-  trap the levelup menu should keep steering past.
+  L4/L8/L14): session A's story unchanged — **all-in pools is a trap**
+  (site 36/5/38 vs medians ~64/45/64), **training-heavy tops the site
+  row** (+16..+19), the saves package poor at L4 / fine from L8. Utility
+  abilities land 72-97% by their stat.
+- **The warrior-moves matchup block** (`bench_abilities`, NEW): a
+  doctrine duo with a GRANTED katana repertoire vs one without — the
+  value ceiling. Room **85->97.5** / duel **79->98.8** at L4; room
+  **76.5->90** / duel **76.5->93** at L8; room **86->85** (noise) / duel
+  **55.5->61** at L14. A strong low-mid edge that fades as base numbers
+  climb; in play the fighter pays for it by shaving a pool or a training
+  rank. Disarm-the-move **86.5%** vs telekinesis-1 **65%** vs plain
+  **77.5%** (the move wounds-and-strips on one hit; tk-1 trades a damage
+  exchange for the strip).
+- **Bestiary at-level win rates** (within noise of session A): cutthroat
+  62@1, soldier 73@3, veteran 80@6, champion 69@10, blademaster 64@15,
+  warlord 61@19, hunter 69@3 at field 3. The soldiery are FOES (no
+  moves); the catalog still orders correctly.
+- **Generated content** (300/cell): at-level rooms win **68-95**; at-level
+  sites **93 at L1** sliding to **~43-48 at 19-20**.
+- **Careers** (200): reach **L5 86% / L8 62% / L11 32% / L14 16% /
+  L20 7%**, median death **L8**, capped median 127 days / 37 quests. The
+  **L8 gate recovered 56% -> 62%** — the flex-premium refund arriving via
+  the drilled seed's now-live move plus high-level leftover moves. It
+  stays below its old ~66% band; the rest of the premium is there for a
+  PLAYED fighter to reclaim by choosing moves (the matchup block's +14 at
+  L8) — and a played party still gets Berserk back for 1 point too. So
+  played careers run easier than these numbers.
+- **Open flags for the designer**: the hideout still sits ~30 points above
+  the 2026-07 retune's ~55% clear target (the standing flag — session C's
+  kit shrink is the scheduled closer; moves are a repertoire, not a
+  difficulty lever); the career L8 gate recovered ~6 points but stays
+  below ~66% (the leftover-only doctrine keeps the reference comparable —
+  a mid-doctrine move buy that shaves a pool is a one-line change if the
+  midgame refund should be baked in rather than left a player choice);
+  all-in pools is a trap the levelup menu should keep steering past.
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
@@ -679,12 +710,15 @@ quest sight (the board blurs to the party's best MIND). **Cross-land
 deliveries** (2026-07-14) send the party travelling. **Ranged combat &
 guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
 shooter foe rows, cultural arms, and the notice contest (rules.md's
-Ranged Combat & the Field add-on). **The levelling framework's session A
-is in (2026-07-17)** — the point economy (3 points/level, pools on the
-menu, training at 2n), the eleven-entry ability catalog, healing as the
-tenth spell, the archetype seed table (rules.md's Progression add-on).
-Next: **levelling sessions B and C** (the warrior moves system, then
-alchemy & the potion rework — specs in plan.md), then stat
+Ranged Combat & the Field add-on). **The levelling framework's sessions A
+and B are in (2026-07-17)** — session A: the point economy (3 points/
+level, pools on the menu, training at 2n), the eleven-entry ability
+catalog, healing as the tenth spell, the archetype seed table; session B:
+the warrior moves system (rules.md's Warrior Moves add-on) — `move_tags`,
+the eleven-move repertoire, the engine's once-per-fight selection rider
+with the flow refund, `learn_move` / `train HERO move NAME`, and the
+`bench_abilities` moves matchup block. Next: **levelling session C**
+(alchemy & the potion rework — spec in plan.md), then stat
 transcendence + the wraith (the rest of the old magic phase), armor
 (note the designer's lean: probably never important), named
 weapon instances — and the career sim's finding that the 14-20 band lacks
