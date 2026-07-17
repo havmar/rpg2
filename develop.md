@@ -75,8 +75,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the roadmap: planned features only**, in build order (next
-  up: major questlines & the story layer), plus parked ideas and open
-  questions.
+  up: the levelling framework — points, abilities, moves, alchemy; the
+  2026-07-16 spec lives there), plus parked ideas and open questions.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
@@ -632,7 +632,10 @@ quest sight (the board blurs to the party's best MIND). **Cross-land
 deliveries** (2026-07-14) send the party travelling. **Ranged combat &
 guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
 shooter foe rows, cultural arms, and the notice contest (rules.md's
-Ranged Combat & the Field add-on). Next: stat
+Ranged Combat & the Field add-on). Next: **the levelling framework**
+(designed 2026-07-16, full spec in plan.md — the point economy,
+learnable abilities, the warrior moves system, the alchemy tree; three
+implementation sessions A/B/C), then stat
 transcendence + the wraith (the rest of the old magic phase), armor
 (note the designer's lean: probably never important), named
 weapon instances — and the career sim's finding that the 14-20 band lacks
