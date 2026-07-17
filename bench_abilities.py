@@ -27,8 +27,10 @@ price is the failure to catch. Perfect balance is explicitly NOT the bar
 survivalist, field medic) are measured on their own axis: the exact-odds
 table at the bottom (they buy nights and lives, not clear rate).
 
-Sessions B/C grow this file: a moves matchup block (B; disarm-the-move
-priced against telekinesis rank 1) and the alchemist career column (C).
+Session B grew this file with the warrior-moves matchup block (a doctrine
+duo with a granted katana repertoire vs one without) and the disarm-move-
+vs-telekinesis-rank-1 pricing check; session C adds the alchemist career
+column.
 
 Run:  python bench_abilities.py [--trials N] [--frame 8]
 """
@@ -199,6 +201,113 @@ def bench_frame(level: int, trials: int) -> None:
           "the acceptance band)")
 
 
+def _grant_repertoire(h: rpg.Entity) -> None:
+    """Grant a katana fighter a full suited repertoire FOR FREE (points set
+    aside), so the block measures what the moves BUY in the fight, isolated
+    from their point cost -- the ceiling, priced separately below."""
+    keep = h.skill_points
+    h.skill_points = 99
+    rpg.autolearn_moves(h, _NO_LOG)
+    _NO_LOG.clear()
+    h.skill_points = keep
+
+
+def _moves_duo(level: int, rng: random.Random, with_moves: bool) -> list:
+    names = rng.sample(rpg.NAMES, 2)
+    duo = [_base_hero(rng, n, level) for n in names]
+    for h in duo:
+        _doctrine(h)
+        if with_moves:
+            _grant_repertoire(h)
+    return duo
+
+
+def _run_room(duo: list, level: int, rng: random.Random) -> bool:
+    pool = rng.choice(pools_for(level))
+    kinds = build_room(room_budget(level, 1.0), pool, rng, final=True)
+    foes = [make_foe(k, i + 1, rng) for i, k in enumerate(kinds)]
+    rpg.sim_fight(duo, foes, rng, _NO_LOG)
+    _NO_LOG.clear()
+    return any(h.alive for h in duo) and not any(f.alive for f in foes)
+
+
+def _run_duel(duo: list, level: int, rng: random.Random) -> bool:
+    spec = FOES[DUEL_ROW[level]]
+    foes = [make_foe(DUEL_ROW[level], i + 1, rng) for i in range(spec.ref_pack)]
+    rpg.sim_fight(duo, foes, rng, _NO_LOG)
+    _NO_LOG.clear()
+    return any(h.alive for h in duo) and not any(f.alive for f in foes)
+
+
+def moves_matchup(trials: int) -> None:
+    """The warrior-moves matchup block (session B): the reference doctrine duo
+    with a full katana repertoire GRANTED vs the same duo without one, on the
+    room and duel rows. The gap is what the repertoire buys in the fight (the
+    riders + the flow refund); the moves cost points too (leftover on the
+    doctrine, or a pool shaved), so this is the value CEILING, not a free win.
+    Acceptance: a repertoire should read as a modest, positive edge -- the
+    riders are small and near-equivalent by design, the value is legibility +
+    the flow refund, not a power spike."""
+    print(f"\n--- the warrior moves: doctrine duo, repertoire GRANTED vs "
+          f"none ({trials} trials/cell) ---")
+    print(f"{'frame':<8}{'room base':>11}{'room +moves':>13}"
+          f"{'duel base':>11}{'duel +moves':>13}{'repertoire':>13}")
+    for level in FRAMES:
+        rates = {}
+        for tag, rowfn in (("room", _run_room), ("duel", _run_duel)):
+            for wm in (False, True):
+                rng = random.Random(9001 + level)
+                wins = sum(rowfn(_moves_duo(level, rng, wm), level, rng)
+                           for _ in range(trials))
+                rates[(tag, wm)] = 100 * wins / trials
+        # a sample repertoire (deterministic: what a katana fighter learns)
+        sample = _base_hero(random.Random(1), "x", level)
+        _doctrine(sample)
+        _grant_repertoire(sample)
+        rep = ",".join(sorted(sample.moves)) or "-"
+        print(f"L{level:<7}{rates[('room', False)]:>10.1f}%"
+              f"{rates[('room', True)]:>12.1f}%{rates[('duel', False)]:>10.1f}%"
+              f"{rates[('duel', True)]:>12.1f}%   {rep}")
+    print("  (repertoire = the suited katana moves the fighter is granted at "
+          "that frame)")
+
+
+def disarm_pricing(trials: int) -> None:
+    """Disarm-the-move vs telekinesis rank 1 (the cast disarm) -- the plan's
+    equal-price check: both are ~1 point and both strip a foe's weapon (the
+    move on a decisive melee hit, the cast on a won opposed exchange). Measured
+    on the L8 soldiery duel (armed foes). They should read comparably; the
+    move is melee-gated and free of Power, the cast reaches at range and costs
+    Power -- different bills, similar value."""
+    level = 8
+    print(f"\n--- disarm-the-move vs telekinesis rank 1 (L{level} armed-foe "
+          f"duel, {trials} trials) ---")
+
+    def duo_move(rng):
+        duo = [_base_hero(rng, n, level) for n in rng.sample(rpg.NAMES, 2)]
+        for h in duo:
+            _doctrine(h)
+            h.moves.add("disarm")      # the ~1-point move
+        return duo
+
+    def duo_tk(rng):
+        duo = [_base_hero(rng, n, level) for n in rng.sample(rpg.NAMES, 2)]
+        for h in duo:
+            _doctrine(h)
+            h.school = "telekinesis"   # rank-1 telekinesis = the disarm only
+            h.spells = {"telekinesis": 1}
+        return duo
+
+    for label, builder in (("disarm move", duo_move),
+                           ("telekinesis 1", duo_tk),
+                           ("plain doctrine", None)):
+        rng = random.Random(4242 + level)
+        wins = sum(_run_duel((builder(rng) if builder
+                              else _moves_duo(level, rng, False)), level, rng)
+                   for _ in range(trials))
+        print(f"  {label:<16}{100 * wins / trials:>6.1f}% duel win")
+
+
 def utility_axis() -> None:
     """The utility buys, on their own axis: exact 2d6 odds per stat (they
     buy nights, Power and lives, not clear rate -- plan.md)."""
@@ -231,6 +340,8 @@ def main() -> None:
     args = ap.parse_args()
     for level in ([args.frame] if args.frame else FRAMES):
         bench_frame(level, args.trials)
+    moves_matchup(args.trials)
+    disarm_pricing(args.trials)
     utility_axis()
 
 

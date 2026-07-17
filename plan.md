@@ -17,27 +17,30 @@ rules.md — the World & Navigation add-on and the updated wound-tier /
 XP sections; measured numbers in benchlog.md. What remains from that design
 session lives in the open questions and parked ideas below.)*
 
-## Next up — the levelling framework (designed 2026-07-16; sessions B and C remain)
+## Next up — the levelling framework (designed 2026-07-16; session C remains)
 
 The shortlist's "levelling framework" foundation, designed in the
 2026-07-16 session and split into three implementation sessions, each
-ending with a full bench re-run and a benchlog entry. **Session A (the
-point economy & the ability catalog) SHIPPED 2026-07-17** — 3 points per
-level, pools on the menu, training at 2n, the eleven-entry single-buy
-catalog (the three parked ranged abilities included), healing as the
-tenth spell, the staff's +1 Power, the five-entry archetype seed table,
-doctrine v2 across the sims, and the new `bench_abilities.py`; mechanics
-in rules.md (the Progression add-on rewrite + the ability catalog),
-measured numbers in benchlog.md (2026-07-17 — note the attributed career
-mid-band dip: the flex premium paid, its refund scheduled below).
-Terminology settled: **ability** is the umbrella word; ranked multi-buy
-tracks are **skills** (combat training, weapon proficiency, spells,
-alchemy); the warrior repertoire entries are **moves**. "Perk" is retired.
+ending with a full bench re-run and a benchlog entry. **Sessions A and B
+SHIPPED 2026-07-17.** Session A (the point economy & the ability catalog)
+— 3 points per level, pools on the menu, training at 2n, the eleven-entry
+single-buy catalog, healing as the tenth spell, the staff's +1 Power, the
+five-entry archetype seed table, doctrine v2. Session B (the warrior moves
+system) — `Weapon.move_tags`, the eleven-move repertoire, the engine's
+selection hook (fire chance 50% + 10%/training, once per fight, priority
+tiebreak), the flow refund (1 STA per distinct move, cap 3), `learn_move`
++ `train HERO move NAME` + the levelup menu, autospend/develop leftover
+move buys, and the `bench_abilities` moves matchup block. Mechanics in
+rules.md (the Progression add-on + the new Warrior Moves add-on), measured
+numbers in benchlog.md (2026-07-17). Terminology settled: **ability** is
+the umbrella word; ranked multi-buy tracks are **skills** (combat
+training, weapon proficiency, spells, alchemy); the warrior repertoire
+entries are **moves**. "Perk" is retired.
 
 Still coming forward from the parked list: **overfill potions** (ships as
-the overcharge doctrine, session C), **the alchemist** (the whole
-session-C tree), **kiting** (ships as the skirmisher's step move,
-session B), and **weapon-granted abilities** (superseded: moves are
+the overcharge doctrine, session C) and **the alchemist** (the whole
+session-C tree). Already shipped: **kiting** (the skirmisher's step move,
+session B) and **weapon-granted abilities** (superseded — moves are
 weapon-gated by tags, which is that idea grown up).
 
 The one-sentence shape (in the engine since session A): **a level grants
@@ -48,71 +51,21 @@ class gates anywhere: the first rank of anything is buyable by anyone
 only (a move needs a weapon that can do it, spellBOOKS stay
 wizard-gated, alchemy is open to all but rolls off MIND).
 
-Session A left two seeds in the schema for the sessions below:
-`Entity.moves` (the drilled archetype grants one, chosen by a name-based
-stand-in for the move tags until B lands) and `Entity.alchemy` (the
-herbalist archetype grants rank 1) — both inert until their systems ship.
+Session A's remaining schema seed for the session below: `Entity.alchemy`
+(the herbalist archetype grants rank 1) — inert until session C ships the
+brew. (The `Entity.moves` seed is live now — session B.)
 
-### Session B — the moves system (the warrior repertoire)
+### Session B — the moves system (SHIPPED 2026-07-17)
 
-Spells for warriors, under the autocombat doctrine: **a move is a rider
-on the normal exchange, chosen by the engine, never a mid-fight decision.**
-
-**Selection.** Each attack, if an owned move is *eligible* (its condition
-holds) and unspent, it fires with chance **50% + 10% x training** (rank 5
-= always — "higher fighting ability means more moves", literally); ties
-broken by a fixed priority (finisher > disarm > sweep > trip > pommel >
-kick > riposte > feint > thrust). **Each move fires at most once per
-fight** — that single rule kills the repeat-penalty bookkeeping the
-brainstorm circled (no combo counters, no same-move fail states) and
-makes a deep repertoire the only way to have a rider every round.
-
-**Flow — why learn many moves when fights run 3-6 rounds:** every
-DISTINCT move that fires refunds **1 STA** (cap 3 per fight). Variety IS
-the stamina engine the brainstorm wanted; a two-move fighter gets two
-riders and 2 STA back, a six-move blademaster fights a longer, richer
-fight. No Power costs anywhere in the system (the designer's open
-question, answered): STA is the warrior's clock and Power stays the
-spell/ability budget — the STA-vs-Power split survives intact.
-
-**Weapon gating** by a new `Weapon.move_tags` field (`pierce` / `blade` /
-`blunt` / `heavy`; ranged cards get `ranged`). The rapier is `pierce
-blade` and simply lacks the tags for the butcher moves — "some moves
-don't fit the rapier" falls out of the tags, no per-move exception lists.
-
-| Move | Cost | Tags | Condition | Rider |
-|------|------|------|-----------|-------|
-| **Thrust** | 1 | pierce | always | +2 attack pressure this exchange |
-| **Sweep** | 1 | heavy | 2+ foes engage the hero | this attack strikes 2 targets (the monster-sweep chassis, hero-side) |
-| **Feint** | 1 | blade | round 2+ | next round's attack vs the same target at +3 |
-| **Pommel strike** | 1 | blade, blunt | target unhurt or lightly hurt | on a wounding hit: severity −2 but the target loses its next attack (the stun-rider chassis) |
-| **Disarm** | 1 | blade, pierce | target carries a breakable weapon | if the attack lands with margin ≥ 3: weapon flies (broken-weapon state; once per foe; mirrors telekinesis rank 1 — the bench checks the two price out comparably) |
-| **Kick** | 1 | any | target engaged with the hero | on a hit: target defends at −2 next round |
-| **Trip** | 1 | any | round 2+ | on margin ≥ 3: target skips its next attack AND defends −2 next round (prone) |
-| **Riposte** | 1 | blade, pierce | hero parried last round | +2 attack pressure this exchange |
-| **Iaido** | 2 | katana only | round 1 | +2 attack, +3 severity — then the hero stands stanced round 2 (no attack). The katana's signature |
-| **Finisher: Decapitate / Split Skull** | 2 | blade / heavy+blunt (not pierce) | target below 1/3 max HP | +3 severity — stretches the almost-kill into the kill; the log names it and the DM gets the best line in the fight |
-| **Skirmisher's step** | 1 | ranged | a charger reaches gap 0 | step back to gap 1 once per fight (the parked kiting, ability-framed so it can't become the default dance) |
-
-Most riders are deliberately small (+2-ish) and mechanically near-
-equivalent — the brainstorm's own read. The value of the system is
-legibility (named lines in both log levels; the DM narrates over "Rhea
-feints — the cutthroat bites") plus the flow refund plus the handful of
-real state riders (disarm, trip, the finishers).
-
-Candidate second-wave moves, NOT in v1: guard-break (severity ignores 2
-soak — the anti-beast tool), taunt (draw one attacker onto self — press
-manipulation, the wizard-protector), battle-cry (waits on enemy morale).
-
-Enemy side: hero-only in v1 (like potions and standing orders). Giving
-the drilled soldiery rows (blademaster, warlord) two moves each is a
-later content pass with its own bench round — noted, not scheduled.
-
-**Touch list**: `Weapon.move_tags`, `Entity.moves` + per-fight spent set,
-the selection hook in `group_combat`'s attack step, the riders (mostly
-existing chassis: sweep, stun, broken-weapon, pressure mods), log lines
-both levels, `train HERO move NAME` + levelup menu, autospend v2 buys
-fighter companions thrust-or-sweep then a finisher, bench extension.
+Shipped as designed — the full mechanics now live in rules.md's **Warrior
+Moves add-on** (the eleven-move repertoire, the selection rule, the flow
+refund, the tag gating), the code (rpg.py's warrior-moves block +
+`group_combat` hook; `learn_move` and `train HERO move NAME`), and the
+`bench_abilities` moves matchup block; measured numbers in benchlog.md
+(2026-07-17). The one carry-forward left for a later content pass:
+**enemy-side moves** (giving the drilled soldiery two moves each) and the
+**second-wave moves** (guard-break, taunt, battle-cry) — both noted, not
+scheduled.
 
 ### Session C — alchemy & the potion rework
 
@@ -195,18 +148,19 @@ rules.md sections, bench + career re-run with the kit-shrink retune.
   the OLD default build in the new currency. Session A's full-suite run
   isolated the economy change; the drift was measured and attributed
   (benchlog 2026-07-17).
-- **Per-session gates**: full suite re-run at the end of B and C.
-  Careers: session A left reach-L8 at **56%** (66% before; ~8 points the
-  flex premium, ~2 the conversions gating — the premium buys the B/C
-  content, so **re-judge the career gate when B lands and autospend buys
-  moves**); session C is the exception — the kit shrink deliberately
-  moves numbers, targets: hideout to the 55-65 clear band, reckless wipe
-  stays ≥ ~75% ("not using resources mostly means death" holds), careers
-  re-anchored and written up.
-- **Session B adds a moves matchup block** to bench_abilities (each move
-  package vs the reference duo; disarm-the-move priced against
-  telekinesis-rank-1); **session C adds the alchemist career column**
-  (the L15 maxed alchemist vs the L15 fighter reference).
+- **Per-session gates**: full suite re-run at the end of each. Session B's
+  re-run (benchlog 2026-07-17) held the career curve within noise — the
+  doctrine buys moves only from LEFTOVER points, so the midgame flex
+  premium stands and the refund lands where the budget has room (high
+  levels) and, in play, wherever a fighter chooses a move over a pool.
+  Session C is the exception — the kit shrink deliberately moves numbers,
+  targets: hideout to the 55-65 clear band, reckless wipe stays ≥ ~75%
+  ("not using resources mostly means death" holds), careers re-anchored
+  and written up.
+- **The moves matchup block** shipped in bench_abilities (session B — a
+  doctrine duo with a granted repertoire vs one without, plus the disarm-
+  move-vs-telekinesis-rank-1 price check); **session C adds the alchemist
+  career column** (the L15 maxed alchemist vs the L15 fighter reference).
 
 ### Settled here vs. designer decision points
 
@@ -223,13 +177,15 @@ Genuinely open — session A's picks stand unless flipped:
 1. ~~Points per level 3 vs 4 (and training 2n)~~ **Session A kept 3 and
    2n** (the arithmetic anchor maps the old build exactly at L4/L8; the
    bench read 2n as a floor, not an overshoot). Re-open only if the
-   mid-band feels grim at the table before B's refund lands — levers in
-   order: doctrine order (training before pools), then 3 -> 4.
+   mid-band feels grim at the table — levers in order: doctrine order
+   (training before pools), then 3 -> 4.
 2. **Spoilage**: the stock cap (recommended) vs the day-stamp variant.
 3. **Kit shrink target**: the 55-65 hideout band, or gentler (per-party
    2+2) if C's career numbers read too grim.
-4. **Move proc chance** (50% + 10%/rank) vs always-fire-when-eligible:
-   texture vs determinism; the sims can measure both in an afternoon.
+4. ~~Move proc chance (50% + 10%/rank) vs always-fire-when-eligible~~
+   **Session B shipped 50% + 10%/rank**, per-move independent (a deeper
+   repertoire fires both more often and more variously). Re-open only if
+   play wants the determinism.
 5. **DEX potion existence at all** — shipped at rank 4/+1 under the
    standing +DEX warning; delete it if the bench shows a rank-4 alchemist
    outfencing the fencer.
