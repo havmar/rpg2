@@ -1,0 +1,3115 @@
+{
+ "party": [],
+ "clock": {
+  "day": 1,
+  "short_rests_used": 0
+ },
+ "purse": {
+  "gold": 0
+ },
+ "foe_count": 0,
+ "active_quest": null,
+ "world": {
+  "seed": 1038166834,
+  "settlements": [
+   {
+    "key": "alderhaven",
+    "name": "Alderhaven",
+    "race": "human",
+    "kind": "capital",
+    "quests": [
+     "q01",
+     "q02",
+     "q03",
+     "q04",
+     "q05",
+     "q22",
+     "q25",
+     "q26",
+     "q29",
+     "q32",
+     "q37"
+    ]
+   },
+   {
+    "key": "blackridge",
+    "name": "Blackridge",
+    "race": "orc",
+    "kind": "town",
+    "quests": [
+     "q06",
+     "q07",
+     "q08",
+     "q09",
+     "q39"
+    ]
+   },
+   {
+    "key": "greenglade",
+    "name": "Greenglade",
+    "race": "elf",
+    "kind": "town",
+    "quests": [
+     "q10",
+     "q11",
+     "q12",
+     "q13",
+     "q23",
+     "q35",
+     "q38"
+    ]
+   },
+   {
+    "key": "underhelm",
+    "name": "Underhelm",
+    "race": "dwarf",
+    "kind": "town",
+    "quests": [
+     "q14",
+     "q15",
+     "q16",
+     "q17",
+     "q33"
+    ]
+   },
+   {
+    "key": "moonhollow",
+    "name": "Moonhollow",
+    "race": "elf",
+    "kind": "village",
+    "quests": [
+     "q18",
+     "q19",
+     "q24",
+     "q31",
+     "q34",
+     "q36"
+    ]
+   },
+   {
+    "key": "greensong",
+    "name": "Greensong",
+    "race": "elf",
+    "kind": "village",
+    "quests": [
+     "q20",
+     "q21",
+     "q27",
+     "q28",
+     "q30",
+     "q40"
+    ]
+   }
+  ],
+  "quests": {
+   "q01": {
+    "id": "q01",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "alderhaven",
+    "level": 19,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 19,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dragon"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dragon"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q02": {
+    "id": "q02",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "alderhaven",
+    "level": 15,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 15,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q03": {
+    "id": "q03",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "alderhaven",
+    "level": 9,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 8,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q04": {
+    "id": "q04",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "alderhaven",
+    "level": 6,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crypt below",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wight"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q05": {
+    "id": "q05",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "alderhaven",
+    "level": 20,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 18,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "drake"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "drake"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the mountain approach",
+      "level": 19,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "drake"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "drake"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dragon"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the hoard-cave",
+      "level": 20,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "drake"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q06": {
+    "id": "q06",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "blackridge",
+    "level": 5,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q07": {
+    "id": "q07",
+    "name": "Wyvern on the Crags",
+    "desc": "A shadow over the herds, and herders who point at the high crags and will not climb.",
+    "settlement": "blackridge",
+    "level": 13,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the scree slopes",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q08": {
+    "id": "q08",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "blackridge",
+    "level": 6,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q09": {
+    "id": "q09",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "blackridge",
+    "level": 14,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q10": {
+    "id": "q10",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "greenglade",
+    "level": 5,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the silked walkways",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q11": {
+    "id": "q11",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greenglade",
+    "level": 14,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q12": {
+    "id": "q12",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "greenglade",
+    "level": 3,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the heartwood",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q13": {
+    "id": "q13",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greenglade",
+    "level": 13,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q14": {
+    "id": "q14",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "underhelm",
+    "level": 11,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q15": {
+    "id": "q15",
+    "name": "Things in the Deep Roads",
+    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
+    "settlement": "underhelm",
+    "level": 1,
+    "skins": {
+     "great spider": "Deep Creeper",
+     "wolf": "Tunnel Hound",
+     "dire wolf": "Tunnel Stalker"
+    },
+    "sites": [
+     {
+      "name": "the toll gate",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deep road",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q16": {
+    "id": "q16",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "underhelm",
+    "level": 4,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the drowned galleries",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q17": {
+    "id": "q17",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "underhelm",
+    "level": 14,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival delving",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "champion",
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q18": {
+    "id": "q18",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "moonhollow",
+    "level": 3,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "archer",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q19": {
+    "id": "q19",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "moonhollow",
+    "level": 4,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the silked walkways",
+      "level": 4,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q20": {
+    "id": "q20",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "greensong",
+    "level": 2,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q21": {
+    "id": "q21",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "greensong",
+    "level": 3,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the heartwood",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "great spider"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q22": {
+    "id": "q22",
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "alderhaven",
+    "level": 12,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the flattened fort",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q23": {
+    "id": "q23",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greenglade",
+    "level": 13,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q24": {
+    "id": "q24",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "moonhollow",
+    "level": 1,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q25": {
+    "id": "q25",
+    "name": "Wolves at the Folds",
+    "desc": "Sheep gone, then a shepherd. The commons want the pack dug out of the hills.",
+    "settlement": "alderhaven",
+    "level": 2,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the high pasture",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the den in the hills",
+      "level": 2,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q26": {
+    "id": "q26",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "alderhaven",
+    "level": 14,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the toll bridge",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q27": {
+    "id": "q27",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greensong",
+    "level": 5,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "bruiser",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q28": {
+    "id": "q28",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "greensong",
+    "level": 3,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q29": {
+    "id": "q29",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "alderhaven",
+    "level": 15,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the mountain approach",
+      "level": 15,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "drake"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q30": {
+    "id": "q30",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greensong",
+    "level": 4,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "archer",
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q31": {
+    "id": "q31",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "moonhollow",
+    "level": 1,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q32": {
+    "id": "q32",
+    "name": "The Giant of the Border Marches",
+    "desc": "Border forts flattened, garrisons walking home weaponless. The marshal wants the marches quiet again.",
+    "settlement": "alderhaven",
+    "level": 6,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the flattened fort",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the march camps",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q33": {
+    "id": "q33",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "underhelm",
+    "level": 3,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "archer": "Grudge-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q34": {
+    "id": "q34",
+    "name": "The Blighted Glade",
+    "desc": "Something soured the heartwood; what lives there now bites. The wardens want it cut out.",
+    "settlement": "moonhollow",
+    "level": 1,
+    "skins": {
+     "great spider": "Gloomweaver",
+     "wolf": "Blight-Wolf",
+     "dire wolf": "Blight-Alpha"
+    },
+    "sites": [
+     {
+      "name": "the glade's edge",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the heartwood",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q35": {
+    "id": "q35",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "greenglade",
+    "level": 3,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar",
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q36": {
+    "id": "q36",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "moonhollow",
+    "level": 2,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the beast's harbor",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q37": {
+    "id": "q37",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "alderhaven",
+    "level": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q38": {
+    "id": "q38",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greenglade",
+    "level": 1,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q39": {
+    "id": "q39",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "blackridge",
+    "level": 14,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "giant"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   },
+   "q40": {
+    "id": "q40",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "greensong",
+    "level": 8,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open"
+   }
+  }
+ },
+ "location": {
+  "place": "alderhaven",
+  "name": "Alderhaven",
+  "land": "human",
+  "kind": "settlement"
+ },
+ "places": [],
+ "sighting": null,
+ "streak": {
+  "site": null,
+  "count": 0
+ },
+ "site_clears": {},
+ "pc_candidates": [
+  {
+   "name": "Tikkit",
+   "dex": 4,
+   "str_": 5,
+   "sta": 7,
+   "max_hp": 9,
+   "power": 6,
+   "ability": "heal",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 9,
+   "cur_sta": 7,
+   "cur_power": 6,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 0,
+    "stamina": 2
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "wooden staff",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 4,
+   "def_bonus": 1,
+   "race": "goblin",
+   "sex": "m",
+   "age": 33,
+   "nickname": "",
+   "traits": {
+    "quirk": "has an enemy (Snagg, a orc rival adventurer, level 3, out there somewhere)",
+    "looks": "big",
+    "dress": "armored"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Tinket",
+   "dex": 6,
+   "str_": 5,
+   "sta": 8,
+   "max_hp": 11,
+   "power": 4,
+   "ability": "heal",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 11,
+   "cur_sta": 8,
+   "cur_power": 4,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 2,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "spear",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 3,
+   "def_bonus": 0,
+   "race": "goblin",
+   "sex": "m",
+   "age": 27,
+   "nickname": "",
+   "traits": {
+    "background": "wealthy",
+    "voice": "mumbling",
+    "looks": "big"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Marok",
+   "dex": 5,
+   "str_": 4,
+   "sta": 7,
+   "max_hp": 10,
+   "power": 5,
+   "ability": "first_blood",
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 10,
+   "cur_sta": 7,
+   "cur_power": 5,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 0,
+    "stamina": 2
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "light hammer",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 6,
+   "def_bonus": 0,
+   "race": "orc",
+   "sex": "m",
+   "age": 29,
+   "nickname": "",
+   "traits": {
+    "quirk": "has a child (with them: Ownka, age 8)",
+    "voice": "mumbling",
+    "speech": "swears a lot"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  }
+ ],
+ "recruits": null,
+ "pending": null,
+ "rooms": {},
+ "rng": [
+  3,
+  [
+   139648850,
+   856221177,
+   228718710,
+   3231199130,
+   30547930,
+   3587275506,
+   405795683,
+   1274133567,
+   3829003268,
+   3885954793,
+   326523160,
+   4206269507,
+   1706120440,
+   1344259323,
+   3372400926,
+   3158195333,
+   2798867359,
+   3533103500,
+   2041388689,
+   3731596469,
+   2624603348,
+   340238291,
+   4285757543,
+   3265165405,
+   687682998,
+   463027487,
+   3473231950,
+   2398940615,
+   577788711,
+   4112785526,
+   3416340034,
+   3603693312,
+   3593174929,
+   4172901324,
+   2961148340,
+   1187116724,
+   2012241437,
+   3184928336,
+   796116482,
+   2573161437,
+   3979214307,
+   2414676787,
+   841664803,
+   1541930813,
+   3038184121,
+   2166138074,
+   2692625454,
+   4076658678,
+   4075700958,
+   3018618929,
+   4021927156,
+   583477876,
+   2719854677,
+   3675460839,
+   2806210774,
+   1280341252,
+   2034241516,
+   2971776709,
+   170034489,
+   3853304680,
+   2537981375,
+   4269364525,
+   54123254,
+   2381246601,
+   1541278904,
+   4182781213,
+   3702031985,
+   1964796149,
+   1539577045,
+   3196549261,
+   3345179368,
+   3027459506,
+   3042065169,
+   1270841270,
+   801190089,
+   4099032701,
+   2206993793,
+   1574594689,
+   3920664030,
+   608644257,
+   525817846,
+   443509772,
+   1522946700,
+   266674181,
+   2620540732,
+   3230556153,
+   174017217,
+   137344626,
+   4287128679,
+   3856058873,
+   214536006,
+   413389747,
+   987358600,
+   2981876832,
+   2421206329,
+   2250151872,
+   2931057858,
+   3187203147,
+   484521474,
+   4179929925,
+   1940115876,
+   121404274,
+   1129662254,
+   1646958029,
+   3508531191,
+   2998211201,
+   895261774,
+   266644100,
+   2510992892,
+   2411368913,
+   1151639868,
+   2748438056,
+   184408795,
+   3943804995,
+   1483012718,
+   1742402436,
+   3502312451,
+   271269613,
+   1717150153,
+   1954714825,
+   3338310069,
+   2464516874,
+   63537464,
+   3622826882,
+   3192983187,
+   583333766,
+   297018323,
+   4011886256,
+   2435236248,
+   1775124228,
+   1320978344,
+   1107167254,
+   2153358453,
+   384765159,
+   258972914,
+   2869067883,
+   1707879878,
+   2413167947,
+   3751803243,
+   917959722,
+   927463916,
+   4013280629,
+   2275858661,
+   1047354763,
+   2853330155,
+   3873460181,
+   3446593501,
+   1660446423,
+   854901755,
+   3889503163,
+   1200843342,
+   3694422747,
+   1950168862,
+   1787156960,
+   992633748,
+   2274775410,
+   3436174253,
+   205670815,
+   723345552,
+   3592088653,
+   3172197112,
+   354094620,
+   2149155081,
+   963853835,
+   1153749434,
+   2270905175,
+   121806918,
+   3625878006,
+   2900283482,
+   2946226243,
+   3752434760,
+   4096185114,
+   4171831154,
+   699494262,
+   3054071394,
+   2070886830,
+   1650700269,
+   2166357432,
+   2535875801,
+   2168924405,
+   2935209763,
+   40956010,
+   2023725455,
+   2529933672,
+   16489680,
+   133781381,
+   1905332637,
+   2044053615,
+   710455065,
+   1932568223,
+   3005585957,
+   2681968956,
+   4028980011,
+   597171258,
+   4071684551,
+   2233677400,
+   2936826887,
+   1821602987,
+   3131698335,
+   781546128,
+   474010542,
+   1629176077,
+   206932839,
+   124318502,
+   2746447456,
+   608320310,
+   2088100982,
+   1791435618,
+   3282929120,
+   3505890671,
+   1904397748,
+   2952631901,
+   305959942,
+   1053277440,
+   2089889165,
+   2352948402,
+   952414597,
+   288655864,
+   522469763,
+   3435290408,
+   838427309,
+   3682073915,
+   1930363599,
+   2677760544,
+   3442356670,
+   2085683830,
+   1064722789,
+   1421751162,
+   1927877655,
+   1884444983,
+   2366057573,
+   3881656393,
+   3576911867,
+   4278549428,
+   365144264,
+   3057937682,
+   1869936639,
+   3820394962,
+   1628343355,
+   3677259296,
+   2486246220,
+   3440220102,
+   3173233008,
+   655553899,
+   90745289,
+   3610521905,
+   3300956042,
+   3393582528,
+   741782553,
+   4005772323,
+   4100190480,
+   893663704,
+   2307834649,
+   586629498,
+   2004467990,
+   4090164898,
+   1497107018,
+   3464662556,
+   3543291025,
+   3884512449,
+   226836064,
+   1602156676,
+   1582197390,
+   2058391634,
+   3750700357,
+   4164432538,
+   2989290683,
+   2699850001,
+   323867775,
+   3139809017,
+   1653244154,
+   443337194,
+   3694357694,
+   3238457673,
+   3332532604,
+   1083356404,
+   4074240249,
+   397321205,
+   673789906,
+   399514013,
+   3408222201,
+   1517060408,
+   2590535292,
+   315611926,
+   1787845838,
+   459757659,
+   2719092790,
+   1430091367,
+   423174071,
+   929902139,
+   2152929319,
+   3155421035,
+   666691582,
+   269249738,
+   292580721,
+   2135931981,
+   3515862048,
+   1634761381,
+   703322659,
+   2402171242,
+   2874837521,
+   890083123,
+   3751375251,
+   3538509454,
+   3775841430,
+   2915258743,
+   4043685143,
+   2259490684,
+   1920356185,
+   3395263159,
+   1805273620,
+   2334382524,
+   181498505,
+   723932697,
+   1587737488,
+   3925655606,
+   3259570284,
+   4140529322,
+   533293683,
+   3269056993,
+   1307192123,
+   732024070,
+   1240531065,
+   1141776876,
+   58057276,
+   762079969,
+   3724567277,
+   4011928696,
+   3973903935,
+   2183829046,
+   3361338553,
+   252329175,
+   2251035866,
+   1683097631,
+   4185916647,
+   3902235512,
+   3318943506,
+   2216404058,
+   3363889928,
+   1068662094,
+   229115485,
+   1317126242,
+   2807239993,
+   4135089176,
+   804113399,
+   2560243668,
+   3649790311,
+   4015872056,
+   2514582525,
+   2605762319,
+   1672559267,
+   3213572550,
+   3534442679,
+   2964677639,
+   3706979729,
+   2164627170,
+   2109917833,
+   52468873,
+   3106627495,
+   3563032063,
+   590477529,
+   594350137,
+   2030557416,
+   2547995780,
+   2971910689,
+   699982819,
+   520727037,
+   1938585242,
+   1095561597,
+   2049013501,
+   3202448587,
+   3899462904,
+   1112225433,
+   4005282795,
+   1682735671,
+   1493823488,
+   385589940,
+   3265343061,
+   326195521,
+   1768109720,
+   4278109089,
+   354400770,
+   2632374742,
+   3105465158,
+   1854258109,
+   2186840138,
+   2648970587,
+   2720136852,
+   3857344189,
+   3795993012,
+   2595489281,
+   1082648726,
+   4291695947,
+   3817792787,
+   3337648829,
+   436643849,
+   2360519308,
+   1479936088,
+   648865677,
+   1181756085,
+   3504346946,
+   763132698,
+   180892261,
+   794528258,
+   721391450,
+   504564738,
+   3837324394,
+   3780794004,
+   3453964451,
+   640448641,
+   3871754970,
+   1596849103,
+   3784062551,
+   2531460960,
+   1212539312,
+   1207757489,
+   1532533681,
+   1540751767,
+   3258509148,
+   2103920189,
+   52317397,
+   2141925468,
+   1956974732,
+   2993073563,
+   2362484075,
+   1515877914,
+   2428801520,
+   4138811817,
+   547659017,
+   1768322468,
+   1109460326,
+   2451540645,
+   2278925987,
+   364300932,
+   2199438727,
+   4150025221,
+   2549594794,
+   950225962,
+   1022837831,
+   2095108383,
+   3728200248,
+   3589085979,
+   3674910167,
+   222935703,
+   2655188364,
+   1157968031,
+   2417062495,
+   3243913299,
+   195234200,
+   3919864185,
+   3435047222,
+   2672707435,
+   3565593916,
+   210605009,
+   1761510363,
+   3498834581,
+   2729202710,
+   1367675509,
+   1683876821,
+   274290896,
+   4040195234,
+   3238409227,
+   1645875523,
+   1410710112,
+   2421495207,
+   3155814324,
+   2739093797,
+   3375270020,
+   2274862723,
+   3026453730,
+   1016778911,
+   1922139716,
+   3329100779,
+   3594877932,
+   810572524,
+   2787640140,
+   1281131695,
+   1517770654,
+   1094939057,
+   1005602635,
+   597056242,
+   1473768776,
+   318556403,
+   4055619064,
+   4213261207,
+   4112936822,
+   3516581948,
+   867165433,
+   3500438984,
+   4162998146,
+   259572346,
+   2911646396,
+   2639626652,
+   3529967131,
+   647475058,
+   1103637011,
+   3511139613,
+   2429830595,
+   2719825702,
+   4209135611,
+   765218781,
+   3425100214,
+   2578228098,
+   2987982708,
+   3802349683,
+   958663869,
+   2349658845,
+   3812777197,
+   2567609490,
+   1050788756,
+   396694024,
+   1400068102,
+   231141797,
+   2960064273,
+   1763146124,
+   638194961,
+   4148600125,
+   38056303,
+   513721691,
+   507082151,
+   2017896522,
+   2195909727,
+   1389700705,
+   207838304,
+   403347938,
+   2405213792,
+   2875220988,
+   1286625841,
+   4130343532,
+   586659529,
+   1200769608,
+   4062962346,
+   346191876,
+   54401911,
+   593706453,
+   2236348411,
+   3079806988,
+   2872868140,
+   123652020,
+   3950419379,
+   1021882860,
+   77481934,
+   1724695484,
+   1026741688,
+   172776374,
+   1282904537,
+   2400977028,
+   1676742239,
+   569836354,
+   1194781030,
+   4227290066,
+   1650747198,
+   294444710,
+   1420174272,
+   2813808315,
+   2444333625,
+   949645577,
+   733509437,
+   2018107847,
+   4104629252,
+   2146768183,
+   1390693759,
+   3771478876,
+   733504251,
+   1447564773,
+   1345169294,
+   670416057,
+   2688316412,
+   1805096530,
+   3001104069,
+   3627216034,
+   2547553727,
+   2971997898,
+   2964966390,
+   1937547731,
+   1993622721,
+   3407596218,
+   816497652,
+   968084932,
+   896719260,
+   188801703,
+   852969100,
+   927646136,
+   1019205211,
+   2694383542,
+   2286064569,
+   705719299,
+   3348308504,
+   2339109853,
+   2082778780,
+   2795468017,
+   1644877438,
+   151987163,
+   3061632476,
+   294538806,
+   3536316551,
+   872486,
+   823795823,
+   2713922996,
+   180145889,
+   2559938192,
+   980341113,
+   2802962394,
+   3945264389,
+   1281899396,
+   750557879,
+   1898943634,
+   2200692211,
+   2608059349,
+   901315514,
+   110656666,
+   1336256011,
+   460508691,
+   3262912345,
+   2006591802,
+   2242739168,
+   4284660188,
+   1596695657,
+   3408780754,
+   3449246778,
+   3357969020,
+   3155013920,
+   285926308,
+   3365651749,
+   139
+  ],
+  null
+ ]
+}
