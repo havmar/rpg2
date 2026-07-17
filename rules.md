@@ -334,7 +334,7 @@ by low common enemies; plain ones are shoppable at 60 g.
 | **Rapier** | +2 | −1 | — | **Graze floor**: a landed thrust is never fully deflected (min. 1 HP) — stricter than the universal margin-3 floor: *any* hit counts | The duelist. Lands constantly, always draws blood, wins by the spiral. Laughs at heavy soak. |
 | **Katana** | +1 | +1 | — | — | The all-rounder: consistently near-best everywhere, best almost nowhere. |
 | **Zweihander** | +1 | +3 | **−1** | — | The crowd-breaker: mooks die in one blow, but there's no parrying a girder. Wants STR/soak behind it. |
-| **Wooden staff** | 0 | −1 | **+1** | **+1 HP per Heal** through it | The healer's weapon — deliberately poor steel, priced in support. |
+| **Wooden staff** | 0 | −1 | **+1** | **+1 max Power while wielded** (2026-07-17: the focus — fuel, not surgery) | The caster's weapon — deliberately poor steel, priced in support. |
 
 Benchmark (`bench_weapons.py`, duel vs swarm win rates per stat frame):
 **suited, not ranked** — the rapier is the best duelist on three of four
@@ -357,7 +357,8 @@ crude weapon". Three stat lines, many names:
 Soldier's arms are the engine's old implicit baseline (0/0/1), so the
 pre-weapons balance is the soldier's-arms balance. **Starting weapons**
 (heroes and bandits alike): 50% crude / 45% soldier's arms / 5% heavy; a
-heal-ability hero has a 50% chance to carry the wooden staff instead.
+hedge-healer (and a wizard) has a 50% chance to carry the wooden staff
+instead.
 Skeletons swing **rusted blades** (0/0, durability 1 — grave-steel that snaps
 on honest metal).
 
@@ -583,21 +584,22 @@ natural cap 6 below holds for every race.
 
 ### The ceilings, and what levels grow (the 1–20 doctrine)
 
-The game runs **levels 1–20** (`100 × L` XP per level, 1 skill point each —
-so level 20 banks 19 points: almost exactly maxed combat training (15) plus
-one mastered weapon (6); the caps and the ceiling were made for each other).
+The game runs **levels 1–20** (`100 × L` XP per level, **3 skill points
+each** since 2026-07-17 — level 20 banks 57 points against an
+everything-the-old-build-had cost of 63: the ~10% shortfall is the point
+economy's flex premium, see the Progression add-on).
 
 **The frame is talent; the engine is training.** DEX and STR are the body
 you were born with — **fixed at creation, never raised by levels**. The
 natural human cap is **6**: 5 is the career elite (the veteran row above),
-6 the generational talent (the top of the hero roll). What a career grows is
-everything trainable: **levels pour into the pools** — **+1 HP, +1 STA, +1
-Power per two levels** (in the engine since 2026-07: `award_xp` grants the
-growth on each odd level) — plus the capped skills (training +5,
-proficiency +3). This split is also the balance-safe
-one: DEX double-dips (landing *and* severity through the margin), so
-per-exchange dominance stays behind the capped skills while levels buy
-staying power.
+6 the generational talent (the top of the hero roll). What a career grows
+is everything trainable: **levels buy the pools** — +1 max HP, STA, or
+Power per point, capped at +10 bought per pool (the old automatic
++1-per-two-levels curve is now the doctrine build's habit, not a law) —
+plus the capped skills (training +5, proficiency +3), spells, and the
+ability catalog. This split is also the balance-safe one: DEX double-dips
+(landing *and* severity through the margin), so per-exchange dominance
+stays behind the capped skills while levels buy staying power.
 
 Note the spiral caps useful HP depth for anything at pain 1: penalty equals
 HP lost, so a human past ~22 HP is buying corpse-phase, not survival — the
@@ -723,9 +725,15 @@ These are the only edits to the existing rules:
 - **Two buffer layers, cleanly split.** *Between fights* (items, drunk in the
   lull — too slow to use mid-fight) and *in the moment* (Bulwark, paid in
   Power — fast enough to fire during an exchange). Flavor-true rule: **trained
-  skill is reflexive; rummaging in a pouch is not.** Heal sits with the items —
-  a Power-cost ability, but a *between-fights* one (see below), since restoring
-  a wound isn't something you can do in the half-second of an exchange either.
+  skill is reflexive; rummaging in a pouch is not.** Healing sits with the
+  items — since 2026-07-17 it is a SPELL (the tenth; Magic & Mind add-on), and
+  still a *between-fights* one: restoring a wound isn't something you can do
+  in the half-second of an exchange either.
+- **The trained answers are LEARNED (2026-07-17, the levelling framework).**
+  Everyone keeps potions and the pause; Bulwark, First Blood, War-Breath,
+  Berserk and the rest are catalog **abilities** bought with skill points
+  (Progression add-on). The universal safety net narrows to potions on
+  purpose — "who knows a conversion" is a build fact now.
 
 ---
 
@@ -735,7 +743,7 @@ These are the only edits to the existing rules:
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
-| **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for abilities: Bulwark's mid-fight absorb, First Blood's opener, War-Breath, and Heal's between-fights HP restore. |
+| **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
 | **Items** | Carried stock | The **kit restocks itself** — every long rest tops each hero back up to 1 healing + 1 stamina (2026-07-11); anything above that line is bought with gold or found in world | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
@@ -777,12 +785,13 @@ keeps build identity alive and makes "who am I about to lose" specific.
   Power-to-STA conversion, see "The pause") now gives Power a live mid-fight
   drain; if it makes Power genuinely scarce in play, re-stock the kind.
 
-**In the moment (abilities — fast, cost Power):**
-- **Warrior's Bulwark (grievous-absorb)** — *active*: when a Grievous or Killing
+**In the moment (learned abilities — fast, cost Power; bought from the
+catalog with skill points since 2026-07-17, see the Progression add-on):**
+- **Bulwark (grievous-absorb)** — *active*: when a Grievous or Killing
   blow lands, spend Power to reduce it one tier (Killing -> Grievous, Grievous ->
   Wound). Fires mid-fight, on the blow that just landed — and it can run out,
   which is the point.
-- **Rogue's First Blood (opening strike)** — *the aggressive counterpart*: as
+- **First Blood (opening strike)** — *the aggressive counterpart*: as
   the fight begins, before the first exchange, spend Power to land a
   guaranteed graze on the focused foe. Deliberately light — 1 HP, never a free
   kill — because its real value is the death spiral: that foe fights the whole
@@ -790,14 +799,19 @@ keeps build identity alive and makes "who am I about to lose" specific.
   Bulwark buys off ~2 HP of incoming harm reactively, First Blood buys roughly
   the same swing proactively (a point of damage plus every roll the spiral now
   costs the foe).
-- Other class skills are likewise paid in Power.
+- The rest of the catalog (Rage, Field Medic, the ranged arts...) lives in
+  the Progression add-on's ability table.
 
-**Between fights (ability — still costs Power, but not reflexive):**
-- **Heal** — spend Power to mend a random amount of HP on yourself or an ally,
-  called deliberately between fights (never mid-exchange; there's no time in an
-  attack this fast to rummage for a spell any more than a potion). Distinct
-  from Bulwark: it's proactive upkeep on the wound pool rather than a reactive
-  save against a specific blow, and it can target a teammate.
+**Between fights (magic — still costs Power, but not reflexive):**
+- **The healing spell** — 3 Power to mend HP on yourself or an ally (3/5/7
+  by rank; the casting check rolls at the caster's edge), called
+  deliberately between fights (never mid-exchange; there's no time in an
+  attack this fast to shape a working any more than to rummage for a
+  potion). Distinct from Bulwark: proactive upkeep on the wound pool rather
+  than a reactive save, and it can target a teammate. Rank 3 stands a
+  Downed ally straight to 3 HP after a won fight. (2026-07-17: this
+  replaces the old Heal ability — healing became magic; the hedge-healer
+  starting roll is the non-wizard door into it.)
 
 ---
 
@@ -861,9 +875,13 @@ player's, at the pause):
   foe below half HP or Spent — do nothing; nobody burns a potion on a won
   fight (designer call: "if the enemy is low and spiralling, no potion is
   needed");
-- *stamina crossing:* drink a carried stamina draught; else War-Breath if
-  the Power is there (a Bulwark hero keeps one save in reserve); else
-  Berserk on a still-healthy body; else fight on;
+- *stamina crossing:* drink a carried stamina draught; else War-Breath —
+  **if they know it** (a Bulwark hero keeps one save in reserve); else
+  Berserk — **if they know it** — on a still-healthy body; else fight on.
+  (2026-07-17: the conversions are learned abilities now; a hero with
+  neither answers a stamina crossing with a draught or fights on. That is
+  the intended new pressure — the universal safety net narrows to potions,
+  and "who knows a conversion" becomes a build fact.)
 - *wounds crossing (the pause already spent):* drink a carried healing
   potion.
 
@@ -876,15 +894,16 @@ occupied — vulnerable, not helpless):
 | **Fight on** | — | Resume; the fight then runs to its end on standing orders. |
 | **Drink** | a carried stamina draught; the round's attack; −2 guard | +4 STA now, mid-fight — it even un-Spends a fighter at 0. |
 | **Heal** | a carried healing potion; the round's attack; −2 guard | +5 HP now, mid-fight — the wound penalty lightens immediately (2026-07-11: the wounds trigger finally has an answer that addresses wounds; the old "between-fights until HP pressure proves otherwise" clause resolved in play). |
-| **Berserk** | 2 HP; the round's attack; −2 guard | +4 STA. Bleed for breath — and the HP loss deepens the wound spiral immediately, which is the real price. |
-| **War-Breath** | 2 Power; the round's attack; −2 guard | +3 STA. A fighter's breath discipline (battle trance), explicitly not wizardry. |
+| **Berserk** | 2 HP; the round's attack; −2 guard; **the ability (1 point)** | +4 STA. Bleed for breath — and the HP loss deepens the wound spiral immediately, which is the real price. |
+| **War-Breath** | 2 Power; the round's attack; −2 guard; **the ability (2 points)** | +3 STA. A fighter's breath discipline (battle trance), explicitly not wizardry. |
 | **Retreat** | see below | Break away from the fight. |
 
 Berserk and War-Breath are the **resource conversions**: STA is the scarce,
 dynamic track, while HP and Power mostly sit idle — these give both a live
-mid-fight role (a better fix for Power feeling inert than any potion). Both
-are open to any hero for now; tying Berserk to the zweihander (the
-weapon-granted-ability hook) is a parked idea.
+mid-fight role (a better fix for Power feeling inert than any potion).
+Since 2026-07-17 both are **learned abilities** (the catalog, Progression
+add-on) — Berserk's 1-point price keeps it near-universal for anyone who
+wants it, which answered the old weapon-granted-Berserk parked idea.
 
 ### Retreat & chase
 
@@ -1108,20 +1127,21 @@ On top of the existing build/allocation choices:
   trip per fled room) so tune/bench numbers describe the same game.
 - **No auto-night.** `long_rest` is called deliberately (by the DM), never by the
   dungeon loop — the day ends when the player chooses to camp, not on a timer.
-- **Saves are automatic and conservative.** A Bulwark-ability character spends
+- **Saves are automatic and conservative.** A Bulwark-knowing character spends
   Power to buy off a *crippling* blow whenever it can (Crippling -> Grievous),
   and to buy off a *grievous* that would put it Down only when it can keep a
   reserve. Both the raw and the bought-down result are logged. **First Blood is
   likewise automatic** — it fires at the start of every fight while the Power
   lasts (`FIRST_BLOOD_COST` = 2 for a guaranteed 1-HP graze on the focused
-  foe); trained aggression is as reflexive as a trained guard. **Heal is not
-  automatic** — it has no in-fight role at all; `use_heal(healer, target, ...)`
-  is a DM-called, between-fights action (same shape as `buy_potion`) that
-  spends `HEAL_COST` (3) Power for a random `HEAL_RESTORE_RANGE` (1-3) HP on
+  foe); trained aggression is as reflexive as a trained guard. **Healing is
+  not automatic** — it has no in-fight role at all;
+  `cast_healing(healer, target, ...)` is a DM-called, between-fights cast
+  (same shape as `buy_potion`) that spends `HEALING_CAST_COST` (3) Power
+  through the casting check for the rank's mending (`HEALING_MEND`) on
   self or an ally.
 - **Potions are not automatic either.** Drinking a carried potion is a DM call,
   `use_potion(hero, kind, ...)`, between fights only (same shape as `buy_potion`
-  / `use_heal`): every potion takes effect **instantly on drink** -- *healing*
+  / `cast_healing`): every potion takes effect **instantly on drink** -- *healing*
   restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA. Only those
   two kinds circulate (`STOCKED_POTION_KINDS`; the power potion is retired --
   see the two-buffer split above). Nothing in the engine drinks on its own.
@@ -1137,10 +1157,11 @@ On top of the existing build/allocation choices:
 
 # Progression & Economy — Add-on
 
-The first slice of the between-fights layer: XP and levels buying **combat
-training** (the only skill so far), and a gold economy that keeps the potion
-stock a real decision. Follows the design spine: **XP buys permanent ability,
-gold buys staying power** — never the reverse.
+The between-fights progression layer: XP and levels feeding the **point
+economy** (2026-07-17 — pools, skills, spells, and the ability catalog all
+bought from the same banked points), and a gold economy that keeps the
+potion stock a real decision. Follows the design spine: **XP buys
+permanent ability, gold buys staying power** — never the reverse.
 
 ## XP and levels
 
@@ -1194,12 +1215,89 @@ gold buys staying power** — never the reverse.
   site ramps ×1/×3/×5 on its own and pays its own lump — the streak never
   carries across sites, so "one site per day" is the natural paying rhythm
   and nothing forces marathoning a whole quest.
-- **Level-ups grant skill points** (1 per level), spent on skills — free
-  allocation, never use-based (the Fallout principle from the design record).
-- **Level-ups grow the pools** (the doctrine's curve, in the engine since
-  2026-07): reaching each odd level (3, 5, 7, ...) adds **+1 max HP, +1 max
-  STA, +1 max Power** — `(L-1)//2` total growth at level L. DEX and STR
-  never move (see *The ceilings*).
+- **Level-ups grant skill points** (**3 per level** since 2026-07-17; 57
+  banked by L20), spent on the menu below — free allocation, never
+  use-based (the Fallout principle from the design record).
+- **Nothing else is automatic.** The old odd-level pool growth is gone:
+  pools joined the menu (the point economy below). DEX and STR still never
+  move (see *The ceilings*).
+
+## The point economy (2026-07-17, the levelling framework session A)
+
+The one-sentence shape: **a level grants several points, and everything a
+level can buy — pool growth included — is bought with those points, at
+prices scaled to measured value.** No class gates anywhere: the first rank
+of anything is buyable by anyone (the free-allocation doctrine);
+prerequisites are physical only (spellBOOKS stay wizard-gated, a deep
+ability rank needs its base).
+
+| Purchase | Point cost | Cap |
+|----------|-----------|-----|
+| +1 max HP, +1 max STA, or +1 max Power | 1 each | +10 bought per pool |
+| Combat training rank n | **2n** (was n) | 5 (unchanged) |
+| Weapon proficiency rank n | n (unchanged) | 3 |
+| Spell rank n, for a spell you KNOW | n (unchanged) | 3 |
+| Alchemy rank n (arrives session C) | 2n | 5 |
+| A move (arrives session B) | 1 (iaido and the finishers 2) | repertoire ≤ training + 1 |
+| Single-buy abilities | 1–3 (the catalog below) | — |
+
+Training doubled in price because it is the measured strongest buy (a rank
+moves site clear rates by tens of points — bench_training): at
+rank-n-costs-n it would be strictly the best deal in the new economy, and
+same-cost-same-value would be broken from day one.
+
+**The arithmetic anchor** (why 3/level and these prices): the old default
+build priced in new points is *training-at-2n + pools-at-1-each*, and it
+maps almost exactly through midgame — L4: old (training 2, pools +1 each)
+= 6+3 = 9 = the new budget to the point; L8: 12+9 = 21 = the budget
+exactly. At L11 the old default costs 35 vs 30 banked and at L20 63 vs 57
+— the new economy runs ~10-15% tighter at the top, WHICH IS THE FLEX
+PREMIUM: nobody gets the old everything-for-free build plus new toys; you
+fund abilities (and later moves and alchemy) by shaving pools or a
+training rank. In the sims this reads as the doctrine build lagging the
+old one by about a training rank through the midgame (benchlog,
+2026-07-17).
+
+## The ability catalog (single buys)
+
+`Entity.abilities` is a set of learned tricks (`learn HERO NAME`;
+`rpg.ABILITIES` is the engine reference). Everyone keeps potions and the
+pause — what stopped being universal is the *trained* answers:
+
+| Ability | Cost | Effect |
+|---------|------|--------|
+| **Bulwark** | 3 | the mid-fight tier-shift save, Power-paid (as ever) |
+| **First Blood** | 2 | the auto opener: 2 Power, guaranteed graze (as ever) |
+| **War-Breath** | 2 | the pause/standing-order conversion, 2 Power -> +3 STA — now known, not universal |
+| **Berserk** | 1 | 2 HP -> +4 STA — now known, not universal |
+| **Rage** | 2 | after slaying a foe: +2 to the next exchange; if that exchange fails to slay, the hero spends the following round exhausted (no attack). Mork Borg import; swingy on purpose |
+| **Field Medic** | 3 | once per day, when a companion would truly DIE nearby: DEX check DC 9 — success commutes it to a Down (rapid surgery, takes the medic's next round). Fate's bargain's price can NOT be medic'd (fate is owed, not bleeding) |
+| **Storyteller** | 2 | at a long rest: CHA check DC 9 (+1 per listener beyond the second) — success gives every party member +1 Power ABOVE max (overcharge rules). CHA's first in-mechanics job beyond capacity/gold |
+| **Survivalist** | 2 | at a wilds camp: MIND check DC 9 — the camp counts as a tavern night (the overcharge) and the night-visitor chance is halved |
+| **Arrow-Parry** | 2 / +3 for rank 2 | melee grip only: +2 defense pressure against missiles (arrows/bolts/stones/knives); rank 2 extends to bullets and rises to +3 |
+| **Point-Blank Mastery** | 3 | the ranged card shoots at gap 0 — contact never forces the switch round |
+| **Rapid Reload** | 3 | cadence 0 on a card that has 1 (the crossbow's heavy draw still applies) |
+
+**The starting roll is an archetype seed** (make_human; the MIND-highest
+wizard override is unchanged): the old heal/bulwark/first-blood roll
+widened to a five-entry table, each grant a ~2-3-point head start that
+HINTS a build without gating one — the **shieldman** (Bulwark), the
+**killer** (First Blood), the **hedge-healer** (healing spell rank 1, plus
+the old staff chance — the only non-wizard door into a spell), the
+**herbalist** (alchemy rank 1, session C's seed), and the **drilled** (one
+move matching the starting weapon, session B's seed; inert until the moves
+system lands).
+
+**Healing became magic** (the same session): the Heal ability is deleted;
+**healing** is the tenth spell (Magic & Mind add-on — unaimed utility,
+between fights only, no in-fight role). Rank 1 mends 3 HP, rank 2 mends 5,
+rank 3 mends 7 and stands a Downed ally straight to 3 HP after a won
+fight; 3 Power per cast, the casting check per the magic add-on. One gate
+loosened to make this work: **ranks are trainable in any spell you KNOW;
+wizardhood keeps gating spellBOOKS** (`train_spell` dropped its wizard
+check, `buy_spellbook` keeps it). And **the staff stopped paying in
+healing**: the wooden staff now grants **+1 max Power while wielded** (the
+focus: fuel, not surgery).
 
 ## Combat training — the general fighting skill
 
@@ -1209,9 +1307,11 @@ The veteran-vs-novice axis: *"you know how to fight."*
   STR difference, training quietly improves *everything*: you land more, get
   hit less, and the hits you land cut deeper. One number, three effects — which
   is why it stays cheap-per-rank but caps hard.
-- **Cost:** rank *n* costs *n* skill points; **cap: rank 5**. With 1 point per
-  level: rank 1 at level 2, rank 2 at level 4, rank 3 at level 7, rank 4 at
-  level 11, rank 5 at level 16. Cheap to start, expensive to max.
+- **Cost:** rank *n* costs **2n** skill points (2026-07-17, the point
+  economy: the measured strongest buy must not also be the cheapest);
+  **cap: rank 5**. On the doctrine build (pools first), rank 3 lands at
+  L8 and rank 4 around L12-13 — about a rank later than the old economy,
+  which is the flex premium made visible.
 - **Benchmarked** (`bench_training.py`, 5k trials/rank, 2026-07-13 after
   the fixed stat budget): the skeleton barrow (tough site) clears
   **17% → 45% → 76% → 94%** across ranks 0–3 (a rank-0 duo still wipes ~4
@@ -1234,18 +1334,21 @@ the proficiency layer until you drill the new type: that loss is the
 commitment cost that makes a build a build. A broken weapon grants no
 proficiency (you're swinging a stump).
 
-**With two sinks, the PC's skill points are a real choice**: his points
-bank on level-up (`session.py train HERO combat|weapon`) and his level-up
-**prints the spending menu automatically** (2026-07-13) so the choice is
-always put in front of the player. **Companions autolevel** (2026-07-13,
-`rpg.autospend_points`, run after every fight's awards and at hire): the
-reference doctrine — combat training to rank 3, then proficiency once they
-carry a **quality** weapon (nobody drills a club) — a wizard companion
-drills their **school** instead (Placeholder Magic add-on) — then training
-to the cap. Managing three companions' menus was bookkeeping, not choice; the
-player's build decisions are the PC's. The batch sims still auto-spend on
-combat training only (`sites.run_site`), so tune/bench numbers stay
-comparable.
+**With the full menu, the PC's skill points are a real build**: points
+bank on level-up (`session.py train` / `learn`) and the level-up **prints
+the spending menu automatically** (2026-07-13) so the choice is always put
+in front of the player. **Companions autolevel** (2026-07-13,
+`rpg.autospend_points`, run after every fight's awards and at hire) on the
+reference **doctrine v2** (2026-07-17: the old default build priced in the
+new currency) — pools to the old odd-level curve first, then combat
+training to rank 3, then proficiency once they carry a **quality** weapon
+(nobody drills a club) — a wizard companion drills their **school**
+instead — then training to the cap. Managing three companions' menus was
+bookkeeping, not choice; the player's build decisions are the PC's. The
+batch sims auto-spend on the SAME doctrine (`sites.run_site`,
+bench_bestiary's reference duo), so tune/bench numbers stay comparable
+across the economy change; `bench_abilities.py` is where the OTHER ways
+of spending get measured.
 
 ## Gold and the potion economy
 
@@ -1317,14 +1420,18 @@ both real rolls.
 ## Spells, ranks, and what gates them
 
 A wizard knows **spells at ranks 1–3** (`Entity.spells`; the catalog is
-`rpg.SPELLS` — nine spells, listed below).
+`rpg.SPELLS` — ten spells since 2026-07-17, healing included; listed
+below).
 
 - **Skill points gate DEPTH**: rank n costs n points (`train HERO
   SPELLNAME`; `train HERO magic` is shorthand for the innate school) —
   the weapon-proficiency chassis wholesale, cap 3. Rank 3 of an attack
   spell is its **signature technique** (fireball, flash-freeze, hurl
   foe); rank 3 of a utility spell is usually the **roleplay tier** the
-  DM adjudicates in the scene.
+  DM adjudicates in the scene. Since 2026-07-17 depth is open to ANYONE
+  who knows the spell (`train_spell` dropped its wizard gate — the
+  hedge-healer's rolled healing rank is the customer); wizardhood keeps
+  gating the books.
 - **Spellbooks gate BREADTH**: the first spell is rolled at creation;
   every further spell needs its book — **`SPELLBOOK_PRICE` (120 g),
   capitals only** (`buy HERO book SPELL`), teaching the spell at rank 1.
@@ -1391,7 +1498,7 @@ an aimed cast's attack dice is likewise a misfire, while steel stays
 reliable — the parked crit/fumble idea shipped magic-only, on purpose,
 touching no melee bench.
 
-## The spell list (nine; `rpg.SPELLS` is the reference)
+## The spell list (ten since 2026-07-17; `rpg.SPELLS` is the reference)
 
 | Spell | Kind | r1 / r2 / r3 |
 |-------|------|--------------|
@@ -1404,6 +1511,7 @@ touching no melee bench.
 | **possession** | opener | seize a living mind: the puppet fights for the party 1 / 2 / 3 rounds (4/5/6 P; DC + target training + 2 × ward; the dead have no mind) |
 | **flight** | opener | **SKY-STEP**: aloft round 1 — melee can't reach, bolts and breath can, +1 attacking (3 P) / aloft rounds 1–2 (5 P) / *not yet written* (see below) |
 | **scry** | utility | the next room's roster (2 P) / the whole site (3 P) / **the far-seeing**: the quest whole, its TRUE level, and DM-adjudicated divination (4 P) — `cast HERO scry` |
+| **healing** | utility | mend 3 HP / 5 HP / 7 HP — **and rank 3 stands a Downed ally straight to 3 HP** after a won fight (3 P a cast; between fights ONLY, no in-fight role; `heal HEALER TARGET`; steadying the truly dying is the roleplay tier). The tenth spell (2026-07-17): the old Heal ability, become magic — and the hedge-healer's starting rank is the one non-wizard door into a spell |
 
 **The assassin openers overlap on purpose** (invisibility, stop time,
 teleport all open with a guaranteed strike at rank 1 — the designer's
@@ -2007,13 +2115,13 @@ is a doorstep, not a railroad.
   - **has a child / has an enemy** (quirks) — generated inline as a name
     and a line (the enemy at level+2, for the DM to `forge` when the story
     wants it). **No recursion**: side-people never get traits of their own.
-- **Level**: grown by the reference progression doctrine
+- **Level**: grown by the reference progression doctrine v2
   (`rpg.develop_hero`, the same curve `bench_bestiary`'s duo calibrates
-  with): points spent monotonically (training 3 → proficiency → training
-  cap), quality steel from L4 **suited to the frame** (STR→zweihander,
-  DEX→rapier, balanced→katana, healers keep the staff), engine pool
-  growth. Points arrive mostly **pre-spent** — choosing between candidates
-  IS the customization — with at most a point or two banked.
+  with): points spent monotonically (pools to the old curve → training 3
+  → proficiency → training cap), quality steel from L4 **suited to the
+  frame** (STR→zweihander, DEX→rapier, balanced→katana, casters keep the
+  staff). Points arrive mostly **pre-spent** — choosing between candidates
+  IS the customization — with a few banked for the player to allocate.
 
 ## Recruiting — on request (2026-07-13)
 

@@ -65,12 +65,94 @@ CROWD_CAP = 2
 
 # Survival add-on tunables.
 SAVE_COST = 2           # Power spent to reduce one wound tier (Bulwark's mid-fight save)
-HEAL_COST = 3           # Power spent on the Heal ability (between fights, see use_heal)
 FIRST_BLOOD_COST = 2    # Power spent on First Blood (the rogue's opening strike)
 FIRST_BLOOD_HP = 1      # First Blood inflicts a guaranteed graze -- light on purpose
                         # (its real value is the death spiral: -1 to the foe's rolls
                         # all fight), never a free kill
-HEAL_RESTORE_RANGE = (1, 3)     # random HP restored per Heal use
+
+# --- Learnable abilities (2026-07-17, the levelling framework session A) ----- #
+# `Entity.abilities` is a SET of catalog keys, bought with skill points
+# (learn_ability). Everyone keeps potions and the pause; what stopped being
+# universal is the TRAINED answers: War-Breath and Berserk are abilities now
+# (the standing-orders rungs check them), Bulwark/First Blood are bought
+# instead of rolled-only, and the ranged/anti-ranged tricks live here too.
+# The old Heal ability is GONE -- healing is the tenth spell (see SPELLS).
+RAGE_ATK_BONUS = 2          # Rage: +2 to the exchange after a slaying blow;
+                            # if THAT exchange fails to slay, the raging hero
+                            # spends the following round exhausted (no
+                            # attack). Mork Borg import; swingy on purpose.
+FIELD_MEDIC_DC = 9          # once per day, a companion's death near the
+                            # medic: 2d6 + DEX vs this commutes it to a Down
+                            # (the surgery takes the medic's next round).
+                            # Fate's bargain's price can NOT be medic'd --
+                            # fate is owed, not bleeding.
+STORYTELLER_DC = 9          # at a long rest: 2d6 + CHA vs DC 9 +1 per
+                            # listener beyond the second; success gives every
+                            # party member +1 Power ABOVE max (overcharge
+                            # rules: spent-only, clamped at the next night)
+STORYTELLER_POWER_BONUS = 1
+SURVIVALIST_DC = 9          # at a wilds camp: 2d6 + MIND vs this makes the
+                            # camp count as a tavern night (the overcharge)
+                            # and halves the night-visitor chance (session)
+ARROW_PARRY_DEF = 2         # +2 defense pressure vs missiles, melee grip
+ARROW_PARRY_DEF_2 = 3       # only; rank 2 extends to bullets and rises to +3
+
+
+@dataclass(frozen=True)
+class Ability:
+    """One learnable ability: a single-buy trick bought with skill points
+    (learn_ability). The behavior is engine code keyed by name; `blurb` is
+    the levelup-menu text. `requires` gates a deeper rank on its base
+    (arrow-parry 2)."""
+    name: str               # catalog key ("war_breath")
+    display: str            # menu name ("War-Breath")
+    cost: int               # skill points
+    blurb: str
+    requires: str = ""      # ability key that must already be known
+
+
+ABILITIES = {a.name: a for a in [
+    Ability("bulwark", "Bulwark", 3,
+            f"the mid-fight save: {SAVE_COST} Power steps an incoming "
+            f"grievous/crippling blow down one wound tier (automatic)"),
+    Ability("first_blood", "First Blood", 2,
+            f"auto opening strike: {FIRST_BLOOD_COST} Power for a "
+            f"guaranteed graze before the lines meet"),
+    Ability("war_breath", "War-Breath", 2,
+            "the pause/standing-order conversion: 2 Power -> +3 STA"),
+    Ability("berserk", "Berserk", 1,
+            "the desperate conversion: 2 HP -> +4 STA (the wound "
+            "penalty deepens)"),
+    Ability("rage", "Rage", 2,
+            f"after slaying a foe: +{RAGE_ATK_BONUS} to the next "
+            f"exchange; if it fails to slay, the following round is "
+            f"spent exhausted (no attack)"),
+    Ability("field_medic", "Field Medic", 3,
+            f"once per day, when a companion would truly DIE nearby: "
+            f"DEX check DC {FIELD_MEDIC_DC} commutes it to a Down "
+            f"(the surgery takes your next round)"),
+    Ability("storyteller", "Storyteller", 2,
+            f"at a long rest: CHA check DC {STORYTELLER_DC} (+1 per "
+            f"listener beyond the second) -- the whole party wakes with "
+            f"+{STORYTELLER_POWER_BONUS} Power above max (spent-only, "
+            f"fades at the next night)"),
+    Ability("survivalist", "Survivalist", 2,
+            f"at a wilds camp: MIND check DC {SURVIVALIST_DC} -- the "
+            f"camp counts as a tavern night (the overcharge) and the "
+            f"night-visitor chance is halved"),
+    Ability("arrow_parry", "Arrow-Parry", 2,
+            f"melee grip only: +{ARROW_PARRY_DEF} defense pressure "
+            f"against missiles (arrows, bolts, stones -- not bullets)"),
+    Ability("arrow_parry_2", "Arrow-Parry rank 2", 3,
+            f"the parry extends to bullets and rises to "
+            f"+{ARROW_PARRY_DEF_2}", requires="arrow_parry"),
+    Ability("point_blank", "Point-Blank Mastery", 3,
+            "the ranged card shoots at gap 0 -- contact never forces "
+            "the switch to the melee grip"),
+    Ability("rapid_reload", "Rapid Reload", 3,
+            "cadence 0 on a ranged card that has 1 (a shot every "
+            "round; the crossbow's heavy draw still applies)"),
+]}
 
 # --- Magic & Mind (2026-07-15; grew out of the 2026-07-14 placeholder) ------- #
 # Wizards exist from level 1. A character whose MIND is STRICTLY the highest
@@ -170,6 +252,20 @@ SCRY_POWER_COST = {1: 2, 2: 3, 3: 4}    # utility (session `cast`): next
                                         # room's roster / the whole site /
                                         # the far-seeing (DM-adjudicated)
 WIZARD_STAFF_CHANCE = 0.50  # wizards often start with the wooden staff
+# Healing is the TENTH spell (2026-07-17: the old Heal ability is deleted --
+# healing became magic). Unaimed utility, between-fights only, no in-fight
+# role -- exactly the old ability's shape under magic rules: the casting
+# check per the add-on (mastery: casting below trained rank never rolls),
+# rank prices the mending. Ranks are trainable in any spell you KNOW
+# (train_spell dropped its wizard gate); wizardhood keeps gating
+# spellBOOKS, so the non-wizard door into healing is the hedge-healer
+# starting roll (make_human) -- after that, parties without one rely on
+# potions, which is the intended ecosystem shift.
+HEALING_CAST_COST = 3               # Power per cast (the old Heal's price)
+HEALING_MEND = {1: 3, 2: 5, 3: 7}   # HP mended per rank cast
+HEALING_REVIVE_HP = 3               # rank 3 stands a Downed ally straight
+                                    # to this after a won fight (plus the
+                                    # DM-adjudicated steady-the-dying tier)
 
 
 @dataclass(frozen=True)
@@ -260,6 +356,15 @@ SPELLS = {s.name: s for s in [
            f"every room of the active site ({SCRY_POWER_COST[2]} Power)",
            f"the far-seeing: the active quest whole, and DM-adjudicated "
            f"divination ({SCRY_POWER_COST[3]} Power)")),
+    Spell("healing", "utility",
+          "Mending as magic: between fights only, no in-fight role "
+          "(session `heal HEALER TARGET`).",
+          (f"mend {HEALING_MEND[1]} HP ({HEALING_CAST_COST} Power)",
+           f"mend {HEALING_MEND[2]} HP ({HEALING_CAST_COST} Power)",
+           f"mend {HEALING_MEND[3]} HP -- and a Downed ally can be stood "
+           f"straight to {HEALING_REVIVE_HP} HP after a won fight "
+           f"({HEALING_CAST_COST} Power); steadying the truly dying is "
+           f"the DM-adjudicated tier")),
 ]}
 HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
@@ -288,15 +393,28 @@ LEVEL_CAP = 20          # the game runs levels 1-20 (rules.md, the doctrine);
 # compounding across a campaign. Gold already works this way for free (the
 # purse is shared, quests pay flat).
 XP_PARTY_BASELINE = 2
-SKILL_POINTS_PER_LEVEL = 1
-# Levels pour into the POOLS (the 1-20 doctrine, rules.md): DEX/STR stay
-# fixed at creation forever; each POOL_GROWTH_LEVELS levels add +1 HP, +1 STA,
-# +1 Power. Total growth at level L is (L-1) // 2 -- the odd levels (3, 5,
-# 7...) each add one -- which is exactly the curve bench_bestiary.py's
-# reference parties were calibrated with when it was still applied by hand.
+# The point economy (2026-07-17, the levelling framework session A): a level
+# grants several points, and EVERYTHING a level can buy -- pool growth
+# included -- is bought with those points, at prices scaled to measured
+# value. No class gates anywhere: the first rank of anything is buyable by
+# anyone; prerequisites are physical only.
+SKILL_POINTS_PER_LEVEL = 3      # 57 banked by L20, 42 by L15. THE knob the
+                                # session-A bench round may move (3 vs 4).
+# The automatic odd-level pool growth is REMOVED: pools joined the menu
+# (+1 max HP, STA, or Power for 1 point each, POOL_BUY_CAP per pool --
+# buy_pool). POOL_GROWTH_LEVELS survives as the DOCTRINE curve: the old
+# default build bought pools at (L-1)//2 each, and develop_hero /
+# autospend_points / the bench reference duo reproduce that build in the
+# new currency so the suite stays comparable (doctrine v2).
 POOL_GROWTH_LEVELS = 2
+POOL_BUY_CAP = 10       # max points bought into any ONE pool, ever
+POOL_KINDS = ("hp", "sta", "power")     # buy_pool's menu
 TRAINING_MAX = 5        # combat training rank cap; each rank = +1 to pressure rolls
-                        # (rank n costs n skill points: cheap to start, dear to max)
+TRAINING_COST_MULT = 2  # rank n costs 2n points (was n): the measured
+                        # strongest buy -- a rank moves site clear rates by
+                        # tens of points (bench_training) -- and at n it
+                        # would be strictly the best deal in the new
+                        # economy. The OTHER session-A bench knob.
 
 # --- Gold & the potion economy ---------------------------------------------- #
 POTION_KINDS = ("healing", "power", "stamina")  # the full schema use_potion accepts
@@ -423,7 +541,7 @@ BREAK_CHANCE_PER_GAP_SQ = 0.0025    # per weapon contact (a parry or a Clash):
 # steel, the odd heavy piece. Crude starts leave room to feel the upgrade.
 CRUDE_WEAPON_CHANCE = 0.50
 HEAVY_WEAPON_CHANCE = 0.05
-HEALER_STAFF_CHANCE = 0.50  # heal-ability heroes often carry the wooden staff
+HEALER_STAFF_CHANCE = 0.50  # hedge-healer heroes often carry the wooden staff
 
 # --- Ranged combat (2026-07-16) ---------------------------------------------- #
 # The distance model: every fight opens across a FIELD (an abstract gap in
@@ -546,7 +664,9 @@ class Weapon:
                             # breaks, never breaks steel (breakage is a
                             # steel-on-steel event; see _check_weapon_break),
                             # never left as loot
-    heal_bonus: int = 0     # extra HP per Heal ability use (the staff)
+    power_bonus: int = 0    # +max Power while wielded (the staff: the focus
+                            # is fuel, not surgery -- applied/removed on
+                            # equip, see equip_weapon and make_human)
     # Ranged cards (2026-07-16; see the ranged-combat constants block).
     # range 0 = a melee weapon (everything above); range N = shoots targets
     # at gap 1..N and is USELESS at gap 0 (the melee grip below takes over
@@ -633,9 +753,10 @@ WEAPONS = {w.name: w for w in [
                        "with a girder (-1 on defense). Wants STR and soak "
                        "behind it; the crowd-breaker."),
     Weapon("wooden staff", 0, -1, 1, durability=3, quality=True, def_pressure=1,
-           heal_bonus=1, bulk=2, value=60,
-           description="A healer's iron-shod staff: poor on the attack, +1 to "
-                       "the parry, and Heals through it restore +1 HP."),
+           power_bonus=1, bulk=2, value=60,
+           description="A caster's iron-shod staff: poor on the attack, +1 to "
+                       "the parry, and a focus -- +1 max Power while "
+                       "wielded (fuel, not surgery)."),
     # Ranged commons -- cheap missiles for whoever can't afford real reach.
     # (Severity flats run higher than melee cards because a shot's severity
     # replaces STR entirely, like a cast: a card's flat IS the whole punch.)
@@ -1071,8 +1192,26 @@ class Entity:
                             # the party's QUEST SIGHT (quests.py: the best
                             # MIND reads a job's level precisely). 0 = never
                             # rolled (pre-magic foes).
-    ability: str | None = None          # "bulwark" (mid-fight save) or "heal" (between-
-                                         # fights HP restore, see use_heal); None = neither
+    abilities: set[str] = field(default_factory=set)    # learnable abilities
+                                         # (ABILITIES catalog keys, bought
+                                         # with skill points -- learn_ability;
+                                         # session A of the levelling
+                                         # framework). Empty = none: the
+                                         # universal safety net is potions
+                                         # and the pause, everything trained
+                                         # is a build fact.
+    alchemy: int = 0                    # alchemy skill rank (0..5). SCHEMA
+                                         # SEED ONLY until session C ships
+                                         # the brew -- the herbalist starting
+                                         # roll plants it.
+    moves: set[str] = field(default_factory=set)    # the warrior repertoire.
+                                         # SCHEMA SEED ONLY until session B
+                                         # ships the moves system -- the
+                                         # drilled starting roll plants one.
+    pool_bought: dict[str, int] = field(default_factory=dict)  # points sunk
+                                         # into each pool ("hp"/"sta"/
+                                         # "power" -> 0..POOL_BUY_CAP;
+                                         # buy_pool enforces the cap)
     school: str = ""                    # the wizard marker: the school rolled
                                          # at creation ("fire"/"ice"; "" = not
                                          # a wizard). The identity gate for
@@ -1168,6 +1307,15 @@ class Entity:
     disarm_tried: bool = field(default=False)   # telekinetic disarm attempted
                                                 # on this target (once per foe
                                                 # per fight, hit or miss)
+    rage_primed: bool = field(default=False)   # Rage: a slaying blow primes
+                                                # +RAGE_ATK_BONUS on the next
+                                                # exchange (per-fight state)
+    rage_exhausted: bool = field(default=False)  # the primed exchange failed
+                                                # to slay: the next round is
+                                                # spent heaving (no attack)
+    medic_ready: bool = field(default=True)    # Field Medic: the day's one
+                                                # surgery still unspent
+                                                # (long_rest re-arms it)
     # Ranged-combat per-fight state (2026-07-16; cleared with the rest):
     adv: int = field(default=0)         # steps advanced from this side's
                                         # line; the gap to an opposing
@@ -1335,12 +1483,16 @@ class Entity:
     @property
     def effective_reload(self) -> int:
         """The card's cadence for THIS wielder: heavy_draw punishes weak
-        arms with an extra cranking round (the crossbow's strength gate)."""
+        arms with an extra cranking round (the crossbow's strength gate);
+        Rapid Reload (the ability) drops a cadence-1 card to 0."""
         w = self.weapon
         if w is None:
             return 0
         extra = 1 if w.heavy_draw and self.str_ < w.heavy_draw else 0
-        return w.reload + extra
+        reload = w.reload
+        if reload == 1 and "rapid_reload" in self.abilities:
+            reload = 0
+        return reload + extra
 
     @property
     def shot_aim(self) -> int:
@@ -1564,6 +1716,11 @@ class Entity:
         # blows down from.
         if attacking and self.aloft > 0 and not misc:
             misc, misc_label = FLIGHT_ALOFT_ATK, "aloft"
+        # Rage: the slaying blow's momentum carries into the next exchange
+        # (group_combat primes/consumes the flag around each attack).
+        if attacking and self.rage_primed:
+            misc += RAGE_ATK_BONUS
+            misc_label = f"{misc_label}+rage" if misc_label else "rage"
         total = (dice + stat - chill + self.training + weapon_mod + prof
                  + armor + misc - pen - fatigue_pen)
         return PressureRoll(total=total, dice=dice, dex=stat,
@@ -1583,14 +1740,14 @@ def _try_save(defender: Entity, tier: str, dmg: int) -> bool:
     """Decide whether the defender spends Power to step an incoming blow down.
 
     Bulwark only -- Heal has no in-fight role; it mends HP between fights
-    instead (see use_heal).
+    instead (potions and the healing spell, cast_healing).
 
     Policy (conservative, death-first): always buy off a *crippling* blow if
     Power allows; buy off a *grievous* that would put us Down only when a
     reserve is left for a later death-save. Mutates Power. Returns True if a
     save fired.
     """
-    if defender.ability != "bulwark" or defender.cur_power < SAVE_COST:
+    if "bulwark" not in defender.abilities or defender.cur_power < SAVE_COST:
         return False
     if tier not in ("grievous", "crippling blow"):
         return False
@@ -1600,6 +1757,26 @@ def _try_save(defender: Entity, tier: str, dmg: int) -> bool:
         defender.cur_power -= SAVE_COST
         return True
     return False
+
+
+def _arrow_parry_bonus(defender: Entity, attacker: Entity) -> int:
+    """Arrow-Parry (the ability): bonus defense pressure against missiles,
+    MELEE GRIP ONLY -- steel in hand bats the shaft aside; a bow in the
+    shooting grip parries nothing. Rank 1 covers arrows, bolts, stones and
+    knives; rank 2 extends to bullets (the gun cards) and rises to
+    ARROW_PARRY_DEF_2."""
+    if "arrow_parry" not in defender.abilities:
+        return 0
+    w = defender.weapon
+    if w is None or defender.weapon_broken:
+        return 0
+    if w.range > 0 and not defender.switched:
+        return 0
+    rank2 = "arrow_parry_2" in defender.abilities
+    aw = attacker.weapon
+    if aw is not None and "gun" in aw.tags and not rank2:
+        return 0        # a bullet is too fast for the rank-1 art
+    return ARROW_PARRY_DEF_2 if rank2 else ARROW_PARRY_DEF
 
 
 def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
@@ -1730,6 +1907,13 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
                                  cast=cast, shot=shot)
                if atk_roll is None else atk_roll)
+        if shot:
+            # Arrow-Parry (the ability): a melee grip bats missiles aside.
+            parry = _arrow_parry_bonus(defender, attacker)
+            if parry:
+                def_mod += parry
+                def_label = (f"{def_label}+arrow-parry" if def_label
+                             else "arrow-parry")
         dfn = defender.pressure(rng, misc=def_mod, misc_label=def_label,
                                 vs_shot=shot)
         pressure_line = (f"        pressure: {atk.breakdown(attacker.name)} vs "
@@ -2000,7 +2184,7 @@ def _first_blood(party: list[Entity], foes: list[Entity],
     the graze's real value is the death spiral (-1 to that foe's rolls all
     fight). Automatic, like Bulwark: trained aggression is reflexive."""
     for hero in party:
-        if (hero.alive and hero.ability == "first_blood"
+        if (hero.alive and "first_blood" in hero.abilities
                 and hero.cur_power >= FIRST_BLOOD_COST
                 and any(f.alive for f in foes)):
             target = _pick_target(foes, rng, focus=True)
@@ -2020,6 +2204,42 @@ def _first_blood(party: list[Entity], foes: list[Entity],
             if not target.alive:
                 target.down = True
                 log.append(f"    *** {target.name} falls. ***")
+
+
+def _try_field_medic(fallen: Entity, party: list[Entity],
+                     rng: random.Random, log: list[str]) -> bool:
+    """Field Medic (the ability): once per day, a companion's true death
+    near the medic is a DEX check DC FIELD_MEDIC_DC away from being a Down
+    instead -- rapid surgery in the press, which costs the medic their next
+    round. The attempt spends the day's readiness, made or missed. The
+    protagonist's fate-spared death is handled upstream (fate's bargain);
+    fate's PRICE (_settle_fate_debt) is never medic'd."""
+    medics = sorted((m for m in party
+                     if m is not fallen and m.alive and m.medic_ready
+                     and "field_medic" in m.abilities),
+                    key=lambda m: -m.dex)
+    if not medics:
+        return False
+    medic = medics[0]
+    medic.medic_ready = False
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    total = dice + medic.dex
+    _debug(log, f"        field medic: {total} (2d6={dice}, "
+                f"+{medic.dex} DEX) vs DC {FIELD_MEDIC_DC}")
+    if total < FIELD_MEDIC_DC:
+        log.append(f"    {medic.name} throws themselves at {fallen.name}'s "
+                   f"wound -- and cannot stop the bleeding.")
+        return False
+    fallen.dead = False
+    fallen.down = True
+    medic.stunned = max(medic.stunned, 1)
+    _play(log,
+          f"    *** {medic.name}'s hands find the wound -- rapid surgery "
+          f"in the press! {fallen.name} is DOWN, not dead (the work costs "
+          f"{medic.name} their next round; the kit is spent for today). ***",
+          f"    *** {medic.name} saves {fallen.name} at the brink -- "
+          f"DOWN, not dead. ***")
+    return True
 
 
 def casting_check(caster: Entity, spell: str, rank_cast: int,
@@ -2326,8 +2546,12 @@ def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
     conversion ladder minus the retreat vote (retreating is the player's,
     at the one wounds pause):
       stamina -> nothing if the fight is winding down; else drink a carried
-                 draught, else War-Breath (a Bulwark hero keeps one save in
-                 reserve), else Berserk on a still-healthy body.
+                 draught, else War-Breath IF KNOWN (a Bulwark hero keeps one
+                 save in reserve), else Berserk IF KNOWN on a still-healthy
+                 body. The conversions are ABILITIES now (session A of the
+                 levelling framework): a hero with neither answers a stamina
+                 crossing with a draught or fights on -- the universal
+                 safety net narrowed to potions on purpose.
       wounds  -> VANISH (invisibility rank 2 -- a cut-up wizard fades out
                  of reach) if they know it and the Power is there; else a
                  carried healing potion; unless the fight is winding down.
@@ -2341,10 +2565,11 @@ def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
         return "heal" if hero.items.get("healing", 0) > 0 else None
     if hero.items.get("stamina", 0) > 0:
         return "drink"
-    if hero.cur_power >= WAR_BREATH_POWER_COST + (
-            SAVE_COST if hero.ability == "bulwark" else 0):
+    if ("war_breath" in hero.abilities
+            and hero.cur_power >= WAR_BREATH_POWER_COST + (
+                SAVE_COST if "bulwark" in hero.abilities else 0)):
         return "war-breath"
-    if hero.hp > BERSERK_HP_COST * 3:
+    if "berserk" in hero.abilities and hero.hp > BERSERK_HP_COST * 3:
         return "berserk"
     return None
 
@@ -2418,6 +2643,11 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
                    f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
         return True
     if action == "berserk":
+        if "berserk" not in h.abilities:
+            log.append(f"    {h.name} has never learned to tear strength "
+                       f"from their own flesh (Berserk untrained). "
+                       f"They fight on.")
+            return False
         if h.hp <= BERSERK_HP_COST:
             log.append(f"    {h.name} is too torn up to go Berserk "
                        f"(HP {h.hp}/{h.max_hp}). They fight on.")
@@ -2432,6 +2662,10 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
                    f"-{PAUSE_ACTION_DEF_PENALTY} defending")
         return True
     if action == "war-breath":
+        if "war_breath" not in h.abilities:
+            log.append(f"    {h.name} has never trained the breath "
+                       f"discipline (War-Breath untrained). They fight on.")
+            return False
         if h.cur_power < WAR_BREATH_POWER_COST:
             log.append(f"    {h.name} lacks the Power for War-Breath "
                        f"({h.cur_power}/{WAR_BREATH_POWER_COST}). "
@@ -2670,6 +2904,13 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 log.append(f"    {attacker.name} struggles back to their "
                            f"footing -- no action this round.")
                 continue
+            if attacker.rage_exhausted:
+                # Rage's crash: the primed exchange failed to slay, and the
+                # debt comes due -- a round spent heaving (defense holds).
+                attacker.rage_exhausted = False
+                log.append(f"    {attacker.name} stands heaving, spent by "
+                           f"the rage -- no attack this round.")
+                continue
             dying = not attacker.alive      # felled earlier this round
             if attacker in party_set:
                 targets = foes
@@ -2730,6 +2971,14 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                and not attacker.weapon_broken)
                 contact = any(_gap(attacker, t) == 0 for t in pool
                               if t.aloft <= 0)
+                # Point-Blank Mastery (the ability): the card shoots at gap
+                # 0 -- contact never forces the switch round; the shooter
+                # simply keeps working the piece in the press.
+                point_blank = ("point_blank" in attacker.abilities
+                               and ranged_card and attacker.has_ammo())
+                if point_blank:
+                    contact = False     # out of ammo, the switch still
+                                        # happens like anyone's
                 if ranged_card and contact and not attacker.switched:
                     # THE ARRIVAL VOLLEY: the round contact first arrives,
                     # a still-loaded shooter looses point-blank into
@@ -2771,10 +3020,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     # The shooting grip with open ground: loose, or work
                     # the reload. Shooters ignore the press both ways.
                     if attacker.shot_ready:
+                        near_limit = 0 if point_blank else 1
                         defender = _pick_target(
                             targets, rng, focus=friendly, attacker=attacker,
-                            reachable=lambda t: 1 <= _gap(attacker, t)
-                            <= w.range)
+                            reachable=lambda t: near_limit
+                            <= _gap(attacker, t) <= w.range)
                         if defender is None:
                             _debug(log, f"    {attacker.name} holds -- "
                                         f"no target in range.")
@@ -2879,6 +3129,9 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 atk_roll = attacker.pressure(
                     rng, attacking=True, cast=sweep_cast,
                     wound_pen=start_pens[attacker] if dying else None)
+            raged = attacker.rage_primed    # the primed swing resolves now
+            slew = False
+            struck = False
             for defender in victims:
                 was_alive = defender.alive
                 # A single attack lets the wizard plan the exchange (disarm /
@@ -2900,6 +3153,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         cast_kind = attacker.default_cast()
                     if cast_kind is None:
                         continue    # nothing that reaches -- hold
+                struck = True
                 _attack(attacker, defender, rng, log,
                         atk_wound_pen=start_pens[attacker] if dying else None,
                         def_mod=(-PAUSE_ACTION_DEF_PENALTY
@@ -2907,6 +3161,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         def_label=busy_label.get(busy.get(defender, ""), ""),
                         atk_roll=atk_roll, cast=cast_kind, shot=shooting)
                 if was_alive and not defender.alive:
+                    slew = True
                     if (defender.dead and defender.protagonist
                             and not defender.fate_debt
                             and any(h is not defender and not h.dead
@@ -2926,6 +3181,14 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                    f"due if this fight is won. ***")
                         log.append(f"    {defender.name} goes down, "
                                    f"out of the fight.")
+                    elif defender.dead and defender in party_set:
+                        # Field Medic (the ability): a companion's death
+                        # nearby can be commuted to a Down, once a day.
+                        # Fate's price (_settle_fate_debt) can NOT be
+                        # medic'd -- fate is owed, not bleeding.
+                        if not _try_field_medic(defender, party, rng, log):
+                            log.append(f"    *** {defender.name} is "
+                                       f"SLAIN. ***")
                     elif defender.dead:
                         log.append(f"    *** {defender.name} is SLAIN. ***")
                     elif defender in party_set:
@@ -2933,6 +3196,26 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                    f"out of the fight.")
                     else:
                         log.append(f"    *** {defender.name} falls. ***")
+            # Rage (the ability): a slaying blow primes +RAGE_ATK_BONUS on
+            # the hero's next exchange; a primed exchange that fails to
+            # slay costs the following round (exhausted). Chained kills
+            # keep the rage rolling. Hero-side only, like every ability.
+            if ("rage" in attacker.abilities and attacker in party_set
+                    and struck):
+                if raged:
+                    attacker.rage_primed = False
+                if slew:
+                    attacker.rage_primed = True
+                    _play(log,
+                          f"    {attacker.name}'s blood is UP -- the rage "
+                          f"carries into the next exchange "
+                          f"(+{RAGE_ATK_BONUS} attack pressure)",
+                          f"    {attacker.name}'s blood is UP -- RAGE "
+                          f"(+{RAGE_ATK_BONUS} next exchange)")
+                elif raged:
+                    attacker.rage_exhausted = True
+                    log.append(f"    {attacker.name}'s rage finds no blood "
+                               f"-- it will cost them the next round.")
         busy.clear()
         # Regeneration (the troll's puzzle): wounds knit at the end of every
         # round the regenerator is still up -- out-damage it or lose to it.
@@ -3057,6 +3340,8 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.stunned = 0
         e.possessed = 0
         e.disarm_tried = False
+        e.rage_primed = False
+        e.rage_exhausted = False
         e.adv = 0
         e.reload_left = 0
         e.switched = False
@@ -3326,6 +3611,25 @@ def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
     return (min(lo, hi), hi) if lo > hi else (lo, hi)
 
 
+# The drilled archetype's move by starting weapon -- a NAME-BASED stand-in
+# until session B ships Weapon.move_tags (pierce weapons thrust, heavy ones
+# sweep, everything bladed feints). The move itself is inert until the moves
+# system lands; the seed just travels on the sheet.
+_THRUST_WEAPONS = frozenset(("dagger", "shortsword", "spear", "rapier",
+                             "halberd"))
+_SWEEP_WEAPONS = frozenset(("club", "light hammer", "mace", "flail",
+                            "morningstar", "battleaxe", "warhammer",
+                            "zweihander", "wooden staff"))
+
+
+def _starter_move(weapon: Weapon) -> str:
+    if weapon.name in _THRUST_WEAPONS:
+        return "thrust"
+    if weapon.name in _SWEEP_WEAPONS:
+        return "sweep"
+    return "feint"
+
+
 def make_human(rng: random.Random, name: str,
                floors: dict[str, int] | None = None,
                ceilings: dict[str, int] | None = None) -> Entity:
@@ -3333,18 +3637,28 @@ def make_human(rng: random.Random, name: str,
     3-6, STA 5-8, HP 8-12; every character starts at the floors and receives
     exactly HERO_STAT_BUDGET surplus points, dealt by a randomly-shuffled
     stat priority (linear weights down the order, each stat capped at its
-    ceiling) -- equal totals, different shapes. Plus a random ability
-    (heal / bulwark / first_blood), two random potions, and a starting
-    weapon (the common table: 50% crude / 45% soldier's arms / 5% heavy;
-    healers often carry the wooden staff). `floors`/`ceilings` shift the
-    ranges per key ("dex", "str", "cha", "hp") -- the racial/trait hook
-    (people.py: an orc's STR floor is 4 and the point is a NET extra under
-    the budget; the "short" trait caps STR at 5).
+    ceiling) -- equal totals, different shapes. Plus the ARCHETYPE SEED
+    roll (below), two random potions, and a starting weapon (the common
+    table: 50% crude / 45% soldier's arms / 5% heavy; hedge-healers often
+    carry the wooden staff). `floors`/`ceilings` shift the ranges per key
+    ("dex", "str", "cha", "hp") -- the racial/trait hook (people.py: an
+    orc's STR floor is 4 and the point is a NET extra under the budget;
+    the "short" trait caps STR at 5).
 
     Magic & Mind (2026-07-15): MIND strictly above BOTH other combat stats
     makes a WIZARD -- a rolled school (fire/ice) known at rank 1 instead of
-    an ability. POWER stays its own rolled pool: the fuel is qi, not iq --
-    it never derives from MIND (designer call)."""
+    a seed. POWER stays its own rolled pool: the fuel is qi, not iq -- it
+    never derives from MIND (designer call).
+
+    The archetype seed (2026-07-17, levelling session A) -- the old
+    heal/bulwark/first-blood roll widened to a five-entry table; each grant
+    is a ~2-3-point head start that HINTS a build without gating one:
+      the shieldman     Bulwark             (the frontline saver)
+      the killer        First Blood         (the aggressive duelist)
+      the hedge-healer  healing spell r1    (+ the staff chance -- the ONLY
+                                             non-wizard door into a spell)
+      the herbalist     alchemy rank 1      (session C's tree, seeded)
+      the drilled       one move by weapon  (session B's system, seeded)"""
     floors = floors or {}
     ceilings = ceilings or {}
     ranges = {"dex": HERO_STAT_RANGE, "str": HERO_STAT_RANGE,
@@ -3366,21 +3680,35 @@ def make_human(rng: random.Random, name: str,
         k = rng.choices(open_keys, [weight[k] for k in open_keys])[0]
         stats[k] += 1
 
-    # MIND strictly above BOTH other combat stats makes a WIZARD -- a
-    # school spell at rank 1 instead of an ability (CHA and POWER stay out
-    # of the comparison: one is social, the other is fuel).
-    ability, school = None, ""
+    # MIND strictly above BOTH other combat stats makes a WIZARD -- the
+    # school spell at rank 1 (CHA and POWER stay out of the comparison:
+    # one is social, the other is fuel). Everyone else rolls the archetype
+    # seed table (see docstring).
+    school, seed = "", ""
+    abilities: set[str] = set()
+    spells: dict[str, int] = {}
+    alchemy = 0
     if stats["mind"] > stats["dex"] and stats["mind"] > stats["str"]:
         school = rng.choice(list(SCHOOLS))
+        spells = {school: 1}
     else:
-        ability = rng.choice(["heal", "bulwark", "first_blood"])
-    if ((ability == "heal" and rng.random() < HEALER_STAFF_CHANCE)
+        seed = rng.choice(["shieldman", "killer", "hedge_healer",
+                           "herbalist", "drilled"])
+        if seed == "shieldman":
+            abilities.add("bulwark")
+        elif seed == "killer":
+            abilities.add("first_blood")
+        elif seed == "hedge_healer":
+            spells = {"healing": 1}
+        elif seed == "herbalist":
+            alchemy = 1
+    if ((seed == "hedge_healer" and rng.random() < HEALER_STAFF_CHANCE)
             or (school and rng.random() < WIZARD_STAFF_CHANCE)):
         weapon = WEAPONS["wooden staff"]    # the caster-bridge weapon at home
                                             # in a healer's (or wizard's) hands
     else:
         weapon = random_common_weapon(rng)
-    return Entity(
+    e = Entity(
         name=name,
         dex=stats["dex"],
         str_=stats["str"],
@@ -3389,13 +3717,21 @@ def make_human(rng: random.Random, name: str,
         max_hp=stats["hp"],
         power=stats["power"],
         cha=stats["cha"],
-        ability=ability,
+        abilities=abilities,
         school=school,
-        spells={school: 1} if school else {},
+        spells=spells,
+        alchemy=alchemy,
+        moves={_starter_move(weapon)} if seed == "drilled" else set(),
         pain=HERO_PAIN,
         weapon=weapon,
         items=random_kit(rng),
     )
+    if weapon.power_bonus:
+        # The staff is a focus: +1 max Power while wielded (equip_weapon
+        # keeps the books when weapons change hands later).
+        e.power += weapon.power_bonus
+        e.cur_power += weapon.power_bonus
+    return e
 
 
 def make_party(rng: random.Random) -> list[Entity]:
@@ -3415,6 +3751,15 @@ def weapon_tag(e: Entity) -> str:
     return tag
 
 
+def ability_tags(e: Entity) -> list[str]:
+    """Readout keys for a hero's abilities: arrow_parry_2 subsumes its
+    base rank so the sheet shows one entry."""
+    keys = set(e.abilities)
+    if "arrow_parry_2" in keys:
+        keys.discard("arrow_parry")
+    return sorted(keys)
+
+
 def stat_line(e: Entity) -> str:
     """One-line body readout. Every drainable track shows cur/max -- current
     STA is THE number the play protocol turns on (dm.md: check it before
@@ -3425,11 +3770,17 @@ def stat_line(e: Entity) -> str:
     kit = ", ".join(f"{k}x{v}" for k, v in e.items.items() if v) or "no kit"
     cha = f"CHA {e.cha}  " if e.cha else ""
     mind = f"MIND {e.mind}  " if e.mind else ""
+    bits = []
     if e.spells:
-        gift = "spells: " + ", ".join(f"{n} {r}"
-                                      for n, r in sorted(e.spells.items()))
-    else:
-        gift = e.ability or "no save"
+        bits.append("spells: " + ", ".join(
+            f"{n} {r}" for n, r in sorted(e.spells.items())))
+    if e.abilities:
+        bits.append(", ".join(ability_tags(e)))
+    if e.alchemy:
+        bits.append(f"alchemy {e.alchemy}")
+    if e.moves:
+        bits.append("moves: " + ", ".join(sorted(e.moves)))
+    gift = "; ".join(bits) or "no gift"
     line = (f"{e.name} (L{e.level}, training {e.training}): "
             f"DEX {e.dex}  STR {e.str_}  {mind}STA {e.cur_sta}/{e.sta}  "
             f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  {cha}"
@@ -3445,12 +3796,18 @@ def progress_line(e: Entity) -> str:
     lives here; stat_line above is the body."""
     parts = [f"XP {e.xp}/{xp_to_next(e.level)} to L{e.level + 1}",
              f"skill points: {e.skill_points}"]
+    pools = ", ".join(f"{k} +{v}"
+                      for k, v in sorted(e.pool_bought.items()) if v)
+    if pools:
+        parts.append(f"pools bought: {pools}")
     profs = ", ".join(f"{n} {r}" for n, r in sorted(e.proficiency.items()) if r)
     if profs:
         parts.append(f"proficiency: {profs}")
     if e.spells:
         parts.append("spells: " + ", ".join(
             f"{n} {r}" for n, r in sorted(e.spells.items())))
+    if e.abilities:
+        parts.append("abilities: " + ", ".join(ability_tags(e)))
     return " | ".join(parts)
 
 
@@ -3485,16 +3842,20 @@ def xp_to_next(level: int) -> int:
 
 
 def pool_growth_due(level: int) -> bool:
-    """Does REACHING `level` grant the pool growth? +1 HP/STA/Power per
-    POOL_GROWTH_LEVELS levels: the odd levels (3, 5, 7...) each add one,
-    so total growth at level L is (L-1) // 2."""
+    """The OLD default build's pool curve (+1 HP/STA/Power at the odd
+    levels; total growth at level L is (L-1) // 2). No longer automatic --
+    pools are bought with points now (buy_pool) -- but the DOCTRINE paths
+    (develop_hero, autospend_points, the bench reference duo) still buy to
+    this curve so the suite stays comparable across the economy change."""
     return level > 1 and (level - 1) % POOL_GROWTH_LEVELS == 0
 
 
 def grow_pools(h: Entity) -> None:
-    """One step of the level pool growth: +1 max HP, STA, and Power, the
-    current pools rising with their maxima (training hardens the living body,
-    it doesn't heal wounds -- a Down hero's HP stays where it fell)."""
+    """One step of the all-three pool growth (+1 max HP, STA, and Power,
+    the current pools rising with their maxima). Since 2026-07-17 this is
+    a DOCTRINE helper only -- award_xp no longer calls it; the doctrine
+    paths buy the old curve through it at 3 points a step and record the
+    spend in pool_bought."""
     h.max_hp += 1
     if h.hp > 0:
         h.hp += 1
@@ -3513,29 +3874,41 @@ HERO_QUALITY_LEVEL = 4      # levels from which a generated character carries
 def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
     """Grow a fresh level-1 roll into a level-`level` character in place --
     the generator for recruits and leveled NPCs (people.make_character calls
-    it). Follows the reference-progression doctrine bench_bestiary.py's duo
-    was calibrated with: monotone spend (training to 3, then proficiency,
-    then training to the cap -- a build must never get WEAKER with levels),
-    quality steel from HERO_QUALITY_LEVEL, the engine pool curve. Points the
-    monotone spend can't afford stay banked (a hired recruit arrives with
-    their history mostly spent -- choosing between candidates IS the
-    customization -- but may carry a point or two to allocate).
+    it). Follows the reference-progression DOCTRINE V2 (2026-07-17: the old
+    default build priced in the new point economy, so the bench suite stays
+    comparable across the currency change): pools bought to the old
+    odd-level curve first, then training to 3 (rank n costs 2n now), then
+    proficiency/school (rank n costs n), then training to the cap -- a
+    monotone spend; a build must never get WEAKER with levels. Quality
+    steel from HERO_QUALITY_LEVEL. Points the doctrine can't afford stay
+    banked (a hired recruit arrives with their history mostly spent --
+    choosing between candidates IS the customization).
 
     The one divergence from the bench reference: the quality weapon SUITS
-    the frame instead of always being the katana -- a healer keeps the
+    the frame instead of always being the katana -- a caster keeps the
     staff, a STR frame takes the zweihander, a DEX frame the rapier."""
     h.level = level
-    points = level - 1
+    points = (level - 1) * SKILL_POINTS_PER_LEVEL
+
+    # Pools first: the old build's automatic growth, bought now (1 point
+    # per +1, all three pools together = 3 a step, recorded for the cap).
+    growth = min((level - 1) // POOL_GROWTH_LEVELS, POOL_BUY_CAP)
+    for _ in range(growth):
+        grow_pools(h)
+        points -= 3
+    for kind in POOL_KINDS:
+        h.pool_bought[kind] = h.pool_bought.get(kind, 0) + growth
 
     def buy_training(cap: int) -> None:
         nonlocal points
-        while h.training < cap and points >= h.training + 1:
-            points -= h.training + 1
+        while (h.training < cap
+               and points >= TRAINING_COST_MULT * (h.training + 1)):
+            points -= TRAINING_COST_MULT * (h.training + 1)
             h.training += 1
 
     buy_training(3)
     if level >= HERO_QUALITY_LEVEL:
-        if ((h.ability == "heal" or h.school) and h.weapon is not None
+        if (("healing" in h.spells or h.school) and h.weapon is not None
                 and h.weapon.name == "wooden staff"):
             pass                                    # the staff IS quality
         elif h.str_ > h.dex:
@@ -3562,9 +3935,6 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
             h.proficiency[h.weapon.name] = rank
     buy_training(TRAINING_MAX)
     h.skill_points = points
-    for lvl in range(2, level + 1):
-        if pool_growth_due(lvl):
-            grow_pools(h)
     return h
 
 
@@ -3690,27 +4060,31 @@ def award_xp(party: list[Entity], amount: int, log: list[str],
             h.xp -= xp_to_next(h.level)
             h.level += 1
             h.skill_points += SKILL_POINTS_PER_LEVEL
-            grown = ""
-            if pool_growth_due(h.level):
-                grow_pools(h)
-                grown = (f" Pools grow: HP {h.hp}/{h.max_hp}, "
-                         f"STA {h.cur_sta}/{h.sta}, "
-                         f"Power {h.cur_power}/{h.power}.")
+            # No automatic pool growth (2026-07-17): everything a level can
+            # buy -- pools included -- is bought with the points (buy_pool /
+            # train_* / learn_ability; the session's levelup menu).
             log.append(f"    *** {h.name} reaches level {h.level}! "
-                       f"(+{SKILL_POINTS_PER_LEVEL} skill point, "
-                       f"{h.skill_points} unspent){grown} ***")
+                       f"(+{SKILL_POINTS_PER_LEVEL} skill points, "
+                       f"{h.skill_points} unspent) ***")
+
+
+def training_cost(current_rank: int) -> int:
+    """The NEXT combat-training rank's price: rank n costs
+    TRAINING_COST_MULT * n (2026-07-17: doubled -- the measured strongest
+    buy must not also be the cheapest)."""
+    return TRAINING_COST_MULT * (current_rank + 1)
 
 
 def train_combat_once(h: Entity, log: list[str]) -> bool:
-    """Spend skill points on ONE rank of combat training (rank n costs n,
-    +1 to ALL pressure rolls per rank, cap TRAINING_MAX). The session-play shape:
-    with proficiency as a second sink, each point is a real player choice now
+    """Spend skill points on ONE rank of combat training (rank n costs 2n
+    -- training_cost; +1 to ALL pressure rolls per rank, cap TRAINING_MAX).
+    The session-play shape: each point is a real player choice
     (session.py `train`), so nothing auto-spends in real play."""
     if h.training >= TRAINING_MAX:
         log.append(f"    {h.name} is already at the combat training cap "
                    f"({TRAINING_MAX}).")
         return False
-    cost = h.training + 1
+    cost = training_cost(h.training)
     if h.skill_points < cost:
         log.append(f"    {h.name} needs {cost} skill point(s) for combat "
                    f"training rank {h.training + 1} (has {h.skill_points}).")
@@ -3719,6 +4093,75 @@ def train_combat_once(h: Entity, log: list[str]) -> bool:
     h.training += 1
     log.append(f"    {h.name} trains: combat training rank {h.training} "
                f"(+{h.training} to all pressure rolls) "
+               f"[{h.skill_points} point(s) left]")
+    return True
+
+
+def buy_pool(h: Entity, kind: str, log: list[str]) -> bool:
+    """Spend ONE skill point on +1 max HP, STA, or Power (the old automatic
+    pool growth, on the menu now). Capped at POOL_BUY_CAP bought per pool
+    over a career; the current pool rises with the maximum (a bigger body,
+    not a healed one -- a Down hero's HP stays where it fell)."""
+    kind = kind.lower()
+    if kind not in POOL_KINDS:
+        log.append(f"    No such pool: {kind!r} (pools: "
+                   f"{', '.join(POOL_KINDS)}).")
+        return False
+    bought = h.pool_bought.get(kind, 0)
+    if bought >= POOL_BUY_CAP:
+        log.append(f"    {h.name} has bought all the {kind.upper()} a "
+                   f"career grants (+{POOL_BUY_CAP}).")
+        return False
+    if h.skill_points < 1:
+        log.append(f"    {h.name} needs 1 skill point for +1 max "
+                   f"{kind.upper()} (has {h.skill_points}).")
+        return False
+    h.skill_points -= 1
+    h.pool_bought[kind] = bought + 1
+    if kind == "hp":
+        h.max_hp += 1
+        if h.hp > 0:
+            h.hp += 1
+        h.hp_regen_per_night = max(1, round(h.max_hp / 7))
+        now = f"HP {h.hp}/{h.max_hp}"
+    elif kind == "sta":
+        h.sta += 1
+        h.cur_sta += 1
+        now = f"STA {h.cur_sta}/{h.sta}"
+    else:
+        h.power += 1
+        h.cur_power += 1
+        now = f"Power {h.cur_power}/{h.power}"
+    log.append(f"    {h.name} hardens the body: +1 max {kind.upper()} "
+               f"({now}; +{h.pool_bought[kind]}/{POOL_BUY_CAP} bought) "
+               f"[{h.skill_points} point(s) left]")
+    return True
+
+
+def learn_ability(h: Entity, name: str, log: list[str]) -> bool:
+    """Spend skill points on a catalog ability (ABILITIES) -- single-buy,
+    no class gates: the first rank of anything is buyable by anyone;
+    prerequisites are physical only (`requires` covers the deeper rank of
+    a ranked ability, e.g. arrow-parry 2)."""
+    a = ABILITIES.get(name)
+    if a is None:
+        log.append(f"    No such ability: {name!r}. Abilities: "
+                   f"{', '.join(sorted(ABILITIES))}.")
+        return False
+    if a.name in h.abilities:
+        log.append(f"    {h.name} already knows {a.display}.")
+        return False
+    if a.requires and a.requires not in h.abilities:
+        log.append(f"    {a.display} builds on "
+                   f"{ABILITIES[a.requires].display} -- learn that first.")
+        return False
+    if h.skill_points < a.cost:
+        log.append(f"    {h.name} needs {a.cost} skill point(s) for "
+                   f"{a.display} (has {h.skill_points}).")
+        return False
+    h.skill_points -= a.cost
+    h.abilities.add(a.name)
+    log.append(f"    {h.name} learns {a.display} -- {a.blurb} "
                f"[{h.skill_points} point(s) left]")
     return True
 
@@ -3764,11 +4207,9 @@ def train_spell(h: Entity, name: str, log: list[str]) -> bool:
     the spell's own ladder (SPELLS[name].ranks): attack spells gain +1
     pressure AND +1 severity per rank like a drilled weapon, and rank 3 is
     the signature technique; openers/utility spells deepen in effect.
-    Wizards only, and the spell must already be KNOWN (rolled at creation,
-    or learned from a spellbook -- learn_spell)."""
-    if not h.is_wizard:
-        log.append(f"    {h.name} has no gift for magic to train.")
-        return False
+    Ranks are trainable in ANY spell the hero KNOWS (2026-07-17: the
+    wizard gate moved to spellBOOKS -- learn_spell/buy_spellbook keep it;
+    the hedge-healer's rolled healing spell is the non-wizard door)."""
     spell = SPELLS.get(name)
     if spell is None:
         log.append(f"    No such spell: {name!r}. "
@@ -3840,21 +4281,31 @@ def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
 
 
 def autospend_points(h: Entity, log: list[str]) -> bool:
-    """COMPANION self-improvement (2026-07-13): spend a companion's banked
-    points on the reference doctrine develop_hero uses -- combat training to
-    rank 3, then proficiency IF the carried weapon is quality steel (nobody
-    drills a club) -- a wizard companion drills the SCHOOL instead, always
-    (the gift is always worth drilling) -- then training to the cap.
-    session.py runs this for
-    party[1:] after every fight's awards (and at hire); the PC's points are
-    never touched -- spending them stays the player's decision. Returns
-    whether anything was bought (the train_* calls log each purchase)."""
+    """COMPANION and SIM self-improvement: spend banked points on the
+    reference doctrine V2 (the old default build in the new currency, so
+    the suite stays comparable) -- pools to the old odd-level curve first
+    (1 point each, the pool_bought cap respected), then combat training to
+    rank 3 (2n), then proficiency IF the carried weapon is quality steel
+    (nobody drills a club) -- a wizard companion drills the SCHOOL instead,
+    always (the gift is always worth drilling) -- then training to the cap.
+    session.py runs this for party[1:] after every fight's awards (and at
+    hire), and sites.run_site runs it for the sim parties; the PC's points
+    are never touched -- spending them stays the player's decision. Returns
+    whether anything was bought (the buy/train calls log each purchase)."""
     bought = False
+
+    # Pools to the old curve: what the automatic growth used to grant at
+    # this level, bought back first (the doctrine's anchor).
+    target = min((h.level - 1) // POOL_GROWTH_LEVELS, POOL_BUY_CAP)
+    for kind in POOL_KINDS:
+        while (h.pool_bought.get(kind, 0) < target
+               and h.skill_points >= 1 and buy_pool(h, kind, log)):
+            bought = True
 
     def training_to(cap: int) -> None:
         nonlocal bought
         while (h.training < cap
-               and h.skill_points >= h.training + 1
+               and h.skill_points >= training_cost(h.training)
                and train_combat_once(h, log)):
             bought = True
 
@@ -3872,21 +4323,6 @@ def autospend_points(h: Entity, log: list[str]) -> bool:
             bought = True
     training_to(TRAINING_MAX)
     return bought
-
-
-def train_combat(h: Entity, log: list[str]) -> bool:
-    """Greedy auto-spend on combat training -- the SIM policy only
-    (sites.run_site calls it after quest awards so tune.py / bench_training.py
-    model a party that spends its points). Real play never auto-spends:
-    session.py banks the points and the player chooses via `train`."""
-    trained = False
-    while h.training < TRAINING_MAX and h.skill_points > h.training:
-        h.skill_points -= h.training + 1
-        h.training += 1
-        trained = True
-        log.append(f"    {h.name} trains: combat training rank {h.training} "
-                   f"(+{h.training} to all pressure rolls)")
-    return trained
 
 
 def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
@@ -3971,8 +4407,15 @@ def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
     """Wield a weapon (found, bought, or DM-granted loot). There is no
     inventory -- the old weapon is set aside as narrative (heroic tone,
     no bookkeeping). A fresh weapon is whole (clears the broken flag).
-    Proficiency is per weapon TYPE, so ranks with this type apply at once."""
+    Proficiency is per weapon TYPE, so ranks with this type apply at once.
+    The staff's focus bonus (+max Power while wielded, Weapon.power_bonus)
+    is applied and removed here."""
     old = h.weapon
+    old_bonus = old.power_bonus if old is not None else 0
+    delta = weapon.power_bonus - old_bonus
+    if delta:
+        h.power += delta
+        h.cur_power = max(0, min(h.cur_power + delta, h.power))
     h.weapon = weapon
     h.weapon_broken = False
     h.switched = False
@@ -4049,43 +4492,69 @@ def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
     return True
 
 
-def use_heal(healer: Entity, target: Entity, rng: random.Random,
-             log: list[str]) -> bool:
-    """Spend Power on the Heal ability: mends a random 1-3 HP on self or an
-    ally. Unlike Bulwark's mid-fight save, Heal has no in-fight role -- it's a
-    between-fights, DM-called action (same shape as buy_potion), so it never
-    fires automatically."""
-    if healer.ability != "heal":
-        log.append(f"    {healer.name} has no Heal ability.")
-        return False
-    if healer.cur_power < HEAL_COST:
-        log.append(f"    {healer.name} doesn't have enough Power to Heal "
-                   f"({healer.cur_power}/{HEAL_COST}).")
+def cast_healing(healer: Entity, target: Entity, rng: random.Random,
+                 log: list[str]) -> bool:
+    """The healing SPELL (2026-07-17: the old Heal ability became magic --
+    the tenth spell, unaimed utility, between fights only, no in-fight
+    role). Cast at the healer's trained rank through the casting check
+    (mastery keeps ranks BELOW the trained one reliable; the check bites
+    at the edge of the art): rank 1 mends 3 HP, rank 2 mends 5, rank 3
+    mends 7 -- and rank 3 stands a Downed ally straight to
+    HEALING_REVIVE_HP after a won fight (a downgraded surgery still
+    stands them, rougher). HEALING_CAST_COST Power a cast; a fizzle burns
+    it, a crit refunds it. Steadying the truly dying is the
+    DM-adjudicated roleplay tier (dm.md)."""
+    rank = healer.spell_rank("healing")
+    if rank <= 0:
+        log.append(f"    {healer.name} does not know the healing spell.")
         return False
     if target.dead:
-        log.append(f"    {target.name} is beyond Heal.")
+        log.append(f"    {target.name} is beyond healing.")
         return False
-    healer.cur_power -= HEAL_COST
-    amount = rng.randint(*HEAL_RESTORE_RANGE)
-    # The wooden staff is the healer's weapon: +1 HP per Heal through it.
-    staff_note = ""
-    if (healer.weapon is not None and not healer.weapon_broken
-            and healer.weapon.heal_bonus):
-        amount += healer.weapon.heal_bonus
-        staff_note = f" ({healer.weapon.name} +{healer.weapon.heal_bonus})"
+    if target.down and rank < SPELL_RANK_MAX:
+        log.append(f"    {target.name} is down -- standing the fallen is "
+                   f"the rank-3 art ({healer.name} knows rank {rank}).")
+        return False
+    if not target.down and target.hp >= target.max_hp:
+        log.append(f"    {target.name} carries no wound to mend.")
+        return False
+    if healer.cur_power < HEALING_CAST_COST:
+        log.append(f"    {healer.name} lacks the Power to heal "
+                   f"({healer.cur_power}/{HEALING_CAST_COST}).")
+        return False
+    healer.cur_power -= HEALING_CAST_COST
+    result = casting_check(healer, "healing", rank, rng, log)
+    if result == "misfire":
+        _misfire(healer, "healing", log)
+        return True
+    if result == "fizzle":
+        log.append(f"    {healer.name}'s hands glow -- and gutter out "
+                   f"({HEALING_CAST_COST} Power wasted).")
+        return True
+    if result == "crit":
+        healer.cur_power += HEALING_CAST_COST
+    effective = max(1, rank - 1) if result == "downgrade" else rank
+    spent = 0 if result == "crit" else HEALING_CAST_COST
+    if target.down:
+        target.hp = max(target.hp, HEALING_REVIVE_HP)
+        target.down = False
+        log.append(f"    {healer.name}'s healing knits the deep wounds -- "
+                   f"{target.name} STANDS ({target.hp}/{target.max_hp} HP) "
+                   f"[-{spent} Power -> {healer.cur_power}]")
+        return True
+    amount = HEALING_MEND[effective]
     before = target.hp
     target.hp = min(target.max_hp, target.hp + amount)
-    if target.hp > 0:
-        target.down = False
-    log.append(f"    {healer.name} spends {HEAL_COST} Power to Heal "
-               f"{target.name}{staff_note} (+{target.hp - before} HP -> "
-               f"{target.hp}/{target.max_hp}) [{healer.cur_power} Power left]")
+    note = " (a rough mending -- one rank down)" if result == "downgrade" else ""
+    log.append(f"    {healer.name} casts healing on {target.name}{note} "
+               f"(+{target.hp - before} HP -> {target.hp}/{target.max_hp}) "
+               f"[-{spent} Power -> {healer.cur_power}]")
     return True
 
 
 def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
     """Consume one carried potion by player choice, between fights. A DM-called
-    action (same shape as buy_potion / use_heal) -- nothing in the engine drinks
+    action (same shape as buy_potion / cast_healing) -- nothing in the engine drinks
     automatically. Every potion takes effect instantly on drink (you're between
     fights; there's time to let it work). Returns True if a potion was spent.
       healing -> restore HP now
@@ -4182,6 +4651,11 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
             continue
         h.cur_sta = h.sta                       # STA fully recharges overnight
         h.cur_power = h.power                   # so does the Power budget
+                                                # (a storyteller's overcharge
+                                                # from LAST night clamps away
+                                                # here, like the tavern's)
+        h.medic_ready = True                    # the field medic's daily
+                                                # surgery re-arms with sleep
         h.down = False
         before = h.hp
         h.hp = min(h.max_hp, max(h.hp, 0) + h.hp_regen_per_night)
@@ -4251,6 +4725,80 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
     return True
 
 
+def storyteller_tale(party: list[Entity], rng: random.Random,
+                     log: list[str]) -> bool:
+    """Storyteller (the ability), rolled once per night AFTER the long
+    rest's recovery: the best-CHA storyteller spins the fire-side tale --
+    2d6 + CHA vs DC STORYTELLER_DC, +1 per listener beyond the second.
+    Success: every living party member wakes with
+    +STORYTELLER_POWER_BONUS Power ABOVE max (overcharge rules: recovery
+    never adds past max, so it is spent-only, and the next night's rest
+    clamps it away). CHA's first in-mechanics job beyond capacity and
+    gold. Session play calls this from its night paths; returns whether
+    a tale landed."""
+    tellers = [h for h in party
+               if not h.dead and "storyteller" in h.abilities]
+    if not tellers:
+        return False
+    teller = max(tellers, key=lambda h: h.cha)
+    listeners = sum(1 for h in party if not h.dead and h is not teller)
+    if listeners <= 0:
+        return False        # a tale needs an audience
+    dc = STORYTELLER_DC + max(0, listeners - 2)
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    total = dice + teller.cha
+    _debug(log, f"        storyteller: {total} (2d6={dice}, "
+                f"+{teller.cha} CHA) vs DC {dc}")
+    if total < dc:
+        log.append(f"    {teller.name}'s tale wanders and dies by the "
+                   f"embers -- a night like any other.")
+        return False
+    for h in party:
+        if h.dead:
+            continue
+        h.cur_power += STORYTELLER_POWER_BONUS
+    log.append(f"    {teller.name} spins a tale that stays with the "
+               f"party into the morning: everyone wakes with "
+               f"+{STORYTELLER_POWER_BONUS} Power above max (spent-only; "
+               f"it fades at the next night's rest).")
+    return True
+
+
+def survivalist_camp(party: list[Entity], rng: random.Random,
+                     log: list[str]) -> bool:
+    """Survivalist (the ability), rolled at a WILDS camp after the long
+    rest: the best-MIND survivalist reads the ground -- 2d6 + MIND vs DC
+    SURVIVALIST_DC. Success: the camp counts as a tavern night (the
+    HP/STA overcharge, TAVERN_OVERCHARGE of each maximum) and the caller
+    should HALVE the night-visitor chance (session's camp roll). Returns
+    whether the check was made."""
+    scouts = [h for h in party
+              if not h.dead and "survivalist" in h.abilities]
+    if not scouts:
+        return False
+    scout = max(scouts, key=lambda h: h.mind)
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    total = dice + scout.mind
+    _debug(log, f"        survivalist: {total} (2d6={dice}, "
+                f"+{scout.mind} MIND) vs DC {SURVIVALIST_DC}")
+    if total < SURVIVALIST_DC:
+        log.append(f"    {scout.name} picks the ground with care, but the "
+                   f"wilds give nothing back tonight.")
+        return False
+    for h in party:
+        if h.dead:
+            continue
+        hp_bonus = max(1, round(h.max_hp * TAVERN_OVERCHARGE))
+        sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))
+        h.hp += hp_bonus
+        h.cur_sta += sta_bonus
+    log.append(f"    {scout.name} finds sweet water, dry ground and a "
+               f"sheltered hollow: the party sleeps as if under a roof "
+               f"(the tavern overcharge -- a one-day edge) and the night "
+               f"passes the quieter for it.")
+    return True
+
+
 def party_wiped(party: list[Entity], log: list[str]) -> bool:
     """A total party knockout is a defeat. If no hero is left standing after a
     fight, there's no one to drag the fallen clear -- every Down hero is finished
@@ -4291,10 +4839,12 @@ def sim_pause_policy(crossings: list[tuple[str, Entity]]
         if kind == "stamina":
             if hero.items.get("stamina", 0) > 0:
                 actions[hero] = "drink"
-            elif hero.cur_power >= WAR_BREATH_POWER_COST + (
-                    SAVE_COST if hero.ability == "bulwark" else 0):
+            elif ("war_breath" in hero.abilities
+                    and hero.cur_power >= WAR_BREATH_POWER_COST + (
+                        SAVE_COST if "bulwark" in hero.abilities else 0)):
                 actions[hero] = "war-breath"
-            elif hero.hp > BERSERK_HP_COST * 3:
+            elif ("berserk" in hero.abilities
+                    and hero.hp > BERSERK_HP_COST * 3):
                 actions[hero] = "berserk"
             else:
                 return "retreat"

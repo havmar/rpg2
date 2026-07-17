@@ -186,7 +186,7 @@ it's worth the road to a better town -- is the player's core decision:**
   small decisions, flavor -- their TRAITS are the material: a poetic
   whisperer and a swearing loudmouth should not read alike), but the player
   directs them *tactically* -- who they focus, when they drink a potion,
-  whether they Heal.
+  whether they cast healing.
 
 ## The party -- recruiting, satisfaction, departures (2026-07-11)
 
@@ -363,7 +363,7 @@ bigger than the fights WITHOUT pages of narration:
   and never turn the check into roster talk about what waits inside. The
   choice stays theirs.
 - **Player decisions -- present, don't push:** drinking a potion (`use`),
-  the Heal ability (`heal`), taking a short rest (`rest`), making camp
+  the healing spell (`heal`), taking a short rest (`rest`), making camp
   (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
   streak: the tally already names the next room's multiplier, so one clause
   on what a camp resets is plenty), paying for the tavern instead of
@@ -371,8 +371,9 @@ bigger than the fights WITHOUT pages of narration:
   **who to hire and whether to hire at all** (`hire`),
   **who to let go** (`dismiss`), spending a day on
   companion morale (`downtime`),
-  **spending the PC's skill points** (`train HERO combat|weapon|SPELL`
-  -- the PC's points bank on level-up; companions spend their own, see
+  **spending the PC's skill points** (`train HERO
+  combat|weapon|hp|sta|power|SPELL` and `learn HERO ABILITY` -- the PC's
+  points bank on level-up; companions spend their own, see
   below), **buying spellbooks** (`buy HERO book SPELL`, 120g, capitals
   -- a wizard's breadth is a purse decision), **the utility casts**
   (`cast HERO scry`, `cast HERO teleport DEST` -- Power spent between
@@ -397,11 +398,17 @@ bigger than the fights WITHOUT pages of narration:
   auto-looping it.
 - **Level-ups run themselves (2026-07-13).** The PC's level-up prints the
   spending menu automatically right after the fight -- SHOW it to the
-  player and wait for their `train` call; don't paraphrase the rules from
-  memory (`levelup` re-prints it). **Companions autolevel** on the
-  standard doctrine (training first, proficiency once they carry quality
-  steel) -- the log shows the purchase; mention it in passing ("Zonk has
-  been drilling"), never as a decision.
+  player and wait for their `train` / `learn` call; don't paraphrase the
+  rules from memory (`levelup` re-prints it). A level is 3 points now
+  (2026-07-17) and EVERYTHING is on the menu -- pools (+1 max HP/STA/Power
+  at 1 each), training (rank n costs 2n), proficiency and spell ranks
+  (n), and the ability catalog (`learn`); nothing grows automatically
+  anymore. **Companions autolevel** on the standard doctrine (pools to
+  the old curve, then training, then proficiency once they carry quality
+  steel) -- the log shows the purchases; mention them in passing ("Zonk
+  has been drilling"), never as a decision. Companions never buy
+  abilities on their own: if the player wants a companion to learn one,
+  `learn` works on anyone with the points banked.
 - **Offer loot.** A cleared fight prints a `Left among the dead:` line with
   the fallen foes' weapons and stats. Mention it in one short sentence --
   most of it is trash and one clause is enough ("a shortsword among the
@@ -511,8 +518,11 @@ bigger than the fights WITHOUT pages of narration:
   fires it) for the player's call. Pause actions (one per hero; cost the
   round's attack, defend at -2 while busy): drink a stamina draught
   (+4 STA -- even un-Spends), heal (a healing potion, +5 HP -- the wound
-  penalty lightens), Berserk (2 HP -> +4 STA; the wound penalty deepens),
-  War-Breath (2 Power -> +3 STA). Retreat: parting blows, one chase roll
+  penalty lightens), Berserk (2 HP -> +4 STA; the wound penalty deepens;
+  KNOWERS ONLY since 2026-07-17), War-Breath (2 Power -> +3 STA; knowers
+  only). The conversions are learned abilities now -- a hero with neither
+  answers a stamina crossing with a draught or fights on, and that
+  pressure is the design. Retreat: parting blows, one chase roll
   (flight gets +2, DEX weighted by current STA); undead never chase past
   their ground. Failed break = the fight resumes at once. **Standing
   orders handle every other crossing** -- heroes drink/convert on their
@@ -588,7 +598,8 @@ bigger than the fights WITHOUT pages of narration:
   or `give`/`buy`). The quality four: rapier (+2 attack, -1 severity, always
   draws blood on a landed hit), katana (+1/+1, the all-rounder), zweihander
   (+1/+3 but -1 on defense -- the crowd-breaker), wooden staff (+1 parry,
-  +1 HP per Heal, weak steel -- the healer's weapon). Commons are named trash
+  +1 max Power while wielded, weak steel -- the caster's focus,
+  2026-07-17). Commons are named trash
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
   ~1 training rank at the barrow; masterwork/legendary are never for sale.
@@ -623,18 +634,22 @@ bigger than the fights WITHOUT pages of narration:
   the weapon type -- switching weapons drops the bonus until re-drilled.
 - **Wizards (Magic & Mind, 2026-07-15):** MIND strictly highest of
   MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
-  rank 1 instead of an ability, rolled for PC, companions, and recruits
-  alike. POWER is the fuel (qi, not iq -- it never comes from MIND).
-  Spells rank 1-3: `train HERO SPELL` buys ranks (rank n = n points),
-  `buy HERO book SPELL` (120g, capitals) teaches new spells; rank 3 is
-  an attack spell's signature technique and usually a utility spell's
-  roleplay tier. Nine spells: fire (bolts -> FIREBALL), ice (rime bolts
-  -> FLASH-FREEZE), telekinesis (disarm/hurl/slam), teleport (blink
-  strike / blink out / travel), invisibility (unseen entry / vanish /
-  ghost-walk), stop time (stolen strikes), possession (a foe fights for
-  the party), flight (rounds aloft), scry (rooms ahead). Costs are
-  Power on top of the normal swing STA; a parried or fizzled cast still
-  burns it.
+  rank 1 instead of an archetype seed, rolled for PC, companions, and
+  recruits alike. POWER is the fuel (qi, not iq -- it never comes from
+  MIND). Spells rank 1-3: `train HERO SPELL` buys ranks (rank n = n
+  points; since 2026-07-17 ANYONE can deepen a spell they know -- books
+  stay wizard-only), `buy HERO book SPELL` (120g, capitals) teaches new
+  spells; rank 3 is an attack spell's signature technique and usually a
+  utility spell's roleplay tier. Ten spells: fire (bolts -> FIREBALL),
+  ice (rime bolts -> FLASH-FREEZE), telekinesis (disarm/hurl/slam),
+  teleport (blink strike / blink out / travel), invisibility (unseen
+  entry / vanish / ghost-walk), stop time (stolen strikes), possession
+  (a foe fights for the party), flight (rounds aloft), scry (rooms
+  ahead), healing (mend 3/5/7 HP between fights, `heal HEALER TARGET`;
+  rank 3 stands a Downed ally to 3 HP -- the old Heal ability, become
+  magic 2026-07-17; the hedge-healer starting roll is the non-wizard
+  door). Costs are Power on top of the normal swing STA; a parried or
+  fizzled cast still burns it.
   **In the melee everything is automatic** -- openers fire as the lines
   meet (one per wizard, skipped vs beaten foes), attack spells follow
   the standing behavior (disarm first, technique on a healthy body,
@@ -683,9 +698,10 @@ bigger than the fights WITHOUT pages of narration:
   paying line -- the tally names the next room's multiplier at every
   fight's end.
   Multi-site quests streak per site (each site ramps and pays on its own;
-  nothing forces marathoning a whole quest in one day). Levels also grow
-  the body: +1 max HP/STA/Power on reaching every odd level (3, 5, 7...),
-  on top of the banked skill point per level.
+  nothing forces marathoning a whole quest in one day). A level banks
+  3 skill points and grants NOTHING automatically (2026-07-17): pools,
+  training, proficiency, spell ranks, and abilities are all bought from
+  the same points at the levelup menu.
 - **Deliveries (2026-07-14):** the board's DELIVERY rows are cross-land
   courier jobs -- taken from their giver at the origin, paid by a named
   RECIPIENT at a settlement in another land (both faces are on the quest;

@@ -36,7 +36,7 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  WEAPONS, make_party, stat_line, outcome, start_fight,
                  short_rest, long_rest, party_wiped,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
-                 train_combat, random_common_weapon,
+                 autospend_points, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
                  SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD)
@@ -621,7 +621,9 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
         if auto_train:
             for h in party:
                 if not h.dead:
-                    train_combat(h, log)    # sim policy: auto-spend on training
+                    # Sim policy: auto-spend on the reference doctrine v2
+                    # (pools to the old curve, then training/proficiency).
+                    autospend_points(h, log)
 
 
 # --------------------------------------------------------------------------- #

@@ -89,13 +89,17 @@ from rpg import (
     award_xp, roll_loot, award_quest,
     short_rest as _short_rest, long_rest as _long_rest,
     tavern_rest as _tavern_rest,
-    buy_potion as _buy_potion, use_heal as _use_heal,
+    buy_potion as _buy_potion, cast_healing as _cast_healing,
     use_potion as _use_potion, buy_weapon as _buy_weapon,
     equip_weapon as _equip_weapon,
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
     train_spell as _train_spell,
     buy_spellbook as _buy_spellbook,
+    buy_pool as _buy_pool, learn_ability as _learn_ability,
+    ABILITIES, ability_tags, training_cost,
+    POOL_KINDS, POOL_BUY_CAP, SKILL_POINTS_PER_LEVEL,
+    storyteller_tale, survivalist_camp,
     blink_escape, casting_check,
     SPELLS, SPELL_RANK_MAX, SPELLBOOK_PRICE, VANISH_POWER_COST,
     SCRY_POWER_COST, TELEPORT_TRAVEL_COST_PER_DAY, TELEPORT_ESCAPE_COST,
@@ -274,12 +278,17 @@ def _weapon_from(ref) -> Weapon | None:
 def _entity_to_dict(e: Entity) -> dict:
     d = dataclasses.asdict(e)
     d["weapon"] = _weapon_ref(e.weapon)
+    # JSON has no sets: abilities and moves travel as sorted lists.
+    d["abilities"] = sorted(e.abilities)
+    d["moves"] = sorted(e.moves)
     return d
 
 
 def _entity_from_dict(d: dict) -> Entity:
     d = dict(d)
     d["weapon"] = _weapon_from(d["weapon"])
+    d["abilities"] = set(d.get("abilities", ()))
+    d["moves"] = set(d.get("moves", ()))
     e = Entity(**d)
     # __post_init__ resets the live tracks to full; restore the saved state.
     e.hp = d["hp"]
@@ -1030,10 +1039,13 @@ def print_pause_menu(state: dict) -> None:
           f"+{STAMINA_DRAUGHT_RESTORE} STA now")
     print(f"    resume --heal HERO        -- healing potion, "
           f"+{HEALING_POTION_RESTORE} HP now (the wound penalty lightens)")
-    print(f"    resume --berserk HERO     -- {BERSERK_HP_COST} HP -> "
-          f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens)")
-    print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} Power -> "
-          f"+{WAR_BREATH_STA_GAIN} STA")
+    if any(not h.dead and "berserk" in h.abilities for h in party):
+        print(f"    resume --berserk HERO     -- {BERSERK_HP_COST} HP -> "
+              f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens; "
+              f"knowers only)")
+    if any(not h.dead and "war_breath" in h.abilities for h in party):
+        print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} "
+              f"Power -> +{WAR_BREATH_STA_GAIN} STA (knowers only)")
     if any(not h.dead and h.spell_rank("invisibility") >= 2 for h in party):
         print(f"    resume --vanish HERO      -- {VANISH_POWER_COST} Power: "
               f"fade from the melee (untargetable; the next strike lands "
@@ -1063,11 +1075,20 @@ def print_levelup_menu(heroes: list) -> None:
         first = h.name.split()[0]
         print(f"{h.name} -- L{h.level}, {h.skill_points} skill point(s) banked "
               f"(XP {h.xp}/{xp_to_next(h.level)} to L{h.level + 1})")
-        # Sink 1: combat training (+1 to ALL pressure rolls per rank).
+        # Sink 1: the pools (the old automatic growth, on the menu now).
+        pool_bits = []
+        for kind in POOL_KINDS:
+            bought = h.pool_bought.get(kind, 0)
+            pool_bits.append(f"{kind.upper()} +{bought}"
+                             + ("(CAP)" if bought >= POOL_BUY_CAP else ""))
+        print(f"  pools  +1 max HP/STA/Power  costs 1 each  "
+              f"(bought: {', '.join(pool_bits)}; cap +{POOL_BUY_CAP} per "
+              f"pool)  -> train {first} hp|sta|power")
+        # Sink 2: combat training (+1 to ALL pressure rolls per rank).
         if h.training >= TRAINING_MAX:
             print(f"  combat training      rank {h.training} -- CAPPED")
         else:
-            cost = h.training + 1
+            cost = training_cost(h.training)
             mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
             print(f"  combat training      rank {h.training} -> "
                   f"{h.training + 1}  costs {cost}  [{mark}]  "
@@ -1111,6 +1132,20 @@ def print_levelup_menu(heroes: list) -> None:
         if other:
             dormant = ", ".join(f"{n} {r}" for n, r in sorted(other.items()))
             print(f"  (drilled but not in hand: {dormant})")
+        # Sink 5: the ability catalog (single buys -- learn HERO NAME).
+        known = ability_tags(h)
+        if known:
+            print(f"  abilities known: {', '.join(known)}")
+        buyable = []
+        for a in ABILITIES.values():
+            if (a.name in h.abilities
+                    or (a.requires and a.requires not in h.abilities)):
+                continue
+            mark = "*" if h.skill_points >= a.cost else ""
+            buyable.append(f"{a.name} {a.cost}{mark}")
+        if buyable:
+            print(f"  abilities to learn (cost, * = affordable; "
+                  f"learn {first} NAME): {', '.join(buyable)}")
 
 
 def cmd_levelup(args: argparse.Namespace) -> None:
@@ -1861,6 +1896,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
     log: list[str] = []
     for _ in range(days):
         _long_rest(state["party"], state["clock"], log)
+        storyteller_tale(state["party"], state["rng"], log)
         night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
@@ -1919,6 +1955,7 @@ def cmd_explore(args: argparse.Namespace) -> None:
           f"camping rough.")
     log: list[str] = []
     _long_rest(party, clock, log)
+    storyteller_tale(party, rng, log)
     night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
@@ -2082,14 +2119,25 @@ def cmd_resume(args: argparse.Namespace) -> None:
             if action == "heal" and hero.items.get("healing", 0) <= 0:
                 print(f"{hero.name} carries no healing potion.")
                 return
-            if action == "berserk" and hero.hp <= BERSERK_HP_COST:
-                print(f"{hero.name} is too torn up to Berserk "
-                      f"(HP {hero.hp}, must survive the {BERSERK_HP_COST}).")
-                return
-            if action == "war-breath" and hero.cur_power < WAR_BREATH_POWER_COST:
-                print(f"{hero.name} lacks the Power for War-Breath "
-                      f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
-                return
+            if action == "berserk":
+                if "berserk" not in hero.abilities:
+                    print(f"{hero.name} has not learned Berserk "
+                          f"(1 point at the levelup menu).")
+                    return
+                if hero.hp <= BERSERK_HP_COST:
+                    print(f"{hero.name} is too torn up to Berserk "
+                          f"(HP {hero.hp}, must survive the "
+                          f"{BERSERK_HP_COST}).")
+                    return
+            if action == "war-breath":
+                if "war_breath" not in hero.abilities:
+                    print(f"{hero.name} has not learned War-Breath "
+                          f"(2 points at the levelup menu).")
+                    return
+                if hero.cur_power < WAR_BREATH_POWER_COST:
+                    print(f"{hero.name} lacks the Power for War-Breath "
+                          f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
+                    return
             if action == "vanish":
                 if hero.spell_rank("invisibility") < 2:
                     print(f"{hero.name} doesn't know invisibility at rank 2 "
@@ -2238,14 +2286,23 @@ def cmd_camp(args: argparse.Namespace) -> None:
     for _ in range(nights):
         log: list[str] = []
         _long_rest(party, clock, log)
+        storyteller_tale(party, state["rng"], log)
+        in_wilds = (state.get("world")
+                    and state["location"]["kind"] != "settlement")
+        quiet = False
+        if in_wilds:
+            # Survivalist (the ability): a made MIND check turns the rough
+            # camp into a tavern night and halves the visitor chance.
+            quiet = survivalist_camp(party, state["rng"], log)
         night_upkeep(state, log)
         print("\n".join(log))
-        if state.get("world") and state["location"]["kind"] != "settlement":
+        if in_wilds:
             # A night in the wilds is not a night behind walls (2026-07-10):
             # the fire can draw a visitor. Rolled after the night's recovery;
             # a fight cuts the stay short -- what remains of it is the
             # player's call again afterward.
-            if wild_event(state, CAMP_ENCOUNTER_CHANCE,
+            chance = CAMP_ENCOUNTER_CHANCE / 2 if quiet else CAMP_ENCOUNTER_CHANCE
+            if wild_event(state, chance,
                           f"In the night at {state['location']['name']}"):
                 return
         if args.heal and all(h.dead or h.hp >= h.max_hp for h in party):
@@ -2276,6 +2333,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     if not _tavern_rest(state["party"], state["clock"], state["purse"], log):
         print("\n".join(log))
         return
+    storyteller_tale(state["party"], state["rng"], log)
     night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
@@ -2319,6 +2377,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
         else:
             adjust_satisfaction(h, SAT_DOWNTIME, log, "a day off their feet")
     _long_rest(party, clock, log)
+    storyteller_tale(party, state["rng"], log)
     night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
@@ -2509,6 +2568,9 @@ def cmd_train(args: argparse.Namespace) -> None:
         _train_combat_once(hero, log)
     elif what == "weapon":
         _train_proficiency(hero, log)
+    elif what in POOL_KINDS:
+        # The pool buys (the point economy): +1 max HP/STA/Power, 1 point.
+        _buy_pool(hero, what, log)
     elif what == "magic":
         # The shorthand: drill the wizard's own school spell.
         if hero.school:
@@ -2518,7 +2580,8 @@ def cmd_train(args: argparse.Namespace) -> None:
     elif what in SPELLS:
         _train_spell(hero, what, log)
     else:
-        print(f"Unknown skill: {what!r}. Options: combat, weapon, magic, "
+        print(f"Unknown skill: {what!r}. Options: combat, weapon, "
+              f"{'|'.join(POOL_KINDS)}, magic, "
               f"or a spell name ({', '.join(sorted(SPELLS))}).")
         return
     print("\n".join(log))
@@ -2540,6 +2603,9 @@ def cmd_use(args: argparse.Namespace) -> None:
 
 
 def cmd_heal(args: argparse.Namespace) -> None:
+    """The healing SPELL, between fights (the old Heal ability became
+    magic -- rules.md): cast at the healer's trained rank through the
+    casting check."""
     state = load()
     if not require_no_pending(state):
         return
@@ -2551,7 +2617,25 @@ def cmd_heal(args: argparse.Namespace) -> None:
     target = find_hero(party, args.target)
     if target is None:
         return
-    _use_heal(healer, target, rng, log)
+    _cast_healing(healer, target, rng, log)
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_learn(args: argparse.Namespace) -> None:
+    """Buy a catalog ability with banked skill points (the levelling
+    framework's single buys -- rpg.ABILITIES; the levelup menu lists
+    costs). Accepts spaces or dashes for the underscored keys."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    party = state["party"]
+    log: list[str] = []
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
+    name = " ".join(args.ability).lower().replace("-", " ").replace(" ", "_")
+    _learn_ability(hero, name, log)
     print("\n".join(log))
     save(state)
 
@@ -3038,21 +3122,37 @@ def main() -> None:
 
     p = sub.add_parser(
         "train",
-        help="spend a banked skill point: 'combat' = +1 to all pressure rolls "
-             "per rank (cap 5); 'weapon' = proficiency with the WIELDED "
-             "weapon, +1 attack pressure & +1 severity per rank (cap 3); "
-             "a SPELL NAME = one rank of a known spell (cap 3; attack "
-             "spells gain +1 pressure & +1 severity per rank, rank 3 is "
-             "the signature technique -- see `levelup`); 'magic' = "
-             "shorthand for the wizard's own school spell. "
-             "Rank n costs n points. The PC's points are the player's "
-             "choice (companions autolevel on the doctrine since "
-             "2026-07-13).")
+        help="spend banked skill points: 'combat' = +1 to all pressure "
+             "rolls per rank (rank n costs 2n, cap 5); 'weapon' = "
+             "proficiency with the WIELDED weapon, +1 attack pressure & "
+             "+1 severity per rank (rank n costs n, cap 3); "
+             "'hp'/'sta'/'power' = +1 to that maximum (1 point each, "
+             "+10 per pool a career); a SPELL NAME = one rank of a KNOWN "
+             "spell (rank n costs n, cap 3 -- anyone can deepen a spell "
+             "they know; books stay wizard-only); 'magic' = shorthand "
+             "for the wizard's own school spell. See `levelup` for the "
+             "whole menu (abilities are `learn`). The PC's points are "
+             "the player's choice (companions autolevel on the "
+             "doctrine).")
     p.add_argument("hero")
     p.add_argument("what", nargs="+",
-                   help="combat | weapon | magic | a spell name "
-                        "(e.g. 'stop time')")
+                   help="combat | weapon | hp | sta | power | magic | "
+                        "a spell name (e.g. 'stop time')")
     p.set_defaults(func=cmd_train)
+
+    p = sub.add_parser(
+        "learn",
+        help="buy a catalog ability with banked skill points (single "
+             "buys, no class gates -- Bulwark 3, First Blood 2, "
+             "War-Breath 2, Berserk 1, Rage 2, Field Medic 3, "
+             "Storyteller 2, Survivalist 2, Arrow-Parry 2 (+3 rank 2), "
+             "Point-Blank Mastery 3, Rapid Reload 3; `levelup` lists "
+             "them with blurbs)")
+    p.add_argument("hero")
+    p.add_argument("ability", nargs="+",
+                   help="ability name (e.g. war breath, rage, "
+                        "arrow parry 2)")
+    p.set_defaults(func=cmd_learn)
 
     p = sub.add_parser(
         "use",
@@ -3062,7 +3162,11 @@ def main() -> None:
     p.add_argument("kind", choices=list(POTION_KINDS))
     p.set_defaults(func=cmd_use)
 
-    p = sub.add_parser("heal", help="Heal ability, between fights only")
+    p = sub.add_parser(
+        "heal",
+        help="cast the healing SPELL, between fights only (rank 1/2/3 "
+             "mends 3/5/7 HP, 3 Power, the casting check rolls; rank 3 "
+             "stands a Downed ally to 3 HP after a won fight)")
     p.add_argument("healer")
     p.add_argument("target")
     p.set_defaults(func=cmd_heal)

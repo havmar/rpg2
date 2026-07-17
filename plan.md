@@ -17,129 +17,41 @@ rules.md — the World & Navigation add-on and the updated wound-tier /
 XP sections; measured numbers in benchlog.md. What remains from that design
 session lives in the open questions and parked ideas below.)*
 
-## Next up — the levelling framework (designed 2026-07-16; three implementation sessions)
+## Next up — the levelling framework (designed 2026-07-16; sessions B and C remain)
 
 The shortlist's "levelling framework" foundation, designed in the
-2026-07-16 session. **This section is the full spec** — implementation is
-deliberately NOT this session's work; it splits into three sessions (A/B/C
-below), each ending with a full bench re-run and a benchlog entry.
+2026-07-16 session and split into three implementation sessions, each
+ending with a full bench re-run and a benchlog entry. **Session A (the
+point economy & the ability catalog) SHIPPED 2026-07-17** — 3 points per
+level, pools on the menu, training at 2n, the eleven-entry single-buy
+catalog (the three parked ranged abilities included), healing as the
+tenth spell, the staff's +1 Power, the five-entry archetype seed table,
+doctrine v2 across the sims, and the new `bench_abilities.py`; mechanics
+in rules.md (the Progression add-on rewrite + the ability catalog),
+measured numbers in benchlog.md (2026-07-17 — note the attributed career
+mid-band dip: the flex premium paid, its refund scheduled below).
 Terminology settled: **ability** is the umbrella word; ranked multi-buy
 tracks are **skills** (combat training, weapon proficiency, spells,
 alchemy); the warrior repertoire entries are **moves**. "Perk" is retired.
 
-Comes forward from the parked list (entries deleted there): **overfill
-potions** (ships as the overcharge doctrine, session C), **the alchemist**
-(the whole session-C tree), **the three ranged abilities** (arrow-parry /
-point-blank mastery / rapid reload, session A catalog), **kiting** (ships
-as the skirmisher's step move, session B), and **weapon-granted abilities**
-(superseded: moves are weapon-gated by tags, which is that idea grown up).
+Still coming forward from the parked list: **overfill potions** (ships as
+the overcharge doctrine, session C), **the alchemist** (the whole
+session-C tree), **kiting** (ships as the skirmisher's step move,
+session B), and **weapon-granted abilities** (superseded: moves are
+weapon-gated by tags, which is that idea grown up).
 
-The one-sentence shape: **a level grants several points, and everything a
-level can buy — pool growth included — is bought with those points, at
-prices scaled to measured value.** No class gates anywhere: the first rank
-of anything is buyable by anyone (the game's own free-allocation doctrine);
-prerequisites are physical only (a move needs a weapon that can do it,
-spellBOOKS stay wizard-gated, alchemy is open to all but rolls off MIND).
+The one-sentence shape (in the engine since session A): **a level grants
+several points, and everything a level can buy — pool growth included —
+is bought with those points, at prices scaled to measured value.** No
+class gates anywhere: the first rank of anything is buyable by anyone
+(the game's own free-allocation doctrine); prerequisites are physical
+only (a move needs a weapon that can do it, spellBOOKS stay
+wizard-gated, alchemy is open to all but rolls off MIND).
 
-### Session A — the point economy & the ability catalog
-
-**The currency.** `SKILL_POINTS_PER_LEVEL` 1 -> **3** (57 points banked by
-L20, 42 by L15). The automatic odd-level pool growth is **removed**;
-`grow_pools` leaves `award_xp`, and pools join the menu:
-
-| Purchase | Point cost | Cap |
-|----------|-----------|-----|
-| +1 max HP, +1 max STA, or +1 max Power | 1 each | +10 bought per pool |
-| Combat training rank n | **2n** (was n) | 5 (unchanged) |
-| Weapon proficiency rank n | n (unchanged) | 3 |
-| Spell rank n, for a spell you KNOW | n (unchanged) | 3 |
-| Alchemy rank n (session C) | 2n | 5 |
-| A move (session B) | 1 (iaido and the finishers 2) | repertoire ≤ training + 1 |
-| Single-buy abilities | 1–3 (catalog below) | — |
-
-Training doubles in price because it is the measured strongest buy (a rank
-moves site clear rates by tens of points — bench_training), and the
-designer's instinct that "the general fighting skill should cost more"
-is right: at rank-n-costs-n it would be strictly the best deal in the new
-economy and same-cost-same-value would be broken from day one.
-
-**The arithmetic sanity check** (why 3/level and these prices): the old
-default build priced in new points is *training-2n + pools-at-1*, and it
-maps almost exactly through midgame — L4: old (training 2, pools +1 each)
-= 6+3 = 9 = the new budget to the point; L8: 12+9 = 21 = the budget
-exactly. At L11 the old default costs 35 vs 30 banked and at L20 63 vs 57
-— the new economy runs ~10-15% tighter at the top, WHICH IS THE FLEX
-PREMIUM: nobody gets the old everything-for-free build plus new toys; you
-fund moves/abilities/alchemy by shaving pools or a training rank. Net
-player power at 14-20 still RISES (the band's known gap): moves, rage,
-the ranged abilities, and alchemy are all new power the old build never
-had. `POINTS_PER_LEVEL` and the training multiplier are THE two knobs the
-session-A bench round is allowed to move (3 vs 4, 2n vs n+something).
-
-**Learnable abilities (the catalog).** `Entity.ability` (one string)
-becomes a set; the pause layer checks it. Everyone keeps potions and the
-pause — what stops being universal is the *trained* answers:
-
-| Ability | Cost | Effect (mechanics unchanged where they exist today) |
-|---------|------|------------------------------------------------------|
-| **Bulwark** | 3 | as today (the mid-fight tier-shift save, Power-paid) |
-| **First Blood** | 2 | as today (auto opener, 2 Power, guaranteed graze) |
-| **War-Breath** | 2 | as today (pause/standing-order: 2 Power -> +3 STA) — now known, not universal |
-| **Berserk** | 1 | as today (2 HP -> +4 STA) — now known, not universal |
-| **Rage** | 2 | after slaying a foe: +2 to the next exchange; if that exchange fails to slay, the hero spends the following round exhausted (no attack). Mork Borg import; swingy on purpose |
-| **Field Medic** | 3 | once per day, when a companion would truly DIE near you: DEX check DC 9 — success commutes it to a Down (rapid surgery, takes your next round). Fate's bargain's price can NOT be medic'd (fate is owed, not bleeding) |
-| **Storyteller** | 2 | at a long rest: CHA check DC 9 (+1 per listener beyond the second) — success gives every party member +1 Power ABOVE max (overcharge rules). CHA's first in-mechanics job beyond capacity/gold |
-| **Survivalist** | 2 | at a wilds camp: MIND check DC 9 — the camp counts as a tavern night (the overcharge) and night-visitor chance is halved |
-| **Arrow-Parry** | 2 / +3 for rank 2 | melee grip only: +2 defense pressure against missiles (arrows/bolts/stones); rank 2 extends to bullets and rises to +3. The parked ranged-ability, priced |
-| **Point-Blank Mastery** | 3 | the ranged card shoots at gap 0 — no switch round (parked design, unchanged) |
-| **Rapid Reload** | 3 | cadence 0 on a card that has 1 (parked design, unchanged) |
-
-Standing orders update: the War-Breath and Berserk rungs check the
-ability; a hero with neither answers a stamina crossing with a draught or
-fights on. That IS the intended new pressure — the universal safety net
-narrows to potions, and "who knows a conversion" becomes a build fact.
-
-**Healing becomes magic.** `Heal` the ability is deleted; **healing** joins
-`rpg.SPELLS` as the tenth spell (unaimed utility, between-fights only, no
-in-fight role — exactly today's shape under magic rules): rank 1 mends
-3 HP, rank 2 5 HP, rank 3 7 HP, 3 Power per cast, casting check per the
-magic add-on (mastery: casting below trained rank never rolls, so a
-trained healer is reliable at their own tier — the check bites at the
-edge). Rank 3 also stands a Downed ally straight to 3 HP after a won
-fight, plus the usual roleplay tier (steady the dying, DM-adjudicated).
-One gate loosens to make this work: **ranks are trainable in any spell
-you KNOW; wizardhood keeps gating spellBOOKS** (`train_spell` drops its
-`is_wizard` check, `buy_spellbook` keeps it). The non-wizard path to
-healing is the starter table below (the hedge-healer roll) — after that,
-parties without one rely on potions and alchemists, which is the intended
-ecosystem shift.
-
-**The staff stops paying in healing.** `heal_bonus` is deleted with the
-ability; the wooden staff instead grants **+1 max Power while wielded**
-(the focus: fuel, not surgery — "power or int" per the designer, and max
-Power is the entanglement-free choice; MIND feeds wizardhood/AIM/quest
-sight and must stay a birth stat).
-
-**Starting abilities become the archetype seed.** The random
-heal/bulwark/first-blood roll widens to a five-entry table (MIND-highest
-wizard override unchanged, school spell as today). Each grant is a
-~2-3-point head start that HINTS an archetype without gating one:
-
-| Roll | Grant | The hint |
-|------|-------|----------|
-| the shieldman | Bulwark | the frontline saver |
-| the killer | First Blood | the aggressive duelist |
-| the hedge-healer | healing spell rank 1 (+ the 50% staff chance, as today's healer) | the support line — and the only non-wizard door into a spell |
-| the herbalist | Alchemy rank 1 | the session-C tree's seed |
-| the drilled | one move matching the starting weapon (thrust/sweep/feint by tag) | the session-B system's seed |
-
-**Touch list**: constants + price functions (`train_combat_once`,
-`train_proficiency`, `train_spell`, new `buy_pool`, new
-`learn_ability`), `award_xp` (no growth), the levelup menu and `train`/
-`buy` session surface, `develop_hero` + `autospend_points` +
-`make_character` doctrine v2 (below), the standing-orders ladder, save
-serializers, dm.md's quick reference + levelup guidance, rules.md
-Progression add-on rewrite. Zero-backcompat: old saves die, as always.
+Session A left two seeds in the schema for the sessions below:
+`Entity.moves` (the drilled archetype grants one, chosen by a name-based
+stand-in for the move tags until B lands) and `Entity.alchemy` (the
+herbalist archetype grants rank 1) — both inert until their systems ship.
 
 ### Session B — the moves system (the warrior repertoire)
 
@@ -208,9 +120,9 @@ fighter companions thrust-or-sweep then a finisher, bench extension.
 drops from 1 healing + 1 stamina PER HERO to **1 + 1 PER PARTY**
 (scrounged herbs; shops unchanged at 10 g). This is a real difficulty
 lever pulled on purpose — it is the natural candidate for finally closing
-the standing hideout flag (measured 80.6% clear vs the ~55% retune
-target). The session-C bench round tunes toward the **55-65 band** and
-says so in benchlog.
+the standing hideout flag (measured 84.4% clear after session A vs the
+~55% retune target). The session-C bench round tunes toward the **55-65
+band** and says so in benchlog.
 
 **The brew.** Alchemy is a skill (rank n costs 2n, cap 5, open to all —
 30 points, so a pure alchemist maxes it around L15 with ~12 points left
@@ -267,33 +179,30 @@ the thrown-bomb branch (AIM chassis), retreat's smoke path, session
 `brew` + shop surface, autospend v2 for an alchemist companion, dm.md +
 rules.md sections, bench + career re-run with the kit-shrink retune.
 
-### Benchmark validation strategy (all three sessions)
+### Benchmark validation strategy (sessions B and C)
 
-- **`bench_abilities.py` (new, session A, grows in B/C)** — the
+- **`bench_abilities.py` (SHIPPED with session A; grows in B/C)** — the
   equal-cost matrix the designer asked for: reference frames at L4 / L8 /
-  L14, each column one way to spend the SAME banked points (training-
-  heavy, pools-heavy, a moves package, an ability package, a spell rank,
-  alchemy), each row a fixed suite (at-level generated room, a site run,
-  a duel vs the soldiery ladder). **Acceptance band: combat options of
-  equal point cost land within ~±10 clear-rate points of the column
-  median**; utility buys (alchemy, storyteller, survivalist) are measured
-  on their own axis (potions produced, Power banked, camp outcomes) plus
-  the career column. Perfect balance is explicitly NOT the bar (the
-  designer's own stance — equipment and party context may weigh in);
-  wildly-different-at-same-price is the failure to catch.
-- **Doctrine v2 keeps the suite comparable**: `develop_hero` /
-  `autospend_points` / the bench reference duo reproduce the OLD default
-  build in the new currency (pools to the old odd-level curve, then
-  training, then proficiency/school as today). Session A's full-suite run
-  then isolates the economy change itself; drift beyond noise is
-  attributable and gets a benchlog entry before any new content lands.
-- **Per-session gates**: full suite (`tune`, training, weapons, ranged,
-  bestiary, party, quests) re-run at the end of A, B, and C. Careers:
-  reach-L8 stays within ~5 points of the current 66% through A and B
-  (no intended difficulty change); session C is the exception — the kit
-  shrink deliberately moves numbers, targets: hideout to the 55-65 clear
-  band, reckless wipe stays ≥ ~75% ("not using resources mostly means
-  death" holds), careers re-anchored and written up.
+  L14, whole-budget columns, rows = at-level generated room / a site run /
+  a duel vs the soldiery ladder; acceptance band ±10 of the row median,
+  utility buys on their own axis. Session A's findings (benchlog
+  2026-07-17): combat columns mostly in band; all-in pools is a trap
+  build, training-heavy still tops the site row even at 2n (the doubling
+  is a floor, not an overshoot). Perfect balance is explicitly NOT the
+  bar; wildly-different-at-same-price is the failure to catch.
+- **Doctrine v2 keeps the suite comparable** (in the engine since A):
+  `develop_hero` / `autospend_points` / the bench reference duo reproduce
+  the OLD default build in the new currency. Session A's full-suite run
+  isolated the economy change; the drift was measured and attributed
+  (benchlog 2026-07-17).
+- **Per-session gates**: full suite re-run at the end of B and C.
+  Careers: session A left reach-L8 at **56%** (66% before; ~8 points the
+  flex premium, ~2 the conversions gating — the premium buys the B/C
+  content, so **re-judge the career gate when B lands and autospend buys
+  moves**); session C is the exception — the kit shrink deliberately
+  moves numbers, targets: hideout to the 55-65 clear band, reckless wipe
+  stays ≥ ~75% ("not using resources mostly means death" holds), careers
+  re-anchored and written up.
 - **Session B adds a moves matchup block** to bench_abilities (each move
   package vs the reference duo; disarm-the-move priced against
   telekinesis-rank-1); **session C adds the alchemist career column**
@@ -309,10 +218,13 @@ non-wizard door, Berserk becomes learnable-at-1 alongside War-Breath (the
 designer asked for "other conversions as well"; if standing orders feel
 toothless in play the 1-point price makes Berserk near-universal anyway).
 
-Genuinely open — cheap to flip before session A starts, pick defaults
-stand otherwise:
+Genuinely open — session A's picks stand unless flipped:
 
-1. **Points per level 3 vs 4** (and training 2n) — bench_abilities rules.
+1. ~~Points per level 3 vs 4 (and training 2n)~~ **Session A kept 3 and
+   2n** (the arithmetic anchor maps the old build exactly at L4/L8; the
+   bench read 2n as a floor, not an overshoot). Re-open only if the
+   mid-band feels grim at the table before B's refund lands — levers in
+   order: doctrine order (training before pools), then 3 -> 4.
 2. **Spoilage**: the stock cap (recommended) vs the day-stamp variant.
 3. **Kit shrink target**: the 55-65 hideout band, or gentler (per-party
    2+2) if C's career numbers read too grim.

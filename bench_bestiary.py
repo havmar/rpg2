@@ -10,13 +10,16 @@ with the -2 column visibly worse and the +2 column visibly safer. That is
 what makes `level` a difficulty language the future encounter generator (and
 the player) can trust.
 
-The reference duo is PROVISIONAL, built to the rules.md progression doctrine:
-  - rolled like any hero (make_human), then leveled to L;
-  - skill points (L-1) spent training-first, leftovers into proficiency with
-    the wielded weapon (the sims' greedy policy, plus the second sink);
-  - quality steel from level 4 (katana -- the reliable all-rounder);
-  - the engine's pool growth (+1 HP / +1 STA / +1 Power per two levels --
-    rpg.grow_pools, the same curve award_xp applies on level-up).
+The reference duo is PROVISIONAL, built to the rules.md progression
+DOCTRINE V2 (2026-07-17, the point economy: the OLD default build priced in
+the new currency, so every pre-economy number stays comparable):
+  - rolled like any hero (make_human), then leveled to L with
+    (L-1) x SKILL_POINTS_PER_LEVEL points;
+  - pools bought to the old odd-level curve first (+1 HP/STA/Power per two
+    levels, 3 points a step -- rpg.grow_pools as the doctrine helper);
+  - then training to 3 (rank n costs 2n now), then proficiency/school
+    (rank n costs n), then training to the cap -- monotone;
+  - quality steel from level 4 (katana -- the reliable all-rounder).
 
 Run:  python bench_bestiary.py [--trials N] [--kind wolf]
 """
@@ -30,21 +33,28 @@ from sites import FOES, make_foe
 
 
 def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
-    """A hero of the given level under the provisional progression doctrine
-    (see module docstring): greedy training, leftover proficiency, quality
-    steel from L4, +1 HP/STA/Power per two levels."""
+    """A hero of the given level under the progression doctrine v2 (see
+    module docstring): the old default build bought back in the new point
+    economy -- pools to the old curve, training at 2n, proficiency/school
+    at n, quality steel from L4, monotone throughout (a bench reference
+    must never get worse with levels)."""
     h = rpg.make_human(rng, name)
     h.level = level
-    points = level - 1
+    points = (level - 1) * rpg.SKILL_POINTS_PER_LEVEL
 
-    # Monotone allocation (training to 3, proficiency to 3, training to 5):
-    # a straight greedy training-first spend makes an L16 build WEAKER than
-    # L14 (training 5 + prof 0 loses to training 4 + prof 2), and a bench
-    # reference must never get worse with levels.
+    # Pools first: the old automatic growth, bought at 3 points a step.
+    growth = min((level - 1) // rpg.POOL_GROWTH_LEVELS, rpg.POOL_BUY_CAP)
+    for _ in range(growth):
+        rpg.grow_pools(h)
+        points -= 3
+    for kind in rpg.POOL_KINDS:
+        h.pool_bought[kind] = h.pool_bought.get(kind, 0) + growth
+
     def buy_training(cap: int) -> None:
         nonlocal points
-        while h.training < cap and points >= h.training + 1:
-            points -= h.training + 1
+        while (h.training < cap
+               and points >= rpg.training_cost(h.training)):
+            points -= rpg.training_cost(h.training)
             h.training += 1
 
     buy_training(3)
@@ -66,10 +76,7 @@ def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
         if rank:
             h.proficiency[h.weapon.name] = rank
     buy_training(rpg.TRAINING_MAX)
-    for lvl in range(2, level + 1):
-        if rpg.pool_growth_due(lvl):
-            rpg.grow_pools(h)      # the engine curve (+1 HP/STA/Power per
-                                   # two levels), applied level by level
+    h.skill_points = points
     return h
 
 

@@ -590,3 +590,106 @@ UNDISTURBED within noise; the one real drift is the mid-band career.
 - **Levers untouched** (feel bows in play first). Standing flag
   unchanged: the hideout sits ~25 points above the 2026-07 retune's
   ~55% clear target.
+
+**Measured numbers (2026-07-17, the levelling framework session A — the
+point economy & the ability catalog: 3 skill points per level, automatic
+pool growth removed (pools bought at 1 point each, +10 cap per pool),
+combat training rank n now costs 2n, the eleven-entry single-buy ability
+catalog (Bulwark / First Blood / War-Breath / Berserk now LEARNED, plus
+Rage, Field Medic, Storyteller, Survivalist, Arrow-Parry 1-2, Point-Blank
+Mastery, Rapid Reload), healing moved from ability to the tenth SPELL
+(hedge-healer starter is the non-wizard door; `train_spell` wizard gate
+dropped, books keep it), the staff's heal bonus replaced by +1 max Power
+while wielded, and the five-entry archetype seed table at creation.**
+Full suite re-run plus the new `bench_abilities.py` (the equal-cost
+matrix). Doctrine v2 (the old default build priced in the new currency:
+pools to the old odd-level curve, then training at 2n, then
+proficiency/school, then training to cap) drives develop_hero,
+autospend_points, run_site's sim spend, and the bench reference duo, so
+every number below is the economy change itself plus the conversions
+gating — no other content moved.
+
+- **The headline pair.** (1) The SINGLE-SITE sims got safer but
+  flee-happier: with War-Breath/Berserk gated behind the ability buys,
+  the sim pause policy retreats where it used to convert — and in the
+  room-attempt loop (a fled room gets one return trip at refreshed STA)
+  that turns out to be BETTER play. Hideout rank 0 (10k): clear **84.4**
+  / wipe **12.4** (was 80.6/16.7); barrow `[3,3,4]`: clear **44.1** /
+  wipe **46.6** (was 26.1/71.0) — the barrow's endurance war rewards
+  leaving and re-entering over bleeding out mid-fight. Reckless wipe
+  79.8 / 98.8: "not using resources mostly means death" holds untouched.
+  (2) The CAREER mid-band paid the flex premium: reach **L5 86 / L8 56 /
+  L11 30 / L14 17 / L20 6**, median death **L8** (was 86/66/38/19/6.5,
+  median L9). Attribution probe (200 careers with the conversions
+  grafted back universally): L8 58% — so the conversions gating is only
+  ~2 points of the 10; the rest is the economy running ~10-15% tighter,
+  i.e. the doctrine build reaching training 3 at L8 instead of L7 and
+  rank 4 around L13 instead of L11. THIS IS THE DESIGNED PREMIUM,
+  currently paid with nothing bought back — sessions B (moves) and C
+  (alchemy) are the refund; re-judge the career gate when they land.
+  If the mid-band feels grim at the table before then, the levers in
+  order: doctrine order (training before pools), then
+  SKILL_POINTS_PER_LEVEL 3 -> 4.
+- **bench_abilities (new; 400/cell, frames L4/L8/L14, columns =
+  whole-budget spending policies, band = +-10 of the row median).**
+  Combat columns mostly land in band; two structural outliers:
+  **all-in pools is a trap build** (site clear 36/5/38 at the three
+  frames vs medians 64/45/64 — pools bought INSTEAD of training buy
+  corpse-phase, exactly what the old automatic growth never let anyone
+  discover), and **training-heavy still tops the site row** (+16/+17/+19
+  over the median) even at 2n — the doubling kept it from being
+  strictly dominant (its duel column dips below reference at L8), but
+  training remains the strongest single sink, which matches its 2n
+  price being the CEILING of the session's mandate rather than proof it
+  should cost more. The saves package (Bulwark+War-Breath+Berserk, 6
+  points) is poor at L4 (crowds out training on a 9-point budget) and
+  fine from L8; the strikes package (First Blood+Rage) rides the median
+  everywhere. Utility buys measured on their own axis (exact odds):
+  storyteller lands 72-97% by CHA (duo), survivalist 72-97% by MIND,
+  field medic 72-97% by DEX — all live from the stat floor up.
+- **Training ladder** (5k/rank, ranks preset — no economy in the
+  measure, so the delta is pure conversions-gating): barrow **42 -> 76
+  -> 95 -> 99**, hideout **84 -> 97 -> 99.5 -> 100** (was 27/58/84/97
+  and 81/96/99.4/100). A rank still reads as a rank; the whole ladder
+  shifted up on the retreat-happier policy.
+- **Party size** (5k/size): hideout **27 / 84 / 98 / 99.5**, barrow
+  **4 / 42 / 88 / 98** (was 22/81/98.8/100 and 1.1/27/73/95) — numbers
+  still dominate; same policy shift.
+- **Weapons (melee)**: unchanged story to the cell (zweihander best
+  duel on precise/steady, katana on powerful/balanced, zweihander every
+  swarm column, staff trails on purpose) — field-0 melee is untouched
+  by construction, and the staff's +1 Power is inert in the pure-weapon
+  test.
+- **Ranged matrix**: unchanged within noise (longbow 46/49/67 at fields
+  0/2/3, katana 97 flat, escort 91-99) — the ranged model didn't move.
+- **Bestiary**: the reference duo now carries doctrine v2's lag and no
+  free conversions, so at-level win rates drifted DOWN a band and fled
+  rates up, hardest where the annotation sits on the drilled soldiery:
+  cutthroat 62@1, soldier 72@3, veteran 81@6, champion 69@10,
+  blademaster 65@15, warlord 63@19; hunter reads 66@3 (fled 31) at
+  field 3. The catalog still orders correctly (every -2 column visibly
+  worse, +2 safer); the rows sit lower in the 55-75 target band than
+  the 2026-07-16 measures, which mostly re-absorbs the pain-2 drift
+  flagged then (the parked re-annotation pass is LESS urgent, not
+  more).
+- **Generated content** (300/cell): at-level rooms win **68-94** (was
+  75-97; the L9/L15-16 dips are the doctrine's rank-boundary lags made
+  visible); at-level sites **94 at L1** sliding to **~47 at 19-20** —
+  the familiar shape, a few points lower mid-band.
+- **What no bench models**: nobody in any sim BUYS the new abilities
+  (autospend doctrine deliberately reproduces the old build; only
+  bench_abilities' packages touch the catalog), the healing spell is
+  never cast by the sim policies (the old Heal ability wasn't either),
+  storyteller/survivalist fire only in session play's night paths, and
+  a played party that buys Berserk for 1 point gets most of the old
+  safety net back at trivial cost. Played careers should therefore run
+  EASIER than these career numbers, not harder.
+- **Flags for the designer**: the hideout now sits ~29 points above the
+  2026-07 retune's ~55% target (the standing flag, wider again —
+  session C's kit shrink remains the scheduled closer); the career L8
+  gate broke its +-5 band for the attributed reasons above (premium by
+  design, refund scheduled); all-in pools flagged as a trap the levelup
+  menu's doctrine hint should steer past. Knobs left at the plan's
+  defaults on purpose: POINTS_PER_LEVEL 3 (the arithmetic anchor maps
+  the old build to the point at L4/L8) and training 2n (the bench shows
+  2n is a floor, not an overshoot).
