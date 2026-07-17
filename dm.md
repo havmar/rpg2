@@ -402,8 +402,9 @@ bigger than the fights WITHOUT pages of narration:
   rules from memory (`levelup` re-prints it). A level is 3 points now
   (2026-07-17) and EVERYTHING is on the menu -- pools (+1 max HP/STA/Power
   at 1 each), training (rank n costs 2n), proficiency and spell ranks
-  (n), the ability catalog (`learn`), and warrior moves (`train HERO move
-  NAME`); nothing grows automatically anymore. **Companions autolevel** on
+  (n), the ability catalog (`learn`), warrior moves (`train HERO move
+  NAME`), and alchemy (`train HERO alchemy`, rank n = 2n); nothing grows
+  automatically anymore. **Companions autolevel** on
   the standard doctrine (pools to the old curve, then training, then
   proficiency once they carry quality steel, then a suited move or two
   from any leftover points) -- the log shows the purchases; mention them
@@ -535,12 +536,15 @@ bigger than the fights WITHOUT pages of narration:
 - **A decisively won exchange always cuts.** Win by margin 3+ and the hit at
   least grazes, whatever the soak (the rapier grazes on ANY landed hit).
   Fresh, high-soak heroes now bleed a little instead of being untouchable.
-- Only healing and stamina potions circulate (the power potion is retired --
-  Power was never the bottleneck). **The kit restocks itself (2026-07-11):**
-  every long rest tops each hero back up to 1 healing + 1 stamina, free
-  (brewed at the fire, scrounged in town -- the log prints it). `buy` is
-  for stocking ABOVE that line before a hard push; nobody shops for the
-  baseline.
+- Only healing and stamina potions circulate at shops (the power potion is
+  retired). **The kit restocks itself, thinly (SHRUNK 2026-07-17):** every
+  long rest the PARTY scrounges up to 1 healing + 1 stamina TOTAL (per
+  party now, not per hero), plus a chance at one extra stamina draught --
+  the log prints what was found. A real difficulty lever: the free faucet
+  is thin now, so `buy` (above the scrounge), loot, and the alchemist's
+  BREW are how a party keeps a deeper stock. **Overcharge:** a potion
+  drunk while a pool is already FULL grants +2 above max (spent-only, gone
+  at the next camp) -- a small pre-bought buffer for tomorrow's door.
 - Recovery is between fights: fight end +1 STA; short rest +3 STA / +1 HP /
   +1 Power
   (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
@@ -648,6 +652,22 @@ bigger than the fights WITHOUT pages of narration:
   finds the gap." Companions pick up a suited move or two from leftover
   points on their own; the PC's are the player's buys. Hero-side only for
   now -- enemies don't use moves yet.
+- **Alchemy (2026-07-17): the brewer's career, open to all.** A skill
+  (`train HERO alchemy`, rank n = 2n, cap 5) rolled off MIND; the herbalist
+  seed starts at rank 1. At camp, `brew HERO RECIPE` rolls 2d6 + MIND +
+  rank vs DC 9 (a make = the batch, a big beat = double, a miss curdles) --
+  ONCE per night per hero; companions auto-brew. Recipes unlock by rank:
+  healing/stamina (r1), strength potion (r2, +1 STR till camp),
+  firebomb (r3), dexterity potion + smoke vial (r4), the +6/3-target bomb
+  (r5). Brewed stock is capped at rank+2 (freshness) and can't be sold
+  (alchemy pays in kit, never gold). In a fight the **firebomb** throws
+  itself like a spell (an alchemist with bombs and 2+ foes in reach hurls
+  one -- flat +4 severity, two foes; NARRATE the blast), and at a retreat
+  the **smoke vial** (`retreat --smoke HERO`) waives the parting blows (the
+  chase still rolls). The stat brews (`use HERO strength|dexterity`) are
+  drunk between fights before a hard door. The alchemist is a SUPPORT
+  career -- its value is the kit it makes the (now-thin) party carry, not
+  out-fighting a trained blade; play it as the party's quartermaster.
 - **Wizards (Magic & Mind, 2026-07-15):** MIND strictly highest of
   MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
   rank 1 instead of an archetype seed, rolled for PC, companions, and

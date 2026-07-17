@@ -433,11 +433,83 @@ STARTING_POTIONS = 2    # random potions rolled at character creation
 # felt game skipped it. `buy` still stocks ABOVE the kit line for a planned
 # push; drops still add on top. The kit is deliberately thin (one of each):
 # a second draught for the same fight is still something you paid or bled for.
-KIT_HEALING = 1         # healing potions each hero wakes with, minimum
-KIT_STAMINA = 1         # stamina draughts each hero wakes with, minimum
+# The kit SHRANK in session C (2026-07-17): the long-rest restock is 1
+# healing + 1 stamina PER PARTY (scrounged herbs), not per hero -- a
+# deliberate difficulty lever (the standing hideout-too-easy flag's closer).
+# The floor is on the party TOTAL: if the party carries none of a kind, one
+# is scrounged to the member who has the least; if they saved even one, the
+# night gives nothing. Shops (POTION_PRICE) and the alchemist's brew are how
+# a party keeps a deeper stock now.
+KIT_HEALING = 1         # healing potions the PARTY floors to overnight
+KIT_STAMINA = 1         # stamina draughts the PARTY floors to overnight
+KIT_FORAGE_CHANCE = 0.5 # ...plus a good-forage night: this chance of one
+                        # EXTRA stamina draught scrounged for the party (the
+                        # stamina supply is the sim's sensitive axis -- the
+                        # determined-camper's retries are stamina-bound; the
+                        # half-draught-a-night average is what lands the
+                        # rank-0 hideout in the 55-65 retune band instead of
+                        # the ~40 a flat 1-per-party gives. Needs an rng: the
+                        # deterministic callers pass one, a bare long_rest
+                        # skips the forage)
 DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
+
+# --- Alchemy & the potion rework (2026-07-17, levelling framework session C) -
+# Alchemy is a SKILL (Entity.alchemy, rank 0..ALCHEMY_MAX), open to all and
+# rolled off MIND (alchemy is its first non-magic customer): rank n costs 2n
+# points (train_alchemy -- the training chassis; the measured value of a
+# faucet must not be the cheapest buy). At a long rest the alchemist BREWS --
+# 2d6 + MIND + rank vs DC ALCHEMY_BREW_DC (the casting-check chassis): a miss
+# curdles the batch, a make yields it, a beat by ALCHEMY_DOUBLE_MARGIN (or
+# boxcars) doubles it. The batch grows and unlocks new recipes by rank
+# (ALCHEMY_BATCH / ALCHEMY_RECIPE_RANK). Brewed stock is fenced at
+# rank + ALCHEMY_STOCK_BONUS carried items -- the freshness cap, ONE integer
+# (Entity.brewed), not per-potion spoil timestamps (the heroic tone forbids
+# upkeep meters). Brewed potions are UNSELLABLE (no guild seal -- rotgut to a
+# shopkeep): alchemy pays in kit, never gold, so the economy faucet stays shut.
+ALCHEMY_MAX = 5
+ALCHEMY_COST_MULT = 2       # rank n costs 2n points (train_alchemy)
+ALCHEMY_BREW_DC = 9
+ALCHEMY_DOUBLE_MARGIN = 7   # beat the DC by this (or boxcars) -> a double batch
+ALCHEMY_STOCK_BONUS = 2     # brewed stock cap = alchemy rank + this
+ALCHEMY_BATCH = {1: 1, 2: 1, 3: 2, 4: 2, 5: 3}     # potions per made batch
+ALCHEMY_RECIPE_RANK = {     # the rank each recipe unlocks at (brewer's choice
+    "healing": 1, "stamina": 1,     # among what's unlocked)
+    "strength": 2,
+    "firebomb": 3,
+    "dexterity": 4, "smoke": 4,
+}
+BREWED_KINDS = ("strength", "dexterity", "firebomb", "smoke")   # alchemy-only
+                            # items (never bought/looted/kitted); healing and
+                            # stamina brew into the universal stock instead
+POTION_DISPLAY = {"healing": "healing potion", "stamina": "stamina draught",
+                  "power": "power potion", "strength": "strength potion",
+                  "dexterity": "dexterity potion", "firebomb": "firebomb",
+                  "smoke": "smoke vial"}
+# The overcharge doctrine (ships the parked overfill idea; the tavern clamp is
+# the chassis): a potion drunk with the pool already at MAX grants a flat
+# +POTION_OVERCHARGE above max (HP or STA by kind) instead of being wasted --
+# spent-only, clamped away at the next long rest (recover() never fills past
+# max; long_rest resets the tracks). Flat on purpose: legible, no half-restore
+# math.
+POTION_OVERCHARGE = 2
+# The stat brews (the membrane: potions may transcend the fixed body, briefly).
+# Each lasts until the next long rest; the buff is applied to the raw stat and
+# recorded so the night can peel it back (str_buff/dex_buff).
+STRENGTH_POTION_STR = 1     # +1 STR; STR circulates freely (it may stack)
+DEXTERITY_POTION_DEX = 1    # +1 DEX; arrives two ranks later and NEVER exceeds
+                            # +1 (a point of DEX is worth several training ranks
+                            # -- the standing warning)
+# The firebomb: an item-fueled hero-side sweep (the fireball chassis, paid in
+# stock instead of Power). Thrown when BOMB_TARGETS+ foes stand in reach and
+# the fight isn't already winding down; attack rides 2d6 + AIM + alchemy rank,
+# severity is a flat (STR and the weapon out, like a cast). Rank 5 is the
+# brewed fireball: a bigger flat and a third target.
+BOMB_SEVERITY = 4
+BOMB_SEVERITY_R5 = 6
+BOMB_TARGETS = 2
+BOMB_TARGETS_R5 = 3
 
 # Site rewards scale with the SITE'S LEVEL, not with which site it happens to
 # be (2026-07, the quest system): the level on the board IS the pay grade, so
@@ -1302,7 +1374,8 @@ def _play(log: list[str], full_line: str, player_line: str) -> None:
 
 CAST_LABEL = {"fire": "fire bolt", "ice": "ice bolt",
               "freeze": "flash-freeze", "tk": "hurled debris",
-              "hurl_foe": "telekinetic slam", "disarm": "telekinetic grip"}
+              "hurl_foe": "telekinetic slam", "disarm": "telekinetic grip",
+              "bomb": "firebomb"}
 
 
 def kind_label(kind: str) -> str:
@@ -1452,10 +1525,21 @@ class Entity:
                                          # universal safety net is potions
                                          # and the pause, everything trained
                                          # is a build fact.
-    alchemy: int = 0                    # alchemy skill rank (0..5). SCHEMA
-                                         # SEED ONLY until session C ships
-                                         # the brew -- the herbalist starting
-                                         # roll plants it.
+    alchemy: int = 0                    # alchemy skill rank (0..ALCHEMY_MAX;
+                                         # rank n costs 2n -- train_alchemy).
+                                         # Open to all, rolled off MIND (the
+                                         # brew check); the herbalist starting
+                                         # roll seeds rank 1. Session C.
+    brewed: int = 0                     # how many brewed items are in the pack
+                                         # right now -- the freshness fence (a
+                                         # hero holds at most alchemy+2; brew()
+                                         # clamps to it, consumption decrements).
+                                         # ONE integer, not per-potion spoilage.
+    str_buff: int = 0                   # +STR from a strength potion, folded
+                                         # into str_ until the next long rest
+    dex_buff: int = 0                   # +DEX from a dexterity potion, folded
+                                         # into dex until the next long rest
+                                         # (capped at DEXTERITY_POTION_DEX)
     moves: set[str] = field(default_factory=set)    # the warrior repertoire.
                                          # SCHEMA SEED ONLY until session B
                                          # ships the moves system -- the
@@ -1568,6 +1652,9 @@ class Entity:
     medic_ready: bool = field(default=True)    # Field Medic: the day's one
                                                 # surgery still unspent
                                                 # (long_rest re-arms it)
+    last_brew_day: int = field(default=-1)      # the day this hero last brewed
+                                                # (session gates one brew per
+                                                # long rest; -1 = never)
     # Warrior-moves per-fight state (session B; cleared by _clear_fight_states):
     moves_spent: set[str] = field(default_factory=set)  # moves already fired
                                                 # this fight (each fires once)
@@ -1886,7 +1973,13 @@ class Entity:
 
     def cast_severity_mods(self, kind: str) -> list[tuple[int, str]]:
         """An aimed cast's severity terms: the kind's flat replaces STR AND
-        the weapon; the spell's rank adds like weapon proficiency does."""
+        the weapon; the spell's rank adds like weapon proficiency does. A
+        firebomb is the exception -- a flat that GROWS with alchemy rank (the
+        rank-5 brewed fireball) and no separate rank line (the rank's pressure
+        already rides the AIM roll)."""
+        if kind == "bomb":
+            flat = BOMB_SEVERITY_R5 if self.alchemy >= ALCHEMY_MAX else BOMB_SEVERITY
+            return [(flat, "firebomb")]
         mods = [(CAST_SEVERITY[kind], f"{kind_label(kind)}")]
         rank = self.spell_rank(CAST_SPELL[kind])
         if rank:
@@ -1933,8 +2026,9 @@ class Entity:
         weapon_mod, weapon_label, prof = 0, "", 0
         if cast:
             # An aimed cast: the weapon stays out of it -- the "proficiency"
-            # is the spell's rank instead.
-            prof = self.spell_rank(CAST_SPELL[cast])
+            # is the spell's rank (a firebomb's is the thrower's alchemy rank).
+            prof = (self.alchemy if cast == "bomb"
+                    else self.spell_rank(CAST_SPELL[cast]))
         elif shot:
             # A shot: the card's attack bonus and the drilled proficiency,
             # like any weapon attack.
@@ -3359,10 +3453,24 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         and attacker.spell_rank("fire") >= SPELL_RANK_MAX
                         and attacker.cur_power >= FIREBALL_POWER_COST
                         and len(thrown) >= FIREBALL_TARGETS)
+            # The firebomb (session C): a hero-side sweep paid in STOCK, not
+            # Power -- an alchemist with bombs in the pack hurls one whenever
+            # BOMB_TARGETS+ foes stand in reach and the fight isn't already
+            # winding down (nobody wastes a scarce bomb on a beaten room).
+            bomb_targets = (BOMB_TARGETS_R5 if attacker.alchemy >= ALCHEMY_MAX
+                            else BOMB_TARGETS)
+            bomb = (not sweeping and not fireball and attacker in party_set
+                    and attacker.items.get("firebomb", 0) > 0
+                    and len([t for t in thrown]) >= BOMB_TARGETS
+                    and not fight_winding_down(foes))
             shooting = False
-            if sweeping or fireball:
-                n = attacker.sweep if sweeping else FIREBALL_TARGETS
-                pick_from = sweep_pool if sweeping else thrown
+            if sweeping or fireball or bomb:
+                if sweeping:
+                    n, pick_from = attacker.sweep, sweep_pool
+                elif fireball:
+                    n, pick_from = FIREBALL_TARGETS, thrown
+                else:
+                    n, pick_from = bomb_targets, thrown
                 victims = rng.sample(pick_from, min(n, len(pick_from)))
             else:
                 # Ranged combat: the wielder of a ranged card fights by its
@@ -3529,20 +3637,28 @@ def group_combat(party: list[Entity], foes: list[Entity],
 
             atk_roll = None
             sweep_cast = None
-            if sweeping or fireball:
+            if sweeping or fireball or bomb:
                 if fireball:
                     attacker.cur_power -= FIREBALL_POWER_COST
                     sweep_cast = "fire"
                     label = "a roaring FIREBALL"
-                    fuel_cost = FIREBALL_POWER_COST
+                    fuel = (f" [{FIREBALL_POWER_COST} Power spent, "
+                            f"{attacker.cur_power} left]")
+                elif bomb:
+                    attacker.items["firebomb"] -= 1
+                    attacker.brewed = max(0, attacker.brewed - 1)
+                    sweep_cast = "bomb"
+                    label = "a FIREBOMB"
+                    fuel = (f" [1 firebomb spent, "
+                            f"{attacker.items['firebomb']} left]")
                 else:
                     if attacker.sweep_cost_power:
                         attacker.cur_power -= attacker.sweep_cost_power
                     label = attacker.sweep_label or "a great sweeping blow"
-                    fuel_cost = attacker.sweep_cost_power
+                    fuel = (f" [{attacker.sweep_cost_power} Power spent, "
+                            f"{attacker.cur_power} left]"
+                            if attacker.sweep_cost_power else "")
                 names = ", ".join(v.name for v in victims)
-                fuel = (f" [{fuel_cost} Power spent, "
-                        f"{attacker.cur_power} left]" if fuel_cost else "")
                 _play(log,
                       f"    {attacker.name} unleashes {label} -- "
                       f"{names} are caught in it!{fuel}",
@@ -3909,7 +4025,7 @@ def _chase_dex(group: list[Entity]) -> float:
 
 def attempt_retreat(party: list[Entity], foes: list[Entity],
                     rng: random.Random, log: list[str],
-                    field: int = 0) -> bool:
+                    field: int = 0, smoke: Entity | None = None) -> bool:
     """Break away from a paused fight. The procedure (deliberately ONE roll,
     no chase scenes): every foe fit to swing (alive, not Winded, not Spent)
     gets one free parting blow -- free like the dying swing, no STA cost --
@@ -3922,13 +4038,27 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     (bound to the grave), so retreat from the barrow always succeeds once
     past it.
 
+    `smoke` (session C) is an alchemist smashing a SMOKE VIAL to cover the
+    break: NO parting blows land (the blink-out's first half, item-priced),
+    but the chase STILL rolls (unlike the blink, which skips both) -- the
+    haze buys the exit, not the legs. Consumes one vial.
+
     Returns True on a clean escape (the runners catch their breath -- the
     fight is over for them); False means the party is run down and the caller
     must resume the fight, the parting-blow damage already taken. Either way
     heroes can go Down or die here: check party_wiped afterward.
     """
     log.append("  The party breaks for safety!")
-    swingers = [f for f in foes if f.alive and not f.winded and not f.spent]
+    fit = [f for f in foes if f.alive and not f.winded and not f.spent]
+    if smoke is not None and smoke.items.get("smoke", 0) > 0:
+        smoke.items["smoke"] -= 1
+        smoke.brewed = max(0, smoke.brewed - 1)
+        log.append(f"    {smoke.name} smashes a smoke vial at their feet -- "
+                   f"the party melts into the choking haze; no blow finds "
+                   f"them as they break ({smoke.items['smoke']} left).")
+        swingers: list[Entity] = []     # no parting blows through the smoke
+    else:
+        swingers = fit
     for f in swingers:
         targets = [h for h in party if h.alive]
         if not targets:
@@ -3962,7 +4092,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     if not runners:
         return False    # cut down at the door -- the caller sees the wipe
 
-    pursuers = [f for f in swingers if f.alive and f.pursues]
+    pursuers = [f for f in fit if f.alive and f.pursues]
     if not pursuers:
         if any(f.alive and not f.pursues for f in foes):
             log.append("    The dead do not follow beyond their ground -- "
@@ -4858,6 +4988,119 @@ def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
     return learn_spell(h, name, log)
 
 
+# --------------------------------------------------------------------------- #
+# Alchemy -- the skill, the brew, the stock cap (session C)
+# --------------------------------------------------------------------------- #
+
+def alchemy_cost(current_rank: int) -> int:
+    """The NEXT alchemy rank's price: rank n costs ALCHEMY_COST_MULT * n (the
+    training chassis -- a faucet must not be the cheapest buy)."""
+    return ALCHEMY_COST_MULT * (current_rank + 1)
+
+
+def brew_stock_cap(h: Entity) -> int:
+    """How many brewed items a hero may carry -- the freshness fence
+    (alchemy rank + ALCHEMY_STOCK_BONUS). One integer, not per-potion spoil
+    timestamps (rules.md: no upkeep meters)."""
+    return h.alchemy + ALCHEMY_STOCK_BONUS
+
+
+def alchemy_recipes(rank: int) -> list[str]:
+    """The recipes a rank-`rank` alchemist can brew (unlocked by rank)."""
+    return [r for r, need in ALCHEMY_RECIPE_RANK.items() if rank >= need]
+
+
+def train_alchemy(h: Entity, log: list[str]) -> bool:
+    """Spend skill points on ONE rank of alchemy (rank n costs 2n; cap
+    ALCHEMY_MAX). Open to all -- no class gate (the free-allocation
+    doctrine); the brew rolls off MIND. A player choice in session play
+    (session `train HERO alchemy`); companions/sims auto-buy it only if
+    seeded (the herbalist)."""
+    if h.alchemy >= ALCHEMY_MAX:
+        log.append(f"    {h.name} has mastered alchemy (cap {ALCHEMY_MAX}).")
+        return False
+    cost = alchemy_cost(h.alchemy)
+    if h.skill_points < cost:
+        log.append(f"    {h.name} needs {cost} skill point(s) for alchemy "
+                   f"rank {h.alchemy + 1} (has {h.skill_points}).")
+        return False
+    h.skill_points -= cost
+    h.alchemy += 1
+    unlocked = [r for r, need in ALCHEMY_RECIPE_RANK.items()
+                if need == h.alchemy]
+    gain = (f" -- unlocks {', '.join(POTION_DISPLAY[r] for r in unlocked)}"
+            if unlocked else "")
+    log.append(f"    {h.name} studies the still: alchemy rank {h.alchemy} "
+               f"(batch {ALCHEMY_BATCH[h.alchemy]}, brewed stock cap "
+               f"{brew_stock_cap(h)}){gain} [{h.skill_points} point(s) left]")
+    return True
+
+
+def brew(h: Entity, recipe: str, rng: random.Random, log: list[str]) -> int:
+    """The long-rest brew (session C): the alchemist rolls 2d6 + MIND + rank
+    vs DC ALCHEMY_BREW_DC (the casting-check chassis). A miss curdles the
+    batch (nothing); a make yields ALCHEMY_BATCH[rank] of the chosen recipe;
+    a beat by ALCHEMY_DOUBLE_MARGIN (or boxcars) doubles it. Output is
+    clamped to the freshness fence (brew_stock_cap). `recipe` is the brewer's
+    choice among what their rank has unlocked (ALCHEMY_RECIPE_RANK). Returns
+    the number of items actually brewed (0 = curdled or already at the cap).
+    Session gates it to once per long rest per hero; the sims call auto_brew.
+    """
+    if h.alchemy <= 0:
+        log.append(f"    {h.name} knows no alchemy.")
+        return 0
+    if recipe not in ALCHEMY_RECIPE_RANK:
+        log.append(f"    No such recipe: {recipe!r}. Recipes: "
+                   f"{', '.join(alchemy_recipes(h.alchemy))}.")
+        return 0
+    need = ALCHEMY_RECIPE_RANK[recipe]
+    if h.alchemy < need:
+        log.append(f"    {POTION_DISPLAY[recipe]} needs alchemy rank {need} "
+                   f"({h.name} is rank {h.alchemy}).")
+        return 0
+    room = brew_stock_cap(h) - h.brewed
+    if room <= 0:
+        log.append(f"    {h.name}'s pack is full of fresh brew "
+                   f"({h.brewed}/{brew_stock_cap(h)}) -- no room until some "
+                   f"is used.")
+        return 0
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    total = dice + h.mind + h.alchemy
+    margin = total - ALCHEMY_BREW_DC
+    _debug(log, f"        brew: {total} (2d6={dice}, +{h.mind} MIND, "
+                f"+{h.alchemy} rank) vs DC {ALCHEMY_BREW_DC} -> margin {margin}")
+    if margin < 0:
+        log.append(f"    {h.name}'s batch curdles in the pot -- a night's "
+                   f"work lost.")
+        return 0
+    batch = ALCHEMY_BATCH[h.alchemy]
+    doubled = dice == 12 or margin >= ALCHEMY_DOUBLE_MARGIN
+    made = min(batch * (2 if doubled else 1), room)
+    h.items[recipe] = h.items.get(recipe, 0) + made
+    h.brewed += made
+    note = " -- a DOUBLE batch!" if doubled else ""
+    log.append(f"    {h.name} brews {made}x {POTION_DISPLAY[recipe]}{note} "
+               f"(brewed stock {h.brewed}/{brew_stock_cap(h)})")
+    return made
+
+
+def auto_brew(h: Entity, rng: random.Random, log: list[str]) -> bool:
+    """The sim / companion brew policy (sites.run_site and the bench alchemist;
+    NOT real play, where `brew HERO RECIPE` is the DM's call): brew the highest
+    combat value the rank has unlocked -- firebombs for the damage career,
+    else strength, else the healing that keeps the party moving. No-op for a
+    non-alchemist. Returns whether anything was brewed."""
+    if h.alchemy <= 0 or h.dead:
+        return False
+    if h.alchemy >= ALCHEMY_RECIPE_RANK["firebomb"]:
+        recipe = "firebomb"
+    elif h.alchemy >= ALCHEMY_RECIPE_RANK["strength"] and not h.str_buff:
+        recipe = "strength"
+    else:
+        recipe = "healing"
+    return brew(h, recipe, rng, log) > 0
+
+
 def autospend_points(h: Entity, log: list[str]) -> bool:
     """COMPANION and SIM self-improvement: spend banked points on the
     reference doctrine V2 (the old default build in the new currency, so
@@ -5134,33 +5377,75 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
     return True
 
 
+DRINKABLE_KINDS = ("healing", "stamina", "power", "strength", "dexterity")
+
+
 def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
     """Consume one carried potion by player choice, between fights. A DM-called
     action (same shape as buy_potion / cast_healing) -- nothing in the engine drinks
     automatically. Every potion takes effect instantly on drink (you're between
     fights; there's time to let it work). Returns True if a potion was spent.
-      healing -> restore HP now
-      stamina -> restore STA now
-      power   -> restore Power now"""
-    if kind not in POTION_KINDS:
-        raise ValueError(f"unknown potion kind: {kind}")
+      healing / stamina -> restore HP / STA now (drunk AT max: the OVERCHARGE
+                           doctrine -- a flat +POTION_OVERCHARGE above max,
+                           spent-only, clamped at the next long rest)
+      strength / dexterity -> +1 STR / +1 DEX until the next long rest (the
+                           brewed stat buffs; DEX never exceeds +1)
+      power   -> restore Power now (the retired kind; an old save may carry it)"""
+    if kind not in DRINKABLE_KINDS:
+        raise ValueError(f"undrinkable potion kind: {kind}")
     if h.items.get(kind, 0) <= 0:
-        log.append(f"    {h.name} has no {kind} potion to use.")
+        log.append(f"    {h.name} has no {POTION_DISPLAY.get(kind, kind)} "
+                   f"to use.")
+        return False
+    if kind == "dexterity" and h.dex_buff >= DEXTERITY_POTION_DEX:
+        log.append(f"    {h.name} is already quickened -- a second dexterity "
+                   f"potion adds nothing (DEX tops out at "
+                   f"+{DEXTERITY_POTION_DEX}).")
         return False
     h.items[kind] -= 1
+    if kind in BREWED_KINDS:
+        h.brewed = max(0, h.brewed - 1)
     if kind == "healing":
         before = h.hp
-        h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.max_hp)
-        if h.hp > 0:
-            h.down = False
-        log.append(f"    {h.name} drinks a healing potion "
-                   f"(HP {before} -> {h.hp}/{h.max_hp}; {h.items['healing']} left)")
+        if h.hp >= h.max_hp:
+            h.hp += POTION_OVERCHARGE
+            log.append(f"    {h.name} drinks a healing potion at full -- it "
+                       f"overcharges (HP {before} -> {h.hp}/{h.max_hp}, +"
+                       f"{POTION_OVERCHARGE} above max, spent-only; "
+                       f"{h.items['healing']} left)")
+        else:
+            h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.max_hp)
+            if h.hp > 0:
+                h.down = False
+            log.append(f"    {h.name} drinks a healing potion "
+                       f"(HP {before} -> {h.hp}/{h.max_hp}; "
+                       f"{h.items['healing']} left)")
     elif kind == "stamina":
         before = h.cur_sta
-        h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
-        log.append(f"    {h.name} downs a stamina draught "
-                   f"(STA {before} -> {h.cur_sta}; {h.items['stamina']} left)")
-    else:  # power
+        if h.cur_sta >= h.sta:
+            h.cur_sta += POTION_OVERCHARGE
+            log.append(f"    {h.name} downs a stamina draught at full -- it "
+                       f"overcharges (STA {before} -> {h.cur_sta}/{h.sta}, +"
+                       f"{POTION_OVERCHARGE} above max, spent-only; "
+                       f"{h.items['stamina']} left)")
+        else:
+            h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
+            log.append(f"    {h.name} downs a stamina draught "
+                       f"(STA {before} -> {h.cur_sta}; "
+                       f"{h.items['stamina']} left)")
+    elif kind == "strength":
+        h.str_ += STRENGTH_POTION_STR
+        h.str_buff += STRENGTH_POTION_STR
+        log.append(f"    {h.name} drinks a strength potion -- muscle surges "
+                   f"(STR {h.str_ - h.str_buff} -> {h.str_} until the next "
+                   f"long rest; {h.items['strength']} left)")
+    elif kind == "dexterity":
+        h.dex += DEXTERITY_POTION_DEX
+        h.dex_buff += DEXTERITY_POTION_DEX
+        log.append(f"    {h.name} drinks a dexterity potion -- the hands "
+                   f"quicken (DEX {h.dex - h.dex_buff} -> {h.dex} until the "
+                   f"next long rest; {h.items['dexterity']} left)")
+    else:  # power (retired kind; old saves)
         before = h.cur_power
         h.cur_power = recover(h.cur_power, POWER_POTION_RESTORE, h.power)
         log.append(f"    {h.name} drinks a power potion "
@@ -5219,12 +5504,16 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
 
 
 def long_rest(party: list[Entity], clock: Clock, log: list[str],
-              banner: str = "The party makes camp.") -> None:
+              banner: str = "The party makes camp.",
+              rng: random.Random | None = None) -> None:
     """Make camp for the night. A deliberate, Claude-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
     advances and the short-rest slots refill. Only the truly Dead stay down.
-    `banner` reflavors the night line (the tavern sleeps under a roof)."""
+    `banner` reflavors the night line (the tavern sleeps under a roof).
+    `rng`, when given, rolls the stamina forage (KIT_FORAGE_CHANCE for one
+    extra draught) -- the deterministic callers (session, the sims) pass it;
+    a bare call skips the bonus."""
     clock.day += 1
     clock.short_rests_used = 0
     log.append(f"  --- {banner} Night passes; day {clock.day} dawns. ---")
@@ -5239,6 +5528,12 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
         h.medic_ready = True                    # the field medic's daily
                                                 # surgery re-arms with sleep
         h.down = False
+        # The brewed stat buffs (session C) fade with the night: peel them
+        # back out of the raw stat before the day's math resumes.
+        if h.str_buff or h.dex_buff:
+            h.str_ -= h.str_buff
+            h.dex -= h.dex_buff
+            h.str_buff = h.dex_buff = 0
         before = h.hp
         h.hp = min(h.max_hp, max(h.hp, 0) + h.hp_regen_per_night)
         note = f"STA and Power full ({h.cur_sta}/{h.sta}, "
@@ -5251,27 +5546,35 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
         else:
             note += ", HP full"
         log.append(f"    {h.name}: {note}")
-    # The traveling kit replenishes itself (2026-07-11, see KIT_*): herbs
-    # brewed at the camp fire, a vial scrounged in town -- nobody shops for
-    # the baseline potion. `buy` still stocks above the kit line.
+    # The traveling kit replenishes itself, SHRUNK in session C (see KIT_*):
+    # 1 healing + 1 stamina scrounged PER PARTY, not per hero -- a floor on
+    # the party total (if they carry none of a kind, one is scrounged to the
+    # member with the least; a saved potion means the night gives nothing).
+    # A real difficulty lever; a deeper stock now comes from shops or the
+    # alchemist's brew.
+    living = [h for h in party if not h.dead]
     restocked = 0
-    for h in party:
-        if h.dead:
-            continue
+    if living:
+        stamina_floor = KIT_STAMINA
+        if rng is not None and rng.random() < KIT_FORAGE_CHANCE:
+            stamina_floor += 1          # a good forage night: one extra draught
         for kind, floor_n in (("healing", KIT_HEALING),
-                              ("stamina", KIT_STAMINA)):
-            have = h.items.get(kind, 0)
-            if have < floor_n:
-                h.items[kind] = floor_n
-                restocked += floor_n - have
+                              ("stamina", stamina_floor)):
+            have = sum(h.items.get(kind, 0) for h in living)
+            while have < floor_n:
+                recip = min(living, key=lambda h: h.items.get(kind, 0))
+                recip.items[kind] = recip.items.get(kind, 0) + 1
+                have += 1
+                restocked += 1
     if restocked:
-        log.append(f"    The kit is restocked overnight (+{restocked} "
-                   f"potion(s) brewed or scrounged -- everyone carries at "
-                   f"least {KIT_HEALING} healing, {KIT_STAMINA} stamina)")
+        log.append(f"    The party scrounges {restocked} potion(s) overnight "
+                   f"(herbs at the camp fire, a vial in town -- the party "
+                   f"carries at least {KIT_HEALING} healing, {KIT_STAMINA} "
+                   f"stamina between them)")
 
 
 def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
-                log: list[str]) -> bool:
+                log: list[str], rng: random.Random | None = None) -> bool:
     """A night at the inn (session play gates it to settlements): a long rest
     plus a hot meal and a real bed, TAVERN_COST_PER_HERO gold per living
     member from the purse. The party wakes OVERCHARGED: current HP and STA
@@ -5292,7 +5595,7 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
     log.append(f"  The party takes beds at the tavern ({cost}g -- purse: "
                f"{purse.gold}g).")
     long_rest(party, clock, log,
-              banner="The party sleeps warm under a roof.")
+              banner="The party sleeps warm under a roof.", rng=rng)
     for h in boarders:
         hp_bonus = max(1, round(h.max_hp * TAVERN_OVERCHARGE))
         sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))

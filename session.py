@@ -98,6 +98,10 @@ from rpg import (
     buy_spellbook as _buy_spellbook,
     buy_pool as _buy_pool, learn_ability as _learn_ability,
     learn_move as _learn_move, MOVES, move_weapon_ok,
+    train_alchemy as _train_alchemy, brew as _brew, auto_brew,
+    alchemy_recipes, brew_stock_cap, alchemy_cost,
+    ALCHEMY_MAX, ALCHEMY_BATCH, ALCHEMY_RECIPE_RANK, POTION_DISPLAY,
+    DRINKABLE_KINDS,
     ABILITIES, ability_tags, training_cost,
     POOL_KINDS, POOL_BUY_CAP, SKILL_POINTS_PER_LEVEL,
     storyteller_tale, survivalist_camp,
@@ -907,6 +911,20 @@ def cmd_dismiss(args: argparse.Namespace) -> None:
     save(state)
 
 
+def companions_brew(state: dict, log: list[str]) -> None:
+    """After a long rest, an alchemist COMPANION brews on the sim policy
+    (auto_brew: firebombs for a damage build, else strength, else healing) --
+    like the autolevel, the companions' brew is automatic while the PC's
+    (party[0]) is the player's own `brew` call. Once per night."""
+    rng = state["rng"]
+    clock = state["clock"]
+    for h in state["party"][1:]:
+        if h.dead or h.alchemy <= 0 or h.last_brew_day == clock.day:
+            continue
+        if auto_brew(h, rng, log):
+            h.last_brew_day = clock.day
+
+
 def night_upkeep(state: dict, log: list[str]) -> None:
     """Once per night slept, wherever it was: the 'needs meds' drain -- a
     companion whose last dose is older than MEDS_INTERVAL_DAYS loses 1
@@ -1071,6 +1089,12 @@ def print_pause_menu(state: dict) -> None:
               f"teleport out: NO parting blows, no chase "
               f"({TELEPORT_ESCAPE_COST} Power; a fizzled door falls "
               f"back to the honest retreat)")
+    smoker = next((h for h in party
+                   if not h.dead and h.items.get("smoke", 0) > 0), None)
+    if smoker is not None:
+        print(f"    retreat --smoke {smoker.name.split()[0]:<10}-- "
+              f"smoke vial: NO parting blows, but the chase still rolls "
+              f"({smoker.items['smoke']} left)")
 
 
 def print_levelup_menu(heroes: list) -> None:
@@ -1155,6 +1179,24 @@ def print_levelup_menu(heroes: list) -> None:
         if buyable:
             print(f"  abilities to learn (cost, * = affordable; "
                   f"learn {first} NAME): {', '.join(buyable)}")
+        # Sink 7: alchemy (session C -- the brew skill; brew at camp, once
+        # per long rest, off MIND). Open to all.
+        if h.alchemy >= ALCHEMY_MAX:
+            print(f"  alchemy              rank {h.alchemy} -- CAPPED "
+                  f"(batch {ALCHEMY_BATCH[h.alchemy]}, stock cap "
+                  f"{brew_stock_cap(h)})")
+        else:
+            cost = alchemy_cost(h.alchemy)
+            mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
+            nxt = h.alchemy + 1
+            unlocks = [POTION_DISPLAY[r] for r, need in
+                       ALCHEMY_RECIPE_RANK.items() if need == nxt]
+            gain = (f"; unlocks {', '.join(unlocks)}" if unlocks
+                    else "")
+            print(f"  alchemy              rank {h.alchemy} -> {nxt}  costs "
+                  f"{cost}  [{mark}]  (brew {ALCHEMY_BATCH.get(nxt)} a night, "
+                  f"stock cap {nxt + 2}{gain}; brew HERO RECIPE at camp)"
+                  f"  -> train {first} alchemy")
         # Sink 6: the warrior moves (session B -- riders on the exchange, the
         # engine fires them; repertoire capped at combat training + 1, gated
         # by the wielded weapon's move tags).
@@ -1927,8 +1969,9 @@ def cmd_travel(args: argparse.Namespace) -> None:
           f"the road, camping as they go.")
     log: list[str] = []
     for _ in range(days):
-        _long_rest(state["party"], state["clock"], log)
+        _long_rest(state["party"], state["clock"], log, rng=state["rng"])
         storyteller_tale(state["party"], state["rng"], log)
+        companions_brew(state, log)
         night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
@@ -1986,8 +2029,9 @@ def cmd_explore(args: argparse.Namespace) -> None:
     print(f"The party ranges out into the {land} wilds -- a day afield, "
           f"camping rough.")
     log: list[str] = []
-    _long_rest(party, clock, log)
+    _long_rest(party, clock, log, rng=rng)
     storyteller_tale(party, rng, log)
+    companions_brew(state, log)
     night_upkeep(state, log)
     reset_streak(state)
     print("\n".join(log))
@@ -2232,9 +2276,22 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                   f"the door open.")
             return
         escaped = blink_escape(living, pending["foes"], wizard, rng, log)
+    smoker = None
+    if not escaped and args.smoke:
+        # A smoke vial (session C): no parting blows land, but the chase
+        # still rolls -- the haze buys the exit, not the legs.
+        smoker = find_hero(party, args.smoke)
+        if smoker is None:
+            return
+        if not smoker.alive:
+            print(f"{smoker.name} is not on their feet to throw the vial.")
+            return
+        if smoker.items.get("smoke", 0) <= 0:
+            print(f"{smoker.name} has no smoke vial.")
+            return
     if not escaped:
         escaped = attempt_retreat(living, pending["foes"], rng, log,
-                                  field=pending.get("field", 0))
+                                  field=pending.get("field", 0), smoke=smoker)
     wiped = party_wiped(party, log)
     if wiped or escaped:
         state["pending"] = None
@@ -2317,8 +2374,9 @@ def cmd_camp(args: argparse.Namespace) -> None:
     clear_sighting(state)
     for _ in range(nights):
         log: list[str] = []
-        _long_rest(party, clock, log)
+        _long_rest(party, clock, log, rng=state["rng"])
         storyteller_tale(party, state["rng"], log)
+        companions_brew(state, log)
         in_wilds = (state.get("world")
                     and state["location"]["kind"] != "settlement")
         quiet = False
@@ -2362,10 +2420,12 @@ def cmd_tavern(args: argparse.Namespace) -> None:
         print(occupation_line(state, here))
         return
     log: list[str] = []
-    if not _tavern_rest(state["party"], state["clock"], state["purse"], log):
+    if not _tavern_rest(state["party"], state["clock"], state["purse"], log,
+                        rng=state["rng"]):
         print("\n".join(log))
         return
     storyteller_tale(state["party"], state["rng"], log)
+    companions_brew(state, log)
     night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
@@ -2408,8 +2468,9 @@ def cmd_downtime(args: argparse.Namespace) -> None:
             adjust_satisfaction(h, SAT_DOWNTIME_MATCH, log, why)
         else:
             adjust_satisfaction(h, SAT_DOWNTIME, log, "a day off their feet")
-    _long_rest(party, clock, log)
+    _long_rest(party, clock, log, rng=state["rng"])
     storyteller_tale(party, state["rng"], log)
+    companions_brew(state, log)
     night_upkeep(state, log)
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
@@ -2600,6 +2661,8 @@ def cmd_train(args: argparse.Namespace) -> None:
         _train_combat_once(hero, log)
     elif what == "weapon":
         _train_proficiency(hero, log)
+    elif what == "alchemy":
+        _train_alchemy(hero, log)
     elif what in POOL_KINDS:
         # The pool buys (the point economy): +1 max HP/STA/Power, 1 point.
         _buy_pool(hero, what, log)
@@ -2619,7 +2682,7 @@ def cmd_train(args: argparse.Namespace) -> None:
             return
         _learn_move(hero, name, log)
     else:
-        print(f"Unknown skill: {what!r}. Options: combat, weapon, "
+        print(f"Unknown skill: {what!r}. Options: combat, weapon, alchemy, "
               f"{'|'.join(POOL_KINDS)}, magic, a spell name "
               f"({', '.join(sorted(SPELLS))}), or move NAME "
               f"({', '.join(sorted(MOVES))}).")
@@ -2638,6 +2701,39 @@ def cmd_use(args: argparse.Namespace) -> None:
     if hero is None:
         return
     _use_potion(hero, args.kind, log)
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_brew(args: argparse.Namespace) -> None:
+    """The alchemist's long-rest brew (session C): pick a recipe their rank
+    has unlocked and roll 2d6 + MIND + rank vs DC 9. Once per hero per day
+    (the brew is the night's work); the batch is fenced by the freshness
+    cap (rank + 2 carried). Brewed potions are unsellable."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    party, rng, clock = state["party"], state["rng"], state["clock"]
+    log: list[str] = []
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
+    if hero.alchemy <= 0:
+        print(f"{hero.name} knows no alchemy (train {hero.name.split()[0]} "
+              f"alchemy).")
+        return
+    recipe = args.recipe.lower()
+    if recipe not in alchemy_recipes(hero.alchemy):
+        print(f"{hero.name} can brew: "
+              f"{', '.join(alchemy_recipes(hero.alchemy))} "
+              f"(rank {hero.alchemy}).")
+        return
+    if hero.last_brew_day == clock.day:
+        print(f"{hero.name} has already brewed today -- the still needs the "
+              f"night. (Brewing is one batch per long rest.)")
+        return
+    _brew(hero, recipe, rng, log)       # a curdled batch still spends the day
+    hero.last_brew_day = clock.day
     print("\n".join(log))
     save(state)
 
@@ -2961,8 +3057,10 @@ def main() -> None:
              "its survivors; re-run the room to face them again. "
              "--blink HERO (teleport rank 2) tears a door instead: no "
              "parting blows, no chase; a fizzled casting falls back to "
-             "the honest retreat.")
+             "the honest retreat. --smoke HERO smashes a smoke vial: no "
+             "parting blows, but the chase still rolls.")
     p.add_argument("--blink", metavar="HERO", default=None)
+    p.add_argument("--smoke", metavar="HERO", default=None)
     p.set_defaults(func=cmd_retreat)
 
     p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
@@ -3179,8 +3277,8 @@ def main() -> None:
              "on the doctrine).")
     p.add_argument("hero")
     p.add_argument("what", nargs="+",
-                   help="combat | weapon | hp | sta | power | magic | "
-                        "a spell name (e.g. 'stop time') | move NAME")
+                   help="combat | weapon | alchemy | hp | sta | power | "
+                        "magic | a spell name (e.g. 'stop time') | move NAME")
     p.set_defaults(func=cmd_train)
 
     p = sub.add_parser(
@@ -3199,11 +3297,25 @@ def main() -> None:
 
     p = sub.add_parser(
         "use",
-        help="drink a carried potion for one hero, between fights "
-             "(instant top-up: healing restores HP, stamina/power restore now)")
+        help="drink a carried potion for one hero, between fights (instant: "
+             "healing/stamina restore HP/STA -- drunk AT max they OVERCHARGE "
+             "+2 above max, spent-only; strength/dexterity give +1 STR/DEX "
+             "until the next long rest)")
     p.add_argument("hero")
-    p.add_argument("kind", choices=list(POTION_KINDS))
+    p.add_argument("kind", choices=list(DRINKABLE_KINDS))
     p.set_defaults(func=cmd_use)
+
+    p = sub.add_parser(
+        "brew",
+        help="an alchemist brews a batch at camp (once per long rest): "
+             "2d6 + MIND + rank vs DC 9 -- a make yields the batch, a beat "
+             "by 7 doubles it, a miss curdles. Recipes by rank: healing, "
+             "stamina (r1); strength (r2); firebomb (r3); dexterity, smoke "
+             "(r4). Brewed stock is capped at rank+2 and can't be sold.")
+    p.add_argument("hero")
+    p.add_argument("recipe", help="healing|stamina|strength|firebomb|"
+                                  "dexterity|smoke (what the rank unlocks)")
+    p.set_defaults(func=cmd_brew)
 
     p = sub.add_parser(
         "heal",

@@ -36,7 +36,7 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  WEAPONS, make_party, stat_line, outcome, start_fight,
                  short_rest, long_rest, party_wiped,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
-                 autospend_points, random_common_weapon,
+                 autospend_points, auto_brew, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
                  SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD)
@@ -590,8 +590,10 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
             day_before = clock.day
             survivors = [h for h in party if h.alive]
             if not short_rest(survivors, clock, log):
-                long_rest(party, clock, log)
+                long_rest(party, clock, log, rng=rng)
                 streak = 0      # a night's camp breaks the momentum streak
+                for h in party:
+                    auto_brew(h, rng, log)  # a herbalist/alchemist restocks
             auto_use_potions_on_rest([h for h in party if h.alive], log)
             held_over = refresh_foes_after_retreat(foes,
                                                    clock.day - day_before)

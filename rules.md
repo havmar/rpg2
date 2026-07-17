@@ -744,7 +744,7 @@ These are the only edits to the existing rules:
 | **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
-| **Items** | Carried stock | The **kit restocks itself** — every long rest tops each hero back up to 1 healing + 1 stamina (2026-07-11); anything above that line is bought with gold or found in world | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). |
+| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
 keeps build identity alive and makes "who am I about to lose" specific.
@@ -769,15 +769,19 @@ keeps build identity alive and makes "who am I about to lose" specific.
   loop. STA otherwise recovers only slowly across a day. *Mid-fight mode:* at
   a pause or by standing order, at the same price as the healing potion
   (the round's attack, −2 guard). Between-fights drinking stays available.
-- **The traveling kit (2026-07-11)** — basic potions replenish themselves:
-  **every long rest tops each living hero back up to 1 healing + 1 stamina**
-  (herbs brewed at the camp fire; a vial scrounged or bought with pocket
-  change in town). Design call: shopping for the baseline potion was
-  friction, not a choice — the felt game skipped it. The kit is deliberately
-  thin: ONE of each per hero per day is the free line, so a second draught
-  for the same fight is still something you bought (`buy`, `POTION_PRICE`),
-  looted, or saved. Drops and purchases stack above the kit and are not
-  clamped by it.
+- **The traveling kit (2026-07-11; SHRUNK 2026-07-17, session C)** — basic
+  potions replenish themselves at camp, but thinly: **every long rest the
+  PARTY scrounges up to 1 healing + 1 stamina** (a floor on the party
+  *total*, not per hero — herbs at the camp fire, a vial in town), **plus a
+  good-forage night** (`KIT_FORAGE_CHANCE`) that yields one extra stamina
+  draught. The old per-hero floor made a bottomless free supply the sim's
+  determined-camper lived on (flee, camp, retry on free draughts); the
+  shrink is a real difficulty lever pulled on purpose — it closed the
+  standing hideout flag to the 55-65 clear band (benchlog 2026-07-17) while
+  leaving the campaign arc alone (a leveled party buys potions and camps to
+  full STA regardless). Anything above the scrounge is bought (`buy`,
+  `POTION_PRICE`), looted, saved, or **BREWED** (the alchemist — see the
+  Alchemy add-on). Drops, purchases, and brew stack above the kit.
 - **Power potion** — *retired from circulation (2026-07)*: Power was never
   the bottleneck in play, so the slot was dead weight in every kit. The kind
   still exists in the schema (an old save can drink one), but creation rolls,
@@ -1237,7 +1241,7 @@ ability rank needs its base).
 | Combat training rank n | **2n** (was n) | 5 (unchanged) |
 | Weapon proficiency rank n | n (unchanged) | 3 |
 | Spell rank n, for a spell you KNOW | n (unchanged) | 3 |
-| Alchemy rank n (arrives session C) | 2n | 5 |
+| Alchemy rank n (2026-07-17, session C) | 2n | 5 |
 | A warrior move (the repertoire) | 1 (iaido and the finisher 2) | repertoire ≤ training + 1 |
 | Single-buy abilities | 1–3 (the catalog below) | — |
 
@@ -1461,6 +1465,116 @@ soak — the anti-beast tool), taunt (draw one attacker onto self), battle-cry
 (waits on enemy morale). **Enemy side:** hero-only in v1 (like potions and
 standing orders); giving the drilled soldiery two moves each is a later
 content pass with its own bench round.
+
+---
+
+# Alchemy & the Potion Rework — Add-on (2026-07-17, levelling framework session C)
+
+The third and last slice of the levelling framework. Two threads: a
+**difficulty lever** (the kit shrinks — the free potion faucet closes) and a
+**new career** (the alchemist brews the kit the party now has to work for,
+plus bombs, stat brews, and the overcharge). The design spine holds: alchemy
+pays in **kit**, never gold (brewed potions are unsellable), so the economy
+faucet stays shut; and the whole layer follows the autocombat doctrine —
+the firebomb fires on its own like a spell, never a new mid-fight decision.
+
+## The kit shrink (the faucet closes)
+
+The self-restocking kit (Survival add-on) drops from **1 healing + 1 stamina
+per HERO** to **1 + 1 per PARTY** — a floor on the party *total* (scrounge
+only what the party lacks), plus a **forage roll** (`KIT_FORAGE_CHANCE`, one
+extra stamina draught on a good night). Shops are unchanged (`POTION_PRICE`
+10 g). This is a real difficulty lever pulled on purpose: the old per-hero
+floor was a bottomless free supply the sims' determined-camper lived on
+(flee, camp, retry on free draughts), and it was the natural closer for the
+standing hideout-too-easy flag. Measured (benchlog 2026-07-17): the rank-0
+hideout falls from 84.7% to the **55-65 retune band**, while careers stay
+within noise (a leveled party buys potions and camps to full STA — the
+shrink is a *fresh-duo* lever, exactly where the flag lived). The effect is
+almost purely a function of the STAMINA floor (a duo needs two draughts per
+retry — a hard integer cliff); the forage roll threads it into band.
+
+## Alchemy — the skill
+
+Alchemy is a **skill** (`Entity.alchemy`, rank 0-5), **open to all** (the
+free-allocation doctrine — no class gate) and rolled off **MIND** (its first
+non-magic customer). Rank *n* costs **2n** points (`train_alchemy`, the
+training chassis — a faucet must not be the cheapest buy): 30 points to max,
+so a pure alchemist maxes it around **L15** with ~12 points left for pools —
+the designer's target career. The **herbalist** archetype seed grants rank 1.
+
+**The brew.** At each long rest the alchemist rolls **2d6 + MIND + rank vs
+DC 9** (the casting-check chassis, MIND-advantaged): a miss curdles the
+batch, a make yields it, a beat by **7+ (or boxcars)** doubles it. The batch
+and its unlocks by rank:
+
+| Rank (cost) | Batch | Unlocks |
+|-------------|-------|---------|
+| 1 (2) | 1 potion (healing or stamina, brewer's choice) | — |
+| 2 (4) | 1 | **strength potion** |
+| 3 (6) | 2 | **firebomb** |
+| 4 (8) | 2 | **dexterity potion**, **smoke vial** |
+| 5 (10) | 3 | bombs at +6 / sweep 3 — "mostly rely on potions for damage" |
+
+Brewing is **one batch per long rest** (`brew HERO RECIPE`; companions
+auto-brew like they autolevel). Healing/stamina brew into the universal
+stock; the rest are alchemy-only items.
+
+**The freshness cap, not spoilage.** A hero carries at most **rank + 2**
+brewed items (`Entity.brewed`, ONE integer — the fiction is freshness, "it
+keeps a week or two"; per-potion spoil timestamps are exactly the inventory
+bookkeeping the heroic tone forbids, and the cap fences the same degenerate
+case). The brew clamps to the cap; using a brewed item reopens the room.
+Brewed potions are **unsellable** (no guild seal — rotgut to a shopkeep):
+alchemy pays in kit, never gold.
+
+## The overcharge doctrine (drinking in advance)
+
+A potion drunk with the pool **already at max** grants a flat **+2 above
+max** (HP or STA by kind) instead of being wasted — spent-only, clamped away
+at the next long rest (the tavern-overcharge chassis; `recover()` never
+fills past max). Flat on purpose: legible, no half-restore math. (Below max,
+a potion fills toward max as ever — the overcharge is only the at-full
+case.)
+
+## The stat brews (the membrane, briefly)
+
+Potions may transcend the fixed body, temporarily: a **strength potion**
+gives **+1 STR**, a **dexterity potion** **+1 DEX**, each until the next long
+rest. DEX arrives two ranks later and **never exceeds +1** (the standing
+warning: a point of DEX is worth several training ranks, so +DEX stays an
+order of magnitude scarcer than +STR — which may stack). The buff folds into
+the raw stat (so it helps everything DEX/STR touch, aim included) and the
+night peels it back.
+
+## The bombs & the smoke vial (the damage/escape career)
+
+- **Firebomb** — an item-fueled **hero-side sweep** (the fireball chassis,
+  paid in stock not Power). Thrown when **2+ foes** stand in reach and the
+  fight isn't already winding down (nobody wastes a scarce bomb on a beaten
+  room): attack = **2d6 + AIM + alchemy rank**, severity a **flat +4** (STR
+  and the weapon out, like a cast), strikes **2 adjacent foes**, consumes
+  the item. At rank 5, **+6 and 3 targets** — a brewed fireball. No misfire
+  (alchemy is reliable; the fumble is scoped to casting). Fires on its own
+  under the autocombat doctrine, like a spell.
+- **Smoke vial** — a retreat with **NO parting blows** (the blink-out's
+  first half, item-priced) — but the **chase still rolls** (unlike the
+  blink, which skips both): the haze buys the exit, not the legs.
+  `retreat --smoke HERO`.
+
+Poisons and oils deliberately wait for the conditions system (the parked
+venom note — alchemy is its first customer).
+
+## Balance notes (benchlog 2026-07-17)
+
+The alchemist is a **support/economy career, not combat parity**: the mixed
+duo (alchemist + fighter) trails two fighters (L15 room 49 vs 67, site 24 vs
+53), and a PURE-alchemist duo is a trap (6/3/4) like all-in pools. The
+firebomb MUST stay a scarce burst (the rank+2 stock cap) precisely because
+alchemy is open to all — a bomb big enough to carry a pure bomber would make
+a *fighter with bombs* oppressive. The alchemist's real value is the kit it
+brews for the party (which the shrink makes matter), the overcharge, and the
+stat brews — none of which a one-go site run (no camp to rebrew) shows.
 
 ---
 
