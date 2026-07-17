@@ -225,9 +225,18 @@ a pointer: what the file is, how it's run, where its docs are.
 - `bench_bestiary.py` — the bestiary calibration: each catalog row's
   reference encounter (`ref_pack` of it) vs reference duos at the annotated
   level and two levels either side; win/fled/wipe/stall/down rates. The
-  reference party grows its pools through the engine curve
-  (`rpg.grow_pools`) and buys training/proficiency monotonically.
+  reference party is built on progression doctrine v2 (2026-07-17: the
+  old default build priced in the point economy — pools to the old curve,
+  training at 2n, proficiency, monotone).
   `python bench_bestiary.py [--trials N] [--kind wolf]`.
+- `bench_abilities.py` — the equal-cost matrix (2026-07-17, levelling
+  session A; grows in B/C): frames at L4/L8/L14, each column one
+  whole-budget way to spend the same points (reference doctrine /
+  training-heavy / pools-heavy / proficiency-heavy / the saves package /
+  the strikes package), rows = at-level generated room, generated site,
+  soldiery-ladder duel; acceptance band +-10 of the row median, flags
+  printed. Utility abilities get an exact-odds table on their own axis.
+  `python bench_abilities.py [--trials N] [--frame 8]`.
 - `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
   Re-run after touching the press or the melee loop.
@@ -286,7 +295,7 @@ mechanic *does* and *why* is rules.md's job.
 
 - **Tunable constants** — all at the top of `rpg.py`, grouped and commented:
   fatigue (`WINDED_STA`, `SPENT_PENALTY`, `STA_ATTACK_COST`), survival
-  (`SAVE_COST`, `HEAL_COST`, `FIRST_BLOOD_*`, potion restores, the
+  (`SAVE_COST`, `FIRST_BLOOD_*`, potion restores, the
   `*_RECOVERY_*` family, `REVIVE_HP`, `SHORT_RESTS_PER_DAY`, and the
   self-restocking kit `KIT_HEALING` / `KIT_STAMINA` — 2026-07-11, every
   long rest tops each hero back up to the kit line), the pause layer
@@ -297,8 +306,16 @@ mechanic *does* and *why* is rules.md's job.
   don't-waste-a-potion check, "heal" the fourth pause action), the graze
   floor
   (`GRAZE_FLOOR_MARGIN`), wound tiers (`TIER_HP`), progression
-  (`XP_LEVEL_STEP`, `LEVEL_CAP`, `POOL_GROWTH_LEVELS`, `TRAINING_MAX`,
-  `PROFICIENCY_MAX`), economy (`POTION_PRICE`, drop chances, and the
+  (`XP_LEVEL_STEP`, `LEVEL_CAP`, `SKILL_POINTS_PER_LEVEL` — 3 since
+  2026-07-17, `TRAINING_MAX`, `TRAINING_COST_MULT` — rank n costs 2n,
+  `POOL_BUY_CAP` / `POOL_KINDS` — pools are bought now, `buy_pool`;
+  `POOL_GROWTH_LEVELS` survives as the doctrine curve only,
+  `PROFICIENCY_MAX`), the ability catalog (2026-07-17: the `ABILITIES`
+  dict + `learn_ability`; the per-ability knobs `RAGE_ATK_BONUS`,
+  `FIELD_MEDIC_DC`, `STORYTELLER_DC` / `STORYTELLER_POWER_BONUS`,
+  `SURVIVALIST_DC`, `ARROW_PARRY_DEF` / `_2`; the healing spell's
+  `HEALING_CAST_COST` / `HEALING_MEND` / `HEALING_REVIVE_HP` sit in the
+  magic block), economy (`POTION_PRICE`, drop chances, and the
   level-pay formulas `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
@@ -363,12 +380,31 @@ mechanic *does* and *why* is rules.md's job.
   outright — + ONE group chase roll; `pursues=False` foes never chase; a
   clean escape waives any fate debt), `refresh_foes_after_retreat`
   (fled-room persistence).
-- **Between fights** — `short_rest` / `long_rest` (the `Clock`), `use_potion`,
-  `use_heal`, `buy_potion` / `buy_weapon` (the `Purse`), `equip_weapon`,
-  `award_xp` / `award_quest` / `roll_loot` (`award_quest` also applies the
-  PC's `cha_gold_bonus` and the +1 satisfaction lump), `train_combat_once` /
-  `train_proficiency` (session play banks points; only the sims auto-spend
-  via `train_combat`), `party_wiped`, `start_fight` (revive-only).
+- **Between fights** — `short_rest` / `long_rest` (the `Clock`; long_rest
+  also re-arms the field medic's day), `use_potion`, `cast_healing` (the
+  healing spell, 2026-07-17 — `use_heal` is gone), `buy_potion` /
+  `buy_weapon` (the `Purse`), `equip_weapon` (keeps the staff's
+  `power_bonus` books), `award_xp` / `award_quest` / `roll_loot`
+  (`award_quest` also applies the PC's `cha_gold_bonus` and the +1
+  satisfaction lump), `train_combat_once` / `train_proficiency` /
+  `train_spell` / `buy_pool` / `learn_ability` (session play banks
+  points; the sims and companions auto-spend via `autospend_points`,
+  doctrine v2 — `train_combat` the greedy trainer is gone),
+  `storyteller_tale` / `survivalist_camp` (the night abilities; session's
+  night paths call them), `party_wiped`, `start_fight` (revive-only).
+- **The ability catalog in the engine** (2026-07-17) — `Entity.abilities`
+  (a set; `alchemy` and `moves` are inert schema seeds for sessions C/B);
+  Bulwark in `_try_save`, First Blood in `_first_blood`, the conversions
+  gated in `standing_order` / `sim_pause_policy` / `_do_pause_action`,
+  Rage in `pressure` (the +2) + group_combat's kill bookkeeping and the
+  exhausted-round skip, Field Medic in `_try_field_medic` (called from
+  group_combat's death branch; fate's price is never medic'd),
+  Arrow-Parry in `_arrow_parry_bonus` (applied in `_attack`'s shot
+  defense), Point-Blank Mastery in group_combat's contact/shooting
+  branches, Rapid Reload in `Entity.effective_reload`, the night pair in
+  `storyteller_tale` / `survivalist_camp`. The archetype seed table lives
+  in `make_human` (`_starter_move` is the session-B stand-in for weapon
+  move tags).
 - **The party layer** (2026-07-11) — `rpg.py`: the satisfaction helpers
   (`adjust_satisfaction` with the cowardly/brave injury scaling,
   `satisfaction_after_fight`, `wants_to_leave` / `leave_threshold`,
@@ -508,62 +544,68 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-16, after Ranged Combat & the Field — the
-distance model, seven ranged cards, four shooter foe rows, the notice
-contest; rooms now open at field 2, the wilds at field 3). The full dated
+**Current state (2026-07-17, after the levelling framework session A —
+the point economy (3 points/level, pools bought, training at 2n), the
+ability catalog (the conversions are LEARNED now), healing-as-a-spell,
+the staff's +1 Power, the archetype seed table; doctrine v2 keeps every
+sim on the old default build priced in the new currency). The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only
 the standing summary — refresh it whenever a new entry lands there.**
 
-- **The batch's headline: the melee game is UNDISTURBED within noise.**
-  Field 0 fights are the old engine to the digit by construction, and
-  the room/road fields moved the tuned sites almost nothing (the
-  hideout's archer traded a random melee weapon for one shortbow shot —
-  a wash). The one real drift is the mid-band career (below).
-- **Hideout** (rank 0, 10k runs): clear **80.6** / wipe **16.7**;
-  reckless (no-resource) wipe **79.2**. **Barrow** `[3, 3, 4]`: clear
-  **26.1** / wipe **71.0**. "Not using resources mostly means death"
-  holds.
-- **Training ladder** (5k/rank): barrow **27 -> 58 -> 84 -> 97**, hideout
-  **81 -> 96 -> 99.4 -> 100** — a rank still reads as a rank.
-- **Party size** (5k/size, sizes 1-4): hideout **22 / 81 / 98.8 / 100**,
-  barrow **1.1 / 27 / 73 / 95** — numbers still dominate; XP x 2/N is
+- **The batch's headline pair.** Single-site sims got SAFER but
+  flee-happier (the gated conversions make the sim policy retreat where
+  it used to convert, and with the return-trip loop that is better
+  play); the CAREER mid-band paid the economy's flex premium. Melee and
+  ranged weapon matrices are untouched within noise.
+- **Hideout** (rank 0, 10k runs): clear **84.4** / wipe **12.4**;
+  reckless (no-resource) wipe **79.8**. **Barrow** `[3, 3, 4]`: clear
+  **44.1** / wipe **46.6**; reckless wipe 98.8. "Not using resources
+  mostly means death" holds.
+- **Training ladder** (5k/rank): barrow **42 -> 76 -> 95 -> 99**,
+  hideout **84 -> 97 -> 99.5 -> 100** — a rank still reads as a rank
+  (the whole ladder rode the retreat-happier policy up).
+- **Party size** (5k/size, sizes 1-4): hideout **27 / 84 / 98 / 99.5**,
+  barrow **4 / 42 / 88 / 98** — numbers still dominate; XP x 2/N is
   the counterweight.
 - **Weapons (melee)**: zweihander best duel on precise/steady, katana on
   powerful/balanced, zweihander owns every swarm column, staff trails on
-  purpose — no weapon tops every cell.
-- **Ranged cards** (`bench_ranged.py`, 4k/cell, suited frames vs the
-  melee reference): reach is an edge that grows with the field and dies
-  at the door — longbow **46 / 49 / 67** win% at fields 0/2/3, revolver
-  26/45/50, crossbow 8/17/34, blunderbuss 13/24/27, sling trails
-  everywhere on purpose; the katana wins **97** flat, so no shooter
-  out-duels steel at contact, and every card holds its own in the played
-  escort shape (91-99% with a katana partner vs a wolf pack). Flagged
-  wart: cadence-1 range-2 cards read a few points WORSE at field 2 than
-  at 0 in a pure 1v1 (one graze-grade shot under-buys its STA + tempo) —
-  party play doesn't show it; candidate levers if it nags: severity
-  flats, or a free switch for melee-grip-strong cards.
-- **Bestiary at-level win rates**: melee rows benched at field 0 —
-  unchanged by construction (skeleton 95.8, troll 97.2, dragon 89.9,
-  hexer 81.8...). The shooter rows bench at field 3: archer **97.2**
-  (L1), slinger **98.7** (L1), hunter **94.8** (L3; 69.8 at -2), gunner
-  **97.5** (L4; 82.8 at -2) — soft at level with real -2 walls, the
-  L1-band norm; annotations set this session (hunter 4 -> 3,
-  gunner 6 -> 4 measured down).
-- **Generated content** (300/cell): at-level rooms win **75-97** across
-  levels 1-20; at-level sites **~96 at L1** sliding to **~43-51 at
-  19-20** — the pre-ranged shape.
-- **Careers** (200): reach **L5 86% / L8 66% / L11 38% / L14 19% /
-  L20 6.5%**, median death **L9**, capped median 175 days / 40 quests.
-  The L8 band is ~6 points harder than 2026-07-15 (72 -> 66): enemy
-  shooters and casters now collect approach-round shots in rooms and on
-  the road — the intended price of distance being real. Everything else
-  within noise.
-- **Open flags for the designer** (levers untouched — feel bows in play
-  first): the hideout still sits ~25 points above the 2026-07 retune's
-  ~55% clear target (the standing flag); the career mid-band hardening
-  partially offsets the Magic & Mind ease. NOTE the benches model NO
-  hero shooters (the reference duo stays melee) — a played bow party
-  runs easier than these numbers, especially outdoors.
+  purpose — no weapon tops every cell. Ranged matrix unchanged (longbow
+  46/49/67 by field, katana 97 flat, escort 91-99; the cadence-1 wart
+  stands as flagged 2026-07-16).
+- **The equal-cost matrix** (`bench_abilities.py`, 400/cell, frames
+  L4/L8/L14): combat columns mostly land within +-10 of the row median.
+  Two structural findings: **all-in pools is a trap build** (site clears
+  36/5/38 vs medians 64/45/64 — pools without training buy corpse-phase),
+  and **training-heavy still tops the site row even at 2n** (+16..+19) —
+  the doubling is a floor, not an overshoot. The saves package is poor
+  on a 9-point L4 budget, fine from L8; the strikes package rides the
+  median. Utility abilities land 72-97% by their stat (exact odds, own
+  axis).
+- **Bestiary at-level win rates**: drifted DOWN a band with doctrine
+  v2's training lag and no free conversions (cutthroat 62@1, soldier
+  72@3, veteran 81@6, champion 69@10, blademaster 65@15, warlord 63@19,
+  hunter 66@3 at field 3) — deeper into the 55-75 target band, which
+  mostly re-absorbs the pain-2 upward drift flagged earlier; the catalog
+  still orders correctly.
+- **Generated content** (300/cell): at-level rooms win **68-94** (the
+  L9/L15-16 dips are the doctrine's rank-boundary lags); at-level sites
+  **~94 at L1** sliding to **~47 at 19-20**.
+- **Careers** (200): reach **L5 86% / L8 56% / L11 30% / L14 17% /
+  L20 6%**, median death **L8**, capped median 171 days / 41 quests.
+  The L8 gate broke its ~5-point band (66 -> 56): the attribution probe
+  (conversions grafted back universally) reads 58%, so ~2 points are
+  the gating and ~8 are the flex premium — the doctrine build reaches
+  training 3 at L8 (was L7) and rank 4 near L13 (was L11). The premium
+  is DESIGNED and currently buys nothing back; sessions B (moves) and C
+  (alchemy) are the refund — re-judge the gate when they land. NOTE no
+  sim buys the new abilities and a played party gets Berserk back for 1
+  point, so played careers run easier than these numbers.
+- **Open flags for the designer**: the hideout sits ~29 points above the
+  2026-07 retune's ~55% clear target (the standing flag, wider — session
+  C's kit shrink remains the scheduled closer); the career L8 dip as
+  attributed above (levers if the table feels it before B: doctrine
+  order training-before-pools, then POINTS 3 -> 4); all-in pools is a
+  trap the levelup menu should keep steering past.
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
@@ -581,12 +623,14 @@ above). The ranged layer adds its own levers: the field sizes
 (`ROOM_FIELD` / `WILD_FIELD` — one point of field is roughly half a shot
 per fight), the cards' severity flats (they replace STR, so they move in
 bigger steps than melee mods), reload cadence, and `NOTICE_BASE` (the
-spotted/ambushed mix on the road). **Always re-run `tune.py`,
-`bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
-`bench_bestiary.py`, and `bench_quests.py` after
-touching any of these** — small changes swing lethality, the attrition
-curve, the weapon matchup matrix, the level annotations, and the career
-curve.
+spotted/ambushed mix on the road). The point economy adds two more
+(2026-07-17): `SKILL_POINTS_PER_LEVEL` and `TRAINING_COST_MULT` — the
+two knobs the levelling design explicitly reserved for the bench rounds.
+**Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
+`bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
+`bench_quests.py` after touching any of these** — small changes swing
+lethality, the attrition curve, the weapon matchup matrix, the level
+annotations, the equal-cost matrix, and the career curve.
 
 
 ## Conventions
@@ -615,16 +659,19 @@ curve.
 ## Not yet built (the point of the design)
 
 The between-fights layer is now substantially player choice: gold/XP flow,
-skill points are a real allocation (combat training vs weapon proficiency —
-nothing auto-spends in session play), `buy_potion` and `buy_weapon` make
+skill points are a real allocation across the WHOLE menu (2026-07-17:
+pools vs training vs proficiency vs spell ranks vs the ability catalog —
+nothing auto-spends in session play and nothing grows automatically),
+`buy_potion` and `buy_weapon` make
 shopping real decisions, **the quest board is the "pick your fights"
 layer at full size** — a generated world of leveled quests, levels shown
 straight, pay scaling with them — and **the party itself is player choice
 now** (2026-07-11): who to pick, who to hire, whose patience to spend, when
 to buy it back with a tavern night or a downtime day. The mid-fight layer
-exists too: the pause (drink / Berserk / War-Breath / vanish / retreat &
+exists too: the pause (drink / Berserk / War-Breath — for those who know
+them — / vanish / retreat &
 chase — or a blink out — with fled rooms persisting). **The Magic & Mind
-layer is in (2026-07-15)** — MIND-highest wizards from level 1, nine
+layer is in (2026-07-15)** — MIND-highest wizards from level 1, ten
 spells at ranks 1-3 (skill points buy depth, spellbooks buy breadth,
 Power prices the burst), the casting check with degrees of success, the
 assassin openers, telekinesis, possession, scry, teleport travel, and
@@ -632,10 +679,12 @@ quest sight (the board blurs to the party's best MIND). **Cross-land
 deliveries** (2026-07-14) send the party travelling. **Ranged combat &
 guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
 shooter foe rows, cultural arms, and the notice contest (rules.md's
-Ranged Combat & the Field add-on). Next: **the levelling framework**
-(designed 2026-07-16, full spec in plan.md — the point economy,
-learnable abilities, the warrior moves system, the alchemy tree; three
-implementation sessions A/B/C), then stat
+Ranged Combat & the Field add-on). **The levelling framework's session A
+is in (2026-07-17)** — the point economy (3 points/level, pools on the
+menu, training at 2n), the eleven-entry ability catalog, healing as the
+tenth spell, the archetype seed table (rules.md's Progression add-on).
+Next: **levelling sessions B and C** (the warrior moves system, then
+alchemy & the potion rework — specs in plan.md), then stat
 transcendence + the wraith (the rest of the old magic phase), armor
 (note the designer's lean: probably never important), named
 weapon instances — and the career sim's finding that the 14-20 band lacks

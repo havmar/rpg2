@@ -22,7 +22,8 @@ THREAT_BASE, ROOM_SHARES, BOSS_ALLOWANCE are tuned against this file):
    level cap or the grave -- take the best reachable quest (highest level
    <= party level + 1, else the lowest posted), run its sites via run_site,
    camp up between sites, buy potions and quality steel when the gold is
-   there, spend points training-first (the sims' usual understatement of a
+   there, spend points on doctrine v2 (rpg.autospend_points -- the sims'
+   usual understatement of a
    real player). Reports how many careers reach the cap, die, or run out of
    board, and the pace (days, quests) of the ones that make it.
 
@@ -165,22 +166,14 @@ POTION_STOCK = 2                # buy up to this many of each kind per hero
 
 
 def _allocate_points(party, log) -> None:
-    """Spend banked skill points the way the bench reference does (monotone:
-    training to 3, katana proficiency to 3, training to 5) -- run_site's
-    greedy training-only spend leaves a career duo fighting two or three
-    levels below its sheet."""
+    """Spend banked skill points the way the bench reference does --
+    doctrine v2 (rpg.autospend_points): pools to the old odd-level curve,
+    then training to 3 (2n), then quality proficiency/school, then
+    training to the cap."""
     for h in party:
         if h.dead:
             continue
-        while h.training < 3 and rpg.train_combat_once(h, log):
-            pass
-        if (h.weapon is not None and h.weapon.quality
-                and not h.weapon_broken):
-            while (h.proficiency.get(h.weapon.name, 0) < rpg.PROFICIENCY_MAX
-                   and rpg.train_proficiency(h, log)):
-                pass
-        while h.training < rpg.TRAINING_MAX and rpg.train_combat_once(h, log):
-            pass
+        rpg.autospend_points(h, log)
 
 
 def _shop_and_rest(party, clock, purse, rng, log) -> None:
