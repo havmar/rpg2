@@ -36,7 +36,7 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 9,
-   "cur_sta": 2,
+   "cur_sta": 4,
    "cur_power": 3,
    "dex_debuff": 0,
    "unseen": false,
@@ -68,9 +68,9 @@
     "stamina": 1
    },
    "hp_regen_per_night": 1,
-   "level": 1,
-   "xp": 11,
-   "skill_points": 0,
+   "level": 2,
+   "xp": 0,
+   "skill_points": 3,
    "training": 0,
    "weapon": "spear",
    "weapon_broken": false,
@@ -126,8 +126,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 11,
-   "cur_sta": 3,
+   "hp": 12,
+   "cur_sta": 6,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -159,13 +159,15 @@
     "stamina": 1
    },
    "hp_regen_per_night": 2,
-   "level": 1,
-   "xp": 11,
+   "level": 2,
+   "xp": 0,
    "skill_points": 0,
-   "training": 0,
+   "training": 1,
    "weapon": "wooden staff",
    "weapon_broken": false,
-   "proficiency": {},
+   "proficiency": {
+    "wooden staff": 1
+   },
    "cha": 6,
    "def_bonus": 0,
    "race": "dwarf",
@@ -177,7 +179,7 @@
     "speech": "poetic",
     "dress": "colorful"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "Tinket",
    "bond_kind": "old companion",
    "last_dose_day": 0
@@ -185,12 +187,12 @@
  ],
  "clock": {
   "day": 1,
-  "short_rests_used": 0
+  "short_rests_used": 1
  },
  "purse": {
-  "gold": 0
+  "gold": 19
  },
- "foe_count": 1,
+ "foe_count": 2,
  "active_quest": "q11",
  "world": {
   "seed": 233553991,
@@ -1054,8 +1056,8 @@
      }
     ],
     "next": {
-     "site": 0,
-     "room": 1
+     "site": 1,
+     "room": 0
     },
     "status": "open",
     "epilogue": "The under-way reopens by the cleared mile, tolls half-price for a season in the party's honor.",
@@ -3463,7 +3465,7 @@
  "sighting": null,
  "streak": {
   "site": "q11/s1",
-  "count": 1
+  "count": 2
  },
  "site_clears": {},
  "recruits": null,
@@ -4099,7 +4101,7 @@
    3909512971,
    4185241301,
    3823740792,
-   350
+   383
   ],
   null
  ]
