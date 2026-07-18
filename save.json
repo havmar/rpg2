@@ -191,7 +191,7 @@
   "gold": 0
  },
  "foe_count": 0,
- "active_quest": null,
+ "active_quest": "q11",
  "world": {
   "seed": 233553991,
   "settlements": [
