@@ -1,0 +1,4106 @@
+{
+ "party": [
+  {
+   "name": "Tinket",
+   "dex": 6,
+   "str_": 4,
+   "sta": 8,
+   "max_hp": 9,
+   "power": 3,
+   "mind": 4,
+   "abilities": [],
+   "alchemy": 0,
+   "brewed": 0,
+   "str_buff": 0,
+   "dex_buff": 0,
+   "moves": [],
+   "pool_bought": {
+    "hp": 0,
+    "sta": 0,
+    "power": 0
+   },
+   "school": "",
+   "spells": {
+    "healing": 1
+   },
+   "spell_ward": 0,
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": true,
+   "hp": 9,
+   "cur_sta": 8,
+   "cur_power": 3,
+   "dex_debuff": 0,
+   "unseen": false,
+   "aloft": 0,
+   "stunned": 0,
+   "possessed": 0,
+   "disarm_tried": false,
+   "rage_primed": false,
+   "rage_exhausted": false,
+   "medic_ready": true,
+   "last_brew_day": -1,
+   "moves_spent": [],
+   "moves_refunded": 0,
+   "feint_target": null,
+   "off_guard": 0,
+   "stanced": 0,
+   "just_parried": false,
+   "parried_last": false,
+   "adv": 0,
+   "reload_left": 0,
+   "switched": false,
+   "shots_hit": 0,
+   "shots_missed": 0,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 1,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "spear",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 6,
+   "def_bonus": 0,
+   "race": "goblin",
+   "sex": "m",
+   "age": 18,
+   "nickname": "",
+   "traits": {
+    "quirk": "has an enemy (Aramil, a elf duelist, level 3, out there somewhere)",
+    "looks": "scarred",
+    "speech": "formal"
+   },
+   "satisfaction": null,
+   "bond": "",
+   "bond_kind": "",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Flint",
+   "dex": 3,
+   "str_": 3,
+   "sta": 8,
+   "max_hp": 12,
+   "power": 6,
+   "mind": 3,
+   "abilities": [],
+   "alchemy": 0,
+   "brewed": 0,
+   "str_buff": 0,
+   "dex_buff": 0,
+   "moves": [],
+   "pool_bought": {
+    "hp": 0,
+    "sta": 0,
+    "power": 0
+   },
+   "school": "",
+   "spells": {
+    "healing": 1
+   },
+   "spell_ward": 0,
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 12,
+   "cur_sta": 8,
+   "cur_power": 6,
+   "dex_debuff": 0,
+   "unseen": false,
+   "aloft": 0,
+   "stunned": 0,
+   "possessed": 0,
+   "disarm_tried": false,
+   "rage_primed": false,
+   "rage_exhausted": false,
+   "medic_ready": true,
+   "last_brew_day": -1,
+   "moves_spent": [],
+   "moves_refunded": 0,
+   "feint_target": null,
+   "off_guard": 0,
+   "stanced": 0,
+   "just_parried": false,
+   "parried_last": false,
+   "adv": 0,
+   "reload_left": 0,
+   "switched": false,
+   "shots_hit": 0,
+   "shots_missed": 0,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 2,
+    "stamina": 0
+   },
+   "hp_regen_per_night": 2,
+   "level": 1,
+   "xp": 0,
+   "skill_points": 0,
+   "training": 0,
+   "weapon": "wooden staff",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 6,
+   "def_bonus": 0,
+   "race": "dwarf",
+   "sex": "m",
+   "age": 37,
+   "nickname": "",
+   "traits": {
+    "quirk": "has an enemy (Gardain, a dwarf disgraced soldier, level 3, out there somewhere)",
+    "speech": "poetic",
+    "dress": "colorful"
+   },
+   "satisfaction": 7,
+   "bond": "Tinket",
+   "bond_kind": "old companion",
+   "last_dose_day": 0
+  }
+ ],
+ "clock": {
+  "day": 1,
+  "short_rests_used": 0
+ },
+ "purse": {
+  "gold": 0
+ },
+ "foe_count": 0,
+ "active_quest": null,
+ "world": {
+  "seed": 233553991,
+  "settlements": [
+   {
+    "key": "redhold",
+    "name": "Redhold",
+    "race": "orc",
+    "kind": "capital",
+    "quests": [
+     "q01",
+     "q02",
+     "q03",
+     "q04",
+     "q05",
+     "q23",
+     "q31"
+    ]
+   },
+   {
+    "key": "dawnspire",
+    "name": "Dawnspire",
+    "race": "elf",
+    "kind": "town",
+    "quests": [
+     "q06",
+     "q07",
+     "q08",
+     "q09",
+     "q26",
+     "q30",
+     "q34",
+     "q38"
+    ]
+   },
+   {
+    "key": "grimforge",
+    "name": "Grimforge",
+    "race": "dwarf",
+    "kind": "town",
+    "quests": [
+     "q10",
+     "q11",
+     "q12",
+     "q13",
+     "q24",
+     "q28",
+     "q29",
+     "q32",
+     "q42",
+     "q43",
+     "q44"
+    ]
+   },
+   {
+    "key": "alderbridge",
+    "name": "Alderbridge",
+    "race": "human",
+    "kind": "town",
+    "quests": [
+     "q14",
+     "q15",
+     "q16",
+     "q17",
+     "q22",
+     "q25",
+     "q27",
+     "q35",
+     "q37",
+     "q40"
+    ]
+   },
+   {
+    "key": "underforge",
+    "name": "Underforge",
+    "race": "dwarf",
+    "kind": "village",
+    "quests": [
+     "q18",
+     "q19",
+     "q33",
+     "q36",
+     "q39",
+     "q41"
+    ]
+   },
+   {
+    "key": "underhall",
+    "name": "Underhall",
+    "race": "dwarf",
+    "kind": "village",
+    "quests": [
+     "q20",
+     "q21"
+    ]
+   }
+  ],
+  "quests": {
+   "q01": {
+    "id": "q01",
+    "name": "The Ash-Callers' Rebellion",
+    "desc": "Shamans who traded the clan's fire for their own. The true shaman pays iron for them silenced.",
+    "settlement": "redhold",
+    "level": 6,
+    "fuzz": 1,
+    "skins": {
+     "hexer": "Frost-Caller",
+     "pyromancer": "Ash-Caller"
+    },
+    "sites": [
+     {
+      "name": "the scorched steppe",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer",
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer",
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "pyromancer"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the ash-callers' circle",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer",
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer",
+         "pyromancer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The circle's ashes are scattered on running water; the clan's fire burns in one pit again, where it belongs.",
+    "giver": {
+     "name": "Neega",
+     "race": "orc",
+     "sex": "f",
+     "age": 27,
+     "role": "the clan's true shaman",
+     "traits": {
+      "background": "poverty",
+      "looks": "scarred",
+      "voice": "melodious"
+     }
+    }
+   },
+   "q02": {
+    "id": "q02",
+    "name": "Wyvern on the Crags",
+    "desc": "A shadow over the herds, and herders who point at the high crags and will not climb.",
+    "settlement": "redhold",
+    "level": 12,
+    "fuzz": 0,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the scree slopes",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the crag eyrie",
+      "level": 12,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The herders climb again; the skull goes up on a spear above the trail, warning and boast at once.",
+    "giver": {
+     "name": "Krusk",
+     "race": "orc",
+     "sex": "m",
+     "age": 23,
+     "role": "the herd-elder",
+     "traits": {
+      "background": "tribesman",
+      "speech": "poetic",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q03": {
+    "id": "q03",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "redhold",
+    "level": 10,
+    "fuzz": -1,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Zug",
+     "race": "orc",
+     "sex": "m",
+     "age": 33,
+     "role": "the warchief",
+     "traits": {
+      "background": "military",
+      "speech": "verbose",
+      "looks": "bald"
+     }
+    }
+   },
+   "q04": {
+    "id": "q04",
+    "name": "The Dragon's Tithe",
+    "desc": "A whole valley pays it tribute and calls that peace. The crown calls it rebellion with wings.",
+    "settlement": "redhold",
+    "level": 15,
+    "fuzz": -2,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the burned tithe-barns",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wyvern"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wyvern"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the mountain approach",
+      "level": 15,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "drake"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "drake"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The valley keeps its harvest for the first year in living memory; the tithe-barns are rebuilt as granaries.",
+    "giver": {
+     "name": "Baggi",
+     "race": "orc",
+     "sex": "f",
+     "age": 39,
+     "role": "the crown's marshal",
+     "traits": {
+      "background": "trader",
+      "voice": "melodious",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q05": {
+    "id": "q05",
+    "name": "The Troll Under the Pass",
+    "desc": "The mountain road pays tribute in carts and drivers. The clans want the pass opened.",
+    "settlement": "redhold",
+    "level": 10,
+    "fuzz": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the boulder field",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the cave under the pass",
+      "level": 10,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Carts roll the pass by the next moon; drivers still spit at the cave mouth for luck.",
+    "giver": {
+     "name": "Keth",
+     "race": "orc",
+     "sex": "m",
+     "age": 29,
+     "role": "the toll-keeper of the pass",
+     "traits": {
+      "temperament": "loyal",
+      "voice": "mumbling",
+      "looks": "weathered"
+     }
+    }
+   },
+   "q06": {
+    "id": "q06",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 9,
+    "fuzz": -2,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild",
+     "hunter": "Rogue Huntsman"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 9,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Althaea",
+     "race": "elf",
+     "sex": "f",
+     "age": 31,
+     "role": "the council's justiciar",
+     "traits": {
+      "interest": "animals",
+      "speech": "formal",
+      "looks": "fat"
+     }
+    }
+   },
+   "q07": {
+    "id": "q07",
+    "name": "Webs in the Canopy",
+    "desc": "The high walkways are silked over and the wardens who went up have not come down.",
+    "settlement": "dawnspire",
+    "level": 2,
+    "fuzz": 1,
+    "skins": {
+     "great spider": "Canopy Weaver"
+    },
+    "sites": [
+     {
+      "name": "the lower boughs",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the silked walkways",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The silk is cut away and the walkways rehung; the lost wardens are carried down for their rites.",
+    "giver": {
+     "name": "Aelar",
+     "race": "elf",
+     "sex": "m",
+     "age": 28,
+     "role": "the master of the high walkways",
+     "traits": {
+      "background": "tribesman",
+      "looks": "ugly",
+      "dress": "flamboyant"
+     }
+    }
+   },
+   "q08": {
+    "id": "q08",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 13,
+    "fuzz": -2,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild",
+     "hunter": "Rogue Huntsman"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rogue lodge",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Bethrynna",
+     "race": "elf",
+     "sex": "f",
+     "age": 32,
+     "role": "the council's justiciar",
+     "traits": {
+      "weakness": "gambling",
+      "dress": "flamboyant",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q09": {
+    "id": "q09",
+    "name": "The Coven in the Mists",
+    "desc": "Singers who left the circle and took the old songs with them. The mists over the hollow are not weather.",
+    "settlement": "dawnspire",
+    "level": 8,
+    "fuzz": 0,
+    "skins": {
+     "hexer": "Mist-Singer",
+     "pyromancer": "Ember-Singer"
+    },
+    "sites": [
+     {
+      "name": "the mist-hung hollow",
+      "level": 7,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "pyromancer",
+         "pyromancer"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the singing stones",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "pyromancer",
+         "pyromancer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer",
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "pyromancer",
+         "pyromancer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The mists lift over the hollow; the censor seals the stolen songs back into the circle's keeping, and does not say thank you.",
+    "giver": {
+     "name": "Antinua",
+     "race": "elf",
+     "sex": "f",
+     "age": 20,
+     "role": "the circle's censor",
+     "traits": {
+      "weakness": "gambling",
+      "looks": "big",
+      "dress": "professional"
+     }
+    }
+   },
+   "q10": {
+    "id": "q10",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "grimforge",
+    "level": 2,
+    "fuzz": 1,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "gunner": "Powder-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The ledger line is struck through in both clans' books -- balanced, the keeper says, for a generation at least.",
+    "giver": {
+     "name": "Helja",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 26,
+     "role": "the clan's grudge-keeper",
+     "traits": {
+      "interest": "history",
+      "looks": "thin",
+      "speech": "swears a lot"
+     }
+    }
+   },
+   "q11": {
+    "id": "q11",
+    "name": "Things in the Deep Roads",
+    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
+    "settlement": "grimforge",
+    "level": 1,
+    "fuzz": 1,
+    "skins": {
+     "great spider": "Deep Creeper",
+     "wolf": "Tunnel Hound",
+     "dire wolf": "Tunnel Stalker"
+    },
+    "sites": [
+     {
+      "name": "the toll gate",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deep road",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "great spider"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The under-way reopens by the cleared mile, tolls half-price for a season in the party's honor.",
+    "giver": {
+     "name": "Hlin",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 20,
+     "role": "the toll-guild's factor",
+     "traits": {
+      "temperament": "mean",
+      "voice": "mumbling",
+      "dress": "elegant"
+     }
+    }
+   },
+   "q12": {
+    "id": "q12",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "grimforge",
+    "level": 7,
+    "fuzz": -1,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the broken gallery",
+      "level": 7,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The seams ring with picks again by week's end.",
+    "giver": {
+     "name": "Dagnal",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 20,
+     "role": "the mine-masters' speaker",
+     "traits": {
+      "interest": "fashion",
+      "speech": "swears a lot",
+      "dress": "ascetic"
+     }
+    }
+   },
+   "q13": {
+    "id": "q13",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "grimforge",
+    "level": 13,
+    "fuzz": 0,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "giant"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "giant"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The seams ring with picks again by week's end.",
+    "giver": {
+     "name": "Audhild",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 35,
+     "role": "the mine-masters' speaker",
+     "traits": {
+      "interest": "history",
+      "looks": "weathered",
+      "speech": "verbose"
+     }
+    }
+   },
+   "q14": {
+    "id": "q14",
+    "name": "Bandits on the King's Road",
+    "desc": "Wagons stripped, a toll of blood at the fords. The reeve pays for the road made safe.",
+    "settlement": "alderbridge",
+    "level": 13,
+    "fuzz": 0,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the roadside camp",
+      "level": 13,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The fords run quiet again; carters raise a cup to the party at every wayhouse on the road.",
+    "giver": {
+     "name": "Martel",
+     "race": "human",
+     "sex": "m",
+     "age": 20,
+     "role": "the king's reeve",
+     "traits": {
+      "interest": "animals",
+      "voice": "mumbling",
+      "looks": "fat"
+     }
+    }
+   },
+   "q15": {
+    "id": "q15",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "alderbridge",
+    "level": 11,
+    "fuzz": 2,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The recovered blades go back to the armory; the villages post no watch tonight.",
+    "giver": {
+     "name": "Inga",
+     "race": "human",
+     "sex": "f",
+     "age": 37,
+     "role": "the garrison captain",
+     "traits": {
+      "background": "trader",
+      "looks": "thin",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q16": {
+    "id": "q16",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "alderbridge",
+    "level": 5,
+    "fuzz": -1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wight"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The graves are re-consecrated at dusk; the parish sleeps its first whole night in weeks.",
+    "giver": {
+     "name": "Bess",
+     "race": "human",
+     "sex": "f",
+     "age": 31,
+     "role": "the parish priest",
+     "traits": {
+      "weakness": "smoker",
+      "voice": "mumbling",
+      "looks": "short"
+     }
+    }
+   },
+   "q17": {
+    "id": "q17",
+    "name": "The Hedge-Wizards' Toll",
+    "desc": "Renegade hedge-wizards tax the road in fire and frost. The witchfinder pays for the tollhouse dark.",
+    "settlement": "alderbridge",
+    "level": 3,
+    "fuzz": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the tollhouse road",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Carters use the road again by week's end; the witchfinder burns the confiscated grimoires in the market square, twice, for the crowd.",
+    "giver": {
+     "name": "Sabine",
+     "race": "human",
+     "sex": "f",
+     "age": 39,
+     "role": "the bishop's witchfinder",
+     "traits": {
+      "background": "military",
+      "voice": "mumbling",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q18": {
+    "id": "q18",
+    "name": "The Rune-Fire Below",
+    "desc": "Chanters feeding forbidden runes in a sealed gallery. The runesmiths want the fire out before the stone learns it.",
+    "settlement": "underforge",
+    "level": 3,
+    "fuzz": 2,
+    "skins": {
+     "hexer": "Cold-Chanter",
+     "pyromancer": "Rune-Burner"
+    },
+    "sites": [
+     {
+      "name": "the sealed gallery",
+      "level": 2,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rune-fire vault",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The vault is re-sealed under three locks and a new rune; the warden files the party's names under 'safe hands'.",
+    "giver": {
+     "name": "Rangrim",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 44,
+     "role": "the runesmiths' warden",
+     "traits": {
+      "temperament": "gloomy",
+      "speech": "poetic",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q19": {
+    "id": "q19",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "underforge",
+    "level": 1,
+    "fuzz": -2,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "skeleton",
+         "skeleton"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the drowned galleries",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the hold's heart",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "skeleton"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The heir walks the dry galleries once, dry-eyed, and seals the hold behind -- some doors are better shut.",
+    "giver": {
+     "name": "Riswynn",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 45,
+     "role": "the hold's last heir",
+     "traits": {
+      "weakness": "needs meds",
+      "speech": "swears a lot",
+      "dress": "colorful"
+     }
+    }
+   },
+   "q20": {
+    "id": "q20",
+    "name": "The Rune-Fire Below",
+    "desc": "Chanters feeding forbidden runes in a sealed gallery. The runesmiths want the fire out before the stone learns it.",
+    "settlement": "underhall",
+    "level": 4,
+    "fuzz": 2,
+    "skins": {
+     "hexer": "Cold-Chanter",
+     "pyromancer": "Rune-Burner"
+    },
+    "sites": [
+     {
+      "name": "the sealed gallery",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rune-fire vault",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer",
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "pyromancer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The vault is re-sealed under three locks and a new rune; the warden files the party's names under 'safe hands'.",
+    "giver": {
+     "name": "Harbek",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 29,
+     "role": "the runesmiths' warden",
+     "traits": {
+      "weakness": "gambling",
+      "looks": "thin",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q21": {
+    "id": "q21",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "underhall",
+    "level": 1,
+    "fuzz": 1,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The heir walks the dry galleries once, dry-eyed, and seals the hold behind -- some doors are better shut.",
+    "giver": {
+     "name": "Diesa",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 40,
+     "role": "the hold's last heir",
+     "traits": {
+      "quirk": "religious",
+      "looks": "thin",
+      "voice": "loud"
+     }
+    }
+   },
+   "q22": {
+    "id": "q22",
+    "name": "Wolves at the Folds",
+    "desc": "Sheep gone, then a shepherd. The commons want the pack dug out of the hills.",
+    "settlement": "alderbridge",
+    "level": 1,
+    "fuzz": -2,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the high pasture",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "wolf",
+         "wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "wolf"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the den in the hills",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Lambing season passes without a beast lost; the elder salts the den's earth as the old rites ask.",
+    "giver": {
+     "name": "Simon",
+     "race": "human",
+     "sex": "m",
+     "age": 33,
+     "role": "the shepherds' elder",
+     "traits": {
+      "temperament": "mean",
+      "speech": "formal",
+      "dress": "mismatched"
+     }
+    }
+   },
+   "q23": {
+    "id": "q23",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "redhold",
+    "level": 16,
+    "fuzz": 0,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 16,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "blademaster",
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Gruk",
+     "race": "orc",
+     "sex": "m",
+     "age": 23,
+     "role": "the warchief",
+     "traits": {
+      "temperament": "cheerful",
+      "voice": "mumbling",
+      "dress": "armored"
+     }
+    }
+   },
+   "q24": {
+    "id": "q24",
+    "name": "The Rune-Fire Below",
+    "desc": "Chanters feeding forbidden runes in a sealed gallery. The runesmiths want the fire out before the stone learns it.",
+    "settlement": "grimforge",
+    "level": 2,
+    "fuzz": 0,
+    "skins": {
+     "hexer": "Cold-Chanter",
+     "pyromancer": "Rune-Burner"
+    },
+    "sites": [
+     {
+      "name": "the sealed gallery",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The vault is re-sealed under three locks and a new rune; the warden files the party's names under 'safe hands'.",
+    "giver": {
+     "name": "Vistra",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 25,
+     "role": "the runesmiths' warden",
+     "traits": {
+      "quirk": "religious",
+      "looks": "weathered",
+      "dress": "flamboyant"
+     }
+    }
+   },
+   "q25": {
+    "id": "q25",
+    "name": "The Hedge-Wizards' Toll",
+    "desc": "Renegade hedge-wizards tax the road in fire and frost. The witchfinder pays for the tollhouse dark.",
+    "settlement": "alderbridge",
+    "level": 2,
+    "fuzz": -1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the tollhouse road",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the burned chapterhouse",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "hexer"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "Carters use the road again by week's end; the witchfinder burns the confiscated grimoires in the market square, twice, for the crowd.",
+    "giver": {
+     "name": "Tilda",
+     "race": "human",
+     "sex": "f",
+     "age": 24,
+     "role": "the bishop's witchfinder",
+     "traits": {
+      "weakness": "gambling",
+      "speech": "verbose",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q26": {
+    "id": "q26",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 12,
+    "fuzz": -1,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild",
+     "hunter": "Rogue Huntsman"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 12,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Faelar",
+     "race": "elf",
+     "sex": "m",
+     "age": 30,
+     "role": "the council's justiciar",
+     "traits": {
+      "temperament": "cowardly",
+      "dress": "flamboyant",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q27": {
+    "id": "q27",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "alderbridge",
+    "level": 5,
+    "fuzz": 1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The graves are re-consecrated at dusk; the parish sleeps its first whole night in weeks.",
+    "giver": {
+     "name": "Corvin",
+     "race": "human",
+     "sex": "m",
+     "age": 30,
+     "role": "the parish priest",
+     "traits": {
+      "interest": "plants",
+      "looks": "scarred",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q28": {
+    "id": "q28",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "grimforge",
+    "level": 12,
+    "fuzz": 2,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "gunner": "Powder-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival delving",
+      "level": 12,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "blademaster"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The ledger line is struck through in both clans' books -- balanced, the keeper says, for a generation at least.",
+    "giver": {
+     "name": "Dain",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 28,
+     "role": "the clan's grudge-keeper",
+     "traits": {
+      "weakness": "smoker",
+      "voice": "loud",
+      "looks": "big"
+     }
+    }
+   },
+   "q29": {
+    "id": "q29",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "grimforge",
+    "level": 8,
+    "fuzz": -1,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "wight"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the drowned galleries",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wight"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The heir walks the dry galleries once, dry-eyed, and seals the hold behind -- some doors are better shut.",
+    "giver": {
+     "name": "Eberk",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 46,
+     "role": "the hold's last heir",
+     "traits": {
+      "interest": "animals",
+      "voice": "whispering",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q30": {
+    "id": "q30",
+    "name": "Beasts Maddened by the Blight",
+    "desc": "Boar and bear alike gone wrong-eyed, tearing through the outlying groves.",
+    "settlement": "dawnspire",
+    "level": 2,
+    "fuzz": 0,
+    "skins": {
+     "boar": "Blight-Boar",
+     "bear": "Blight-Bear"
+    },
+    "sites": [
+     {
+      "name": "the torn grove",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar",
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The groves go quiet again; the keeper plants a sapling for every beast that had to die.",
+    "giver": {
+     "name": "Varis",
+     "race": "elf",
+     "sex": "m",
+     "age": 34,
+     "role": "the grove-keeper",
+     "traits": {
+      "quirk": "religious",
+      "voice": "mumbling",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q31": {
+    "id": "q31",
+    "name": "Rival Warband",
+    "desc": "A rival clan's raiders cut the herd trails. The warchief pays for them driven off or dead.",
+    "settlement": "redhold",
+    "level": 15,
+    "fuzz": 2,
+    "skins": {
+     "cutthroat": "Orc Raider",
+     "archer": "Orc Skirmisher",
+     "bruiser": "Orc Breaker",
+     "soldier": "Orc Raider",
+     "veteran": "Orc Blooded",
+     "champion": "Orc Warchief",
+     "blademaster": "Orc Deathblade",
+     "warlord": "Orc Overlord"
+    },
+    "sites": [
+     {
+      "name": "the raided trail",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival camp",
+      "level": 15,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "blademaster"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rival clan sends a peace-gift of salt and knives; the herd trails run open.",
+    "giver": {
+     "name": "Varga",
+     "race": "orc",
+     "sex": "f",
+     "age": 44,
+     "role": "the warchief",
+     "traits": {
+      "quirk": "has an enemy (Ovak, a orc mercenary captain, level 17, out there somewhere)",
+      "voice": "mumbling",
+      "speech": "formal"
+     }
+    }
+   },
+   "q32": {
+    "id": "q32",
+    "name": "The Flooded Hold",
+    "desc": "An old hold, lost and lately dry again. What was buried with it did not stay buried.",
+    "settlement": "grimforge",
+    "level": 7,
+    "fuzz": 1,
+    "skins": {
+     "skeleton": "Drowned Delver",
+     "ghoul": "Pale Delver",
+     "wight": "Hold-Lord"
+    },
+    "sites": [
+     {
+      "name": "the cracked gate",
+      "level": 7,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "skeleton",
+         "skeleton",
+         "skeleton",
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "wight"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The heir walks the dry galleries once, dry-eyed, and seals the hold behind -- some doors are better shut.",
+    "giver": {
+     "name": "Tordek",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 28,
+     "role": "the hold's last heir",
+     "traits": {
+      "interest": "history",
+      "speech": "formal",
+      "voice": "mumbling"
+     }
+    }
+   },
+   "q33": {
+    "id": "q33",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "underforge",
+    "level": 8,
+    "fuzz": -1,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "gunner": "Powder-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 8,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "gunner",
+         "gunner",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "gunner",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The ledger line is struck through in both clans' books -- balanced, the keeper says, for a generation at least.",
+    "giver": {
+     "name": "Falkrunn",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 29,
+     "role": "the clan's grudge-keeper",
+     "traits": {
+      "quirk": "patriotic",
+      "voice": "mumbling",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q34": {
+    "id": "q34",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 10,
+    "fuzz": 0,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild",
+     "hunter": "Rogue Huntsman"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 10,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Naal",
+     "race": "elf",
+     "sex": "m",
+     "age": 33,
+     "role": "the council's justiciar",
+     "traits": {
+      "background": "scholar",
+      "dress": "ascetic",
+      "looks": "weathered"
+     }
+    }
+   },
+   "q35": {
+    "id": "q35",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "alderbridge",
+    "level": 2,
+    "fuzz": -2,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "cutthroat",
+         "cutthroat"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The recovered blades go back to the armory; the villages post no watch tonight.",
+    "giver": {
+     "name": "Theobald",
+     "race": "human",
+     "sex": "m",
+     "age": 32,
+     "role": "the garrison captain",
+     "traits": {
+      "quirk": "religious",
+      "dress": "elegant",
+      "speech": "formal"
+     }
+    }
+   },
+   "q36": {
+    "id": "q36",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "underforge",
+    "level": 6,
+    "fuzz": -2,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the broken gallery",
+      "level": 6,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ogre"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ogre"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The seams ring with picks again by week's end.",
+    "giver": {
+     "name": "Finellen",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 42,
+     "role": "the mine-masters' speaker",
+     "traits": {
+      "interest": "music",
+      "looks": "pockmarked",
+      "dress": "tattered"
+     }
+    }
+   },
+   "q37": {
+    "id": "q37",
+    "name": "Deserters Turned Raiders",
+    "desc": "Soldiers who kept their steel and lost their oaths, living off the villages they once guarded.",
+    "settlement": "alderbridge",
+    "level": 12,
+    "fuzz": -2,
+    "skins": {
+     "soldier": "Deserter",
+     "veteran": "Deserter Sergeant"
+    },
+    "sites": [
+     {
+      "name": "the burned farmstead",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran",
+         "veteran",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deserters' camp",
+      "level": 12,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The recovered blades go back to the armory; the villages post no watch tonight.",
+    "giver": {
+     "name": "Rosamund",
+     "race": "human",
+     "sex": "f",
+     "age": 49,
+     "role": "the garrison captain",
+     "traits": {
+      "weakness": "gambling",
+      "voice": "whispering",
+      "looks": "pockmarked"
+     }
+    }
+   },
+   "q38": {
+    "id": "q38",
+    "name": "Wardens Gone Rogue",
+    "desc": "A warden-band that answers to no council now, taxing the forest roads at arrowpoint.",
+    "settlement": "dawnspire",
+    "level": 11,
+    "fuzz": 2,
+    "skins": {
+     "archer": "Rogue Warden",
+     "cutthroat": "Rogue Scout",
+     "soldier": "Rogue Warden",
+     "veteran": "Warden-Captain",
+     "champion": "Blade of the Wild",
+     "hunter": "Rogue Huntsman"
+    },
+    "sites": [
+     {
+      "name": "the forest road",
+      "level": 11,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "veteran",
+         "veteran",
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "champion",
+         "champion"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran",
+         "champion",
+         "champion"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The rogue lodge is unroofed and left to the moss; the forest roads charge no toll but weather.",
+    "giver": {
+     "name": "Felosial",
+     "race": "elf",
+     "sex": "f",
+     "age": 27,
+     "role": "the council's justiciar",
+     "traits": {
+      "background": "craftsman",
+      "dress": "luxurious",
+      "speech": "formal"
+     }
+    }
+   },
+   "q39": {
+    "id": "q39",
+    "name": "Things in the Deep Roads",
+    "desc": "The under-way to the second hold is silked and skittering. The toll-guild pays by the cleared mile.",
+    "settlement": "underforge",
+    "level": 4,
+    "fuzz": 0,
+    "skins": {
+     "great spider": "Deep Creeper",
+     "wolf": "Tunnel Hound",
+     "dire wolf": "Tunnel Stalker"
+    },
+    "sites": [
+     {
+      "name": "the toll gate",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "wolf",
+         "great spider",
+         "great spider"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "great spider",
+         "great spider",
+         "great spider"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the deep road",
+      "level": 4,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "dire wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The under-way reopens by the cleared mile, tolls half-price for a season in the party's honor.",
+    "giver": {
+     "name": "Kathra",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 28,
+     "role": "the toll-guild's factor",
+     "traits": {
+      "interest": "art",
+      "looks": "weathered",
+      "speech": "verbose"
+     }
+    }
+   },
+   "q40": {
+    "id": "q40",
+    "name": "The Restless Crypt",
+    "desc": "The churchyard dead are not staying put. The parish purse opens for whoever settles them.",
+    "settlement": "alderbridge",
+    "level": 9,
+    "fuzz": 0,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the churchyard",
+      "level": 9,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "ghoul",
+         "ghoul",
+         "wight"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "ghoul",
+         "ghoul",
+         "ghoul",
+         "ghoul"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul",
+         "wight",
+         "wight"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The graves are re-consecrated at dusk; the parish sleeps its first whole night in weeks.",
+    "giver": {
+     "name": "Isolde",
+     "race": "human",
+     "sex": "f",
+     "age": 31,
+     "role": "the parish priest",
+     "traits": {
+      "quirk": "patriotic",
+      "dress": "mismatched",
+      "voice": "loud"
+     }
+    }
+   },
+   "q41": {
+    "id": "q41",
+    "name": "The Grudge War",
+    "desc": "A rival clan pressed an old grudge with new axes. The ledger wants balancing.",
+    "settlement": "underforge",
+    "level": 5,
+    "fuzz": -1,
+    "skins": {
+     "cutthroat": "Grudge-Sworn",
+     "gunner": "Powder-Sworn",
+     "bruiser": "Grudge-Sworn",
+     "soldier": "Grudge-Sworn",
+     "veteran": "Oathbreaker",
+     "champion": "Grudge-Captain",
+     "blademaster": "Grudge-Lord"
+    },
+    "sites": [
+     {
+      "name": "the contested gate",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "cutthroat",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "bruiser",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the rival delving",
+      "level": 5,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The ledger line is struck through in both clans' books -- balanced, the keeper says, for a generation at least.",
+    "giver": {
+     "name": "Bardryn",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 34,
+     "role": "the clan's grudge-keeper",
+     "traits": {
+      "quirk": "has an enemy (Kildrak, a dwarf outlaw, level 7, out there somewhere)",
+      "dress": "ascetic",
+      "voice": "loud"
+     }
+    }
+   },
+   "q42": {
+    "id": "q42",
+    "name": "The Breaker in the Dark",
+    "desc": "Something big moved into the worked seams and it does not share. The mine masters want their tunnels back.",
+    "settlement": "grimforge",
+    "level": 14,
+    "fuzz": 2,
+    "skins": {
+     "ogre": "Deep Ogre",
+     "troll": "Stone Troll"
+    },
+    "sites": [
+     {
+      "name": "the worked seam",
+      "level": 13,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the broken gallery",
+      "level": 14,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "giant"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "troll"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "troll"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The seams ring with picks again by week's end.",
+    "giver": {
+     "name": "Brottor",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 20,
+     "role": "the mine-masters' speaker",
+     "traits": {
+      "interest": "hunting",
+      "voice": "loud",
+      "dress": "flamboyant"
+     }
+    }
+   },
+   "q43": {
+    "id": "q43",
+    "kind": "delivery",
+    "name": "The Sealed Dispatch",
+    "desc": "Court business under wax, and a rider who never arrived. Someone would rather it never does.",
+    "cargo": "a sealed dispatch",
+    "settlement": "grimforge",
+    "dest": "dawnspire",
+    "dest_name": "Dawnspire",
+    "days": 2,
+    "gold": 40,
+    "xp": 50,
+    "level": 0,
+    "skins": {},
+    "sites": [],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "intercepted": false,
+    "status": "open",
+    "epilogue": "The seal is broken behind a shut door; whatever it says, couriers ride the same road twice as guarded within the week.",
+    "giver": {
+     "name": "Borin",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 40,
+     "role": "the courier-master",
+     "traits": {
+      "temperament": "loyal",
+      "dress": "flamboyant",
+      "looks": "scarred"
+     }
+    },
+    "recipient": {
+     "name": "Adrie",
+     "race": "elf",
+     "sex": "f",
+     "age": 46,
+     "role": "the resident envoy",
+     "traits": {
+      "interest": "art",
+      "dress": "mismatched",
+      "speech": "verbose"
+     }
+    }
+   },
+   "q44": {
+    "id": "q44",
+    "kind": "delivery",
+    "name": "The Master-Smith's Commission",
+    "desc": "A commissioned piece, finished at last, and a patron in another land who paid in advance and waits badly.",
+    "cargo": "a wrapped blade",
+    "settlement": "grimforge",
+    "dest": "alderbridge",
+    "dest_name": "Alderbridge",
+    "days": 2,
+    "gold": 40,
+    "xp": 50,
+    "level": 0,
+    "skins": {},
+    "sites": [],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "intercepted": false,
+    "status": "open",
+    "epilogue": "The wrapping comes off to a long silence, which from this patron is the highest praise on record.",
+    "giver": {
+     "name": "Morgran",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 30,
+     "role": "the master smith",
+     "traits": {
+      "background": "craftsman",
+      "speech": "poetic",
+      "voice": "mumbling"
+     }
+    },
+    "recipient": {
+     "name": "Yorick",
+     "race": "human",
+     "sex": "m",
+     "age": 25,
+     "role": "the commissioning patron",
+     "traits": {
+      "weakness": "smoker",
+      "voice": "whispering",
+      "dress": "armored"
+     }
+    }
+   }
+  },
+  "npcs": [
+   {
+    "name": "Ogrim",
+    "race": "orc",
+    "sex": "m",
+    "age": 64,
+    "role": "great chief of the clans",
+    "traits": {
+     "interest": "art",
+     "dress": "mismatched",
+     "voice": "whispering"
+    },
+    "land": "orc",
+    "seat": "redhold",
+    "post": "ruler"
+   },
+   {
+    "name": "Drena",
+    "race": "orc",
+    "sex": "f",
+    "age": 56,
+    "role": "keeper of records",
+    "traits": {
+     "quirk": "patriotic",
+     "speech": "verbose",
+     "looks": "big"
+    },
+    "land": "orc",
+    "seat": "redhold",
+    "post": "sage"
+   },
+   {
+    "name": "Kansif",
+    "race": "orc",
+    "sex": "f",
+    "age": 33,
+    "role": "guild factor",
+    "traits": {
+     "background": "priest or monk",
+     "dress": "armored",
+     "speech": "formal"
+    },
+    "land": "orc",
+    "seat": "redhold",
+    "post": "wildcard"
+   },
+   {
+    "name": "Heian",
+    "race": "elf",
+    "sex": "m",
+    "age": 53,
+    "role": "speaker of the high council",
+    "traits": {
+     "weakness": "needs meds",
+     "voice": "mumbling",
+     "looks": "fat"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "ruler"
+   },
+   {
+    "name": "Wren",
+    "race": "elf",
+    "sex": "m",
+    "age": 36,
+    "role": "star-reader",
+    "traits": {
+     "temperament": "brave",
+     "voice": "whispering",
+     "dress": "elegant"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "sage"
+   },
+   {
+    "name": "Berrian",
+    "race": "elf",
+    "sex": "m",
+    "age": 28,
+    "role": "master smith",
+    "traits": {
+     "quirk": "religious",
+     "voice": "whispering",
+     "speech": "formal"
+    },
+    "land": "elf",
+    "seat": "dawnspire",
+    "post": "wildcard"
+   },
+   {
+    "name": "Orsik",
+    "race": "dwarf",
+    "sex": "m",
+    "age": 61,
+    "role": "high thane",
+    "traits": {
+     "weakness": "needs meds",
+     "dress": "elegant",
+     "voice": "loud"
+    },
+    "land": "dwarf",
+    "seat": "grimforge",
+    "post": "ruler"
+   },
+   {
+    "name": "Mardred",
+    "race": "dwarf",
+    "sex": "f",
+    "age": 63,
+    "role": "keeper of records",
+    "traits": {
+     "weakness": "gambling",
+     "speech": "formal",
+     "dress": "colorful"
+    },
+    "land": "dwarf",
+    "seat": "grimforge",
+    "post": "sage"
+   },
+   {
+    "name": "Gurdis",
+    "race": "dwarf",
+    "sex": "f",
+    "age": 20,
+    "role": "guild factor",
+    "traits": {
+     "interest": "fashion",
+     "voice": "loud",
+     "speech": "swears a lot"
+    },
+    "land": "dwarf",
+    "seat": "grimforge",
+    "post": "wildcard"
+   },
+   {
+    "name": "Cole",
+    "race": "human",
+    "sex": "m",
+    "age": 70,
+    "role": "king",
+    "traits": {
+     "quirk": "has a child (with them: Anneth, age 10)",
+     "looks": "thin",
+     "voice": "mumbling"
+    },
+    "land": "human",
+    "seat": "alderbridge",
+    "post": "ruler"
+   },
+   {
+    "name": "Berrick",
+    "race": "human",
+    "sex": "m",
+    "age": 44,
+    "role": "loremaster",
+    "traits": {
+     "interest": "fashion",
+     "speech": "verbose",
+     "voice": "melodious"
+    },
+    "land": "human",
+    "seat": "alderbridge",
+    "post": "sage"
+   },
+   {
+    "name": "Wynne",
+    "race": "human",
+    "sex": "f",
+    "age": 38,
+    "role": "spymaster",
+    "traits": {
+     "interest": "art",
+     "dress": "colorful",
+     "voice": "whispering"
+    },
+    "land": "human",
+    "seat": "alderbridge",
+    "post": "wildcard"
+   }
+  ]
+ },
+ "story": {
+  "aggressor": "human",
+  "conqueror": {
+   "name": "Martel",
+   "race": "human",
+   "sex": "m",
+   "age": 38,
+   "role": "Deathless King",
+   "traits": {
+    "temperament": "gloomy",
+    "dress": "mismatched",
+    "speech": "poetic"
+   }
+  },
+  "lieutenants": [
+   {
+    "name": "Aldric",
+    "race": "human",
+    "sex": "m",
+    "age": 32,
+    "role": "Gravemarshal",
+    "traits": {
+     "interest": "food",
+     "voice": "mumbling",
+     "looks": "beautiful"
+    }
+   },
+   {
+    "name": "Rosamund",
+    "race": "human",
+    "sex": "f",
+    "age": 32,
+    "role": "Bone Chancellor",
+    "traits": {
+     "interest": "art",
+     "voice": "melodious",
+     "looks": "scarred"
+    }
+   }
+  ],
+  "targets": [
+   "dwarf",
+   "elf"
+  ],
+  "wave_posted": 0,
+  "wave_done": 0,
+  "quests": [],
+  "fallen": null,
+  "over": false,
+  "events": []
+ },
+ "location": {
+  "place": "grimforge",
+  "name": "Grimforge",
+  "land": "dwarf",
+  "kind": "settlement"
+ },
+ "places": [],
+ "sighting": null,
+ "streak": {
+  "site": null,
+  "count": 0
+ },
+ "site_clears": {},
+ "recruits": null,
+ "visited": [
+  "grimforge"
+ ],
+ "pending": null,
+ "rooms": {},
+ "rng": [
+  3,
+  [
+   3005753177,
+   2838438576,
+   3770887467,
+   4064930295,
+   841368106,
+   2613212987,
+   3894318893,
+   3796132357,
+   4046666805,
+   644890436,
+   131364751,
+   2498488217,
+   1999249684,
+   3360443831,
+   1728309625,
+   624931994,
+   3041998845,
+   4160642989,
+   1097991091,
+   3399343665,
+   18430475,
+   3012218992,
+   2309236442,
+   2113762151,
+   2433263571,
+   2214512254,
+   2542926008,
+   433500851,
+   2109112424,
+   1417456225,
+   4279754557,
+   1060392273,
+   814674999,
+   2630809687,
+   433548733,
+   1228755418,
+   3970922377,
+   191406982,
+   4070047589,
+   2531912140,
+   2150303766,
+   3428117678,
+   1880898926,
+   2213490425,
+   1699476890,
+   1856104588,
+   554005711,
+   3429592468,
+   2372971443,
+   2182147292,
+   2686334184,
+   2632209777,
+   2299060384,
+   857626744,
+   1371136620,
+   3267024942,
+   3887398066,
+   4121394663,
+   3743222773,
+   1419495383,
+   4089977823,
+   908671920,
+   913874317,
+   746100827,
+   1163327143,
+   2155089038,
+   610335430,
+   3754864487,
+   2617064745,
+   2493089093,
+   3145696385,
+   1377581623,
+   631066518,
+   2686944288,
+   1399598505,
+   1024078951,
+   3864402714,
+   1790461780,
+   353485207,
+   1363041681,
+   2793395492,
+   1968234672,
+   2711714491,
+   2596516714,
+   3218129491,
+   2370928360,
+   1084704274,
+   19816321,
+   3120187148,
+   3754556454,
+   2878941457,
+   4128080325,
+   2770554295,
+   3937468926,
+   3339066894,
+   3885263862,
+   3437584437,
+   502928033,
+   3172864965,
+   798274941,
+   2392401952,
+   3238020332,
+   2926307151,
+   478063360,
+   2819089482,
+   4144525092,
+   3393267826,
+   2756922222,
+   3948347631,
+   3095906075,
+   2046968234,
+   3815075751,
+   1859791917,
+   3961208019,
+   2768361847,
+   2433041528,
+   526634067,
+   3305217759,
+   3211122675,
+   2561250557,
+   123582431,
+   542524829,
+   722074143,
+   3530908170,
+   2528504106,
+   2327024909,
+   3564232997,
+   2893550558,
+   1312035739,
+   3464402885,
+   1942506234,
+   3671331422,
+   3775832684,
+   1961851844,
+   3980446897,
+   2102063884,
+   1419313123,
+   1056141832,
+   1434057393,
+   309358825,
+   2637259601,
+   1909864194,
+   362720407,
+   819640714,
+   3227839478,
+   3928437861,
+   931610503,
+   3596130917,
+   888487731,
+   2560648052,
+   1103432932,
+   356997497,
+   3048595670,
+   1632953348,
+   4282773762,
+   3103197062,
+   2182269398,
+   1497263077,
+   1112501045,
+   4112206564,
+   1164038701,
+   2757713832,
+   1610601868,
+   309750079,
+   3517394965,
+   3005895099,
+   3739271929,
+   3887450306,
+   736165559,
+   2199006372,
+   530333952,
+   3780033814,
+   2229189423,
+   3507478348,
+   29144686,
+   3392035249,
+   2539557620,
+   1828336959,
+   3248129977,
+   2226645469,
+   507684634,
+   3716288541,
+   2171208910,
+   1439770719,
+   1425399217,
+   3261886447,
+   1787784452,
+   216905925,
+   4230125116,
+   1484396315,
+   2873180373,
+   3236891392,
+   1330152501,
+   3021438677,
+   1306672668,
+   970717911,
+   4267529440,
+   959321553,
+   1476752909,
+   1568636525,
+   1808273950,
+   993924537,
+   553540665,
+   1264491998,
+   999295305,
+   3804980049,
+   2663004552,
+   3991588347,
+   1371863174,
+   491017768,
+   2406740544,
+   2221423902,
+   2059359648,
+   2528588392,
+   3276561096,
+   3110210156,
+   2807746158,
+   3565221123,
+   2326834421,
+   1953802995,
+   3576602603,
+   1634948771,
+   1398498481,
+   497470849,
+   1652931766,
+   141102170,
+   1081998819,
+   3029826328,
+   4177680183,
+   1573618701,
+   178901185,
+   1052828785,
+   1979793202,
+   2419257859,
+   2122601782,
+   225989379,
+   2565739758,
+   763868279,
+   1537335565,
+   1400421694,
+   2642561842,
+   1694914001,
+   3803957015,
+   3422982377,
+   2637742485,
+   4172717042,
+   2119034089,
+   3496224916,
+   1284026096,
+   3770073800,
+   1588958988,
+   1883649536,
+   3153275352,
+   1201791754,
+   2785266959,
+   3113076903,
+   4078080246,
+   189480915,
+   866451921,
+   1247744975,
+   934612269,
+   515369460,
+   889467676,
+   533618152,
+   1970324224,
+   3778466124,
+   2903103660,
+   3239825364,
+   2178586794,
+   1454953546,
+   3349169778,
+   2982283252,
+   3141793977,
+   776348338,
+   559547999,
+   2893184165,
+   3329887333,
+   1755511838,
+   2519419905,
+   1147413697,
+   1562386918,
+   3861527796,
+   1388585550,
+   668478026,
+   991535613,
+   2977022527,
+   1124669679,
+   4208567421,
+   2652274510,
+   3506242056,
+   466532254,
+   110568372,
+   1411646710,
+   3827800210,
+   2162363820,
+   3685869596,
+   934344692,
+   2089635882,
+   1786137542,
+   2403660317,
+   3750718222,
+   4204469822,
+   1780638653,
+   3654185928,
+   1588027368,
+   1593606253,
+   576902452,
+   3664225183,
+   3310781686,
+   2941898526,
+   670982261,
+   3021345884,
+   3614258097,
+   144592493,
+   2326679544,
+   663265421,
+   1015597205,
+   4057931952,
+   209671388,
+   2575733118,
+   513689097,
+   3518104016,
+   1468706553,
+   581691410,
+   1714942128,
+   2571074611,
+   3699638406,
+   3980580904,
+   2246178557,
+   298740129,
+   952559013,
+   267390770,
+   3995231795,
+   2357839714,
+   1982665624,
+   1294476627,
+   2769860047,
+   779106931,
+   3919607865,
+   3886300847,
+   3743008050,
+   2905876081,
+   6775257,
+   3635727258,
+   2899142842,
+   1709071814,
+   1752670315,
+   215745711,
+   3261023483,
+   1061159645,
+   547175826,
+   3037833015,
+   3959318954,
+   3100759137,
+   3690933868,
+   1830807607,
+   2114671610,
+   2933267693,
+   3955993867,
+   2929751133,
+   253801071,
+   2823109364,
+   388469841,
+   224262609,
+   4288969293,
+   3678416727,
+   3588358844,
+   210458954,
+   3094334592,
+   133606940,
+   2384168391,
+   1449159067,
+   4081760131,
+   2671038423,
+   3385813571,
+   2000522962,
+   1680358831,
+   3850921065,
+   1236844348,
+   1672355690,
+   544299703,
+   870720786,
+   1662167051,
+   671783072,
+   998840809,
+   3854854039,
+   1820922946,
+   2566499710,
+   2767957170,
+   3773905265,
+   3713273672,
+   3538895050,
+   3912190616,
+   2693921324,
+   2705255179,
+   1391588242,
+   594871307,
+   3545568899,
+   3257044395,
+   496693642,
+   1040593277,
+   3969359643,
+   1559462398,
+   3378612221,
+   4221259309,
+   853140283,
+   3102150773,
+   2735390270,
+   2264024111,
+   1172902208,
+   1653073514,
+   4141020482,
+   1422084,
+   489387018,
+   1420398495,
+   2088945697,
+   3750764404,
+   2176636483,
+   3981485584,
+   728158414,
+   4090365096,
+   3855689944,
+   1665651841,
+   3265639762,
+   453390497,
+   2664132880,
+   2671795355,
+   1246592432,
+   4257366041,
+   1322607827,
+   1157202358,
+   3755335554,
+   2630882202,
+   624056105,
+   1865424489,
+   3238706867,
+   3340789988,
+   3337466755,
+   937076235,
+   1253439824,
+   494519353,
+   1137514221,
+   1112809529,
+   2252373926,
+   791486174,
+   3420355085,
+   3037293973,
+   3020034860,
+   1194428806,
+   1314803127,
+   205595613,
+   1674226532,
+   1539462257,
+   620567262,
+   3443322615,
+   607127458,
+   1150255668,
+   2528318570,
+   1452961965,
+   3013423664,
+   185854979,
+   1876397888,
+   3128475352,
+   1503445311,
+   1857475723,
+   546741022,
+   1108046869,
+   1914040840,
+   3171123093,
+   3219703747,
+   2907131580,
+   1203803856,
+   667089433,
+   327928077,
+   3954217510,
+   128235340,
+   3364419963,
+   3137517597,
+   249640592,
+   539337372,
+   4236180263,
+   1216782854,
+   3594699148,
+   3520892827,
+   942217082,
+   1197564452,
+   40814958,
+   85512368,
+   338819210,
+   1726597499,
+   2243655805,
+   1095371934,
+   1215365092,
+   2099644240,
+   2799130649,
+   184989896,
+   2877202905,
+   34045947,
+   2893202859,
+   188078620,
+   2126651295,
+   2175524262,
+   3731799040,
+   1607281967,
+   2730676541,
+   1956343376,
+   2622627750,
+   2664807450,
+   1895689123,
+   128037681,
+   748009536,
+   1793412108,
+   1016594483,
+   2201576300,
+   2298407671,
+   668710630,
+   2878107101,
+   4212948081,
+   4073392500,
+   2476989999,
+   3463535847,
+   3943128094,
+   3442422484,
+   1957526566,
+   788937511,
+   977305522,
+   2552207373,
+   3972425524,
+   2876181831,
+   2701764622,
+   2220071686,
+   138514298,
+   3918396059,
+   3823671460,
+   1896576698,
+   3153242193,
+   1657845401,
+   1439592485,
+   1768270346,
+   1702972195,
+   1241057816,
+   456164009,
+   1606463365,
+   4194874232,
+   3891904328,
+   2670383687,
+   2042497526,
+   173972734,
+   2026464614,
+   3063072941,
+   2589471965,
+   659109461,
+   2930875635,
+   3765987010,
+   3657779118,
+   4121437232,
+   2754773065,
+   3298806079,
+   3380105844,
+   2835771206,
+   4084204286,
+   2939095589,
+   3293489303,
+   2175587716,
+   2829140445,
+   1155097331,
+   2530175048,
+   876990198,
+   572613483,
+   1135406808,
+   3243584901,
+   563449739,
+   1927981265,
+   888536605,
+   1778299659,
+   602766351,
+   980068256,
+   526226609,
+   673376942,
+   708396914,
+   2562990326,
+   413330335,
+   840082886,
+   629457359,
+   1197580822,
+   1953708783,
+   3115641117,
+   926978105,
+   2852249172,
+   1463500560,
+   719000004,
+   2601270153,
+   2644097691,
+   1208784444,
+   220162220,
+   3912784138,
+   630081418,
+   1725301599,
+   3875132281,
+   295109522,
+   1647621893,
+   3865136937,
+   4088938662,
+   1442163741,
+   3766585906,
+   2502883640,
+   615069368,
+   132458204,
+   1859111549,
+   931308467,
+   3641175054,
+   692993232,
+   1095869145,
+   2476641657,
+   1721104254,
+   4188919042,
+   1305062748,
+   218523939,
+   3390603703,
+   4139838831,
+   2859183174,
+   3909512971,
+   4185241301,
+   3823740792,
+   225
+  ],
+  null
+ ]
+}
