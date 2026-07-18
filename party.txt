@@ -1,29 +1,28 @@
 RPG2 PARTY SHEET -- day 1, at Grimforge
   (dwarf lands, settlement)
-purse: 19g | short rests left today: 0
+purse: 38g | short rests left today: 0
 party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU)       Tinket (L2, training 0): DEX
-  6  STR 4  MIND 4  STA 6/10  HP 9/9
+  6  STR 4  MIND 4  STA 5/10  HP 7/9
   Power 3/3  CHA 6  (spells: healing 1;
-  moves: kick; spear; healingx1,
-  staminax1)
+  moves: kick; spear; healingx1)
             Tinket -- goblin m, age 18;
               quirk: has an enemy
               (Aramil, a elf duelist,
               level 3, out there
               somewhere); speech:
               formal; looks: scarred
-            XP 0/200 to L3 | skill
+            XP 100/200 to L3 | skill
               points: 0 | pools bought:
               sta +2 | spells: healing 1
 
 (companion) Flint (L2, training 1): DEX
-  3  STR 3  MIND 3  STA 6/8  HP 12/12
+  3  STR 3  MIND 3  STA 5/8  HP 10/12
   Power 6/6  CHA 6  (spells: healing 1;
-  wooden staff, prof 1; healingx2,
-  staminax1)  [satisfaction 8/10]
+  wooden staff, prof 1; healingx2)
+  [satisfaction 9/10]
             Flint -- dwarf m, age 37;
               quirk: has an enemy
               (Gardain, a dwarf
@@ -31,13 +30,12 @@ party: 1/3 companion slot(s) filled (CHA
               3, out there somewhere);
               speech: poetic; dress:
               colorful
-            XP 0/200 to L3 | skill
+            XP 100/200 to L3 | skill
               points: 0 | proficiency:
               wooden staff 1 | spells:
               healing 1
 
-active quest: [q11] L1 Things in the
-  Deep Roads -- next: the deep road
-  (L1), room 1/1
-momentum: 2 encounter(s) at q11/s1 since
+active quest [q11] Things in the Deep
+  Roads is COMPLETE
+momentum: 1 encounter(s) at q11/s2 since
   the last camp
