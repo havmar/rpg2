@@ -5,7 +5,7 @@ party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU)       Tinket (L1, training 0): DEX
-  6  STR 4  MIND 4  STA 8/8  HP 9/9
+  6  STR 4  MIND 4  STA 2/8  HP 9/9
   Power 3/3  CHA 6  (spells: healing 1;
   spear; healingx1, staminax1)
             Tinket -- goblin m, age 18;
@@ -14,14 +14,14 @@ party: 1/3 companion slot(s) filled (CHA
               level 3, out there
               somewhere); speech:
               formal; looks: scarred
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0 | spells:
               healing 1
 
 (companion) Flint (L1, training 0): DEX
-  3  STR 3  MIND 3  STA 8/8  HP 12/12
+  3  STR 3  MIND 3  STA 3/8  HP 11/12
   Power 6/6  CHA 6  (spells: healing 1;
-  wooden staff; healingx2)
+  wooden staff; healingx2, staminax1)
   [satisfaction 7/10]
             Flint -- dwarf m, age 37;
               quirk: has an enemy
@@ -30,10 +30,12 @@ party: 1/3 companion slot(s) filled (CHA
               3, out there somewhere);
               speech: poetic; dress:
               colorful
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0 | spells:
               healing 1
 
 active quest: [q11] L1 Things in the
   Deep Roads -- next: the toll gate
-  (L1), room 1/2
+  (L1), room 2/2
+momentum: 1 encounter(s) at q11/s1 since
+  the last camp
