@@ -34,3 +34,6 @@ party: 1/3 companion slot(s) filled (CHA
               points: 0 | spells:
               healing 1
 
+active quest: [q11] L1 Things in the
+  Deep Roads -- next: the toll gate
+  (L1), room 1/2
