@@ -37,8 +37,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": true,
-   "hp": 6,
-   "cur_sta": 3,
+   "hp": 10,
+   "cur_sta": 5,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -103,7 +103,7 @@
    "mind": 5,
    "abilities": [],
    "alchemy": 1,
-   "brewed": 0,
+   "brewed": 3,
    "str_buff": 0,
    "dex_buff": 0,
    "moves": [
@@ -128,8 +128,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 8,
-   "cur_sta": 5,
+   "hp": 9,
+   "cur_sta": 6,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -140,7 +140,7 @@
    "rage_primed": false,
    "rage_exhausted": false,
    "medic_ready": true,
-   "last_brew_day": -1,
+   "last_brew_day": 4,
    "moves_spent": [],
    "moves_refunded": 0,
    "feint_target": null,
@@ -157,8 +157,8 @@
    "dead": false,
    "fate_debt": false,
    "items": {
-    "healing": 1,
-    "stamina": 0
+    "healing": 4,
+    "stamina": 1
    },
    "hp_regen_per_night": 1,
    "level": 2,
@@ -186,7 +186,7 @@
   }
  ],
  "clock": {
-  "day": 1,
+  "day": 5,
   "short_rests_used": 0
  },
  "purse": {
@@ -3229,107 +3229,47 @@
    },
    "q45": {
     "id": "q45",
-    "name": "The Menagerie Order",
-    "desc": "Hell wants a rare beast, caged and delivered breathing. The catching is one job; the part where it slips the cage at the town gates is another.",
+    "name": "The Last Sermon",
+    "desc": "Hell wants the local priest on the altar he preaches from. He is, for the record, a bad man -- a usurer in vestments who has ruined more families than any bandit. Will you still chicken out?",
     "settlement": "grimhall",
-    "level": 1,
+    "level": 4,
     "fuzz": -2,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the trapping ground",
-      "level": 1,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "boar"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "boar"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open",
-    "align": "dark",
-    "epilogue": "The crate goes down the hellmouth stairs, growling. A receipt comes back up, signed in something brown.",
-    "giver": {
-     "name": "Helja",
-     "race": "dwarf",
-     "sex": "f",
-     "age": 40,
-     "role": "the fixer",
-     "traits": {
-      "weakness": "smoker",
-      "speech": "poetic",
-      "voice": "melodious"
-     }
-    }
-   },
-   "q46": {
-    "id": "q46",
-    "name": "Burn the Granary",
-    "desc": "The miller's rival pays for a fire and no witnesses. The miller, regrettably, pays for guards and dogs.",
-    "settlement": "grimhall",
-    "level": 1,
-    "fuzz": 1,
     "skins": {
-     "wolf": "Miller's Mastiff",
-     "cutthroat": "Night Watchman",
-     "archer": "Granary Archer",
-     "bruiser": "Miller's Man",
-     "soldier": "Hired Guard"
+     "cutthroat": "Outraged Sexton",
+     "archer": "Bell-Tower Warden",
+     "bruiser": "Lay Brother",
+     "soldier": "Temple Guard",
+     "veteran": "the Old Crusader",
+     "hexer": "the Curate",
+     "pyromancer": "the Censer-Swinger"
     },
     "sites": [
      {
-      "name": "the mill yard",
-      "level": 1,
+      "name": "the vestry",
+      "level": 3,
       "rooms": [
-       [
-        "the approach",
-        [
-         "soldier"
-        ]
-       ],
        [
         "the heart of it",
         [
-         "wolf",
-         "archer",
-         "bruiser"
+         "pyromancer"
         ]
        ]
       ]
      },
      {
-      "name": "the granary floor",
-      "level": 1,
+      "name": "the altar steps",
+      "level": 4,
       "rooms": [
        [
         "the approach",
         [
-         "bruiser"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "bruiser"
+         "veteran"
         ]
        ],
        [
         "the heart of it",
         [
-         "soldier"
+         "pyromancer"
         ]
        ]
       ]
@@ -3341,17 +3281,154 @@
     },
     "status": "open",
     "align": "dark",
-    "epilogue": "Grain prices double by market day. The rival in silk is very sorry to hear it, publicly, at length.",
+    "epilogue": "The parish, freed of its usurer, is oddly quiet about the how. The ledger of debts burns in the vestry grate, and nobody claims to have lit it.",
     "giver": {
-     "name": "Sannl",
+     "name": "Ilde",
      "race": "dwarf",
      "sex": "f",
-     "age": 37,
-     "role": "the rival in silk",
+     "age": 35,
+     "role": "the fixer",
      "traits": {
-      "quirk": "has an enemy (Jorik, a human mercenary captain, level 3, out there somewhere)",
-      "dress": "colorful",
-      "speech": "formal"
+      "interest": "animals",
+      "looks": "short",
+      "speech": "poetic"
+     }
+    }
+   },
+   "q46": {
+    "id": "q46",
+    "name": "The Blade That Thirsts",
+    "desc": "A famous evil weapon lies in the barrow of the last fool who wielded it. Hell would like it back in circulation. The barrow disagrees.",
+    "settlement": "grimhall",
+    "level": 1,
+    "fuzz": -1,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the sealed tomb",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "skeleton"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "ghoul"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The blade comes up humming, faintly, in a key that makes dogs leave the room. It is very pleased to meet you. (The DM places the actual weapon -- a reskinned quality blade until named instances land.)",
+    "giver": {
+     "name": "Gunnloda",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 28,
+     "role": "the grave-broker",
+     "traits": {
+      "background": "military",
+      "speech": "poetic",
+      "looks": "beautiful"
+     }
+    }
+   },
+   "q47": {
+    "id": "q47",
+    "name": "The Vault Job",
+    "desc": "The counting-house vault holds three lands' worth of deposits. The plan is elegant. The guards are not part of the plan.",
+    "settlement": "grimhall",
+    "level": 3,
+    "fuzz": 0,
+    "skins": {
+     "cutthroat": "Night Clerk",
+     "archer": "Gallery Guard",
+     "bruiser": "Vault-Door Muscle",
+     "soldier": "House Guard",
+     "veteran": "Guard Sergeant",
+     "champion": "the Guild's Duelist"
+    },
+    "sites": [
+     {
+      "name": "the counting floor",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier"
+        ]
+       ]
+      ],
+      "deed": {
+       "stat": "mind",
+       "dc": 11,
+       "text": "the plan -- cased for a week, timed to the minute, in through the lamplit gallery between rounds",
+       "fail": "the rounds changed this morning; the plan meets the guards"
+      }
+     },
+     {
+      "name": "the vault below",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "Three counting-houses fail by month's end and the broker, who sold their debts short, sends a fruit basket. It is not poisoned. Probably.",
+    "giver": {
+     "name": "Dagnal",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 35,
+     "role": "the moneylender's broker",
+     "traits": {
+      "weakness": "smoker",
+      "speech": "swears a lot",
+      "dress": "luxurious"
      }
     }
    }
@@ -3599,8 +3676,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": "q44/s1",
-  "count": 1
+  "site": null,
+  "count": 0
  },
  "site_clears": {},
  "recruits": null,
@@ -3616,11 +3693,11 @@
  },
  "dark_board": {
   "place": "grimhall",
-  "day": 1,
+  "day": 5,
   "qids": [
-   "q44",
    "q45",
-   "q46"
+   "q46",
+   "q47"
   ]
  },
  "pact": {
@@ -4261,7 +4338,7 @@
    3540980949,
    990283639,
    4186333981,
-   441
+   578
   ],
   null
  ]
