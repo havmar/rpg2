@@ -5,14 +5,14 @@ party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L2, training 0): DEX 5
-  STR 4  MIND 6  STA 5/5  HP 10/10
-  Power 8/8  CHA 4  (spells: fire 2;
+  STR 4  MIND 6  STA 3/5  HP 10/10
+  Power 5/8  CHA 4  (spells: fire 2;
   wooden staff; healingx1, staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 15/200 to L3 | skill
+            XP 32/200 to L3 | skill
               points: 0 | pools bought:
               power +1 | spells: fire 2
 
@@ -26,14 +26,16 @@ party: 1/1 companion slot(s) filled (CHA
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 15/200 to L3 | skill
+            XP 32/200 to L3 | skill
               points: 0 | abilities:
               bulwark
 
 active quest: [q41] L2 The Debt
   Collection -- next: the village square
-  (L2), room 1/2
-karma: bad karma 140/200; heat 0 --
+  (L2), room 2/2
+momentum: 1 encounter(s) at q41/s2 since
+  the last camp
+karma: bad karma 157/200; heat 0 --
   lying low
 THE PACT: no current assignment --
   hell's next job comes any settlement
