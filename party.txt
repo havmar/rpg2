@@ -1,0 +1,35 @@
+RPG2 PARTY SHEET -- day 1, at
+  Sprocketworks (goblin lands,
+  settlement)
+purse: 5g | short rests left today: 1
+party: 1/1 companion slot(s) filled (CHA
+  4)
+
+(YOU)       Wozzek (L1, training 0): DEX
+  4  STR 5  MIND 6  STA 5/8  HP 8/8
+  Power 1/5  CHA 4  (spells: fire 1;
+  flail; healingx1, staminax1)
+            Wozzek -- goblin m, age 21;
+              weakness: smoker; dress:
+              mismatched; looks: ugly
+            XP 11/100 to L2 | skill
+              points: 0 | spells: fire 1
+
+(companion) Althaea (L1, training 0):
+  DEX 3  STR 6  MIND 5  STA 7/8  HP 8/8
+  Power 4/4  CHA 6  (spells: healing 1;
+  scimitar; healingx1, staminax1)
+  [satisfaction 7/10]
+            Althaea -- elf f, age 23;
+              weakness: needs meds;
+              voice: whispering; looks:
+              bald
+            XP 11/100 to L2 | skill
+              points: 0 | spells:
+              healing 1
+
+active quest: [q06] L1 Press-Gang
+  Trouble -- next: the night market
+  (L1), room 2/2
+momentum: 1 encounter(s) at q06/s1 since
+  the last camp
