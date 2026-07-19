@@ -71,7 +71,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 0,
+   "xp": 55,
    "skill_points": 0,
    "training": 0,
    "weapon": "halberd",
@@ -162,7 +162,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 0,
+   "xp": 55,
    "skill_points": 0,
    "training": 1,
    "weapon": "dagger",
@@ -179,9 +179,100 @@
     "voice": "melodious",
     "looks": "sickly"
    },
-   "satisfaction": 8,
+   "satisfaction": 9,
    "bond": "Delg",
    "bond_kind": "old companion",
+   "last_dose_day": 0
+  },
+  {
+   "name": "Kathra",
+   "dex": 3,
+   "str_": 3,
+   "sta": 9,
+   "max_hp": 12,
+   "power": 7,
+   "mind": 5,
+   "abilities": [],
+   "alchemy": 0,
+   "brewed": 0,
+   "str_buff": 0,
+   "dex_buff": 0,
+   "moves": [],
+   "pool_bought": {
+    "hp": 1,
+    "sta": 1,
+    "power": 1
+   },
+   "school": "ice",
+   "spells": {
+    "ice": 1
+   },
+   "spell_ward": 0,
+   "sta_cost": 1,
+   "undead": false,
+   "pain": 2,
+   "tireless": false,
+   "pursues": true,
+   "crowd_cap": 2,
+   "regen": 0,
+   "sweep": 1,
+   "sweep_cost_power": 0,
+   "sweep_label": "",
+   "protagonist": false,
+   "hp": 12,
+   "cur_sta": 9,
+   "cur_power": 7,
+   "dex_debuff": 0,
+   "unseen": false,
+   "aloft": 0,
+   "stunned": 0,
+   "possessed": 0,
+   "disarm_tried": false,
+   "rage_primed": false,
+   "rage_exhausted": false,
+   "medic_ready": true,
+   "last_brew_day": -1,
+   "moves_spent": [],
+   "moves_refunded": 0,
+   "feint_target": null,
+   "off_guard": 0,
+   "stanced": 0,
+   "just_parried": false,
+   "parried_last": false,
+   "adv": 0,
+   "reload_left": 0,
+   "switched": false,
+   "shots_hit": 0,
+   "shots_missed": 0,
+   "down": false,
+   "dead": false,
+   "fate_debt": false,
+   "items": {
+    "healing": 1,
+    "stamina": 1
+   },
+   "hp_regen_per_night": 2,
+   "level": 3,
+   "xp": 55,
+   "skill_points": 1,
+   "training": 1,
+   "weapon": "wooden staff",
+   "weapon_broken": false,
+   "proficiency": {},
+   "cha": 5,
+   "def_bonus": 0,
+   "race": "dwarf",
+   "sex": "f",
+   "age": 34,
+   "nickname": "",
+   "traits": {
+    "background": "trader",
+    "looks": "fat",
+    "voice": "mumbling"
+   },
+   "satisfaction": 8,
+   "bond": "",
+   "bond_kind": "",
    "last_dose_day": 0
   }
  ],
@@ -190,10 +281,10 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 14
+  "gold": 73
  },
  "foe_count": 3,
- "active_quest": null,
+ "active_quest": "q49",
  "world": {
   "seed": 493172361,
   "settlements": [
@@ -3561,7 +3652,8 @@
        "stat": "mind",
        "dc": 11,
        "text": "the plan -- cased for a week, timed to the minute, in through the lamplit gallery between rounds",
-       "fail": "the rounds changed this morning; the plan meets the guards"
+       "fail": "the rounds changed this morning; the plan meets the guards",
+       "done": true
       }
      },
      {
@@ -3594,7 +3686,7 @@
      }
     ],
     "next": {
-     "site": 0,
+     "site": 1,
      "room": 0
     },
     "status": "open",
@@ -4059,102 +4151,6 @@
     ]
    },
    {
-    "kind": null,
-    "members": [
-     {
-      "name": "Kathra",
-      "dex": 3,
-      "str_": 3,
-      "sta": 9,
-      "max_hp": 12,
-      "power": 7,
-      "mind": 5,
-      "abilities": [],
-      "alchemy": 0,
-      "brewed": 0,
-      "str_buff": 0,
-      "dex_buff": 0,
-      "moves": [],
-      "pool_bought": {
-       "hp": 1,
-       "sta": 1,
-       "power": 1
-      },
-      "school": "ice",
-      "spells": {
-       "ice": 1
-      },
-      "spell_ward": 0,
-      "sta_cost": 1,
-      "undead": false,
-      "pain": 2,
-      "tireless": false,
-      "pursues": true,
-      "crowd_cap": 2,
-      "regen": 0,
-      "sweep": 1,
-      "sweep_cost_power": 0,
-      "sweep_label": "",
-      "protagonist": false,
-      "hp": 12,
-      "cur_sta": 9,
-      "cur_power": 7,
-      "dex_debuff": 0,
-      "unseen": false,
-      "aloft": 0,
-      "stunned": 0,
-      "possessed": 0,
-      "disarm_tried": false,
-      "rage_primed": false,
-      "rage_exhausted": false,
-      "medic_ready": true,
-      "last_brew_day": -1,
-      "moves_spent": [],
-      "moves_refunded": 0,
-      "feint_target": null,
-      "off_guard": 0,
-      "stanced": 0,
-      "just_parried": false,
-      "parried_last": false,
-      "adv": 0,
-      "reload_left": 0,
-      "switched": false,
-      "shots_hit": 0,
-      "shots_missed": 0,
-      "down": false,
-      "dead": false,
-      "fate_debt": false,
-      "items": {
-       "healing": 1,
-       "stamina": 1
-      },
-      "hp_regen_per_night": 2,
-      "level": 3,
-      "xp": 0,
-      "skill_points": 1,
-      "training": 1,
-      "weapon": "wooden staff",
-      "weapon_broken": false,
-      "proficiency": {},
-      "cha": 5,
-      "def_bonus": 0,
-      "race": "dwarf",
-      "sex": "f",
-      "age": 34,
-      "nickname": "",
-      "traits": {
-       "background": "trader",
-       "looks": "fat",
-       "voice": "mumbling"
-      },
-      "satisfaction": null,
-      "bond": "",
-      "bond_kind": "",
-      "last_dose_day": 0
-     }
-    ]
-   },
-   {
     "kind": "two old friends",
     "members": [
      {
@@ -4348,8 +4344,8 @@
   "king'smere"
  ],
  "karma": {
-  "bad": 100,
-  "bad_total": 100,
+  "bad": 182,
+  "bad_total": 182,
   "good_total": 0,
   "last_punish_day": -99,
   "last_leader": null
@@ -5001,7 +4997,7 @@
    2550532531,
    1649903101,
    2004442145,
-   347
+   349
   ],
   null
  ]
