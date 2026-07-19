@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 2,
-   "cur_power": 1,
+   "cur_sta": 5,
+   "cur_power": 8,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -128,7 +128,7 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 5,
+   "hp": 12,
    "cur_sta": 7,
    "cur_power": 5,
    "dex_debuff": 0,
@@ -186,7 +186,7 @@
   }
  ],
  "clock": {
-  "day": 2,
+  "day": 6,
   "short_rests_used": 0
  },
  "purse": {
@@ -3521,8 +3521,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": "q41/s1",
-  "count": 1
+  "site": null,
+  "count": 0
  },
  "site_clears": {},
  "recruits": null,
@@ -4183,7 +4183,7 @@
    1966343208,
    2985665027,
    3497298375,
-   573
+   581
   ],
   null
  ]
