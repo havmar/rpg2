@@ -1,42 +1,42 @@
 RPG2 PARTY SHEET -- day 6, at Fairfield
   (human lands, settlement)
-purse: 38g | short rests left today: 1
+purse: 92g | short rests left today: 0
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L2, training 0): DEX 5
-  STR 4  MIND 6  STA 3/5  HP 10/10
-  Power 5/8  CHA 4  (spells: fire 2;
-  wooden staff; healingx1, staminax1)
+  STR 4  MIND 6  STA 5/5  HP 10/10
+  Power 2/8  CHA 4  (spells: fire 2;
+  wooden staff; healingx1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 32/200 to L3 | skill
+            XP 165/200 to L3 | skill
               points: 0 | pools bought:
               power +1 | spells: fire 2
 
 (companion) Kristryd (L2, training 1):
-  DEX 4  STR 6  MIND 3  STA 7/7  HP
+  DEX 4  STR 6  MIND 3  STA 6/7  HP
   12/12  Power 5/5  CHA 3  (bulwark;
   moves: thrust; longsword; staminax1)
-  [satisfaction 7/10]
+  [satisfaction 8/10]
             Kristryd -- dwarf f, age 36;
               quirk: has a child (with
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 32/200 to L3 | skill
+            XP 165/200 to L3 | skill
               points: 0 | abilities:
               bulwark
 
-active quest: [q41] L2 The Debt
-  Collection -- next: the village square
-  (L2), room 2/2
-momentum: 1 encounter(s) at q41/s2 since
+active quest [q41] The Debt Collection
+  is COMPLETE
+momentum: 2 encounter(s) at q41/s2 since
   the last camp
-karma: bad karma 157/200; heat 0 --
-  lying low
+karma: bad karma 290; HEAT 1 --
+  retribution hunts 1 level(s) above the
+  party
 THE PACT: no current assignment --
   hell's next job comes any settlement
   day now.
