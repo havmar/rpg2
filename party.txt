@@ -5,9 +5,9 @@ party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L1, training 0): DEX 5
-  STR 4  MIND 6  STA 5/5  HP 10/10
-  Power 7/7  CHA 4  (spells: fire 1;
-  wooden staff; healingx1, staminax2)
+  STR 4  MIND 6  STA 4/5  HP 10/10
+  Power 3/7  CHA 4  (spells: fire 1;
+  wooden staff; healingx1, staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
@@ -16,10 +16,9 @@ party: 1/1 companion slot(s) filled (CHA
               points: 0 | spells: fire 1
 
 (companion) Kristryd (L1, training 0):
-  DEX 4  STR 6  MIND 3  STA 7/7  HP
-  12/12  Power 5/5  CHA 3  (bulwark;
-  longsword; staminax2)  [satisfaction
-  7/10]
+  DEX 4  STR 6  MIND 3  STA 3/7  HP 6/12
+  Power 5/5  CHA 3  (bulwark; longsword;
+  staminax2)  [satisfaction 7/10]
             Kristryd -- dwarf f, age 36;
               quirk: has a child (with
               them: Audhild, age 10);
@@ -29,8 +28,13 @@ party: 1/1 companion slot(s) filled (CHA
               points: 0 | abilities:
               bulwark
 
+active quest: [q41] L2 The Debt
+  Collection -- next: the barricaded
+  bridge (L1), room 1/1
 karma: bad karma 40/100; heat 0 -- lying
   low
 THE PACT: no current assignment --
   hell's next job comes any settlement
   day now.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***
