@@ -1,11 +1,11 @@
-RPG2 PARTY SHEET -- day 2, at Stormridge
-  (orc lands, settlement)
+RPG2 PARTY SHEET -- day 8, at Stonefield
+  (human lands, settlement)
 purse: 21g | short rests left today: 1
 party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Uthemar (L2, training 0):
-  DEX 5  STR 5  MIND 6  STA 6/5  HP 9/8
+  DEX 5  STR 5  MIND 6  STA 5/5  HP 8/8
   Power 6/6  CHA 5  (spells: fire 2;
   moves: kick; flail; healingx1,
   staminax1)
@@ -19,9 +19,9 @@ party: 1/2 companion slot(s) filled (CHA
               points: 0 | spells: fire 2
 
 (companion) Feng (L2, training 1): DEX 3
-  STR 5  MIND 3  STA 9/8  HP 3/11  Power
-  5/5  CHA 6  (spells: healing 1; wooden
-  staff, prof 1; staminax1)
+  STR 5  MIND 3  STA 8/8  HP 11/11
+  Power 5/5  CHA 6  (spells: healing 1;
+  wooden staff, prof 1; staminax1)
   [satisfaction 7/10]
             Feng -- orc m, age 43;
               interest: fashion; speech:
