@@ -8,12 +8,16 @@
    "max_hp": 10,
    "power": 6,
    "mind": 3,
-   "abilities": [],
+   "abilities": [
+    "rage"
+   ],
    "alchemy": 1,
    "brewed": 0,
    "str_buff": 0,
    "dex_buff": 0,
-   "moves": [],
+   "moves": [
+    "kick"
+   ],
    "pool_bought": {
     "hp": 0,
     "sta": 0,
@@ -68,7 +72,7 @@
    "hp_regen_per_night": 1,
    "level": 2,
    "xp": 0,
-   "skill_points": 3,
+   "skill_points": 0,
    "training": 0,
    "weapon": "halberd",
    "weapon_broken": false,
