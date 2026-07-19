@@ -5,8 +5,8 @@ party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Uthemar (L1, training 0):
-  DEX 5  STR 5  MIND 6  STA 0/5  HP 8/8
-  Power 1/6  CHA 5  (spells: fire 1;
+  DEX 5  STR 5  MIND 6  STA 1/5  HP 8/8
+  Power 0/6  CHA 5  (spells: fire 1;
   flail; healingx2)
             Uthemar -- elf m, age 36;
               quirk: has an enemy
@@ -14,22 +14,21 @@ party: 1/2 companion slot(s) filled (CHA
               captain, level 3, out
               there somewhere); speech:
               formal; dress: armored
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0 | spells: fire 1
 
 (companion) Feng (L1, training 0): DEX 3
-  STR 5  MIND 3  STA 4/8  HP 2/11  Power
+  STR 5  MIND 3  STA 3/8  HP 7/11  Power
   5/5  CHA 6  (spells: healing 1; wooden
-  staff; healingx1, staminax1)
-  [satisfaction 7/10]
+  staff; staminax1)  [satisfaction 7/10]
             Feng -- orc m, age 43;
               interest: fashion; speech:
               formal; looks: beautiful
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0 | spells:
               healing 1
 
 active quest: [q08] L1 Rival Warband --
-  next: the raided trail (L1), room 1/2
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
+  next: the raided trail (L1), room 2/2
+momentum: 1 encounter(s) at q08/s1 since
+  the last camp
