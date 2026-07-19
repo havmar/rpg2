@@ -1,7 +1,7 @@
 RPG2 PARTY SHEET -- day 13, at
   King'smere (human lands, settlement)
-purse: 14g | short rests left today: 1
-party: 1/3 companion slot(s) filled (CHA
+purse: 73g | short rests left today: 1
+party: 2/3 companion slot(s) filled (CHA
   6)
 
 (YOU)       Delg (L2, training 0): DEX 5
@@ -12,7 +12,7 @@ party: 1/3 companion slot(s) filled (CHA
               background: tribesman;
               voice: mumbling; dress:
               tattered
-            XP 0/200 to L3 | skill
+            XP 55/200 to L3 | skill
               points: 0 | abilities:
               rage
 
@@ -20,14 +20,29 @@ party: 1/3 companion slot(s) filled (CHA
   6  STR 3  MIND 5  STA 6/6  HP 9/9
   Power 6/6  CHA 4  (alchemy 1; moves:
   thrust; dagger; healingx4, staminax1)
-  [satisfaction 8/10]
+  [satisfaction 9/10]
             Nessa -- human f, age 32;
               interest: food; voice:
               melodious; looks: sickly
-            XP 0/200 to L3 | skill
+            XP 55/200 to L3 | skill
               points: 0
 
-karma: bad karma 100/200; heat 0 --
+(companion) Kathra (L3, training 1): DEX
+  3  STR 3  MIND 5  STA 9/9  HP 12/12
+  Power 7/7  CHA 5  (spells: ice 1;
+  wooden staff; healingx1, staminax1)
+  [satisfaction 8/10]
+            Kathra -- dwarf f, age 34;
+              background: trader; voice:
+              mumbling; looks: fat
+            XP 55/300 to L4 | skill
+              points: 1 | pools bought:
+              hp +1, power +1, sta +1 |
+              spells: ice 1
+
+active quest: [q49] L3 The Vault Job --
+  next: the vault below (L3), room 1/3
+karma: bad karma 182/300; heat 0 --
   lying low
 THE PACT: assignment [q49] The Vault Job
   at King'smere (grace runs to day 17).
