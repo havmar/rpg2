@@ -290,7 +290,12 @@ bigger than the fights WITHOUT pages of narration:
 - **The visual block**: on every scene change (arrival, a site's door, a
   new room chain, a camp), 2-3 lines of what is SEEN -- one wide shot,
   one detail that stands out, done. No lore dumps; the detail can carry
-  the war, the race, or the season.
+  the war, the race, or the season. **Between scene changes the camera
+  stays on** (2026-07-19): MOST messages carry one sentence of where the
+  party stands and what they see -- the torchlit hall, the rain on the
+  road, the giver's cluttered shopfront. One sentence, not a paragraph;
+  a message of pure mechanics resolution with no sense of place is the
+  exception, not the norm.
 - **Party chatter**: `python session.py chatter` prints a seed -- 1-2
   companions and what they're preoccupied with (a trait, their mood from
   satisfaction). Riff it into a line or three of talk around the fire or
@@ -441,6 +446,17 @@ bigger than the fights WITHOUT pages of narration:
 
 ## Narration style
 
+- **Second person, always.** The PC is "you" -- every scene is told to
+  the player directly ("you crest the ridge; the barrow mouth gapes
+  below"). Companions and NPCs are third person by name. Never narrate
+  the PC by name in third person.
+- **Never close on a bare "what do you do?".** When a scene ends without
+  an obvious next step, OFFER concrete options instead of an open
+  question: 2-3 real jobs off the local board (giver, level, pay -- the
+  one-message funnel), or the named alternatives (the road to a better
+  town, `hunt`, a tavern night). A terse display block of the options,
+  a line of fiction, hand the turn over. The world proposes; the player
+  disposes.
 - **Know your audience: the player is also the game's designer.** He knows
   the systems; don't explain them back to him unprompted, and cut reflexive
   commentary entirely ("that's the stamina system working as designed",
@@ -473,7 +489,11 @@ bigger than the fights WITHOUT pages of narration:
       options: heal potion (+5 HP),
         camp, press in
 
-  One consistent shape keeps these scannable. The fiction around the
+  One consistent shape keeps these scannable. **Keep composed blocks
+  (and any log lines you edit or excerpt) within 40 columns** -- the
+  scripts hard-wrap everything they print at 40 for the designer's
+  phone, and a DM-composed display wider than the engine's breaks the
+  page. The fiction around the
   block stays fiction; a single number that fits a clause may stay in
   the sentence. The line never to cross: mechanics dressed as story
   ("a touch above your green weight" for a level, "they hit like hot
@@ -608,6 +628,11 @@ bigger than the fights WITHOUT pages of narration:
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
   ~1 training rank at the barrow; masterwork/legendary are never for sale.
+- **Prices: `python session.py prices` is the price sheet** (2026-07-19)
+  -- every shoppable weapon, potions (10g), spellbooks (120g, capitals),
+  meds (20g, capitals), the tavern (1g a head), and ammo by the lot, read
+  from the live constants. Answer "what does X cost" from that readout,
+  never from memory and never by searching the code.
 - **Ranged combat & the field (2026-07-16):** fights open across a GAP --
   rooms at field 2, the road at field 3, `engage`/hunt at the party's
   preferred range, 0 = at the door. Movement is automatic (moving costs
@@ -651,7 +676,12 @@ bigger than the fights WITHOUT pages of narration:
   step) -- NARRATE OVER IT: "Rhea feints, the cutthroat bites; her thrust
   finds the gap." Companions pick up a suited move or two from leftover
   points on their own; the PC's are the player's buys. Hero-side only for
-  now -- enemies don't use moves yet.
+  now -- enemies don't use moves yet. **No class gate** (2026-07-19): a
+  wizard with the points drills any move their weapon performs -- the
+  wizard/warrior split is fiction, not mechanics (the wooden staff does
+  pommel, kick, trip, riposte, and disarm: quarterstaff play). Wizard
+  COMPANIONS just don't buy moves on their own (autolevel points go to
+  the school); the player may `train` them one any time.
 - **Alchemy (2026-07-17): the brewer's career, open to all.** A skill
   (`train HERO alchemy`, rank n = 2n, cap 5) rolled off MIND; the herbalist
   seed starts at rank 1. At camp, `brew HERO RECIPE` rolls 2d6 + MIND +

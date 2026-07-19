@@ -1081,10 +1081,18 @@ MOVES = {m.name: m for m in [
 ]}
 
 # Iaido is the katana's alone (a name gate on top of the blade tag); the
-# finisher's arc is the blade-or-heavy-blunt gate.
+# finisher's arc is the blade-or-heavy-blunt gate. The wooden staff joins
+# riposte and disarm past its blunt tag (2026-07-19, quarterstaff play: the
+# +1-parry weapon answers after a parry, and the bind-and-lever disarm is
+# the staff's classic trick) -- with its tag's pommel/kick/trip that gives
+# the caster's focus a real small repertoire without a killing arc.
 _MOVE_WEAPON_OK = {
     "iaido": lambda w: w is not None and w.name == "katana",
     "finisher": _finisher_ok,
+    "riposte": lambda w: (MOVES["riposte"].weapon_ok(w)
+                          or (w is not None and w.name == "wooden staff")),
+    "disarm": lambda w: (MOVES["disarm"].weapon_ok(w)
+                         or (w is not None and w.name == "wooden staff")),
 }
 
 # Priority when several eligible moves pass their proc in one exchange: the
