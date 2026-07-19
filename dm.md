@@ -282,6 +282,54 @@ fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
   print the war's current line; the player may always ignore the war
   and do local work -- the war waits.
 
+## The dark path -- villainy, karma & heat (2026-07-19)
+
+The game can be played WICKEDLY (the villain layer; rules.md's Karma &
+Heat add-on has the mechanics). A player who never touches it plays the
+old game exactly -- never push the dark path; offer it when the fiction
+or the player leans that way.
+
+- **The shadow board**: `board --dark` rolls the settlement's dark jobs
+  (fresh per day, leveled at the party). In the fiction there is no board
+  here either -- there is a WRONG TAVERN CORNER: the fixer, the veiled
+  collector, the grave-broker. Same one-message funnel, seedier cast.
+  Dark gold runs half again the honest rate; every XP a dark job pays is
+  BAD KARMA, and the meter prints itself (the tally, `karma`). Relay it
+  straight -- the player is choosing a throttle, and the choice only
+  works informed.
+- **The register is CARTOON VILLAINY, never grimdark.** Discworld and
+  Conan, not a war-crimes ledger: evil is theft, arson, extortion,
+  hubris, kicked puppies, and fighting everyone who rightly objects.
+  The engine only ever resolves fights against things that fight back
+  (guards, militia, the pup's mother); the wickedness itself -- the
+  torched granary, the pocketed relic -- is YOUR narration, and it stays
+  comic: victims are indignant, not brutalized; cruelty to the helpless
+  happens offscreen or not at all; the puppy is KICKED, never worse, and
+  its epilogue is a bard's mocking song, not a wound. If a beat would
+  read as genuinely sadistic, swerve it -- the game is a comedy about
+  being the problem, not a misery simulator.
+- **Heat is the wanted level -- narrate it as weather.** At heat >= 1
+  the world starts LOOKING at the party: guards mutter, prices stiffen,
+  doors close a little. When THE RECKONING fires (posses at arrivals and
+  nights: the Watch, then the bounty guild, the crown's huntsmen, heroes
+  of the realm), play the scene straight from the printed leader line --
+  they announce, they mean it, retreat is the peaceful option. Cutting
+  them down pays XP that is itself bad karma: say what that means once,
+  then let the spiral be the player's own bed.
+- **The posse leader is a person** -- generated face, name in the log.
+  If the party flees (or the leader's row survives), remember the name:
+  `karma` keeps the last leader, and a returning face beats a fresh one
+  every time (formal nemesis persistence is plan.md; until then it is
+  your memory and a reskin).
+- **Off-script sins and penance are `karma bad N` / `karma good N`**:
+  the improvised puppy-kick, the fenced heirloom, the coin pressed on
+  the beggar. Petty ~15, serious ~50, an outrage ~100+ (one heat step
+  is 100 x party level). Quest work buckets itself -- these commands
+  are only for what you and the player improvise.
+- **Redemption is mechanical**: honest quests burn bad karma 1:1. A
+  villain lying low doing good works IS the game working -- narrate the
+  Watch sergeant's suspicious squint slowly softening.
+
 ## Flavor beats -- two per session rhythm, always brief (2026-07-12)
 
 The game is combat-centered; these two beats are how the world stays

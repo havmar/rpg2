@@ -115,10 +115,11 @@ from rpg import (
     buy_ammo as _buy_ammo, grant_starter_ammo,
 )
 import story
+import karma
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
-from quests import (generate_world, forge_quest, board_lines,
+from quests import (generate_world, forge_quest, board_lines, site_gold_for,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade, seen_level, mind_precision,
                     lands, roll_wild_level, build_wild_encounter,
@@ -327,6 +328,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "streak_pos": pending.get("streak_pos"),
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
+        "align": pending.get("align", "neutral"),
     }
 
 
@@ -346,6 +348,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "streak_pos": d.get("streak_pos"),
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
+        "align": d.get("align", "neutral"),
     }
 
 
@@ -474,6 +477,8 @@ def save(state: dict) -> None:
         "site_clears": state.get("site_clears", {}),
         "recruits": state.get("recruits"),
         "visited": state.get("visited", []),
+        "karma": state.get("karma") or karma.new_karma(),
+        "dark_board": state.get("dark_board"),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -527,6 +532,8 @@ def load() -> dict:
         "visited": doc.get("visited")
         or ([location["place"]]
             if location and location.get("kind") != "wild" else []),
+        "karma": doc.get("karma") or karma.new_karma(),
+        "dark_board": doc.get("dark_board"),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -586,6 +593,9 @@ def tally_lines(state: dict) -> list[str]:
         lines.append(f"  ({kit or 'no kit'})")
     lines.append(f"Purse {purse.gold}g; {clock.short_rests_left} short "
                  f"rest(s) left today.")
+    k = state.get("karma")
+    if k and k.get("bad_total"):
+        lines.append(f"Karma: {karma.karma_line(k, party_level(state))}.")
     qid = state.get("active_quest")
     world = state.get("world")
     if qid and world:
@@ -696,6 +706,7 @@ def cmd_new(args: argparse.Namespace) -> None:
              "places": [], "sighting": None,
              "streak": {"site": None, "count": 0}, "site_clears": {},
              "recruits": None,
+             "karma": karma.new_karma(), "dark_board": None,
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
              "visited": [_starting_settlement(world)["key"]]}
@@ -1030,6 +1041,11 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"  Momentum: {streak['count']} encounter(s) cleared at "
               f"{streak['site']} since the last camp -- the next pays more "
               f"(a camp resets it).")
+    k = state.get("karma")
+    if k and (k.get("bad_total") or k.get("good_total")):
+        print(f"  Karma: {karma.karma_line(k, party_level(state))} "
+              f"(lifetime {k['bad_total']} wickedness / "
+              f"{k['good_total']} penance; see `karma`).")
     if state.get("sighting"):
         s = state["sighting"]
         print(f"  Sighted (day {s['day']}): {s['line']} -- `engage` to fight "
@@ -1259,7 +1275,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       room: int | None = None,
                       quest: str | None = None,
                       streak_pos: int | None = None,
-                      field: int = 0) -> None:
+                      field: int = 0, align: str = "neutral") -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE once, at the fight's first wounds crossing (see play_orders) --
     then award and
@@ -1288,6 +1304,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "streak_pos": streak_pos,
             "dead_before": dead_before,
             "field": field,
+            "align": align,
         }
         print_combat(log)
         print()
@@ -1296,7 +1313,22 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
                      quest=quest, streak_pos=streak_pos,
-                     dead_before=dead_before)
+                     dead_before=dead_before, align=align)
+
+
+def party_level(state: dict) -> int:
+    """The party's best living level -- the karma layer's yardstick (heat
+    steps scale with it, posses arrive relative to it)."""
+    return max((h.level for h in state["party"] if not h.dead), default=1)
+
+
+def record_karma(state: dict, xp: int, align: str, log: list) -> None:
+    """The session shim over karma.record_karma: a QUOTED award in,
+    bucketed by the work's alignment (dark accrues, good burns, neutral
+    passes through), the meter line appended to the log."""
+    if align in ("dark", "good"):
+        karma.record_karma(state["karma"], xp, align, log,
+                           party_level(state))
 
 
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
@@ -1319,9 +1351,11 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
     # A multi-site quest names its position (site 1/2) in the banner so a
     # SITE CLEARED never reads as the whole job done (2026-07-19).
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
-    award_quest(party, purse, site_gold(site["level"]),
-                site_clear_xp(site["level"], n_rooms), log,
+    clear_xp = site_clear_xp(site["level"], n_rooms)
+    award_quest(party, purse, site_gold_for(quest, site),
+                clear_xp, log,
                 f"{quest['name']} -- {site['name']}{pos}", banner=banner)
+    record_karma(state, clear_xp, quest.get("align", "good"), log)
     cur["site"] += 1
     cur["room"] = 0
     if last_site:
@@ -1377,6 +1411,7 @@ def deliver_if_arrived(state: dict, log: list[str]) -> bool:
         return False
     award_quest(state["party"], state["purse"], q["gold"], q["xp"], log,
                 q["name"], banner="DELIVERY COMPLETE")
+    record_karma(state, q["xp"], q.get("align", "good"), log)
     q["status"] = "done"
     q["done_day"] = state["clock"].day
     r = q.get("recipient")
@@ -1429,6 +1464,107 @@ def occupation_line(state: dict, settlement: dict) -> str:
             f"still pass through, and the war can still turn.")
 
 
+# --------------------------------------------------------------------------- #
+# Karma & heat (the villain layer, 2026-07-19 -- karma.py, rules.md add-on)
+# --------------------------------------------------------------------------- #
+
+def maybe_punish(state: dict) -> bool:
+    """Heat's collection call: at heat >= 1, once the cooldown has passed,
+    a chance-rolled POSSE finds the party -- checked at travel arrivals,
+    settlement nights (tavern/downtime), and camp nights: the law is
+    people, and people travel. The posse fights at party level + heat off
+    the plain ladder wearing the band's lawful names (the Watch -> bounty
+    guild -> crown's huntsmen -> heroes of the realm), led by a generated
+    face (the nemesis seed). It pays wild XP like any road fight and ALL
+    of it is bad karma -- cutting down the law is itself a crime; that
+    ratchet is the design. Returns True when a fight ran (the encounter
+    machinery has printed and saved)."""
+    k = state.get("karma")
+    living = [h for h in state["party"] if not h.dead]
+    if not k or not living or state.get("pending"):
+        return False
+    lvl = party_level(state)
+    h = karma.heat(k, lvl)
+    if h < 1:
+        return False
+    day = state["clock"].day
+    if day < k.get("last_punish_day", -99) + karma.PUNISH_COOLDOWN_DAYS:
+        return False
+    rng = state["rng"]
+    if rng.random() >= karma.PUNISH_CHANCE:
+        return False
+    k["last_punish_day"] = day
+    posse_level = min(karma.LEVEL_CAP, lvl + h)
+    land = state["location"]["land"]
+    used = {n["name"] for n in state["world"].get("npcs", [])}
+    kinds, skins, leader, label = karma.build_posse(posse_level, land, rng,
+                                                    used_names=used)
+    k["last_leader"] = f"{leader['name']}, {leader['role']}"
+    here = local_settlement(state)
+    where = (f"at {here['name']}'s gates" if here is not None
+             else "at the party's fire")
+    print(f"*** THE RECKONING -- day {day}: word of the party's deeds "
+          f"has caught up ({karma.karma_line(k, lvl)}). ***")
+    print(f"  {label} find the party {where}, led by {npc_line(leader)}")
+    print(f"  (no parley in v1 -- they mean to collect; retreat is the "
+          f"peaceful option)")
+    log = CombatLog()
+    for hero in living:
+        start_fight(hero, log)
+    log.append(f"=== The reckoning: {label} "
+               f"(a level-{posse_level} posse) ===")
+    foes = []
+    for kind in kinds:
+        state["foe_count"] += 1
+        foes.append(make_foe(kind, state["foe_count"], rng,
+                             display=skins.get(kind)))
+    # Biggest last (build_room's order): the leader's face goes on the
+    # strongest slot, the conquest-boss doctrine -- a display name over a
+    # budget-honest row.
+    foes[-1].name = leader["name"]
+    for line in roster_lines(foes):
+        log.append("  " + line)
+    field = 0 if here is not None else WILD_FIELD
+    resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
+                      field=field, align="dark")
+    return True
+
+
+def roll_dark_board(state: dict) -> dict | None:
+    """The SHADOW board (`board --dark`): rolled lazily, once per
+    settlement per day -- the recruits-on-request pattern, so worldgen
+    (and every bench) never sees a dark quest. Yesterday's untaken offers
+    melt back into the shadows: pruned from world['quests'] unless taken
+    (the active quest, or any quest already progressed/done, survives)."""
+    here = local_settlement(state)
+    if here is None:
+        return None
+    rec = state.get("dark_board")
+    day = state["clock"].day
+    if rec and rec["place"] == here["key"] and rec["day"] == day:
+        return rec
+    world = state["world"]
+    if rec:
+        for qid in rec["qids"]:
+            q = world["quests"].get(qid)
+            untouched = (q is not None and q["status"] == "open"
+                         and q["next"] == {"site": 0, "room": 0}
+                         and state.get("active_quest") != qid)
+            if untouched:
+                del world["quests"][qid]
+    used = {n["name"] for n in world.get("npcs", [])}
+    used |= {q["giver"]["name"] for q in world["quests"].values()
+             if q.get("giver")}
+    qids = []
+    for _ in range(karma.DARK_JOBS_PER_DAY):
+        q = karma.roll_dark_quest(world, here, party_level(state),
+                                  state["rng"], used_names=used)
+        qids.append(q["id"])
+    rec = {"place": here["key"], "day": day, "qids": qids}
+    state["dark_board"] = rec
+    return rec
+
+
 def pay_set_site_clear(state: dict, log: list[str], site_key: str,
                        room: int) -> None:
     """A SET site (hideout/barrow) has no quest cursor, so track its cleared
@@ -1456,7 +1592,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      room: int | None = None,
                      quest: str | None = None,
                      streak_pos: int | None = None,
-                     dead_before: list[str] | None = None) -> None:
+                     dead_before: list[str] | None = None,
+                     align: str = "neutral") -> None:
     """The melee actually ended: wipe check, awards, companion autolevel,
     loot, the companion morale pass, persist -- and the PC's level-up
     prints the spending menu on the spot (2026-07-13)."""
@@ -1481,6 +1618,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         if streak_pos is not None and streak_pos > 1:
             reason = f"encounter, streak {streak_pos}"
         award_xp(party, encounter_xp, log, reason)
+        record_karma(state, encounter_xp, align, log)
         if site is not None and streak_pos is not None:
             # Momentum recorded: the next same-site encounter without a camp
             # between pays the next multiplier up.
@@ -1632,6 +1770,38 @@ def cmd_board(args: argparse.Namespace) -> None:
     if not world:
         print("No world in this save -- start one with `new`.")
         return
+    if getattr(args, "dark", False):
+        # The SHADOW board (karma & heat): the wrong tavern corner, the
+        # back room, the fence's cellar. Rolled on request, once per
+        # settlement day; its jobs are leveled AT the party (the fixer
+        # offers what the taker can handle -- the OSR straight-board
+        # stance is the honest world's).
+        here = local_settlement(state)
+        if here is None:
+            print(f"The shadows do business behind walls -- the party is "
+                  f"at {location_line(state)}. Find a settlement first.")
+            return
+        if occupied_here(state):
+            print(occupation_line(state, here))
+            return
+        rec = roll_dark_board(state)
+        save(state)
+        mind = party_mind(state)
+        print(f"Day {state['clock'].day}. Asking around the wrong corners "
+              f"of {here['name']} (dark work: the gold runs half again "
+              f"the honest rate, but every XP is BAD KARMA -- heat "
+              f"follows, and the law collects):")
+        for qid in rec["qids"]:
+            q = world["quests"].get(qid)
+            if q is None:
+                continue
+            g = q.get("giver")
+            who = f"    ({g['name']}, {g['role']})" if g else ""
+            print("  " + quest_line(q, mind) + who)
+        print(f"({karma.karma_line(state['karma'], party_level(state))}; "
+              f"these offers last today only -- take one like any "
+              f"quest: `take QID`)")
+        return
     if state["party"] and maybe_post_wave(state):
         save(state)     # persist the posting BEFORE the readout: a broken
                         # pipe mid-print must not lose the wave
@@ -1749,6 +1919,10 @@ def cmd_take(args: argparse.Namespace) -> None:
     else:
         print("Fight the next room with `room`. Switching quests later keeps "
               "this one's progress.")
+    if quest.get("align") == "dark":
+        print("(dark work: every XP it pays is BAD KARMA -- heat rises, "
+              "and the law comes collecting. Honest jobs burn bad karma "
+              "1:1; `karma` shows the meter.)")
 
 
 def cmd_room(args: argparse.Namespace) -> None:
@@ -1818,7 +1992,8 @@ def cmd_room(args: argparse.Namespace) -> None:
     resolve_encounter(state, log, foes,
                       site_encounter_xp(site["level"], len(site["rooms"]), k),
                       site=site_key, room=room_i + 1, quest=qid,
-                      streak_pos=k, field=ROOM_FIELD)
+                      streak_pos=k, field=ROOM_FIELD,
+                      align=quest.get("align", "good"))
 
 
 def cmd_forge(args: argparse.Namespace) -> None:
@@ -1846,10 +2021,14 @@ def cmd_forge(args: argparse.Namespace) -> None:
             print(f"No settlement matches {args.settlement!r}.")
             return
         settlement = match[0]
-    qid = f"q{len(world['quests']) + 1:02d}"
+    n = len(world["quests"]) + 1
+    while f"q{n:02d}" in world["quests"]:    # shadow-board pruning can
+        n += 1                               # leave id holes
+    qid = f"q{n:02d}"
     quest = forge_quest(qid, args.level, args.sites, args.rooms, kinds,
                         args.name, state["rng"],
-                        settlement_key=settlement["key"])
+                        settlement_key=settlement["key"],
+                        align="dark" if args.dark else "good")
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
     save(state)
@@ -2022,6 +2201,8 @@ def cmd_travel(args: argparse.Namespace) -> None:
                         # (deliver_if_arrived in finish_encounter/retreat)
     elif wild_event(state, chance, f"On the road to {target['name']}"):
         return
+    if maybe_punish(state):     # the law meets the party at the walls
+        return                  # (karma & heat; the machinery saved)
     log = []
     if deliver_if_arrived(state, log):
         print("\n".join(log))
@@ -2257,7 +2438,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
                      streak_pos=pending.get("streak_pos"),
-                     dead_before=pending.get("dead_before"))
+                     dead_before=pending.get("dead_before"),
+                     align=pending.get("align", "neutral"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -2349,7 +2531,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
                      streak_pos=pending.get("streak_pos"),
-                     dead_before=pending.get("dead_before"))
+                     dead_before=pending.get("dead_before"),
+                     align=pending.get("align", "neutral"))
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -2408,6 +2591,8 @@ def cmd_camp(args: argparse.Namespace) -> None:
             if wild_event(state, chance,
                           f"In the night at {state['location']['name']}"):
                 return
+        if maybe_punish(state):     # posses track a camp too (karma)
+            return
         if args.heal and all(h.dead or h.hp >= h.max_hp for h in party):
             break
     if args.heal:
@@ -2451,6 +2636,8 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     # player wants to hire, `recruit` gathers the day's faces.
     maybe_post_wave(state, log)     # tavern talk is where war news lands
     print("\n".join(log))
+    if maybe_punish(state):     # the Watch knows where the party sleeps
+        return
     save(state)
 
 
@@ -2494,6 +2681,8 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     process_departures(state, log)
     maybe_post_wave(state, log)
     print("\n".join(log))
+    if maybe_punish(state):     # an idle day is easy to find the party on
+        return
     save(state)
 
 
@@ -2548,6 +2737,10 @@ def cmd_award(args: argparse.Namespace) -> None:
     pc_level_before = pc.level
     log: list[str] = []
     award_quest(party, purse, args.gold, args.xp, log, args.name)
+    if args.dark:
+        record_karma(state, args.xp, "dark", log)
+    elif args.good:
+        record_karma(state, args.xp, "good", log)
     for h in party[1:]:
         if not h.dead:
             autospend_points(h, log)
@@ -2558,6 +2751,41 @@ def cmd_award(args: argparse.Namespace) -> None:
         print(f"*** {pc.name} reached level {pc.level} -- the spending "
               f"menu (show it to the player, dm.md): ***")
         print_levelup_menu([pc])
+
+
+def cmd_karma(args: argparse.Namespace) -> None:
+    """The karma & heat meter, and the DM's off-script sin/penance entry
+    (quest work buckets itself -- this is for improvised wickedness or
+    roleplayed virtue: the kicked puppy, the fenced heirloom, the coin
+    pressed into the beggar's hand)."""
+    state = load()
+    k = state["karma"]
+    lvl = party_level(state)
+    if args.kind:
+        if args.amount <= 0:
+            print("Usage: karma bad N [reason...] / karma good N "
+                  "[reason...] -- N must be positive.")
+            return
+        log: list[str] = []
+        align = "dark" if args.kind == "bad" else "good"
+        karma.record_karma(k, args.amount, align, log, lvl)
+        why = " ".join(args.why)
+        word = "Sin" if align == "dark" else "Penance"
+        print(f"{word} recorded" + (f": {why}" if why else "") + ".")
+        for line in log:
+            print(line)
+        save(state)
+    print(f"Karma: {karma.karma_line(k, lvl)}")
+    print(f"  lifetime: {k['bad_total']} wickedness, {k['good_total']} "
+          f"penance.")
+    if k.get("last_leader"):
+        print(f"  Last posse led by {k['last_leader']} (day "
+              f"{k['last_punish_day']}).")
+    h = karma.heat(k, lvl)
+    if h >= 1:
+        print(f"  Posses arrive at party level +{h} -- at arrivals and "
+              f"nights, at most one per {karma.PUNISH_COOLDOWN_DAYS} "
+              f"days. Honest quests burn bad karma 1:1.")
 
 
 def cmd_buy(args: argparse.Namespace) -> None:
@@ -3155,8 +3383,14 @@ def main() -> None:
              "level (straight), shape, pay, and the giver; plus notables "
              "in town, WORD FROM AROUND THE LAND (other open jobs in this "
              "land), and the war's status. Only local jobs can be taken "
-             "here. `board all` / `board NAME` is the wider DM overview.")
+             "here. `board all` / `board NAME` is the wider DM overview. "
+             "`board --dark` asks the WRONG corners instead: the shadow "
+             "board (karma & heat) -- 2-3 dark jobs leveled at the "
+             "party, rolled fresh per settlement day; a gold premium, "
+             "but every XP is BAD KARMA.")
     p.add_argument("settlement", nargs="?", default=None)
+    p.add_argument("--dark", action="store_true",
+                   help="the shadow board: today's dark jobs here")
     p.set_defaults(func=cmd_board)
 
     p = sub.add_parser(
@@ -3258,16 +3492,40 @@ def main() -> None:
     p.add_argument("--name", required=True)
     p.add_argument("--settlement", default=None,
                    help="where to post it (default: the capital)")
+    p.add_argument("--dark", action="store_true",
+                   help="forge a SHADOW job (karma & heat): bad-karma "
+                        "XP, the dark gold premium")
     p.set_defaults(func=cmd_forge)
 
     p = sub.add_parser(
         "award",
         help="off-script bonus: award gold + an XP lump by hand (board "
-             "quests pay themselves -- this is for improvised scenes)")
+             "quests pay themselves -- this is for improvised scenes). "
+             "--dark buckets the XP as BAD KARMA, --good as penance "
+             "(karma & heat); plain awards touch neither.")
     p.add_argument("gold", type=int)
     p.add_argument("xp", type=int)
     p.add_argument("name")
+    p.add_argument("--dark", action="store_true",
+                   help="the scene was wicked: its XP is bad karma")
+    p.add_argument("--good", action="store_true",
+                   help="the scene was virtuous: its XP burns bad karma")
     p.set_defaults(func=cmd_award)
+
+    p = sub.add_parser(
+        "karma",
+        help="the karma & heat meter (the villain layer): current bad "
+             "karma, heat, lifetime ledgers, the last posse's leader. "
+             "`karma bad N [reason]` / `karma good N [reason]` record an "
+             "off-script sin or penance by hand -- quest work buckets "
+             "itself; this is for improvised wickedness (the kicked "
+             "puppy) or roleplayed virtue. Guideline sizes: petty ~15, "
+             "serious ~50, an outrage ~100+ (one heat step is 100 x "
+             "party level).")
+    p.add_argument("kind", nargs="?", choices=("bad", "good"), default=None)
+    p.add_argument("amount", nargs="?", type=int, default=0)
+    p.add_argument("why", nargs="*", default=[])
+    p.set_defaults(func=cmd_karma)
 
     p = sub.add_parser(
         "buy",
