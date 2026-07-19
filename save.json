@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 5,
-   "cur_power": 7,
+   "cur_sta": 2,
+   "cur_power": 3,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -69,7 +69,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 1,
-   "xp": 0,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -127,7 +127,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 12,
-   "cur_sta": 7,
+   "cur_sta": 5,
    "cur_power": 5,
    "dex_debuff": 0,
    "unseen": false,
@@ -160,7 +160,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 1,
-   "xp": 0,
+   "xp": 15,
    "skill_points": 0,
    "training": 0,
    "weapon": "longsword",
@@ -188,9 +188,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 10
+  "gold": 14
  },
- "foe_count": 0,
+ "foe_count": 2,
  "active_quest": null,
  "world": {
   "seed": 608519924,
@@ -3309,8 +3309,8 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 0,
-  "bad_total": 0,
+  "bad": 40,
+  "bad_total": 40,
   "good_total": 0,
   "last_punish_day": -99,
   "last_leader": null
@@ -3954,7 +3954,7 @@
    1966343208,
    2985665027,
    3497298375,
-   188
+   272
   ],
   null
  ]
