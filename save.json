@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 3,
-   "cur_power": 5,
+   "cur_sta": 5,
+   "cur_power": 2,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -65,11 +65,11 @@
    "fate_debt": false,
    "items": {
     "healing": 1,
-    "stamina": 1
+    "stamina": 0
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 32,
+   "xp": 165,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -129,7 +129,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 12,
-   "cur_sta": 7,
+   "cur_sta": 6,
    "cur_power": 5,
    "dex_debuff": 0,
    "unseen": false,
@@ -162,7 +162,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 32,
+   "xp": 165,
    "skill_points": 0,
    "training": 1,
    "weapon": "longsword",
@@ -179,7 +179,7 @@
     "speech": "poetic",
     "dress": "luxurious"
    },
-   "satisfaction": 7,
+   "satisfaction": 8,
    "bond": "Cogg",
    "bond_kind": "old companion",
    "last_dose_day": 0
@@ -187,12 +187,12 @@
  ],
  "clock": {
   "day": 6,
-  "short_rests_used": 0
+  "short_rests_used": 1
  },
  "purse": {
-  "gold": 38
+  "gold": 92
  },
- "foe_count": 6,
+ "foe_count": 9,
  "active_quest": "q41",
  "world": {
   "seed": 608519924,
@@ -3202,10 +3202,10 @@
      }
     ],
     "next": {
-     "site": 1,
-     "room": 1
+     "site": 2,
+     "room": 0
     },
-    "status": "open",
+    "status": "done",
     "align": "dark",
     "epilogue": "The village pays to the copper, then names its new well after the party. The bucket, specifically.",
     "giver": {
@@ -3219,7 +3219,8 @@
       "dress": "elegant",
       "speech": "swears a lot"
      }
-    }
+    },
+    "done_day": 6
    },
    "q42": {
     "id": "q42",
@@ -3522,7 +3523,7 @@
  "sighting": null,
  "streak": {
   "site": "q41/s2",
-  "count": 1
+  "count": 2
  },
  "site_clears": {},
  "recruits": null,
@@ -3530,8 +3531,8 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 157,
-  "bad_total": 157,
+  "bad": 290,
+  "bad_total": 290,
   "good_total": 0,
   "last_punish_day": -99,
   "last_leader": null
@@ -4183,7 +4184,7 @@
    1939750200,
    2469640030,
    2357403017,
-   2
+   103
   ],
   null
  ]
