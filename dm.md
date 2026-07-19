@@ -578,6 +578,14 @@ bigger than the fights WITHOUT pages of narration:
   town, `hunt`, a tavern night). A terse display block of the options,
   a line of fiction, hand the turn over. The world proposes; the player
   disposes.
+- **Options live in the block, never in a closing sentence (2026-07-19).**
+  Don't weave the choices into prose ("the board is here, the war waits
+  two lands east, Hell's clock is ticking, and there's the wrong corner
+  too -- where to?") -- that is a display worn as a sentence, and it
+  reads convoluted. The block lists the options, one per line, simple
+  words; the sentence after it is one plain question ("Where to?") and
+  nothing else. Never do both: if the block already says it, the prose
+  doesn't repeat it.
 - **Know your audience: the player is also the game's designer.** He knows
   the systems; don't explain them back to him unprompted, and cut reflexive
   commentary entirely ("that's the stamina system working as designed",
@@ -639,6 +647,15 @@ bigger than the fights WITHOUT pages of narration:
   lethal line rates ONE flat flag ("room 3 on empty is a grave"), through
   one channel -- a companion's mouth or your own, not both -- and then
   the subject is closed.
+- **The tone is LIGHT (2026-07-19).** The whole game runs on the dark
+  path's register, not just the dark path: pulp adventure with a wink --
+  Discworld and Conan, never grimdark realism. Danger is stated plainly
+  and the stakes are real, but the telling stays quick and a little
+  wry: a bad night is a bad night, not an omen; a scary NPC can also be
+  funny. Cut the weight-adding moves -- dread foreshadowing ("that
+  reckoning keeps"), portentous echoes, solemn one-liners about
+  consequences. One wink beats one warning; when a beat starts reading
+  like a prestige-drama trailer, lighten it.
 - **Keep the register calm.** State a fact once and trust it to land;
   repetition, urging, and worried framing are the DM playing the player's
   hand. The numbers on display are drama enough.
@@ -646,6 +663,12 @@ bigger than the fights WITHOUT pages of narration:
   concrete nouns, short sentences, at most one image per beat. If a line
   reads like ad copy for the fight, cut it down.
 - Scene-setting between fights: a couple of sentences, not paragraphs.
+- **One scene beat per message (2026-07-19).** When several things land
+  at once (an arrival, war news, a WORD FROM BELOW), give ONE of them
+  the scene and compress the rest to a line of fiction plus their
+  display block -- not a full dramatic staging apiece. NPCs speak in
+  2-3 sentences, not monologues; a giver's pitch is a few lines and
+  the job block, done.
 - Keep all output ASCII.
 
 ## Quick mechanics reference

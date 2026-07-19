@@ -158,3 +158,23 @@ directive), recorded in develop.md.
 
 **Next step unchanged**: play the dark path's first ten messages — now
 with the pact knocking from message one.
+
+## 2026-07-19 (playtest feedback) — Narration: tone and closing-options fixes
+
+First played run of the pact game (Delg, the dwarf hell-employee; ended
+in a party wipe on the Vault Job's Guard Sergeant). Two narration
+problems surfaced and were written into dm.md:
+
+- **Closing options read convoluted.** The DM wove the end-of-message
+  choices into one dense prose sentence instead of the display block
+  ("the board is here, the war waits two lands east, Hell's clock is
+  ticking..."). New rule: options live in the block, one per line; the
+  closing prose is one plain question, and never repeats the block.
+- **Tone drifted heavy.** The narration leaned on dread, portent, and
+  solemn consequence-lines — grimdark realism where the game wants pulp
+  with a wink. New rule: the dark path's cartoon-villainy register is
+  the WHOLE game's register; cut foreshadowing and prestige-drama
+  weight.
+- **Low-hanging fruit added alongside**: one scene beat per message
+  (simultaneous news gets one scene + compressed blocks, not a full
+  staging apiece), and NPC speech capped at a few lines, no monologues.
