@@ -5,9 +5,9 @@ party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU)       Delg (L2, training 0): DEX 5
-  STR 5  MIND 3  STA 5/5  HP 10/10
-  Power 6/6  CHA 6  (rage; alchemy 1;
-  moves: kick; halberd; staminax1)
+  STR 5  MIND 3  STA 5/5  HP 4/10  Power
+  6/6  CHA 6  (rage; alchemy 1; moves:
+  kick; halberd; staminax1)
             Delg -- dwarf m, age 40;
               background: tribesman;
               voice: mumbling; dress:
@@ -27,10 +27,12 @@ party: 1/3 companion slot(s) filled (CHA
             XP 0/200 to L3 | skill
               points: 0
 
-active quest [q44] Sack the Village is
-  COMPLETE
+active quest: [q45] L4 The Last Sermon
+  -- next: the vestry (L3), room 1/1
 karma: bad karma 100/200; heat 0 --
   lying low
 THE PACT: no current assignment --
   hell's next job comes any settlement
   day now.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***
