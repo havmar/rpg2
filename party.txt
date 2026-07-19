@@ -1,12 +1,12 @@
-RPG2 PARTY SHEET -- day 6, at Fairfield
+RPG2 PARTY SHEET -- day 7, at Fairfield
   (human lands, settlement)
-purse: 92g | short rests left today: 0
+purse: 32g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L2, training 0): DEX 5
   STR 4  MIND 6  STA 5/5  HP 10/10
-  Power 2/8  CHA 4  (spells: fire 2;
+  Power 8/8  CHA 4  (spells: fire 2;
   wooden staff; healingx1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
@@ -17,9 +17,9 @@ party: 1/1 companion slot(s) filled (CHA
               power +1 | spells: fire 2
 
 (companion) Kristryd (L2, training 1):
-  DEX 4  STR 6  MIND 3  STA 6/7  HP
+  DEX 4  STR 6  MIND 3  STA 7/7  HP
   12/12  Power 5/5  CHA 3  (bulwark;
-  moves: thrust; longsword; staminax1)
+  moves: thrust; zweihander; staminax1)
   [satisfaction 8/10]
             Kristryd -- dwarf f, age 36;
               quirk: has a child (with
@@ -32,8 +32,6 @@ party: 1/1 companion slot(s) filled (CHA
 
 active quest [q41] The Debt Collection
   is COMPLETE
-momentum: 2 encounter(s) at q41/s2 since
-  the last camp
 karma: bad karma 290; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
