@@ -1,13 +1,13 @@
-RPG2 PARTY SHEET -- day 1, at Fairfield
+RPG2 PARTY SHEET -- day 2, at Fairfield
   (human lands, settlement)
 purse: 14g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L1, training 0): DEX 5
-  STR 4  MIND 6  STA 2/5  HP 10/10
-  Power 3/7  CHA 4  (spells: fire 1;
-  wooden staff; staminax2)
+  STR 4  MIND 6  STA 5/5  HP 10/10
+  Power 7/7  CHA 4  (spells: fire 1;
+  wooden staff; healingx1, staminax2)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
@@ -16,7 +16,7 @@ party: 1/1 companion slot(s) filled (CHA
               points: 0 | spells: fire 1
 
 (companion) Kristryd (L1, training 0):
-  DEX 4  STR 6  MIND 3  STA 5/7  HP
+  DEX 4  STR 6  MIND 3  STA 7/7  HP
   12/12  Power 5/5  CHA 3  (bulwark;
   longsword; staminax2)  [satisfaction
   7/10]
