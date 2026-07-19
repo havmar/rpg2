@@ -29,3 +29,5 @@ party: 1/2 companion slot(s) filled (CHA
               points: 0 | spells:
               healing 1
 
+active quest: [q08] L1 Rival Warband --
+  next: the raided trail (L1), room 1/2
