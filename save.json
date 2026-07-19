@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 10,
-   "cur_sta": 5,
-   "cur_power": 8,
+   "cur_sta": 2,
+   "cur_power": 4,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -69,7 +69,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 2,
-   "xp": 165,
+   "xp": 182,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -128,8 +128,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 12,
-   "cur_sta": 7,
+   "hp": 10,
+   "cur_sta": 6,
    "cur_power": 5,
    "dex_debuff": 0,
    "unseen": false,
@@ -162,7 +162,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 2,
-   "xp": 165,
+   "xp": 182,
    "skill_points": 0,
    "training": 1,
    "weapon": "zweihander",
@@ -190,10 +190,10 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 32
+  "gold": 37
  },
- "foe_count": 9,
- "active_quest": "q41",
+ "foe_count": 11,
+ "active_quest": "q44",
  "world": {
   "seed": 608519924,
   "settlements": [
@@ -3274,13 +3274,14 @@
        "stat": "cha",
        "dc": 10,
        "text": "the long con -- twelve courses of charm, ending alone with the host and the strongbox",
-       "fail": "the sommelier remembers your face from a poster"
+       "fail": "the sommelier remembers your face from a poster",
+       "done": true
       }
      }
     ],
     "next": {
      "site": 0,
-     "room": 0
+     "room": 1
     },
     "status": "open",
     "align": "dark",
@@ -3542,8 +3543,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "q44/s1",
+  "count": 1
  },
  "site_clears": {},
  "recruits": null,
@@ -3551,8 +3552,8 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 290,
-  "bad_total": 290,
+  "bad": 322,
+  "bad_total": 322,
   "good_total": 0,
   "last_punish_day": -99,
   "last_leader": null
@@ -4204,7 +4205,7 @@
    1939750200,
    2469640030,
    2357403017,
-   209
+   274
   ],
   null
  ]
