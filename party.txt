@@ -1,0 +1,53 @@
+RPG2 PARTY SHEET -- day 13, at
+  King'smere (human lands, settlement)
+purse: 73g | short rests left today: 0
+party: 0/3 companion slot(s) filled (CHA
+  6)
+
+(YOU)       Delg (L2, training 0): DEX 5
+  STR 5  MIND 3  STA 0/5  HP 0/10  Power
+  6/6  CHA 6  (rage; alchemy 1; moves:
+  kick; halberd; healingx1) [DEAD]
+            Delg -- dwarf m, age 40;
+              background: tribesman;
+              voice: mumbling; dress:
+              tattered
+            XP 82/200 to L3 | skill
+              points: 0 | abilities:
+              rage
+
+(companion) Nessa (L2, training 1): DEX
+  6  STR 3  MIND 5  STA 0/6  HP 0/9
+  Power 6/6  CHA 4  (alchemy 1; moves:
+  thrust; dagger; no kit)  [satisfaction
+  9/10] [DEAD]
+            Nessa -- human f, age 32;
+              interest: food; voice:
+              melodious; looks: sickly
+            XP 82/200 to L3 | skill
+              points: 0
+
+(companion) Kathra (L3, training 1): DEX
+  3  STR 3  MIND 5  STA 0/9  HP 0/12
+  Power 0/7  CHA 5  (spells: ice 1;
+  wooden staff; healingx1)
+  [satisfaction 8/10] [DEAD]
+            Kathra -- dwarf f, age 34;
+              background: trader; voice:
+              mumbling; looks: fat
+            XP 82/300 to L4 | skill
+              points: 1 | pools bought:
+              hp +1, power +1, sta +1 |
+              spells: ice 1
+
+active quest: [q49] L3 The Vault Job --
+  next: the vault below (L3), room 3/3
+momentum: 2 encounter(s) at q49/s2 since
+  the last camp
+karma: bad karma 222; HEAT 2 --
+  retribution hunts 2 level(s) above the
+  party
+THE PACT: assignment [q49] The Vault Job
+  at King'smere (grace runs to day 17).
+THE WAR: [w1] L2 Strange Salvage --
+  raised at Whisperspire.
