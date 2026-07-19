@@ -848,8 +848,14 @@ add-on) — the alchemy skill + the long-rest brew, the kit shrink (per
 party + a forage roll, which CLOSED the standing hideout flag to the
 55-65 band), the overcharge doctrine, the strength/dexterity stat brews,
 the firebomb and the smoke vial, plus the `bench_abilities` alchemist
-column. Next: **stat transcendence + the wraith** (the rest of the old
-magic phase), armor (note the designer's lean: probably never important),
-named weapon instances — and the career sim's finding that the 14-20 band
-lacks its player power until masterwork/magic-item content lands. See
-plan.md for the full roadmap and the parked-ideas list.
+column. **The villain layer's first slices are in (2026-07-19)** — karma & heat,
+the shadow board, the punishment posses, the hell pact and its capers.
+Next per plan.md's villain roadmap (reordered 2026-07-19): play the dark
+path first (the no-code tone probe), then **nemesis persistence** (the
+cheap, high-leverage slice — a surviving posse leader who returns with a
+face and a grudge), then conquest ticking. The old magic-phase remainder
+(stat transcendence + the wraith, armor — designer lean: probably never
+important — named weapon instances) still stands behind that, along with
+the career sim's finding that the 14-20 band lacks its player power until
+masterwork/magic-item content lands. See plan.md for the full roadmap and
+the parked-ideas list.
