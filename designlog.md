@@ -93,3 +93,68 @@ constants (hand-set, sim-unverified — the table tunes them).
 
 **Next step agreed**: play the dark path's first ten messages — the
 tone probe. The first 3 levels are the only part that ever gets tested.
+
+## 2026-07-19 (later) — The hell pact (dark quests, the big content pass)
+
+**The designer's input.** A long brainstorm reframing the dark path's
+fiction and asking for a major dark-quests implementation: the PC is
+NOT a neutral adventurer but a low-ranking employee of Hell — a mortal
+of a game race (explicitly not an imp) under a pact with an evil god;
+hell's aim is weakening the orderly universe's fabric (gates,
+summonings); order is maintained by the gods of Light and their
+agents (paladins, hunters, priests, hired heroes, watchmen, mobs) and
+is often not Good. Hell assigns tasks (a curriculum in vice, difficulty
+suited to the player with the margin of error running upward) via
+unseen job boards / mail / couriers; refusing — Chickening Out — draws
+infernal enforcers; hell can be bribed; tasks can be ignored up to a
+point while questing normally. Plus ~30 task ideas, a mandate to
+formalize a more complex quest structure, the rule that heroic
+adventurers never kill the PC (he loses party, gold, and all bad
+karma; heroes think him dead or he runs in shame, hell laughing), a
+minor DM rule (taking a quest opens the fight in the same message, no
+wasted arrival turn), and a directive: **abandon XP/gold balance for
+now — quest variety does more good.**
+
+**The triage** (asked for explicitly: cut / later / dm.md lore):
+
+- *Shipped as mechanics*: the pact frame (default-on at `new`,
+  `--no-pact` opts out — settles plan.md's imp-frame question as
+  MORTAL EMPLOYEE), assignments (`TASK_INTERVAL_DAYS` 4, spread 0..+2,
+  WORD FROM BELOW), Chickening Out (grace 4 d, hell posses at party
+  +1 escalating per beating, neutral XP), `bribe` (30g × level, 10 d),
+  the caper structure (deed = PC 2d6+stat vs DC 10-11, clean-or-botch
+  with +15 witness karma; twist = priced terms, `settle` at ×0.5), the
+  left-for-dead mercy (law: party/purse/karma forfeit; hell: purse
+  fine + task withdrawn — never GAME OVER vs posses), and 17 new dark
+  templates (steal/fence, beast-caging, dine-and-dash, priest
+  sacrifice, puppy sacrifice, village sack, bank vault, poisoned
+  round, mansion murder, evil weapon, sacred-weapon corruption, altar
+  desecration, coworker betrayal, cultist protection, hellgate,
+  powder trade, nobleman's land grab) — 24 dark templates in all.
+- *To dm.md as world lore*: the pact fiction, the world of Order
+  ("often not Good" as questgiver color), hell walkable-but-bullying
+  (narration-only), the curriculum doctrine (self-assigned dark work
+  encouraged), the non-lethal combat note (0 HP = knocked out when the
+  fiction says so), the freeform "graded on body count" tasks (forge
+  --dark + karma bad N), and the take→fight turn rule.
+- *Planned for later (plan.md)*: hell as a place (gladiator pits +
+  bribe-to-lose, the bone-paid castle), the geographic wanted level
+  (heat is the global version), standing enterprises (powder network
+  as a holding), the rot spell (wants conditions), war-side-taking
+  (already villain roadmap 6), artwork/relic flaunting (already the
+  greed economy, item 5).
+- *Cut / folded*: the tax-doubling nobleman (Debt Collection already
+  is it), nothing else — the input was nearly all usable.
+
+**Design calls made while implementing**: deed success closes the
+site through the same `_close_site` path as a fight (full lump, no
+encounter XP — stealth runs karma-light, kept as a happy accident);
+enforcer XP is neutral (demon-farming must not become penance);
+beating enforcers never closes the task (only doing it, bribing, or
+losing does); the mercy covers POSSES only — roads and quests still
+kill (the mandate was about heroic adventurers, and a deathless world
+would unmake the game). Balance: everything hand-set, no bench (the
+directive), recorded in develop.md.
+
+**Next step unchanged**: play the dark path's first ten messages — now
+with the pact knocking from message one.

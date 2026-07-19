@@ -22,8 +22,14 @@ instead of its janitor. The game facilitates and encourages a **cartoon-
 villain campaign** — conquer, extort, steal, flaunt — while remaining
 fully playable as the old Good game (dual by construction, never two
 rulesets). Tone: Discworld/Conan, pratfall evil, never grimdark (dm.md
-owns the register). The candidate frame for the PC: **an imp sent
-topside with a quota** — wickedness is the job; virtue gets you audited.
+owns the register). ~~The candidate frame for the PC: an imp sent
+topside with a quota~~ — **SETTLED later the same day (the dark-quests
+session): the PC is a MORTAL of an ordinary race, a low-ranking
+employee of Hell under a pact with an evil god.** Not an imp. The pact
+rides every new save (`new --no-pact` opts out); rules.md's Karma &
+Heat add-on, "The Hell Pact", has the shipped mechanics (assignments,
+Chickening Out enforcement, bribes, the caper structure, the
+left-for-dead mercy, seventeen new dark templates).
 
 **The load-bearing mechanism (SHIPPED as the first slice, 2026-07-19 —
 rules.md's Karma & Heat add-on):** XP bucketed by the alignment of the
@@ -70,12 +76,13 @@ level curve. Karma rides *beside* levels for now: merging them fully
    settlements refuse honest boards but keep shadow ones. Reuses the
    occupation machinery. Bad karma prices the deed; holding land should
    probably RAISE the heat floor (standing wickedness).
-3. **The good-karma mirror — the dual campaign.** Under the imp frame,
-   *good* karma is the liability: hell's disciplinary posses (the
-   mirror of the Watch ladder) hunt a virtuous imp. One mechanic, two
-   skins, and the hypocritical middle path (both meters hot) is the
-   comedy jackpot. This is also where the PC frame decision lands
-   (imp as a `new --imp` start vs a reskin doctrine).
+3. **The good-karma mirror — the dual campaign.** *Half-shipped
+   2026-07-19*: hell's disciplinary posses exist (Chickening Out — they
+   punish DISOBEDIENCE, an ignored assignment), and the PC frame is
+   settled (mortal pact-holder, default-on). What remains is the mirror
+   proper: hell auditing a too-*virtuous* employee (good karma as the
+   liability axis), so the hypocritical middle path (both meters hot)
+   becomes the comedy jackpot. One mechanic, two skins.
 4. **Nemesis persistence.** Posse leaders who survive (party fled, or
    the leader's row lived) RETURN: same face, +1 level, a grudge line.
    The save already keeps `last_leader`; grow it into a small nemesis
@@ -204,6 +211,29 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 
 ## Parked ideas (agreed to exist, not scheduled)
 
+- **Hell as a place** (2026-07-19, dark-quests session) — walkable any
+  time at no cost, dangerous, demons love bullying. Today it is pure
+  DM narration (dm.md); the parked content: the gladiator pits of hell
+  (with the bribe-to-lose-on-purpose bout), the castle bought in human
+  bones, hell's org chart above the collections agent. First customer
+  of any hell map.
+- **A geographic wanted level** (2026-07-19, dark-quests session) —
+  searched-for in one settlement / the whole land / all lands, as the
+  designer's brainstorm named it. Heat is the GLOBAL version and
+  shipped; the geographic split is a refinement — park until heat has
+  been felt at the table.
+- **Standing dark enterprises** (2026-07-19, dark-quests session) —
+  the powder network (and rackets generally) as HOLDINGS that earn and
+  draw rivals over time, not one-shot quests. The Powder Trade
+  template ships the seed version; the standing layer feeds domain
+  play / conquest ticking.
+- **The rot spell & evil magic content** (2026-07-19, dark-quests
+  session) — "learn an evil spell that quickly rots the opponent
+  alive; use it on an innocent bystander" wants a new spell (and the
+  conditions system); park with the magic content pass.
+- **War-side-taking** ("a land has attacked a neighbor — help the
+  aggressor") — already the dark content pass / war-integration item
+  (villain roadmap 6); noted here so the brainstorm line has a home.
 - **An army mechanic** (2026-07-19) — "some army mechanic might be
   good" for the conquest game; parked until conquest ticking has been
   felt. The guard rail stands: one chat line per decision, or it's out.

@@ -1,4 +1,4 @@
-"""Karma & heat -- the villain layer's first slice (2026-07-19).
+"""Karma & heat + the hell pact -- the villain layer (2026-07-19).
 
 The design (rules.md, the Karma & Heat add-on, has the full spine): the
 game learns to be PLAYED WICKEDLY without forking into a second ruleset.
@@ -7,6 +7,38 @@ accrues BAD KARMA, honest work burns it 1:1 (penance) -- and the party's
 current bad karma sets its HEAT: how many levels above the party the
 world's retribution arrives. Zero heat is the old game exactly; the whole
 layer is inert until the player takes dark work.
+
+THE HELL PACT (2026-07-19, second slice -- the dark-quests session): the
+PC is not a neutral adventurer but a LOW-RANKING EMPLOYEE OF HELL, a
+mortal of an ordinary race bound by a pact with an evil god -- wealth
+and power promised in exchange for obedience in tasks that fray the
+orderly fabric of the universe (hell's long game: gates and summonings).
+Mechanically:
+
+- **Assignments.** Hell assigns Dark Tasks on its own clock (a fresh one
+  ~TASK_INTERVAL_DAYS after the last resolved), leveled AT the party
+  with the margin of error running UPWARD (spread 0..+2). They arrive by
+  job boards unseen to ordinary men, black-waxed letters, ember-eyed
+  couriers (HELL_MAIL). An assignment is an ordinary dark quest flagged
+  `hell_task` -- take it, fight it, turn it in.
+- **Chickening Out.** An assignment may be IGNORED for TASK_GRACE_DAYS;
+  past that, infernal colleagues come to punish the disobedience
+  (build_hell_posse -- the lawful posses' mirror, at party level +1,
+  escalating with each beating survived). Beating them changes nothing:
+  the job still stands. LOSING to them is hell's lesson (the mercy in
+  session.py): the purse taken as a fine, the refused job withdrawn.
+- **Bribes.** Hell can be bribed to ease off for a while (`bribe`:
+  BRIBE_GOLD_PER_LEVEL x party level buys BRIBE_DAYS of no assignments
+  and no enforcement).
+- **The caper structure.** Dark templates may carry a `deed` (a skill
+  check that can do the job CLEAN -- or botch it into the fight, with
+  witnesses: DEED_FAIL_KARMA) and a `twist` (an authored complication
+  with priced terms -- the fence's half-price offer; `settle` takes it,
+  fighting on refuses it). The machinery lives in quests.build_quest
+  and session.py; the templates below author the content.
+- **Left for dead.** The PC is never killed by the law's heroes or
+  hell's enforcers -- a lost posse fight costs the party, the purse,
+  and (against the law) all bad karma instead (session.apply_mercy).
 
 - **Heat is the throttle.** One at-level dark quest is ~one heat step
   (KARMA_HEAT_STEP * level bad karma per step; a level-L quest quotes
@@ -43,6 +75,7 @@ import random
 
 from rpg import LEVEL_CAP
 from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, CASTER_POOL,
+                    BEAST_POOL, GIANTKIN_POOL,
                     build_quest, attach_giver, template_band, build_room,
                     room_budget)
 
@@ -63,6 +96,33 @@ PUNISH_CHANCE = 0.6     # per eligible stop (arrival / settlement night /
                         # wilds camp) once the cooldown has passed
 DARK_JOBS_PER_DAY = 3   # the shadow board's size, rolled per settlement day
 
+# The hell pact's knobs (2026-07-19, second slice). ALL hand-set and
+# sim-unverified BY DIRECTIVE: the designer abandoned XP/gold balance for
+# the dark layer this session -- quest VARIETY first, the table tunes
+# numbers later (develop.md, Balance / tuning).
+TASK_INTERVAL_DAYS = 4  # a fresh assignment ~this long after the last one
+                        # resolved (done, withdrawn, or bribed away)
+TASK_GRACE_DAYS = 4     # an assignment may be ignored this long; past it,
+                        # Chickening Out -- hell's enforcers come calling
+ENFORCE_COOLDOWN_DAYS = 2   # hell's patience between beatings (mirrors
+ENFORCE_CHANCE = 0.6        # the law's cooldown + chance shape)
+BRIBE_GOLD_PER_LEVEL = 30   # `bribe`: this x party level buys...
+BRIBE_DAYS = 10             # ...this many days of no assignments and no
+                            # enforcement (the task clock restarts after)
+DEED_FAIL_KARMA = 15    # witnesses are hard to avoid: a BOTCHED deed is
+                        # talked about -- flat bad karma on top of the fight
+
+# How WORD FROM BELOW arrives (rolled flavor for the assignment scene).
+HELL_MAIL = (
+    "a job board stands where a bare wall stood yesterday -- unseen by "
+    "ordinary folk, searched for by paladins",
+    "a letter arrives, sealed in black wax that is faintly warm and "
+    "will not cool",
+    "a courier finds the party: a polite urchin whose eyes catch the "
+    "light like embers",
+    "the taproom smoke curls into words meant for one reader only",
+)
+
 # --------------------------------------------------------------------------- #
 # Karma state (one plain dict in the save)
 # --------------------------------------------------------------------------- #
@@ -77,6 +137,23 @@ def new_karma() -> dict:
             "last_punish_day": -99,
             "last_leader": None}   # the last posse's named leader -- the
                                    # nemesis seed (persistence is plan.md)
+
+
+def new_pact() -> dict:
+    """The hell pact's state (one plain dict in the save, `pact`). Rides
+    every new game by default (`new --no-pact` is the neutral-adventurer
+    switch): the PC is hell's employee from scene one."""
+    return {"task": None,           # the current assignment's quest id
+            "assigned_day": 0,      # when it landed (grace runs from here)
+            "last_task_day": -99,   # when the last one resolved -- the
+                                    # interval clock (fresh pact: hell's
+                                    # first letter comes early)
+            "bribed_until": 0,      # no assignments/enforcement before this
+            "last_enforce_day": -99,
+            "beatings": 0,          # enforcer visits survived over the
+                                    # CURRENT refusal (escalates them)
+            "done": 0}              # lifetime assignments completed (the
+                                    # curriculum ledger -- titles later)
 
 
 def heat(karma: dict, pc_level: int) -> int:
@@ -130,6 +207,23 @@ def karma_line(karma: dict, pc_level: int) -> str:
 # FIGHTS BACK -- guards, militia, the relic's keepers, the puppy's parent
 # -- so the engine only ever resolves honest fights and the wickedness
 # itself stays narration (dm.md, the villain register).
+#
+# THE CAPER SCHEMA (2026-07-19, the dark-quests session) -- two optional
+# fields formalize the more-complex quest structure:
+#   deed  = dict(stat="dex|str|mind|cha", dc=N, text=..., fail=...)
+#           -- attached to the quest's FIRST site: before its first fight,
+#           the PC rolls 2d6 + stat vs dc. A make does the site CLEAN
+#           (site closed, full lump, no fight); a miss botches it into
+#           the fight, with witnesses (+DEED_FAIL_KARMA bad karma). DCs
+#           sit high on purpose: "the dex check will probably fail, and
+#           lead to a fight" is the design sentence.
+#   twist = dict(text=..., accept=..., pay=0.5)
+#           -- attached to the LAST site: arriving there prints the
+#           authored complication and its priced terms. `settle` takes
+#           them (site closed at pay x lump); fighting on refuses them.
+# A template carrying either pins its site count (capers are authored
+# shapes, not rolled). Machinery: quests.build_quest + session.cmd_room /
+# cmd_settle; rules.md's Karma & Heat add-on documents the math.
 
 DARK_TEMPLATES: list[dict] = [
     dict(title="The Puppy on the Doorstep", align="dark",
@@ -221,18 +315,280 @@ DARK_TEMPLATES: list[dict] = [
          epilogue="For one glorious week the road pays the party, not "
                   "the crown. Clerks in three counting-houses develop "
                   "nervous conditions."),
+    # --- the 2026-07-19 dark-quests content pass (the curriculum) --- #
+    dict(title="The Five-Finger Discount", align="dark",
+         desc="A collector wants one small, priceless thing lifted from "
+              "a merchant's strongroom. Then there is the fence, who has "
+              "opinions about prices.",
+         pool=LADDER_POOL[:4],
+         skins={"cutthroat": "Shop Guard", "archer": "Rooftop Watchman",
+                "bruiser": "Strongroom Tough", "soldier": "Hired Guard"},
+         sites=("the merchant's strongroom", "the fence's cellar"),
+         deed=dict(stat="dex", dc=11, text="the lift -- in through the "
+                   "coal chute, out with the goods, touching nothing",
+                   fail="a shelf goes over; the whole house wakes"),
+         twist=dict(text="The fence turns the piece over once and offers "
+                    "HALF its price -- 'damaged in transit, see' -- and "
+                    "his bodyguards lean off the wall in unison.",
+                    accept="Half is half. The fence smiles like a purse "
+                    "closing.", pay=0.5),
+         giver="the veiled collector",
+         epilogue="The piece surfaces in a private gallery three lands "
+                  "away. The merchant posts a reward; the Watch posts "
+                  "a description; neither is close."),
+    dict(title="The Menagerie Order", align="dark",
+         desc="Hell wants a rare beast, caged and delivered breathing. "
+              "The catching is one job; the part where it slips the cage "
+              "at the town gates is another.",
+         pool=BEAST_POOL + ("dire wolf",), skins={},
+         sites=("the trapping ground", "the beast loose at the gates"),
+         giver="the fixer",
+         epilogue="The crate goes down the hellmouth stairs, growling. "
+                  "A receipt comes back up, signed in something brown."),
+    dict(title="Dine and Dash", align="dark",
+         desc="Take the best table, order everything, compliment the "
+              "cellar -- then rob the owner to settle the bill. The "
+              "house employs discreet, well-fed muscle.",
+         pool=LADDER_POOL[:4],
+         skins={"cutthroat": "Coat-Check Knife", "archer": "Balcony "
+                "Lookout", "bruiser": "the Door's Opinion",
+                "soldier": "House Guard"},
+         sites=("the proprietor's back office",),
+         deed=dict(stat="cha", dc=10, text="the long con -- twelve "
+                   "courses of charm, ending alone with the host and "
+                   "the strongbox", fail="the sommelier remembers your "
+                   "face from a poster"),
+         giver="the rival in silk",
+         epilogue="The review, dictated to a terrified waiter on the "
+                  "way out: five stars, would rob again."),
+    dict(title="The Last Sermon", align="dark",
+         desc="Hell wants the local priest on the altar he preaches "
+              "from. He is, for the record, a bad man -- a usurer in "
+              "vestments who has ruined more families than any bandit. "
+              "Will you still chicken out?",
+         pool=LADDER_POOL[:5] + CASTER_POOL,
+         skins={"cutthroat": "Outraged Sexton", "archer": "Bell-Tower "
+                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
+                "Guard", "veteran": "the Old Crusader",
+                "hexer": "the Curate", "pyromancer": "the Censer-Swinger"},
+         sites=("the vestry", "the altar steps"),
+         giver="the fixer",
+         epilogue="The parish, freed of its usurer, is oddly quiet about "
+                  "the how. The ledger of debts burns in the vestry "
+                  "grate, and nobody claims to have lit it."),
+    dict(title="A Most Heinous Act", align="dark",
+         desc="Hell requires one act no healthy mind would contemplate: "
+              "a puppy, an altar, a knife. It is a direwolf pup, and its "
+              "parents can smell the altar from two valleys off.",
+         pool=WOLF_POOL,
+         skins={"wolf": "Direwolf Kin", "dire wolf": "the Pup's "
+                "Mother"},
+         sites=("the shrine in the woods",),
+         giver="the grave-broker",
+         epilogue="Cooked afterwards, as the rite requires, and -- this "
+                  "is the worst part -- it tastes genuinely good. "
+                  "Somewhere below, applause. Somewhere above, a bard "
+                  "starts a very long song."),
+    dict(title="Sack the Village", align="dark",
+         desc="A whole village, one night, everything in it: all their "
+              "gold is yours. They have a palisade, a militia, and "
+              "strong opinions about visitors with torches.",
+         pool=LADDER_POOL[:5],
+         skins={"cutthroat": "Village Rough", "archer": "Palisade "
+                "Bowman", "bruiser": "the Blacksmith", "soldier":
+                "Militiaman", "veteran": "the Old Campaigner"},
+         sites=("the palisade gate", "the high street", "the moot hall"),
+         giver="the ambitious lieutenant",
+         epilogue="The village will rebuild, the ballads insist. The "
+                  "ballads are mostly about what the party took, listed, "
+                  "with amounts."),
+    dict(title="The Vault Job", align="dark",
+         desc="The counting-house vault holds three lands' worth of "
+              "deposits. The plan is elegant. The guards are not part "
+              "of the plan.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Night Clerk", "archer": "Gallery Guard",
+                "bruiser": "Vault-Door Muscle", "soldier": "House "
+                "Guard", "veteran": "Guard Sergeant",
+                "champion": "the Guild's Duelist"},
+         sites=("the counting floor", "the vault below"),
+         deed=dict(stat="mind", dc=11, text="the plan -- cased for a "
+                   "week, timed to the minute, in through the lamplit "
+                   "gallery between rounds", fail="the rounds changed "
+                   "this morning; the plan meets the guards"),
+         giver="the moneylender's broker",
+         epilogue="Three counting-houses fail by month's end and the "
+                  "broker, who sold their debts short, sends a fruit "
+                  "basket. It is not poisoned. Probably."),
+    dict(title="A Round on the House", align="dark",
+         desc="Season the feast-day cask, then stand everyone a round "
+              "and watch the hall fold. The philter is gut-rot, not "
+              "grave-dirt -- hell wants the humiliation, and whoever "
+              "did not drink wants you.",
+         pool=LADDER_POOL[:4],
+         skins={"cutthroat": "Furious Potboy", "archer": "the Innkeep's "
+                "Nephew", "bruiser": "the Town Wrestler",
+                "soldier": "Feast-Day Guard"},
+         sites=("the reeling feast-hall",),
+         deed=dict(stat="mind", dc=10, text="the philter, slipped into "
+                   "the cask between toasts", fail="a potboy sees the "
+                   "vial go in and screams the house down"),
+         giver="the fixer",
+         epilogue="Nobody dies; everybody remembers. The feast day is "
+                  "renamed for the disaster, which hell counts as a "
+                  "monument."),
+    dict(title="The Inheritance", align="dark",
+         desc="A fine mansion, elderly owners, no heirs anyone will "
+              "press about. Murder them and it's yours. They were bad "
+              "people. Probably. The household guard is definitely "
+              "well paid.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Under-Butler", "archer": "Gatehouse "
+                "Archer", "bruiser": "the Groundskeeper", "soldier":
+                "House Guard", "veteran": "the Majordomo",
+                "champion": "the Old Master-at-Arms"},
+         sites=("the garden wall", "the master's study"),
+         giver="the veiled collector",
+         epilogue="The deed reads cleanly enough, if nobody holds it to "
+                  "the light. The staff stay on; the pay is better and "
+                  "they ask no questions at all."),
+    dict(title="The Blade That Thirsts", align="dark",
+         desc="A famous evil weapon lies in the barrow of the last fool "
+              "who wielded it. Hell would like it back in circulation. "
+              "The barrow disagrees.",
+         pool=UNDEAD_POOL, skins={},
+         sites=("the sealed tomb", "the wielder's rest"),
+         giver="the grave-broker",
+         epilogue="The blade comes up humming, faintly, in a key that "
+                  "makes dogs leave the room. It is very pleased to "
+                  "meet you. (The DM places the actual weapon -- a "
+                  "reskinned quality blade until named instances land.)"),
+    dict(title="The Unmaking", align="dark",
+         desc="A sacred sword hangs above a shrine's altar, famous for "
+              "three miracles. Corrupt it by dark ritual where it "
+              "hangs. The faithful will object, in ranks.",
+         pool=LADDER_POOL[:6] + CASTER_POOL,
+         skins={"cutthroat": "Shrine Novice", "archer": "Pilgrim "
+                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
+                "Guard", "veteran": "Warden of the Shrine",
+                "champion": "the Faith's Sworn Blade",
+                "hexer": "the Anchorite", "pyromancer": "Censer-Burner"},
+         sites=("the pilgrim road", "the reliquary shrine"),
+         giver="the veiled collector",
+         epilogue="The blade still hangs there. It looks the same. The "
+                  "miracles stop, and the pilgrims' road grows quietly "
+                  "over with grass."),
+    dict(title="Blood on the Altar", align="dark",
+         desc="Desecrate the altar with blood before the dawn bell. "
+              "Whose blood is not specified -- your own works, if you "
+              "are a coward. Hell will know.",
+         pool=LADDER_POOL[:5],
+         skins={"cutthroat": "Outraged Sexton", "archer": "Bell-Tower "
+                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
+                "Guard", "veteran": "the Old Crusader"},
+         sites=("the midnight chapel",),
+         giver="the grave-broker",
+         epilogue="The altar is scrubbed, re-blessed, and roped off. "
+                  "Attendance, perversely, has never been better."),
+    dict(title="An Old Friend", align="dark",
+         desc="A hellish coworker has been skimming. Work with the "
+              "authorities: testify, then help take their crew. It is "
+              "an old friend. They once saved your life. Hell calls "
+              "this a loyalty exercise, and means yours.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Old Friend's Knife", "archer": "Crew "
+                "Lookout", "bruiser": "Crew Muscle", "soldier": "Sworn "
+                "Crewman", "veteran": "the Lieutenant",
+                "champion": "the Old Friend"},
+         sites=("the safehouse door", "the last back room"),
+         giver="the ambitious lieutenant",
+         epilogue="The Watch captain shakes your hand in public, which "
+                  "does your reputation no good anywhere. The old "
+                  "friend's chair at the fixer's table stays empty; "
+                  "nobody sits in it."),
+    dict(title="The Shepherds", align="dark",
+         desc="A cabal of cultists is inviting something old and "
+              "nameless through, and heroic adventurers have come to "
+              "stop them. Hold the cordon: the cultists must not be "
+              "interrupted. The heroes are exactly as good as the "
+              "songs say.",
+         pool=LADDER_POOL,
+         skins={"cutthroat": "Hero's Scout", "archer": "Far-Famed "
+                "Archer", "bruiser": "the Strong Companion",
+                "soldier": "Sworn Companion", "veteran": "Errant Hero",
+                "champion": "Famous Hero",
+                "blademaster": "Legendary Swordmaster",
+                "warlord": "the Realm's Chosen"},
+         sites=("the cordon of campfires", "the standing stones"),
+         giver="the veiled collector",
+         epilogue="The chanting reaches its end and something arrives. "
+                  "The cultists look delighted, then thoughtful, then "
+                  "very briefly alarmed. Hell rates the outcome "
+                  "'acceptable'."),
+    dict(title="The Doorman's Surprise", align="dark",
+         desc="Open a hellgate by dark ritual at the appointed place. "
+              "One administrative wrinkle: the invading forces were "
+              "never told you are one of them.",
+         pool=GIANTKIN_POOL + CASTER_POOL,
+         skins={"ogre": "Pit Bruiser", "troll": "Flesh-Render",
+                "giant": "a Duke's Champion", "hexer": "Frost-Fiend",
+                "pyromancer": "Flame-Fiend"},
+         sites=("the ritual ground", "the open gate"),
+         giver="the grave-broker",
+         epilogue="The gate is closed by the time the paperwork "
+                  "arrives, stamped IN ERROR. Hell apologizes for the "
+                  "inconvenience in writing, which the fixer says has "
+                  "never happened before."),
+    dict(title="The Powder Trade", align="dark",
+         desc="Seed a network selling a terrible, moreish powder -- "
+              "hell provides the recipe. The town's standing criminals "
+              "regard the market as spoken for.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Corner Knife", "archer": "Rooftop "
+                "Spotter", "bruiser": "Rival Muscle", "soldier": "Sworn "
+                "Legbreaker", "veteran": "the Underboss",
+                "champion": "the Kingpin"},
+         sites=("the night market", "the rival den"),
+         twist=dict(text="The kingpin's envoy proposes a PARTNERSHIP "
+                    "instead: half the take, no blood, his people run "
+                    "the corners.", accept="Half the take, none of the "
+                    "work. The envoy's handshake counts your rings.",
+                    pay=0.5),
+         giver="the fixer",
+         epilogue="The powder sells itself; that is the terrible part. "
+                  "The standing enterprise -- routes, rivals, the "
+                  "slow rot -- is a later layer (plan.md); for now the "
+                  "seed money is yours."),
+    dict(title="The Neighbor Dispute", align="dark",
+         desc="A scheming nobleman wants his neighbor's estates. The "
+              "neighbor is a good, honorable man, which is why he has "
+              "no idea what is about to happen to him.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Estate Poacher-Turned-Guard", "archer":
+                "Gatehouse Archer", "bruiser": "the Good Man's "
+                "Huntsman", "soldier": "Liveried Guard", "veteran":
+                "the Old Steward", "champion": "the Good Man Himself"},
+         sites=("the disputed orchard", "the honorable house"),
+         giver="the rival in silk",
+         epilogue="The papers are signed at sword-point and notarized "
+                  "at a distance. The nobleman throws a garden party "
+                  "in the orchard within the month; the fruit, "
+                  "everyone agrees, tastes of nothing at all."),
 ]
 
 
 def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
                     rng: random.Random,
-                    used_names: set[str] | None = None) -> dict:
+                    used_names: set[str] | None = None,
+                    spread: tuple[int, int] = (-1, 2)) -> dict:
     """One shadow job: leveled AT the party (-1..+2 -- the fixer offers
     what the taker can handle; the public board's OSR stance is about the
     honest world), built by build_quest unchanged, flagged dark, given a
     shady face. Registered in world['quests'] (so show/take work) but on
-    NO settlement board -- the shadow board lists it (session.py)."""
-    level = max(1, min(LEVEL_CAP, pc_level + rng.randint(-1, 2)))
+    NO settlement board -- the shadow board lists it (session.py).
+    `spread` is the level roll around the party: hell's ASSIGNMENTS pass
+    (0, 2) -- suited to the taker, the margin of error running upward."""
+    level = max(1, min(LEVEL_CAP, pc_level + rng.randint(*spread)))
     fitting = [t for t in DARK_TEMPLATES
                if template_band(t)[0] <= level <= template_band(t)[1]]
     tpl = rng.choice(fitting or DARK_TEMPLATES)
@@ -308,6 +664,37 @@ def build_posse(level: int, race: str, rng: random.Random,
     return kinds, skins, leader, label
 
 
+# --------------------------------------------------------------------------- #
+# Hell's enforcers (Chickening Out -- the hell pact, 2026-07-19)
+# --------------------------------------------------------------------------- #
+# The lawful posses' mirror: budget-honest ladder rosters wearing INFERNAL
+# display names ("demons love bullying" -- and disobedient employees most
+# of all), led by a generated face in a borrowed body. One band for now
+# (hell's org chart is a later content pass); the escalation is the LEVEL
+# (party + 1, +1 per beating survived, capped at +3 over).
+
+HELL_SKINS = {
+    "cutthroat": "Spite-Imp", "archer": "Barb-Flinger",
+    "bruiser": "Pit Bully", "soldier": "Chain-Devil",
+    "veteran": "Collections Fiend", "champion": "the Under-Manager",
+    "blademaster": "the Auditor of Souls", "warlord": "a Duke of Hell",
+}
+HELL_LEADER_ROLE = "collections agent of Hell (in a borrowed body)"
+
+
+def build_hell_posse(level: int, race: str, rng: random.Random,
+                     used_names: set[str] | None = None
+                     ) -> tuple[list[str], dict, dict, str]:
+    """One Chickening Out encounter at `level`: (kinds, skins, leader,
+    band label) -- build_posse's shape exactly, wearing hell's names."""
+    from people import make_npc     # runtime import (people imports quests)
+    kinds = build_room(room_budget(level, 1.0), LADDER_POOL, rng,
+                       final=True)
+    leader = make_npc(rng, race, HELL_LEADER_ROLE, level=level,
+                      used_names=used_names)
+    return kinds, HELL_SKINS, leader, "hell's enforcers"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=None)
@@ -325,6 +712,13 @@ def main() -> None:
     print("Sample posses (one per heat band):")
     for lvl in (3, 6, 11, 16):
         kinds, skins, leader, label = build_posse(lvl, s["race"], rng)
+        shown = ", ".join(skins.get(k, k) for k in kinds)
+        print(f"  L{lvl} ({label}): {shown}")
+        print(f"    led by {leader['name']}, {leader['role']}")
+    print()
+    print("Sample hell enforcers (Chickening Out):")
+    for lvl in (4, 9):
+        kinds, skins, leader, label = build_hell_posse(lvl, s["race"], rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")

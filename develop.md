@@ -145,14 +145,22 @@ a pointer: what the file is, how it's run, where its docs are.
   occupation, and the war readouts. State lives in the session save
   (`story` key); the sims never import it. `python story.py [--seed N]
   [--aggressor R]` dumps one rolled conquest, all waves force-posted.
-- `karma.py` — **the villain layer's first slice** (2026-07-19, rules.md's
-  Karma & Heat add-on; the direction it serves is plan.md's VILLAIN
-  PIVOT): the karma state dict + heat math (`new_karma` / `heat` /
-  `record_karma` / `karma_line`), the seven generic DARK quest templates
+- `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
+  Heat add-on; the direction it serves is plan.md's VILLAIN PIVOT):
+  the karma state dict + heat math (`new_karma` / `heat` /
+  `record_karma` / `karma_line`), the DARK quest templates
   + `roll_dark_quest` (lazy per-settlement-day shadow jobs — worldgen
-  never sees them), and the punishment posses (`POSSE_BANDS` /
+  never sees them; the `spread` param leans hell's assignments upward),
+  and the punishment posses (`POSSE_BANDS` /
   `build_posse`: ladder rosters wearing lawful display names, a
-  generated leader face). All knobs at the top (`KARMA_HEAT_STEP`,
+  generated leader face). **The hell pact (same day, second slice —
+  rules.md's "The Hell Pact"):** `new_pact` + the assignment/
+  enforcement knobs (`TASK_INTERVAL_DAYS`, `TASK_GRACE_DAYS`,
+  `ENFORCE_*`, `BRIBE_*`, `DEED_FAIL_KARMA`, `HELL_MAIL`), the hell
+  enforcers (`HELL_SKINS` / `build_hell_posse` — Chickening Out), and
+  the CAPER schema on templates (`deed` = 2d6+stat vs DC gate, `twist`
+  = priced terms; 24 dark templates total after the content pass). All
+  other knobs at the top (`KARMA_HEAT_STEP`,
   `HEAT_CAP`, `PUNISH_*`, `DARK_JOBS_PER_DAY`; the dark gold premium
   `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
   never import it. `python karma.py [--seed N]` prints sample shadow
@@ -613,6 +621,22 @@ mechanic *does* and *why* is rules.md's job.
   tavern/downtime/camp nights), `roll_dark_board` + `board --dark`,
   `forge --dark`, `award --dark/--good`, `cmd_karma`, the karma lines in
   `tally_lines`/`cmd_status`, the `karma`/`dark_board` save keys.
+- **The hell pact & the capers** (2026-07-19, second slice — rules.md's
+  "The Hell Pact") — `karma.py`: the pact constants, `new_pact`,
+  `HELL_MAIL`, `HELL_SKINS` / `build_hell_posse`, the `deed`/`twist`
+  template fields (see Files). `quests.py`: `build_quest` pins a caper's
+  site count and copies `deed` → first site / `twist` → last site; the
+  deed/twist lines in `quest_detail_lines` (twist is DM-eyes-only).
+  `session.py`: the `pact` save key (None = pactless; `new --no-pact`),
+  `pact_task` / `pact_lines`, `maybe_assign_task` (arrivals, `board`,
+  settlement nights) + `maybe_enforce` (the posse stops, after
+  `maybe_punish`), `cmd_task` / `cmd_bribe`, THE DEED + THE TWIST
+  branches in `cmd_room`, `cmd_settle`, `_close_site` (advance_quest's
+  tail split out: deed-skips and settles close sites through it;
+  also the hell-task completion ledger), and the MERCY thread —
+  `mercy` through `resolve_encounter`/`pending`/resume/retreat,
+  `apply_mercy` (left for dead / the lesson) in place of
+  `report_game_over` on posse losses.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
   record, `rooms` fled-room records, `location`, `places` discovered wilds,
@@ -721,6 +745,16 @@ summary — refresh it whenever a new entry lands there.**
   `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_GOLD_MULT` 1.5) are
   hand-set and SIM-UNVERIFIED — tune them at the table; a karma-playing
   career sim is parked in plan.md.
+- **The dark layer's balance is deliberately unmanaged (designer
+  directive, 2026-07-19, the dark-quests session).** "Game balance of
+  xp gold and similar should be abandoned for now — a good variety of
+  quests will do more good for the game": the hell pact, the capers,
+  the mercy, and the 17-template content pass ship with hand-set
+  numbers (`TASK_*`, `ENFORCE_*`, `BRIBE_*`, `DEED_FAIL_KARMA`, deed
+  DCs 10-11, twist pay 0.5) and NO bench coverage — all play-surface,
+  engine untouched, worldgen untouched (`build_quest`'s caper attach is
+  a no-op for every worldgen template). Don't spend bench rounds here
+  until the dark path has actually been played.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's

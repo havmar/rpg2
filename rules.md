@@ -2622,12 +2622,104 @@ Conan, pratfall evil, never grimdark).
   serious ~50, outrage ~100+), `award --dark/--good`, `forge --dark`.
   State is one plain dict in the save (`karma`).
 
+## The Hell Pact (2026-07-19, second slice — the dark-quests session)
+
+The frame, settled by the designer the same day the first slice shipped:
+**the PC is not a neutral adventurer but a low-ranking employee of
+Hell** — a mortal of an ordinary game race (not an imp; this settles
+plan.md's open frame question) bound by a pact with an evil god. Wealth
+and power are promised in exchange for obedience in tasks that weaken
+the fabric of the orderly universe — hell's aim being exactly that
+fraying (hellgates, summonings). Order is maintained by the gods of
+Light and their religions (paladins, hunters, monks, priests, hired
+heroes) and by worldly power (armies, watchmen, mobs) — and that order
+is often not Good, which is the dark path's running joke (dm.md owns
+the register). The pact rides every new save; `new --no-pact` is the
+neutral game, and a pact-holder who quests honestly and stiff-arms
+hell is a fully supported campaign — the mechanics below only price it.
+
+- **Assignments.** Hell assigns Dark Tasks on its own clock: a fresh
+  one lands at a settlement `TASK_INTERVAL_DAYS` (4) after the last
+  resolved, printed as a WORD FROM BELOW block (delivery flavor rolled
+  from `HELL_MAIL`: unseen job boards — searched for by paladins —
+  black-waxed letters, ember-eyed couriers). The task is an ordinary
+  dark quest flagged `hell_task`, rolled AT the party with the margin
+  of error running UPWARD (spread 0..+2 — the fixer's −1..+2 belongs
+  to chosen shadow work). The curriculum doctrine: each task teaches a
+  type of destructive act; the shadow board and `forge --dark` are the
+  self-assigned version the player graduates into.
+- **Chickening Out.** An assignment may be ignored for
+  `TASK_GRACE_DAYS` (4). Past that, infernal colleagues are dispatched
+  at the posse stops (arrivals, nights; cooldown 2 d, chance 0.6):
+  budget-honest ladder rosters wearing infernal names (`HELL_SKINS`),
+  led by a generated face, at **party level + 1, +1 per beating
+  already survived (capped +3 over)**. Beating them changes nothing —
+  the job stands and the next visit is worse. Their XP is **neutral**:
+  cutting down devils is neither crime nor penance (farming them for
+  absolution would be a hole).
+- **Bribes.** `bribe` pays `BRIBE_GOLD_PER_LEVEL` (30) × party level
+  for `BRIBE_DAYS` (10) of no new assignments and no enforcement. An
+  open assignment survives the bribe; its grace runs fresh from the
+  bribe's end.
+- **Left for dead (the mercy).** The PC is never killed by heroic
+  adventurers — or by hell's enforcers. A posse fight lost (wipe, or
+  the PC down for good) fires `apply_mercy` instead of GAME OVER: the
+  PC alone survives at 1 HP; the party and the purse are forfeit.
+  Against the **law**, all bad karma clears too — the heroes think him
+  dead (or he ran, in shame; everyone in hell is laughing), and the
+  ledger is considered settled: heat 0, a fresh start in one shoe.
+  Against **hell**, the purse is the fine, the refused assignment is
+  withdrawn, and the karma stays. Ordinary fights (roads, quests,
+  hunts) still kill exactly as before — the mercy is the posses' rule,
+  not the world's. Related doctrine (dm.md): combat the fiction says
+  isn't lethal reads 0 HP as knocked out, same numbers.
+
+### The caper structure (deeds & twists)
+
+The formalized "more complex quest structure" for dark work — two
+optional authored fields on a template, riding the site dicts through
+`build_quest` (a template carrying either pins its site count):
+
+- **Deed** (first site): `{stat, dc, text, fail}`. Before the site's
+  first fight, the **PC** rolls 2d6 + stat vs the DC (printed as THE
+  DEED block). A make closes the site CLEAN — full lump, no fight, and
+  (a happy accident kept on purpose) none of the rooms' encounter XP,
+  so stealth runs karma-light. A miss is the complication: the fight
+  is on, and witnesses add `DEED_FAIL_KARMA` (15) flat bad karma. DCs
+  sit at 10-11 against typical stats 3-5: *the dex check will probably
+  fail, and lead to a fight* is the design sentence.
+- **Twist** (last site): `{text, accept, pay}`. Arriving prints THE
+  TWIST block — an authored complication with priced terms (the
+  fence's half-price offer, the rival's partnership). `settle` takes
+  the terms: the site closes without a fight at `pay` (0.5) × its
+  lump. `room` refuses them and fights for the full pay.
+
+Both paths close sites through `_close_site` (advance_quest's tail,
+split out), so lumps, epilogues, the war hook, and the pact ledger all
+fire identically however a site ends.
+
+### Balance stance (designer directive, 2026-07-19)
+
+**XP/gold balance is deliberately abandoned for the dark layer for
+now** — a good variety of quests does the game more good than tuned
+numbers. Every pact constant is hand-set and sim-unverified (no sim
+sees the pact, the capers, or the mercy — all play-surface); the
+seventeen-template content pass optimizes for texture, not for the
+career curve. Tune at the table; a karma career sim stays parked.
+
 ## Explicitly not in this slice (roadmap, plan.md)
 
-Conquest ticking (settlement ownership + tribute), the good-karma mirror
-(hell's enforcers hunting a *virtuous* imp — the dual campaign), nemesis
-persistence beyond the remembered name, race-flavored dark templates,
-parley/bribery with posses, and any karma-gated power. Bad karma
-currently buys nothing but heat and gold-rich work — whether it should
-*unlock* anything (hell ranks, evil powers) is the next design decision.
+Conquest ticking (settlement ownership + tribute), hell as a VISITABLE
+place (the gladiator pits, the castle bought in bones, bullying demons
+— walkable today as pure narration), a geographic wanted level
+(searched-for in one settlement / a land / all lands — heat is the
+global version), the good-karma mirror (hell auditing a *virtuous*
+employee — the dual campaign), nemesis persistence beyond the
+remembered name, race-flavored dark templates, standing dark
+enterprises (the powder network as a holding), the rot-spell and other
+evil magic content, parley/bribery with the LAW's posses (hell takes
+bribes now; the Watch doesn't yet), and any karma-gated power. Bad
+karma currently buys nothing but heat and gold-rich work — whether it
+should *unlock* anything (hell ranks, evil powers) is the next design
+decision.
 
