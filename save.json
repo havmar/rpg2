@@ -37,7 +37,7 @@
    "protagonist": true,
    "hp": 10,
    "cur_sta": 5,
-   "cur_power": 2,
+   "cur_power": 8,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -129,7 +129,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 12,
-   "cur_sta": 6,
+   "cur_sta": 7,
    "cur_power": 5,
    "dex_debuff": 0,
    "unseen": false,
@@ -165,7 +165,7 @@
    "xp": 165,
    "skill_points": 0,
    "training": 1,
-   "weapon": "longsword",
+   "weapon": "zweihander",
    "weapon_broken": false,
    "proficiency": {},
    "cha": 3,
@@ -186,11 +186,11 @@
   }
  ],
  "clock": {
-  "day": 6,
-  "short_rests_used": 1
+  "day": 7,
+  "short_rests_used": 0
  },
  "purse": {
-  "gold": 92
+  "gold": 32
  },
  "foe_count": 9,
  "active_quest": "q41",
@@ -3058,99 +3058,6 @@
      }
     }
    },
-   "q40": {
-    "id": "q40",
-    "name": "The Five-Finger Discount",
-    "desc": "A collector wants one small, priceless thing lifted from a merchant's strongroom. Then there is the fence, who has opinions about prices.",
-    "settlement": "fairfield",
-    "level": 2,
-    "fuzz": -2,
-    "skins": {
-     "cutthroat": "Shop Guard",
-     "archer": "Rooftop Watchman",
-     "bruiser": "Strongroom Tough",
-     "soldier": "Hired Guard"
-    },
-    "sites": [
-     {
-      "name": "the merchant's strongroom",
-      "level": 1,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "archer",
-         "bruiser"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "archer",
-         "soldier"
-        ]
-       ]
-      ],
-      "deed": {
-       "stat": "dex",
-       "dc": 11,
-       "text": "the lift -- in through the coal chute, out with the goods, touching nothing",
-       "fail": "a shelf goes over; the whole house wakes"
-      }
-     },
-     {
-      "name": "the fence's cellar",
-      "level": 2,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "bruiser"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "bruiser",
-         "bruiser"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "archer",
-         "cutthroat",
-         "bruiser"
-        ]
-       ]
-      ],
-      "twist": {
-       "text": "The fence turns the piece over once and offers HALF its price -- 'damaged in transit, see' -- and his bodyguards lean off the wall in unison.",
-       "accept": "Half is half. The fence smiles like a purse closing.",
-       "pay": 0.5
-      }
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open",
-    "align": "dark",
-    "epilogue": "The piece surfaces in a private gallery three lands away. The merchant posts a reward; the Watch posts a description; neither is close.",
-    "giver": {
-     "name": "Isolde",
-     "race": "human",
-     "sex": "f",
-     "age": 28,
-     "role": "the veiled collector",
-     "traits": {
-      "background": "tribesman",
-      "dress": "luxurious",
-      "speech": "formal"
-     }
-    }
-   },
    "q41": {
     "id": "q41",
     "name": "The Debt Collection",
@@ -3224,34 +3131,28 @@
    },
    "q42": {
     "id": "q42",
-    "name": "The Puppy on the Doorstep",
-    "desc": "A widow's guard-pup keeps fouling the fixer's doorstep. Kick it down the lane, says the fixer. The pup, it turns out, has family.",
+    "name": "The Menagerie Order",
+    "desc": "Hell wants a rare beast, caged and delivered breathing. The catching is one job; the part where it slips the cage at the town gates is another.",
     "settlement": "fairfield",
-    "level": 3,
+    "level": 4,
     "fuzz": 0,
-    "skins": {
-     "wolf": "Very Big Dog",
-     "dire wolf": "the Pup's Mother"
-    },
+    "skins": {},
     "sites": [
      {
-      "name": "the back lane",
-      "level": 3,
+      "name": "the trapping ground",
+      "level": 4,
       "rooms": [
        [
         "the approach",
         [
-         "wolf",
-         "wolf",
-         "dire wolf"
+         "boar",
+         "boar"
         ]
        ],
        [
         "the heart of it",
         [
-         "wolf",
-         "wolf",
-         "wolf",
+         "dire wolf",
          "dire wolf"
         ]
        ]
@@ -3264,17 +3165,136 @@
     },
     "status": "open",
     "align": "dark",
-    "epilogue": "The pup limps home. Somewhere a tavern bard is already singing about the brutes who kicked it, with gestures.",
+    "epilogue": "The crate goes down the hellmouth stairs, growling. A receipt comes back up, signed in something brown.",
     "giver": {
-     "name": "Rhea",
+     "name": "Cole",
      "race": "human",
-     "sex": "f",
-     "age": 25,
+     "sex": "m",
+     "age": 37,
      "role": "the fixer",
      "traits": {
-      "temperament": "gloomy",
-      "dress": "elegant",
+      "temperament": "cowardly",
+      "speech": "poetic",
       "looks": "bald"
+     }
+    }
+   },
+   "q43": {
+    "id": "q43",
+    "name": "The Unmaking",
+    "desc": "A sacred sword hangs above a shrine's altar, famous for three miracles. Corrupt it by dark ritual where it hangs. The faithful will object, in ranks.",
+    "settlement": "fairfield",
+    "level": 1,
+    "fuzz": 2,
+    "skins": {
+     "cutthroat": "Shrine Novice",
+     "archer": "Pilgrim Warden",
+     "bruiser": "Lay Brother",
+     "soldier": "Temple Guard",
+     "veteran": "Warden of the Shrine",
+     "champion": "the Faith's Sworn Blade",
+     "hexer": "the Anchorite",
+     "pyromancer": "Censer-Burner"
+    },
+    "sites": [
+     {
+      "name": "the pilgrim road",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "hexer"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The blade still hangs there. It looks the same. The miracles stop, and the pilgrims' road grows quietly over with grass.",
+    "giver": {
+     "name": "Sela",
+     "race": "human",
+     "sex": "f",
+     "age": 34,
+     "role": "the veiled collector",
+     "traits": {
+      "weakness": "smoker",
+      "looks": "tattooed",
+      "voice": "loud"
+     }
+    }
+   },
+   "q44": {
+    "id": "q44",
+    "name": "Dine and Dash",
+    "desc": "Take the best table, order everything, compliment the cellar -- then rob the owner to settle the bill. The house employs discreet, well-fed muscle.",
+    "settlement": "fairfield",
+    "level": 2,
+    "fuzz": 0,
+    "skins": {
+     "cutthroat": "Coat-Check Knife",
+     "archer": "Balcony Lookout",
+     "bruiser": "the Door's Opinion",
+     "soldier": "House Guard"
+    },
+    "sites": [
+     {
+      "name": "the proprietor's back office",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "bruiser",
+         "soldier"
+        ]
+       ]
+      ],
+      "deed": {
+       "stat": "cha",
+       "dc": 10,
+       "text": "the long con -- twelve courses of charm, ending alone with the host and the strongbox",
+       "fail": "the sommelier remembers your face from a poster"
+      }
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The review, dictated to a terrified waiter on the way out: five stars, would rob again.",
+    "giver": {
+     "name": "Maud",
+     "race": "human",
+     "sex": "f",
+     "age": 36,
+     "role": "the rival in silk",
+     "traits": {
+      "weakness": "smoker",
+      "voice": "whispering",
+      "looks": "weathered"
      }
     }
    }
@@ -3522,8 +3542,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": "q41/s2",
-  "count": 2
+  "site": null,
+  "count": 0
  },
  "site_clears": {},
  "recruits": null,
@@ -3539,11 +3559,11 @@
  },
  "dark_board": {
   "place": "fairfield",
-  "day": 2,
+  "day": 7,
   "qids": [
-   "q40",
-   "q41",
-   "q42"
+   "q42",
+   "q43",
+   "q44"
   ]
  },
  "pact": {
@@ -4184,7 +4204,7 @@
    1939750200,
    2469640030,
    2357403017,
-   103
+   209
   ],
   null
  ]
