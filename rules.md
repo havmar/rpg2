@@ -1432,10 +1432,23 @@ Each weapon carries `move_tags` (**pierce / blade / blunt / heavy** for
 steel, **ranged** for the missile cards). A move is eligible only if the
 wielded weapon carries one of its tags — so "some moves don't fit the
 rapier" (pierce+blade, no butcher's heft) falls out of the tags, no per-move
-exception lists. Two special gates: **iaido** is the katana's alone, and the
+exception lists. Three special gates: **iaido** is the katana's alone; the
 **finisher** needs a killing arc (a blade, or a heavy blunt — a pure spear
-has none). Learning a move requires a weapon that can perform it, and the
+has none); and the **wooden staff** joins **riposte** and **disarm** past
+its blunt tag (2026-07-19, quarterstaff play: the +1-parry weapon answers
+after a parry, and the bind-and-lever disarm is the staff's classic trick)
+— with its tag's pommel/kick/trip, the caster's focus performs a real small
+repertoire (5 of 11) without ever gaining a killing arc. Learning a move
+requires a weapon that can perform it, and the
 repertoire is capped at **combat training + 1**.
+
+**No class gate** (the free-allocation doctrine, restated because the
+levelup menu once implied otherwise): *anyone* with the points — wizards
+included — learns any move their weapon performs. The wizard/warrior split
+is fiction. Wizard **companions** simply don't buy moves on their own
+(`autolearn_moves` skips them: their autolevel points go to the school
+spell — a spending default, not a prohibition); the player can `train`
+a move onto any hero with the points banked.
 
 ## The repertoire (v1)
 
@@ -1445,10 +1458,10 @@ repertoire is capped at **combat training + 1**.
 | **Sweep** | 1 | heavy | 2+ foes at contact | the swing catches a second foe (the hero-side sweep, one roll each defends) |
 | **Feint** | 1 | blade | round 2+ | the next attack on the same foe rides at +3 |
 | **Pommel Strike** | 1 | blade/blunt | foe unhurt (≥ 2/3 HP) | on a wounding hit: severity −2 but the foe loses its next attack |
-| **Disarm** | 1 | blade/pierce | foe armed | on a decisive hit (margin ≥ 3): the weapon flies (broken-weapon state; mirrors telekinesis rank 1) |
+| **Disarm** | 1 | blade/pierce (+ the staff) | foe armed | on a decisive hit (margin ≥ 3): the weapon flies (broken-weapon state; mirrors telekinesis rank 1) |
 | **Kick** | 1 | any melee | foe at contact | on a hit: the foe defends at −2 next round |
 | **Trip** | 1 | any melee | round 2+ | on a decisive hit (margin ≥ 3): the foe skips its next attack AND defends −2 (prone) |
-| **Riposte** | 1 | blade/pierce | parried a blow last round | +2 attack pressure this exchange |
+| **Riposte** | 1 | blade/pierce (+ the staff) | parried a blow last round | +2 attack pressure this exchange |
 | **Iaido** | 2 | katana only | round 1 | +2 attack, +3 severity — then a round stanced (no attack). The katana's signature |
 | **Finisher** (Decapitate / Split Skull) | 2 | blade / heavy+blunt | foe below 1/3 max HP | +3 severity — stretches the almost-kill into the kill; the log names it |
 | **Skirmisher's Step** | 1 | ranged | a charger reaches contact | give ground to reopen the gap by a step (once per fight — kiting, ability-framed so it can't become the default dance) |

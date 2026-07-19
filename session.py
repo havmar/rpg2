@@ -47,6 +47,7 @@ The shape of a playthrough:
                                                part of a played campaign)
   resume [...] / retreat [--blink]          -- settle a paused fight
   rest / camp / tavern / downtime / award / buy / give / train / use / heal
+  prices                                    -- the shop price sheet (DM ref)
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
@@ -69,6 +70,7 @@ from pathlib import Path
 
 from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
+    POTION_PRICE,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, HEALING_POTION_RESTORE,
     PAUSE_ACTION_DEF_PENALTY,
@@ -625,12 +627,17 @@ def require_no_pending(state: dict) -> bool:
 
 def _starting_settlement(world: dict) -> dict:
     """Where a new game begins (2026-07-13): the settlement posting the
-    world's LOWEST-level open quest, so the opening hook is a job a fresh
-    party can actually take. (The capital -- settlements[0] -- keeps its
-    story-layer role regardless of where the party starts.)"""
+    world's LOWEST-level open COMBAT quest, so the opening hook is a job a
+    fresh party can actually take. Deliveries are excluded (2026-07-19 fix:
+    they carry level 0, so a settlement with a delivery and only high-level
+    combat work used to win this contest -- and the hook, which is always
+    a combat job, then opened the game on a level-5 door). (The capital --
+    settlements[0] -- keeps its story-layer role regardless of where the
+    party starts.)"""
     def lowest(s: dict) -> int:
         levels = [world["quests"][qid]["level"] for qid in s["quests"]
-                  if world["quests"][qid]["status"] == "open"]
+                  if world["quests"][qid]["status"] == "open"
+                  and world["quests"][qid].get("kind") != "delivery"]
         return min(levels) if levels else 99
     return min(world["settlements"], key=lowest)
 
@@ -1199,27 +1206,29 @@ def print_levelup_menu(heroes: list) -> None:
                   f"  -> train {first} alchemy")
         # Sink 6: the warrior moves (session B -- riders on the exchange, the
         # engine fires them; repertoire capped at combat training + 1, gated
-        # by the wielded weapon's move tags).
-        if not h.school:
-            cap = h.training + 1
-            if h.moves:
-                print(f"  moves known ({len(h.moves)}/{cap}): "
-                      f"{', '.join(sorted(h.moves))}")
-            if len(h.moves) >= cap:
-                print(f"  moves: repertoire full ({len(h.moves)}/{cap}) -- "
-                      f"raise combat training for room")
-            else:
-                learnable = []
-                for name, m in MOVES.items():
-                    if name in h.moves or not move_weapon_ok(name, h.weapon):
-                        continue
-                    mark = "*" if h.skill_points >= m.cost else ""
-                    learnable.append(f"{name} {m.cost}{mark}")
-                if learnable:
-                    print(f"  moves to learn (cost, * = affordable; "
-                          f"train {first} move NAME): {', '.join(learnable)}")
-                elif h.weapon is not None:
-                    print(f"  moves: none fit the {h.weapon.name}")
+        # by the wielded weapon's move tags). Shown to EVERYONE (2026-07-19
+        # fix: the menu used to hide it from wizards, which read as a class
+        # gate -- the free-allocation doctrine has none; the only gates are
+        # the weapon's tags and the training cap).
+        cap = h.training + 1
+        if h.moves:
+            print(f"  moves known ({len(h.moves)}/{cap}): "
+                  f"{', '.join(sorted(h.moves))}")
+        if len(h.moves) >= cap:
+            print(f"  moves: repertoire full ({len(h.moves)}/{cap}) -- "
+                  f"raise combat training for room")
+        else:
+            learnable = []
+            for name, m in MOVES.items():
+                if name in h.moves or not move_weapon_ok(name, h.weapon):
+                    continue
+                mark = "*" if h.skill_points >= m.cost else ""
+                learnable.append(f"{name} {m.cost}{mark}")
+            if learnable:
+                print(f"  moves to learn (cost, * = affordable; "
+                      f"train {first} move NAME): {', '.join(learnable)}")
+            elif h.weapon is not None:
+                print(f"  moves: none fit the {h.weapon.name}")
 
 
 def cmd_levelup(args: argparse.Namespace) -> None:
@@ -1304,11 +1313,15 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
     if cur["room"] < len(site["rooms"]):
         return
     n_rooms = len(site["rooms"])
-    last_site = cur["site"] == len(quest["sites"]) - 1
+    n_sites = len(quest["sites"])
+    last_site = cur["site"] == n_sites - 1
     banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
+    # A multi-site quest names its position (site 1/2) in the banner so a
+    # SITE CLEARED never reads as the whole job done (2026-07-19).
+    pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
     award_quest(party, purse, site_gold(site["level"]),
                 site_clear_xp(site["level"], n_rooms), log,
-                f"{quest['name']} -- {site['name']}", banner=banner)
+                f"{quest['name']} -- {site['name']}{pos}", banner=banner)
     cur["site"] += 1
     cur["room"] = 0
     if last_site:
@@ -2691,6 +2704,34 @@ def cmd_train(args: argparse.Namespace) -> None:
     save(state)
 
 
+def cmd_prices(args: argparse.Namespace) -> None:
+    """The DM's price sheet (2026-07-19), read from the live constants --
+    'what does a katana cost' should never mean searching the code (dm.md
+    points here). A pure readout: no save touched, callable any time."""
+    print("-- SHOP PRICES (gold) --")
+    print(f"potion (healing or stamina): {POTION_PRICE}g")
+    print(f"spellbook (capitals only): {SPELLBOOK_PRICE}g")
+    print(f"meds dose (capitals only, one per {MEDS_INTERVAL_DAYS} days): "
+          f"{MEDS_PRICE}g")
+    print(f"tavern night: {TAVERN_COST_PER_HERO}g a head")
+    print("ammo, by the lot (to the carry cap):")
+    for kind, (lot, price) in AMMO_LOTS.items():
+        print(f"  {kind}: {lot} for {price}g (cap {AMMO_CAPS[kind]})")
+    print("  sling stones: free (the ground is full of them)")
+    common = [(n, w) for n, w in WEAPONS.items()
+              if w.tier == "plain" and not w.quality]
+    quality = [(n, w) for n, w in WEAPONS.items()
+               if w.tier == "plain" and w.quality]
+    print("common weapons:")
+    for name, w in sorted(common, key=lambda kv: (kv[1].value, kv[0])):
+        print(f"  {name}: {w.value}g")
+    print("quality weapons:")
+    for name, w in sorted(quality, key=lambda kv: (kv[1].value, kv[0])):
+        print(f"  {name}: {w.value}g")
+    print("(the revolver sells in DWARVEN settlements only; masterwork and "
+          "legendary are never for sale; brewed potions can't be sold)")
+
+
 def cmd_use(args: argparse.Namespace) -> None:
     state = load()
     if not require_no_pending(state):
@@ -3243,6 +3284,14 @@ def main() -> None:
                    help="a potion kind, a weapon name (e.g. rapier, "
                         "wooden staff), 'meds', or 'book SPELL'")
     p.set_defaults(func=cmd_buy)
+
+    p = sub.add_parser(
+        "prices",
+        help="the DM's price sheet, read from the live constants: potions, "
+             "spellbooks, meds, the tavern, ammo lots, and every shoppable "
+             "weapon -- answer 'what does X cost' from this readout, never "
+             "by searching the code")
+    p.set_defaults(func=cmd_prices)
 
     p = sub.add_parser(
         "give",

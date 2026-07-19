@@ -212,7 +212,13 @@ a pointer: what the file is, how it's run, where its docs are.
   also the alchemy surface: `brew HERO RECIPE` (once/day), `train HERO
   alchemy`, `use HERO strength|dexterity` (the stat brews / overcharge),
   `retreat --smoke HERO`, companion auto-brew at the night paths, and the
-  levelup-menu alchemy sink.
+  levelup-menu alchemy sink. Since 2026-07-19: `prices` (the DM price
+  sheet, read from the live constants -- dm.md points at it), the
+  starting settlement excludes deliveries (their level 0 used to win
+  the lowest-job contest and open the game on a high-level hook,
+  ~59% of seeds), multi-site SITE CLEARED banners carry their position
+  (site 1/2), and the levelup menu shows the moves section to wizards
+  too (the free-allocation doctrine: no class gate).
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -451,7 +457,9 @@ mechanic *does* and *why* is rules.md's job.
   Moves add-on) — `rpg.py`: the moves constants block + the `Move`/`MOVES`
   catalog + `MOVE_PRIORITY` + `MoveRider`/`build_move_rider` +
   `move_weapon_ok`/`_finisher_ok`/`finisher_name` (just after the WEAPONS
-  catalog, which now carries `Weapon.move_tags` via `_WEAPON_MOVE_TAGS`);
+  catalog, which now carries `Weapon.move_tags` via `_WEAPON_MOVE_TAGS`;
+  `_MOVE_WEAPON_OK` holds the special gates -- iaido, the finisher, and
+  since 2026-07-19 the staff's riposte/disarm quarterstaff pair);
   `Entity`'s per-fight move state (`moves_spent`, `moves_refunded`,
   `feint_target`, `off_guard`, `stanced`, `just_parried`/`parried_last`,
   cleared in `_clear_fight_states`); the selection hook `_fire_move` +
