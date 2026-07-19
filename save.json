@@ -13,7 +13,9 @@
    "brewed": 0,
    "str_buff": 0,
    "dex_buff": 0,
-   "moves": [],
+   "moves": [
+    "kick"
+   ],
    "pool_bought": {
     "hp": 0,
     "sta": 0,
@@ -21,7 +23,7 @@
    },
    "school": "fire",
    "spells": {
-    "fire": 1
+    "fire": 2
    },
    "spell_ward": 0,
    "sta_cost": 1,
@@ -35,9 +37,9 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": true,
-   "hp": 8,
-   "cur_sta": 1,
-   "cur_power": 0,
+   "hp": 9,
+   "cur_sta": 6,
+   "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -70,7 +72,7 @@
    "hp_regen_per_night": 1,
    "level": 2,
    "xp": 0,
-   "skill_points": 3,
+   "skill_points": 0,
    "training": 0,
    "weapon": "flail",
    "weapon_broken": false,
@@ -126,8 +128,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 0,
-   "cur_sta": 2,
+   "hp": 3,
+   "cur_sta": 9,
    "cur_power": 5,
    "dex_debuff": 0,
    "unseen": false,
@@ -151,12 +153,12 @@
    "switched": false,
    "shots_hit": 0,
    "shots_missed": 0,
-   "down": true,
+   "down": false,
    "dead": false,
    "fate_debt": false,
    "items": {
     "healing": 0,
-    "stamina": 0
+    "stamina": 1
    },
    "hp_regen_per_night": 2,
    "level": 2,
@@ -179,18 +181,18 @@
     "looks": "beautiful",
     "speech": "formal"
    },
-   "satisfaction": 6,
+   "satisfaction": 7,
    "bond": "Uthemar",
    "bond_kind": "old companion",
    "last_dose_day": 0
   }
  ],
  "clock": {
-  "day": 1,
-  "short_rests_used": 1
+  "day": 2,
+  "short_rests_used": 0
  },
  "purse": {
-  "gold": 23
+  "gold": 21
  },
  "foe_count": 4,
  "active_quest": "q08",
@@ -263,7 +265,8 @@
      "q31",
      "q32",
      "q36",
-     "q39"
+     "q39",
+     "w1"
     ]
    },
    {
@@ -3311,6 +3314,90 @@
       "dress": "luxurious"
      }
     }
+   },
+   "w1": {
+    "id": "w1",
+    "name": "Strange Salvage",
+    "desc": "Livestock, fence-iron, and one census-taker have gone missing along the human border. What the trackers found was half animal, half machine, and all appetite.",
+    "settlement": "stonefield",
+    "level": 2,
+    "skins": {
+     "wolf": "Vat-Hound",
+     "dire wolf": "Vat-Alpha",
+     "cutthroat": "Bomb-Lobber",
+     "archer": "Rivet-Gunner",
+     "bruiser": "Scrap-Golem",
+     "soldier": "Tin Legionnaire",
+     "veteran": "Tin Sergeant",
+     "champion": "War-Tinker",
+     "blademaster": "Buzzblade Duelist",
+     "warlord": "Grand Tinkerer",
+     "ogre": "Walking Bomb",
+     "troll": "Flesh-Forge Hulk"
+    },
+    "sites": [
+     {
+      "name": "the picked-clean farmstead",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the salvage burrow",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "dire wolf"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "wolf",
+         "dire wolf"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The burrow is collapsed onto its own bomb stores; the crater smokes for a week and the livestock stop vanishing.",
+    "story_wave": 0,
+    "giver": {
+     "name": "Cateline",
+     "race": "human",
+     "sex": "f",
+     "age": 45,
+     "role": "queen",
+     "traits": {
+      "temperament": "cheerful",
+      "speech": "swears a lot",
+      "dress": "ascetic"
+     },
+     "land": "human",
+     "seat": "stonefield",
+     "post": "ruler"
+    }
    }
   },
   "npcs": [
@@ -3540,12 +3627,19 @@
    "human",
    "orc"
   ],
-  "wave_posted": 0,
+  "wave_posted": 1,
   "wave_done": 0,
-  "quests": [],
+  "quests": [
+   "w1"
+  ],
   "fallen": null,
   "over": false,
-  "events": []
+  "events": [
+   {
+    "day": 2,
+    "line": "wave 1 posted: Strange Salvage (at Stonefield)"
+   }
+  ]
  },
  "location": {
   "place": "stormridge",
@@ -3556,8 +3650,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": "q08/s1",
-  "count": 2
+  "site": null,
+  "count": 0
  },
  "site_clears": {},
  "recruits": null,
@@ -4201,7 +4295,7 @@
    443446895,
    4126518327,
    830152053,
-   596
+   616
   ],
   null
  ]
