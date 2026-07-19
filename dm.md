@@ -90,6 +90,13 @@ it's worth the road to a better town -- is the player's core decision:**
   next encounter (same pause / retreat machinery as the set sites).
   Progress is remembered per quest -- switching quests and coming back
   later is fine, but working it means being there.
+- **Taking a job starts it (2026-07-19).** When the player takes a
+  quest, the SAME DM message runs `room` and opens the first encounter
+  (or the deed/twist block a caper prints): a sentence of walking up to
+  the door, then the fight. Never spend a message on "you have arrived
+  at the site, what do you do?" -- arrival is not a decision point. The
+  exception is the player's own words: if they take a job and say they
+  want to do something else first (shop, hire, rest), do that instead.
 - **Check where the party stands BEFORE framing a scene.** Quests are
   local, and the scripts enforce it: `room`/`take` refuse with a "travel
   there first" line when the party is elsewhere. Don't narrate the arrival
@@ -282,21 +289,64 @@ fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
   print the war's current line; the player may always ignore the war
   and do local work -- the war waits.
 
-## The dark path -- villainy, karma & heat (2026-07-19)
+## The dark path -- the pact with Hell, villainy, karma & heat (2026-07-19)
 
-The game can be played WICKEDLY (the villain layer; rules.md's Karma &
-Heat add-on has the mechanics). A player who never touches it plays the
-old game exactly -- never push the dark path; offer it when the fiction
-or the player leans that way.
+**The frame: the PC is not a neutral adventurer.** He is a LOW-RANKING
+EMPLOYEE OF HELL -- a mortal of an ordinary race (never an imp) bound
+by a pact with an evil god: wealth and power promised, obedience owed,
+in tasks that weaken the very fabric of the orderly universe. Hell's
+long game is that fraying -- hellgates opened, summonings eased. The
+pact rides every new save (`new --no-pact` is the neutral game); it
+colors the PC's situation, never his choices -- honest questing,
+ignoring hell, even trying to go straight are all real play, priced by
+the mechanics below. Never push the dark path; the pact makes it KNOCK
+(assignments arrive on their own), and what the player does about the
+knocking is the game.
 
+**The world of Order.** Against hell stand the gods of Light and their
+religions -- paladins, hunters, monks, priests, heroes and adventurers
+on their coin -- and the worldly powers: armies, city watchmen, angry
+pitchfork mobs. Use them as the faces of every posse and every
+consequence. And keep this true: **the order they maintain is often
+not Good** -- tithes squeezed, poachers hanged, heretics hounded.
+Honest questgivers can be petty, cruel, or both; the dark path's best
+comedy is how respectable the other side looks.
+
+**Hell itself is walkable.** The PC can walk into hell any time, at no
+cost -- but it is dangerous there, and demons LOVE bullying, junior
+mortal staff most of all. There is no hell map or content yet
+(plan.md): narrate hell scenes freeform, `forge` any fight there with
+infernal reskins, and keep visits scene-sized.
+
+- **Assignments (Dark Tasks).** Hell assigns work on its own clock: a
+  WORD FROM BELOW block prints at settlements (unseen job boards --
+  which paladins search for -- black-waxed letters, ember-eyed
+  couriers; the script rolls the delivery). The task is a dark quest
+  leveled AT the party with the margin of error running UPWARD; it is
+  a curriculum in vice -- each task teaches a type of destructive act,
+  and the player is meant to take a liking to some and do them
+  proactively (`board --dark` and `forge --dark` are exactly that:
+  self-assigned wickedness). An assignment may be ignored for its
+  GRACE (~4 days); past that comes CHICKENING OUT -- infernal
+  colleagues dispatched to punish the disobedience, worse each visit.
+  `bribe` buys quiet (30g x level, 10 days); `task` is the ledger.
+  Relay the whole bargain straight -- the choice only works informed.
+- **Capers: deeds and twists.** Dark jobs are not all door-kicking.
+  A DEED site opens on a check (the lift, the long con, the plan):
+  the script rolls the PC's 2d6+stat vs a DC set HIGH on purpose --
+  the dex check will probably fail, and lead to a fight, with
+  witnesses (+15 bad karma). Narrate the attempt as the scene it is;
+  a CLEAN make is a heist told in one message, full pay, no blood. A
+  TWIST site opens on printed terms (the fence offers half, backed by
+  bodyguards; the rival proposes a partnership): present them as the
+  scene, then the player's call -- `settle` takes the terms, `room`
+  refuses and fights. Play the counterparty from the giver line.
 - **The shadow board**: `board --dark` rolls the settlement's dark jobs
   (fresh per day, leveled at the party). In the fiction there is no board
   here either -- there is a WRONG TAVERN CORNER: the fixer, the veiled
   collector, the grave-broker. Same one-message funnel, seedier cast.
   Dark gold runs half again the honest rate; every XP a dark job pays is
-  BAD KARMA, and the meter prints itself (the tally, `karma`). Relay it
-  straight -- the player is choosing a throttle, and the choice only
-  works informed.
+  BAD KARMA, and the meter prints itself (the tally, `karma`).
 - **The register is CARTOON VILLAINY, never grimdark.** Discworld and
   Conan, not a war-crimes ledger: evil is theft, arson, extortion,
   hubris, kicked puppies, and fighting everyone who rightly objects.
@@ -304,10 +354,17 @@ or the player leans that way.
   (guards, militia, the pup's mother); the wickedness itself -- the
   torched granary, the pocketed relic -- is YOUR narration, and it stays
   comic: victims are indignant, not brutalized; cruelty to the helpless
-  happens offscreen or not at all; the puppy is KICKED, never worse, and
-  its epilogue is a bard's mocking song, not a wound. If a beat would
-  read as genuinely sadistic, swerve it -- the game is a comedy about
-  being the problem, not a misery simulator.
+  happens OFFSCREEN or not at all. Even hell's most heinous
+  assignments (the puppy sacrifice) stay comic-grotesque: the act is a
+  line and a hard cut, the epilogue does the work (the applause from
+  below, the bard's very long song), never a lingering scene. If a
+  beat would read as genuinely sadistic, swerve it -- the game is a
+  comedy about being the problem, not a misery simulator.
+- **Combat that shouldn't be lethal isn't.** When the fiction says a
+  fight is not to the death (a beast to be CAGED, a tavern brawl, a
+  beating), 0 HP is defeated or knocked out, not dead -- same numbers,
+  your narration decides what falling means. Kill only where the
+  story wants killing.
 - **Heat is the wanted level -- narrate it as weather.** At heat >= 1
   the world starts LOOKING at the party: guards mutter, prices stiffen,
   doors close a little. When THE RECKONING fires (posses at arrivals and
@@ -316,6 +373,16 @@ or the player leans that way.
   they announce, they mean it, retreat is the peaceful option. Cutting
   them down pays XP that is itself bad karma: say what that means once,
   then let the spiral be the player's own bed.
+- **Losing to a posse is never the end (2026-07-19).** The PC does not
+  get killed by heroic adventurers or by hell's enforcers -- the
+  script prints the mercy and reshapes the save. LEFT FOR DEAD (the
+  law): the party and purse are forfeit and ALL bad karma clears; the
+  heroes think him dead, or he ran in shame -- and everyone in hell is
+  laughing at him. THE LESSON (hell): the purse is the fine, the
+  refused job is withdrawn, the karma stays. Narrate the ditch, the
+  laughter, the walk back to town in one shoe -- it is a pratfall and
+  a fresh start, not a funeral. The named companions' fates are yours
+  to tell (dead, jailed, scattered); mechanically they are gone.
 - **The posse leader is a person** -- generated face, name in the log.
   If the party flees (or the leader's row survives), remember the name:
   `karma` keeps the last leader, and a returning face beats a fresh one
@@ -325,10 +392,16 @@ or the player leans that way.
   the improvised puppy-kick, the fenced heirloom, the coin pressed on
   the beggar. Petty ~15, serious ~50, an outrage ~100+ (one heat step
   is 100 x party level). Quest work buckets itself -- these commands
-  are only for what you and the player improvise.
+  are only for what you and the player improvise. Hell also
+  occasionally wants FREEFORM wickedness ("do something really mean;
+  be creative -- you will be graded on body count, not creativity"):
+  run it as narration plus `forge --dark` for any fight it needs and
+  `karma bad N` for the deed itself.
 - **Redemption is mechanical**: honest quests burn bad karma 1:1. A
   villain lying low doing good works IS the game working -- narrate the
-  Watch sergeant's suspicious squint slowly softening.
+  Watch sergeant's suspicious squint slowly softening. (Hell notices
+  too -- for now only as flavor; hell's own audit of a too-virtuous
+  employee is roadmap.)
 
 ## Flavor beats -- two per session rhythm, always brief (2026-07-12)
 
@@ -826,6 +899,18 @@ bigger than the fights WITHOUT pages of narration:
   the spot: pay (20g + 25 XP per road day; CHA talks it up), recipient
   prompt, epilogue. Frame the cargo as the fiction demands -- the
   templates say what it is.
+- **The pact & karma in numbers (2026-07-19):** dark XP = bad karma;
+  heat = bad karma // (100 x party level), capped 3; the law's posses
+  arrive at party level + heat (cooldown 2d, chance 0.6, at arrivals
+  and nights). Assignments: a fresh one ~4 days after the last
+  resolved, leveled at the party +0..+2, grace ~4 days, then hell's
+  enforcers at party +1 (+1 per beaten visit, max +3; neutral XP --
+  demon-slaying is neither crime nor penance). `bribe` = 30g x level
+  for 10 quiet days. Deeds: PC 2d6+stat vs DC (usually 10-11); a
+  botch adds +15 bad karma and starts the fight. `settle` takes a
+  twist's terms at x0.5 of the site lump. Losing to any posse is the
+  mercy (left for dead / the lesson), never GAME OVER; ordinary
+  fights still kill as ever.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their

@@ -41,6 +41,10 @@ The shape of a playthrough:
                                                in play quests come from
                                                their GIVERS -- dm.md)
   chatter                                   -- a party-flavor seed (dm.md)
+  task / bribe / settle                     -- the hell pact (2026-07-19):
+                                               the assignment ledger,
+                                               greasing hell's hand, and
+                                               taking a caper twist's terms
   fight N                                   -- off-script encounters
   hideout ROOM / barrow ROOM                -- the two set sites (DEV/TEST
                                                only since 2026-07-13; not
@@ -329,6 +333,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
         "align": pending.get("align", "neutral"),
+        "mercy": pending.get("mercy"),
     }
 
 
@@ -349,6 +354,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
         "align": d.get("align", "neutral"),
+        "mercy": d.get("mercy"),
     }
 
 
@@ -403,6 +409,10 @@ def party_sheet_lines(state: dict) -> list[str]:
     if streak["count"]:
         lines.append(f"momentum: {streak['count']} encounter(s) at "
                      f"{streak['site']} since the last camp")
+    k = state.get("karma")
+    if k and k.get("bad_total"):
+        lines.append(f"karma: {karma.karma_line(k, party_level(state))}")
+    lines.extend(pact_lines(state))
     if state.get("sighting"):
         lines.append(f"sighted: {state['sighting']['line']}")
     for (site, room), rec in sorted(state.get("rooms", {}).items()):
@@ -479,6 +489,7 @@ def save(state: dict) -> None:
         "visited": state.get("visited", []),
         "karma": state.get("karma") or karma.new_karma(),
         "dark_board": state.get("dark_board"),
+        "pact": state.get("pact"),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -534,6 +545,9 @@ def load() -> dict:
             if location and location.get("kind") != "wild" else []),
         "karma": doc.get("karma") or karma.new_karma(),
         "dark_board": doc.get("dark_board"),
+        # None = a pactless save (new --no-pact, or pre-pact): the hell
+        # layer stays inert -- no default resurrect.
+        "pact": doc.get("pact"),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -707,6 +721,10 @@ def cmd_new(args: argparse.Namespace) -> None:
              "streak": {"site": None, "count": 0}, "site_clears": {},
              "recruits": None,
              "karma": karma.new_karma(), "dark_board": None,
+             # THE HELL PACT (2026-07-19): the PC is a low-ranking
+             # employee of Hell by default -- `--no-pact` is the
+             # neutral-adventurer switch (and what the old game was).
+             "pact": None if args.no_pact else karma.new_pact(),
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
              "visited": [_starting_settlement(world)["key"]]}
@@ -733,6 +751,11 @@ def cmd_new(args: argparse.Namespace) -> None:
     print("(The story layer is armed: a war is seeded in this world and "
           "its first word finds a level-2 party in a settlement. DM: see "
           "dm.md, The war.)")
+    if state.get("pact"):
+        print(f"(THE PACT rides this save: {pc.name} is a low-ranking "
+              f"employee of Hell -- dm.md, The dark path. Hell's first "
+              f"assignment finds the party at a settlement soon; `task` "
+              f"shows the ledger. `new --no-pact` is the neutral game.)")
 
 
 # --------------------------------------------------------------------------- #
@@ -1046,6 +1069,8 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"  Karma: {karma.karma_line(k, party_level(state))} "
               f"(lifetime {k['bad_total']} wickedness / "
               f"{k['good_total']} penance; see `karma`).")
+    for line in pact_lines(state):
+        print("  " + line)
     if state.get("sighting"):
         s = state["sighting"]
         print(f"  Sighted (day {s['day']}): {s['line']} -- `engage` to fight "
@@ -1275,7 +1300,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       room: int | None = None,
                       quest: str | None = None,
                       streak_pos: int | None = None,
-                      field: int = 0, align: str = "neutral") -> None:
+                      field: int = 0, align: str = "neutral",
+                      mercy: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE once, at the fight's first wounds crossing (see play_orders) --
     then award and
@@ -1286,7 +1312,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     (site encounters only) -- recorded on victory so the NEXT one pays more.
     `field` is the fight's opening gap (ranged combat: ROOM_FIELD indoors,
     the engagement's outcome in the wilds) -- persisted with a paused
-    fight so the resume stands on the same ground."""
+    fight so the resume stands on the same ground. `mercy` ("law"/"hell")
+    marks a POSSE fight: losing it fires apply_mercy, never GAME OVER."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     dead_before = [h.name for h in party if h.dead]    # so the post-fight
@@ -1305,6 +1332,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "dead_before": dead_before,
             "field": field,
             "align": align,
+            "mercy": mercy,
         }
         print_combat(log)
         print()
@@ -1313,7 +1341,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
                      quest=quest, streak_pos=streak_pos,
-                     dead_before=dead_before, align=align)
+                     dead_before=dead_before, align=align, mercy=mercy)
 
 
 def party_level(state: dict) -> int:
@@ -1338,22 +1366,38 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
     it, and delivers the EPILOGUE (2026-07-12: the authored aftermath line
     the giver's turn-in scene is narrated over -- dm.md)."""
     quest = state["world"]["quests"][qid]
-    party, purse = state["party"], state["purse"]
     cur = quest["next"]
     site = quest["sites"][cur["site"]]
     cur["room"] += 1
     if cur["room"] < len(site["rooms"]):
         return
+    _close_site(state, log, qid)
+
+
+def _close_site(state: dict, log: list[str], qid: str,
+                pay_mult: float = 1.0, note: str = "") -> None:
+    """Close the active quest's CURRENT site: pay its lump (scaled by
+    `pay_mult` -- the caper paths pay fractions: a settled twist), move
+    the cursor to the next site or complete the quest (day stamp, giver
+    prompt, EPILOGUE, war hook, the hell-pact ledger). advance_quest's
+    tail, split out (2026-07-19) so a deed done clean and a settled
+    twist can close a site without walking its rooms."""
+    quest = state["world"]["quests"][qid]
+    party, purse = state["party"], state["purse"]
+    cur = quest["next"]
+    site = quest["sites"][cur["site"]]
     n_rooms = len(site["rooms"])
     n_sites = len(quest["sites"])
     last_site = cur["site"] == n_sites - 1
     banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
+    if note:
+        banner += f" ({note})"
     # A multi-site quest names its position (site 1/2) in the banner so a
     # SITE CLEARED never reads as the whole job done (2026-07-19).
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
-    clear_xp = site_clear_xp(site["level"], n_rooms)
-    award_quest(party, purse, site_gold_for(quest, site),
-                clear_xp, log,
+    clear_xp = round(site_clear_xp(site["level"], n_rooms) * pay_mult)
+    gold = round(site_gold_for(quest, site) * pay_mult)
+    award_quest(party, purse, gold, clear_xp, log,
                 f"{quest['name']} -- {site['name']}{pos}", banner=banner)
     record_karma(state, clear_xp, quest.get("align", "good"), log)
     cur["site"] += 1
@@ -1372,6 +1416,17 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
             for line in story.on_wave_done(state["story"], quest,
                                            state["clock"].day):
                 log.append("  " + line)
+        pact = state.get("pact")
+        if pact and quest.get("hell_task") and pact.get("task") == qid:
+            # The assignment is done: hell's clock restarts, the
+            # curriculum ledger ticks (the pact, 2026-07-19).
+            pact["task"] = None
+            pact["last_task_day"] = state["clock"].day
+            pact["beatings"] = 0
+            pact["done"] = pact.get("done", 0) + 1
+            log.append(f"  (THE ASSIGNMENT IS DONE -- hell is pleased; "
+                       f"the ledger reads {pact['done']} completed. The "
+                       f"next job comes in its own time.)")
     else:
         nxt = quest["sites"][cur["site"]]
         log.append(f"  (next: {nxt['name']}, L{nxt['level']}, "
@@ -1507,7 +1562,8 @@ def maybe_punish(state: dict) -> bool:
           f"has caught up ({karma.karma_line(k, lvl)}). ***")
     print(f"  {label} find the party {where}, led by {npc_line(leader)}")
     print(f"  (no parley in v1 -- they mean to collect; retreat is the "
-          f"peaceful option)")
+          f"peaceful option. Losing is not death: the law leaves the "
+          f"PC for dead -- party, purse, and bad karma all forfeit)")
     log = CombatLog()
     for hero in living:
         start_fight(hero, log)
@@ -1526,7 +1582,7 @@ def maybe_punish(state: dict) -> bool:
         log.append("  " + line)
     field = 0 if here is not None else WILD_FIELD
     resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
-                      field=field, align="dark")
+                      field=field, align="dark", mercy="law")
     return True
 
 
@@ -1565,6 +1621,340 @@ def roll_dark_board(state: dict) -> dict | None:
     return rec
 
 
+# --------------------------------------------------------------------------- #
+# The hell pact (2026-07-19, the dark-quests session -- karma.py, rules.md)
+# --------------------------------------------------------------------------- #
+
+def pact_task(state: dict) -> dict | None:
+    """The current assignment's quest, or None (also self-heals a stale
+    pointer: a done/withdrawn task clears the slot)."""
+    pact = state.get("pact")
+    if not pact or not pact.get("task"):
+        return None
+    q = state["world"]["quests"].get(pact["task"]) if state.get("world") \
+        else None
+    if q is None or q["status"] == "done":
+        pact["task"] = None
+        return None
+    return q
+
+
+def pact_lines(state: dict) -> list[str]:
+    """The pact's readout lines (status and `task` share them)."""
+    pact = state.get("pact")
+    if not pact:
+        return []
+    day = state["clock"].day
+    lines = []
+    q = pact_task(state)
+    if q is not None:
+        s = _settlement_by_key(state["world"], q["settlement"])
+        where = s["name"] if s else q["settlement"]
+        due = pact["assigned_day"] + karma.TASK_GRACE_DAYS
+        state_word = ("OVERDUE -- hell's enforcers are coming"
+                      if day > due and day >= pact.get("bribed_until", 0)
+                      else f"grace runs to day {due}")
+        lines.append(f"THE PACT: assignment [{q['id']}] {q['name']} at "
+                     f"{where} ({state_word}).")
+    elif day < pact.get("bribed_until", 0):
+        lines.append(f"THE PACT: hell eased off until day "
+                     f"{pact['bribed_until']} (bribed).")
+    else:
+        nxt = pact.get("last_task_day", -99) + karma.TASK_INTERVAL_DAYS
+        when = ("any settlement day now" if nxt <= day
+                else f"~day {nxt}, at a settlement")
+        lines.append(f"THE PACT: no current assignment -- hell's next "
+                     f"job comes {when}.")
+    if pact.get("done"):
+        lines.append(f"  ({pact['done']} assignment(s) completed -- "
+                     f"the curriculum ledger; see `task`)")
+    return lines
+
+
+def maybe_assign_task(state: dict) -> bool:
+    """Hell's curriculum clock: a fresh ASSIGNMENT finds the party at a
+    settlement -- TASK_INTERVAL_DAYS after the last one resolved, never
+    while one is open or a bribe holds. The task is a dark quest rolled
+    AT the party with the margin of error running upward (spread 0..+2),
+    flagged `hell_task`, delivered by unseen job board / black-waxed
+    letter / ember-eyed courier (karma.HELL_MAIL). Prints the WORD FROM
+    BELOW block; the caller saves. Returns True when one landed."""
+    pact = state.get("pact")
+    living = [h for h in state["party"] if not h.dead]
+    if not pact or not living or state.get("pending"):
+        return False
+    if pact.get("task"):
+        return False
+    day = state["clock"].day
+    if day < pact.get("bribed_until", 0):
+        return False
+    if day < pact.get("last_task_day", -99) + karma.TASK_INTERVAL_DAYS:
+        return False
+    here = local_settlement(state)
+    if here is None or occupied_here(state) is not None:
+        return False
+    world, rng = state["world"], state["rng"]
+    used = {n["name"] for n in world.get("npcs", [])}
+    used |= {q["giver"]["name"] for q in world["quests"].values()
+             if q.get("giver")}
+    q = karma.roll_dark_quest(world, here, party_level(state), rng,
+                              used_names=used, spread=(0, 2))
+    q["hell_task"] = True
+    pact["task"] = q["id"]
+    pact["assigned_day"] = day
+    pact["beatings"] = 0
+    how = rng.choice(karma.HELL_MAIL)
+    print(f"*** WORD FROM BELOW -- day {day}: {how}. ***")
+    print(f"  Hell assigns: {quest_line(q, party_mind(state))}")
+    g = q.get("giver")
+    if g:
+        print(f"  (the local hand on the job: {npc_line(g)})")
+    print(f"  It may be ignored for ~{karma.TASK_GRACE_DAYS} days; past "
+          f"that, Chickening Out -- infernal colleagues come to punish "
+          f"the disobedience. `take {q['id']}` works it; `bribe` "
+          f"(~{karma.BRIBE_GOLD_PER_LEVEL} g x level) buys "
+          f"{karma.BRIBE_DAYS} days of quiet; `task` shows the ledger.")
+    return True
+
+
+def maybe_enforce(state: dict) -> bool:
+    """Chickening Out: an assignment ignored past its grace draws hell's
+    enforcers -- checked at the same stops as the law's posses (arrivals
+    and nights), cooldown + chance, never stacked on a stop that already
+    fought. The posse fights at party level +1, +1 per beating already
+    survived (capped +3 over): the margin of error runs upward. Beating
+    them changes nothing -- the job still stands, and the next visit is
+    worse; LOSING is hell's lesson (apply_mercy: the purse taken as a
+    fine, the refused job withdrawn). Their XP is NEUTRAL -- cutting
+    down devils is neither crime nor penance, and farming them for
+    absolution would be a hole."""
+    pact = state.get("pact")
+    living = [h for h in state["party"] if not h.dead]
+    if not pact or not living or state.get("pending"):
+        return False
+    q = pact_task(state)
+    if q is None:
+        return False
+    day = state["clock"].day
+    if day <= pact["assigned_day"] + karma.TASK_GRACE_DAYS:
+        return False
+    if day < pact.get("bribed_until", 0):
+        return False
+    if day < pact.get("last_enforce_day", -99) + karma.ENFORCE_COOLDOWN_DAYS:
+        return False
+    rng = state["rng"]
+    if rng.random() >= karma.ENFORCE_CHANCE:
+        return False
+    pact["last_enforce_day"] = day
+    pact["beatings"] = pact.get("beatings", 0) + 1
+    lvl = party_level(state)
+    posse_level = min(karma.LEVEL_CAP,
+                      lvl + 1 + min(2, pact["beatings"] - 1))
+    land = state["location"]["land"]
+    used = {n["name"] for n in state["world"].get("npcs", [])}
+    kinds, skins, leader, label = karma.build_hell_posse(
+        posse_level, land, rng, used_names=used)
+    here = local_settlement(state)
+    where = (f"at {here['name']}" if here is not None
+             else "at the party's fire")
+    print(f"*** CHICKENING OUT -- day {day}: hell's patience with "
+          f"[{q['id']}] {q['name']} has run out. ***")
+    print(f"  {label} find the party {where}, led by {npc_line(leader)}")
+    print(f"  (beat them and the job still stands -- the next visit "
+          f"comes worse; lose and hell collects its fine. `bribe` or "
+          f"the job itself are the ways out)")
+    log = CombatLog()
+    for hero in living:
+        start_fight(hero, log)
+    log.append(f"=== Chickening Out: {label} "
+               f"(a level-{posse_level} posse) ===")
+    foes = []
+    for kind in kinds:
+        state["foe_count"] += 1
+        foes.append(make_foe(kind, state["foe_count"], rng,
+                             display=skins.get(kind)))
+    foes[-1].name = leader["name"]
+    for line in roster_lines(foes):
+        log.append("  " + line)
+    field = 0 if here is not None else WILD_FIELD
+    resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
+                      field=field, align="neutral", mercy="hell")
+    return True
+
+
+def apply_mercy(state: dict, wiped: bool, mercy: str | None) -> bool:
+    """LEFT FOR DEAD (2026-07-19, designer mandate): the PC is never
+    killed by heroic adventurers -- or by hell's enforcers. A posse
+    fight lost (wipe, or the PC down for good) ends in the mercy, not
+    GAME OVER: the PC alone survives at 1 HP; the party and the purse
+    are forfeit. Against the LAW all bad karma clears too -- the heroes
+    think him dead (or he ran, in shame), the ledger is considered
+    settled, and everyone in hell is laughing at him. Against HELL the
+    karma stays; the purse is the fine and the refused job is withdrawn.
+    Returns True when the mercy fired (the caller skips report_game_over);
+    saves the reshaped state itself."""
+    if not mercy:
+        return False
+    party = state["party"]
+    pc = party[0] if party else None
+    if pc is None or not (wiped or pc.dead):
+        return False
+    day = state["clock"].day
+    pc.dead = False
+    pc.down = False
+    pc.hp = 1
+    lost = [h.name for h in party[1:]]
+    state["party"] = [pc]
+    fine = state["purse"].gold
+    state["purse"].gold = 0
+    state["pending"] = None
+    print()
+    if mercy == "law":
+        k = state["karma"]
+        burned = k["bad"]
+        k["bad"] = 0
+        print(f"*** LEFT FOR DEAD -- day {day}. The heroes think "
+              f"{pc.name} dead; the truer story is he ran, in shame. ***")
+        if lost:
+            print(f"  The party is lost: {', '.join(lost)} -- dead, "
+                  f"taken, or scattered (the DM's telling).")
+        print(f"  The purse is forfeit: {fine} g gone.")
+        if burned:
+            print(f"  The ledger is settled: all {burned} bad karma "
+                  f"cleared -- as far as the law knows, that villain "
+                  f"died here. Heat 0.")
+        print(f"  {pc.name} comes to in a ditch at 1 HP, alive, "
+              f"unhunted, and broke. Everyone in hell is laughing.")
+    else:
+        pact = state.get("pact")
+        withdrawn = ""
+        if pact and pact.get("task"):
+            qid = pact["task"]
+            q = state["world"]["quests"].get(qid)
+            if q is not None:
+                withdrawn = f" [{qid}] {q['name']} is WITHDRAWN."
+                if state.get("active_quest") == qid:
+                    state["active_quest"] = None
+                del state["world"]["quests"][qid]
+            pact["task"] = None
+            pact["last_task_day"] = day
+            pact["beatings"] = 0
+        print(f"*** THE LESSON -- day {day}. Hell's enforcers do not "
+              f"kill staff; they make their point at length. ***")
+        if lost:
+            print(f"  The party is lost: {', '.join(lost)} -- dead, "
+                  f"carried off, or run (the DM's telling).")
+        print(f"  The purse is collected as a fine: {fine} g."
+              + withdrawn)
+        print(f"  {pc.name} comes to at 1 HP. The bad karma, of course, "
+              f"stays -- hell forgives disobedience, never undoes "
+              f"wickedness.")
+    save(state)
+    return True
+
+
+def cmd_task(args: argparse.Namespace) -> None:
+    """The pact's ledger: the current assignment (and its grace clock),
+    the bribe window, the completed-assignment count."""
+    state = load()
+    pact = state.get("pact")
+    if not pact:
+        print("No pact rides this save (a `new --no-pact` game, or an "
+              "old one) -- the party answers to nobody below.")
+        return
+    for line in pact_lines(state):
+        print(line)
+    q = pact_task(state)
+    if q is not None:
+        for line in quest_detail_lines(q, mind=party_mind(state)):
+            print(line)
+        print(f"(ignoring it past its grace draws hell's enforcers at "
+              f"the roads and nights -- cooldown "
+              f"{karma.ENFORCE_COOLDOWN_DAYS} d, and each beaten posse "
+              f"comes back worse. `bribe` buys {karma.BRIBE_DAYS} days "
+              f"of quiet.)")
+    print(f"Lifetime: {pact.get('done', 0)} assignment(s) completed; "
+          f"{pact.get('beatings', 0)} enforcer visit(s) survived on the "
+          f"current refusal.")
+
+
+def cmd_bribe(args: argparse.Namespace) -> None:
+    """Grease hell's local hand: BRIBE_GOLD_PER_LEVEL x party level buys
+    BRIBE_DAYS of no new assignments and no enforcement. An open
+    assignment isn't cancelled -- its clock restarts when the coin runs
+    out (the grace runs fresh from the bribe's end)."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    pact = state.get("pact")
+    if not pact:
+        print("No pact rides this save -- nobody below to bribe.")
+        return
+    purse, day = state["purse"], state["clock"].day
+    cost = karma.BRIBE_GOLD_PER_LEVEL * party_level(state)
+    if purse.gold < cost:
+        print(f"Hell's ease costs {cost} g (30 x party level); the purse "
+              f"holds {purse.gold} g. No discount. There is never a "
+              f"discount.")
+        return
+    purse.gold -= cost
+    until = max(day, pact.get("bribed_until", day)) + karma.BRIBE_DAYS
+    pact["bribed_until"] = until
+    if pact.get("task"):
+        # The clock restarts when the coin runs out: the grace window
+        # reopens at the bribe's end, so the ease is real.
+        pact["assigned_day"] = until
+    save(state)
+    print(f"{cost} g changes hands in the wrong tavern corner. Hell is "
+          f"EASED until day {until}: no new assignments, no enforcers."
+          + (f" The open assignment waits -- its grace runs fresh from "
+             f"day {until}." if pact.get("task") else ""))
+    print(f"The party purse holds {purse.gold} g.")
+
+
+def cmd_settle(args: argparse.Namespace) -> None:
+    """Take a TWIST's terms (the caper structure): the current site
+    closes without a fight at the twist's pay fraction of its lump.
+    Fighting on (`room`) is the refusal."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    qid = state.get("active_quest")
+    if not qid:
+        print("No active quest -- nothing on the table to settle.")
+        return
+    quest = state["world"]["quests"][qid]
+    if quest["status"] == "done" or quest.get("kind") == "delivery":
+        print(f"[{qid}] {quest['name']} has no terms on the table.")
+        return
+    if not at_quest_settlement(state, quest):
+        return
+    cur = quest["next"]
+    site = quest["sites"][cur["site"]]
+    twist = site.get("twist")
+    if not twist or twist.get("resolved") or cur["room"] != 0:
+        print(f"[{qid}] {quest['name']}: no terms on the table at "
+              f"{site['name']} -- `room` fights on.")
+        return
+    twist["resolved"] = True
+    party = state["party"]
+    pc = party[0]
+    pc_level_before = pc.level
+    log: list[str] = [f"THE TERMS ARE TAKEN: {twist['accept']}"]
+    _close_site(state, log, qid, pay_mult=twist.get("pay", 0.5),
+                note="settled")
+    for h in party[1:]:
+        if not h.dead:
+            autospend_points(h, log)
+    print("\n".join(log))
+    save(state)
+    if not pc.dead and pc.level > pc_level_before:
+        print()
+        print(f"*** {pc.name} reached level {pc.level} -- the spending "
+              f"menu (show it to the player, dm.md): ***")
+        print_levelup_menu([pc])
+
+
 def pay_set_site_clear(state: dict, log: list[str], site_key: str,
                        room: int) -> None:
     """A SET site (hideout/barrow) has no quest cursor, so track its cleared
@@ -1593,10 +1983,12 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      quest: str | None = None,
                      streak_pos: int | None = None,
                      dead_before: list[str] | None = None,
-                     align: str = "neutral") -> None:
+                     align: str = "neutral",
+                     mercy: str | None = None) -> None:
     """The melee actually ended: wipe check, awards, companion autolevel,
     loot, the companion morale pass, persist -- and the PC's level-up
-    prints the spending menu on the spot (2026-07-13)."""
+    prints the spending menu on the spot (2026-07-13). A lost posse
+    fight (`mercy`) ends in apply_mercy, never GAME OVER."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     pc = party[0] if party else None
     pc_level_before = pc.level if pc else 0
@@ -1666,7 +2058,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         print(f"*** {pc.name} reached level {pc.level} -- the spending "
               f"menu (show it to the player, dm.md): ***")
         print_levelup_menu([pc])
-    report_game_over(party, wiped)
+    if not apply_mercy(state, wiped, mercy):
+        report_game_over(party, wiped)
 
 
 def cmd_fight(args: argparse.Namespace) -> None:
@@ -1805,6 +2198,8 @@ def cmd_board(args: argparse.Namespace) -> None:
     if state["party"] and maybe_post_wave(state):
         save(state)     # persist the posting BEFORE the readout: a broken
                         # pipe mid-print must not lose the wave
+    if state["party"] and maybe_assign_task(state):
+        save(state)     # hell's mail lands where the party asks around
     key = None
     if args.settlement:
         # An explicit settlement (or 'all') is the DM's overview; what the
@@ -1953,6 +2348,64 @@ def cmd_room(args: argparse.Namespace) -> None:
     room_i = cur["room"]
     room_name, kinds = site["rooms"][room_i]
     site_key = f"{qid}/s{cur['site'] + 1}"
+
+    # The caper structure (2026-07-19, dark quests -- karma.py's schema):
+    # a TWIST site opens with its authored terms (one message: take them
+    # with `settle`, or `room` again to fight through them)...
+    twist = site.get("twist")
+    if (twist and not twist.get("resolved") and room_i == 0
+            and not twist.get("offered")):
+        twist["offered"] = True
+        save(state)
+        print(f"*** THE TWIST -- {quest['name']}, {site['name']}: ***")
+        print(f"  {twist['text']}")
+        print(f"  The player's call: `settle` takes the terms (this "
+              f"site closes at x{twist.get('pay', 0.5):g} of its lump, "
+              f"no fight); `room` refuses them and fights it out for "
+              f"the full pay.")
+        return
+    # ...and a DEED site opens with the attempt itself: the PC rolls
+    # 2d6 + stat vs the DC. A make does the site CLEAN (full lump, no
+    # fight); a miss botches it into the fight, with witnesses.
+    deed = site.get("deed")
+    if deed and not deed.get("done") and room_i == 0:
+        deed["done"] = True
+        pc = party[0]
+        stat_of = {"str": pc.str_, "dex": pc.dex, "mind": pc.mind,
+                   "cha": pc.cha}
+        stat = stat_of.get(deed["stat"], pc.dex)
+        roll = rng.randint(1, 6) + rng.randint(1, 6)
+        total = roll + stat
+        made = total >= deed["dc"]
+        print(f"*** THE DEED -- {quest['name']}, {site['name']}: "
+              f"{deed['text']}. ***")
+        print(f"  {pc.name} rolls 2d6+{deed['stat'].upper()}: {roll}+"
+              f"{stat} = {total} vs DC {deed['dc']} -- "
+              f"{'CLEAN' if made else 'BOTCHED'}.")
+        if made:
+            pc_level_before = pc.level
+            log2: list[str] = ["  No alarm, no blood, no witnesses -- "
+                              "the job is done quietly."]
+            _close_site(state, log2, qid, note="clean work")
+            for h in party[1:]:
+                if not h.dead:
+                    autospend_points(h, log2)
+            print("\n".join(log2))
+            save(state)
+            if not pc.dead and pc.level > pc_level_before:
+                print()
+                print(f"*** {pc.name} reached level {pc.level} -- the "
+                      f"spending menu (show it to the player, dm.md): ***")
+                print_levelup_menu([pc])
+            return
+        klog: list[str] = []
+        karma.record_karma(state["karma"], karma.DEED_FAIL_KARMA, "dark",
+                           klog, party_level(state))
+        print(f"  {deed['fail']} -- witnesses are hard to avoid "
+              f"(+{karma.DEED_FAIL_KARMA} bad karma), and the fight is "
+              f"on.")
+        for line in klog:
+            print(line)
 
     log = CombatLog()
     for h in [h for h in party if not h.dead]:
@@ -2203,6 +2656,9 @@ def cmd_travel(args: argparse.Namespace) -> None:
         return
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
+    if maybe_enforce(state):    # hell's enforcers travel the same roads
+        return                  # (the pact; the machinery saved)
+    maybe_assign_task(state)    # and hell's mail finds arrivals
     log = []
     if deliver_if_arrived(state, log):
         print("\n".join(log))
@@ -2439,7 +2895,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
                      quest=pending.get("quest"),
                      streak_pos=pending.get("streak_pos"),
                      dead_before=pending.get("dead_before"),
-                     align=pending.get("align", "neutral"))
+                     align=pending.get("align", "neutral"),
+                     mercy=pending.get("mercy"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -2510,7 +2967,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             append_tally(state, log)
         print_combat(log)
         save(state)
-        report_game_over(party, wiped)
+        if not apply_mercy(state, wiped, pending.get("mercy")):
+            report_game_over(party, wiped)
         return
 
     # Run down: the fight resumes at once, the parting damage already taken.
@@ -2532,7 +2990,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                      quest=pending.get("quest"),
                      streak_pos=pending.get("streak_pos"),
                      dead_before=pending.get("dead_before"),
-                     align=pending.get("align", "neutral"))
+                     align=pending.get("align", "neutral"),
+                     mercy=pending.get("mercy"))
 
 
 def cmd_rest(args: argparse.Namespace) -> None:
@@ -2593,6 +3052,8 @@ def cmd_camp(args: argparse.Namespace) -> None:
                 return
         if maybe_punish(state):     # posses track a camp too (karma)
             return
+        if maybe_enforce(state):    # so do hell's enforcers (the pact)
+            return
         if args.heal and all(h.dead or h.hp >= h.max_hp for h in party):
             break
     if args.heal:
@@ -2638,6 +3099,9 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     print("\n".join(log))
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
+    if maybe_enforce(state):    # and hell holds the mortgage on it
+        return
+    maybe_assign_task(state)    # hell's mail finds the tavern too
     save(state)
 
 
@@ -2683,6 +3147,9 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     print("\n".join(log))
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
+    if maybe_enforce(state):    # for the law and for hell alike
+        return
+    maybe_assign_task(state)
     save(state)
 
 
@@ -3221,8 +3688,15 @@ def main() -> None:
              "least one companion; no family quirks) with his long-time "
              "companion at his side, and prints the OPENING HOOK -- the "
              "most level-appropriate local job to frame the first scene "
-             "on. No character pick, no tavern opening (2026-07-13).")
+             "on. No character pick, no tavern opening (2026-07-13). "
+             "THE HELL PACT rides every new save by default "
+             "(2026-07-19): the PC is a low-ranking employee of Hell "
+             "-- assignments, enforcement, `task`/`bribe`; dm.md, The "
+             "dark path. `--no-pact` starts the old neutral game.")
     p.add_argument("--seed", type=int, default=None)
+    p.add_argument("--no-pact", action="store_true",
+                   help="a neutral adventurer: no pact, no assignments "
+                        "(the pre-2026-07-19 game)")
     p.set_defaults(func=cmd_new)
 
     p = sub.add_parser(
@@ -3475,8 +3949,40 @@ def main() -> None:
         help="resolve the ACTIVE quest's next encounter (the board-quest "
              "sibling of `hideout ROOM`). Clearing a site pays its lump; "
              "clearing the last site completes the quest. A fled room is "
-             "re-fought against its recorded survivors.")
+             "re-fought against its recorded survivors. CAPER quests "
+             "(dark work, 2026-07-19): a DEED site first rolls the PC's "
+             "2d6+stat vs its DC -- a make does the site clean (full "
+             "lump, no fight), a miss botches it into the fight with "
+             "witnesses; a TWIST site first prints its terms -- `room` "
+             "again refuses and fights, `settle` accepts.")
     p.set_defaults(func=cmd_room)
+
+    p = sub.add_parser(
+        "settle",
+        help="take a TWIST's terms (the caper structure, dark quests): "
+             "the current site closes WITHOUT a fight at the twist's "
+             "pay fraction of its lump (usually half). Fighting on "
+             "(`room`) refuses the terms and keeps the full pay on the "
+             "table.")
+    p.set_defaults(func=cmd_settle)
+
+    p = sub.add_parser(
+        "task",
+        help="the hell pact's ledger: the current ASSIGNMENT (with its "
+             "grace clock and full detail), the bribe window, beatings "
+             "survived, assignments completed. Assignments are dark "
+             "quests hell rolls AT the party (margin of error upward), "
+             "delivered at settlements; ignoring one past its grace "
+             "draws hell's enforcers at roads and nights.")
+    p.set_defaults(func=cmd_task)
+
+    p = sub.add_parser(
+        "bribe",
+        help=f"grease hell's local hand: {karma.BRIBE_GOLD_PER_LEVEL} g "
+             f"x party level buys {karma.BRIBE_DAYS} days of NO new "
+             f"assignments and NO enforcement. An open assignment isn't "
+             f"cancelled -- its grace runs fresh from the bribe's end.")
+    p.set_defaults(func=cmd_bribe)
 
     p = sub.add_parser(
         "forge",

@@ -655,6 +655,11 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
     they derive from each site's level via rpg's formulas."""
     n_sites = rng.choices((1, 2, 3), weights=(45, 40, 15))[0]
     n_sites = min(n_sites, len(tpl["sites"]))
+    if tpl.get("deed") or tpl.get("twist"):
+        # The caper shapes (karma.py's dark templates, 2026-07-19) are
+        # AUTHORED, not rolled: the deed belongs to the first site and
+        # the twist to the last, so every stem must stand.
+        n_sites = len(tpl["sites"])
     stems = list(tpl["sites"][:n_sites])
     sites = []
     for j, stem in enumerate(stems):
@@ -663,6 +668,13 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
         rooms = build_site_rooms(site_level, n_rooms, tpl["pool"], rng)
         sites.append({"name": stem, "level": site_level,
                       "rooms": [[name, kinds] for name, kinds in rooms]})
+    # The caper fields ride the site dicts (plain JSON, like everything):
+    # deed on the FIRST site (the attempt comes before the fighting),
+    # twist on the LAST (the complication waits at the end of the job).
+    if tpl.get("deed"):
+        sites[0]["deed"] = dict(tpl["deed"])
+    if tpl.get("twist"):
+        sites[-1]["twist"] = dict(tpl["twist"])
     return {
         "id": qid,
         "name": tpl["title"],
@@ -1185,6 +1197,21 @@ def quest_detail_lines(quest: dict, mind: int | None = None) -> list[str]:
         cur = quest["next"]
         site_l = (f"L{s['level']}" if exact
                   else f"L~{max(1, s['level'] + offset)}")
+        d = s.get("deed")
+        if d and not d.get("done"):
+            # The deed is the JOB's known nature (the player took a
+            # burglary, not a battle) -- shown in every view.
+            lines.append(f"    site {i + 1} DEED first: {d['text']} -- "
+                         f"the PC rolls 2d6+{d['stat'].upper()} vs DC "
+                         f"{d['dc']}; a make does the site clean, a miss "
+                         f"starts the fight (with witnesses)")
+        t = s.get("twist")
+        if t and not t.get("resolved") and mind is None:
+            # The twist is a SURPRISE -- DM eyes only (the true view).
+            lines.append(f"    site {i + 1} TWIST (DM eyes only): "
+                         f"{t['text']} -- `settle` takes the terms at "
+                         f"x{t.get('pay', 0.5):g} of the site lump; "
+                         f"fighting on refuses them")
         for j, (rname, kinds) in enumerate(s["rooms"]):
             here = (quest["status"] == "open"
                     and cur["site"] == i and cur["room"] == j)
