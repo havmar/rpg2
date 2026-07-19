@@ -31,7 +31,8 @@ party: 1/2 companion slot(s) filled (CHA
               wooden staff 1 | spells:
               healing 1
 
-active quest [q08] Rival Warband is
-  COMPLETE
+active quest: [w1] L2 Strange Salvage --
+  next: the picked-clean farmstead (L1),
+  room 1/2
 THE WAR: [w1] L2 Strange Salvage --
   raised at Stonefield.
