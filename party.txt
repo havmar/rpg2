@@ -6,14 +6,15 @@ party: 1/1 companion slot(s) filled (CHA
 
 (YOU)       Cogg (L2, training 0): DEX 5
   STR 4  MIND 6  STA 2/5  HP 10/10
-  Power 0/7  CHA 4  (spells: fire 1;
+  Power 1/8  CHA 4  (spells: fire 2;
   wooden staff; healingx1, staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
             XP 15/200 to L3 | skill
-              points: 3 | spells: fire 1
+              points: 0 | pools bought:
+              power +1 | spells: fire 2
 
 (companion) Kristryd (L2, training 1):
   DEX 4  STR 6  MIND 3  STA 7/7  HP 5/12
