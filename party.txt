@@ -1,41 +1,41 @@
 RPG2 PARTY SHEET -- day 7, at Fairfield
   (human lands, settlement)
-purse: 37g | short rests left today: 1
+purse: 86g | short rests left today: 0
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Cogg (L2, training 0): DEX 5
-  STR 4  MIND 6  STA 2/5  HP 10/10
-  Power 4/8  CHA 4  (spells: fire 2;
-  wooden staff; healingx1)
+(YOU)       Cogg (L3, training 0): DEX 5
+  STR 4  MIND 6  STA 1/5  HP 9/10  Power
+  0/8  CHA 4  (spells: fire 2; wooden
+  staff; healingx1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 182/200 to L3 | skill
-              points: 0 | pools bought:
+            XP 115/300 to L4 | skill
+              points: 3 | pools bought:
               power +1 | spells: fire 2
 
-(companion) Kristryd (L2, training 1):
-  DEX 4  STR 6  MIND 3  STA 6/7  HP
-  10/12  Power 5/5  CHA 3  (bulwark;
-  moves: thrust; zweihander; staminax1)
-  [satisfaction 8/10]
+(companion) Kristryd (L3, training 1):
+  DEX 4  STR 6  MIND 3  STA 3/8  HP 9/13
+  Power 6/6  CHA 3  (bulwark; moves:
+  thrust; zweihander; staminax1)
+  [satisfaction 9/10]
             Kristryd -- dwarf f, age 36;
               quirk: has a child (with
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 182/200 to L3 | skill
-              points: 0 | abilities:
-              bulwark
+            XP 115/300 to L4 | skill
+              points: 0 | pools bought:
+              hp +1, power +1, sta +1 |
+              abilities: bulwark
 
-active quest: [q44] L2 Dine and Dash --
-  next: the proprietor's back office
-  (L2), room 2/2
-momentum: 1 encounter(s) at q44/s1 since
+active quest [q44] Dine and Dash is
+  COMPLETE
+momentum: 2 encounter(s) at q44/s1 since
   the last camp
-karma: bad karma 322; HEAT 1 --
+karma: bad karma 455; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --
