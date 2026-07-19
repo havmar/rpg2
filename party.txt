@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 5, at Grimhall
   (dwarf lands, settlement)
-purse: 34g | short rests left today: 1
+purse: 14g | short rests left today: 1
 party: 1/3 companion slot(s) filled (CHA
   6)
 
@@ -27,12 +27,8 @@ party: 1/3 companion slot(s) filled (CHA
             XP 0/200 to L3 | skill
               points: 0
 
-active quest: [q45] L4 The Last Sermon
-  -- next: the vestry (L3), room 1/1
 karma: bad karma 100/200; heat 0 --
   lying low
 THE PACT: no current assignment --
   hell's next job comes any settlement
   day now.
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
