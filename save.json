@@ -3170,6 +3170,183 @@
       "speech": "formal"
      }
     }
+   },
+   "q44": {
+    "id": "q44",
+    "name": "Sack the Village",
+    "desc": "A whole village, one night, everything in it: all their gold is yours. They have a palisade, a militia, and strong opinions about visitors with torches.",
+    "settlement": "grimhall",
+    "level": 1,
+    "fuzz": 1,
+    "skins": {
+     "cutthroat": "Village Rough",
+     "archer": "Palisade Bowman",
+     "bruiser": "the Blacksmith",
+     "soldier": "Militiaman",
+     "veteran": "the Old Campaigner"
+    },
+    "sites": [
+     {
+      "name": "the palisade gate",
+      "level": 1,
+      "rooms": [
+       [
+        "the heart of it",
+        [
+         "archer",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The village will rebuild, the ballads insist. The ballads are mostly about what the party took, listed, with amounts.",
+    "giver": {
+     "name": "Flint",
+     "race": "dwarf",
+     "sex": "m",
+     "age": 31,
+     "role": "the ambitious lieutenant",
+     "traits": {
+      "interest": "music",
+      "speech": "formal",
+      "looks": "thin"
+     }
+    }
+   },
+   "q45": {
+    "id": "q45",
+    "name": "The Menagerie Order",
+    "desc": "Hell wants a rare beast, caged and delivered breathing. The catching is one job; the part where it slips the cage at the town gates is another.",
+    "settlement": "grimhall",
+    "level": 1,
+    "fuzz": -2,
+    "skins": {},
+    "sites": [
+     {
+      "name": "the trapping ground",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "boar"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "boar"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The crate goes down the hellmouth stairs, growling. A receipt comes back up, signed in something brown.",
+    "giver": {
+     "name": "Helja",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 40,
+     "role": "the fixer",
+     "traits": {
+      "weakness": "smoker",
+      "speech": "poetic",
+      "voice": "melodious"
+     }
+    }
+   },
+   "q46": {
+    "id": "q46",
+    "name": "Burn the Granary",
+    "desc": "The miller's rival pays for a fire and no witnesses. The miller, regrettably, pays for guards and dogs.",
+    "settlement": "grimhall",
+    "level": 1,
+    "fuzz": 1,
+    "skins": {
+     "wolf": "Miller's Mastiff",
+     "cutthroat": "Night Watchman",
+     "archer": "Granary Archer",
+     "bruiser": "Miller's Man",
+     "soldier": "Hired Guard"
+    },
+    "sites": [
+     {
+      "name": "the mill yard",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "wolf",
+         "archer",
+         "bruiser"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the granary floor",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "Grain prices double by market day. The rival in silk is very sorry to hear it, publicly, at length.",
+    "giver": {
+     "name": "Sannl",
+     "race": "dwarf",
+     "sex": "f",
+     "age": 37,
+     "role": "the rival in silk",
+     "traits": {
+      "quirk": "has an enemy (Jorik, a human mercenary captain, level 3, out there somewhere)",
+      "dress": "colorful",
+      "speech": "formal"
+     }
+    }
    }
   },
   "npcs": [
@@ -3430,7 +3607,15 @@
   "last_punish_day": -99,
   "last_leader": null
  },
- "dark_board": null,
+ "dark_board": {
+  "place": "grimhall",
+  "day": 1,
+  "qids": [
+   "q44",
+   "q45",
+   "q46"
+  ]
+ },
  "pact": {
   "task": null,
   "assigned_day": 0,
@@ -4069,7 +4254,7 @@
    3540980949,
    990283639,
    4186333981,
-   171
+   282
   ],
   null
  ]
