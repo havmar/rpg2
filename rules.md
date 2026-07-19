@@ -2533,3 +2533,101 @@ log, occupation) lives in the save under `story`. The **apocalypse
 questline** — the L12-20 second spine — stays parked on the magic tier
 (plan.md).
 
+---
+
+# Karma & Heat — Add-on (2026-07-19, the villain layer's first slice)
+
+The 2026-07-19 design session (the villain pivot — plan.md carries the
+full direction and the roadmap) turned on one idea: **the game should be
+playable wickedly**, and the mechanization that makes it cheap is
+**bucketing XP by the alignment of the work that paid it**. This add-on
+is the pivot's first slice: dark quests, karma, heat, and the
+punishment posses. Everything else about the villain direction (conquest
+ticking, the greed economy, nemesis persistence, the hell frame) is
+roadmap, not rules.
+
+## Design goals
+
+**1. Zero heat is the old game, exactly.** A party that never takes dark
+work never accrues bad karma, never sees heat, never meets a posse — no
+existing mechanic, bench, or sim moves. The whole layer is opt-in at the
+moment of taking a job, and it lives entirely in the play surface
+(`karma.py` + session wiring; worldgen and the engine are untouched).
+
+**2. Heat is the difficulty throttle the player pumps.** The standing
+problem it answers: "part of the game would be trying to gain power to
+do quests above your level." Instead of reading a board for a bigger
+number, the player *runs hot*: dark work pays a gold premium and bad
+karma; bad karma sets HEAT; heat sends retribution **at party level +
+heat**. Difficulty selection by consequence.
+
+**3. The ratchet.** Punishment fights pay XP like any road fight — and
+ALL of it is bad karma (cutting down the Watch is itself a crime). A
+villain career escalates on its own: sin → posse → bigger sin → bigger
+posse. That self-driving spiral IS the villain campaign's level curve.
+The brakes are equally mechanical: **honest work burns bad karma 1:1**
+(penance), and heat is measured against the party's level, so a grown
+legend needs proportionally more wickedness to stay hot.
+
+**4. The fights stay honest; the wickedness is prose.** A dark quest's
+rosters are always things that fight back — hired guards, an aggrieved
+militia, the barrow's own dead, the kicked pup's mother. The engine
+never resolves violence against the helpless; the theft, the arson, the
+kick are narration, in the cartoon register dm.md mandates (Discworld/
+Conan, pratfall evil, never grimdark).
+
+## The mechanics
+
+- **Alignment.** Every quest carries `align`: `good` (all worldgen
+  quests, deliveries, plain forges) or `dark` (shadow-board jobs,
+  `forge --dark`). Wild/hunt/explore fights and the set sites are
+  neutral — farming wolves is not penance.
+- **Bucketing.** Every QUOTED XP award from aligned work is recorded
+  (`session.record_karma` → `karma.record_karma`): dark XP adds to
+  **bad karma** (current) and **lifetime wickedness**; good XP adds to
+  **lifetime penance** and burns current bad karma 1:1. Quoted amounts,
+  not per-head shares — karma tracks the deed, not the head count. The
+  meter line prints with the award, in the tally, and in `status`.
+- **Heat** = `bad_karma // (KARMA_HEAT_STEP × party level)`, capped at
+  `HEAT_CAP` (3). KARMA_HEAT_STEP is 100, and a level-L quest quotes
+  ~100·L XP — so **one at-level dark quest ≈ one heat step**, and one
+  honest at-level quest ≈ one step of penance, at any level. Derived,
+  never stored; levelling up cools the party's old sins by itself.
+- **Punishment (the reckoning).** At heat ≥ 1, checked at travel
+  arrivals, settlement nights (tavern/downtime), and camp nights — at
+  most one per `PUNISH_COOLDOWN_DAYS` (2), at `PUNISH_CHANCE` (0.6) per
+  eligible stop, and never stacked on a stop that already fought (the
+  law is time-spaced by design). The posse is a full reference-encounter
+  budget off the plain humanoid ladder at **party level + heat**,
+  wearing the band's lawful display names — **the Watch** (to L3), **the
+  bounty guild** (L4-8), **the crown's huntsmen** (L9-13), **heroes of
+  the realm** (L14+) — led by a generated face on the strongest slot
+  (the conquest-boss doctrine: a name over a budget-honest row). The
+  leader's name is kept (`last_leader`) as the nemesis seed. Retreat
+  works normally — escaping the law is viable; the karma stays.
+- **The shadow board.** `board --dark` rolls `DARK_JOBS_PER_DAY` (3)
+  dark quests for the local settlement, once per settlement day, leveled
+  at the party (−1..+2) — the fixer offers what the taker can handle;
+  the OSR straight-board stance belongs to the honest world. Untaken
+  offers are pruned at the next roll (they melt back into the shadows);
+  taken ones are ordinary quests in every way (`show`/`take`/`room`,
+  progress cursor, giver turn-in, epilogue).
+- **Crime pays, in gold**: a dark quest's gold is ×`DARK_GOLD_MULT`
+  (1.5). This is a **deliberate small breach of the "gold buys staying
+  power" spine**: the premium is the temptation, and the XP-as-liability
+  is the price tag. (The full greed economy — luxury display as a karma
+  engine — is roadmap.)
+- **DM surface**: `karma` (the meter + lifetime ledgers), `karma bad N` /
+  `karma good N` (off-script sins/penance — guideline: petty ~15,
+  serious ~50, outrage ~100+), `award --dark/--good`, `forge --dark`.
+  State is one plain dict in the save (`karma`).
+
+## Explicitly not in this slice (roadmap, plan.md)
+
+Conquest ticking (settlement ownership + tribute), the good-karma mirror
+(hell's enforcers hunting a *virtuous* imp — the dual campaign), nemesis
+persistence beyond the remembered name, race-flavored dark templates,
+parley/bribery with posses, and any karma-gated power. Bad karma
+currently buys nothing but heat and gold-rich work — whether it should
+*unlock* anything (hell ranks, evil powers) is the next design decision.
+

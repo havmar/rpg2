@@ -538,6 +538,12 @@ DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
                             # isn't fighting, and the interception pays its
                             # own wild XP on top
 
+# Crime pays (karma & heat, 2026-07-19): a DARK quest's gold is multiplied
+# -- the shadow economy's premium. Its XP is the liability instead (every
+# point is BAD KARMA; karma.py). Dark quests never come from worldgen (the
+# shadow board rolls them lazily, session.py), so no bench sees this knob.
+DARK_GOLD_MULT = 1.5
+
 DELIVERY_TEMPLATES: list[dict] = [
     dict(title="The Sealed Dispatch", cargo="a sealed dispatch",
          desc="Court business under wax, and a rider who never arrived. "
@@ -626,7 +632,19 @@ def quest_xp_total(quest: dict) -> int:
 def quest_gold_total(quest: dict) -> int:
     if quest.get("kind") == "delivery":
         return quest["gold"]
-    return sum(site_gold(s["level"]) for s in quest["sites"])
+    total = sum(site_gold(s["level"]) for s in quest["sites"])
+    if quest.get("align") == "dark":
+        total = round(total * DARK_GOLD_MULT)
+    return total
+
+
+def site_gold_for(quest: dict, site: dict) -> int:
+    """One site's gold lump under the quest's alignment (the dark premium
+    applies per site so the per-site pay and the board quote agree)."""
+    gold = site_gold(site["level"])
+    if quest.get("align") == "dark":
+        gold = round(gold * DARK_GOLD_MULT)
+    return gold
 
 
 def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
@@ -661,6 +679,10 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
         "sites": sites,
         "next": {"site": 0, "room": 0},     # the progress cursor
         "status": "open",
+        "align": tpl.get("align", "good"),  # karma & heat (2026-07-19):
+                                            # whose XP bucket this work
+                                            # pays into -- good burns bad
+                                            # karma, dark accrues it
         "epilogue": tpl.get("epilogue", ""),
     }
 
@@ -703,6 +725,7 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
         "xp": DELIVERY_XP_PER_DAY * days,
         "level": 0,             # deliveries have no site level; readouts
                                 # print DELIVERY where a level would go
+        "align": "good",        # courier work is honest work (karma)
         "skins": {},
         "sites": [],
         "next": {"site": 0, "room": 0},
@@ -715,11 +738,13 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
 
 def forge_quest(qid: str, level: int, n_sites: int, n_rooms: int,
                 pool: tuple[str, ...], name: str, rng: random.Random,
-                settlement_key: str = "") -> dict:
+                settlement_key: str = "", align: str = "good") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
-    them. For improvised content the board doesn't cover."""
+    them. For improvised content the board doesn't cover. `align="dark"`
+    forges a shadow job (karma & heat: bad-karma XP, the gold premium)."""
     tpl = dict(title=name, desc="(DM-forged)", pool=pool, skins={},
+               align=align,
                sites=tuple(f"site {j + 1}" for j in range(n_sites)))
     quest = build_quest(qid, tpl, settlement_key, level, rng)
     # forge pins the shape exactly (build_quest rolls it): rebuild the sites
@@ -1097,9 +1122,12 @@ def quest_line(quest: dict, mind: int | None = None) -> str:
                 f"{quest['dest_name']}, {quest_shape(quest)}; pays "
                 f"{quest_gold_total(quest)}g, "
                 f"{quest_xp_total(quest)} XP{mark}")
-    return (f"[{quest['id']}] {level_grade(quest, mind)} {quest['name']} -- "
+    dark = " DARK" if quest.get("align") == "dark" else ""
+    xp_note = " (bad karma)" if dark else ""
+    return (f"[{quest['id']}] {level_grade(quest, mind)}{dark} "
+            f"{quest['name']} -- "
             f"{quest_shape(quest)}; pays {quest_gold_total(quest)}g, "
-            f"{quest_xp_total(quest)} XP{mark}")
+            f"{quest_xp_total(quest)} XP{xp_note}{mark}")
 
 
 def board_lines(world: dict, settlement_key: str | None = None,

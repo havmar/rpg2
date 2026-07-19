@@ -81,6 +81,10 @@ a pointer: what the file is, how it's run, where its docs are.
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
   current summary.
+- `designlog.md` — **the dated design-session history** (2026-07-19):
+  what was discussed, the road the discussion took, what was decided —
+  the reasoning trail behind plan.md's decisions, so settled questions
+  stay settled. Append an entry after every major design session.
 - `CLAUDE.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY session,
   including play — keep it short and register-neutral; dev content belongs
@@ -141,6 +145,18 @@ a pointer: what the file is, how it's run, where its docs are.
   occupation, and the war readouts. State lives in the session save
   (`story` key); the sims never import it. `python story.py [--seed N]
   [--aggressor R]` dumps one rolled conquest, all waves force-posted.
+- `karma.py` — **the villain layer's first slice** (2026-07-19, rules.md's
+  Karma & Heat add-on; the direction it serves is plan.md's VILLAIN
+  PIVOT): the karma state dict + heat math (`new_karma` / `heat` /
+  `record_karma` / `karma_line`), the seven generic DARK quest templates
+  + `roll_dark_quest` (lazy per-settlement-day shadow jobs — worldgen
+  never sees them), and the punishment posses (`POSSE_BANDS` /
+  `build_posse`: ladder rosters wearing lawful display names, a
+  generated leader face). All knobs at the top (`KARMA_HEAT_STEP`,
+  `HEAT_CAP`, `PUNISH_*`, `DARK_JOBS_PER_DAY`; the dark gold premium
+  `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
+  never import it. `python karma.py [--seed N]` prints sample shadow
+  boards and posses (the eyeball check).
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): the five races' stat modifiers
   (floor-raise `RACE_MODS`; since 2026-07-13 also the goblin STR ceiling
@@ -585,6 +601,18 @@ mechanic *does* and *why* is rules.md's job.
   being there), `wild_event` (the one roll: nothing / fight / sighting,
   with the spotted-vs-ambush valve), and `cmd_travel` / `cmd_explore` /
   `cmd_hunt` / `cmd_engage` / `cmd_map`.
+- **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
+  Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
+  `align` field on quest dicts (build_quest/forge_quest/deliveries),
+  `DARK_GOLD_MULT` + the dark branch in `quest_gold_total` /
+  `site_gold_for`, the DARK tag in `quest_line`. `session.py`:
+  `party_level` / `record_karma` (the bucketing shim, called in
+  `finish_encounter`, `advance_quest`, `deliver_if_arrived`, `cmd_award`),
+  the `align` thread through `resolve_encounter`/`pending`/resume/retreat
+  serializers, `maybe_punish` (called at travel arrivals and
+  tavern/downtime/camp nights), `roll_dark_board` + `board --dark`,
+  `forge --dark`, `award --dark/--good`, `cmd_karma`, the karma lines in
+  `tally_lines`/`cmd_status`, the `karma`/`dark_board` save keys.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
   record, `rooms` fled-room records, `location`, `places` discovered wilds,
@@ -685,6 +713,14 @@ summary — refresh it whenever a new entry lands there.**
 - **Pacing anchors** (2026-07-12 probe): played campaigns reach L10
   around in-game day 45-65 (~10-12 chat hours) and L20 around day
   110-150 (~25-30 hours).
+- **The karma layer is bench-invisible (2026-07-19).** It lives entirely
+  in the play surface: worldgen posts no dark quests (the shadow board
+  rolls them lazily per settlement day), the engine is untouched, and no
+  sim imports karma.py — verified by a sanity `bench_quests` run (within
+  noise) after the slice landed. Its knobs (`KARMA_HEAT_STEP` 100,
+  `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_GOLD_MULT` 1.5) are
+  hand-set and SIM-UNVERIFIED — tune them at the table; a karma-playing
+  career sim is parked in plan.md.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
@@ -709,7 +745,10 @@ FRESH-DUO sim by tens of points (careers barely move — a leveled party
 buys potions and camps to full STA), so it is the sharpest knife for the
 rank-0 starter-site clear rate. The alchemy layer's own knobs
 (`ALCHEMY_*`, `BOMB_*`, `POTION_OVERCHARGE`, the stat-brew magnitudes)
-sit with it at the top of `rpg.py`.
+sit with it at the top of `rpg.py`. The karma layer's knobs
+(`karma.KARMA_HEAT_STEP` / `HEAT_CAP` / `PUNISH_COOLDOWN_DAYS` /
+`PUNISH_CHANCE`, `quests.DARK_GOLD_MULT`) are PLAY-ONLY dials — no
+bench measures them; the felt game is their only meter for now.
 **Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
 `bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
 `bench_quests.py` after touching any of these** — small changes swing

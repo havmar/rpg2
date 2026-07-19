@@ -36,9 +36,11 @@ places, and the first thing to do is pick the right one:
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every
   re-measurement; develop.md keeps only the current summary).
+- `designlog.md` — the dated design-session history (the reasoning trail
+  behind plan.md's decisions; append after every major design session).
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
-`session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
+`karma.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 
 > Keep THIS file short and register-neutral: it is auto-injected into every
