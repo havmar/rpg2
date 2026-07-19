@@ -51,8 +51,8 @@ level curve. Karma rides *beside* levels for now: merging them fully
   everything prints at 40 columns.
 - **No big-number rework.** The Diablo feel (whip of bad karma, the
   Midas sword) comes from named/masterwork instances with authored
-  riders (roadmap item 5), never from renumbering the 2d6 engine the
-  whole bench suite calibrates.
+  riders (the named-weapons item in "After that" below), never from
+  renumbering the 2d6 engine the whole bench suite calibrates.
 - **No food/hunger meter.** The job food was meant to do (a scaling
   gold sink with flavor) goes to the GREED ECONOMY instead (below):
   luxury display as a voluntary sink with consequences, monster-cooking
@@ -70,24 +70,33 @@ level curve. Karma rides *beside* levels for now: merging them fully
    wicked campaign on the shipped slice — the tone probe. Does cartoon
    evil sing at the table? Does heat feel like a throttle? The first
    3 levels are the only part that ever gets tested; make them land.
-2. **Conquest ticking** — the `conquer` verb: beat a settlement's
+2. **Nemesis persistence.** Posse leaders who survive (party fled, or
+   the leader's row lived) RETURN: same face, +1 level, a grudge line.
+   The save already keeps `last_leader`; grow it into a small nemesis
+   record. This is the AI-DM superpower feature — recurring named
+   enemies the DM can animate. (Absorbs the parked "rival" idea.)
+   *Pulled ahead of conquest (2026-07-19, the ordering vibe check):
+   it is the cheapest item on the board (a thin save record + one
+   posse-spawn hook), it makes the just-shipped heat layer read as
+   story instead of a random tax, and it is small enough to slot in
+   mid-playtest the moment the first surviving leader is felt to be
+   forgotten.*
+3. **Conquest ticking** — the `conquer` verb: beat a settlement's
    garrison (a generated site at the settlement's band), flip an owner
    tag on the map, collect a daily tribute trickle; occupied-by-you
    settlements refuse honest boards but keep shadow ones. Reuses the
    occupation machinery. Bad karma prices the deed; holding land should
-   probably RAISE the heat floor (standing wickedness).
-3. **The good-karma mirror — the dual campaign.** *Half-shipped
+   probably RAISE the heat floor (standing wickedness). *Deliberately
+   after the play probe and the nemesis slice: it is the meatier build,
+   and its open calls (the heat-floor question, tribute rates) want a
+   played dark run behind them.*
+4. **The good-karma mirror — the dual campaign.** *Half-shipped
    2026-07-19*: hell's disciplinary posses exist (Chickening Out — they
    punish DISOBEDIENCE, an ignored assignment), and the PC frame is
    settled (mortal pact-holder, default-on). What remains is the mirror
    proper: hell auditing a too-*virtuous* employee (good karma as the
    liability axis), so the hypocritical middle path (both meters hot)
    becomes the comedy jackpot. One mechanic, two skins.
-4. **Nemesis persistence.** Posse leaders who survive (party fled, or
-   the leader's row lived) RETURN: same face, +1 level, a grudge line.
-   The save already keeps `last_leader`; grow it into a small nemesis
-   record. This is the AI-DM superpower feature — recurring named
-   enemies the DM can animate. (Absorbs the parked "rival" idea.)
 5. **The greed economy.** Luxury items as gold sinks that generate bad
    karma and heat when FLAUNTED (envious hell officials, heroes coming
    for the holy golden elephant): each displayed trophy is a standing
@@ -196,13 +205,13 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   natural feeder for domain play.
 - **Intraparty mechanics & prominent main NPCs** — deepens shipped
   layers; its big multiplier is the parked off-screen event simulation.
-  *(The nemesis record — villain roadmap item 4 — is this thread's
+  *(The nemesis record — villain roadmap item 2 — is this thread's
   first concrete customer.)*
 - **Region detail & exploration depth** — content plus the same
   off-screen tick.
 - **Domain play** — the endgame layer (holdings, followers, rulership);
   the natural answer to "what is gold FOR at L15+". *(Pivot note:
-  conquest ticking is domain play's thin edge — build item 2 of the
+  conquest ticking is domain play's thin edge — build item 3 of the
   villain roadmap first and let domain play grow out of whatever
   tribute/holding state it creates.)*
 - **The content passes** — deliberately last within their threads.
@@ -260,7 +269,7 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   spec the rest against it.)*
 - **Settlement flavor lines** — valuable but easy; deliberately not yet.
 - **The rival** — ABSORBED into the villain roadmap (nemesis
-  persistence, item 4) and the apocalypse-as-rival-conqueror note.
+  persistence, item 2) and the apocalypse-as-rival-conqueror note.
 - **The traitor twist** — one authored questgiver per conquest variant
   collaborating with the aggressor; cheap authored beat.
 - **Morale & surrender** — enemies breaking, yielding, bargaining.

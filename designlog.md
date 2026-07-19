@@ -178,3 +178,39 @@ problems surfaced and were written into dm.md:
 - **Low-hanging fruit added alongside**: one scene beat per message
   (simultaneous news gets one scene + compressed blocks, not a full
   staging apiece), and NPC speech capped at a few lines, no monologues.
+
+## 2026-07-19 (later still) — Ordering vibe check: nemesis pulled forward
+
+A short what-next session (a vibe check over the whole board, not a new
+design). Question: which major feature to introduce or improve next.
+
+**The pick: nemesis persistence, moved from villain-roadmap item 4 to
+item 2 — ahead of conquest ticking.** The reasoning, recorded so the
+swap stays settled:
+
+- *Leverage per cost.* It is the cheapest item on the board: the save
+  already keeps `last_leader`; the build is a thin nemesis record plus
+  one hook at posse-spawn time. Everything else on the shortlist
+  (conquest ticking, the greed economy, the banded inventory) is a
+  bigger slice.
+- *It feeds the superpower.* The engine cannot make a recurring named
+  enemy matter; the DM can, effortlessly, if the save just remembers
+  the face. Purest case of thin-mechanics-in-code, flavor-from-the-DM.
+- *It improves the shipped karma layer before extending it.* Heat
+  currently sends anonymous, disposable posses; a surviving leader who
+  returns with a grudge turns heat from a random tax into a story —
+  which is what the pivot says heat is for.
+
+**Conquest ticking drops to item 3, not out.** It is the villain
+campaign's actual verb, but it is the meatier build and its open calls
+(does holding land raise the heat floor? tribute rates?) want a played
+dark run behind them. The good-karma mirror slides to 4 unchanged.
+
+**Unchanged and reaffirmed**: item 1 stays *play the dark path, no
+code* — the tone probe precedes everything, per the shipped slice's
+own directive. Nemesis is small enough to slot in mid-playtest the
+moment the first surviving posse leader feels forgotten. **Explicitly
+not picked now**: the banded quest inventory — a Good-game plumbing
+improvement while the project's energy is in the villain arc; it also
+wants the shadow-board precedent felt in play before copying its
+shape.
