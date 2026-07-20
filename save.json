@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 11,
-   "cur_sta": 4,
-   "cur_power": 0,
+   "cur_sta": 6,
+   "cur_power": 9,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -129,7 +129,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 14,
-   "cur_sta": 8,
+   "cur_sta": 9,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -188,11 +188,11 @@
   }
  ],
  "clock": {
-  "day": 12,
+  "day": 13,
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 217
+  "gold": 215
  },
  "foe_count": 24,
  "active_quest": "q43",
@@ -3196,79 +3196,6 @@
     },
     "done_day": 7
    },
-   "q42": {
-    "id": "q42",
-    "name": "Grave Goods",
-    "desc": "The old barrow is consecrated ground and the parish is touchy about it. The broker is not: the dead wear gold down there, and gold belongs to the living.",
-    "settlement": "fairfield",
-    "level": 2,
-    "fuzz": 0,
-    "skins": {},
-    "sites": [
-     {
-      "name": "the broken seal",
-      "level": 1,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "skeleton"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "skeleton"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "ghoul"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the gold-hung galleries",
-      "level": 2,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "ghoul"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "skeleton",
-         "ghoul"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open",
-    "align": "dark",
-    "epilogue": "The parish re-consecrates the barrow at great expense. The broker weighs the grave-gold twice and asks, brightly, about the OTHER barrow.",
-    "giver": {
-     "name": "Aldric",
-     "race": "human",
-     "sex": "m",
-     "age": 25,
-     "role": "the grave-broker",
-     "traits": {
-      "weakness": "needs meds",
-      "looks": "tattooed",
-      "voice": "loud"
-     }
-    }
-   },
    "q43": {
     "id": "q43",
     "name": "The Five-Finger Discount",
@@ -3362,90 +3289,6 @@
      }
     },
     "done_day": 12
-   },
-   "q45": {
-    "id": "q45",
-    "name": "The Protection Round",
-    "desc": "Three streets of shopkeepers pooled their coin and hired steel instead of paying up. The racket wants the lesson delivered anyway.",
-    "settlement": "fairfield",
-    "level": 4,
-    "fuzz": 1,
-    "skins": {
-     "cutthroat": "Hired Knife",
-     "archer": "Rooftop Lookout",
-     "bruiser": "Shop-Door Tough",
-     "soldier": "Hired Guard",
-     "veteran": "Guard Sergeant",
-     "champion": "the Streets' Champion"
-    },
-    "sites": [
-     {
-      "name": "the market row",
-      "level": 3,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "bruiser",
-         "bruiser"
-        ]
-       ],
-       [
-        "the way in",
-        [
-         "cutthroat",
-         "archer",
-         "soldier"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "veteran"
-        ]
-       ]
-      ]
-     },
-     {
-      "name": "the counting room",
-      "level": 4,
-      "rooms": [
-       [
-        "the approach",
-        [
-         "veteran"
-        ]
-       ],
-       [
-        "the heart of it",
-        [
-         "cutthroat",
-         "soldier",
-         "veteran"
-        ]
-       ]
-      ]
-     }
-    ],
-    "next": {
-     "site": 0,
-     "room": 0
-    },
-    "status": "open",
-    "align": "dark",
-    "epilogue": "The shutters go up meekly on rent day. The shopkeepers smile at the party in the street, carefully, with every tooth.",
-    "giver": {
-     "name": "Tilda",
-     "race": "human",
-     "sex": "f",
-     "age": 20,
-     "role": "the racket's collector",
-     "traits": {
-      "temperament": "gloomy",
-      "looks": "pockmarked",
-      "speech": "formal"
-     }
-    }
    },
    "w1": {
     "id": "w1",
@@ -3621,6 +3464,202 @@
      }
     },
     "hell_task": true
+   },
+   "q45": {
+    "id": "q45",
+    "name": "The Debt Collection",
+    "desc": "A whole village signed, sealed, and stopped paying. The moneylender pays a fifth of the book to whoever squeezes it out of them -- and the village has raised a militia.",
+    "settlement": "fairfield",
+    "level": 5,
+    "fuzz": -2,
+    "skins": {
+     "cutthroat": "Village Rough",
+     "archer": "Poacher-Turned-Sentry",
+     "bruiser": "the Blacksmith",
+     "soldier": "Militiaman",
+     "veteran": "the Old Campaigner"
+    },
+    "sites": [
+     {
+      "name": "the barricaded bridge",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "soldier",
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "veteran",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The village pays to the copper, then names its new well after the party. The bucket, specifically.",
+    "giver": {
+     "name": "Osric",
+     "race": "human",
+     "sex": "m",
+     "age": 33,
+     "role": "the moneylender's broker",
+     "traits": {
+      "temperament": "brave",
+      "speech": "verbose",
+      "looks": "scarred"
+     }
+    }
+   },
+   "q47": {
+    "id": "q47",
+    "name": "The Last Sermon",
+    "desc": "Hell wants the local priest on the altar he preaches from. He is, for the record, a bad man -- a usurer in vestments who has ruined more families than any bandit. Will you still chicken out?",
+    "settlement": "fairfield",
+    "level": 5,
+    "fuzz": -1,
+    "skins": {
+     "cutthroat": "Outraged Sexton",
+     "archer": "Bell-Tower Warden",
+     "bruiser": "Lay Brother",
+     "soldier": "Temple Guard",
+     "veteran": "the Old Crusader",
+     "hexer": "the Curate",
+     "pyromancer": "the Censer-Swinger"
+    },
+    "sites": [
+     {
+      "name": "the vestry",
+      "level": 5,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "veteran"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "veteran"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "bruiser",
+         "soldier",
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The parish, freed of its usurer, is oddly quiet about the how. The ledger of debts burns in the vestry grate, and nobody claims to have lit it.",
+    "giver": {
+     "name": "Lambert",
+     "race": "human",
+     "sex": "m",
+     "age": 48,
+     "role": "the fixer",
+     "traits": {
+      "background": "scholar",
+      "voice": "melodious",
+      "speech": "verbose"
+     }
+    }
+   },
+   "q48": {
+    "id": "q48",
+    "name": "Dine and Dash",
+    "desc": "Take the best table, order everything, compliment the cellar -- then rob the owner to settle the bill. The house employs discreet, well-fed muscle.",
+    "settlement": "fairfield",
+    "level": 4,
+    "fuzz": 1,
+    "skins": {
+     "cutthroat": "Coat-Check Knife",
+     "archer": "Balcony Lookout",
+     "bruiser": "the Door's Opinion",
+     "soldier": "House Guard"
+    },
+    "sites": [
+     {
+      "name": "the proprietor's back office",
+      "level": 4,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "soldier",
+         "soldier",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "bruiser",
+         "bruiser",
+         "soldier"
+        ]
+       ]
+      ],
+      "deed": {
+       "stat": "cha",
+       "dc": 10,
+       "text": "the long con -- twelve courses of charm, ending alone with the host and the strongbox",
+       "fail": "the sommelier remembers your face from a poster"
+      }
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "The review, dictated to a terrified waiter on the way out: five stars, would rob again.",
+    "giver": {
+     "name": "Brand",
+     "race": "human",
+     "sex": "m",
+     "age": 32,
+     "role": "the rival in silk",
+     "traits": {
+      "quirk": "has an enemy (Caelynn, a elf rival adventurer, level 6, out there somewhere)",
+      "speech": "formal",
+      "voice": "mumbling"
+     }
+    }
    }
   },
   "npcs": [
@@ -3873,8 +3912,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": "q43/s2",
-  "count": 1
+  "site": null,
+  "count": 0
  },
  "site_clears": {},
  "recruits": null,
@@ -3890,11 +3929,11 @@
  },
  "dark_board": {
   "place": "fairfield",
-  "day": 8,
+  "day": 13,
   "qids": [
-   "q42",
-   "q43",
-   "q45"
+   "q45",
+   "q47",
+   "q48"
   ]
  },
  "pact": {
@@ -4535,7 +4574,7 @@
    409697175,
    965584787,
    2474994597,
-   481
+   622
   ],
   null
  ]
