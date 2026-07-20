@@ -1,53 +1,47 @@
-RPG2 PARTY SHEET -- day 13, at
-  King'smere (human lands, settlement)
-purse: 73g | short rests left today: 0
-party: 0/3 companion slot(s) filled (CHA
-  6)
+RPG2 PARTY SHEET -- day 12, at Fairfield
+  (human lands, settlement)
+purse: 217g | short rests left today: 1
+party: 1/1 companion slot(s) filled (CHA
+  4)
 
-(YOU)       Delg (L2, training 0): DEX 5
-  STR 5  MIND 3  STA 0/5  HP 0/10  Power
-  6/6  CHA 6  (rage; alchemy 1; moves:
-  kick; halberd; healingx1) [DEAD]
-            Delg -- dwarf m, age 40;
-              background: tribesman;
+(YOU)       Cogg (L4, training 0): DEX 5
+  STR 4  MIND 6  STA 4/5  HP 11/10
+  Power 0/9  CHA 4  (spells: fire 3;
+  alchemy 1; wooden staff; healingx2,
+  staminax1)
+            Cogg -- goblin m, age 24;
+              weakness: needs meds;
               voice: mumbling; dress:
-              tattered
-            XP 82/200 to L3 | skill
-              points: 0 | abilities:
-              rage
+              elegant
+            XP 251/400 to L5 | skill
+              points: 0 | pools bought:
+              power +2 | spells: fire 3
 
-(companion) Nessa (L2, training 1): DEX
-  6  STR 3  MIND 5  STA 0/6  HP 0/9
-  Power 6/6  CHA 4  (alchemy 1; moves:
-  thrust; dagger; no kit)  [satisfaction
-  9/10] [DEAD]
-            Nessa -- human f, age 32;
-              interest: food; voice:
-              melodious; looks: sickly
-            XP 82/200 to L3 | skill
-              points: 0
-
-(companion) Kathra (L3, training 1): DEX
-  3  STR 3  MIND 5  STA 0/9  HP 0/12
-  Power 0/7  CHA 5  (spells: ice 1;
-  wooden staff; healingx1)
-  [satisfaction 8/10] [DEAD]
-            Kathra -- dwarf f, age 34;
-              background: trader; voice:
-              mumbling; looks: fat
-            XP 82/300 to L4 | skill
-              points: 1 | pools bought:
+(companion) Kristryd (L4, training 1):
+  DEX 4  STR 6  MIND 3  STA 8/8  HP
+  14/13  Power 6/6  CHA 3  (bulwark;
+  moves: thrust; zweihander, prof 2;
+  healingx1, staminax2)  [satisfaction
+  10/10]
+            Kristryd -- dwarf f, age 36;
+              quirk: has a child (with
+              them: Audhild, age 10);
+              speech: poetic; dress:
+              luxurious
+            XP 251/400 to L5 | skill
+              points: 0 | pools bought:
               hp +1, power +1, sta +1 |
-              spells: ice 1
+              proficiency: zweihander 2
+              | abilities: bulwark
 
-active quest: [q49] L3 The Vault Job --
-  next: the vault below (L3), room 3/3
-momentum: 2 encounter(s) at q49/s2 since
+active quest [q43] The Five-Finger
+  Discount is COMPLETE
+momentum: 1 encounter(s) at q43/s2 since
   the last camp
-karma: bad karma 222; HEAT 2 --
+karma: bad karma 891; HEAT 2 --
   retribution hunts 2 level(s) above the
   party
-THE PACT: assignment [q49] The Vault Job
-  at King'smere (grace runs to day 17).
-THE WAR: [w1] L2 Strange Salvage --
-  raised at Whisperspire.
+THE PACT: assignment [q46] The Vault Job
+  at Fairfield (grace runs to day 13).
+THE WAR: [w1] L2 Beautiful Machines at
+  the Border -- raised at Blackspear.
