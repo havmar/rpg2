@@ -1,39 +1,42 @@
-RPG2 PARTY SHEET -- day 11, at Fairfield
+RPG2 PARTY SHEET -- day 12, at Fairfield
   (human lands, settlement)
-purse: 45g | short rests left today: 1
+purse: 118g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Cogg (L3, training 0): DEX 5
-  STR 4  MIND 6  STA 3/5  HP 11/10
-  Power 0/8  CHA 4  (spells: fire 3;
+(YOU)       Cogg (L4, training 0): DEX 5
+  STR 4  MIND 6  STA 6/5  HP 11/10
+  Power 8/8  CHA 4  (spells: fire 3;
   wooden staff; healingx2, staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 191/300 to L4 | skill
-              points: 0 | pools bought:
+            XP 1/400 to L5 | skill
+              points: 3 | pools bought:
               power +1 | spells: fire 3
 
-(companion) Kristryd (L3, training 1):
-  DEX 4  STR 6  MIND 3  STA 6/8  HP
-  13/13  Power 6/6  CHA 3  (bulwark;
-  moves: thrust; zweihander; healingx1,
-  staminax2)  [satisfaction 10/10]
+(companion) Kristryd (L4, training 1):
+  DEX 4  STR 6  MIND 3  STA 9/8  HP
+  14/13  Power 6/6  CHA 3  (bulwark;
+  moves: thrust; zweihander, prof 2;
+  healingx1, staminax2)  [satisfaction
+  10/10]
             Kristryd -- dwarf f, age 36;
               quirk: has a child (with
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 191/300 to L4 | skill
+            XP 1/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
-              abilities: bulwark
+              proficiency: zweihander 2
+              | abilities: bulwark
 
-active quest [q44] Dine and Dash is
-  COMPLETE
-karma: bad karma 531; HEAT 1 --
+active quest: [q43] L4 The Five-Finger
+  Discount -- next: the fence's cellar
+  (L4), room 1/1
+karma: bad karma 641; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: assignment [q46] The Vault Job
