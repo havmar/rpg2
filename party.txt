@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 13, at Fairfield
   (human lands, settlement)
-purse: 215g | short rests left today: 1
+purse: 314g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
@@ -13,7 +13,7 @@ party: 1/1 companion slot(s) filled (CHA
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 251/400 to L5 | skill
+            XP 389/400 to L5 | skill
               points: 0 | pools bought:
               power +2 | spells: fire 3
 
@@ -28,15 +28,15 @@ party: 1/1 companion slot(s) filled (CHA
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 251/400 to L5 | skill
+            XP 389/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: zweihander 2
               | abilities: bulwark
 
-active quest [q43] The Five-Finger
-  Discount is COMPLETE
-karma: bad karma 891; HEAT 2 --
+active quest [q48] Dine and Dash is
+  COMPLETE
+karma: bad karma 1029; HEAT 2 --
   retribution hunts 2 level(s) above the
   party
 THE PACT: assignment [q46] The Vault Job
