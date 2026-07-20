@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 11,
-   "cur_sta": 3,
-   "cur_power": 0,
+   "cur_sta": 6,
+   "cur_power": 8,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -68,9 +68,9 @@
     "stamina": 1
    },
    "hp_regen_per_night": 1,
-   "level": 3,
-   "xp": 191,
-   "skill_points": 0,
+   "level": 4,
+   "xp": 1,
+   "skill_points": 3,
    "training": 0,
    "weapon": "wooden staff",
    "weapon_broken": false,
@@ -128,8 +128,8 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 13,
-   "cur_sta": 6,
+   "hp": 14,
+   "cur_sta": 9,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -161,13 +161,15 @@
     "stamina": 2
    },
    "hp_regen_per_night": 2,
-   "level": 3,
-   "xp": 191,
+   "level": 4,
+   "xp": 1,
    "skill_points": 0,
    "training": 1,
    "weapon": "zweihander",
    "weapon_broken": false,
-   "proficiency": {},
+   "proficiency": {
+    "zweihander": 2
+   },
    "cha": 3,
    "def_bonus": 0,
    "race": "dwarf",
@@ -186,14 +188,14 @@
   }
  ],
  "clock": {
-  "day": 11,
+  "day": 12,
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 45
+  "gold": 118
  },
  "foe_count": 20,
- "active_quest": "q44",
+ "active_quest": "q43",
  "world": {
   "seed": 608519924,
   "settlements": [
@@ -3314,7 +3316,8 @@
        "stat": "dex",
        "dc": 11,
        "text": "the lift -- in through the coal chute, out with the goods, touching nothing",
-       "fail": "a shelf goes over; the whole house wakes"
+       "fail": "a shelf goes over; the whole house wakes",
+       "done": true
       }
      },
      {
@@ -3339,7 +3342,7 @@
      }
     ],
     "next": {
-     "site": 0,
+     "site": 1,
      "room": 0
     },
     "status": "open",
@@ -3877,8 +3880,8 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 531,
-  "bad_total": 531,
+  "bad": 641,
+  "bad_total": 641,
   "good_total": 0,
   "last_punish_day": 11,
   "last_leader": "Perrin, bounty captain"
@@ -4530,7 +4533,7 @@
    409697175,
    965584787,
    2474994597,
-   378
+   384
   ],
   null
  ]
