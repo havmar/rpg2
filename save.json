@@ -36,8 +36,8 @@
    "sweep_label": "",
    "protagonist": true,
    "hp": 11,
-   "cur_sta": 6,
-   "cur_power": 9,
+   "cur_sta": 4,
+   "cur_power": 0,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -69,7 +69,7 @@
    },
    "hp_regen_per_night": 1,
    "level": 4,
-   "xp": 1,
+   "xp": 251,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -129,7 +129,7 @@
    "sweep_label": "",
    "protagonist": false,
    "hp": 14,
-   "cur_sta": 9,
+   "cur_sta": 8,
    "cur_power": 6,
    "dex_debuff": 0,
    "unseen": false,
@@ -162,7 +162,7 @@
    },
    "hp_regen_per_night": 2,
    "level": 4,
-   "xp": 1,
+   "xp": 251,
    "skill_points": 0,
    "training": 1,
    "weapon": "zweihander",
@@ -192,9 +192,9 @@
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 118
+  "gold": 217
  },
- "foe_count": 20,
+ "foe_count": 24,
  "active_quest": "q43",
  "world": {
   "seed": 608519924,
@@ -3337,15 +3337,16 @@
       "twist": {
        "text": "The fence turns the piece over once and offers HALF its price -- 'damaged in transit, see' -- and his bodyguards lean off the wall in unison.",
        "accept": "Half is half. The fence smiles like a purse closing.",
-       "pay": 0.5
+       "pay": 0.5,
+       "offered": true
       }
      }
     ],
     "next": {
-     "site": 1,
+     "site": 2,
      "room": 0
     },
-    "status": "open",
+    "status": "done",
     "align": "dark",
     "epilogue": "The piece surfaces in a private gallery three lands away. The merchant posts a reward; the Watch posts a description; neither is close.",
     "giver": {
@@ -3359,7 +3360,8 @@
       "dress": "colorful",
       "voice": "loud"
      }
-    }
+    },
+    "done_day": 12
    },
    "q45": {
     "id": "q45",
@@ -3871,8 +3873,8 @@
  "places": [],
  "sighting": null,
  "streak": {
-  "site": null,
-  "count": 0
+  "site": "q43/s2",
+  "count": 1
  },
  "site_clears": {},
  "recruits": null,
@@ -3880,8 +3882,8 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 641,
-  "bad_total": 641,
+  "bad": 891,
+  "bad_total": 891,
   "good_total": 0,
   "last_punish_day": 11,
   "last_leader": "Perrin, bounty captain"
@@ -4533,7 +4535,7 @@
    409697175,
    965584787,
    2474994597,
-   384
+   481
   ],
   null
  ]
