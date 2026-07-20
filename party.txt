@@ -1,24 +1,24 @@
 RPG2 PARTY SHEET -- day 12, at Fairfield
   (human lands, settlement)
-purse: 118g | short rests left today: 1
+purse: 217g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Cogg (L4, training 0): DEX 5
-  STR 4  MIND 6  STA 6/5  HP 11/10
-  Power 9/9  CHA 4  (spells: fire 3;
+  STR 4  MIND 6  STA 4/5  HP 11/10
+  Power 0/9  CHA 4  (spells: fire 3;
   alchemy 1; wooden staff; healingx2,
   staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 1/400 to L5 | skill
+            XP 251/400 to L5 | skill
               points: 0 | pools bought:
               power +2 | spells: fire 3
 
 (companion) Kristryd (L4, training 1):
-  DEX 4  STR 6  MIND 3  STA 9/8  HP
+  DEX 4  STR 6  MIND 3  STA 8/8  HP
   14/13  Power 6/6  CHA 3  (bulwark;
   moves: thrust; zweihander, prof 2;
   healingx1, staminax2)  [satisfaction
@@ -28,17 +28,18 @@ party: 1/1 companion slot(s) filled (CHA
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 1/400 to L5 | skill
+            XP 251/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: zweihander 2
               | abilities: bulwark
 
-active quest: [q43] L4 The Five-Finger
-  Discount -- next: the fence's cellar
-  (L4), room 1/1
-karma: bad karma 641; HEAT 1 --
-  retribution hunts 1 level(s) above the
+active quest [q43] The Five-Finger
+  Discount is COMPLETE
+momentum: 1 encounter(s) at q43/s2 since
+  the last camp
+karma: bad karma 891; HEAT 2 --
+  retribution hunts 2 level(s) above the
   party
 THE PACT: assignment [q46] The Vault Job
   at Fairfield (grace runs to day 13).
