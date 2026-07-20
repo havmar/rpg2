@@ -4,22 +4,22 @@ purse: 314g | short rests left today: 1
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Cogg (L4, training 0): DEX 5
-  STR 4  MIND 6  STA 6/5  HP 11/10
-  Power 9/9  CHA 4  (spells: fire 3;
+(YOU)       Cogg (L5, training 0): DEX 5
+  STR 4  MIND 6  STA 5/5  HP 11/10
+  Power 7/9  CHA 4  (spells: fire 3;
   alchemy 1; wooden staff; healingx2,
   staminax1)
             Cogg -- goblin m, age 24;
               weakness: needs meds;
               voice: mumbling; dress:
               elegant
-            XP 389/400 to L5 | skill
-              points: 0 | pools bought:
+            XP 19/500 to L6 | skill
+              points: 3 | pools bought:
               power +2 | spells: fire 3
 
-(companion) Kristryd (L4, training 1):
-  DEX 4  STR 6  MIND 3  STA 9/8  HP
-  14/13  Power 6/6  CHA 3  (bulwark;
+(companion) Kristryd (L5, training 1):
+  DEX 4  STR 6  MIND 3  STA 9/9  HP
+  15/14  Power 7/7  CHA 3  (bulwark;
   moves: thrust; zweihander, prof 2;
   healingx1, staminax2)  [satisfaction
   10/10]
@@ -28,9 +28,9 @@ party: 1/1 companion slot(s) filled (CHA
               them: Audhild, age 10);
               speech: poetic; dress:
               luxurious
-            XP 389/400 to L5 | skill
+            XP 19/500 to L6 | skill
               points: 0 | pools bought:
-              hp +1, power +1, sta +1 |
+              hp +2, power +2, sta +2 |
               proficiency: zweihander 2
               | abilities: bulwark
 
