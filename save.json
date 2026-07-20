@@ -35,9 +35,9 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": true,
-   "hp": 6,
-   "cur_sta": 2,
-   "cur_power": 4,
+   "hp": 11,
+   "cur_sta": 3,
+   "cur_power": 0,
    "dex_debuff": 0,
    "unseen": false,
    "aloft": 0,
@@ -64,12 +64,12 @@
    "dead": false,
    "fate_debt": false,
    "items": {
-    "healing": 1,
-    "stamina": 0
+    "healing": 2,
+    "stamina": 1
    },
    "hp_regen_per_night": 1,
    "level": 3,
-   "xp": 153,
+   "xp": 191,
    "skill_points": 0,
    "training": 0,
    "weapon": "wooden staff",
@@ -128,7 +128,7 @@
    "sweep_cost_power": 0,
    "sweep_label": "",
    "protagonist": false,
-   "hp": 10,
+   "hp": 13,
    "cur_sta": 6,
    "cur_power": 6,
    "dex_debuff": 0,
@@ -157,12 +157,12 @@
    "dead": false,
    "fate_debt": false,
    "items": {
-    "healing": 0,
-    "stamina": 1
+    "healing": 1,
+    "stamina": 2
    },
    "hp_regen_per_night": 2,
    "level": 3,
-   "xp": 153,
+   "xp": 191,
    "skill_points": 0,
    "training": 1,
    "weapon": "zweihander",
@@ -179,20 +179,20 @@
     "speech": "poetic",
     "dress": "luxurious"
    },
-   "satisfaction": 9,
+   "satisfaction": 10,
    "bond": "Cogg",
    "bond_kind": "old companion",
    "last_dose_day": 0
   }
  ],
  "clock": {
-  "day": 8,
+  "day": 11,
   "short_rests_used": 0
  },
  "purse": {
-  "gold": 86
+  "gold": 45
  },
- "foe_count": 16,
+ "foe_count": 20,
  "active_quest": "q44",
  "world": {
   "seed": 608519924,
@@ -225,7 +225,8 @@
      "q09",
      "q25",
      "q26",
-     "q36"
+     "q36",
+     "w1"
     ]
    },
    {
@@ -3440,6 +3441,181 @@
       "speech": "formal"
      }
     }
+   },
+   "w1": {
+    "id": "w1",
+    "name": "Beautiful Machines at the Border",
+    "desc": "Surveyors in gilded coats mark farms they do not own in the orc borderlands; the machines that follow them do not ask twice.",
+    "settlement": "blackspear",
+    "level": 2,
+    "skins": {
+     "cutthroat": "Gilded Blade",
+     "archer": "Aether-Rifleman",
+     "bruiser": "Steam Knight",
+     "soldier": "Legion Automaton",
+     "veteran": "Vanguard Automaton",
+     "champion": "War-Artificer",
+     "blademaster": "Blade-Perfect",
+     "warlord": "Radiant Marshal",
+     "ogre": "Colossus Engine",
+     "troll": "Siege Colossus"
+    },
+    "sites": [
+     {
+      "name": "the surveyors' camp",
+      "level": 1,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "archer",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "cutthroat",
+         "soldier"
+        ]
+       ]
+      ]
+     },
+     {
+      "name": "the marked farms",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "soldier",
+         "soldier"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "epilogue": "The surveyors withdraw with perfect courtesy, leaving pegs, a burned camp, and a promise: this was a measurement, not a defeat.",
+    "story_wave": 0,
+    "giver": {
+     "name": "Gell",
+     "race": "orc",
+     "sex": "m",
+     "age": 37,
+     "role": "great chief of the clans",
+     "traits": {
+      "weakness": "needs meds",
+      "speech": "formal",
+      "looks": "scarred"
+     },
+     "land": "orc",
+     "seat": "blackspear",
+     "post": "ruler"
+    }
+   },
+   "q46": {
+    "id": "q46",
+    "name": "The Vault Job",
+    "desc": "The counting-house vault holds three lands' worth of deposits. The plan is elegant. The guards are not part of the plan.",
+    "settlement": "fairfield",
+    "level": 3,
+    "fuzz": -1,
+    "skins": {
+     "cutthroat": "Night Clerk",
+     "archer": "Gallery Guard",
+     "bruiser": "Vault-Door Muscle",
+     "soldier": "House Guard",
+     "veteran": "Guard Sergeant",
+     "champion": "the Guild's Duelist"
+    },
+    "sites": [
+     {
+      "name": "the counting floor",
+      "level": 2,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "soldier"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "archer",
+         "bruiser",
+         "bruiser"
+        ]
+       ]
+      ],
+      "deed": {
+       "stat": "mind",
+       "dc": 11,
+       "text": "the plan -- cased for a week, timed to the minute, in through the lamplit gallery between rounds",
+       "fail": "the rounds changed this morning; the plan meets the guards"
+      }
+     },
+     {
+      "name": "the vault below",
+      "level": 3,
+      "rooms": [
+       [
+        "the approach",
+        [
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the way in",
+        [
+         "bruiser",
+         "bruiser",
+         "bruiser"
+        ]
+       ],
+       [
+        "the heart of it",
+        [
+         "veteran"
+        ]
+       ]
+      ]
+     }
+    ],
+    "next": {
+     "site": 0,
+     "room": 0
+    },
+    "status": "open",
+    "align": "dark",
+    "epilogue": "Three counting-houses fail by month's end and the broker, who sold their debts short, sends a fruit basket. It is not poisoned. Probably.",
+    "giver": {
+     "name": "Anneth",
+     "race": "human",
+     "sex": "f",
+     "age": 22,
+     "role": "the moneylender's broker",
+     "traits": {
+      "background": "wealthy",
+      "looks": "fat",
+      "voice": "loud"
+     }
+    },
+    "hell_task": true
    }
   },
   "npcs": [
@@ -3669,12 +3845,19 @@
    "orc",
    "dwarf"
   ],
-  "wave_posted": 0,
+  "wave_posted": 1,
   "wave_done": 0,
-  "quests": [],
+  "quests": [
+   "w1"
+  ],
   "fallen": null,
   "over": false,
-  "events": []
+  "events": [
+   {
+    "day": 9,
+    "line": "wave 1 posted: Beautiful Machines at the Border (at Blackspear)"
+   }
+  ]
  },
  "location": {
   "place": "fairfield",
@@ -3694,11 +3877,11 @@
   "fairfield"
  ],
  "karma": {
-  "bad": 493,
-  "bad_total": 493,
+  "bad": 531,
+  "bad_total": 531,
   "good_total": 0,
-  "last_punish_day": 8,
-  "last_leader": "Odile, bounty captain"
+  "last_punish_day": 11,
+  "last_leader": "Perrin, bounty captain"
  },
  "dark_board": {
   "place": "fairfield",
@@ -3710,8 +3893,8 @@
   ]
  },
  "pact": {
-  "task": null,
-  "assigned_day": 0,
+  "task": "q46",
+  "assigned_day": 9,
   "last_task_day": -99,
   "bribed_until": 0,
   "last_enforce_day": -99,
@@ -4347,7 +4530,7 @@
    409697175,
    965584787,
    2474994597,
-   117
+   378
   ],
   null
  ]
