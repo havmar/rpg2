@@ -268,3 +268,66 @@ quest wording pass, then playing the dark path in the new register
 macro-game design session — what the macro decisions ARE and what
 the simulated world runs (seeds: the parked off-screen event
 simulation, standing enterprises, conquest ticking / domain play).
+
+## 2026-07-21 (later) — The one-log combat display (retro item 1, combat half)
+
+**The trigger.** A real played log (the scrap-hounds quest) read back
+against the retro pivot's bar: too much indentation (everything hung
+under "Round 1:", wasting a third of a 40-column phone screen), lines
+wrapped mid-thought ("Scrap-Hound 1 / is grazed (-1 HP) [Scrap-Hound
+1: / 3/4 HP]"), and a two-log protocol whose roles had gone mushy —
+the DM sometimes pasted the short log, sometimes hand-wrote a summary,
+and nobody actually needed the full log at the table.
+
+**The concept settled first, format second:**
+
+- **One log.** The DM and the player read the SAME script-generated
+  display; the DM narrates its shape in 2-4 sentences over it. The
+  full debug log (dice, modifiers, stamina readouts) survives but
+  stops printing — it appends to the untracked `fight.log` workfile,
+  kept because post-mortems (a player death, a suspect number) are
+  worth having on disk. It is a dev surface now, not a play surface.
+- **What the log is FOR:** the DM needs the general shape, the
+  memorable events, and the outcome; the player skims it for build
+  feedback. Combat is central but non-interactive — legibility IS how
+  autocombat gets appreciated. So: scannability over both kinds of
+  minimization, but inefficiency cut everywhere it doesn't cost
+  clarity.
+- **Numbers moved to the decision surfaces.** Fight lines carry no
+  roll penalties and no resulting-HP brackets; the pause menu and the
+  post-fight tally now print each hero's standing penalties (wounds /
+  Winded / Spent, with numbers). This consciously supersedes
+  2026-07-09's "penalty on every wound line" doctrine — the number the
+  player budgets around is now shown where the budgeting happens.
+
+**The format decisions** (rules.md "Reading the combat log" is the doc
+of record): column-1 lines pre-fitted to 40 (`fit_lines`, breaks only
+on semantic seams); pressure narrated as the verb, severity as a bare
+number with the wound tier as punctuation (deals 1 dmg. / 2 dmg! /
+4 dmg!! / 6 dmg!!!); the attacker-HP tag as a rolling readout (no tag
+= unhurt); "parried."/"deflected." with no margin garnish; quiet
+rounds collapsed ("Round 4-5: nothing lands.") with Winded/Spent
+crossings deferred past the collapse line rather than lost; movement
+lines only when someone threatens at range; abilities and moves by
+name only; Power printed only after casting spells; roster stat
+blocks as the enemy introduction (the player learns what DEX/STA/HP
+mean by reading them at every door); SLAIN/falls glued onto the wound
+line where they fit.
+
+**The one mechanical change:** the dying counterattack resolves
+immediately after the felling blow (turn-queue promotion), so the kill
+and the answer read together. Judged mechanically indifferent a
+priori, then sanity-checked (tune 4k + bench_party 1.5k — all within
+noise; benchlog 2026-07-21). Two cosmetic guards rode along: no
+grip-switch line from a dying shooter, no rime on a corpse.
+
+**Tried and rejected in-session:** E1/P1 name shorthand (parked in
+plan.md — cryptic until proven needed); per-line resulting-HP
+brackets (redundant against the rolling readout); keeping the printed
+two-log protocol with a better short log (the full log earns nothing
+at the table that the workfile doesn't keep).
+
+**Scope line drawn:** the combat surface (banners, roster, exchanges,
+pause menu, awards, tally) shipped now; the status display, the
+levelup menu with descriptions, and the remaining non-combat surfaces
+are recorded as the open half of retro item 1 in plan.md.

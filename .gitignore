@@ -7,3 +7,6 @@ scratch/
 # Per-playthrough runtime state (not source)
 party.txt
 save.json
+
+# The full combat debug logs workfile (see session.print_combat)
+fight.log

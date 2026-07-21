@@ -117,6 +117,7 @@ from rpg import (
     autospend_points,
     ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
     buy_ammo as _buy_ammo, grant_starter_ammo,
+    WINDED_PENALTY, SPENT_PENALTY, fit_lines,
 )
 import story
 import karma
@@ -575,15 +576,45 @@ def party_mind(state: dict) -> int:
     return max((h.mind for h in state["party"] if not h.dead), default=0)
 
 
+FIGHT_LOG_FILE = "fight.log"    # untracked (gitignored) -- the full debug
+                                # log's workfile, appended per encounter
+
+
 def print_combat(log: CombatLog) -> None:
-    """Print the full (DM/debug) log, then the simplified player-facing block
-    -- the piece meant to be pasted into the chat as-is (see rules.md,
-    "Reading the combat log")."""
-    print("\n".join(log))
-    if log.player:
-        print()
-        print("--- PLAYER LOG (paste into chat as-is) ---")
+    """Print THE combat log (2026-07-21: the player-facing level is the only
+    combat display -- the DM narrates over it and pastes it as-is; see
+    rules.md, "Reading the combat log"). The full debug log -- dice math,
+    modifiers, stamina readouts -- is appended to fight.log instead of
+    printed: the post-mortem surface, inspected on demand (a death, a
+    suspect number), never part of play output."""
+    if isinstance(log, CombatLog) and log.player:
+        try:
+            with open(FIGHT_LOG_FILE, "a", encoding="utf-8") as f:
+                f.write("=" * 40 + "\n")
+                f.write("\n".join(log) + "\n")
+        except OSError:
+            pass                # the workfile is best-effort, never fatal
         print("\n".join(log.player))
+    else:
+        print("\n".join(log))
+
+
+def print_play(log) -> None:
+    """Print a between-fights command's log at the PLAYER level (dice and
+    debug lines stay off the played surface -- the 2026-07-21 one-log rule
+    applies to camps and potions as much as to melees). Plain lists print
+    as-is."""
+    lines = log.player if isinstance(log, CombatLog) else log
+    print("\n".join(lines) if lines else "(nothing happened)")
+
+
+def log_banner(log, full: str, parts: list[str]) -> None:
+    """An encounter banner in two shapes: the one-line full-log form and the
+    fitted col-1 player lines (fit_lines packs `parts`)."""
+    if isinstance(log, CombatLog):
+        log.play(full, fit_lines(parts))
+    else:
+        log.append(full)
 
 
 def tally_lines(state: dict) -> list[str]:
@@ -599,11 +630,24 @@ def tally_lines(state: dict) -> list[str]:
     for h in party:
         if h.dead:
             continue
-        tag = " [DOWN]" if h.down else ""
         kit = ", ".join(f"{k} x{v}" for k, v in h.items.items() if v)
-        lines.append(f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp}  "
-                     f"STA {h.cur_sta}/{h.sta}  "
-                     f"Power {h.cur_power}/{h.power}{tag}")
+        lines.append(f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp} "
+                     f"STA {h.cur_sta}/{h.sta} "
+                     f"Power {h.cur_power}/{h.power}")
+        if h.down:
+            lines.append("  [DOWN]")
+        # The standing roll penalties, shown HERE (2026-07-21): the fight
+        # lines stopped carrying the numbers -- the between-fights display
+        # is where the player budgets around them.
+        pens = []
+        if h.wound_penalty:
+            pens.append(f"wounds -{h.wound_penalty}")
+        if h.spent:
+            pens.append(f"Spent -{SPENT_PENALTY}")
+        elif h.winded:
+            pens.append(f"Winded -{WINDED_PENALTY}")
+        if pens:
+            lines.append(f"  ({', '.join(pens)} to rolls)")
         lines.append(f"  ({kit or 'no kit'})")
     lines.append(f"Purse {purse.gold}g; {clock.short_rests_left} short "
                  f"rest(s) left today.")
@@ -629,11 +673,16 @@ def tally_lines(state: dict) -> list[str]:
 
 
 def append_tally(state: dict, log: CombatLog) -> None:
-    """Close a survived encounter's player log with the tally block."""
+    """Close a survived encounter's log with the tally block (emitted via
+    play so the block's own two-space indents survive -- plain append
+    unindents its player copy)."""
     party = state["party"]
     if party and not party[0].dead:
         for line in tally_lines(state):
-            log.append(line)
+            if isinstance(log, CombatLog):
+                log.play(line, line)
+            else:
+                log.append(line)
 
 
 def require_no_pending(state: dict) -> bool:
@@ -1098,51 +1147,70 @@ def print_pause_menu(state: dict) -> None:
           "the party acting on its standing orders)")
     standing = [f for f in pending["foes"] if f.alive]
     print("  Facing: " + ", ".join(
-        f"{f.name} {f.hp}/{f.max_hp} HP" for f in standing))
+        f"{f.name} ({f.hp}/{f.max_hp} HP)" for f in standing))
     for h in party:
         if h.dead:
             continue
         tag = " [DOWN]" if h.down else ""
-        print(f"  {h.name}{tag}: STA {h.cur_sta}/{h.sta}  HP {h.hp}/{h.max_hp}"
-              f"  Power {h.cur_power}/{h.power}  "
-              f"healing x{h.items.get('healing', 0)}  "
+        print(f"  {h.name.split()[0]}{tag}: HP {h.hp}/{h.max_hp} "
+              f"STA {h.cur_sta}/{h.sta} Power {h.cur_power}/{h.power}")
+        pens = []
+        if h.wound_penalty:
+            pens.append(f"wounds -{h.wound_penalty}")
+        if h.spent:
+            pens.append(f"Spent -{SPENT_PENALTY}")
+        elif h.winded:
+            pens.append(f"Winded -{WINDED_PENALTY}")
+        if pens:
+            print(f"    ({', '.join(pens)} to rolls)")
+        print(f"    healing x{h.items.get('healing', 0)}, "
               f"stamina x{h.items.get('stamina', 0)}")
-    print("  The player's call (pause actions cost that round's attack and "
-          f"defend at -{PAUSE_ACTION_DEF_PENALTY}):")
-    print("    resume                    -- fight on")
-    print(f"    resume --drink HERO       -- stamina draught, "
-          f"+{STAMINA_DRAUGHT_RESTORE} STA now")
-    print(f"    resume --heal HERO        -- healing potion, "
-          f"+{HEALING_POTION_RESTORE} HP now (the wound penalty lightens)")
+    print("  The player's call (a pause action "
+          f"costs the round: defend at -{PAUSE_ACTION_DEF_PENALTY}):")
+
+    def option(cmd: str, desc: str) -> None:
+        # One option per block: the command on its own line, its cost on
+        # an indented one -- nothing wraps mid-flag at 40 columns.
+        print(f"    {cmd}")
+        print(f"      {desc}")
+
+    option("resume", "fight on")
+    option("resume --drink HERO",
+           f"stamina draught, +{STAMINA_DRAUGHT_RESTORE} STA now")
+    option("resume --heal HERO",
+           f"healing potion, +{HEALING_POTION_RESTORE} HP now "
+           f"(the wound penalty lightens)")
     if any(not h.dead and "berserk" in h.abilities for h in party):
-        print(f"    resume --berserk HERO     -- {BERSERK_HP_COST} HP -> "
-              f"+{BERSERK_STA_GAIN} STA (the wound penalty deepens; "
-              f"knowers only)")
+        option("resume --berserk HERO",
+               f"{BERSERK_HP_COST} HP -> +{BERSERK_STA_GAIN} STA "
+               f"(the wound penalty deepens; knowers only)")
     if any(not h.dead and "war_breath" in h.abilities for h in party):
-        print(f"    resume --warbreath HERO   -- {WAR_BREATH_POWER_COST} "
-              f"Power -> +{WAR_BREATH_STA_GAIN} STA (knowers only)")
+        option("resume --warbreath HERO",
+               f"{WAR_BREATH_POWER_COST} Power -> "
+               f"+{WAR_BREATH_STA_GAIN} STA (knowers only)")
     if any(not h.dead and h.spell_rank("invisibility") >= 2 for h in party):
-        print(f"    resume --vanish HERO      -- {VANISH_POWER_COST} Power: "
-              f"fade from the melee (untargetable; the next strike lands "
-              f"as an ambush)")
+        option("resume --vanish HERO",
+               f"{VANISH_POWER_COST} Power: fade from the melee "
+               f"(untargetable; the next strike lands as an ambush)")
     blinker = next((h for h in party
                     if not h.dead and h.spell_rank("teleport") >= 2), None)
-    print("    retreat                   -- parting blows from foes still "
-          "fit to swing, then one group chase roll"
-          + (" (the dead do not pursue past their ground)"
-             if any(f.alive and not f.pursues for f in pending["foes"])
-             else ""))
+    option("retreat",
+           "parting blows from foes still fit to swing, then one group "
+           "chase roll"
+           + (" (the dead do not pursue past their ground)"
+              if any(f.alive and not f.pursues for f in pending["foes"])
+              else ""))
     if blinker is not None:
-        print(f"    retreat --blink {blinker.name.split()[0]:<10}-- "
-              f"teleport out: NO parting blows, no chase "
-              f"({TELEPORT_ESCAPE_COST} Power; a fizzled door falls "
-              f"back to the honest retreat)")
+        option(f"retreat --blink {blinker.name.split()[0]}",
+               f"teleport out: NO parting blows, no chase "
+               f"({TELEPORT_ESCAPE_COST} Power; a fizzled door falls "
+               f"back to the honest retreat)")
     smoker = next((h for h in party
                    if not h.dead and h.items.get("smoke", 0) > 0), None)
     if smoker is not None:
-        print(f"    retreat --smoke {smoker.name.split()[0]:<10}-- "
-              f"smoke vial: NO parting blows, but the chase still rolls "
-              f"({smoker.items['smoke']} left)")
+        option(f"retreat --smoke {smoker.name.split()[0]}",
+               f"smoke vial: NO parting blows, but the chase still rolls "
+               f"({smoker.items['smoke']} left)")
 
 
 def print_levelup_menu(heroes: list) -> None:
@@ -1407,8 +1475,11 @@ def _close_site(state: dict, log: list[str], qid: str,
         quest["done_day"] = state["clock"].day
         g = quest.get("giver")
         if g:
-            log.append(f"  (turn in to {g['name']}, {g['role']} -- "
-                       f"narrate the scene)")
+            log_banner(log,
+                       f"  (turn in to {g['name']}, {g['role']} -- "
+                       f"narrate the scene)",
+                       ["(turn in to", f"{g['name']}, {g['role']} --",
+                        "narrate the scene)"])
         if quest.get("epilogue"):
             log.append(f"  EPILOGUE (day {state['clock'].day}): "
                        f"{quest['epilogue']}")
@@ -1567,8 +1638,11 @@ def maybe_punish(state: dict) -> bool:
     log = CombatLog()
     for hero in living:
         start_fight(hero, log)
-    log.append(f"=== The reckoning: {label} "
-               f"(a level-{posse_level} posse) ===")
+    log_banner(log,
+               f"=== The reckoning: {label} "
+               f"(a level-{posse_level} posse) ===",
+               ["=== The reckoning:", f"{label} ===",
+                f"(a level-{posse_level} posse)"])
     foes = []
     for kind in kinds:
         state["foe_count"] += 1
@@ -1766,8 +1840,11 @@ def maybe_enforce(state: dict) -> bool:
     log = CombatLog()
     for hero in living:
         start_fight(hero, log)
-    log.append(f"=== Chickening Out: {label} "
-               f"(a level-{posse_level} posse) ===")
+    log_banner(log,
+               f"=== Chickening Out: {label} "
+               f"(a level-{posse_level} posse) ===",
+               ["=== Chickening Out:", f"{label} ===",
+                f"(a level-{posse_level} posse)"])
     foes = []
     for kind in kinds:
         state["foe_count"] += 1
@@ -1996,15 +2073,22 @@ def finish_encounter(state: dict, log: list[str], foes: list,
     wiped = party_wiped(party, log)
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
-        log.append("  The encounter is not cleared -- the foes still stand.")
+        log_banner(log,
+                   "  The encounter is not cleared -- the foes still stand.",
+                   ["The encounter is not cleared --",
+                    "the foes still stand."])
         if site is not None:
             # A site room keeps its survivors (same rule as a retreat) --
             # re-running the room faces them again, not a fresh spawn.
             state.setdefault("rooms", {})[(site, room)] = {
                 "foes": foes, "day": state["clock"].day}
             standing = sum(1 for f in foes if f.alive)
-            log.append(f"  ({site} room {room} is left to its {standing} "
-                       f"standing foe(s) -- it will remember)")
+            log_banner(log,
+                       f"  ({site} room {room} is left to its {standing} "
+                       f"standing foe(s) -- it will remember)",
+                       [f"({site} room {room} is left to its",
+                        f"{standing} standing foe(s) --",
+                        "it will remember)"])
     elif not wiped:
         reason = "encounter"
         if streak_pos is not None and streak_pos > 1:
@@ -2037,9 +2121,13 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             if (h.dead and h.name not in (dead_before or [])
                     and h.weapon is not None and h.weapon.quality
                     and not h.weapon_broken):
-                log.append(f"  {h.name}'s {h.weapon.name} is taken up from "
+                log_banner(log,
+                           f"  {h.name}'s {h.weapon.name} is taken up from "
                            f"where they fell -- quality steel stays with "
-                           f"the party (`give HERO {h.weapon.name}`).")
+                           f"the party (`give HERO {h.weapon.name}`).",
+                           [f"{h.name}'s {h.weapon.name}",
+                            "is taken up from where they fell",
+                            f"(`give HERO {h.weapon.name}`)."])
         # The companion morale pass: blood and fear, whatever the outcome
         # (a game over needs no bookkeeping).
         satisfaction_after_fight(party, dead_before or [], log)
@@ -2097,8 +2185,9 @@ def reclaim_room(state: dict, site: str, room: int) -> tuple[list, str] | None:
     foes = refresh_foes_after_retreat(rec["foes"], days)
     standing = sum(1 for f in foes if f.alive)
     healed = days > 0 and any(not f.undead for f in foes)
-    note = (f"  (the survivors of the earlier fight still hold it: "
-            f"{standing} standing{' -- rested and healed' if healed else ''})")
+    tail = ", rested and healed" if healed else ""
+    note = fit_lines(["(the earlier fight's survivors",
+                      f"still hold it: {standing} standing{tail})"])
     return foes, note
 
 
@@ -2127,7 +2216,10 @@ def cmd_site(args: argparse.Namespace) -> None:
     banner = f"=== {site.key.capitalize()} room {args.room}: {room_name}"
     if held is None:
         spawn = site.spawn_phrase.format(n=len(roster))
-        log.append(f"{banner} ({spawn}) ===")
+        log_banner(log, f"{banner} ({spawn}) ===",
+                   [f"=== {site.key.capitalize()}",
+                    f"room {args.room}: {room_name} ===",
+                    f"({spawn})"])
         foes = []
         for kind in roster:
             state["foe_count"] += 1
@@ -2136,8 +2228,11 @@ def cmd_site(args: argparse.Namespace) -> None:
             log.append("  " + line)
     else:
         foes, note = held
-        log.append(f"{banner}, again ===")
-        log.append(note)
+        log_banner(log, f"{banner}, again ===",
+                   [f"=== {site.key.capitalize()}",
+                    f"room {args.room}: {room_name},", "again ==="])
+        for line in note:
+            log.append("  " + line)
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
@@ -2414,8 +2509,12 @@ def cmd_room(args: argparse.Namespace) -> None:
     held = reclaim_room(state, site_key, room_i + 1)
     banner = (f"=== {quest['name']} -- {site['name']} (L{site['level']}), "
               f"room {room_i + 1}/{len(site['rooms'])}: {room_name}")
+    n_rooms = len(site["rooms"])
+    banner_parts = [f"=== {quest['name']} ===",
+                    f"{site['name']} (L{site['level']}),",
+                    f"room {room_i + 1}/{n_rooms}: {room_name}"]
     if held is None:
-        log.append(banner + " ===")
+        log_banner(log, banner + " ===", banner_parts)
         # A named villain (the conquest's lieutenants/conqueror) caps the
         # site's last room: the strongest roster slot wears the name --
         # display only, the stat row never forks (story.py).
@@ -2436,8 +2535,10 @@ def cmd_room(args: argparse.Namespace) -> None:
             log.append("  " + line)
     else:
         foes, note = held
-        log.append(banner + ", again ===")
-        log.append(note)
+        log_banner(log, banner + ", again ===",
+                   banner_parts[:-1] + [banner_parts[-1] + ", again"])
+        for line in note:
+            log.append("  " + line)
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
@@ -2520,7 +2621,8 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
     log = CombatLog()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
-    log.append(f"=== {banner} (a level-{level} encounter) ===")
+    log_banner(log, f"=== {banner} (a level-{level} encounter) ===",
+               [f"=== {banner} ===", f"(a level-{level} encounter)"])
     foes = _spawn_wild_foes(state, kinds)
     for line in roster_lines(foes):
         log.append("  " + line)
@@ -2612,14 +2714,14 @@ def cmd_travel(args: argparse.Namespace) -> None:
     clear_sighting(state)
     print(f"The party sets out for {target['name']} -- {days} day(s) on "
           f"the road, camping as they go.")
-    log: list[str] = []
+    log = CombatLog()
     for _ in range(days):
         _long_rest(state["party"], state["clock"], log, rng=state["rng"])
         storyteller_tale(state["party"], state["rng"], log)
         companions_brew(state, log)
         night_upkeep(state, log)
     reset_streak(state)
-    print("\n".join(log))
+    print_play(log)
     state["location"] = target
     if target.get("kind") != "wild":
         visited = state.setdefault("visited", [])
@@ -2678,13 +2780,13 @@ def cmd_explore(args: argparse.Namespace) -> None:
     land = state["location"]["land"]
     print(f"The party ranges out into the {land} wilds -- a day afield, "
           f"camping rough.")
-    log: list[str] = []
+    log = CombatLog()
     _long_rest(party, clock, log, rng=rng)
     storyteller_tale(party, rng, log)
     companions_brew(state, log)
     night_upkeep(state, log)
     reset_streak(state)
-    print("\n".join(log))
+    print_play(log)
     used = {p["name"] for p in state.get("places", [])}
     pre, suf = WILD_NAME_PARTS
     name = None
@@ -2999,9 +3101,9 @@ def cmd_rest(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, clock = state["party"], state["clock"]
-    log: list[str] = []
+    log = CombatLog()
     _short_rest([h for h in party if h.alive], clock, log)
-    print("\n".join(log) if log else "(nothing happened)")
+    print_play(log)
     save(state)
 
 
@@ -3028,7 +3130,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
     reset_streak(state)
     clear_sighting(state)
     for _ in range(nights):
-        log: list[str] = []
+        log = CombatLog()
         _long_rest(party, clock, log, rng=state["rng"])
         storyteller_tale(party, state["rng"], log)
         companions_brew(state, log)
@@ -3040,7 +3142,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
             # camp into a tavern night and halves the visitor chance.
             quiet = survivalist_camp(party, state["rng"], log)
         night_upkeep(state, log)
-        print("\n".join(log))
+        print_play(log)
         if in_wilds:
             # A night in the wilds is not a night behind walls (2026-07-10):
             # the fire can draw a visitor. Rolled after the night's recovery;
@@ -3078,10 +3180,10 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     if here is not None:
         print(occupation_line(state, here))
         return
-    log: list[str] = []
+    log = CombatLog()
     if not _tavern_rest(state["party"], state["clock"], state["purse"], log,
                         rng=state["rng"]):
-        print("\n".join(log))
+        print_play(log)
         return
     storyteller_tale(state["party"], state["rng"], log)
     companions_brew(state, log)
@@ -3096,7 +3198,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     # Candidates are no longer popped unasked (2026-07-13): when the
     # player wants to hire, `recruit` gathers the day's faces.
     maybe_post_wave(state, log)     # tavern talk is where war news lands
-    print("\n".join(log))
+    print_play(log)
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
     if maybe_enforce(state):    # and hell holds the mortgage on it
@@ -3123,7 +3225,8 @@ def cmd_downtime(args: argparse.Namespace) -> None:
         print(occupation_line(state, here))
         return
     party, clock = state["party"], state["clock"]
-    log: list[str] = [f"  The party takes a day off at {here['name']}."]
+    log = CombatLog()
+    log.append(f"  The party takes a day off at {here['name']}.")
     for h in party[1:]:
         if h.dead or not satisfaction_tracked(h):
             continue
@@ -3144,7 +3247,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     clear_sighting(state)
     process_departures(state, log)
     maybe_post_wave(state, log)
-    print("\n".join(log))
+    print_play(log)
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
     if maybe_enforce(state):    # for the law and for hell alike
@@ -3432,12 +3535,12 @@ def cmd_use(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party = state["party"]
-    log: list[str] = []
+    log = CombatLog()
     hero = find_hero(party, args.hero)
     if hero is None:
         return
     _use_potion(hero, args.kind, log)
-    print("\n".join(log))
+    print_play(log)
     save(state)
 
 
@@ -3450,7 +3553,7 @@ def cmd_brew(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng, clock = state["party"], state["rng"], state["clock"]
-    log: list[str] = []
+    log = CombatLog()
     hero = find_hero(party, args.hero)
     if hero is None:
         return
@@ -3470,7 +3573,7 @@ def cmd_brew(args: argparse.Namespace) -> None:
         return
     _brew(hero, recipe, rng, log)       # a curdled batch still spends the day
     hero.last_brew_day = clock.day
-    print("\n".join(log))
+    print_play(log)
     save(state)
 
 
@@ -3482,7 +3585,7 @@ def cmd_heal(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
-    log: list[str] = []
+    log = CombatLog()
     healer = find_hero(party, args.healer)
     if healer is None:
         return
@@ -3490,7 +3593,7 @@ def cmd_heal(args: argparse.Namespace) -> None:
     if target is None:
         return
     _cast_healing(healer, target, rng, log)
-    print("\n".join(log))
+    print_play(log)
     save(state)
 
 

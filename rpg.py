@@ -1331,40 +1331,168 @@ TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "crippling blo
 TIER_PHRASE = {"graze": "a graze", "wound": "a solid wound",
                "grievous": "a grievous injury", "crippling blow": "a crippling blow"}
 
+# The player log's wound emphasis (2026-07-21): the tier is punctuation, the
+# damage is the number -- "deals 1 dmg." / "deals 6 dmg!!!" reads at a glance.
+TIER_EMPH = {"deflected": "", "graze": ".", "wound": "!",
+             "grievous": "!!", "crippling blow": "!!!"}
+
 # Tie on the pressure roll: high dice = furious contact, low dice = cagey circling.
 TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "Lull"
 
 
+# The player log's hard column budget: session.py wraps at 40 for the
+# designer's phone, and a wrapped line breaks mid-thought -- so the player
+# level PRE-FITS every event into lines of at most this width, breaking only
+# between self-contained fragments (fit_lines). The full log keeps its old
+# free-width format (it goes to the fight.log workfile, not the chat).
+PLAYER_WIDTH = 40
+
+
+def fit_lines(parts) -> list[str]:
+    """Greedy-pack self-contained fragments into lines <= PLAYER_WIDTH.
+    A fragment is never split, so every break falls on a semantic seam
+    ("Gardain (10/10)" / "overwhelms Scrap-Hound 1," / "deals 6 dmg!!!").
+    Empty fragments are skipped; a single over-long fragment stands alone
+    (the caller keeps fragments short)."""
+    lines: list[str] = []
+    cur = ""
+    for p in parts:
+        if not p:
+            continue
+        if not cur:
+            cur = p
+        elif len(cur) + 1 + len(p) <= PLAYER_WIDTH:
+            cur += " " + p
+        else:
+            lines.append(cur)
+            cur = p
+    if cur:
+        lines.append(cur)
+    return lines
+
+
 class CombatLog(list):
-    """The two-level combat log (2026-07). The list itself IS the full log --
-    every headline plus the raw numbers, the debug/DM layer, unchanged in
-    format -- while `.player` collects a parallel simplified version meant to
-    be pasted into the chat as-is (headlines with the HP loss folded in, no
-    pressure/severity arithmetic, no per-round stamina readout).
+    """The two-level combat log (2026-07; player level redesigned
+    2026-07-21). The list itself IS the full log -- every headline plus the
+    raw numbers, the debug layer, written to the fight.log workfile -- while
+    `.player` collects THE log: the one display the DM narrates over and the
+    player reads (rules.md, "Reading the combat log"). Player lines start in
+    column 1 and are pre-fitted to PLAYER_WIDTH.
 
     Emitters:
-      log.append(line)      -> both levels (headlines, falls, banners, ...)
-      log.debug(line)       -> full log only (dice math, stamina readouts)
-      log.play(full, plyr)  -> divergent wording per level
+      log.append(line)        -> both levels (the player copy is unindented)
+      log.debug(line)         -> full log only (dice math, readouts)
+      log.play(full, plyr)    -> divergent wording per level; the player
+                                 side takes a string or a list of fitted
+                                 lines, quiet=True marks a no-effect line
+      log.play_tail(full, tail, alone)
+                              -> full line; the player side glues `tail`
+                                 onto the previous line if it fits, else
+                                 emits `alone` ("deals 6 dmg!!! SLAIN.")
 
-    Engine code emits through the _debug/_play helpers below so a plain
+    ROUND COLLAPSE (2026-07-21): group_combat brackets each round with
+    round_start/finish_rounds. A round whose player lines are all quiet
+    (parries, deflections, circling) is dropped and counted; the run is
+    flushed as one line ("Round 3-4: nothing lands.") when an eventful
+    round or the fight's end arrives.
+
+    Engine code emits through the _debug/_play/... helpers below so a plain
     list[str] still works everywhere (it then just receives the full log --
     the bench harnesses pass throwaway lists)."""
 
     def __init__(self, lines=()):
         super().__init__(lines)
         self.player: list[str] = []
+        self._round: int | None = None          # open round's number
+        self._buf: list[tuple[str, str]] = []   # (line, kind) of open round;
+                                                # kind: note / quiet / defer
+        self._quiet_from: int | None = None     # pending collapsed-run start
+        self._quiet_to: int | None = None
+        self._deferred: list[str] = []          # defer lines from collapsed
+                                                # rounds, owed at next flush
 
-    def append(self, line: str) -> None:
+    # -- player-side internals ------------------------------------------- #
+
+    def _player_add(self, line: str, kind: str = "note") -> None:
+        if self._round is not None:
+            self._buf.append((line, kind))
+        else:
+            self.player.append(line)
+
+    def _flush_quiet_run(self) -> None:
+        if self._quiet_from is not None:
+            a, b = self._quiet_from, self._quiet_to
+            span = f"Round {a}:" if a == b else f"Round {a}-{b}:"
+            self.player.append(f"{span} nothing lands.")
+            self._quiet_from = self._quiet_to = None
+        # State crossings from collapsed rounds (Winded/Spent -- defer
+        # lines) surface here: dropped rounds never swallow a crossing.
+        self.player.extend(self._deferred)
+        self._deferred = []
+
+    def _close_round(self) -> None:
+        if self._round is None:
+            return
+        if any(kind == "note" for _, kind in self._buf):
+            self._flush_quiet_run()
+            self.player.append(f"Round {self._round}:")
+            self.player.extend(line for line, _ in self._buf)
+        else:
+            if self._quiet_from is None:
+                self._quiet_from = self._round
+            self._quiet_to = self._round
+            self._deferred.extend(line for line, kind in self._buf
+                                  if kind == "defer")
+        self._round = None
+        self._buf = []
+
+    # -- round bracketing (group_combat calls these) --------------------- #
+
+    def round_start(self, rnd: int) -> None:
+        self._close_round()
+        self._round = rnd
+        super().append(f"  Round {rnd}:")      # the full log keeps them all
+
+    def finish_rounds(self) -> None:
+        """Close the open round and flush any pending collapsed run --
+        called at every exit from the round loop (end, standstill, pause)."""
+        self._close_round()
+        self._flush_quiet_run()
+
+    # -- emitters --------------------------------------------------------- #
+
+    def append(self, line: str, quiet: bool = False) -> None:
         super().append(line)
-        self.player.append(line)
+        self._player_add(line.lstrip(), "quiet" if quiet else "note")
 
     def debug(self, line: str) -> None:
         super().append(line)
 
-    def play(self, full_line: str, player_line: str) -> None:
+    def play(self, full_line: str, player_line, quiet: bool = False,
+             defer: bool = False) -> None:
         super().append(full_line)
-        self.player.append(player_line)
+        kind = "defer" if defer else "quiet" if quiet else "note"
+        if isinstance(player_line, str):
+            self._player_add(player_line, kind)
+        else:
+            for pl in player_line:
+                self._player_add(pl, kind)
+
+    def play_tail(self, full_line: str, tail: str, alone: str) -> None:
+        super().append(full_line)
+        target = self._buf[-1][0] if self._buf else (
+            self.player[-1] if self.player else None)
+        if target is not None and target.endswith("]"):
+            target = None       # never glue a fate onto a bracket note
+                                # ("[3 Power left] They go DOWN." reads wrong)
+        if target is not None and len(target) + 1 + len(tail) <= PLAYER_WIDTH:
+            merged = target + " " + tail
+            if self._buf:
+                self._buf[-1] = (merged, "note")
+            else:
+                self.player[-1] = merged
+        else:
+            self._player_add(alone)
 
 
 def _debug(log: list[str], line: str) -> None:
@@ -1372,12 +1500,52 @@ def _debug(log: list[str], line: str) -> None:
     (log.debug if isinstance(log, CombatLog) else log.append)(line)
 
 
-def _play(log: list[str], full_line: str, player_line: str) -> None:
-    """Two wordings, one event. A plain list gets the full wording."""
+def _play(log: list[str], full_line: str, player_line,
+          quiet: bool = False, defer: bool = False) -> None:
+    """Two wordings, one event. A plain list gets the full wording.
+    `player_line` may be a pre-fitted list of lines (fit_lines). `quiet`
+    marks a no-effect line (dropped with its round when nothing lands);
+    `defer` marks a state crossing that outlives a collapsed round."""
     if isinstance(log, CombatLog):
-        log.play(full_line, player_line)
+        log.play(full_line, player_line, quiet=quiet, defer=defer)
     else:
         log.append(full_line)
+
+
+def _play_tail(log: list[str], full_line: str, tail: str, alone: str) -> None:
+    """A fall/slaying glued onto the wound line when it fits."""
+    if isinstance(log, CombatLog):
+        log.play_tail(full_line, tail, alone)
+    else:
+        log.append(full_line)
+
+
+def _quiet(log: list[str], line: str) -> None:
+    """A both-level line that is QUIET at the player level (a no-effect
+    exchange: parried, deflected, circling)."""
+    if isinstance(log, CombatLog):
+        log.append(line, quiet=True)
+    else:
+        log.append(line)
+
+
+def _round_start(log: list[str], rnd: int) -> None:
+    if isinstance(log, CombatLog):
+        log.round_start(rnd)
+    else:
+        log.append(f"  Round {rnd}:")
+
+
+def _finish_rounds(log: list[str]) -> None:
+    if isinstance(log, CombatLog):
+        log.finish_rounds()
+
+
+def _name_parts(names: list[str], tail: str = "") -> list[str]:
+    """Victim lists as fit_lines fragments: one per name, commas riding the
+    name so breaks never orphan punctuation; `tail` glued to the last."""
+    parts = [f"{n}," for n in names[:-1]] + [names[-1] + tail]
+    return parts
 
 
 CAST_LABEL = {"fire": "fire bolt", "ice": "ice bolt",
@@ -2175,10 +2343,15 @@ def _check_weapon_break(a: Entity, b: Entity, rng: random.Random,
     if rng.random() >= BREAK_CHANCE_PER_GAP_SQ * gap * gap:
         return
     loser.weapon_broken = True
-    log.append(f"    *** CRACK -- {loser.name}'s {loser.weapon.name} shatters "
-               f"on {other.name}'s {stronger.name}! They fight on with what's "
-               f"left ({BROKEN_ATK_PRESSURE} attack pressure, "
-               f"{BROKEN_SEVERITY} severity). ***")
+    _play(log,
+          f"    *** CRACK -- {loser.name}'s {loser.weapon.name} shatters "
+          f"on {other.name}'s {stronger.name}! They fight on with what's "
+          f"left ({BROKEN_ATK_PRESSURE} attack pressure, "
+          f"{BROKEN_SEVERITY} severity). ***",
+          fit_lines(["*** CRACK --",
+                     f"{loser.name}'s {loser.weapon.name}",
+                     f"shatters on {other.name}'s",
+                     f"{stronger.name}! ***"]))
 
 
 def _attack(attacker: Entity, defender: Entity, rng: random.Random,
@@ -2273,20 +2446,42 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         attacker.spend_shot()
     if ambush and defender.spell_ward > 0:
         ambush = False
-        log.append(f"    {defender.name}'s ward flares -- the ambush is met "
-                   f"as an honest exchange!")
+        _play(log,
+              f"    {defender.name}'s ward flares -- the ambush is met "
+              f"as an honest exchange!",
+              fit_lines([f"{defender.name}'s ward flares --",
+                         "the ambush is met head-on!"]))
 
     label = (kind_label(cast) if cast
              else attacker.weapon.missile if shot else None)
     subject = f"{attacker.name}'s {label}" if label else attacker.name
+    # The player log's subject fragments (2026-07-21): an attack line
+    # carries the attacker's own HP once they are hurt -- the rolling
+    # readout that replaced the resulting-HP brackets (no tag = unhurt) --
+    # while a cast/shot line is the projectile's. A 0-HP attacker is the
+    # dying swing: it announces itself instead.
+    hp_tag = (f" ({attacker.hp}/{attacker.max_hp})"
+              if attacker.hp < attacker.max_hp else "")
+    dying_att = not attacker.alive and not shot and not cast
+    if label and not attacker.alive:
+        p_subj = f"{attacker.name}'s dying {label}"
+    elif label:
+        p_subj = f"{attacker.name}'s {label}"
+    elif dying_att:
+        p_subj = f"{attacker.name} strikes as they fall:"
+    else:
+        p_subj = f"{attacker.name}{hp_tag}"
 
     if ambush:
         atk, dfn = None, None
         margin = AMBUSH_MARGIN
         pressure_line = (f"        pressure: ambush -- no defense, "
                          f"margin {AMBUSH_MARGIN}")
-        log.append(f"    {attacker.name} strikes out of nowhere -- "
-                   f"{defender.name} never sees it coming!")
+        _play(log,
+              f"    {attacker.name} strikes out of nowhere -- "
+              f"{defender.name} never sees it coming!",
+              fit_lines([f"{attacker.name} strikes from nowhere --",
+                         f"{defender.name} never sees it coming!"]))
     else:
         atk = (attacker.pressure(rng, attacking=True, wound_pen=atk_wound_pen,
                                  cast=cast, shot=shot)
@@ -2330,13 +2525,14 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                   f"    !! {attacker.name}'s {label} MISFIRES -- the spell "
                   f"collapses in their hands (-{MISFIRE_BACKLASH_HP} HP -> "
                   f"{attacker.hp}/{attacker.max_hp}; the Power is wasted)",
-                  f"    !! {attacker.name}'s {label} MISFIRES "
-                  f"(-{MISFIRE_BACKLASH_HP} HP to the caster)")
+                  fit_lines([f"!! {attacker.name}'s {label} MISFIRES",
+                             f"(-{MISFIRE_BACKLASH_HP} HP to the caster)"]))
             _debug(log, pressure_line)
             if attacker.hp <= 0:
                 attacker.down = True
-                log.append(f"    {attacker.name} goes down, "
-                           f"out of the fight.")
+                _play(log,
+                      f"    {attacker.name} goes down, out of the fight.",
+                      f"{attacker.name} goes DOWN.")
             return
 
         if cast == "disarm":
@@ -2354,28 +2550,42 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                       f"{defender.weapon.name} from {defender.name}'s hands "
                       f"-- it clatters away ({BROKEN_ATK_PRESSURE} attack "
                       f"pressure, {BROKEN_SEVERITY} severity bare-handed). ***",
-                      f"    *** {defender.name} is DISARMED -- the "
-                      f"{defender.weapon.name} is torn away! ***")
+                      fit_lines([f"*** {defender.name} is DISARMED --",
+                                 f"the {defender.weapon.name} is torn "
+                                 f"away! ***"]))
             else:
-                log.append(f"    {attacker.name}'s telekinetic grip closes on "
-                           f"{defender.name}'s weapon -- and is shaken off.")
+                _play(log,
+                      f"    {attacker.name}'s telekinetic grip closes on "
+                      f"{defender.name}'s weapon -- and is shaken off.",
+                      f"{attacker.name}'s grip is shaken off.",
+                      quiet=True)
             return
 
         if atk.total == dfn.total:
             # A tie: no one lands. High dice = furious contact, low = circling.
             if cast:
                 tie = f"the {label} splashes wide; neither yields"
+                p_tie = f"{attacker.name}'s {label} splashes wide."
                 contact = False     # magic on steel tests nothing
             elif shot:
                 tie = f"the {label} hisses past; neither yields"
+                p_tie = f"{attacker.name}'s {label} hisses past."
                 contact = False     # a missile tests no steel
             elif max(atk.dice, dfn.dice) >= TIE_HIGH_DICE:
                 tie = "Clash! Steel rings; neither yields"
+                p_tie = None        # fitted below
                 contact = True      # steel met steel -- durability is tested
             else:
                 tie = "Lull. They circle, probing for an opening"
+                p_tie = None
                 contact = False     # no contact, nothing to break
-            log.append(f"    {attacker.name} and {defender.name} -- {tie}.")
+            if p_tie is None:
+                word = "Clash!" if contact else "they circle."
+                p_tie = fit_lines(
+                    [f"{attacker.name} and {defender.name}:", word])
+            _play(log,
+                  f"    {attacker.name} and {defender.name} -- {tie}.",
+                  p_tie, quiet=True)
             _debug(log, pressure_line)
             if shot:
                 attacker.shots_missed += 1
@@ -2385,15 +2595,27 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
 
         if atk.total < dfn.total:
             if cast:
-                log.append(f"    {attacker.name} sends {label} "
-                           f"at {defender.name} -- warded off.")
+                _play(log,
+                      f"    {attacker.name} sends {label} "
+                      f"at {defender.name} -- warded off.",
+                      f"{attacker.name}'s {label} is warded off.",
+                      quiet=True)
             elif shot:
-                log.append(f"    {attacker.name} sends {_an(label)} "
-                           f"at {defender.name} -- who twists away.")
+                _play(log,
+                      f"    {attacker.name} sends {_an(label)} "
+                      f"at {defender.name} -- who twists away.",
+                      f"{attacker.name}'s {label} misses {defender.name}.",
+                      quiet=True)
                 attacker.shots_missed += 1
             else:
-                log.append(f"    {attacker.name} attacks {defender.name} "
-                           f"-- parried.")
+                p_parry = (fit_lines([p_subj, f"{defender.name} parries."])
+                           if dying_att else
+                           fit_lines([p_subj, f"attacks {defender.name}, "
+                                              f"parried."]))
+                _play(log,
+                      f"    {attacker.name} attacks {defender.name} "
+                      f"-- parried.",
+                      p_parry, quiet=True)
                 defender.just_parried = True    # riposte's opening (session B)
             _debug(log, pressure_line)
             if not cast and not shot:
@@ -2441,8 +2663,18 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             sev_line += " -> a clean hit still cuts: graze"
         else:
             what = "the " + label if (cast or shot) else "the blow"
-            log.append(f"    {subject} {margin_verb(margin)} "
-                       f"{defender.name}, but {what} glances off -- deflected.")
+            if cast or shot:
+                p_defl = f"{attacker.name}'s {label} is deflected."
+            elif dying_att:
+                p_defl = fit_lines([p_subj,
+                                    f"{defender.name} deflects it."])
+            else:
+                p_defl = fit_lines([p_subj, f"attacks {defender.name}, "
+                                            f"deflected."])
+            _play(log,
+                  f"    {subject} {margin_verb(margin)} "
+                  f"{defender.name}, but {what} glances off -- deflected.",
+                  p_defl, quiet=True)
             _debug(log, pressure_line)
             _debug(log, sev_line)
             if shot:
@@ -2456,9 +2688,13 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         raw_tier, dmg = reduce_tier(raw_tier)
         sev_line += f" -> a hurried blow at a fleeing back: {raw_tier}"
         if dmg == 0:
-            log.append(f"    {subject} {margin_verb(margin)} "
-                       f"{defender.name}, but the hurried blow at a fleeing "
-                       f"back glances off -- deflected.")
+            _play(log,
+                  f"    {subject} {margin_verb(margin)} "
+                  f"{defender.name}, but the hurried blow at a fleeing "
+                  f"back glances off -- deflected.",
+                  fit_lines([f"{attacker.name}'s parting blow at",
+                             f"{defender.name} -- deflected."]),
+                  quiet=True)
             _debug(log, pressure_line)
             _debug(log, sev_line)
             if shot:
@@ -2479,12 +2715,20 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                                     # more often than one in the grass
     state = (f"{defender.name}: {defender.hp}/{defender.max_hp} HP, "
              f"-{defender.wound_penalty} to rolls")
-    # The death spiral is a real number the player budgets around, so the
-    # player log shows it too (2026-07-09: it used to be full-log-only, which
-    # made wounded fights read as inexplicable losing).
-    player_state = f"{defender.name}: {defender.hp}/{defender.max_hp} HP"
-    if defender.wound_penalty:
-        player_state += f", -{defender.wound_penalty} to rolls"
+
+    # The player's hit line (2026-07-21): the pressure margin narrated (the
+    # verb), the severity a bare number with the tier as punctuation, no
+    # state brackets -- penalties and totals live in the pause menu and the
+    # post-fight tally now.
+    dmg_part = (f"deals {dmg} dmg{TIER_EMPH[tier]}" if dmg
+                else "no harm done.")
+    p_parts = [p_subj, f"{margin_verb(margin)} {defender.name},"]
+    if saved:
+        p_parts += ["but Bulwark blunts it:", dmg_part]
+    else:
+        p_parts.append(dmg_part)
+    if cast and atk_roll is None:
+        p_parts.append(f"[{attacker.cur_power} Power left]")
 
     if saved:
         _play(log,
@@ -2492,19 +2736,15 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
               f" -- {TIER_PHRASE[raw_tier]}... {defender.name}'s Bulwark "
               f"flares! Reduced to {tier}. [{state}; "
               f"{defender.cur_power} Power left]",
-              f"    {subject} {margin_verb(margin)} {defender.name}"
-              f" -- {TIER_PHRASE[raw_tier]}... {defender.name}'s Bulwark "
-              f"flares! Reduced to {tier} (-{dmg} HP). [{player_state}; "
-              f"{defender.cur_power} Power left]")
+              fit_lines(p_parts))
     else:
         _play(log,
               f"    {subject} {margin_verb(margin)} {defender.name}"
               f" -- {TIER_PHRASE[tier]}! [{state}]",
-              f"    {subject} {margin_verb(margin)} {defender.name}"
-              f" -- {TIER_PHRASE[tier]} (-{dmg} HP)! [{player_state}]")
+              fit_lines(p_parts))
     _debug(log, pressure_line)
     _debug(log, sev_line)
-    if cast in ("ice", "freeze"):
+    if cast in ("ice", "freeze") and defender.alive:
         # The ice school's whole point: every landed bolt rimes the target --
         # a stacking DEX loss for the rest of the fight (attack and defense;
         # the term floors at 0 in `pressure`). A flash-freeze rimes deeper.
@@ -2513,8 +2753,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         _play(log,
               f"    {defender.name} is rimed with frost "
               f"(-{defender.dex_debuff} DEX for this fight)",
-              f"    {defender.name} is rimed with frost "
-              f"(-{defender.dex_debuff} DEX for this fight)")
+              f"{defender.name} is rimed with frost.")
     if (cast in ("freeze", "hurl_foe") and dmg > 0 and defender.alive
             and defender.spell_ward < 2):
         # The control riders: a wounding flash-freeze locks the body, a
@@ -2524,8 +2763,11 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         defender.stunned = max(defender.stunned, 1)
         what = ("frozen fast" if cast == "freeze"
                 else "slammed sprawling")
-        log.append(f"    {defender.name} is {what} -- they lose their "
-                   f"next action!")
+        _play(log,
+              f"    {defender.name} is {what} -- they lose their "
+              f"next action!",
+              fit_lines([f"{defender.name} is {what} --",
+                         "they lose their next action!"]))
 
     # Warrior-move outcome riders (session B), applied on the landed hit --
     # a wound already fell above; these add the control on top. Ward 2+ shrugs
@@ -2541,23 +2783,33 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                   f"{defender.weapon.name} from {defender.name} -- it clatters "
                   f"away ({BROKEN_ATK_PRESSURE} attack pressure, "
                   f"{BROKEN_SEVERITY} severity bare-handed). ***",
-                  f"    *** {defender.name} is DISARMED -- the "
-                  f"{defender.weapon.name} is knocked away! ***")
+                  fit_lines([f"*** {defender.name} is DISARMED --",
+                             f"the {defender.weapon.name} is knocked "
+                             f"away! ***"]))
         if (move.trip and decisive and defender.alive
                 and defender.spell_ward < 2):
             defender.stunned = max(defender.stunned, 1)
             defender.off_guard = max(defender.off_guard, 2)
-            log.append(f"    {defender.name} is swept off their feet -- prone: "
-                       f"no next action, and open for the round after!")
+            _play(log,
+                  f"    {defender.name} is swept off their feet -- prone: "
+                  f"no next action, and open for the round after!",
+                  fit_lines([f"{defender.name} is swept prone --",
+                             "no action, and open next round!"]))
         if move.kick and defender.alive:
             defender.off_guard = max(defender.off_guard, 2)
-            log.append(f"    {defender.name} is kicked off balance "
-                       f"(-{OFF_GUARD_PENALTY} defense next round).")
+            _play(log,
+                  f"    {defender.name} is kicked off balance "
+                  f"(-{OFF_GUARD_PENALTY} defense next round).",
+                  f"{defender.name} is kicked off balance.")
         if (move.stun_on_wound and dmg > 0 and defender.alive
                 and defender.spell_ward < 2):
             defender.stunned = max(defender.stunned, 1)
-            log.append(f"    {attacker.name}'s pommel rings {defender.name}'s "
-                       f"skull -- they lose their next action!")
+            _play(log,
+                  f"    {attacker.name}'s pommel rings {defender.name}'s "
+                  f"skull -- they lose their next action!",
+                  fit_lines([f"the pommel rings {defender.name}'s "
+                             f"skull --",
+                             "they lose their next action!"]))
 
     # Death is a 0-HP state (see the `alive` property): a blow only kills if
     # it actually drops you. At 0 HP an unsaved crippling blow is a death; any
@@ -2625,13 +2877,12 @@ def _first_blood(party: list[Entity], foes: list[Entity],
                   f" -{target.wound_penalty} to rolls) "
                   f"[{FIRST_BLOOD_COST} Power spent, "
                   f"{hero.cur_power} left]",
-                  f"    {hero.name} strikes before the lines meet -- "
-                  f"First Blood! {target.name} is grazed "
-                  f"(-{FIRST_BLOOD_HP} HP) "
-                  f"[{target.name}: {target.hp}/{target.max_hp} HP]")
+                  fit_lines([f"{hero.name} uses First Blood!",
+                             f"{target.name} takes "
+                             f"{FIRST_BLOOD_HP} dmg."]))
             if not target.alive:
                 target.down = True
-                log.append(f"    *** {target.name} falls. ***")
+                _log_foe_fall(target, log)
 
 
 def _spend_move(attacker: Entity, key: str) -> int:
@@ -2670,6 +2921,22 @@ def _move_fire_text(attacker: Entity, defender: Entity, key: str) -> str:
         "iaido": f"    {a} draws in one flowing cut -- iaido!",
     }
     return lines.get(key, f"    {a} works a flourish on {d}.")
+
+
+def _move_fire_player(attacker: Entity, defender: Entity,
+                      key: str) -> list[str]:
+    """The player level's move line: the move's NAME, front and center (the
+    legibility rule -- named moves stay named), fitted to width. The full
+    log keeps _move_fire_text's flavor sentence."""
+    a, d = attacker.name, defender.name
+    if key == "finisher":
+        return fit_lines([f"{a}:", f"{finisher_name(attacker.weapon)}!"])
+    if key == "feint":
+        return fit_lines([f"{a}: Feint --", f"{d}'s guard opens."])
+    if key == "iaido":
+        return fit_lines([f"{a}: Iaido --", "one flowing cut!"])
+    display = MOVES[key].display if key in MOVES else key
+    return fit_lines([f"{a}: {display}", f"at {d}!"])
 
 
 def _fire_move(attacker: Entity, defender: Entity, near: int, rnd: int,
@@ -2724,8 +2991,11 @@ def _try_field_medic(fallen: Entity, party: list[Entity],
     _debug(log, f"        field medic: {total} (2d6={dice}, "
                 f"+{medic.dex} DEX) vs DC {FIELD_MEDIC_DC}")
     if total < FIELD_MEDIC_DC:
-        log.append(f"    {medic.name} throws themselves at {fallen.name}'s "
-                   f"wound -- and cannot stop the bleeding.")
+        _play(log,
+              f"    {medic.name} throws themselves at {fallen.name}'s "
+              f"wound -- and cannot stop the bleeding.",
+              fit_lines([f"{medic.name}: Field Medic --",
+                         "the bleeding cannot be stopped."]))
         return False
     fallen.dead = False
     fallen.down = True
@@ -2734,8 +3004,8 @@ def _try_field_medic(fallen: Entity, party: list[Entity],
           f"    *** {medic.name}'s hands find the wound -- rapid surgery "
           f"in the press! {fallen.name} is DOWN, not dead (the work costs "
           f"{medic.name} their next round; the kit is spent for today). ***",
-          f"    *** {medic.name} saves {fallen.name} at the brink -- "
-          f"DOWN, not dead. ***")
+          fit_lines([f"*** {medic.name}: Field Medic --",
+                     f"{fallen.name} is DOWN, not dead. ***"]))
     return True
 
 
@@ -2791,20 +3061,27 @@ def _misfire(caster: Entity, spell: str, log: list[str]) -> None:
           f"    !! {caster.name}'s {spell} MISFIRES -- the spell collapses "
           f"in their hands (-{MISFIRE_BACKLASH_HP} HP -> "
           f"{caster.hp}/{caster.max_hp}; the Power is wasted)",
-          f"    !! {caster.name}'s {spell} MISFIRES "
-          f"(-{MISFIRE_BACKLASH_HP} HP to the caster)")
+          fit_lines([f"!! {caster.name}'s {spell} MISFIRES",
+                     f"(-{MISFIRE_BACKLASH_HP} HP to the caster)"]))
     if caster.hp <= 0:
         caster.down = True
-        log.append(f"    {caster.name} goes down, out of the fight.")
+        _play(log,
+              f"    {caster.name} goes down, out of the fight.",
+              f"{caster.name} goes DOWN.")
 
 
 def _log_foe_fall(defender: Entity, log: list[str]) -> None:
+    """A foe drops: the player level glues the fate onto the wound line when
+    it fits ("deals 6 dmg!!! SLAIN.") -- the fall reads in the same breath as
+    the blow that caused it."""
     if defender.alive:
         return
     if defender.dead:
-        log.append(f"    *** {defender.name} is SLAIN. ***")
+        _play_tail(log, f"    *** {defender.name} is SLAIN. ***",
+                   "SLAIN.", f"{defender.name} is SLAIN.")
     else:
-        log.append(f"    *** {defender.name} falls. ***")
+        _play_tail(log, f"    *** {defender.name} falls. ***",
+                   "It falls.", f"{defender.name} falls.")
 
 
 def _cast_openers(party: list[Entity], foes: list[Entity],
@@ -2846,9 +3123,12 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
             if result == "misfire":
                 _misfire(hero, spell, log)
             elif result == "fizzle" or rounds <= 0:
-                log.append(f"    {hero.name} reaches for {target.name}'s "
-                           f"mind -- and is shut out. The spell fizzles "
-                           f"({cost} Power wasted).")
+                _play(log,
+                      f"    {hero.name} reaches for {target.name}'s "
+                      f"mind -- and is shut out. The spell fizzles "
+                      f"({cost} Power wasted).",
+                      fit_lines([f"{hero.name}'s possession fizzles",
+                                 f"({cost} Power wasted)."]))
             else:
                 if result == "crit":
                     hero.cur_power += cost
@@ -2859,9 +3139,10 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
                       f"    *** {target.name}'s eyes go glassy -- "
                       f"{hero.name} seizes their mind! The puppet fights "
                       f"for the party ({rounds} round(s); {left}). ***",
-                      f"    *** {target.name}'s eyes go glassy -- "
-                      f"{hero.name} seizes their mind ({rounds} "
-                      f"round(s))! ***")
+                      fit_lines([f"*** {hero.name} seizes",
+                                 f"{target.name}'s mind --",
+                                 f"a puppet for {rounds} round(s)! ***",
+                                 f"[{hero.cur_power} Power left]"]))
             return
         if spell == "stop time":
             cost = STOP_TIME_POWER_COST + rank
@@ -2873,15 +3154,22 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
             if result == "misfire":
                 _misfire(hero, spell, log)
             elif result == "fizzle" or strikes <= 0:
-                log.append(f"    {hero.name} reaches for the moment between "
-                           f"moments -- and it slips away ({cost} Power "
-                           f"wasted).")
+                _play(log,
+                      f"    {hero.name} reaches for the moment between "
+                      f"moments -- and it slips away ({cost} Power "
+                      f"wasted).",
+                      fit_lines([f"{hero.name}'s stop time fizzles",
+                                 f"({cost} Power wasted)."]))
             else:
                 if result == "crit":
                     hero.cur_power += cost
-                log.append(f"    *** Time stutters and HANGS -- {hero.name} "
-                           f"moves alone through the frozen moment "
-                           f"({strikes} stolen strike(s))! ***")
+                _play(log,
+                      f"    *** Time stutters and HANGS -- {hero.name} "
+                      f"moves alone through the frozen moment "
+                      f"({strikes} stolen strike(s))! ***",
+                      fit_lines([f"*** {hero.name} STOPS TIME --",
+                                 f"{strikes} stolen strike(s)! ***",
+                                 f"[{hero.cur_power} Power left]"]))
                 for _ in range(strikes):
                     target = _pick_target(foes, rng, focus=True,
                                           attacker=hero)
@@ -2904,14 +3192,21 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
             if result == "misfire":
                 _misfire(hero, spell, log)
             elif result == "fizzle":
-                log.append(f"    {hero.name} folds space -- and arrives a "
-                           f"step wide of it. The blink fizzles "
-                           f"({cost} Power wasted).")
+                _play(log,
+                      f"    {hero.name} folds space -- and arrives a "
+                      f"step wide of it. The blink fizzles "
+                      f"({cost} Power wasted).",
+                      fit_lines([f"{hero.name}'s blink fizzles",
+                                 f"({cost} Power wasted)."]))
             else:
                 if result == "crit":
                     hero.cur_power += cost
-                log.append(f"    *** {hero.name} BLINKS -- and is behind "
-                           f"{target.name}. ***")
+                _play(log,
+                      f"    *** {hero.name} BLINKS -- and is behind "
+                      f"{target.name}. ***",
+                      fit_lines([f"*** {hero.name} BLINKS behind",
+                                 f"{target.name}. ***",
+                                 f"[{hero.cur_power} Power left]"]))
                 was_alive = target.alive
                 _attack(hero, target, rng, log, ambush=True)
                 if was_alive and not target.alive:
@@ -2926,15 +3221,22 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
             if result == "misfire":
                 _misfire(hero, spell, log)
             elif result == "fizzle":
-                log.append(f"    {hero.name} gathers the light around "
-                           f"themselves -- and it slides off. The spell "
-                           f"fizzles ({cost} Power wasted).")
+                _play(log,
+                      f"    {hero.name} gathers the light around "
+                      f"themselves -- and it slides off. The spell "
+                      f"fizzles ({cost} Power wasted).",
+                      fit_lines([f"{hero.name}'s invisibility fizzles",
+                                 f"({cost} Power wasted)."]))
             else:
                 if result == "crit":
                     hero.cur_power += cost
                 hero.unseen = True
-                log.append(f"    *** {hero.name} is simply NOT THERE -- "
-                           f"unseen until their strike lands. ***")
+                _play(log,
+                      f"    *** {hero.name} is simply NOT THERE -- "
+                      f"unseen until their strike lands. ***",
+                      fit_lines([f"*** {hero.name} is simply NOT",
+                                 "THERE -- unseen until they strike. ***",
+                                 f"[{hero.cur_power} Power left]"]))
             return
         if spell == "flight":
             rank = min(rank, SPELLS["flight"].max_rank)
@@ -2947,17 +3249,24 @@ def _cast_opener(hero: Entity, foes: list[Entity], rng: random.Random,
             if result == "misfire":
                 _misfire(hero, spell, log)
             elif result == "fizzle" or rounds <= 0:
-                log.append(f"    {hero.name} kicks off the earth -- and "
-                           f"comes right back down. The spell fizzles "
-                           f"({cost} Power wasted).")
+                _play(log,
+                      f"    {hero.name} kicks off the earth -- and "
+                      f"comes right back down. The spell fizzles "
+                      f"({cost} Power wasted).",
+                      fit_lines([f"{hero.name}'s flight fizzles",
+                                 f"({cost} Power wasted)."]))
             else:
                 if result == "crit":
                     hero.cur_power += cost
                 hero.aloft = rounds
-                log.append(f"    *** {hero.name} steps onto the AIR -- "
-                           f"aloft for {rounds} round(s), out of steel's "
-                           f"reach (+{FLIGHT_ALOFT_ATK} attacking; bolts "
-                           f"and breath can still find them). ***")
+                _play(log,
+                      f"    *** {hero.name} steps onto the AIR -- "
+                      f"aloft for {rounds} round(s), out of steel's "
+                      f"reach (+{FLIGHT_ALOFT_ATK} attacking; bolts "
+                      f"and breath can still find them). ***",
+                      fit_lines([f"*** {hero.name} steps onto the AIR",
+                                 f"-- aloft for {rounds} round(s)! ***",
+                                 f"[{hero.cur_power} Power left]"]))
             return
 
 
@@ -3103,23 +3412,32 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
             if result == "crit":
                 h.cur_power += VANISH_POWER_COST
             h.unseen = True
-            log.append(f"    {h.name} VANISHES from the melee "
-                       f"(-{VANISH_POWER_COST} Power -> {h.cur_power}) -- "
-                       f"out of every foe's reach until their next strike, "
-                       f"which lands as an ambush.")
+            _play(log,
+                  f"    {h.name} VANISHES from the melee "
+                  f"(-{VANISH_POWER_COST} Power -> {h.cur_power}) -- "
+                  f"out of every foe's reach until their next strike, "
+                  f"which lands as an ambush.",
+                  fit_lines([f"{h.name} VANISHES from the melee --",
+                             "the next strike is an ambush.",
+                             f"[{h.cur_power} Power left]"]))
         return True
     if action == "drink":
         if h.items.get("stamina", 0) <= 0:
-            log.append(f"    {h.name} gropes for a stamina draught -- "
-                       f"none left! They fight on.")
+            _play(log,
+                  f"    {h.name} gropes for a stamina draught -- "
+                  f"none left! They fight on.",
+                  f"{h.name} has no draught left!")
             return False
         h.items["stamina"] -= 1
         before = h.cur_sta
         h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
-        log.append(f"    {h.name} downs a stamina draught mid-fight "
-                   f"(STA {before} -> {h.cur_sta}/{h.sta}; "
-                   f"{h.items['stamina']} left) -- no attack this round, "
-                   f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
+        _play(log,
+              f"    {h.name} downs a stamina draught mid-fight "
+              f"(STA {before} -> {h.cur_sta}/{h.sta}; "
+              f"{h.items['stamina']} left) -- no attack this round, "
+              f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink",
+              fit_lines([f"{h.name} downs a stamina draught",
+                         f"({h.items['stamina']} left)."]))
         return True
     if action == "heal":
         # The wounds trigger's own answer (2026-07-11; rules.md's "until HP
@@ -3127,17 +3445,22 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
         # potion at the drink's exact price. It lightens the wound penalty
         # immediately -- fighting the spiral is the point.
         if h.items.get("healing", 0) <= 0:
-            log.append(f"    {h.name} gropes for a healing potion -- "
-                       f"none left! They fight on.")
+            _play(log,
+                  f"    {h.name} gropes for a healing potion -- "
+                  f"none left! They fight on.",
+                  f"{h.name} has no healing potion left!")
             return False
         h.items["healing"] -= 1
         before = h.hp
         h.hp = recover(h.hp, HEALING_POTION_RESTORE, h.max_hp)
-        log.append(f"    {h.name} downs a healing potion mid-fight "
-                   f"(HP {before} -> {h.hp}/{h.max_hp}, now "
-                   f"-{h.wound_penalty} to rolls; "
-                   f"{h.items['healing']} left) -- no attack this round, "
-                   f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink")
+        _play(log,
+              f"    {h.name} downs a healing potion mid-fight "
+              f"(HP {before} -> {h.hp}/{h.max_hp}, now "
+              f"-{h.wound_penalty} to rolls; "
+              f"{h.items['healing']} left) -- no attack this round, "
+              f"-{PAUSE_ACTION_DEF_PENALTY} defending while they drink",
+              fit_lines([f"{h.name} downs a healing potion",
+                         f"({h.items['healing']} left)."]))
         return True
     if action == "berserk":
         if "berserk" not in h.abilities:
@@ -3152,11 +3475,14 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
         before = h.cur_sta
         h.hp -= BERSERK_HP_COST
         h.cur_sta = recover(h.cur_sta, BERSERK_STA_GAIN, h.sta)
-        log.append(f"    {h.name} goes BERSERK -- strength torn from their "
-                   f"own flesh (-{BERSERK_HP_COST} HP -> {h.hp}/{h.max_hp}, "
-                   f"now -{h.wound_penalty} to rolls; STA {before} -> "
-                   f"{h.cur_sta}/{h.sta}) -- no attack this round, "
-                   f"-{PAUSE_ACTION_DEF_PENALTY} defending")
+        _play(log,
+              f"    {h.name} goes BERSERK -- strength torn from their "
+              f"own flesh (-{BERSERK_HP_COST} HP -> {h.hp}/{h.max_hp}, "
+              f"now -{h.wound_penalty} to rolls; STA {before} -> "
+              f"{h.cur_sta}/{h.sta}) -- no attack this round, "
+              f"-{PAUSE_ACTION_DEF_PENALTY} defending",
+              fit_lines([f"{h.name} goes BERSERK --",
+                         "strength torn from their own flesh."]))
         return True
     if action == "war-breath":
         if "war_breath" not in h.abilities:
@@ -3171,10 +3497,12 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
         before = h.cur_sta
         h.cur_power -= WAR_BREATH_POWER_COST
         h.cur_sta = recover(h.cur_sta, WAR_BREATH_STA_GAIN, h.sta)
-        log.append(f"    {h.name} centers their breath -- War-Breath! "
-                   f"(-{WAR_BREATH_POWER_COST} Power -> {h.cur_power}; "
-                   f"STA {before} -> {h.cur_sta}/{h.sta}) -- no attack this "
-                   f"round, -{PAUSE_ACTION_DEF_PENALTY} defending")
+        _play(log,
+              f"    {h.name} centers their breath -- War-Breath! "
+              f"(-{WAR_BREATH_POWER_COST} Power -> {h.cur_power}; "
+              f"STA {before} -> {h.cur_sta}/{h.sta}) -- no attack this "
+              f"round, -{PAUSE_ACTION_DEF_PENALTY} defending",
+              f"{h.name}: War-Breath!")
         return True
     raise ValueError(f"unknown pause action: {action}")
 
@@ -3305,13 +3633,21 @@ def group_combat(party: list[Entity], foes: list[Entity],
     # pause answers on a resume, plus any standing orders issued at a
     # crossing (both pay the same price when they fire).
     queued: dict[Entity, str] = dict(actions) if actions else {}
+    # Movement narration is RANGED color (2026-07-21): in an all-steel fight
+    # the lines always just meet, so the player log skips the approach lines
+    # (the full log keeps them). Decided once, at the fight's start: anyone
+    # who threatens at range -- a card or a caster -- makes the ground worth
+    # narrating.
+    ranged_fight = field > 0 and any(
+        e.threat_reach > 0 for e in party + foes if e.alive)
     rnd = first_round - 1
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
         if rnd > max_rounds:
+            _finish_rounds(log)
             log.append("    (the fight grinds to a standstill)")
             break
-        log.append(f"  Round {rnd}:")
+        _round_start(log, rnd)
         if rnd == 1:
             # The wizard openers fire before the lines meet (First Blood's
             # slot; a resume never re-fires them -- rnd starts past 1).
@@ -3382,39 +3718,67 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 gap_now = _min_gap()
                 names = ", ".join(e.name for e in advancing)
                 if gap_before > 0 and gap_now == 0:
-                    _play(log,
-                          f"    {names} close the distance -- the lines "
-                          f"meet!",
-                          f"    The lines meet -- steel range.")
+                    if ranged_fight:
+                        _play(log,
+                              f"    {names} close the distance -- the lines "
+                              f"meet!",
+                              "The lines meet -- steel range.")
+                    else:
+                        _debug(log, f"    {names} close the distance -- "
+                                    f"the lines meet!")
                 else:
-                    _play(log,
-                          f"    {names} close the distance "
-                          f"(the gap narrows to {gap_now}).",
-                          f"    The lines close.")
-        for attacker in actors:
+                    if ranged_fight:
+                        _play(log,
+                              f"    {names} close the distance "
+                              f"(the gap narrows to {gap_now}).",
+                              "The lines close.", quiet=True)
+                    else:
+                        _debug(log, f"    {names} close the distance "
+                                    f"(the gap narrows to {gap_now}).")
+        # THE TURN QUEUE (2026-07-21): round-start actors act in order, but a
+        # fighter felled before their turn now takes the dying swing
+        # IMMEDIATELY after the blow that felled them (promoted to the front
+        # of the queue), not at their original slot -- same swing, same
+        # round-start wound penalty, but the fall and its answer read
+        # together in the log.
+        turn_queue = list(actors)
+        acted: set[Entity] = set()
+        while turn_queue:
+            attacker = turn_queue.pop(0)
+            acted.add(attacker)
             if attacker in busy:
                 continue    # occupied with their draught/conversion this round
             if attacker.stunned > 0:
                 # Frozen fast / slammed sprawling (the control riders): the
                 # action is lost -- no swing, no STA; the body still defends.
                 attacker.stunned -= 1
-                log.append(f"    {attacker.name} struggles back to their "
-                           f"footing -- no action this round.")
+                _play(log,
+                      f"    {attacker.name} struggles back to their "
+                      f"footing -- no action this round.",
+                      f"{attacker.name} struggles up -- no action.",
+                      quiet=True)
                 continue
             if attacker.rage_exhausted:
                 # Rage's crash: the primed exchange failed to slay, and the
                 # debt comes due -- a round spent heaving (defense holds).
                 attacker.rage_exhausted = False
-                log.append(f"    {attacker.name} stands heaving, spent by "
-                           f"the rage -- no attack this round.")
+                _play(log,
+                      f"    {attacker.name} stands heaving, spent by "
+                      f"the rage -- no attack this round.",
+                      fit_lines([f"{attacker.name} stands heaving --",
+                                 "the rage's price: no attack."]),
+                      quiet=True)
                 continue
             if attacker.stanced > 0:
                 # Iaido's follow-through: the flowing draw-cut leaves the hero
                 # stanced -- a round with the blade sheathed, no attack (the
                 # body still defends).
                 attacker.stanced -= 1
-                log.append(f"    {attacker.name} holds the iaido stance, blade "
-                           f"resettled -- no attack this round.")
+                _play(log,
+                      f"    {attacker.name} holds the iaido stance, blade "
+                      f"resettled -- no attack this round.",
+                      f"{attacker.name} holds the iaido stance.",
+                      quiet=True)
                 continue
             dying = not attacker.alive      # felled earlier this round
             if attacker in party_set:
@@ -3512,8 +3876,9 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         _play(log,
                               f"    {attacker.name} looses point-blank "
                               f"into {volley.name}'s charge!",
-                              f"    {attacker.name} looses point-blank "
-                              f"into the charge!")
+                              fit_lines([f"{attacker.name} looses "
+                                         f"point-blank",
+                                         f"into {volley.name}'s charge!"]))
                         victims = [volley]
                         shooting = True
                         fired_shots.add(attacker)
@@ -3533,10 +3898,14 @@ def group_combat(party: list[Entity], foes: list[Entity],
                               f"    {attacker.name} skips back out of reach, "
                               f"keeping the {w.name} up -- the gap reopens."
                               f"{note}",
-                              f"    {attacker.name} skips back out of reach, "
-                              f"keeping the {w.name} up!")
+                              fit_lines([f"{attacker.name}:",
+                                         "Skirmisher's Step --",
+                                         "back out of reach!"]))
                         continue    # the fall-back step is the round's action
                     else:
+                        if dying:
+                            continue    # a dead hand changes no grips --
+                                        # and the log would read absurd
                         attacker.switched = True
                         _play(log,
                               f"    {attacker.name} is caught at arm's "
@@ -3544,15 +3913,20 @@ def group_combat(party: list[Entity], foes: list[Entity],
                               f"fighting grip ({w.melee_atk:+d} atk/"
                               f"{w.melee_sev:+d} sev, no shooting until "
                               f"there's room)!",
-                              f"    {attacker.name} is caught at arm's "
-                              f"length -- the {w.name} becomes a poor "
-                              f"melee weapon!")
+                              fit_lines([f"{attacker.name} is caught --",
+                                         f"the {w.name} drops to a",
+                                         "poor melee grip."]))
                         continue    # the switch is the round (free, like
                                     # circling -- no STA)
                 if ranged_card and not contact and attacker.switched:
+                    if dying:
+                        continue        # likewise: no dying grip-swap
                     attacker.switched = False
-                    log.append(f"    {attacker.name} finds room to breathe "
-                               f"and brings the {w.name} back up.")
+                    _play(log,
+                          f"    {attacker.name} finds room to breathe "
+                          f"and brings the {w.name} back up.",
+                          fit_lines([f"{attacker.name} finds room --",
+                                     f"the {w.name} comes back up."]))
                     continue
                 if attacker.ranged is not None and not contact:
                     # The shooting grip with open ground: loose, or work
@@ -3601,15 +3975,24 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                 and any(_gap(attacker, t) > 0
                                         for t in living_targets)):
                             attacker.adv += 1
-                            _play(log,
-                                  f"    {attacker.name} slips through the "
-                                  f"press, pushing deeper "
-                                  f"(advance {attacker.adv}/{field}).",
-                                  f"    {attacker.name} slips through the "
-                                  f"press, pushing deeper!")
+                            if ranged_fight:
+                                _play(log,
+                                      f"    {attacker.name} slips through "
+                                      f"the press, pushing deeper "
+                                      f"(advance {attacker.adv}/{field}).",
+                                      f"{attacker.name} slips through the "
+                                      f"press.", quiet=True)
+                            else:
+                                _debug(log,
+                                       f"    {attacker.name} slips through "
+                                       f"the press, pushing deeper "
+                                       f"(advance {attacker.adv}/{field}).")
                         else:
-                            log.append(f"    {attacker.name} circles, "
-                                       f"crowded out of the press.")
+                            _play(log,
+                                  f"    {attacker.name} circles, "
+                                  f"crowded out of the press.",
+                                  f"{attacker.name} circles, crowded out.",
+                                  quiet=True)
                         continue
                     if _gap(attacker, defender) == 0:
                         engaged[defender] = engaged.get(defender, 0) + 1
@@ -3628,8 +4011,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                           f"    !! {attacker.name} is Winded "
                           f"(STA {attacker.cur_sta} -- -{WINDED_PENALTY} "
                           f"to all rolls until they catch their breath)",
-                          f"    !! {attacker.name} is Winded -- "
-                          f"-{WINDED_PENALTY} to all rolls")
+                          f"!! {attacker.name} is Winded.", defer=True)
                 if attacker.spent and attacker not in spent_logged:
                     # Covers both the swing that emptied the tank and walking
                     # into the fight already at 0.
@@ -3638,10 +4020,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
                           f"    !! {attacker.name} is SPENT -- running "
                           f"on empty (-{SPENT_PENALTY} to all rolls "
                           f"until the fight ends)",
-                          f"    !! {attacker.name} is SPENT -- "
-                          f"-{SPENT_PENALTY} to all rolls")
+                          f"!! {attacker.name} is SPENT.", defer=True)
             if dying:
-                log.append(f"    ({attacker.name} strikes even as they fall)")
+                # Player level: _attack phrases the dying swing itself
+                # ("X strikes as they fall: ...").
+                _debug(log, f"    ({attacker.name} strikes even as "
+                            f"they fall)")
 
             atk_roll = None
             sweep_cast = None
@@ -3667,11 +4051,21 @@ def group_combat(party: list[Entity], foes: list[Entity],
                             f"{attacker.cur_power} left]"
                             if attacker.sweep_cost_power else "")
                 names = ", ".join(v.name for v in victims)
+                vic_names = [v.name for v in victims]
+                if fireball:
+                    p_parts = ([f"{attacker.name} hurls a FIREBALL at"]
+                               + _name_parts(vic_names, "!")
+                               + [f"[{attacker.cur_power} Power left]"])
+                elif bomb:
+                    p_parts = ([f"{attacker.name} hurls a FIREBOMB at"]
+                               + _name_parts(vic_names, "!"))
+                else:
+                    p_parts = ([f"{attacker.name} unleashes", f"{label}:"]
+                               + _name_parts(vic_names, " are caught!"))
                 _play(log,
                       f"    {attacker.name} unleashes {label} -- "
                       f"{names} are caught in it!{fuel}",
-                      f"    {attacker.name} unleashes {label} -- "
-                      f"{names} are caught in it!")
+                      fit_lines(p_parts))
                 atk_roll = attacker.pressure(
                     rng, attacking=True, cast=sweep_cast,
                     wound_pen=start_pens[attacker] if dying else None)
@@ -3719,23 +4113,28 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                   f"    {attacker.name} sweeps the blade in a "
                                   f"wide arc -- {names} are both caught!"
                                   f"{sta_note}",
-                                  f"    {attacker.name} sweeps the blade wide "
-                                  f"-- {names} both caught!")
+                                  fit_lines([f"{attacker.name}: Sweep --"]
+                                            + _name_parts(
+                                                [v.name for v in victims],
+                                                " both caught!")))
                         elif feint_bonus:
                             move_rider = MoveRider("feint_payoff",
                                                    "feint opening",
                                                    atk=feint_bonus)
                     elif key == "feint":
                         attacker.feint_target = d0
-                        log.append(_move_fire_text(attacker, d0, "feint")
-                                   + sta_note)
+                        _play(log,
+                              _move_fire_text(attacker, d0, "feint")
+                              + sta_note,
+                              _move_fire_player(attacker, d0, "feint"))
                         if feint_bonus:
                             move_rider = MoveRider("feint_payoff",
                                                    "feint opening",
                                                    atk=feint_bonus)
                     elif key:
-                        log.append(_move_fire_text(attacker, d0, key)
-                                   + sta_note)
+                        _play(log,
+                              _move_fire_text(attacker, d0, key) + sta_note,
+                              _move_fire_player(attacker, d0, key))
                         move_rider = build_move_rider(attacker, d0, key)
                         if key == "iaido":
                             attacker.stanced = 1    # a round stanced next round
@@ -3749,6 +4148,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
             raged = attacker.rage_primed    # the primed swing resolves now
             slew = False
             struck = False
+            fresh_falls: list[Entity] = []  # felled by THIS action -- their
+                                            # dying swings are promoted below
             for defender in victims:
                 was_alive = defender.alive
                 # A single attack lets the wizard plan the exchange (disarm /
@@ -3780,6 +4181,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         move=move_rider)
                 if was_alive and not defender.alive:
                     slew = True
+                    fresh_falls.append(defender)
                     if (defender.dead and defender.protagonist
                             and not defender.fate_debt
                             and any(h is not defender and not h.dead
@@ -3793,27 +4195,44 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         defender.dead = False
                         defender.down = True
                         defender.fate_debt = True
-                        log.append(f"    *** The blow should be "
-                                   f"{defender.name}'s death -- and is not. "
-                                   f"Fate has spared them; its price comes "
-                                   f"due if this fight is won. ***")
-                        log.append(f"    {defender.name} goes down, "
-                                   f"out of the fight.")
+                        _play(log,
+                              f"    *** The blow should be "
+                              f"{defender.name}'s death -- and is not. "
+                              f"Fate has spared them; its price comes "
+                              f"due if this fight is won. ***",
+                              fit_lines(["*** The blow should be",
+                                         f"{defender.name}'s death --",
+                                         "and is not.",
+                                         "Fate's price comes due",
+                                         "if this fight is won. ***"]))
+                        _play(log,
+                              f"    {defender.name} goes down, "
+                              f"out of the fight.",
+                              f"{defender.name} goes DOWN.")
                     elif defender.dead and defender in party_set:
                         # Field Medic (the ability): a companion's death
                         # nearby can be commuted to a Down, once a day.
                         # Fate's price (_settle_fate_debt) can NOT be
                         # medic'd -- fate is owed, not bleeding.
                         if not _try_field_medic(defender, party, rng, log):
-                            log.append(f"    *** {defender.name} is "
-                                       f"SLAIN. ***")
+                            _play_tail(log,
+                                       f"    *** {defender.name} is "
+                                       f"SLAIN. ***",
+                                       "SLAIN.",
+                                       f"{defender.name} is SLAIN.")
                     elif defender.dead:
-                        log.append(f"    *** {defender.name} is SLAIN. ***")
+                        _play_tail(log,
+                                   f"    *** {defender.name} is SLAIN. ***",
+                                   "SLAIN.", f"{defender.name} is SLAIN.")
                     elif defender in party_set:
-                        log.append(f"    {defender.name} goes down, "
-                                   f"out of the fight.")
+                        _play_tail(log,
+                                   f"    {defender.name} goes down, "
+                                   f"out of the fight.",
+                                   "They go DOWN.",
+                                   f"{defender.name} goes DOWN.")
                     else:
-                        log.append(f"    *** {defender.name} falls. ***")
+                        _play_tail(log, f"    *** {defender.name} falls. ***",
+                                   "It falls.", f"{defender.name} falls.")
             # Rage (the ability): a slaying blow primes +RAGE_ATK_BONUS on
             # the hero's next exchange; a primed exchange that fails to
             # slay costs the following round (exhausted). Chained kills
@@ -3828,12 +4247,24 @@ def group_combat(party: list[Entity], foes: list[Entity],
                           f"    {attacker.name}'s blood is UP -- the rage "
                           f"carries into the next exchange "
                           f"(+{RAGE_ATK_BONUS} attack pressure)",
-                          f"    {attacker.name}'s blood is UP -- RAGE "
-                          f"(+{RAGE_ATK_BONUS} next exchange)")
+                          f"{attacker.name}'s blood is UP -- Rage!")
                 elif raged:
                     attacker.rage_exhausted = True
-                    log.append(f"    {attacker.name}'s rage finds no blood "
-                               f"-- it will cost them the next round.")
+                    _play(log,
+                          f"    {attacker.name}'s rage finds no blood "
+                          f"-- it will cost them the next round.",
+                          fit_lines([f"{attacker.name}'s rage finds no "
+                                     f"blood --",
+                                     "it will cost them a round."]))
+
+            # Promote this action's freshly fallen to the front of the turn
+            # queue: their dying swing answers NOW (see the queue comment).
+            slot = 0
+            for f in fresh_falls:
+                if f not in acted and f in turn_queue:
+                    turn_queue.remove(f)
+                    turn_queue.insert(slot, f)
+                    slot += 1
         busy.clear()
         # Regeneration (the troll's puzzle): wounds knit at the end of every
         # round the regenerator is still up -- out-damage it or lose to it.
@@ -3846,9 +4277,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                       f"    {e.name}'s wounds knit closed before their eyes "
                       f"(+{e.hp - before} HP -> {e.hp}/{e.max_hp}, "
                       f"-{e.wound_penalty} to rolls)",
-                      f"    {e.name}'s wounds knit closed "
-                      f"(+{e.hp - before} HP) [{e.name}: "
-                      f"{e.hp}/{e.max_hp} HP]")
+                      f"{e.name}'s wounds knit (+{e.hp - before} HP).")
         # The reload clock ticks on any round the shooter didn't fire --
         # walking, circling, even switching grips works the nock/crank.
         for e in actors:
@@ -3860,14 +4289,17 @@ def group_combat(party: list[Entity], foes: list[Entity],
             if e.aloft > 0:
                 e.aloft -= 1
                 if e.aloft == 0 and e.alive:
-                    log.append(f"    {e.name} alights -- back in "
-                               f"steel's reach.")
+                    _play(log,
+                          f"    {e.name} alights -- back in steel's reach.",
+                          f"{e.name} alights -- in steel's reach.")
             if e.possessed > 0:
                 e.possessed -= 1
                 if e.possessed == 0 and e.alive:
-                    log.append(f"    *** The light returns to {e.name}'s "
-                               f"eyes -- the puppet is free, and FURIOUS. "
-                               f"***")
+                    _play(log,
+                          f"    *** The light returns to {e.name}'s "
+                          f"eyes -- the puppet is free, and FURIOUS. ***",
+                          fit_lines([f"*** {e.name} shakes free of the",
+                                     "possession -- and is FURIOUS. ***"]))
         # Warrior-move states tick at round end (session B): the off-balance
         # from a kick/trip fades, and each fighter's parry window rolls one
         # round forward (riposte reads parried_last). A feint aimed at a foe
@@ -3896,19 +4328,24 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 if interrupts:
                     for kind, h in interrupts:
                         if kind == "stamina":
-                            log.append(f"    == {h.name} is nearly out of "
-                                       f"breath (STA {h.cur_sta}/{h.sta}) -- "
-                                       f"the fight hangs for a heartbeat. ==")
+                            _play(log,
+                                  f"    == {h.name} is nearly out of "
+                                  f"breath (STA {h.cur_sta}/{h.sta}) -- "
+                                  f"the fight hangs for a heartbeat. ==",
+                                  f"== {h.name} is nearly out of breath ==")
                         else:
-                            log.append(f"    == {h.name} is badly cut up "
-                                       f"(HP {h.hp}/{h.max_hp}) -- "
-                                       f"the fight hangs for a heartbeat. ==")
+                            _play(log,
+                                  f"    == {h.name} is badly cut up "
+                                  f"(HP {h.hp}/{h.max_hp}) -- "
+                                  f"the fight hangs for a heartbeat. ==",
+                                  f"== {h.name} is badly cut up ==")
                     # Re-arm the auto crossings instead of acting: an order
                     # queued now would be lost across the caller's
                     # save/resume boundary. Their condition still holds, so
                     # they re-trip at the end of the first resumed round.
                     for kind, h, _ in autos:
                         fired.discard((kind, h))
+                    _finish_rounds(log)
                     return Pause(round=rnd, crossings=interrupts)
                 for kind, h, order in autos:
                     # One action per hero per round: a hero crossing both
@@ -3922,6 +4359,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
     # outlasts the melee: the rime melts, fliers land, the unseen resolve,
     # puppets are released (a retreat clears the same states in
     # attempt_retreat / refresh_foes_after_retreat instead).
+    _finish_rounds(log)
     if any(h.alive for h in party) and not any(f.alive for f in foes):
         _recover_missiles(party, rng, log)
     _clear_fight_states(party + foes)
@@ -3952,9 +4390,13 @@ def _recover_missiles(party: list[Entity], rng: random.Random,
         if got:
             h.items[w.ammo] = min(AMMO_CAPS.get(w.ammo, got),
                                   h.items.get(w.ammo, 0) + got)
-        log.append(f"    {h.name} walks the field and recovers {got} of "
-                   f"the {spent} {w.ammo} spent "
-                   f"({h.items.get(w.ammo, 0)} carried).")
+        _play(log,
+              f"    {h.name} walks the field and recovers {got} of "
+              f"the {spent} {w.ammo} spent "
+              f"({h.items.get(w.ammo, 0)} carried).",
+              fit_lines([f"{h.name} recovers {got} of {spent}",
+                         f"{w.ammo} ({h.items.get(w.ammo, 0)} "
+                         f"carried)."]))
 
 
 def _clear_fight_states(entities: list[Entity]) -> None:
@@ -4008,10 +4450,15 @@ def _settle_fate_debt(party: list[Entity], foes: list[Entity],
     victim.hp = 0
     victim.down = False
     victim.dead = True
-    log.append(f"    *** The last foe spends its dying strength on one final "
-               f"blow -- fate's price for {debtors[0].name}'s life. It finds "
-               f"{victim.name}. ***")
-    log.append(f"    *** {victim.name} is SLAIN. ***")
+    _play(log,
+          f"    *** The last foe spends its dying strength on one final "
+          f"blow -- fate's price for {debtors[0].name}'s life. It finds "
+          f"{victim.name}. ***",
+          fit_lines(["*** The last foe's dying blow is",
+                     f"fate's price for {debtors[0].name}'s",
+                     f"life. It finds {victim.name}. ***"]))
+    _play(log, f"    *** {victim.name} is SLAIN. ***",
+          f"{victim.name} is SLAIN.")
 
 
 # --------------------------------------------------------------------------- #
@@ -4061,9 +4508,13 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     if smoke is not None and smoke.items.get("smoke", 0) > 0:
         smoke.items["smoke"] -= 1
         smoke.brewed = max(0, smoke.brewed - 1)
-        log.append(f"    {smoke.name} smashes a smoke vial at their feet -- "
-                   f"the party melts into the choking haze; no blow finds "
-                   f"them as they break ({smoke.items['smoke']} left).")
+        _play(log,
+              f"    {smoke.name} smashes a smoke vial at their feet -- "
+              f"the party melts into the choking haze; no blow finds "
+              f"them as they break ({smoke.items['smoke']} left).",
+              fit_lines([f"{smoke.name} smashes a smoke vial --",
+                         "no blow finds them in the haze",
+                         f"({smoke.items['smoke']} left)."]))
         swingers: list[Entity] = []     # no parting blows through the smoke
     else:
         swingers = fit
@@ -4092,9 +4543,12 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
             continue    # out of reach: no blow at this back
         if not h.alive:
             if h.dead:
-                log.append(f"    *** {h.name} is SLAIN. ***")
+                _play_tail(log, f"    *** {h.name} is SLAIN. ***",
+                           "SLAIN.", f"{h.name} is SLAIN.")
             else:
-                log.append(f"    {h.name} goes down, out of the fight.")
+                _play_tail(log,
+                           f"    {h.name} goes down, out of the fight.",
+                           "They go DOWN.", f"{h.name} goes DOWN.")
 
     runners = [h for h in party if h.alive]
     if not runners:
@@ -4103,10 +4557,16 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     pursuers = [f for f in fit if f.alive and f.pursues]
     if not pursuers:
         if any(f.alive and not f.pursues for f in foes):
-            log.append("    The dead do not follow beyond their ground -- "
-                       "clean escape.")
+            _play(log,
+                  "    The dead do not follow beyond their ground -- "
+                  "clean escape.",
+                  fit_lines(["The dead do not follow --",
+                             "clean escape."]))
         else:
-            log.append("    No one is fit to give chase -- clean escape.")
+            _play(log,
+                  "    No one is fit to give chase -- clean escape.",
+                  fit_lines(["No one is fit to give chase --",
+                             "clean escape."]))
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
         _clear_fight_states(party)  # the spell states drop on the run
@@ -4130,8 +4590,11 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         _clear_fight_states(party)  # the spell states drop on the run
         _catch_breath(runners, log)
         return True
-    log.append("    *** RUN DOWN -- the pursuers catch them, and the fight "
-               "resumes with their backs to it. ***")
+    _play(log,
+          "    *** RUN DOWN -- the pursuers catch them, and the fight "
+          "resumes with their backs to it. ***",
+          fit_lines(["*** RUN DOWN -- the pursuers catch",
+                     "them; the fight resumes. ***"]))
     return False
 
 
@@ -4158,15 +4621,23 @@ def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
         _misfire(wizard, "teleport", log)
         return False
     if result == "fizzle":
-        log.append(f"    {wizard.name} tears at the air -- and it holds. "
-                   f"The door won't open ({TELEPORT_ESCAPE_COST} Power "
-                   f"wasted); the party must run for it.")
+        _play(log,
+              f"    {wizard.name} tears at the air -- and it holds. "
+              f"The door won't open ({TELEPORT_ESCAPE_COST} Power "
+              f"wasted); the party must run for it.",
+              fit_lines([f"{wizard.name}'s blink-out fizzles",
+                         f"({TELEPORT_ESCAPE_COST} Power wasted) --",
+                         "the party must run for it."]))
         return False
     if result == "crit":
         wizard.cur_power += TELEPORT_ESCAPE_COST
-    log.append(f"  *** {wizard.name} tears a door in the air -- the party "
-               f"steps through and is GONE. No blade falls, nothing gives "
-               f"chase. ***")
+    _play(log,
+          f"  *** {wizard.name} tears a door in the air -- the party "
+          f"steps through and is GONE. No blade falls, nothing gives "
+          f"chase. ***",
+          fit_lines([f"*** {wizard.name} tears a door in",
+                     "the air -- the party steps through",
+                     "and is GONE. ***"]))
     for h in party:
         h.fate_debt = False     # a fled fight is not a won one: waived
     _clear_fight_states(party)
@@ -4476,7 +4947,9 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
         n = f"{count}x " if count > 1 else "a "
         bits.append(f"{n}{name} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
                     f"{w.value}g)")
-    return "  Left among the dead: " + ", ".join(bits) + "."
+    parts = ["Left among the dead:"]
+    parts += [b + "," for b in bits[:-1]] + [bits[-1] + "."]
+    return "\n".join(fit_lines(parts))
 
 
 # --------------------------------------------------------------------------- #
@@ -4631,16 +5104,27 @@ def adjust_satisfaction(e: Entity, delta: int, log: list[str], reason: str,
                          min(SATISFACTION_MAX, old + delta))
     if e.satisfaction == old:
         return
-    log.append(f"    {e.name}: satisfaction {old} -> "
-               f"{e.satisfaction}/{SATISFACTION_MAX} ({reason})")
+    _play(log,
+          f"    {e.name}: satisfaction {old} -> "
+          f"{e.satisfaction}/{SATISFACTION_MAX} ({reason})",
+          fit_lines([f"{e.name}: satisfaction {old} -> "
+                     f"{e.satisfaction}/{SATISFACTION_MAX}",
+                     f"({reason})"]))
     threshold = leave_threshold(e)
     if old > threshold >= e.satisfaction:
-        log.append(f"    *** {e.name} has had enough -- they will leave the "
-                   f"party at the next settlement (unless something lifts "
-                   f"their spirits first). ***")
+        _play(log,
+              f"    *** {e.name} has had enough -- they will leave the "
+              f"party at the next settlement (unless something lifts "
+              f"their spirits first). ***",
+              fit_lines([f"*** {e.name} has had enough --",
+                         "they will leave at the next",
+                         "settlement. ***"]))
     elif (threshold < 0 and old > 0 >= e.satisfaction):
-        log.append(f"    {e.name} is past caring, but loyalty holds them -- "
-                   f"for now.")
+        _play(log,
+              f"    {e.name} is past caring, but loyalty holds them -- "
+              f"for now.",
+              fit_lines([f"{e.name} is past caring, but",
+                         "loyalty holds them -- for now."]))
     elif old > SATISFACTION_WARN >= e.satisfaction:
         log.append(f"    ({e.name} has gone quiet -- their patience is "
                    f"wearing thin.)")
@@ -4701,8 +5185,11 @@ def award_xp(party: list[Entity], amount: int, log: list[str],
         if h.dead:
             continue
         h.xp += share
-        log.append(f"    {h.name} gains {share} XP{note} "
-                   f"[{h.xp}/{xp_to_next(h.level)}]")
+        _play(log,
+              f"    {h.name} gains {share} XP{note} "
+              f"[{h.xp}/{xp_to_next(h.level)}]",
+              fit_lines([f"{h.name} +{share} XP{note}",
+                         f"[{h.xp}/{xp_to_next(h.level)}]"]))
         while h.level < LEVEL_CAP and h.xp >= xp_to_next(h.level):
             h.xp -= xp_to_next(h.level)
             h.level += 1
@@ -4710,9 +5197,14 @@ def award_xp(party: list[Entity], amount: int, log: list[str],
             # No automatic pool growth (2026-07-17): everything a level can
             # buy -- pools included -- is bought with the points (buy_pool /
             # train_* / learn_ability; the session's levelup menu).
-            log.append(f"    *** {h.name} reaches level {h.level}! "
-                       f"(+{SKILL_POINTS_PER_LEVEL} skill points, "
-                       f"{h.skill_points} unspent) ***")
+            _play(log,
+                  f"    *** {h.name} reaches level {h.level}! "
+                  f"(+{SKILL_POINTS_PER_LEVEL} skill points, "
+                  f"{h.skill_points} unspent) ***",
+                  fit_lines([f"*** {h.name} reaches",
+                             f"level {h.level}!",
+                             f"({h.skill_points} skill points "
+                             f"unspent) ***"]))
 
 
 def training_cost(current_rank: int) -> int:
@@ -4738,9 +5230,13 @@ def train_combat_once(h: Entity, log: list[str]) -> bool:
         return False
     h.skill_points -= cost
     h.training += 1
-    log.append(f"    {h.name} trains: combat training rank {h.training} "
-               f"(+{h.training} to all pressure rolls) "
-               f"[{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} trains: combat training rank {h.training} "
+          f"(+{h.training} to all pressure rolls) "
+          f"[{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} trains:",
+                     f"combat rank {h.training}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -4779,9 +5275,13 @@ def buy_pool(h: Entity, kind: str, log: list[str]) -> bool:
         h.power += 1
         h.cur_power += 1
         now = f"Power {h.cur_power}/{h.power}"
-    log.append(f"    {h.name} hardens the body: +1 max {kind.upper()} "
-               f"({now}; +{h.pool_bought[kind]}/{POOL_BUY_CAP} bought) "
-               f"[{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} hardens the body: +1 max {kind.upper()} "
+          f"({now}; +{h.pool_bought[kind]}/{POOL_BUY_CAP} bought) "
+          f"[{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name}: +1 max {kind.upper()}",
+                     f"({now})",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -4808,8 +5308,11 @@ def learn_ability(h: Entity, name: str, log: list[str]) -> bool:
         return False
     h.skill_points -= a.cost
     h.abilities.add(a.name)
-    log.append(f"    {h.name} learns {a.display} -- {a.blurb} "
-               f"[{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} learns {a.display} -- {a.blurb} "
+          f"[{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} learns {a.display}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -4849,8 +5352,12 @@ def learn_move(h: Entity, name: str, log: list[str]) -> bool:
         return False
     h.skill_points -= m.cost
     h.moves.add(name)
-    log.append(f"    {h.name} drills a new move -- {m.display}: {m.blurb} "
-               f"[{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} drills a new move -- {m.display}: {m.blurb} "
+          f"[{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} drills a new move:",
+                     f"{m.display}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -4910,9 +5417,13 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
         return False
     h.skill_points -= cost
     h.proficiency[name] = rank + 1
-    log.append(f"    {h.name} drills with the {name}: proficiency rank "
-               f"{rank + 1} (+{rank + 1} attack pressure and +{rank + 1} "
-               f"severity with it) [{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} drills with the {name}: proficiency rank "
+          f"{rank + 1} (+{rank + 1} attack pressure and +{rank + 1} "
+          f"severity with it) [{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} drills the {name}:",
+                     f"proficiency rank {rank + 1}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -4947,8 +5458,12 @@ def train_spell(h: Entity, name: str, log: list[str]) -> bool:
         return False
     h.skill_points -= cost
     h.spells[name] = rank + 1
-    log.append(f"    {h.name} deepens their {name}: rank {rank + 1} -- "
-               f"{spell.ranks[rank]} [{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} deepens their {name}: rank {rank + 1} -- "
+          f"{spell.ranks[rank]} [{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} deepens their {name}:",
+                     f"rank {rank + 1}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -5038,9 +5553,13 @@ def train_alchemy(h: Entity, log: list[str]) -> bool:
                 if need == h.alchemy]
     gain = (f" -- unlocks {', '.join(POTION_DISPLAY[r] for r in unlocked)}"
             if unlocked else "")
-    log.append(f"    {h.name} studies the still: alchemy rank {h.alchemy} "
-               f"(batch {ALCHEMY_BATCH[h.alchemy]}, brewed stock cap "
-               f"{brew_stock_cap(h)}){gain} [{h.skill_points} point(s) left]")
+    _play(log,
+          f"    {h.name} studies the still: alchemy rank {h.alchemy} "
+          f"(batch {ALCHEMY_BATCH[h.alchemy]}, brewed stock cap "
+          f"{brew_stock_cap(h)}){gain} [{h.skill_points} point(s) left]",
+          fit_lines([f"{h.name} studies the still:",
+                     f"alchemy rank {h.alchemy}",
+                     f"[{h.skill_points} point(s) left]"]))
     return True
 
 
@@ -5078,8 +5597,11 @@ def brew(h: Entity, recipe: str, rng: random.Random, log: list[str]) -> int:
     _debug(log, f"        brew: {total} (2d6={dice}, +{h.mind} MIND, "
                 f"+{h.alchemy} rank) vs DC {ALCHEMY_BREW_DC} -> margin {margin}")
     if margin < 0:
-        log.append(f"    {h.name}'s batch curdles in the pot -- a night's "
-                   f"work lost.")
+        _play(log,
+              f"    {h.name}'s batch curdles in the pot -- a night's "
+              f"work lost.",
+              fit_lines([f"{h.name}'s batch curdles --",
+                         "a night's work lost."]))
         return 0
     batch = ALCHEMY_BATCH[h.alchemy]
     doubled = dice == 12 or margin >= ALCHEMY_DOUBLE_MARGIN
@@ -5087,8 +5609,13 @@ def brew(h: Entity, recipe: str, rng: random.Random, log: list[str]) -> int:
     h.items[recipe] = h.items.get(recipe, 0) + made
     h.brewed += made
     note = " -- a DOUBLE batch!" if doubled else ""
-    log.append(f"    {h.name} brews {made}x {POTION_DISPLAY[recipe]}{note} "
-               f"(brewed stock {h.brewed}/{brew_stock_cap(h)})")
+    p_note = " -- a DOUBLE batch!" if doubled else "."
+    _play(log,
+          f"    {h.name} brews {made}x {POTION_DISPLAY[recipe]}{note} "
+          f"(brewed stock {h.brewed}/{brew_stock_cap(h)})",
+          fit_lines([f"{h.name.split()[0]} brews",
+                     f"{made}x {POTION_DISPLAY[recipe]}{p_note}",
+                     f"(stock {h.brewed}/{brew_stock_cap(h)})"]))
     return made
 
 
@@ -5167,14 +5694,18 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
         return
     if rng.random() < DROP_GOLD_CHANCE:
         purse.gold += DROP_GOLD_AMOUNT
-        log.append(f"    Loot: {DROP_GOLD_AMOUNT} gold scavenged "
-                   f"(purse: {purse.gold}g).")
+        log.append(f"    Loot: {DROP_GOLD_AMOUNT} gold "
+                   f"(purse {purse.gold}g).")
     if rng.random() < DROP_POTION_CHANCE:
         kind = rng.choice(STOCKED_POTION_KINDS)
         h = rng.choice(living)
         h.items[kind] = h.items.get(kind, 0) + 1
-        log.append(f"    Loot: a {kind} potion -- {h.name} pockets it "
-                   f"({kind} x{h.items[kind]}).")
+        _play(log,
+              f"    Loot: a {kind} potion -- {h.name} pockets it "
+              f"({kind} x{h.items[kind]}).",
+              fit_lines([f"Loot: a {kind} potion --",
+                         f"{h.name} pockets it "
+                         f"(x{h.items[kind]})."]))
 
 
 def cha_gold_bonus(party: list[Entity], gold: int) -> int:
@@ -5202,13 +5733,21 @@ def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
     A charismatic PC talks the gold up (cha_gold_bonus), and a paid-out job
     is the one thing that RAISES companion satisfaction on the road."""
     log.append("")
-    log.append(f"  *** {banner}: {name}. Reward: {gold} gold. ***")
+    bits = name.split(" -- ")
+    name_parts = [b + " --" for b in bits[:-1]] + [bits[-1] + "."]
+    _play(log,
+          f"  *** {banner}: {name}. Reward: {gold} gold. ***",
+          fit_lines([f"*** {banner}:"] + name_parts
+                    + [f"Reward: {gold} gold. ***"]))
     bonus = cha_gold_bonus(party, gold)
     if bonus:
         pc = next(h for h in party if h.protagonist and not h.dead)
         gold += bonus
-        log.append(f"    {pc.name} talks the pay up: +{bonus}g "
-                   f"(CHA {pc.cha} -- {gold}g in all).")
+        _play(log,
+              f"    {pc.name} talks the pay up: +{bonus}g "
+              f"(CHA {pc.cha} -- {gold}g in all).",
+              fit_lines([f"{pc.name} talks the pay up:",
+                         f"+{bonus}g ({gold}g in all)."]))
     purse.gold += gold
     log.append(f"    The party purse holds {purse.gold} gold.")
     award_xp(party, xp, log, "quest")
@@ -5371,17 +5910,27 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
     if target.down:
         target.hp = max(target.hp, HEALING_REVIVE_HP)
         target.down = False
-        log.append(f"    {healer.name}'s healing knits the deep wounds -- "
-                   f"{target.name} STANDS ({target.hp}/{target.max_hp} HP) "
-                   f"[-{spent} Power -> {healer.cur_power}]")
+        _play(log,
+              f"    {healer.name}'s healing knits the deep wounds -- "
+              f"{target.name} STANDS ({target.hp}/{target.max_hp} HP) "
+              f"[-{spent} Power -> {healer.cur_power}]",
+              fit_lines([f"{healer.name} casts healing --",
+                         f"{target.name} STANDS",
+                         f"(HP {target.hp}/{target.max_hp}).",
+                         f"[{healer.cur_power} Power left]"]))
         return True
     amount = HEALING_MEND[effective]
     before = target.hp
     target.hp = min(target.max_hp, target.hp + amount)
     note = " (a rough mending -- one rank down)" if result == "downgrade" else ""
-    log.append(f"    {healer.name} casts healing on {target.name}{note} "
-               f"(+{target.hp - before} HP -> {target.hp}/{target.max_hp}) "
-               f"[-{spent} Power -> {healer.cur_power}]")
+    _play(log,
+          f"    {healer.name} casts healing on {target.name}{note} "
+          f"(+{target.hp - before} HP -> {target.hp}/{target.max_hp}) "
+          f"[-{spent} Power -> {healer.cur_power}]",
+          fit_lines([f"{healer.name} casts healing on",
+                     f"{target.name}:",
+                     f"HP {target.hp}/{target.max_hp}.",
+                     f"[{healer.cur_power} Power left]"]))
     return True
 
 
@@ -5413,51 +5962,77 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
     h.items[kind] -= 1
     if kind in BREWED_KINDS:
         h.brewed = max(0, h.brewed - 1)
+    first = h.name.split()[0]
     if kind == "healing":
         before = h.hp
         if h.hp >= h.max_hp:
             h.hp += POTION_OVERCHARGE
-            log.append(f"    {h.name} drinks a healing potion at full -- it "
-                       f"overcharges (HP {before} -> {h.hp}/{h.max_hp}, +"
-                       f"{POTION_OVERCHARGE} above max, spent-only; "
-                       f"{h.items['healing']} left)")
+            _play(log,
+                  f"    {h.name} drinks a healing potion at full -- it "
+                  f"overcharges (HP {before} -> {h.hp}/{h.max_hp}, +"
+                  f"{POTION_OVERCHARGE} above max, spent-only; "
+                  f"{h.items['healing']} left)",
+                  fit_lines([f"{first} drinks a healing potion --",
+                             f"it overcharges: HP {h.hp}/{h.max_hp}",
+                             f"({h.items['healing']} left)."]))
         else:
             h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.max_hp)
             if h.hp > 0:
                 h.down = False
-            log.append(f"    {h.name} drinks a healing potion "
-                       f"(HP {before} -> {h.hp}/{h.max_hp}; "
-                       f"{h.items['healing']} left)")
+            _play(log,
+                  f"    {h.name} drinks a healing potion "
+                  f"(HP {before} -> {h.hp}/{h.max_hp}; "
+                  f"{h.items['healing']} left)",
+                  fit_lines([f"{first} drinks a healing potion:",
+                             f"HP {h.hp}/{h.max_hp}",
+                             f"({h.items['healing']} left)."]))
     elif kind == "stamina":
         before = h.cur_sta
         if h.cur_sta >= h.sta:
             h.cur_sta += POTION_OVERCHARGE
-            log.append(f"    {h.name} downs a stamina draught at full -- it "
-                       f"overcharges (STA {before} -> {h.cur_sta}/{h.sta}, +"
-                       f"{POTION_OVERCHARGE} above max, spent-only; "
-                       f"{h.items['stamina']} left)")
+            _play(log,
+                  f"    {h.name} downs a stamina draught at full -- it "
+                  f"overcharges (STA {before} -> {h.cur_sta}/{h.sta}, +"
+                  f"{POTION_OVERCHARGE} above max, spent-only; "
+                  f"{h.items['stamina']} left)",
+                  fit_lines([f"{first} downs a stamina draught --",
+                             f"it overcharges: STA {h.cur_sta}/{h.sta}",
+                             f"({h.items['stamina']} left)."]))
         else:
             h.cur_sta = recover(h.cur_sta, STAMINA_DRAUGHT_RESTORE, h.sta)
-            log.append(f"    {h.name} downs a stamina draught "
-                       f"(STA {before} -> {h.cur_sta}; "
-                       f"{h.items['stamina']} left)")
+            _play(log,
+                  f"    {h.name} downs a stamina draught "
+                  f"(STA {before} -> {h.cur_sta}; "
+                  f"{h.items['stamina']} left)",
+                  fit_lines([f"{first} downs a stamina draught:",
+                             f"STA {h.cur_sta}/{h.sta}",
+                             f"({h.items['stamina']} left)."]))
     elif kind == "strength":
         h.str_ += STRENGTH_POTION_STR
         h.str_buff += STRENGTH_POTION_STR
-        log.append(f"    {h.name} drinks a strength potion -- muscle surges "
-                   f"(STR {h.str_ - h.str_buff} -> {h.str_} until the next "
-                   f"long rest; {h.items['strength']} left)")
+        _play(log,
+              f"    {h.name} drinks a strength potion -- muscle surges "
+              f"(STR {h.str_ - h.str_buff} -> {h.str_} until the next "
+              f"long rest; {h.items['strength']} left)",
+              fit_lines([f"{first} drinks a strength potion:",
+                         f"STR {h.str_} until the next rest."]))
     elif kind == "dexterity":
         h.dex += DEXTERITY_POTION_DEX
         h.dex_buff += DEXTERITY_POTION_DEX
-        log.append(f"    {h.name} drinks a dexterity potion -- the hands "
-                   f"quicken (DEX {h.dex - h.dex_buff} -> {h.dex} until the "
-                   f"next long rest; {h.items['dexterity']} left)")
+        _play(log,
+              f"    {h.name} drinks a dexterity potion -- the hands "
+              f"quicken (DEX {h.dex - h.dex_buff} -> {h.dex} until the "
+              f"next long rest; {h.items['dexterity']} left)",
+              fit_lines([f"{first} drinks a dexterity potion:",
+                         f"DEX {h.dex} until the next rest."]))
     else:  # power (retired kind; old saves)
         before = h.cur_power
         h.cur_power = recover(h.cur_power, POWER_POTION_RESTORE, h.power)
-        log.append(f"    {h.name} drinks a power potion "
-                   f"(Power {before} -> {h.cur_power}; {h.items['power']} left)")
+        _play(log,
+              f"    {h.name} drinks a power potion "
+              f"(Power {before} -> {h.cur_power}; {h.items['power']} left)",
+              fit_lines([f"{first} drinks a power potion:",
+                         f"Power {h.cur_power}/{h.power}."]))
     return True
 
 
@@ -5484,7 +6059,10 @@ def start_fight(h: Entity, log: list[str]) -> None:
     if h.down or h.hp <= 0:
         h.hp = REVIVE_HP
         h.down = False
-        log.append(f"    {h.name} is helped back to their feet ({REVIVE_HP} HP).")
+        _play(log,
+              f"    {h.name} is helped back to their feet ({REVIVE_HP} HP).",
+              fit_lines([f"{h.name} is helped back to",
+                         f"their feet ({REVIVE_HP} HP)."]))
 
 
 def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
@@ -5494,12 +6072,18 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
     on depleted or Claude calls long_rest() to make camp. Potions are NOT drunk
     here: that is a deliberate DM call (use_potion), never automatic."""
     if clock.short_rests_left <= 0:
-        log.append("    (no short rest left today -- the party must push on "
-                   "or make camp)")
+        _play(log,
+              "    (no short rest left today -- the party must push on "
+              "or make camp)",
+              fit_lines(["(no short rest left today --",
+                         "push on or make camp)"]))
         return False
     clock.short_rests_used += 1
-    log.append(f"  The party takes a short rest "
-               f"({clock.short_rests_left} left today).")
+    _play(log,
+          f"  The party takes a short rest "
+          f"({clock.short_rests_left} left today).",
+          fit_lines(["The party takes a short rest",
+                     f"({clock.short_rests_left} left today)."]))
     for h in survivors:
         # STA is the per-day clock: only a slow catch-breath, never a full reset.
         h.cur_sta = recover(h.cur_sta, STA_RECOVERY_BETWEEN_ROOMS, h.sta)
@@ -5524,7 +6108,10 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
     a bare call skips the bonus."""
     clock.day += 1
     clock.short_rests_used = 0
-    log.append(f"  --- {banner} Night passes; day {clock.day} dawns. ---")
+    _play(log,
+          f"  --- {banner} Night passes; day {clock.day} dawns. ---",
+          fit_lines([f"--- {banner}",
+                     f"Night passes; day {clock.day} dawns. ---"]))
     for h in party:
         if h.dead:
             continue
@@ -5553,7 +6140,10 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
             note += f", the overcharge fades -> {h.hp}/{h.max_hp} HP"
         else:
             note += ", HP full"
-        log.append(f"    {h.name}: {note}")
+        _play(log, f"    {h.name}: {note}",
+              fit_lines([f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp}",
+                         f"STA {h.cur_sta}/{h.sta}",
+                         f"Power {h.cur_power}/{h.power}"]))
     # The traveling kit replenishes itself, SHRUNK in session C (see KIT_*):
     # 1 healing + 1 stamina scrounged PER PARTY, not per hero -- a floor on
     # the party total (if they carry none of a kind, one is scrounged to the
@@ -5575,10 +6165,13 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
                 have += 1
                 restocked += 1
     if restocked:
-        log.append(f"    The party scrounges {restocked} potion(s) overnight "
-                   f"(herbs at the camp fire, a vial in town -- the party "
-                   f"carries at least {KIT_HEALING} healing, {KIT_STAMINA} "
-                   f"stamina between them)")
+        _play(log,
+              f"    The party scrounges {restocked} potion(s) overnight "
+              f"(herbs at the camp fire, a vial in town -- the party "
+              f"carries at least {KIT_HEALING} healing, {KIT_STAMINA} "
+              f"stamina between them)",
+              fit_lines([f"The party scrounges {restocked}",
+                         "potion(s) overnight."]))
 
 
 def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
@@ -5600,8 +6193,11 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                    f"still camp for free.")
         return False
     purse.gold -= cost
-    log.append(f"  The party takes beds at the tavern ({cost}g -- purse: "
-               f"{purse.gold}g).")
+    _play(log,
+          f"  The party takes beds at the tavern ({cost}g -- purse: "
+          f"{purse.gold}g).",
+          fit_lines(["The party takes beds at the tavern",
+                     f"({cost}g -- purse {purse.gold}g)."]))
     long_rest(party, clock, log,
               banner="The party sleeps warm under a roof.", rng=rng)
     for h in boarders:
@@ -5609,10 +6205,14 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
         sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))
         h.hp += hp_bonus
         h.cur_sta += sta_bonus
-        log.append(f"    {h.name} wakes overcharged: +{hp_bonus} HP -> "
-                   f"{h.hp}/{h.max_hp}, +{sta_bonus} STA -> "
-                   f"{h.cur_sta}/{h.sta} (a one-day edge -- it fades at the "
-                   f"next night's rest)")
+        _play(log,
+              f"    {h.name} wakes overcharged: +{hp_bonus} HP -> "
+              f"{h.hp}/{h.max_hp}, +{sta_bonus} STA -> "
+              f"{h.cur_sta}/{h.sta} (a one-day edge -- it fades at the "
+              f"next night's rest)",
+              fit_lines([f"{h.name.split()[0]} wakes overcharged:",
+                         f"HP {h.hp}/{h.max_hp}",
+                         f"STA {h.cur_sta}/{h.sta}"]))
     for h in boarders:
         adjust_satisfaction(h, SAT_TAVERN, log, "a warm bed and a hot meal")
     return True
@@ -5703,8 +6303,12 @@ def party_wiped(party: list[Entity], log: list[str]) -> bool:
         if not h.dead:
             h.dead = True
             h.down = False
-    log.append("  *** The party is overwhelmed -- none left standing. "
-               "The fallen do not rise. TOTAL DEFEAT. ***")
+    _play(log,
+          "  *** The party is overwhelmed -- none left standing. "
+          "The fallen do not rise. TOTAL DEFEAT. ***",
+          fit_lines(["*** The party is overwhelmed --",
+                     "none left standing.",
+                     "TOTAL DEFEAT. ***"]))
     return True
 
 

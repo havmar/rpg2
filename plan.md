@@ -48,12 +48,35 @@ Concretely:
 ### The retro roadmap (build order)
 
 1. **The log/menu rework.** Script output becomes the primary thing
-   the player reads; the chat should usually display it directly. Most
-   important: the combat PLAYER LOG and a player STATUS DISPLAY log;
-   also the levelup menu WITH ability descriptions. The 40-column wrap
-   stands. dm.md's protocol sections get trimmed to match in the same
-   change. Success test: a typical DM message is mostly script output
-   plus a few terse retro-register lines.
+   the player reads; the chat should usually display it directly. The
+   40-column wrap stands. Success test: a typical DM message is mostly
+   script output plus a few terse retro-register lines.
+   - **The combat log part SHIPPED 2026-07-21** (rules.md "Reading the
+     combat log" is the doc of record): ONE displayed log — col-1
+     lines pre-fitted to 40 via `fit_lines`, damage as `deals N dmg` +
+     tier punctuation, attacker-HP tags when hurt, no penalty numbers
+     in fight lines (they moved to the pause menu + tally), quiet
+     rounds collapsed, movement lines only in ranged fights, named
+     moves/abilities name-only, Power printed only on casts, roster
+     stat blocks as the enemy introduction, the dying counterattack
+     resolving immediately (bench-checked within noise, benchlog).
+     The full debug log stopped printing: it appends to the untracked
+     `fight.log` workfile (post-mortems only). Encounter banners, the
+     pause menu, and the award/XP/autospend lines were refit in the
+     same pass; dm.md's protocol/narration sections updated.
+   - **Still open from item 1:** a player STATUS DISPLAY log (a
+     fitted, pasteable `status` in the same register — today's
+     `status`/`board`/`map` print DM-shaped, wrap-reliant output);
+     the levelup menu refit WITH ability descriptions (it still
+     prints the old wide two-column-ish lines that wrap raggedly at
+     40); and a fitting pass over the remaining non-combat surfaces
+     (rests, travel, recruit sheets) where lines still hang a word
+     past the width. The `fit_lines` helper and the tally/pause
+     penalty display are the pattern to reuse.
+   - **Parked from the log session (designer skepticism recorded):
+     E1/P1 shorthand** for enemy/party names in fight lines — saves
+     width on long names but reads cryptic; try only if long-name
+     fights prove noisy in play.
 2. **The quest wording rework.** The dark templates' words themselves
    (titles, descs, giver lines, epilogues in `karma.py`) rewritten
    simple and straightforward, in the retro register — the current

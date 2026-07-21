@@ -879,3 +879,33 @@ so, unlike B, the aggregate is expected to shift.**
   need cutting. (4) Barrow slid to 38 clear — acceptable for the tough
   site ("suicide until trained"), but worth a glance if the 15-20 band
   ever feels punishing on top of its known missing player power.
+
+## 2026-07-21 — the one-log rework: dying-swing reorder sanity check
+
+**What changed mechanically.** The combat-log rework (one displayed log,
+rules.md "Reading the combat log") is display-only except for ONE engine
+change: a fighter felled before their turn now takes the round-start
+dying swing IMMEDIATELY after the blow that felled them (promoted to the
+front of the turn queue in `group_combat`) instead of at their original
+slot, so the fall and its answer read together. Same swing, same
+round-start wound penalty; intra-round ordering and the rng stream
+reflow. (Two cosmetic guards ride along: a dying shooter no longer logs
+a pointless grip switch, and a corpse is no longer rimed by the bolt
+that killed it — neither has any live-state effect.)
+
+**Sanity runs (not a full re-measurement — nothing was tuned):**
+
+- `tune.simulate`, 4k trials/cell: hideout policy **clear 57.6 / wipe
+  12.2 / down 20.7 / early 64.2**, reckless wipe **75.8** (standing
+  numbers: 57.2 / 12.5 / 75.9). Barrow `[3,3,4]` policy **clear 37.0 /
+  wipe 41.4**, reckless wipe **98.5** (standing: 38.1 / 40.6 / 98.3).
+- `bench_party`, 1.5k/size: hideout duo **58.1 clear / 11.6 wipe**,
+  barrow duo **38.3 / 38.6**; the size ladder keeps its shape (solo
+  death-trap, 3-4 cruise).
+
+**Reading:** everything within noise of the 2026-07-17 session-C
+numbers. The reorder is balance-neutral, as argued a priori (the dying
+swing keeps its snapshot penalty; only the order of already-scheduled
+actions inside one round moves). No retune, no lever touched; the
+standing summary in develop.md is unchanged apart from noting this
+check.
