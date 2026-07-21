@@ -18,6 +18,16 @@ instead of grinding through every roll by hand — but the world around it stays
 open-ended and player-driven. The engine owns the numbers; the DM owns the
 fiction.
 
+**The retro pivot (2026-07-21, designlog):** the game is presented as a
+minimalist retro text adventure, no longer as a narrated ttrpg. The AI's
+advantage is reframed: not that it narrates, but that it is the coding
+agent RUNNING the game — subsystems it calls on purpose, content
+generated where needed, coherence kept by the agent, no central game
+loop required (which the "How play is driven" model below already
+embodies). Script-generated logs and menus become the primary chat
+display; plan.md's THE RETRO PIVOT section is the roadmap, dm.md's
+Narration style opens with the register.
+
 **How play is driven:** the game is *two halves working together*.
 - **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
   library of mechanics primitives and content — `start_fight`,

@@ -214,3 +214,57 @@ not picked now**: the banded quest inventory — a Good-game plumbing
 improvement while the project's energy is in the villain arc; it also
 wants the shadow-board precedent felt in play before copying its
 shape.
+
+## 2026-07-21 — The retro pivot: mechanics-centered text adventure
+
+**Where it started.** Verdict on the dark quests: an improvement,
+somewhat more interesting than the vanilla ones. But strong
+dissatisfaction with the AI's narration and DMing style — the table
+manner, not the content. Proposed and adopted: drop the "ttrpg with an
+AI DM" paradigm and work toward a **mechanics-centered game like a
+retro text adventure**. The mechanics are not tactical combat but
+MACRO decisions and a SIMULATED WORLD the player watches play out.
+
+**The reframed superpower.** The LLM's advantage is NOT that it can
+narrate — it is that it is a CODING AGENT running the game: the
+central game function need not exist, only subsystems; the AI calls
+them, generates content where necessary, and brings it together to
+keep the game coherent and open. This inverts half of 2026-07-19's
+diagnosis (there, the superpower was free narration and animated
+NPCs, and the villain frame leaned on it) — recorded here so the
+reversal is explicit and stays settled. Note the architecture half
+was ALREADY this shape (develop.md's "no autopilot" doctrine: thin
+mechanics in code, the AI calling primitives on purpose); what
+changes is the register and which decisions the game is about.
+
+**Decided:**
+
+- **Style, shipped same day**: minimalist retro text adventure —
+  present tense, second person, terse, deadpan; not wry Pratchett,
+  not generic-fantasy purple prose. Written into dm.md as the
+  governing rule at the head of Narration style; the 2026-07-19
+  "pulp with a wink" tone bullet rewritten to match (content stays
+  comic and light, the narrator stops performing it). The full dm.md
+  protocol trim rides the log/menu rework.
+- **Displays over prose**: a greater role for script-generated logs
+  and menus, optimized so the chat can usually display them
+  directly. Most important: the combat PLAYER LOG and a player
+  STATUS DISPLAY log, plus the levelup menu with ability
+  descriptions. Planned as retro roadmap item 1.
+- **Quest wording rework** (item 2): the dark templates' words
+  themselves rewritten simple and straightforward; the dark quests
+  remain the most important pre-authored content.
+- **The villain layer demoted**: dark quests + karma are ONE layer
+  of the game we might return to, not the main direction. Nemesis
+  persistence / rival posses — plan.md's next-up item until today —
+  bumped way back: it serves narrative strength, not mechanical,
+  and narrative is not the focus now. The villain roadmap is
+  shelved as the layer's internal order; conquest ticking and the
+  greed economy noted as its most retro-compatible re-entry points.
+
+**Next steps** (plan.md, THE RETRO PIVOT): the log/menu rework, the
+quest wording pass, then playing the dark path in the new register
+(the probe now tests style and content at once), then a dedicated
+macro-game design session — what the macro decisions ARE and what
+the simulated world runs (seeds: the parked off-screen event
+simulation, standing enterprises, conquest ticking / domain play).

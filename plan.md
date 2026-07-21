@@ -9,7 +9,79 @@ file rather than marking it done.
 
 ---
 
-## THE VILLAIN PIVOT (2026-07-19) — the direction the roadmap now serves
+## THE RETRO PIVOT (2026-07-21) — the direction the roadmap now serves
+
+The 2026-07-21 design session reframed the game again — this time the
+presentation and the seat the AI sits in, not the content. The trigger:
+strong dissatisfaction with the AI-DM's narration and table manner,
+even as the dark quests were judged an improvement over the vanilla
+ones. The paradigm so far — a ttrpg with an AI DM — is dropped as the
+goal.
+
+**The vision:** a mechanics-centered game in the mold of a **retro
+text adventure**. The mechanics are not tactical combat but MACRO
+decisions and a SIMULATED WORLD the player watches play out. The LLM's
+advantage is reframed: not that it narrates, but that it is a **coding
+agent running the game** — the central game function need not exist,
+only subsystems; the AI calls them, generates content where needed,
+and keeps the whole coherent and open. (This inverts half of
+2026-07-19's "the superpower is free narration" diagnosis — designlog
+records the reversal.)
+
+Concretely:
+
+- **Style (SHIPPED 2026-07-21):** minimalist retro text adventure —
+  present tense, second person, terse, deadpan; not wry Pratchett, not
+  generic-fantasy purple prose. dm.md's Narration style now opens with
+  the governing rule.
+- **Displays over prose:** a greater role for script-generated logs
+  and menus, optimized so the chat can usually display them directly
+  (roadmap item 1 below).
+- **Dark quests stay the most important pre-authored content** — but
+  their wording gets a simple-and-straightforward rewrite (item 2).
+- **The villain/karma layer is DEMOTED to one layer among several** we
+  may return to — no longer the direction the roadmap serves. Nemesis
+  persistence / rival posses: bumped way back (they serve narrative
+  strength, not mechanical strength, and narrative is not the focus
+  now).
+
+### The retro roadmap (build order)
+
+1. **The log/menu rework.** Script output becomes the primary thing
+   the player reads; the chat should usually display it directly. Most
+   important: the combat PLAYER LOG and a player STATUS DISPLAY log;
+   also the levelup menu WITH ability descriptions. The 40-column wrap
+   stands. dm.md's protocol sections get trimmed to match in the same
+   change. Success test: a typical DM message is mostly script output
+   plus a few terse retro-register lines.
+2. **The quest wording rework.** The dark templates' words themselves
+   (titles, descs, giver lines, epilogues in `karma.py`) rewritten
+   simple and straightforward, in the retro register — the current
+   Pratchett-wry phrasing goes; the comedy that survives is situational
+   and deadpan. The good-side templates in `quests.py` get the same
+   pass afterward where the clash is felt.
+3. **Play the dark path in the new register** (absorbs villain roadmap
+   item 1): the probe now tests the retro style AND the dark content at
+   once — the first ten messages, the first three levels.
+4. **The macro-game design session.** The genuinely new build: define
+   what the macro decisions ARE and what the simulated world runs.
+   Seeds already on the books: off-screen event simulation (parked),
+   standing dark enterprises, conquest ticking / domain play. Schedule
+   as its own session; nothing is committed yet beyond the direction.
+
+---
+
+## The villain layer (the 2026-07-19 pivot — DEMOTED 2026-07-21)
+
+*(2026-07-21: the retro pivot above supersedes this section's FRAMING.
+The karma/heat/pact mechanics and the dark content stay shipped and
+stay important; what is demoted is the villain ARC as the roadmap's
+direction. The build order below is kept as the layer's internal order
+for when/if it returns; item 1 moved into the retro roadmap; item 2 —
+the nemesis — is bumped way back, narrative-serving. Of the rest,
+conquest ticking and the greed economy are the most retro-compatible
+entries — macro decisions, world state — enter through them if the
+layer returns.)*
 
 The 2026-07-19 design session reframed the game. The diagnosis: the game
 had become a difficulty curve with a purse — real decisions, but all the
@@ -64,7 +136,7 @@ level curve. Karma rides *beside* levels for now: merging them fully
   over the line. (An army mechanic is parked as an open question, not
   promised.)
 
-### The villain roadmap (build order)
+### The villain roadmap (build order — SHELVED 2026-07-21, see the note above)
 
 1. **Play the dark path** (no code): run the first ten messages of a
    wicked campaign on the shipped slice — the tone probe. Does cartoon
@@ -264,12 +336,15 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Off-screen event simulation** (2026-07-12) — a world tick rolled at
   settlement arrivals from small event tables, day-stamped. First
   customers: the landmark problems, the nemesis record, the rival.
+  *(2026-07-21: promoted to a SEED of the retro pivot's simulated
+  world — feeds the macro-game design session, retro roadmap 4.)*
 - **Faction reputation** — designer has more to spec; nothing until
   then. *(Note: karma IS a first faction axis — law vs the party;
   spec the rest against it.)*
 - **Settlement flavor lines** — valuable but easy; deliberately not yet.
 - **The rival** — ABSORBED into the villain roadmap (nemesis
   persistence, item 2) and the apocalypse-as-rival-conqueror note.
+  *(Bumped way back with the nemesis, 2026-07-21.)*
 - **The traitor twist** — one authored questgiver per conquest variant
   collaborating with the aggressor; cheap authored beat.
 - **Morale & surrender** — enemies breaking, yielding, bargaining.
@@ -300,7 +375,9 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Survival/adventure-sim pivot** (hunger, upkeep, inventory) — kept
   on the books as a possible deliberate pivot, but note 2026-07-19
   chose the GREED ECONOMY over food as the villain game's sink; this
-  pivot is further away than it was.
+  pivot is further away than it was. *(2026-07-21: the retro pivot is
+  a sibling — macro decisions over a simulated world — so pieces of
+  this may return through the macro-game design session.)*
 - **Power potion re-stock** — if War-Breath ever makes Power scarce.
 - **Crit/fumble on the 2d6** — fattens both tails of every exchange;
   full bench re-run before judging.

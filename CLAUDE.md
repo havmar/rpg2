@@ -1,10 +1,12 @@
 # RPG2 — Combat Sim Prototype
 
-A combat simulator for a fantasy RPG, played through Claude Code with Claude
-as DM. Fights resolve on their own (autocombat, with at most one mid-fight
-pause) and produce an outcome plus a narrative log; the DM narrates *over*
-that log. The player's real decisions happen *between* fights — and at the
-pause. The engine owns the numbers; the DM owns the fiction.
+A mechanics-centered fantasy RPG played through Claude Code in the style
+of a retro text adventure, with Claude running the game (2026-07-21
+pivot). Fights resolve on their own (autocombat, with at most one
+mid-fight pause) and produce an outcome plus a narrative log; the DM's
+prose over the script output is minimal — present tense, second person
+(dm.md owns the register). The player's real decisions happen *between*
+fights — and at the pause. The engine owns the numbers.
 
 ## Which kind of session is this? (settle this first)
 
