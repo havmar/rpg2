@@ -3,3 +3,7 @@ __pycache__/
 *.pyo
 .notes.txt
 scratch/
+
+# Per-playthrough runtime state (not source)
+party.txt
+save.json
