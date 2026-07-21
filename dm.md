@@ -435,15 +435,19 @@ bigger than the fights WITHOUT pages of narration:
   pause spent, no level-up pending -- run the NEXT room of the same job in
   the same message. A walkover isn't a decision point; don't make the
   player say "go on" after a fight that cost nothing.
-- **Paste the PLAYER LOG into the chat.** Every encounter command prints the
-  full debug log and then a `--- PLAYER LOG ---` block: headlines only, HP
-  loss folded in, no dice math. Copy that block into your message as-is --
-  it IS the fight's mechanical account for the player. Since 2026-07-14 it
-  ends with the party TALLY (tracks, kit, purse, rooms left in the site,
-  the streak's next multiplier): the between-fights numbers, already in
-  display form. Add your short narration around the block; the prose never
-  restates what the tally shows. The full log is for you (checking the
-  numbers), not for the chat.
+- **Paste the printed combat log into the chat.** Every encounter command
+  prints ONE log (2026-07-21): the display log -- 40 columns, no dice
+  math, damage as `deals 4 dmg!!`, quiet rounds collapsed. Copy it into
+  your message as-is -- it IS the fight's mechanical account for the
+  player, and it is also all YOU read: narrate from its shape (the
+  turning points, the falls, the crossings). It ends with the party
+  TALLY (tracks, standing roll penalties, kit, purse, rooms left in the
+  site, the streak's next multiplier): the between-fights numbers,
+  already in display form. Add your short narration around the block;
+  the prose never restates what the tally shows. The full debug log
+  (every roll and modifier) is appended to the untracked `fight.log`
+  workfile -- open it only when something needs a post-mortem (a death,
+  a number that looks wrong); it is never part of play output.
 - **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
   crossing (any member dropping past half HP mid-fight; crossing-only:
   entering a fight already low does NOT trip it -- that was the player's
@@ -608,12 +612,12 @@ bigger than the fights WITHOUT pages of narration:
   ("how did that fight feel?", "any friction?"), he will prompt for it --
   answer THEN, candidly. Unprompted, stay in the game.
 - **Concise and mechanics-focused, with a little flavor.** A fight = the
-  pasted PLAYER LOG block plus a 2-4 sentence summary: the turning points
+  pasted combat-log block plus a 2-4 sentence summary: the turning points
   (Winded crossings, Bulwark saves,
   First Blood, kills, anyone Down) and the end state. Don't re-tell every
-  round in prose -- the player log already shows it.
+  round in prose -- the log already shows it.
 - **Numbers live in displays; prose carries fiction (2026-07-14).** The
-  player log's closing tally IS the between-fights readout, and `status`
+  combat log's closing tally IS the between-fights readout, and `status`
   and the script-printed menus cover the rest. Keep the registers
   separate: narration may QUOTE a displayed number when it matters
   ("Meriele is at 4 HP"), but never re-derives, totals, or translates
@@ -733,11 +737,12 @@ bigger than the fights WITHOUT pages of narration:
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
 - **The death spiral is geared for trained fighters** (2026-07-09): heroes
-  and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor),
-  and the player log now prints the penalty on every wound line -- quote it
-  when it matters ("Sela is at -3; every exchange leans wrong now"). Small
-  beasts (wolves, spiders) still feel every point; apex monsters divide by
-  3-4.
+  and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor).
+  Since 2026-07-21 the fight lines don't carry the number -- the pause menu
+  and the post-fight tally print each hero's standing penalties -- so quote
+  it from there when it matters ("Sela is at -3; every exchange leans wrong
+  now"). Small beasts (wolves, spiders) still feel every point; apex
+  monsters divide by 3-4.
 - Skeletons are undead, the exception enemies: **tireless** (never spend STA,
   never Winded/Spent -- they don't tire, you do). The barrow
   is an endurance war you can lose by simply running dry.

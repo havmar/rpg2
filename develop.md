@@ -237,10 +237,14 @@ a pointer: what the file is, how it's run, where its docs are.
   designer's phone, and **`party.txt`** is rewritten on every save but
   committed only by **`sheet`** — the end-of-every-DM-message command
   (one commit per message; best-effort git, never fatal).
-  Encounter commands print the full log then the
-  `--- PLAYER LOG ---` block the DM pastes into chat -- which since
-  2026-07-14 ends with the party tally (`tally_lines`: tracks/kit/purse,
-  rooms-left count, next streak multiplier), the standard
+  Encounter commands print ONE log since 2026-07-21 (the log rework):
+  the player-facing display the DM pastes into chat as-is, while the
+  full debug log goes to the untracked **`fight.log`** workfile
+  (`print_combat`; gitignored with save.json/party.txt -- the
+  post-mortem surface, e.g. on a player death). The block ends with the
+  party tally (`tally_lines`: tracks, standing roll penalties -- shown
+  HERE and in the pause menu since the fight lines dropped the numbers
+  -- kit/purse, rooms-left count, next streak multiplier), the standard
   between-encounters numbers display so the DM's prose never has to
   carry the numbers (dm.md, Narration style). Since 2026-07-17 (session C)
   also the alchemy surface: `brew HERO RECIPE` (once/day), `train HERO
@@ -525,8 +529,22 @@ mechanic *does* and *why* is rules.md's job.
   arrivals and tavern/downtime nights), `night_upkeep` (meds drain),
   `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
   post-fight morale pass knows who died in *this* fight.
-- **The log** — `CombatLog` (full + `.player` levels; `_debug` / `_play`
-  emit helpers so plain lists still work).
+- **The log** — `CombatLog` (reworked 2026-07-21, the one-log display):
+  the list itself is the full debug log (never printed in play --
+  `session.print_combat` appends it to the untracked **`fight.log`**
+  workfile and prints only `.player`); `.player` is THE display --
+  col-1, pre-fitted to `PLAYER_WIDTH` = 40 via `fit_lines` (fragments
+  never split), damage as `deals N dmg` + tier punctuation (`TIER_EMPH`),
+  attacker-HP tags when hurt, quiet-round collapse
+  (`round_start`/`finish_rounds`; parries/deflects marked `quiet=`,
+  Winded/Spent crossings `defer=` so collapsed rounds still surface
+  them), `play_tail` gluing SLAIN/falls onto the wound line, movement
+  lines player-only in ranged fights. Emit helpers `_debug` / `_play` /
+  `_play_tail` / `_quiet` / `_round_start` keep plain lists working (the
+  benches' path -- they get the full wording; full-log line WORDING is
+  unchanged on purpose: tune.py/bench greps key on it). The roster
+  blocks live in `sites.roster_lines`; the banners in session's
+  `log_banner`; the penalties display in `tally_lines` + the pause menu.
 - **Content** — `sites.py`: `FOES` (the bestiary: 25 stat blocks — six
   monster families + the humanoid ladder + the three casters — each row
   with a bench-calibrated
@@ -755,6 +773,15 @@ summary — refresh it whenever a new entry lands there.**
   `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_GOLD_MULT` 1.5) are
   hand-set and SIM-UNVERIFIED — tune them at the table; a karma-playing
   career sim is parked in plan.md.
+- **The one-log rework's dying-swing reorder is within noise
+  (2026-07-21).** The only engine-mechanical piece of the log rework
+  (the felled fighter's dying swing resolving immediately after the
+  felling blow instead of at its original turn slot) was sanity-checked:
+  tune.simulate at 4k trials reads hideout 57.6 clear / 12.2 wipe /
+  75.8 reckless-wipe (standing: 57.2 / 12.5 / 75.9) and barrow 37.0 /
+  41.4 / 98.5 (38.1 / 40.6 / 98.3); bench_party at 1.5k reads the duo
+  58.1 / 38.3 clear (58/38 shape intact). No retune needed; benchlog
+  entry 2026-07-21.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

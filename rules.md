@@ -261,9 +261,11 @@ either blanked the party or killed it. The regear puts trained fighters at
 hero at half HP is *in trouble*, not already dead. Measured effect: the
 share of cleared starter-site runs ending in the 10–70% HP-lost middle went
 from thin to ~4 in 5 — "I'm low on HP" is now a state you play in, not a
-death sentence you watch. The spiral is also **visible to the player** now:
-the player log prints `-n to rolls` on every wound line, same as the full
-log — a number the player budgets around must be a number the player sees.
+death sentence you watch. The spiral is also **visible to the player** —
+but at the decision surfaces, not on every wound line (the 2026-07-21 log
+rework): the pause menu and the post-fight tally print each hero's standing
+`-n to rolls`, where the budgeting actually happens; the fight lines
+themselves stay number-light (see "Reading the combat log").
 
 **The pain divisor** (2026-07; generalizes the old undead-only halving):
 every entity has a `pain` value and its wound penalty is `HP lost // pain`.
@@ -415,76 +417,101 @@ is for).
 
 ## Reading the combat log
 
-The log is written for two readers at once — the human player and the AI DM —
-and since 2026-07 it comes in **two simultaneous levels** (`CombatLog` in
-`rpg.py`): the **full log** (the DM/debug layer — everything below) and a
-parallel **player log** (`CombatLog.player`) built at the same time, designed
-to be pasted into the chat as-is. Combat lines in both levels use **short
-names** ("Inga", nothing appended — a character's race, age, and traits are
-sheet flavor, shown at creation and in `status`, never in the exchanges;
-the old highest-stat epithet, "the precise", was removed 2026-07-11 — it
-was a stat-tell in costume, and the trait system does its job better).
+**One displayed log (the 2026-07-21 rework).** Combat produces a single
+displayed log — `CombatLog.player` — that both readers share: the DM
+narrates over it, the player reads it as the fight's mechanical account.
+The **full debug log** (dice, every modifier with its source, severity
+arithmetic, per-round stamina readouts) still exists — the `CombatLog`
+list itself — but it is never printed in play: `session.print_combat`
+appends it to the untracked workfile **`fight.log`**, the post-mortem
+surface for a death or a suspect number. The bench harnesses still pass
+plain lists and receive the full wording.
 
-Within the full log, every exchange prints **two layers**:
+The displayed log is built for a 40-column phone screen (`PLAYER_WIDTH`
+in rpg.py): **every line starts in column 1**, and every event is
+pre-fitted into lines that break only on semantic seams (`fit_lines` —
+fragments like `Gardain (10/12)` / `overwhelms Scrap-Hound 1,` /
+`deals 6 dmg!!!` are never split mid-thought). Combat lines use **short
+names** ("Inga", nothing appended — a character's race, age, and traits
+are sheet flavor, shown at creation and in `status`, never in the
+exchanges).
 
-**1. An interpretive headline** — a catchy label a spectator would use:
+**The exchange line.** The pressure margin is narrated as the verb, the
+severity is a bare number, and the wound tier is punctuation:
 
-| Situation | Label |
-|-----------|-------|
-| Pressure tie, high dice (either 2d6 ≥ 8) | **Clash** — steel rings, neither yields |
-| Pressure tie, low dice | **Lull** — they circle, probing for an opening |
-| Attacker loses the exchange | *parried* |
-| A fighter hits 0 STA | `!! X is SPENT — running on empty (-6 to all rolls until the fight ends)` |
+| Situation | Line |
+|-----------|------|
 | Hit by margin 1–2 / 3–4 / 5+ | *edges past* / *outmaneuvers* / *overwhelms* |
-| Hit lands but soak zeroes the severity | *deflected* — the blow glances off |
-| Wound tiers | *a graze / a solid wound / a grievous injury / a crippling blow*, with the target's HP and current roll penalty (`-n to rolls`) in brackets |
+| Wound tiers (graze/wound/grievous/crippling) | `deals 1 dmg.` / `deals 2 dmg!` / `deals 4 dmg!!` / `deals 6 dmg!!!` |
+| Attacker loses the exchange | `X attacks Y, parried.` |
+| Hit lands but soak zeroes it | `X attacks Y, deflected.` |
+| Pressure tie | `X and Y: Clash!` (high dice) / `X and Y: they circle.` |
+| A kill / a fall | `SLAIN.` / `It falls.` glued onto the wound line when it fits, else its own line |
+| A hero drops | `X goes DOWN.` |
 
-Notable events get their own lines: `!! X is Winded` when the STA threshold is
-crossed, `First Blood!` on the opening strike, a Bulwark *flare* on a saved
-blow (raw tier stated first — narrate the averted death),
-`*** CRACK -- X's club shatters on Y's blade ***` when a weapon breaks,
-`X circles, crowded out of the press` when the crowding cap bites,
-`X unleashes a great sweeping blow -- Y, Z are caught in it!` announcing a
-multi-target attack (then each defender's exchange resolves under it),
-`X's wounds knit closed` on a regenerator's end-of-round heal, and
-the `***` lines for falls, slayings, and level-ups.
+**The rolling HP readout.** Wound lines no longer print the target's
+resulting HP; instead every attack line carries the ATTACKER's own HP
+right after their name — `Wolf 2 (1/4) attacks Fizzle, parried.` — and
+**no tag means unhurt**. Since everyone acts every round, the reader sees
+each fighter's state refreshed once a round, on the line where they act.
+A dying attacker announces itself instead: `X strikes as they fall:`.
 
-**2. The raw mechanics**, indented under each headline: the actual `2d6`
-result, every modifier with its source (`+DEX`, `+training`, `+rapier`,
-`+proficiency`, `-wounds`, `-winded`), both totals (formatted
-`Name: total (parts)`), then the full severity arithmetic
-(`severity = margin + STR + weapon mods - soak -> tier`).
+**No penalty numbers in the fight lines (the 2026-07-21 doctrine turn —
+supersedes 2026-07-09's "print `-n to rolls` on every wound line").**
+State crossings say only the state — `!! X is Winded.` / `!! X is
+SPENT.` — and wound lines carry no roll penalty. The numbers moved to
+the two decision surfaces instead: the **pause menu** and the
+**post-fight tally** both print each hero's standing penalties
+(`(wounds -2, Winded -2 to rolls)`). A number the player budgets around
+is a number the player sees — at the moments they actually budget.
 
-A `stamina:` readout prints every round — the clock is visible ticking — with
-`*` marking the Winded and `!!` the Spent; tireless entities are
-summarized (`3 tireless`) since their clock never moves. This full version is
-deliberately complete: it is how the numbers earn trust, and the DM reads it.
+**Quiet rounds collapse.** A round in which nothing lands (all parries,
+deflections, circling) is not printed; consecutive quiet rounds compress
+into one line — `Round 4-5: nothing lands.` — with any Winded/Spent
+crossings from those rounds surfacing right after it. Movement lines
+(`The lines close.` / `The lines meet -- steel range.`) print only in
+fights where someone threatens at range (a card or a caster); in an
+all-steel fight the approach is silent.
 
-**The player log** is the terser mode, kept in lockstep: headlines only, with
-the HP loss folded into the wound phrase and the roll-penalty bookkeeping
-dropped —
+**Named things stay named.** Abilities and warrior moves log by name and
+name only — `Morgran uses First Blood!`, `Rhea: Feint -- the cutthroat's
+guard opens.`, `Orsik: Iaido -- one flowing cut!`, a Bulwark save as
+`but Bulwark blunts it: deals 2 dmg!` — with no cost/bonus arithmetic on
+the line. **Power is printed only after casting spells** (`[5 Power
+left]` on cast lines, fireballs, openers, vanish); ability fuel and STA
+refunds stay off the displayed log. Falls, weapon breaks (`*** CRACK
+... ***`), regeneration, XP, and loot appear as their own fitted lines.
+
+**The enemy introduction.** Each encounter opens with the fitted banner
+(quest, site, room) and the roster as per-kind stat blocks — the one
+place the player reads the numbers they are about to fight:
 
 ```
-Round 2:
-  Rhea outmaneuvers Cutthroat 2 -- a grievous injury (-4 HP)! [Cutthroat 2: 3/7 HP]
-  Tomas edges past Cutthroat 2 -- a graze (-1 HP)! [Cutthroat 2: 2/7 HP]
-  !! Cutthroat 2 is Winded -- -2 to all rolls
+3x Blight-Wolf -- fangs
+DEX 4  STR 2  STA 8  HP 4/4
+Gloomweaver 5 -- fangs
+DEX 6  STR 2  STA 7  HP 6/6
+caster: shadow 2; 8 Power
 ```
 
-No pressure/severity arithmetic, no per-round stamina readout (the `!!`
-Winded/Spent crossings and the pause menu carry the clock), no chase math.
-Falls, slayings, weapon breaks, First Blood, Bulwark flares, XP, and loot
-lines all appear in both levels. `session.py` prints the player log as a
-`--- PLAYER LOG ---` block after the full log; the DM pastes it into chat
-so the player gets the mechanical shape of the fight without the dice.
+Special rules (drilled, undead, tireless, casters, sweeps, regeneration,
+ranged reach) ride a tag line under the stats.
+
+**The dying counterattack resolves immediately (2026-07-21).** A fighter
+felled before their turn takes the round-start dying swing right after
+the blow that felled them — promoted to the front of the turn order, not
+at their original slot — so `deals 6 dmg!!! SLAIN.` and `X strikes as
+they fall:` read together. Same swing, same round-start wound penalty;
+no balance intent (verified within noise on the tune sweep).
 
 Since 2026-07-14 every survived encounter's block closes with the **party
-tally** (`session.tally_lines`): each standing member's HP/STA/Power and
-kit, the purse, the day's remaining short rests, and -- with an active
-site -- the count of rooms left plus the streak's next multiplier. It is
-the standard between-encounters numbers display: the DM narrates around
-it instead of restating it, and it deliberately shows a *count* of what
-lies ahead, never the rosters (dm.md, Narration style).
+tally** (`session.tally_lines`): each standing member's HP/STA/Power,
+their standing roll penalties (see above), kit, the purse, the day's
+remaining short rests, and -- with an active site -- the count of rooms
+left plus the streak's next multiplier. It is the standard
+between-encounters numbers display: the DM narrates around it instead of
+restating it, and it deliberately shows a *count* of what lies ahead,
+never the rosters (dm.md, Narration style).
 
 ---
 

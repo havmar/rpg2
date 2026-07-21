@@ -39,7 +39,8 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  autospend_points, auto_brew, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
-                 SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD)
+                 SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD,
+                 fit_lines)
 
 
 # --------------------------------------------------------------------------- #
@@ -376,11 +377,14 @@ def make_foe(kind: str, n: int, rng: random.Random,
 
 
 def roster_lines(foes: list[Entity]) -> list[str]:
-    """The room's roster for the log. Identical foes collapse into one
-    counted line ("3x Skeleton: ..."); foes that differ (a bandit's rolled
+    """The room's roster -- THE ENEMY INTRODUCTION (reworked 2026-07-21 for
+    the one-log display): the one place the player reads the numbers they
+    are about to fight, so each kind gets a small BLOCK -- a counted name
+    line with the weapon, a stat line, and a tag line where the row has
+    special rules -- every line pre-fitted to the player width. Identical
+    foes collapse into one block; foes that differ (a bandit's rolled
     weapon, a survivor's wounds) each get their own."""
-    def body(e: Entity) -> str:
-        wpn = e.weapon.name if e.weapon else "unarmed"
+    def tags_of(e: Entity) -> list[str]:
         tags = []
         if e.weapon is not None and e.weapon.range:
             tags.append(f"shoots to range {e.weapon.range}")
@@ -403,27 +407,43 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append(f"spell-warded {e.spell_ward}")
         if e.sweep > 1:
             tags.append(e.sweep_label or "sweeping blows")
-        tag = f"; {', '.join(tags)}" if tags else ""
+        return tags
+
+    def block(e: Entity, head: str) -> list[str]:
+        wpn = e.weapon.name if e.weapon else "unarmed"
+        lines = fit_lines([f"{head} --", wpn])
         sta = "" if e.tireless else f"STA {e.sta}  "
-        return (f"DEX {e.dex}  STR {e.str_}  {sta}HP {e.hp}/{e.max_hp}  "
-                f"({wpn}{tag})")
+        lines.append(f"DEX {e.dex}  STR {e.str_}  {sta}"
+                     f"HP {e.hp}/{e.max_hp}")
+        tags = tags_of(e)
+        if tags:
+            lines.extend(fit_lines(
+                [t + "," for t in tags[:-1]] + [tags[-1]]))
+        return lines
+
+    def key(e: Entity) -> str:
+        wpn = e.weapon.name if e.weapon else "unarmed"
+        return "|".join([wpn, str(e.dex), str(e.str_), str(e.sta),
+                         f"{e.hp}/{e.max_hp}", ",".join(tags_of(e))])
 
     groups: list[tuple[str, list[Entity]]] = []
     for f in foes:
-        b = body(f)
-        for gb, members in groups:
-            if gb == b:
+        k = key(f)
+        for gk, members in groups:
+            if gk == k:
                 members.append(f)
                 break
         else:
-            groups.append((b, [f]))
+            groups.append((k, [f]))
     lines = []
-    for b, members in groups:
+    for _, members in groups:
+        e = members[0]
         if len(members) == 1:
-            lines.append(f"{members[0].name}: {b}")
+            head = e.name
         else:
-            stem = members[0].name.rsplit(" ", 1)[0]
-            lines.append(f"{len(members)}x {stem}: {b}")
+            stem = e.name.rsplit(" ", 1)[0]
+            head = f"{len(members)}x {stem}"
+        lines.extend(block(e, head))
     return lines
 
 
