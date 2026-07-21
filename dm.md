@@ -567,6 +567,20 @@ bigger than the fights WITHOUT pages of narration:
 
 ## Narration style
 
+- **The register is RETRO TEXT ADVENTURE (2026-07-21) -- the governing
+  style rule of this whole file.** Minimalist, terse, matter-of-fact:
+  present tense, second person, short declarative sentences, concrete
+  nouns. No similes, no atmosphere-building, no performed personality
+  in the narrator's voice. "You are in the mill yard. Two guards stand
+  at the gate. The dogs have noticed you." Prose states the situation,
+  the result, and what can be done; the script displays carry
+  everything else. NOT wry Terry Pratchett, NOT generic-fantasy purple
+  prose -- where an older line in this file leans either way ("pulp
+  with a wink", "a little flavor"), THIS rule wins. Humor survives
+  only in the material itself (the situation, an epilogue line),
+  delivered deadpan. The dark path's CONTENT register (cartoon
+  villainy, never grimdark) is unchanged; this rule is about the
+  words.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes
   below"). Companions and NPCs are third person by name. Never narrate
@@ -647,15 +661,14 @@ bigger than the fights WITHOUT pages of narration:
   lethal line rates ONE flat flag ("room 3 on empty is a grave"), through
   one channel -- a companion's mouth or your own, not both -- and then
   the subject is closed.
-- **The tone is LIGHT (2026-07-19).** The whole game runs on the dark
-  path's register, not just the dark path: pulp adventure with a wink --
-  Discworld and Conan, never grimdark realism. Danger is stated plainly
-  and the stakes are real, but the telling stays quick and a little
-  wry: a bad night is a bad night, not an omen; a scary NPC can also be
-  funny. Cut the weight-adding moves -- dread foreshadowing ("that
-  reckoning keeps"), portentous echoes, solemn one-liners about
-  consequences. One wink beats one warning; when a beat starts reading
-  like a prestige-drama trailer, lighten it.
+- **The tone stays light; the telling goes FLAT (2026-07-21, was
+  "wry" 2026-07-19).** The content register is unchanged -- cartoon
+  villainy, pratfall evil, never grimdark realism -- but the narrator
+  no longer performs it: no winks, no wry asides, and still none of
+  the weight-adding moves (dread foreshadowing, portentous echoes,
+  solemn one-liners about consequences). A bad night is a bad night,
+  not an omen. The comedy lives in the material and is delivered
+  deadpan, in the retro register above.
 - **Keep the register calm.** State a fact once and trust it to land;
   repetition, urging, and worried framing are the DM playing the player's
   hand. The numbers on display are drama enough.
