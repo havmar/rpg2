@@ -51,6 +51,13 @@ catchphrase.
 - **Use familiar words without apology.** Gate, sword, witch, barrow, troll,
   king, road, and ruined tower are strengths. Specific arrangement makes them
   memorable; ornamental synonyms do not.
+- **Use CRPG vocabulary, not period vocabulary.** Prefer sheriff, village,
+  agent, and judge to reeve, parish, factor, and justiciar. Familiar fantasy
+  words are useful; rare historical terms make the player stop and translate.
+- **Say the job and result literally.** Do not hide the actor or action behind
+  metonymy: "The priest pays you to destroy them" is clearer than "the parish
+  purse opens." Epilogues state what changed and stop; they do not add a clever
+  final beat merely to give the line flavor.
 - **Keep game output ASCII and fit display copy to 40 columns.** This width
   limit applies to code-authored output and DM-composed display lines. It does
   not require prose stored only in development documentation to wrap at 40.

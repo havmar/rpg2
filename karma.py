@@ -227,354 +227,293 @@ def karma_line(karma: dict, pc_level: int) -> str:
 # cmd_settle; rules.md's Karma & Heat add-on documents the math.
 
 DARK_TEMPLATES: list[dict] = [
-    dict(title="The Puppy on the Doorstep", align="dark",
-         desc="A widow's guard-pup keeps fouling the fixer's doorstep. "
-              "Kick it down the lane, says the fixer. The pup, it turns "
-              "out, has family.",
+    dict(title="Kick the Puppy", align="dark",
+         desc="The fixer wants a widow's puppy driven away from his door. "
+              "Kick it into the alley. Its mother is nearby.",
          pool=WOLF_POOL,
          skins={"wolf": "Very Big Dog", "dire wolf": "the Pup's Mother"},
-         sites=("the back lane", "the kennel yard"),
+         sites=("the back alley", "the kennel yard"),
          giver="the fixer",
-         epilogue="The pup limps home. Somewhere a tavern bard is already "
-                  "singing about the brutes who kicked it, with gestures."),
-    dict(title="The Protection Round", align="dark",
-         desc="Three streets of shopkeepers pooled their coin and hired "
-              "steel instead of paying up. The racket wants the lesson "
-              "delivered anyway.",
+         epilogue="The puppy limps home. The widow tells the town what the "
+                  "party did."),
+    dict(title="Collect Protection Money", align="dark",
+         desc="Shopkeepers on three streets refuse to pay protection money. "
+              "They hired guards. Beat them and collect.",
          pool=LADDER_POOL,
-         skins={"cutthroat": "Hired Knife", "archer": "Rooftop Lookout",
-                "bruiser": "Shop-Door Tough", "soldier": "Hired Guard",
-                "veteran": "Guard Sergeant", "champion": "the Streets' "
-                "Champion"},
-         sites=("the market row", "the counting room"),
-         giver="the racket's collector",
-         epilogue="The shutters go up meekly on rent day. The shopkeepers "
-                  "smile at the party in the street, carefully, with "
-                  "every tooth."),
+         skins={"cutthroat": "Hired Thug", "archer": "Rooftop Lookout",
+                "bruiser": "Heavy Guard", "soldier": "Hired Guard",
+                "veteran": "Guard Sergeant", "champion": "Street Champion"},
+         sites=("the market row", "the main office"),
+         giver="the gang collector",
+         epilogue="The shopkeepers pay. They now fear the party."),
     dict(title="Burn the Granary", align="dark",
-         desc="The miller's rival pays for a fire and no witnesses. The "
-              "miller, regrettably, pays for guards and dogs.",
+         desc="A rival pays you to burn the miller's granary. Kill the guards "
+              "and leave no witnesses.",
          pool=("wolf",) + LADDER_POOL[:4],
-         skins={"wolf": "Miller's Mastiff", "cutthroat": "Night Watchman",
-                "archer": "Granary Archer", "bruiser": "Miller's Man",
+         skins={"wolf": "Guard Dog", "cutthroat": "Night Guard",
+                "archer": "Granary Archer", "bruiser": "Heavy Guard",
                 "soldier": "Hired Guard"},
          sites=("the mill yard", "the granary floor"),
-         giver="the rival in silk",
-         epilogue="Grain prices double by market day. The rival in silk "
-                  "is very sorry to hear it, publicly, at length."),
-    dict(title="The Reliquary Job", align="dark",
-         desc="A collector wants the temple's golden relic, feels the "
-              "temple has had its turn. The keepers keep it with steel "
-              "and scripture.",
+         giver="the wealthy rival",
+         epilogue="The granary burns. Food prices double."),
+    dict(title="Steal the Temple Relic", align="dark",
+         desc="A collector wants the gold relic inside the temple. Fight "
+              "through the guards and steal it.",
          pool=LADDER_POOL[:6] + CASTER_POOL,
-         skins={"cutthroat": "Temple Novice", "archer": "Roof Warden",
-                "bruiser": "Lay Brother", "soldier": "Temple Guard",
-                "veteran": "Warden of the Shrine",
-                "champion": "the Faith's Sworn Blade",
-                "hexer": "Curse-Chanter", "pyromancer": "Censer-Burner"},
-         sites=("the temple court", "the reliquary vault"),
-         giver="the veiled collector",
-         epilogue="The empty plinth draws bigger crowds than the relic "
-                  "ever did. The priests declare a miracle of absence "
-                  "and double the alms box takings."),
-    dict(title="The Debt Collection", align="dark",
-         desc="A whole village signed, sealed, and stopped paying. The "
-              "moneylender pays a fifth of the book to whoever squeezes "
-              "it out of them -- and the village has raised a militia.",
+         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Temple Guard Captain",
+                "champion": "Temple Champion",
+                "hexer": "Curse Mage", "pyromancer": "Fire Priest"},
+         sites=("the temple yard", "the relic vault"),
+         giver="the masked collector",
+         epilogue="The relic is gone. The priests ask for donations to "
+                  "replace it."),
+    dict(title="Collect the Debt", align="dark",
+         desc="A village stopped paying its debt. The moneylender will give "
+              "you a share if you force the village to pay. The villagers "
+              "have formed a militia.",
          pool=LADDER_POOL[:5],
-         skins={"cutthroat": "Village Rough", "archer": "Poacher-Turned-"
-                "Sentry", "bruiser": "the Blacksmith", "soldier":
-                "Militiaman", "veteran": "the Old Campaigner"},
+         skins={"cutthroat": "Village Thug", "archer": "Village Hunter",
+                "bruiser": "Blacksmith", "soldier": "Militiaman",
+                "veteran": "Militia Veteran"},
          sites=("the barricaded bridge", "the village square"),
-         giver="the moneylender's broker",
-         epilogue="The village pays to the copper, then names its new "
-                  "well after the party. The bucket, specifically."),
-    dict(title="Grave Goods", align="dark",
-         desc="The old barrow is consecrated ground and the parish is "
-              "touchy about it. The broker is not: the dead wear gold "
-              "down there, and gold belongs to the living.",
+         giver="the moneylender's agent",
+         epilogue="The village pays the debt. The moneylender takes the money."),
+    dict(title="Rob the Tomb", align="dark",
+         desc="A broker wants the gold buried in an old tomb. The tomb is "
+              "sacred and full of undead. Take the gold.",
          pool=UNDEAD_POOL,
          skins={},
-         sites=("the broken seal", "the gold-hung galleries"),
-         giver="the grave-broker",
-         epilogue="The parish re-consecrates the barrow at great expense. "
-                  "The broker weighs the grave-gold twice and asks, "
-                  "brightly, about the OTHER barrow."),
-    dict(title="Toll the King's Road", align="dark",
-         desc="Why rob a road when you can OWN one? Set up the chain, "
-              "post the rates -- and hold the crossing when the garrison "
-              "comes to take it down.",
+         sites=("the tomb entrance", "the burial halls"),
+         giver="the grave robber",
+         epilogue="The tomb is robbed. The priest blesses it again."),
+    dict(title="Take Over the Road", align="dark",
+         desc="Set up a toll on the king's road. Defeat the soldiers sent to "
+              "remove it.",
          pool=LADDER_POOL,
-         skins={"cutthroat": "Garrison Scout", "archer": "Garrison "
-                "Crossbowman", "bruiser": "Garrison Mauler",
-                "soldier": "Garrison Regular", "veteran": "Garrison "
-                "Sergeant", "champion": "the Garrison Captain",
-                "blademaster": "the Crown's Duelist",
-                "warlord": "the Lord Marshal"},
-         sites=("the toll chain", "the fordside camp", "the held crossing"),
-         giver="the ambitious lieutenant",
-         epilogue="For one glorious week the road pays the party, not "
-                  "the crown. Clerks in three counting-houses develop "
-                  "nervous conditions."),
+         skins={"cutthroat": "Army Scout", "archer": "Army Crossbowman",
+                "bruiser": "Heavy Soldier", "soldier": "Army Soldier",
+                "veteran": "Army Sergeant", "champion": "Army Captain",
+                "blademaster": "Royal Duelist",
+                "warlord": "Army General"},
+         sites=("the toll gate", "the roadside camp", "the bridge"),
+         giver="the gang lieutenant",
+         epilogue="The party controls the road for a week and takes the toll "
+                  "money."),
     # --- the 2026-07-19 dark-quests content pass (the curriculum) --- #
-    dict(title="The Five-Finger Discount", align="dark",
-         desc="A collector wants one small, priceless thing lifted from "
-              "a merchant's strongroom. Then there is the fence, who has "
-              "opinions about prices.",
+    dict(title="Steal the Jewel", align="dark",
+         desc="A collector wants a valuable jewel. Steal it from a merchant's "
+              "vault, then sell it to the fence.",
          pool=LADDER_POOL[:4],
-         skins={"cutthroat": "Shop Guard", "archer": "Rooftop Watchman",
-                "bruiser": "Strongroom Tough", "soldier": "Hired Guard"},
-         sites=("the merchant's strongroom", "the fence's cellar"),
-         deed=dict(stat="dex", dc=11, text="the lift -- in through the "
-                   "coal chute, out with the goods, touching nothing",
-                   fail="a shelf goes over; the whole house wakes"),
-         twist=dict(text="The fence turns the piece over once and offers "
-                    "HALF its price -- 'damaged in transit, see' -- and "
-                    "his bodyguards lean off the wall in unison.",
-                    accept="Half is half. The fence smiles like a purse "
-                    "closing.", pay=0.5),
-         giver="the veiled collector",
-         epilogue="The piece surfaces in a private gallery three lands "
-                  "away. The merchant posts a reward; the Watch posts "
-                  "a description; neither is close."),
-    dict(title="The Menagerie Order", align="dark",
-         desc="Hell wants a rare beast, caged and delivered breathing. "
-              "The catching is one job; the part where it slips the cage "
-              "at the town gates is another.",
+         skins={"cutthroat": "Store Guard", "archer": "Roof Guard",
+                "bruiser": "Vault Guard", "soldier": "Hired Guard"},
+         sites=("the merchant's vault", "the fence's cellar"),
+         deed=dict(stat="dex", dc=11, text="enter through the coal chute, "
+                                           "take the jewel, and leave without "
+                                           "touching anything else",
+                   fail="a shelf falls and wakes the whole house"),
+         twist=dict(text="The fence claims the jewel is damaged and offers "
+                         "half the price. His bodyguards wait for your "
+                         "answer.",
+                    accept="You accept half payment. The fence takes the "
+                           "jewel.", pay=0.5),
+         giver="the masked collector",
+         epilogue="The jewel is sold in another land. The merchant offers a "
+                  "reward for the thieves."),
+    dict(title="Capture the Beast", align="dark",
+         desc="Hell wants a rare beast alive. Trap it and take it to town. It "
+              "escapes at the gate.",
          pool=BEAST_POOL + ("dire wolf",), skins={},
-         sites=("the trapping ground", "the beast loose at the gates"),
+         sites=("the wilderness trap", "the town gate"),
          giver="the fixer",
-         epilogue="The crate goes down the hellmouth stairs, growling. "
-                  "A receipt comes back up, signed in something brown."),
+         epilogue="Hell takes the beast. The party receives a signed receipt."),
     dict(title="Dine and Dash", align="dark",
-         desc="Take the best table, order everything, compliment the "
-              "cellar -- then rob the owner to settle the bill. The "
-              "house employs discreet, well-fed muscle.",
+         desc="Eat an expensive meal, then rob the owner to pay the bill. The "
+              "owner has guards.",
          pool=LADDER_POOL[:4],
-         skins={"cutthroat": "Coat-Check Knife", "archer": "Balcony "
-                "Lookout", "bruiser": "the Door's Opinion",
+         skins={"cutthroat": "Cloakroom Guard", "archer": "Balcony Guard",
+                "bruiser": "Door Guard",
                 "soldier": "House Guard"},
-         sites=("the proprietor's back office",),
-         deed=dict(stat="cha", dc=10, text="the long con -- twelve "
-                   "courses of charm, ending alone with the host and "
-                   "the strongbox", fail="the sommelier remembers your "
-                   "face from a poster"),
-         giver="the rival in silk",
-         epilogue="The review, dictated to a terrified waiter on the "
-                  "way out: five stars, would rob again."),
-    dict(title="The Last Sermon", align="dark",
-         desc="Hell wants the local priest on the altar he preaches "
-              "from. He is, for the record, a bad man -- a usurer in "
-              "vestments who has ruined more families than any bandit. "
-              "Will you still chicken out?",
+         sites=("the owner's office",),
+         deed=dict(stat="cha", dc=10,
+                   text="charm the owner during dinner and get into the "
+                        "office with the safe",
+                   fail="the waiter recognizes you from a wanted poster"),
+         giver="the wealthy rival",
+         epilogue="The party robs the owner and leaves without paying."),
+    dict(title="Kill the Priest", align="dark",
+         desc="Hell orders you to kill a corrupt priest at his own altar. He "
+              "ruined families with illegal loans. His guards will defend "
+              "him.",
          pool=LADDER_POOL[:5] + CASTER_POOL,
-         skins={"cutthroat": "Outraged Sexton", "archer": "Bell-Tower "
-                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
-                "Guard", "veteran": "the Old Crusader",
-                "hexer": "the Curate", "pyromancer": "the Censer-Swinger"},
-         sites=("the vestry", "the altar steps"),
+         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Old Knight",
+                "hexer": "Priest", "pyromancer": "Fire Priest"},
+         sites=("the priest's room", "the altar steps"),
          giver="the fixer",
-         epilogue="The parish, freed of its usurer, is oddly quiet about "
-                  "the how. The ledger of debts burns in the vestry "
-                  "grate, and nobody claims to have lit it."),
-    dict(title="A Most Heinous Act", align="dark",
-         desc="Hell requires one act no healthy mind would contemplate: "
-              "a puppy, an altar, a knife. It is a direwolf pup, and its "
-              "parents can smell the altar from two valleys off.",
+         epilogue="The priest is dead. Someone burns his debt records."),
+    dict(title="Sacrifice the Puppy", align="dark",
+         desc="Hell orders you to sacrifice a dire wolf puppy at a forest "
+              "shrine. Its pack is coming.",
          pool=WOLF_POOL,
-         skins={"wolf": "Direwolf Kin", "dire wolf": "the Pup's "
-                "Mother"},
+         skins={"wolf": "Dire Wolf", "dire wolf": "Mother Dire Wolf"},
          sites=("the shrine in the woods",),
-         giver="the grave-broker",
-         epilogue="Cooked afterwards, as the rite requires, and -- this "
-                  "is the worst part -- it tastes genuinely good. "
-                  "Somewhere below, applause. Somewhere above, a bard "
-                  "starts a very long song."),
-    dict(title="Sack the Village", align="dark",
-         desc="A whole village, one night, everything in it: all their "
-              "gold is yours. They have a palisade, a militia, and "
-              "strong opinions about visitors with torches.",
-         pool=LADDER_POOL[:5],
-         skins={"cutthroat": "Village Rough", "archer": "Palisade "
-                "Bowman", "bruiser": "the Blacksmith", "soldier":
-                "Militiaman", "veteran": "the Old Campaigner"},
-         sites=("the palisade gate", "the high street", "the moot hall"),
-         giver="the ambitious lieutenant",
-         epilogue="The village will rebuild, the ballads insist. The "
-                  "ballads are mostly about what the party took, listed, "
-                  "with amounts."),
-    dict(title="The Vault Job", align="dark",
-         desc="The counting-house vault holds three lands' worth of "
-              "deposits. The plan is elegant. The guards are not part "
-              "of the plan.",
-         pool=LADDER_POOL[:6],
-         skins={"cutthroat": "Night Clerk", "archer": "Gallery Guard",
-                "bruiser": "Vault-Door Muscle", "soldier": "House "
-                "Guard", "veteran": "Guard Sergeant",
-                "champion": "the Guild's Duelist"},
-         sites=("the counting floor", "the vault below"),
-         deed=dict(stat="mind", dc=11, text="the plan -- cased for a "
-                   "week, timed to the minute, in through the lamplit "
-                   "gallery between rounds", fail="the rounds changed "
-                   "this morning; the plan meets the guards"),
-         giver="the moneylender's broker",
-         epilogue="Three counting-houses fail by month's end and the "
-                  "broker, who sold their debts short, sends a fruit "
-                  "basket. It is not poisoned. Probably."),
-    dict(title="A Round on the House", align="dark",
-         desc="Season the feast-day cask, then stand everyone a round "
-              "and watch the hall fold. The philter is gut-rot, not "
-              "grave-dirt -- hell wants the humiliation, and whoever "
-              "did not drink wants you.",
-         pool=LADDER_POOL[:4],
-         skins={"cutthroat": "Furious Potboy", "archer": "the Innkeep's "
-                "Nephew", "bruiser": "the Town Wrestler",
-                "soldier": "Feast-Day Guard"},
-         sites=("the reeling feast-hall",),
-         deed=dict(stat="mind", dc=10, text="the philter, slipped into "
-                   "the cask between toasts", fail="a potboy sees the "
-                   "vial go in and screams the house down"),
          giver="the fixer",
-         epilogue="Nobody dies; everybody remembers. The feast day is "
-                  "renamed for the disaster, which hell counts as a "
-                  "monument."),
-    dict(title="The Inheritance", align="dark",
-         desc="A fine mansion, elderly owners, no heirs anyone will "
-              "press about. Murder them and it's yours. They were bad "
-              "people. Probably. The household guard is definitely "
-              "well paid.",
-         pool=LADDER_POOL[:6],
-         skins={"cutthroat": "Under-Butler", "archer": "Gatehouse "
-                "Archer", "bruiser": "the Groundskeeper", "soldier":
-                "House Guard", "veteran": "the Majordomo",
-                "champion": "the Old Master-at-Arms"},
-         sites=("the garden wall", "the master's study"),
-         giver="the veiled collector",
-         epilogue="The deed reads cleanly enough, if nobody holds it to "
-                  "the light. The staff stay on; the pay is better and "
-                  "they ask no questions at all."),
-    dict(title="The Blade That Thirsts", align="dark",
-         desc="A famous evil weapon lies in the barrow of the last fool "
-              "who wielded it. Hell would like it back in circulation. "
-              "The barrow disagrees.",
-         pool=UNDEAD_POOL, skins={},
-         sites=("the sealed tomb", "the wielder's rest"),
-         giver="the grave-broker",
-         epilogue="The blade comes up humming, faintly, in a key that "
-                  "makes dogs leave the room. It is very pleased to "
-                  "meet you. (The DM places the actual weapon -- a "
-                  "reskinned quality blade until named instances land.)"),
-    dict(title="The Unmaking", align="dark",
-         desc="A sacred sword hangs above a shrine's altar, famous for "
-              "three miracles. Corrupt it by dark ritual where it "
-              "hangs. The faithful will object, in ranks.",
-         pool=LADDER_POOL[:6] + CASTER_POOL,
-         skins={"cutthroat": "Shrine Novice", "archer": "Pilgrim "
-                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
-                "Guard", "veteran": "Warden of the Shrine",
-                "champion": "the Faith's Sworn Blade",
-                "hexer": "the Anchorite", "pyromancer": "Censer-Burner"},
-         sites=("the pilgrim road", "the reliquary shrine"),
-         giver="the veiled collector",
-         epilogue="The blade still hangs there. It looks the same. The "
-                  "miracles stop, and the pilgrims' road grows quietly "
-                  "over with grass."),
-    dict(title="Blood on the Altar", align="dark",
-         desc="Desecrate the altar with blood before the dawn bell. "
-              "Whose blood is not specified -- your own works, if you "
-              "are a coward. Hell will know.",
+         epilogue="The puppy is sacrificed and cooked. Hell approves."),
+    dict(title="Loot the Village", align="dark",
+         desc="Attack a village at night and take its gold. The village has a "
+              "wooden wall and a militia.",
          pool=LADDER_POOL[:5],
-         skins={"cutthroat": "Outraged Sexton", "archer": "Bell-Tower "
-                "Warden", "bruiser": "Lay Brother", "soldier": "Temple "
-                "Guard", "veteran": "the Old Crusader"},
+         skins={"cutthroat": "Village Thug", "archer": "Village Archer",
+                "bruiser": "Blacksmith", "soldier": "Militiaman",
+                "veteran": "Militia Veteran"},
+         sites=("the village gate", "the main street", "the town hall"),
+         giver="the gang lieutenant",
+         epilogue="The party takes the village's gold. The survivors begin "
+                  "rebuilding."),
+    dict(title="Rob the Vault", align="dark",
+         desc="A bank vault holds gold from three lands. Enter at night and "
+              "steal it. The bank has many guards.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "Bank Clerk", "archer": "Hall Guard",
+                "bruiser": "Vault Guard", "soldier": "House Guard",
+                "veteran": "Guard Captain",
+                "champion": "Bank Champion"},
+         sites=("the bank hall", "the bank vault"),
+         deed=dict(stat="mind", dc=11,
+                   text="enter the bank between guard patrols according to "
+                        "the plan",
+                   fail="the guards changed their patrol time"),
+         giver="the banker's agent",
+         epilogue="The stolen gold ruins three banks. The broker sends a gift."),
+    dict(title="Poison the Feast", align="dark",
+         desc="Hell wants you to put a sickness potion in the feast drink. "
+              "Most guests will get sick. The guards who stay sober will "
+              "attack.",
+         pool=LADDER_POOL[:4],
+         skins={"cutthroat": "Angry Servant",
+                "archer": "Innkeeper's Nephew",
+                "bruiser": "Town Wrestler",
+                "soldier": "Feast Guard"},
+         sites=("the feast hall",),
+         deed=dict(stat="mind", dc=10,
+                   text="pour the potion into the drink while nobody is "
+                        "looking",
+                   fail="a servant sees the potion and calls the guards"),
+         giver="the fixer",
+         epilogue="Nobody dies, but the town remembers the ruined feast. Hell "
+                  "is satisfied."),
+    dict(title="Take the Mansion", align="dark",
+         desc="An old couple owns a mansion and has no heirs. Kill them and "
+              "claim the house. Their guards will fight.",
+         pool=LADDER_POOL[:6],
+         skins={"cutthroat": "House Servant", "archer": "Gate Archer",
+                "bruiser": "Groundskeeper", "soldier": "House Guard",
+                "veteran": "Head Servant",
+                "champion": "Old Swordmaster"},
+         sites=("the garden gate", "the owner's office"),
+         giver="the masked collector",
+         epilogue="The owners are dead. The papers name the party as heirs, "
+                  "and the staff stays."),
+    dict(title="Find the Evil Sword", align="dark",
+         desc="An evil sword is buried with its last owner. Enter the tomb "
+              "and bring it back to Hell.",
+         pool=UNDEAD_POOL, skins={},
+         sites=("the sealed tomb", "the burial chamber"),
+         giver="the grave robber",
+         epilogue="The sword hums when it is found. Dogs avoid it. (The DM "
+                  "uses a renamed quality weapon until named weapons are "
+                  "added.)"),
+    dict(title="Corrupt the Holy Sword", align="dark",
+         desc="A holy sword hangs in a temple. Perform a dark ritual on it. "
+              "The temple guards will try to stop you.",
+         pool=LADDER_POOL[:6] + CASTER_POOL,
+         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Temple Guard Captain",
+                "champion": "Temple Champion",
+                "hexer": "Priest", "pyromancer": "Fire Priest"},
+         sites=("the temple road", "the holy shrine"),
+         giver="the masked collector",
+         epilogue="The sword looks unchanged, but its miracles stop. The "
+                  "temple closes."),
+    dict(title="Blood on the Altar", align="dark",
+         desc="Put blood on the altar before dawn. Any blood will work, "
+              "including yours. Hell will know what you choose.",
+         pool=LADDER_POOL[:5],
+         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Old Knight"},
          sites=("the midnight chapel",),
-         giver="the grave-broker",
-         epilogue="The altar is scrubbed, re-blessed, and roped off. "
-                  "Attendance, perversely, has never been better."),
-    dict(title="An Old Friend", align="dark",
-         desc="A hellish coworker has been skimming. Work with the "
-              "authorities: testify, then help take their crew. It is "
-              "an old friend. They once saved your life. Hell calls "
-              "this a loyalty exercise, and means yours.",
+         giver="the fixer",
+         epilogue="The priests clean and bless the altar. More people come to "
+                  "see it."),
+    dict(title="Betray an Old Friend", align="dark",
+         desc="An old friend has been stealing from Hell. Tell the town guard "
+              "where to find them, then help kill their crew. This friend "
+              "once saved your life.",
          pool=LADDER_POOL[:6],
-         skins={"cutthroat": "Old Friend's Knife", "archer": "Crew "
-                "Lookout", "bruiser": "Crew Muscle", "soldier": "Sworn "
-                "Crewman", "veteran": "the Lieutenant",
-                "champion": "the Old Friend"},
-         sites=("the safehouse door", "the last back room"),
-         giver="the ambitious lieutenant",
-         epilogue="The Watch captain shakes your hand in public, which "
-                  "does your reputation no good anywhere. The old "
-                  "friend's chair at the fixer's table stays empty; "
-                  "nobody sits in it."),
-    dict(title="The Shepherds", align="dark",
-         desc="A cabal of cultists is inviting something old and "
-              "nameless through, and heroic adventurers have come to "
-              "stop them. Hold the cordon: the cultists must not be "
-              "interrupted. The heroes are exactly as good as the "
-              "songs say.",
+         skins={"cutthroat": "Crew Assassin", "archer": "Crew Lookout",
+                "bruiser": "Crew Muscle", "soldier": "Crew Guard",
+                "veteran": "Crew Lieutenant",
+                "champion": "Old Friend"},
+         sites=("the safehouse entrance", "the back room"),
+         giver="the gang lieutenant",
+         epilogue="The guard captain thanks the party in public. The old "
+                  "friend is dead."),
+    dict(title="Guard the Cultists", align="dark",
+         desc="Cultists are summoning a demon. Heroes are coming to stop "
+              "them. Hold the ritual site until the summoning is complete.",
          pool=LADDER_POOL,
-         skins={"cutthroat": "Hero's Scout", "archer": "Far-Famed "
-                "Archer", "bruiser": "the Strong Companion",
-                "soldier": "Sworn Companion", "veteran": "Errant Hero",
+         skins={"cutthroat": "Hero Scout", "archer": "Hero Archer",
+                "bruiser": "Strong Hero",
+                "soldier": "Hero Warrior", "veteran": "Veteran Hero",
                 "champion": "Famous Hero",
-                "blademaster": "Legendary Swordmaster",
-                "warlord": "the Realm's Chosen"},
-         sites=("the cordon of campfires", "the standing stones"),
-         giver="the veiled collector",
-         epilogue="The chanting reaches its end and something arrives. "
-                  "The cultists look delighted, then thoughtful, then "
-                  "very briefly alarmed. Hell rates the outcome "
-                  "'acceptable'."),
-    dict(title="The Doorman's Surprise", align="dark",
-         desc="Open a hellgate by dark ritual at the appointed place. "
-              "One administrative wrinkle: the invading forces were "
-              "never told you are one of them.",
+                "blademaster": "Master Swordfighter",
+                "warlord": "Chosen Hero"},
+         sites=("the outer camp", "the ritual stones"),
+         giver="the masked collector",
+         epilogue="A demon appears. It attacks the cultists. Hell calls the "
+                  "job complete."),
+    dict(title="Open the Hellgate", align="dark",
+         desc="Open a hellgate at the marked location. The demons on the "
+              "other side do not know you work for Hell.",
          pool=GIANTKIN_POOL + CASTER_POOL,
-         skins={"ogre": "Pit Bruiser", "troll": "Flesh-Render",
-                "giant": "a Duke's Champion", "hexer": "Frost-Fiend",
-                "pyromancer": "Flame-Fiend"},
+         skins={"ogre": "Demon Brute", "troll": "Demon Troll",
+                "giant": "Demon Champion", "hexer": "Ice Demon",
+                "pyromancer": "Fire Demon"},
          sites=("the ritual ground", "the open gate"),
-         giver="the grave-broker",
-         epilogue="The gate is closed by the time the paperwork "
-                  "arrives, stamped IN ERROR. Hell apologizes for the "
-                  "inconvenience in writing, which the fixer says has "
-                  "never happened before."),
-    dict(title="The Powder Trade", align="dark",
-         desc="Seed a network selling a terrible, moreish powder -- "
-              "hell provides the recipe. The town's standing criminals "
-              "regard the market as spoken for.",
+         giver="the fixer",
+         epilogue="The gate closes. Hell sends a written apology."),
+    dict(title="Sell the Powder", align="dark",
+         desc="Hell gives you a drug recipe. Build a market in town. The "
+              "local gang wants to stop you.",
          pool=LADDER_POOL[:6],
-         skins={"cutthroat": "Corner Knife", "archer": "Rooftop "
-                "Spotter", "bruiser": "Rival Muscle", "soldier": "Sworn "
-                "Legbreaker", "veteran": "the Underboss",
-                "champion": "the Kingpin"},
+         skins={"cutthroat": "Street Thug", "archer": "Roof Lookout",
+                "bruiser": "Gang Brute", "soldier": "Gang Guard",
+                "veteran": "Gang Boss",
+                "champion": "Gang Leader"},
          sites=("the night market", "the rival den"),
-         twist=dict(text="The kingpin's envoy proposes a PARTNERSHIP "
-                    "instead: half the take, no blood, his people run "
-                    "the corners.", accept="Half the take, none of the "
-                    "work. The envoy's handshake counts your rings.",
+         twist=dict(text="The gang leader offers a deal: half the profit, no "
+                         "fighting, and his gang handles the sales.",
+                    accept="You accept half the profit. His gang handles the "
+                           "sales.",
                     pay=0.5),
          giver="the fixer",
-         epilogue="The powder sells itself; that is the terrible part. "
-                  "The standing enterprise -- routes, rivals, the "
-                  "slow rot -- is a later layer (plan.md); for now the "
-                  "seed money is yours."),
-    dict(title="The Neighbor Dispute", align="dark",
-         desc="A scheming nobleman wants his neighbor's estates. The "
-              "neighbor is a good, honorable man, which is why he has "
-              "no idea what is about to happen to him.",
+         epilogue="The powder begins to sell. The party receives the first "
+                  "payment."),
+    dict(title="Take the Neighbor's Land", align="dark",
+         desc="A noble wants his neighbor's land. Attack the house and force "
+              "the owner to sign it over.",
          pool=LADDER_POOL[:6],
-         skins={"cutthroat": "Estate Poacher-Turned-Guard", "archer":
-                "Gatehouse Archer", "bruiser": "the Good Man's "
-                "Huntsman", "soldier": "Liveried Guard", "veteran":
-                "the Old Steward", "champion": "the Good Man Himself"},
-         sites=("the disputed orchard", "the honorable house"),
-         giver="the rival in silk",
-         epilogue="The papers are signed at sword-point and notarized "
-                  "at a distance. The nobleman throws a garden party "
-                  "in the orchard within the month; the fruit, "
-                  "everyone agrees, tastes of nothing at all."),
+         skins={"cutthroat": "Estate Guard", "archer": "Gate Archer",
+                "bruiser": "Huntsman", "soldier": "House Guard",
+                "veteran": "Old Guard", "champion": "Landowner"},
+         sites=("the outer farm", "the main house"),
+         giver="the wealthy rival",
+         epilogue="The owner signs. The noble takes the land."),
 ]
 
 

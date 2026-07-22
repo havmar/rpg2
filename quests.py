@@ -227,294 +227,267 @@ DRAKE_POOL = ("wyvern", "drake", "dragon")
 
 TEMPLATES: dict[str, list[dict]] = {
     "human": [
-        dict(title="Bandits on the King's Road",
-             desc="Wagons stripped, a toll of blood at the fords. The reeve "
-                  "pays for the road made safe.",
+        dict(title="Bandits on the Road",
+             desc="Bandits are attacking travelers on the king's road. Find "
+                  "their camp and kill them. The sheriff will pay you.",
              pool=LADDER_POOL, skins={},
              sites=("the roadside camp", "the toll bridge", "the old fort"),
-             giver="the king's reeve",
-             epilogue="The fords run quiet again; carters raise a cup to "
-                      "the party at every wayhouse on the road."),
-        dict(title="Wolves at the Folds",
-             desc="Sheep gone, then a shepherd. The commons want the pack "
-                  "dug out of the hills.",
+             giver="the sheriff",
+             epilogue="The bandits are dead. The road and bridge are safe "
+                      "again."),
+        dict(title="Wolves Attack",
+             desc="Wolves have killed sheep and a shepherd. Hunt the pack in "
+                  "the hills and kill it.",
              pool=WOLF_POOL, skins={},
              sites=("the high pasture", "the den in the hills"),
-             giver="the shepherds' elder",
-             epilogue="Lambing season passes without a beast lost; the "
-                      "elder salts the den's earth as the old rites ask."),
+             giver="the head shepherd",
+             epilogue="The wolves are dead. No sheep are lost for the rest of "
+                      "the season."),
         dict(title="The Restless Crypt",
-             desc="The churchyard dead are not staying put. The parish "
-                  "purse opens for whoever settles them.",
+             desc="The dead rise from the village graveyard. Enter the crypt "
+                  "and destroy them.",
              pool=UNDEAD_POOL, skins={},
-             sites=("the churchyard", "the crypt below"),
-             giver="the parish priest",
-             epilogue="The graves are re-consecrated at dusk; the parish "
-                      "sleeps its first whole night in weeks."),
-        dict(title="Deserters Turned Raiders",
-             desc="Soldiers who kept their steel and lost their oaths, "
-                  "living off the villages they once guarded.",
+             sites=("the village graveyard", "the crypt below"),
+             giver="the village priest",
+             epilogue="The dead are destroyed. The priest blesses the graves "
+                      "again."),
+        dict(title="Deserter Raiders",
+             desc="Army deserters are raiding the villages they once guarded. "
+                  "Find their camp and stop them.",
              pool=LADDER_POOL, skins={"soldier": "Deserter",
                                       "veteran": "Deserter Sergeant"},
-             sites=("the burned farmstead", "the deserters' camp"),
-             giver="the garrison captain",
-             epilogue="The recovered blades go back to the armory; the "
-                      "villages post no watch tonight."),
-        dict(title="The Hedge-Wizards' Toll",
-             desc="Renegade hedge-wizards tax the road in fire and frost. "
-                  "The witchfinder pays for the tollhouse dark.",
+             sites=("the burned farm", "the deserters' camp"),
+             giver="the army captain",
+             epilogue="The deserters are defeated. Their weapons return to "
+                      "the army."),
+        dict(title="Renegade Wizards",
+             desc="Renegade wizards have taken the tollhouse. They attack "
+                  "travelers with fire and ice. Kill them and clear the road.",
              pool=CASTER_POOL, skins={},
-             sites=("the tollhouse road", "the burned chapterhouse"),
-             giver="the bishop's witchfinder",
-             epilogue="Carters use the road again by week's end; the "
-                      "witchfinder burns the confiscated grimoires in the "
-                      "market square, twice, for the crowd."),
+             sites=("the tollhouse road", "the ruined guildhall"),
+             giver="the bishop's mage hunter",
+             epilogue="The wizards are dead. Travelers use the road again."),
     ],
     "elf": [
-        dict(title="The Blighted Glade",
-             desc="Something soured the heartwood; what lives there now "
-                  "bites. The wardens want it cut out.",
+        dict(title="The Blighted Grove",
+             desc="A curse has poisoned the grove. Wolves and spiders attack "
+                  "anyone who enters. Kill them and burn the source of the "
+                  "blight.",
              pool=SPIDER_POOL + WOLF_POOL,
-             skins={"great spider": "Gloomweaver",
-                    "wolf": "Blight-Wolf", "dire wolf": "Blight-Alpha"},
-             sites=("the glade's edge", "the heartwood"),
-             giver="the warden-council's voice",
-             epilogue="Green returns to the glade's edge within the "
-                      "season; what soured the heartwood is burned and "
-                      "sung over."),
-        dict(title="Webs in the Canopy",
-             desc="The high walkways are silked over and the wardens who "
-                  "went up have not come down.",
-             pool=SPIDER_POOL, skins={"great spider": "Canopy Weaver"},
-             sites=("the lower boughs", "the silked walkways"),
-             giver="the master of the high walkways",
-             epilogue="The silk is cut away and the walkways rehung; the "
-                      "lost wardens are carried down for their rites."),
-        dict(title="Beasts Maddened by the Blight",
-             desc="Boar and bear alike gone wrong-eyed, tearing through "
-                  "the outlying groves.",
-             pool=BEAST_POOL, skins={"boar": "Blight-Boar",
-                                     "bear": "Blight-Bear"},
-             sites=("the torn grove", "the beast's harbor"),
-             giver="the grove-keeper",
-             epilogue="The groves go quiet again; the keeper plants a "
-                      "sapling for every beast that had to die."),
-        dict(title="Wardens Gone Rogue",
-             desc="A warden-band that answers to no council now, taxing "
-                  "the forest roads at arrowpoint.",
+             skins={"great spider": "Blighted Spider",
+                    "wolf": "Blighted Wolf", "dire wolf": "Blighted Dire Wolf"},
+             sites=("the outer grove", "the heart of the grove"),
+             giver="the head warden",
+             epilogue="The blight is gone. New plants grow at the edge of the "
+                      "grove."),
+        dict(title="Spiders in the Trees",
+             desc="Giant spiders have covered the tree paths in webs. Several "
+                  "wardens are missing. Clear the paths and find them.",
+             pool=SPIDER_POOL, skins={"great spider": "Giant Tree Spider"},
+             sites=("the lower branches", "the upper walkways"),
+             giver="the walkway keeper",
+             epilogue="The spiders are dead and the webs are gone. The "
+                      "missing wardens are brought home."),
+        dict(title="Blighted Beasts",
+             desc="The blight has driven the boars and bears mad. They are "
+                  "attacking the outer groves. Kill them.",
+             pool=BEAST_POOL, skins={"boar": "Blighted Boar",
+                                     "bear": "Blighted Bear"},
+             sites=("the torn grove", "the beast den"),
+             giver="the grove keeper",
+             epilogue="The beasts are dead. The groves are safe again."),
+        dict(title="Rogue Wardens",
+             desc="A group of wardens has taken over the forest road. They "
+                  "demand money from travelers. Stop them.",
              pool=ELF_LADDER_POOL,
              skins={"archer": "Rogue Warden", "cutthroat": "Rogue Scout",
-                    "soldier": "Rogue Warden", "veteran": "Warden-Captain",
-                    "champion": "Blade of the Wild",
-                    "hunter": "Rogue Huntsman"},
+                    "soldier": "Rogue Warden", "veteran": "Warden Captain",
+                    "champion": "Forest Champion",
+                    "hunter": "Rogue Hunter"},
              sites=("the forest road", "the rogue lodge"),
-             giver="the council's justiciar",
-             epilogue="The rogue lodge is unroofed and left to the moss; "
-                      "the forest roads charge no toll but weather."),
-        dict(title="The Coven in the Mists",
-             desc="Singers who left the circle and took the old songs with "
-                  "them. The mists over the hollow are not weather.",
+             giver="the council judge",
+             epilogue="The rogue wardens are defeated. The forest road is "
+                      "open again."),
+        dict(title="The Mist Coven",
+             desc="A group of mages stole forbidden songs from the circle. "
+                  "Their magic covers the valley in mist. Find them and stop "
+                  "the ritual.",
              pool=CASTER_POOL,
-             skins={"hexer": "Mist-Singer", "pyromancer": "Ember-Singer"},
-             sites=("the mist-hung hollow", "the singing stones"),
-             giver="the circle's censor",
-             epilogue="The mists lift over the hollow; the censor seals "
-                      "the stolen songs back into the circle's keeping, "
-                      "and does not say thank you."),
+             skins={"hexer": "Mist Mage", "pyromancer": "Fire Mage"},
+             sites=("the misty valley", "the stone circle"),
+             giver="the circle elder",
+             epilogue="The mages are dead. The mist fades from the valley."),
     ],
     "orc": [
-        dict(title="The Proving Hunt",
-             desc="The clan sets a beast worth a name. Bring back its hide "
-                  "and the clan pays in iron and standing.",
+        dict(title="The Great Hunt",
+             desc="The clan has chosen a dangerous beast for the hunt. Kill "
+                  "it and bring back its hide.",
              pool=BEAST_POOL + ("dire wolf",), skins={},
-             sites=("the hunting ground", "the beast's lair"),
-             giver="the clan's huntmaster",
-             epilogue="The hide hangs in the long-tent and the party's "
-                      "name is spoken at the fire -- iron and standing, "
-                      "paid in full."),
+             sites=("the hunting grounds", "the beast den"),
+             giver="the clan's lead hunter",
+             epilogue="The hide hangs in the clan hall. The clan honors the "
+                      "party."),
         dict(title="Rival Warband",
-             desc="A rival clan's raiders cut the herd trails. The warchief "
-                  "pays for them driven off or dead.",
+             desc="A rival clan is raiding the herd trails. Find their camp "
+                  "and defeat them.",
              pool=LADDER_POOL,
              skins={"cutthroat": "Orc Raider", "archer": "Orc Skirmisher",
                     "bruiser": "Orc Breaker", "soldier": "Orc Raider",
-                    "veteran": "Orc Blooded", "champion": "Orc Warchief",
-                    "blademaster": "Orc Deathblade", "warlord": "Orc Overlord"},
-             sites=("the raided trail", "the rival camp", "the war-tent"),
+                    "veteran": "Orc Veteran", "champion": "Orc Warchief",
+                    "blademaster": "Orc Swordmaster", "warlord": "Orc Overlord"},
+             sites=("the raided trail", "the rival camp", "the war camp"),
              giver="the warchief",
-             epilogue="The rival clan sends a peace-gift of salt and "
-                      "knives; the herd trails run open."),
-        dict(title="The Troll Under the Pass",
-             desc="The mountain road pays tribute in carts and drivers. "
-                  "The clans want the pass opened.",
+             epilogue="The rival warband is defeated. The herd trails are "
+                      "safe again."),
+        dict(title="Giants in the Pass",
+             desc="Giants have blocked the mountain pass. They attack carts "
+                  "and kill travelers. Find their cave and kill them.",
              pool=GIANTKIN_POOL, skins={},
              sites=("the boulder field", "the cave under the pass"),
-             giver="the toll-keeper of the pass",
-             epilogue="Carts roll the pass by the next moon; drivers "
-                      "still spit at the cave mouth for luck."),
-        dict(title="Wyvern on the Crags",
-             desc="A shadow over the herds, and herders who point at the "
-                  "high crags and will not climb.",
+             giver="the pass keeper",
+             epilogue="The giants are dead. Carts use the mountain pass again."),
+        dict(title="Dragon on the Mountain",
+             desc="A dragon hunts the clan's herds from the high peaks. Climb "
+                  "to its nest and kill it.",
              pool=DRAKE_POOL, skins={},
-             sites=("the scree slopes", "the crag eyrie"),
-             giver="the herd-elder",
-             epilogue="The herders climb again; the skull goes up on a "
-                      "spear above the trail, warning and boast at once."),
-        dict(title="The Ash-Callers' Rebellion",
-             desc="Shamans who traded the clan's fire for their own. The "
-                  "true shaman pays iron for them silenced.",
+             sites=("the mountain slopes", "the dragon's nest"),
+             giver="the clan elder",
+             epilogue="The dragon is dead. The herds return to the mountain."),
+        dict(title="Rebel Shamans",
+             desc="A group of shamans has turned against the clan. They burn "
+                  "the plains and attack the old shaman's followers. Defeat "
+                  "them.",
              pool=CASTER_POOL,
-             skins={"hexer": "Frost-Caller", "pyromancer": "Ash-Caller"},
-             sites=("the scorched steppe", "the ash-callers' circle"),
-             giver="the clan's true shaman",
-             epilogue="The circle's ashes are scattered on running water; "
-                      "the clan's fire burns in one pit again, where it "
-                      "belongs."),
+             skins={"hexer": "Ice Shaman", "pyromancer": "Fire Shaman"},
+             sites=("the burned plains", "the rebel camp"),
+             giver="the clan shaman",
+             epilogue="The rebels are defeated. Their ritual fire is put out."),
     ],
     "dwarf": [
-        dict(title="Things in the Deep Roads",
-             desc="The under-way to the second hold is silked and skittering. "
-                  "The toll-guild pays by the cleared mile.",
+        dict(title="Monsters in the Deep Road",
+             desc="Giant spiders and tunnel hounds have blocked the road to "
+                  "another dwarf city. Clear the tunnels.",
              pool=SPIDER_POOL + WOLF_POOL,
-             skins={"great spider": "Deep Creeper", "wolf": "Tunnel Hound",
+             skins={"great spider": "Tunnel Spider", "wolf": "Tunnel Hound",
                     "dire wolf": "Tunnel Stalker"},
-             sites=("the toll gate", "the deep road", "the junction vault"),
-             giver="the toll-guild's factor",
-             epilogue="The under-way reopens by the cleared mile, tolls "
-                      "half-price for a season in the party's honor."),
-        dict(title="The Flooded Hold",
-             desc="An old hold, lost and lately dry again. What was buried "
-                  "with it did not stay buried.",
+             sites=("the checkpoint", "the deep road", "the crossroads"),
+             giver="the trade guild agent",
+             epilogue="The monsters are dead. The deep road is open again."),
+        dict(title="The Lost Hold",
+             desc="An old dwarf hold has drained after years under water. "
+                  "Undead now walk its halls. Destroy them.",
              pool=UNDEAD_POOL,
-             skins={"skeleton": "Drowned Delver", "ghoul": "Pale Delver",
-                    "wight": "Hold-Lord"},
-             sites=("the cracked gate", "the drowned galleries",
-                    "the hold's heart"),
-             giver="the hold's last heir",
-             epilogue="The heir walks the dry galleries once, dry-eyed, "
-                      "and seals the hold behind -- some doors are better "
-                      "shut."),
-        dict(title="The Breaker in the Dark",
-             desc="Something big moved into the worked seams and it does "
-                  "not share. The mine masters want their tunnels back.",
+             skins={"skeleton": "Drowned Miner", "ghoul": "Pale Miner",
+                    "wight": "Dead Lord"},
+             sites=("the cracked gate", "the flooded halls",
+                    "the central hall"),
+             giver="the last heir of the hold",
+             epilogue="The undead are destroyed. The entrance to the hold is "
+                      "sealed."),
+        dict(title="Monster in the Mine",
+             desc="A giant has taken over part of the mine. Kill it and clear "
+                  "the tunnels.",
              pool=GIANTKIN_POOL, skins={"ogre": "Deep Ogre",
                                         "troll": "Stone Troll"},
-             sites=("the worked seam", "the broken gallery"),
-             giver="the mine-masters' speaker",
-             epilogue="The seams ring with picks again by week's end."),
-        dict(title="The Grudge War",
-             desc="A rival clan pressed an old grudge with new axes. The "
-                  "ledger wants balancing.",
+             sites=("the mine tunnel", "the broken chamber"),
+             giver="the mine foreman",
+             epilogue="The monster is dead. The miners return to work."),
+        dict(title="The Clan War",
+             desc="A rival dwarf clan has attacked the gate and mine. Defeat "
+                  "them and end the attack.",
              pool=DWARF_LADDER_POOL,
-             skins={"cutthroat": "Grudge-Sworn", "gunner": "Powder-Sworn",
-                    "bruiser": "Grudge-Sworn", "soldier": "Grudge-Sworn",
-                    "veteran": "Oathbreaker", "champion": "Grudge-Captain",
-                    "blademaster": "Grudge-Lord"},
-             sites=("the contested gate", "the rival delving"),
-             giver="the clan's grudge-keeper",
-             epilogue="The ledger line is struck through in both clans' "
-                      "books -- balanced, the keeper says, for a "
-                      "generation at least."),
-        dict(title="The Rune-Fire Below",
-             desc="Chanters feeding forbidden runes in a sealed gallery. "
-                  "The runesmiths want the fire out before the stone "
-                  "learns it.",
+             skins={"cutthroat": "Rival Scout", "gunner": "Rival Gunner",
+                    "bruiser": "Rival Brute", "soldier": "Rival Soldier",
+                    "veteran": "Rival Veteran", "champion": "Rival Captain",
+                    "blademaster": "Rival Swordmaster"},
+             sites=("the main gate", "the mine entrance"),
+             giver="the clan elder",
+             epilogue="The rival clan is defeated. The fighting ends."),
+        dict(title="Mages in the Mine",
+             desc="A group of mages has opened a magic fire in a sealed mine. "
+                  "Kill them and put out the fire.",
              pool=CASTER_POOL,
-             skins={"hexer": "Cold-Chanter", "pyromancer": "Rune-Burner"},
-             sites=("the sealed gallery", "the rune-fire vault"),
-             giver="the runesmiths' warden",
-             epilogue="The vault is re-sealed under three locks and a "
-                      "new rune; the warden files the party's names under "
-                      "'safe hands'."),
+             skins={"hexer": "Ice Mage", "pyromancer": "Fire Mage"},
+             sites=("the sealed mine", "the magic vault"),
+             giver="the head runesmith",
+             epilogue="The mages are dead. The vault is sealed again."),
     ],
     "goblin": [
-        dict(title="Scrap-Hounds Loose in the Works",
-             desc="The bosses' hound-pack slipped its chains and dens in "
-                  "the gearworks. Pay docked for every eaten shift-worker.",
-             pool=WOLF_POOL, skins={"wolf": "Scrap-Hound",
+        dict(title="Hounds in the Factory",
+             desc="The boss's guard dogs escaped into the factory. They are "
+                  "killing workers. Hunt them down.",
+             pool=WOLF_POOL, skins={"wolf": "Factory Hound",
                                     "dire wolf": "Boiler Hound"},
-             sites=("the scrapyard", "the gearworks floor"),
-             giver="the shift foreman",
-             epilogue="The works run a full shift without a scream; the "
-                      "foreman docks nobody, this once."),
-        dict(title="Press-Gang Trouble",
-             desc="A rival boss's press-gang is stealing crews off the "
-                  "night shift. The foreman pays for it stopped, no "
-                  "questions on the how.",
+             sites=("the scrapyard", "the factory floor"),
+             giver="the shift boss",
+             epilogue="The hounds are dead. The factory workers return to "
+                      "work."),
+        dict(title="Stolen Workers",
+             desc="A rival boss is kidnapping workers from the night shift. "
+                  "Find the gang and stop them.",
              pool=GOBLIN_LADDER_POOL,
-             skins={"cutthroat": "Press-Ganger", "slinger": "Sling-Runt",
-                    "bruiser": "Pit Boss", "soldier": "Wrench-Guard",
-                    "veteran": "Shift-Breaker", "champion": "Under-Boss",
-                    "blademaster": "Knife-King", "warlord": "The Big Boss"},
-             sites=("the night market", "the press-gang den",
+             skins={"cutthroat": "Kidnapper", "slinger": "Gang Slinger",
+                    "bruiser": "Gang Boss", "soldier": "Gang Guard",
+                    "veteran": "Gang Veteran", "champion": "Gang Captain",
+                    "blademaster": "Gang Swordmaster", "warlord": "The Big Boss"},
+             sites=("the night market", "the gang hideout",
                     "the boss's tower"),
-             giver="the night-shift foreman",
-             epilogue="The night crews walk home unescorted; the rival "
-                      "boss's tower stands quiet -- under new management "
-                      "within the week."),
-        dict(title="The Engine Gone Feral",
-             desc="They built it too big and fed it too well, and now the "
-                  "lower works belong to it.",
+             giver="the night shift boss",
+             epilogue="The gang is defeated. The workers return home safely."),
+        dict(title="The Killer Machine",
+             desc="A large machine has broken loose in the lower factory. "
+                  "Destroy it.",
              pool=GIANTKIN_POOL,
-             skins={"ogre": "Breaker-Engine", "troll": "Furnace Hulk",
-                    "giant": "The Great Machine"},
-             sites=("the lower works", "the furnace hall"),
-             giver="the works overseer",
-             epilogue="The lower works are re-lit gallery by gallery; the "
-                      "bosses are already arguing about building it "
-                      "again, bigger."),
-        dict(title="Spiders in the Undercity",
-             desc="The vent shafts are webbed shut and the air below is "
-                  "going bad. Small pay, small heroes welcome.",
-             pool=SPIDER_POOL, skins={"great spider": "Vent Crawler"},
-             sites=("the vent shafts", "the web-choked cistern"),
-             giver="the vent-warden",
-             epilogue="Air moves in the undercity again; small pay, but "
-                      "the vent-warden's word is now good in every "
-                      "burrow."),
-        dict(title="The Boiler-Cult",
-             desc="A cult that worships the works' oldest boiler and "
-                  "feeds it what it asks for. It has started asking for "
-                  "shift-workers.",
+             skins={"ogre": "Crusher Machine", "troll": "Furnace Machine",
+                    "giant": "Great Machine"},
+             sites=("the lower factory", "the furnace hall"),
+             giver="the factory boss",
+             epilogue="The machine is destroyed. The lower factory opens "
+                      "again."),
+        dict(title="Spiders Below",
+             desc="Giant spiders have blocked the air shafts. Clear their "
+                  "webs before the lower city runs out of air.",
+             pool=SPIDER_POOL, skins={"great spider": "Giant Cave Spider"},
+             sites=("the air shafts", "the old cistern"),
+             giver="the air keeper",
+             epilogue="The spiders are dead. Air flows into the lower city "
+                      "again."),
+        dict(title="The Boiler Cult",
+             desc="A cult feeds workers to an old boiler. Enter their shrine "
+                  "and kill them.",
              pool=CASTER_POOL,
-             skins={"hexer": "Frost-Tinker", "pyromancer": "Boiler-Mage"},
-             sites=("the cult's stacks", "the overheated shrine"),
-             giver="the works inspector",
-             epilogue="The old boiler is decommissioned with full "
-                      "honors and sold for scrap; the inspector stamps "
-                      "the paperwork DONE with visible pleasure."),
+             skins={"hexer": "Ice Tinker", "pyromancer": "Fire Tinker"},
+             sites=("the boiler room", "the boiler shrine"),
+             giver="the factory inspector",
+             epilogue="The cult is gone. The old boiler is shut down."),
     ],
 }
 
 # Race-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
 EPIC_TEMPLATES: list[dict] = [
-    dict(title="The Dragon's Tithe",
-         desc="A whole valley pays it tribute and calls that peace. The "
-              "crown calls it rebellion with wings.",
+    dict(title="The Dragon's Tribute",
+         desc="A dragon takes food and gold from an entire valley. Kill it "
+              "and end the tribute.",
          pool=DRAKE_POOL, skins={},
-         sites=("the burned tithe-barns", "the mountain approach",
-                "the hoard-cave"),
-         giver="the crown's marshal",
-         epilogue="The valley keeps its harvest for the first year in "
-                  "living memory; the tithe-barns are rebuilt as "
-                  "granaries."),
-    dict(title="The Giant of the Border Marches",
-         desc="Border forts flattened, garrisons walking home weaponless. "
-              "The marshal wants the marches quiet again.",
+         sites=("the burned storehouses", "the mountain path",
+                "the dragon's cave"),
+         giver="the king's general",
+         epilogue="The dragon is dead. The valley keeps its harvest."),
+    dict(title="The Giant at the Border",
+         desc="A giant has destroyed several border forts. Track it to its "
+              "stronghold and kill it.",
          pool=GIANTKIN_POOL, skins={},
-         sites=("the flattened fort", "the march camps", "the high steading"),
-         giver="the march-warden",
-         epilogue="The forts are re-garrisoned; the marches go quiet, "
-                  "and stay so."),
-    dict(title="The Renegade Magus",
-         desc="A court wizard who stopped asking leave. The crown pays "
-              "for the tower dark and the fires out.",
+         sites=("the ruined fort", "the border camp", "the giant's hall"),
+         giver="the border commander",
+         epilogue="The giant is dead. Soldiers return to the border forts."),
+    dict(title="The Renegade Wizard",
+         desc="A royal wizard has rebelled and taken control of a tower. Kill "
+              "the wizard and stop the fires.",
          pool=MAGUS_POOL, skins={},
-         sites=("the scorched approach", "the tower of the magus"),
-         giver="the crown's own sage",
-         epilogue="The tower stands dark and cold; the crown's sage "
-                  "carries the renegade's books away under seal."),
+         sites=("the burned road", "the wizard's tower"),
+         giver="the king's wizard",
+         epilogue="The renegade wizard is dead. The tower goes dark."),
 ]
 
 # Villages post the same race tables, just fewer and lower-leveled: samey on
@@ -545,45 +518,39 @@ DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
 DARK_GOLD_MULT = 1.5
 
 DELIVERY_TEMPLATES: list[dict] = [
-    dict(title="The Sealed Dispatch", cargo="a sealed dispatch",
-         desc="Court business under wax, and a rider who never arrived. "
-              "Someone would rather it never does.",
-         giver="the courier-master", recipient="the resident envoy",
-         epilogue="The seal is broken behind a shut door; whatever it "
-                  "says, couriers ride the same road twice as guarded "
-                  "within the week."),
-    dict(title="A Coffer Under Seal", cargo="a locked coffer",
-         desc="A counting-house settles a debt abroad. The coffer is "
-              "heavy, the road long, and the ledger says nothing else.",
-         giver="the counting-house factor", recipient="the receiving factor",
-         epilogue="The coffer's weight is counted twice and found true; "
-                  "the party's name goes in the ledger under 'reliable'."),
-    dict(title="Medicine for the Outbreak", cargo="a crate of medicine",
-         desc="A sickness across the border, and the cure sitting here in "
-              "a stockroom. Every day on the road is counted in graves.",
-         giver="the settlement's healer", recipient="the plague-warden",
-         epilogue="The crate is empty within two days and the burial "
-                  "details stand down; the warden keeps the party's "
-                  "names for the record of the outbreak."),
-    dict(title="The Master-Smith's Commission", cargo="a wrapped blade",
-         desc="A commissioned piece, finished at last, and a patron in "
-              "another land who paid in advance and waits badly.",
-         giver="the master smith", recipient="the commissioning patron",
-         epilogue="The wrapping comes off to a long silence, which from "
-                  "this patron is the highest praise on record."),
-    dict(title="Ashes Going Home", cargo="a sealed urn",
-         desc="One of theirs died far from home. The family wants the "
-              "ashes carried the whole way, and carried right.",
-         giver="the bereaved family's elder", recipient="the family's kin",
-         epilogue="The urn goes into the ground beside its people; the "
-                  "kin set a place at the table for the party that night."),
-    dict(title="The Prisoner's Ransom", cargo="a strongbox of ransom gold",
-         desc="A magistrate buys a hostage back from across the border. "
-              "The gold must arrive uncounted and unopened.",
-         giver="the magistrate", recipient="the ransom-broker",
-         epilogue="The hostage walks free at the next new moon; the "
-                  "broker, professionally offended by honesty, pays out "
-                  "to the coin."),
+    dict(title="The Secret Message", cargo="a sealed letter",
+         desc="A royal messenger never reached the next kingdom. Carry the "
+              "sealed letter to the envoy. Enemies may try to take it.",
+         giver="the head courier", recipient="the royal envoy",
+         epilogue="The envoy reads the letter. More guards are sent to the "
+                  "road."),
+    dict(title="The Locked Chest", cargo="a locked chest",
+         desc="A merchant guild must send payment to another city. Deliver "
+              "the locked chest unopened.",
+         giver="the guild agent", recipient="the merchant agent",
+         epilogue="The chest arrives unopened. The guild records the party as "
+                  "reliable."),
+    dict(title="Medicine Delivery", cargo="a crate of medicine",
+         desc="A plague has struck a city across the border. Deliver this "
+              "medicine as quickly as possible.",
+         giver="the town healer", recipient="the city healer",
+         epilogue="The medicine reaches the sick. The number of deaths begins "
+                  "to fall."),
+    dict(title="The Smith's Delivery", cargo="a wrapped blade",
+         desc="A smith has finished a sword for a buyer in another land. "
+              "Deliver it safely.",
+         giver="the master smith", recipient="the buyer",
+         epilogue="The buyer accepts the sword. The job is complete."),
+    dict(title="Return the Ashes", cargo="a sealed urn",
+         desc="A traveler died far from home. Carry the ashes back to the "
+              "family.",
+         giver="the traveler's friend", recipient="the family",
+         epilogue="The family buries the ashes. They thank the party."),
+    dict(title="The Ransom Payment", cargo="a strongbox of ransom gold",
+         desc="A town is paying to free a hostage across the border. Deliver "
+              "the gold unopened.",
+         giver="the town mayor", recipient="the kidnapper's agent",
+         epilogue="The gold is delivered. The hostage is released."),
 ]
 
 RACES = tuple(TEMPLATES)

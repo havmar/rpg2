@@ -64,290 +64,214 @@ AGGRESSORS = ("elf", "goblin", "human", "orc")
 
 CONQUESTS: dict[str, dict] = {
     "elf": dict(
-        banner="the Radiant Ascendancy",
-        creed="the elves have decided that perfection obliges: the lesser "
-              "peoples are to be governed, improved, and grateful. Their "
-              "machines are beautiful, efficient, and already moving.",
-        conqueror_title="Radiant Marshal",
-        lieutenant_titles=("Artificer-General", "Prefect of the Vanguard"),
+        banner="the Golden Empire",
+        creed="The elf empire believes other peoples are weak and must be "
+              "ruled. Its army of magic machines is crossing the border.",
+        conqueror_title="High General",
+        lieutenant_titles=("Chief Engineer", "Army Captain"),
         pool=LADDER_POOL + ("ogre", "troll"),
-        skins={"cutthroat": "Gilded Blade", "archer": "Aether-Rifleman",
-               "bruiser": "Steam Knight", "soldier": "Legion Automaton",
-               "veteran": "Vanguard Automaton", "champion": "War-Artificer",
-               "blademaster": "Blade-Perfect", "warlord": "Radiant Marshal",
-               "ogre": "Colossus Engine", "troll": "Siege Colossus"},
+        skins={"cutthroat": "Golden Scout", "archer": "Magic Rifleman",
+               "bruiser": "Steam Knight", "soldier": "War Machine",
+               "veteran": "Heavy War Machine", "champion": "Battle Mage",
+               "blademaster": "Master Swordsman", "warlord": "High General",
+               "ogre": "Giant War Machine", "troll": "Siege Machine"},
         waves=(
-            dict(title="Beautiful Machines at the Border",
-                 desc="Surveyors in gilded coats mark farms they do not "
-                      "own in the {land} borderlands; the machines that "
-                      "follow them do not ask twice.",
-                 herald="a mud-splashed rider from the {land} border: "
-                        "gilded machines are pacing the frontier, and "
-                        "where they stop, fences move.",
-                 sites=("the surveyors' camp", "the marked farms"),
-                 epilogue="The surveyors withdraw with perfect courtesy, "
-                          "leaving pegs, a burned camp, and a promise: "
-                          "this was a measurement, not a defeat."),
-            dict(title="The Line Must Hold",
-                 desc="The Ascendancy has stopped measuring the {land} "
-                      "lands and started collecting them. {lt1} builds a "
-                      "beachhead foundry; every day it stands, the line "
-                      "of beautiful soldiers grows.",
-                 herald="the war is open: Ascendancy columns are in the "
-                        "{land} lands and a foundry is going up on the "
-                        "coast road.",
-                 sites=("the shattered watchtower", "the aqueduct works",
-                        "the beachhead foundry"),
-                 epilogue="The foundry burns for three days in perfect "
-                          "silence. The {land} lands hold, and the "
-                          "Ascendancy files the loss as an arithmetic "
-                          "error to be corrected."),
-            dict(title="The Fall of the {land_cap} Lands",
-                 desc="{lt2} brings the main works against the {land} "
-                      "lands: siege colossi, lens-fire, and no terms. The "
-                      "walls will not hold -- what can still be won is "
-                      "the road out.",
-                 herald="black smoke over the {land} lands: the "
-                        "Ascendancy's main works have arrived, and this "
-                        "time the numbers say the walls fail.",
-                 sites=("the burning outworks", "the last gate",
+            dict(title="Machines at the Border",
+                 desc="Elf scouts are marking farms along the {land} border. "
+                      "War machines follow them and drive the farmers out.",
+                 herald="a rider from the {land} border: elf scouts and war "
+                        "machines have crossed the border.",
+                 sites=("the scout camp", "the occupied farms"),
+                 epilogue="The scouts and machines are destroyed. The elves "
+                          "pull back from the border."),
+            dict(title="The Elf Invasion",
+                 desc="The Golden Empire has invaded the {land} lands. {lt1} "
+                      "is building a factory that makes new war machines. "
+                      "Destroy it.",
+                 herald="the Golden Empire has invaded the {land} lands. A "
+                        "war factory is being built near the main road.",
+                 sites=("the ruined watchtower", "the river works",
+                        "the war factory"),
+                 epilogue="The factory is destroyed. The {land} lands stop "
+                          "the invasion."),
+            dict(title="Evacuate the {land_cap} Lands",
+                 desc="{lt2} leads the main army into the {land} lands. The "
+                      "walls will fall. Keep the escape road open.",
+                 herald="the main elf army has reached the {land} lands. The "
+                        "city must be evacuated.",
+                 sites=("the burning defenses", "the last gate",
                         "the evacuation road"),
-                 epilogue="The {land} lands fall behind the party -- silk "
-                          "banners over machine-cut stone. The road out "
-                          "stayed open one day longer than the enemy "
-                          "planned, and every cart on it is someone the "
-                          "party saved."),
-            dict(title="The Radiant Court",
-                 desc="{conqueror} holds court in the great works: the "
-                      "war's whole beautiful machine, and the one elf it "
-                      "cannot run without. Cut the head off.",
-                 herald="the allied crowns have found the Radiant "
-                        "Marshal's court -- and will pay whoever walks in "
-                        "and ends this.",
-                 sites=("the lens-field perimeter", "the great works",
-                        "the marshal's court"),
-                 epilogue="The great works fall silent mid-shift. The "
-                          "Ascendancy sues for peace in flawless "
-                          "calligraphy; nobody who signs believes them, "
-                          "but the armies go home, and the fallen lands "
-                          "breathe again."),
+                 epilogue="The {land} lands fall to the empire. The party "
+                          "keeps the road open and many people escape."),
+            dict(title="Kill the High General",
+                 desc="{conqueror} commands the war from the main factory. "
+                      "Kill the general and stop the army.",
+                 herald="the allied kingdoms have found the High General's "
+                        "base. They will pay the party to destroy it.",
+                 sites=("the outer defenses", "the main factory",
+                        "the general's hall"),
+                 epilogue="The main factory stops. The empire asks for peace, "
+                          "and its armies leave the conquered lands."),
         ),
     ),
     "goblin": dict(
         banner="the Thousand Workshops",
-        creed="the goblin overbosses have merged into one roaring "
-              "concern: why should the world stay as built when it could "
-              "be EXPERIMENTED on? Their soldiers are riveted, vat-grown, "
-              "or ticking.",
-        conqueror_title="Grand Tinkerer",
-        lieutenant_titles=("Bomb-Marshal", "Chief Fleshwright"),
+        creed="The goblin bosses have united. They plan to rebuild the world "
+              "with bombs, machines, and monsters.",
+        conqueror_title="Master Tinkerer",
+        lieutenant_titles=("Bomb General", "Beast Maker"),
         pool=LADDER_POOL + WOLF_POOL + ("ogre", "troll"),
-        skins={"wolf": "Vat-Hound", "dire wolf": "Vat-Alpha",
-               "cutthroat": "Bomb-Lobber", "archer": "Rivet-Gunner",
-               "bruiser": "Scrap-Golem", "soldier": "Tin Legionnaire",
-               "veteran": "Tin Sergeant", "champion": "War-Tinker",
-               "blademaster": "Buzzblade Duelist", "warlord": "Grand Tinkerer",
-               "ogre": "Walking Bomb", "troll": "Flesh-Forge Hulk"},
+        skins={"wolf": "Mutant Hound", "dire wolf": "Mutant Dire Hound",
+               "cutthroat": "Goblin Bomber", "archer": "Scrap Gunner",
+               "bruiser": "Scrap-Golem", "soldier": "Tin Soldier",
+               "veteran": "Tin Sergeant", "champion": "War Tinkerer",
+               "blademaster": "Sawblade Duelist", "warlord": "Master Tinkerer",
+               "ogre": "Walking Bomb", "troll": "Mutant Hulk"},
         waves=(
-            dict(title="Strange Salvage",
-                 desc="Livestock, fence-iron, and one census-taker have "
-                      "gone missing along the {land} border. What the "
-                      "trackers found was half animal, half machine, and "
-                      "all appetite.",
-                 herald="word from the {land} border: something is "
-                        "stealing iron and eating witnesses, and it "
-                        "ticks.",
-                 sites=("the picked-clean farmstead", "the salvage burrow"),
-                 epilogue="The burrow is collapsed onto its own bomb "
-                          "stores; the crater smokes for a week and the "
-                          "livestock stop vanishing."),
-            dict(title="The Sky Rains Scrap",
-                 desc="The Thousand Workshops have declared the {land} "
-                      "lands a 'test range'. {lt1}'s bombing line creeps "
-                      "toward the walls while a tunneling engine chews in "
-                      "from below.",
-                 herald="the {land} lands are under open attack: bombs "
-                        "by day, and the ground itself humming by night.",
-                 sites=("the crash site", "the bombing line",
-                        "the tunneling engine"),
-                 epilogue="The tunneling engine dies with a cough that "
-                          "registers three lands away. The {land} lands "
-                          "hold; scrap-pickers will be rich for a "
-                          "generation."),
-            dict(title="The Fall of the {land_cap} Lands",
-                 desc="{lt2} unveils the war's masterpiece against the "
-                      "{land} lands: gas, hulks, and things with too many "
-                      "sets of teeth. The walls are already lost -- hold "
-                      "the road out instead.",
-                 herald="the {land} lands are choking: the Fleshwright's "
-                        "host is at the walls and the engineers give the "
-                        "gates two days.",
-                 sites=("the gas-choked walls", "the breach",
+            dict(title="Stolen Parts",
+                 desc="Animals, tools, and people are disappearing along the "
+                      "{land} border. Goblins are using them to build new "
+                      "monsters.",
+                 herald="a guard from the {land} border: goblins are stealing "
+                        "animals, tools, and people.",
+                 sites=("the stripped farm", "the goblin workshop"),
+                 epilogue="The workshop is destroyed. The thefts stop."),
+            dict(title="Bombs and Tunnels",
+                 desc="The Thousand Workshops have invaded the {land} lands. "
+                      "{lt1} bombs the defenses while a machine digs under "
+                      "the walls. Destroy both.",
+                 herald="the {land} lands are under attack. Goblins bomb the "
+                        "walls while a machine digs below them.",
+                 sites=("the bombed camp", "the bomb line",
+                        "the digging machine"),
+                 epilogue="The digging machine and bomb line are destroyed. "
+                          "The {land} lands hold."),
+            dict(title="Evacuate the {land_cap} Lands",
+                 desc="{lt2} attacks the {land} lands with poison gas and "
+                      "mutant soldiers. The walls are lost. Keep the escape "
+                      "road open.",
+                 herald="the goblin army has broken the walls of the {land} "
+                        "lands. The city must be evacuated.",
+                 sites=("the poisoned walls", "the breach",
                         "the evacuation road"),
-                 epilogue="The {land} lands fall under a sky the color "
-                          "of engine oil. The party's rearguard held the "
-                          "road while it emptied -- the Workshops got the "
-                          "walls, not the people."),
-            dict(title="The Grand Workshop",
-                 desc="Every wire in the war runs back to {conqueror}'s "
-                      "dome. The Workshops cannot agree on anything "
-                      "without the Tinkerer -- so make them try.",
-                 herald="deserters sell the secret cheap: the Grand "
-                        "Tinkerer's dome stands past the minefields, and "
-                        "the whole war is wired to it.",
-                 sites=("the minefields", "the assembly floor",
-                        "the Tinkerer's dome"),
-                 epilogue="The dome comes down. Without the Grand "
-                          "Tinkerer the Thousand Workshops turn on each "
-                          "other by nightfall; the war ends as a thousand "
-                          "small explosions, none of them aimed, and the "
-                          "fallen lands are freed."),
+                 epilogue="The {land} lands fall to the Workshops. The party "
+                          "holds the road while the people escape."),
+            dict(title="Destroy the Main Workshop",
+                 desc="All goblin armies take orders from {conqueror}'s main "
+                      "workshop. Kill the Tinkerer and destroy it.",
+                 herald="deserters have found the Master Tinkerer's workshop. "
+                        "Destroy it to end the war.",
+                 sites=("the minefields", "the main workshop",
+                        "the Tinkerer's room"),
+                 epilogue="The Tinkerer is dead. The Workshops fight each "
+                          "other, and the war ends."),
         ),
     ),
     "human": dict(
-        banner="the Deathless Crown",
-        creed="a human king has sold his crown to a hungry god: service "
-              "no longer ends at death, the graves are a recruiting "
-              "ground, and order eternal marches on its neighbors.",
-        conqueror_title="Deathless King",
-        lieutenant_titles=("Gravemarshal", "Bone Chancellor"),
+        banner="the Undead Kingdom",
+        creed="A human king serves a dark god. His army raises the dead and "
+              "sends them to conquer nearby lands.",
+        conqueror_title="Undead King",
+        lieutenant_titles=("Grave General", "Bone Priest"),
         pool=UNDEAD_POOL + LADDER_POOL,
-        skins={"skeleton": "Deathless Conscript", "ghoul": "Grave-Sworn",
-               "wight": "Deathless Knight", "cutthroat": "Cult Knife",
-               "archer": "Cult Archer", "bruiser": "Cult Enforcer",
-               "soldier": "Cult Legionary", "veteran": "Cult Captain",
-               "champion": "Deathless Paladin",
-               "blademaster": "Sword of the Crown",
-               "warlord": "Deathless King"},
+        skins={"skeleton": "Undead Soldier", "ghoul": "Ghoul Soldier",
+               "wight": "Undead Knight", "cutthroat": "Cult Assassin",
+               "archer": "Cult Archer", "bruiser": "Cult Guard",
+               "soldier": "Cult Soldier", "veteran": "Cult Captain",
+               "champion": "Undead Champion",
+               "blademaster": "Royal Swordmaster",
+               "warlord": "Undead King"},
         waves=(
-            dict(title="Empty Graves on the Border",
-                 desc="Churchyards along the {land} border are being "
-                      "emptied by night, and a chapel nobody built is "
-                      "burning candles that do not gutter.",
-                 herald="a shaken priest from the {land} border: the "
-                        "graves are empty, and the missing dead were seen "
-                        "WALKING, in step.",
-                 sites=("the robbed churchyard", "the cult chapel"),
-                 epilogue="The chapel's censers are smashed and the "
-                          "graves re-filled, this time with rites said "
-                          "over them. For now, the border's dead stay "
-                          "down."),
-            dict(title="The Marching Dead",
-                 desc="The Deathless Crown crosses into the {land} lands "
-                      "behind {lt1}: a host that does not eat, sleep, or "
-                      "break. Its heart is a black reliquary that must "
-                      "not reach the walls.",
-                 herald="the {land} lands are invaded: a column that "
-                        "marches through the night, every night, and "
-                        "grows at each churchyard it passes.",
-                 sites=("the ford of the dead", "the siege lines",
-                        "the black reliquary"),
-                 epilogue="The reliquary cracks and the host falls where "
-                          "it stands, rank by rank, like a held breath "
-                          "let out. The {land} lands hold; the crows do "
-                          "not starve."),
-            dict(title="The Fall of the {land_cap} Lands",
-                 desc="{lt2} brings the full muster against the {land} "
-                      "lands -- and every defender who falls stands back "
-                      "up on the wrong side. The walls cannot win that "
-                      "arithmetic. The road out still can.",
-                 herald="the worst kind of word from the {land} lands: "
-                        "the dead outside the walls now outnumber the "
-                        "living inside, and the count only moves one "
-                        "way.",
-                 sites=("the plague-lit outskirts", "the last gate",
+            dict(title="The Dead Rise",
+                 desc="Cultists are stealing bodies from graveyards along the "
+                      "{land} border. They are raising the dead in a hidden "
+                      "chapel.",
+                 herald="a priest from the {land} border: the graves are "
+                        "empty, and the dead are walking.",
+                 sites=("the empty graveyard", "the hidden chapel"),
+                 epilogue="The cultists are dead and the chapel is destroyed. "
+                          "The stolen bodies are buried again."),
+            dict(title="The Army of the Dead",
+                 desc="The undead army has entered the {land} lands. A black "
+                      "relic controls it. Destroy the relic before the army "
+                      "reaches the city.",
+                 herald="the undead army has invaded the {land} lands. It "
+                        "marches through the night and grows at every "
+                        "graveyard.",
+                 sites=("the bridge of the dead", "the undead camp",
+                        "the black relic"),
+                 epilogue="The relic is destroyed. The undead army falls, and "
+                          "the {land} lands hold."),
+            dict(title="Evacuate the {land_cap} Lands",
+                 desc="{lt2} leads the full undead army into the {land} "
+                      "lands. Fallen defenders rise and join the enemy. Keep "
+                      "the escape road open.",
+                 herald="the undead have broken the defenses of the {land} "
+                        "lands. The city must be evacuated.",
+                 sites=("the ruined outskirts", "the last gate",
                         "the evacuation road"),
-                 epilogue="The {land} lands fall to a host that does not "
-                          "sleep. Those on the evacuation road live to "
-                          "hate the crown another day -- and they know "
-                          "exactly whose blades bought them the road."),
-            dict(title="The Deathless Court",
-                 desc="{conqueror} sits a cathedral of bone at the heart "
-                      "of the war, the god's grip on three lands running "
-                      "through one dead king's hands. Unclench them.",
-                 herald="the free crowns have one hope left and it is "
-                        "blunt: kill the Deathless King on his own "
-                        "throne, and the god behind him starves.",
-                 sites=("the silent approach", "the cathedral of bone",
-                        "the throne of the Deathless King"),
-                 epilogue="The Deathless King is cut from his throne and "
-                          "the god behind him starves. At the same hour, "
-                          "in three lands, every conscripted corpse lies "
-                          "down -- and this time stays down."),
+                 epilogue="The {land} lands fall to the undead. The party "
+                          "holds the road while the people escape."),
+            dict(title="Kill the Undead King",
+                 desc="{conqueror} controls the undead army from his throne. "
+                      "Kill the king and break the dark god's power.",
+                 herald="the allied kingdoms know where the Undead King is. "
+                        "Kill him to stop the army.",
+                 sites=("the road to the castle", "the bone temple",
+                        "the throne room"),
+                 epilogue="The Undead King is dead. His army falls, and the "
+                          "conquered lands are free."),
         ),
     ),
     "orc": dict(
-        banner="the Iron Sky Horde",
-        creed="a khagan has united the orc clans under one law: might is "
-              "right, war is glory, and everything under the iron sky is "
-              "theirs to take.",
-        conqueror_title="Khagan",
-        lieutenant_titles=("First Spear", "Wolf-Keeper"),
+        banner="the Iron Horde",
+        creed="An orc warlord has united the clans. He plans to conquer every "
+              "land his army can reach.",
+        conqueror_title="Warlord",
+        lieutenant_titles=("War Chief", "Wolf Master"),
         pool=LADDER_POOL + WOLF_POOL,
-        skins={"wolf": "War-Wolf", "dire wolf": "War-Wolf Alpha",
-               "cutthroat": "Horde Raider", "archer": "Horde Skirmisher",
-               "bruiser": "Horde Breaker", "soldier": "Horde Sworn",
-               "veteran": "Blooded of the Horde",
-               "champion": "Clan-Champion",
-               "blademaster": "Deathblade of the Khagan",
-               "warlord": "Khagan"},
+        skins={"wolf": "War Wolf", "dire wolf": "Dire War Wolf",
+               "cutthroat": "Horde Raider", "archer": "Horde Archer",
+               "bruiser": "Horde Brute", "soldier": "Horde Warrior",
+               "veteran": "Horde Veteran",
+               "champion": "Horde Champion",
+               "blademaster": "Horde Swordmaster",
+               "warlord": "Orc Warlord"},
         waves=(
-            dict(title="Outriders",
-                 desc="Waystations along the {land} border are burning, "
-                      "one a night, each with a wolf-tail standard left "
-                      "in the ashes. The horde is counting the roads in.",
-                 herald="riders from the {land} border: waystations "
-                        "burn, and the raiders are not raiding -- they "
-                        "are MAPPING.",
-                 sites=("the burned waystation", "the outriders' camp"),
-                 epilogue="The outriders' standard is cast down and sent "
-                          "back to the steppes. The clans read it as an "
-                          "omen worth arguing about; the border buys a "
-                          "season."),
-            dict(title="The Horde at the Gates",
-                 desc="The Iron Sky Horde is in the {land} lands in "
-                      "force, {lt1} at its point. The siege camp grows "
-                      "daily; the breach is a matter of time unless "
-                      "someone makes it a matter of blood.",
-                 herald="the horde has come down on the {land} lands "
-                        "entire -- herds taken, walls invested, and the "
-                        "First Spear's drums heard through the ground.",
-                 sites=("the herd trails", "the siege camp",
-                        "the breach in the wall"),
-                 epilogue="The siege breaks and the horde pulls back to "
-                          "argue about whose fault it was. The {land} "
-                          "lands hold, and the wall's new stones are "
-                          "mortared with boasting."),
-            dict(title="The Fall of the {land_cap} Lands",
-                 desc="The Khagan turns the whole horde on the {land} "
-                      "lands, {lt2}'s war-wolves running ahead of it. "
-                      "The walls will break -- the fight now is for the "
-                      "road out and everyone on it.",
-                 herald="the ground itself carries it: the whole horde "
-                        "moves on the {land} lands, and no wall built "
-                        "by hands is rated for that.",
-                 sites=("the trampled fields", "the last gate",
+            dict(title="Orc Scouts",
+                 desc="Orc raiders are burning guard posts along the {land} "
+                      "border. They are mapping the roads for an invasion.",
+                 herald="a guard from the {land} border: orc raiders are "
+                        "burning guard posts and mapping the roads.",
+                 sites=("the burned guard post", "the orc camp"),
+                 epilogue="The raiders are dead. The invasion is delayed."),
+            dict(title="The Horde Invasion",
+                 desc="The Iron Horde has invaded the {land} lands. {lt1} "
+                      "leads the siege. Break the camp and stop the attack.",
+                 herald="the Iron Horde has invaded the {land} lands. The War "
+                        "Chief is attacking the main city.",
+                 sites=("the occupied farms", "the siege camp",
+                        "the broken wall"),
+                 epilogue="The siege is broken. The horde leaves the {land} "
+                          "lands."),
+            dict(title="Evacuate the {land_cap} Lands",
+                 desc="The Warlord sends the whole horde into the {land} "
+                      "lands. The walls will fall. Keep the escape road open.",
+                 herald="the whole horde is attacking the {land} lands. The "
+                        "city must be evacuated.",
+                 sites=("the ruined farms", "the last gate",
                         "the evacuation road"),
-                 epilogue="The {land} lands fall to the horde. The "
-                          "party's stand on the road is already a song "
-                          "-- an orc song, which is its own kind of "
-                          "respect."),
-            dict(title="The Khagan's Tent",
-                 desc="{conqueror} rules the war from the great "
-                      "war-tent, by the old law: the horde follows the "
-                      "mightiest. The law cuts both ways -- walk in and "
-                      "prove otherwise.",
-                 herald="the clans' own law is the opening: whoever "
-                        "kills the Khagan in his own circle breaks the "
-                        "horde -- and the free lands will pay to see it "
-                        "tried.",
-                 sites=("the picket lines", "the champions' circle",
-                        "the war-tent"),
-                 epilogue="The Khagan dies in his own circle, by his own "
-                          "law: might made right, and today the party "
-                          "was right. The clans scatter to fight each "
-                          "other -- which is peace, as the steppes count "
-                          "it -- and the fallen lands are freed."),
+                 epilogue="The {land} lands fall to the horde. The party "
+                          "holds the road while the people escape."),
+            dict(title="Kill the Warlord",
+                 desc="{conqueror} commands the horde from a guarded war "
+                      "camp. Kill him and break the invasion.",
+                 herald="the allied kingdoms have found the Warlord's camp. "
+                        "Kill him to end the war.",
+                 sites=("the outer camp", "the champion's ring",
+                        "the warlord's tent"),
+                 epilogue="The Warlord is dead. The clans turn on each other, "
+                          "and the conquered lands are free."),
         ),
     ),
 }
