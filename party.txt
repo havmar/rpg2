@@ -1,0 +1,43 @@
+RPG2 PARTY SHEET -- day 4, at Ironfang
+  (orc lands, settlement)
+purse: 95g | short rests left today: 0
+party: 1/3 companion slot(s) filled (CHA
+  6)
+
+(YOU)       Laucian (L3, training 1):
+  DEX 4  STR 6  MIND 6  STA 0/6  HP 0/9
+  Power 4/4  CHA 6  (moves: thrust;
+  spear; no kit) [DOWN]
+            Laucian -- elf m, age 17;
+              weakness: needs meds;
+              voice: whispering; dress:
+              colorful
+            XP 100/300 to L4 | skill
+              points: 3 | pools bought:
+              sta +1
+
+(companion) Berrick (L3, training 1):
+  DEX 3  STR 5  MIND 4  STA 4/9  HP 8/12
+  Power 2/5  CHA 4  (first_blood; moves:
+  pommel; morningstar; healingx2)
+  [satisfaction 10/10]
+            Berrick -- human m, age 21;
+              quirk: has an enemy
+              (Kansif, a orc mercenary
+              captain, level 3, out
+              there somewhere); voice:
+              whispering; dress: elegant
+            XP 100/300 to L4 | skill
+              points: 0 | pools bought:
+              hp +1, power +1, sta +1 |
+              abilities: first_blood
+
+active quest [q46] Kansif's Company is
+  COMPLETE
+momentum: 2 encounter(s) at q46/s1 since
+  the last camp
+THE PACT: assignment [q45] Collect the
+  Debt at Dawnreach (grace runs to day
+  6).
+THE WAR: [w1] L2 Stolen Parts -- raised
+  at Ironfang.
