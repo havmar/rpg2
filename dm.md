@@ -26,10 +26,21 @@ play.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
   commit it and the playthrough travels with the repo. Every save also
-  rewrites **`party.txt`** (the full party info sheet); **end EVERY DM
-  message with `python session.py sheet`**, which commits that one file --
-  one commit per message, the designer follows the playthrough as
-  message-sized diffs. Unchanged sheets are a no-op; run it anyway.
+  rewrites the two **UI pages** in **`ui/`**: **`ui/party.txt`** (the full
+  party info sheet) and **`ui/map.txt`** (the world map -- lands, their
+  settlements, discovered wild places, and the sites of every quest in
+  hand). **End EVERY DM message with `python session.py sheet`**, which
+  commits those two files -- one commit per message, so the player follows
+  the playthrough as message-sized diffs. Unchanged sheets are a no-op; run
+  it anyway.
+- **GitHub IS the player's UI.** The two pages are committed to the branch,
+  so the player can read them as blob links. After the `sheet` at the end
+  of a message, drop the two links (swap in the current branch name):
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` and
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt`. The player
+  keeps them open on a phone and refreshes -- the party sheet is the
+  between-fights board, the map is where they are and where their taken
+  jobs lead.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between

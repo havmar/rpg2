@@ -5,7 +5,10 @@ __pycache__/
 scratch/
 
 # Per-playthrough runtime state (not source)
-party.txt
+# NOTE: the ui/ display files (ui/party.txt, ui/map.txt) are NOT ignored --
+# they are the game's GitHub UI, committed by `sheet` so the player reads
+# the playthrough as blob pages on the branch (see dm.md). save.json stays
+# runtime-only (committable by hand, but not auto-committed).
 save.json
 
 # The full combat debug logs workfile (see session.print_combat)
