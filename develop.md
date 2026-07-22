@@ -6,10 +6,10 @@ numbers. `AGENTS.md` is only the auto-loaded dispatcher (Claude Code imports
 it through `CLAUDE.md`); THIS file is the real development entry point —
 read it before changing the game.
 
-> **PLAYING, NOT DEVELOPING? Read `dm.md` instead** — it is the entire
-> instruction set for running a game, narration style included. Nothing in
-> this file (especially the be-thorough dev-communication register) applies
-> at the table.
+> **PLAYING, NOT DEVELOPING? Read `dm.md` and `writing.md` instead** — they
+> are the entire instruction set for running a game. Nothing in this file
+> (especially the be-thorough dev-communication register) applies at the
+> table.
 
 ## The feel we're going for
 
@@ -26,8 +26,8 @@ agent RUNNING the game — subsystems it calls on purpose, content
 generated where needed, coherence kept by the agent, no central game
 loop required (which the "How play is driven" model below already
 embodies). Script-generated logs and menus become the primary chat
-display; plan.md's THE RETRO PIVOT section is the roadmap, dm.md's
-Narration style opens with the register.
+display; plan.md's THE RETRO PIVOT section is the roadmap, `writing.md`
+owns the fiction register, and dm.md applies it at the table.
 
 **How play is driven:** the game is *two halves working together*.
 - **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
@@ -73,6 +73,11 @@ his own design back to him.
   and after, what was tried and rejected. Conciseness is a virtue of DM
   *narration*, not of dev reports — an over-terse summary that forces the
   designer to ask follow-ups costs more than a long one.
+- **Fiction written during development uses `writing.md`.** Quest templates,
+  locations, NPC hooks, items, epilogues, and script-authored event lines use
+  the same retro text-RPG voice as the DM. This does not make dev reports
+  terse: the shared guide governs words *inside the game*, not explanations
+  about the game.
 
 ## Files
 
@@ -80,8 +85,13 @@ his own design back to him.
 a pointer: what the file is, how it's run, where its docs are.
 
 - `dm.md` — **the DM playbook: read it before playing or testing a game.**
-  Play protocol, narration style, quick mechanics reference. Keep it in sync
-  when play-facing rules change.
+  Play protocol, application of the shared fiction style at the table, quick
+  mechanics reference. Keep it in sync when play-facing rules change.
+- `writing.md` — **the shared fiction and content style guide.** Read it
+  before running a game or writing/generating quests, locations, NPC hooks,
+  items, epilogues, or event copy. It owns the retro text-RPG register across
+  play and development; `dm.md` owns play protocol and this file owns dev
+  communication.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
@@ -100,7 +110,8 @@ a pointer: what the file is, how it's run, where its docs are.
   the doc pointers, nothing else. It is injected into EVERY agent session,
   including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and
   other AGENTS.md-aware agents read it directly) — keep it short and
-  register-neutral; dev content belongs in this file, play content in dm.md.
+  register-neutral; shared fiction style belongs in writing.md, dev content
+  in this file, and play protocol in dm.md.
 - `CLAUDE.md` — **a thin shim** that imports `AGENTS.md` so Claude Code
   loads the same dispatcher; put no content of its own here.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
@@ -549,7 +560,8 @@ mechanic *does* and *why* is rules.md's job.
   unchanged on purpose: tune.py/bench greps key on it). The roster
   blocks live in `sites.roster_lines`; the banners in session's
   `log_banner`; the penalties display in `tally_lines` + the pause menu.
-- **Content** — `sites.py`: `FOES` (the bestiary: 25 stat blocks — six
+- **Content** — all fictional wording follows `writing.md`. `sites.py`:
+  `FOES` (the bestiary: 25 stat blocks — six
   monster families + the humanoid ladder + the three casters — each row
   with a bench-calibrated
   `level` annotation, `ref_pack`, and for the drilled soldiery a `training`
@@ -839,8 +851,9 @@ annotations, the equal-cost matrix, and the career curve.
 - `Entity` is `@dataclass(eq=False)` so instances are identity-hashable (used in
   combat sets and the pause's `fired` pairs) — don't switch it back to value
   equality.
-- Two layers, kept separate: thin mechanics in code, rich flavor added by the DM
-  over the log. Don't bake prose into the engine beyond terse event lines.
+- Two layers, kept separate: thin mechanics in code, fiction supplied by
+  authored/generated content and the DM in the register `writing.md` defines.
+  Don't bake prose into the engine beyond terse event lines.
 - **Zero backwards compatibility.** This is an early prototype: never spend
   effort keeping saves or schemas loadable across changes. Rename and
   restructure freely; any `save.json` is disposable — when a change breaks

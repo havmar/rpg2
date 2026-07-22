@@ -331,3 +331,36 @@ at the table that the workfile doesn't keep).
 pause menu, awards, tally) shipped now; the status display, the
 levelup menu with descriptions, and the remaining non-combat surfaces
 are recorded as the open half of retro item 1 in plan.md.
+
+## 2026-07-22 — The shared retro text-RPG writing voice
+
+**The prompt.** The retro pivot had established "second person, present
+tense, terse, deadpan" for DM narration, but it did not yet define the larger
+voice clearly enough to guide content generation. The desired reference was
+the text-game vernacular that survives in cultural memory even for people who
+did not play its source games: parser adventures, battle announcers,
+roguelike/MUD event lines, and system/menu messages.
+
+**The composite settled.** The parser-adventure voice is the backbone for
+world prose: second person, present tense, spatial, external, and dry. The
+JRPG/roguelike announcer is an accent for discrete events and displays:
+abrupt subject-verb-result lines, compact labels, occasional earned ALL CAPS
+and exclamation marks. The `>` prompt belongs only to real commands or
+selectable actions. This is a shared cultural shorthand, not an imitation of
+one title and not permission to fill every line with retro catchphrases.
+
+**Content follows the same voice.** Quests, locations, NPC hooks, items,
+creatures, and epilogues are game pieces rather than miniature stories. They
+lead with a concrete problem or place, give one memorable material detail,
+and expose something visible or actionable. Familiar fantasy nouns are a
+strength; specificity comes from their arrangement, not from purple synonyms
+or lore piled in front of the player. Comedy remains in the situation and is
+reported straight.
+
+**Documentation decision.** Added `writing.md` as the canonical shared guide
+for words inside the game. `dm.md` continues to own play protocol and applies
+the guide at the table. `develop.md` continues to own the thorough development
+register, but points content authors and generators to `writing.md`. The
+dispatcher now requires the shared guide in play and whenever development
+touches fictional content. The planned quest wording pass remains open; this
+session supplies its acceptance standard rather than performing that rewrite.

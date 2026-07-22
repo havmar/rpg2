@@ -2,10 +2,11 @@
 
 What is left to build, in order. This file is **planned features only**:
 design principles (the design spine, the three currencies, tone, legibility)
-live in `rules.md`; the play protocol in `dm.md`; dev conventions and current
-balance numbers in `develop.md`. Anything already implemented is documented in
-`rules.md` and the code, not here — when a feature ships, delete it from this
-file rather than marking it done.
+live in `rules.md`; shared fiction/content style in `writing.md`; the play
+protocol in `dm.md`; dev conventions and current balance numbers in
+`develop.md`. Anything already implemented is documented in `rules.md` and the
+code, not here — when a feature ships, delete it from this file rather than
+marking it done.
 
 ---
 
@@ -32,8 +33,8 @@ Concretely:
 
 - **Style (SHIPPED 2026-07-21):** minimalist retro text adventure —
   present tense, second person, terse, deadpan; not wry Pratchett, not
-  generic-fantasy purple prose. dm.md's Narration style now opens with
-  the governing rule.
+  generic-fantasy purple prose. Expanded into the shared `writing.md`
+  fiction/content guide on 2026-07-22; dm.md applies it at the table.
 - **Displays over prose:** a greater role for script-generated logs
   and menus, optimized so the chat can usually display them directly
   (roadmap item 1 below).
@@ -79,7 +80,7 @@ Concretely:
      fights prove noisy in play.
 2. **The quest wording rework.** The dark templates' words themselves
    (titles, descs, giver lines, epilogues in `karma.py`) rewritten
-   simple and straightforward, in the retro register — the current
+   simple and straightforward, using `writing.md` — the current
    Pratchett-wry phrasing goes; the comedy that survives is situational
    and deadpan. The good-side templates in `quests.py` get the same
    pass afterward where the clash is felt.
@@ -116,8 +117,9 @@ freely narrating and animating people) had nothing to chew on.
 instead of its janitor. The game facilitates and encourages a **cartoon-
 villain campaign** — conquer, extort, steal, flaunt — while remaining
 fully playable as the old Good game (dual by construction, never two
-rulesets). Tone: Discworld/Conan, pratfall evil, never grimdark (dm.md
-owns the register). ~~The candidate frame for the PC: an imp sent
+rulesets). Tone: Discworld/Conan, pratfall evil, never grimdark (`writing.md`
+owns the register; dm.md applies it at the table). ~~The candidate frame for
+the PC: an imp sent
 topside with a quota~~ — **SETTLED later the same day (the dark-quests
 session): the PC is a MORTAL of an ordinary race, a low-ranking
 employee of Hell under a pact with an evil god.** Not an imp. The pact

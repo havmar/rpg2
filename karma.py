@@ -59,7 +59,8 @@ Mechanically:
 - **The fights stay honest.** A dark quest's foes are always people/things
   that fight back (guards, militia, an aggrieved parent dire wolf); the
   wickedness itself -- the theft, the arson, the kicked puppy -- is
-  narration (dm.md owns the register: cartoonish, never grim).
+  narration (writing.md owns the register: cartoonish material, flat telling,
+  never grim).
 
 The sims never import this file. State is one plain dict in the save
 (`karma`): current bad karma, the lifetime ledgers, the punishment day
@@ -206,7 +207,7 @@ def karma_line(karma: dict, pc_level: int) -> str:
 # quests.TEMPLATES plus `align: "dark"`; the foes are always someone who
 # FIGHTS BACK -- guards, militia, the relic's keepers, the puppy's parent
 # -- so the engine only ever resolves honest fights and the wickedness
-# itself stays narration (dm.md, the villain register).
+# itself stays narration (writing.md, the shared fiction register).
 #
 # THE CAPER SCHEMA (2026-07-19, the dark-quests session) -- two optional
 # fields formalize the more-complex quest structure:

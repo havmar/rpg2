@@ -2600,8 +2600,9 @@ legend needs proportionally more wickedness to stay hot.
 rosters are always things that fight back — hired guards, an aggrieved
 militia, the barrow's own dead, the kicked pup's mother. The engine
 never resolves violence against the helpless; the theft, the arson, the
-kick are narration, in the cartoon register dm.md mandates (Discworld/
-Conan, pratfall evil, never grimdark).
+kick are narration, in the cartoon register (pratfall evil, never grimdark).
+`writing.md` owns the wording: the material may be comic, but the telling
+stays flat and concrete.
 
 ## The mechanics
 
@@ -2660,9 +2661,10 @@ the fabric of the orderly universe — hell's aim being exactly that
 fraying (hellgates, summonings). Order is maintained by the gods of
 Light and their religions (paladins, hunters, monks, priests, hired
 heroes) and by worldly power (armies, watchmen, mobs) — and that order
-is often not Good, which is the dark path's running joke (dm.md owns
-the register). The pact rides every new save; `new --no-pact` is the
-neutral game, and a pact-holder who quests honestly and stiff-arms
+is often not Good, which is the dark path's running joke (`writing.md`
+owns the register; dm.md owns its use at the table). The pact rides every
+new save; `new --no-pact` is the neutral game, and a pact-holder who quests
+honestly and stiff-arms
 hell is a fully supported campaign — the mechanics below only price it.
 
 - **Assignments.** Hell assigns Dark Tasks on its own clock: a fresh
@@ -2749,4 +2751,3 @@ bribes now; the Watch doesn't yet), and any karma-gated power. Bad
 karma currently buys nothing but heat and gold-rich work — whether it
 should *unlock* anything (hell ranks, evil powers) is the next design
 decision.
-

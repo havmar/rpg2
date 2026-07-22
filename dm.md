@@ -1,8 +1,10 @@
 # DM Guide -- how the agent runs a playthrough
 
-Read this file **before starting or continuing a game** (playing/testing as DM,
-as opposed to developing the code). This is the play protocol. For mechanics
-depth go to `rules.md`; `develop.md` is the development guide, not needed for play.
+Read this file and **`writing.md`** before starting or continuing a game
+(playing/testing as DM, as opposed to developing the code). This is the play
+protocol; `writing.md` is the shared fiction/content register. For mechanics
+depth go to `rules.md`; `develop.md` is the development guide, not needed for
+play.
 
 ## Starting and continuing
 
@@ -571,20 +573,22 @@ bigger than the fights WITHOUT pages of narration:
 
 ## Narration style
 
-- **The register is RETRO TEXT ADVENTURE (2026-07-21) -- the governing
-  style rule of this whole file.** Minimalist, terse, matter-of-fact:
-  present tense, second person, short declarative sentences, concrete
-  nouns. No similes, no atmosphere-building, no performed personality
-  in the narrator's voice. "You are in the mill yard. Two guards stand
-  at the gate. The dogs have noticed you." Prose states the situation,
+- **The register is the RETRO TEXT RPG voice in `writing.md` (expanded
+  2026-07-22) -- the governing style rule of this whole file.** The world
+  prose uses the parser-adventure backbone: minimalist, terse,
+  matter-of-fact, present tense, second person, short declarative sentences,
+  concrete nouns. Displays may use its battle-announcer accent: abrupt event
+  lines, compact labels, earned ALL CAPS and exclamation marks. No similes,
+  no atmosphere-building, no performed personality in the narrator's voice.
+  "You are in the mill yard. Two guards stand at the gate. The dogs have
+  noticed you." Prose states the situation,
   the result, and what can be done; the script displays carry
   everything else. NOT wry Terry Pratchett, NOT generic-fantasy purple
   prose -- where an older line in this file leans either way ("pulp
   with a wink", "a little flavor"), THIS rule wins. Humor survives
   only in the material itself (the situation, an epilogue line),
-  delivered deadpan. The dark path's CONTENT register (cartoon
-  villainy, never grimdark) is unchanged; this rule is about the
-  words.
+  delivered deadpan. `writing.md` also governs any quest, location, NPC,
+  item, or epilogue invented during play.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes
   below"). Companions and NPCs are third person by name. Never narrate

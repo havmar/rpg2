@@ -5,18 +5,20 @@ A mechanics-centered fantasy RPG played through a terminal coding agent
 the agent running the game (2026-07-21 pivot). Fights resolve on their own
 (autocombat, with at most one mid-fight pause) and produce an outcome plus a
 narrative log; the DM's prose over the script output is minimal — present
-tense, second person (dm.md owns the register). The player's real decisions
-happen *between* fights — and at the pause. The engine owns the numbers.
+tense, second person (`writing.md` owns the shared fiction register; `dm.md`
+owns its use at the table). The player's real decisions happen *between*
+fights — and at the pause. The engine owns the numbers.
 
 ## Which kind of session is this? (settle this first)
 
-This file is only a dispatcher — the real instructions live in one of two
-places, and the first thing to do is pick the right one:
+This file is only a dispatcher — the first thing to do is pick the right
+mode guide. `writing.md` is the shared fiction/content guide across both
+modes:
 
-- **PLAYING or TESTING a game (running a playthrough as DM):** `dm.md` is
-  your ENTIRE instruction set — play protocol, narration style, verbosity,
-  quick mechanics reference. Read it before the first scene. Nothing in the
-  dev docs governs how you speak at the table: the dev guide's
+- **PLAYING or TESTING a game (running a playthrough as DM):** `dm.md` and
+  `writing.md` are your ENTIRE instruction set — play protocol, fiction
+  style, verbosity, quick mechanics reference. Read both before the first
+  scene. Nothing in the dev docs governs how you speak at the table: its
   be-thorough-and-verbose reporting register does NOT apply to play, and
   out-of-character design commentary stays out of the game unless the
   player asks for it. Concise, in-fiction narration is the rule; dm.md
@@ -24,13 +26,16 @@ places, and the first thing to do is pick the right one:
 - **DEVELOPING (changing code, mechanics, docs, or tuning):** `develop.md`
   is the dev guide and is REQUIRED reading — the workflow, the file index,
   the dev map, conventions, difficulty levers, and the current measured
-  balance numbers all live there. Don't start a dev task from this file
-  alone.
+  balance numbers all live there. Read `writing.md` too whenever the task
+  writes or generates fictional content. Don't start a dev task from this
+  file alone.
 
 ## The documents
 
-- `dm.md` — the DM playbook (play protocol, narration style, quick
-  mechanics reference).
+- `dm.md` — the DM playbook (play protocol, application of the fiction
+  style at the table, quick mechanics reference).
+- `writing.md` — shared fiction and content style for DM prose and authored
+  or generated quests, locations, people, items, and event lines.
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
 - `plan.md` — the roadmap: planned features only, plus parked ideas.
@@ -47,8 +52,9 @@ The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
 
 > Keep THIS file short and register-neutral: it is auto-injected into every
 > agent session, play included (Claude Code imports it through `CLAUDE.md`;
-> Codex CLI and other AGENTS.md-aware agents read it directly). Dev content
-> belongs in develop.md, play content in dm.md.
+> Codex CLI and other AGENTS.md-aware agents read it directly). Shared fiction
+> style belongs in writing.md, dev content in develop.md, and play protocol in
+> dm.md.
 
 > Project-level environment (Python path, encoding, etc.) lives in the parent
 > project's agent-instructions file (`C:\minden\projects\AGENTS.md`, or
