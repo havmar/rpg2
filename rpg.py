@@ -1172,7 +1172,7 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 # SHORT rests -- each ~ an hour or two of narrative time -- between fights; when
 # those run out there is no more mid-day recovery and the party must make camp
 # for a LONG rest (overnight). Nothing forces the day's end: long_rest() is a
-# function Claude calls on purpose (see the module docstring / develop.md), never
+# function the agent calls on purpose (see the module docstring / develop.md), never
 # automatic. A long rest recharges STA and Power fully and knits HP back at a
 # per-character weekly rate (~max_hp / 7 per night -> roughly a week to heal).
 SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
@@ -6069,7 +6069,7 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
     """A short rest (~an hour or two): a little STA, HP, and Power back. Costs
     one of the day's short-rest slots. Returns False (no effect) once the day's
     slots are spent -- there is no more mid-day recovery then; the party pushes
-    on depleted or Claude calls long_rest() to make camp. Potions are NOT drunk
+    on depleted or the agent calls long_rest() to make camp. Potions are NOT drunk
     here: that is a deliberate DM call (use_potion), never automatic."""
     if clock.short_rests_left <= 0:
         _play(log,
@@ -6098,7 +6098,7 @@ def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
 def long_rest(party: list[Entity], clock: Clock, log: list[str],
               banner: str = "The party makes camp.",
               rng: random.Random | None = None) -> None:
-    """Make camp for the night. A deliberate, Claude-invoked step -- never
+    """Make camp for the night. A deliberate, agent-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
     advances and the short-rest slots refill. Only the truly Dead stay down.

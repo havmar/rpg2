@@ -2,8 +2,9 @@
 
 The dev guide for the combat-sim prototype: workflow, the file index, the
 dev map, conventions, tuning levers, and the current measured balance
-numbers. `CLAUDE.md` is only the auto-loaded dispatcher; THIS file is the
-real development entry point — read it before changing the game.
+numbers. `AGENTS.md` is only the auto-loaded dispatcher (Claude Code imports
+it through `CLAUDE.md`); THIS file is the real development entry point —
+read it before changing the game.
 
 > **PLAYING, NOT DEVELOPING? Read `dm.md` instead** — it is the entire
 > instruction set for running a game, narration style included. Nothing in
@@ -34,13 +35,13 @@ Narration style opens with the register.
   `group_combat`, `short_rest`, `long_rest`, `party_wiped`, the foe
   catalog, the set sites, the quest generator and its world, the
   character generator and its races/traits.
-- **Claude (as DM)** calls those primitives *on purpose*, in whatever order the
+- **The agent (as DM)** calls those primitives *on purpose*, in whatever order the
   story wants, and narrates over the result. There is deliberately **no
-  autopilot** for pacing: e.g. nothing forces the day to end — Claude decides
+  autopilot** for pacing: e.g. nothing forces the day to end — the agent decides
   when the party makes camp and calls `long_rest`. This preserves TTRPG-style
   freedom. Some of these calls can be automated more later; for now they're
   manual on purpose.
-- **Part of the game lives in instructions to Claude**, not in code. The engine
+- **Part of the game lives in instructions to the agent**, not in code. The engine
   won't ever encode every situation; judgement calls, improvised scenes, and
   when-to-call-which-function all live in `dm.md` and the DM's reasoning. When
   we settle a rule of play that isn't a pure number, write it into dm.md
@@ -95,10 +96,13 @@ a pointer: what the file is, how it's run, where its docs are.
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
   stay settled. Append an entry after every major design session.
-- `CLAUDE.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
-  the doc pointers, nothing else. It is injected into EVERY session,
-  including play — keep it short and register-neutral; dev content belongs
-  in this file, play content in dm.md.
+- `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
+  the doc pointers, nothing else. It is injected into EVERY agent session,
+  including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and
+  other AGENTS.md-aware agents read it directly) — keep it short and
+  register-neutral; dev content belongs in this file, play content in dm.md.
+- `CLAUDE.md` — **a thin shim** that imports `AGENTS.md` so Claude Code
+  loads the same dispatcher; put no content of its own here.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and rests, progression,
   economy, random party generation, the Magic & Mind layer

@@ -672,7 +672,7 @@ def main() -> None:
         log.append("  " + stat_line(h))
 
     run_site(site, party, clock, purse, rng, log)
-    # No auto-night: making camp (long_rest) is a deliberate call Claude makes
+    # No auto-night: making camp (long_rest) is a deliberate call the agent makes
     # between adventuring days, not something the site loop does on its own.
 
     log.append("")

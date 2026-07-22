@@ -1,4 +1,4 @@
-# DM Guide -- how Claude runs a playthrough
+# DM Guide -- how the agent runs a playthrough
 
 Read this file **before starting or continuing a game** (playing/testing as DM,
 as opposed to developing the code). This is the play protocol. For mechanics
