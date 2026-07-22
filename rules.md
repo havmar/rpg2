@@ -1090,7 +1090,7 @@ HP.
     survival use and settlements a comfort identity. (Overcharged HP never
     grants a *negative* wound penalty; the spiral floors at 0.)
 
-**Nothing forces the day to end.** Ending the day is a *choice* — the DM (Claude)
+**Nothing forces the day to end.** Ending the day is a *choice* — the DM (the agent)
 decides when the party camps and takes the long rest; the mechanics never
 auto-camp. This keeps the tabletop freedom: you can press on wounded and Winded
 into one more fight, or pull back and pay the day. The tension is *when* to spend

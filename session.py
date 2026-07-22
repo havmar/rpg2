@@ -140,7 +140,7 @@ from quests import (generate_world, forge_quest, board_lines, site_gold_for,
 STATE_PATH = Path(__file__).parent / "save.json"
 
 # --------------------------------------------------------------------------- #
-# Output wrapping (2026-07-13) -- the designer plays through Claude Code on
+# Output wrapping (2026-07-13) -- the designer plays through a coding-agent CLI on
 # the web, on a phone whose code blocks show ~41 characters and never
 # soft-wrap. EVERYTHING this driver prints (and party.txt) is therefore
 # hard-wrapped at WRAP_WIDTH, continuation lines hanging two spaces past the
@@ -365,7 +365,7 @@ PARTY_SHEET_PATH = Path(__file__).parent / "party.txt"
 def party_sheet_lines(state: dict) -> list[str]:
     """The full-party info sheet written to party.txt on every save: the
     whole between-fights board in one plain file (the designer reads it in
-    Claude Code on the web via the auto-commit; the DM never has to
+    the coding agent on the web via the auto-commit; the DM never has to
     reassemble it from logs)."""
     party, clock, purse = state["party"], state["clock"], state["purse"]
     loc = location_line(state) if state.get("location") else "nowhere yet"
