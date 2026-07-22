@@ -1,0 +1,32 @@
+RPG2 PARTY SHEET -- day 1, at Stonefield
+  (human lands, settlement)
+purse: 10g | short rests left today: 1
+party: 1/1 companion slot(s) filled (CHA
+  4)
+
+(YOU)       Krusk (L1, training 0): DEX
+  4  STR 5  MIND 6  STA 8/8  HP 8/8
+  Power 6/6  CHA 4  (spells: ice 1;
+  wooden staff; healingx1, staminax1)
+            Krusk -- orc m, age 24;
+              weakness: gambling;
+              speech: formal; dress:
+              ascetic
+            XP 0/100 to L2 | skill
+              points: 0 | spells: ice 1
+
+(companion) Keyleth (L1, training 0):
+  DEX 6  STR 5  MIND 5  STA 6/6  HP
+  10/10  Power 3/3  CHA 5  (bulwark;
+  club; staminax2)  [satisfaction 7/10]
+            Keyleth -- elf f, age 29;
+              weakness: needs meds;
+              voice: melodious; dress:
+              luxurious
+            XP 0/100 to L2 | skill
+              points: 0 | abilities:
+              bulwark
+
+THE PACT: no current assignment --
+  hell's next job comes any settlement
+  day now.

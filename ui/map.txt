@@ -1,0 +1,22 @@
+RPG2 MAP -- day 1
+the party is at Stonefield (human lands,
+  settlement)
+(travel: 1 day within a land, 2 days to
+  another)
+
+== the orc lands ==
+  Bonemaw (capital) -- 8 job(s)
+
+== the elf lands ==
+  Moonreach (town) -- 9 job(s)
+
+== the dwarf lands ==
+  Karakvault (town) -- 5 job(s)
+
+== the human lands ==  <- here
+  Stonefield (town) -- 7 job(s)  <- the
+    party
+  King'sford (village) -- 6 job(s)
+
+== the goblin lands ==
+  Gearmarket (village) -- 5 job(s)
