@@ -55,8 +55,9 @@ The shape of a playthrough:
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
-  sheet                                     -- commit party.txt (run at the
-                                               END of every DM message)
+  sheet                                     -- commit ui/party.txt +
+                                               ui/map.txt (run at the END of
+                                               every DM message)
 
 All output is wrapped at WRAP_WIDTH columns (the designer plays on a phone
 whose code blocks show ~41 characters and never soft-wrap).
@@ -359,7 +360,13 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     }
 
 
-PARTY_SHEET_PATH = Path(__file__).parent / "party.txt"
+# The player-facing display files (2026-07-22): the game's GitHub UI. Both
+# live in ui/, are rewritten on every save, and are committed together by
+# `sheet` -- the player reads them as blob pages on the branch
+# (github.com/.../blob/<branch>/ui/party.txt and .../ui/map.txt). See dm.md.
+UI_DIR = Path(__file__).parent / "ui"
+PARTY_SHEET_PATH = UI_DIR / "party.txt"
+MAP_SHEET_PATH = UI_DIR / "map.txt"
 
 
 def party_sheet_lines(state: dict) -> list[str]:
@@ -427,6 +434,115 @@ def party_sheet_lines(state: dict) -> list[str]:
     return lines
 
 
+def accepted_quests(state: dict) -> list[dict]:
+    """The quests the party has TAKEN and not yet finished -- what the map
+    shows sites for. `cmd_take` records each in state["accepted"]; the active
+    quest and any quest whose cursor has moved off {0,0} also count (so a
+    pre-2026-07-22 save, or a save whose accepted list got out of step, still
+    maps what's in hand). Offered-but-untaken jobs never appear: the map is
+    where the party has been or is bound, not the whole board (a design ask
+    of the 2026-07-22 map display)."""
+    world = state.get("world")
+    if not world:
+        return []
+    taken = set(state.get("accepted") or [])
+    if state.get("active_quest"):
+        taken.add(state["active_quest"])
+    out = []
+    for qid, q in world["quests"].items():
+        if q.get("status") == "done":
+            continue
+        progressed = q.get("next", {"site": 0, "room": 0}) != {"site": 0,
+                                                                "room": 0}
+        if qid in taken or progressed:
+            out.append(q)
+    return out
+
+
+def _quest_site_lines(q: dict) -> list[str]:
+    """One line per site of a taken quest, tagged by the progress cursor:
+    cleared / here (with the room) / not yet. These ARE the 'sites the player
+    has quests to visit' -- the door banner reveals a site's true level on
+    entry, and a taken quest is committed, so levels print plain here."""
+    cur = q.get("next", {"site": 0, "room": 0})
+    lines = []
+    for j, s in enumerate(q["sites"]):
+        n = len(s["rooms"])
+        if j < cur["site"]:
+            mark = "cleared"
+        elif j == cur["site"]:
+            mark = (f"here, room {cur['room'] + 1}/{n}"
+                    if cur["room"] < n else "cleared")
+        else:
+            mark = f"not yet ({n} room(s))"
+        lines.append(f"  - {s['name']} (L{s['level']}): {mark}")
+    return lines
+
+
+def map_sheet_lines(state: dict) -> list[str]:
+    """The world map written to map.txt on every save (2026-07-22): the
+    game's second GitHub-UI page. Lists the LANDS, the settlements (regions)
+    within each with their open-job counts and a visited/here marker, the
+    wild places the party has discovered, and -- in its own section -- the
+    sites of every TAKEN quest with its progress. Player-facing, so it never
+    prints the DM-only board (dark jobs, hidden givers): only where the party
+    has been and where its accepted work leads."""
+    world = state.get("world")
+    if not world:
+        return ["RPG2 MAP", "(no world yet -- start one with `new`)"]
+    loc = state["location"]
+    st = state.get("story")
+    lines = [f"RPG2 MAP -- day {state['clock'].day}",
+             f"the party is at {location_line(state)}",
+             f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
+             f"{TRAVEL_DAYS_CROSS} days to another)"]
+    visited = set(state.get("visited") or [])
+    for race, settlements in lands(world).items():
+        mark = "  <- here" if race == loc["land"] else ""
+        if st and st.get("fallen") == race:
+            mark += "  [UNDER THE YOKE]"
+        lines.append("")
+        lines.append(f"== the {race} lands =={mark}")
+        for s in settlements:
+            open_q = sum(1 for qid in s["quests"]
+                         if world["quests"][qid]["status"] == "open")
+            if s["key"] == loc["place"]:
+                where = "  <- the party"
+            elif s["key"] in visited:
+                where = "  (visited)"
+            else:
+                where = ""
+            lines.append(f"  {s['name']} ({s['kind']}) -- "
+                         f"{open_q} job(s){where}")
+        wilds = [p for p in state.get("places", []) if p["land"] == race]
+        for p in wilds:
+            here = ("  <- the party"
+                    if p["name"].lower() == loc["place"] else "")
+            lines.append(f"    wilds: {p['name']} (found day "
+                         f"{p['day']}){here}")
+    taken = accepted_quests(state)
+    if taken:
+        lines.append("")
+        lines.append("-- quests in hand (where they lead) --")
+        for q in taken:
+            home = _settlement_by_key(world, q.get("settlement"))
+            posted = f" @ {home['name']}" if home else ""
+            lines.append("")
+            if q.get("kind") == "delivery":
+                lines.append(f"[{q['id']}] DELIVERY {q['name']}{posted}")
+                lines.append(f"  - carry {q['cargo']} to {q['dest_name']} "
+                             f"(travel {q['dest']})")
+            else:
+                lines.append(f"[{q['id']}] {q['name']} (L{q['level']}){posted}")
+                lines.extend(_quest_site_lines(q))
+    war = story.war_status_lines(world, st)
+    if war:
+        lines.append("")
+        lines.append("-- the war --")
+        lines.extend(war)
+    return lines
+
+
 def _write_party_sheet(state: dict) -> None:
     """Write party.txt (phone-wrapped, like all output) on every save.
     NEVER raises: a broken disk must not take the game loop down with it.
@@ -434,6 +550,7 @@ def _write_party_sheet(state: dict) -> None:
     end of every DM message, not one per command -- the designer reads the
     playthrough as message-sized diffs."""
     try:
+        UI_DIR.mkdir(parents=True, exist_ok=True)
         PARTY_SHEET_PATH.write_text(
             _wrap_block("\n".join(party_sheet_lines(state))) + "\n",
             encoding="utf-8")
@@ -441,32 +558,49 @@ def _write_party_sheet(state: dict) -> None:
         return
 
 
+def _write_map_sheet(state: dict) -> None:
+    """Write map.txt (the world-map UI page) on every save, beside party.txt.
+    NEVER raises, for the same reason `_write_party_sheet` doesn't -- a disk
+    hiccup must not sink the game loop. `sheet` commits it alongside the
+    party sheet."""
+    try:
+        UI_DIR.mkdir(parents=True, exist_ok=True)
+        MAP_SHEET_PATH.write_text(
+            _wrap_block("\n".join(map_sheet_lines(state))) + "\n",
+            encoding="utf-8")
+    except Exception:
+        return
+
+
 def cmd_sheet(args: argparse.Namespace) -> None:
-    """Rewrite party.txt from the save and commit it (that one file only).
-    The DM runs this at the END of every message (dm.md) so the sheet's
-    history reads one commit per message. Committing nothing (the sheet
-    didn't change) is fine and says so."""
+    """Rewrite the UI display files (ui/party.txt + ui/map.txt) from the save
+    and commit them (those two files only). The DM runs this at the END of
+    every message (dm.md) so their history reads one commit per message and
+    the player follows the playthrough as blob pages on the branch.
+    Committing nothing (nothing changed) is fine and says so."""
     state = load()
     _write_party_sheet(state)
+    _write_map_sheet(state)
     day = state["clock"].day
     where = (state["location"]["name"]
              if state.get("location") else "nowhere")
+    paths = ["ui/party.txt", "ui/map.txt"]
     try:
         root = Path(__file__).parent
-        subprocess.run(["git", "add", "party.txt"], cwd=root, check=False,
+        subprocess.run(["git", "add", *paths], cwd=root, check=False,
                        capture_output=True, timeout=15)
         done = subprocess.run(
             ["git", "commit", "--quiet",
-             "-m", f"party sheet: day {day} at {where}", "--", "party.txt"],
+             "-m", f"party & map: day {day} at {where}", "--", *paths],
             cwd=root, check=False, capture_output=True, timeout=15)
     except Exception as exc:
-        print(f"party.txt written; commit failed ({exc}) -- the game is "
+        print(f"UI sheets written; commit failed ({exc}) -- the game is "
               f"unaffected.")
         return
     if done.returncode == 0:
-        print(f"party.txt committed (day {day} at {where}).")
+        print(f"party.txt + map.txt committed (day {day} at {where}).")
     else:
-        print("party.txt unchanged -- nothing to commit.")
+        print("UI sheets unchanged -- nothing to commit.")
 
 
 def save(state: dict) -> None:
@@ -479,6 +613,7 @@ def save(state: dict) -> None:
         "purse": {"gold": state["purse"].gold},
         "foe_count": state["foe_count"],
         "active_quest": state.get("active_quest"),
+        "accepted": state.get("accepted", []),
         "world": state.get("world"),
         "story": state.get("story"),
         "location": state.get("location"),
@@ -502,6 +637,7 @@ def save(state: dict) -> None:
         json.dump(doc, f, indent=1)
         f.write("\n")
     _write_party_sheet(state)
+    _write_map_sheet(state)
 
 
 def load() -> dict:
@@ -533,6 +669,11 @@ def load() -> dict:
         "rng": rng,
         "foe_count": doc["foe_count"],
         "active_quest": doc.get("active_quest"),
+        # Quests the party has TAKEN (map.txt shows their sites; offered-but-
+        # -untaken jobs never appear). A pre-2026-07-22 save has no list -- seed
+        # it from the one active quest so the map still knows what's in hand.
+        "accepted": doc.get("accepted")
+        or ([doc["active_quest"]] if doc.get("active_quest") else []),
         "world": world,
         "story": doc.get("story"),
         "location": location,
@@ -763,7 +904,7 @@ def cmd_new(args: argparse.Namespace) -> None:
     world = generate_world(world_seed)
     state = {"party": [pc, ally], "clock": Clock(), "purse": Purse(),
              "rng": rng, "foe_count": 0, "pending": None, "rooms": {},
-             "world": world, "active_quest": None,
+             "world": world, "active_quest": None, "accepted": [],
              "story": story.init_story(world, rng, pc_race=pc.race),
              "location": _settlement_location(_starting_settlement(world)),
              "places": [], "sighting": None,
@@ -2393,6 +2534,9 @@ def cmd_take(args: argparse.Namespace) -> None:
         print(occupation_line(state, here))
         return
     state["active_quest"] = quest["id"]
+    accepted = state.setdefault("accepted", [])
+    if quest["id"] not in accepted:
+        accepted.append(quest["id"])   # the map tracks TAKEN jobs (map.txt)
     save(state)
     g = quest.get("giver")
     if g:
@@ -4261,10 +4405,11 @@ def main() -> None:
 
     p = sub.add_parser(
         "sheet",
-        help="rewrite party.txt from the save and COMMIT it (that one "
-             "file). Run at the END of every DM message (dm.md) -- the "
-             "sheet's git history then reads one commit per message. "
-             "Committing an unchanged sheet is a no-op and says so.")
+        help="rewrite ui/party.txt + ui/map.txt from the save and COMMIT "
+             "them (those two files). Run at the END of every DM message "
+             "(dm.md) -- their git history then reads one commit per "
+             "message, the player's GitHub-UI pages. Committing unchanged "
+             "sheets is a no-op and says so.")
     p.set_defaults(func=cmd_sheet)
 
     args = ap.parse_args()

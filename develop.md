@@ -248,14 +248,22 @@ a pointer: what the file is, how it's run, where its docs are.
   the PC's level-up auto-prints the `levelup` menu, `maybe_post_wave` is
   settlement-gated (no war news mid-wilds), a dead companion's quality
   weapon stays with the party, `give --as` reskins weapons, ALL output
-  (and `party.txt`) is hard-wrapped at `WRAP_WIDTH` = 40 for the
-  designer's phone, and **`party.txt`** is rewritten on every save but
-  committed only by **`sheet`** — the end-of-every-DM-message command
-  (one commit per message; best-effort git, never fatal).
+  (and the UI pages) is hard-wrapped at `WRAP_WIDTH` = 40 for the
+  designer's phone, and the two **UI pages in `ui/`** are rewritten on
+  every save but committed only by **`sheet`** — the end-of-every-DM-message
+  command (one commit per message; best-effort git, never fatal). The pages
+  are **`ui/party.txt`** (`party_sheet_lines` — the full party board) and,
+  since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — lands, their
+  settlements with open-job counts + a visited/here marker, discovered
+  wild places, and, in its own section, the sites of every TAKEN quest with
+  its progress cursor; `accepted_quests` gates it on the new `accepted`
+  save key — offered-but-untaken jobs never appear). Both are **committed
+  to the branch, not gitignored: they are the player's GitHub UI** (blob
+  links, dm.md); only `save.json` and `fight.log` stay untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
   the player-facing display the DM pastes into chat as-is, while the
   full debug log goes to the untracked **`fight.log`** workfile
-  (`print_combat`; gitignored with save.json/party.txt -- the
+  (`print_combat`; gitignored with save.json -- the
   post-mortem surface, e.g. on a player death). The block ends with the
   party tally (`tally_lines`: tracks, standing roll penalties -- shown
   HERE and in the pause menu since the fight lines dropped the numbers
@@ -682,7 +690,9 @@ mechanic *does* and *why* is rules.md's job.
   `apply_mercy` (left for dead / the lesson) in place of
   `report_game_over` on posse losses.
 - **Session state** — `session.py`: one JSON document in `save.json`
-  (party, clock, purse, rng, world, `active_quest`, `pending` paused-fight
+  (party, clock, purse, rng, world, `active_quest`, `accepted` (the TAKEN-
+  quest ids, since 2026-07-22 — `cmd_take` appends, `ui/map.txt` reads),
+  `pending` paused-fight
   record, `rooms` fled-room records, `location`, `places` discovered wilds,
   `sighting`, `streak` momentum record, `site_clears` set-site pay
   tracking, and `recruits` (the on-request candidate pool, keyed to its
