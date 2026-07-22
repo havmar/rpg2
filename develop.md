@@ -74,7 +74,7 @@ his own design back to him.
   *narration*, not of dev reports — an over-terse summary that forces the
   designer to ask follow-ups costs more than a long one.
 - **Fiction written during development uses `writing.md`.** Quest templates,
-  locations, NPC hooks, items, epilogues, and script-authored event lines use
+  places, NPC hooks, items, epilogues, and script-authored event lines use
   the same retro text-RPG voice as the DM. This does not make dev reports
   terse: the shared guide governs words *inside the game*, not explanations
   about the game.
@@ -88,7 +88,7 @@ a pointer: what the file is, how it's run, where its docs are.
   Play protocol, application of the shared fiction style at the table, quick
   mechanics reference. Keep it in sync when play-facing rules change.
 - `writing.md` — **the shared fiction and content style guide.** Read it
-  before running a game or writing/generating quests, locations, NPC hooks,
+  before running a game or writing/generating quests, places, NPC hooks,
   items, epilogues, or event copy. It owns the retro text-RPG register across
   play and development; `dm.md` owns play protocol and this file owns dev
   communication.
@@ -145,9 +145,11 @@ a pointer: what the file is, how it's run, where its docs are.
   generated board covers the band; the benches still run them).
   One-shot: `python sites.py [--site
   hideout] [--seed N] [--training N]`.
-- `quests.py` — **the quest & encounter generator** (rules.md, the Quest
-  System add-on): the threat math (all constants at the top, calibrated by
-  `bench_quests.py`), the room/site/quest builders, per-race quest
+- `quests.py` — **the world, quest & encounter generator** (rules.md, the
+  Quest System and World & Navigation add-ons): the persistent Land -> Area
+  -> Site -> Room schema and its accessors, the threat math (all constants at
+  the top, calibrated by `bench_quests.py`), the room/site/quest builders,
+  per-race quest
   templates with reskin tables (since 2026-07-12 each also authors a
   `giver` role and an `epilogue` line), and seeded worldgen with asserted
   XP coverage to the level cap — which since 2026-07-12 also attaches a
@@ -217,8 +219,9 @@ a pointer: what the file is, how it's run, where its docs are.
   subcommand with its rules; dm.md says which decisions belong to the
   player. Quest play: `board` (LOCAL by default since 2026-07-09) /
   `show QID` / `take QID` / `room`, plus `forge` (the DM quest creator).
-  World play (2026-07-09): `map` / `travel` / `explore` / `hunt` /
-  `engage` — location state, local boards, road encounters, the momentum
+  World play (2026-07-09; hierarchy 2026-07-22): `map` / `travel` / `look` /
+  `go` / `back` / `explore` / `hunt` / `engage` — breadcrumb position,
+  macro and local navigation, local boards, road encounters, the momentum
   streak; since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
   ordinary-encounter spotted valve, and the hunt ambush. Since 2026-07-11
@@ -253,9 +256,10 @@ a pointer: what the file is, how it's run, where its docs are.
   every save but committed only by **`sheet`** — the end-of-every-DM-message
   command (one commit per message; best-effort git, never fatal). The pages
   are **`ui/party.txt`** (`party_sheet_lines` — the full party board) and,
-  since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — lands, their
-  settlements with open-job counts + a visited/here marker, discovered
-  wild places, and, in its own section, the sites of every TAKEN quest with
+  since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — lands, known areas
+  with settlement open-job counts + a visited/here marker, and, until the
+  planned `ui/minimap.txt` takes over local detail, the sites of every TAKEN
+  quest with
   its progress cursor; `accepted_quests` gates it on the new `accepted`
   save key — offered-but-untaken jobs never appear). Both are **committed
   to the branch, not gitignored: they are the player's GitHub UI** (blob
@@ -651,16 +655,21 @@ mechanic *does* and *why* is rules.md's job.
   and after a retreat's clean escape), the forced interception in
   `cmd_travel`, and the delivery guards in take/room/status/sheet/
   opening-hook/board-rumors.
-- **The world & navigation** (2026-07-09) — `quests.py`: `lands` (race ->
-  settlements; the map IS this grouping, no coordinates), `wild_pool`
+- **The world & navigation** (2026-07-09; hierarchy 2026-07-22) —
+  `quests.py`: the world-owned `lands` / `areas` / `sites` / `rooms` stores;
+  `new_area` / `new_site` / `new_room` and the tree accessors; settlements
+  as areas (`kind=settlement`, capital/town/village `subtype`), discovered
+  geography as areas (`kind=natural`, a geographic `subtype`); quest `sites`
+  as persistent world IDs; `wild_pool`
   (what roams a land = the union of its race's template pools),
   `roll_wild_level` (the road's party-independent geometric level table),
-  `build_wild_encounter`, `wild_encounter_xp`. `session.py`: the location
-  helpers (`_settlement_location` / `local_settlement` /
-  `at_quest_settlement` — board/take/room/hideout/barrow are gated on
-  being there), `wild_event` (the one roll: nothing / fight / sighting,
-  with the spotted-vs-ambush valve), and `cmd_travel` / `cmd_explore` /
-  `cmd_hunt` / `cmd_engage` / `cmd_map`.
+  `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
+  `position` (`land`, `area`, optional `site`/`room`), `current_area` /
+  `local_settlement` / `at_quest_origin` / `at_quest_site`; `cmd_map` and
+  `ui/map.txt` as the macro Land/Area view; `cmd_look` / `cmd_go` / `cmd_back`
+  as the local view and movement precursor to the planned `ui/minimap.txt`;
+  `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` /
+  `cmd_explore` / `cmd_hunt` / `cmd_engage`.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -692,8 +701,9 @@ mechanic *does* and *why* is rules.md's job.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `accepted` (the TAKEN-
   quest ids, since 2026-07-22 — `cmd_take` appends, `ui/map.txt` reads),
-  `pending` paused-fight
-  record, `rooms` fled-room records, `location`, `places` discovered wilds,
+  `pending` paused-fight record, `rooms` fled-encounter records, breadcrumb
+  `position`, persistent geography under `world` (`lands` / `areas` / `sites`
+  / `rooms`),
   `sighting`, `streak` momentum record, `site_clears` set-site pay
   tracking, and `recruits` (the on-request candidate pool, keyed to its
   settlement and day); entities/

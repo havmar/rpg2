@@ -15,6 +15,11 @@ This file is only a dispatcher — the first thing to do is pick the right
 mode guide. `writing.md` is the shared fiction/content guide across both
 modes:
 
+Before reading or changing project state, run `git status --short --branch`.
+If the tree is clean, fast-forward it with `git pull --ff-only`; if it is
+dirty, preserve and understand the local work before pulling. Never assume
+the checked-out copy already contains the latest UI or rules changes.
+
 - **PLAYING or TESTING a game (running a playthrough as DM):** `dm.md` and
   `writing.md` are your ENTIRE instruction set — play protocol, fiction
   style, verbosity, quick mechanics reference. Read both before the first
@@ -35,7 +40,7 @@ modes:
 - `dm.md` — the DM playbook (play protocol, application of the fiction
   style at the table, quick mechanics reference).
 - `writing.md` — shared fiction and content style for DM prose and authored
-  or generated quests, locations, people, items, and event lines.
+  or generated quests, places, people, items, and event lines.
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
 - `plan.md` — the roadmap: planned features only, plus parked ideas.

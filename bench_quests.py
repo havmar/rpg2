@@ -329,7 +329,7 @@ def run_career(seed: int) -> dict:
                     "forced_up": forced_up}
         forced_up += was_forced
         cleared_all = True
-        for site in quest_to_sites(quest):
+        for site in quest_to_sites(world, quest):
             log.clear()
             cleared = career_run_site(site, party, clock, purse, rng, log)
             if any(h.dead for h in party):

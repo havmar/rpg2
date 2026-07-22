@@ -35,7 +35,8 @@ The shape of a playthrough:
   recruit / hire NAME / dismiss NAME        -- the hiring layer (recruit
                                                rolls the day's faces ON
                                                REQUEST, settlements only)
-  map / travel / explore / hunt / engage    -- the world & the wilds
+  map / travel / look / go / back           -- world and local navigation
+  explore / hunt / engage                   -- the wilds
   board / show QID / take QID / room        -- the LOCAL jobs (the game;
                                                board = the DM inventory,
                                                in play quests come from
@@ -128,14 +129,16 @@ from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_line
 from quests import (generate_world, forge_quest, board_lines, site_gold_for,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade, seen_level, mind_precision,
-                    lands, roll_wild_level, build_wild_encounter,
+                    new_area, all_areas, settlements, settlements_by_land,
+                    area_sites, quest_sites, site_rooms,
+                    roll_wild_level, build_wild_encounter,
                     wild_encounter_xp,
                     TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
                     TRAVEL_ENCOUNTER_CHANCE, EXPLORE_ENCOUNTER_CHANCE,
                     EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
                     HUNT_AMBUSH_CHANCE,
                     CAMP_ENCOUNTER_CHANCE,
-                    HUNT_LEVEL_REACH, WILD_NAME_PARTS,
+                    HUNT_LEVEL_REACH, WILD_NAME_PREFIXES, WILD_NAME_SUFFIXES,
                     notice_contest, foes_preferred_field)
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -183,41 +186,42 @@ def _spawn_foe(kind: str, rng, n: int):
 
 
 # --------------------------------------------------------------------------- #
-# Location (the navigation layer, 2026-07-09)
+# Position (the navigation layer, 2026-07-09; hierarchy 2026-07-22)
 # --------------------------------------------------------------------------- #
-# The party is always SOMEWHERE: at a settlement (its board is the local
-# board; its surrounding sites are in reach) or at a discovered wilderness
-# place. A location is {"place": key, "name": display, "land": race,
-# "kind": "settlement" | "wild"}. The two hand-built DEV/TEST set sites
-# (hideout / barrow) lie outside the capital (the first settlement worldgen
-# made); a new game starts wherever the lowest-level job is posted.
+# The party's position is a breadcrumb through Land -> Area -> Site -> Room.
+# Areas are the day-scale travel destinations; sites and rooms are local.
 
-def _settlement_location(s: dict) -> dict:
-    return {"place": s["key"], "name": s["name"], "land": s["race"],
-            "kind": "settlement"}
+def _area_position(area: dict) -> dict:
+    return {"land": area["land"], "area": area["key"],
+            "site": None, "room": None}
 
 
 def location_line(state: dict) -> str:
-    loc = state["location"]
-    return f"{loc['name']} ({loc['land']} lands, {loc['kind']})"
+    world, pos = state["world"], state["position"]
+    area = world["areas"][pos["area"]]
+    names = [f"the {pos['land']} lands", area["name"]]
+    if pos.get("site"):
+        names.append(world["sites"][pos["site"]]["name"])
+    if pos.get("room"):
+        names.append(world["rooms"][pos["room"]]["name"])
+    return " > ".join(names)
+
+
+def current_area(state: dict) -> dict:
+    return state["world"]["areas"][state["position"]["area"]]
 
 
 def local_settlement(state: dict) -> dict | None:
     """The settlement the party is AT, or None out in the wilds."""
-    loc = state["location"]
-    if loc["kind"] != "settlement":
-        return None
-    for s in state["world"]["settlements"]:
-        if s["key"] == loc["place"]:
-            return s
-    return None
+    area = current_area(state)
+    return area if area["kind"] == "settlement" else None
 
 
 def home_settlement(state: dict) -> dict:
     """The capital (settlements[0]) -- the two hand-built DEV/TEST set
     sites lie outside it. (Since 2026-07-13 a new game starts at the
     settlement with the lowest-level job, which may be elsewhere.)"""
-    return state["world"]["settlements"][0]
+    return settlements(state["world"])[0]
 
 
 def clear_sighting(state: dict, quiet: bool = False) -> None:
@@ -243,26 +247,37 @@ def streak_pos_for(state: dict, site_key: str) -> int:
 
 
 def _settlement_by_key(world: dict, key: str) -> dict | None:
-    for s in world["settlements"]:
-        if s["key"] == key:
-            return s
-    return None
+    area = world["areas"].get(key)
+    return area if area and area["kind"] == "settlement" else None
 
 
-def at_quest_settlement(state: dict, quest: dict) -> bool:
-    """Quests are LOCAL: taking one and working its sites means being at the
-    settlement that posted it (its region holds the sites). Prints the way
-    there when the party isn't."""
-    key = quest.get("settlement")
+def at_quest_origin(state: dict, quest: dict) -> bool:
+    """Taking a quest requires standing in the area where it was offered."""
+    key = quest.get("origin")
     if not key:
         return True     # a placeless forged quest works anywhere
-    if state["location"]["place"] == key:
+    if state["position"]["area"] == key:
         return True
-    s = _settlement_by_key(state["world"], key)
-    name = s["name"] if s else key
+    area = state["world"]["areas"].get(key)
+    name = area["name"] if area else key
     print(f"[{quest['id']}] {quest['name']} is {name}'s business -- the "
           f"party is at {location_line(state)}. `travel {key}` first.")
     return False
+
+
+def at_quest_site(state: dict, quest: dict) -> bool:
+    """Working a quest requires reaching its current world-owned site."""
+    cur = quest["next"]
+    site = quest_sites(state["world"], quest)[cur["site"]]
+    if state["position"]["area"] != site["area"]:
+        area = state["world"]["areas"][site["area"]]
+        print(f"The next site is {site['name']} in {area['name']}. "
+              f"`travel {area['key']}` first.")
+        return False
+    if state["position"].get("site") != site["id"]:
+        print(f"The next site is {site['name']}. `go {site['name']}` first.")
+        return False
+    return True
 
 
 # --------------------------------------------------------------------------- #
@@ -375,7 +390,7 @@ def party_sheet_lines(state: dict) -> list[str]:
     the coding agent on the web via the auto-commit; the DM never has to
     reassemble it from logs)."""
     party, clock, purse = state["party"], state["clock"], state["purse"]
-    loc = location_line(state) if state.get("location") else "nowhere yet"
+    loc = location_line(state) if state.get("position") else "nowhere yet"
     lines = [f"RPG2 PARTY SHEET -- day {clock.day}, at {loc}",
              f"purse: {purse.gold}g | short rests left today: "
              f"{clock.short_rests_left}"]
@@ -409,10 +424,11 @@ def party_sheet_lines(state: dict) -> list[str]:
                          f"(travel {q['dest']})")
         else:
             cur = q["next"]
-            s = q["sites"][cur["site"]]
+            s = quest_sites(world, q)[cur["site"]]
+            rooms = site_rooms(world, s)
             lines.append(f"active quest: [{qid}] L{q['level']} {q['name']} "
                          f"-- next: {s['name']} (L{s['level']}), room "
-                         f"{cur['room'] + 1}/{len(s['rooms'])}")
+                         f"{cur['room'] + 1}/{len(rooms)}")
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
         lines.append(f"momentum: {streak['count']} encounter(s) at "
@@ -459,15 +475,15 @@ def accepted_quests(state: dict) -> list[dict]:
     return out
 
 
-def _quest_site_lines(q: dict) -> list[str]:
+def _quest_site_lines(world: dict, q: dict) -> list[str]:
     """One line per site of a taken quest, tagged by the progress cursor:
     cleared / here (with the room) / not yet. These ARE the 'sites the player
     has quests to visit' -- the door banner reveals a site's true level on
     entry, and a taken quest is committed, so levels print plain here."""
     cur = q.get("next", {"site": 0, "room": 0})
     lines = []
-    for j, s in enumerate(q["sites"]):
-        n = len(s["rooms"])
+    for j, s in enumerate(quest_sites(world, q)):
+        n = len(site_rooms(world, s))
         if j < cur["site"]:
             mark = "cleared"
         elif j == cur["site"]:
@@ -481,52 +497,53 @@ def _quest_site_lines(q: dict) -> list[str]:
 
 def map_sheet_lines(state: dict) -> list[str]:
     """The world map written to map.txt on every save (2026-07-22): the
-    game's second GitHub-UI page. Lists the LANDS, the settlements (regions)
-    within each with their open-job counts and a visited/here marker, the
-    wild places the party has discovered, and -- in its own section -- the
+    game's second GitHub-UI page. Lists the LANDS and known AREAS with their
+    settlement open-job counts and a visited/here marker, and -- until the
+    planned minimap takes over local detail -- in its own section the
     sites of every TAKEN quest with its progress. Player-facing, so it never
     prints the DM-only board (dark jobs, hidden givers): only where the party
     has been and where its accepted work leads."""
     world = state.get("world")
     if not world:
         return ["RPG2 MAP", "(no world yet -- start one with `new`)"]
-    loc = state["location"]
+    pos = state["position"]
     st = state.get("story")
     lines = [f"RPG2 MAP -- day {state['clock'].day}",
              f"the party is at {location_line(state)}",
              f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
              f"{TRAVEL_DAYS_CROSS} days to another)"]
     visited = set(state.get("visited") or [])
-    for race, settlements in lands(world).items():
-        mark = "  <- here" if race == loc["land"] else ""
+    for race, land_rec in world["lands"].items():
+        mark = "  <- here" if race == pos["land"] else ""
         if st and st.get("fallen") == race:
             mark += "  [UNDER THE YOKE]"
         lines.append("")
         lines.append(f"== the {race} lands =={mark}")
-        for s in settlements:
-            open_q = sum(1 for qid in s["quests"]
+        for key in land_rec["areas"]:
+            area = world["areas"][key]
+            if not area.get("known"):
+                continue
+            open_q = sum(1 for qid in area["quests"]
                          if world["quests"][qid]["status"] == "open")
-            if s["key"] == loc["place"]:
+            if area["key"] == pos["area"]:
                 where = "  <- the party"
-            elif s["key"] in visited:
+            elif area["key"] in visited or area.get("visited"):
                 where = "  (visited)"
             else:
                 where = ""
-            lines.append(f"  {s['name']} ({s['kind']}) -- "
-                         f"{open_q} job(s){where}")
-        wilds = [p for p in state.get("places", []) if p["land"] == race]
-        for p in wilds:
-            here = ("  <- the party"
-                    if p["name"].lower() == loc["place"] else "")
-            lines.append(f"    wilds: {p['name']} (found day "
-                         f"{p['day']}){here}")
+            kind = area.get("subtype", area["kind"])
+            jobs = (f" -- {open_q} job(s)"
+                    if area["kind"] == "settlement" else "")
+            found = (f", found day {area['discovered_day']}"
+                     if "discovered_day" in area else "")
+            lines.append(f"  {area['name']} ({kind}{found}){jobs}{where}")
     taken = accepted_quests(state)
     if taken:
         lines.append("")
         lines.append("-- quests in hand (where they lead) --")
         for q in taken:
-            home = _settlement_by_key(world, q.get("settlement"))
-            posted = f" @ {home['name']}" if home else ""
+            origin = world["areas"].get(q.get("origin"))
+            posted = f" @ {origin['name']}" if origin else ""
             lines.append("")
             if q.get("kind") == "delivery":
                 lines.append(f"[{q['id']}] DELIVERY {q['name']}{posted}")
@@ -534,7 +551,7 @@ def map_sheet_lines(state: dict) -> list[str]:
                              f"(travel {q['dest']})")
             else:
                 lines.append(f"[{q['id']}] {q['name']} (L{q['level']}){posted}")
-                lines.extend(_quest_site_lines(q))
+                lines.extend(_quest_site_lines(world, q))
     war = story.war_status_lines(world, st)
     if war:
         lines.append("")
@@ -582,8 +599,8 @@ def cmd_sheet(args: argparse.Namespace) -> None:
     _write_party_sheet(state)
     _write_map_sheet(state)
     day = state["clock"].day
-    where = (state["location"]["name"]
-             if state.get("location") else "nowhere")
+    where = (current_area(state)["name"]
+             if state.get("position") else "nowhere")
     paths = ["ui/party.txt", "ui/map.txt"]
     try:
         root = Path(__file__).parent
@@ -616,8 +633,7 @@ def save(state: dict) -> None:
         "accepted": state.get("accepted", []),
         "world": state.get("world"),
         "story": state.get("story"),
-        "location": state.get("location"),
-        "places": state.get("places", []),
+        "position": state.get("position"),
         "sighting": state.get("sighting"),
         "streak": state.get("streak", {"site": None, "count": 0}),
         "site_clears": state.get("site_clears", {}),
@@ -658,10 +674,7 @@ def load() -> dict:
             "foes": [_entity_from_dict(f) for f in rec["foes"]],
             "day": rec["day"]}
     world = doc.get("world")
-    location = doc.get("location")
-    if location is None and world:
-        # A save from before the navigation layer: the party is at home.
-        location = _settlement_location(world["settlements"][0])
+    position = doc.get("position")
     return {
         "party": party,
         "clock": Clock(**doc["clock"]),
@@ -676,15 +689,15 @@ def load() -> dict:
         or ([doc["active_quest"]] if doc.get("active_quest") else []),
         "world": world,
         "story": doc.get("story"),
-        "location": location,
-        "places": doc.get("places", []),
+        "position": position,
         "sighting": doc.get("sighting"),
         "streak": doc.get("streak", {"site": None, "count": 0}),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
         "visited": doc.get("visited")
-        or ([location["place"]]
-            if location and location.get("kind") != "wild" else []),
+        or ([position["area"]]
+            if position and world["areas"][position["area"]]["kind"]
+            == "settlement" else []),
         "karma": doc.get("karma") or karma.new_karma(),
         "dark_board": doc.get("dark_board"),
         # None = a pactless save (new --no-pact, or pre-pact): the hell
@@ -801,8 +814,8 @@ def tally_lines(state: dict) -> list[str]:
         q = world["quests"][qid]
         if q["status"] == "open" and q.get("kind") != "delivery":
             cur = q["next"]
-            s = q["sites"][cur["site"]]
-            left = len(s["rooms"]) - cur["room"]
+            s = quest_sites(world, q)[cur["site"]]
+            left = len(site_rooms(world, s)) - cur["room"]
             sites_after = len(q["sites"]) - cur["site"] - 1
             ahead = f"Ahead: {left} room(s) in {s['name']}"
             if sites_after:
@@ -853,7 +866,7 @@ def _starting_settlement(world: dict) -> dict:
                   if world["quests"][qid]["status"] == "open"
                   and world["quests"][qid].get("kind") != "delivery"]
         return min(levels) if levels else 99
-    return min(world["settlements"], key=lowest)
+    return min(settlements(world), key=lowest)
 
 
 def opening_hook(state: dict) -> list[str]:
@@ -902,12 +915,14 @@ def cmd_new(args: argparse.Namespace) -> None:
     world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
                                             # whole playthrough, world and all
     world = generate_world(world_seed)
+    start = _starting_settlement(world)
+    start["visited"] = True
     state = {"party": [pc, ally], "clock": Clock(), "purse": Purse(),
              "rng": rng, "foe_count": 0, "pending": None, "rooms": {},
              "world": world, "active_quest": None, "accepted": [],
              "story": story.init_story(world, rng, pc_race=pc.race),
-             "location": _settlement_location(_starting_settlement(world)),
-             "places": [], "sighting": None,
+             "position": _area_position(start),
+             "sighting": None,
              "streak": {"site": None, "count": 0}, "site_clears": {},
              "recruits": None,
              "karma": karma.new_karma(), "dark_board": None,
@@ -917,7 +932,7 @@ def cmd_new(args: argparse.Namespace) -> None:
              "pact": None if args.no_pact else karma.new_pact(),
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
-             "visited": [_starting_settlement(world)["key"]]}
+             "visited": [start["key"]]}
     if has_trait(ally, "needs meds"):
         ally.last_dose_day = state["clock"].day
     state["purse"].gold += joining_gold(pc) + joining_gold(ally)
@@ -1126,7 +1141,7 @@ def cmd_dismiss(args: argparse.Namespace) -> None:
                    None)
     if partner is not None:
         leavers.append(partner)
-    place = state["location"]["name"]
+    place = current_area(state)["name"]
     living = [h for h in party if not h.dead]
     share = purse.gold // len(living) if living else 0
     log: list[str] = []
@@ -1180,7 +1195,7 @@ def process_departures(state: dict, log: list[str]) -> None:
     if local_settlement(state) is None:
         return
     party, purse = state["party"], state["purse"]
-    place = state["location"]["name"]
+    place = current_area(state)["name"]
     for h in [h for h in party[1:] if h.dead]:
         party.remove(h)
         log.append(f"  {h.name} is laid to rest at {place}.")
@@ -1232,7 +1247,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         open_q = sum(1 for q in world["quests"].values()
                      if q["status"] == "open")
         print(f"  Board: {open_q} open quest(s) across "
-              f"{len(world['settlements'])} settlement(s) -- see `board`.")
+              f"{len(settlements(world))} settlement(s) -- see `board`.")
     qid = state.get("active_quest")
     if qid:
         q = world["quests"][qid]
@@ -1245,10 +1260,11 @@ def cmd_status(args: argparse.Namespace) -> None:
                   f"(`travel {q['dest']}`; arriving is the turn-in).")
         else:
             cur = q["next"]
-            s = q["sites"][cur["site"]]
+            s = quest_sites(world, q)[cur["site"]]
+            rooms = site_rooms(world, s)
             print(f"  Active quest: [{qid}] L{q['level']} {q['name']} -- "
                   f"next: {s['name']} (L{s['level']}), room "
-                  f"{cur['room'] + 1}/{len(s['rooms'])}. Fight it with `room`.")
+                  f"{cur['room'] + 1}/{len(rooms)}. Fight it with `room`.")
     streak = state.get("streak") or {"site": None, "count": 0}
     if streak["count"]:
         print(f"  Momentum: {streak['count']} encounter(s) cleared at "
@@ -1576,9 +1592,9 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
     the giver's turn-in scene is narrated over -- dm.md)."""
     quest = state["world"]["quests"][qid]
     cur = quest["next"]
-    site = quest["sites"][cur["site"]]
+    site = quest_sites(state["world"], quest)[cur["site"]]
     cur["room"] += 1
-    if cur["room"] < len(site["rooms"]):
+    if cur["room"] < len(site_rooms(state["world"], site)):
         return
     _close_site(state, log, qid)
 
@@ -1594,8 +1610,9 @@ def _close_site(state: dict, log: list[str], qid: str,
     quest = state["world"]["quests"][qid]
     party, purse = state["party"], state["purse"]
     cur = quest["next"]
-    site = quest["sites"][cur["site"]]
-    n_rooms = len(site["rooms"])
+    sites = quest_sites(state["world"], quest)
+    site = sites[cur["site"]]
+    n_rooms = len(site_rooms(state["world"], site))
     n_sites = len(quest["sites"])
     last_site = cur["site"] == n_sites - 1
     banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
@@ -1640,9 +1657,12 @@ def _close_site(state: dict, log: list[str], qid: str,
                        f"the ledger reads {pact['done']} completed. The "
                        f"next job comes in its own time.)")
     else:
-        nxt = quest["sites"][cur["site"]]
+        nxt = sites[cur["site"]]
+        nxt["known"] = True
+        state["position"]["site"] = None
+        state["position"]["room"] = None
         log.append(f"  (next: {nxt['name']}, L{nxt['level']}, "
-                   f"{len(nxt['rooms'])} encounter(s))")
+                   f"{len(site_rooms(state['world'], nxt))} encounter(s))")
 
 
 def active_delivery(state: dict) -> dict | None:
@@ -1762,7 +1782,7 @@ def maybe_punish(state: dict) -> bool:
         return False
     k["last_punish_day"] = day
     posse_level = min(karma.LEVEL_CAP, lvl + h)
-    land = state["location"]["land"]
+    land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_posse(posse_level, land, rng,
                                                     used_names=used)
@@ -1863,8 +1883,8 @@ def pact_lines(state: dict) -> list[str]:
     lines = []
     q = pact_task(state)
     if q is not None:
-        s = _settlement_by_key(state["world"], q["settlement"])
-        where = s["name"] if s else q["settlement"]
+        s = _settlement_by_key(state["world"], q["origin"])
+        where = s["name"] if s else q["origin"]
         due = pact["assigned_day"] + karma.TASK_GRACE_DAYS
         state_word = ("OVERDUE -- hell's enforcers are coming"
                       if day > due and day >= pact.get("bribed_until", 0)
@@ -1965,7 +1985,7 @@ def maybe_enforce(state: dict) -> bool:
     lvl = party_level(state)
     posse_level = min(karma.LEVEL_CAP,
                       lvl + 1 + min(2, pact["beatings"] - 1))
-    land = state["location"]["land"]
+    land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_hell_posse(
         posse_level, land, rng, used_names=used)
@@ -2084,7 +2104,8 @@ def cmd_task(args: argparse.Namespace) -> None:
         print(line)
     q = pact_task(state)
     if q is not None:
-        for line in quest_detail_lines(q, mind=party_mind(state)):
+        for line in quest_detail_lines(state["world"], q,
+                                       mind=party_mind(state)):
             print(line)
         print(f"(ignoring it past its grace draws hell's enforcers at "
               f"the roads and nights -- cooldown "
@@ -2145,10 +2166,10 @@ def cmd_settle(args: argparse.Namespace) -> None:
     if quest["status"] == "done" or quest.get("kind") == "delivery":
         print(f"[{qid}] {quest['name']} has no terms on the table.")
         return
-    if not at_quest_settlement(state, quest):
+    if not at_quest_site(state, quest):
         return
     cur = quest["next"]
-    site = quest["sites"][cur["site"]]
+    site = quest_sites(state["world"], quest)[cur["site"]]
     twist = site.get("twist")
     if not twist or twist.get("resolved") or cur["room"] != 0:
         print(f"[{qid}] {quest['name']}: no terms on the table at "
@@ -2343,7 +2364,7 @@ def cmd_site(args: argparse.Namespace) -> None:
     site = SITES[args.site]
     if state.get("world"):
         home = home_settlement(state)
-        if state["location"]["place"] != home["key"]:
+        if state["position"]["area"] != home["key"]:
             print(f"The {site.key} lies outside {home['name']} -- the party "
                   f"is at {location_line(state)}. `travel {home['key']}` "
                   f"first.")
@@ -2442,11 +2463,11 @@ def cmd_board(args: argparse.Namespace) -> None:
         # PLAYER gets is the ask-around funnel over the local list (dm.md).
         if args.settlement.lower() != "all":
             want = args.settlement.lower()
-            match = [s for s in world["settlements"] if want in s["key"]]
+            match = [s for s in settlements(world) if want in s["key"]]
             if not match:
                 print(f"No settlement matches {args.settlement!r}. "
                       "Settlements: "
-                      + ", ".join(s["name"] for s in world["settlements"]))
+                      + ", ".join(s["name"] for s in settlements(world)))
                 return
             key = match[0]["key"]
     else:
@@ -2484,9 +2505,9 @@ def cmd_board(args: argparse.Namespace) -> None:
         # where -- so travel is an informed choice, not a blind hop. Levels
         # read through the party's MIND like the local board (quest sight);
         # details and `take` still want the party AT the posting settlement.
-        land = state["location"]["land"]
+        land = state["position"]["land"]
         rumors = []
-        for s in lands(world).get(land, []):
+        for s in settlements_by_land(world).get(land, []):
             if s["key"] == key:
                 continue
             for qid in s["quests"]:
@@ -2513,7 +2534,7 @@ def cmd_show(args: argparse.Namespace) -> None:
     # The player-facing view reads through the party's MIND (quest sight);
     # --dm is the true view for the DM's own planning.
     mind = None if args.dm else party_mind(state)
-    for line in quest_detail_lines(quest, mind=mind):
+    for line in quest_detail_lines(state["world"], quest, mind=mind):
         print(line)
 
 
@@ -2527,7 +2548,7 @@ def cmd_take(args: argparse.Namespace) -> None:
     if quest["status"] == "done":
         print(f"[{quest['id']}] {quest['name']} is already complete.")
         return
-    if not at_quest_settlement(state, quest):
+    if not at_quest_origin(state, quest):
         return
     here = occupied_here(state)
     if here is not None:
@@ -2537,26 +2558,28 @@ def cmd_take(args: argparse.Namespace) -> None:
     accepted = state.setdefault("accepted", [])
     if quest["id"] not in accepted:
         accepted.append(quest["id"])   # the map tracks TAKEN jobs (map.txt)
-    save(state)
     g = quest.get("giver")
     if g:
         print(f"The job is taken from its giver -- narrate the scene "
               f"(dm.md): {npc_line(g)}")
     mind = party_mind(state)
     print(f"The party takes the job: {quest_line(quest, mind)}")
-    for line in quest_detail_lines(quest, mind=mind)[1:]:
+    for line in quest_detail_lines(state["world"], quest, mind=mind)[1:]:
         print(line)
     if quest.get("kind") == "delivery":
         print(f"The road is the job: `travel {quest['dest']}` "
               f"({quest['days']} day(s)) and expect trouble en route -- "
               f"arriving is the turn-in.")
     else:
-        print("Fight the next room with `room`. Switching quests later keeps "
-              "this one's progress.")
+        first = quest_sites(state["world"], quest)[quest["next"]["site"]]
+        first["known"] = True
+        print(f"The first site is {first['name']}. `look`, then "
+              f"`go {first['name']}`; `room` faces its next encounter.")
     if quest.get("align") == "dark":
         print("(dark work: every XP it pays is BAD KARMA -- heat rises, "
               "and the law comes collecting. Honest jobs burn bad karma "
               "1:1; `karma` shows the meter.)")
+    save(state)
 
 
 def cmd_room(args: argparse.Namespace) -> None:
@@ -2579,14 +2602,19 @@ def cmd_room(args: argparse.Namespace) -> None:
         print(f"[{qid}] {quest['name']} is a road job -- no rooms to fight. "
               f"`travel {quest['dest']}` to carry it.")
         return
-    if not at_quest_settlement(state, quest):
+    if not at_quest_site(state, quest):
         return
     party, rng = state["party"], state["rng"]
     cur = quest["next"]
-    site = quest["sites"][cur["site"]]
+    site = quest_sites(state["world"], quest)[cur["site"]]
+    rooms = site_rooms(state["world"], site)
     room_i = cur["room"]
-    room_name, kinds = site["rooms"][room_i]
-    site_key = f"{qid}/s{cur['site'] + 1}"
+    room = rooms[room_i]
+    room_name, kinds = room["name"], room["kinds"]
+    site_key = site["id"]
+    state["position"]["room"] = room["id"]
+    site["visited"] = True
+    room["known"] = room["visited"] = True
 
     # The caper structure (2026-07-19, dark quests -- karma.py's schema):
     # a TWIST site opens with its authored terms (one message: take them
@@ -2653,7 +2681,7 @@ def cmd_room(args: argparse.Namespace) -> None:
     held = reclaim_room(state, site_key, room_i + 1)
     banner = (f"=== {quest['name']} -- {site['name']} (L{site['level']}), "
               f"room {room_i + 1}/{len(site['rooms'])}: {room_name}")
-    n_rooms = len(site["rooms"])
+    n_rooms = len(rooms)
     banner_parts = [f"=== {quest['name']} ===",
                     f"{site['name']} (L{site['level']}),",
                     f"room {room_i + 1}/{n_rooms}: {room_name}"]
@@ -2664,7 +2692,7 @@ def cmd_room(args: argparse.Namespace) -> None:
         # display only, the stat row never forks (story.py).
         boss = site.get("boss")
         boss_at = None
-        if boss and room_i == len(site["rooms"]) - 1:
+        if boss and room_i == len(rooms) - 1:
             hits = [i for i, k in enumerate(kinds) if k == boss["kind"]]
             boss_at = hits[-1] if hits else None
         foes = []
@@ -2688,7 +2716,7 @@ def cmd_room(args: argparse.Namespace) -> None:
 
     k = streak_pos_for(state, site_key)
     resolve_encounter(state, log, foes,
-                      site_encounter_xp(site["level"], len(site["rooms"]), k),
+                      site_encounter_xp(site["level"], len(rooms), k),
                       site=site_key, room=room_i + 1, quest=qid,
                       streak_pos=k, field=ROOM_FIELD,
                       align=quest.get("align", "good"))
@@ -2696,8 +2724,8 @@ def cmd_room(args: argparse.Namespace) -> None:
 
 def cmd_forge(args: argparse.Namespace) -> None:
     """The DM's quest creator: build a quest by the generator's own rules
-    (level in, rosters out) for scenes the board doesn't cover, and post it
-    to a settlement's board like any other quest."""
+    (level in, rosters out) for scenes the generated offers don't cover,
+    placing its persistent sites in an area."""
     state = load()
     if not require_no_pending(state):
         return
@@ -2711,27 +2739,28 @@ def cmd_forge(args: argparse.Namespace) -> None:
         print(f"Unknown foe kind(s): {', '.join(unknown)}. "
               f"Catalog: {', '.join(sorted(FOES))}.")
         return
-    settlement = world["settlements"][0]
-    if args.settlement:
-        want = args.settlement.lower()
-        match = [s for s in world["settlements"] if want in s["key"]]
+    area = current_area(state)
+    if args.area:
+        want = args.area.lower()
+        match = [a for a in all_areas(world) if want in a["key"]]
         if not match:
-            print(f"No settlement matches {args.settlement!r}.")
+            print(f"No area matches {args.area!r}.")
             return
-        settlement = match[0]
+        area = match[0]
     n = len(world["quests"]) + 1
-    while f"q{n:02d}" in world["quests"]:    # shadow-board pruning can
-        n += 1                               # leave id holes
+    while (f"q{n:02d}" in world["quests"]
+           or f"q{n:02d}/s1" in world["sites"]):
+        n += 1       # expired shadow jobs may leave persistent geography
     qid = f"q{n:02d}"
-    quest = forge_quest(qid, args.level, args.sites, args.rooms, kinds,
+    quest = forge_quest(world, qid, args.level, args.sites, args.rooms, kinds,
                         args.name, state["rng"],
-                        settlement_key=settlement["key"],
+                        area_key=area["key"],
                         align="dark" if args.dark else "good")
     world["quests"][qid] = quest
-    settlement["quests"].append(qid)
+    area["quests"].append(qid)
     save(state)
-    print(f"Forged and posted at {settlement['name']}:")
-    for line in quest_detail_lines(quest):
+    print(f"Forged at {area['name']}:")
+    for line in quest_detail_lines(world, quest):
         print(line)
 
 
@@ -2788,7 +2817,7 @@ def wild_event(state: dict, chance: float, banner: str) -> bool:
     if rng.random() >= chance:
         return False
     level = roll_wild_level(rng)
-    land = state["location"]["land"]
+    land = state["position"]["land"]
     kinds = build_wild_encounter(level, land, rng)
     party_level = max(h.level for h in state["party"] if not h.dead)
     towering = level >= party_level + SPOTTED_MARGIN
@@ -2833,27 +2862,17 @@ def cmd_travel(args: argparse.Namespace) -> None:
         print("No world in this save -- start one with `new`.")
         return
     want = " ".join(args.dest).lower()
-    target = None
-    for s in world["settlements"]:
-        if want in s["key"]:
-            target = _settlement_location(s)
-            break
+    target = next((a for a in all_areas(world)
+                   if a.get("known") and want in a["key"]), None)
     if target is None:
-        for p in state.get("places", []):
-            if want in p["name"].lower():
-                target = {"place": p["name"].lower(), "name": p["name"],
-                          "land": p["land"], "kind": "wild"}
-                break
-    if target is None:
-        known = [s["name"] for s in world["settlements"]]
-        known += [p["name"] for p in state.get("places", [])]
+        known = [a["name"] for a in all_areas(world) if a.get("known")]
         print(f"No known place matches {want!r}. Known: {', '.join(known)}.")
         return
-    if target["place"] == state["location"]["place"]:
+    if target["key"] == state["position"]["area"]:
         print(f"The party is already at {target['name']}.")
         return
     days = (TRAVEL_DAYS_IN_LAND
-            if target["land"] == state["location"]["land"]
+            if target["land"] == state["position"]["land"]
             else TRAVEL_DAYS_CROSS)
     clear_sighting(state)
     print(f"The party sets out for {target['name']} -- {days} day(s) on "
@@ -2866,11 +2885,12 @@ def cmd_travel(args: argparse.Namespace) -> None:
         night_upkeep(state, log)
     reset_streak(state)
     print_play(log)
-    state["location"] = target
-    if target.get("kind") != "wild":
+    state["position"] = _area_position(target)
+    target["visited"] = True
+    if target.get("kind") == "settlement":
         visited = state.setdefault("visited", [])
-        if target["place"] not in visited:
-            visited.append(target["place"])  # known ground for teleport
+        if target["key"] not in visited:
+            visited.append(target["key"])  # known ground for teleport
     print(f"The party arrives at {location_line(state)} (day "
           f"{state['clock'].day}).")
     here = occupied_here(state)
@@ -2885,7 +2905,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
     dq = active_delivery(state)
-    if (dq is not None and target["place"] == dq["dest"]
+    if (dq is not None and target["key"] == dq["dest"]
             and not dq.get("intercepted")):
         # The delivery's guaranteed encounter: the leg that reaches the
         # destination is watched. Rolled off the road's own table like any
@@ -2921,7 +2941,7 @@ def cmd_explore(args: argparse.Namespace) -> None:
         return
     clear_sighting(state)
     party, clock, rng = state["party"], state["clock"], state["rng"]
-    land = state["location"]["land"]
+    land = state["position"]["land"]
     print(f"The party ranges out into the {land} wilds -- a day afield, "
           f"camping rough.")
     log = CombatLog()
@@ -2931,17 +2951,20 @@ def cmd_explore(args: argparse.Namespace) -> None:
     night_upkeep(state, log)
     reset_streak(state)
     print_play(log)
-    used = {p["name"] for p in state.get("places", [])}
-    pre, suf = WILD_NAME_PARTS
+    used = {a["name"] for a in all_areas(world)}
+    prefixes, suffixes = WILD_NAME_PREFIXES, WILD_NAME_SUFFIXES
     name = None
+    subtype = "natural"
     for _ in range(60):
-        name = rng.choice(pre) + rng.choice(suf)
+        suffix, subtype = rng.choice(suffixes)
+        name = rng.choice(prefixes) + suffix
         if name not in used:
             break
-    state.setdefault("places", []).append(
-        {"name": name, "land": land, "day": clock.day})
-    state["location"] = {"place": name.lower(), "name": name, "land": land,
-                         "kind": "wild"}
+    area = new_area(world, name.lower(), name, land, "natural",
+                    subtype=subtype,
+                    discovered_day=clock.day)
+    area["visited"] = True
+    state["position"] = _area_position(area)
     log = []
     award_xp(party, EXPLORE_XP, log, "discovery")
     print(f"They find a place no map of theirs holds: {name}.")
@@ -2965,7 +2988,7 @@ def cmd_hunt(args: argparse.Namespace) -> None:
         return
     clear_sighting(state)
     party, rng = state["party"], state["rng"]
-    land = state["location"]["land"]
+    land = state["position"]["land"]
     if rng.random() < HUNT_AMBUSH_CHANCE:
         # The hunter is the hunted (2026-07-10): stalking means going where
         # the predators are, and this often something off the ROAD's table
@@ -3008,41 +3031,95 @@ def cmd_engage(args: argparse.Namespace) -> None:
                          field=party_preferred_field(state["party"]))
 
 
+def cmd_look(args: argparse.Namespace) -> None:
+    """Show the local branch of the spatial tree. This is the command-line
+    precursor to the planned ui/minimap.txt local display."""
+    state = load()
+    world, pos = state["world"], state["position"]
+    area = current_area(state)
+    print(f"WHERE: {location_line(state)}")
+    if pos.get("room"):
+        room = world["rooms"][pos["room"]]
+        print(f"You are at {room['name']}. `back` returns to "
+              f"{world['sites'][room['site']]['name']}.")
+        return
+    if pos.get("site"):
+        site = world["sites"][pos["site"]]
+        rooms = site_rooms(world, site)
+        print(f"{site['name']} has {len(rooms)} immediate place(s):")
+        for room in rooms:
+            mark = "  <- here" if room["id"] == pos.get("room") else ""
+            print(f"  {room['name']}{mark}")
+        print(f"`back` returns to {area['name']}.")
+        return
+    visible = [s for s in area_sites(world, area) if s.get("known")]
+    kind = area.get("subtype", area["kind"])
+    print(f"{area['name']} is a {kind} area.")
+    if visible:
+        print("Sites in reach:")
+        for site in visible:
+            print(f"  {site['name']}")
+        print("Use `go SITE` to enter.")
+    else:
+        print("No local sites are known here.")
+
+
+def cmd_go(args: argparse.Namespace) -> None:
+    """Move locally within the current area. Local movement costs no day;
+    `travel` remains the explicit day-scale move between areas."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world, pos = state["world"], state["position"]
+    want = " ".join(args.dest).lower()
+    if pos.get("site"):
+        site = world["sites"][pos["site"]]
+        matches = [r for r in site_rooms(world, site)
+                   if want in r["name"].lower()]
+        if matches:
+            room = matches[0]
+            room["known"] = room["visited"] = True
+            pos["room"] = room["id"]
+            print(f"You go to {location_line(state)}.")
+            save(state)
+            return
+    area = current_area(state)
+    matches = [s for s in area_sites(world, area)
+               if s.get("known") and want in s["name"].lower()]
+    if matches:
+        site = matches[0]
+        site["visited"] = True
+        pos["site"], pos["room"] = site["id"], None
+        print(f"You enter {location_line(state)}.")
+        save(state)
+        return
+    print(f"No local destination matches {want!r}. `look` shows what is "
+          "in reach; `travel` moves between areas.")
+
+
+def cmd_back(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    pos = state["position"]
+    if pos.get("room"):
+        pos["room"] = None
+    elif pos.get("site"):
+        pos["site"] = None
+    else:
+        print("Already at area level. Use `travel AREA` to leave.")
+        return
+    print(f"You return to {location_line(state)}.")
+    save(state)
+
+
 def cmd_map(args: argparse.Namespace) -> None:
     state = load()
     world = state.get("world")
     if not world:
         print("No world in this save -- start one with `new`.")
         return
-    loc = state["location"]
-    st = state.get("story")
-    print(f"Day {state['clock'].day}. The party stands at "
-          f"{location_line(state)}.")
-    print(f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
-          f"{TRAVEL_DAYS_CROSS} days to another land; every travel day "
-          f"risks a road encounter)")
-    for race, settlements in lands(world).items():
-        mark = "  <- here" if race == loc["land"] else ""
-        if st and st.get("fallen") == race:
-            mark += "  [UNDER THE YOKE]"
-        print(f"the {race} lands:{mark}")
-        for s in settlements:
-            open_q = sum(1 for qid in s["quests"]
-                         if world["quests"][qid]["status"] == "open")
-            here = "  <- the party" if s["key"] == loc["place"] else ""
-            print(f"  {s['name']} ({s['kind']}) -- {open_q} open "
-                  f"quest(s){here}")
-        cast = [n for n in world.get("npcs", []) if n["land"] == race]
-        if cast:
-            print("  notables: " + "; ".join(f"{n['name']} ({n['role']}, "
-                                             f"at {n['seat']})"
-                                             for n in cast))
-        for p in state.get("places", []):
-            if p["land"] == race:
-                here = ("  <- the party"
-                        if p["name"].lower() == loc["place"] else "")
-                print(f"  {p['name']} (wilds, found day {p['day']}){here}")
-    for line in story.war_status_lines(world, st):
+    for line in map_sheet_lines(state):
         print(line)
 
 
@@ -3279,7 +3356,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
         storyteller_tale(party, state["rng"], log)
         companions_brew(state, log)
         in_wilds = (state.get("world")
-                    and state["location"]["kind"] != "settlement")
+                    and current_area(state)["kind"] != "settlement")
         quiet = False
         if in_wilds:
             # Survivalist (the ability): a made MIND check turns the rough
@@ -3294,7 +3371,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
             # player's call again afterward.
             chance = CAMP_ENCOUNTER_CHANCE / 2 if quiet else CAMP_ENCOUNTER_CHANCE
             if wild_event(state, chance,
-                          f"In the night at {state['location']['name']}"):
+                          f"In the night at {current_area(state)['name']}"):
                 return
         if maybe_punish(state):     # posses track a camp too (karma)
             return
@@ -3523,7 +3600,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
             # The magic gun is dwarf craft and dwarf commerce: sold only
             # in dwarven settlements (the L10+ gold sink lives there).
             here = local_settlement(state)
-            if here is None or here["race"] != "dwarf":
+            if here is None or here["land"] != "dwarf":
                 print(f"Revolvers are sold only in dwarven settlements -- "
                       f"the party is at {location_line(state)}.")
                 return
@@ -3538,7 +3615,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
                   f"{', '.join(sorted(SPELLS))}.")
             return
         here = local_settlement(state)
-        if here is None or here["kind"] != "capital":
+        if here is None or here.get("subtype") != "capital":
             print(f"Spellbooks are sold only in a capital -- the party is "
                   f"at {location_line(state)}.")
             return
@@ -3550,7 +3627,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
             print(f"{hero.name} has no need of medicine.")
             return
         here = local_settlement(state)
-        if here is None or here["kind"] != "capital":
+        if here is None or here.get("subtype") != "capital":
             print(f"Doses are compounded only in a capital -- the party is "
                   f"at {location_line(state)}.")
             return
@@ -3799,16 +3876,18 @@ def _cast_scry(state: dict, hero, log: list[str]) -> None:
     log.append(f"    {hero.name} scries (-{0 if result == 'crit' else cost} "
                f"Power -> {hero.cur_power}):")
     cur = quest["next"]
-    site = quest["sites"][cur["site"]]
+    qsites = quest_sites(world, quest)
+    site = qsites[cur["site"]]
     if seen_rank >= 3:
         log.append(f"    THE FAR-SEEING -- [{quest['id']}] {quest['name']} "
                    f"is truly level {quest['level']}:")
-    sites = (quest["sites"] if seen_rank >= 3
+    sites = (qsites if seen_rank >= 3
              else [site])
     for i, s in enumerate(sites):
         s_i = i if seen_rank >= 3 else cur["site"]
-        rooms = s["rooms"]
-        for j, (rname, kinds) in enumerate(rooms):
+        rooms = site_rooms(world, s)
+        for j, room in enumerate(rooms):
+            rname, kinds = room["name"], room["kinds"]
             if seen_rank == 1 and not (s_i == cur["site"]
                                        and j == cur["room"]):
                 continue
@@ -3833,7 +3912,7 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
         return
     visited = state.get("visited", [])
     target = None
-    for s in world["settlements"]:
+    for s in settlements(world):
         if want in s["key"]:
             target = s
             break
@@ -3845,11 +3924,11 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
         print(f"The party has never stood in {target['name']} -- teleport "
               f"reaches only KNOWN ground (travel there once first).")
         return
-    if target["key"] == state["location"]["place"]:
+    if target["key"] == state["position"]["area"]:
         print(f"The party is already at {target['name']}.")
         return
     days = (TRAVEL_DAYS_IN_LAND
-            if target["race"] == state["location"]["land"]
+            if target["land"] == state["position"]["land"]
             else TRAVEL_DAYS_CROSS)
     cost = TELEPORT_TRAVEL_COST_PER_DAY * days
     if hero.cur_power < cost:
@@ -3872,7 +3951,7 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
     if result == "crit":
         hero.cur_power += cost
     clear_sighting(state, quiet=True)
-    state["location"] = _settlement_location(target)
+    state["position"] = _area_position(target)
     log.append(f"    *** {hero.name} folds the world -- one step, and the "
                f"party stands in {target['name']} "
                f"(-{0 if result == 'crit' else cost} Power -> "
@@ -4124,14 +4203,32 @@ def main() -> None:
 
     p = sub.add_parser(
         "map",
-        help="the known world: the race lands, their settlements (with open "
-             "quest counts), discovered wild places, and where the party "
-             "stands")
+        help="the known world: lands and known areas, with settlement job "
+             "counts and the party's position")
     p.set_defaults(func=cmd_map)
 
     p = sub.add_parser(
+        "look",
+        help="the local view: current Land > Area > Site > Room breadcrumb "
+             "and the sites or rooms in reach (the command precursor to "
+             "the planned ui/minimap.txt)")
+    p.set_defaults(func=cmd_look)
+
+    p = sub.add_parser(
+        "go",
+        help="move locally to a known site or room; costs no day (`travel` "
+             "is the day-scale move between areas)")
+    p.add_argument("dest", nargs="+", help="local site or room (substring)")
+    p.set_defaults(func=cmd_go)
+
+    p = sub.add_parser(
+        "back",
+        help="move one local level outward: room to site, or site to area")
+    p.set_defaults(func=cmd_back)
+
+    p = sub.add_parser(
         "travel",
-        help=f"move to a settlement or discovered place: "
+        help=f"move to a known area (settlement or natural geography): "
              f"{TRAVEL_DAYS_IN_LAND} day within a land, {TRAVEL_DAYS_CROSS} "
              f"days to another land. Every travel day is a camp night "
              f"(overnight recovery -- travel heals; it also resets the "
@@ -4184,17 +4281,16 @@ def main() -> None:
 
     p = sub.add_parser(
         "take",
-        help="make a board quest the ACTIVE quest (the party must be AT the "
-             "settlement that posted it); `room` then fights its encounters "
-             "in order. Switching quests keeps the old one's progress -- "
-             "come back to it whenever.")
+        help="make a quest ACTIVE (the party must be at its origin area) and "
+             "reveal its first site. `go SITE`, then `room`, works its "
+             "encounters in order. Switching quests preserves progress.")
     p.add_argument("quest", help="quest id (q07, or just 7)")
     p.set_defaults(func=cmd_take)
 
     p = sub.add_parser(
         "room",
-        help="resolve the ACTIVE quest's next encounter (the board-quest "
-             "sibling of `hideout ROOM`). Clearing a site pays its lump; "
+        help="resolve the ACTIVE quest's next encounter at its current site "
+             "(enter it with `go SITE` first). Clearing a site pays its lump; "
              "clearing the last site completes the quest. A fled room is "
              "re-fought against its recorded survivors. CAPER quests "
              "(dark work, 2026-07-19): a DEED site first rolls the PC's "
@@ -4234,8 +4330,8 @@ def main() -> None:
     p = sub.add_parser(
         "forge",
         help="DM quest creator: generate a quest at a level/shape/foe-mix of "
-             "your choosing (same builder as worldgen) and post it to a "
-             "settlement's board. For scenes the board doesn't cover.")
+             "your choosing (same builder as worldgen) and place its sites "
+             "in an area. Defaults to the current area.")
     p.add_argument("--level", type=int, required=True)
     p.add_argument("--sites", type=int, default=1, choices=(1, 2, 3))
     p.add_argument("--rooms", type=int, default=2, choices=(1, 2, 3),
@@ -4243,8 +4339,8 @@ def main() -> None:
     p.add_argument("--kinds", required=True,
                    help="comma-separated catalog foe kinds (the quest's pool)")
     p.add_argument("--name", required=True)
-    p.add_argument("--settlement", default=None,
-                   help="where to post it (default: the capital)")
+    p.add_argument("--area", default=None,
+                   help="where its sites belong (default: current area)")
     p.add_argument("--dark", action="store_true",
                    help="forge a SHADOW job (karma & heat): bad-karma "
                         "XP, the dark gold premium")

@@ -2048,22 +2048,32 @@ shortbow), the **slinger** (L1), the **hunter** (L3, drilled), the
 
 # The Quest System — Add-on (2026-07)
 
-The generation layer over the bestiary: a generated **world** of settlements
-posting combat **quests** (1–3 sites of 1–3 encounters), every roster
-assembled from the catalog by its level annotations. `quests.py` owns it;
-`bench_quests.py` is its calibration harness. The two hand-built sites stay
-hand-built — they are the anchors the formulas were fitted to.
+The generation layer over the bestiary: a generated **world** with persistent
+Land -> Area -> Site -> Room geography, and settlements posting combat
+**quests** that point into it. Every roster is assembled from the catalog by
+its level annotations. `quests.py` owns it; `bench_quests.py` is its
+calibration harness. The two hand-built sites stay hand-built — they are the
+anchors the formulas were fitted to.
 
 ## The shape
 
-- **Quest = description + encounters, nothing more.** Deliberately dreamlike:
-  the system provides the fights and one line of premise; the DM invents the
-  telling. Local quests are formulaic placeholders (a race stereotype × a
-  themed foe pool), not authored content.
-- **Hierarchy:** a quest has 1–3 **sites** (weighted toward fewer); a site
-  has 1–3 **rooms** (encounters). Multi-site quests escalate: earlier sites
-  run at level −1, −2 from the quest's level. A site pays its own lump (XP +
-  gold, the level formulas) when cleared; the last site completes the quest.
+- **Geography belongs to the world.** A quest carries its premise, giver,
+  ordered objectives, progress, alignment, and rewards; its `sites` are IDs
+  pointing to persistent world sites, whose `rooms` are IDs pointing to
+  persistent immediate places. A generated quest may create a tower, cave,
+  farm, or road site, but the place remains part of the world after the job.
+  This is the foundation for later procedural detail and reuse; procedural
+  detail generation itself is not part of this slice.
+- **Quest shape:** a combat quest targets 1–3 **sites** (weighted toward
+  fewer), each with 1–3 **rooms** (encounters). Multi-site quests escalate:
+  earlier sites run at level −1, −2 from the quest's level. Clearing the
+  quest challenge at a site pays its own lump (XP + gold, the level formulas);
+  the site itself is geography and does not intrinsically pay merely for
+  existing. The last site completes the quest.
+- **Local content remains deliberately compact:** the system provides the
+  fights and a direct premise; the DM supplies only the connective telling.
+  Local quests are formulaic placeholders (a land culture × themed foe pool),
+  not authored short stories.
 - **The world is generated once per playthrough, seeded** (`session.py new`),
   and lives in the save: one capital, three towns (distinct races), villages
   — quest levels rolled uniformly in a settlement band (village 1–8, town
@@ -2149,30 +2159,60 @@ road is the content:
 
 ---
 
-# The World & Navigation — Add-on (2026-07-09)
+# The World & Navigation — Add-on (2026-07-09; hierarchy 2026-07-22)
 
-The geography over the quest system: the party is always **somewhere**, and
-where they are decides what work they can see and take. Deliberately
-list-shaped, not spatial — no coordinates, no hex map. `quests.py` owns the
-constants and tables (top of file); `session.py` owns the state and moves.
+The geography under the quest system: the party is always **somewhere**, and
+quests refer to places in the same world rather than carrying private maps.
+It remains deliberately list-shaped, not coordinate-shaped — no hex grid.
+`quests.py` owns the persistent tree and the travel constants/tables;
+`session.py` owns position, discovery, movement, and displays.
+
+## The hierarchy
+
+The canonical spatial vocabulary is **Land -> Area -> Site -> Room**:
+
+- **Land** is the macro territory: culture, ownership, war state, wilderness
+  encounter pool, and cross-land travel. The existing race lands keep their
+  plain, player-facing names; `region` is not a structural tier.
+- **Area** is a world-map destination. Its broad `kind` is `settlement` or
+  `natural`; its subtype says capital/town/village or forest, mountain, plain,
+  swamp, and similar. Travel between areas costs days. This handles both kinds
+  of destination without making them parallel hierarchies.
+- **Site** is a local destination in an area, reached without day-scale
+  travel: a castle, street, tavern, cave, tower, grove, bridge, or battlefield.
+- **Room** is the smallest persistent navigable place and encounter node. It
+  may be a literal room or an outdoor clearing, ledge, stream bank, or stretch
+  of path. `room` remains the engine term; player output leads with the
+  place's actual name.
+
+Classification follows **gameplay scale**, not physical size. A normal castle
+is a site with rooms; a fortress-city whose districts host independent work is
+an area with several sites. The tree may be sparse, and the UI may collapse a
+single-child step — no dummy “forest site / forest room” is required. Each
+deeper level must add a landmark, function, obstacle, or affordance rather
+than repeat its parent's kind.
 
 ## The map
 
-- **Lands.** Each race's land holds its settlements and its wilderness; a
-  land exists exactly when its race has at least one settlement. `map`
-  lists them all — the world is known in outline from day one; what's *in*
-  the wilds is not.
-- **Location.** The save carries where the party stands: a settlement, or a
-  discovered wilderness place. A new game starts at the settlement posting
-  the world's lowest-level open quest (2026-07-13 — the opening hook must
-  be takeable). The two hand-built set sites (hideout, barrow) lie outside
+- **Lands and areas.** Each land owns ordered area IDs. Settlement areas are
+  known from day one; natural areas join the map when discovered. `map` and
+  `ui/map.txt` show this macro Land/Area view as a 40-column list.
+- **Position.** The save carries a breadcrumb with `land`, `area`, and
+  optional `site` / `room` IDs. Status and `look` print it as, for example,
+  `Elven Lands > Far Forest > Wizard's Tower > Library`. A new game starts
+  in the settlement area posting the world's lowest-level open quest
+  (2026-07-13 — the opening hook must be takeable). The two hand-built set
+  sites (hideout, barrow) lie outside
   the **capital** (the first settlement worldgen made) and are **DEV/TEST
   calibration content only** since 2026-07-13 — presented alongside
   generated quests they confused the board's fiction, and the generator
   covers the level band; the benches still run them.
-- **Quests are local — but word travels (2026-07-11).** `board` shows the
-  CURRENT settlement's full board, and taking or working a quest still
-  means being at the settlement that posted it. But the player now also
+- **Quest offers are local; targets are places.** `board` shows the current
+  settlement area's jobs, and taking one requires standing in its origin
+  area. Taking it reveals its first target site. Working it then requires
+  travelling to that site's area and entering it with `go`; `room` faces the
+  next encounter there. A future quest may span areas without changing its
+  schema. Word still travels (2026-07-11): the player also
   KNOWS every other open quest **in the current land** — name, level,
   where — as a "word from around the land" rumor list under the local
   board. Same stance as straight-shown levels: travel should be an
@@ -2182,8 +2222,9 @@ constants and tables (top of file); `session.py` owns the state and moves.
 
 ## Travel
 
-- **1 day** between settlements of the same land, **2 days** crossing into
-  another land. Every travel day is a camp night: the ordinary overnight
+- **`travel AREA`** is the day-scale move: **1 day** between areas of the
+  same land, **2 days** crossing into another land. It returns the position
+  to area level. Every travel day is a camp night: the ordinary overnight
   recovery applies, so *travel heals* — and every night on the road resets
   the momentum streak, so leaving a half-cleared site costs its pay
   escalation.
@@ -2205,13 +2246,29 @@ constants and tables (top of file); `session.py` owns the state and moves.
   slipping past is the player's call. A quarter of the road's trouble is
   now optional trouble; the rest is simply met.
 
+## Local movement
+
+- **`look`** prints the current breadcrumb and the known child sites or rooms
+  in reach.
+- **`go NAME`** moves from an area into a known site, or from a site to one of
+  its rooms. It costs no day; local walking is not another survival tax.
+- **`back`** moves one level outward (room to site, site to area).
+- Settlement-wide conveniences (`board`, tavern, recruiting, shops) remain
+  area-scoped shortcuts. The hierarchy supports meaningful local choices; it
+  does not force repeated walks through streets with no decision.
+- `ui/map.txt` is the macro Land/Area page. A companion `ui/minimap.txt` is
+  planned for Site/Room detail and local quest markers; it is UI work, not
+  built in this hierarchy slice. Until then, `look` is the local display and
+  `map.txt` retains the taken-quest site summary it already shipped with.
+
 ## The explore move & the hunt
 
 - **`explore`** spends a day ranging the current land's wilds: discovers a
-  new named place (persists on the map, travelable later, XP for the
+  new named natural area (persists on the map, travelable later, XP for the
   discovery), camps rough (overnight recovery, streak reset), and beats
   more bushes than the road (~30% encounter chance, same table and valve).
-  Discovered places are hooks — the DM can `forge` content onto them.
+  Discovered areas are hooks — the DM can `forge --area` persistent sites
+  and rooms into them.
 - **`hunt`** is the always-available farm loop: stalk prey in the current
   land NOW (no day cost). The party chooses this fight, so unlike the road
   the level rolls at-or-below the party's (down to −2) — grinding XP, loot

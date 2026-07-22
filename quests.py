@@ -1,9 +1,11 @@
 """The quest & encounter generator -- structured combat content, worldgen.
 
 sites.py holds the CATALOG (foe rows, the two hand-built anchor sites); this
-file turns that catalog into a WORLD of quests: settlements with boards of
-1-3-site quests, each site 1-3 encounters, every roster assembled from the
-bestiary by its bench-calibrated level annotations. The design (2026-07):
+file turns that catalog into a WORLD of areas and quests. Geography is a
+persistent Land -> Area -> Site -> Room tree; quests point at world-owned
+sites instead of carrying disposable geography inside themselves. Every
+roster is still assembled from the bestiary by its bench-calibrated level
+annotations. The design (2026-07):
 
 - **The level IS the pay grade.** A quest's board level sets its rewards
   through rpg.py's site_* formulas; quest levels are rolled RANDOMLY within
@@ -593,13 +595,13 @@ def xp_to_cap(level: int = 1) -> int:
 def quest_xp_total(quest: dict) -> int:
     if quest.get("kind") == "delivery":
         return quest["xp"]
-    return sum(site_xp_total(s["level"]) for s in quest["sites"])
+    return quest.get("xp_total", 0)
 
 
 def quest_gold_total(quest: dict) -> int:
     if quest.get("kind") == "delivery":
         return quest["gold"]
-    total = sum(site_gold(s["level"]) for s in quest["sites"])
+    total = quest.get("gold_total", 0)
     if quest.get("align") == "dark":
         total = round(total * DARK_GOLD_MULT)
     return total
@@ -614,12 +616,82 @@ def site_gold_for(quest: dict, site: dict) -> int:
     return gold
 
 
-def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
+# --------------------------------------------------------------------------- #
+# Persistent geography -- Land -> Area -> Site -> Room
+# --------------------------------------------------------------------------- #
+
+def new_area(world: dict, key: str, name: str, land: str, kind: str,
+             *, subtype: str | None = None, known: bool = True,
+             discovered_day: int | None = None) -> dict:
+    """Add one world-map destination. Settlements and natural geography are
+    both areas; `kind` controls their content without changing the hierarchy."""
+    area = {"key": key, "name": name, "land": land, "kind": kind,
+            "sites": [], "quests": [], "known": known, "visited": False}
+    if subtype:
+        area["subtype"] = subtype
+    if discovered_day is not None:
+        area["discovered_day"] = discovered_day
+    world["areas"][key] = area
+    world["lands"].setdefault(
+        land, {"key": land, "name": f"{land.capitalize()} Lands",
+               "areas": []})["areas"].append(key)
+    return area
+
+
+def new_site(world: dict, area_key: str, site_id: str, name: str, level: int,
+             *, quest: str | None = None, known: bool = False) -> dict:
+    site = {"id": site_id, "name": name, "area": area_key,
+            "kind": "quest" if quest else "place", "level": level,
+            "rooms": [], "quest": quest, "known": known, "visited": False}
+    world["sites"][site_id] = site
+    world["areas"][area_key]["sites"].append(site_id)
+    return site
+
+
+def new_room(world: dict, site_id: str, room_id: str, name: str,
+             kinds: list[str], *, quest: str | None = None) -> dict:
+    """Add an immediate place. `room` covers interiors and outdoor text-
+    adventure nodes such as clearings, ledges, and stretches of path."""
+    room = {"id": room_id, "name": name, "site": site_id,
+            "kinds": list(kinds), "quest": quest,
+            "known": False, "visited": False}
+    world["rooms"][room_id] = room
+    world["sites"][site_id]["rooms"].append(room_id)
+    return room
+
+
+def all_areas(world: dict) -> list[dict]:
+    return list(world["areas"].values())
+
+
+def settlements(world: dict) -> list[dict]:
+    return [a for a in all_areas(world) if a["kind"] == "settlement"]
+
+
+def land_areas(world: dict, land: str) -> list[dict]:
+    rec = world["lands"].get(land)
+    return [world["areas"][key] for key in rec["areas"]] if rec else []
+
+
+def area_sites(world: dict, area: dict | str) -> list[dict]:
+    key = area if isinstance(area, str) else area["key"]
+    return [world["sites"][sid] for sid in world["areas"][key]["sites"]]
+
+
+def site_rooms(world: dict, site: dict | str) -> list[dict]:
+    key = site if isinstance(site, str) else site["id"]
+    return [world["rooms"][rid] for rid in world["sites"][key]["rooms"]]
+
+
+def quest_sites(world: dict, quest: dict) -> list[dict]:
+    return [world["sites"][sid] for sid in quest.get("sites", [])]
+
+
+def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                 rng: random.Random) -> dict:
-    """One quest instance: 1-3 sites (weighted toward fewer), each 1-3 rooms,
-    sites escalating to the quest's level (an S-site quest runs its earlier
-    sites at level-1, level-2... floored at 1). Rewards are never stored --
-    they derive from each site's level via rpg's formulas."""
+    """One quest instance targeting 1-3 newly created world sites, each with
+    1-3 world rooms. Sites escalate to the quest's level (an S-site quest runs
+    its earlier sites at level-1, level-2... floored at 1)."""
     n_sites = rng.choices((1, 2, 3), weights=(45, 40, 15))[0]
     n_sites = min(n_sites, len(tpl["sites"]))
     if tpl.get("deed") or tpl.get("twist"):
@@ -628,25 +700,33 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
         # the twist to the last, so every stem must stand.
         n_sites = len(tpl["sites"])
     stems = list(tpl["sites"][:n_sites])
-    sites = []
+    site_ids = []
+    xp_total = 0
+    gold_total = 0
     for j, stem in enumerate(stems):
         site_level = max(1, level - (n_sites - 1 - j))
         n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
         rooms = build_site_rooms(site_level, n_rooms, tpl["pool"], rng)
-        sites.append({"name": stem, "level": site_level,
-                      "rooms": [[name, kinds] for name, kinds in rooms]})
+        site_id = f"{qid}/s{j + 1}"
+        new_site(world, area_key, site_id, stem, site_level, quest=qid)
+        for k, (name, kinds) in enumerate(rooms):
+            new_room(world, site_id, f"{site_id}/r{k + 1}", name, kinds,
+                     quest=qid)
+        site_ids.append(site_id)
+        xp_total += site_xp_total(site_level)
+        gold_total += site_gold(site_level)
     # The caper fields ride the site dicts (plain JSON, like everything):
     # deed on the FIRST site (the attempt comes before the fighting),
     # twist on the LAST (the complication waits at the end of the job).
     if tpl.get("deed"):
-        sites[0]["deed"] = dict(tpl["deed"])
+        world["sites"][site_ids[0]]["deed"] = dict(tpl["deed"])
     if tpl.get("twist"):
-        sites[-1]["twist"] = dict(tpl["twist"])
+        world["sites"][site_ids[-1]]["twist"] = dict(tpl["twist"])
     return {
         "id": qid,
         "name": tpl["title"],
         "desc": tpl["desc"],
-        "settlement": settlement_key,
+        "origin": area_key,
         "level": level,
         "fuzz": rng.randint(-2, 2),     # quest sight (Magic & Mind): the
                                         # fixed error a dull-witted party
@@ -655,7 +735,12 @@ def build_quest(qid: str, tpl: dict, settlement_key: str, level: int,
                                         # re-rolls it; clamped by the
                                         # party's best MIND (seen_level)
         "skins": dict(tpl["skins"]),
-        "sites": sites,
+        "sites": site_ids,
+        "site_count": len(site_ids),
+        "room_count": sum(len(world["sites"][sid]["rooms"])
+                          for sid in site_ids),
+        "xp_total": xp_total,
+        "gold_total": gold_total,
         "next": {"site": 0, "room": 0},     # the progress cursor
         "status": "open",
         "align": tpl.get("align", "good"),  # karma & heat (2026-07-19):
@@ -688,7 +773,7 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
     the road IS the pay grade here, not a site level (`level` stays 0: no
     rooms, no threat math; the guaranteed interception rolls off the road's
     own party-independent table like any travel event)."""
-    days = (TRAVEL_DAYS_IN_LAND if origin["race"] == dest["race"]
+    days = (TRAVEL_DAYS_IN_LAND if origin["land"] == dest["land"]
             else TRAVEL_DAYS_CROSS)
     return {
         "id": qid,
@@ -696,7 +781,7 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
         "name": tpl["title"],
         "desc": tpl["desc"],
         "cargo": tpl["cargo"],
-        "settlement": origin["key"],
+        "origin": origin["key"],
         "dest": dest["key"],
         "dest_name": dest["name"],
         "days": days,
@@ -715,27 +800,36 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
     }
 
 
-def forge_quest(qid: str, level: int, n_sites: int, n_rooms: int,
+def forge_quest(world: dict, qid: str, level: int, n_sites: int, n_rooms: int,
                 pool: tuple[str, ...], name: str, rng: random.Random,
-                settlement_key: str = "", align: str = "good") -> dict:
+                area_key: str = "", align: str = "good") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
     forges a shadow job (karma & heat: bad-karma XP, the gold premium)."""
-    tpl = dict(title=name, desc="(DM-forged)", pool=pool, skins={},
-               align=align,
-               sites=tuple(f"site {j + 1}" for j in range(n_sites)))
-    quest = build_quest(qid, tpl, settlement_key, level, rng)
-    # forge pins the shape exactly (build_quest rolls it): rebuild the sites
-    # at the asked-for site count and room count.
-    sites = []
+    # Forge pins the shape, so build its world-owned places directly instead
+    # of asking build_quest to roll and then discarding a second layout.
+    site_ids = []
+    xp_total = 0
+    gold_total = 0
     for j in range(n_sites):
         site_level = max(1, level - (n_sites - 1 - j))
         rooms = build_site_rooms(site_level, n_rooms, pool, rng)
-        sites.append({"name": f"site {j + 1}", "level": site_level,
-                      "rooms": [[rn, kinds] for rn, kinds in rooms]})
-    quest["sites"] = sites
-    return quest
+        site_id = f"{qid}/s{j + 1}"
+        new_site(world, area_key, site_id, f"site {j + 1}", site_level,
+                 quest=qid)
+        for k, (rn, kinds) in enumerate(rooms):
+            new_room(world, site_id, f"{site_id}/r{k + 1}", rn, kinds,
+                     quest=qid)
+        site_ids.append(site_id)
+        xp_total += site_xp_total(site_level)
+        gold_total += site_gold(site_level)
+    return {"id": qid, "name": name, "desc": "(DM-forged)",
+            "origin": area_key, "level": level, "fuzz": rng.randint(-2, 2),
+            "skins": {}, "sites": site_ids, "site_count": n_sites,
+            "room_count": n_sites * n_rooms, "xp_total": xp_total,
+            "gold_total": gold_total, "next": {"site": 0, "room": 0},
+            "status": "open", "align": align, "epilogue": ""}
 
 
 # --------------------------------------------------------------------------- #
@@ -799,10 +893,10 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the race's table (the capital also draws the epics)
     among those whose band contains the roll."""
-    lo, hi = SETTLEMENT_KINDS[settlement["kind"]][1]
+    lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
     level = rng.randint(lo, hi)
-    tables = list(TEMPLATES[settlement["race"]])
-    if settlement["kind"] == "capital":
+    tables = list(TEMPLATES[settlement["land"]])
+    if settlement["subtype"] == "capital":
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
                if template_band(t)[0] <= level <= template_band(t)[1]]
@@ -816,8 +910,8 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     fresh = [t for t in fitting if t["title"] not in posted]
     tpl = rng.choice(fresh or fitting)
     qid = f"q{len(world['quests']) + 1:02d}"
-    quest = build_quest(qid, tpl, settlement["key"], level, rng)
-    attach_giver(quest, settlement["race"], rng, role=tpl.get("giver"),
+    quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    attach_giver(quest, settlement["land"], rng, role=tpl.get("giver"),
                  used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -834,7 +928,8 @@ def generate_world(seed: int | None = None) -> dict:
     used_names: set[str] = set()
     used_people: set[str] = set()   # one namespace for givers AND the cast:
                                     # two Ruriks in one town read as a bug
-    world: dict = {"seed": seed, "settlements": [], "quests": {}, "npcs": []}
+    world: dict = {"seed": seed, "lands": {}, "areas": {}, "sites": {},
+                   "rooms": {}, "quests": {}, "npcs": []}
 
     races = list(RACES)
     rng.shuffle(races)
@@ -842,19 +937,18 @@ def generate_world(seed: int | None = None) -> dict:
     plan += [("village", rng.choice(races)) for _ in range(2)]
     for kind, race in plan:
         name = _settlement_name(race, rng, used_names)
-        settlement = {"key": name.lower(), "name": name, "race": race,
-                      "kind": kind, "quests": []}
-        world["settlements"].append(settlement)
+        settlement = new_area(world, name.lower(), name, race, "settlement",
+                              subtype=kind)
         for _ in range(SETTLEMENT_KINDS[kind][0]):
             _post_quest(world, settlement, rng, used_people)
 
-    for race, setts in lands(world).items():
+    for race, setts in settlements_by_land(world).items():
         _cast_the_land(world, race, setts[0], rng, used_people)
 
     target = WORLD_XP_MARGIN * xp_to_cap(1)
     while (sum(quest_xp_total(q) for q in world["quests"].values()) < target
            and len(world["quests"]) < WORLD_MAX_QUESTS):
-        _post_quest(world, rng.choice(world["settlements"]), rng,
+        _post_quest(world, rng.choice(settlements(world)), rng,
                     used_people)
 
     # The deliveries go on last, ON TOP of the coverage target (courier work
@@ -871,8 +965,8 @@ def _post_delivery(world: dict, rng: random.Random,
     face at the origin and a RECIPIENT face at the destination (the
     hand-off is the turn-in scene)."""
     from people import make_npc     # runtime import (cycle: RACES)
-    origin = rng.choice(world["settlements"])
-    dests = [s for s in world["settlements"] if s["race"] != origin["race"]]
+    origin = rng.choice(settlements(world))
+    dests = [s for s in settlements(world) if s["land"] != origin["land"]]
     dest = rng.choice(dests)
     posted = {q["name"] for q in world["quests"].values()
               if q.get("kind") == "delivery"}
@@ -880,9 +974,9 @@ def _post_delivery(world: dict, rng: random.Random,
     tpl = rng.choice(fresh or DELIVERY_TEMPLATES)
     qid = f"q{len(world['quests']) + 1:02d}"
     quest = build_delivery_quest(qid, tpl, origin, dest, rng)
-    attach_giver(quest, origin["race"], rng, role=tpl.get("giver"),
+    attach_giver(quest, origin["land"], rng, role=tpl.get("giver"),
                  used_names=used_people)
-    quest["recipient"] = make_npc(rng, dest["race"], tpl["recipient"],
+    quest["recipient"] = make_npc(rng, dest["land"], tpl["recipient"],
                                   used_names=used_people)
     world["quests"][qid] = quest
     origin["quests"].append(qid)
@@ -939,20 +1033,23 @@ CAMP_ENCOUNTER_CHANCE = 0.10  # a night camped in the WILDS (not at a
                               # rolled after the night's recovery, same road
                               # table and spotted/ambush valves
 
-# Wilderness place names, discovered by the explore move (race-neutral;
-# the land's race colors the fiction, the DM colors the rest).
-WILD_NAME_PARTS = (("Black", "Red", "Mist", "Thorn", "Crow", "Elk",
-                    "Adder", "Howling", "Broken", "Old"),
-                   ("fen", "hollow", "ridge", "wood", "moor", "caves",
-                    "falls", "barrens", "tarn", "cairns"))
+# Natural-area names and their modest geography tags, discovered by explore.
+# This is classification for the spatial schema, not the planned procedural
+# detail generator: the DM still supplies what is actually present there.
+WILD_NAME_PREFIXES = ("Black", "Red", "Mist", "Thorn", "Crow", "Elk",
+                      "Adder", "Howling", "Broken", "Old")
+WILD_NAME_SUFFIXES = (("fen", "wetland"), ("hollow", "woodland"),
+                      ("ridge", "highlands"), ("wood", "forest"),
+                      ("moor", "moorland"), ("caves", "caverns"),
+                      ("falls", "riverland"), ("barrens", "badlands"),
+                      ("tarn", "lake"), ("cairns", "hills"))
 
 
-def lands(world: dict) -> dict[str, list[dict]]:
-    """The map: race -> that land's settlements, in worldgen order. A land
-    exists exactly when its race holds at least one settlement."""
+def settlements_by_land(world: dict) -> dict[str, list[dict]]:
+    """Settlement areas grouped by land, preserving world generation order."""
     out: dict[str, list[dict]] = {}
-    for s in world["settlements"]:
-        out.setdefault(s["race"], []).append(s)
+    for s in settlements(world):
+        out.setdefault(s["land"], []).append(s)
     return out
 
 
@@ -1019,18 +1116,19 @@ def wild_encounter_xp(level: int) -> int:
     return site_encounter_xp(level, 3, 2)
 
 
-def quest_to_sites(quest: dict) -> list[Site]:
+def quest_to_sites(world: dict, quest: dict) -> list[Site]:
     """A quest's sites as sites.Site instances, so the batch sims can run a
     generated quest through the very same run_site loop the hand-built sites
     (and tune.py) use. Session play doesn't need this -- it fights rooms
     one command at a time. A delivery has no sites: empty list (the career
     sim and any other site iterator just walks past it)."""
     out = []
-    for i, s in enumerate(quest["sites"]):
+    for s in quest_sites(world, quest):
+        rooms = site_rooms(world, s)
         out.append(Site(
-            key=f"{quest['id']}/s{i + 1}",
+            key=s["id"],
             level=s["level"],
-            rooms=tuple((rn, tuple(kinds)) for rn, kinds in s["rooms"]),
+            rooms=tuple((r["name"], tuple(r["kinds"])) for r in rooms),
             quest_line=f"{quest['name']} -- {s['name']}",
             spawn_phrase="{n} foes",
             abandon_line="the site is abandoned.",
@@ -1047,8 +1145,8 @@ def quest_shape(quest: dict) -> str:
     if quest.get("kind") == "delivery":
         return (f"a road delivery, {quest['days']} "
                 f"day{'s' if quest['days'] > 1 else ''} out")
-    rooms = sum(len(s["rooms"]) for s in quest["sites"])
-    n = len(quest["sites"])
+    rooms = quest.get("room_count", 0)
+    n = quest.get("site_count", len(quest.get("sites", [])))
     return (f"{n} site{'s' if n > 1 else ''}, "
             f"{rooms} encounter{'s' if rooms > 1 else ''}")
 
@@ -1117,10 +1215,10 @@ def board_lines(world: dict, settlement_key: str | None = None,
     best MIND: with it, levels blur to quest sight (L~7); without it (the
     default -- the DM/demo view) they print true."""
     lines = []
-    for s in world["settlements"]:
+    for s in settlements(world):
         if settlement_key and s["key"] != settlement_key:
             continue
-        lines.append(f"{s['name']} ({s['race']} {s['kind']}):")
+        lines.append(f"{s['name']} ({s['land']} {s['subtype']}):")
         for qid in s["quests"]:
             q = world["quests"][qid]
             g = q.get("giver")
@@ -1136,7 +1234,8 @@ def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
     return ", ".join(f"{n}x {d}" if n > 1 else d for d, n in counts.items())
 
 
-def quest_detail_lines(quest: dict, mind: int | None = None) -> list[str]:
+def quest_detail_lines(world: dict, quest: dict,
+                       mind: int | None = None) -> list[str]:
     """The full quest view. With `mind` (quest sight) the site levels shift
     by the same read error as the headline -- a blurred read is blurred
     consistently, it never leaks the truth through a sub-line."""
@@ -1160,7 +1259,7 @@ def quest_detail_lines(quest: dict, mind: int | None = None) -> list[str]:
                          f"({r['race']} {r['sex']}, age {r['age']}; "
                          f"{traits})")
         return lines
-    for i, s in enumerate(quest["sites"]):
+    for i, s in enumerate(quest_sites(world, quest)):
         cur = quest["next"]
         site_l = (f"L{s['level']}" if exact
                   else f"L~{max(1, s['level'] + offset)}")
@@ -1179,13 +1278,15 @@ def quest_detail_lines(quest: dict, mind: int | None = None) -> list[str]:
                          f"{t['text']} -- `settle` takes the terms at "
                          f"x{t.get('pay', 0.5):g} of the site lump; "
                          f"fighting on refuses them")
-        for j, (rname, kinds) in enumerate(s["rooms"]):
+        rooms = site_rooms(world, s)
+        for j, room in enumerate(rooms):
+            rname, kinds = room["name"], room["kinds"]
             here = (quest["status"] == "open"
                     and cur["site"] == i and cur["room"] == j)
             mark = "  <- next" if here else ""
             boss = s.get("boss")
             led = (f" -- led by {boss['display']}"
-                   if boss and j == len(s["rooms"]) - 1 else "")
+                   if boss and j == len(rooms) - 1 else "")
             lines.append(f"    site {i + 1} '{s['name']}' ({site_l}) "
                          f"room {j + 1}: {rname} -- "
                          f"{roster_kinds_line(kinds, quest['skins'])}"
@@ -1201,7 +1302,7 @@ def main() -> None:
     args = ap.parse_args()
     world = generate_world(args.seed)
     total = sum(quest_xp_total(q) for q in world["quests"].values())
-    print(f"World (seed={args.seed}): {len(world['settlements'])} settlements, "
+    print(f"World (seed={args.seed}): {len(settlements(world))} settlements, "
           f"{len(world['quests'])} quests, {total} XP on the board "
           f"(a duo needs {xp_to_cap(1)} to L{LEVEL_CAP}).")
     print()
@@ -1215,7 +1316,7 @@ def main() -> None:
     if args.demo:
         for q in world["quests"].values():
             print()
-            for line in quest_detail_lines(q):
+            for line in quest_detail_lines(world, q):
                 print(line)
 
 

@@ -74,6 +74,12 @@ Concretely:
      (rests, travel, recruit sheets) where lines still hang a word
      past the width. The `fit_lines` helper and the tally/pause
      penalty display are the pattern to reuse.
+   - **Local map page:** add **`ui/minimap.txt`** beside the shipped
+     `ui/map.txt`. `map.txt` is the macro Land/Area view; the minimap is the
+     current Area/Site/Room branch, visible exits, and local quest markers.
+     It should use the shipped `look`/breadcrumb data and join the same
+     rewrite + `sheet` commit lifecycle. This is UI only; the persistent
+     Land -> Area -> Site -> Room foundation shipped 2026-07-22.
    - **Parked from the log session (designer skepticism recorded):
      E1/P1 shorthand** for enemy/party names in fight lines — saves
      width on long names but reads cryptic; try only if long-name
@@ -143,7 +149,7 @@ level curve. Karma rides *beside* levels for now: merging them fully
   currency — a separate track would re-open "what does karma actually
   get you"; the bucket answer is free.
 - **The map stays a LIST.** Conquest will be ownership tags on the
-  existing lands/settlements readout (`[YOURS]` beside `[UNDER THE
+  existing Land/Area readout (`[YOURS]` beside `[UNDER THE
   YOKE]`), like the occupation layer already does. No hexes, no grid —
   everything prints at 40 columns.
 - **No big-number rework.** The Diablo feel (whip of bad karma, the
@@ -304,8 +310,10 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   layers; its big multiplier is the parked off-screen event simulation.
   *(The nemesis record — villain roadmap item 2 — is this thread's
   first concrete customer.)*
-- **Region detail & exploration depth** — content plus the same
-  off-screen tick.
+- **Area detail & exploration depth** — procedurally materialize area/site/
+  room descriptions and contents in stages, persist the results, and feed
+  them from the same off-screen tick. The spatial schema and navigation
+  foundation are shipped; procedural detail generation is not.
 - **Domain play** — the endgame layer (holdings, followers, rulership);
   the natural answer to "what is gold FOR at L15+". *(Pivot note:
   conquest ticking is domain play's thin edge — build item 3 of the

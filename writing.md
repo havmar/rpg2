@@ -1,7 +1,7 @@
 # RPG2 — Fiction and Content Style
 
 This is the shared writing guide for RPG2. Read it when running the game and
-when writing or generating fictional content: quests, locations, encounters,
+when writing or generating fictional content: quests, places, encounters,
 NPC hooks, item names, event lines, and epilogues.
 
 This guide governs **words inside the game**. `dm.md` still owns play protocol,
@@ -102,9 +102,10 @@ level, modifier, or resource count inside a metaphor.
 
 ### 3. Authored and generated content
 
-Quest templates, location records, NPC hooks, items, and epilogues use the
-same plain vocabulary and hard edges even when they are not written in second
-person. They are **game pieces, not miniature short stories**. Each should
+Quest templates, place records (areas, sites, and rooms), NPC hooks, items,
+and epilogues use the same plain vocabulary and hard edges even when they are
+not written in second person. They are **game pieces, not miniature short
+stories**. Each should
 give the DM material that becomes a clear scene and gives the player something
 to act on.
 
@@ -120,10 +121,13 @@ name the job instead of teasing it. Epilogues state the changed result in one
 beat. Do not write a mystery unless discovering the answer is genuinely part
 of play.
 
-For a **location**, start with an ordinary, legible kind of place, then give it
-one defining feature and one current condition: who holds it, what is broken,
-what moves there, or which way remains open. Build a place the player can
-navigate, not a vista the narrator can admire.
+For a **place**, start with an ordinary, legible kind, then give it one defining
+feature and one current condition: who holds it, what is broken, what moves
+there, or which way remains open. Respect the spatial scale: an area establishes
+the broad destination, a site adds a landmark or function, and a room adds an
+immediate obstacle or affordance. Never repeat the parent as filler (“forest
+site,” “forest room”). Build a place the player can navigate, not a vista the
+narrator can admire.
 
 For a **person**, lead with role and immediate intent. Add one visible or
 behavioral marker that can recur. Generated traits are prompts for conduct,
@@ -147,7 +151,7 @@ does not erase the event; it trusts the event.
 
 ## Examples
 
-**Location**
+**Place**
 
 Avoid:
 

@@ -538,11 +538,12 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     # (session.py rolls a fresh board per settlement day), so the count
     # alone can collide with a surviving taken job's id.
     n = len(world["quests"]) + 1
-    while f"q{n:02d}" in world["quests"]:
+    while (f"q{n:02d}" in world["quests"]
+           or f"q{n:02d}/s1" in world["sites"]):
         n += 1
     qid = f"q{n:02d}"
-    quest = build_quest(qid, tpl, settlement["key"], level, rng)
-    attach_giver(quest, settlement["race"], rng, role=tpl.get("giver"),
+    quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    attach_giver(quest, settlement["land"], rng, role=tpl.get("giver"),
                  used_names=used_names)
     world["quests"][qid] = quest
     return quest
@@ -640,25 +641,25 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=None)
     args = ap.parse_args()
     rng = random.Random(args.seed)
-    from quests import generate_world, quest_detail_lines
+    from quests import generate_world, quest_detail_lines, settlements
     world = generate_world(rng.randrange(1 << 30))
-    s = world["settlements"][0]
+    s = settlements(world)[0]
     print(f"Sample shadow board at {s['name']} (PC level 3):")
     for _ in range(DARK_JOBS_PER_DAY):
         q = roll_dark_quest(world, s, 3, rng)
-        for line in quest_detail_lines(q):
+        for line in quest_detail_lines(world, q):
             print(line)
         print()
     print("Sample posses (one per heat band):")
     for lvl in (3, 6, 11, 16):
-        kinds, skins, leader, label = build_posse(lvl, s["race"], rng)
+        kinds, skins, leader, label = build_posse(lvl, s["land"], rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")
     print()
     print("Sample hell enforcers (Chickening Out):")
     for lvl in (4, 9):
-        kinds, skins, leader, label = build_hell_posse(lvl, s["race"], rng)
+        kinds, skins, leader, label = build_hell_posse(lvl, s["land"], rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")

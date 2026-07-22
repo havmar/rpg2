@@ -27,9 +27,11 @@ play.
   is listed in `session.py --help`. The save is plain JSON on purpose:
   commit it and the playthrough travels with the repo. Every save also
   rewrites the two **UI pages** in **`ui/`**: **`ui/party.txt`** (the full
-  party info sheet) and **`ui/map.txt`** (the world map -- lands, their
-  settlements, discovered wild places, and the sites of every quest in
-  hand). **End EVERY DM message with `python session.py sheet`**, which
+  party info sheet) and **`ui/map.txt`** (the macro world map -- lands and
+  known areas, with the existing taken-quest site summary). A third page,
+  **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
+  yet; `look` is the local display meanwhile. **End EVERY DM message with
+  `python session.py sheet`**, which
   commits those two files -- one commit per message, so the player follows
   the playthrough as message-sized diffs. Unchanged sheets are a no-op; run
   it anyway.
@@ -50,15 +52,19 @@ play.
 
 ## The world and the quests (the game's spine)
 
-The world holds ~5 race LANDS, each with settlements posting combat quests
-at rolled levels (1-3 sites of 1-3 encounters each), plus its wilderness.
-**The party is always somewhere, and quests are LOCAL**: the jobs you can
-take are the current settlement's. **Which quest to take -- and whether
-it's worth the road to a better town -- is the player's core decision:**
+The world is one persistent **Land -> Area -> Site -> Room** tree. Areas are
+world-map destinations: settlements and substantial natural geography. Sites
+are local destinations; rooms are immediate indoor or outdoor places. Quests
+point to those world-owned places. **The party is always somewhere, and quest
+offers are LOCAL**: the jobs you can take are the current settlement area's.
+Which quest to take -- and whether it is worth the road to another area -- is
+the player's core decision:
 
-- `map` shows the known world: lands, settlements (with open-quest counts),
-  notables, discovered wild places, the war's status, and where the party
-  stands -- plus the in-game day.
+- `map` shows the macro world: lands, known areas, settlement open-quest
+  counts, the war's status, and the party's breadcrumb position. `look`
+  shows the known sites or rooms locally; `go NAME` enters one and `back`
+  moves one local level outward. Local moves cost no day. `travel AREA`
+  is the day-scale move.
 - **There is NO quest board in the fiction (2026-07-12): quests come from
   PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
   its level, pay, and WHOSE job it is (every quest has a generated giver:
@@ -91,7 +97,7 @@ it's worth the road to a better town -- is the player's core decision:**
   day-stamped aftermath line and a turn-in prompt naming the giver.
   Narrate the turn-in scene over both -- the epilogue is what the world
   now looks like because the party worked; don't skip it, don't pad it.
-- `travel PLACE` moves them: 1 day inside a land, 2 days to another land.
+- `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
   section below). Travel also RESETS the site momentum streak -- leaving a
@@ -99,30 +105,33 @@ it's worth the road to a better town -- is the player's core decision:**
 - `show QID` details one quest: description, sites, and what holds each
   room -- a DM readout. What the player hears about the road ahead is a
   COUNT of rooms and sites, never the rosters (see Narration style).
-- `take QID` makes it active (must be AT its settlement); `room` fights its
-  next encounter (same pause / retreat machinery as the set sites).
-  Progress is remembered per quest -- switching quests and coming back
-  later is fine, but working it means being there.
+- `take QID` makes it active (must be AT its origin area) and reveals its
+  first site. `go SITE` enters that persistent place; `room` fights its next
+  encounter there (same pause / retreat machinery as the set sites).
+  Progress is remembered per quest -- switching quests and returning later
+  is fine. Future quests can span areas because each site names its own area.
 - **Taking a job starts it (2026-07-19).** When the player takes a
-  quest, the SAME DM message runs `room` and opens the first encounter
-  (or the deed/twist block a caper prints): a sentence of walking up to
+  quest, the SAME DM message runs `look`, `go SITE`, then `room` and opens
+  the first encounter (or the deed/twist block a caper prints): a sentence of walking up to
   the door, then the fight. Never spend a message on "you have arrived
   at the site, what do you do?" -- arrival is not a decision point. The
   exception is the player's own words: if they take a job and say they
   want to do something else first (shop, hire, rest), do that instead.
 - **Check where the party stands BEFORE framing a scene.** Quests are
-  local, and the scripts enforce it: `room`/`take` refuse with a "travel
-  there first" line when the party is elsewhere. Don't narrate the arrival
+  local, and the scripts enforce it: `take` requires the origin area;
+  `room` requires the current target site. Don't narrate the arrival
   at the night market and then have the script contradict you -- glance at
   `status` (the `At:` field) or the active-quest line first; if the job's
-  settlement is elsewhere, the road IS the next scene: narrate setting
+  target area is elsewhere, the road IS the next scene: narrate setting
   out, run `travel`, then frame the arrival.
-- Sites pay themselves: each cleared site pays its lump (gold + XP) and the
-  last one completes the quest -- no manual award needed. `award GOLD XP
-  NAME` remains for off-script scenes only.
-- `forge --level L --sites N --rooms N --kinds a,b,c --name "..."` builds a
-  quest by the generator's rules for scenes the board doesn't cover, and
-  posts it like any other. Prefer it over improvising rosters by hand.
+- Quest challenges pay by site: each cleared objective pays its lump (gold +
+  XP) and the last completes the quest. The persistent geographical site
+  itself does not intrinsically pay. `award GOLD XP NAME` remains for
+  off-script scenes only.
+- `forge --level L --sites N --rooms N --kinds a,b,c --name "..." [--area
+  AREA]` builds a quest by the generator's rules and places its persistent
+  sites in the named area (the current area by default). Prefer it over
+  improvising rosters by hand.
 - The quest descriptions are one-line prompts, not stories -- **the fiction
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
@@ -154,9 +163,10 @@ it's worth the road to a better town -- is the player's core decision:**
   gets ambushed more; a sharp-MINDed one sees trouble first -- worth one
   flat mention when it first bites, not a recurring lecture.
 - `explore` spends a day ranging the current land: discovers a new named
-  place (persists on `map`, pays a little XP), camps rough overnight, and
+  natural area (persists on `map`, pays a little XP), camps rough overnight, and
   runs a higher encounter risk (~30%). Discovered places are yours to hang
-  fiction on -- `forge` a quest there when the story wants one.
+  fiction on -- `forge --area AREA` persistent sites there when the story
+  wants them.
 - `hunt` is the always-available farm: an immediate encounter at-or-below
   the party's level (their chosen prey), paying wild rates (below board
   work on purpose) plus normal loot rolls. When the player wants to grind
@@ -598,7 +608,7 @@ bigger than the fights WITHOUT pages of narration:
   prose -- where an older line in this file leans either way ("pulp
   with a wink", "a little flavor"), THIS rule wins. Humor survives
   only in the material itself (the situation, an epilogue line),
-  delivered deadpan. `writing.md` also governs any quest, location, NPC,
+  delivered deadpan. `writing.md` also governs any quest, place, NPC,
   item, or epilogue invented during play.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes

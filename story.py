@@ -40,8 +40,11 @@ from __future__ import annotations
 import argparse
 import random
 
+from rpg import site_xp_total, site_gold
 from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL,
-                    build_site_rooms, threat_value, attach_giver, lands,
+                    build_site_rooms, threat_value, attach_giver,
+                    new_site, new_room, quest_sites, site_rooms,
+                    settlements, settlements_by_land,
                     quest_line, quest_detail_lines)
 
 # --------------------------------------------------------------------------- #
@@ -300,8 +303,8 @@ def init_story(world: dict, rng: random.Random,
     (2026-07-13, designer call: the PC never fights his own people's war
     of conquest)."""
     from people import make_npc    # runtime import (people imports quests)
-    present = list(lands(world))
-    capital_land = world["settlements"][0]["race"]
+    present = list(world["lands"])
+    capital_land = settlements(world)[0]["land"]
     pool = [r for r in AGGRESSORS if r != pc_race] or list(AGGRESSORS)
     aggressor = rng.choice(pool)
     victims = [r for r in present if r != aggressor]
@@ -358,24 +361,26 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     level = WAVE_LEVELS[i]
     land = wave_target_land(story, i)
     if land:
-        settlement = lands(world)[land][0]
+        settlement = settlements_by_land(world)[land][0]
     else:
         # Wave 4 is raised from the capital -- unless the capital happens
         # to be the aggressor's own race (its free kin disowning the war
         # reads confusing); then the wave-2 ally land raises it instead.
-        settlement = world["settlements"][0]
-        if settlement["race"] == story["aggressor"]:
-            settlement = lands(world)[story["targets"][0]][0]
-    fmt = dict(_names(story), land=land or settlement["race"],
-               land_cap=(land or settlement["race"]).capitalize())
+        settlement = settlements(world)[0]
+        if settlement["land"] == story["aggressor"]:
+            settlement = settlements_by_land(world)[story["targets"][0]][0]
+    fmt = dict(_names(story), land=land or settlement["land"],
+               land_cap=(land or settlement["land"]).capitalize())
     qid = f"w{i + 1}"
     quest = {"id": qid,
              "name": wv["title"].format(**fmt),
              "desc": wv["desc"].format(**fmt),
-             "settlement": settlement["key"],
+             "origin": settlement["key"],
              "level": level,
              "skins": dict(spec["skins"]),
-             "sites": [],
+             "sites": [], "site_count": len(wv["sites"]),
+             "room_count": sum(WAVE_ROOMS[i]),
+             "xp_total": 0, "gold_total": 0,
              "next": {"site": 0, "room": 0},
              "status": "open",
              "epilogue": wv["epilogue"].format(**fmt),
@@ -384,24 +389,31 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     for j, (stem, n_rooms) in enumerate(zip(wv["sites"], WAVE_ROOMS[i])):
         site_level = max(1, level - (n_sites - 1 - j))
         rooms = build_site_rooms(site_level, n_rooms, spec["pool"], rng)
-        quest["sites"].append({"name": stem, "level": site_level,
-                               "rooms": [[rn, list(ks)] for rn, ks in rooms]})
+        site_id = f"{qid}/s{j + 1}"
+        new_site(world, settlement["key"], site_id, stem, site_level,
+                 quest=qid)
+        for k, (rn, kinds) in enumerate(rooms):
+            new_room(world, site_id, f"{site_id}/r{k + 1}", rn, list(kinds),
+                     quest=qid)
+        quest["sites"].append(site_id)
+        quest["xp_total"] += site_xp_total(site_level)
+        quest["gold_total"] += site_gold(site_level)
     boss_face = ([None, story["lieutenants"][0], story["lieutenants"][1],
                   story["conqueror"]][i])
     if boss_face is not None:
-        last = quest["sites"][-1]
-        kinds = last["rooms"][-1][1]
+        last = world["sites"][quest["sites"][-1]]
+        kinds = site_rooms(world, last)[-1]["kinds"]
         strongest = max(kinds, key=threat_value)
         last["boss"] = {"kind": strongest,
                         "display": f"{boss_face['name']}, "
                                    f"the {boss_face['role']}"}
     ruler = next((n for n in world.get("npcs", [])
                   if n.get("post") == "ruler"
-                  and n["land"] == settlement["race"]), None)
+                  and n["land"] == settlement["land"]), None)
     if ruler is not None:
         quest["giver"] = dict(ruler)
     else:
-        attach_giver(quest, settlement["race"], rng,
+        attach_giver(quest, settlement["land"], rng,
                      role="the war-muster's captain")
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -449,7 +461,7 @@ def on_wave_done(story: dict, quest: dict, day: int) -> list[str]:
 
 def occupied(story: dict | None, settlement: dict) -> bool:
     """Is this settlement under the aggressor's yoke (post-wave-3)?"""
-    return bool(story) and story.get("fallen") == settlement["race"]
+    return bool(story) and story.get("fallen") == settlement["land"]
 
 
 def war_status_lines(world: dict, story: dict | None) -> list[str]:
@@ -465,8 +477,7 @@ def war_status_lines(world: dict, story: dict | None) -> list[str]:
                       if world["quests"][qid]["status"] == "open"), None)
     if open_wave is not None:
         q = world["quests"][open_wave]
-        s = next(s for s in world["settlements"]
-                 if s["key"] == q["settlement"])
+        s = world["areas"][q["origin"]]
         lines.append(f"THE WAR: [{q['id']}] L{q['level']} {q['name']} -- "
                      f"raised at {s['name']}.")
     else:
@@ -516,7 +527,7 @@ def main() -> None:
         quest, lines = post_wave(world, story, rng, day=0)
         for line in lines:
             print(line)
-        for line in quest_detail_lines(quest):
+        for line in quest_detail_lines(world, quest):
             print(line)
         print(f"    epilogue: {quest['epilogue']}")
         quest["status"] = "done"        # force the gate for the dump

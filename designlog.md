@@ -364,3 +364,52 @@ register, but points content authors and generators to `writing.md`. The
 dispatcher now requires the shared guide in play and whenever development
 touches fictional content. The planned quest wording pass remains open; this
 session supplies its acceptance standard rather than performing that rewrite.
+
+## 2026-07-22 — Unified place hierarchy and navigation foundation
+
+**The problem.** Geography had two chains that met only at settlements:
+lands contained settlement/wild `location` records, while each quest privately
+contained sites and rooms. A tower therefore existed only as part of a quest,
+natural places stopped at one undifferentiated level, and `region`, `location`,
+and `site` had begun to overlap in discussion. The planned procedural-detail
+system needed stable places before it could generate anything coherent.
+
+**Vocabulary settled:** **Land -> Area -> Site -> Room**. Land remains the
+evocative macro territory rather than being renamed Region. Area is the
+world-map destination and may be a settlement, forest, mountain, plain, or
+other substantial geography. Site is a local building, street, landmark, or
+minor natural place. Room is the engine's smallest persistent node, literal
+indoors and text-adventure-spatial outdoors. “Place” is the generic prose word;
+`location` is no longer a schema tier, and the party carries a breadcrumb
+`position`. Classification follows gameplay scale: a castle is normally a
+site, but a fortress-city with independent districts is an area.
+
+Area records use `kind=settlement|natural`; `subtype` carries the meaningful
+shape (capital/town/village or forest/wetland/highlands/etc.). This keeps rules
+that care about walls separate from descriptive geography without flattening
+all of nature back into one "wilderness" type.
+
+**Ownership settled.** Geography belongs to the world. Quests retain premise,
+giver, objectives/progress, alignment, and rewards, but their site list now
+contains IDs into the world's site store; sites likewise point to world-owned
+rooms. The current quest generator still creates the same layouts and rosters
+at the same time — procedural detail generation is explicitly out of scope —
+but the resulting places persist and can later be revisited, changed, or used
+by another system. A site-clear payment belongs to the quest challenge at the
+site, not intrinsically to the geography.
+
+**Navigation slice.** `travel AREA` remains the day-scale move and resets the
+local breadcrumb. `look` shows the current branch, `go` enters a known site or
+room at no day cost, and `back` moves outward. Taking a quest requires its
+origin area and reveals its first site; fighting requires entering the current
+target site. Settlement conveniences stay area-scoped shortcuts so the new
+hierarchy does not manufacture walking chores. The tree may be sparse and UI
+may collapse unary levels; generated children must add a landmark, function,
+obstacle, or affordance instead of repeating “forest” at every depth.
+
+**UI boundary.** The newly shipped `ui/map.txt` is the macro Land/Area page.
+The desired lower-level companion is **`ui/minimap.txt`**, showing the current
+Area/Site/Room branch, exits, and local quest markers through the same rewrite
+and `sheet`-commit lifecycle. That page is planned UI work, not part of this
+slice; `look` is its command-line precursor, and `map.txt` temporarily retains
+its existing taken-quest site summary.
