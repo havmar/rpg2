@@ -1,0 +1,22 @@
+RPG2 MAP -- day 1
+the party is at the elf lands >
+  Dawnglade
+(travel: 1 day within a land, 2 days to
+  another)
+
+== the human lands ==
+  Alderford (capital) -- 8 job(s)
+
+== the elf lands ==  <- here
+  Dawnglade (town) -- 8 job(s)  <- the
+    party
+
+== the goblin lands ==
+  Gearburrow (town) -- 6 job(s)
+  Greasesprawl (village) -- 6 job(s)
+
+== the dwarf lands ==
+  Goldforge (town) -- 9 job(s)
+
+== the orc lands ==
+  Ashhold (village) -- 4 job(s)
