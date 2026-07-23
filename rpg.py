@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 
 
 # --------------------------------------------------------------------------- #
@@ -1344,7 +1345,7 @@ TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "
 # designer's phone, and a wrapped line breaks mid-thought -- so the player
 # level PRE-FITS every event into lines of at most this width, breaking only
 # between self-contained fragments (fit_lines). The full log keeps its old
-# free-width format (it goes to the fight.log workfile, not the chat).
+# free-width format (it goes to the ui/fight.log workfile, not the chat).
 PLAYER_WIDTH = 40
 
 
@@ -1374,10 +1375,10 @@ def fit_lines(parts) -> list[str]:
 class CombatLog(list):
     """The two-level combat log (2026-07; player level redesigned
     2026-07-21). The list itself IS the full log -- every headline plus the
-    raw numbers, the debug layer, written to the fight.log workfile -- while
-    `.player` collects THE log: the one display the DM narrates over and the
-    player reads (rules.md, "Reading the combat log"). Player lines start in
-    column 1 and are pre-fitted to PLAYER_WIDTH.
+    raw numbers, the debug layer, optionally written to a configured
+    workfile -- while `.player` collects THE log: the one display the DM
+    narrates over and the player reads (rules.md, "Reading the combat log").
+    Player lines start in column 1 and are pre-fitted to PLAYER_WIDTH.
 
     Emitters:
       log.append(line)        -> both levels (the player copy is unindented)
@@ -1400,9 +1401,15 @@ class CombatLog(list):
     list[str] still works everywhere (it then just receives the full log --
     the bench harnesses pass throwaway lists)."""
 
-    def __init__(self, lines=()):
+    def __init__(self, lines=(), debug_path: str | Path | None = None):
         super().__init__(lines)
         self.player: list[str] = []
+        # Optional persistence sink. group_combat flushes its own output to
+        # this path at every exit (pause or resolution); the session layer
+        # flushes again after it appends awards/tallies. Plain-list bench logs
+        # and unconfigured CombatLogs remain memory-only.
+        self.debug_path = Path(debug_path) if debug_path is not None else None
+        self._debug_flushed = 0
         self._round: int | None = None          # open round's number
         self._buf: list[tuple[str, str]] = []   # (line, kind) of open round;
                                                 # kind: note / quiet / defer
@@ -1494,10 +1501,36 @@ class CombatLog(list):
         else:
             self._player_add(alone)
 
+    def flush_debug(self) -> bool:
+        """Append full-log lines not written yet to the configured workfile.
+
+        Returns True when lines were written. Persistence is deliberately
+        best-effort: combat resolution must not fail because its diagnostic
+        workfile cannot be created or written.
+        """
+        if self.debug_path is None or self._debug_flushed >= len(self):
+            return False
+        try:
+            self.debug_path.parent.mkdir(parents=True, exist_ok=True)
+            with self.debug_path.open("a", encoding="utf-8") as f:
+                if self._debug_flushed == 0:
+                    f.write("=" * 40 + "\n")
+                f.write("\n".join(self[self._debug_flushed:]) + "\n")
+        except OSError:
+            return False
+        self._debug_flushed = len(self)
+        return True
+
 
 def _debug(log: list[str], line: str) -> None:
     """Full-log-only line (raw numbers). No-op difference on a plain list."""
     (log.debug if isinstance(log, CombatLog) else log.append)(line)
+
+
+def _flush_debug(log: list[str]) -> None:
+    """Persist a configured CombatLog; plain lists remain memory-only."""
+    if isinstance(log, CombatLog):
+        log.flush_debug()
 
 
 def _play(log: list[str], full_line: str, player_line,
@@ -3592,6 +3625,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
     interrupt and auto-orders, the auto crossings are RE-ARMED (removed from
     `fired`) instead of acted on, so the order isn't lost across the
     save/resume boundary -- they re-trip after the resume.
+
+    Logging: when `log` is a CombatLog configured with `debug_path`, this
+    function appends the full mechanics log to that workfile before every
+    return (pause or resolution). A plain list, used by the batch harnesses,
+    remains memory-only. Callers may append their own post-combat lines and
+    call `CombatLog.flush_debug()` again; its cursor prevents duplication.
     """
     party_set = set(party)
 
@@ -4346,6 +4385,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     for kind, h, _ in autos:
                         fired.discard((kind, h))
                     _finish_rounds(log)
+                    _flush_debug(log)
                     return Pause(round=rnd, crossings=interrupts)
                 for kind, h, order in autos:
                     # One action per hero per round: a hero crossing both
@@ -4367,6 +4407,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
     survivors = [h for h in party if h.alive]
     if survivors:
         _catch_breath(survivors, log)
+    _flush_debug(log)
     return None
 
 

@@ -382,6 +382,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
 UI_DIR = Path(__file__).parent / "ui"
 PARTY_SHEET_PATH = UI_DIR / "party.txt"
 MAP_SHEET_PATH = UI_DIR / "map.txt"
+FIGHT_LOG_PATH = UI_DIR / "fight.log"
 
 
 def party_sheet_lines(state: dict) -> list[str]:
@@ -730,24 +731,22 @@ def party_mind(state: dict) -> int:
     return max((h.mind for h in state["party"] if not h.dead), default=0)
 
 
-FIGHT_LOG_FILE = "fight.log"    # untracked (gitignored) -- the full debug
-                                # log's workfile, appended per encounter
+def new_combat_log() -> CombatLog:
+    """A full combat log configured for the UI-directory debug workfile."""
+    return CombatLog(debug_path=FIGHT_LOG_PATH)
 
 
 def print_combat(log: CombatLog) -> None:
     """Print THE combat log (2026-07-21: the player-facing level is the only
     combat display -- the DM narrates over it and pastes it as-is; see
     rules.md, "Reading the combat log"). The full debug log -- dice math,
-    modifiers, stamina readouts -- is appended to fight.log instead of
+    modifiers, stamina readouts -- is appended to ui/fight.log instead of
     printed: the post-mortem surface, inspected on demand (a death, a
-    suspect number), never part of play output."""
+    suspect number), never part of play output. group_combat already flushes
+    its configured log at resolution/pause; this flush captures the session
+    tail added afterward (awards, loot, tally) without duplicating lines."""
     if isinstance(log, CombatLog) and log.player:
-        try:
-            with open(FIGHT_LOG_FILE, "a", encoding="utf-8") as f:
-                f.write("=" * 40 + "\n")
-                f.write("\n".join(log) + "\n")
-        except OSError:
-            pass                # the workfile is best-effort, never fatal
+        log.flush_debug()
         print("\n".join(log.player))
     else:
         print("\n".join(log))
@@ -1796,7 +1795,7 @@ def maybe_punish(state: dict) -> bool:
     print(f"  (no parley in v1 -- they mean to collect; retreat is the "
           f"peaceful option. Losing is not death: the law leaves the "
           f"PC for dead -- party, purse, and bad karma all forfeit)")
-    log = CombatLog()
+    log = new_combat_log()
     for hero in living:
         start_fight(hero, log)
     log_banner(log,
@@ -1998,7 +1997,7 @@ def maybe_enforce(state: dict) -> bool:
     print(f"  (beat them and the job still stands -- the next visit "
           f"comes worse; lose and hell collects its fine. `bribe` or "
           f"the job itself are the ways out)")
-    log = CombatLog()
+    log = new_combat_log()
     for hero in living:
         start_fight(hero, log)
     log_banner(log,
@@ -2317,7 +2316,7 @@ def cmd_fight(args: argparse.Namespace) -> None:
     if not require_no_pending(state):
         return
     party, rng = state["party"], state["rng"]
-    log = CombatLog()
+    log = new_combat_log()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -2369,7 +2368,7 @@ def cmd_site(args: argparse.Namespace) -> None:
                   f"is at {location_line(state)}. `travel {home['key']}` "
                   f"first.")
             return
-    log = CombatLog()
+    log = new_combat_log()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -2674,7 +2673,7 @@ def cmd_room(args: argparse.Namespace) -> None:
         for line in klog:
             print(line)
 
-    log = CombatLog()
+    log = new_combat_log()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
 
@@ -2791,7 +2790,7 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
     (it can pause; retreat scatters it -- the road is not a room). `field`
     is the engagement's opening gap (who noticed whom decides it)."""
     party = state["party"]
-    log = CombatLog()
+    log = new_combat_log()
     for h in [h for h in party if not h.dead]:
         start_fight(h, log)
     log_banner(log, f"=== {banner} (a level-{level} encounter) ===",
@@ -3198,7 +3197,7 @@ def cmd_resume(args: argparse.Namespace) -> None:
                     return
             actions[hero] = action
 
-    log = CombatLog()
+    log = new_combat_log()
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
@@ -3236,7 +3235,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         return
     party, rng, clock = state["party"], state["rng"], state["clock"]
     living = [h for h in party if not h.dead]
-    log = CombatLog()
+    log = new_combat_log()
 
     escaped = False
     if args.blink:

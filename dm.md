@@ -468,9 +468,10 @@ bigger than the fights WITHOUT pages of narration:
   site, the streak's next multiplier): the between-fights numbers,
   already in display form. Add your short narration around the block;
   the prose never restates what the tally shows. The full debug log
-  (every roll and modifier) is appended to the untracked `fight.log`
+  (every roll and modifier) is appended to the untracked `ui/fight.log`
   workfile -- open it only when something needs a post-mortem (a death,
-  a number that looks wrong); it is never part of play output.
+  a number that looks wrong); it is never part of play output and `sheet`
+  does not commit it.
 - **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
   crossing (any member dropping past half HP mid-fight; crossing-only:
   entering a fight already low does NOT trip it -- that was the player's

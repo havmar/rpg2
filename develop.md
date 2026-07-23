@@ -263,11 +263,12 @@ a pointer: what the file is, how it's run, where its docs are.
   its progress cursor; `accepted_quests` gates it on the new `accepted`
   save key — offered-but-untaken jobs never appear). Both are **committed
   to the branch, not gitignored: they are the player's GitHub UI** (blob
-  links, dm.md); only `save.json` and `fight.log` stay untracked.
+  links, dm.md); only `save.json` and `ui/fight.log` stay untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
   the player-facing display the DM pastes into chat as-is, while the
-  full debug log goes to the untracked **`fight.log`** workfile
-  (`print_combat`; gitignored with save.json -- the
+  full debug log goes to the untracked **`ui/fight.log`** workfile
+  (`group_combat` flushes the configured log at pause/resolution and
+  `print_combat` flushes its session tail; gitignored with save.json -- the
   post-mortem surface, e.g. on a player death). The block ends with the
   party tally (`tally_lines`: tracks, standing roll penalties -- shown
   HERE and in the pause menu since the fight lines dropped the numbers
@@ -556,10 +557,12 @@ mechanic *does* and *why* is rules.md's job.
   arrivals and tavern/downtime nights), `night_upkeep` (meds drain),
   `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
   post-fight morale pass knows who died in *this* fight.
-- **The log** — `CombatLog` (reworked 2026-07-21, the one-log display):
-  the list itself is the full debug log (never printed in play --
-  `session.print_combat` appends it to the untracked **`fight.log`**
-  workfile and prints only `.player`); `.player` is THE display --
+- **The log** — `CombatLog` (reworked 2026-07-21, the one-log display;
+  persistence fixed 2026-07-23): the list itself is the full debug log
+  (never printed in play -- session-created logs target the untracked
+  **`ui/fight.log`** workfile; `group_combat` flushes at pause/resolution,
+  then `session.print_combat` flushes any appended session tail and prints
+  only `.player`); `.player` is THE display --
   col-1, pre-fitted to `PLAYER_WIDTH` = 40 via `fit_lines` (fragments
   never split), damage as `deals N dmg` + tier punctuation (`TIER_EMPH`),
   attacker-HP tags when hurt, quiet-round collapse

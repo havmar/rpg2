@@ -422,10 +422,14 @@ displayed log — `CombatLog.player` — that both readers share: the DM
 narrates over it, the player reads it as the fight's mechanical account.
 The **full debug log** (dice, every modifier with its source, severity
 arithmetic, per-round stamina readouts) still exists — the `CombatLog`
-list itself — but it is never printed in play: `session.print_combat`
-appends it to the untracked workfile **`fight.log`**, the post-mortem
-surface for a death or a suspect number. The bench harnesses still pass
-plain lists and receive the full wording.
+list itself — but it is never printed in play. Session combat logs are
+configured for the untracked workfile **`ui/fight.log`**: `group_combat`
+flushes the mechanics block when it pauses or resolves, and
+`session.print_combat` flushes the session tail (awards, loot, tally)
+afterward without duplicating lines. This makes the debug record independent
+of the shell's working directory and leaves a record even when the engine is
+called without the display step. The bench harnesses pass plain lists and
+receive the full wording without doing file I/O.
 
 The displayed log is built for a 40-column phone screen (`PLAYER_WIDTH`
 in rpg.py): **every line starts in column 1**, and every event is

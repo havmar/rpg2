@@ -62,7 +62,8 @@ Concretely:
      stat blocks as the enemy introduction, the dying counterattack
      resolving immediately (bench-checked within noise, benchlog).
      The full debug log stopped printing: it appends to the untracked
-     `fight.log` workfile (post-mortems only). Encounter banners, the
+     `ui/fight.log` workfile (post-mortems only; persistence anchored and
+     moved into `ui/` on 2026-07-23). Encounter banners, the
      pause menu, and the award/XP/autospend lines were refit in the
      same pass; dm.md's protocol/narration sections updated.
    - **Still open from item 1:** a player STATUS DISPLAY log (a
