@@ -413,3 +413,86 @@ Area/Site/Room branch, exits, and local quest markers through the same rewrite
 and `sheet`-commit lifecycle. That page is planned UI work, not part of this
 slice; `look` is its command-line precursor, and `map.txt` temporarily retains
 its existing taken-quest site summary.
+
+## 2026-07-23 — Procedural place generation structure
+
+**The desired world.** The continental sketch establishes a small number of
+large, distinct realms and environments: icy dwarf mountains, temperate and
+mediterranean human lands, elven and wild forests, goblin mediterranean
+country, orc prairie, northern and tropical pirate islands, jungle, desert,
+and Caelum, the city of angels and devils. The scale remains deliberately
+game-like: a Land has a handful of memorable geographic Areas and settlements,
+not a realistic census. The map itself remains planned context rather than
+this slice's implementation target.
+
+**The authored/generated boundary settled.** The world map, Land identities,
+major wonders, and each Land's three or four major natural Area themes are
+authored. Area names and ordinary settlement details may be rolled inside
+those constraints. Most Sites and Rooms are generated lazily, then saved
+permanently. Areas are finite: `explore` should reveal the authored inventory
+instead of creating an unlimited succession of random moors and woods. After
+the major geography is known, exploration materializes Sites within an Area.
+The local layer may grow without a hard cap, but does not promise infinite
+novelty.
+
+**Land is no longer race.** The current race-keyed placeholder cannot express
+two human realms with different climates, shared cultures, wild country,
+mixed Caelum, pirate holdings in different environments, or later conquest.
+A Land therefore gets its own identity, owner/faction, cultures, default
+environment, encounter profile, Areas, and adjacency. Race remains a people
+and culture input. The future grid projects Lands and terrain; it does not add
+a structural tier to Land -> Area -> Site -> Room.
+
+**Environment settled as inheritance.** A Land supplies a default climate,
+weather distribution, vegetation palette, terrain tags, and natural content
+pools. Areas inherit and specialize them; children consult ancestor tags
+without copying the same descriptors down the tree. Climate is a distribution,
+not current weather. Persistent fog or magical snow is a feature; ordinary
+rain belongs to a later day/weather roll.
+
+**Place facts separated.** Core identity makes an ordinary place complete.
+Template-specific required facets (cathedral material, path surface,
+settlement wealth) are separate from optional features. Optional facts divide
+into exclusive slots, compatible additive traits, mutable states, and rare
+concrete curiosities. Links, services, resources, and child places remain
+structural data rather than being flattened into adjectives. A Site is its own
+default scene and may have no Rooms; deeper nodes exist only when they add a
+landmark, function, obstacle, affordance, or local decision.
+
+**Normality rule.** Optional feature counts roll 0/1/2/3 at
+50%/30%/15%/5%, matching a 50% chance of any feature, 20% of a second, and
+5% of a third. Required facets do not consume that budget. Within pools,
+common/uncommon/rare content targets roughly 75%/20%/5%; unique wonders never
+roll. Templates and exclusive slots prevent contradictions before pairwise
+requirements and exclusions are checked. A place has at most one rare random
+feature, and scope limits prevent rare curiosities from repeating throughout
+one Area or Land.
+
+**Knowledge and narration.** Feature knowledge uses `public`, `local`,
+`explore`, and `hidden` reveal levels rather than calling the axis renown.
+Scope, rarity, reveal, and salience are independent. A place may store several
+facts while its DM-facing summary leads with one defining or actionable
+detail, preserving `writing.md`'s restraint.
+
+**Permanence and change.** Lazy generation uses stable child seeds and saves
+the materialized result; returning never rerolls it. DM-authored and
+DM-requested generated places become equally canonical when saved. Stable
+identity remains beneath mutable states: a diseased forest may become
+recovering without ceasing to be the same forest. Quests point at suitable
+existing or newly materialized Sites and alter their state. They no longer
+place every mountain, road, and den inside the giver's settlement merely
+because the job originated there.
+
+**Settlement boundary.** Settlement templates own tier, culture, setting,
+wealth, resources, services, Sites, and civic states. Lodging, smith service,
+and general goods are ordinary guarantees; capitals also guarantee an
+alchemist, major market, and government seat. A service becomes a navigable
+Site only when it creates a useful scene. Minor hamlets may be Sites in rural
+Areas rather than equal macro destinations.
+
+**Draft recorded.** `placegen.md` is the detailed planned specification and
+first reviewable content inventory: nine environment profiles, natural Area
+features and Site roles, paths, settlement tiers and pools, constructed Sites,
+the cathedral and clergy-room example, curiosities, name generation, worked
+forest/cathedral chains, and a vertical-slice implementation order. No
+procedural-detail code ships in this session; `rules.md` remains unchanged.

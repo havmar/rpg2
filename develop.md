@@ -106,6 +106,12 @@ a pointer: what the file is, how it's run, where its docs are.
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
   stay settled. Append an entry after every major design session.
+- `placegen.md` — **the planned place-generation design and content draft**
+  (2026-07-23): the authored-vs-generated boundary, persistent feature
+  schema, weighting/reveal/mutation/seed rules, implementation order, and
+  the first reviewable environment, Area, Site, Room, settlement, cathedral,
+  curiosity, and name pools. It is a design source while the feature remains
+  unimplemented; shipped behavior belongs in `rules.md`.
 - `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
   including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and

@@ -314,7 +314,9 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Area detail & exploration depth** — procedurally materialize area/site/
   room descriptions and contents in stages, persist the results, and feed
   them from the same off-screen tick. The spatial schema and navigation
-  foundation are shipped; procedural detail generation is not.
+  foundation are shipped; procedural detail generation is not. The settled
+  structure, generation rules, implementation order, and first reviewable
+  content inventory live in `placegen.md`.
 - **Domain play** — the endgame layer (holdings, followers, rulership);
   the natural answer to "what is gold FOR at L15+". *(Pivot note:
   conquest ticking is domain play's thin edge — build item 3 of the
