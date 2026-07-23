@@ -1,6 +1,7 @@
 RPG2 MAP -- day 1
 the party is at the elf lands >
-  Dawnglade
+  Dawnglade > the torn grove > the heart
+  of it
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -8,7 +9,7 @@ the party is at the elf lands >
   Alderford (capital) -- 8 job(s)
 
 == the elf lands ==  <- here
-  Dawnglade (town) -- 8 job(s)  <- the
+  Dawnglade (town) -- 7 job(s)  <- the
     party
 
 == the goblin lands ==
