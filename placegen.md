@@ -22,9 +22,9 @@ plain fantasy nouns, concrete details, one useful fact first.
 - Support features which are public, locally known, discoverable, or hidden.
 - Support mutable conditions such as blight, occupation, fire, or recovery.
 - Give quests persistent places to reveal, reuse, and change.
-- Keep generated content as labels and facts for now. Objects, inventories,
-  ownership, and a general quest-hook engine may grow from the same records
-  later.
+- Keep generated content as labels, facts, and small persistent Room-content
+  lists. Ordinary furnishings and objects should make an interior concrete
+  without requiring prose.
 
 ## Non-goals for the first implementation
 
@@ -32,7 +32,9 @@ plain fantasy nouns, concrete details, one useful fact first.
 - Simulating weather, ecology, trade, or settlement populations realistically.
 - Making every feature mechanical.
 - Generating unlimited unique prose.
-- Building a general object system.
+- Building a general inventory, ownership, or object-physics system. The MVP
+  may list and inspect lightweight Room contents; only objects which already
+  map to a mechanical item need inventory behavior.
 - Automatically turning every interesting feature into a quest.
 - Preserving old save formats. Development saves remain disposable.
 
@@ -133,6 +135,33 @@ content. It does not identify geography.
 
 The future grid is a projection, not a fifth place tier. A map cell may
 reference a Land and a terrain symbol. A Land may occupy several cells.
+
+## Planned culture and environment distribution
+
+| Planned Land | Culture | Environment |
+|---|---|---|
+| Icy dwarf mountains | Dwarf | Alpine tundra |
+| Temperate human country | Human, temperate | Temperate |
+| Mediterranean human country | Human, mediterranean | Mediterranean |
+| Elven forest | Elf | Temperate forest |
+| Wild forest | None fixed | Temperate forest |
+| Goblin mediterranean country | Goblin | Mediterranean |
+| Orc prairie | Orc | Prairie |
+| Northern pirate islands | Pirate | Cold archipelago |
+| Tropical pirate islands | Pirate | Tropical archipelago |
+| Jungle | None fixed | Jungle |
+| Desert | None fixed | Desert |
+| Caelum | Angel/devil, mixed | Authored urban; undecided |
+
+Dwarf, elf, goblin, and orc culture each have one primary environment. Human
+and pirate culture each span two. Mediterranean is shared by human and goblin
+Lands; temperate forest is shared by the elven and wild forests. Jungle,
+desert, and the wild forest do not yet require a governing culture. Caelum is
+an authored exception.
+
+`Temperate forest` is the elven forest's practical temperate-oceanic analogue:
+mild or cool, damp, frequently overcast, and heavily wooded. Environment
+profiles are game-content bundles, not scientific climate classes.
 
 ## Environment inheritance
 
@@ -238,6 +267,7 @@ optional exclusive slots
 additive feature pools
 mutable state pools
 child Site or Room roles
+required content anchors and optional content pools
 naming rules
 applicability tags
 generation limits
@@ -315,6 +345,36 @@ details rather than adjective fragments:
 - every statue faces the cellar door.
 
 Unique world wonders remain authored.
+
+### Room contents and lightweight objects
+
+A generated Room may carry a small ordered `contents` list. These records make
+ordinary interiors concrete: a house can contain a hearth, table, stools,
+tools, food, and one personal object without requiring a general item engine.
+
+Conceptual content record:
+
+```text
+content ID
+label
+category: fixture | furniture | tool | food | container | personal | valuable
+reveal: visible | search | hidden
+state, optional
+mechanical item reference, optional
+```
+
+Room templates provide one or two required anchors and an optional content
+pool. An inhabited ordinary Room should normally resolve to two to five
+visible objects or compact object groups. It may also hold one searched or
+hidden object. Contents are generated once from the Room seed, saved, and do
+not reroll on return.
+
+Object labels are facts, not automatic loot. A table, fishing net, locked
+chest, or loaf of bread may be listed and inspected without becoming a
+portable inventory item. A potion, weapon, key, or other existing mechanical
+item may carry a reference into the relevant game catalog. Residents attach
+to the house or Room as NPC IDs; this does not require universal ownership
+rules for every object.
 
 ## Feature count and rarity
 
@@ -559,6 +619,21 @@ all be equal macro destinations. Capitals, cities, towns, and independent
 villages are Areas. Minor hamlets which do not need their own travel hub,
 shops, and board are Sites in rural Areas.
 
+MVP settlement inventory for an ordinary culturally settled Land:
+
+- one authored capital Area;
+- two or three authored town Areas;
+- three procedurally generated village Areas at world creation.
+
+The initial dwarf Land is deliberately smaller: one capital and two towns,
+with no additional generated villages. Wilderness Lands and unique Caelum do
+not inherit this count automatically.
+
+Ordinary houses materialize lazily as Sites when explored or requested. The
+generator does not instantiate a realistic census, but any settlement can
+produce a persistent resident, house, Rooms, and Room contents when play needs
+one.
+
 ### Services are not automatically Sites
 
 Every ordinary settlement guarantees:
@@ -593,13 +668,17 @@ Weights are shown as rarity labels rather than final numeric constants.
 
 ### Alpine tundra
 
-Climate:
+Climate summary:
 
-- long cold season;
-- short clear summer;
-- sudden snow;
+- Cold, windy highlands with long winters and short summers.
+
+Weather:
+
+- clear cold;
 - hard wind;
-- dry cold at high altitude.
+- light snow;
+- heavy snow;
+- mountain fog.
 
 Vegetation:
 
@@ -608,27 +687,11 @@ Vegetation:
 - lichen;
 - moss;
 - alpine grass;
-- low flowering herbs.
+- mountain flowers.
 
-Natural Areas:
-
-- ice-capped range;
-- high pass;
-- sheltered valley;
-- stony uplands;
-- glacier basin;
-- pine slope.
-
-Common Sites:
-
-- ledge;
-- pass road;
-- cave mouth;
-- frozen stream;
-- abandoned mine;
-- watch post;
-- goat pasture;
-- stone shrine.
+The Alpine Tundra base content is concrete in the accepted icy dwarf Land
+catalog below. Generic natural-Area and Site suggestions were removed after
+review; the Land owns its finite named Areas and their accepted Site pools.
 
 ### Temperate
 
@@ -947,6 +1010,286 @@ Common Sites:
 - oasis;
 - tomb entrance;
 - wind-carved arch.
+
+## First concrete Land structure: icy dwarf mountains
+
+This is the non-wording structure behind the current string worksheet.
+
+- Culture: dwarf.
+- Default environment: alpine tundra.
+- Natural Areas: Drunurnar Mountains, Krokskogur Forest, and Lake Hornindal.
+- Settlement Areas: Bjorgheim, the central capital; Roros, the remote northern
+  town; and Svalaver, the southern fishing and trade town.
+- No additional generated villages at world creation.
+- The southern town connects directly to the temperate human Land and is the
+  dwarf-human trading hub.
+
+Working arrangement:
+
+```text
+                            northern town
+                                 |
+                           mountain range
+                                 |
+                           central capital
+                              /       \
+                         pine forest  cold lake
+                              \       /
+                           southern town
+                                 |
+                       temperate human Land
+```
+
+The lake and southern town are sibling Areas. The lake owns the open water and
+unsettled shore; the town owns the built southern shore. The northern town and
+mountains follow the same rule: wilderness stays in the natural Area, while
+walls, streets, services, and houses belong to the settlement Area.
+
+Natural Sites, starting settlement Sites, their Room roles, and ordinary
+content pools are reviewed as strings in `placegen_review.txt`. Accepted names
+and wording return to the concrete content catalog in this file.
+
+### Accepted Area strings
+
+**Drunurnar Mountains** — natural Area, mountains.
+
+> An ice-capped range fills the western Land.
+
+**Krokskogur Forest** — natural Area, forest.
+
+> Dwarf pine covers the valley below the mountains.
+
+**Lake Hornindal** — natural Area, lake.
+
+> A great cold lake fills the basin. Ice remains in its coves and along its
+> northern shore through the short summer.
+
+**Bjorgheim** — settlement Area, capital.
+
+> A walled stone city stands where the mountain roads meet.
+
+**Roros** — settlement Area, northern town.
+
+> A remote stone town guards the northern pass. Snow lies against its walls
+> through most of the year.
+
+**Svalaver** — settlement Area, southern fishing and trade town.
+
+> A stone fishing town stands on the southern shore. Dwarf and human merchants
+> meet beside its jetty.
+
+### Accepted natural Site, Room, and content strings
+
+**Drunurnar Mountains**
+
+```text
+HIGH PASS — Site
+  PASS ROAD — Room
+    stone markers
+    ice-crusted cart ruts
+    warning post
+  WIND SHELTER — Room
+    low stone wall
+    dead firepit
+    stack of split wood
+
+ABANDONED MINE — Site
+  MINE ENTRANCE — Room
+    broken ore cart
+    timber props
+    rusted chain
+  WINCH ROOM — Room
+    hand winch
+    frayed rope
+    empty ore baskets
+  LOWER TUNNEL — Room
+    old rail
+    standing water
+    collapsed side passage
+
+WATCH POST — Site
+  LOOKOUT — Room
+    signal brazier
+    iron bell
+    mountain map
+  GUARD ROOM — Room
+    bench
+    weapon rack
+    coal box
+```
+
+**Krokskogur Forest**
+
+```text
+OLD FOREST ROAD — Site
+  FROZEN STREAM CROSSING — Room
+    plank bridge
+    ice-covered ford
+    road marker
+  LOGGER'S TURN — Room
+    stacked timber
+    drag sled
+    wood chips
+
+LOGGING CAMP — Site
+  FIREPIT — Room
+    stone fire ring
+    log benches
+    black cooking pot
+  STORE HUT — Room
+    axes
+    rope coils
+    timber wedges
+
+STONE SHRINE — Site
+  carved stone
+  offering bowl
+  iron candle stand
+```
+
+**Lake Hornindal**
+
+```text
+NORTH SHORE — Site
+  SHINGLE BANK — Room
+    flat stones
+    driftwood
+    overturned skiff
+  ICE COVE — Room
+    shore ice
+    mooring ring
+    abandoned fish basket
+
+ICE-FISHING GROUND — Site
+  FISHING HOLES — Room
+    cut ice holes
+    low windbreak
+    bait box
+
+FROZEN INLET — Site
+  REED BANK — Room
+    dry reeds
+    narrow footbridge
+    animal tracks
+```
+
+### Accepted settlement Site and Room strings
+
+Required Sites materialize with their settlement. Optional ordinary Sites
+materialize lazily when requested or explored and then persist.
+
+**Bjorgheim**
+
+```text
+CLAN HALL
+  GREAT HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MAIN MARKET
+  FOOD ROW
+  SMITHS' ROW
+  HUMAN YARD
+WARM HEARTH INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+BJORGHEIM SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S SHOP
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+SOUTH GATE
+  GATE PASSAGE
+  GUARD ROOM
+```
+
+Optional ordinary Sites:
+
+- ordinary house;
+- brewery;
+- temple;
+- warehouse;
+- barracks;
+- guildhall.
+
+**Roros**
+
+```text
+NORTH WATCH
+  GATE PASSAGE
+  GUARD ROOM
+  SIGNAL PLATFORM
+LAST FIRE INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+  GOAT SHED
+ROROS SMITHY
+  FORGE
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+MINE OFFICE
+  CONTRACT ROOM
+  EQUIPMENT STORE
+```
+
+Optional ordinary Sites:
+
+- ordinary house;
+- ore warehouse;
+- mountain shrine;
+- brewery.
+
+**Svalaver**
+
+```text
+TRADE HALL
+  PUBLIC COUNTER
+  RECORDS ROOM
+  MERCHANT ROOM
+STONE JETTY
+  LANDING
+  NET YARD
+FISH MARKET
+  FISH STALLS
+  HUMAN YARD
+LAKESIDE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+SVALAVER SMITHY
+  FORGE
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+SMOKEHOUSE
+  CUTTING ROOM
+  SMOKE ROOM
+  SALT STORE
+```
+
+Optional ordinary Sites:
+
+- ordinary house;
+- human warehouse;
+- boat shed;
+- small temple;
+- brewery.
+
+This completes the icy dwarf Land's **basic string pass**. It does not accept
+or reject the special, nonessential feature pools below. Those pools remain
+draft material until the later global special-feature review phase.
 
 ## Natural Area feature pools
 
@@ -1537,6 +1880,7 @@ an unsupported adjective.
 
 Initial ordinary settlement pool:
 
+- ordinary house;
 - tavern or inn;
 - smithy;
 - general shop;
@@ -1707,6 +2051,321 @@ Constraints:
 - hidden and illicit entries default to `hidden`.
 
 ## Other first-pass Site anatomy
+
+### Ordinary house — accepted basic template
+
+An ordinary house is a lazily materialized Site attached to a generated
+resident or household. It always has a `Main Room` and rolls zero to two of:
+
+- Sleeping Alcove;
+- Store Room;
+- Work Room;
+- Small Yard.
+
+Accepted Site-name model:
+
+- Borin's House.
+
+`Main Room` heating, choose one:
+
+- stone hearth;
+- iron stove.
+
+`Main Room` eating furniture, choose one:
+
+- rough table and stools;
+- narrow table and bench.
+
+`Main Room` ordinary contents, choose one to three:
+
+- shelf of crockery;
+- water bucket;
+- oil lamp;
+- wool blankets;
+- coat pegs;
+- broom;
+- kindling basket;
+- covered food crock;
+- small household shrine.
+
+`Main Room` food, zero or one:
+
+- black bread;
+- onions;
+- hard cheese;
+- dried mushrooms;
+- smoked fish;
+- pot of stew.
+
+`Main Room` personal object, zero or one:
+
+- carved toy;
+- sewing basket;
+- smoking pipe;
+- whetstone;
+- family token;
+- bundle of letters.
+
+`Sleeping Alcove`:
+
+- one narrow bed;
+- two narrow beds;
+- blanket chest;
+- wash basin;
+- stool;
+- wall peg;
+- candle;
+- spare boots.
+
+`Store Room`:
+
+- shelves;
+- sacks;
+- barrels;
+- rope;
+- lamp oil;
+- preserved food;
+- spare tools;
+- empty baskets.
+
+`Work Room`:
+
+- workbench;
+- tool rack.
+
+`Small Yard`:
+
+- wood pile;
+- water barrel;
+- handcart;
+- chopping block;
+- goat pen;
+- drying line;
+- tool shed.
+
+Dwarf livelihood overlays:
+
+Bjorgheim:
+
+- hand tools;
+- leather apron;
+- unfinished ironwork;
+- account slate;
+- stone dust.
+
+Roros:
+
+- pickaxe;
+- rope;
+- hooded lamp;
+- ore basket;
+- fur boots;
+- goat tack.
+
+Svalaver:
+
+- fishing net;
+- iron hooks;
+- cork floats;
+- ice chisel;
+- fish basket;
+- cargo tally.
+
+Generation:
+
+- generate one resident or household role from the settlement culture;
+- always generate the `Main Room`;
+- roll zero to two optional Rooms;
+- give each Room its required anchors;
+- add one to three ordinary visible contents;
+- add zero or one livelihood object;
+- add zero or one personal object;
+- add at most one searched or hidden object for the whole house;
+- save the resident, Rooms, and contents permanently.
+
+### Accepted shared basic Room-content pools
+
+These ordinary pools are accepted in the dwarf base pass and may be reused by
+later cultures where their wording and material fit.
+
+`Great Hall`:
+
+- long table;
+- high seat;
+- iron braziers;
+- clan banners;
+- public notice board;
+- petition bench;
+- feast vessels.
+
+`Council Room` or `Contract Room`:
+
+- table;
+- chairs;
+- stools;
+- wall map;
+- account slate;
+- contract box;
+- seal press;
+- locked chest.
+
+`Records Room`:
+
+- shelves;
+- document boxes;
+- ledgers;
+- road maps;
+- tax rolls;
+- spare ink;
+- seal box.
+
+`Market Row` or `Yard`:
+
+- stalls;
+- trading tables;
+- handcarts;
+- baskets;
+- awnings;
+- scales;
+- empty crates;
+- public notices.
+
+`Tavern Common Room`:
+
+- hearth;
+- tables and benches;
+- serving counter;
+- ale barrels;
+- game board;
+- notice board;
+- coat pegs;
+- stew pot.
+
+`Kitchen`:
+
+- cooking fire;
+- stove;
+- worktable;
+- iron pots;
+- knives;
+- crockery;
+- bread shelf;
+- water barrel.
+
+`Cellar` or `Food Store`:
+
+- shelves;
+- racks;
+- ale barrels;
+- salt sacks;
+- root baskets;
+- smoked meat;
+- lamp.
+
+`Guest Room`:
+
+- bed;
+- bunks;
+- wash basin;
+- stool;
+- peg rail;
+- blanket chest;
+- candle;
+- shuttered window.
+
+`Forge`:
+
+- forge;
+- anvil;
+- quench tub;
+- tool rack;
+- coal bin;
+- unfinished tools;
+- scrap basket;
+- bellows.
+
+`Smithy Store Room`:
+
+- shelves;
+- locked tool chest;
+- iron bars;
+- horseshoes;
+- axe heads;
+- nails;
+- charcoal sacks.
+
+`General Shop Sales Room`:
+
+- counter;
+- goods shelves;
+- baskets;
+- rope;
+- lamps;
+- crockery;
+- blankets;
+- tools;
+- food jars.
+
+`General Store Room`:
+
+- crates;
+- barrels;
+- flour sacks;
+- lamp oil;
+- spare rope;
+- folded cloth;
+- empty bottles.
+
+`Alchemist's Shop`:
+
+- counter;
+- bottle shelves;
+- mortar;
+- scales;
+- dried herbs;
+- labeled jars;
+- locked cabinet.
+
+`Alchemist's Work Room`:
+
+- workbench;
+- small furnace;
+- glass tubes;
+- herb rack;
+- water basin;
+- charcoal box;
+- notes.
+
+`Guard Room`:
+
+- bench;
+- weapon rack;
+- duty board;
+- bell rope;
+- lanterns;
+- shield rack;
+- key board.
+
+`Jetty` or `Landing`:
+
+- stone quay;
+- timber platform;
+- mooring posts;
+- rope coils;
+- cargo hook;
+- handcart;
+- fish baskets;
+- small crane.
+
+`Smokehouse`:
+
+- smoking racks;
+- fire trench;
+- fish hooks;
+- salt barrel;
+- cutting table;
+- knives;
+- wood pile.
 
 ### Tavern or inn
 
@@ -2081,8 +2740,14 @@ Elf:
 
 Dwarf:
 
-- Deep, Gold, Grim, Karak, Under, Hammer, Stone, Iron;
-- delve, forge, gate, vault, helm, hall, stair, hold.
+- use an invented Germanic/Norse-sounding creole, drawing loosely from
+  Icelandic, Swedish, Norwegian, and related languages without claiming
+  linguistic accuracy;
+- use ASCII transliteration only;
+- model names: Drunurnar, Krokskogur, Hornindal, Bjorgheim, Roros, Svalaver;
+- a plain English type noun may remain for immediate readability:
+  `Drunurnar Mountains`, `Krokskogur Forest`, `Lake Hornindal`;
+- DM-created dwarf place names follow the same sound and hybrid construction.
 
 Goblin:
 
@@ -2186,20 +2851,106 @@ This Site has several structural facts, but its ordinary description leads
 with the unfinished west tower. The DM does not recite every feature at the
 door.
 
+## Review-to-implementation workflow
+
+Procedural place generation remains the active development track until it is
+implemented and verified. Content work uses this repeatable loop:
+
+1. This file holds the schema, distributions, counts, links, constraints,
+   generation rules, rationale, and completion requirements.
+2. **Phase 1 — basic content:** `placegen_review.txt` presents one Land's
+   essential player/DM-facing strings, grouped under minimal labels for its
+   environment, Areas, Sites, Rooms, and ordinary contents.
+3. Review the sheet like a translation: keep, cut, rename, or supply
+   alternative wording without working through the surrounding design again.
+4. Transfer the accepted basic strings into this canonical catalog. Move
+   reusable Room/content pools into shared templates; keep culture- and
+   geography-specific strings under their concrete Land.
+5. Replace the worksheet with the next Land's basic sheet in a new review
+   session. Repeat until every planned Land, culture, and environment has
+   completed Phase 1.
+6. **Phase 2 — special content:** only after every basic Land pass is complete,
+   review the optional Area traits, mutable states, rare curiosities,
+   exceptional settlement features, and hidden or unusual Room contents.
+   These may be grouped by environment or shared template instead of repeated
+   Land by Land.
+7. Transfer the accepted special strings into this canonical catalog.
+8. Implement the accepted schemas and catalogs in code. A vertical slice may
+   ship internally before every pool is coded, but no accepted MVP content may
+   remain documentation-only when the feature is declared complete.
+
+Review and implementation therefore form one track, not two unrelated
+projects. The worksheets settle the concrete content; this file consolidates
+it; the code generates and persists it.
+
+The worksheet deliberately contains no introduction, schema explanation,
+rationale, coverage requirements, completion checklist, or open-question
+essay. Keep only enough non-output labeling for the reviewer to know what each
+string names. All general information belongs here.
+
+## Current review handoff
+
+Status on 2026-07-24:
+
+- Phase 1 is active.
+- Alpine Tundra and the icy dwarf Land basic pass are complete.
+- The accepted dwarf content has been consolidated into the Alpine Tundra
+  profile, the concrete dwarf Land catalog, the ordinary-house template, and
+  the shared basic Room-content pools in this file.
+- `placegen_review.txt` remains the completed dwarf string sheet as the review
+  record.
+- No special/nonessential feature pool has been accepted yet. Existing
+  optional-feature and curiosity lists in this draft remain Phase-2
+  candidates.
+
+Next session:
+
+1. Replace `placegen_review.txt` with the **temperate human country basic
+   strings**.
+2. Use the same minimal translation-sheet format.
+3. Review only essential environment, Area, settlement, Site, Room, and
+   ordinary-content strings.
+4. Consolidate accepted strings here before starting the following Land.
+
+Do not begin the special-feature review until every planned basic Land/climate
+sheet has been completed and consolidated.
+
+The feature is done when:
+
+- the reviewed Land/culture/environment distribution is represented in
+  worldgen;
+- the generator creates each Land's finite Area and initial settlement
+  inventory;
+- lazy Sites, Rooms, residents, place facts, and Room contents use stable
+  child seeds and survive save/load without rerolling;
+- ordinary settlement interiors, including generated houses, are navigable
+  and display their persistent contents;
+- quest placement selects suitable persistent geography and quest or world
+  changes mutate that geography without replacing its identity;
+- macro and local readouts expose known places, exits, contents, and relevant
+  state;
+- deterministic generation, constraints, persistence, and a fresh-world
+  vertical play path have automated or reproducible verification.
+
+After those conditions hold, move the shipped mechanics and behavior to
+`rules.md`, update the development map and file index, and remove the feature
+from `plan.md`.
+
 ## Initial implementation order
 
 1. Split Land identity from race/culture and add environment profiles.
 2. Replace unlimited natural-Area creation with finite authored Area roles.
-3. Add place facets, features, states, reveal state, source, and generation
-   seed to the persistent schema.
+3. Add place facets, features, states, reveal state, source, generation seed,
+   and lightweight Room contents to the persistent schema.
 4. Build the generic weighted selector with slots, requirements, exclusions,
    scope limits, and the 50/30/15/5 feature-count distribution.
 5. Add natural Area and forest/path Site content first.
 6. Make quest placement select suitable Areas and persistent Sites.
 7. Add settlement tiers, services, and settlement Site templates.
-8. Add cathedral and Room-content templates.
-9. Add DM readouts and the local minimap surface.
-10. Add mutation hooks for quests and later off-screen events.
+8. Add the ordinary-house template and its Room-content pools.
+9. Add cathedral and other specialized Room-content templates.
+10. Add DM readouts and the local minimap surface.
+11. Add mutation hooks for quests and later off-screen events.
 
 The first vertical slice should be one temperate human Land containing:
 
@@ -2210,6 +2961,7 @@ The first vertical slice should be one temperate human Land containing:
 - pasture or hills;
 - the White Forest;
 - generated ordinary Sites in the forest;
+- one generated ordinary house with persistent Rooms and visible contents;
 - one quest which discovers and changes a forest state.
 
 This is enough to test inheritance, names, feature weighting, reveal levels,

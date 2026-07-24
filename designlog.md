@@ -496,3 +496,89 @@ features and Site roles, paths, settlement tiers and pools, constructed Sites,
 the cathedral and clergy-room example, curiosities, name generation, worked
 forest/cathedral chains, and a vertical-slice implementation order. No
 procedural-detail code ships in this session; `rules.md` remains unchanged.
+
+## 2026-07-23 — Concrete place-content boundary and dwarf Land
+
+**The review target corrected.** The first worksheet initially isolated an
+environment profile and stopped before settlements, detailed Sites, Rooms,
+and objects. That was too narrow for the intended implementation source. A
+completed Land packet must now cover culture and environment together,
+concrete Areas and their links, Site inventories, Room roles, and the visible
+contents which make those Rooms usable in play.
+
+**Room contents joined the MVP.** `placegen.md` now includes lightweight,
+persistent Room-content records. An ordinary generated interior should list a
+small number of stable furnishings, tools, food, containers, or personal
+objects and allow the player to inspect the concrete scene. This is not yet a
+general inventory, ownership, or object-physics system: only content which
+already maps to a mechanical item needs portable-item behavior.
+
+**Settlement counts settled.** An ordinary culturally settled Land begins
+with one authored capital, two or three authored towns, and three
+procedurally generated villages. The dwarf Land is the smaller exception:
+one capital and two authored towns, with no extra initial villages. Ordinary
+houses materialize lazily rather than simulating a full census, but once
+generated their resident, Rooms, and contents persist.
+
+**The first concrete Land.** The icy northwestern dwarf Land uses Alpine
+Tundra and has three natural Areas: Frosthelm Mountains, Ironpine Forest, and
+Lake Rime. Hammerhall is the normal central capital. Frostgate is the remote,
+icier northern town. Ironhook is the southern fishing town on Lake Rime and
+the trade link to the temperate human Land. Lake Rime and Ironhook are sibling
+Areas; the lake owns its open water and wild shore, while the town owns the
+built southern shore and its jetty.
+
+**Vertical content chain.** `placegen_review.txt` now carries the first full
+review packet through natural Sites, settlement Site inventories, Room roles,
+shared object anchors, dwarf livelihood overlays, and an ordinary-house
+example. The completion rule is structural rather than exhaustive: each Land
+needs enough concrete templates and constrained pools to generate ordinary
+places without improvising unsupported content at runtime.
+
+**Completion track settled.** Procedural place generation is now the active
+development track until it ships. Each Land, culture, and environment is
+reviewed through the full Area -> Site -> Room -> contents chain in
+`placegen_review.txt`; accepted decisions are consolidated into `placegen.md`;
+then the canonical schemas and catalogs are implemented. Finishing the
+worksheets alone does not finish the feature. Completion also requires stable
+seeded generation, persistence, navigation/readouts, quest placement and
+mutation, generated ordinary interiors, and reproducible verification. The
+active track and its exit conditions are recorded in `plan.md`.
+
+**The review surface simplified.** The worksheet is now a translation-style
+string sheet rather than a miniature design packet. It contains names,
+descriptions, Site and Room labels, and visible content strings under only the
+context needed to identify them. The designer can cut an entry or give an
+alternative wording without rereading schemas and rationale. Distribution,
+counts, links, generation rules, explanations, completion criteria, and the
+review process itself live in `placegen.md`; `plan.md` records the same
+division for the active development track.
+
+## 2026-07-24 — Dwarf naming and the optional-feature review pass
+
+**Dwarf place names.** The dwarf culture uses an invented Germanic/Norse-
+sounding creole, drawing loosely from Icelandic, Swedish, Norwegian, and
+related languages rather than reproducing one real language. Names stay ASCII.
+Plain English type nouns remain when useful for immediate recognition, as in
+Drunurnar Mountains, Krokskogur Forest, and Lake Hornindal. The same rule
+governs names improvised by the DM. The first Land's proper nouns are Drunurnar
+Mountains, Krokskogur Forest, Lake Hornindal, Bjorgheim, Roros, and Svalaver.
+
+**Review order.** Base Land sheets cover essential names, descriptions, Sites,
+Rooms, and ordinary contents. Special nonessential material gets a separate
+review phase: optional Area traits, mutable states, rare curiosities,
+exceptional settlement features, and hidden or unusual Room contents. The
+ordering was clarified after the first pass: finish the basic sheets for
+**every** Land and climate first, consolidating each into `placegen.md`; only
+then begin the global special-feature phase. This keeps the translation-style
+base sheets readable and lets shared special pools be reviewed once instead
+of repeated under every Land.
+
+**Dwarf base pass consolidated.** The complete accepted worksheet now lives
+canonically in `placegen.md`: the Alpine Tundra strings; six named Areas and
+their descriptions; natural and settlement Site/Room inventories; the dwarf
+ordinary-house and livelihood content; and shared basic Room-content pools
+for halls, markets, inns, shops, smithies, guard rooms, jetties, and
+smokehouses. The completed worksheet remains as the review record. The next
+session begins the temperate human country basic pass; no special feature
+review starts before then or between basic Land sessions.

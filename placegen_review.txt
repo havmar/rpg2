@@ -1,0 +1,586 @@
+ICY DWARF LAND
+==============
+
+ENVIRONMENT PROFILE
+-------------------
+
+Name
+
+- Alpine tundra
+
+Climate summary
+
+- Cold, windy highlands with long winters and short summers
+
+Weather
+
+- Clear cold
+- Hard wind
+- Light snow
+- Heavy snow
+- Mountain fog
+
+Vegetation
+
+- Dwarf pine
+- Juniper
+- Lichen
+- Moss
+- Alpine grass
+- Mountain flowers
+
+
+AREAS
+-----
+
+Natural Area: mountains
+
+- Drunurnar Mountains
+- An ice-capped range fills the western Land.
+
+Natural Area: forest
+
+- Krokskogur Forest
+- Dwarf pine covers the valley below the mountains.
+
+Natural Area: lake
+
+- Lake Hornindal
+- A great cold lake fills the basin. Ice remains in its coves and along its
+  northern shore through the short summer.
+
+Settlement Area: capital
+
+- Bjorgheim
+- A walled stone city stands where the mountain roads meet.
+
+Settlement Area: northern town
+
+- Roros
+- A remote stone town guards the northern pass. Snow lies against its walls
+  through most of the year.
+
+Settlement Area: southern fishing and trade town
+
+- Svalaver
+- A stone fishing town stands on the southern shore. Dwarf and human
+  merchants meet beside its jetty.
+
+
+DRUNURNAR MOUNTAINS
+-------------------
+
+High Pass [Site]
+
+- Pass Road [Room]
+  - stone markers
+  - ice-crusted cart ruts
+  - warning post
+- Wind Shelter [Room]
+  - low stone wall
+  - dead firepit
+  - stack of split wood
+
+Abandoned Mine [Site]
+
+- Mine Entrance [Room]
+  - broken ore cart
+  - timber props
+  - rusted chain
+- Winch Room [Room]
+  - hand winch
+  - frayed rope
+  - empty ore baskets
+- Lower Tunnel [Room]
+  - old rail
+  - standing water
+  - collapsed side passage
+
+Watch Post [Site]
+
+- Lookout [Room]
+  - signal brazier
+  - iron bell
+  - mountain map
+- Guard Room [Room]
+  - bench
+  - weapon rack
+  - coal box
+
+
+KROKSKOGUR FOREST
+-----------------
+
+Old Forest Road [Site]
+
+- Frozen Stream Crossing [Room]
+  - plank bridge
+  - ice-covered ford
+  - road marker
+- Logger's Turn [Room]
+  - stacked timber
+  - drag sled
+  - wood chips
+
+Logging Camp [Site]
+
+- Firepit [Room]
+  - stone fire ring
+  - log benches
+  - black cooking pot
+- Store Hut [Room]
+  - axes
+  - rope coils
+  - timber wedges
+
+Stone Shrine [Site]
+
+- carved stone
+- offering bowl
+- iron candle stand
+
+
+LAKE HORNINDAL
+--------------
+
+North Shore [Site]
+
+- Shingle Bank [Room]
+  - flat stones
+  - driftwood
+  - overturned skiff
+- Ice Cove [Room]
+  - shore ice
+  - mooring ring
+  - abandoned fish basket
+
+Ice-Fishing Ground [Site]
+
+- Fishing Holes [Room]
+  - cut ice holes
+  - low windbreak
+  - bait box
+
+Frozen Inlet [Site]
+
+- Reed Bank [Room]
+  - dry reeds
+  - narrow footbridge
+  - animal tracks
+
+
+BJORGHEIM
+---------
+
+Starting Sites and Rooms
+
+- Clan Hall
+  - Great Hall
+  - Council Room
+  - Records Room
+- Main Market
+  - Food Row
+  - Smiths' Row
+  - Human Yard
+- Warm Hearth Inn
+  - Common Room
+  - Kitchen
+  - Cellar
+  - Guest Room
+- Bjorgheim Smithy
+  - Forge
+  - Yard
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Alchemist's Shop
+  - Shop
+  - Work Room
+  - Locked Store
+- South Gate
+  - Gate Passage
+  - Guard Room
+
+Optional Site names
+
+- ordinary house
+- brewery
+- temple
+- warehouse
+- barracks
+- guildhall
+
+
+ROROS
+-----
+
+Starting Sites and Rooms
+
+- North Watch
+  - Gate Passage
+  - Guard Room
+  - Signal Platform
+- Last Fire Inn
+  - Common Room
+  - Kitchen
+  - Guest Room
+  - Goat Shed
+- Roros Smithy
+  - Forge
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Mine Office
+  - Contract Room
+  - Equipment Store
+
+Optional Site names
+
+- ordinary house
+- ore warehouse
+- mountain shrine
+- brewery
+
+
+SVALAVER
+--------
+
+Starting Sites and Rooms
+
+- Trade Hall
+  - Public Counter
+  - Records Room
+  - Merchant Room
+- Stone Jetty
+  - Landing
+  - Net Yard
+- Fish Market
+  - Fish Stalls
+  - Human Yard
+- Lakeside Inn
+  - Common Room
+  - Kitchen
+  - Cellar
+  - Guest Room
+- Svalaver Smithy
+  - Forge
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Smokehouse
+  - Cutting Room
+  - Smoke Room
+  - Salt Store
+
+Optional Site names
+
+- ordinary house
+- human warehouse
+- boat shed
+- small temple
+- brewery
+
+
+ROOM CONTENT
+------------
+
+Great Hall
+
+- long table
+- high seat
+- iron braziers
+- clan banners
+- public notice board
+- petition bench
+- feast vessels
+
+Council Room or Contract Room
+
+- table
+- chairs
+- stools
+- wall map
+- account slate
+- contract box
+- seal press
+- locked chest
+
+Records Room
+
+- shelves
+- document boxes
+- ledgers
+- road maps
+- tax rolls
+- spare ink
+- seal box
+
+Market Row or Yard
+
+- stalls
+- trading tables
+- handcarts
+- baskets
+- awnings
+- scales
+- empty crates
+- public notices
+
+Tavern Common Room
+
+- hearth
+- tables and benches
+- serving counter
+- ale barrels
+- game board
+- notice board
+- coat pegs
+- stew pot
+
+Kitchen
+
+- cooking fire
+- stove
+- worktable
+- iron pots
+- knives
+- crockery
+- bread shelf
+- water barrel
+
+Cellar or Food Store
+
+- shelves
+- racks
+- ale barrels
+- salt sacks
+- root baskets
+- smoked meat
+- lamp
+
+Guest Room
+
+- bed
+- bunks
+- wash basin
+- stool
+- peg rail
+- blanket chest
+- candle
+- shuttered window
+
+Forge
+
+- forge
+- anvil
+- quench tub
+- tool rack
+- coal bin
+- unfinished tools
+- scrap basket
+- bellows
+
+Smithy Store Room
+
+- shelves
+- locked tool chest
+- iron bars
+- horseshoes
+- axe heads
+- nails
+- charcoal sacks
+
+General Shop Sales Room
+
+- counter
+- goods shelves
+- baskets
+- rope
+- lamps
+- crockery
+- blankets
+- tools
+- food jars
+
+General Store Room
+
+- crates
+- barrels
+- flour sacks
+- lamp oil
+- spare rope
+- folded cloth
+- empty bottles
+
+Alchemist's Shop
+
+- counter
+- bottle shelves
+- mortar
+- scales
+- dried herbs
+- labeled jars
+- locked cabinet
+
+Alchemist's Work Room
+
+- workbench
+- small furnace
+- glass tubes
+- herb rack
+- water basin
+- charcoal box
+- notes
+
+Guard Room
+
+- bench
+- weapon rack
+- duty board
+- bell rope
+- lanterns
+- shield rack
+- key board
+
+Jetty or Landing
+
+- stone quay
+- timber platform
+- mooring posts
+- rope coils
+- cargo hook
+- handcart
+- fish baskets
+- small crane
+
+Smokehouse
+
+- smoking racks
+- fire trench
+- fish hooks
+- salt barrel
+- cutting table
+- knives
+- wood pile
+
+
+ORDINARY HOUSE
+--------------
+
+Site name example
+
+- Borin's House
+
+Room names
+
+- Main Room
+- Sleeping Alcove
+- Store Room
+- Work Room
+- Small Yard
+
+Main Room: heating
+
+- stone hearth
+- iron stove
+
+Main Room: eating
+
+- rough table and stools
+- narrow table and bench
+
+Main Room: ordinary contents
+
+- shelf of crockery
+- water bucket
+- oil lamp
+- wool blankets
+- coat pegs
+- broom
+- kindling basket
+- covered food crock
+- small household shrine
+
+Main Room: food
+
+- black bread
+- onions
+- hard cheese
+- dried mushrooms
+- smoked fish
+- pot of stew
+
+Main Room: personal objects
+
+- carved toy
+- sewing basket
+- smoking pipe
+- whetstone
+- family token
+- bundle of letters
+
+Sleeping Alcove
+
+- one narrow bed
+- two narrow beds
+- blanket chest
+- wash basin
+- stool
+- wall peg
+- candle
+- spare boots
+
+Store Room
+
+- shelves
+- sacks
+- barrels
+- rope
+- lamp oil
+- preserved food
+- spare tools
+- empty baskets
+
+Work Room
+
+- workbench
+- tool rack
+
+Small Yard
+
+- wood pile
+- water barrel
+- handcart
+- chopping block
+- goat pen
+- drying line
+- tool shed
+
+Bjorgheim livelihood objects
+
+- hand tools
+- leather apron
+- unfinished ironwork
+- account slate
+- stone dust
+
+Roros livelihood objects
+
+- pickaxe
+- rope
+- hooded lamp
+- ore basket
+- fur boots
+- goat tack
+
+Svalaver livelihood objects
+
+- fishing net
+- iron hooks
+- cork floats
+- ice chisel
+- fish basket
+- cargo tally

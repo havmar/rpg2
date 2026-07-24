@@ -102,6 +102,61 @@ Concretely:
 
 ---
 
+## Current development track — procedural place generation
+
+This is the active development track until the feature ships. It supersedes
+the older placement of “Area detail & exploration depth” in the unordered
+major-feature shortlist below.
+
+Work proceeds Land by Land through `placegen_review.txt`:
+
+1. Keep schema, distribution, links, constraints, generation rules, rationale,
+   and completion requirements in `placegen.md`.
+2. **Phase 1 — all basic Lands:** review each culture/environment pairing's
+   essential strings in `placegen_review.txt`, grouped by Area, Site, Room,
+   and ordinary contents with only minimal context labels.
+3. Treat each worksheet like a translation sheet: cut strings or provide
+   alternative wording without rereading the general design.
+4. Move every accepted basic decision into the canonical `placegen.md`
+   catalog, then advance the worksheet in a new session.
+5. Repeat Phase 1 until every planned settled culture, environment profile,
+   wilderness Land, and authored exception such as Caelum has its basic MVP
+   content.
+6. **Phase 2 — special content:** after all basic sheets are complete, review
+   optional traits, mutable states, rare curiosities, exceptional settlement
+   features, and hidden/unusual Room contents by environment or shared
+   template.
+7. Consolidate the accepted special content into `placegen.md`.
+8. Implement the canonical design in code, using vertical slices where useful,
+   until all reviewed content is generator-owned rather than documentation-
+   only.
+
+Current handoff (2026-07-24): the Alpine Tundra / icy dwarf basic pass is
+complete and consolidated. The next new session starts the temperate human
+country basic sheet. Special features wait until every basic Land/climate pass
+is complete.
+
+Reviewing all worksheets is the content-specification pass, not completion by
+itself. The feature is complete only when:
+
+- world generation separates Land, culture, and environment while applying
+  the reviewed pairings;
+- every planned Land receives its finite persistent Area inventory and initial
+  settlements;
+- Sites, Rooms, residents, features, and lightweight Room contents
+  materialize from stable seeds and never reroll on return;
+- navigation and player/DM readouts expose the generated hierarchy;
+- quests select, reveal, reuse, and mutate suitable persistent places;
+- generation constraints, persistence, save/load behavior, and at least one
+  fresh-world play path are verified;
+- shipped behavior is documented in `rules.md`, and this roadmap section is
+  removed.
+
+The detailed workflow, implementation order, content schemas, and per-Land
+completion contract live in `placegen.md`.
+
+---
+
 ## The villain layer (the 2026-07-19 pivot — DEMOTED 2026-07-21)
 
 *(2026-07-21: the retro pivot above supersedes this section's FRAMING.
@@ -314,9 +369,10 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Area detail & exploration depth** — procedurally materialize area/site/
   room descriptions and contents in stages, persist the results, and feed
   them from the same off-screen tick. The spatial schema and navigation
-  foundation are shipped; procedural detail generation is not. The settled
-  structure, generation rules, implementation order, and first reviewable
-  content inventory live in `placegen.md`.
+  foundation are shipped; procedural detail generation is not. **Now promoted
+  to the current development track above.** The settled structure, generation
+  rules, implementation order, and first reviewable content inventory live in
+  `placegen.md`.
 - **Domain play** — the endgame layer (holdings, followers, rulership);
   the natural answer to "what is gold FOR at L15+". *(Pivot note:
   conquest ticking is domain play's thin edge — build item 3 of the

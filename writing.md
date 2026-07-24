@@ -129,6 +129,13 @@ immediate obstacle or affordance. Never repeat the parent as filler (“forest
 site,” “forest room”). Build a place the player can navigate, not a vista the
 narrator can admire.
 
+When improvising place names, follow the active culture profile rather than
+the old race-to-Land fragments. Dwarf names use a loose invented
+Germanic/Norse-sounding creole drawn from Icelandic, Swedish, Norwegian, and
+related sounds. They are not claims of correct real-world language. Use ASCII
+only, and retain a plain English type noun when it makes the place immediately
+legible: `Drunurnar Mountains`, `Krokskogur Forest`, `Lake Hornindal`.
+
 For a **person**, lead with role and immediate intent. Add one visible or
 behavioral marker that can recur. Generated traits are prompts for conduct,
 not invitations to write a biography or a speech about the trait.
