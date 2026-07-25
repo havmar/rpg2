@@ -1,5 +1,5 @@
-RPG2 MAP -- day 3
-the party is at Firascir > Walhaven
+RPG2 MAP -- day 5
+the party is at Gibili > Maketawa
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -8,13 +8,12 @@ the party is at Firascir > Walhaven
   Roros (town) -- 1 job(s)
   Svalaver (town) -- 1 job(s)
 
-== Firascir ==  <- here
+== Firascir ==
   Stura River (river, found day 1)
     (visited)
   Tomburgh (capital) -- 1 job(s)
   Leehaven (city) -- 2 job(s)
-  Walhaven (city) -- 0 job(s)  <- the
-    party
+  Walhaven (city) -- 0 job(s)  (visited)
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)
   Sturford (village) -- 1 job(s)
@@ -39,8 +38,9 @@ the party is at Firascir > Walhaven
   Oirava (village) -- 1 job(s)
   Liorenne (village) -- 1 job(s)
 
-== Gibili ==
-  Maketawa (capital) -- 2 job(s)
+== Gibili ==  <- here
+  Maketawa (capital) -- 2 job(s)  <- the
+    party
   Potalu (town) -- 1 job(s)
   Birikava (town) -- 2 job(s)
   Boilaki (town) -- 1 job(s)
