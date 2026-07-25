@@ -143,10 +143,10 @@ reference a Land and a terrain symbol. A Land may occupy several cells.
 | Dvarvengrond | Dwarf | Alpine tundra |
 | Firascir | Human, temperate | Temperate |
 | Mortellaria | Human, mediterranean | Mediterranean |
-| Ensimaa (Prisma Tersa) | Elf | Temperate forest |
+| Ensimaa | Elf | Temperate forest |
 | Wild forest | None fixed | Temperate forest |
-| Giblia (Gibili) | Goblin | Mediterranean |
-| Tergal (Ulus-Gal) | Orc | Prairie |
+| Gibili | Goblin | Mediterranean |
+| Tergal | Orc | Prairie |
 | Northern pirate islands | Pirate | Cold archipelago |
 | Tropical pirate islands | Pirate | Tropical archipelago |
 | Jungle | None fixed | Jungle |
@@ -3362,7 +3362,23 @@ Generation rules:
 - numbered depths and generic `site 2` are development fallbacks only;
 - cultural settlement pools remain separate from environmental Area pools;
 - a public defining feature may influence the name;
-- hidden or mutable states normally do not.
+- hidden or mutable states normally do not;
+- a river which crosses several Lands keeps one canonical name for its whole
+  course; culture profiles do not translate or regenerate it at a border.
+
+The cultural profiles below govern proper nouns for Lands, natural Areas, and
+settlements. Ordinary functional Site and Room labels remain plain English so
+the map is immediately legible. An exceptional Site which needs a proper
+label reuses its parent name with an English function, such as `Taivelle Gate`
+or `Maketawa Market`; it does not open another generated proper-name pool. The
+four remaining settled cultures now have complete **name-only** rosters.
+Their later basic-string passes supply descriptions, Site layouts, Room
+labels, and contents without reopening the proper names.
+
+Canonical cross-Land rivers:
+
+- **Stura River** — Firascir and Mortellaria;
+- **Flumenpur River** — Firascir, Caelum, and Tergal.
 
 ### Natural Area patterns
 
@@ -3529,13 +3545,79 @@ Human temperate:
 
 Human mediterranean:
 
-- Bell, Rose, Sun, Gold, White, High, Saint, Olive;
-- coast, hill, port, vale, bridge, market, spring, tower.
+- use an Italian-Spanish pastiche written as an English speaker might spell it
+  by ear;
+- keep spelling simple and ASCII: clear vowels, few silent letters, no
+  accents, and no claim of correct real-world language;
+- prefer names which sound Romance without becoming transparent English
+  compounds such as `Goldport` or `Olive Hill`;
+- the Land is **Mortellaria**;
+- finite natural Areas:
+  - **Valdoro Hills** — vineyard and olive hills;
+  - **Orivela Coast** — rocky western coast;
+  - **Pinavera Valley** — pine valley and dry uplands;
+  - **Riomara Plain** — lower river plain;
+  - **Stura River** — the same river named in Firascir, continuing south to
+    the sea;
+- authored settlements:
+  - **Castavera** — capital;
+  - **Portomera** — harbor city;
+  - **Belafonte** — inland town;
+  - **Montaro** — hill town;
+- generated village name pool; three are drawn at world creation:
+  - Alavera;
+  - Beloro;
+  - Calavento;
+  - Doramonte;
+  - Fontela;
+  - Lunaro;
+  - Maravento;
+  - Oliveta;
+  - Rosavera;
+  - Sanoro;
+  - Solavela;
+  - Toralba;
+  - Valesero;
+  - Ventoro;
+  - Vilaro.
 
 Elf:
 
-- Silver, Moon, Green, Dawn, Star, Willow, Mist, Bright;
-- glade, hollow, reach, veil, song, grove, spire, bough.
+- use a loose Finnish-Gaelic-French sound blend: open vowels and doubled
+  vowels beside soft consonants, `ae`/`ai`/`ui` clusters, and occasional
+  `dun`, `mael`, `-elle`, `-enne`, `-aine`, or `-maa` shapes;
+- treat those languages as sound palettes, not translation sources, and use
+  ASCII only;
+- avoid the stock English elf compounds `Silverglade`, `Moonspire`, and their
+  near equivalents;
+- the Land is **Ensimaa**;
+- finite natural Areas:
+  - **Tiravaine Forest** — deep central forest;
+  - **Koivelle Wood** — old western woodland;
+  - **Maelmor Hills** — forested northern hills;
+  - **Avelune River** — river wood and crossings;
+  - **Saimere Hollow** — low misty woodland;
+- authored settlements:
+  - **Taivelle** — capital;
+  - **Dunmaelle** — western town;
+  - **Kervaine** — river town;
+  - **Ruunamont** — hill town;
+- generated village name pool; three are drawn at world creation:
+  - Ailava;
+  - Aurenne;
+  - Briomaa;
+  - Eilamere;
+  - Fionava;
+  - Halivain;
+  - Kaelinne;
+  - Liorenne;
+  - Muirala;
+  - Oirava;
+  - Rosmaine;
+  - Suvamere;
+  - Tervaine;
+  - Vaelora;
+  - Yllenne.
 
 Dwarf:
 
@@ -3550,13 +3632,80 @@ Dwarf:
 
 Goblin:
 
-- Gear, Sprocket, Grease, Boiler, Scrap, Smog, Brass, Rivet;
-- town, works, burrow, pit, sprawl, market, stack, yard.
+- use short, open Polynesian-like syllables disturbed by worn-down simple
+  English work words; this is an invented goblin sound, not a representation
+  of Hawaiian or a claim of correct Pidgin;
+- a source such as `market`, `port`, `boiler`, `brick`, `brass`, `stack`,
+  `rivet`, or `yard` may survive faintly inside a name, but do not emit plain
+  compounds such as `Irontown`, `Scrap Yard`, or `Boiler Works`;
+- keep spelling direct, rhythmic, and ASCII;
+- the Land is **Gibili**;
+- finite natural Areas:
+  - **Kapaliki Coast** — rocky coast and sea caves;
+  - **Barasa Hills** — olive scrub and dry hills;
+  - **Paina Valley** — pine valley;
+  - **Wela River** — river plain;
+  - **Satakalu Plain** — hot inland country;
+- authored settlements:
+  - **Maketawa** — capital;
+  - **Potalu** — harbor town;
+  - **Birikava** — inland town;
+  - **Boilaki** — hill town;
+- generated village name pool; three are drawn at world creation:
+  - Barasalo;
+  - Bokapali;
+  - Brikiki;
+  - Kapalota;
+  - Kikawa;
+  - Kopaka;
+  - Makelu;
+  - Napaliki;
+  - Pakapota;
+  - Pikitawa;
+  - Riveta;
+  - Satakiki;
+  - Tinkalo;
+  - Wekapali;
+  - Yadaka.
 
 Orc:
 
-- Iron, Red, Ash, Bone, Storm, Black, Horse, Flint;
-- hold, camp, ridge, spear, fang, range, ford, crown.
+- use a loose Mongol-Sumerian sound blend: hard `k`/`kh`/`g`, broad back
+  vowels, compact roots, and occasional monumental compounds;
+- treat both language families as sound palettes, not translation sources,
+  and use ASCII only;
+- avoid transparent warlike English compounds such as `Ironhold`,
+  `Bone Camp`, and `Stormfang`;
+- the Land is **Tergal**;
+- finite natural Areas:
+  - **Khuratal Steppe** — open central prairie;
+  - **Borugal Hills** — broken northern hills;
+  - **Temur Ridge** — high grazing range;
+  - **Namak Basin** — dry southern basin;
+  - **Kharun River** — eastern river plain;
+  - **Flumenpur River** — the same river named in Firascir, crossing Caelum
+    before entering western Tergal;
+- authored settlements:
+  - **Ulus-Gal** — capital;
+  - **Kharuk** — western town;
+  - **Temenur** — northern town;
+  - **Ordubal** — southern town;
+- generated village name pool; three are drawn at world creation:
+  - Aradun;
+  - Balurun;
+  - Borkal;
+  - Enkhar;
+  - Eshkar;
+  - Guratai;
+  - Kharnam;
+  - Kurugan;
+  - Namuruk;
+  - Ordaki;
+  - Sargul;
+  - Teguren;
+  - Tumengal;
+  - Urkhal;
+  - Zamutar.
 
 Pirate:
 
@@ -3699,8 +3848,12 @@ Status on 2026-07-25:
   Room-content pools in this file.
 - `placegen_review.txt` remains the completed Firascir string sheet as the
   current review record.
-- The named Lands are Dvarvengrond, Firascir, Mortellaria, Ensimaa
-  (Prisma Tersa), Giblia (Gibili), and Tergal (Ulus-Gal).
+- The named Lands are Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili,
+  and Tergal. `Ulus-Gal` is Tergal's capital.
+- The complete proper-name rosters for Mortellaria, Ensimaa, Gibili, and
+  Tergal are fixed in **Name generation**. Their basic-string passes should
+  use those names and review only descriptions, ordinary Site/Room labels,
+  and contents.
 - No special/nonessential feature pool has been accepted yet. Existing
   optional-feature and curiosity lists in this draft remain Phase-2
   candidates.
@@ -3708,7 +3861,7 @@ Status on 2026-07-25:
 Next session:
 
 1. Replace `placegen_review.txt` with the **Mortellaria / Mediterranean human
-   basic strings**.
+   basic strings**, using the fixed proper-name roster in **Name generation**.
 2. Use the same minimal translation-sheet format.
 3. Review only essential environment, Area, settlement, Site, Room, and
    ordinary-content strings.

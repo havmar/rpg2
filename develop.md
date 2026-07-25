@@ -111,8 +111,9 @@ a pointer: what the file is, how it's run, where its docs are.
   lightweight Room-content schema, weighting/reveal/mutation/seed rules,
   implementation order, and the canonical pre-implementation content catalog.
   The Alpine Tundra / Dvarvengrond and Temperate / Firascir basic passes are
-  accepted and consolidated there; other environments and the later global
-  special-feature pass remain draft.
+  accepted and consolidated there. The Mortellarian, elven, goblin, and orc
+  proper-name rosters are fixed; their other basic content and the later
+  global special-feature pass remain draft.
   It is the implementation source while the feature remains unimplemented;
   shipped behavior belongs in `rules.md`.
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
