@@ -965,12 +965,6 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         "place": requirement,
         "state_target": target_area["id"],
         "level": level,
-        "fuzz": rng.randint(-2, 2),     # quest sight (Magic & Mind): the
-                                        # fixed error a dull-witted party
-                                        # READS this job's level with --
-                                        # rolled once so re-asking never
-                                        # re-rolls it; clamped by the
-                                        # party's best MIND (seen_level)
         "skins": dict(tpl["skins"]),
         "sites": site_ids,
         "site_count": len(site_ids),
@@ -1080,7 +1074,7 @@ def forge_quest(world: dict, qid: str, level: int, n_sites: int, n_rooms: int,
         xp_total += site_xp_total(site_level)
         gold_total += site_gold(site_level)
     return {"id": qid, "name": name, "desc": "(DM-forged)",
-            "origin": area_key, "level": level, "fuzz": rng.randint(-2, 2),
+            "origin": area_key, "level": level,
             "skins": {}, "sites": site_ids, "site_count": n_sites,
             "room_count": n_sites * n_rooms, "xp_total": xp_total,
             "gold_total": gold_total, "next": {"site": 0, "room": 0},
@@ -1291,11 +1285,10 @@ AMBUSH_CHANCE = 0.25         # ...except this often, when they find YOU.
 # the old flat 25% spotted roll (ranged combat, 2026-07-16): each side
 # rolls 2d6 + its notice stat against NOTICE_BASE + the OTHER side's
 # conspicuousness (rpg.conspicuousness: group size, showy traits, the
-# worst-DEX stealth term). The party watches with its best MIND (the
-# watchful mind -- MIND's third everyday job); beasts and foes sense with
-# the sharper of MIND and DEX. One side seeing alone = spotted (the
-# sighting choice) or AMBUSHED (they open at their preferred range); both
-# or neither = met square across the open field.
+# worst-DEX stealth term). The party watches with its best MIND; beasts and
+# foes sense with the sharper of MIND and DEX. One side seeing alone =
+# spotted (the sighting choice) or AMBUSHED (they open at their preferred
+# range); both or neither = met square across the open field.
 HUNT_LEVEL_REACH = 2         # a hunt stalks prey up to this far below the
                              # party's level (never above it)
 HUNT_AMBUSH_CHANCE = 0.10    # ...but this often the hunter is the hunted
@@ -1414,49 +1407,17 @@ def quest_shape(quest: dict) -> str:
     return (f"{n} site{'s' if n > 1 else ''}, "
             f"{rooms} encounter{'s' if rooms > 1 else ''}")
 
-def mind_precision(mind: int) -> int:
-    """Quest sight (Magic & Mind, 2026-07-15): how blurry the party's read
-    of a job's level is. The party's BEST MIND does the reading: 6 = the
-    savant sees it exact; 4-5 = within a level; 3 and under = within two.
-    This deliberately spends part of the old levels-shown-straight stance
-    to make MIND matter to every party (design discussion; pay always
-    follows the TRUE level -- only the READ blurs)."""
-    if mind >= 6:
-        return 0
-    if mind >= 4:
-        return 1
-    return 2
-
-
-def seen_level(quest: dict, mind: int | None) -> tuple[int, bool]:
-    """The level the party READS off a quest: its true level shifted by the
-    quest's stored fuzz, clamped to the reading MIND's precision. Returns
-    (shown level, exact?). mind=None is the DM's true view (and the sims':
-    they never pass a mind, so no bench number moves)."""
-    level = quest["level"]
-    if mind is None or quest.get("kind") == "delivery":
-        return level, True
-    p = mind_precision(mind)
-    if p == 0:
-        return level, True
-    f = max(-p, min(p, quest.get("fuzz", 0)))
-    return max(1, level + f), False
-
-
-def level_grade(quest: dict, mind: int | None = None) -> str:
-    """The level column of a board row: 'L7 ' exact, 'L~7' an estimate
-    (quest sight), 'DELIVERY' for the road jobs."""
+def level_grade(quest: dict) -> str:
+    """The exact level column of a board row, or DELIVERY for a road job."""
     if quest.get("kind") == "delivery":
         return "DELIVERY"
-    shown, exact = seen_level(quest, mind)
-    return f"L{shown:<2}" if exact else f"L~{shown}"
+    return f"L{quest['level']:<2}"
 
 
-def quest_line(quest: dict, mind: int | None = None) -> str:
-    """One board row: id, level (exact to a sharp MIND; an estimate --
-    'L~7' -- to a dull one: quest sight), shape, pay, status. A delivery
-    has no site level: DELIVERY stands where the level would (the road's
-    danger is the road's own table)."""
+def quest_line(quest: dict) -> str:
+    """One board row: id, exact level, shape, pay, and status. A delivery has
+    no site level: DELIVERY stands where the level would (the road's danger
+    is the road's own table)."""
     mark = {"open": "", "done": "  [DONE]"}[quest["status"]]
     if quest.get("kind") == "delivery":
         return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
@@ -1465,19 +1426,17 @@ def quest_line(quest: dict, mind: int | None = None) -> str:
                 f"{quest_xp_total(quest)} XP{mark}")
     dark = " DARK" if quest.get("align") == "dark" else ""
     xp_note = " (bad karma)" if dark else ""
-    return (f"[{quest['id']}] {level_grade(quest, mind)}{dark} "
+    return (f"[{quest['id']}] {level_grade(quest)}{dark} "
             f"{quest['name']} -- "
             f"{quest_shape(quest)}; pays {quest_gold_total(quest)}g, "
             f"{quest_xp_total(quest)} XP{xp_note}{mark}")
 
 
-def board_lines(world: dict, settlement_key: str | None = None,
-                mind: int | None = None) -> list[str]:
+def board_lines(world: dict,
+                settlement_key: str | None = None) -> list[str]:
     """The DM's quest inventory per settlement (2026-07-12: in play there
     is no board -- each row shows WHOSE job it is, and the ask-around
-    funnel leads to that person, see dm.md). `mind` is the reading party's
-    best MIND: with it, levels blur to quest sight (L~7); without it (the
-    default -- the DM/demo view) they print true."""
+    funnel leads to that person, see dm.md). Levels always print exactly."""
     lines = []
     for s in settlements(world):
         if settlement_key and s["key"] != settlement_key:
@@ -1488,7 +1447,7 @@ def board_lines(world: dict, settlement_key: str | None = None,
             q = world["quests"][qid]
             g = q.get("giver")
             who = f"    ({g['name']}, {g['role']})" if g else ""
-            lines.append("  " + quest_line(q, mind) + who)
+            lines.append("  " + quest_line(q) + who)
     return lines
 
 
@@ -1500,13 +1459,10 @@ def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
 
 
 def quest_detail_lines(world: dict, quest: dict,
-                       mind: int | None = None) -> list[str]:
-    """The full quest view. With `mind` (quest sight) the site levels shift
-    by the same read error as the headline -- a blurred read is blurred
-    consistently, it never leaks the truth through a sub-line."""
-    lines = [quest_line(quest, mind), f"    {quest['desc']}"]
-    shown, exact = seen_level(quest, mind)
-    offset = shown - quest["level"]
+                       dm: bool = True) -> list[str]:
+    """The full quest view. `dm=False` withholds surprise twists; all public
+    quest and site levels still print exactly."""
+    lines = [quest_line(quest), f"    {quest['desc']}"]
     g = quest.get("giver")
     if g:
         traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
@@ -1526,8 +1482,7 @@ def quest_detail_lines(world: dict, quest: dict,
         return lines
     for i, s in enumerate(quest_sites(world, quest)):
         cur = quest["next"]
-        site_l = (f"L{s['level']}" if exact
-                  else f"L~{max(1, s['level'] + offset)}")
+        site_l = f"L{s['level']}"
         d = s.get("deed")
         if d and not d.get("done"):
             # The deed is the JOB's known nature (the player took a
@@ -1537,7 +1492,7 @@ def quest_detail_lines(world: dict, quest: dict,
                          f"{d['dc']}; a make does the site clean, a miss "
                          f"starts the fight (with witnesses)")
         t = s.get("twist")
-        if t and not t.get("resolved") and mind is None:
+        if t and not t.get("resolved") and dm:
             # The twist is a SURPRISE -- DM eyes only (the true view).
             lines.append(f"    site {i + 1} TWIST (DM eyes only): "
                          f"{t['text']} -- `settle` takes the terms at "

@@ -26,23 +26,28 @@ play.
 - State persists in **`save.json`** between terminal calls; every subcommand
   is listed in `session.py --help`. The save is plain JSON on purpose:
   commit it and the playthrough travels with the repo. Every save also
-  rewrites the two **UI pages** in **`ui/`**: **`ui/party.txt`** (the full
-  party info sheet) and **`ui/map.txt`** (the macro world map -- lands and
-  known areas, with the existing taken-quest site summary). A third page,
+  rewrites the standing **UI pages** in **`ui/`**: **`ui/party.txt`** (the
+  full party info sheet) and **`ui/map.txt`** (the macro world map -- lands
+  and known areas, with the existing taken-quest site summary). Combat also
+  rewrites **`ui/fight-short.txt`** (the displayed last fight) and
+  **`ui/fight-detailed.txt`** (its full mechanics record). A fifth page,
   **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
   yet; `look` is the local display meanwhile. **End EVERY DM message with
   `python session.py sheet`**, which
-  commits those two files -- one commit per message, so the player follows
-  the playthrough as message-sized diffs. Unchanged sheets are a no-op; run
-  it anyway.
-- **GitHub IS the player's UI.** The two pages are committed to the branch,
-  so the player can read them as blob links. After the `sheet` at the end
-  of a message, drop the two links (swap in the current branch name):
+  commits every existing page -- one commit per message, so the player
+  follows the playthrough as message-sized diffs. Unchanged pages are a
+  no-op; run it anyway.
+- **GitHub IS the player's UI.** The four pages are committed to the branch,
+  so the player and DM can read them as blob links. After the `sheet` at the
+  end of a message, drop the standing two player links (swap in the current
+  branch name):
   `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` and
   `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt`. The player
   keeps them open on a phone and refreshes -- the party sheet is the
   between-fights board, the map is where they are and where their taken
-  jobs lead.
+  jobs lead. The fight pages live at the corresponding
+  `ui/fight-short.txt` and `ui/fight-detailed.txt` links; use or share them
+  when the combat record matters.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between
@@ -70,15 +75,9 @@ the player's core decision:
 - **There is NO quest board in the fiction (2026-07-12): quests come from
   PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
   its level, pay, and WHOSE job it is (every quest has a generated giver:
-  name, role, personality). **Levels read through the party's best MIND
-  (quest sight, 2026-07-15):** a best MIND of 6 reads them exact; 4-5
-  within one level; 3 and under within two -- the blurred rows print
-  `L~7` and the board says so. Relay the estimate AS an estimate ("looks
-  like level 7 work, near enough") and never correct it from your own
-  knowledge -- the party finds out the truth by fighting (the door
-  banner prints it) or by scrying. Pay is always honest, so a job that
-  pays too well for its apparent level SMELLS wrong -- let the player
-  notice, don't flag it. `show QID --dm` is your true view for pacing. In play, run the **one-message funnel**: the party asks
+  name, role, personality). **Quest and site levels always print exactly.**
+  Relay them straight; `show QID --dm` adds surprise complications for your
+  planning, not a truer level. In play, run the **one-message funnel**: the party asks
   around -- the tavern keeper knows, any local points the way -- and ONE
   message lands them in front of the giver, who lays out the job ("you
   ask at the taproom; the mayor waves you on to the chief constable, a
@@ -477,16 +476,19 @@ bigger than the fights WITHOUT pages of narration:
   prints ONE log (2026-07-21): the display log -- 40 columns, no dice
   math, damage as `deals 4 dmg!!`, quiet rounds collapsed. Copy it into
   your message as-is -- it IS the fight's mechanical account for the
-  player, and it is also all YOU read: narrate from its shape (the
+  player, and it is also what YOU read: narrate from its shape (the
   turning points, the falls, the crossings). It ends with the party
   TALLY (tracks, standing roll penalties, kit, purse, rooms left in the
   site, the streak's next multiplier): the between-fights numbers,
   already in display form. Add your short narration around the block;
-  the prose never restates what the tally shows. The full debug log
-  (every roll and modifier) is appended to the untracked `ui/fight.log`
-  workfile -- open it only when something needs a post-mortem (a death,
-  a number that looks wrong); it is never part of play output and `sheet`
-  does not commit it.
+  the prose never restates what the tally shows. **Do not pipe an encounter
+  through `tail` or otherwise discard its opening lines.** If terminal output
+  is clipped or you inherited a command that did, read the complete
+  **`ui/fight-short.txt`** snapshot before narrating; it is the authoritative
+  backup of exactly what should be pasted. **`ui/fight-detailed.txt`** carries
+  every roll and modifier for post-mortems only (a death, a number that looks
+  wrong). A new encounter replaces both files; resume/retreat appends to the
+  paused fight, keeping that fight whole. `sheet` commits both.
 - **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
   crossing (any member dropping past half HP mid-fight; crossing-only:
   entering a fight already low does NOT trip it -- that was the player's
@@ -951,10 +953,8 @@ bigger than the fights WITHOUT pages of narration:
   Power is the ammo: close fast or bleed at range -- an emptied
   caster is a robed conscript with a knife. Narrate bolts as the school's
   fiction; the log already says who's casting what.
-- **Quest sight** (2026-07-15): the party's best MIND reads job levels
-  -- see the board section above. Blurred rows print `L~N`; relay the
-  estimate as an estimate, keep the truth to yourself, and let honest
-  pay be the tell the player may catch.
+- **Quest levels are exact:** boards, rumors, `show`, and `take` all print
+  the true level. MIND does not alter quest readouts.
 - **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
   and `15*L` gold, split rooms-then-lump): punching up pays above your
   weight class by construction, easy work pays less. **Per-encounter pay

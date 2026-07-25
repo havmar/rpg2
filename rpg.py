@@ -684,9 +684,9 @@ STARTER_AMMO = {"arrows": 10, "bolts": 10, "shells": 2, "knives": 4}
 # plus a clumsy-stealth point when its WORST DEX drags (stealth is a
 # weakest-link property). NOTICING is the other side's roll against it:
 # 2d6 + notice stat vs NOTICE_BASE + conspicuousness. The party watches
-# with its best MIND (the watchful mind reads the land -- MIND's third
-# everyday job, after casting and quest sight); beasts and foes sense with
-# the sharper of MIND and DEX. Whoever notices first picks the engagement:
+# with its best MIND (the watchful mind reads the land); beasts and foes
+# sense with the sharper of MIND and DEX. Whoever notices first picks the
+# engagement:
 # shooters open at their range, an unseen melee side closes to contact.
 NOTICE_BASE = 8
 STEALTH_DEX_BASE = 4        # a group's worst DEX below this adds the gap
@@ -1344,8 +1344,8 @@ TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "
 # The player log's hard column budget: session.py wraps at 40 for the
 # designer's phone, and a wrapped line breaks mid-thought -- so the player
 # level PRE-FITS every event into lines of at most this width, breaking only
-# between self-contained fragments (fit_lines). The full log keeps its old
-# free-width format (it goes to the ui/fight.log workfile, not the chat).
+# between self-contained fragments (fit_lines). The detailed log keeps its old
+# free-width format (it goes to ui/fight-detailed.txt, not the chat).
 PLAYER_WIDTH = 40
 
 
@@ -1375,8 +1375,8 @@ def fit_lines(parts) -> list[str]:
 class CombatLog(list):
     """The two-level combat log (2026-07; player level redesigned
     2026-07-21). The list itself IS the full log -- every headline plus the
-    raw numbers, the debug layer, optionally written to a configured
-    workfile -- while `.player` collects THE log: the one display the DM
+    raw numbers, the detailed layer, optionally written to a configured
+    snapshot -- while `.player` collects THE log: the one display the DM
     narrates over and the player reads (rules.md, "Reading the combat log").
     Player lines start in column 1 and are pre-fitted to PLAYER_WIDTH.
 
@@ -1401,15 +1401,24 @@ class CombatLog(list):
     list[str] still works everywhere (it then just receives the full log --
     the bench harnesses pass throwaway lists)."""
 
-    def __init__(self, lines=(), debug_path: str | Path | None = None):
+    def __init__(self, lines=(), debug_path: str | Path | None = None,
+                 player_path: str | Path | None = None,
+                 continuing: bool = False):
         super().__init__(lines)
         self.player: list[str] = []
-        # Optional persistence sink. group_combat flushes its own output to
-        # this path at every exit (pause or resolution); the session layer
-        # flushes again after it appends awards/tallies. Plain-list bench logs
-        # and unconfigured CombatLogs remain memory-only.
+        # Optional persistence sinks. group_combat flushes its detailed output
+        # at every exit (pause or resolution); the session layer flushes both
+        # levels after it appends awards/tallies. A new fight replaces the
+        # snapshots, while a resumed/retreated paused fight appends to them.
+        # Plain-list bench logs and unconfigured CombatLogs remain memory-only.
         self.debug_path = Path(debug_path) if debug_path is not None else None
+        self.player_path = (Path(player_path)
+                            if player_path is not None else None)
+        self.continuing = continuing
         self._debug_flushed = 0
+        self._player_flushed = 0
+        self._debug_file_started = False
+        self._player_file_started = False
         self._round: int | None = None          # open round's number
         self._buf: list[tuple[str, str]] = []   # (line, kind) of open round;
                                                 # kind: note / quiet / defer
@@ -1501,25 +1510,42 @@ class CombatLog(list):
         else:
             self._player_add(alone)
 
+    def _flush_path(self, path: Path | None, lines: list[str], cursor: int,
+                    file_started: bool) -> tuple[int, bool, bool]:
+        """Write one log level's unwritten tail to its last-fight snapshot."""
+        if path is None or cursor >= len(lines):
+            return cursor, file_started, False
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            mode = "a" if self.continuing or file_started else "w"
+            with path.open(mode, encoding="utf-8") as f:
+                f.write("\n".join(lines[cursor:]) + "\n")
+        except OSError:
+            return cursor, file_started, False
+        return len(lines), True, True
+
     def flush_debug(self) -> bool:
-        """Append full-log lines not written yet to the configured workfile.
+        """Write detailed lines not persisted yet to the configured snapshot.
 
         Returns True when lines were written. Persistence is deliberately
         best-effort: combat resolution must not fail because its diagnostic
-        workfile cannot be created or written.
+        snapshot cannot be created or written.
         """
-        if self.debug_path is None or self._debug_flushed >= len(self):
-            return False
-        try:
-            self.debug_path.parent.mkdir(parents=True, exist_ok=True)
-            with self.debug_path.open("a", encoding="utf-8") as f:
-                if self._debug_flushed == 0:
-                    f.write("=" * 40 + "\n")
-                f.write("\n".join(self[self._debug_flushed:]) + "\n")
-        except OSError:
-            return False
-        self._debug_flushed = len(self)
-        return True
+        (self._debug_flushed,
+         self._debug_file_started,
+         wrote) = self._flush_path(
+             self.debug_path, self, self._debug_flushed,
+             self._debug_file_started)
+        return wrote
+
+    def flush_player(self) -> bool:
+        """Write short display lines not persisted yet to its snapshot."""
+        (self._player_flushed,
+         self._player_file_started,
+         wrote) = self._flush_path(
+             self.player_path, self.player, self._player_flushed,
+             self._player_file_started)
+        return wrote
 
 
 def _debug(log: list[str], line: str) -> None:
@@ -1724,7 +1750,7 @@ class Entity:
                             # Aim for a thrown cast is ceil((MIND+DEX)/2);
                             # the casting check rolls off MIND alone. Also
                             # the party's QUEST SIGHT (quests.py: the best
-                            # MIND reads a job's level precisely). 0 = never
+                            # MIND watches for danger on the road). 0 = never
                             # rolled (pre-magic foes).
     abilities: set[str] = field(default_factory=set)    # learnable abilities
                                          # (ABILITIES catalog keys, bought
@@ -3627,7 +3653,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
     save/resume boundary -- they re-trip after the resume.
 
     Logging: when `log` is a CombatLog configured with `debug_path`, this
-    function appends the full mechanics log to that workfile before every
+    function writes the detailed mechanics log to that snapshot before every
     return (pause or resolution). A plain list, used by the batch harnesses,
     remains memory-only. Callers may append their own post-combat lines and
     call `CombatLog.flush_debug()` again; its cursor prevents duplication.

@@ -5,13 +5,12 @@ __pycache__/
 scratch/
 
 # Per-playthrough runtime state (not source)
-# NOTE: the player-facing ui/ display files (ui/party.txt, ui/map.txt) are
-# NOT ignored -- they are committed by `sheet` so the player reads the
-# playthrough as blob pages on the branch (see dm.md). save.json and the
-# developer-facing ui/fight.log stay runtime-only.
+# NOTE: the four player-facing ui/*.txt pages (party, map, fight-short, and
+# fight-detailed) are NOT ignored -- `sheet` commits them so the player and DM
+# can read the playthrough on the branch (see dm.md). save.json stays
+# runtime-only.
 save.json
 
-# Full combat debug workfile. Keep the old root path ignored too: builds
-# before 2026-07-23 wrote there, and an existing local workfile may remain.
+# Legacy combat workfiles from before the last-fight .txt snapshots.
 fight.log
 ui/fight.log

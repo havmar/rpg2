@@ -132,6 +132,10 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
+- `test_ui_logs.py` — focused contracts for the committed last-fight
+  snapshots (new-fight replace, pause/resume append, short/detailed split,
+  `sheet` path registration) and exact quest-level readouts.
+  `python -m unittest -v test_ui_logs.py`.
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
   translation-style view of one Land's player/DM-facing names, descriptions,
   Site and Room labels, and visible content strings. It carries only enough
@@ -289,24 +293,27 @@ a pointer: what the file is, how it's run, where its docs are.
   settlement-gated (no war news mid-wilds), a dead companion's quality
   weapon stays with the party, `give --as` reskins weapons, ALL output
   (and the UI pages) is hard-wrapped at `WRAP_WIDTH` = 40 for the
-  designer's phone, and the two **UI pages in `ui/`** are rewritten on
-  every save but committed only by **`sheet`** — the end-of-every-DM-message
-  command (one commit per message; best-effort git, never fatal). The pages
-  are **`ui/party.txt`** (`party_sheet_lines` — the full party board) and,
+  designer's phone, and the **UI pages in `ui/`** are committed only by
+  **`sheet`** — the end-of-every-DM-message command (one commit per message;
+  best-effort git, never fatal). **`ui/party.txt`** (`party_sheet_lines` —
+  the full party board) and,
   since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — lands, known areas
   with settlement open-job counts + a visited/here marker, and, until the
   planned `ui/minimap.txt` takes over local detail, the sites of every TAKEN
   quest with
   its progress cursor; `accepted_quests` gates it on the new `accepted`
-  save key — offered-but-untaken jobs never appear). Both are **committed
-  to the branch, not gitignored: they are the player's GitHub UI** (blob
-  links, dm.md); only `save.json` and `ui/fight.log` stay untracked.
+  save key — offered-but-untaken jobs never appear) are rewritten on every
+  save. Combat writes two last-fight snapshots:
+  **`ui/fight-short.txt`** (the exact displayed log and DM fallback) and
+  **`ui/fight-detailed.txt`** (every roll and modifier). A new encounter
+  replaces them; resume/retreat appends to the paused encounter. All four
+  are **committed to the branch, not gitignored: they are the GitHub UI**
+  (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
   the player-facing display the DM pastes into chat as-is, while the
-  full debug log goes to the untracked **`ui/fight.log`** workfile
+  detailed version goes to **`ui/fight-detailed.txt`**
   (`group_combat` flushes the configured log at pause/resolution and
-  `print_combat` flushes its session tail; gitignored with save.json -- the
-  post-mortem surface, e.g. on a player death). The block ends with the
+  `print_combat` flushes both snapshots' session tail). The block ends with the
   party tally (`tally_lines`: tracks, standing roll penalties -- shown
   HERE and in the pause menu since the fight lines dropped the numbers
   -- kit/purse, rooms-left count, next streak multiplier), the standard
@@ -410,6 +417,7 @@ python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python -m unittest -v test_places.py  # procedural-place MVP contract
+python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -596,11 +604,13 @@ mechanic *does* and *why* is rules.md's job.
   `cmd_downtime`, and the `dead_before` plumbing through `pending` so the
   post-fight morale pass knows who died in *this* fight.
 - **The log** — `CombatLog` (reworked 2026-07-21, the one-log display;
-  persistence fixed 2026-07-23): the list itself is the full debug log
-  (never printed in play -- session-created logs target the untracked
-  **`ui/fight.log`** workfile; `group_combat` flushes at pause/resolution,
-  then `session.print_combat` flushes any appended session tail and prints
-  only `.player`); `.player` is THE display --
+  last-fight snapshots added 2026-07-26): the list itself is the detailed
+  log (never printed in play; session-created logs target
+  **`ui/fight-detailed.txt`**); `.player` is THE display and targets
+  **`ui/fight-short.txt`**. New fights overwrite both, while
+  resume/retreat logs append; `group_combat` flushes detailed mechanics at
+  pause/resolution, then `session.print_combat` flushes both appended
+  session tails and prints only `.player`. The player level is
   col-1, pre-fitted to `PLAYER_WIDTH` = 40 via `fit_lines` (fragments
   never split), damage as `deals N dmg` + tier punctuation (`TIER_EMPH`),
   attacker-HP tags when hurt, quiet-round collapse
@@ -657,13 +667,11 @@ mechanic *does* and *why* is rules.md's job.
   `spell_ward` + the hexer/pyromancer/magus rows and the roster tags.
   `quests.py`: `CASTER_POOL` — one contained caster template per race
   (NOT the warband ladder; see rules.md on the career collapse that
-  decided it) plus the "Renegade Magus" epic; **quest sight** —
-  `quest["fuzz"]`, `mind_precision` / `seen_level` / `level_grade`, the
-  `mind` param through `quest_line` / `board_lines` /
-  `quest_detail_lines`. `session.py`: `train HERO SPELL`, `buy HERO book
-  SPELL` (capitals), `cast HERO scry|teleport`, `resume --vanish`,
-  `retreat --blink`, `party_mind` + the blurred board/show/take
-  readouts (`show --dm` = the true view), the `visited` save key
+  decided it) plus the "Renegade Magus" epic. `session.py`:
+  `train HERO SPELL`, `buy HERO book SPELL` (capitals),
+  `cast HERO scry|teleport`, `resume --vanish`,
+  `retreat --blink`, exact board/show/take levels (`show --dm` adds
+  surprise complications), the `visited` save key
   (teleport's known ground), the levelup menu's spell section.
 - **Ranged combat & the field** (2026-07-16) — `rpg.py`: the constants
   block (`ROOM_FIELD` / `WILD_FIELD` / `CAST_RANGE`, ammo caps/lots/
@@ -956,8 +964,8 @@ chase — or a blink out — with fled rooms persisting). **The Magic & Mind
 layer is in (2026-07-15)** — MIND-highest wizards from level 1, ten
 spells at ranks 1-3 (skill points buy depth, spellbooks buy breadth,
 Power prices the burst), the casting check with degrees of success, the
-assassin openers, telekinesis, possession, scry, teleport travel, and
-quest sight (the board blurs to the party's best MIND). **Cross-land
+assassin openers, telekinesis, possession, scry, and teleport travel.
+**Cross-land
 deliveries** (2026-07-14) send the party travelling. **Ranged combat &
 guns are in (2026-07-16)** — the field model, seven ranged cards, ammo,
 shooter foe rows, cultural arms, and the notice contest (rules.md's

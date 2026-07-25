@@ -61,9 +61,11 @@ Concretely:
      moves/abilities name-only, Power printed only on casts, roster
      stat blocks as the enemy introduction, the dying counterattack
      resolving immediately (bench-checked within noise, benchlog).
-     The full debug log stopped printing: it appends to the untracked
-     `ui/fight.log` workfile (post-mortems only; persistence anchored and
-     moved into `ui/` on 2026-07-23). Encounter banners, the
+     The detailed log stopped printing. Since 2026-07-26 combat writes
+     committed last-fight snapshots in `ui/fight-short.txt` (the complete
+     displayed log and DM fallback) and `ui/fight-detailed.txt`
+     (post-mortems); new encounters replace them and paused fights append
+     through resume/retreat. Encounter banners, the
      pause menu, and the award/XP/autospend lines were refit in the
      same pass; dm.md's protocol/narration sections updated.
    - **Still open from item 1:** a player STATUS DISPLAY log (a

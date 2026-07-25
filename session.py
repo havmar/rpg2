@@ -56,9 +56,9 @@ The shape of a playthrough:
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
-  sheet                                     -- commit ui/party.txt +
-                                               ui/map.txt (run at the END of
-                                               every DM message)
+  sheet                                     -- commit the four ui/*.txt pages
+                                               (run at the END of every DM
+                                               message)
 
 All output is wrapped at WRAP_WIDTH columns (the designer plays on a phone
 whose code blocks show ~41 characters and never soft-wrap).
@@ -129,7 +129,7 @@ from people import (make_character, make_pair, character_sheet, person_line,
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines, site_gold_for,
                     quest_detail_lines, quest_line, roster_kinds_line,
-                    level_grade, seen_level, mind_precision,
+                    level_grade,
                     all_areas, settlements, settlements_by_land,
                     area_sites, quest_sites, site_rooms,
                     complete_quest_place_state,
@@ -383,14 +383,21 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     }
 
 
-# The player-facing display files (2026-07-22): the game's GitHub UI. Both
-# live in ui/, are rewritten on every save, and are committed together by
-# `sheet` -- the player reads them as blob pages on the branch
-# (github.com/.../blob/<branch>/ui/party.txt and .../ui/map.txt). See dm.md.
+# The player-facing display files: the game's GitHub UI. The party/map pages
+# are rewritten on every save; the two fight pages are last-fight snapshots.
+# `sheet` commits every page that exists so the player and DM can read them as
+# blob pages on the branch. See dm.md.
 UI_DIR = Path(__file__).parent / "ui"
 PARTY_SHEET_PATH = UI_DIR / "party.txt"
 MAP_SHEET_PATH = UI_DIR / "map.txt"
-FIGHT_LOG_PATH = UI_DIR / "fight.log"
+FIGHT_DETAILED_PATH = UI_DIR / "fight-detailed.txt"
+FIGHT_SHORT_PATH = UI_DIR / "fight-short.txt"
+UI_COMMIT_PATHS = (
+    "ui/party.txt",
+    "ui/map.txt",
+    "ui/fight-short.txt",
+    "ui/fight-detailed.txt",
+)
 
 
 def party_sheet_lines(state: dict) -> list[str]:
@@ -602,34 +609,35 @@ def _write_map_sheet(state: dict) -> None:
 
 
 def cmd_sheet(args: argparse.Namespace) -> None:
-    """Rewrite the UI display files (ui/party.txt + ui/map.txt) from the save
-    and commit them (those two files only). The DM runs this at the END of
-    every message (dm.md) so their history reads one commit per message and
-    the player follows the playthrough as blob pages on the branch.
-    Committing nothing (nothing changed) is fine and says so."""
+    """Rewrite party/map and commit every existing ui/*.txt game page.
+
+    Fight pages do not exist until the first encounter. Once written, they
+    join the same end-of-message commit as party.txt and map.txt.
+    """
     state = load()
     _write_party_sheet(state)
     _write_map_sheet(state)
     day = state["clock"].day
     where = (current_area(state)["name"]
              if state.get("position") else "nowhere")
-    paths = ["ui/party.txt", "ui/map.txt"]
+    paths = list(UI_COMMIT_PATHS)
     try:
         root = Path(__file__).parent
+        paths = [path for path in paths if (root / path).exists()]
         subprocess.run(["git", "add", *paths], cwd=root, check=False,
                        capture_output=True, timeout=15)
         done = subprocess.run(
             ["git", "commit", "--quiet",
-             "-m", f"party & map: day {day} at {where}", "--", *paths],
+             "-m", f"ui: day {day} at {where}", "--", *paths],
             cwd=root, check=False, capture_output=True, timeout=15)
     except Exception as exc:
         print(f"UI sheets written; commit failed ({exc}) -- the game is "
               f"unaffected.")
         return
     if done.returncode == 0:
-        print(f"party.txt + map.txt committed (day {day} at {where}).")
+        print(f"UI pages committed (day {day} at {where}).")
     else:
-        print("UI sheets unchanged -- nothing to commit.")
+        print("UI pages unchanged -- nothing to commit.")
 
 
 def save(state: dict) -> None:
@@ -735,29 +743,30 @@ def find_hero(party: list, name: str):
     return None
 
 
-def party_mind(state: dict) -> int:
-    """The party's best living MIND -- the reader of quest levels (quest
-    sight, Magic & Mind): 6 reads exact, 4-5 within one level, 3 and under
-    within two. Hiring the bookish companion sharpens the whole board."""
-    return max((h.mind for h in state["party"] if not h.dead), default=0)
+def new_combat_log(continuing: bool = False) -> CombatLog:
+    """A two-level log configured for the UI's last-fight snapshots.
 
-
-def new_combat_log() -> CombatLog:
-    """A full combat log configured for the UI-directory debug workfile."""
-    return CombatLog(debug_path=FIGHT_LOG_PATH)
+    New encounters replace both files. Resume/retreat calls continue the
+    paused fight already in them, so one fight remains intact even though it
+    spans two session.py processes.
+    """
+    return CombatLog(debug_path=FIGHT_DETAILED_PATH,
+                     player_path=FIGHT_SHORT_PATH,
+                     continuing=continuing)
 
 
 def print_combat(log: CombatLog) -> None:
     """Print THE combat log (2026-07-21: the player-facing level is the only
     combat display -- the DM narrates over it and pastes it as-is; see
-    rules.md, "Reading the combat log"). The full debug log -- dice math,
-    modifiers, stamina readouts -- is appended to ui/fight.log instead of
-    printed: the post-mortem surface, inspected on demand (a death, a
-    suspect number), never part of play output. group_combat already flushes
-    its configured log at resolution/pause; this flush captures the session
-    tail added afterward (awards, loot, tally) without duplicating lines."""
+    rules.md, "Reading the combat log"). Both levels are also written as
+    last-fight snapshots: ui/fight-short.txt is the paste/narration backup;
+    ui/fight-detailed.txt carries dice math, modifiers, and stamina readouts
+    for post-mortems. group_combat already flushes detailed mechanics at
+    resolution/pause; these cursor-safe flushes capture the session tail
+    without duplicating lines."""
     if isinstance(log, CombatLog) and log.player:
         log.flush_debug()
+        log.flush_player()
         print("\n".join(log.player))
     else:
         print("\n".join(log))
@@ -1953,7 +1962,7 @@ def maybe_assign_task(state: dict) -> bool:
     pact["beatings"] = 0
     how = rng.choice(karma.HELL_MAIL)
     print(f"*** WORD FROM BELOW -- day {day}: {how}. ***")
-    print(f"  Hell assigns: {quest_line(q, party_mind(state))}")
+    print(f"  Hell assigns: {quest_line(q)}")
     g = q.get("giver")
     if g:
         print(f"  (the local hand on the job: {npc_line(g)})")
@@ -2117,8 +2126,7 @@ def cmd_task(args: argparse.Namespace) -> None:
         print(line)
     q = pact_task(state)
     if q is not None:
-        for line in quest_detail_lines(state["world"], q,
-                                       mind=party_mind(state)):
+        for line in quest_detail_lines(state["world"], q, dm=False):
             print(line)
         print(f"(ignoring it past its grace draws hell's enforcers at "
               f"the roads and nights -- cooldown "
@@ -2449,7 +2457,6 @@ def cmd_board(args: argparse.Namespace) -> None:
             return
         rec = roll_dark_board(state)
         save(state)
-        mind = party_mind(state)
         print(f"Day {state['clock'].day}. Asking around the wrong corners "
               f"of {here['name']} (dark work: the gold runs half again "
               f"the honest rate, but every XP is BAD KARMA -- heat "
@@ -2460,7 +2467,7 @@ def cmd_board(args: argparse.Namespace) -> None:
                 continue
             g = q.get("giver")
             who = f"    ({g['name']}, {g['role']})" if g else ""
-            print("  " + quest_line(q, mind) + who)
+            print("  " + quest_line(q) + who)
         print(f"({karma.karma_line(state['karma'], party_level(state))}; "
               f"these offers last today only -- take one like any "
               f"quest: `take QID`)")
@@ -2497,14 +2504,7 @@ def cmd_board(args: argparse.Namespace) -> None:
         print(f"Day {state['clock'].day}. Asking around {here['name']} "
               f"(the DM's inventory -- in play, each job is its GIVER's; "
               f"funnel to them in one message, dm.md):")
-    # Quest sight: the LOCAL (played) board reads through the party's best
-    # MIND -- L~7 is an estimate, not the truth. The explicit-settlement /
-    # 'all' call is the DM overview and stays true.
-    mind = party_mind(state) if not args.settlement else None
-    if mind is not None and mind_precision(mind) > 0:
-        print(f"(the party's best MIND is {mind}: quest levels marked ~ "
-              f"are read within {mind_precision(mind)} level(s))")
-    for line in board_lines(world, key, mind=mind):
+    for line in board_lines(world, key):
         print(line)
     if not args.settlement:
         cast = [n for n in world.get("npcs", [])
@@ -2516,10 +2516,9 @@ def cmd_board(args: argparse.Namespace) -> None:
                 print("  " + npc_line(n))
     if not args.settlement:
         # Word travels within a land (2026-07-11, designer call): the
-        # player KNOWS every open quest in the current land -- name, level,
-        # where -- so travel is an informed choice, not a blind hop. Levels
-        # read through the party's MIND like the local board (quest sight);
-        # details and `take` still want the party AT the posting settlement.
+        # player KNOWS every open quest in the current land -- name, exact
+        # level, where -- so travel is an informed choice, not a blind hop.
+        # Details and `take` still want the party AT the posting settlement.
         land = state["position"]["land"]
         rumors = []
         for s in settlements_by_land(world).get(land, []):
@@ -2528,7 +2527,7 @@ def cmd_board(args: argparse.Namespace) -> None:
             for qid in s["quests"]:
                 q = world["quests"][qid]
                 if q["status"] == "open":
-                    rumors.append(f"  [{q['id']}] {level_grade(q, mind)} "
+                    rumors.append(f"  [{q['id']}] {level_grade(q)} "
                                   f"{q['name']} -- at {s['name']}")
         if rumors:
             land_name = world["lands"][land]["name"]
@@ -2547,10 +2546,7 @@ def cmd_show(args: argparse.Namespace) -> None:
     quest = _get_quest(state["world"], args.quest)
     if quest is None:
         return
-    # The player-facing view reads through the party's MIND (quest sight);
-    # --dm is the true view for the DM's own planning.
-    mind = None if args.dm else party_mind(state)
-    for line in quest_detail_lines(state["world"], quest, mind=mind):
+    for line in quest_detail_lines(state["world"], quest, dm=args.dm):
         print(line)
 
 
@@ -2578,9 +2574,8 @@ def cmd_take(args: argparse.Namespace) -> None:
     if g:
         print(f"The job is taken from its giver -- narrate the scene "
               f"(dm.md): {npc_line(g)}")
-    mind = party_mind(state)
-    print(f"The party takes the job: {quest_line(quest, mind)}")
-    for line in quest_detail_lines(state["world"], quest, mind=mind)[1:]:
+    print(f"The party takes the job: {quest_line(quest)}")
+    for line in quest_detail_lines(state["world"], quest, dm=False)[1:]:
         print(line)
     if quest.get("kind") == "delivery":
         print(f"The road is the job: `travel {quest['dest']}` "
@@ -3332,7 +3327,7 @@ def cmd_resume(args: argparse.Namespace) -> None:
                     return
             actions[hero] = action
 
-    log = new_combat_log()
+    log = new_combat_log(continuing=True)
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
@@ -3370,7 +3365,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         return
     party, rng, clock = state["party"], state["rng"], state["clock"]
     living = [h for h in party if not h.dead]
-    log = new_combat_log()
+    log = new_combat_log(continuing=True)
 
     escaped = False
     if args.blink:
@@ -3973,8 +3968,7 @@ def cmd_learn(args: argparse.Namespace) -> None:
 def _cast_scry(state: dict, hero, log: list[str]) -> None:
     """Scry, between fights: sight beyond walls. Rank 1 reads the ACTIVE
     quest's next room; rank 2 the whole current site; rank 3 the whole
-    quest (its TRUE level included -- the far-seeing outranks quest sight)
-    plus whatever DM-adjudicated divination the scene wants (dm.md)."""
+    quest plus whatever DM-adjudicated divination the scene wants (dm.md)."""
     rng = state["rng"]
     rank = hero.spell_rank("scry")
     if rank <= 0:
@@ -4428,12 +4422,11 @@ def main() -> None:
     p = sub.add_parser(
         "show",
         help="one quest in full: description, sites, rooms, and what holds "
-             "each room (by skinned display name). Levels read through the "
-             "party's best MIND (quest sight: L~7 is an estimate); --dm "
-             "prints the true levels for the DM's own planning.")
+             "each room (by skinned display name). Levels are exact; --dm "
+             "also reveals surprise complications for planning.")
     p.add_argument("quest", help="quest id (q07, or just 7)")
     p.add_argument("--dm", action="store_true",
-                   help="true levels (DM view), no quest-sight blur")
+                   help="include DM-only surprise complications")
     p.set_defaults(func=cmd_show)
 
     p = sub.add_parser(
@@ -4658,11 +4651,10 @@ def main() -> None:
 
     p = sub.add_parser(
         "sheet",
-        help="rewrite ui/party.txt + ui/map.txt from the save and COMMIT "
-             "them (those two files). Run at the END of every DM message "
-             "(dm.md) -- their git history then reads one commit per "
-             "message, the player's GitHub-UI pages. Committing unchanged "
-             "sheets is a no-op and says so.")
+        help="rewrite party/map and COMMIT every existing ui/*.txt page, "
+             "including the last-fight short and detailed logs. Run at the "
+             "END of every DM message; committing unchanged pages is a "
+             "harmless no-op.")
     p.set_defaults(func=cmd_sheet)
 
     args = ap.parse_args()

@@ -420,16 +420,19 @@ is for).
 **One displayed log (the 2026-07-21 rework).** Combat produces a single
 displayed log — `CombatLog.player` — that both readers share: the DM
 narrates over it, the player reads it as the fight's mechanical account.
-The **full debug log** (dice, every modifier with its source, severity
+The **detailed log** (dice, every modifier with its source, severity
 arithmetic, per-round stamina readouts) still exists — the `CombatLog`
-list itself — but it is never printed in play. Session combat logs are
-configured for the untracked workfile **`ui/fight.log`**: `group_combat`
-flushes the mechanics block when it pauses or resolves, and
-`session.print_combat` flushes the session tail (awards, loot, tally)
-afterward without duplicating lines. This makes the debug record independent
-of the shell's working directory and leaves a record even when the engine is
-called without the display step. The bench harnesses pass plain lists and
-receive the full wording without doing file I/O.
+list itself — but it is never printed in play. Session combat logs write
+two last-fight snapshots beside the other GitHub UI pages:
+**`ui/fight-short.txt`** is the exact displayed log and
+**`ui/fight-detailed.txt`** is the detailed record. A new encounter replaces
+both files; resume or retreat appends to the paused encounter, so a fight
+that spans two commands remains one complete record. `group_combat` flushes
+the detailed mechanics block when it pauses or resolves, and
+`session.print_combat` flushes both levels' session tail (awards, loot,
+tally) afterward without duplicating lines. `sheet` commits both snapshots
+with party.txt and map.txt. The bench harnesses pass plain lists and receive
+the detailed wording without doing file I/O.
 
 The displayed log is built for a 40-column phone screen (`PLAYER_WIDTH`
 in rpg.py): **every line starts in column 1**, and every event is
@@ -1645,8 +1648,8 @@ doctrine holds for wizards too. Its jobs:
   rank 1; wizards often carry the wooden staff (50%).
 - **The casting check's stat** (unaimed spells, below).
 - **Half the AIM of a thrown cast** (aimed spells, below).
-- **Quest sight** (its everyday second job, below) — MIND matters to
-  parties with no wizard at all.
+- **The notice contest's party stat** — a watchful mind sees road trouble
+  before it closes.
 
 **POWER is fuel, never intellect** (designer call, 2026-07-15: "qi, not
 iq"). It stays its own rolled pool (3–6 + the level growth), spends on
@@ -1747,7 +1750,7 @@ touching no melee bench.
 | **stop time** | opener | 1 / 2 / 3 **stolen strikes** — ambushes before the lines meet (4/5/6 P) |
 | **possession** | opener | seize a living mind: the puppet fights for the party 1 / 2 / 3 rounds (4/5/6 P; DC + target training + 2 × ward; the dead have no mind) |
 | **flight** | opener | **SKY-STEP**: aloft round 1 — melee can't reach, bolts and breath can, +1 attacking (3 P) / aloft rounds 1–2 (5 P) / *not yet written* (see below) |
-| **scry** | utility | the next room's roster (2 P) / the whole site (3 P) / **the far-seeing**: the quest whole, its TRUE level, and DM-adjudicated divination (4 P) — `cast HERO scry` |
+| **scry** | utility | the next room's roster (2 P) / the whole site (3 P) / **the far-seeing**: the whole quest and DM-adjudicated divination (4 P) — `cast HERO scry` |
 | **healing** | utility | mend 3 HP / 5 HP / 7 HP — **and rank 3 stands a Downed ally straight to 3 HP** after a won fight (3 P a cast; between fights ONLY, no in-fight role; `heal HEALER TARGET`; steadying the truly dying is the roleplay tier). The tenth spell (2026-07-17): the old Heal ability, become magic — and the hedge-healer's starting rank is the one non-wizard door into a spell |
 
 **The assassin openers overlap on purpose** (invisibility, stop time,
@@ -1794,20 +1797,6 @@ Three existing surfaces carry it instead:
    ward ≥ 2 immune to the stun riders, ANY ward meets ambush strikes as
    honest exchanges. Current wards: dragon 3, drake 2, magus 2, wight 2,
    giant 1 — the apex keeps its bosshood through the wizard tier.
-
-## Quest sight — MIND's second job
-
-**The party's best living MIND reads quest levels**: 6 reads the board
-exact; 4–5 within one level; 3 and under within two. A blurred read
-shows as `L~7` (board, rumors, `show`, `take`), the error is rolled once
-per quest at worldgen (re-asking never re-rolls), and the site sub-lines
-shift consistently — the truth never leaks through a detail row. **Pay
-always follows the TRUE level** — a canny player can smell a mispriced
-job, which is intended flavor. Scry rank 3 outranks the blur. This
-deliberately spends part of the old levels-shown-straight stance to make
-MIND matter to every party (hiring the bookish companion sharpens the
-whole board); `show --dm` keeps the DM's true view, and the sims read
-true levels, so no bench number moves.
 
 ## Enemy casters
 
@@ -2003,9 +1992,8 @@ inputs (the notice contest):
   loud, colorful, flamboyant, luxurious — the presentation tables'
   first mechanics) + a clumsy-stealth point per point its *worst* DEX
   sits under 4 (stealth is a weakest-link property). The party notices
-  with its **best MIND** (the watchful mind — MIND's third everyday job,
-  after casting and quest sight); beasts and foes sense with the sharper
-  of MIND and DEX.
+  with its **best MIND** (the watchful mind); beasts and foes sense with
+  the sharper of MIND and DEX.
 - Outcomes: seen-first alone = **spotted** (the sighting persists;
   `engage` or slip past — the player's call, as ever); seeing the party
   first alone = **AMBUSH at the foes' preferred range** (their shooters
