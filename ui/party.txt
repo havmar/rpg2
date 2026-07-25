@@ -1,13 +1,13 @@
 RPG2 PARTY SHEET -- day 5, at Gibili >
   Maketawa
-purse: 61g | short rests left today: 1
-party: 0/2 companion slot(s) filled (CHA
+purse: 1g | short rests left today: 1
+party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L2, training 1): DEX
   6  STR 5  MIND 5  STA 5/7  HP 5/8
-  Power 5/5  CHA 5  (alchemy 1; halberd;
-  staminax2)
+  Power 5/5  CHA 5  (alchemy 1;
+  zweihander; staminax2)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
@@ -28,6 +28,31 @@ party: 0/2 companion slot(s) filled (CHA
             XP 100/200 to L3 | skill
               points: 0 | abilities:
               bulwark
+
+(companion) Mox (L2, training 1): DEX 6
+  STR 5  MIND 4  STA 8/8  HP 10/10
+  Power 3/3  CHA 4  (alchemy 1; flail,
+  prof 1; staminax2)  [satisfaction
+  7/10]
+            Mox -- goblin m, age 42;
+              background: craftsman;
+              speech: swears a lot;
+              dress: elegant
+            XP 0/200 to L3 | skill
+              points: 0 | proficiency:
+              flail 1
+
+(companion) Vespa (L2, training 1): DEX
+  5  STR 4  MIND 4  STA 5/5  HP 12/12
+  Power 6/6  CHA 4  (alchemy 1; club,
+  prof 1; healingx1, staminax1)
+  [satisfaction 7/10]
+            Vespa -- goblin f, age 25;
+              weakness: smoker; dress:
+              tattered; looks: short
+            XP 0/200 to L3 | skill
+              points: 0 | proficiency:
+              club 1
 
 active quest [q06] Deserter Raiders is
   COMPLETE
