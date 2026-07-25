@@ -1,6 +1,5 @@
 RPG2 MAP -- day 9
-the party is at Gibili > Maketawa > the
-  occupied farms > battle line
+the party is at Gibili > Maketawa
 (travel: 1 day within a land, 2 days to
   another)
 

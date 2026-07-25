@@ -1,21 +1,22 @@
 RPG2 PARTY SHEET -- day 9, at Gibili >
-  Maketawa > the occupied farms > battle
-  line
+  Maketawa
 purse: 65g | short rests left today: 0
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L3, training 1): DEX
-  6  STR 5  MIND 5  STA 2/7  HP 8/8
-  Power 5/5  CHA 5  (alchemy 1;
-  zweihander; healingx2, staminax2)
+  6  STR 5  MIND 5  STA 3/8  HP 8/8
+  Power 5/5  CHA 5  (alchemy 1; moves:
+  kick; zweihander, prof 1; healingx2,
+  staminax2)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
               scarred
             XP 63/300 to L4 | skill
-              points: 3 | pools bought:
-              sta +1
+              points: 0 | pools bought:
+              sta +2 | proficiency:
+              zweihander 1
 
 (companion) Cindra (L2, training 1): DEX
   5  STR 5  MIND 5  STA 7/8  HP 0/9
