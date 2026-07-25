@@ -1,193 +1,332 @@
-ICY DWARF LAND
-==============
+FIRASCIR
+========
+
+LAND
+----
+
+Name
+
+- Firascir
+
+Description
+
+- A broad human kingdom lies between the northern mountains and the western
+  sea. Two great rivers cross its fields.
+
 
 ENVIRONMENT PROFILE
 -------------------
 
 Name
 
-- Alpine tundra
+- Temperate
 
 Climate summary
 
-- Cold, windy highlands with long winters and short summers
+- Mild country with frequent rain, warm summers, and winter frost
 
 Weather
 
-- Clear cold
+- Mild rain
+- Cloud
+- Clear weather
 - Hard wind
-- Light snow
-- Heavy snow
-- Mountain fog
+- Autumn fog
+- Winter frost
 
 Vegetation
 
-- Dwarf pine
-- Juniper
-- Lichen
-- Moss
-- Alpine grass
-- Mountain flowers
+- Oak
+- Beech
+- Ash
+- Elm
+- Hedges
+- Meadow grass
+- Reeds along water
 
 
 AREAS
 -----
 
-Natural Area: mountains
-
-- Drunurnar Mountains
-- An ice-capped range fills the western Land.
-
 Natural Area: forest
 
-- Krokskogur Forest
-- Dwarf pine covers the valley below the mountains.
+- Whitweld Forest
+- Pale beech trunks fill the old wood east of the fields.
 
-Natural Area: lake
+Natural Area: farmland and pasture
 
-- Lake Hornindal
-- A great cold lake fills the basin. Ice remains in its coves and along its
-  northern shore through the short summer.
+- Grendon Fields
+- Farms, hedged roads, and sheep pastures cover the rising ground below the
+  northern mountains.
+
+Natural Area: southbound river
+
+- Stura River
+- A great river runs from the northern mountains through Grendon Fields. It
+  continues south through Mortellaria and reaches the sea.
+
+Natural Area: eastbound river
+
+- Flumenpur River
+- A great river runs from the northern mountains through Tomburgh. It
+  continues east-southeast through Caelum toward Tergal.
 
 Settlement Area: capital
 
-- Bjorgheim
-- A walled stone city stands where the mountain roads meet.
+- Tomburgh
+- The walled capital stands on both banks of the Flumenpur River. The great
+  east road crosses the river here.
 
-Settlement Area: northern town
+Settlement Area: northern harbor city
 
-- Roros
-- A remote stone town guards the northern pass. Snow lies against its walls
-  through most of the year.
+- Leehaven
+- A harbor city stands around a sheltered bay on the northwestern coast.
+  Fishing boats crowd its inner quay.
 
-Settlement Area: southern fishing and trade town
+Settlement Area: southern harbor city
 
-- Svalaver
-- A stone fishing town stands on the southern shore. Dwarf and human
-  merchants meet beside its jetty.
+- Walhaven
+- A walled harbor city guards the southwestern coast road. Human and foreign
+  merchants unload beside its stone docks.
+
+Settlement Area: western inland town
+
+- Bradwhitchip
+- A market town stands among the farms of Grendon Fields. Grain carts fill
+  its square after harvest.
+
+Settlement Area: eastern inland town
+
+- Redflurton
+- A riverside town stands where the old road meets the lower Flumenpur River.
+  Reed beds line the water below its bridge.
+
+Starting generated Village Area
+
+- Sturford
+- A farming village stands beside a shallow crossing of the Stura River.
+
+Starting generated Village Area
+
+- Ackham
+- A village of small farms stands at the western edge of Whitweld Forest.
+
+Starting generated Village Area
+
+- Flurham
+- A fishing village stands beside a broad pond fed by the Flumenpur River.
+
+Further generated Village Area name pool (up to five used)
+
+- Sturham
+- Sturworth
+- Newton
+- Midton
+- Aston
+- Tomton
+- Walham
+- Coldcot
+- Thornley
+- Blackton
+- Astmoor
+- Ackbridge
+- Ackton
+- Mickleham
+- Shepham
 
 
-DRUNURNAR MOUNTAINS
--------------------
-
-High Pass [Site]
-
-- Pass Road [Room]
-  - stone markers
-  - ice-crusted cart ruts
-  - warning post
-- Wind Shelter [Room]
-  - low stone wall
-  - dead firepit
-  - stack of split wood
-
-Abandoned Mine [Site]
-
-- Mine Entrance [Room]
-  - broken ore cart
-  - timber props
-  - rusted chain
-- Winch Room [Room]
-  - hand winch
-  - frayed rope
-  - empty ore baskets
-- Lower Tunnel [Room]
-  - old rail
-  - standing water
-  - collapsed side passage
-
-Watch Post [Site]
-
-- Lookout [Room]
-  - signal brazier
-  - iron bell
-  - mountain map
-- Guard Room [Room]
-  - bench
-  - weapon rack
-  - coal box
-
-
-KROKSKOGUR FOREST
------------------
+WHITWELD FOREST
+----------------
 
 Old Forest Road [Site]
 
-- Frozen Stream Crossing [Room]
-  - plank bridge
-  - ice-covered ford
+- Beech Gate [Room]
+  - pale beech trunks
   - road marker
-- Logger's Turn [Room]
-  - stacked timber
-  - drag sled
-  - wood chips
+  - wagon ruts
+- Stream Bridge [Room]
+  - plank bridge
+  - clear stream
+  - mossy stones
 
-Logging Camp [Site]
+Woodcutter's Camp [Site]
 
 - Firepit [Room]
   - stone fire ring
   - log benches
   - black cooking pot
+- Timber Yard [Room]
+  - cut logs
+  - splitting block
+  - drag sled
 - Store Hut [Room]
   - axes
   - rope coils
-  - timber wedges
+  - iron wedges
 
-Stone Shrine [Site]
+Ruined Watchtower [Site]
 
-- carved stone
-- offering bowl
-- iron candle stand
+- Tower Foot [Room]
+  - broken doorway
+  - fallen stones
+  - old firepit
+- Upper Platform [Room]
+  - cracked stair
+  - low parapet
+  - view over the treetops
 
 
-LAKE HORNINDAL
+GRENDON FIELDS
 --------------
 
-North Shore [Site]
+Hedged Road [Site]
+
+- Cart Track [Room]
+  - packed earth
+  - wheel ruts
+  - milestone
+- Stone Crossing [Room]
+  - narrow stream
+  - flat stepping stones
+  - gap in the hedge
+
+Shepherd's Hut [Site]
+
+- Main Room [Room]
+  - stone hearth
+  - rough table
+  - wool blankets
+- Sheepfold [Room]
+  - low stone wall
+  - wooden gate
+  - water trough
+
+Old Windmill [Site]
+
+- Mill Floor [Room]
+  - millstones
+  - flour bins
+  - wooden gears
+- Grain Store [Room]
+  - grain sacks
+  - hand scales
+  - mouse traps
+- Upper Loft [Room]
+  - wind shaft
+  - spare sailcloth
+  - ladder
+
+
+STURA RIVER
+-----------
+
+South Road Bridge [Site]
+
+- North Bank [Room]
+  - gravel bank
+  - road marker
+  - willow tree
+- Bridge Deck [Room]
+  - timber rails
+  - stone piers
+  - cart ruts
+- South Bank [Room]
+  - muddy landing
+  - mooring post
+  - path downstream
+
+Riverside Mill [Site]
+
+- Mill Yard [Room]
+  - mill stream
+  - stacked grain sacks
+  - handcart
+- Mill Room [Room]
+  - waterwheel shaft
+  - millstones
+  - flour bins
+- Store Room [Room]
+  - grain sacks
+  - spare belts
+  - oil jar
+
+Ferry Point [Site]
+
+- Landing [Room]
+  - timber platform
+  - mooring posts
+  - ferry rope
+- Ferry House [Room]
+  - small hearth
+  - table and stools
+  - toll box
+
+
+FLUMENPUR RIVER
+---------------
+
+West Bank Road [Site]
+
+- Towpath [Room]
+  - packed earth
+  - mooring rings
+  - cart tracks
+- Willow Bend [Room]
+  - willow trees
+  - gravel bank
+  - fishing stakes
+
+East Ferry [Site]
+
+- West Landing [Room]
+  - timber steps
+  - bell post
+  - rope coil
+- Ferryboat [Room]
+  - flat deck
+  - guide rope
+  - boat hook
+- East Landing [Room]
+  - stone ramp
+  - road marker
+  - waiting bench
+
+River Island [Site]
 
 - Shingle Bank [Room]
-  - flat stones
+  - smooth stones
   - driftwood
-  - overturned skiff
-- Ice Cove [Room]
-  - shore ice
-  - mooring ring
-  - abandoned fish basket
-
-Ice-Fishing Ground [Site]
-
-- Fishing Holes [Room]
-  - cut ice holes
-  - low windbreak
-  - bait box
-
-Frozen Inlet [Site]
-
-- Reed Bank [Room]
-  - dry reeds
-  - narrow footbridge
-  - animal tracks
+  - tied skiff
+- Fisher's Camp [Room]
+  - canvas shelter
+  - fish basket
+  - cold firepit
 
 
-BJORGHEIM
----------
+TOMBURGH
+--------
 
 Starting Sites and Rooms
 
-- Clan Hall
-  - Great Hall
+- Royal Hall
+  - Throne Hall
   - Council Room
   - Records Room
 - Main Market
   - Food Row
-  - Smiths' Row
-  - Human Yard
-- Warm Hearth Inn
+  - Cloth Row
+  - Foreign Yard
+- Flumenpur Bridge
+  - West Gatehouse
+  - Bridge Deck
+  - East Gatehouse
+- Crown and Bell Inn
   - Common Room
   - Kitchen
   - Cellar
   - Guest Room
-- Bjorgheim Smithy
+  - Stable
+- Tomburgh Smithy
   - Forge
   - Yard
   - Store Room
@@ -198,112 +337,307 @@ Starting Sites and Rooms
   - Shop
   - Work Room
   - Locked Store
-- South Gate
+- East Gate
   - Gate Passage
   - Guard Room
+  - Wall Walk
 
-Optional Site names
+Further ordinary Site names
 
 - ordinary house
-- brewery
-- temple
-- warehouse
+- cathedral
 - barracks
 - guildhall
-
-
-ROROS
------
-
-Starting Sites and Rooms
-
-- North Watch
-  - Gate Passage
-  - Guard Room
-  - Signal Platform
-- Last Fire Inn
-  - Common Room
-  - Kitchen
-  - Guest Room
-  - Goat Shed
-- Roros Smithy
-  - Forge
-  - Store Room
-- General Shop
-  - Sales Room
-  - Store Room
-- Mine Office
-  - Contract Room
-  - Equipment Store
-
-Optional Site names
-
-- ordinary house
-- ore warehouse
-- mountain shrine
+- warehouse
 - brewery
 
 
-SVALAVER
+LEEHAVEN
 --------
 
 Starting Sites and Rooms
 
-- Trade Hall
+- Harbor Hall
   - Public Counter
+  - Council Room
   - Records Room
-  - Merchant Room
-- Stone Jetty
-  - Landing
+- Inner Quay
+  - Fish Landing
   - Net Yard
+  - Harbor Steps
 - Fish Market
   - Fish Stalls
-  - Human Yard
-- Lakeside Inn
+  - Salt Row
+  - Basket Yard
+- Gull and Net Inn
   - Common Room
   - Kitchen
   - Cellar
   - Guest Room
-- Svalaver Smithy
+- Leehaven Smithy
   - Forge
+  - Yard
   - Store Room
 - General Shop
   - Sales Room
   - Store Room
-- Smokehouse
-  - Cutting Room
-  - Smoke Room
-  - Salt Store
+- North Watch
+  - Guard Room
+  - Signal Platform
+  - Harbor Wall
 
-Optional Site names
+Further ordinary Site names
 
 - ordinary house
-- human warehouse
+- warehouse
 - boat shed
+- shipwright
 - small temple
 - brewery
+- smokehouse
+
+
+WALHAVEN
+--------
+
+Starting Sites and Rooms
+
+- City Hall
+  - Public Hall
+  - Council Room
+  - Records Room
+- Stone Docks
+  - Main Quay
+  - Cargo Yard
+  - Harbor Stairs
+- Harbor Market
+  - Food Row
+  - Cloth Row
+  - Foreign Yard
+- Anchor Inn
+  - Common Room
+  - Kitchen
+  - Cellar
+  - Guest Room
+  - Stable
+- Walhaven Smithy
+  - Forge
+  - Yard
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Sea Gate
+  - Gate Passage
+  - Guard Room
+  - Wall Walk
+
+Further ordinary Site names
+
+- ordinary house
+- merchant warehouse
+- customs house
+- shipwright
+- temple
+- brewery
+
+
+BRADWHITCHIP
+------------
+
+Starting Sites and Rooms
+
+- Town Hall
+  - Public Hall
+  - Council Room
+  - Records Room
+- Market Square
+  - Grain Row
+  - Livestock Yard
+  - Cart Stand
+- Harvest Inn
+  - Common Room
+  - Kitchen
+  - Cellar
+  - Guest Room
+  - Stable
+- Bradwhitchip Smithy
+  - Forge
+  - Yard
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Grain House
+  - Weighing Room
+  - Grain Store
+  - Loading Yard
+
+Further ordinary Site names
+
+- ordinary house
+- barn
+- windmill
+- small temple
+- brewery
+- manor
+
+
+REDFLURTON
+----------
+
+Starting Sites and Rooms
+
+- Town Hall
+  - Public Hall
+  - Council Room
+  - Records Room
+- Mere Bridge
+  - West Gate
+  - Bridge Deck
+  - East Gate
+- Reed and Pike Inn
+  - Common Room
+  - Kitchen
+  - Cellar
+  - Guest Room
+- Redflurton Smithy
+  - Forge
+  - Yard
+  - Store Room
+- General Shop
+  - Sales Room
+  - Store Room
+- Riverside Market
+  - Fish Stalls
+  - Reed Row
+  - Boat Landing
+
+Further ordinary Site names
+
+- ordinary house
+- ferry house
+- reed warehouse
+- watermill
+- small shrine
+- brewery
+
+
+STURFORD
+--------
+
+Starting Sites and Rooms
+
+- Ford House
+  - Toll Room
+  - Store Room
+- Shallow Ford
+  - West Bank
+  - River Crossing
+  - East Bank
+- Plough Inn
+  - Common Room
+  - Kitchen
+  - Guest Room
+  - Stable
+- Village Smithy
+  - Forge
+  - Yard
+- General Store
+  - Sales Room
+  - Store Room
+
+Further ordinary Site names
+
+- ordinary house
+- farm
+- barn
+- roadside shrine
+- mill
+
+
+ACKHAM
+------
+
+Starting Sites and Rooms
+
+- Village Green
+  - Old Oak
+  - Well
+  - Notice Post
+- Oak and Axe Inn
+  - Common Room
+  - Kitchen
+  - Guest Room
+- Village Smithy
+  - Forge
+  - Yard
+- General Store
+  - Sales Room
+  - Store Room
+- Wood Yard
+  - Timber Yard
+  - Tool Shed
+
+Further ordinary Site names
+
+- ordinary house
+- farm
+- woodcutter's hut
+- charcoal camp
+- small shrine
+
+
+FLURHAM
+-------
+
+Starting Sites and Rooms
+
+- Mere Landing
+  - Timber Jetty
+  - Boat Yard
+- Heron Inn
+  - Common Room
+  - Kitchen
+  - Guest Room
+- Smith's Shed
+  - Forge
+  - Yard
+- General Store
+  - Sales Room
+  - Store Room
+- Fish Shed
+  - Cutting Room
+  - Salt Store
+
+Further ordinary Site names
+
+- ordinary house
+- fisher's hut
+- boat shed
+- reed store
+- small shrine
 
 
 ROOM CONTENT
 ------------
 
-Great Hall
+Throne Hall or Public Hall
 
 - long table
-- high seat
-- iron braziers
-- clan banners
+- raised seat
+- benches
+- wall banners
 - public notice board
-- petition bench
-- feast vessels
+- petition rail
+- iron braziers
 
-Council Room or Contract Room
+Council Room
 
 - table
 - chairs
-- stools
 - wall map
-- account slate
+- account books
 - contract box
 - seal press
 - locked chest
@@ -317,6 +651,16 @@ Records Room
 - tax rolls
 - spare ink
 - seal box
+
+Harbor Hall Public Counter
+
+- long counter
+- harbor ledger
+- ship list
+- wall map
+- weighing scales
+- seal box
+- bell
 
 Market Row or Yard
 
@@ -371,6 +715,16 @@ Guest Room
 - blanket chest
 - candle
 - shuttered window
+
+Stable
+
+- stalls
+- hay rack
+- water trough
+- tack pegs
+- feed bin
+- pitchfork
+- stable lantern
 
 Forge
 
@@ -435,6 +789,15 @@ Alchemist's Work Room
 - charcoal box
 - notes
 
+Gate Passage or Gatehouse
+
+- timber gates
+- portcullis
+- guard bench
+- weapon rack
+- bell rope
+- key board
+
 Guard Room
 
 - bench
@@ -445,7 +808,23 @@ Guard Room
 - shield rack
 - key board
 
-Jetty or Landing
+Wall Walk or Signal Platform
+
+- stone parapet
+- signal brazier
+- warning bell
+- arrow chest
+- watch shelter
+
+Bridge Deck
+
+- stone roadway
+- low parapets
+- lamp posts
+- drainage gaps
+- cart ruts
+
+Quay or Landing
 
 - stone quay
 - timber platform
@@ -456,7 +835,81 @@ Jetty or Landing
 - fish baskets
 - small crane
 
-Smokehouse
+Cargo Yard
+
+- stacked crates
+- barrels
+- handcarts
+- cargo net
+- weighing scales
+- tally board
+
+Fish Market
+
+- fish stalls
+- cutting tables
+- baskets
+- weighing scales
+- salt barrels
+- water buckets
+- canvas awnings
+
+Grain Row or Grain Store
+
+- grain sacks
+- flour bins
+- weighing scales
+- tally board
+- handcart
+- grain scoops
+- mouse traps
+
+Livestock Yard
+
+- timber pens
+- hitching rails
+- water trough
+- feed baskets
+- weighing gate
+- straw
+
+Village Green
+
+- old tree
+- stone well
+- notice post
+- benches
+- hitching rail
+- water trough
+
+Ford or River Crossing
+
+- shallow water
+- gravel bed
+- marker posts
+- guide rope
+- muddy banks
+- cart tracks
+
+Timber Yard
+
+- cut logs
+- timber stacks
+- splitting block
+- handcart
+- saw frame
+- wood chips
+
+Boat Yard
+
+- pulled-up skiffs
+- trestles
+- rope coils
+- tar pot
+- spare planks
+- oars
+
+Smokehouse or Fish Shed
 
 - smoking racks
 - fire trench
@@ -472,7 +925,7 @@ ORDINARY HOUSE
 
 Site name example
 
-- Borin's House
+- Sela's House
 
 Room names
 
@@ -506,10 +959,10 @@ Main Room: ordinary contents
 
 Main Room: food
 
-- black bread
+- brown bread
 - onions
 - hard cheese
-- dried mushrooms
+- dried apples
 - smoked fish
 - pot of stew
 
@@ -555,32 +1008,70 @@ Small Yard
 - water barrel
 - handcart
 - chopping block
-- goat pen
+- chicken coop
 - drying line
 - tool shed
 
-Bjorgheim livelihood objects
+Tomburgh livelihood objects
 
-- hand tools
-- leather apron
-- unfinished ironwork
-- account slate
-- stone dust
+- account book
+- sealing wax
+- guard belt
+- folded cloth
+- writing case
 
-Roros livelihood objects
-
-- pickaxe
-- rope
-- hooded lamp
-- ore basket
-- fur boots
-- goat tack
-
-Svalaver livelihood objects
+Leehaven livelihood objects
 
 - fishing net
 - iron hooks
 - cork floats
-- ice chisel
+- sailcloth
 - fish basket
+
+Walhaven livelihood objects
+
 - cargo tally
+- rope coil
+- tar pot
+- crate bar
+- merchant scales
+
+Bradwhitchip livelihood objects
+
+- sickle
+- grain sack
+- seed basket
+- harness
+- wooden measure
+
+Redflurton livelihood objects
+
+- reed knife
+- eel basket
+- ferry rope
+- waterproof boots
+- fish trap
+
+Sturford livelihood objects
+
+- plough blade
+- grain sack
+- ferry pole
+- horse tack
+- seed basket
+
+Ackham livelihood objects
+
+- hand saw
+- splitting axe
+- timber wedges
+- charcoal basket
+- leather apron
+
+Flurham livelihood objects
+
+- fishing line
+- reed basket
+- cork floats
+- boat hook
+- salt sack

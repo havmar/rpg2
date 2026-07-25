@@ -110,17 +110,19 @@ a pointer: what the file is, how it's run, where its docs are.
   (2026-07-23): the authored-vs-generated boundary, persistent feature and
   lightweight Room-content schema, weighting/reveal/mutation/seed rules,
   implementation order, and the canonical pre-implementation content catalog.
-  The Alpine Tundra / icy dwarf basic pass is accepted and consolidated there;
-  other environments and the later global special-feature pass remain draft.
+  The Alpine Tundra / Dvarvengrond and Temperate / Firascir basic passes are
+  accepted and consolidated there; other environments and the later global
+  special-feature pass remain draft.
   It is the implementation source while the feature remains unimplemented;
   shipped behavior belongs in `rules.md`.
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
   translation-style view of one Land's player/DM-facing names, descriptions,
   Site and Room labels, and visible content strings. It carries only enough
   context to identify each string; schema, rationale, constraints, and process
-  live in `placegen.md`. It currently preserves the completed icy dwarf basic
-  pass; replace it with the temperate human basic sheet in the next review
-  session. Special-feature sheets begin only after all basic Lands are done.
+  live in `placegen.md`. It currently preserves the completed Firascir /
+  temperate human basic pass; replace it with the Mortellaria / Mediterranean
+  human basic sheet in the next review session. Special-feature sheets begin
+  only after all basic Lands are done.
 - `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
   including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and

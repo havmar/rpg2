@@ -140,13 +140,13 @@ reference a Land and a terrain symbol. A Land may occupy several cells.
 
 | Planned Land | Culture | Environment |
 |---|---|---|
-| Icy dwarf mountains | Dwarf | Alpine tundra |
-| Temperate human country | Human, temperate | Temperate |
-| Mediterranean human country | Human, mediterranean | Mediterranean |
-| Elven forest | Elf | Temperate forest |
+| Dvarvengrond | Dwarf | Alpine tundra |
+| Firascir | Human, temperate | Temperate |
+| Mortellaria | Human, mediterranean | Mediterranean |
+| Ensimaa (Prisma Tersa) | Elf | Temperate forest |
 | Wild forest | None fixed | Temperate forest |
-| Goblin mediterranean country | Goblin | Mediterranean |
-| Orc prairie | Orc | Prairie |
+| Giblia (Gibili) | Goblin | Mediterranean |
+| Tergal (Ulus-Gal) | Orc | Prairie |
 | Northern pirate islands | Pirate | Cold archipelago |
 | Tropical pirate islands | Pirate | Tropical archipelago |
 | Jungle | None fixed | Jungle |
@@ -436,7 +436,7 @@ the generated world.
 
 Examples:
 
-- the White Forest's pale trees: public;
+- Whitweld Forest's pale trees: public;
 - a huntsman's cabin near the edge: local;
 - the charred oak in the deep wood: explore;
 - the crypt beneath the forest altar: hidden.
@@ -464,8 +464,8 @@ readout. This protects the fiction register from feature dumping.
 Stable identity and active state remain separate:
 
 ```text
-White Forest
-  identity: temperate forest
+Whitweld Forest
+  identity: temperate
   stable feature: pale-barked trees
   active state: diseased
 ```
@@ -614,7 +614,7 @@ Recommended tiers:
 - village;
 - hamlet, normally a Site rather than an Area.
 
-Five to ten settlements per country may exist in fiction, but they need not
+Five to ten settlements per country is the ordinary range, but they need not
 all be equal macro destinations. Capitals, cities, towns, and independent
 villages are Areas. Minor hamlets which do not need their own travel hub,
 shops, and board are Sites in rural Areas.
@@ -628,6 +628,12 @@ MVP settlement inventory for an ordinary culturally settled Land:
 The initial dwarf Land is deliberately smaller: one capital and two towns,
 with no additional generated villages. Wilderness Lands and unique Caelum do
 not inherit this count automatically.
+
+Firascir is deliberately denser than the ordinary range. It begins with one
+capital, two harbor cities, two inland towns, and three generated village
+Areas. Five further village Areas may materialize from its reviewed name pool,
+for a maximum of eight villages and thirteen settlements. These are finite
+Land slots with stable seeds, not unlimited `explore` results.
 
 Ordinary houses materialize lazily as Sites when explored or requested. The
 generator does not instantiate a realistic census, but any settlement can
@@ -689,7 +695,7 @@ Vegetation:
 - alpine grass;
 - mountain flowers.
 
-The Alpine Tundra base content is concrete in the accepted icy dwarf Land
+The Alpine Tundra base content is concrete in the accepted Dvarvengrond
 catalog below. Generic natural-Area and Site suggestions were removed after
 review; the Land owns its finite named Areas and their accepted Site pools.
 
@@ -714,25 +720,8 @@ Vegetation:
 - meadow grass;
 - reeds along water.
 
-Natural Areas:
-
-- farmland;
-- pasture;
-- broadleaf forest;
-- grassy hills;
-- river valley;
-- wetland.
-
-Common Sites:
-
-- field road;
-- hedged lane;
-- copse;
-- mill stream;
-- old bridge;
-- shepherd's hut;
-- ruined farm;
-- roadside shrine.
+The Temperate base content is concrete in the accepted Firascir catalog
+below. The Land owns its finite named Areas and their accepted Site pools.
 
 ### Temperate forest
 
@@ -1011,9 +1000,9 @@ Common Sites:
 - tomb entrance;
 - wind-carved arch.
 
-## First concrete Land structure: icy dwarf mountains
+## First concrete Land structure: Dvarvengrond
 
-This is the non-wording structure behind the current string worksheet.
+This is the non-wording structure behind the completed dwarf string pass.
 
 - Culture: dwarf.
 - Default environment: alpine tundra.
@@ -1021,7 +1010,7 @@ This is the non-wording structure behind the current string worksheet.
 - Settlement Areas: Bjorgheim, the central capital; Roros, the remote northern
   town; and Svalaver, the southern fishing and trade town.
 - No additional generated villages at world creation.
-- The southern town connects directly to the temperate human Land and is the
+- The southern town connects directly to Firascir and is the
   dwarf-human trading hub.
 
 Working arrangement:
@@ -1037,7 +1026,7 @@ Working arrangement:
                               \       /
                            southern town
                                  |
-                       temperate human Land
+                            Firascir
 ```
 
 The lake and southern town are sibling Areas. The lake owns the open water and
@@ -1046,10 +1035,12 @@ mountains follow the same rule: wilderness stays in the natural Area, while
 walls, streets, services, and houses belong to the settlement Area.
 
 Natural Sites, starting settlement Sites, their Room roles, and ordinary
-content pools are reviewed as strings in `placegen_review.txt`. Accepted names
-and wording return to the concrete content catalog in this file.
+content pools were reviewed in the first worksheet pass. Its accepted names
+and wording are preserved in the concrete content catalog below.
 
-### Accepted Area strings
+### Accepted Land and Area strings
+
+**Dvarvengrond** — Land.
 
 **Drunurnar Mountains** — natural Area, mountains.
 
@@ -1287,9 +1278,601 @@ Optional ordinary Sites:
 - small temple;
 - brewery.
 
-This completes the icy dwarf Land's **basic string pass**. It does not accept
-or reject the special, nonessential feature pools below. Those pools remain
-draft material until the later global special-feature review phase.
+This completes Dvarvengrond's **basic string pass**. It does not accept or
+reject the special, nonessential feature pools below. Those pools remain draft
+material until the later global special-feature review phase.
+
+## Second concrete Land structure: Firascir
+
+This is the accepted base structure behind the temperate human string
+worksheet.
+
+- Culture: human, temperate.
+- Default environment: temperate.
+- Natural Areas: Whitweld Forest, Grendon Fields, Stura River, and Flumenpur
+  River.
+- Settlement Areas at world creation: Tomburgh, the capital; Leehaven and
+  Walhaven, the two western harbor cities; Bradwhitchip and Redflurton, the
+  two inland towns; and the villages of Sturford, Ackham, and Flurham.
+- Up to five further village Areas may materialize from the reviewed name
+  pool, for a maximum of eight villages.
+- Stura River rises in the northern mountains, runs south through
+  Mortellaria, and reaches the sea.
+- Flumenpur River rises in the northern mountains, crosses Tomburgh, runs
+  east-southeast through Caelum, and continues toward Tergal.
+- Leehaven and Walhaven stand on Firascir's western sea coast.
+
+Working arrangement:
+
+```text
+                   Dvarvengrond / northern mountains
+                         /                 \
+                    Stura River       Flumenpur River
+                         |                  |
+                    Grendon Fields      Tomburgh ---- Caelum ---- Tergal
+                    /      |      \         |
+             Leehaven  Bradwhitchip  Whitweld Forest
+                    \      |      /         |
+                     Walhaven          Redflurton
+                         |
+                     Mortellaria
+```
+
+The diagram records the main routes, not exact cartographic positions.
+Sturford belongs beside Stura River, Ackham at Whitweld Forest's western
+edge, and Flurham beside a pond fed by Flumenpur River.
+
+Natural Sites, starting settlement Sites, their Room roles, and ordinary
+content pools are reviewed as strings in `placegen_review.txt`. Accepted
+names and wording are consolidated below.
+
+### Accepted Land and Area strings
+
+**Firascir** — Land.
+
+> A broad human kingdom lies between the northern mountains and the western
+> sea. Two great rivers cross its fields.
+
+**Whitweld Forest** — natural Area, forest.
+
+> Pale beech trunks fill the old wood east of the fields.
+
+**Grendon Fields** — natural Area, farmland and pasture.
+
+> Farms, hedged roads, and sheep pastures cover the rising ground below the
+> northern mountains.
+
+**Stura River** — natural Area, southbound river.
+
+> A great river runs from the northern mountains through Grendon Fields. It
+> continues south through Mortellaria and reaches the sea.
+
+**Flumenpur River** — natural Area, eastbound river.
+
+> A great river runs from the northern mountains through Tomburgh. It
+> continues east-southeast through Caelum toward Tergal.
+
+**Tomburgh** — settlement Area, capital.
+
+> The walled capital stands on both banks of the Flumenpur River. The great
+> east road crosses the river here.
+
+**Leehaven** — settlement Area, northern harbor city.
+
+> A harbor city stands around a sheltered bay on the northwestern coast.
+> Fishing boats crowd its inner quay.
+
+**Walhaven** — settlement Area, southern harbor city.
+
+> A walled harbor city guards the southwestern coast road. Human and foreign
+> merchants unload beside its stone docks.
+
+**Bradwhitchip** — settlement Area, western inland town.
+
+> A market town stands among the farms of Grendon Fields. Grain carts fill its
+> square after harvest.
+
+**Redflurton** — settlement Area, eastern inland town.
+
+> A riverside town stands where the old road meets the lower Flumenpur River.
+> Reed beds line the water below its bridge.
+
+**Sturford** — generated settlement Area, starting village.
+
+> A farming village stands beside a shallow crossing of the Stura River.
+
+**Ackham** — generated settlement Area, starting village.
+
+> A village of small farms stands at the western edge of Whitweld Forest.
+
+**Flurham** — generated settlement Area, starting village.
+
+> A fishing village stands beside a broad pond fed by the Flumenpur River.
+
+Further generated village name pool; use at most five:
+
+- Sturham;
+- Sturworth;
+- Newton;
+- Midton;
+- Aston;
+- Tomton;
+- Walham;
+- Coldcot;
+- Thornley;
+- Blackton;
+- Astmoor;
+- Ackbridge;
+- Ackton;
+- Mickleham;
+- Shepham.
+
+### Accepted natural Site, Room, and content strings
+
+**Whitweld Forest**
+
+```text
+OLD FOREST ROAD — Site
+  BEECH GATE — Room
+    pale beech trunks
+    road marker
+    wagon ruts
+  STREAM BRIDGE — Room
+    plank bridge
+    clear stream
+    mossy stones
+
+WOODCUTTER'S CAMP — Site
+  FIREPIT — Room
+    stone fire ring
+    log benches
+    black cooking pot
+  TIMBER YARD — Room
+    cut logs
+    splitting block
+    drag sled
+  STORE HUT — Room
+    axes
+    rope coils
+    iron wedges
+
+RUINED WATCHTOWER — Site
+  TOWER FOOT — Room
+    broken doorway
+    fallen stones
+    old firepit
+  UPPER PLATFORM — Room
+    cracked stair
+    low parapet
+    view over the treetops
+```
+
+**Grendon Fields**
+
+```text
+HEDGED ROAD — Site
+  CART TRACK — Room
+    packed earth
+    wheel ruts
+    milestone
+  STONE CROSSING — Room
+    narrow stream
+    flat stepping stones
+    gap in the hedge
+
+SHEPHERD'S HUT — Site
+  MAIN ROOM — Room
+    stone hearth
+    rough table
+    wool blankets
+  SHEEPFOLD — Room
+    low stone wall
+    wooden gate
+    water trough
+
+OLD WINDMILL — Site
+  MILL FLOOR — Room
+    millstones
+    flour bins
+    wooden gears
+  GRAIN STORE — Room
+    grain sacks
+    hand scales
+    mouse traps
+  UPPER LOFT — Room
+    wind shaft
+    spare sailcloth
+    ladder
+```
+
+**Stura River**
+
+```text
+SOUTH ROAD BRIDGE — Site
+  NORTH BANK — Room
+    gravel bank
+    road marker
+    willow tree
+  BRIDGE DECK — Room
+    timber rails
+    stone piers
+    cart ruts
+  SOUTH BANK — Room
+    muddy landing
+    mooring post
+    path downstream
+
+RIVERSIDE MILL — Site
+  MILL YARD — Room
+    mill stream
+    stacked grain sacks
+    handcart
+  MILL ROOM — Room
+    waterwheel shaft
+    millstones
+    flour bins
+  STORE ROOM — Room
+    grain sacks
+    spare belts
+    oil jar
+
+FERRY POINT — Site
+  LANDING — Room
+    timber platform
+    mooring posts
+    ferry rope
+  FERRY HOUSE — Room
+    small hearth
+    table and stools
+    toll box
+```
+
+**Flumenpur River**
+
+```text
+WEST BANK ROAD — Site
+  TOWPATH — Room
+    packed earth
+    mooring rings
+    cart tracks
+  WILLOW BEND — Room
+    willow trees
+    gravel bank
+    fishing stakes
+
+EAST FERRY — Site
+  WEST LANDING — Room
+    timber steps
+    bell post
+    rope coil
+  FERRYBOAT — Room
+    flat deck
+    guide rope
+    boat hook
+  EAST LANDING — Room
+    stone ramp
+    road marker
+    waiting bench
+
+RIVER ISLAND — Site
+  SHINGLE BANK — Room
+    smooth stones
+    driftwood
+    tied skiff
+  FISHER'S CAMP — Room
+    canvas shelter
+    fish basket
+    cold firepit
+```
+
+### Accepted settlement Site and Room strings
+
+Required Sites materialize with their settlement. Further ordinary Sites
+materialize lazily when requested or explored and then persist.
+
+**Tomburgh**
+
+```text
+ROYAL HALL
+  THRONE HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MAIN MARKET
+  FOOD ROW
+  CLOTH ROW
+  FOREIGN YARD
+FLUMENPUR BRIDGE
+  WEST GATEHOUSE
+  BRIDGE DECK
+  EAST GATEHOUSE
+CROWN AND BELL INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+  STABLE
+TOMBURGH SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S SHOP
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+EAST GATE
+  GATE PASSAGE
+  GUARD ROOM
+  WALL WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- cathedral;
+- barracks;
+- guildhall;
+- warehouse;
+- brewery.
+
+**Leehaven**
+
+```text
+HARBOR HALL
+  PUBLIC COUNTER
+  COUNCIL ROOM
+  RECORDS ROOM
+INNER QUAY
+  FISH LANDING
+  NET YARD
+  HARBOR STEPS
+FISH MARKET
+  FISH STALLS
+  SALT ROW
+  BASKET YARD
+GULL AND NET INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+LEEHAVEN SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+NORTH WATCH
+  GUARD ROOM
+  SIGNAL PLATFORM
+  HARBOR WALL
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- warehouse;
+- boat shed;
+- shipwright;
+- small temple;
+- brewery;
+- smokehouse.
+
+**Walhaven**
+
+```text
+CITY HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+STONE DOCKS
+  MAIN QUAY
+  CARGO YARD
+  HARBOR STAIRS
+HARBOR MARKET
+  FOOD ROW
+  CLOTH ROW
+  FOREIGN YARD
+ANCHOR INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+  STABLE
+WALHAVEN SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+SEA GATE
+  GATE PASSAGE
+  GUARD ROOM
+  WALL WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- merchant warehouse;
+- customs house;
+- shipwright;
+- temple;
+- brewery.
+
+**Bradwhitchip**
+
+```text
+TOWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MARKET SQUARE
+  GRAIN ROW
+  LIVESTOCK YARD
+  CART STAND
+HARVEST INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+  STABLE
+BRADWHITCHIP SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+GRAIN HOUSE
+  WEIGHING ROOM
+  GRAIN STORE
+  LOADING YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- barn;
+- windmill;
+- small temple;
+- brewery;
+- manor.
+
+**Redflurton**
+
+```text
+TOWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MERE BRIDGE
+  WEST GATE
+  BRIDGE DECK
+  EAST GATE
+REED AND PIKE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+REDFLURTON SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+RIVERSIDE MARKET
+  FISH STALLS
+  REED ROW
+  BOAT LANDING
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- ferry house;
+- reed warehouse;
+- watermill;
+- small shrine;
+- brewery.
+
+**Sturford**
+
+```text
+FORD HOUSE
+  TOLL ROOM
+  STORE ROOM
+SHALLOW FORD
+  WEST BANK
+  RIVER CROSSING
+  EAST BANK
+PLOUGH INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+  STABLE
+VILLAGE SMITHY
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- farm;
+- barn;
+- roadside shrine;
+- mill.
+
+**Ackham**
+
+```text
+VILLAGE GREEN
+  OLD OAK
+  WELL
+  NOTICE POST
+OAK AND AXE INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+VILLAGE SMITHY
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+WOOD YARD
+  TIMBER YARD
+  TOOL SHED
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- farm;
+- woodcutter's hut;
+- charcoal camp;
+- small shrine.
+
+**Flurham**
+
+```text
+MERE LANDING
+  TIMBER JETTY
+  BOAT YARD
+HERON INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+FISH SHED
+  CUTTING ROOM
+  SALT STORE
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- fisher's hut;
+- boat shed;
+- reed store;
+- small shrine.
+
+This completes Firascir's **basic string pass**. It does not accept or reject
+the special, nonessential feature pools below. Those pools remain draft
+material until the later global special-feature review phase.
 
 ## Natural Area feature pools
 
@@ -2062,9 +2645,10 @@ resident or household. It always has a `Main Room` and rolls zero to two of:
 - Work Room;
 - Small Yard.
 
-Accepted Site-name model:
+Accepted Site-name models:
 
-- Borin's House.
+- Borin's House — dwarf;
+- Sela's House — human.
 
 `Main Room` heating, choose one:
 
@@ -2090,10 +2674,12 @@ Accepted Site-name model:
 
 `Main Room` food, zero or one:
 
-- black bread;
+- black bread — dwarf;
+- brown bread — human;
 - onions;
 - hard cheese;
-- dried mushrooms;
+- dried mushrooms — dwarf;
+- dried apples — human;
 - smoked fish;
 - pot of stew.
 
@@ -2139,7 +2725,8 @@ Accepted Site-name model:
 - water barrel;
 - handcart;
 - chopping block;
-- goat pen;
+- goat pen — dwarf;
+- chicken coop — human;
 - drying line;
 - tool shed.
 
@@ -2171,6 +2758,72 @@ Svalaver:
 - fish basket;
 - cargo tally.
 
+Firascir human livelihood overlays:
+
+Tomburgh:
+
+- account book;
+- sealing wax;
+- guard belt;
+- folded cloth;
+- writing case.
+
+Leehaven:
+
+- fishing net;
+- iron hooks;
+- cork floats;
+- sailcloth;
+- fish basket.
+
+Walhaven:
+
+- cargo tally;
+- rope coil;
+- tar pot;
+- crate bar;
+- merchant scales.
+
+Bradwhitchip:
+
+- sickle;
+- grain sack;
+- seed basket;
+- harness;
+- wooden measure.
+
+Redflurton:
+
+- reed knife;
+- eel basket;
+- ferry rope;
+- waterproof boots;
+- fish trap.
+
+Sturford:
+
+- plough blade;
+- grain sack;
+- ferry pole;
+- horse tack;
+- seed basket.
+
+Ackham:
+
+- hand saw;
+- splitting axe;
+- timber wedges;
+- charcoal basket;
+- leather apron.
+
+Flurham:
+
+- fishing line;
+- reed basket;
+- cork floats;
+- boat hook;
+- salt sack.
+
 Generation:
 
 - generate one resident or household role from the settlement culture;
@@ -2185,8 +2838,9 @@ Generation:
 
 ### Accepted shared basic Room-content pools
 
-These ordinary pools are accepted in the dwarf base pass and may be reused by
-later cultures where their wording and material fit.
+These ordinary pools are accepted in the Dvarvengrond and Firascir base
+passes and may be reused by later cultures where their wording and material
+fit.
 
 `Great Hall`:
 
@@ -2346,7 +3000,7 @@ later cultures where their wording and material fit.
 - shield rack;
 - key board.
 
-`Jetty` or `Landing`:
+`Jetty`, `Quay`, or `Landing`:
 
 - stone quay;
 - timber platform;
@@ -2357,7 +3011,7 @@ later cultures where their wording and material fit.
 - fish baskets;
 - small crane.
 
-`Smokehouse`:
+`Smokehouse` or `Fish Shed`:
 
 - smoking racks;
 - fire trench;
@@ -2366,6 +3020,147 @@ later cultures where their wording and material fit.
 - cutting table;
 - knives;
 - wood pile.
+
+Firascir adds these accepted basic pools:
+
+`Throne Hall` or `Public Hall`:
+
+- long table;
+- raised seat;
+- benches;
+- wall banners;
+- public notice board;
+- petition rail;
+- iron braziers.
+
+Human `Council Room`:
+
+- table;
+- chairs;
+- wall map;
+- account books;
+- contract box;
+- seal press;
+- locked chest.
+
+`Harbor Hall Public Counter`:
+
+- long counter;
+- harbor ledger;
+- ship list;
+- wall map;
+- weighing scales;
+- seal box;
+- bell.
+
+`Stable`:
+
+- stalls;
+- hay rack;
+- water trough;
+- tack pegs;
+- feed bin;
+- pitchfork;
+- stable lantern.
+
+`Gate Passage` or `Gatehouse`:
+
+- timber gates;
+- portcullis;
+- guard bench;
+- weapon rack;
+- bell rope;
+- key board.
+
+`Wall Walk` or `Signal Platform`:
+
+- stone parapet;
+- signal brazier;
+- warning bell;
+- arrow chest;
+- watch shelter.
+
+`Bridge Deck`:
+
+- stone roadway;
+- low parapets;
+- lamp posts;
+- drainage gaps;
+- cart ruts.
+
+`Cargo Yard`:
+
+- stacked crates;
+- barrels;
+- handcarts;
+- cargo net;
+- weighing scales;
+- tally board.
+
+`Fish Market`:
+
+- fish stalls;
+- cutting tables;
+- baskets;
+- weighing scales;
+- salt barrels;
+- water buckets;
+- canvas awnings.
+
+`Grain Row` or `Grain Store`:
+
+- grain sacks;
+- flour bins;
+- weighing scales;
+- tally board;
+- handcart;
+- grain scoops;
+- mouse traps.
+
+`Livestock Yard`:
+
+- timber pens;
+- hitching rails;
+- water trough;
+- feed baskets;
+- weighing gate;
+- straw.
+
+`Village Green`:
+
+- old tree;
+- stone well;
+- notice post;
+- benches;
+- hitching rail;
+- water trough.
+
+`Ford` or `River Crossing`:
+
+- shallow water;
+- gravel bed;
+- marker posts;
+- guide rope;
+- muddy banks;
+- cart tracks.
+
+`Timber Yard`:
+
+- cut logs;
+- timber stacks;
+- splitting block;
+- handcart;
+- saw frame;
+- wood chips.
+
+`Boat Yard`:
+
+- pulled-up skiffs;
+- trestles;
+- rope coils;
+- tar pot;
+- spare planks;
+- oars.
 
 ### Tavern or inn
 
@@ -2579,7 +3374,7 @@ Person's Name + Place Noun
 Place Noun + geographic qualifier
 ```
 
-Use `The White Forest` in prose but store the canonical name consistently;
+Use `Whitweld Forest` in prose but store the canonical name consistently;
 the display layer should not double the article.
 
 ### Forest modifiers
@@ -2725,8 +3520,12 @@ mapping. A culture profile supplies fragments and whole-name patterns.
 
 Human temperate:
 
-- Alder, Oak, Stone, Fair, King's, Marsh, Green, High;
-- ford, bridge, field, haven, market, mere, wall, gate.
+- Firascir uses loose invented English-sounding names;
+- authored models: Tomburgh, Leehaven, Walhaven, Bradwhitchip, Redflurton,
+  Sturford, Ackham, and Flurham;
+- generated village models: Sturham, Sturworth, Newton, Midton, Aston,
+  Tomton, Walham, Coldcot, Thornley, Blackton, Astmoor, Ackbridge, Ackton,
+  Mickleham, and Shepham.
 
 Human mediterranean:
 
@@ -2770,10 +3569,10 @@ and devils; ordinary name generation should not produce near-copies.
 ## Worked forest chain
 
 ```text
-THE WHITE FOREST — Area
+WHITWELD FOREST — Area
   kind: natural
   subtype: forest
-  environment: temperate forest
+  environment: temperate
   public signature: pale-barked trees
 
   HUNTER'S EDGE — Site
@@ -2806,7 +3605,7 @@ THE WHITE FOREST — Area
 
 Possible generated Area states:
 
-- none: the ordinary White Forest;
+- none: ordinary Whitweld Forest;
 - diseased;
 - scorched;
 - frequented by dire wolves.
@@ -2890,23 +3689,26 @@ string names. All general information belongs here.
 
 ## Current review handoff
 
-Status on 2026-07-24:
+Status on 2026-07-25:
 
 - Phase 1 is active.
-- Alpine Tundra and the icy dwarf Land basic pass are complete.
-- The accepted dwarf content has been consolidated into the Alpine Tundra
-  profile, the concrete dwarf Land catalog, the ordinary-house template, and
-  the shared basic Room-content pools in this file.
-- `placegen_review.txt` remains the completed dwarf string sheet as the review
-  record.
+- Alpine Tundra / Dvarvengrond and Temperate / Firascir basic passes are
+  complete.
+- Their accepted content has been consolidated into the environment profiles,
+  concrete Land catalogs, ordinary-house template, and shared basic
+  Room-content pools in this file.
+- `placegen_review.txt` remains the completed Firascir string sheet as the
+  current review record.
+- The named Lands are Dvarvengrond, Firascir, Mortellaria, Ensimaa
+  (Prisma Tersa), Giblia (Gibili), and Tergal (Ulus-Gal).
 - No special/nonessential feature pool has been accepted yet. Existing
   optional-feature and curiosity lists in this draft remain Phase-2
   candidates.
 
 Next session:
 
-1. Replace `placegen_review.txt` with the **temperate human country basic
-   strings**.
+1. Replace `placegen_review.txt` with the **Mortellaria / Mediterranean human
+   basic strings**.
 2. Use the same minimal translation-sheet format.
 3. Review only essential environment, Area, settlement, Site, Room, and
    ordinary-content strings.
@@ -2952,14 +3754,14 @@ from `plan.md`.
 10. Add DM readouts and the local minimap surface.
 11. Add mutation hooks for quests and later off-screen events.
 
-The first vertical slice should be one temperate human Land containing:
+The first vertical slice should use Firascir and contain:
 
 - one capital;
 - one town;
 - one village or hamlet;
 - farmland;
 - pasture or hills;
-- the White Forest;
+- Whitweld Forest;
 - generated ordinary Sites in the forest;
 - one generated ordinary house with persistent Rooms and visible contents;
 - one quest which discovers and changes a forest state.
