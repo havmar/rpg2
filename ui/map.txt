@@ -1,5 +1,6 @@
 RPG2 MAP -- day 9
-the party is at Gibili > Maketawa
+the party is at Gibili > Maketawa > the
+  occupied farms > war road
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -63,7 +64,7 @@ the party is at Gibili > Maketawa
   Maketawa
   - the scout camp (L1): cleared
   - the occupied farms (L2): here, room
-    1/2
+    2/2
 
 -- the war --
 THE WAR: [w1] L2 Machines at the Border
