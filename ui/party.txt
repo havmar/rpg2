@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 13, at Firascir
-  > Leehaven > the roadside camp > outer
-  watch
+  > Leehaven > the roadside camp >
+  campfire
 purse: 36g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
@@ -14,13 +14,13 @@ party: 2/2 companion slot(s) filled (CHA
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 135/300 to L4 | skill
+            XP 150/300 to L4 | skill
               points: 0 | pools bought:
               sta +2 | proficiency:
               zweihander 1
 
 (companion) Mox (L3, training 1): DEX 6
-  STR 5  MIND 4  STA 8/9  HP 11/11
+  STR 5  MIND 4  STA 8/9  HP 10/11
   Power 4/4  CHA 4  (alchemy 1; katana;
   healingx2, staminax2)  [satisfaction
   10/10]
@@ -28,7 +28,7 @@ party: 2/2 companion slot(s) filled (CHA
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 13/300 to L4 | skill
+            XP 28/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: flail 1
@@ -41,18 +41,18 @@ party: 2/2 companion slot(s) filled (CHA
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 13/300 to L4 | skill
+            XP 28/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: club 1
 
 active quest: [q42] L3 Take Over the
   Road -- next: the roadside camp (L2),
-  room 2/3
-momentum: 1 encounter(s) at
+  room 3/3
+momentum: 2 encounter(s) at
   site/firascir/leehaven/quest-q42-2
   since the last camp
-karma: bad karma 108/300; heat 0 --
+karma: bad karma 130/300; heat 0 --
   lying low
 THE PACT: assignment [q42] Take Over the
   Road at Walhaven (OVERDUE -- hell's
