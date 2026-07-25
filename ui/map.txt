@@ -1,4 +1,4 @@
-RPG2 MAP -- day 13
+RPG2 MAP -- day 14
 the party is at Firascir > Leehaven
 (travel: 1 day within a land, 2 days to
   another)
