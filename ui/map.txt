@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Firascir > Walhaven
+RPG2 MAP -- day 2
+the party is at Firascir > Stura River >
+  the burned farm > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -9,10 +10,11 @@ the party is at Firascir > Walhaven
   Svalaver (town) -- 1 job(s)
 
 == Firascir ==  <- here
+  Stura River (river, found day 1)  <-
+    the party
   Tomburgh (capital) -- 1 job(s)
   Leehaven (city) -- 2 job(s)
-  Walhaven (city) -- 1 job(s)  <- the
-    party
+  Walhaven (city) -- 1 job(s)  (visited)
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)
   Sturford (village) -- 1 job(s)
@@ -54,3 +56,10 @@ the party is at Firascir > Walhaven
   Namuruk (village) -- 1 job(s)
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
+
+-- quests in hand (where they lead) --
+
+[q06] Deserter Raiders (L1) @ Walhaven
+  - the burned farm (L1): here, room 2/2
+  - the deserters' camp (L1): not yet (3
+    room(s))

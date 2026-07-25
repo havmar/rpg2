@@ -1,6 +1,7 @@
-RPG2 PARTY SHEET -- day 1, at Firascir >
-  Walhaven
-purse: 10g | short rests left today: 1
+RPG2 PARTY SHEET -- day 2, at Firascir >
+  Stura River > the burned farm > outer
+  watch
+purse: 15g | short rests left today: 1
 party: 1/2 companion slot(s) filled (CHA
   5)
 
@@ -12,21 +13,27 @@ party: 1/2 companion slot(s) filled (CHA
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0
 
 (companion) Cindra (L1, training 0): DEX
-  5  STR 5  MIND 5  STA 8/8  HP 9/9
+  5  STR 5  MIND 5  STA 4/8  HP 9/9
   Power 3/3  CHA 5  (bulwark; club;
   staminax2)  [satisfaction 7/10]
             Cindra -- goblin f, age 41;
               weakness: needs meds;
               speech: formal; dress:
               colorful
-            XP 0/100 to L2 | skill
+            XP 11/100 to L2 | skill
               points: 0 | abilities:
               bulwark
 
+active quest: [q06] L1 Deserter Raiders
+  -- next: the burned farm (L1), room
+  2/2
+momentum: 1 encounter(s) at
+  site/firascir/stura-river/quest-q06-1
+  since the last camp
 THE PACT: assignment [q42] Take Over the
   Road at Walhaven (grace runs to day
   5).
