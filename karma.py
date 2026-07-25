@@ -79,6 +79,7 @@ from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, CASTER_POOL,
                     BEAST_POOL, GIANTKIN_POOL,
                     build_quest, attach_giver, template_band, build_room,
                     room_budget)
+from places import land_race
 
 # --------------------------------------------------------------------------- #
 # Constants (the villain layer's knobs)
@@ -535,15 +536,18 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     lo, hi = template_band(tpl)
     level = max(lo, min(hi, level))
     # First free id: stale shadow jobs are PRUNED from world['quests']
-    # (session.py rolls a fresh board per settlement day), so the count
-    # alone can collide with a surviving taken job's id.
+    # (session.py rolls a fresh board per settlement day), while their
+    # persistent Sites remain. The count alone can therefore collide with
+    # either a surviving quest or a historical Site attachment.
     n = len(world["quests"]) + 1
     while (f"q{n:02d}" in world["quests"]
-           or f"q{n:02d}/s1" in world["sites"]):
+           or any(f"q{n:02d}" in site.get("quest_ids", ())
+                  for site in world["sites"].values())):
         n += 1
     qid = f"q{n:02d}"
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
-    attach_giver(quest, settlement["land"], rng, role=tpl.get("giver"),
+    attach_giver(quest, land_race(world, settlement["land"]), rng,
+                 role=tpl.get("giver"),
                  used_names=used_names)
     world["quests"][qid] = quest
     return quest
@@ -652,14 +656,16 @@ def main() -> None:
         print()
     print("Sample posses (one per heat band):")
     for lvl in (3, 6, 11, 16):
-        kinds, skins, leader, label = build_posse(lvl, s["land"], rng)
+        kinds, skins, leader, label = build_posse(
+            lvl, land_race(world, s["land"]), rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")
     print()
     print("Sample hell enforcers (Chickening Out):")
     for lvl in (4, 9):
-        kinds, skins, leader, label = build_hell_posse(lvl, s["land"], rng)
+        kinds, skins, leader, label = build_hell_posse(
+            lvl, land_race(world, s["land"]), rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")

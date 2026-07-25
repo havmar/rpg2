@@ -62,9 +62,11 @@ the player's core decision:
 
 - `map` shows the macro world: lands, known areas, settlement open-quest
   counts, the war's status, and the party's breadcrumb position. `look`
-  shows the known sites or rooms locally; `go NAME` enters one and `back`
-  moves one local level outward. Local moves cost no day. `travel AREA`
-  is the day-scale move.
+  shows the stored description, salient known state, sites/rooms, services,
+  links, and visible Room contents; `go NAME` enters one and `back` moves
+  one local level outward. `look --dm` is the full fact record, including
+  seeds, hidden facts, occupants, and quest attachments. Local moves cost no
+  day. `travel AREA` is the day-scale move.
 - **There is NO quest board in the fiction (2026-07-12): quests come from
   PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
   its level, pay, and WHOSE job it is (every quest has a generated giver:
@@ -105,18 +107,24 @@ the player's core decision:
 - `show QID` details one quest: description, sites, and what holds each
   room -- a DM readout. What the player hears about the road ahead is a
   COUNT of rooms and sites, never the rosters (see Narration style).
-- `take QID` makes it active (must be AT its origin area) and reveals its
-  first site. `go SITE` enters that persistent place; `room` fights its next
-  encounter there (same pause / retreat machinery as the set sites).
+- `take QID` makes it active (must be AT its origin Area) and reveals the
+  target Area plus its first Site. `travel TARGET`, `go SITE`, then `room`
+  reaches its next encounter (same pause / retreat machinery as the set
+  sites). Quest families route through real geography: wolves to
+  forest/hills/pasture, mines to high country or industry, roads and public
+  structures reused when suitable. Completion leaves the place standing and
+  may change its state.
   Progress is remembered per quest -- switching quests and returning later
   is fine. Future quests can span areas because each site names its own area.
-- **Taking a job starts it (2026-07-19).** When the player takes a
-  quest, the SAME DM message runs `look`, `go SITE`, then `room` and opens
-  the first encounter (or the deed/twist block a caper prints): a sentence of walking up to
-  the door, then the fight. Never spend a message on "you have arrived
-  at the site, what do you do?" -- arrival is not a decision point. The
-  exception is the player's own words: if they take a job and say they
-  want to do something else first (shop, hire, rest), do that instead.
+- **Taking a job starts it (2026-07-19).** If the first Site is local, the
+  SAME DM message runs `look`, `go SITE`, then `room` and opens the first
+  encounter (or the deed/twist block a caper prints): a sentence of walking
+  up to the door, then the fight. If the target Area is elsewhere, run
+  `travel` first; a road encounter may properly become that message's one
+  encounter. Never spend a message on "you have arrived at the site, what do
+  you do?" -- arrival is not a decision point. The exception is the player's
+  own words: if they take a job and say they want to do something else first
+  (shop, hire, rest), do that instead.
 - **Check where the party stands BEFORE framing a scene.** Quests are
   local, and the scripts enforce it: `take` requires the origin area;
   `room` requires the current target site. Don't narrate the arrival
@@ -162,18 +170,25 @@ the player's core decision:
   sides close, shooters shooting). A loud, armored, torch-bright party
   gets ambushed more; a sharp-MINDed one sees trouble first -- worth one
   flat mention when it first bites, not a recurring lecture.
-- `explore` spends a day ranging the current land: discovers a new named
-  natural area (persists on `map`, pays a little XP), camps rough overnight, and
-  runs a higher encounter risk (~30%). Discovered places are yours to hang
-  fiction on -- `forge --area AREA` persistent sites there when the story
-  wants them.
+- `explore` spends a day on finite discovery. From a settlement it reveals
+  the next existing natural Area in that Land's stable order. Inside a known
+  natural Area it materializes the next one of its three ordinary Sites,
+  including permanent Rooms and contents. Each pays discovery XP once; after
+  all three Sites, it says nothing new was found. It camps rough overnight
+  and runs the usual higher encounter risk (~30%).
+- `house` is the ordinary-interior materializer. Call it when play needs a
+  resident's home in the current settlement: it creates and enters one
+  persistent culture- and livelihood-appropriate house. Do not call it just
+  to fill the map. `place-state add|replace|clear PLACE STATE [NEW]` is the
+  explicit DM mutation surface; use it for off-script blight, occupation,
+  fire, recovery, and similar changes rather than rewriting place identity.
 - `hunt` is the always-available farm: an immediate encounter at-or-below
   the party's level (their chosen prey), paying wild rates (below board
   work on purpose) plus normal loot rolls. When the player wants to grind
   gold or XP between quests, this is the sanctioned loop -- no day cost,
-  but no free recovery either. NOTE: what roams a land is that race's
-  template pools -- in some lands the cheapest prey is a level-3 dire
-  wolf, and a fresh duo should hear about it before the pounce.
+  but no free recovery either. NOTE: what roams a Land comes from its
+  people-race adapter's template pools -- in some Lands the cheapest prey is
+  a level-3 dire wolf, and a fresh duo should hear about it before the pounce.
   **~10% of hunts the hunter is the hunted** (2026-07-10): an AMBUSH off
   the road's any-level table, met blade-first (the script prints it). The
   farm is never entirely safe -- a fact worth one flat mention the first

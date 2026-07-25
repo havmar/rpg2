@@ -102,48 +102,6 @@ Concretely:
 
 ---
 
-## Current development track — procedural place generation
-
-This is the active development track until the feature ships. It supersedes
-the older placement of “Area detail & exploration depth” in the unordered
-major-feature shortlist below.
-
-`placegen.md` now contains the complete six-settled-Land MVP content
-specification: Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili, and
-Tergal. Each has finite Areas, Area descriptions, natural Site/Room layouts,
-authored settlement skeletons, generated-village roles, and ordinary
-house/content material. The document also fixes the first-pass record shape,
-seed/materialization rules, quest-routing requirements, mutation surface,
-readouts, and verification.
-
-Current handoff (2026-07-25): begin the Firascir vertical slice, verify it,
-then load the other five catalogs through the same path. `placegen_review.txt`
-remains the completed Firascir wording sheet and may be reused for focused
-later rewrites; no further Land worksheet blocks implementation. Pirate
-islands, wilderness-only Lands, Caelum, and the special-feature/curiosity pass
-are post-MVP content.
-
-Reviewing all worksheets is the content-specification pass, not completion by
-itself. The feature is complete only when:
-
-- world generation separates Land, culture, and environment while applying
-  the reviewed pairings;
-- every one of the six MVP Lands receives its finite persistent Area inventory
-  and initial settlements;
-- Sites, Rooms, residents, features, and lightweight Room contents
-  materialize from stable seeds and never reroll on return;
-- navigation and player/DM readouts expose the generated hierarchy;
-- quests select, reveal, reuse, and mutate suitable persistent places;
-- generation constraints, persistence, save/load behavior, and at least one
-  fresh-world play path are verified;
-- shipped behavior is documented in `rules.md`, and this roadmap section is
-  removed.
-
-The detailed workflow, implementation order, content schemas, and per-Land
-completion contract live in `placegen.md`.
-
----
-
 ## The villain layer (the 2026-07-19 pivot — DEMOTED 2026-07-21)
 
 *(2026-07-21: the retro pivot above supersedes this section's FRAMING.
@@ -353,13 +311,6 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   layers; its big multiplier is the parked off-screen event simulation.
   *(The nemesis record — villain roadmap item 2 — is this thread's
   first concrete customer.)*
-- **Area detail & exploration depth** — procedurally materialize area/site/
-  room descriptions and contents in stages, persist the results, and feed
-  them from the same off-screen tick. The spatial schema and navigation
-  foundation are shipped; procedural detail generation is not. **Now promoted
-  to the current development track above.** The settled structure, generation
-  rules, implementation order, and first reviewable content inventory live in
-  `placegen.md`.
 - **Domain play** — the endgame layer (holdings, followers, rulership);
   the natural answer to "what is gold FOR at L15+". *(Pivot note:
   conquest ticking is domain play's thin edge — build item 3 of the

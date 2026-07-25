@@ -909,3 +909,26 @@ swing keeps its snapshot penalty; only the order of already-scheduled
 actions inside one round moves). No retune, no lever touched; the
 standing summary in develop.md is unchanged apart from noting this
 check.
+
+## 2026-07-25 — procedural-place MVP quest-routing sanity
+
+**What changed.** Quest templates now select tagged persistent Areas and
+concrete Site/Room roles. Public structures can be reused, while hidden camps,
+dens, and shrines remain fresh. The calibrated encounter-budget builder,
+foe pools, XP formulas, and gold formulas did not change.
+
+**Sanity run (not a full re-measurement):**
+
+- `bench_quests.py --trials 50 --careers 10`: at-level generated Room wins
+  ranged **74–100%** and at-level Site clears **32–94%** across L1–20. The
+  small career sample reached at least L5/L8/L11/L14/L17/L20 in
+  **90/80/50/30/10/0%**, with median death at L11 and no forced-up picks.
+- A fresh seed-1 world posted about **25,950 XP** against the unchanged
+  **19,000 XP** L1–20 requirement.
+- `test_places.py` covered deterministic structure, every existing quest
+  family finding compatible geography, persistent Site completion/reuse, and
+  the Blighted Grove state transition.
+
+**Reading:** this is the expected noisy shape from a deliberately small
+integration run. Place routing changes destination identity and persistence,
+not encounter weight or rewards. No retune and no standing-summary refresh.

@@ -70,6 +70,7 @@ import builtins
 import dataclasses
 import json
 import random
+import re
 import subprocess
 import textwrap
 from pathlib import Path
@@ -129,8 +130,9 @@ from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_line
 from quests import (generate_world, forge_quest, board_lines, site_gold_for,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade, seen_level, mind_precision,
-                    new_area, all_areas, settlements, settlements_by_land,
+                    all_areas, settlements, settlements_by_land,
                     area_sites, quest_sites, site_rooms,
+                    complete_quest_place_state,
                     roll_wild_level, build_wild_encounter,
                     wild_encounter_xp,
                     TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
@@ -138,8 +140,14 @@ from quests import (generate_world, forge_quest, board_lines, site_gold_for,
                     EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
                     HUNT_AMBUSH_CHANCE,
                     CAMP_ENCOUNTER_CHANCE,
-                    HUNT_LEVEL_REACH, WILD_NAME_PREFIXES, WILD_NAME_SUFFIXES,
+                    HUNT_LEVEL_REACH,
                     notice_contest, foes_preferred_field)
+from places import (
+    discover_area, materialize_natural_site, materialize_house,
+    active_known_facts, place_debug_lines, find_place,
+    add_state as add_place_state, replace_state as replace_place_state,
+    clear_state as clear_place_state, land_race,
+)
 
 STATE_PATH = Path(__file__).parent / "save.json"
 
@@ -199,7 +207,7 @@ def _area_position(area: dict) -> dict:
 def location_line(state: dict) -> str:
     world, pos = state["world"], state["position"]
     area = world["areas"][pos["area"]]
-    names = [f"the {pos['land']} lands", area["name"]]
+    names = [world["lands"][pos["land"]]["name"], area["name"]]
     if pos.get("site"):
         names.append(world["sites"][pos["site"]]["name"])
     if pos.get("room"):
@@ -514,12 +522,12 @@ def map_sheet_lines(state: dict) -> list[str]:
              f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
              f"{TRAVEL_DAYS_CROSS} days to another)"]
     visited = set(state.get("visited") or [])
-    for race, land_rec in world["lands"].items():
-        mark = "  <- here" if race == pos["land"] else ""
-        if st and st.get("fallen") == race:
+    for polity, land_rec in world["lands"].items():
+        mark = "  <- here" if polity == pos["land"] else ""
+        if st and st.get("fallen") == polity:
             mark += "  [UNDER THE YOKE]"
         lines.append("")
-        lines.append(f"== the {race} lands =={mark}")
+        lines.append(f"== {land_rec['name']} =={mark}")
         for key in land_rec["areas"]:
             area = world["areas"][key]
             if not area.get("known"):
@@ -537,7 +545,10 @@ def map_sheet_lines(state: dict) -> list[str]:
                     if area["kind"] == "settlement" else "")
             found = (f", found day {area['discovered_day']}"
                      if "discovered_day" in area else "")
-            lines.append(f"  {area['name']} ({kind}{found}){jobs}{where}")
+            facts = active_known_facts(area)
+            state_note = f" [{facts[0]['id']}]" if facts else ""
+            lines.append(f"  {area['name']} ({kind}{found}){state_note}"
+                         f"{jobs}{where}")
     taken = accepted_quests(state)
     if taken:
         lines.append("")
@@ -1630,6 +1641,8 @@ def _close_site(state: dict, log: list[str], qid: str,
     if last_site:
         quest["status"] = "done"
         quest["done_day"] = state["clock"].day
+        complete_quest_place_state(state["world"], quest,
+                                   day=state["clock"].day)
         g = quest.get("giver")
         if g:
             log_banner(log,
@@ -1783,7 +1796,8 @@ def maybe_punish(state: dict) -> bool:
     posse_level = min(karma.LEVEL_CAP, lvl + h)
     land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
-    kinds, skins, leader, label = karma.build_posse(posse_level, land, rng,
+    kinds, skins, leader, label = karma.build_posse(
+        posse_level, land_race(state["world"], land), rng,
                                                     used_names=used)
     k["last_leader"] = f"{leader['name']}, {leader['role']}"
     here = local_settlement(state)
@@ -1987,7 +2001,7 @@ def maybe_enforce(state: dict) -> bool:
     land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_hell_posse(
-        posse_level, land, rng, used_names=used)
+        posse_level, land_race(state["world"], land), rng, used_names=used)
     here = local_settlement(state)
     where = (f"at {here['name']}" if here is not None
              else "at the party's fire")
@@ -2493,7 +2507,9 @@ def cmd_board(args: argparse.Namespace) -> None:
     for line in board_lines(world, key, mind=mind):
         print(line)
     if not args.settlement:
-        cast = [n for n in world.get("npcs", []) if n["seat"] == key]
+        cast = [n for n in world.get("npcs", [])
+                if n["seat"] == key
+                and n.get("post") in ("ruler", "sage", "wildcard")]
         if cast:
             print("Notables in town (the recurring cast -- see dm.md):")
             for n in cast:
@@ -2515,7 +2531,8 @@ def cmd_board(args: argparse.Namespace) -> None:
                     rumors.append(f"  [{q['id']}] {level_grade(q, mind)} "
                                   f"{q['name']} -- at {s['name']}")
         if rumors:
-            print(f"Word from around the {land} lands (travel there to "
+            land_name = world["lands"][land]["name"]
+            print(f"Word from around {land_name} (travel there to "
                   f"take one; `show QID` for what's known):")
             for line in rumors:
                 print(line)
@@ -2571,9 +2588,17 @@ def cmd_take(args: argparse.Namespace) -> None:
               f"arriving is the turn-in.")
     else:
         first = quest_sites(state["world"], quest)[quest["next"]["site"]]
+        target_area = state["world"]["areas"][first["area"]]
+        if not target_area.get("known"):
+            target_area["known"] = True
+            target_area["discovered_day"] = state["clock"].day
         first["known"] = True
+        rooms = site_rooms(state["world"], first)
+        if rooms:
+            rooms[0]["known"] = True
         print(f"The first site is {first['name']}. `look`, then "
-              f"`go {first['name']}`; `room` faces its next encounter.")
+              f"`travel {target_area['name']}`, `go {first['name']}`, then "
+              f"`room` faces its next encounter.")
     if quest.get("align") == "dark":
         print("(dark work: every XP it pays is BAD KARMA -- heat rises, "
               "and the law comes collecting. Honest jobs burn bad karma "
@@ -2861,8 +2886,12 @@ def cmd_travel(args: argparse.Namespace) -> None:
         print("No world in this save -- start one with `new`.")
         return
     want = " ".join(args.dest).lower()
+    want_slug = re.sub(r"[^a-z0-9]+", "-", want).strip("-")
     target = next((a for a in all_areas(world)
-                   if a.get("known") and want in a["key"]), None)
+                   if a.get("known")
+                   and (want in a["key"].lower()
+                        or want in a["name"].lower()
+                        or want_slug in a["key"].lower())), None)
     if target is None:
         known = [a["name"] for a in all_areas(world) if a.get("known")]
         print(f"No known place matches {want!r}. Known: {', '.join(known)}.")
@@ -2940,9 +2969,11 @@ def cmd_explore(args: argparse.Namespace) -> None:
         return
     clear_sighting(state)
     party, clock, rng = state["party"], state["clock"], state["rng"]
-    land = state["position"]["land"]
-    print(f"The party ranges out into the {land} wilds -- a day afield, "
-          f"camping rough.")
+    polity = state["position"]["land"]
+    land_name = world["lands"][polity]["name"]
+    here = current_area(state)
+    print(f"The party explores {here['name']} and the roads beyond -- "
+          f"a day afield, camping rough.")
     log = CombatLog()
     _long_rest(party, clock, log, rng=rng)
     storyteller_tale(party, rng, log)
@@ -2950,27 +2981,55 @@ def cmd_explore(args: argparse.Namespace) -> None:
     night_upkeep(state, log)
     reset_streak(state)
     print_play(log)
-    used = {a["name"] for a in all_areas(world)}
-    prefixes, suffixes = WILD_NAME_PREFIXES, WILD_NAME_SUFFIXES
-    name = None
-    subtype = "natural"
-    for _ in range(60):
-        suffix, subtype = rng.choice(suffixes)
-        name = rng.choice(prefixes) + suffix
-        if name not in used:
-            break
-    area = new_area(world, name.lower(), name, land, "natural",
-                    subtype=subtype,
-                    discovered_day=clock.day)
-    area["visited"] = True
-    state["position"] = _area_position(area)
+    found_area = None
+    found_site = None
+    if here["kind"] == "natural":
+        found_site = materialize_natural_site(world, here, day=clock.day)
+    else:
+        found_area = discover_area(world, polity, clock.day)
     log = []
-    award_xp(party, EXPLORE_XP, log, "discovery")
-    print(f"They find a place no map of theirs holds: {name}.")
+    if found_area is not None:
+        found_area["visited"] = True
+        state["position"] = _area_position(found_area)
+        award_xp(party, EXPLORE_XP, log, "discovery")
+        print(f"A known route opens onto {found_area['name']}.")
+        print(found_area["description"])
+        found_name = found_area["name"]
+    elif found_site is not None:
+        award_xp(party, EXPLORE_XP, log, "discovery")
+        print(f"A local place is found: {found_site['name']}.")
+        found_name = found_site["name"]
+    else:
+        found_name = here["name"]
+        if here["kind"] == "natural":
+            print(f"Nothing new is found in {here['name']}. Its three "
+                  f"ordinary sites are already mapped.")
+        else:
+            print(f"No unknown natural Area remains in {land_name}. "
+                  f"Travel to a known natural Area to explore its Sites.")
     print("\n".join(log))
     if not wild_event(state, EXPLORE_ENCOUNTER_CHANCE,
-                      f"In the wilds at {name}"):
+                      f"In the wilds at {found_name}"):
         save(state)
+
+
+def cmd_house(args: argparse.Namespace) -> None:
+    """Materialize one persistent ordinary house in the current settlement."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    settlement = local_settlement(state)
+    if settlement is None:
+        print("Ordinary houses are requested in a settlement.")
+        return
+    site, resident = materialize_house(state["world"], settlement)
+    state["position"]["site"] = site["id"]
+    state["position"]["room"] = site["rooms"][0]
+    site["visited"] = True
+    state["world"]["rooms"][site["rooms"][0]]["visited"] = True
+    print(f"{site['name']} is now part of {settlement['name']}.")
+    print(f"{resident['name']} is here, {resident['role']}.")
+    save(state)
 
 
 def cmd_hunt(args: argparse.Namespace) -> None:
@@ -3031,21 +3090,44 @@ def cmd_engage(args: argparse.Namespace) -> None:
 
 
 def cmd_look(args: argparse.Namespace) -> None:
-    """Show the local branch of the spatial tree. This is the command-line
-    precursor to the planned ui/minimap.txt local display."""
+    """Show the stored local place and only player-known facts/children."""
     state = load()
     world, pos = state["world"], state["position"]
     area = current_area(state)
+    if args.dm:
+        place = (world["rooms"][pos["room"]] if pos.get("room") else
+                 world["sites"][pos["site"]] if pos.get("site") else area)
+        print("DM PLACE FACTS")
+        for line in place_debug_lines(world, place):
+            print(line)
+        return
     print(f"WHERE: {location_line(state)}")
     if pos.get("room"):
         room = world["rooms"][pos["room"]]
-        print(f"You are at {room['name']}. `back` returns to "
-              f"{world['sites'][room['site']]['name']}.")
+        print(f"You are at {room['name']}.")
+        facts = active_known_facts(room)
+        if facts:
+            print(f"It is {facts[0]['id'].replace('_', ' ')}.")
+        visible = [c["label"] for c in room.get("contents", ())
+                   if c.get("known") and c.get("reveal") == "visible"]
+        if visible:
+            print("You see: " + ", ".join(visible) + ".")
+        print(f"`back` returns to {world['sites'][room['site']]['name']}.")
         return
     if pos.get("site"):
         site = world["sites"][pos["site"]]
-        rooms = site_rooms(world, site)
-        print(f"{site['name']} has {len(rooms)} immediate place(s):")
+        if site.get("description"):
+            print(site["description"])
+        facts = active_known_facts(site)
+        if facts:
+            print(f"Current state: {facts[0]['id'].replace('_', ' ')}.")
+        contents = [c["label"] for c in site.get("contents", ())
+                    if c.get("known")]
+        if contents:
+            print("You see: " + ", ".join(contents) + ".")
+        rooms = [room for room in site_rooms(world, site)
+                 if room.get("known")]
+        print(f"{site['name']} has {len(rooms)} known immediate place(s):")
         for room in rooms:
             mark = "  <- here" if room["id"] == pos.get("room") else ""
             print(f"  {room['name']}{mark}")
@@ -3053,7 +3135,10 @@ def cmd_look(args: argparse.Namespace) -> None:
         return
     visible = [s for s in area_sites(world, area) if s.get("known")]
     kind = area.get("subtype", area["kind"])
-    print(f"{area['name']} is a {kind} area.")
+    print(area.get("description") or f"{area['name']} is a {kind} Area.")
+    facts = active_known_facts(area)
+    if facts:
+        print(f"Current state: {facts[0]['id'].replace('_', ' ')}.")
     if visible:
         print("Sites in reach:")
         for site in visible:
@@ -3061,6 +3146,18 @@ def cmd_look(args: argparse.Namespace) -> None:
         print("Use `go SITE` to enter.")
     else:
         print("No local sites are known here.")
+    services = area.get("services", ())
+    if services:
+        print("Services: " + ", ".join(s["label"] for s in services) + ".")
+    links = [link for link in area.get("links", ())
+             if world["areas"].get(link["target"], {}).get("known")]
+    if links:
+        print("Links: " + ", ".join(
+            world["areas"][link["target"]]["name"] for link in links) + ".")
+    neighbors = world["lands"][area["land"]].get("neighbors", ())
+    if neighbors:
+        print("Neighboring Lands: " + ", ".join(
+            world["lands"][land]["name"] for land in neighbors) + ".")
 
 
 def cmd_go(args: argparse.Namespace) -> None:
@@ -3074,11 +3171,15 @@ def cmd_go(args: argparse.Namespace) -> None:
     if pos.get("site"):
         site = world["sites"][pos["site"]]
         matches = [r for r in site_rooms(world, site)
-                   if want in r["name"].lower()]
+                   if r.get("known") and want in r["name"].lower()]
         if matches:
             room = matches[0]
             room["known"] = room["visited"] = True
             pos["room"] = room["id"]
+            rooms = site_rooms(world, site)
+            index = rooms.index(room)
+            if index + 1 < len(rooms):
+                rooms[index + 1]["known"] = True
             print(f"You go to {location_line(state)}.")
             save(state)
             return
@@ -3089,6 +3190,9 @@ def cmd_go(args: argparse.Namespace) -> None:
         site = matches[0]
         site["visited"] = True
         pos["site"], pos["room"] = site["id"], None
+        rooms = site_rooms(world, site)
+        if rooms:
+            rooms[0]["known"] = True
         print(f"You enter {location_line(state)}.")
         save(state)
         return
@@ -3120,6 +3224,37 @@ def cmd_map(args: argparse.Namespace) -> None:
         return
     for line in map_sheet_lines(state):
         print(line)
+
+
+def cmd_place_state(args: argparse.Namespace) -> None:
+    """DM override for the minimum persistent place-state mutation API."""
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    target = find_place(world, args.place)
+    if target is None or "states" not in target:
+        print(f"No mutable place matches {args.place!r}.")
+        return
+    day = state["clock"].day
+    if args.action == "add":
+        add_place_state(world, target, args.state, day=day)
+        print(f"{target['name']}: {args.state} added.")
+    elif args.action == "clear":
+        if clear_place_state(world, target, args.state, day=day):
+            print(f"{target['name']}: {args.state} cleared.")
+        else:
+            print(f"{target['name']} has no active {args.state} state.")
+            return
+    else:
+        if not args.new_state:
+            print("`place-state replace` needs NEW_STATE.")
+            return
+        replace_place_state(world, target, args.state, args.new_state,
+                            day=day)
+        print(f"{target['name']}: {args.state} -> {args.new_state}.")
+    save(state)
 
 
 def report_game_over(party: list, wiped: bool) -> None:
@@ -3599,7 +3734,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
             # The magic gun is dwarf craft and dwarf commerce: sold only
             # in dwarven settlements (the L10+ gold sink lives there).
             here = local_settlement(state)
-            if here is None or here["land"] != "dwarf":
+            if here is None or here.get("race") != "dwarf":
                 print(f"Revolvers are sold only in dwarven settlements -- "
                       f"the party is at {location_line(state)}.")
                 return
@@ -4208,9 +4343,11 @@ def main() -> None:
 
     p = sub.add_parser(
         "look",
-        help="the local view: current Land > Area > Site > Room breadcrumb "
-             "and the sites or rooms in reach (the command precursor to "
-             "the planned ui/minimap.txt)")
+        help="the local view: stored description, known state, child places, "
+             "services, and visible Room contents. --dm prints the complete "
+             "place record including hidden facts and generation data")
+    p.add_argument("--dm", action="store_true",
+                   help="full current-place fact record for DM eyes")
     p.set_defaults(func=cmd_look)
 
     p = sub.add_parser(
@@ -4243,12 +4380,33 @@ def main() -> None:
 
     p = sub.add_parser(
         "explore",
-        help=f"a day ranging the current land's wilds: discovers a new "
-             f"place (pays {EXPLORE_XP} XP, persists on the map), camps "
+        help=f"a day ranging the current Area and its roads: from a "
+             f"settlement, reveals the next finite natural Area; inside a "
+             f"natural Area, reveals its next ordinary Site. A new place "
+             f"pays {EXPLORE_XP} XP and persists; revisits do not. Camps "
              f"rough (overnight recovery, streak reset), and beats more "
              f"bushes than the road "
              f"({int(EXPLORE_ENCOUNTER_CHANCE * 100)}%% encounter chance)")
     p.set_defaults(func=cmd_explore)
+
+    p = sub.add_parser(
+        "house",
+        help="materialize one ordinary house in the current settlement: a "
+             "persistent resident, Main Room, zero to two optional Rooms, "
+             "and culture-compatible visible contents")
+    p.set_defaults(func=cmd_house)
+
+    p = sub.add_parser(
+        "place-state",
+        help="DM place mutation: add, replace, or clear a persistent state "
+             "on a Land, Area, Site, or Room; records a day-stamped world "
+             "event")
+    p.add_argument("action", choices=("add", "replace", "clear"))
+    p.add_argument("place", help="place name or ID substring")
+    p.add_argument("state", help="state to add/clear, or old state")
+    p.add_argument("new_state", nargs="?", default=None,
+                   help="replacement state (replace only)")
+    p.set_defaults(func=cmd_place_state)
 
     p = sub.add_parser(
         "hunt",

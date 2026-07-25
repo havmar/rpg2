@@ -455,7 +455,8 @@ def downtime_match(e: Entity, settlement: dict) -> str | None:
     SAT_DOWNTIME_MATCH trigger), or None for the plain SAT_DOWNTIME day:
     patriotic in their race's land, religious at a capital's temples, an
     interest where it thrives (INTEREST_PLACES)."""
-    if rpg.has_trait(e, "patriotic") and settlement["land"] == e.race:
+    if rpg.has_trait(e, "patriotic") and settlement.get(
+            "race", settlement["land"]) == e.race:
         return "walking their own land"
     subtype = settlement.get("subtype")
     if rpg.has_trait(e, "religious") and subtype == "capital":

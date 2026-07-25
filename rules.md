@@ -2066,26 +2066,31 @@ anchors the formulas were fitted to.
   pointing to persistent world sites, whose `rooms` are IDs pointing to
   persistent immediate places. A generated quest may create a tower, cave,
   farm, or road site, but the place remains part of the world after the job.
-  This is the foundation for later procedural detail and reuse; procedural
-  detail generation itself is not part of this slice.
+  Ordinary and quest-specific places use the same records, contents,
+  knowledge, and state machinery.
 - **Quest shape:** a combat quest targets 1–3 **sites** (weighted toward
   fewer), each with 1–3 **rooms** (encounters). Multi-site quests escalate:
   earlier sites run at level −1, −2 from the quest's level. Clearing the
   quest challenge at a site pays its own lump (XP + gold, the level formulas);
   the site itself is geography and does not intrinsically pay merely for
   existing. The last site completes the quest.
-- **Local content remains deliberately compact:** the system provides the
-  fights and a direct premise; the DM supplies only the connective telling.
-  Local quests are formulaic placeholders (a land culture × themed foe pool),
-  not authored short stories.
+- **Quest placement follows place requirements.** Each family specifies
+  acceptable Area tags, a Site template/domain, and a reuse policy. A wolf
+  hunt selects forest, hills, pasture, or prairie; a mine job selects
+  mountains, mines, or quarries. Public roads, bridges, mines, markets, and
+  towers may be reused when free; hidden camps, dens, and shrines are made
+  fresh. Two active quests never share one Site.
+- **Local content remains deliberately compact:** the system provides a
+  direct premise, a persistent destination, concrete Room roles and contents,
+  and the fights. Local quests are formulaic pieces (a culture × themed foe
+  pool), not miniature stories.
 - **The world is generated once per playthrough, seeded** (`session.py new`),
-  and lives in the save: one capital, three towns (distinct races), villages
-  — quest levels rolled uniformly in a settlement band (village 1–8, town
-  1–14, capital 1–20) and **displayed straight**: too easy and too hard both
-  appear, reading the board is the decision. Worldgen tops the board up
-  until it posts **1.35× the XP a duo needs to reach level 20** — coverage
-  is asserted at generation, and the surplus is grind room (a party that
-  only took at-level work would die compounding the risk).
+  and lives in the save. It creates the six finite MVP Lands and all their
+  settlements before posting one local job per settlement, then tops up until
+  the board carries **1.35× the XP a duo needs to reach level 20**. Quest
+  levels still roll uniformly in their settlement bands (village 1–8, town
+  1–14, city 1–16, capital 1–20). Too-easy and too-hard work both exists;
+  geography selects where it happens without changing its threat budget.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
   row is mechanics — a goblin "Scrap-Hound" is the wolf row, a dwarf
   "Hold-Lord" the wight. Balance never forks on a skin.
@@ -2168,16 +2173,21 @@ road is the content:
 The geography under the quest system: the party is always **somewhere**, and
 quests refer to places in the same world rather than carrying private maps.
 It remains deliberately list-shaped, not coordinate-shaped — no hex grid.
-`quests.py` owns the persistent tree and the travel constants/tables;
-`session.py` owns position, discovery, movement, and displays.
+`places.py` and `place_catalog.json` own place definitions, deterministic
+materialization, knowledge, contents, and mutation. `quests.py` owns encounter
+placement and travel constants/tables; `session.py` owns position, discovery,
+movement, and displays.
 
 ## The hierarchy
 
 The canonical spatial vocabulary is **Land -> Area -> Site -> Room**:
 
-- **Land** is the macro territory: culture, ownership, war state, wilderness
-  encounter pool, and cross-land travel. The existing race lands keep their
-  plain, player-facing names; `region` is not a structural tier.
+- **Land** is the macro territory: identity, owner, culture, default
+  environment, war state, wilderness encounter profile, and cross-land
+  links. Land identity is not race: Firascir and Mortellaria are distinct
+  human realms with different cultures and environments, and conquest may
+  change `owner` without changing geography. `race` remains an adapter into
+  NPC, quest, and encounter content.
 - **Area** is a world-map destination. Its broad `kind` is `settlement` or
   `natural`; its subtype says capital/town/village or forest, mountain, plain,
   swamp, and similar. Travel between areas costs days. This handles both kinds
@@ -2196,11 +2206,36 @@ single-child step — no dummy “forest site / forest room” is required. Each
 deeper level must add a landmark, function, obstacle, or affordance rather
 than repeat its parent's kind.
 
+Authored definitions and saved instances are separate. Lazy child seeds use a
+stable BLAKE2 digest of `world seed | parent ID | purpose | sequence`; Python's
+process-randomized hash and the campaign RNG are never used. The instance
+stores its selected definition IDs, seed, mutable facts, knowledge, child IDs,
+and lightweight contents. Returning or loading the JSON save reads that
+instance rather than calling the generator again.
+
+Room contents are persistent facts, not automatic loot. Fixtures, furniture,
+tools, food, containers, and personal objects make ordinary interiors
+concrete; only a record with a mechanical item reference enters the existing
+inventory systems. Required settlement Sites and Room skeletons exist at
+world creation. Natural Sites and ordinary houses materialize lazily.
+
 ## The map
 
-- **Lands and areas.** Each land owns ordered area IDs. Settlement areas are
-  known from day one; natural areas join the map when discovered. `map` and
-  `ui/map.txt` show this macro Land/Area view as a 40-column list.
+- **The finite world.** The MVP has Dvarvengrond, Firascir, Mortellaria,
+  Ensimaa, Gibili, and Tergal: 28 natural Areas and 39 settlements. The
+  settlement split is Dvarvengrond 3; Firascir 5 authored + 3 fixed villages;
+  and Mortellaria, Ensimaa, Gibili, and Tergal 4 authored + 3 generated
+  villages each. Generated village names are drawn without replacement from
+  culture pools and assigned to authored livelihood roles.
+- **Lands and Areas.** Each Land owns IDs in stable authored order.
+  Settlement Areas are known from day one; all natural Areas already exist
+  but join the player map only when revealed. Discovery changes knowledge,
+  never creates or rerolls the Area. `map` and `ui/map.txt` show the known
+  macro Land/Area view as a 40-column list.
+- **Links.** Land adjacency is explicit. Mortellaria–Gibili is a sea route;
+  Firascir–Tergal uses the Flumenpur transit route until Caelum exists. Stura
+  River links its Firascir and Mortellaria Areas, and Flumenpur River links
+  Firascir and Tergal without creating a placeholder Caelum.
 - **Position.** The save carries a breadcrumb with `land`, `area`, and
   optional `site` / `room` IDs. Status and `look` print it as, for example,
   `Elven Lands > Far Forest > Wizard's Tower > Library`. A new game starts
@@ -2211,12 +2246,13 @@ than repeat its parent's kind.
   calibration content only** since 2026-07-13 — presented alongside
   generated quests they confused the board's fiction, and the generator
   covers the level band; the benches still run them.
-- **Quest offers are local; targets are places.** `board` shows the current
+- **Quest offers are local; targets are tagged places.** `board` shows the current
   settlement area's jobs, and taking one requires standing in its origin
-  area. Taking it reveals its first target site. Working it then requires
-  travelling to that site's area and entering it with `go`; `room` faces the
-  next encounter there. A future quest may span areas without changing its
-  schema. Word still travels (2026-07-11): the player also
+  Area. Taking it reveals its target Area and first Site. Working it then
+  requires travelling to that Site's Area and entering it with `go`; `room`
+  faces the next encounter there. Completion never deletes the Site. A quest
+  may replace an active place state; the vertical slice changes a blighted
+  forest to recovering. Word still travels (2026-07-11): the player also
   KNOWS every other open quest **in the current land** — name, level,
   where — as a "word from around the land" rumor list under the local
   board. Same stance as straight-shown levels: travel should be an
@@ -2252,10 +2288,15 @@ than repeat its parent's kind.
 
 ## Local movement
 
-- **`look`** prints the current breadcrumb and the known child sites or rooms
-  in reach.
+- **`look`** prints the breadcrumb, stored description, one salient known
+  state or feature, known children, usable links/services, and visible Room
+  contents. **`look --dm`** prints the complete current record: ID,
+  template/source, seed, all facts/reveal flags, children, links, occupants,
+  quest attachments, and used natural-Site inventory.
 - **`go NAME`** moves from an area into a known site, or from a site to one of
-  its rooms. It costs no day; local walking is not another survival tax.
+  its known rooms. Entering a Site reveals its first Room; entering one Room
+  reveals the next. It costs no day; local walking is not another survival
+  tax.
 - **`back`** moves one level outward (room to site, site to area).
 - Settlement-wide conveniences (`board`, tavern, recruiting, shops) remain
   area-scoped shortcuts. The hierarchy supports meaningful local choices; it
@@ -2267,12 +2308,26 @@ than repeat its parent's kind.
 
 ## The explore move & the hunt
 
-- **`explore`** spends a day ranging the current land's wilds: discovers a
-  new named natural area (persists on the map, travelable later, XP for the
-  discovery), camps rough (overnight recovery, streak reset), and beats
-  more bushes than the road (~30% encounter chance, same table and valve).
-  Discovered areas are hooks — the DM can `forge --area` persistent sites
-  and rooms into them.
+- **`explore`** spends a day ranging the current place and its roads. From a
+  settlement it reveals the next existing natural Area in the Land's stable
+  shuffled discovery order. Inside a natural Area it materializes the next
+  unused one of that Area's three authored ordinary Site templates, including
+  its full Room skeleton, then reveals the Site and entrance. Each template
+  appears once; after all three, ordinary exploration reports nothing new in
+  the MVP. New Areas and Sites pay discovery XP; revisits do not. The day
+  still camps rough and checks for a wild encounter.
+- **`house`** materializes an ordinary house in the current settlement. It
+  casts a culture-compatible resident, creates a Main Room plus zero to two
+  optional Rooms, and stores two to five visible Main-Room contents plus at
+  most one searched object. Heating, food, livelihood tools, and yard details
+  follow culture and settlement role. The complete house is saved at once and
+  never rerolls.
+- **Place facts and mutation.** Every Area, Site, and Room carries separate
+  `features` and active `states`; facts have public/local/explore/hidden
+  reveal rules and exist before discovery. The minimal API adds, replaces, or
+  clears a state and appends a day-stamped world event. `place-state` is the
+  DM override surface. Identity survives every transition:
+  `blighted -> recovering -> no adverse state`.
 - **`hunt`** is the always-available farm loop: stalk prey in the current
   land NOW (no day cost). The party chooses this fight, so unlike the road
   the level rolls at-or-below the party's (down to −2) — grinding XP, loot

@@ -106,19 +106,32 @@ a pointer: what the file is, how it's run, where its docs are.
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
   stay settled. Append an entry after every major design session.
-- `placegen.md` — **the complete place-generation MVP specification**
-  (2026-07-23; MVP specification completed 2026-07-25): the
+- `placegen.md` — **the implemented place-generation MVP specification**
+  (2026-07-23; content specification and implementation completed
+  2026-07-25): the
   authored-vs-generated boundary, persistent feature and lightweight
   Room-content schema, weighting/reveal/mutation/seed rules, implementation
   order, and the canonical pre-implementation content catalog. All six
   settled MVP Lands — Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili,
   and Tergal — have finite Area inventories, basic natural and settlement
   Site/Room layouts, generated-village roles, house overlays, and ordinary
-  content pools. Its implementation contract fixes record fields, stable
-  materialization, quest routing, readouts, and minimum verification. Pirate,
-  wilderness, Caelum, and special-feature content remain post-MVP.
-  It is the implementation source while the feature remains unimplemented;
+  content pools. Its historical implementation contract fixes record fields,
+  stable materialization, quest routing, readouts, and minimum verification.
+  Pirate, wilderness, Caelum, and special-feature content remain post-MVP;
   shipped behavior belongs in `rules.md`.
+- `places.py` — **the procedural-place runtime**: loads the immutable catalog,
+  derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
+  materializes required settlements/lazy natural Sites/ordinary houses,
+  resolves Room contents, tracks knowledge, and applies place-state mutation.
+- `place_catalog.json` — **the checked-in ordinary place catalog** extracted
+  from the accepted concrete content in `placegen.md`: all six Land/Area
+  records, required settlement Site/Room skeletons, natural three-Site
+  inventories, generated-village roles/names, adjacency, and river/routes.
+- `test_places.py` — **the place-generation MVP contract suite**: counts,
+  IDs/names, deterministic seeds, finite discovery, lazy persistence,
+  services/content, house constraints, quest routing/state transitions,
+  hidden facts, ASCII, and 40-column display wrapping.
+  `python -m unittest -v test_places.py`.
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
   translation-style view of one Land's player/DM-facing names, descriptions,
   Site and Room labels, and visible content strings. It carries only enough
@@ -166,11 +179,12 @@ a pointer: what the file is, how it's run, where its docs are.
   generated board covers the band; the benches still run them).
   One-shot: `python sites.py [--site
   hideout] [--seed N] [--training N]`.
-- `quests.py` — **the world, quest & encounter generator** (rules.md, the
-  Quest System and World & Navigation add-ons): the persistent Land -> Area
-  -> Site -> Room schema and its accessors, the threat math (all constants at
-  the top, calibrated by `bench_quests.py`), the room/site/quest builders,
-  per-race quest
+- `quests.py` — **the quest & encounter generator over persistent places**
+  (rules.md, the Quest System and World & Navigation add-ons): tree
+  accessors, the threat math (all constants at the top, calibrated by
+  `bench_quests.py`), concrete quest Room builders, the
+  `QUEST_PLACE_REQUIREMENTS` tag/template routing layer,
+  and per-race quest
   templates with reskin tables (since 2026-07-12 each also authors a
   `giver` role and an `epilogue` line), and seeded worldgen with asserted
   XP coverage to the level cap — which since 2026-07-12 also attaches a
@@ -241,7 +255,9 @@ a pointer: what the file is, how it's run, where its docs are.
   player. Quest play: `board` (LOCAL by default since 2026-07-09) /
   `show QID` / `take QID` / `room`, plus `forge` (the DM quest creator).
   World play (2026-07-09; hierarchy 2026-07-22): `map` / `travel` / `look` /
-  `go` / `back` / `explore` / `hunt` / `engage` — breadcrumb position,
+  `go` / `back` / `explore` / `house` / `place-state` / `hunt` / `engage` —
+  breadcrumb position, finite Area/Site discovery, persistent ordinary
+  houses, DM mutation,
   macro and local navigation, local boards, road encounters, the momentum
   streak; since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
@@ -393,6 +409,7 @@ python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
+python -m unittest -v test_places.py  # procedural-place MVP contract
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -679,12 +696,16 @@ mechanic *does* and *why* is rules.md's job.
   and after a retreat's clean escape), the forced interception in
   `cmd_travel`, and the delivery guards in take/room/status/sheet/
   opening-hook/board-rumors.
-- **The world & navigation** (2026-07-09; hierarchy 2026-07-22) —
-  `quests.py`: the world-owned `lands` / `areas` / `sites` / `rooms` stores;
-  `new_area` / `new_site` / `new_room` and the tree accessors; settlements
-  as areas (`kind=settlement`, capital/town/village `subtype`), discovered
-  geography as areas (`kind=natural`, a geographic `subtype`); quest `sites`
-  as persistent world IDs; `wild_pool`
+- **The world, places & navigation** (2026-07-09; hierarchy 2026-07-22;
+  procedural-place MVP 2026-07-25) — `places.py` +
+  `place_catalog.json`: independent Land/culture/owner/environment records,
+  the finite 67-Area six-Land inventory, stable BLAKE2 child seeds, required
+  settlement skeletons/services/providers, three-entry natural Site
+  inventories, Room contents, ordinary houses, knowledge, links, and the
+  explicit state mutation/event API. `quests.py`: the world-owned
+  `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
+  Sites as persistent world IDs, `QUEST_PLACE_REQUIREMENTS` routing;
+  `wild_pool`
   (what roams a land = the union of its race's template pools),
   `roll_wild_level` (the road's party-independent geometric level table),
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
@@ -693,7 +714,8 @@ mechanic *does* and *why* is rules.md's job.
   `ui/map.txt` as the macro Land/Area view; `cmd_look` / `cmd_go` / `cmd_back`
   as the local view and movement precursor to the planned `ui/minimap.txt`;
   `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` /
-  `cmd_explore` / `cmd_hunt` / `cmd_engage`.
+  finite `cmd_explore`, `cmd_house`, `cmd_place_state`, `cmd_hunt` /
+  `cmd_engage`; `look --dm` is the complete place-fact readout.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -842,6 +864,11 @@ summary — refresh it whenever a new entry lands there.**
   41.4 / 98.5 (38.1 / 40.6 / 98.3); bench_party at 1.5k reads the duo
   58.1 / 38.3 clear (58/38 shape intact). No retune needed; benchlog
   entry 2026-07-21.
+- **The procedural-place MVP is routing-only for balance (2026-07-25).**
+  A small `bench_quests` integration run confirmed the generated Room/Site
+  and career shapes remain plausible after quests began selecting tagged
+  persistent geography. Encounter budgets, foe pools, XP, and gold formulas
+  are unchanged; this was not a rebaseline. See the 2026-07-25 benchlog entry.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

@@ -43,10 +43,15 @@ from __future__ import annotations
 
 import argparse
 import random
+import re
 
 from rpg import (LEVEL_CAP, xp_to_next, site_xp_total, site_encounter_xp,
                  site_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
+from places import (
+    LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
+    stable_seed, land_race, add_state, replace_state,
+)
 
 # --------------------------------------------------------------------------- #
 # The threat math (the encounter builder's whole theory)
@@ -162,20 +167,26 @@ def build_room(budget: float, pool: tuple[str, ...], rng: random.Random,
     return room
 
 
-# Room name stages -- generic on purpose; real flavor is the DM's layer.
+# Generic stages remain the bench/low-level fallback. Runtime quest Sites pass
+# concrete roles from their place template.
 ROOM_STAGES = ("the approach", "the way in", "the outer chamber",
                "the inner chamber", "the heart of it")
 
 
 def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
-                     rng: random.Random) -> list[tuple[str, list[str]]]:
+                     rng: random.Random,
+                     room_roles: tuple[str, ...] | None = None
+                     ) -> list[tuple[str, list[str]]]:
     """1-3 rooms escalating to the site's level: rising budget shares of the
     ~2-reference-encounter site total, the last room carrying the anchor."""
     shares = ROOM_SHARES[n_rooms]
     rooms = []
     for i, share in enumerate(shares):
         final = i == n_rooms - 1
-        name = ROOM_STAGES[-1] if final else ROOM_STAGES[i]
+        if room_roles:
+            name = room_roles[min(i, len(room_roles) - 1)]
+        else:
+            name = ROOM_STAGES[-1] if final else ROOM_STAGES[i]
         rooms.append((name, build_room(room_budget(level, share), pool, rng,
                                        final=final)))
     return rooms
@@ -492,6 +503,101 @@ EPIC_TEMPLATES: list[dict] = [
          epilogue="The renegade wizard is dead. The tower goes dark."),
 ]
 
+# Geographic routing for the existing quest families.  The encounter tables
+# stay exactly as calibrated; this layer selects persistent geography and a
+# concrete Site/Room shape for them.
+QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
+    "Bandits on the Road": dict(
+        area_any=("road", "farmland", "pasture", "coast"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Wolves Attack": dict(
+        area_any=("forest", "hills", "pasture", "prairie"),
+        site_template="den", domain="natural", reuse="never"),
+    "The Restless Crypt": dict(
+        area_any=("settlement",),
+        site_template="crypt", domain="built", reuse="prefer"),
+    "Deserter Raiders": dict(
+        area_any=("road", "farmland", "pasture"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Renegade Wizards": dict(
+        area_any=("ruin", "road", "settlement"),
+        site_template="ruin", domain="built", reuse="prefer"),
+    "The Blighted Grove": dict(
+        area_any=("forest", "hollow"),
+        site_template="grove", domain="natural", reuse="never",
+        state_on_post="blighted", state_on_complete="recovering"),
+    "Spiders in the Trees": dict(
+        area_any=("forest", "hollow", "hills"),
+        site_template="grove", domain="natural", reuse="never"),
+    "Blighted Beasts": dict(
+        area_any=("forest", "hollow", "hills"),
+        site_template="den", domain="natural", reuse="never"),
+    "Rogue Wardens": dict(
+        area_any=("forest", "road", "warden"),
+        site_template="road", domain="mixed", reuse="prefer"),
+    "The Mist Coven": dict(
+        area_any=("hollow", "river", "forest", "hills"),
+        site_template="shrine", domain="mixed", reuse="never"),
+    "Monsters in the Deep Road": dict(
+        area_any=("mountains", "mine"),
+        site_template="mine", domain="mixed", reuse="prefer"),
+    "The Lost Hold": dict(
+        area_any=("mountains", "mine"),
+        site_template="ruin", domain="built", reuse="never"),
+    "Monster in the Mine": dict(
+        area_any=("mountains", "mine"),
+        site_template="mine", domain="mixed", reuse="prefer"),
+    "The Clan War": dict(
+        area_any=("mountains", "mine", "settlement"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Mages in the Mine": dict(
+        area_any=("mountains", "mine"),
+        site_template="mine", domain="mixed", reuse="prefer"),
+    "Hounds in the Factory": dict(
+        area_any=("industry", "repair"),
+        site_template="industrial", domain="built", reuse="prefer"),
+    "Stolen Workers": dict(
+        area_any=("market", "industry", "settlement"),
+        site_template="camp", domain="built", reuse="never"),
+    "The Killer Machine": dict(
+        area_any=("industry", "clay", "quarry"),
+        site_template="industrial", domain="built", reuse="prefer"),
+    "Spiders Below": dict(
+        area_any=("industry", "quarry", "clay", "repair"),
+        site_template="mine", domain="built", reuse="prefer"),
+    "The Boiler Cult": dict(
+        area_any=("industry", "repair"),
+        site_template="industrial", domain="built", reuse="prefer"),
+    "The Great Hunt": dict(
+        area_any=("prairie", "pasture", "hills", "basin"),
+        site_template="den", domain="natural", reuse="never"),
+    "Rival Warband": dict(
+        area_any=("prairie", "pasture", "road", "hills"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Giants in the Pass": dict(
+        area_any=("hills", "pass", "ridge"),
+        site_template="mine", domain="natural", reuse="never"),
+    "Dragon on the Mountain": dict(
+        area_any=("hills", "ridge", "mountains"),
+        site_template="den", domain="natural", reuse="never"),
+    "Rebel Shamans": dict(
+        area_any=("prairie", "ridge", "basin", "hills"),
+        site_template="shrine", domain="mixed", reuse="never"),
+    "The Dragon's Tribute": dict(
+        area_any=("mountains", "hills", "ridge"),
+        site_template="den", domain="natural", reuse="never"),
+    "The Giant at the Border": dict(
+        area_any=("road", "hills", "pass"),
+        site_template="ruin", domain="built", reuse="never"),
+    "The Renegade Wizard": dict(
+        area_any=("ruin", "road", "settlement"),
+        site_template="tower", domain="built", reuse="prefer"),
+}
+
+for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
+    for _template in _templates:
+        _template["place"] = dict(QUEST_PLACE_REQUIREMENTS[_template["title"]])
+
 # Villages post the same race tables, just fewer and lower-leveled: samey on
 # purpose -- placeholders for authored content, not competition for it.
 
@@ -573,6 +679,7 @@ NAME_PARTS = {
 
 SETTLEMENT_KINDS = {         # (quest slots, level band)
     "capital": (5, (1, LEVEL_CAP)),
+    "city":    (4, (1, 16)),
     "town":    (4, (1, 14)),
     "village": (2, (1, 8)),
 }
@@ -623,28 +730,45 @@ def site_gold_for(quest: dict, site: dict) -> int:
 def new_area(world: dict, key: str, name: str, land: str, kind: str,
              *, subtype: str | None = None, known: bool = True,
              discovered_day: int | None = None) -> dict:
-    """Add one world-map destination. Settlements and natural geography are
-    both areas; `kind` controls their content without changing the hierarchy."""
-    area = {"key": key, "name": name, "land": land, "kind": kind,
-            "sites": [], "quests": [], "known": known, "visited": False}
-    if subtype:
-        area["subtype"] = subtype
+    """Add a DM-authored Area with the same persistent schema as worldgen."""
+    area = {
+        "id": key, "key": key, "name": name, "land": land, "kind": kind,
+        "subtype": subtype or kind, "role": "dm", "description": "",
+        "source": "dm", "template": "dm",
+        "seed": stable_seed(world.get("seed"), f"land/{land}", "dm-area",
+                            len(world["areas"]) + 1),
+        "sites": [], "quests": [], "known": known, "visited": False,
+        "tags": [kind, subtype or kind], "features": [], "states": [],
+        "used_natural_sites": [], "natural_site_order": [], "services": [],
+        "links": [], "sequences": {},
+    }
     if discovered_day is not None:
         area["discovered_day"] = discovered_day
     world["areas"][key] = area
-    world["lands"].setdefault(
-        land, {"key": land, "name": f"{land.capitalize()} Lands",
-               "areas": []})["areas"].append(key)
+    world["lands"][land]["areas"].append(key)
     return area
 
 
 def new_site(world: dict, area_key: str, site_id: str, name: str, level: int,
-             *, quest: str | None = None, known: bool = False) -> dict:
-    site = {"id": site_id, "name": name, "area": area_key,
-            "kind": "quest" if quest else "place", "level": level,
-            "rooms": [], "quest": quest, "known": known, "visited": False}
+             *, quest: str | None = None, known: bool = False,
+             template: str = "wild", domain: str = "mixed",
+             source: str = "worldgen") -> dict:
+    if site_id in world["sites"]:
+        raise ValueError(f"duplicate Site ID: {site_id}")
+    area = world["areas"][area_key]
+    seed = stable_seed(world.get("seed"), area_key, f"quest-site:{site_id}",
+                       len(area["sites"]) + 1)
+    site = {
+        "id": site_id, "name": name, "area": area_key,
+        "domain": domain, "template": template, "description": "",
+        "source": source, "seed": seed, "known": known, "visited": False,
+        "rooms": [], "quest_ids": [quest] if quest else [],
+        "level": level, "tags": [template, domain],
+        "features": [], "states": [], "services": [], "occupants": [],
+        "contents": [], "sequences": {},
+    }
     world["sites"][site_id] = site
-    world["areas"][area_key]["sites"].append(site_id)
+    area["sites"].append(site_id)
     return site
 
 
@@ -652,12 +776,28 @@ def new_room(world: dict, site_id: str, room_id: str, name: str,
              kinds: list[str], *, quest: str | None = None) -> dict:
     """Add an immediate place. `room` covers interiors and outdoor text-
     adventure nodes such as clearings, ledges, and stretches of path."""
-    room = {"id": room_id, "name": name, "site": site_id,
-            "kinds": list(kinds), "quest": quest,
-            "known": False, "visited": False}
+    if room_id in world["rooms"]:
+        raise ValueError(f"duplicate Room ID: {room_id}")
+    site = world["sites"][site_id]
+    seed = stable_seed(world.get("seed"), site_id, f"quest-room:{room_id}",
+                       len(site["rooms"]) + 1)
+    pool_id, contents = generic_room_contents(room_id, name, site["name"],
+                                               seed)
+    room = {
+        "id": room_id, "name": name, "site": site_id,
+        "template": slug_name(name), "role": slug_name(name),
+        "content_pool": pool_id, "source": "worldgen", "seed": seed,
+        "known": False, "visited": False, "contents": contents,
+        "features": [], "states": [], "occupants": [],
+        "kinds": list(kinds), "quest_ids": [quest] if quest else [],
+    }
     world["rooms"][room_id] = room
-    world["sites"][site_id]["rooms"].append(room_id)
+    site["rooms"].append(room_id)
     return room
+
+
+def slug_name(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
 def all_areas(world: dict) -> list[dict]:
@@ -687,11 +827,94 @@ def quest_sites(world: dict, quest: dict) -> list[dict]:
     return [world["sites"][sid] for sid in quest.get("sites", [])]
 
 
+def _fallback_place_requirement(tpl: dict) -> dict:
+    text = " ".join((tpl.get("title", ""), *tpl.get("sites", ()))).lower()
+    if any(word in text for word in ("factory", "boiler", "machine")):
+        template, tags, domain = "industrial", ("industry", "settlement"), "built"
+    elif any(word in text for word in ("mine", "deep", "cave")):
+        template, tags, domain = "mine", ("mountains", "mine", "quarry"), "mixed"
+    elif any(word in text for word in ("grove", "forest", "tree")):
+        template, tags, domain = "grove", ("forest", "hollow"), "natural"
+    elif any(word in text for word in ("crypt", "grave", "dead")):
+        template, tags, domain = "crypt", ("settlement", "tomb"), "built"
+    elif any(word in text for word in ("tower", "wizard", "guildhall")):
+        template, tags, domain = "tower", ("ruin", "road", "settlement"), "built"
+    elif any(word in text for word in ("den", "hunt", "beast", "dragon")):
+        template, tags, domain = "den", ("forest", "hills", "prairie"), "natural"
+    else:
+        template, tags, domain = "camp", ("road", "settlement", "prairie"), "mixed"
+    return {"area_any": tags, "site_template": template, "domain": domain,
+            "reuse": "never"}
+
+
+def quest_place_requirement(tpl: dict) -> dict:
+    return dict(tpl.get("place") or _fallback_place_requirement(tpl))
+
+
+def _select_quest_area(world: dict, origin_key: str, requirement: dict,
+                       rng: random.Random) -> dict:
+    origin = world["areas"][origin_key]
+    wanted = set(requirement.get("area_any", ()))
+    candidates = [a for a in all_areas(world)
+                  if wanted.intersection(a.get("tags", ())) and
+                  a["land"] == origin["land"]]
+    if not candidates:
+        candidates = [a for a in all_areas(world)
+                      if wanted.intersection(a.get("tags", ()))]
+    if not candidates:
+        candidates = [origin]
+    domain = requirement.get("domain")
+    if domain == "natural":
+        natural = [a for a in candidates if a["kind"] == "natural"]
+        if natural:
+            candidates = natural
+    elif domain == "built":
+        built = [a for a in candidates if a["kind"] == "settlement"]
+        if built:
+            candidates = built
+    return rng.choice(candidates)
+
+
+def _reusable_site(world: dict, area: dict, requirement: dict) -> dict | None:
+    if requirement.get("reuse") != "prefer":
+        return None
+    template = requirement["site_template"]
+    compatible = {
+        "crypt": {"crypt", "shrine"},
+    }.get(template, {template})
+    for site in area_sites(world, area):
+        active_quests = [
+            qid for qid in site.get("quest_ids", ())
+            if qid not in world["quests"]
+            or world["quests"][qid].get("status") not in ("done", "complete",
+                                                          "failed")
+        ]
+        if (site.get("template") in compatible
+                and not active_quests
+                and 1 <= len(site.get("rooms", ())) <= 3):
+            return site
+    return None
+
+
+def _put_quest_in_site(world: dict, site: dict, qid: str, level: int,
+                       pool: tuple[str, ...], rng: random.Random) -> None:
+    """Attach calibrated rosters to an existing compatible place skeleton."""
+    rooms = site_rooms(world, site)
+    built = build_site_rooms(
+        level, len(rooms), pool, rng,
+        tuple(room["name"] for room in rooms))
+    site["level"] = level
+    site["quest_ids"].append(qid)
+    for room, (_name, kinds) in zip(rooms, built):
+        room["kinds"] = list(kinds)
+        room["quest_ids"].append(qid)
+
+
 def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                 rng: random.Random) -> dict:
-    """One quest instance targeting 1-3 newly created world sites, each with
-    1-3 world rooms. Sites escalate to the quest's level (an S-site quest runs
-    its earlier sites at level-1, level-2... floored at 1)."""
+    """Build calibrated encounters into compatible persistent geography."""
+    requirement = quest_place_requirement(tpl)
+    target_area = _select_quest_area(world, area_key, requirement, rng)
     n_sites = rng.choices((1, 2, 3), weights=(45, 40, 15))[0]
     n_sites = min(n_sites, len(tpl["sites"]))
     if tpl.get("deed") or tpl.get("twist"):
@@ -705,13 +928,24 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
     gold_total = 0
     for j, stem in enumerate(stems):
         site_level = max(1, level - (n_sites - 1 - j))
-        n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
-        rooms = build_site_rooms(site_level, n_rooms, tpl["pool"], rng)
-        site_id = f"{qid}/s{j + 1}"
-        new_site(world, area_key, site_id, stem, site_level, quest=qid)
-        for k, (name, kinds) in enumerate(rooms):
-            new_room(world, site_id, f"{site_id}/r{k + 1}", name, kinds,
-                     quest=qid)
+        reused = _reusable_site(world, target_area, requirement)
+        if reused is not None:
+            _put_quest_in_site(world, reused, qid, site_level, tpl["pool"],
+                               rng)
+            site_id = reused["id"]
+        else:
+            n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
+            roles = tuple(SITE_TEMPLATES[requirement["site_template"]]
+                          .get("room_roles", ()))
+            rooms = build_site_rooms(site_level, n_rooms, tpl["pool"], rng,
+                                     roles)
+            site_id = f"site/{target_area['land']}/{slug_name(target_area['name'])}/quest-{qid}-{j + 1}"
+            new_site(world, target_area["key"], site_id, stem, site_level,
+                     quest=qid, template=requirement["site_template"],
+                     domain=requirement["domain"])
+            for k, (name, kinds) in enumerate(rooms):
+                new_room(world, site_id, f"{site_id}/{slug_name(name)}",
+                         name, kinds, quest=qid)
         site_ids.append(site_id)
         xp_total += site_xp_total(site_level)
         gold_total += site_gold(site_level)
@@ -722,11 +956,14 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         world["sites"][site_ids[0]]["deed"] = dict(tpl["deed"])
     if tpl.get("twist"):
         world["sites"][site_ids[-1]]["twist"] = dict(tpl["twist"])
-    return {
+    quest = {
         "id": qid,
         "name": tpl["title"],
         "desc": tpl["desc"],
         "origin": area_key,
+        "target_area": target_area["id"],
+        "place": requirement,
+        "state_target": target_area["id"],
         "level": level,
         "fuzz": rng.randint(-2, 2),     # quest sight (Magic & Mind): the
                                         # fixed error a dull-witted party
@@ -749,6 +986,20 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                                             # karma, dark accrues it
         "epilogue": tpl.get("epilogue", ""),
     }
+    if requirement.get("state_on_post"):
+        add_state(world, target_area, requirement["state_on_post"])
+    return quest
+
+
+def complete_quest_place_state(world: dict, quest: dict,
+                               day: int | None = None) -> None:
+    """Apply the quest's persistent geography transition, if it has one."""
+    req = quest.get("place") or {}
+    old = req.get("state_on_post")
+    new = req.get("state_on_complete")
+    target = world["areas"].get(quest.get("state_target"))
+    if target is not None and old and new:
+        replace_state(world, target, old, new, day=day)
 
 
 def attach_giver(quest: dict, race: str, rng: random.Random,
@@ -814,13 +1065,17 @@ def forge_quest(world: dict, qid: str, level: int, n_sites: int, n_rooms: int,
     gold_total = 0
     for j in range(n_sites):
         site_level = max(1, level - (n_sites - 1 - j))
-        rooms = build_site_rooms(site_level, n_rooms, pool, rng)
-        site_id = f"{qid}/s{j + 1}"
+        rooms = build_site_rooms(
+            site_level, n_rooms, pool, rng,
+            tuple(SITE_TEMPLATES["wild"]["room_roles"]))
+        site_id = (f"site/{world['areas'][area_key]['land']}/"
+                   f"{slug_name(world['areas'][area_key]['name'])}/"
+                   f"quest-{qid}-{j + 1}")
         new_site(world, area_key, site_id, f"site {j + 1}", site_level,
-                 quest=qid)
+                 quest=qid, template="wild", domain="mixed", source="dm")
         for k, (rn, kinds) in enumerate(rooms):
-            new_room(world, site_id, f"{site_id}/r{k + 1}", rn, kinds,
-                     quest=qid)
+            new_room(world, site_id, f"{site_id}/{slug_name(rn)}", rn,
+                     kinds, quest=qid)
         site_ids.append(site_id)
         xp_total += site_xp_total(site_level)
         gold_total += site_gold(site_level)
@@ -859,9 +1114,10 @@ WILDCARD_ROLES = ("spymaster", "mercenary captain", "master smith",
                   "high priest", "war profiteer", "guild factor")
 
 
-def _cast_the_land(world: dict, race: str, seat: dict, rng: random.Random,
+def _cast_the_land(world: dict, polity: str, seat: dict, rng: random.Random,
                    used_people: set[str]) -> None:
     from people import make_npc, SEXES     # runtime import (cycle: RACES)
+    race = land_race(world, polity)
     sex = rng.choice(SEXES)
     for role, post in ((RULER_TITLES[race][sex], "ruler"),
                        (rng.choice(SAGE_ROLES), "sage"),
@@ -871,8 +1127,36 @@ def _cast_the_land(world: dict, race: str, seat: dict, rng: random.Random,
         age = rng.randint(35, 70) if post in ("ruler", "sage") else None
         npc = make_npc(rng, race, role, sex=sex if post == "ruler" else None,
                        age=age, used_names=used_people)
-        npc.update(land=race, seat=seat["key"], post=post)
+        npc_id = f"npc/{polity}/{slug_name(npc['name'])}/{post}"
+        npc.update(id=npc_id, land=polity, seat=seat["key"], post=post)
         world["npcs"].append(npc)
+
+
+def _cast_service_providers(world: dict, rng: random.Random,
+                            used_people: set[str]) -> None:
+    """Give every required settlement service a persistent local face."""
+    from people import make_npc
+    roles = {
+        "lodging": "innkeeper", "smith": "smith",
+        "general_goods": "shopkeeper", "alchemist": "alchemist",
+        "market": "market keeper", "government": "clerk",
+    }
+    for settlement in settlements(world):
+        race = land_race(world, settlement["land"])
+        for service in settlement.get("services", ()):
+            # Service faces are local to their settlement; their names do
+            # not consume the campaign-wide giver/notable namespace.
+            npc = make_npc(rng, race, roles[service["kind"]])
+            npc_id = (f"npc/{settlement['land']}/{slug_name(npc['name'])}/"
+                      f"{slug_name(settlement['name'])}/"
+                      f"{slug_name(service['kind'])}")
+            npc.update(id=npc_id, land=settlement["land"],
+                       seat=settlement["id"], post="service")
+            service["provider"] = npc_id
+            site = world["sites"].get(service.get("site"))
+            if site is not None and npc_id not in site["occupants"]:
+                site["occupants"].append(npc_id)
+            world["npcs"].append(npc)
 
 
 def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
@@ -895,7 +1179,8 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     among those whose band contains the roll."""
     lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
     level = rng.randint(lo, hi)
-    tables = list(TEMPLATES[settlement["land"]])
+    race = land_race(world, settlement["land"])
+    tables = list(TEMPLATES[race])
     if settlement["subtype"] == "capital":
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
@@ -911,7 +1196,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     tpl = rng.choice(fresh or fitting)
     qid = f"q{len(world['quests']) + 1:02d}"
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
-    attach_giver(quest, settlement["land"], rng, role=tpl.get("giver"),
+    attach_giver(quest, race, rng, role=tpl.get("giver"),
                  used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -919,37 +1204,24 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
 
 
 def generate_world(seed: int | None = None) -> dict:
-    """The whole playthrough's structured content, generated once: a capital,
-    three towns (distinct races), villages as needed. The board is topped up
-    -- an extra quest on a random settlement at a time -- until it carries
-    WORLD_XP_MARGIN x the XP a duo needs to reach LEVEL_CAP, so a fresh
-    world provably holds a full career of at-level work."""
+    """Create the six-Land persistent world, then route its quest inventory."""
     rng = random.Random(seed)
-    used_names: set[str] = set()
     used_people: set[str] = set()   # one namespace for givers AND the cast:
                                     # two Ruriks in one town read as a bug
-    world: dict = {"seed": seed, "lands": {}, "areas": {}, "sites": {},
-                   "rooms": {}, "quests": {}, "npcs": []}
+    world = create_geography(seed)
+    _cast_service_providers(world, rng, used_people)
+    for polity, setts in settlements_by_land(world).items():
+        _cast_the_land(world, polity, setts[0], rng, used_people)
 
-    races = list(RACES)
-    rng.shuffle(races)
-    plan = [("capital", races[0])] + [("town", r) for r in races[1:4]]
-    plan += [("village", rng.choice(races)) for _ in range(2)]
-    for kind, race in plan:
-        name = _settlement_name(race, rng, used_names)
-        settlement = new_area(world, name.lower(), name, race, "settlement",
-                              subtype=kind)
-        for _ in range(SETTLEMENT_KINDS[kind][0]):
-            _post_quest(world, settlement, rng, used_people)
-
-    for race, setts in settlements_by_land(world).items():
-        _cast_the_land(world, race, setts[0], rng, used_people)
+    # Seed every settlement with one local job.  The career-coverage loop
+    # then adds work without recreating the old arbitrary per-tier census.
+    for settlement in settlements(world):
+        _post_quest(world, settlement, rng, used_people)
 
     target = WORLD_XP_MARGIN * xp_to_cap(1)
     while (sum(quest_xp_total(q) for q in world["quests"].values()) < target
            and len(world["quests"]) < WORLD_MAX_QUESTS):
-        _post_quest(world, rng.choice(settlements(world)), rng,
-                    used_people)
+        _post_quest(world, rng.choice(settlements(world)), rng, used_people)
 
     # The deliveries go on last, ON TOP of the coverage target (courier work
     # is travel pay, not the climb's XP).
@@ -974,9 +1246,11 @@ def _post_delivery(world: dict, rng: random.Random,
     tpl = rng.choice(fresh or DELIVERY_TEMPLATES)
     qid = f"q{len(world['quests']) + 1:02d}"
     quest = build_delivery_quest(qid, tpl, origin, dest, rng)
-    attach_giver(quest, origin["land"], rng, role=tpl.get("giver"),
+    attach_giver(quest, land_race(world, origin["land"]), rng,
+                 role=tpl.get("giver"),
                  used_names=used_people)
-    quest["recipient"] = make_npc(rng, dest["land"], tpl["recipient"],
+    quest["recipient"] = make_npc(rng, land_race(world, dest["land"]),
+                                  tpl["recipient"],
                                   used_names=used_people)
     world["quests"][qid] = quest
     origin["quests"].append(qid)
@@ -1033,18 +1307,6 @@ CAMP_ENCOUNTER_CHANCE = 0.10  # a night camped in the WILDS (not at a
                               # rolled after the night's recovery, same road
                               # table and spotted/ambush valves
 
-# Natural-area names and their modest geography tags, discovered by explore.
-# This is classification for the spatial schema, not the planned procedural
-# detail generator: the DM still supplies what is actually present there.
-WILD_NAME_PREFIXES = ("Black", "Red", "Mist", "Thorn", "Crow", "Elk",
-                      "Adder", "Howling", "Broken", "Old")
-WILD_NAME_SUFFIXES = (("fen", "wetland"), ("hollow", "woodland"),
-                      ("ridge", "highlands"), ("wood", "forest"),
-                      ("moor", "moorland"), ("caves", "caverns"),
-                      ("falls", "riverland"), ("barrens", "badlands"),
-                      ("tarn", "lake"), ("cairns", "hills"))
-
-
 def settlements_by_land(world: dict) -> dict[str, list[dict]]:
     """Settlement areas grouped by land, preserving world generation order."""
     out: dict[str, list[dict]] = {}
@@ -1056,6 +1318,8 @@ def settlements_by_land(world: dict) -> dict[str, list[dict]]:
 def wild_pool(race: str) -> tuple[str, ...]:
     """What roams a land's wilderness: the union of every foe pool the
     race's quest templates draw from, deduplicated, level-sorted."""
+    if race in LAND_SPECS:
+        race = LAND_SPECS[race]["race"]
     kinds: set[str] = set()
     for tpl in TEMPLATES[race]:
         kinds.update(tpl["pool"])
@@ -1218,7 +1482,8 @@ def board_lines(world: dict, settlement_key: str | None = None,
     for s in settlements(world):
         if settlement_key and s["key"] != settlement_key:
             continue
-        lines.append(f"{s['name']} ({s['land']} {s['subtype']}):")
+        land_name = world["lands"][s["land"]]["name"]
+        lines.append(f"{s['name']} ({land_name} {s['subtype']}):")
         for qid in s["quests"]:
             q = world["quests"][qid]
             g = q.get("giver")
@@ -1312,7 +1577,11 @@ def main() -> None:
     print("The central cast:")
     from people import npc_line
     for npc in world["npcs"]:
-        print(f"  [{npc['land']} lands, at {npc['seat']}] {npc_line(npc)}")
+        if npc.get("post") not in ("ruler", "sage", "wildcard"):
+            continue
+        land_name = world["lands"][npc["land"]]["name"]
+        seat = world["areas"][npc["seat"]]["name"]
+        print(f"  [{land_name}, at {seat}] {npc_line(npc)}")
     if args.demo:
         for q in world["quests"].values():
             print()

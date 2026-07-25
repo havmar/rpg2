@@ -46,6 +46,7 @@ from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL,
                     new_site, new_room, quest_sites, site_rooms,
                     settlements, settlements_by_land,
                     quest_line, quest_detail_lines)
+from places import land_race, slug
 
 # --------------------------------------------------------------------------- #
 # The shape (shared by every variant)
@@ -307,7 +308,10 @@ def init_story(world: dict, rng: random.Random,
     capital_land = settlements(world)[0]["land"]
     pool = [r for r in AGGRESSORS if r != pc_race] or list(AGGRESSORS)
     aggressor = rng.choice(pool)
-    victims = [r for r in present if r != aggressor]
+    aggressor_lands = [land for land in present
+                       if land_race(world, land) == aggressor]
+    aggressor_land = rng.choice(aggressor_lands)
+    victims = [land for land in present if land != aggressor_land]
     # The land that FALLS (wave 3) must not host the capital -- wave 4 is
     # raised from the capital, which occupation would gate shut.
     b_pool = [r for r in victims if r != capital_land] or victims
@@ -320,6 +324,7 @@ def init_story(world: dict, rng: random.Random,
              for title in (spec["conqueror_title"],)
              + spec["lieutenant_titles"]]
     return {"aggressor": aggressor,
+            "aggressor_land": aggressor_land,
             "conqueror": faces[0],
             "lieutenants": faces[1:],
             "targets": [land_a, land_b],
@@ -367,10 +372,11 @@ def post_wave(world: dict, story: dict, rng: random.Random,
         # to be the aggressor's own race (its free kin disowning the war
         # reads confusing); then the wave-2 ally land raises it instead.
         settlement = settlements(world)[0]
-        if settlement["land"] == story["aggressor"]:
+        if land_race(world, settlement["land"]) == story["aggressor"]:
             settlement = settlements_by_land(world)[story["targets"][0]][0]
-    fmt = dict(_names(story), land=land or settlement["land"],
-               land_cap=(land or settlement["land"]).capitalize())
+    shown_land = land or settlement["land"]
+    shown_name = world["lands"][shown_land]["name"]
+    fmt = dict(_names(story), land=shown_name, land_cap=shown_name)
     qid = f"w{i + 1}"
     quest = {"id": qid,
              "name": wv["title"].format(**fmt),
@@ -388,13 +394,16 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     n_sites = len(wv["sites"])
     for j, (stem, n_rooms) in enumerate(zip(wv["sites"], WAVE_ROOMS[i])):
         site_level = max(1, level - (n_sites - 1 - j))
-        rooms = build_site_rooms(site_level, n_rooms, spec["pool"], rng)
-        site_id = f"{qid}/s{j + 1}"
+        rooms = build_site_rooms(
+            site_level, n_rooms, spec["pool"], rng,
+            ("war road", "battle line", "enemy stronghold"))
+        site_id = (f"site/{settlement['land']}/{slug(settlement['name'])}/"
+                   f"war-{qid}-{j + 1}")
         new_site(world, settlement["key"], site_id, stem, site_level,
-                 quest=qid)
+                 quest=qid, template="camp", domain="mixed")
         for k, (rn, kinds) in enumerate(rooms):
-            new_room(world, site_id, f"{site_id}/r{k + 1}", rn, list(kinds),
-                     quest=qid)
+            new_room(world, site_id, f"{site_id}/{slug(rn)}", rn,
+                     list(kinds), quest=qid)
         quest["sites"].append(site_id)
         quest["xp_total"] += site_xp_total(site_level)
         quest["gold_total"] += site_gold(site_level)
@@ -413,7 +422,7 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     if ruler is not None:
         quest["giver"] = dict(ruler)
     else:
-        attach_giver(quest, settlement["land"], rng,
+        attach_giver(quest, land_race(world, settlement["land"]), rng,
                      role="the war-muster's captain")
     world["quests"][qid] = quest
     settlement["quests"].append(qid)

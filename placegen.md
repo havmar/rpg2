@@ -1,9 +1,10 @@
 # RPG2 — Place Generation MVP Specification
 
-Status: **MVP content specification complete; not implemented**. This is the
-implementation source for the first procedural-place pass. `rules.md`
-continues to describe the shipped game; `plan.md` points here while the system
-is pending.
+Status: **MVP implemented 2026-07-25**. This document preserves the complete
+content catalog and implementation contract behind the shipped pass.
+`places.py` and `place_catalog.json` are the runtime catalog/materializer;
+`rules.md` describes player-facing behavior. The optional special-feature,
+pirate, wilderness, and Caelum material below remains post-MVP.
 
 The generator extends the persistent **Land -> Area -> Site -> Room** world
 tree already used by quests and navigation. It is meant to give the DM compact,
@@ -6861,8 +6862,8 @@ Automated or reproducible checks must cover:
 
 ## Review-to-implementation workflow
 
-Procedural place generation remains the active development track until it is
-implemented and verified.
+The ordinary procedural-place MVP is implemented and verified. This workflow
+now applies to later content expansion.
 
 The six settled MVP Lands now have complete basic catalogs in this file.
 Implementation can begin without producing four more translation worksheets.
@@ -6880,9 +6881,9 @@ Further content work uses this loop:
 5. Review Phase-2 special features after the ordinary vertical slice works;
    they do not block the MVP.
 
-## Current review handoff
+## Implementation handoff
 
-Status on 2026-07-25:
+Shipped on 2026-07-25:
 
 - The six-settled-Land MVP content specification is complete.
 - Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili, and Tergal each have
@@ -6893,20 +6894,13 @@ Status on 2026-07-25:
   template drafts.
 - `placegen_review.txt` remains the completed Firascir string sheet as the
   last dedicated review record. It need not be replaced before coding.
-- The **MVP implementation contract** fixes saved fields, seed derivation,
-  materialization order, quest routing, mutation, readouts, and verification.
+- The **MVP implementation contract** is realized by the checked-in catalog,
+  materializer, quest routing, navigation commands, mutation API, and
+  `test_places.py`.
 - No special/nonessential feature pool has been accepted yet. Existing
   optional-feature and curiosity lists remain post-MVP candidates.
 
-Next session:
-
-1. Implement the Firascir vertical slice.
-2. Verify deterministic creation, lazy materialization, save/load, house
-   contents, quest placement, mutation, and readouts.
-3. Load the other five settled Land catalogs through the same data path.
-4. Review special features only after ordinary generated places can be played.
-
-The feature is done when:
+The shipped feature provides:
 
 - the reviewed Land/culture/environment distribution is represented in
   worldgen;
@@ -6923,11 +6917,11 @@ The feature is done when:
 - deterministic generation, constraints, persistence, and a fresh-world
   vertical play path have automated or reproducible verification.
 
-After those conditions hold, move the shipped mechanics and behavior to
-`rules.md`, update the development map and file index, and remove the feature
-from `plan.md`.
+Shipped mechanics and behavior now live in `rules.md`; the completed track was
+removed from `plan.md`. Further work here is a content expansion, beginning
+with review of special features only when play exposes a need.
 
-## Initial implementation order
+## Implemented order (historical)
 
 1. Add catalog data structures and stable seed derivation.
 2. Split Land identity from race/culture; load environment profiles and the
@@ -6946,7 +6940,7 @@ from `plan.md`.
 11. Add cathedral and other optional specialized templates after the ordinary
     path is stable.
 
-The first vertical slice should use Firascir and contain:
+The verified Firascir vertical slice contains:
 
 - one capital;
 - one town;
