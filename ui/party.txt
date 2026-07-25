@@ -7,17 +7,18 @@ party: 2/2 companion slot(s) filled (CHA
 
 (YOU)       Nizzet (L4, training 1): DEX
   6  STR 5  MIND 5  STA 8/8  HP 9/8
-  Power 5/5  CHA 5  (alchemy 1; moves:
-  kick; zweihander, prof 1; healingx2,
-  staminax2)
+  Power 5/5  CHA 5  (arrow_parry;
+  alchemy 1; moves: kick; zweihander,
+  prof 1; healingx2, staminax2)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
               scarred
             XP 63/400 to L5 | skill
-              points: 3 | pools bought:
+              points: 1 | pools bought:
               sta +2 | proficiency:
-              zweihander 1
+              zweihander 1 | abilities:
+              arrow_parry
 
 (companion) Mox (L3, training 1): DEX 6
   STR 5  MIND 4  STA 9/9  HP 12/11
