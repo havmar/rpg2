@@ -1,6 +1,5 @@
-RPG2 MAP -- day 2
-the party is at Firascir > Stura River >
-  the deserters' camp > leader's shelter
+RPG2 MAP -- day 3
+the party is at Firascir > Walhaven
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -10,11 +9,12 @@ the party is at Firascir > Stura River >
   Svalaver (town) -- 1 job(s)
 
 == Firascir ==  <- here
-  Stura River (river, found day 1)  <-
-    the party
+  Stura River (river, found day 1)
+    (visited)
   Tomburgh (capital) -- 1 job(s)
   Leehaven (city) -- 2 job(s)
-  Walhaven (city) -- 0 job(s)  (visited)
+  Walhaven (city) -- 0 job(s)  <- the
+    party
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)
   Sturford (village) -- 1 job(s)
@@ -40,7 +40,7 @@ the party is at Firascir > Stura River >
   Liorenne (village) -- 1 job(s)
 
 == Gibili ==
-  Maketawa (capital) -- 1 job(s)
+  Maketawa (capital) -- 2 job(s)
   Potalu (town) -- 1 job(s)
   Birikava (town) -- 2 job(s)
   Boilaki (town) -- 1 job(s)
@@ -56,3 +56,7 @@ the party is at Firascir > Stura River >
   Namuruk (village) -- 1 job(s)
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
+
+-- the war --
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Maketawa.

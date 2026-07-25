@@ -1,14 +1,13 @@
-RPG2 PARTY SHEET -- day 2, at Firascir >
-  Stura River > the deserters' camp >
-  leader's shelter
-purse: 56g | short rests left today: 0
+RPG2 PARTY SHEET -- day 3, at Firascir >
+  Walhaven
+purse: 56g | short rests left today: 1
 party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L2, training 1): DEX
-  6  STR 5  MIND 5  STA 5/7  HP 8/8
+  6  STR 5  MIND 5  STA 7/7  HP 8/8
   Power 5/5  CHA 5  (alchemy 1; halberd;
-  healingx1)
+  healingx1, staminax1)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
@@ -18,7 +17,7 @@ party: 1/2 companion slot(s) filled (CHA
               sta +1
 
 (companion) Cindra (L2, training 1): DEX
-  5  STR 5  MIND 5  STA 4/8  HP 8/9
+  5  STR 5  MIND 5  STA 8/8  HP 9/9
   Power 3/3  CHA 5  (bulwark; moves:
   pommel; shortsword; staminax1)
   [satisfaction 9/10]
@@ -32,9 +31,8 @@ party: 1/2 companion slot(s) filled (CHA
 
 active quest [q06] Deserter Raiders is
   COMPLETE
-momentum: 3 encounter(s) at
-  site/firascir/stura-river/quest-q06-2
-  since the last camp
 THE PACT: assignment [q42] Take Over the
   Road at Walhaven (grace runs to day
   5).
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Maketawa.
