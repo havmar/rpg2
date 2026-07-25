@@ -1,6 +1,6 @@
 RPG2 MAP -- day 16
 the party is at Firascir > Grendon
-  Fields > the night market > tracks
+  Fields
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -63,10 +63,8 @@ the party is at Firascir > Grendon
 -- quests in hand (where they lead) --
 
 [q45] Sell the Powder (L4) @ Leehaven
-  - the night market (L3): here, room
-    2/2
-  - the rival den (L4): not yet (1
-    room(s))
+  - the night market (L3): cleared
+  - the rival den (L4): here, room 1/1
 
 -- the war --
 THE WAR: the Golden Empire regroups --
