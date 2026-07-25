@@ -1,11 +1,12 @@
 RPG2 PARTY SHEET -- day 14, at Firascir
-  > Leehaven
-purse: 27g | short rests left today: 1
+  > Leehaven > the bridge > leader's
+  shelter
+purse: 114g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
-(YOU)       Nizzet (L3, training 1): DEX
-  6  STR 5  MIND 5  STA 9/8  HP 9/8
+(YOU)       Nizzet (L4, training 1): DEX
+  6  STR 5  MIND 5  STA 8/8  HP 9/8
   Power 5/5  CHA 5  (alchemy 1; moves:
   kick; zweihander, prof 1; healingx2,
   staminax2)
@@ -13,13 +14,13 @@ party: 2/2 companion slot(s) filled (CHA
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 230/300 to L4 | skill
-              points: 0 | pools bought:
+            XP 63/400 to L5 | skill
+              points: 3 | pools bought:
               sta +2 | proficiency:
               zweihander 1
 
 (companion) Mox (L3, training 1): DEX 6
-  STR 5  MIND 4  STA 10/9  HP 12/11
+  STR 5  MIND 4  STA 9/9  HP 12/11
   Power 4/4  CHA 4  (alchemy 1; katana;
   healingx2, staminax2)  [satisfaction
   10/10]
@@ -27,32 +28,37 @@ party: 2/2 companion slot(s) filled (CHA
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 108/300 to L4 | skill
+            XP 241/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: flail 1
 
 (companion) Vespa (L3, training 1): DEX
-  5  STR 4  MIND 4  STA 7/6  HP 13/13
+  5  STR 4  MIND 4  STA 6/6  HP 12/13
   Power 7/7  CHA 4  (alchemy 1; katana;
-  healingx3, staminax1)  [satisfaction
+  healingx4, staminax1)  [satisfaction
   10/10]
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 108/300 to L4 | skill
+            XP 241/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: club 1
 
-active quest: [q42] L3 Take Over the
-  Road -- next: the bridge (L3), room
-  1/3
-karma: bad karma 250/300; heat 0 --
-  lying low
-THE PACT: assignment [q42] Take Over the
-  Road at Walhaven (OVERDUE -- hell's
-  enforcers are coming).
+active quest [q42] Take Over the Road is
+  COMPLETE
+momentum: 3 encounter(s) at
+  site/firascir/leehaven/quest-q42-3
+  since the last camp
+karma: bad karma 450; HEAT 1 --
+  retribution hunts 1 level(s) above the
+  party
+THE PACT: no current assignment --
+  hell's next job comes ~day 18, at a
+  settlement.
+  (1 assignment(s) completed -- the
+    curriculum ledger; see `task`)
 THE WAR: the Golden Empire regroups --
   word of the next blow will find a
   party of level 5.
