@@ -10,6 +10,8 @@ the party is at Firascir > Leehaven >
   Svalaver (town) -- 1 job(s)
 
 == Firascir ==  <- here
+  Grendon Fields (farmland, found day
+    14)
   Stura River (river, found day 1)
     (visited)
   Tomburgh (capital) -- 1 job(s)
@@ -58,6 +60,14 @@ the party is at Firascir > Leehaven >
   Namuruk (village) -- 1 job(s)
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
+
+-- quests in hand (where they lead) --
+
+[q45] Sell the Powder (L4) @ Leehaven
+  - the night market (L3): here, room
+    1/2
+  - the rival den (L4): not yet (1
+    room(s))
 
 -- the war --
 THE WAR: the Golden Empire regroups --

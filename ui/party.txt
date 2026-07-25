@@ -47,8 +47,9 @@ party: 2/2 companion slot(s) filled (CHA
               hp +1, power +1, sta +1 |
               proficiency: club 1
 
-active quest [q42] Take Over the Road is
-  COMPLETE
+active quest: [q45] L4 Sell the Powder
+  -- next: the night market (L3), room
+  1/2
 momentum: 3 encounter(s) at
   site/firascir/leehaven/quest-q42-3
   since the last camp
