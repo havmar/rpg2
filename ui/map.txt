@@ -1,6 +1,6 @@
 RPG2 MAP -- day 16
 the party is at Firascir > Grendon
-  Fields
+  Fields > the night market > tracks
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -64,7 +64,7 @@ the party is at Firascir > Grendon
 
 [q45] Sell the Powder (L4) @ Leehaven
   - the night market (L3): here, room
-    1/2
+    2/2
   - the rival den (L4): not yet (1
     room(s))
 
