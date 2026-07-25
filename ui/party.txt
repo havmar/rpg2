@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 17, at Firascir
   > Grendon Fields > the rival den
-purse: 201g | short rests left today: 1
+purse: 255g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
@@ -13,7 +13,7 @@ party: 2/2 companion slot(s) filled (CHA
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 251/400 to L5 | skill
+            XP 297/400 to L5 | skill
               points: 1 | pools bought:
               sta +2 | proficiency:
               zweihander 1 | abilities:
@@ -28,7 +28,7 @@ party: 2/2 companion slot(s) filled (CHA
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 129/400 to L5 | skill
+            XP 175/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: flail 1,
@@ -42,15 +42,15 @@ party: 2/2 companion slot(s) filled (CHA
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 129/400 to L5 | skill
+            XP 175/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: club 1,
               katana 2
 
-active quest: [q45] L4 Sell the Powder
-  -- next: the rival den (L4), room 1/1
-karma: bad karma 695; HEAT 1 --
+active quest [q45] Sell the Powder is
+  COMPLETE
+karma: bad karma 764; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --

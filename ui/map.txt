@@ -60,12 +60,6 @@ the party is at Firascir > Grendon
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
 
--- quests in hand (where they lead) --
-
-[q45] Sell the Powder (L4) @ Leehaven
-  - the night market (L3): cleared
-  - the rival den (L4): here, room 1/1
-
 -- the war --
 THE WAR: the Golden Empire regroups --
   word of the next blow will find a
