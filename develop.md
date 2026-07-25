@@ -106,14 +106,17 @@ a pointer: what the file is, how it's run, where its docs are.
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
   stay settled. Append an entry after every major design session.
-- `placegen.md` — **the planned place-generation design and content draft**
-  (2026-07-23): the authored-vs-generated boundary, persistent feature and
-  lightweight Room-content schema, weighting/reveal/mutation/seed rules,
-  implementation order, and the canonical pre-implementation content catalog.
-  The Alpine Tundra / Dvarvengrond and Temperate / Firascir basic passes are
-  accepted and consolidated there. The Mortellarian, elven, goblin, and orc
-  proper-name rosters are fixed; their other basic content and the later
-  global special-feature pass remain draft.
+- `placegen.md` — **the complete place-generation MVP specification**
+  (2026-07-23; MVP specification completed 2026-07-25): the
+  authored-vs-generated boundary, persistent feature and lightweight
+  Room-content schema, weighting/reveal/mutation/seed rules, implementation
+  order, and the canonical pre-implementation content catalog. All six
+  settled MVP Lands — Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili,
+  and Tergal — have finite Area inventories, basic natural and settlement
+  Site/Room layouts, generated-village roles, house overlays, and ordinary
+  content pools. Its implementation contract fixes record fields, stable
+  materialization, quest routing, readouts, and minimum verification. Pirate,
+  wilderness, Caelum, and special-feature content remain post-MVP.
   It is the implementation source while the feature remains unimplemented;
   shipped behavior belongs in `rules.md`.
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
@@ -121,9 +124,9 @@ a pointer: what the file is, how it's run, where its docs are.
   Site and Room labels, and visible content strings. It carries only enough
   context to identify each string; schema, rationale, constraints, and process
   live in `placegen.md`. It currently preserves the completed Firascir /
-  temperate human basic pass; replace it with the Mortellaria / Mediterranean
-  human basic sheet in the next review session. Special-feature sheets begin
-  only after all basic Lands are done.
+  temperate human basic pass as the last dedicated review record. No further
+  Land worksheet blocks the MVP implementation; reuse the format for focused
+  wording or later special-feature review when useful.
 - `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
   including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and

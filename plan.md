@@ -108,41 +108,28 @@ This is the active development track until the feature ships. It supersedes
 the older placement of “Area detail & exploration depth” in the unordered
 major-feature shortlist below.
 
-Work proceeds Land by Land through `placegen_review.txt`:
+`placegen.md` now contains the complete six-settled-Land MVP content
+specification: Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili, and
+Tergal. Each has finite Areas, Area descriptions, natural Site/Room layouts,
+authored settlement skeletons, generated-village roles, and ordinary
+house/content material. The document also fixes the first-pass record shape,
+seed/materialization rules, quest-routing requirements, mutation surface,
+readouts, and verification.
 
-1. Keep schema, distribution, links, constraints, generation rules, rationale,
-   and completion requirements in `placegen.md`.
-2. **Phase 1 — all basic Lands:** review each culture/environment pairing's
-   essential strings in `placegen_review.txt`, grouped by Area, Site, Room,
-   and ordinary contents with only minimal context labels.
-3. Treat each worksheet like a translation sheet: cut strings or provide
-   alternative wording without rereading the general design.
-4. Move every accepted basic decision into the canonical `placegen.md`
-   catalog, then advance the worksheet in a new session.
-5. Repeat Phase 1 until every planned settled culture, environment profile,
-   wilderness Land, and authored exception such as Caelum has its basic MVP
-   content.
-6. **Phase 2 — special content:** after all basic sheets are complete, review
-   optional traits, mutable states, rare curiosities, exceptional settlement
-   features, and hidden/unusual Room contents by environment or shared
-   template.
-7. Consolidate the accepted special content into `placegen.md`.
-8. Implement the canonical design in code, using vertical slices where useful,
-   until all reviewed content is generator-owned rather than documentation-
-   only.
-
-Current handoff (2026-07-24): the Alpine Tundra / icy dwarf basic pass is
-complete and consolidated. The next new session starts the temperate human
-country basic sheet. Special features wait until every basic Land/climate pass
-is complete.
+Current handoff (2026-07-25): begin the Firascir vertical slice, verify it,
+then load the other five catalogs through the same path. `placegen_review.txt`
+remains the completed Firascir wording sheet and may be reused for focused
+later rewrites; no further Land worksheet blocks implementation. Pirate
+islands, wilderness-only Lands, Caelum, and the special-feature/curiosity pass
+are post-MVP content.
 
 Reviewing all worksheets is the content-specification pass, not completion by
 itself. The feature is complete only when:
 
 - world generation separates Land, culture, and environment while applying
   the reviewed pairings;
-- every planned Land receives its finite persistent Area inventory and initial
-  settlements;
+- every one of the six MVP Lands receives its finite persistent Area inventory
+  and initial settlements;
 - Sites, Rooms, residents, features, and lightweight Room contents
   materialize from stable seeds and never reroll on return;
 - navigation and player/DM readouts expose the generated hierarchy;

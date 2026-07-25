@@ -1,8 +1,9 @@
-# RPG2 — Place Generation Design and Content Draft
+# RPG2 — Place Generation MVP Specification
 
-Status: **planned, not implemented**. This is the reviewable design and first
-content inventory for procedural place generation. `rules.md` continues to
-describe the shipped game; `plan.md` points here while the system is pending.
+Status: **MVP content specification complete; not implemented**. This is the
+implementation source for the first procedural-place pass. `rules.md`
+continues to describe the shipped game; `plan.md` points here while the system
+is pending.
 
 The generator extends the persistent **Land -> Area -> Site -> Room** world
 tree already used by quests and navigation. It is meant to give the DM compact,
@@ -37,6 +38,89 @@ plain fantasy nouns, concrete details, one useful fact first.
   map to a mechanical item need inventory behavior.
 - Automatically turning every interesting feature into a quest.
 - Preserving old save formats. Development saves remain disposable.
+
+## MVP boundary and completion contract
+
+The first implementation covers the six settled core Lands:
+
+- Dvarvengrond;
+- Firascir;
+- Mortellaria;
+- Ensimaa;
+- Gibili;
+- Tergal.
+
+For those Lands the MVP includes:
+
+- independent Land, culture, owner, and environment records;
+- the finite natural and settlement Area inventories specified below;
+- every authored settlement's required Site and Room skeleton;
+- three generated village Areas per non-dwarf Land where its catalog says so;
+- lazy ordinary natural Sites, ordinary houses, and their persistent Rooms and
+  visible contents;
+- coarse environment and purpose tags for quest placement;
+- stable seeds, reveal state, navigation, save/load persistence, and simple
+  place-state mutation;
+- player-facing `look` output and a fuller DM-facing fact readout.
+
+The following are post-MVP content, even though this document keeps their
+direction:
+
+- the northern and tropical pirate islands;
+- the wild forest, jungle, desert, and Caelum;
+- rare curiosities, magical materials, and other Phase-2 special features;
+- daily weather and off-screen place simulation;
+- unlimited cultural proper-name generation beyond the fixed pools.
+
+The optional-feature machinery may be implemented in the MVP, but missing
+special pools do not block the first release. Ordinary identity, structure,
+contents, persistence, and quest reuse are the acceptance path.
+
+### Required world-generation counts
+
+| Land | Natural Areas | Authored settlements | Generated villages |
+|---|---:|---:|---:|
+| Dvarvengrond | 3 | 3 | 0 |
+| Firascir | 4 | 5 | 3 |
+| Mortellaria | 5 | 4 | 3 |
+| Ensimaa | 5 | 4 | 3 |
+| Gibili | 5 | 4 | 3 |
+| Tergal | 6 | 4 | 3 |
+
+Initial identity fields:
+
+| Land | Owner ID | Culture profile | People race | Environment |
+|---|---|---|---|---|
+| Dvarvengrond | dvarvengrond | dwarf | dwarf | alpine_tundra |
+| Firascir | firascir | firascir_human | human | temperate |
+| Mortellaria | mortellaria | mortellarian_human | human | mediterranean |
+| Ensimaa | ensimaa | elf | elf | temperate_forest |
+| Gibili | gibili | goblin | goblin | mediterranean |
+| Tergal | tergal | orc | orc | prairie |
+
+The initial owner ID deliberately equals the Land polity ID. Ownership remains
+a separate field so conquest can change it without changing geography.
+`People race` is the adapter into the current NPC, quest, and encounter
+tables; culture selects place names and material content.
+
+All of these finite Area records are created at world generation. Settlement
+Areas begin known. Natural Areas begin unknown unless the opening position,
+a public route, or a quest reveals them. Discovery changes `known`; it does
+not create the Area or reroll any of its facts.
+
+Required settlement Sites and their Room skeletons materialize with the
+settlement. Ordinary optional Sites and Room contents materialize on first
+request or entry. A natural Area owns the three ordinary Site templates listed
+in its concrete catalog. Area exploration draws each once in a stable shuffled
+order before any template repeats. Quest-specific Sites may be added at any
+time when their tags fit the Area.
+
+Mortellaria, Ensimaa, Gibili, and Tergal draw generated village names without
+replacement from their fixed pools, then assign them without replacement to
+the three roles defined in their Land catalog. Firascir instead begins with
+the fixed Sturford, Ackham, and Flurham records. Its five additional reviewed
+names remain post-MVP growth capacity. Names do not decide geography; the role
+supplies the description, Sites, and livelihood overlay.
 
 ## The central division: authored silhouette, generated local detail
 
@@ -631,9 +715,9 @@ not inherit this count automatically.
 
 Firascir is deliberately denser than the ordinary range. It begins with one
 capital, two harbor cities, two inland towns, and three generated village
-Areas. Five further village Areas may materialize from its reviewed name pool,
-for a maximum of eight villages and thirteen settlements. These are finite
-Land slots with stable seeds, not unlimited `explore` results.
+Areas. Five further village names are reserved for post-MVP expansion, for an
+eventual maximum of eight villages and thirteen settlements. If added, these
+are finite Land slots with stable seeds, not unlimited `explore` results.
 
 Ordinary houses materialize lazily as Sites when explored or requested. The
 generator does not instantiate a realistic census, but any settlement can
@@ -662,7 +746,7 @@ An important marketplace is a Site. A famous smith attaches to the smith
 service, its NPC, and eventually its smithy Site. Oppressive leadership is a
 mutable civic state.
 
-# CONTENT DRAFT
+# MVP CONTENT CATALOG AND LATER DRAFTS
 
 The lists below are deliberately broader than the first implementation needs.
 Review should cut weak or redundant entries before they become data.
@@ -1294,8 +1378,8 @@ worksheet.
 - Settlement Areas at world creation: Tomburgh, the capital; Leehaven and
   Walhaven, the two western harbor cities; Bradwhitchip and Redflurton, the
   two inland towns; and the villages of Sturford, Ackham, and Flurham.
-- Up to five further village Areas may materialize from the reviewed name
-  pool, for a maximum of eight villages.
+- Five further village names remain reserved for post-MVP expansion. The first
+  implementation creates only Sturford, Ackham, and Flurham.
 - Stura River rises in the northern mountains, runs south through
   Mortellaria, and reaches the sea.
 - Flumenpur River rises in the northern mountains, crosses Tomburgh, runs
@@ -1389,7 +1473,7 @@ names and wording are consolidated below.
 
 > A fishing village stands beside a broad pond fed by the Flumenpur River.
 
-Further generated village name pool; use at most five:
+Post-MVP village name pool; use at most five:
 
 - Sturham;
 - Sturworth;
@@ -1873,6 +1957,2100 @@ Further ordinary Sites:
 This completes Firascir's **basic string pass**. It does not accept or reject
 the special, nonessential feature pools below. Those pools remain draft
 material until the later global special-feature review phase.
+
+## Third concrete Land structure: Mortellaria
+
+- Culture: human, mediterranean.
+- Default environment: mediterranean.
+- Natural Areas: Valdoro Hills, Orivela Coast, Pinavera Valley, Riomara Plain,
+  and Stura River.
+- Authored settlement Areas: Castavera, the capital; Portomera, the western
+  harbor city; Belafonte, the inland market town; and Montaro, the hill town.
+- Three village Areas are drawn from the fixed Mortellarian pool and assigned
+  to the vineyard, river-plain, and coast-road roles.
+- Stura River enters from Firascir, crosses Riomara Plain, and reaches the sea
+  south of Portomera.
+
+Working arrangement:
+
+```text
+                         Firascir
+                            |
+                       Stura River
+                            |
+         Orivela Coast -- Castavera -- Riomara Plain
+              |              |              |
+          Portomera      Valdoro Hills   river village
+              |          /          \
+      coast-road village  Belafonte  Montaro
+                              |
+                       Pinavera Valley
+                              |
+                      vineyard village
+```
+
+### Accepted Land and Area strings
+
+**Mortellaria** — Land.
+
+> A warm human kingdom lies between dry hills and the western sea. Vineyards,
+> olive groves, and old stone roads cover the settled country.
+
+**Valdoro Hills** — natural Area, vineyard and olive hills.
+
+> Terraced vineyards and olive groves cover the hills south of Castavera.
+> Stone walls divide the slopes.
+
+**Orivela Coast** — natural Area, rocky coast.
+
+> A rocky coast runs west of the capital. Pines grow above its coves and sea
+> caves.
+
+**Pinavera Valley** — natural Area, pine valley and dry uplands.
+
+> A dry pine valley cuts through the southern uplands. Goat tracks cross its
+> stony slopes.
+
+**Riomara Plain** — natural Area, lower river plain.
+
+> Farms and irrigation channels cover the low plain east of the hills. The
+> Stura River bends through its fields.
+
+**Stura River** — natural Area, southbound river.
+
+> The great river continues south from Firascir. It crosses Riomara Plain and
+> reaches the western sea.
+
+**Castavera** — settlement Area, capital.
+
+> The walled capital stands above the Stura River road. White stone halls and
+> tiled roofs surround its market.
+
+**Portomera** — settlement Area, harbor city.
+
+> A harbor city fills a deep cove on the Orivela Coast. Stone quays shelter
+> fishing boats and merchant ships.
+
+**Belafonte** — settlement Area, inland town.
+
+> A market town stands among the lower Valdoro Hills. A public fountain fills
+> the square below its olive presses.
+
+**Montaro** — settlement Area, hill town.
+
+> A stone town climbs a steep vineyard hill. Its upper gate overlooks the
+> road through Pinavera Valley.
+
+Generated village roles; draw one unused name for each:
+
+**Vineyard village**
+
+> A small village stands among vineyards and olive terraces. Wine carts wait
+> beside its press house.
+
+**River-plain village**
+
+> A farming village stands beside an irrigation channel on Riomara Plain.
+> Reeds grow along its low walls.
+
+**Coast-road village**
+
+> A fishing village stands where the coast road descends to a sheltered cove.
+
+### Accepted natural Site, Room, and content strings
+
+**Valdoro Hills**
+
+```text
+TERRACED ROAD — Site
+  LOWER TURN — Room
+    fitted stones
+    low terrace wall
+    cart ruts
+  HILL CROSSING — Room
+    stone marker
+    dry streambed
+    two road branches
+
+VINEYARD — Site
+  VINE ROWS — Room
+    wooden stakes
+    grape baskets
+    pruning knife
+  PRESS HOUSE — Room
+    wine press
+    clay jars
+    drain channel
+
+OLIVE GROVE — Site
+  GROVE PATH — Room
+    old olive trees
+    stone boundary wall
+    picking nets
+  OIL SHED — Room
+    stone press
+    oil jars
+    wooden measures
+```
+
+**Orivela Coast**
+
+```text
+CLIFF ROAD — Site
+  HIGH TURN — Room
+    low stone wall
+    road shrine
+    view of the cove
+  COVE STEPS — Room
+    rock-cut steps
+    mooring ring
+    driftwood
+
+SEA CAVE — Site
+  TIDAL MOUTH — Room
+    wet stones
+    tide line
+    shell bank
+  DRY CHAMBER — Room
+    sand floor
+    old firepit
+    rope peg
+
+COAST WATCHTOWER — Site
+  TOWER FOOT — Room
+    stone doorway
+    signal wood
+    rain barrel
+  LOOKOUT — Room
+    low parapet
+    signal brazier
+    coast map
+```
+
+**Pinavera Valley**
+
+```text
+PINE ROAD — Site
+  VALLEY TRACK — Room
+    pine needles
+    cart ruts
+    road marker
+  STONE CUT — Room
+    cut rock walls
+    drainage ditch
+    fallen pine
+
+SHEPHERD'S FOLD — Site
+  GOAT YARD — Room
+    low stone wall
+    wooden gate
+    water trough
+  SHELTER — Room
+    small hearth
+    wool blankets
+    cheese basket
+
+HILL SHRINE — Site
+  stone altar
+  clay lamps
+  water jar
+```
+
+**Riomara Plain**
+
+```text
+IRRIGATION ROAD — Site
+  CHANNEL BANK — Room
+    packed earth
+    stone-lined channel
+    sluice gate
+  FIELD CROSSING — Room
+    plank bridge
+    boundary stones
+    willow tree
+
+FARMSTEAD — Site
+  FARM YARD — Room
+    handcart
+    water trough
+    grain baskets
+  STORE HOUSE — Room
+    grain sacks
+    olive jars
+    tool rack
+
+REED MARSH — Site
+  RAISED PATH — Room
+    plank walkway
+    reed beds
+    marker posts
+  CLEAR POOL — Room
+    open water
+    fishing basket
+    tied skiff
+```
+
+**Stura River**
+
+```text
+STONE ROAD BRIDGE — Site
+  NORTH BANK — Room
+    gravel landing
+    willow tree
+    road marker
+  BRIDGE DECK — Room
+    fitted stones
+    low parapets
+    cart ruts
+  SOUTH BANK — Room
+    mooring posts
+    reed bank
+    path downstream
+
+RIVERSIDE MILL — Site
+  MILL YARD — Room
+    mill stream
+    grain sacks
+    handcart
+  MILL ROOM — Room
+    waterwheel shaft
+    millstones
+    flour bins
+  STORE ROOM — Room
+    grain sacks
+    spare belts
+    oil jar
+
+REED LANDING — Site
+  RIVER STEPS — Room
+    stone steps
+    mooring rings
+    rope coil
+  BOAT SHED — Room
+    flat-bottomed boat
+    oars
+    fish baskets
+```
+
+### Accepted settlement Site and Room strings
+
+**Castavera**
+
+```text
+ROYAL PALACE
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MAIN MARKET
+  FOOD ROW
+  CLOTH ROW
+  OIL AND WINE ROW
+THREE FOUNTAINS INN
+  COURTYARD
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+CASTAVERA SMITHY
+  FORGE
+  COURTYARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S SHOP
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+RIVER GATE
+  GATE PASSAGE
+  GUARD ROOM
+  WALL WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- temple;
+- barracks;
+- guildhall;
+- wine warehouse;
+- bathhouse.
+
+**Portomera**
+
+```text
+HARBOR HALL
+  PUBLIC COUNTER
+  COUNCIL ROOM
+  RECORDS ROOM
+STONE QUAYS
+  FISH LANDING
+  CARGO YARD
+  HARBOR STEPS
+HARBOR MARKET
+  FISH STALLS
+  SALT ROW
+  FOREIGN YARD
+BLUE SAIL INN
+  COURTYARD
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+PORTOMERA SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+SEA WATCH
+  GUARD ROOM
+  SIGNAL PLATFORM
+  HARBOR WALL
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- merchant warehouse;
+- shipwright;
+- smokehouse;
+- small temple;
+- wine shop.
+
+**Belafonte**
+
+```text
+TOWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+FOUNTAIN MARKET
+  STONE FOUNTAIN
+  PRODUCE ROW
+  CART STAND
+OLIVE BRANCH INN
+  COURTYARD
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+BELAFONTE SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+PRESS HOUSE
+  OLIVE PRESS
+  OIL STORE
+  LOADING YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- vineyard;
+- olive warehouse;
+- roadside shrine;
+- pottery;
+- manor.
+
+**Montaro**
+
+```text
+HILL HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+UPPER GATE
+  GATE PASSAGE
+  GUARD ROOM
+  LOOKOUT
+GOAT AND VINE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+MONTARO SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+WINE HOUSE
+  PRESS ROOM
+  BARREL STORE
+  LOADING YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- vineyard;
+- shepherd's house;
+- hill shrine;
+- watch post;
+- cistern.
+
+**Generated vineyard village**
+
+```text
+VILLAGE SQUARE
+  STONE WELL
+  NOTICE POST
+  CART STAND
+VINE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+SMITH'S SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+PRESS HOUSE
+  WINE PRESS
+  JAR STORE
+```
+
+**Generated river-plain village**
+
+```text
+CHANNEL SQUARE
+  STONE WELL
+  SLUICE POST
+  NOTICE POST
+RIVER INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+GRAIN HOUSE
+  GRAIN STORE
+  LOADING YARD
+```
+
+**Generated coast-road village**
+
+```text
+COVE LANDING
+  TIMBER JETTY
+  BOAT YARD
+ROAD INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+FISH SHED
+  CUTTING ROOM
+  SALT STORE
+```
+
+Every generated village may additionally materialize an ordinary house, farm
+or fisher's hut, small shrine, and livelihood store appropriate to its role.
+
+This completes Mortellaria's **MVP basic string pass**.
+
+## Fourth concrete Land structure: Ensimaa
+
+- Culture: elf.
+- Default environment: temperate forest.
+- Natural Areas: Tiravaine Forest, Koivelle Wood, Maelmor Hills, Avelune
+  River, and Saimere Hollow.
+- Authored settlement Areas: Taivelle, the capital; Dunmaelle, the western
+  town; Kervaine, the river town; and Ruunamont, the hill town.
+- Three village Areas are drawn from the fixed elven pool and assigned to the
+  deep-forest, river, and woodland-edge roles.
+- Buildings use timber, pale plaster, fitted stone, and living trees without
+  turning every Room into a magical wonder.
+
+Working arrangement:
+
+```text
+                         Maelmor Hills
+                               |
+                           Ruunamont
+                               |
+       Dunmaelle -- Koivelle Wood -- Taivelle -- Tiravaine Forest
+                         \            |               |
+                     edge village  Avelune River  forest village
+                                      |
+                                  Kervaine
+                                      |
+                                river village
+                                      |
+                                Saimere Hollow
+```
+
+### Accepted Land and Area strings
+
+**Ensimaa** — Land.
+
+> An elven realm fills the great eastern forest. Rivers, old roads, and small
+> settlements run beneath its canopy.
+
+**Tiravaine Forest** — natural Area, deep forest.
+
+> Great oaks and beeches fill the center of Ensimaa. Raised paths cross the
+> roots beneath the oldest trees.
+
+**Koivelle Wood** — natural Area, old western woodland.
+
+> Birch and pale beech cover the western wood. Old boundary stones stand
+> beside its roads.
+
+**Maelmor Hills** — natural Area, forested hills.
+
+> Wooded hills rise along the northern border. Bare ridges break through the
+> trees above the high pastures.
+
+**Avelune River** — natural Area, forest river.
+
+> A clear river runs south through the forest. Root bridges and ferry paths
+> join its banks.
+
+**Saimere Hollow** — natural Area, low misty woodland.
+
+> Low woodland surrounds a chain of clear pools. Mist remains between the
+> trees until midday.
+
+**Taivelle** — settlement Area, capital.
+
+> The elven capital stands among great living trees beside the Avelune River.
+> Timber halls and stone walks circle an open market.
+
+**Dunmaelle** — settlement Area, western town.
+
+> A timber town guards the western forest road. Its gate stands between two
+> old beeches.
+
+**Kervaine** — settlement Area, river town.
+
+> A river town stands on both banks of the Avelune. Boats tie beneath its
+> broad wooden bridge.
+
+**Ruunamont** — settlement Area, hill town.
+
+> A hill town stands above the northern forest. Stone terraces climb from the
+> lower road to its watch hall.
+
+Generated village roles; draw one unused name for each:
+
+**Deep-forest village**
+
+> A small village stands in a wide clearing beneath old trees. Raised paths
+> join its timber houses.
+
+**River village**
+
+> A fishing village stands beside a quiet bend of the Avelune River.
+
+**Woodland-edge village**
+
+> A village of foresters and small farms stands at the western edge of
+> Koivelle Wood.
+
+### Accepted natural Site, Room, and content strings
+
+**Tiravaine Forest**
+
+```text
+ROOT ROAD — Site
+  RAISED WALK — Room
+    timber walkway
+    great roots
+    mossy rail
+  STREAM GATE — Room
+    clear stream
+    low bridge
+    carved marker
+
+GREAT GROVE — Site
+  OUTER RING — Room
+    old oaks
+    stone seats
+    open grass
+  INNER TREE — Room
+    broad trunk
+    root hollow
+    offering shelf
+
+WARDEN LODGE — Site
+  PORCH — Room
+    boot rack
+    rain barrel
+    warning bell
+  MAIN ROOM — Room
+    stone hearth
+    wall map
+    bow rack
+  STORE ROOM — Room
+    rope coils
+    lanterns
+    trail markers
+```
+
+**Koivelle Wood**
+
+```text
+OLD BOUNDARY PATH — Site
+  BIRCH TURN — Room
+    pale birch trunks
+    packed earth
+    boundary stone
+  BROKEN WALL — Room
+    mossy stones
+    narrow gap
+    old road marker
+
+BIRCH CLEARING — Site
+  CLEARING EDGE — Room
+    fern beds
+    fallen birch
+    wood pile
+  CHARCOAL HEARTH — Room
+    earth mound
+    blackened tools
+    water bucket
+
+RUINED GATE — Site
+  GATE ROAD — Room
+    two stone posts
+    fallen lintel
+    wagon ruts
+  GUARD SHELTER — Room
+    low wall
+    dead firepit
+    broken bench
+```
+
+**Maelmor Hills**
+
+```text
+RIDGE PATH — Site
+  WOODED SLOPE — Room
+    stone steps
+    wind-bent trees
+    path marker
+  BARE RIDGE — Room
+    exposed rock
+    low cairn
+    view south
+
+HIGH GROVE — Site
+  HILLSIDE TREES — Room
+    old pines
+    spring channel
+    stone bench
+  OPEN PASTURE — Room
+    short grass
+    sheep fold
+    water trough
+
+STONE LOOKOUT — Site
+  LOWER STAIR — Room
+    rock-cut steps
+    iron handrail
+    warning post
+  WATCH PLATFORM — Room
+    stone parapet
+    signal brazier
+    hill map
+```
+
+**Avelune River**
+
+```text
+ROOT BRIDGE — Site
+  WEST BANK — Room
+    willow roots
+    gravel landing
+    path marker
+  BRIDGE WALK — Room
+    living roots
+    timber rails
+    lantern hooks
+  EAST BANK — Room
+    stone steps
+    mooring post
+    path downstream
+
+RIVER ISLAND — Site
+  SHINGLE POINT — Room
+    smooth stones
+    tied skiff
+    driftwood
+  WILLOW GROVE — Room
+    willow trees
+    reed mats
+    cold firepit
+
+FERRY LANDING — Site
+  WEST LANDING — Room
+    timber steps
+    bell post
+    rope coil
+  FERRYBOAT — Room
+    flat deck
+    guide rope
+    boat hook
+  EAST LANDING — Room
+    gravel ramp
+    waiting bench
+    road marker
+```
+
+**Saimere Hollow**
+
+```text
+MIST PATH — Site
+  FERN WALK — Room
+    flat stones
+    wet ferns
+    white trail marks
+  LOW CROSSING — Room
+    shallow water
+    plank bridge
+    willow roots
+
+CLEAR POOL — Site
+  POOL BANK — Room
+    clear water
+    smooth stones
+    wooden steps
+  SPRING HEAD — Room
+    rock basin
+    cup on a chain
+    herb basket
+
+HEALER'S HUT — Site
+  HERB GARDEN — Room
+    raised beds
+    drying frame
+    water barrel
+  MAIN ROOM — Room
+    tiled hearth
+    worktable
+    herb shelves
+  STORE ROOM — Room
+    labeled jars
+    folded cloth
+    locked cabinet
+```
+
+### Accepted settlement Site and Room strings
+
+**Taivelle**
+
+```text
+CROWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+CANOPY MARKET
+  FOOD WALK
+  CRAFT ROW
+  RIVER YARD
+ROOT AND RIVER INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+TAIVELLE SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S HOUSE
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+WESTERN GATE
+  GATE WALK
+  GUARD ROOM
+  WATCH PLATFORM
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- great temple;
+- archive;
+- warden barracks;
+- bowyer;
+- garden.
+
+**Dunmaelle**
+
+```text
+TOWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+WESTERN GATE
+  GATE WALK
+  GUARD ROOM
+  WATCH PLATFORM
+BEECH AND LANTERN INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+DUNMAELLE SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+FORESTER'S YARD
+  TIMBER YARD
+  TOOL SHED
+  MAP ROOM
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- bowyer;
+- wood store;
+- small temple;
+- warden lodge;
+- healer's house.
+
+**Kervaine**
+
+```text
+RIVER HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+AVELUNE BRIDGE
+  WEST GATE
+  BRIDGE WALK
+  EAST GATE
+RIVER MARKET
+  FISH ROW
+  BOAT YARD
+  PRODUCE WALK
+WILLOW INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+KERVAINE SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- ferry house;
+- boat shed;
+- fish store;
+- river shrine;
+- herb shop.
+
+**Ruunamont**
+
+```text
+HILL COUNCIL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+HIGH WATCH
+  LOWER STAIR
+  GUARD ROOM
+  SIGNAL PLATFORM
+PINE AND STONE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+RUUNAMONT SMITHY
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+PASTURE YARD
+  SHEEP PENS
+  WOOL STORE
+  LOADING YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- shepherd's house;
+- bowyer;
+- hill temple;
+- watch post;
+- quarry office.
+
+**Generated deep-forest village**
+
+```text
+VILLAGE CIRCLE
+  OLD TREE
+  STONE WELL
+  NOTICE POST
+FERN INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHELTER
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+WARDEN POST
+  DUTY ROOM
+  EQUIPMENT STORE
+```
+
+**Generated river village**
+
+```text
+RIVER LANDING
+  TIMBER JETTY
+  BOAT YARD
+WILLOW INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHELTER
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+FISH HOUSE
+  CUTTING ROOM
+  NET STORE
+```
+
+**Generated woodland-edge village**
+
+```text
+VILLAGE GREEN
+  OLD BEECH
+  STONE WELL
+  NOTICE POST
+ROAD INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S SHELTER
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+TIMBER YARD
+  LOG YARD
+  TOOL SHED
+```
+
+Every generated village may additionally materialize an ordinary house,
+forester's hut, small shrine, healer's room, and livelihood store appropriate
+to its role.
+
+This completes Ensimaa's **MVP basic string pass**.
+
+## Fifth concrete Land structure: Gibili
+
+- Culture: goblin.
+- Default environment: mediterranean.
+- Natural Areas: Kapaliki Coast, Barasa Hills, Paina Valley, Wela River, and
+  Satakalu Plain.
+- Authored settlement Areas: Maketawa, the capital; Potalu, the harbor town;
+  Birikava, the inland town; and Boilaki, the hill town.
+- Three village Areas are drawn from the fixed goblin pool and assigned to
+  the coast, river, and brick-country roles.
+- Goblin construction reuses stone, brick, timber, sheet metal, rope, and
+  repaired machinery. A place may look patched without being ruined.
+
+Working arrangement:
+
+```text
+                         Barasa Hills
+                              |
+                          Boilaki
+                              |
+      Kapaliki Coast -- Maketawa -- Satakalu Plain
+            |             |              |
+         Potalu       Wela River     brick village
+            |             |
+      coast village    river village
+                          |
+                      Birikava
+                          |
+                     Paina Valley
+```
+
+### Accepted Land and Area strings
+
+**Gibili** — Land.
+
+> A goblin country spreads across a hot coast and dry inland hills. Brick
+> roads, patched towers, and crowded yards join its settlements.
+
+**Kapaliki Coast** — natural Area, rocky coast.
+
+> A broken coast of low cliffs and narrow coves runs along western Gibili.
+> Sea caves open below the road.
+
+**Barasa Hills** — natural Area, olive scrub and dry hills.
+
+> Dry hills rise north of Maketawa. Olive scrub and abandoned quarries cover
+> their lower slopes.
+
+**Paina Valley** — natural Area, pine valley.
+
+> A pine valley runs south from Birikava. Charcoal tracks cross the dry
+> forest floor.
+
+**Wela River** — natural Area, river plain.
+
+> A brown river crosses the settled center of Gibili. Rope ferries and reed
+> yards line its banks.
+
+**Satakalu Plain** — natural Area, hot inland plain.
+
+> Dry grass and clay flats stretch east of the capital. Brick pits mark the
+> old road.
+
+**Maketawa** — settlement Area, capital.
+
+> The goblin capital crowds both sides of the Wela River. Brick halls, metal
+> roofs, and market awnings fill the inner wall.
+
+**Potalu** — settlement Area, harbor town.
+
+> A harbor town stands around a narrow cove on the Kapaliki Coast. Piled
+> timber jetties reach between the rocks.
+
+**Birikava** — settlement Area, inland town.
+
+> A busy town stands where the river road meets the road to Paina Valley.
+> Carts and repair yards fill its outer streets.
+
+**Boilaki** — settlement Area, hill town.
+
+> A brick town stands below an old quarry in the Barasa Hills. Smoke rises
+> from lime kilns outside its wall.
+
+Generated village roles; draw one unused name for each:
+
+**Coast village**
+
+> A fishing village fills a small cove below the Kapaliki road. Nets hang
+> from every rail.
+
+**River village**
+
+> A reed-cutting village stands beside a rope ferry on the Wela River.
+
+**Brick-country village**
+
+> A small village stands beside clay pits on Satakalu Plain. Brick clamps
+> smoke beyond its yards.
+
+### Accepted natural Site, Room, and content strings
+
+**Kapaliki Coast**
+
+```text
+CLIFF TRACK — Site
+  ROCKY TURN — Room
+    gravel path
+    rope rail
+    road marker
+  COVE DROP — Room
+    timber steps
+    mooring ring
+    driftwood
+
+SEA CAVE — Site
+  CAVE MOUTH — Room
+    tide pools
+    wet stones
+    rope posts
+  UPPER SHELF — Room
+    dry ledge
+    old firepit
+    broken crate
+
+WRECK YARD — Site
+  BEACH — Room
+    broken hull
+    driftwood piles
+    iron nails
+  SORTING SHED — Room
+    workbench
+    rope coils
+    scrap baskets
+```
+
+**Barasa Hills**
+
+```text
+QUARRY ROAD — Site
+  LOWER TRACK — Room
+    cart ruts
+    cut stone blocks
+    warning post
+  HIGH TURN — Room
+    low wall
+    broken handcart
+    view of the plain
+
+ABANDONED QUARRY — Site
+  QUARRY FLOOR — Room
+    stone chips
+    lifting frame
+    rusted tools
+  CUT FACE — Room
+    drill holes
+    loose blocks
+    shallow cave
+
+OLIVE CAMP — Site
+  GROVE YARD — Room
+    scrubby olive trees
+    picking nets
+    water barrel
+  PRESS SHED — Room
+    small press
+    clay jars
+    tool rack
+```
+
+**Paina Valley**
+
+```text
+PINE TRACK — Site
+  DRY FORD — Room
+    stone bed
+    timber marker
+    cart tracks
+  FOREST TURN — Room
+    pine needles
+    charcoal sacks
+    cut stump
+
+CHARCOAL CAMP — Site
+  BURNING GROUND — Room
+    earth mounds
+    long rakes
+    water barrels
+  STORE SHELTER — Room
+    charcoal sacks
+    rope coils
+    handcart
+
+SPRING WORKS — Site
+  SPRING HEAD — Room
+    stone basin
+    iron pipe
+    cup on a chain
+  TANK YARD — Room
+    wooden tank
+    repair tools
+    drainage ditch
+```
+
+**Wela River**
+
+```text
+RIVER ROAD — Site
+  MUD BANK — Room
+    packed earth
+    reed fence
+    cart tracks
+  RAISED WALK — Room
+    plank walkway
+    mooring posts
+    warning bell
+
+ROPE FERRY — Site
+  WEST LANDING — Room
+    timber ramp
+    bell post
+    rope drum
+  FERRY DECK — Room
+    flat deck
+    guide rope
+    boat hook
+  EAST LANDING — Room
+    muddy steps
+    waiting shelter
+    road marker
+
+REED WORKS — Site
+  CUTTING BANK — Room
+    reed bundles
+    narrow skiff
+    cutting knives
+  DRYING YARD — Room
+    drying racks
+    woven mats
+    cord bundles
+```
+
+**Satakalu Plain**
+
+```text
+DUST ROAD — Site
+  CART TRACK — Room
+    hard clay
+    wheel ruts
+    stone marker
+  SHADE SHELTER — Room
+    patched roof
+    water jar
+    hitching rail
+
+WATERING YARD — Site
+  CISTERN — Room
+    brick tank
+    hand pump
+    water trough
+  CORRAL — Room
+    timber fence
+    feed baskets
+    shade cloth
+
+BRICK PIT — Site
+  CLAY CUT — Room
+    clay bank
+    digging tools
+    plank ramp
+  FIRING GROUND — Room
+    brick clamps
+    wood piles
+    stacked bricks
+```
+
+### Accepted settlement Site and Room strings
+
+**Maketawa**
+
+```text
+HIGH OFFICE
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+MAKETAWA MARKET
+  FOOD ROW
+  PARTS ROW
+  RIVER YARD
+BRASS POT INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+MAKETAWA METAL SHOP
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S SHOP
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+RIVET GATE
+  GATE PASSAGE
+  GUARD ROOM
+  WALL WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- watch barracks;
+- brick temple;
+- guild yard;
+- repair shed;
+- warehouse.
+
+**Potalu**
+
+```text
+HARBOR OFFICE
+  PUBLIC COUNTER
+  COUNCIL ROOM
+  RECORDS ROOM
+PILE JETTIES
+  FISH LANDING
+  NET YARD
+  CARGO WALK
+FISH MARKET
+  FISH STALLS
+  SALT ROW
+  BASKET YARD
+NET AND KETTLE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+POTALU METAL SHOP
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+COAST WATCH
+  GUARD ROOM
+  SIGNAL PLATFORM
+  ROOF WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- wreck yard;
+- boat shed;
+- smokehouse;
+- rope shop;
+- small temple.
+
+**Birikava**
+
+```text
+TOWN OFFICE
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+PARTS MARKET
+  TOOL ROW
+  CART YARD
+  CLOTH ROW
+BRICK AND BOTTLE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+  STABLE
+BIRIKAVA METAL SHOP
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+CART WORKS
+  REPAIR FLOOR
+  PARTS STORE
+  OUTER YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- warehouse;
+- wheelwright;
+- reed store;
+- small shrine;
+- repair yard.
+
+**Boilaki**
+
+```text
+HILL OFFICE
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+QUARRY GATE
+  GATE PASSAGE
+  GUARD ROOM
+  LOADING WALK
+LIME AND LADLE INN
+  COMMON ROOM
+  KITCHEN
+  CELLAR
+  GUEST ROOM
+BOILAKI METAL SHOP
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+LIME KILN
+  KILN YARD
+  FUEL STORE
+  BRICK SHED
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- quarry office;
+- brick yard;
+- water store;
+- hill shrine;
+- watch post.
+
+**Generated coast village**
+
+```text
+COVE YARD
+  TIMBER JETTY
+  NET RACK
+KETTLE INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+METAL SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+FISH SHED
+  CUTTING ROOM
+  SALT STORE
+```
+
+**Generated river village**
+
+```text
+FERRY YARD
+  WEST LANDING
+  ROPE DRUM
+  WAITING SHED
+FERRY INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+METAL SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+REED WORKS
+  CUTTING YARD
+  DRY STORE
+```
+
+**Generated brick-country village**
+
+```text
+VILLAGE YARD
+  WATER TANK
+  NOTICE POST
+  CART STAND
+BRICK INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+METAL SHED
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+BRICK WORKS
+  CLAY YARD
+  FIRING GROUND
+  BRICK SHED
+```
+
+Every generated village may additionally materialize an ordinary house,
+worker's shed, small shrine, store yard, and livelihood Site appropriate to
+its role.
+
+This completes Gibili's **MVP basic string pass**.
+
+## Sixth concrete Land structure: Tergal
+
+- Culture: orc.
+- Default environment: prairie.
+- Natural Areas: Khuratal Steppe, Borugal Hills, Temur Ridge, Namak Basin,
+  Kharun River, and Flumenpur River.
+- Authored settlement Areas: Ulus-Gal, the capital; Kharuk, the western town;
+  Temenur, the northern town; and Ordubal, the southern town.
+- Three village Areas are drawn from the fixed orc pool and assigned to the
+  herd-road, river, and basin roles.
+- Flumenpur River enters western Tergal from Caelum. Kharun River drains the
+  eastern plain.
+
+Working arrangement:
+
+```text
+                         Borugal Hills
+                              |
+                          Temenur
+                              |
+         Flumenpur River -- Kharuk -- Temur Ridge
+                  |             \          |
+               Caelum        Ulus-Gal -- Khuratal Steppe
+                                |              |
+                           herd village    Kharun River
+                                |              |
+                          Namak Basin -- river village
+                                |
+                             Ordubal
+                                |
+                          basin village
+```
+
+### Accepted Land and Area strings
+
+**Tergal** — Land.
+
+> An orc realm covers the eastern prairie. Herd roads cross its grasslands
+> between rivers, dry basins, and broken hills.
+
+**Khuratal Steppe** — natural Area, open prairie.
+
+> Open grassland stretches east of Ulus-Gal. Herd trails and wagon roads run
+> beneath the constant wind.
+
+**Borugal Hills** — natural Area, broken hills.
+
+> Broken stone hills rise along the northern border. Narrow passes cut
+> between their bare slopes.
+
+**Temur Ridge** — natural Area, high grazing range.
+
+> A long ridge overlooks the central prairie. Horses and sheep graze on its
+> high slopes.
+
+**Namak Basin** — natural Area, dry southern basin.
+
+> A dry basin lies south of the capital. Salt grass grows around its wells and
+> seasonal pools.
+
+**Kharun River** — natural Area, eastern river plain.
+
+> A broad river crosses the eastern prairie. Willow groves mark its bends.
+
+**Flumenpur River** — natural Area, western river.
+
+> The great river enters Tergal from Caelum. The western road follows its
+> north bank toward Kharuk.
+
+**Ulus-Gal** — settlement Area, capital.
+
+> The walled capital stands on a low rise above the prairie. Broad roads lead
+> from its great hall to the horse market and eastern gate.
+
+**Kharuk** — settlement Area, western town.
+
+> A road town guards the Flumenpur crossing. Traders from Caelum camp outside
+> its western wall.
+
+**Temenur** — settlement Area, northern town.
+
+> A stone town stands below Temur Ridge. Herd pens and wool stores fill its
+> lower quarter.
+
+**Ordubal** — settlement Area, southern town.
+
+> A low-walled town stands beside the main well of Namak Basin. Salt and
+> livestock caravans meet in its yard.
+
+Generated village roles; draw one unused name for each:
+
+**Herd-road village**
+
+> A herding village stands beside a well on Khuratal Steppe. Corrals surround
+> its low houses.
+
+**River village**
+
+> A fishing and ferry village stands in a willow bend of the Kharun River.
+
+**Basin village**
+
+> A small village stands beside a deep well in Namak Basin. Salt grass and
+> goat pens surround it.
+
+### Accepted natural Site, Room, and content strings
+
+**Khuratal Steppe**
+
+```text
+HERD ROAD — Site
+  WAGON TRACK — Room
+    twin ruts
+    stone marker
+    old dung fires
+  GRASS CROSSING — Room
+    herd trail
+    low rise
+    direction post
+
+WATERING PLACE — Site
+  WELL YARD — Room
+    stone well
+    water trough
+    hitching posts
+  REST SHELTER — Room
+    felt awning
+    fire ring
+    feed baskets
+
+HUNTER'S CAMP — Site
+  FIREPIT — Room
+    stone fire ring
+    hide screens
+    cooking pot
+  GEAR SHELTER — Room
+    bow rack
+    rope coils
+    skinning frame
+```
+
+**Borugal Hills**
+
+```text
+BROKEN PASS — Site
+  LOWER ROAD — Room
+    loose stones
+    cart ruts
+    warning marker
+  NARROW CUT — Room
+    high rock walls
+    fallen boulder
+    old firepit
+
+STONE QUARRY — Site
+  QUARRY FLOOR — Room
+    cut blocks
+    lifting frame
+    stone sled
+  TOOL SHELTER — Room
+    hammers
+    iron wedges
+    water barrel
+
+BURIAL MOUND — Site
+  MOUND FOOT — Room
+    standing stones
+    worn path
+    offering bowl
+  STONE DOOR — Room
+    fitted slabs
+    carved lintel
+    sealed entrance
+```
+
+**Temur Ridge**
+
+```text
+RIDGE ROAD — Site
+  GRASS SLOPE — Room
+    switchback track
+    low cairn
+    wind-bent shrubs
+  HIGH SADDLE — Room
+    flat stones
+    road marker
+    view of the steppe
+
+HIGH PASTURE — Site
+  GRAZING GROUND — Room
+    short grass
+    horse lines
+    salt blocks
+  HERDER'S SHELTER — Room
+    stone hearth
+    felt rolls
+    water skins
+
+WATCH POST — Site
+  LOWER YARD — Room
+    hitching rail
+    firepit
+    wood stack
+  LOOKOUT — Room
+    stone platform
+    signal brazier
+    ridge map
+```
+
+**Namak Basin**
+
+```text
+DRY TRACK — Site
+  SALT-GRASS ROAD — Room
+    hard earth
+    wagon ruts
+    bone marker
+  BASIN TURN — Room
+    dry channel
+    low cairn
+    forked road
+
+SALT SPRING — Site
+  SPRING YARD — Room
+    mineral pool
+    stone trough
+    salt crust
+  DRYING RACKS — Room
+    clay pans
+    reed mats
+    storage jars
+
+ABANDONED CORRAL — Site
+  OUTER FENCE — Room
+    broken posts
+    open gate
+    old tracks
+  HERDER'S HUT — Room
+    cold hearth
+    low table
+    empty water skins
+```
+
+**Kharun River**
+
+```text
+RIVER FORD — Site
+  WEST BANK — Room
+    willow trees
+    gravel track
+    marker post
+  FORD — Room
+    shallow water
+    guide stakes
+    firm stone bed
+  EAST BANK — Room
+    muddy landing
+    hitching rail
+    road east
+
+WILLOW CAMP — Site
+  RIVER CLEARING — Room
+    willow shade
+    fire ring
+    fish rack
+  BOAT SHELTER — Room
+    narrow boat
+    oars
+    net basket
+
+FERRY POINT — Site
+  WEST LANDING — Room
+    timber ramp
+    bell post
+    rope drum
+  FERRYBOAT — Room
+    broad deck
+    guide rope
+    boat hook
+  EAST LANDING — Room
+    stone steps
+    waiting bench
+    direction post
+```
+
+**Flumenpur River**
+
+```text
+WESTERN CROSSING — Site
+  CAELUM ROAD — Room
+    packed earth
+    border marker
+    willow tree
+  BRIDGE DECK — Room
+    timber roadway
+    stone piers
+    low rails
+  TERGAL ROAD — Room
+    wagon yard
+    hitching posts
+    guard shelter
+
+NORTH BANK ROAD — Site
+  RIVER TRACK — Room
+    gravel road
+    mooring rings
+    cart tracks
+  BLUFF TURN — Room
+    low stone wall
+    signal post
+    view west
+
+TRADER'S LANDING — Site
+  RIVER STEPS — Room
+    fitted stones
+    mooring posts
+    cargo hook
+  STORE SHELTER — Room
+    stacked crates
+    rope coils
+    tally board
+```
+
+### Accepted settlement Site and Room strings
+
+**Ulus-Gal**
+
+```text
+GREAT HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+HORSE MARKET
+  HORSE YARD
+  TACK ROW
+  TRADER'S CAMP
+OPEN HEARTH INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+  STABLE
+ULUS-GAL FORGE
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+ALCHEMIST'S SHOP
+  SHOP
+  WORK ROOM
+  LOCKED STORE
+EAST GATE
+  GATE PASSAGE
+  GUARD ROOM
+  WALL WALK
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- barracks;
+- ancestor temple;
+- wool hall;
+- caravan yard;
+- bowyer.
+
+**Kharuk**
+
+```text
+ROAD HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+FLUMENPUR BRIDGE
+  WEST GATE
+  BRIDGE DECK
+  EAST GATE
+WEST ROAD INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+  STABLE
+KHARUK FORGE
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+CARAVAN YARD
+  WAGON YARD
+  CARGO STORE
+  ANIMAL PENS
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- foreign warehouse;
+- ferry house;
+- small temple;
+- leather shop;
+- guard post.
+
+**Temenur**
+
+```text
+RIDGE HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+HERD MARKET
+  SHEEP PENS
+  WOOL ROW
+  HORSE YARD
+LONG FIRE INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+  STABLE
+TEMENUR FORGE
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+RIDGE WATCH
+  GUARD ROOM
+  SIGNAL PLATFORM
+  UPPER YARD
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- wool store;
+- bowyer;
+- hill temple;
+- tannery;
+- shepherd's house.
+
+**Ordubal**
+
+```text
+TOWN HALL
+  PUBLIC HALL
+  COUNCIL ROOM
+  RECORDS ROOM
+GREAT CISTERN
+  WELL YARD
+  PUMP HOUSE
+  WATER STORE
+SALT ROAD INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+  STABLE
+ORDUBAL FORGE
+  FORGE
+  YARD
+  STORE ROOM
+GENERAL SHOP
+  SALES ROOM
+  STORE ROOM
+SALT MARKET
+  SALT ROW
+  GOAT YARD
+  CART STAND
+```
+
+Further ordinary Sites:
+
+- ordinary house;
+- salt store;
+- goat yard;
+- basin shrine;
+- caravan shed;
+- healer's house.
+
+**Generated herd-road village**
+
+```text
+VILLAGE WELL
+  STONE WELL
+  WATER TROUGHS
+  NOTICE POST
+HERD INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+SMITH'S FORGE
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+HERD YARD
+  ANIMAL PENS
+  TACK SHED
+```
+
+**Generated river village**
+
+```text
+RIVER LANDING
+  TIMBER JETTY
+  FERRY YARD
+WILLOW INN
+  COMMON ROOM
+  KITCHEN
+  GUEST ROOM
+SMITH'S FORGE
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+FISH HOUSE
+  CUTTING ROOM
+  NET STORE
+```
+
+**Generated basin village**
+
+```text
+DEEP WELL
+  STONE WELL
+  WATER TROUGHS
+  SHADE SHELTER
+BASIN INN
+  COMMON ROOM
+  KITCHEN
+  STORE ROOM
+  GUEST ROOM
+SMITH'S FORGE
+  FORGE
+  YARD
+GENERAL STORE
+  SALES ROOM
+  STORE ROOM
+GOAT YARD
+  GOAT PENS
+  FEED STORE
+```
+
+Every generated village may additionally materialize an ordinary house,
+herder's house, small temple, healer's room, and livelihood Site appropriate
+to its role.
+
+This completes Tergal's **MVP basic string pass**.
 
 ## Natural Area feature pools
 
@@ -2648,12 +4826,21 @@ resident or household. It always has a `Main Room` and rolls zero to two of:
 Accepted Site-name models:
 
 - Borin's House — dwarf;
-- Sela's House — human.
+- Sela's House — human;
+- Aurenne's House — elf;
+- Kikawa's House — goblin;
+- Sargul's House — orc.
 
 `Main Room` heating, choose one:
 
 - stone hearth;
 - iron stove.
+
+Culture additions:
+
+- tiled hearth — Mortellarian or elf;
+- clay stove — goblin or orc;
+- iron brazier — goblin;
 
 `Main Room` eating furniture, choose one:
 
@@ -2676,10 +4863,17 @@ Accepted Site-name models:
 
 - black bread — dwarf;
 - brown bread — human;
+- flatbread — Mortellarian, goblin, or orc;
+- oat bread — elf;
 - onions;
 - hard cheese;
 - dried mushrooms — dwarf;
+- dried mushrooms — elf;
 - dried apples — human;
+- olives — Mortellarian;
+- dried peppers — goblin;
+- dried curds — orc;
+- berry preserves — elf;
 - smoked fish;
 - pot of stew.
 
@@ -2727,6 +4921,9 @@ Accepted Site-name models:
 - chopping block;
 - goat pen — dwarf;
 - chicken coop — human;
+- herb bed — Mortellarian or elf;
+- scrap basket — goblin;
+- hitching rail — orc;
 - drying line;
 - tool shed.
 
@@ -2823,6 +5020,238 @@ Flurham:
 - cork floats;
 - boat hook;
 - salt sack.
+
+Mortellarian livelihood overlays:
+
+Castavera:
+
+- account book;
+- sealing wax;
+- folded cloth;
+- oil jar;
+- writing case.
+
+Portomera:
+
+- fishing net;
+- sailcloth;
+- cargo tally;
+- tar pot;
+- fish basket.
+
+Belafonte:
+
+- pruning knife;
+- olive basket;
+- oil measure;
+- pottery tools;
+- market scales.
+
+Montaro:
+
+- grape basket;
+- barrel hoops;
+- goat bell;
+- pruning hook;
+- wine tally.
+
+Vineyard village:
+
+- pruning knife;
+- grape basket;
+- picking net;
+- clay wine jug;
+- olive rake.
+
+River-plain village:
+
+- sickle;
+- grain sack;
+- sluice key;
+- reed basket;
+- wooden measure.
+
+Coast-road village:
+
+- fishing line;
+- cork floats;
+- salt sack;
+- boat hook;
+- net needle.
+
+Elven livelihood overlays:
+
+Taivelle:
+
+- account book;
+- map case;
+- folded cloth;
+- carving knife;
+- herb basket.
+
+Dunmaelle:
+
+- hand saw;
+- timber wedges;
+- bow stave;
+- trail markers;
+- leather apron.
+
+Kervaine:
+
+- fishing line;
+- oar blade;
+- reed basket;
+- ferry rope;
+- fish trap.
+
+Ruunamont:
+
+- wool bundle;
+- shepherd's crook;
+- quarry hammer;
+- signal cord;
+- horse tack.
+
+Deep-forest village:
+
+- bow stave;
+- herb basket;
+- trail markers;
+- pruning knife;
+- hide scraper.
+
+River village:
+
+- fishing net;
+- cork floats;
+- boat hook;
+- reed basket;
+- net needle.
+
+Woodland-edge village:
+
+- hand saw;
+- splitting axe;
+- seed basket;
+- charcoal basket;
+- leather apron.
+
+Goblin livelihood overlays:
+
+Maketawa:
+
+- tally slate;
+- rivet box;
+- folded awning cloth;
+- repair tools;
+- labeled parts tin.
+
+Potalu:
+
+- fishing net;
+- rope coil;
+- scrap hook;
+- tar pot;
+- cork floats.
+
+Birikava:
+
+- wheel pin;
+- tool roll;
+- cargo tally;
+- crate bar;
+- spare harness.
+
+Boilaki:
+
+- quarry hammer;
+- lime scoop;
+- brick mold;
+- dust mask;
+- iron wedges.
+
+Coast village:
+
+- net needle;
+- fish basket;
+- rope coil;
+- hull scraper;
+- salt sack.
+
+River village:
+
+- reed knife;
+- ferry rope;
+- matting needle;
+- boat hook;
+- cord bundle.
+
+Brick-country village:
+
+- brick mold;
+- clay spade;
+- firing tongs;
+- handcart pin;
+- charcoal basket.
+
+Orc livelihood overlays:
+
+Ulus-Gal:
+
+- tack repair kit;
+- market tally;
+- wool bundle;
+- bow case;
+- seal box.
+
+Kharuk:
+
+- cargo tally;
+- harness;
+- ferry rope;
+- foreign coin weights;
+- crate bar.
+
+Temenur:
+
+- wool shears;
+- saddle blanket;
+- shepherd's crook;
+- bow stave;
+- salt blocks.
+
+Ordubal:
+
+- salt scoop;
+- water tally;
+- goat bell;
+- clay jar;
+- caravan rope.
+
+Herd-road village:
+
+- horse brush;
+- rope halter;
+- feed basket;
+- leather needle;
+- wool shears.
+
+River village:
+
+- fishing net;
+- ferry pole;
+- fish basket;
+- boat hook;
+- reed mat.
+
+Basin village:
+
+- water skin;
+- salt scoop;
+- goat tack;
+- reed mat;
+- well rope.
 
 Generation:
 
@@ -3162,6 +5591,174 @@ Human `Council Room`:
 - spare planks;
 - oars.
 
+Mortellaria adds:
+
+`Courtyard`:
+
+- stone paving;
+- covered tables;
+- water basin;
+- clay planters;
+- hitching rings;
+- canvas shade.
+
+`Oil and Wine Row`, `Press Room`, or `Press House`:
+
+- olive baskets;
+- grape baskets;
+- stone press;
+- wooden press;
+- clay jars;
+- barrel racks;
+- wooden measures;
+- drain channel.
+
+`Stone Fountain` or `Well`:
+
+- carved basin;
+- iron spout;
+- water jars;
+- stone bench;
+- drainage channel.
+
+`Pottery` or `Jar Store`:
+
+- clay jars;
+- stacked tiles;
+- potter's wheel;
+- drying shelves;
+- clay bins;
+- packing straw.
+
+Ensimaa adds:
+
+`Gate Walk` or `Raised Walk`:
+
+- timber walkway;
+- carved rails;
+- lantern hooks;
+- warning bell;
+- root steps;
+- watch bench.
+
+`Warden Post` or `Forester's Yard`:
+
+- wall map;
+- duty board;
+- bow rack;
+- lantern shelf;
+- rope coils;
+- trail markers;
+- tool shed.
+
+`Craft Row`:
+
+- carving tables;
+- bow staves;
+- folded cloth;
+- herb baskets;
+- small awnings;
+- handcarts.
+
+`Herb Room`, `Healer's Room`, or `Herb Shop`:
+
+- worktable;
+- drying rack;
+- labeled jars;
+- folded cloth;
+- water basin;
+- mortar;
+- locked cabinet.
+
+Gibili adds:
+
+`Parts Row`, `Parts Store`, or `Repair Floor`:
+
+- parts bins;
+- rivet boxes;
+- gear wheels;
+- tool rack;
+- oil cans;
+- repair bench;
+- scrap baskets.
+
+`Metal Shop` or `Metal Shed`:
+
+- forge;
+- anvil;
+- quench barrel;
+- hand drill;
+- rivet tray;
+- scrap pile;
+- tool rack.
+
+`Brick Works`, `Brick Shed`, or `Firing Ground`:
+
+- brick molds;
+- clay barrows;
+- stacked bricks;
+- charcoal baskets;
+- firing tongs;
+- water barrel.
+
+`Reed Works`:
+
+- reed bundles;
+- cutting knives;
+- drying racks;
+- woven mats;
+- cord bundles;
+- handcart.
+
+Tergal adds:
+
+`Horse Market`, `Herd Market`, or `Herd Yard`:
+
+- timber pens;
+- hitching rails;
+- water troughs;
+- feed baskets;
+- tack racks;
+- tally board;
+- judging ring.
+
+`Tack Row`, `Tack Shed`, or `Stable Store`:
+
+- saddles;
+- rope halters;
+- folded blankets;
+- harness;
+- leather tools;
+- feed sacks.
+
+`Wool Row` or `Wool Store`:
+
+- wool bales;
+- shears;
+- weighing scales;
+- tally board;
+- packing cloth;
+- handcart.
+
+`Cistern`, `Pump House`, or `Water Store`:
+
+- stone tank;
+- hand pump;
+- well rope;
+- water jars;
+- repair tools;
+- locked grate.
+
+`Caravan Yard` or `Trader's Camp`:
+
+- wagons;
+- cargo stacks;
+- animal pens;
+- hitching rails;
+- cook fire;
+- tally board;
+- canvas shelters.
+
 ### Tavern or inn
 
 Required:
@@ -3371,9 +5968,10 @@ settlements. Ordinary functional Site and Room labels remain plain English so
 the map is immediately legible. An exceptional Site which needs a proper
 label reuses its parent name with an English function, such as `Taivelle Gate`
 or `Maketawa Market`; it does not open another generated proper-name pool. The
-four remaining settled cultures now have complete **name-only** rosters.
-Their later basic-string passes supply descriptions, Site layouts, Room
-labels, and contents without reopening the proper names.
+six settled MVP cultures now have complete proper-name rosters and concrete
+basic catalogs. Later revisions to descriptions, Site layouts, Room labels,
+or contents do not reopen the proper names unless the designer explicitly
+does so.
 
 Canonical cross-Land rivers:
 
@@ -3799,76 +6397,514 @@ This Site has several structural facts, but its ordinary description leads
 with the unfinished west tower. The DM does not recite every feature at the
 door.
 
+## MVP implementation contract
+
+This section resolves the choices a first code pass should not have to make.
+Field names may be improved during implementation, but all information and
+behavior below must survive any rename.
+
+### Catalog split
+
+Keep authored definitions separate from saved instances:
+
+```text
+ENVIRONMENT_PROFILES
+LAND_SPECS
+AREA_SPECS
+SETTLEMENT_SITE_SPECS
+NATURAL_SITE_SPECS
+SITE_TEMPLATES
+ROOM_CONTENT_POOLS
+CULTURE_PROFILES
+QUEST_PLACE_REQUIREMENTS
+```
+
+Definitions are immutable module data. The save contains only materialized
+instances, selected definition IDs, local generated values, and mutable state.
+Do not copy whole template definitions into every save record.
+
+The concrete Land sections in this document are canonical input, not examples:
+every named Area, required settlement Site, Room label, and ordinary natural
+Site listed for the six MVP Lands must have a catalog entry.
+
+Every Room definition carries either fixed `anchors` or a `content_pool` ID.
+Resolve repeated role labels through aliases rather than copying pools:
+
+- `PUBLIC HALL`, `THRONE HALL`, `GREAT HALL`, and `HILL COUNCIL` use the
+  public-hall family;
+- `COUNCIL ROOM` and `CONTRACT ROOM` use the council-room family;
+- `RECORDS ROOM` and `MAP ROOM` use the records-room family;
+- every tavern `COMMON ROOM`, `KITCHEN`, `CELLAR`, `GUEST ROOM`, and `STABLE`
+  uses its shared pool;
+- every `FORGE`, shop `SALES ROOM`, ordinary `STORE ROOM`, guard Room, gate,
+  bridge, market row, landing, yard, and watch platform uses its shared or
+  culture-specific family;
+- a unique Room whose concrete catalog lists contents uses those lines as
+  fixed anchors.
+
+Add three generic fallback pools so no authored Room is empty:
+
+`generic store`:
+
+- shelves;
+- crates;
+- barrels;
+- sacks;
+- lamp;
+
+`generic work room`:
+
+- workbench;
+- tool rack;
+- water bucket;
+- shelves;
+- waste basket;
+
+`generic yard`:
+
+- packed ground;
+- handcart;
+- water barrel;
+- stacked materials;
+- covered shelter.
+
+The catalog loader should fail loudly when a Room has neither anchors, an
+explicit pool, a recognized alias, nor one of these intentional generic
+fallbacks.
+
+### Saved record minimums
+
+`Land`:
+
+```text
+id
+name
+owner
+culture
+environment
+seed
+area IDs in stable authored order
+neighbor Land IDs
+```
+
+`Area`:
+
+```text
+id
+name
+land ID
+kind: natural | settlement
+subtype
+role
+description
+source
+template ID
+seed
+known
+visited
+Site IDs in stable materialization order
+quest IDs
+tags
+features
+states
+used natural-Site template IDs
+```
+
+`Site`:
+
+```text
+id
+name
+Area ID
+domain: natural | built | mixed
+template ID
+description, optional
+source
+seed
+known
+visited
+Room IDs in stable order
+quest IDs
+level, optional
+tags
+features
+states
+services
+occupant NPC IDs
+```
+
+`Room`:
+
+```text
+id
+name
+Site ID
+template or role ID
+source
+seed
+known
+visited
+content records in stable order
+features
+states
+occupant NPC IDs
+encounter foe-kind list, when used by combat
+```
+
+Lightweight `content`:
+
+```text
+id
+label
+category
+reveal: visible | search | hidden
+known
+state, optional
+mechanical item reference, optional
+```
+
+A feature or state instance minimally stores its definition ID, reveal rule,
+known flag, active flag, and any local value. If the first slice does not yet
+use optional features, keep empty lists on the records so mutation and save
+shape do not require another schema rewrite.
+
+IDs use ASCII slugs and parent ownership:
+
+```text
+land/mortellaria
+area/mortellaria/valdoro-hills
+site/mortellaria/valdoro-hills/terraced-road/1
+room/mortellaria/valdoro-hills/terraced-road/1/lower-turn
+```
+
+The exact prefix is not important; uniqueness, stable derivation, and readable
+debug output are. Display names are never used as dictionary keys.
+
+### Stable seed derivation
+
+Use a deterministic digest such as SHA-256 or BLAKE2 over an ASCII payload:
+
+```text
+world seed | parent ID | purpose | sequence
+```
+
+Convert a fixed first portion of the digest to an integer for
+`random.Random`. Never use Python `hash()`, call order in the campaign-wide
+RNG, or the display name as the only seed input.
+
+Every lazy operation first reserves a child sequence on its parent, derives a
+seed, materializes the complete result, and saves it. A failed compatibility
+roll does not consume an externally visible child: filter candidates first,
+then choose.
+
+### World creation
+
+First-pass order:
+
+1. Create the six `Land` records in authored order.
+2. Create every finite natural and authored settlement `Area`.
+3. Create Firascir's three fixed starting villages; for the other four
+   village-bearing Lands, draw generated names without replacement and attach
+   them to the Land's three village roles.
+4. Add explicit Land adjacency and cross-Land river links.
+5. Materialize required settlement Sites and Room skeletons.
+6. Cast settlement NPCs and attach required services.
+7. Post quests only after geography exists, so their targets can select it.
+8. Save the resulting world. Reprinting it performs no generation.
+
+MVP adjacency:
+
+- Dvarvengrond <-> Firascir;
+- Firascir <-> Mortellaria;
+- Firascir <-> Ensimaa;
+- Firascir <-> Tergal, through Caelum as a two-day route until Caelum exists;
+- Gibili is reached by a sea route from Mortellaria;
+- Mortellaria <-> Gibili is therefore a travel link, not a shared border.
+
+Cross-Land water links:
+
+- Stura River: Firascir -> Mortellaria -> sea;
+- Flumenpur River: Firascir -> future Caelum -> Tergal.
+
+Until Caelum is implemented, the Flumenpur travel route may be represented by
+one named transit link with no visitable intermediate Area. Do not create a
+placeholder Caelum settlement.
+
+### Natural exploration
+
+Discovering a natural Area:
+
+- changes its existing record to `known`;
+- records `discovered_day`;
+- places it on the macro map;
+- does not automatically reveal all Sites within it.
+
+Exploring inside a known natural Area:
+
+1. take the next unused ordinary Site template from that Area's seeded,
+   shuffled three-template inventory;
+2. materialize its full Room skeleton;
+3. reveal the Site and its entrance/default Room;
+4. mark the selected template used;
+5. award exploration XP only for the new Site or Area, never for revisiting.
+
+After all three ordinary templates are used, ordinary exploration may return
+`nothing new` in the MVP. Quest and DM requests may still create compatible
+Sites. Unlimited blind Site repetition is not required for the first pass.
+
+### Settlement and house materialization
+
+All required settlement Site and Room names in the concrete catalogs exist
+from world creation. They begin known when the settlement is known, but Rooms
+begin unvisited. Contents may be rolled at world creation or on first entry;
+either path must use the Room seed and save the same result.
+
+An ordinary house request:
+
+1. generates or selects a resident of the settlement culture;
+2. names the Site `<resident>'s House`;
+3. creates `Main Room`;
+4. selects zero to two distinct optional Rooms;
+5. selects heating and furniture compatible with culture;
+6. adds one to three ordinary contents, zero or one food, zero or one
+   livelihood object, and zero or one personal object;
+7. adds at most one non-visible object for the whole Site;
+8. saves resident, Site, Rooms, and contents together.
+
+An inhabited `Main Room` must end with two to five visible content records
+after anchors are combined. Do not emit duplicate labels in one Room.
+
+### MVP Area tags
+
+Use these controlled tags for natural-Site selection and quest placement.
+Settlement Areas also carry `settlement`, their tier, culture, and livelihood
+role.
+
+| Land | Area | Tags |
+|---|---|---|
+| Dvarvengrond | Drunurnar Mountains | mountains, hills, pass, mine, road |
+| Dvarvengrond | Krokskogur Forest | forest, road, timber |
+| Dvarvengrond | Lake Hornindal | lake, shore, ice, fishing |
+| Firascir | Whitweld Forest | forest, road, timber, ruin |
+| Firascir | Grendon Fields | farmland, pasture, hills, road |
+| Firascir | Stura River | river, road, crossing, mill |
+| Firascir | Flumenpur River | river, road, crossing, island |
+| Mortellaria | Valdoro Hills | hills, vineyard, olive, road, pasture |
+| Mortellaria | Orivela Coast | coast, road, cave, fishing |
+| Mortellaria | Pinavera Valley | forest, hills, road, pasture |
+| Mortellaria | Riomara Plain | farmland, river, wetland, road |
+| Mortellaria | Stura River | river, road, crossing, mill |
+| Ensimaa | Tiravaine Forest | forest, road, grove, warden |
+| Ensimaa | Koivelle Wood | forest, road, timber, ruin |
+| Ensimaa | Maelmor Hills | forest, hills, pasture, road, lookout |
+| Ensimaa | Avelune River | forest, river, crossing, island |
+| Ensimaa | Saimere Hollow | forest, wetland, mist, healer |
+| Gibili | Kapaliki Coast | coast, road, cave, fishing, wreck |
+| Gibili | Barasa Hills | hills, quarry, olive, road |
+| Gibili | Paina Valley | forest, road, timber, spring |
+| Gibili | Wela River | river, wetland, crossing, reed |
+| Gibili | Satakalu Plain | prairie, road, clay, livestock |
+| Tergal | Khuratal Steppe | prairie, road, pasture, hunt |
+| Tergal | Borugal Hills | hills, pass, quarry, tomb |
+| Tergal | Temur Ridge | hills, pasture, road, lookout |
+| Tergal | Namak Basin | prairie, basin, road, salt, livestock |
+| Tergal | Kharun River | river, crossing, fishing, willow |
+| Tergal | Flumenpur River | river, road, crossing, trade |
+
+Generated village roles add:
+
+- Sturford: settlement, village, river, crossing, farmland;
+- Ackham: settlement, village, forest, farmland, timber;
+- Flurham: settlement, village, river, pond, fishing;
+- vineyard village: settlement, village, vineyard, olive;
+- river-plain village: settlement, village, river, farmland;
+- coast-road village: settlement, village, coast, road, fishing;
+- deep-forest village: settlement, village, forest, warden;
+- elven river village: settlement, village, river, fishing, crossing;
+- woodland-edge village: settlement, village, forest, farmland, timber;
+- goblin coast village: settlement, village, coast, fishing, repair;
+- goblin river village: settlement, village, river, reed, crossing;
+- brick-country village: settlement, village, clay, industry, prairie;
+- herd-road village: settlement, village, prairie, pasture, livestock;
+- orc river village: settlement, village, river, fishing, crossing;
+- orc basin village: settlement, village, basin, salt, livestock.
+
+Authored settlement tags follow their stated functions: harbor, market,
+industrial, mining, river, hill, or pasture. Store them explicitly in
+`AREA_SPECS`; do not recover tags later by parsing descriptions or names.
+
+### Quest placement requirements
+
+Add a `place` requirement to quest templates. It contains:
+
+```text
+area_any: acceptable Area tags
+site_template: preferred ordinary or quest-specific Site template
+domain
+reuse: prefer | allow | never
+state_on_post, optional
+state_on_complete, optional
+```
+
+MVP routing by existing quest family:
+
+| Quest family | Acceptable target |
+|---|---|
+| Human bandits/deserters | road, farmland, pasture, coast-road, or rural settlement fringe |
+| Human wolves | forest, hills, pasture, pine valley, or prairie edge |
+| Human crypt | cemetery or temple Site in or beside a settlement |
+| Human renegade wizards | ruined built Site on a road or settlement fringe |
+| Elf grove/beasts/spiders | forest, woodland, hollow, or forested hills |
+| Elf wardens | forest road or warden Site |
+| Elf mist coven | hollow, forest river, or forested hills |
+| Dwarf deep road/mine | mountains or a mining settlement |
+| Dwarf lost hold/clan war | mountains, abandoned mine, gate, or settlement fringe |
+| Goblin factory/machine/boiler | industrial Site in Maketawa, Birikava, Boilaki, or a brick-country village |
+| Goblin night market/gang | settlement market, warehouse, tower, or yard |
+| Goblin spiders below | cistern, cellar, quarry, or underground works |
+| Orc hunt/warband/shamans | prairie, ridge, basin, herd road, or broken hills |
+| Orc giants/dragon | Borugal Hills or Temur Ridge |
+| Epic dragon | mountains, hills, or ridge |
+| Epic giant | border road, ruined fort, hills, or pass |
+| Epic wizard | ruined built Site or isolated tower |
+
+The current Site stems remain valid player-facing names for quest-specific
+Sites. Replace generic Room-stage names with concrete roles selected from the
+Site template, but leave encounter budgets and foe pools unchanged.
+
+Reuse rules:
+
+- never attach two active quests to one Site unless a template explicitly
+  allows it;
+- prefer an existing compatible unused Site for roads, bridges, cemeteries,
+  markets, mines, towers, and other public structures;
+- create a fresh den, camp, hidden shrine, or temporary war camp when reuse
+  would reveal it before the quest;
+- quest completion changes state and knowledge; it does not delete the Site;
+- a cleared quest Site remains available for later travel, inspection, DM use,
+  or a compatible new state.
+
+### Minimum mutation API
+
+The first pass needs only small explicit operations:
+
+```text
+add_state(place, state_id)
+replace_state(place, old_state_id, new_state_id)
+clear_state(place, state_id)
+reveal(place_or_fact)
+```
+
+Operations append a short world event with day, target ID, action, and state
+IDs. The active record is the source for current display. The event list is a
+history/debug surface, not a second state engine.
+
+Required vertical-slice transition:
+
+```text
+Whitweld Forest: blighted -> recovering -> no adverse state
+```
+
+The quest may target a grove Site, but the state belongs to the Area when the
+whole forest is described as blighted.
+
+### Readouts
+
+Player `map`:
+
+- known Lands;
+- known Areas beneath each Land;
+- settlement job counts and current position;
+- no hidden Sites or feature facts.
+
+Player `look`:
+
+- breadcrumb;
+- place name and stored description;
+- one salient active state or feature;
+- known child Sites or Rooms;
+- usable links and services;
+- visible Room contents when at Room scope.
+
+DM place readout:
+
+- IDs and template/source;
+- seed;
+- all facets, features, states, and reveal flags;
+- all children and links;
+- occupant IDs;
+- quest attachments;
+- used Site-template inventory.
+
+Display helpers wrap at 40 columns. Catalog strings remain ASCII. Stored
+descriptions are sentence text; headings and tree indentation are composed by
+the display layer.
+
+### Minimum verification
+
+Automated or reproducible checks must cover:
+
+- exact Land/Area/settlement counts in the table above;
+- unique stable IDs and unique generated village names;
+- same seed produces structurally identical world data;
+- a different seed changes village assignment and lazy Site order;
+- save/load/re-entry does not change Sites, Rooms, contents, or fact reveal;
+- discovering an Area reveals an existing record rather than adding one;
+- each natural Area yields its three ordinary Sites without repetition;
+- every required settlement service resolves to a Site or service record;
+- house generation respects content counts and culture restrictions;
+- every quest family finds at least one compatible target in a fresh world;
+- quest posting and completion preserve the target Site and persist its state;
+- no hidden fact appears in player readouts;
+- every generated output string is ASCII and wraps to 40 columns;
+- existing encounter-budget and career benches remain mechanically unchanged.
+
 ## Review-to-implementation workflow
 
 Procedural place generation remains the active development track until it is
-implemented and verified. Content work uses this repeatable loop:
+implemented and verified.
 
-1. This file holds the schema, distributions, counts, links, constraints,
-   generation rules, rationale, and completion requirements.
-2. **Phase 1 — basic content:** `placegen_review.txt` presents one Land's
-   essential player/DM-facing strings, grouped under minimal labels for its
-   environment, Areas, Sites, Rooms, and ordinary contents.
-3. Review the sheet like a translation: keep, cut, rename, or supply
-   alternative wording without working through the surrounding design again.
-4. Transfer the accepted basic strings into this canonical catalog. Move
-   reusable Room/content pools into shared templates; keep culture- and
-   geography-specific strings under their concrete Land.
-5. Replace the worksheet with the next Land's basic sheet in a new review
-   session. Repeat until every planned Land, culture, and environment has
-   completed Phase 1.
-6. **Phase 2 — special content:** only after every basic Land pass is complete,
-   review the optional Area traits, mutable states, rare curiosities,
-   exceptional settlement features, and hidden or unusual Room contents.
-   These may be grouped by environment or shared template instead of repeated
-   Land by Land.
-7. Transfer the accepted special strings into this canonical catalog.
-8. Implement the accepted schemas and catalogs in code. A vertical slice may
-   ship internally before every pool is coded, but no accepted MVP content may
-   remain documentation-only when the feature is declared complete.
+The six settled MVP Lands now have complete basic catalogs in this file.
+Implementation can begin without producing four more translation worksheets.
+`placegen_review.txt` remains useful as the historical Firascir wording sheet
+and as a format for focused rewrites, but it is no longer a gate.
 
-Review and implementation therefore form one track, not two unrelated
-projects. The worksheets settle the concrete content; this file consolidates
-it; the code generates and persists it.
+Further content work uses this loop:
 
-The worksheet deliberately contains no introduction, schema explanation,
-rationale, coverage requirements, completion checklist, or open-question
-essay. Keep only enough non-output labeling for the reviewer to know what each
-string names. All general information belongs here.
+1. Review a narrow environment, culture, or template pool when play exposes a
+   wording or repetition problem.
+2. Use `placegen_review.txt` only when a translation-style sheet makes that
+   review easier.
+3. Consolidate accepted changes into this canonical catalog.
+4. Add the same catalog change to code once implementation exists.
+5. Review Phase-2 special features after the ordinary vertical slice works;
+   they do not block the MVP.
 
 ## Current review handoff
 
 Status on 2026-07-25:
 
-- Phase 1 is active.
-- Alpine Tundra / Dvarvengrond and Temperate / Firascir basic passes are
-  complete.
-- Their accepted content has been consolidated into the environment profiles,
-  concrete Land catalogs, ordinary-house template, and shared basic
-  Room-content pools in this file.
+- The six-settled-Land MVP content specification is complete.
+- Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili, and Tergal each have
+  Land and Area descriptions, ordinary natural Site/Room layouts, settlement
+  Site/Room skeletons, generated-village roles, and house livelihood content.
+- The shared and culture-specific Room-content pools cover every required MVP
+  Room role; specialized optional Sites may continue using the generic
+  template drafts.
 - `placegen_review.txt` remains the completed Firascir string sheet as the
-  current review record.
-- The named Lands are Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili,
-  and Tergal. `Ulus-Gal` is Tergal's capital.
-- The complete proper-name rosters for Mortellaria, Ensimaa, Gibili, and
-  Tergal are fixed in **Name generation**. Their basic-string passes should
-  use those names and review only descriptions, ordinary Site/Room labels,
-  and contents.
+  last dedicated review record. It need not be replaced before coding.
+- The **MVP implementation contract** fixes saved fields, seed derivation,
+  materialization order, quest routing, mutation, readouts, and verification.
 - No special/nonessential feature pool has been accepted yet. Existing
-  optional-feature and curiosity lists in this draft remain Phase-2
-  candidates.
+  optional-feature and curiosity lists remain post-MVP candidates.
 
 Next session:
 
-1. Replace `placegen_review.txt` with the **Mortellaria / Mediterranean human
-   basic strings**, using the fixed proper-name roster in **Name generation**.
-2. Use the same minimal translation-sheet format.
-3. Review only essential environment, Area, settlement, Site, Room, and
-   ordinary-content strings.
-4. Consolidate accepted strings here before starting the following Land.
-
-Do not begin the special-feature review until every planned basic Land/climate
-sheet has been completed and consolidated.
+1. Implement the Firascir vertical slice.
+2. Verify deterministic creation, lazy materialization, save/load, house
+   contents, quest placement, mutation, and readouts.
+3. Load the other five settled Land catalogs through the same data path.
+4. Review special features only after ordinary generated places can be played.
 
 The feature is done when:
 
@@ -3893,19 +6929,22 @@ from `plan.md`.
 
 ## Initial implementation order
 
-1. Split Land identity from race/culture and add environment profiles.
-2. Replace unlimited natural-Area creation with finite authored Area roles.
-3. Add place facets, features, states, reveal state, source, generation seed,
-   and lightweight Room contents to the persistent schema.
-4. Build the generic weighted selector with slots, requirements, exclusions,
-   scope limits, and the 50/30/15/5 feature-count distribution.
-5. Add natural Area and forest/path Site content first.
-6. Make quest placement select suitable Areas and persistent Sites.
-7. Add settlement tiers, services, and settlement Site templates.
-8. Add the ordinary-house template and its Room-content pools.
-9. Add cathedral and other specialized Room-content templates.
-10. Add DM readouts and the local minimap surface.
-11. Add mutation hooks for quests and later off-screen events.
+1. Add catalog data structures and stable seed derivation.
+2. Split Land identity from race/culture; load environment profiles and the
+   finite six-Land Area inventory.
+3. Materialize settlement Site/Room skeletons and required services.
+4. Replace unlimited natural-Area creation with discovery of existing Areas
+   followed by the three-entry lazy natural-Site inventory.
+5. Add lightweight Room contents and the ordinary-house generator.
+6. Add player `look` and DM fact readouts; update the macro/local map surface.
+7. Route quests through `QUEST_PLACE_REQUIREMENTS`, replacing generic Room
+   stages without changing encounter budgets.
+8. Add reveal and minimum state-mutation operations.
+9. Verify the Firascir vertical slice, then load all remaining MVP catalogs.
+10. Add the optional weighted-feature selector and 50/30/15/5 distribution
+    when the first special-feature pool is accepted.
+11. Add cathedral and other optional specialized templates after the ordinary
+    path is stable.
 
 The first vertical slice should use Firascir and contain:
 
@@ -3919,13 +6958,14 @@ The first vertical slice should use Firascir and contain:
 - one generated ordinary house with persistent Rooms and visible contents;
 - one quest which discovers and changes a forest state.
 
-This is enough to test inheritance, names, feature weighting, reveal levels,
-quest placement, mutation, persistence, and DM output before filling every
-biome.
+This is enough to test inheritance, names, reveal levels, quest placement,
+mutation, persistence, and DM output before loading the other five settled
+catalogs. The forest state may be assigned directly by the test quest; the
+optional-feature weighting pass is not required.
 
-## Content review questions
+## Post-MVP content review questions
 
-Before implementation, review the draft for:
+During later content expansion, review the draft for:
 
 - environment entries which are redundant or use the wrong scale;
 - feature entries which are merely atmosphere and give the DM no usable fact;

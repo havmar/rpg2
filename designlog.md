@@ -582,3 +582,43 @@ for halls, markets, inns, shops, smithies, guard rooms, jetties, and
 smokehouses. The completed worksheet remains as the review record. The next
 session begins the temperate human country basic pass; no special feature
 review starts before then or between basic Land sessions.
+
+## 2026-07-25 — Six-Land placegen MVP specification
+
+**The implementation boundary narrowed.** Requiring every pirate,
+wilderness, jungle, desert, and Caelum sheet before coding made the content
+review process the critical path. The first implementation now covers the six
+settled core Lands: Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili, and
+Tergal. Pirate islands, wilderness-only Lands, Caelum, and the global
+special-feature pass remain planned content but no longer block an ordinary
+place-generation vertical slice.
+
+**The missing basic catalogs were completed.** Mortellaria, Ensimaa, Gibili,
+and Tergal now match the concrete depth already established for Dvarvengrond
+and Firascir. Each Land has Area descriptions, three ordinary natural Site
+layouts per natural Area, authored settlement Site and Room skeletons, three
+generated-village roles, culture-specific ordinary-house livelihood overlays,
+and the additional Room-content pools needed by its materials and economy.
+Their previously fixed proper nouns were not reopened.
+
+**Finite worldgen counts are explicit.** All natural and settlement Area
+records exist at world creation. Settlements begin known; natural Areas begin
+unknown and discovery reveals rather than creates them. Generated village
+names are drawn without replacement and assigned to fixed geographic roles.
+Each natural Area exposes its three ordinary Site templates once in a stable
+shuffled order; exhausted ordinary exploration may return nothing new while
+quests and DM requests can still add compatible Sites.
+
+**The first-pass code contract is explicit.** `placegen.md` now specifies the
+definition/instance split, minimum saved fields, readable stable IDs,
+digest-derived child seeds, world creation and lazy materialization order,
+house-generation counts, quest geography requirements, Site-reuse rules,
+minimum mutation operations, player and DM readouts, and deterministic
+verification. The existing encounter budgets and foe pools remain unchanged.
+
+**Implementation is the next handoff.** `placegen_review.txt` remains the
+completed Firascir review record and a reusable narrow wording surface, not a
+gate for four more Land sessions. The next build starts with the Firascir
+vertical slice, verifies stable generation, contents, quest placement,
+mutation, persistence, and output, then loads the other five catalogs through
+the same path.
