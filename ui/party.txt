@@ -1,39 +1,40 @@
 RPG2 PARTY SHEET -- day 2, at Firascir >
-  Stura River
-purse: 33g | short rests left today: 0
+  Stura River > the deserters' camp >
+  campfire
+purse: 38g | short rests left today: 0
 party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L2, training 1): DEX
-  6  STR 5  MIND 5  STA 4/7  HP 8/8
+  6  STR 5  MIND 5  STA 3/7  HP 8/8
   Power 5/5  CHA 5  (alchemy 1; halberd;
   healingx1, staminax1)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 0/200 to L3 | skill
+            XP 20/200 to L3 | skill
               points: 0 | pools bought:
               sta +1
 
 (companion) Cindra (L2, training 1): DEX
-  5  STR 5  MIND 5  STA 5/8  HP 8/9
+  5  STR 5  MIND 5  STA 6/8  HP 8/9
   Power 3/3  CHA 5  (bulwark; moves:
-  pommel; shortsword; staminax3)
+  pommel; shortsword; staminax1)
   [satisfaction 8/10]
             Cindra -- goblin f, age 41;
               weakness: needs meds;
               speech: formal; dress:
               colorful
-            XP 0/200 to L3 | skill
+            XP 20/200 to L3 | skill
               points: 0 | abilities:
               bulwark
 
 active quest: [q06] L1 Deserter Raiders
   -- next: the deserters' camp (L1),
-  room 1/3
+  room 3/3
 momentum: 2 encounter(s) at
-  site/firascir/stura-river/quest-q06-1
+  site/firascir/stura-river/quest-q06-2
   since the last camp
 THE PACT: assignment [q42] Take Over the
   Road at Walhaven (grace runs to day

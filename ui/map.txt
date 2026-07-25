@@ -1,5 +1,6 @@
 RPG2 MAP -- day 2
-the party is at Firascir > Stura River
+the party is at Firascir > Stura River >
+  the deserters' camp > campfire
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -61,4 +62,4 @@ the party is at Firascir > Stura River
 [q06] Deserter Raiders (L1) @ Walhaven
   - the burned farm (L1): cleared
   - the deserters' camp (L1): here, room
-    1/3
+    3/3
