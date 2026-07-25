@@ -1,6 +1,6 @@
 RPG2 MAP -- day 9
 the party is at Gibili > Maketawa > the
-  occupied farms > war road
+  occupied farms > battle line
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -40,7 +40,7 @@ the party is at Gibili > Maketawa > the
   Liorenne (village) -- 1 job(s)
 
 == Gibili ==  <- here
-  Maketawa (capital) -- 2 job(s)  <- the
+  Maketawa (capital) -- 1 job(s)  <- the
     party
   Potalu (town) -- 1 job(s)
   Birikava (town) -- 2 job(s)
@@ -58,14 +58,7 @@ the party is at Gibili > Maketawa > the
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
 
--- quests in hand (where they lead) --
-
-[w1] Machines at the Border (L2) @
-  Maketawa
-  - the scout camp (L1): cleared
-  - the occupied farms (L2): here, room
-    2/2
-
 -- the war --
-THE WAR: [w1] L2 Machines at the Border
-  -- raised at Maketawa.
+THE WAR: the Golden Empire regroups --
+  word of the next blow will find a
+  party of level 5.
