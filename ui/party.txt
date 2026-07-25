@@ -1,7 +1,7 @@
 RPG2 PARTY SHEET -- day 2, at Firascir >
   Stura River > the burned farm > outer
   watch
-purse: 15g | short rests left today: 1
+purse: 15g | short rests left today: 0
 party: 1/2 companion slot(s) filled (CHA
   5)
 
@@ -17,7 +17,7 @@ party: 1/2 companion slot(s) filled (CHA
               points: 0
 
 (companion) Cindra (L1, training 0): DEX
-  5  STR 5  MIND 5  STA 4/8  HP 9/9
+  5  STR 5  MIND 5  STA 7/8  HP 9/9
   Power 3/3  CHA 5  (bulwark; club;
   staminax2)  [satisfaction 7/10]
             Cindra -- goblin f, age 41;
