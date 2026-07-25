@@ -1,6 +1,6 @@
-RPG2 MAP -- day 14
-the party is at Firascir > Leehaven >
-  the bridge > leader's shelter
+RPG2 MAP -- day 15
+the party is at Firascir > Grendon
+  Fields
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -11,12 +11,11 @@ the party is at Firascir > Leehaven >
 
 == Firascir ==  <- here
   Grendon Fields (farmland, found day
-    14)
+    14)  <- the party
   Stura River (river, found day 1)
     (visited)
   Tomburgh (capital) -- 1 job(s)
-  Leehaven (city) -- 2 job(s)  <- the
-    party
+  Leehaven (city) -- 2 job(s)  (visited)
   Walhaven (city) -- 0 job(s)  (visited)
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)

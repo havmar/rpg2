@@ -1,12 +1,11 @@
-RPG2 PARTY SHEET -- day 14, at Firascir
-  > Leehaven > the bridge > leader's
-  shelter
+RPG2 PARTY SHEET -- day 15, at Firascir
+  > Grendon Fields
 purse: 114g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L4, training 1): DEX
-  6  STR 5  MIND 5  STA 8/8  HP 9/8
+  6  STR 5  MIND 5  STA 8/8  HP 8/8
   Power 5/5  CHA 5  (arrow_parry;
   alchemy 1; moves: kick; zweihander,
   prof 1; healingx2, staminax2)
@@ -14,35 +13,35 @@ party: 2/2 companion slot(s) filled (CHA
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 63/400 to L5 | skill
+            XP 88/400 to L5 | skill
               points: 1 | pools bought:
               sta +2 | proficiency:
               zweihander 1 | abilities:
               arrow_parry
 
 (companion) Mox (L3, training 1): DEX 6
-  STR 5  MIND 4  STA 9/9  HP 12/11
-  Power 4/4  CHA 4  (alchemy 1; katana;
-  healingx2, staminax2)  [satisfaction
+  STR 5  MIND 4  STA 9/9  HP 8/11  Power
+  4/4  CHA 4  (alchemy 1; katana;
+  healingx1, staminax2)  [satisfaction
   10/10]
             Mox -- goblin m, age 42;
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 241/300 to L4 | skill
+            XP 266/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: flail 1
 
 (companion) Vespa (L3, training 1): DEX
-  5  STR 4  MIND 4  STA 6/6  HP 12/13
+  5  STR 4  MIND 4  STA 6/6  HP 13/13
   Power 7/7  CHA 4  (alchemy 1; katana;
   healingx4, staminax1)  [satisfaction
   10/10]
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 241/300 to L4 | skill
+            XP 266/300 to L4 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: club 1
@@ -50,9 +49,6 @@ party: 2/2 companion slot(s) filled (CHA
 active quest: [q45] L4 Sell the Powder
   -- next: the night market (L3), room
   1/2
-momentum: 3 encounter(s) at
-  site/firascir/leehaven/quest-q42-3
-  since the last camp
 karma: bad karma 450; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
