@@ -1,19 +1,19 @@
 RPG2 PARTY SHEET -- day 18, at Firascir
   > Leehaven
-purse: 255g | short rests left today: 1
+purse: 260g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L4, training 1): DEX
-  6  STR 5  MIND 5  STA 7/8  HP 1/8
+  6  STR 5  MIND 5  STA 8/8  HP 6/8
   Power 5/5  CHA 5  (arrow_parry;
   alchemy 1; moves: kick; zweihander,
-  prof 1; healingx2, staminax1)
+  prof 1; healingx1, staminax1)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 297/400 to L5 | skill
+            XP 327/400 to L5 | skill
               points: 1 | pools bought:
               sta +2 | proficiency:
               zweihander 1 | abilities:
@@ -28,7 +28,7 @@ party: 2/2 companion slot(s) filled (CHA
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 175/400 to L5 | skill
+            XP 205/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: flail 1,
@@ -42,7 +42,7 @@ party: 2/2 companion slot(s) filled (CHA
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 175/400 to L5 | skill
+            XP 205/400 to L5 | skill
               points: 0 | pools bought:
               hp +1, power +1, sta +1 |
               proficiency: club 1,
@@ -50,8 +50,8 @@ party: 2/2 companion slot(s) filled (CHA
 
 active quest [q45] Sell the Powder is
   COMPLETE
-karma: bad karma 764; HEAT 1 --
-  retribution hunts 1 level(s) above the
+karma: bad karma 809; HEAT 2 --
+  retribution hunts 2 level(s) above the
   party
 THE PACT: no current assignment --
   hell's next job comes any settlement
@@ -61,5 +61,3 @@ THE PACT: no current assignment --
 THE WAR: the Golden Empire regroups --
   word of the next blow will find a
   party of level 5.
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
