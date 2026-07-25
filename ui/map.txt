@@ -1,6 +1,5 @@
 RPG2 MAP -- day 2
-the party is at Firascir > Stura River >
-  the burned farm > outer watch
+the party is at Firascir > Stura River
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -60,6 +59,6 @@ the party is at Firascir > Stura River >
 -- quests in hand (where they lead) --
 
 [q06] Deserter Raiders (L1) @ Walhaven
-  - the burned farm (L1): here, room 2/2
-  - the deserters' camp (L1): not yet (3
-    room(s))
+  - the burned farm (L1): cleared
+  - the deserters' camp (L1): here, room
+    1/3
