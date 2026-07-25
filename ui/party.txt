@@ -4,8 +4,8 @@ purse: 33g | short rests left today: 0
 party: 1/2 companion slot(s) filled (CHA
   5)
 
-(YOU)       Nizzet (L2, training 0): DEX
-  6  STR 5  MIND 5  STA 3/6  HP 8/8
+(YOU)       Nizzet (L2, training 1): DEX
+  6  STR 5  MIND 5  STA 4/7  HP 8/8
   Power 5/5  CHA 5  (alchemy 1; halberd;
   healingx1, staminax1)
             Nizzet -- goblin m, age 33;
@@ -13,12 +13,13 @@ party: 1/2 companion slot(s) filled (CHA
               dress: luxurious; looks:
               scarred
             XP 0/200 to L3 | skill
-              points: 3
+              points: 0 | pools bought:
+              sta +1
 
 (companion) Cindra (L2, training 1): DEX
   5  STR 5  MIND 5  STA 5/8  HP 8/9
   Power 3/3  CHA 5  (bulwark; moves:
-  pommel; club; staminax3)
+  pommel; shortsword; staminax3)
   [satisfaction 8/10]
             Cindra -- goblin f, age 41;
               weakness: needs meds;
