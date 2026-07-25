@@ -1,6 +1,5 @@
 RPG2 MAP -- day 13
-the party is at Firascir > Leehaven >
-  the roadside camp > campfire
+the party is at Firascir > Leehaven
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -63,9 +62,8 @@ the party is at Firascir > Leehaven >
 
 [q42] Take Over the Road (L3) @ Walhaven
   - the toll gate (L1): cleared
-  - the roadside camp (L2): here, room
-    3/3
-  - the bridge (L3): not yet (3 room(s))
+  - the roadside camp (L2): cleared
+  - the bridge (L3): here, room 1/3
 
 -- the war --
 THE WAR: the Golden Empire regroups --
