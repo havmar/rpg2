@@ -1,6 +1,6 @@
 RPG2 MAP -- day 17
 the party is at Firascir > Grendon
-  Fields
+  Fields > the rival den
 (travel: 1 day within a land, 2 days to
   another)
 

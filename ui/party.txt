@@ -1,5 +1,5 @@
 RPG2 PARTY SHEET -- day 17, at Firascir
-  > Grendon Fields
+  > Grendon Fields > the rival den
 purse: 201g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
@@ -8,7 +8,7 @@ party: 2/2 companion slot(s) filled (CHA
   6  STR 5  MIND 5  STA 8/8  HP 8/8
   Power 5/5  CHA 5  (arrow_parry;
   alchemy 1; moves: kick; zweihander,
-  prof 1; healingx2, staminax2)
+  prof 1; healingx2, staminax1)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
@@ -22,7 +22,7 @@ party: 2/2 companion slot(s) filled (CHA
 (companion) Mox (L4, training 1): DEX 6
   STR 5  MIND 4  STA 9/9  HP 11/11
   Power 4/4  CHA 4  (alchemy 1; katana,
-  prof 2; healingx2, staminax2)
+  prof 2; healingx2, staminax1)
   [satisfaction 10/10]
             Mox -- goblin m, age 42;
               background: craftsman;
@@ -37,8 +37,8 @@ party: 2/2 companion slot(s) filled (CHA
 (companion) Vespa (L4, training 1): DEX
   5  STR 4  MIND 4  STA 6/6  HP 13/13
   Power 7/7  CHA 4  (alchemy 1; katana,
-  prof 2; healingx1)  [satisfaction
-  10/10]
+  prof 2; healingx1, staminax2)
+  [satisfaction 10/10]
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
