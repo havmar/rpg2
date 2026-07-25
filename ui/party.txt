@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 9, at Gibili >
   Maketawa
-purse: 65g | short rests left today: 0
+purse: 5g | short rests left today: 0
 party: 2/2 companion slot(s) filled (CHA
   5)
 
@@ -33,9 +33,9 @@ party: 2/2 companion slot(s) filled (CHA
 
 (companion) Mox (L2, training 1): DEX 6
   STR 5  MIND 4  STA 6/8  HP 10/10
-  Power 3/3  CHA 4  (alchemy 1; flail,
-  prof 1; healingx2, staminax2)
-  [satisfaction 9/10]
+  Power 3/3  CHA 4  (alchemy 1; katana;
+  healingx2, staminax2)  [satisfaction
+  9/10]
             Mox -- goblin m, age 42;
               background: craftsman;
               speech: swears a lot;
