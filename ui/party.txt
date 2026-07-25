@@ -1,18 +1,18 @@
-RPG2 PARTY SHEET -- day 5, at Gibili >
-  Maketawa
-purse: 1g | short rests left today: 1
+RPG2 PARTY SHEET -- day 9, at Gibili >
+  Maketawa > the scout camp
+purse: 6g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L2, training 1): DEX
-  6  STR 5  MIND 5  STA 5/7  HP 5/8
+  6  STR 5  MIND 5  STA 7/7  HP 8/8
   Power 5/5  CHA 5  (alchemy 1;
   zweihander; staminax2)
             Nizzet -- goblin m, age 33;
               background: scholar;
               dress: luxurious; looks:
               scarred
-            XP 122/200 to L3 | skill
+            XP 137/200 to L3 | skill
               points: 0 | pools bought:
               sta +1
 
@@ -32,32 +32,33 @@ party: 2/2 companion slot(s) filled (CHA
 (companion) Mox (L2, training 1): DEX 6
   STR 5  MIND 4  STA 8/8  HP 10/10
   Power 3/3  CHA 4  (alchemy 1; flail,
-  prof 1; staminax2)  [satisfaction
-  7/10]
+  prof 1; healingx3, staminax2)
+  [satisfaction 7/10]
             Mox -- goblin m, age 42;
               background: craftsman;
               speech: swears a lot;
               dress: elegant
-            XP 0/200 to L3 | skill
+            XP 15/200 to L3 | skill
               points: 0 | proficiency:
               flail 1
 
 (companion) Vespa (L2, training 1): DEX
   5  STR 4  MIND 4  STA 5/5  HP 12/12
   Power 6/6  CHA 4  (alchemy 1; club,
-  prof 1; healingx1, staminax1)
+  prof 1; healingx4, staminax1)
   [satisfaction 7/10]
             Vespa -- goblin f, age 25;
               weakness: smoker; dress:
               tattered; looks: short
-            XP 0/200 to L3 | skill
+            XP 15/200 to L3 | skill
               points: 0 | proficiency:
               club 1
 
-active quest [q06] Deserter Raiders is
-  COMPLETE
+active quest: [w1] L2 Machines at the
+  Border -- next: the scout camp (L1),
+  room 1/2
 THE PACT: assignment [q42] Take Over the
-  Road at Walhaven (grace runs to day
-  5).
+  Road at Walhaven (OVERDUE -- hell's
+  enforcers are coming).
 THE WAR: [w1] L2 Machines at the Border
   -- raised at Maketawa.
