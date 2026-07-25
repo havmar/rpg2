@@ -1,5 +1,6 @@
-RPG2 MAP -- day 9
-the party is at Gibili > Maketawa
+RPG2 MAP -- day 13
+the party is at Firascir > Leehaven >
+  the toll gate
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -8,11 +9,12 @@ the party is at Gibili > Maketawa
   Roros (town) -- 1 job(s)
   Svalaver (town) -- 1 job(s)
 
-== Firascir ==
+== Firascir ==  <- here
   Stura River (river, found day 1)
     (visited)
   Tomburgh (capital) -- 1 job(s)
-  Leehaven (city) -- 2 job(s)
+  Leehaven (city) -- 2 job(s)  <- the
+    party
   Walhaven (city) -- 0 job(s)  (visited)
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)
@@ -38,9 +40,9 @@ the party is at Gibili > Maketawa
   Oirava (village) -- 1 job(s)
   Liorenne (village) -- 1 job(s)
 
-== Gibili ==  <- here
-  Maketawa (capital) -- 1 job(s)  <- the
-    party
+== Gibili ==
+  Maketawa (capital) -- 1 job(s)
+    (visited)
   Potalu (town) -- 1 job(s)
   Birikava (town) -- 2 job(s)
   Boilaki (town) -- 1 job(s)
@@ -56,6 +58,14 @@ the party is at Gibili > Maketawa
   Namuruk (village) -- 1 job(s)
   Guratai (village) -- 1 job(s)
   Urkhal (village) -- 1 job(s)
+
+-- quests in hand (where they lead) --
+
+[q42] Take Over the Road (L3) @ Walhaven
+  - the toll gate (L1): here, room 1/2
+  - the roadside camp (L2): not yet (3
+    room(s))
+  - the bridge (L3): not yet (3 room(s))
 
 -- the war --
 THE WAR: the Golden Empire regroups --

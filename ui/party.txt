@@ -1,11 +1,11 @@
-RPG2 PARTY SHEET -- day 9, at Gibili >
-  Maketawa
-purse: 5g | short rests left today: 0
+RPG2 PARTY SHEET -- day 13, at Firascir
+  > Leehaven > the toll gate
+purse: 5g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L3, training 1): DEX
-  6  STR 5  MIND 5  STA 3/8  HP 8/8
+  6  STR 5  MIND 5  STA 8/8  HP 8/8
   Power 5/5  CHA 5  (alchemy 1; moves:
   kick; zweihander, prof 1; healingx2,
   staminax2)
@@ -18,21 +18,8 @@ party: 2/2 companion slot(s) filled (CHA
               sta +2 | proficiency:
               zweihander 1
 
-(companion) Cindra (L2, training 1): DEX
-  5  STR 5  MIND 5  STA 7/8  HP 0/9
-  Power 1/3  CHA 5  (bulwark; moves:
-  pommel; shortsword; staminax1)
-  [satisfaction 9/10] [DEAD]
-            Cindra -- goblin f, age 41;
-              weakness: needs meds;
-              speech: formal; dress:
-              colorful
-            XP 100/200 to L3 | skill
-              points: 0 | abilities:
-              bulwark
-
 (companion) Mox (L2, training 1): DEX 6
-  STR 5  MIND 4  STA 6/8  HP 10/10
+  STR 5  MIND 4  STA 8/8  HP 10/10
   Power 3/3  CHA 4  (alchemy 1; katana;
   healingx2, staminax2)  [satisfaction
   9/10]
@@ -45,7 +32,7 @@ party: 2/2 companion slot(s) filled (CHA
               flail 1
 
 (companion) Vespa (L2, training 1): DEX
-  5  STR 4  MIND 4  STA 3/5  HP 12/12
+  5  STR 4  MIND 4  STA 5/5  HP 12/12
   Power 6/6  CHA 4  (alchemy 1; club,
   prof 1; healingx3, staminax1)
   [satisfaction 9/10]
@@ -56,11 +43,9 @@ party: 2/2 companion slot(s) filled (CHA
               points: 0 | proficiency:
               club 1
 
-active quest [w1] Machines at the Border
-  is COMPLETE
-momentum: 2 encounter(s) at
-  site/gibili/maketawa/war-w1-2 since
-  the last camp
+active quest: [q42] L3 Take Over the
+  Road -- next: the toll gate (L1), room
+  1/2
 THE PACT: assignment [q42] Take Over the
   Road at Walhaven (OVERDUE -- hell's
   enforcers are coming).
