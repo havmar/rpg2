@@ -1,11 +1,11 @@
-RPG2 PARTY SHEET -- day 17, at Firascir
-  > Grendon Fields > the rival den
+RPG2 PARTY SHEET -- day 18, at Firascir
+  > Leehaven
 purse: 255g | short rests left today: 1
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU)       Nizzet (L4, training 1): DEX
-  6  STR 5  MIND 5  STA 8/8  HP 8/8
+  6  STR 5  MIND 5  STA 7/8  HP 1/8
   Power 5/5  CHA 5  (arrow_parry;
   alchemy 1; moves: kick; zweihander,
   prof 1; healingx2, staminax1)
@@ -20,7 +20,7 @@ party: 2/2 companion slot(s) filled (CHA
               arrow_parry
 
 (companion) Mox (L4, training 1): DEX 6
-  STR 5  MIND 4  STA 9/9  HP 11/11
+  STR 5  MIND 4  STA 7/9  HP 11/11
   Power 4/4  CHA 4  (alchemy 1; katana,
   prof 2; healingx2, staminax1)
   [satisfaction 10/10]
@@ -35,7 +35,7 @@ party: 2/2 companion slot(s) filled (CHA
               katana 2
 
 (companion) Vespa (L4, training 1): DEX
-  5  STR 4  MIND 4  STA 6/6  HP 13/13
+  5  STR 4  MIND 4  STA 4/6  HP 13/13
   Power 7/7  CHA 4  (alchemy 1; katana,
   prof 2; healingx1, staminax2)
   [satisfaction 10/10]
@@ -54,10 +54,12 @@ karma: bad karma 764; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --
-  hell's next job comes ~day 18, at a
-  settlement.
+  hell's next job comes any settlement
+  day now.
   (1 assignment(s) completed -- the
     curriculum ledger; see `task`)
 THE WAR: the Golden Empire regroups --
   word of the next blow will find a
   party of level 5.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***

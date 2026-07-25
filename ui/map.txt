@@ -1,6 +1,5 @@
-RPG2 MAP -- day 17
-the party is at Firascir > Grendon
-  Fields > the rival den
+RPG2 MAP -- day 18
+the party is at Firascir > Leehaven
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -11,11 +10,12 @@ the party is at Firascir > Grendon
 
 == Firascir ==  <- here
   Grendon Fields (farmland, found day
-    14)  <- the party
+    14)  (visited)
   Stura River (river, found day 1)
     (visited)
   Tomburgh (capital) -- 1 job(s)
-  Leehaven (city) -- 2 job(s)  (visited)
+  Leehaven (city) -- 2 job(s)  <- the
+    party
   Walhaven (city) -- 0 job(s)  (visited)
   Bradwhitchip (town) -- 1 job(s)
   Redflurton (town) -- 1 job(s)
