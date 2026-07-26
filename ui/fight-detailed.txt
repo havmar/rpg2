@@ -1,46 +1,43 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
+=== Guard the Cultists -- the outer camp (L2), room 1/1: outer watch ===
+  Hero Archer 1 -- shortbow
+  DEX 5  STR 2  STA 5  HP 6/6
+  shoots to range 2
+  2x Hero Warrior -- spear
+  DEX 5  STR 4  STA 6  HP 10/10
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Skiv, Pox, Hero Warrior 2, Hero Warrior 3 close the distance -- the lines meet!
+    Hero Archer 1 sends an arrow at Skiv -- who twists away.
+        pressure: Hero Archer 1: 6 (2d6=2, +4 AIM) vs Skiv: 7 (2d6=2, +5 DEX) [arrows: 7 left]
+    stamina: Skiv 6/6, Pox 7/7 | Hero Archer 1 4/5, Hero Warrior 2 6/6, Hero Warrior 3 6/6
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Skiv edges past Hero Warrior 2 -- a graze! [Hero Warrior 2: 9/10 HP, -0 to rolls]
+        pressure: Skiv: 12 (2d6=7, +5 DEX) vs Hero Warrior 2: 10 (2d6=5, +5 DEX)
+        severity: 2 = margin 2 +4 STR -4 soak -> graze (-1 HP)
+    Pox attacks Hero Warrior 2 -- parried.
+        pressure: Pox: 12 (2d6=6, +6 DEX) vs Hero Warrior 2: 14 (2d6=9, +5 DEX)
+    Hero Archer 1 works the shortbow's reload.
+    Hero Warrior 2 attacks Skiv -- parried.
+        pressure: Hero Warrior 2: 10 (2d6=5, +5 DEX) vs Skiv: 11 (2d6=6, +5 DEX)
+    Hero Warrior 3 attacks Skiv -- parried.
+        pressure: Hero Warrior 3: 8 (2d6=3, +5 DEX) vs Skiv: 12 (2d6=7, +5 DEX)
+    stamina: Skiv 5/6, Pox 6/7 | Hero Archer 1 4/5, Hero Warrior 2 5/6, Hero Warrior 3 5/6
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
-    The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
-
--- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
-  (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+    Skiv edges past Hero Warrior 2 -- a graze! [Hero Warrior 2: 8/10 HP, -1 to rolls]
+        pressure: Skiv: 13 (2d6=8, +5 DEX) vs Hero Warrior 2: 12 (2d6=7, +5 DEX)
+        severity: 1 = margin 1 +4 STR -4 soak -> graze (-1 HP)
+    Pox outmaneuvers Hero Warrior 2 -- a solid wound! [Hero Warrior 2: 6/10 HP, -2 to rolls]
+        pressure: Pox: 13 (2d6=7, +6 DEX) vs Hero Warrior 2: 9 (2d6=5, +5 DEX, -1 wounds)
+        severity: 3 = margin 4 +4 STR -1 wooden staff -4 soak -> wound (-2 HP)
+    !! Hero Archer 1 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Hero Archer 1's arrow outmaneuvers Skiv -- a solid wound! [Skiv: 10/12 HP, -0 to rolls]
+        pressure: Hero Archer 1: 13 (2d6=11, +4 AIM, -2 winded) vs Skiv: 10 (2d6=5, +5 DEX) [arrows: 6 left]
+        severity: 3 = margin 3 +4 shortbow -4 soak -> wound (-2 HP)
+    Skiv takes a wound: a split knuckle (severity 1; HP ceiling 11/12)
+    Hero Warrior 2 attacks Pox -- parried.
+        pressure: Hero Warrior 2: 12 (2d6=9, +5 DEX, -2 wounds) vs Pox: 16 (2d6=9, +6 DEX, +1 wooden staff)
+    Hero Warrior 3 overwhelms Skiv -- a grievous injury! [Skiv: 6/12 HP, -2 to rolls]
+        pressure: Hero Warrior 3: 12 (2d6=7, +5 DEX) vs Skiv: 7 (2d6=3, +4 DEX)
+        severity: 5 = margin 5 +4 STR -4 soak -> grievous (-4 HP)
+    Skiv takes a wound: a deep gash across the back (severity 2; HP ceiling 9/12)
+    stamina: Skiv 4/6, Pox 5/7 | Hero Archer 1 3/5*, Hero Warrior 2 4/6, Hero Warrior 3 4/6   (* = Winded)
+    == Skiv is badly cut up (HP 6/12) -- the fight hangs for a heartbeat. ==
