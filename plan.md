@@ -227,8 +227,9 @@ Carry-forwards, parked (not scheduled):
   STOCK CAP (rank + 2 brewed items) over per-potion spoil timestamps. If
   spoilage should ever be FELT, the cheap variant is one day-stamp per
   hero's brewed batch — noted, not built.
-- **Alchemy conditions** (poisons, oils) — wait for the conditions system;
-  alchemy is its first customer (the parked venom note).
+- **Alchemy conditions** (poisons, oils) — UNBLOCKED 2026-07-26: the
+  conditions framework shipped (slice 3a), and alchemy is its first queued
+  customer. A poison oil is now a recipe plus one `apply_condition` call.
 
 Open to feel out in PLAY: points-per-level 3 vs 4 and training 2n
 (re-open only if the mid-band feels grim); the **kit-shrink dial**
@@ -272,9 +273,11 @@ re-tune forever, and a bed is a bed.
 > not inflate; a cap on what a night can restore is worth exactly as much at
 > level 20 as at level 1.
 
-*(Slice 2 shipped the first half of the answer: a day now costs a job. What
-it does NOT do is make a night restore less — that is still slices 3a/3b's
-whole job, and until they land `camp --heal` is merely expensive rather than
+*(Slices 2 and 3a shipped the first two thirds of the answer: a day now
+costs a job, and what a fight leaves on you no longer always stops at the
+door — venom follows you out of the room and only a night ends it. What is
+still missing is a night that restores LESS, which is slice 3b's whole job;
+until it lands `camp --heal` is expensive and slightly leaky rather than
 incomplete.)*
 
 Hence four slices: cut the encounters, make days cost something (quest
@@ -319,46 +322,6 @@ prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
 they gain value for free once camping stops substituting for them);
 **retribution or patrol attacks as healing pressure** (re-adds the
 contentless combat this whole rework removes).
-
-### Slice 3a — the conditions framework
-
-Built as a general system because it has been the standing blocker behind
-varied enemies, venom (the spider row currently carries poison in its raw
-damage), varied magic, and burn.
-
-```
-@dataclass
-class Condition:
-    kind: str        # "bleed" | "poison" | "burn" | ...
-    power: int       # magnitude per tick
-    rounds: int|None # None = persists past the fight until treated
-    source: str      # display/attribution
-```
-
-`Entity.conditions: list[Condition]`. **Tick point:** end of round in
-`group_combat`, beside `Entity.regen` — order regen -> conditions -> Winded /
-Spent crossings, so a tick can trip a pause the same round it lands.
-**Stacking is bounded:** a second condition of the same kind refreshes
-`rounds` and takes `max(power)`, never adds — unbounded stacking is how
-condition systems become the only strategy. **A tick can never kill
-outright:** taking an entity to 0 puts it **Down**, no crippling save
-involved; bleeding out is treatable, and a silent scalar killer would undo
-`rules.md`'s "lethality is real, then padded" intent. **Log:** one collapsed
-line per round in the player log, emitted `quiet=` so the quiet-round
-collapse still works, full arithmetic to the detailed log — the 40-column
-display must not grow a line per condition per entity per round.
-**Clearing:** `_clear_fight_states` clears every `rounds`-limited condition;
-`rounds=None` survives to the between-fights layer. **Stabilize:** a free
-automatic pass at fight end clears combat bleed on survivors, while
-wound-driven bleed and poison persist until treated — the designer's "after
-combat, stabilized, the wounds and penalties remain, blood pool remains
-lower, but the char wouldn't be actively dying". New knobs in their own
-block: `BLEED_POWER`, `POISON_*`, `BURN_*`, `CONDITION_STACK_RULE`. First
-customers: the spider row's venom and the pyromancer's fire.
-
-**Acceptance.** `bench_bestiary.py` re-run: the spider and pyromancer rows
-may need their `level` annotations re-fit; every other row unchanged to the
-cell.
 
 ### Slice 3b — the wound system
 
@@ -515,7 +478,7 @@ Additive to the schemas above — none of them requires redesigning anything.
 
 - **Damage types and weapon profiles** (cut / pierce / blunt / burn / poison
   / magic). `Weapon` already carries `move_tags` and severity flats, so a
-  `damage_type` field is cheap once conditions exist.
+  `damage_type` field is cheap now that conditions exist (shipped 3a).
 - **Magic energy bypassing protections.** Waits on damage types, and on
   armour existing at all.
 - **Armour interacting with wounds** — a tier shift would now also decide
@@ -559,21 +522,23 @@ One build session per slice — deliberately. `rpg.py` is 332 KB and
 `session.py` 206 KB, and slice 3b ends in a bench rebaseline whose
 numbers need reading and judging **before** the next slice lands on top of
 it. The precedent is the levelling framework's sessions A/B/C.
-**Slices 1 and 2 SHIPPED 2026-07-26** (benchlog has both rebaselines).
+**Slices 1, 2 and 3a SHIPPED 2026-07-26** (benchlog has all three
+measurement entries).
 
 | # | slice | ends with |
 |---|-------|-----------|
-| 3a | the conditions framework | `bench_bestiary` re-fit for spider/pyromancer only |
 | 3b | the wound system | **full** rebaseline; the beatability curve must survive |
 | 4 | defeat without death | mercy converts wipes; median death level rises |
 
-Order is forced only where it must be: 3b needs 3a. Slice 4 can slot in any
-time after 3b.
+Slice 4 can slot in any time after 3b. **3a shipped 2026-07-26** — the
+conditions framework is in `rules.md`'s Conditions add-on, and 3b's
+`Wound.bleed` is now writing into a channel that already exists (the
+untimed-condition branch, the field stabilize, the potion/spell clears are
+all built and unused).
 
 **Each session closes by propagating outward and deleting its slice from
 here.** What each one owes:
 
-- **Slice 3a** — a new `rules.md` **Conditions** add-on; `develop.md` dev map.
 - **Slice 3b** — a new `rules.md` **Wounds & Recovery** add-on, plus rewrites
   of Survival's "Resources at a glance", "The two-buffer split" and "The day
   / run economy". `dm.md`'s "camp until whole" default becomes wrong and must
@@ -703,11 +668,13 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 
 Foundations all shipped (magic, ranged, levelling); what stands:
 
-- **Conditions** (poison, bleed, disease) — the missing enabler behind
-  "more varied enemies"; varied magic wants it too. *(2026-07-26:
-  SCHEDULED as the attrition rework's slice 3a — bleed and poison and burn
-  ship there as a general framework, disease stays parked. Designer:
-  "let's do bleed and conditions, it always comes up as a blocker.")*
+- **Conditions** — SHIPPED 2026-07-26 as the attrition rework's slice 3a
+  (rules.md's Conditions add-on): bleed, poison and burn as one general
+  framework. **Disease stays parked** as the third family, and the queued
+  customers the framework now unblocks are cheap: a school-wide cast rider
+  (every fire bolt burns — deliberately held back, it moves every bestiary
+  row because hero wizards gain it too), the firebomb, poisoned blades and
+  the rot spell, and varied-enemy riders generally.
 - **Free-play facilitation / overriding the mechanics** — mostly dm.md
   doctrine plus the override surfaces that already exist (`forge`,
   `give --as`, the hand-editable save). Cheap, worth doing early.
@@ -747,7 +714,8 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **The rot spell & evil magic content** (2026-07-19, dark-quests
   session) — "learn an evil spell that quickly rots the opponent
   alive; use it on an innocent bystander" wants a new spell (and the
-  conditions system); park with the magic content pass.
+  conditions system, which shipped 2026-07-26); park with the magic
+  content pass, alongside the school-wide cast rider that pass also owes.
 - **War-side-taking** ("a land has attacked a neighbor — help the
   aggressor") — already the dark content pass / war-integration item
   (villain roadmap 6); noted here so the brainstorm line has a home.
@@ -811,9 +779,12 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   authored. *(2026-07-26: slice 3b gets most of what it wanted for free
   — a crippling blow to a vital already reads as the killing one, and
   the same blow to a limb maims instead.)*
-- **Venom / conditions** — the bite carries the spider row until
-  conditions exist. *(2026-07-26: scheduled — the spider row is slice
-  3a's first customer, and its `level` annotation gets re-fit there.)*
+- ~~**Venom / conditions**~~ — SHIPPED 2026-07-26 (slice 3a). The great
+  spider is venomous and the pyromancer's fire clings. The `level`
+  annotations were deliberately NOT re-fit: both rows moved toward the
+  calibration band and stayed in family with a catalog that is broadly
+  annotated easy — see benchlog for the numbers, and "Re-annotate the
+  bestiary for the pain-2 party" below for the pass that owns it.
 - **Survival/adventure-sim pivot** (hunger, upkeep, inventory) — kept
   on the books as a possible deliberate pivot, but note 2026-07-19
   chose the GREED ECONOMY over food as the villain game's sink; this

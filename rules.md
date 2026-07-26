@@ -1678,8 +1678,11 @@ night peels it back.
   blink, which skips both): the haze buys the exit, not the legs.
   `retreat --smoke HERO`.
 
-Poisons and oils deliberately wait for the conditions system (the parked
-venom note — alchemy is its first customer).
+Poisons and oils are unblocked as of 2026-07-26 — the conditions framework
+shipped (the Conditions add-on) and alchemy is its first queued customer: a
+poison oil is a recipe plus one `apply_condition` call. The firebomb likewise
+does not set anything alight yet; hooking it to `burn` is a content-pass
+decision with its own bench round, not a framework one.
 
 ## Balance notes (benchlog 2026-07-17)
 
@@ -2104,6 +2107,120 @@ shortbow), the **slinger** (L1), the **hunter** (L3, drilled), the
 - **Flight ranks 3–4 unblock**: sustained flight vs a bestiary that can
   now shoot back is designable — scheduled with the magic content pass,
   not here.
+
+---
+
+# Conditions — Add-on (2026-07-26, the attrition rework's slice 3a)
+
+Lingering effects that keep costing you after the blow that caused them:
+**bleed**, **poison**, **burn**. One schema, one tick point, one stacking
+rule. It is built as a general framework rather than a bleed special case
+because it has been the named blocker behind varied enemies, venom, varied
+magic and fire for three design sessions — so it gets built once, properly,
+and the wound system (slice 3b) lands on top of it.
+
+`rpg.Condition` / `rpg.Entity.conditions`; the constants live in the
+conditions block at the top of `rpg.py`.
+
+## The schema
+
+| field | meaning |
+|-------|---------|
+| `kind` | `bleed` / `poison` / `burn` |
+| `power` | HP lost per tick |
+| `rounds` | how many ticks are left — **`None` = untimed** |
+| `source` | who or what put it there (display only, never mechanics) |
+
+**`rounds=None` is the load-bearing distinction.** An untimed condition does
+not run out on a clock: it survives the end of the fight, walks out of the
+room on its victim, and waits for something to *treat* it. A rounds count is
+the ordinary case — fire burns out on its own.
+
+## The tick
+
+At the **end of every round**, in this order: regenerators knit → conditions
+tick → Winded/Spent crossings are read. The order is deliberate both ways —
+a troll's knitting outruns a burn, and a tick can trip the pause the same
+round it lands.
+
+**A tick can never kill.** A body taken to 0 HP by a tick goes **Down**, with
+no crippling save involved. Steel kills; the blood loss after it only ever
+costs you the fight. A silent scalar killer would undo "lethality is real,
+then padded", and bleeding out has to stay treatable.
+
+**Stacking is bounded.** A second condition of the same kind on the same body
+*refreshes* — it takes `max(power)` and the longer duration, and an untimed
+dose wins outright over a timed one. It never adds a second copy and never
+sums the powers. Unbounded stacking is how condition systems become the only
+strategy worth playing.
+
+**The log gets one line per round, not one per condition per body.** Every
+ticking entity folds into a single collapsed line ("`Poisoned: Gard -1.`"),
+emitted quiet so the quiet-round collapse still works; the arithmetic goes to
+the detailed log. Going Down from a tick is a real event and gets its own
+line, worded by side exactly like the melee's own falls.
+
+## Clearing and treatment
+
+| what | clears | when |
+|------|--------|------|
+| end of fight | every **timed** condition | automatic (`_clear_fight_states`) |
+| **field stabilize** | bleeding, on anyone still standing | free, automatic at fight end, both sides |
+| healing potion / healing spell | bleeding | on the drink / the cast |
+| **the night** | everything still on you | `long_rest`, at a price |
+
+The field stabilize is the designer's line made mechanical: *after combat,
+stabilized, the wounds and the penalties remain and the blood pool stays
+lower, but the character is not actively dying.* It costs nothing and is
+never a decision — the alternative was a party that quietly bleeds to death
+walking to the next room.
+
+What it deliberately does **not** touch is venom. A poisoned hero walks out
+of the room still poisoned and ticks again in the next one; only sleeping it
+off ends it, and the night charges `POISON_NIGHT_HP` per condition off its
+own recovery (floored so a night is never a death sentence). That is the
+attrition point of the whole rework in miniature: with one fight per quest,
+pressing on has to cost blood, and a day already costs a job (the quest
+clock). The fuller treatment ladder — healer services, salves, the potion
+tiers — arrives with the wound system.
+
+Conditions do **not** persist for foes across a return trip: a room left
+alone binds its own wounds. Foes keep the scalar and nothing else, the same
+asymmetry the wound system will run on.
+
+## Who inflicts what
+
+The rider hangs on the **body**, not the delivery (`Entity.inflicts`): it is
+what this creature's attacks leave behind, whether that arrives as fangs, a
+bolt, or a shot. Two shipped customers:
+
+- **The great spider** — venomous. Untimed poison, so the row's whole shape
+  is now "it barely hurts you in the room and then follows you out of it".
+  This is what its STR 2 bite needed; the venom no longer has to hide inside
+  the raw damage.
+- **The pyromancer** — its fire clings. Timed burn, a couple of rounds.
+
+Both announce themselves in the roster's stat block, which is the enemy
+introduction: a venomous row that only revealed itself in the log would have
+cheated the player out of the decision.
+
+A **school-wide** rider — every fire bolt on the board burns, the ice
+school's rime as its precedent — is the obvious generalization and is
+deliberately not here. Measured 2026-07-26: hooking burn to the fire *cast*
+moved every single bestiary row, because the reference duo rolls fire
+wizards, so the hero side gains it too. That is a career-curve change, not a
+framework one; it is a one-line addition whenever the magic content pass is
+ready to bench it.
+
+## Balance
+
+`bench_bestiary` re-run at 2000 trials a column: exactly two rows moved, to
+the cell. Great Spider at level 89.5% → 81.9% win (wipe 0.8% → 5.2%);
+Pyromancer at level 92.4% → 87.7% (wipe 3.1% → 7.5%). Both moved *toward*
+the 55-75% calibration band and both remain on its easy side, along with
+most of the catalog — the standing "re-annotate the bestiary for the pain-2
+party" item, not this slice's business. Every other row, `tune.py` and
+`bench_training.py` are unchanged.
 
 ---
 

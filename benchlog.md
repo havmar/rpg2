@@ -1159,3 +1159,98 @@ comparability with every career number in this log).
    Save size roughly doubles on the quest side; `release_quest_places` keeps
    the Site/Room stores flat (~370 sites steady-state against 272 at
    worldgen), so it does not compound.
+
+---
+
+## 2026-07-26 — the attrition rework, SLICE 3a: the conditions framework
+
+**What shipped.** The general lingering-effect layer — bleed, poison, burn
+under one schema (`rpg.Condition`), one tick point (end of round in
+`group_combat`, between the regen loop and the Winded/Spent crossings), and
+one stacking rule (refresh, never add). Untimed conditions (`rounds=None`)
+survive `_clear_fight_states`; a free field stabilize at every fight exit
+stops bleeding on anyone still standing; venom is left alone by first aid and
+is sweated out over the night at `POISON_NIGHT_HP` off that night's recovery.
+A tick can only ever put a body **Down**, never kill it. Two customers: the
+great spider's venom and the pyromancer's clinging fire.
+
+**The acceptance was `bench_bestiary`, and it is met to the cell.** 2000
+trials a column, whole catalog, diffed against HEAD:
+
+| row | column | before | after |
+|---|---|---|---|
+| Great Spider (L3, 3x) | L1 win / wipe / down | 55.0 / 10.8 / 18.9 | **34.6 / 36.6 / 55.8** |
+| | **L3 (annotated)** | 89.5 / 0.8 / 2.5 | **81.9 / 5.2 / 14.4** |
+| | L5 | 99.2 / 0.1 / 0.5 | **97.7 / 0.8 / 3.6** |
+| Pyromancer (L6, 2x) | L4 | 77.0 / 14.4 / 17.2 | **65.0 / 26.7 / 36.5** |
+| | **L6 (annotated)** | 92.4 / 3.1 / 10.2 | **87.7 / 7.5 / 25.6** |
+| | L8 | 92.5 / 2.1 / 10.2 | **88.7 / 6.5 / 21.9** |
+
+Every one of the other 26 rows is **identical to the cell**. `tune.py`,
+`bench_training.py` and `python sites.py --seed 3` are byte-identical.
+
+**The annotations were left alone — the reasoning, so it stays settled.**
+Filling in the intermediate levels (2000 trials each) gives the honest fits:
+
+| row | L-2 | L-1 | annotated | L+1 |
+|---|---|---|---|---|
+| Great Spider | 34.6% | **71.6% (L2)** | 81.9% (L3) | 94.8% |
+| Pyromancer | 65.0% | **74.0% (L5)** | 87.7% (L6) | 90.2% |
+
+So by the harness's own 55-75% target, the spider now fits L2 and the
+pyromancer L5. They were **not** re-fitted, because they were already above
+the band *before* this change (89.5% and 92.4%) and so is most of the
+catalog — archer 80.9, skeleton 93.0, dire wolf 93.5, ghoul 92.0, bear 90.0,
+magus 90.5, wyvern 91.4, giant 98.8. Moving two rows in isolation would make
+them outliers in the other direction and would ripple into `quests.py`'s
+threat math (a lower annotation means MORE of them per room at a given
+level — venom compounding on itself) with no matching pass over the rest.
+Both rows moved toward the target and stayed in family. The catalog-wide
+re-annotation remains the parked "re-annotate the bestiary for the pain-2
+party" item, and now it has numbers attached.
+
+**A measurement worth recording, because it decided a design call.** The
+first cut hooked burn to the fire *cast* (`CAST_CONDITION = {"fire":
+"burn"}`), which is the general, obviously-right shape — the ice school's
+rime is exactly that. Measured, it moved **every row in the catalog**,
+because `bench_bestiary`'s reference duo rolls wizards and a rolled fire
+wizard then carries the rider too. Dire wolf L1 56.2 → 59.0, cutthroat L1
+64.5 → 63.0, and so on down the table. That is a career-curve change wearing
+a framework slice's clothes, so the rider was moved onto the BODY
+(`Entity.inflicts`) instead: the pyromancer burns, hero wizards do not. The
+school-wide version is a one-line addition whenever the magic content pass is
+ready to pay for its own bench round.
+
+Second artifact caught in the same run: the tick's fall line originally read
+"...goes down..." for both sides, and `bench_bestiary` greps `"goes down"` to
+count **hero** falls (foes fall with `"*** X falls. ***"`). It was inflating
+down% across the whole table. The tick now words its falls by side, exactly
+like the melee's own — a reminder that the bench greps are load-bearing on
+log wording.
+
+**Flags for the designer:**
+
+1. **The spider is a genuinely different row now**, and it is the first foe
+   in the game whose damage follows you out of the room. Its L1 column is
+   brutal (36.6% wipe against a level-1 duo) — that is the row being used
+   two levels under its annotation, which the generator does not do, but it
+   is worth knowing that a venomous swarm is swingy at the bottom.
+2. **`BLEED_POWER` has no customer yet.** Nothing in the shipped bestiary
+   bleeds; the knob exists because slice 3b's `Wound.bleed` is what will
+   drive it. That is why the bleed half of this slice costs zero bench
+   movement — the stabilize pass and the potion/spell clears are all built
+   and tested, waiting for wounds to feed them.
+3. **The night is currently the only answer to venom.** That is deliberate
+   for 3a (the treatment ladder is 3b's), but it means the one poison
+   decision at the table is "press on, or burn a day of the quest clock" —
+   which is exactly the pressure slice 2 built the clock for. If it reads as
+   *too* punishing before 3b lands, the dial is `POISON_NIGHT_HP` (2), not
+   `POISON_POWER`.
+4. **A poisoned hero who was Downed stands up at `REVIVE_HP` = 1 and can be
+   ticked straight back down at the end of that round.** Mechanically this
+   is correct — the tick never kills, they simply cannot fight while
+   poisoned and gutted — but it is the sharpest corner the venom created,
+   and one the party can already answer with a healing potion or by not
+   walking into the next room. Worth watching in play before touching
+   anything; the honest fix if it grates is a treatment rung, which is
+   exactly what 3b builds.

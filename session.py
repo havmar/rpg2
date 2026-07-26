@@ -77,6 +77,7 @@ from pathlib import Path
 
 from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
+    Condition, condition_tags,
     POTION_PRICE,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, HEALING_POTION_RESTORE,
@@ -318,6 +319,9 @@ def _entity_to_dict(e: Entity) -> dict:
     # serialized by identity, so a feint set up the instant a fight pauses
     # simply doesn't carry across the save -- a negligible edge.
     d["feint_target"] = None
+    # Conditions (slice 3a) DO travel: an untimed one outlives the fight, so
+    # it has to outlive the save too. dataclasses.asdict already flattened
+    # them into plain dicts.
     return d
 
 
@@ -328,6 +332,9 @@ def _entity_from_dict(d: dict) -> Entity:
     d["moves"] = set(d.get("moves", ()))
     d["moves_spent"] = set(d.get("moves_spent", ()))
     d["feint_target"] = None
+    # Conditions come back as dicts (and are simply absent in a pre-slice-3a
+    # save, which is the same thing as carrying none).
+    d["conditions"] = [Condition(**c) for c in d.get("conditions", ())]
     e = Entity(**d)
     # __post_init__ resets the live tracks to full; restore the saved state.
     e.hp = d["hp"]
@@ -418,6 +425,8 @@ def party_sheet_lines(state: dict) -> list[str]:
         if h.race:
             lines.append(" " * 12 + person_line(h))
         lines.append(" " * 12 + progress_line(h))
+        for ctag in condition_tags(h):
+            lines.append(" " * 12 + f"[{ctag}]")
     lines.append("")
     world = state.get("world")
     qid = state.get("active_quest")
@@ -813,6 +822,11 @@ def tally_lines(state: dict) -> list[str]:
             pens.append(f"Winded -{WINDED_PENALTY}")
         if pens:
             lines.append(f"  ({', '.join(pens)} to rolls)")
+        # What is still ON them after the fight (slice 3a): first aid stopped
+        # the bleeding, so anything listed here is what a night (or, later, a
+        # healer) has to answer -- and it ticks again in the next room.
+        for tag in condition_tags(h):
+            lines.append(f"  [{tag}]")
         lines.append(f"  ({kit or 'no kit'})")
     lines.append(f"Purse {purse.gold}g; day {clock.day}.")
     k = state.get("karma")
@@ -1276,6 +1290,8 @@ def cmd_status(args: argparse.Namespace) -> None:
         if h.race:
             print(" " * 14 + person_line(h))
         print(" " * 14 + progress_line(h))
+        for ctag in condition_tags(h):
+            print(" " * 14 + f"[{ctag}]")
     if local_recruits(state):
         print("  Candidates wait at the tavern -- `recruit` shows them.")
     world = state.get("world")
@@ -1359,6 +1375,10 @@ def print_pause_menu(state: dict) -> None:
             pens.append(f"Winded -{WINDED_PENALTY}")
         if pens:
             print(f"    ({', '.join(pens)} to rolls)")
+        # The tick is priced into the retreat decision: a bleeding hero
+        # loses HP every round the fight goes on, whatever else happens.
+        for ctag in condition_tags(h):
+            print(f"    [{ctag}]")
         print(f"    healing x{h.items.get('healing', 0)}, "
               f"stamina x{h.items.get('stamina', 0)}")
     print("  The player's call (a pause action "

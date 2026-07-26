@@ -1368,6 +1368,78 @@ GRAZE_FLOOR_MARGIN = 3
 TIER_ORDER = ["deflected", "graze", "wound", "grievous", "crippling blow"]
 TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "crippling blow": 6}
 
+# --- Conditions (2026-07-26, the attrition rework's slice 3a) --------------- #
+# The general lingering-effect framework: bleed, poison, burn under ONE schema,
+# ONE tick point, ONE stacking rule (rules.md's Conditions add-on). Built
+# general on purpose -- it has been the named blocker behind varied enemies,
+# venom, varied magic and fire for three design sessions, so it gets built once
+# rather than as a bleed special case.
+#
+# THE TICK sits at the end of every round in group_combat, immediately after
+# the regenerators knit and BEFORE the Winded/Spent crossings are checked -- so
+# a tick can trip the pause the same round it lands.
+#
+# A TICK CAN NEVER KILL. Taking a body to 0 puts it DOWN, with no crippling
+# save involved. Steel kills; the blood loss after it only ever costs you the
+# fight. A silent scalar killer would undo rules.md's "lethality is real, then
+# padded" intent, and bleeding out has to stay treatable.
+#
+# STACKING IS BOUNDED. A second condition of the same kind on the same body
+# REFRESHES the duration and takes max(power) -- it never adds a second copy
+# and never sums. Unbounded stacking is how condition systems become the only
+# strategy worth playing.
+CONDITION_STACK_RULE = "refresh"    # refresh the duration, take max(power),
+                                    # never add. The one rule; an "add" mode
+                                    # would need its own bench round.
+CONDITION_KINDS = ("bleed", "poison", "burn")
+
+BLEED_POWER = 1         # HP per round from an open wound. UNTIMED (rounds
+                        # None): blood does not clot on a schedule -- the free
+                        # FIELD STABILIZE at fight end is what stops it
+                        # (_stabilize). Slice 3b's Wound.bleed is this knob's
+                        # real customer; nothing in the shipped bestiary
+                        # bleeds yet, so it costs zero bench movement today.
+POISON_POWER = 1        # HP per round from venom (the great spider's bite).
+POISON_ROUNDS = None    # ...and venom does NOT stop with the fight: a
+                        # poisoned hero walks out of the room still poisoned
+                        # and ticks again in the next one. First aid is no use
+                        # against it (stabilize leaves it); the NIGHT is what
+                        # sweats it out. That is the attrition point -- with
+                        # one fight per quest, pressing on has to cost blood.
+POISON_NIGHT_HP = 2     # what sleeping off ONE lingering condition costs,
+                        # taken off the night's recovery (long_rest, floored
+                        # so a night is never a death sentence).
+BURN_POWER = 1          # HP per round while the fire is on you...
+BURN_ROUNDS = 2         # ...and it burns out on its own, so _clear_fight_states
+                        # drops it with the rest of the fight state.
+CONDITION_POWER = {"bleed": BLEED_POWER, "poison": POISON_POWER,
+                   "burn": BURN_POWER}
+CONDITION_ROUNDS = {"bleed": None, "poison": POISON_ROUNDS,
+                    "burn": BURN_ROUNDS}
+# First aid's reach: what the free stabilize at fight end clears off anyone
+# still standing. Bleeding stops under a bandage; venom and fire do not care.
+# (Slice 3b's wound-driven bleed is re-derived from the Wound record each
+# round, so a still-open wound goes on bleeding through this pass.)
+STABILIZE_CLEARS = ("bleed",)
+
+# A SCHOOL-WIDE rider (every fire bolt on the board leaves a burn, the ice
+# school's rime as its precedent) is the obvious generalization and is
+# deliberately NOT in this slice. Measured 2026-07-26: hooking burn to the
+# fire cast moved every single bestiary row, because the reference duo rolls
+# fire WIZARDS -- the hero side gains the rider too, and that is a career-curve
+# change, not a framework one. It is a one-line addition once the magic
+# content pass is ready to bench it. Slice 3a keeps the rider on the BODY
+# (Entity.inflicts), so the pyromancer burns and nothing else moves.
+
+# Log/display vocabulary. The collapsed tick line heads with the tags; the
+# roster's enemy introduction uses the on-hit line so a venomous row announces
+# itself before it bites.
+CONDITION_TAG = {"bleed": "bleeding", "poison": "poisoned", "burn": "burning"}
+CONDITION_NOUN = {"bleed": "the bleeding", "poison": "the poison",
+                  "burn": "the burns"}
+CONDITION_ON_HIT_TAG = {"bleed": "leaves wounds bleeding",
+                        "poison": "venomous", "burn": "its fire clings"}
+
 # --- Log vocabulary (the interpretive layer) -------------------------------- #
 # Every exchange logs two layers: a catchy headline (what a watcher would say)
 # and the raw numbers beneath it (every die, modifier, and source). See
@@ -1771,6 +1843,25 @@ class Purse:
     gold: int = 0
 
 
+@dataclass
+class Condition:
+    """One lingering effect riding one body (slice 3a -- see the conditions
+    constants block and rules.md's Conditions add-on).
+
+    `rounds=None` is the load-bearing distinction: the effect does NOT run out
+    on a clock. It survives _clear_fight_states, walks out of the room on its
+    victim, and waits for something to treat it (first aid at the fight's end
+    for bleeding, a night's sleep for venom). A rounds count is the ordinary
+    case -- fire burns out.
+
+    `power` is HP per tick; `source` is display/attribution only ("Great
+    Spider 2"), never mechanics."""
+    kind: str               # a CONDITION_KINDS member
+    power: int              # HP per tick (the tick can never kill -- see below)
+    rounds: int | None = None   # None = untimed: outlives the fight
+    source: str = ""        # who or what put it there (display only)
+
+
 @dataclass(eq=False)
 class Entity:
     name: str               # short (combat-log) name -- "Inga", nothing
@@ -1889,9 +1980,25 @@ class Entity:
                                          # party is a life-resource, spent one
                                          # member at a time; a party that
                                          # cannot win anyway still wipes.
+    inflicts: str = ""                  # the CONDITION this body's own attacks
+                                         # leave behind on a landed blow (slice
+                                         # 3a): the great spider's "poison",
+                                         # the pyromancer's "burn". Any
+                                         # delivery -- fangs, a bolt, a shot --
+                                         # because the rider belongs to the
+                                         # creature, not the swing. "" =
+                                         # nothing, which is the norm.
     hp: int = field(default=0)
     cur_sta: int = field(default=0)
     cur_power: int = field(default=0)
+    conditions: list["Condition"] = field(default_factory=list)
+                                         # the lingering effects on this body
+                                         # (slice 3a). NOT per-fight state:
+                                         # _clear_fight_states drops the timed
+                                         # ones, an untimed one rides out of
+                                         # the room and waits for treatment.
+                                         # At most one per kind (the bounded
+                                         # stacking rule -- apply_condition).
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
@@ -2377,6 +2484,161 @@ class Entity:
 
 
 # --------------------------------------------------------------------------- #
+# Conditions (slice 3a): the lingering-effect framework
+# --------------------------------------------------------------------------- #
+
+def condition_of(e: Entity, kind: str) -> Condition | None:
+    """The body's condition of that kind, or None. At most one per kind ever
+    exists (apply_condition enforces the bounded stacking rule)."""
+    for c in e.conditions:
+        if c.kind == kind:
+            return c
+    return None
+
+
+def condition_tags(e: Entity) -> list[str]:
+    """Display tags for everything currently on this body, worst first --
+    "poisoned -1 HP/round". The between-fights displays (the tally, `status`,
+    the party sheet) read this; the fight log has its own collapsed line."""
+    tags = []
+    for c in sorted(e.conditions, key=lambda c: -c.power):
+        tag = f"{CONDITION_TAG.get(c.kind, c.kind)} -{c.power} HP/round"
+        if c.rounds is not None:
+            tag += f", {c.rounds} rd"
+        tags.append(tag)
+    return tags
+
+
+def apply_condition(e: Entity, kind: str, source: str = "",
+                    power: int | None = None,
+                    rounds: "int | None | str" = "default") -> Condition:
+    """Put `kind` on `e` under CONDITION_STACK_RULE ("refresh").
+
+    A body already carrying that kind does NOT gain a second copy and does not
+    sum the powers: the existing condition takes max(power) and the longer of
+    the two durations, and an UNTIMED dose (rounds=None) wins outright -- once
+    something is bleeding freely, a timed dose does not hand it an expiry.
+    That bound is deliberate: unbounded stacking is how conditions become the
+    only strategy worth playing.
+
+    `power`/`rounds` default to the kind's knobs (CONDITION_POWER /
+    CONDITION_ROUNDS); pass them to author a stronger or shorter dose.
+    Returns the live condition."""
+    if power is None:
+        power = CONDITION_POWER.get(kind, 1)
+    if rounds == "default":
+        rounds = CONDITION_ROUNDS.get(kind)
+    cur = condition_of(e, kind)
+    if cur is None:
+        cur = Condition(kind=kind, power=power, rounds=rounds, source=source)
+        e.conditions.append(cur)
+        return cur
+    cur.power = max(cur.power, power)
+    if rounds is None or cur.rounds is None:
+        cur.rounds = None
+    else:
+        cur.rounds = max(cur.rounds, rounds)
+    if source:
+        cur.source = source
+    return cur
+
+
+def clear_conditions(e: Entity, kinds=None) -> list[str]:
+    """Strip conditions off a body. `kinds` = None clears everything (the
+    night); otherwise only those kinds (first aid clears STABILIZE_CLEARS).
+    Returns the kinds actually removed, for the caller's log line."""
+    gone = [c.kind for c in e.conditions
+            if kinds is None or c.kind in kinds]
+    e.conditions = [c for c in e.conditions if c.kind not in gone]
+    return gone
+
+
+def _tick_conditions(actors: list[Entity], party_set: set,
+                     log: list[str]) -> None:
+    """End-of-round condition tick -- the framework's one heartbeat.
+
+    Runs immediately after the regenerators knit and before the Winded/Spent
+    crossings are read, so a tick can trip the pause the same round it lands.
+    Every ticking body is folded into ONE collapsed player line, emitted
+    `quiet=` so the quiet-round collapse still works (a 40-column display
+    cannot afford a line per condition per entity per round); the arithmetic
+    goes to the detailed log.
+
+    A TICK NEVER KILLS: a body taken to 0 goes Down, with no crippling save
+    involved. Down is a real event, so it gets its own un-quiet line, worded
+    by side exactly as the melee's own fall lines are (`party_set` says which
+    is which) -- tune.py and the bench harnesses grep on that wording.
+
+    Timed conditions count down here and expire; untimed ones (rounds=None)
+    ride on. A body that has already fallen keeps only the untimed ones --
+    a corpse stops burning, but venom is still in it when it is helped up."""
+    parts: list[str] = []
+    kinds: list[str] = []
+    felled: list[Entity] = []
+    for e in actors:
+        if not e.conditions:
+            continue
+        if not e.alive:
+            e.conditions = [c for c in e.conditions if c.rounds is None]
+            continue
+        total = sum(c.power for c in e.conditions)
+        bits = ", ".join(
+            f"{c.kind} {c.power}"
+            + ("" if c.rounds is None else f" ({c.rounds} rd left)")
+            for c in e.conditions)
+        e.hp = max(0, e.hp - total)
+        _debug(log, f"        conditions: {e.name} -{total} HP [{bits}] "
+                    f"-> {e.hp}/{e.max_hp}, "
+                    f"-{e.wound_penalty} to rolls")
+        parts.append(f"{e.name} -{total},")
+        for c in e.conditions:
+            if c.kind not in kinds:
+                kinds.append(c.kind)
+        if e.hp <= 0:
+            e.down = True       # never dead: bleeding out stays treatable
+            felled.append(e)
+        for c in e.conditions:
+            if c.rounds is not None:
+                c.rounds -= 1
+        spent = [c.kind for c in e.conditions
+                 if c.rounds is not None and c.rounds <= 0]
+        if spent:
+            e.conditions = [c for c in e.conditions
+                            if c.rounds is None or c.rounds > 0]
+            _debug(log, f"        conditions: {e.name} -- "
+                        f"{', '.join(spent)} runs out")
+    if parts:
+        parts[-1] = parts[-1].rstrip(",") + "."
+        head = ", ".join(CONDITION_TAG.get(k, k) for k in kinds).capitalize()
+        _play(log,
+              f"    {head}: " + " ".join(parts),
+              fit_lines([f"{head}:"] + parts), quiet=True)
+    for e in felled:
+        if e in party_set:
+            _play(log, f"    {e.name} goes down, out of the fight.",
+                  f"{e.name} goes DOWN.")
+        else:
+            _play(log, f"    *** {e.name} falls. ***",
+                  f"{e.name} falls.")
+
+
+def _stabilize(entities: list[Entity], log: list[str]) -> None:
+    """The free field pass when the steel stops: pressure, a bandage, a belt
+    pulled tight. Everything in STABILIZE_CLEARS comes off anyone still
+    standing -- after a fight the party is HURT, not dying. Venom is not first
+    aid's business and rides on (the night sweats it out); fire went out with
+    the fight. Costs nothing and is never a decision: the alternative was a
+    party that quietly bleeds to death walking to the next room."""
+    helped = [e.name for e in entities
+              if e.alive and clear_conditions(e, STABILIZE_CLEARS)]
+    if helped:
+        _play(log,
+              f"    The bleeding is stopped: {', '.join(helped)}.",
+              fit_lines(["The bleeding is stopped:"]
+                        + _name_parts(helped, ".")))
+
+
+# --------------------------------------------------------------------------- #
 # Combat: a group melee
 # --------------------------------------------------------------------------- #
 
@@ -2854,6 +3116,29 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
               f"    {defender.name} is rimed with frost "
               f"(-{defender.dex_debuff} DEX for this fight)",
               f"{defender.name} is rimed with frost.")
+    # Conditions on a landed blow (slice 3a). The hook is the BODY, not the
+    # delivery: `inflicts` is what this creature's attacks leave behind,
+    # whether that is fangs, a bolt, or a shot. The great spider's venom and
+    # the pyromancer's clinging fire are the two shipped customers; a
+    # school-wide rider is the queued generalization (see the conditions
+    # constants block for why it is not in this slice).
+    left_behind = attacker.inflicts
+    if left_behind and dmg > 0 and defender.alive:
+        had = condition_of(defender, left_behind)
+        c = apply_condition(defender, left_behind, source=attacker.name)
+        if had is None or c.power > had.power:
+            # Only a NEW condition (or a dose that actually deepened one)
+            # is worth a line. Under the refresh rule a second bite on an
+            # already-poisoned body only tops the clock back up, and
+            # announcing that every round would bury the log it rides in.
+            note = ("until it is treated -- it does not stop with the fight"
+                    if c.rounds is None else f"{c.rounds} rounds")
+            _play(log,
+                  f"    {defender.name} is {CONDITION_TAG[left_behind]} "
+                  f"(-{c.power} HP at the end of each round, {note})",
+                  fit_lines([f"{defender.name} is "
+                             f"{CONDITION_TAG[left_behind]}",
+                             f"(-{c.power} HP/round)."]))
     if (cast in ("freeze", "hurl_foe") and dmg > 0 and defender.alive
             and defender.spell_ward < 2):
         # The control riders: a wounding flash-freeze locks the body, a
@@ -4384,6 +4669,11 @@ def group_combat(party: list[Entity], foes: list[Entity],
                       f"(+{e.hp - before} HP -> {e.hp}/{e.max_hp}, "
                       f"-{e.wound_penalty} to rolls)",
                       f"{e.name}'s wounds knit (+{e.hp - before} HP).")
+        # Conditions tick HERE (slice 3a): after the regenerators knit --
+        # a troll's knitting outruns a burn, as it should -- and before the
+        # Winded/Spent crossings are read below, so a tick can trip the
+        # pause the same round it lands.
+        _tick_conditions(actors, party_set, log)
         # The reload clock ticks on any round the shooter didn't fire --
         # walking, circling, even switching grips works the nock/crank.
         for e in actors:
@@ -4472,6 +4762,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
     _clear_fight_states(party + foes)
     _settle_fate_debt(party, foes, rng, log)
     survivors = [h for h in party if h.alive]
+    # First aid before the breath: the free stabilize pass (slice 3a) stops
+    # every open bleed on whoever is still standing, on both sides -- what it
+    # deliberately does NOT touch is venom.
+    _stabilize(party + foes, log)
     if survivors:
         _catch_breath(survivors, log)
     _flush_debug(log)
@@ -4511,8 +4805,15 @@ def _clear_fight_states(entities: list[Entity]) -> None:
     """End-of-fight cleanup for every per-fight state: the ice rime,
     invisibility, flight, stuns, possession, the per-foe disarm-attempt
     marker -- and the field state (advances, the reload clock, the melee
-    grip, the shot tallies). Nothing per-fight crosses fights."""
+    grip, the shot tallies). Nothing per-fight crosses fights.
+
+    Conditions (slice 3a) are the one deliberate exception, and the reason
+    they are not per-fight state: every TIMED condition drops here with the
+    rest of the fight (the fire goes out), while an UNTIMED one -- venom, an
+    open bleed -- rides out of the room on its victim and waits for treatment
+    (_stabilize handles the bleeding; the night handles the rest)."""
     for e in entities:
+        e.conditions = [c for c in e.conditions if c.rounds is None]
         e.dex_debuff = 0
         e.unseen = False
         e.aloft = 0
@@ -4678,6 +4979,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
         _clear_fight_states(party)  # the spell states drop on the run
+        _stabilize(party, log)      # ...and the bleeding is bound past the door
         _catch_breath(runners, log)
         return True
 
@@ -4696,6 +4998,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
         _clear_fight_states(party)  # the spell states drop on the run
+        _stabilize(party, log)      # ...and the bleeding is bound past the door
         _catch_breath(runners, log)
         return True
     _play(log,
@@ -4749,6 +5052,7 @@ def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
     for h in party:
         h.fate_debt = False     # a fled fight is not a won one: waived
     _clear_fight_states(party)
+    _stabilize(party, log)
     runners = [h for h in party if h.alive]
     if runners:
         _catch_breath(runners, log)
@@ -4765,6 +5069,10 @@ def refresh_foes_after_retreat(foes: list[Entity],
     survivors = [f for f in foes if not f.dead]
     _clear_fight_states(survivors)  # no spell state survives to a return trip
     for f in survivors:
+        f.conditions = []           # a room left alone binds its own wounds:
+                                    # foes carry no condition to a return trip
+                                    # (they keep the scalar and nothing else --
+                                    # the same asymmetry wounds will run on)
         f.cur_sta = f.sta
         if f.regen or (days_passed > 0 and not f.undead):
             # A fled regenerator is a healed one, same day or not -- the
@@ -6026,6 +6334,7 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
                          f"{target.name} STANDS",
                          f"(HP {target.hp}/{target.max_hp}).",
                          f"[{healer.cur_power} Power left]"]))
+        _mend_bleeding(target, log)
         return True
     amount = HEALING_MEND[effective]
     before = target.hp
@@ -6039,7 +6348,17 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
                      f"{target.name}:",
                      f"HP {target.hp}/{target.max_hp}.",
                      f"[{healer.cur_power} Power left]"]))
+    _mend_bleeding(target, log)
     return True
+
+
+def _mend_bleeding(target: Entity, log: list[str]) -> None:
+    """Healing magic closes what is open (slice 3a's rung of the treatment
+    ladder): a landed mend stops any bleeding. Venom is a different art --
+    the antidote/healer tiers arrive with the wound system."""
+    if clear_conditions(target, ("bleed",)):
+        _play(log, f"    {target.name}'s bleeding closes over.",
+              f"{target.name.split()[0]}'s bleeding closes over.")
 
 
 DRINKABLE_KINDS = ("healing", "stamina", "power", "strength", "dexterity")
@@ -6094,6 +6413,11 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
                   fit_lines([f"{first} drinks a healing potion:",
                              f"HP {h.hp}/{h.max_hp}",
                              f"({h.items['healing']} left)."]))
+        # The basic potion's reach on the conditions ladder (slice 3a): blood
+        # loss, nothing else. It closes what is open; it is no antidote.
+        if clear_conditions(h, ("bleed",)):
+            _play(log, f"    {h.name}'s bleeding closes over.",
+                  f"{first}'s bleeding closes over.")
     elif kind == "stamina":
         before = h.cur_sta
         if h.cur_sta >= h.sta:
@@ -6380,6 +6704,27 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
             h.str_ -= h.str_buff
             h.dex -= h.dex_buff
             h.str_buff = h.dex_buff = 0
+        # Whatever outlived the fight is sweated out over the night (slice
+        # 3a): venom, an open bleed nobody bound. It is not free -- each one
+        # costs POISON_NIGHT_HP off the night's recovery -- but a night is
+        # never a death sentence, so the price floors at 1 HP. This is the
+        # between-fights half of the conditions layer: the reason pressing on
+        # to the next room poisoned is a real decision and sleeping it off is
+        # a real cost. (Slice 3b's treatment ladder -- healer, salve, the
+        # potion tiers -- is what will buy a faster answer than a night.)
+        slept_off = clear_conditions(h)
+        if slept_off:
+            cost = POISON_NIGHT_HP * len(slept_off)
+            h.hp = max(1, max(h.hp, 0) - cost)
+            what = " and ".join(CONDITION_NOUN.get(k, k) for k in slept_off)
+            _play(log,
+                  f"    {h.name} sweats out {what} "
+                  f"(-{cost} HP off the night -> {h.hp}/{h.max_hp})",
+                  fit_lines([f"{h.name.split()[0]} sweats out"]
+                            + _name_parts(
+                                [CONDITION_NOUN.get(k, k) for k in slept_off],
+                                ":")
+                            + [f"-{cost} HP."]))
         before = h.hp
         h.hp = min(h.max_hp, max(h.hp, 0) + h.hp_regen_per_night)
         note = f"STA and Power full ({h.cur_sta}/{h.sta}, "

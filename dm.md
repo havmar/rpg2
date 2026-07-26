@@ -855,6 +855,24 @@ bigger than the fights WITHOUT pages of narration:
   it from there when it matters ("Sela is at -3; every exchange leans wrong
   now"). Small beasts (wolves, spiders) still feel every point; apex
   monsters divide by 3-4.
+- **Conditions -- bleed, poison, burn (2026-07-26).** They tick at the end of
+  every round for their power in HP, and a tick can only ever put someone
+  **Down**, never kill. The log folds them into one line a round
+  ("`Poisoned: Gard -1.`") -- read it, don't restate it. What the player has
+  to decide around:
+  - **When the steel stops, the party is stabilized for free.** Bleeding
+    stops on anyone still standing, both sides. Don't narrate first aid as
+    an event, and never charge for it.
+  - **Venom does not stop.** A poisoned hero walks out of the room still
+    poisoned and ticks again in the next fight; the tally and `status` carry
+    it as `[poisoned -1 HP/round]`. Only the NIGHT ends it, and it eats
+    2 HP off that night's recovery per condition. So "press on to the next
+    room poisoned, or burn a day of the quest clock sleeping it off" is a
+    real question -- put it to the player when it comes up, once, plainly.
+  - The two rows that carry it: the **great spider** (venomous) and the
+    **pyromancer** (its fire clings for a couple of rounds). Both say so in
+    the roster block, which the player reads before the first exchange --
+    so the venom is never a gotcha, and you don't need to foreshadow it.
 - Skeletons are undead, the exception enemies: **tireless** (never spend STA,
   never Winded/Spent -- they don't tire, you do). The barrow
   is an endurance war you can lose by simply running dry.
