@@ -191,9 +191,15 @@ a pointer: what the file is, how it's run, where its docs are.
   `QUEST_PLACE_REQUIREMENTS` tag/template routing layer,
   and per-race quest
   templates with reskin tables (since 2026-07-12 each also authors a
-  `giver` role and an `epilogue` line), and seeded worldgen with asserted
-  XP coverage to the level cap — which since 2026-07-12 also attaches a
-  generated giver face to every quest (`attach_giver`) and casts each
+  `giver` role and an `epilogue` line; since 2026-07-26 a
+  `failure_epilogue` too), the QUEST CLOCK and the banded lazy refill
+  (2026-07-26, slice 2: `stamp_quest_clock` / `quest_band` /
+  `quest_expired` / `expire_settlement_board` / `refresh_settlement_board`
+  / `release_quest_places` / `next_quest_id` — rules.md's Quest System,
+  "The clock"), and seeded worldgen, which now posts ONE job per
+  settlement and stops (the asserted XP coverage to the level cap is
+  DELETED — expiry made the assert a lie) — and which since 2026-07-12 also
+  attaches a generated giver face to every quest (`attach_giver`) and casts each
   land's three persistent notables (`RULER_TITLES` / `SAGE_ROLES` /
   `WILDCARD_ROLES`, `world["npcs"]`). Since 2026-07-14 also the
   cross-land deliveries (`DELIVERY_TEMPLATES`, `build_delivery_quest`,
@@ -491,7 +497,9 @@ mechanic *does* and *why* is rules.md's job.
   knobs (racial `RACE_MODS`, `PAIR_CHANCE`, `ARMORED_DEF_BONUS`,
   `TRAIT_GOLD`, `INTEREST_PLACES`) sit at the top of `people.py`. The
   quest generator's own knobs sit at the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
-  `PACK_CAP`, `BOSS_ALLOWANCE`, `WORLD_XP_MARGIN`, settlement bands), and
+  `PACK_CAP`, `BOSS_ALLOWANCE`, the quest-clock block `QUEST_WINDOW_DAYS` /
+  `QUEST_QUICK_SHARE` / `QUEST_GRACE_DAYS` / `QUEST_PAY_BANDS` /
+  `QUEST_REFILL_PER_DAY`, settlement bands), and
   so do the navigation layer's (`TRAVEL_DAYS_*`, `TRAVEL_ENCOUNTER_CHANCE`,
   `EXPLORE_*`, `WILD_LEVEL_DECAY`, `SPOTTED_MARGIN`, `AMBUSH_CHANCE`,
   `WILD_SPOTTED_CHANCE`, `HUNT_LEVEL_REACH`, `HUNT_AMBUSH_CHANCE`,
@@ -638,8 +646,33 @@ mechanic *does* and *why* is rules.md's job.
 - **Generation** — `quests.py`: `threat_value` / `build_room` /
   `build_site_rooms` (the threat math), `TEMPLATES` / `EPIC_TEMPLATES`
   (the per-race quest tables + reskins), `build_quest` / `forge_quest`,
-  `generate_world` (+ the coverage top-up), `quest_to_sites` (generated
+  `generate_world` (the one-job-per-settlement SEED since 2026-07-26),
+  `quest_to_sites` (generated
   quest -> `Site` instances for the sims), the board readout helpers.
+- **The quest clock & the live board** (2026-07-26, the attrition rework's
+  slice 2 — rules.md's Quest System, "The clock") — `quests.py`: the
+  constants block, `stamp_quest_clock` / `quest_days_left` / `quest_band` /
+  `quest_pay_mult` / `quest_expired` / `deadline_note` / `failure_line`,
+  `next_quest_id` (the world's monotonic id counter, `world["quest_seq"]`),
+  `release_quest_places` (a dead posting gives its Sites back),
+  `board_slots` / `open_quests` / `expire_settlement_board` /
+  `refresh_settlement_board` / `refresh_deliveries`, the `day` parameter on
+  `quest_line` / `board_lines` / `quest_detail_lines`, and the
+  `failure_epilogue` field on every good/epic/delivery template.
+  `session.py`: `board_clock` / `print_board_clock` (called at EVERY day
+  advance — travel out and travel in, explore, each camp night, tavern,
+  downtime — and on `board`), `_remember_failure` / `take_failure_rumors`
+  (the settlement's `rumors` list, told once), the band multiplier in
+  `_close_site` and `deliver_if_arrived`, the clock lines in `tally_lines` /
+  `cmd_status` / `cmd_take` / `party_sheet_lines`, `open_quests` in
+  `map_sheet_lines`, and `forge --days N`. `karma.py` and `story.py` post
+  jobs with NO clock on purpose (day-scoped shadow offers; an authored
+  questline does not lapse). `bench_quests.py`: `run_board_clock` and the
+  banded turn-in in `run_career`. `people.py`: `pick_name` numbers its
+  overflow (`Brand II`, `Brand 3`) instead of choosing from an empty pool —
+  a churning board asks for far more faces than the 25-a-race/sex pools
+  hold, and the giver namespace is now the names IN USE (recomputed in
+  `board_clock`), never a persisted ledger.
 - **The story layer** (2026-07-12) — `quests.py`: template `giver`/
   `epilogue` fields, `attach_giver`, the central cast
   (`_cast_the_land` + the role tables, `world["npcs"]`). `people.py`:
@@ -787,12 +820,42 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-26, after the attrition rework's SLICE 1 — quest
-shape, the pay rebase, and the deletion of the XP streak and the short rest.
-Session C's alchemy layer and sessions A/B's point economy still underlie
-doctrine v2.) The full dated report of every measured re-tuning lives in
-`benchlog.md`; this is only the standing summary — refresh it whenever a new
-entry lands there.**
+**Current state (2026-07-26, after the attrition rework's SLICES 1 and 2 —
+quest shape, the pay rebase, the two deletions, and then the quest clocks +
+the banded lazy refill. Session C's alchemy layer and sessions A/B's point
+economy still underlie doctrine v2.) The full dated report of every measured
+re-tuning lives in `benchlog.md`; this is only the standing summary — refresh
+it whenever a new entry lands there.**
+
+**Slice 2 (2026-07-26) changed no combat math and nothing in the fixtures
+moved** — `tune.py`, `bench_training.py`, `bench_party.py`,
+`bench_weapons.py`, `bench_ranged.py` and `bench_quests`' encounter/site rows
+all read exactly as the slice-1 block below. What moved is the CAREER:
+
+- **The clock:** `QUEST_WINDOW_DAYS` = (3, 7) rolled per posting,
+  `QUEST_QUICK_SHARE` = 1/3, `QUEST_GRACE_DAYS` = 3, pay bands
+  **quick 1.15 / on time 1.00 / late 0.60 / expired 0**.
+  `QUEST_REFILL_PER_DAY` = 1 per settlement (a board's first look fills it to
+  its `SETTLEMENT_KINDS` slot count).
+- **Careers** (500): reach **L5 89% / L8 72% / L11 47% / L14 16% / L17 9% /
+  L20 4.2%**, median death **L10**, capped median **78 days / 34 quests**
+  (p10-p90 60-94 days). Against slice 1's 85/70/40/17/8/6.4, death L9, 81
+  days / 37 quests: the beatability curve survived, the mid band drifted
+  slightly survival-ward again, and **days to cap held at ~78** (the
+  designer's call: the 158-day calendar is not coming back, and 80 is fine).
+- **The board never runs dry:** 0/500 careers exhausted it, ~660 postings
+  expire unfinished per career, ~129 live jobs standing at the end. The
+  up-front XP-coverage assert is deleted and nothing replaced it but the
+  measurement.
+- **Turn-in bands in the sim: quick 51% / on time 43% / late 4% / expired
+  1%.** That quick share is a sim artifact, not a play prediction — the
+  career sim has no travel layer, so its jobs land 2-3 days faster than a
+  played one ever will. Do not read it as "the premium is too easy to get";
+  re-read it after the road is priced in.
+- **The open dial** if the clock ever needs to bite harder or softer, in
+  order: `QUEST_WINDOW_DAYS`, then `QUEST_PAY_BANDS["late"]`, then
+  `QUEST_GRACE_DAYS`. Never the refill rate — an empty board is not
+  difficulty, it is a dead world.
 
 **The slice-1 rebaseline (2026-07-26).** Every fixture number below moved
 because `run_site` lost a whole recovery step (the short rest is deleted), and
@@ -824,11 +887,11 @@ the game getting harder:
   because a job is no longer four fights deep.
 - **Careers** (500): reach **L5 85% / L8 70% / L11 40% / L14 17% / L20
   6.4%**, median death **L9**, capped median **81 days / 37 quests**.
-- **The open flag: days to cap fell 158 -> 81** (gold per quest unchanged, so
-  gold per DAY roughly doubled). Slice 2's clocks and banded refill are what
-  have to put the calendar back; its own acceptance target now reads against
-  81, not 158. **Ask the designer before slice 2 whether 158 is still the
-  target.** The hideout fixture also fell out of its 55-65 band (50.8) — the
+- **The flag that was: days to cap fell 158 -> 81** (gold per quest
+  unchanged, so gold per DAY roughly doubled). **Settled 2026-07-26 by the
+  designer: the shorter calendar stands.** Slice 2 was therefore built to
+  HOLD ~80 days, not to restore 158, and it does (78). The hideout fixture
+  also fell out of its 55-65 band (50.8) — the
   standing flag is reopened at fixture level, but no lever was pulled: doing
   so now would confound slice 3b's full rebaseline.
 

@@ -29,6 +29,12 @@ THREAT_BASE, ROOM_SHARES, BOSS_ALLOWANCE are tuned against this file):
    real player). Reports how many careers reach the cap, die, or run out of
    board, and the pace (days, quests) of the ones that make it.
 
+   Since 2026-07-26 (slice 2) the career also runs the BOARD'S CLOCK between
+   jobs (`run_board_clock`): postings expire, settlements refill, and the
+   turn-in is paid in its band. The sim has no travel layer, so its jobs land
+   faster than a played one's -- read the band split with that caveat
+   (benchlog), and read "board exhausted: 0%" as the slice's real acceptance.
+
 Run:  python bench_quests.py [--trials N] [--careers N] [--part enc|site|career]
 """
 
@@ -45,7 +51,10 @@ from bench_bestiary import reference_hero
 from quests import (TEMPLATES, EPIC_TEMPLATES, template_band, build_room,
                     build_site_rooms, room_budget, generate_world,
                     quest_to_sites, quest_xp_posted, xp_to_cap,
-                    QUEST_ENCOUNTERS)
+                    QUEST_ENCOUNTERS, QUEST_PAY_BANDS,
+                    settlements, expire_settlement_board,
+                    refresh_settlement_board, refresh_deliveries,
+                    quest_band, quest_days_left, quest_expired)
 
 ALL_TEMPLATES = [t for table in TEMPLATES.values() for t in table]
 ALL_TEMPLATES += EPIC_TEMPLATES
@@ -210,25 +219,50 @@ def _shop_and_rest(party, clock, purse, rng, log) -> None:
     _allocate_points(party, log)
 
 
-def _pick_quest(world, done: set[str], party_level: int):
+def run_board_clock(world, day: int, rng: random.Random) -> int:
+    """The career sim's stand-in for session.board_clock: expire the closed
+    windows off every settlement's board and let each settlement refill
+    (2026-07-26, slice 2). The sim has no travel layer, so it reads the whole
+    world as one board -- and therefore runs the clock on the whole world.
+    Returns how many postings expired unfinished."""
+    gone = 0
+    for s in settlements(world):
+        gone += len(expire_settlement_board(world, s, day))
+        refresh_settlement_board(world, s, day, rng)
+    refresh_deliveries(world, day, rng)
+    return gone
+
+
+def _pick_quest(world, done: set[str], party_level: int, day: int):
     """The board policy: the best-paying quest at least one level BELOW the
     party (the intended arc -- bank levels and steel on work you outmatch,
     step up only when the board forces it; an early draft that always took
     party level + 1 died at median level 2, the barrow-on-day-one mistake).
     If nothing sits below, the lowest-level quest posted. Returns
-    (quest, forced_up)."""
+    (quest, forced_up).
+
+    Since 2026-07-26 the tie-break is the CLOCK: among equally good work the
+    sim takes the freshest window. That is the whole extent of its deadline
+    play -- it does not hurry, skip a stale job, or read the pay bands, so
+    the late turn-ins it eats are the floor a real player sits above (the
+    standing tuning principle: the sims understate the player)."""
     open_q = [q for q in world["quests"].values()
               if q["status"] == "open" and q["id"] not in done
-              and q.get("kind") != "delivery"]   # the career sim has no
-                                                 # travel layer to carry one
+              and q.get("kind") != "delivery"   # the career sim has no
+                                                # travel layer to carry one
+              and not quest_expired(q, day)]
     if not open_q:
         return None, False
+    def freshest(q):
+        return (q["level"], quest_days_left(q, day) or 0)
     for depth in (2, 1):        # grind two below when the board allows it,
                                 # one below when it doesn't
         safe = [q for q in open_q if q["level"] <= max(1, party_level - depth)]
         if safe:
-            return max(safe, key=lambda q: q["level"]), False
-    q = min(open_q, key=lambda q: q["level"])
+            return max(safe, key=freshest), False
+    def stalest(q):
+        return (q["level"], -(quest_days_left(q, day) or 0))
+    q = min(open_q, key=stalest)
     return q, q["level"] > party_level + 1
 
 
@@ -300,31 +334,41 @@ def run_career(seed: int) -> dict:
     done: set[str] = set()          # cleared or abandoned: never retaken
     quests_cleared = 0
     forced_up = 0
+    expired = 0                     # postings the board lost unfinished
+    bands: Counter[str] = Counter() # what the turn-ins were worth
+    clock_day = -1
     log: list[str] = []
 
     def party_level() -> int:
         return max(h.level for h in party if not h.dead)
+
+    def result(end: str, level: int) -> dict:
+        return {"end": end, "level": level, "days": clock.day,
+                "quests": quests_cleared, "forced_up": forced_up,
+                "expired": expired, "bands": bands,
+                "board": sum(1 for q in world["quests"].values()
+                             if q["status"] == "open"
+                             and not quest_expired(q, clock.day))}
 
     while True:
         if any(h.dead for h in party):
             # First true death ends the career (session play's PC rule, and
             # a halved duo against duo-baseline content is dead anyway --
             # the party-size sweep's 15%-solo-clear number).
-            return {"end": "died", "level": max(h.level for h in party),
-                    "days": clock.day, "quests": quests_cleared,
-                    "forced_up": forced_up}
+            return result("died", max(h.level for h in party))
         if party_level() >= LEVEL_CAP:
-            return {"end": "capped", "level": LEVEL_CAP, "days": clock.day,
-                    "quests": quests_cleared, "forced_up": forced_up}
+            return result("capped", LEVEL_CAP)
         if clock.day >= CAREER_MAX_DAYS:
-            return {"end": "timeout", "level": party_level(),
-                    "days": clock.day, "quests": quests_cleared,
-                    "forced_up": forced_up}
-        quest, was_forced = _pick_quest(world, done, party_level())
+            return result("timeout", party_level())
+        # The board's clock, run between jobs: the days the last one cost
+        # close windows on the ones nobody took, and the settlements post
+        # fresh work (session.board_clock's bench sibling).
+        if clock.day != clock_day:
+            expired += run_board_clock(world, clock.day, rng)
+            clock_day = clock.day
+        quest, was_forced = _pick_quest(world, done, party_level(), clock.day)
         if quest is None:
-            return {"end": "no_content", "level": party_level(),
-                    "days": clock.day, "quests": quests_cleared,
-                    "forced_up": forced_up}
+            return result("no_content", party_level())
         forced_up += was_forced
         cleared_all = True
         level = quest["level"]
@@ -342,13 +386,21 @@ def run_career(seed: int) -> dict:
                 break
             _shop_and_rest(party, clock, purse, rng, log)
         if cleared_all and quest["sites"]:
-            # The turn-in: the whole job's lump, paid once (2026-07-26).
-            rpg.award_quest(party, purse, rpg.quest_gold(level, enc),
-                            rpg.quest_clear_xp(level, enc), log,
-                            quest["name"])
-        quest["status"] = "done" if cleared_all else quest["status"]
+            # The turn-in: the whole job's lump, paid once (2026-07-26), and
+            # banded by the day it lands (slice 2). A job carried past the
+            # grace pays NOTHING at the turn-in -- the fights it already paid
+            # for are kept.
+            band = quest_band(quest, clock.day)
+            mult = QUEST_PAY_BANDS[band]
+            bands[band] += 1
+            if mult:
+                rpg.award_quest(party, purse,
+                                round(rpg.quest_gold(level, enc) * mult),
+                                round(rpg.quest_clear_xp(level, enc) * mult),
+                                log, quest["name"])
+            quest["status"] = "done" if mult else "failed"
+            quests_cleared += bool(mult)
         done.add(quest["id"])
-        quests_cleared += cleared_all
 
 
 def bench_careers(n: int) -> None:
@@ -381,10 +433,23 @@ def bench_careers(n: int) -> None:
     stalls = sum(r["forced_up"] for r in results)
     print(f"forced-up picks (nothing within party level +1 on the board): "
           f"{stalls / n:.2f} per career")
+    # The clock (slice 2): the board must churn and must never run dry.
+    bands: Counter[str] = Counter()
+    for r in results:
+        bands.update(r["bands"])
+    turned_in = sum(bands.values()) or 1
+    split = "  ".join(f"{b}: {100 * bands[b] / turned_in:.0f}%"
+                      for b in ("quick", "on time", "late", "expired"))
+    print(f"turn-ins by band   {split}")
+    boards = sorted(r["board"] for r in results)
+    print(f"expired postings: {sum(r['expired'] for r in results) / n:.1f} "
+          f"per career; live board at the end: median "
+          f"{boards[len(boards) // 2]} open job(s) "
+          f"(p10 {boards[len(boards) // 10]})")
     total = sum(quest_xp_posted(q) for q in
                 generate_world(1)["quests"].values())
-    print(f"(a fresh world posts ~{total} XP; a duo needs {xp_to_cap(1)} "
-          f"to L{LEVEL_CAP})")
+    print(f"(a fresh world SEEDS ~{total} XP and refills as days pass; "
+          f"a duo needs {xp_to_cap(1)} to L{LEVEL_CAP})")
 
 
 def main() -> None:

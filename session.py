@@ -142,7 +142,12 @@ from quests import (generate_world, forge_quest, board_lines,
                     HUNT_AMBUSH_CHANCE,
                     CAMP_ENCOUNTER_CHANCE,
                     HUNT_LEVEL_REACH,
-                    notice_contest, foes_preferred_field)
+                    notice_contest, foes_preferred_field,
+                    expire_settlement_board, refresh_settlement_board,
+                    refresh_deliveries, next_quest_id, release_quest_places,
+                    quest_band, quest_expired, deadline_note, failure_line,
+                    open_quests, board_forecast,
+                    QUEST_GRACE_DAYS, QUEST_PAY_BANDS)
 from places import (
     discover_area, materialize_natural_site, materialize_house,
     active_known_facts, place_debug_lines, find_place,
@@ -415,9 +420,12 @@ def party_sheet_lines(state: dict) -> list[str]:
     lines.append("")
     world = state.get("world")
     qid = state.get("active_quest")
-    if world and qid:
+    if world and qid and qid in world["quests"]:
         q = world["quests"][qid]
-        if q["status"] == "done":
+        if q["status"] in ("failed", "expired"):
+            lines.append(f"active quest [{qid}] {q['name']} is LOST "
+                         f"(the window closed)")
+        elif q["status"] == "done":
             lines.append(f"active quest [{qid}] {q['name']} is COMPLETE")
         elif q.get("kind") == "delivery":
             lines.append(f"active quest: [{qid}] DELIVERY {q['name']} -- "
@@ -430,6 +438,9 @@ def party_sheet_lines(state: dict) -> list[str]:
             lines.append(f"active quest: [{qid}] L{q['level']} {q['name']} "
                          f"-- next: {s['name']} (L{s['level']}), room "
                          f"{cur['room'] + 1}/{len(rooms)}")
+        note = deadline_note(q, clock.day) if q["status"] == "open" else ""
+        if note:
+            lines.append(f"  due day {q['deadline_day']} -- {note}")
     k = state.get("karma")
     if k and k.get("bad_total"):
         lines.append(f"karma: {karma.karma_line(k, party_level(state))}")
@@ -463,7 +474,7 @@ def accepted_quests(state: dict) -> list[dict]:
         taken.add(state["active_quest"])
     out = []
     for qid, q in world["quests"].items():
-        if q.get("status") == "done":
+        if q.get("status") in ("done", "failed", "expired"):
             continue
         progressed = q.get("next", {"site": 0, "room": 0}) != {"site": 0,
                                                                 "room": 0}
@@ -520,8 +531,10 @@ def map_sheet_lines(state: dict) -> list[str]:
             area = world["areas"][key]
             if not area.get("known"):
                 continue
-            open_q = sum(1 for qid in area["quests"]
-                         if world["quests"][qid]["status"] == "open")
+            # What a visit would FIND today, not what is stored: the board's
+            # clock only runs where the party stands, so a raw count would
+            # show a land it left decaying to zero (quests.board_forecast).
+            open_q = board_forecast(world, area, state["clock"].day)
             if area["key"] == pos["area"]:
                 where = "  <- the party"
             elif area["key"] in visited or area.get("visited"):
@@ -807,8 +820,8 @@ def tally_lines(state: dict) -> list[str]:
     qid = state.get("active_quest")
     world = state.get("world")
     if qid and world:
-        q = world["quests"][qid]
-        if q["status"] == "open" and q.get("kind") != "delivery":
+        q = world["quests"].get(qid)
+        if q and q["status"] == "open" and q.get("kind") != "delivery":
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
             left = len(site_rooms(world, s)) - cur["room"]
@@ -816,9 +829,19 @@ def tally_lines(state: dict) -> list[str]:
             ahead = f"Ahead: {left} fight(s) at {s['name']}"
             if sites_after:
                 ahead += f", then {sites_after} more place(s)"
-            lump = quest_clear_xp(q["level"], q.get("encounters", 1))
-            lines.append(f"{ahead}; the turn-in pays "
-                         f"{quest_gold_posted(q)}g, {lump} XP.")
+            # The turn-in is quoted AT TODAY'S BAND (2026-07-26): the number
+            # the player budgets against is what the job pays if it is handed
+            # over now, not what the board advertised on the day it posted.
+            band = quest_band(q, clock.day)
+            mult = QUEST_PAY_BANDS[band]
+            lump = round(quest_clear_xp(q["level"],
+                                        q.get("encounters", 1)) * mult)
+            gold = round(quest_gold_posted(q) * mult)
+            lines.append(f"{ahead}; the turn-in pays {gold}g, {lump} XP.")
+            note = deadline_note(q, clock.day)
+            if note:
+                lines.append(f"  (due day {q['deadline_day']} -- {note}; "
+                             f"{band} pay, x{mult:g})")
     return lines
 
 
@@ -1240,14 +1263,18 @@ def cmd_status(args: argparse.Namespace) -> None:
         print("  Candidates wait at the tavern -- `recruit` shows them.")
     world = state.get("world")
     if world:
-        open_q = sum(1 for q in world["quests"].values()
-                     if q["status"] == "open")
+        day = state["clock"].day
+        open_q = sum(board_forecast(world, s, day)
+                     for s in settlements(world))
         print(f"  Board: {open_q} open quest(s) across "
               f"{len(settlements(world))} settlement(s) -- see `board`.")
     qid = state.get("active_quest")
-    if qid:
+    if qid and world and qid in world["quests"]:
         q = world["quests"][qid]
-        if q["status"] == "done":
+        if q["status"] in ("failed", "expired"):
+            print(f"  Active quest [{qid}] {q['name']} is LOST -- its "
+                  f"window closed. Take a new one.")
+        elif q["status"] == "done":
             print(f"  Active quest [{qid}] {q['name']} is COMPLETE -- "
                   f"take a new one.")
         elif q.get("kind") == "delivery":
@@ -1261,6 +1288,10 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"  Active quest: [{qid}] L{q['level']} {q['name']} -- "
                   f"next: {s['name']} (L{s['level']}), room "
                   f"{cur['room'] + 1}/{len(rooms)}. Fight it with `room`.")
+        note = deadline_note(q, state["clock"].day)
+        if note and q["status"] == "open":
+            print(f"    (due day {q['deadline_day']} -- {note}; "
+                  f"{quest_band(q, state['clock'].day)} pay)")
     k = state.get("karma")
     if k and (k.get("bad_total") or k.get("good_total")):
         print(f"  Karma: {karma.karma_line(k, party_level(state))} "
@@ -1571,6 +1602,104 @@ def record_karma(state: dict, xp: int, align: str, log: list) -> None:
                            party_level(state))
 
 
+SETTLEMENT_RUMOR_CAP = 4    # failure rumors a settlement remembers
+
+
+def _remember_failure(settlement: dict, quest: dict, day: int) -> None:
+    """Leave a day-stamped rumor behind: what happened because nobody took
+    the job. The party hears it next time it asks around here."""
+    rumors = settlement.setdefault("rumors", [])
+    rumors.append({"day": day, "name": quest["name"],
+                   "text": failure_line(quest)})
+    del rumors[:-SETTLEMENT_RUMOR_CAP]
+
+
+def take_failure_rumors(settlement: dict) -> list[dict]:
+    """Read and clear a settlement's failure rumors (they are news once)."""
+    rumors = settlement.get("rumors") or []
+    settlement["rumors"] = []
+    return rumors
+
+
+def board_clock(state: dict) -> list[str]:
+    """Run the quest board's clock (2026-07-26, the attrition rework's slice
+    2). Two jobs, in order:
+
+    1. **The taken job's window closes wherever the party is standing.** Past
+       the deadline plus QUEST_GRACE_DAYS the quest is FAILED: the encounter
+       pay already banked stands, the turn-in lump does not, and the giver's
+       failure line lands as the epilogue. This is what makes a day cost
+       something -- a week of camping is a week the job did not wait through.
+    2. **The local land's boards expire and refill.** Untaken work comes off
+       at its deadline (leaving a failure rumor at the settlement that posted
+       it), and each settlement posts back toward its slot count. Only the
+       CURRENT LAND is run: a board nobody is looking at costs nothing to
+       leave alone, and its first look fills it up (quests.py).
+
+    Called at every day advance (travel, explore, camp, tavern, downtime) and
+    on `board`. Returns the notices the caller prints."""
+    world = state.get("world")
+    if not world:
+        return []
+    day, rng = state["clock"].day, state["rng"]
+    notices: list[str] = []
+    accepted = state.setdefault("accepted", [])
+    taken = set(accepted)
+    active = state.get("active_quest")
+    if active:
+        taken.add(active)
+    for qid in sorted(taken):
+        quest = world["quests"].get(qid)
+        if quest is None or quest["status"] != "open":
+            continue
+        if not quest_expired(quest, day, taken=True):
+            continue
+        quest["status"] = "failed"
+        quest["failed_day"] = day
+        if qid in accepted:
+            accepted.remove(qid)
+        if state.get("active_quest") == qid:
+            state["active_quest"] = None
+        # The giver's row comes off the board, but no RUMOR is left: the
+        # party was the one carrying this job and hears its epilogue here
+        # and now, not as gossip on the next visit.
+        origin = world["areas"].get(quest.get("origin"))
+        if origin is not None and qid in origin.get("quests", ()):
+            origin["quests"].remove(qid)
+        notices.append(f"  *** JOB LOST: {quest['name']} ***")
+        notices.append(f"  The window closed on day "
+                       f"{quest['deadline_day'] + QUEST_GRACE_DAYS}. "
+                       f"No turn-in, no lump -- what the fighting already "
+                       f"paid is kept.")
+        notices.append(f"  EPILOGUE (day {day}): {failure_line(quest)}")
+    position = state.get("position") or {}
+    local = settlements_by_land(world).get(position.get("land"), [])
+    if not local:
+        return notices
+    # The name namespace is the names IN USE, recomputed -- not a ledger of
+    # every giver the world ever had. With the board churning (~660 postings
+    # a career) a persisted list would outgrow the race name pools inside a
+    # single playthrough; a giver whose job lapsed forty days ago is free to
+    # be reused. Same shape as roll_dark_board's.
+    used = {n["name"] for n in world.get("npcs", ())}
+    used |= {q["giver"]["name"] for q in world["quests"].values()
+             if q.get("giver")}
+    used |= {h.name for h in state["party"]}
+    for settlement in local:
+        for gone in expire_settlement_board(world, settlement, day, taken):
+            _remember_failure(settlement, gone, day)
+        refresh_settlement_board(world, settlement, day, rng, used)
+    refresh_deliveries(world, day, rng, used, origins=local)
+    return notices
+
+
+def print_board_clock(state: dict) -> None:
+    """The day-advance path: run the clock and print whatever it cost."""
+    notices = board_clock(state)
+    if notices:
+        print("\n".join(notices))
+
+
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
     """The active quest's cleared room: move the cursor. Finishing the last
     room of a place moves on to the next place; finishing the LAST place
@@ -1615,11 +1744,26 @@ def _close_site(state: dict, log: list[str], qid: str,
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
     if last_site:
         enc = quest.get("encounters", 1)
+        # The clock's band rides ON TOP of the caper fraction (2026-07-26):
+        # what the job is worth is what it is worth ON THE DAY it is handed
+        # over. Only the TURN-IN is banded -- the per-encounter shares were
+        # paid as they were earned and are never clawed back.
+        day = state["clock"].day
+        band = quest_band(quest, day)
+        pay_mult *= QUEST_PAY_BANDS[band]
         clear_xp = round(quest_clear_xp(quest["level"], enc) * pay_mult)
         gold = round(quest_gold_posted(quest) * pay_mult)
         award_quest(party, purse, gold, clear_xp, log,
                     f"{quest['name']} -- {site['name']}{pos}", banner=banner)
         record_karma(state, clear_xp, quest.get("align", "good"), log)
+        if quest.get("deadline_day") is not None and band != "on time":
+            log_banner(log,
+                       f"  (turned in {band.upper()} -- day {day} against a "
+                       f"deadline of day {quest['deadline_day']}: "
+                       f"x{QUEST_PAY_BANDS[band]:g} on the turn-in)",
+                       [f"({band.upper()} turn-in: day {day},",
+                        f"due day {quest['deadline_day']} --",
+                        f"x{QUEST_PAY_BANDS[band]:g} on the lump)"])
     else:
         log_banner(log,
                    f"  *** {banner}: {site['name']}{pos} -- "
@@ -1698,9 +1842,16 @@ def deliver_if_arrived(state: dict, log: list[str]) -> bool:
                    f"no one here can receive {q['cargo']} or pay for it. "
                    f"The delivery waits on the war.)")
         return False
-    award_quest(state["party"], state["purse"], q["gold"], q["xp"], log,
+    day = state["clock"].day
+    band = quest_band(q, day)
+    mult = QUEST_PAY_BANDS[band]
+    award_quest(state["party"], state["purse"], round(q["gold"] * mult),
+                round(q["xp"] * mult), log,
                 q["name"], banner="DELIVERY COMPLETE")
-    record_karma(state, q["xp"], q.get("align", "good"), log)
+    record_karma(state, round(q["xp"] * mult), q.get("align", "good"), log)
+    if q.get("deadline_day") is not None and band != "on time":
+        log.append(f"  (delivered {band.upper()} -- day {day} against a "
+                   f"deadline of day {q['deadline_day']}: x{mult:g})")
     q["status"] = "done"
     q["done_day"] = state["clock"].day
     r = q.get("recipient")
@@ -1845,6 +1996,8 @@ def roll_dark_board(state: dict) -> dict | None:
                          and q["next"] == {"site": 0, "room": 0}
                          and state.get("active_quest") != qid)
             if untouched:
+                release_quest_places(world, q)   # 2026-07-26: an untaken
+                                                 # offer gives its Sites back
                 del world["quests"][qid]
     used = {n["name"] for n in world.get("npcs", [])}
     used |= {q["giver"]["name"] for q in world["quests"].values()
@@ -2449,6 +2602,8 @@ def cmd_board(args: argparse.Namespace) -> None:
                         # pipe mid-print must not lose the wave
     if state["party"] and maybe_assign_task(state):
         save(state)     # hell's mail lands where the party asks around
+    clock_notices = board_clock(state)   # asking around IS reading the board:
+    save(state)                          # closed windows, fresh postings
     key = None
     if args.settlement:
         # An explicit settlement (or 'all') is the DM's overview; what the
@@ -2473,11 +2628,23 @@ def cmd_board(args: argparse.Namespace) -> None:
             print(occupation_line(state, here))
             return
         key = here["key"]
+        if clock_notices:
+            print("\n".join(clock_notices))
         print(f"Day {state['clock'].day}. Asking around {here['name']} "
               f"(the DM's inventory -- in play, each job is its GIVER's; "
               f"funnel to them in one message, dm.md):")
-    for line in board_lines(world, key):
+    for line in board_lines(world, key, day=state["clock"].day):
         print(line)
+    if not args.settlement:
+        # What came of the jobs nobody took (2026-07-26): the settlement's
+        # failure rumors, day-stamped, told once.
+        here = local_settlement(state)
+        told = take_failure_rumors(here) if here is not None else []
+        if told:
+            print("What came of the work nobody took:")
+            for r in told:
+                print(f"  (day {r['day']}) {r['name']}: {r['text']}")
+            save(state)
     if not args.settlement:
         cast = [n for n in world.get("npcs", [])
                 if n["seat"] == key
@@ -2493,14 +2660,15 @@ def cmd_board(args: argparse.Namespace) -> None:
         # Details and `take` still want the party AT the posting settlement.
         land = state["position"]["land"]
         rumors = []
+        day = state["clock"].day
         for s in settlements_by_land(world).get(land, []):
             if s["key"] == key:
                 continue
-            for qid in s["quests"]:
-                q = world["quests"][qid]
-                if q["status"] == "open":
-                    rumors.append(f"  [{q['id']}] {level_grade(q)} "
-                                  f"{q['name']} -- at {s['name']}")
+            for q in open_quests(world, s, day):
+                note = deadline_note(q, day)
+                rumors.append(f"  [{q['id']}] {level_grade(q)} "
+                              f"{q['name']} -- at {s['name']}"
+                              + (f" ({note})" if note else ""))
         if rumors:
             land_name = world["lands"][land]["name"]
             print(f"Word from around {land_name} (travel there to "
@@ -2518,7 +2686,8 @@ def cmd_show(args: argparse.Namespace) -> None:
     quest = _get_quest(state["world"], args.quest)
     if quest is None:
         return
-    for line in quest_detail_lines(state["world"], quest, dm=args.dm):
+    for line in quest_detail_lines(state["world"], quest, dm=args.dm,
+                                   day=state["clock"].day):
         print(line)
 
 
@@ -2531,6 +2700,20 @@ def cmd_take(args: argparse.Namespace) -> None:
         return
     if quest["status"] == "done":
         print(f"[{quest['id']}] {quest['name']} is already complete.")
+        return
+    if quest["status"] in ("failed", "expired"):
+        print(f"[{quest['id']}] {quest['name']} is over -- the window "
+              f"closed on day {quest.get('deadline_day')}. "
+              f"{failure_line(quest)}")
+        return
+    day = state["clock"].day
+    already = quest["id"] in (state.get("accepted") or [])
+    if not already and quest_expired(quest, day):
+        # A job the party ALREADY took keeps its grace (switching back to a
+        # late job is the player's call); an untaken one is simply gone.
+        print(f"[{quest['id']}] {quest['name']} is stale -- it was due on "
+              f"day {quest['deadline_day']} and nobody is paying for it "
+              f"now. `board` for what still stands.")
         return
     if not at_quest_origin(state, quest):
         return
@@ -2546,9 +2729,16 @@ def cmd_take(args: argparse.Namespace) -> None:
     if g:
         print(f"The job is taken from its giver -- narrate the scene "
               f"(dm.md): {npc_line(g)}")
-    print(f"The party takes the job: {quest_line(quest)}")
-    for line in quest_detail_lines(state["world"], quest, dm=False)[1:]:
+    print(f"The party takes the job: {quest_line(quest, day)}")
+    for line in quest_detail_lines(state["world"], quest, dm=False,
+                                   day=day)[1:]:
         print(line)
+    if quest.get("deadline_day") is not None:
+        print(f"The job is wanted by day {quest['deadline_day']} "
+              f"({deadline_note(quest, day)}). Late still pays "
+              f"x{QUEST_PAY_BANDS['late']:g} for "
+              f"{QUEST_GRACE_DAYS} more days; after that the job is lost "
+              f"and the turn-in with it.")
     if quest.get("kind") == "delivery":
         print(f"The road is the job: `travel {quest['dest']}` "
               f"({quest['days']} day(s)) and expect trouble en route -- "
@@ -2738,20 +2928,24 @@ def cmd_forge(args: argparse.Namespace) -> None:
             print(f"No area matches {args.area!r}.")
             return
         area = match[0]
-    n = len(world["quests"]) + 1
-    while (f"q{n:02d}" in world["quests"]
-           or f"q{n:02d}/s1" in world["sites"]):
-        n += 1       # expired shadow jobs may leave persistent geography
-    qid = f"q{n:02d}"
+    qid = next_quest_id(world)   # the world's monotonic counter: pruned
+                                 # shadow jobs and expired postings leave
+                                 # persistent geography behind
     quest = forge_quest(world, qid, args.level, args.places, args.encounters,
                         kinds, args.name, state["rng"],
                         area_key=area["key"],
                         align="dark" if args.dark else "good")
+    if args.days:
+        # A forged job carries a window only when the DM gives it one
+        # (`forge --days N`); without one it is timeless, like a war wave.
+        quest["posted_day"] = state["clock"].day
+        quest["window"] = args.days
+        quest["deadline_day"] = state["clock"].day + args.days
     world["quests"][qid] = quest
     area["quests"].append(qid)
     save(state)
     print(f"Forged at {area['name']}:")
-    for line in quest_detail_lines(world, quest):
+    for line in quest_detail_lines(world, quest, day=state["clock"].day):
         print(line)
 
 
@@ -2879,6 +3073,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
         companions_brew(state, log)
         night_upkeep(state, log)
     print_play(log)
+    print_board_clock(state)    # the road costs days, and days cost jobs
     # THE ROAD, before the gates (2026-07-26). The trip's encounter used to
     # be rolled after the arrival was printed, so a road fight was narrated
     # at the destination and drew its roster from the DESTINATION land's
@@ -2931,6 +3126,8 @@ def cmd_travel(args: argparse.Namespace) -> None:
     process_departures(state, log)
     if log:
         print("\n".join(log))
+    print_board_clock(state)    # and the new land's boards are read on
+                                # arrival (a board's first look fills it)
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
@@ -2964,6 +3161,7 @@ def cmd_explore(args: argparse.Namespace) -> None:
     companions_brew(state, log)
     night_upkeep(state, log)
     print_play(log)
+    print_board_clock(state)    # a day afield is a day off the board's clock
     found_area = None
     found_site = None
     if here["kind"] == "natural":
@@ -3486,6 +3684,8 @@ def cmd_camp(args: argparse.Namespace) -> None:
         companions_brew(state, log)
         night_upkeep(state, log)
         print_play(log)
+        print_board_clock(state)    # every night camped is a night the job
+                                    # was not being done
         if maybe_punish(state):     # posses track a camp too (karma)
             return
         if maybe_enforce(state):    # so do hell's enforcers (the pact)
@@ -3529,6 +3729,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     # player wants to hire, `recruit` gathers the day's faces.
     maybe_post_wave(state, log)     # tavern talk is where war news lands
     print_play(log)
+    print_board_clock(state)    # a bed costs a day like any other
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
     if maybe_enforce(state):    # and hell holds the mortgage on it
@@ -3573,6 +3774,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     process_departures(state, log)
     maybe_post_wave(state, log)
     print_play(log)
+    print_board_clock(state)    # so does an idle one
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
     if maybe_enforce(state):    # for the law and for hell alike
@@ -4472,6 +4674,11 @@ def main() -> None:
     p.add_argument("--dark", action="store_true",
                    help="forge a SHADOW job (karma & heat): bad-karma "
                         "XP, the dark gold premium")
+    p.add_argument("--days", type=int, default=0,
+                   help="give the job a WINDOW this many days out (the "
+                        "board's clock, quests.py). Omit for a timeless "
+                        "job -- the DM's improvised work has no deadline "
+                        "unless the fiction gives it one.")
     p.set_defaults(func=cmd_forge)
 
     p = sub.add_parser(

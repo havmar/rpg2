@@ -272,6 +272,11 @@ re-tune forever, and a bed is a bed.
 > not inflate; a cap on what a night can restore is worth exactly as much at
 > level 20 as at level 1.
 
+*(Slice 2 shipped the first half of the answer: a day now costs a job. What
+it does NOT do is make a night restore less — that is still slices 3a/3b's
+whole job, and until they land `camp --heal` is merely expensive rather than
+incomplete.)*
+
 Hence four slices: cut the encounters, make days cost something (quest
 clocks), make damage persist past a night (wounds), and make defeat
 survivable enough to carry that weight (mercy).
@@ -314,40 +319,6 @@ prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
 they gain value for free once camping stops substituting for them);
 **retribution or patrol attacks as healing pressure** (re-adds the
 contentless combat this whole rework removes).
-
-### Slice 2 — quest clocks and the banded refill
-
-The piece that makes days cost something without a gold price: healing takes
-days, and days cost you the job.
-
-**Clocks.** `QUEST_WINDOW_DAYS = (3, 7)` rolled per quest at posting; the
-quest dict gains `posted_day` and `deadline_day`. Outcome bands on turn-in:
-**quick** (done within the first third of the window) x1.15, **on time** (by
-`deadline_day`) x1.00, **late** (within a +3 day grace) x0.60 with a late
-epilogue, **expired** (past the grace, or never taken) removed with a failure
-epilogue. Templates gain **`failure_epilogue`** beside `epilogue` — "the
-wolves moved on; two more shepherds are dead", `writing.md` register. Untaken
-quests expire off the board at `deadline_day` and surface their failure
-epilogue as a day-stamped rumour next time the party is in that settlement. A
-taken quest that expires mid-run closes as failed: encounter pay already
-earned stands, the turn-in lump does not. `session.expire_quests(state)` runs
-at every day advance (`_long_rest`, travel, camp) and on `board`; `board`
-shows days left per quest.
-
-**The hard dependency.** Worldgen posts the whole board up front against an
-asserted XP-coverage target (`WORLD_XP_MARGIN` 1.35, ~26k XP, `xp_to_cap`).
-Once quests expire that assert is meaningless and the world can run dry, so
-this slice must also land the **banded quest inventory** queued below: each
-settlement keeps a few live jobs per level band, rolled lazily per
-settlement-day and pruned as they expire or complete, with bands from
-`SETTLEMENT_KINDS` (capital 5 slots / 1-20, city 4 / 1-16, town 4 / 1-14,
-village 2 / 1-8). `karma.roll_dark_quest` is the working precedent — lazily
-rolled, never seen by worldgen, bench-invisible. Copy its shape and delete
-the up-front top-up and its assert.
-
-**Acceptance.** A world runs a full 1-20 career without exhausting posted
-work; quests visibly expire and refill across a simulated 150-day career;
-days to cap within ~15% of the current ~158.
 
 ### Slice 3a — the conditions framework
 
@@ -568,9 +539,16 @@ Additive to the schemas above — none of them requires redesigning anything.
 - **Road-encounter rate trim.** `TRAVEL_ENCOUNTER_CHANCE` 0.15/day,
   `EXPLORE_ENCOUNTER_CHANCE` 0.30, `CAMP_ENCOUNTER_CHANCE` 0.10 were sized
   against 3.74-fight quests; now that quests average 1.66 the road is a
-  much larger *share* of all combat, and slice 2 adds town trips. Re-judge
-  from played evidence; the lever is a trim to ~0.10 / ~0.20, not a
+  much larger *share* of all combat, and slice 2's clocks price the trips.
+  Re-judge from played evidence; the lever is a trim to ~0.10 / ~0.20, not a
   redesign.
+- **A travel layer in the career sim.** `bench_quests`' careers still teleport
+  between jobs, which is why 51% of its turn-ins land in the QUICK band —
+  a played campaign, paying 1-2 days each way, will sit in "on time" and
+  drift late. Adding the road would make the sim's calendar honest against
+  the clock, at the cost of breaking comparability with every career number
+  in benchlog. Do it deliberately, in its own pass, not as a side effect of
+  another slice.
 - **Wilds camping restoring less than full STA** (`CAMP_STA_FRACTION` ~0.75,
   a bed 1.0). Held at 1.0; pull it only if multi-encounter quests get chunked
   into one-fight days.
@@ -581,24 +559,20 @@ One build session per slice — deliberately. `rpg.py` is 332 KB and
 `session.py` 206 KB, and slice 3b ends in a bench rebaseline whose
 numbers need reading and judging **before** the next slice lands on top of
 it. The precedent is the levelling framework's sessions A/B/C.
-**Slice 1 SHIPPED 2026-07-26** (benchlog has its rebaseline).
+**Slices 1 and 2 SHIPPED 2026-07-26** (benchlog has both rebaselines).
 
 | # | slice | ends with |
 |---|-------|-----------|
-| 2 | quest clocks + banded lazy refill | career sim proves the board never runs dry |
 | 3a | the conditions framework | `bench_bestiary` re-fit for spider/pyromancer only |
 | 3b | the wound system | **full** rebaseline; the beatability curve must survive |
 | 4 | defeat without death | mercy converts wipes; median death level rises |
 
-Order is forced only where it must be: 2 builds on 1's quest dict (shipped),
-3b needs 3a. Slice 4 can slot in any time after 3b.
+Order is forced only where it must be: 3b needs 3a. Slice 4 can slot in any
+time after 3b.
 
 **Each session closes by propagating outward and deleting its slice from
 here.** What each one owes:
 
-- **Slice 2** — `rules.md`: Quest System (clocks, expiry, worldgen
-  reframed). `dm.md`: board reading and deadlines. Delete the banded
-  quest inventory section below.
 - **Slice 3a** — a new `rules.md` **Conditions** add-on; `develop.md` dev map.
 - **Slice 3b** — a new `rules.md` **Wounds & Recovery** add-on, plus rewrites
   of Survival's "Resources at a glance", "The two-buffer split" and "The day
@@ -634,11 +608,13 @@ here.** What each one owes:
 
 ---
 
-## Queued — the banded quest inventory (worldgen reframed)
+## Queued — landmark problems (what the banded refill did NOT ship)
 
-*(2026-07-26: PULLED FORWARD as a hard dependency of the attrition rework's
-slice 2 — quest expiry makes the up-front coverage assert meaningless. Build
-it there, not separately, and delete this section when it ships.)*
+*(2026-07-26: the **banded refill itself SHIPPED** with the attrition
+rework's slice 2 — settlement slot counts, lazy per-day refill, expiry, and
+the deletion of the up-front coverage assert are all in `quests.py` and
+documented in rules.md's Quest System, "The clock". What is left of the
+original entry is the authored half.)*
 
 *(Story-layer batches 1-2 shipped 2026-07-12; pacing anchors measured
 2026-07-12: played campaigns L10 ~ day 45-65 (~10-12 chat hours), L20 ~
@@ -646,14 +622,11 @@ day 110-150 (~25-30 hours). Still good and cheap once wanted in play:
 war-flavored reskins on local quests in threatened lands, and a rescued
 recruit as an extra wave-3 tangible.)*
 
-- The designer's vision made concrete: **a land always has work at every
-  band, plus objective high-level problems that exist independent of the
-  player** (landmark problems known by rumor from level 1) and **banded
-  refill** (each settlement keeps a few live problems per level band,
-  lazily generated as consumed). Replaces the up-front ~26k-XP posting
-  and its coverage assert. Schedule as its own session. *(The shadow
-  board, 2026-07-19, is a working precedent: lazily rolled, pruned,
-  bench-invisible — the refill wants the same shape.)*
+- **Objective high-level problems that exist independent of the player**:
+  landmark problems known by rumor from level 1, standing on the board
+  regardless of the party's level and NOT subject to the refill's churn (a
+  dragon does not lapse in seven days). The refill posts ordinary work; this
+  is the authored counterweight to it.
 - Later sim hook (parked): other heroes occasionally solve, or die to, a
   landmark problem while the player is elsewhere.
 
