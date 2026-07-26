@@ -2103,11 +2103,68 @@ anchors the formulas were fitted to.
   pool), not miniature stories.
 - **The world is generated once per playthrough, seeded** (`session.py new`),
   and lives in the save. It creates the six finite MVP Lands and all their
-  settlements before posting one local job per settlement, then tops up until
-  the board carries **1.35× the XP a duo needs to reach level 20**. Quest
+  settlements, posts **one local job per settlement**, and stops. The board
+  is not a census taken at worldgen — it is a **live inventory** that expires
+  and refills (see *The clock*, below). Quest
   levels still roll uniformly in their settlement bands (village 1–8, town
   1–14, city 1–16, capital 1–20). Too-easy and too-hard work both exists;
   geography selects where it happens without changing its threat budget.
+
+## The clock: windows, bands, and the live board (2026-07-26)
+
+The attrition rework's slice 2. Its spine: **do not make rest expensive —
+make rest incomplete.** Recovery is gated on *rate and access*, never on
+price, because time and geography do not inflate. A window is worth exactly
+as much at level 20 as at level 1; a bed is not.
+
+**Every posting carries a window.** A quest is stamped with `posted_day`, a
+`window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days, and the `deadline_day`
+that follows. The clock starts at **posting**, not at taking: a job already
+five days old is five days into its window, so reading the board's clock is
+part of reading the board.
+
+**The turn-in is paid in bands**, by the day it is handed over:
+
+| band | when | the turn-in pays |
+|---|---|---|
+| quick | within the first third of the window | ×1.15 |
+| on time | by `deadline_day` | ×1.00 |
+| late | within `QUEST_GRACE_DAYS` = 3 days past it | ×0.60 |
+| expired | past the grace | nothing — the job is lost |
+
+Only the **turn-in lump and the gold** are banded. The per-encounter XP
+shares were paid as they were earned and are never clawed back: a failed job
+still leaves the party with what the fighting paid. The premium is small on
+purpose — the clock is a pressure, not a second economy.
+
+**Untaken work expires off the board** the day after its deadline, and the
+settlement that posted it keeps a day-stamped **failure rumour** — the
+template's `failure_epilogue`, told once, the next time the party asks around
+there ("The bandits are still on the road. Two carters are dead and the toll
+bridge is theirs now."). **Taken work keeps the grace**, then closes as
+FAILED wherever the party is standing, with its failure line as the epilogue.
+This is what makes a day cost something: a week of camping is a week the job
+did not wait through.
+
+**The board refills instead of being pre-posted.** Each settlement keeps its
+`SETTLEMENT_KINDS` slot count live — capital 5, city 4, town 4, village 2 —
+and posts back toward it as days pass: at most `QUEST_REFILL_PER_DAY` = 1 new
+job a day, except the first time a board is looked at, which fills it (the
+land has always had work; the party has just never asked). Only the current
+land's boards run their clock — a board nobody is looking at costs nothing to
+leave alone. `karma.roll_dark_quest`'s shadow board is the shape this copies:
+rolled lazily, never seen by worldgen.
+
+The old up-front XP-coverage top-up and its assert are **gone**. They
+asserted a total the board would carry forever, and expiry makes that total a
+lie within a week. What replaces the guarantee is measured, not asserted: the
+career sim runs a full 1–20 career with the board never running dry
+(benchlog).
+
+Two kinds of job deliberately carry **no clock**: the war waves (an authored
+questline does not lapse) and the shadow board's offers (they are already
+day-scoped — "these offers last today only"). The DM's `forge` is timeless
+unless given `--days N`.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
   row is mechanics — a goblin "Scrap-Hound" is the wolf row, a dwarf
   "Hold-Lord" the wight. Balance never forks on a skin.
@@ -2146,18 +2203,25 @@ widened, so punching up is a real choice and being overleveled for a quest
 is comfortable, which is what a leveled open world needs to be playable.
 Current numbers live in develop.md ("Balance / tuning").
 
-## What careers measure (updated 2026-07-09)
+## What careers measure (updated 2026-07-26)
 
 The career sim (fresh duo, fresh world, grind-below-level policy, camps
-between rooms) reaches
-**L5 68% / L8 56% / L11 38% / L14 20% / L20 6%**; median death at level 8.
-The pain regear moved every number sharply survival-ward from 2026-07-08's
-roguelike curve (L5 46 / L11 14 / L20 ~0, median death L3-4): the rank-0
-front door now claims far fewer careers, and a capped career takes ~148
-days / ~37 quests. The top band is still the hard edge (per-quest wipe
-40–65% at 15–20 at level) and still waits on masterwork gear, armor, and
-magic (plan.md) for its missing player power — but a full 1–20 career is
-now merely harsh, not a lottery.
+between rooms, board clock run between jobs) reaches
+**L5 89% / L8 72% / L11 47% / L14 16% / L17 9% / L20 4%**; median death at
+level 10, and a capped career takes ~78 days / ~34 quests. The top band is
+still the hard edge (per-quest wipe 40–65% at 15–20 at level) and still
+waits on masterwork gear, armor, and magic (plan.md) for its missing player
+power — but a full 1–20 career is now merely harsh, not a lottery.
+
+The sim runs the board's clock but does **not** play against it: it takes the
+freshest of equally good work and otherwise ignores deadlines, so it eats
+whatever late turn-ins its rest schedule produces. With no travel layer its
+jobs land fast — half in the quick band — which a played campaign will not
+match once the road is priced in. That is the usual understatement (the
+standing tuning principle), read here on a new axis. The board itself is the
+part that matters and it holds: **zero careers in 500 exhausted the board**,
+with ~660 postings expiring unfinished per career and ~129 live jobs standing
+at the end. Current numbers live in develop.md ("Balance / tuning").
 
 ## Cross-land deliveries (2026-07-14)
 
@@ -2180,10 +2244,13 @@ road is the content:
   Every delivery carries a giver face at the origin AND a **recipient**
   face at the destination (the turn-in scene), plus an epilogue. An
   occupied destination cannot pay — the delivery waits on the war.
-- **A couple per world** at worldgen (2), posted ON TOP of the XP coverage
-  target (courier work is travel pay, not the climb). On the board a
+- **A couple live at a time** (2): worldgen posts them and the board's
+  refill tops them back up as they are run or lapse. On the board a
   delivery shows **DELIVERY** where a level would go: the road's danger
   is the road's table, not a site level.
+- **A courier job's window buys its road** (2026-07-26): the standard
+  3–7 day window plus twice the trip's travel days, so a cross-land run is
+  not late before it starts. Its hand-off is banded like any turn-in.
 
 ---
 

@@ -94,10 +94,35 @@ the player's core decision:
   town** -- the land's recurring cast (ruler, sage, wildcard): use them
   for color, rumor, and war scenes; they persist all campaign.
   (`board all` / `board NAME` is your wider overview for pacing.)
+- **Every job has a DEADLINE (2026-07-26).** A posting is wanted within
+  3-7 days of the day it went up, and the board prints the clock on every
+  row ("4 days left", "DUE TODAY", "LATE (2 day(s) of grace)"). Relay it
+  like the level and the pay -- straight, in the giver's mouth ("she wants
+  it done inside the week"). What the clock is worth:
+  - **Turned in quick** (the first third of the window) pays x1.15,
+    **on time** x1.00, **late** x0.60 for three days of grace. Past that
+    the job is LOST: the script prints JOB LOST and the giver's failure
+    line, and the turn-in lump is gone. The per-fight XP already banked
+    stays -- the party is not robbed of the fighting it did.
+  - Untaken jobs come off the board at their deadline and leave a
+    day-stamped **failure rumor** at the settlement ("the dead walk out of
+    the graveyard now"). `board` prints the rumors once, under "What came
+    of the work nobody took". Read them out -- that is the world moving
+    without the party, and it is the whole point of the clock.
+  - The board REFILLS: one new job a settlement a day, up to its size
+    (village 2, town/city 4, capital 5). Nobody has to hoard work.
+  - **This is what makes convalescence cost something.** "Camp until
+    whole" is no longer free: `camp 6` is six days off every live window.
+    Say so when the player asks for a long rest with a job in hand -- one
+    line, not a lecture ("the crypt job is wanted by day 9").
+  - The war waves and the shadow board's offers carry NO clock (the war
+    does not lapse; shadow work is already same-day only).
 - **Turn-ins pay an EPILOGUE**: the QUEST COMPLETE banner prints a
   day-stamped aftermath line and a turn-in prompt naming the giver.
   Narrate the turn-in scene over both -- the epilogue is what the world
   now looks like because the party worked; don't skip it, don't pad it.
+  A LATE turn-in prints its own band line; play the giver accordingly --
+  paid, but not pleased.
 - `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
@@ -134,14 +159,17 @@ the player's core decision:
   `status` (the `At:` field) or the active-quest line first; if the job's
   target area is elsewhere, the road IS the next scene: narrate setting
   out, run `travel`, then frame the arrival.
-- Quest challenges pay by site: each cleared objective pays its lump (gold +
-  XP) and the last completes the quest. The persistent geographical site
-  itself does not intrinsically pay. `award GOLD XP NAME` remains for
-  off-script scenes only.
-- `forge --level L --sites N --rooms N --kinds a,b,c --name "..." [--area
-  AREA]` builds a quest by the generator's rules and places its persistent
-  sites in the named area (the current area by default). Prefer it over
-  improvising rosters by hand.
+- **Pay is per QUEST, not per site (2026-07-26).** Each fight pays its flat
+  encounter share as it is won; everything else -- the turn-in lump and ALL
+  of the gold -- lands once, when the last place falls, banded by the day it
+  lands. An intermediate place clears with a SITE CLEARED banner and no
+  purse. The persistent geographical site itself does not intrinsically pay.
+  `award GOLD XP NAME` remains for off-script scenes only.
+- `forge --level L --places N --encounters N --kinds a,b,c --name "..."
+  [--area AREA] [--days N]` builds a quest by the generator's rules and
+  places its persistent sites in the named area (the current area by
+  default). Prefer it over improvising rosters by hand. `--days` gives the
+  forged job a window; without it the job is timeless.
 - The quest descriptions are one-line prompts, not stories -- **the fiction
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
@@ -561,15 +589,21 @@ bigger than the fights WITHOUT pages of narration:
   list them as a terse display line ("options: heal potion (+5 HP), camp,
   press in"), not a paragraph weighing each. A read on them is given when
   the player asks for one: straight, a sentence or two, done.
-- **The default night is "camp until whole" (2026-07-11).** When there is
-  HP to heal and the player hasn't said otherwise, assume the party camps
-  to full -- `camp --heal` runs the nights in one go and reports the days
-  passed (HP knits at ~max/7 a night, so it's often several). One night
-  only is the EXCEPTION the player asks for, not the default. The carve-out
-  is the WILDS: each night out there rolls its own ~10% visitor, so a long
-  convalescence in the open is a real gamble -- put THAT choice to the
-  player ("limp back to town, or risk the nights here?") instead of
-  auto-looping it.
+- **The default night is "camp until whole" -- WITH NO JOB IN HAND
+  (2026-07-11; narrowed 2026-07-26).** When there is HP to heal, nothing
+  is on the clock, and the player hasn't said otherwise, assume the party
+  camps to full -- `camp --heal` runs the nights in one go and reports the
+  days passed (HP knits at ~max/7 a night, so it's often several). One
+  night only is the EXCEPTION the player asks for, not the default.
+  - **With a taken job it stops being a default and becomes a CHOICE.**
+    Every night is a day off the window (see the quest clock above), so
+    put the trade to the player in one line -- "the crypt job is wanted by
+    day 9; you're at day 6 and Orsik is down 5 HP" -- and let them answer.
+    Never auto-loop a long camp that would cost a job.
+  - The other carve-out is the WILDS: each night out there rolls its own
+    ~10% visitor, so a long convalescence in the open is a real gamble --
+    put THAT choice to the player ("limp back to town, or risk the nights
+    here?") instead of auto-looping it.
 - **Level-ups run themselves (2026-07-13).** The PC's level-up prints the
   spending menu automatically right after the fight -- SHOW it to the
   player and wait for their `train` / `learn` call; don't paraphrase the
@@ -776,7 +810,9 @@ bigger than the fights WITHOUT pages of narration:
   the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
   and Power, ~1/7 max HP, the day advances. Nothing forces the day to end --
   camping is the player's call, and the played default is `camp --heal`
-  (camp until whole) when nothing presses -- see the turn protocol. In the
+  (camp until whole) when nothing presses. With a job in hand something
+  DOES press: every night burns a day of its window (the quest clock) --
+  see the turn protocol. In the
   WILDS the night's visitor is now rolled BEFORE the recovery: a camp that
   draws a fight heals nobody, and the party meets it as tired as the day
   left them.
@@ -982,7 +1018,9 @@ bigger than the fights WITHOUT pages of narration:
   pays wild XP and cannot un-deliver). Arriving completes the quest on
   the spot: pay (20g + 25 XP per road day; CHA talks it up), recipient
   prompt, epilogue. Frame the cargo as the fiction demands -- the
-  templates say what it is.
+  templates say what it is. A courier job carries a window like any job,
+  with the round trip's road days added on top, and the hand-off is banded
+  the same way -- so a delivery is not a thing to sit on.
 - **The pact & karma in numbers (2026-07-19):** dark XP = bad karma;
   heat = bad karma // (100 x party level), capped 3; the law's posses
   arrive at party level + heat (cooldown 2d, chance 0.6, at arrivals

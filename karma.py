@@ -78,7 +78,7 @@ from rpg import LEVEL_CAP
 from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, CASTER_POOL,
                     BEAST_POOL, GIANTKIN_POOL,
                     build_quest, attach_giver, template_band, build_room,
-                    room_budget)
+                    room_budget, next_quest_id)
 from places import land_race
 
 # --------------------------------------------------------------------------- #
@@ -540,16 +540,11 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     tpl = rng.choice(fitting or DARK_TEMPLATES)
     lo, hi = template_band(tpl)
     level = max(lo, min(hi, level))
-    # First free id: stale shadow jobs are PRUNED from world['quests']
-    # (session.py rolls a fresh board per settlement day), while their
-    # persistent Sites remain. The count alone can therefore collide with
-    # either a surviving quest or a historical Site attachment.
-    n = len(world["quests"]) + 1
-    while (f"q{n:02d}" in world["quests"]
-           or any(f"q{n:02d}" in site.get("quest_ids", ())
-                  for site in world["sites"].values())):
-        n += 1
-    qid = f"q{n:02d}"
+    # The world's monotonic id counter (quests.next_quest_id): shadow jobs
+    # are PRUNED from world['quests'] and so are expired postings, while
+    # their persistent Sites remain, so a count would collide with either a
+    # surviving quest or a historical Site attachment.
+    qid = next_quest_id(world)
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
     attach_giver(quest, land_race(world, settlement["land"]), rng,
                  role=tpl.get("giver"),

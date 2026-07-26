@@ -1066,3 +1066,96 @@ median death L8, 158 days / 38 quests.
    "suicide until trained" site and the rank ladder still climbs 31 -> 63 ->
    87 -> 97, so it still teaches what it was built to teach.
 
+
+---
+
+## 2026-07-26 — the attrition rework, SLICE 2: quest clocks and the banded refill
+
+**What changed.** The second slice of the attrition rework (plan.md's NEXT
+BUILD spec). No combat math was touched at all — this slice is entirely the
+board and the calendar.
+
+1. **The clock on every posting.** A quest is stamped with `posted_day`, a
+   `window` rolled at `QUEST_WINDOW_DAYS` = (3, 7), and the `deadline_day`
+   that follows. The clock starts at POSTING, not at taking, so a job's age is
+   part of what the board tells you. The turn-in lump and the gold are then
+   paid in bands by the day the job lands: **quick** (first third of the
+   window) x1.15, **on time** x1.00, **late** (within `QUEST_GRACE_DAYS` = 3)
+   x0.60, **expired** nothing. Per-encounter XP is never clawed back.
+2. **Expiry, both ways.** Untaken work comes off the board the day after its
+   deadline, is deleted from `world["quests"]`, gives its Sites back
+   (`release_quest_places`), and leaves a day-stamped **failure rumour** at
+   the settlement that posted it — the new `failure_epilogue` field, written
+   for all 28 good/epic templates and all 6 delivery templates. Taken work
+   keeps the grace and then closes as FAILED wherever the party is standing.
+3. **The banded lazy refill, and the deletion of the coverage assert.**
+   Worldgen now posts ONE job per settlement and stops; the up-front
+   `WORLD_XP_MARGIN` top-up and its ~26k-XP assert are gone. Each settlement
+   refills toward its `SETTLEMENT_KINDS` slot count at
+   `QUEST_REFILL_PER_DAY` = 1 a day, with a first look filling the board.
+   Only the CURRENT LAND runs its clock. `session.board_clock` is called at
+   every day advance (travel out and in, explore, each camp night, tavern,
+   downtime) and on `board`.
+4. **Quest ids became a monotonic counter** (`world["quest_seq"]` /
+   `next_quest_id`), shared by worldgen, the shadow board, and `forge`:
+   with postings now DELETED, counting the live dict would reissue an id a
+   released Site still remembers.
+
+**Controls: unchanged to the cell.** `tune.py` (hideout 50.8 clear / 15.6
+wipe, reckless 86.5; barrow [3,3,4] 30.2 / 48.3, reckless 99.8),
+`bench_training.py` (hideout 51.2 / 71.0 / 83.8 / 92.4, barrow 31.0 / 63.1 /
+87.4 / 96.8), `bench_party.py` (hideout 23.3 / 51.2 / 54.5 / 67.0, barrow
+2.2 / 31.0 / 70.1 / 89.4), `bench_weapons.py` and `bench_ranged.py` (longbow
+46.4 / 48.8 / 66.7) all reproduce the slice-1 numbers exactly. That is the
+point: a quest clock must not be able to reach the melee loop, and it did
+not.
+
+**Careers (500), against slice 1's 500:**
+
+| | slice 1 | slice 2 |
+|---|---|---|
+| reach L5 / L8 / L11 / L14 / L17 / L20 | 85 / 70 / 40 / 17 / 8 / 6.4 | **89 / 72 / 47 / 16 / 9 / 4.2** |
+| median death level | 9 | **10** |
+| capped: days / quests | 81 / 37 | **78 / 34** |
+| days p10-p90 | 64-99 | **60-94** |
+| board exhausted | 0% | **0%** |
+
+- **The acceptance criteria are met.** The board never runs dry in 500
+  careers, ~660 postings expire unfinished per career, and ~129 live jobs
+  are standing when a career ends. Days to cap held at **78** against the
+  ~80 the designer signed off on (the 158-day calendar is not coming back).
+- **Three fewer quests to the cap** because the sim banks the quick premium
+  about half the time; total career pay is within a couple of percent, which
+  is why the days did not move.
+- The reach curve drifted survival-ward again in the mid band (L11 40 -> 47)
+  and the L20 corner fell (6.4 -> 4.2). At n=500 that corner is ~2 standard
+  errors, so it is a soft signal, not a finding — but it points the same way
+  slice 1 did: the top band is still the wall, and it still waits on
+  masterwork gear, armour, and magic for its missing player power.
+
+**Turn-in bands in the sim: quick 51% / on time 43% / late 4% / expired 1%.**
+
+**Read this number with the caveat attached.** The career sim has no travel
+layer — it teleports between jobs — so its quests land 2-3 days faster than a
+played one can. In play, the road out and the road back are 1-2 days each,
+which puts an ordinary job in "on time" and makes "quick" a genuine
+achievement of taking fresh work and going straight at it. Do NOT read 51%
+quick as "the premium is free"; re-measure it if and when the sim ever grows
+a road (parked in plan.md, deliberately, because adding it breaks
+comparability with every career number in this log).
+
+**Flags for the designer:**
+
+1. **The clock is only half of slice 2's stated job.** The spine is "make
+   rest incomplete"; what shipped makes rest EXPENSIVE (a night costs a day
+   of somebody's window). Nothing yet stops `camp --heal` from restoring
+   everything it always did — that is slices 3a/3b. dm.md's "camp until
+   whole" default was narrowed to "with no job in hand" rather than deleted.
+2. **The dials, in order, if the clock proves wrong at the table:**
+   `QUEST_WINDOW_DAYS`, then the late multiplier, then the grace. Not the
+   refill rate — an empty board is a dead world, not a difficulty setting.
+3. **A live board is bigger than a posted one.** A world holds ~130 open
+   quests once the party has walked a couple of lands, against 61 before.
+   Save size roughly doubles on the quest side; `release_quest_places` keeps
+   the Site/Room stores flat (~370 sites steady-state against 272 at
+   worldgen), so it does not compound.

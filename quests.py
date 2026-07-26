@@ -24,9 +24,13 @@ annotations. The design (2026-07):
   (make_foe's `display`). Balance never forks on a skin.
 - **The world is generated ONCE, seeded, at game start** (session.py `new`)
   and lives in the save file: permanent and learnable for that playthrough,
-  different every playthrough. Worldgen tops the board up until it carries
-  enough total XP to take a duo from level 1 to LEVEL_CAP with margin --
-  "enough structured content to max out" is asserted, not hoped.
+  different every playthrough. Worldgen seeds ONE job per settlement and
+  stops there. Since 2026-07-26 (the attrition rework's slice 2) the board
+  is a LIVE INVENTORY, not a fixed census: every posting carries a clock
+  (`posted_day` / `deadline_day`), untaken work expires off the board, and
+  each settlement refills toward its slot count as the days pass
+  (`refresh_settlement_board`). The old up-front XP-coverage top-up and its
+  assert are gone -- they asserted a total that expiry makes meaningless.
 
 Local quests are FORMULAIC ON PURPOSE (placeholders, not authored content):
 a stereotype of the settlement's race x a themed foe pool. The authored
@@ -112,12 +116,37 @@ ROOM_MAX_BODIES = 6     # hard roster cap per room (log readability; the
 FILLER_LEVEL_REACH = 4  # fillers must be within this many levels of the
                         # room's anchor (no dragons herding rats -- and at
                         # the top band even mid rows stay dangerous chaff)
-WORLD_XP_MARGIN = 1.35  # the board must carry this x the XP a duo needs
-                        # from level 1 to LEVEL_CAP -- surplus is grind
-                        # room: a party that only took at-level work would
-                        # die compounding the risk (bench_quests), so the
-                        # board must hold enough BELOW-level work to climb on
-WORLD_MAX_QUESTS = 60   # worldgen safety valve
+
+# --------------------------------------------------------------------------- #
+# Quest clocks & the banded refill (2026-07-26, the attrition rework's slice 2)
+# --------------------------------------------------------------------------- #
+# A job is a job SOMEONE NEEDS DONE, and needs done by a date. Every posting
+# carries a window; the turn-in is paid in bands by when it lands. This is
+# what makes a DAY cost something without ever pricing a bed: time and
+# geography do not inflate, so a window is worth exactly as much at level 20
+# as at level 1 (plan.md's spine -- do not make rest expensive, make rest
+# incomplete).
+#
+# The board is a live inventory as a direct consequence: once work expires,
+# a world posted up front against an XP-coverage target runs dry, so each
+# settlement keeps its own slots full instead (SETTLEMENT_KINDS' first
+# number). karma.roll_dark_quest is the shape this copies -- rolled lazily,
+# never seen by worldgen, invisible to the benches until they ask for it.
+
+QUEST_WINDOW_DAYS = (3, 7)   # the posting window, rolled per quest
+QUEST_QUICK_SHARE = 1 / 3    # done within this fraction of the window: QUICK
+QUEST_GRACE_DAYS = 3         # ...and this long past the deadline is LATE,
+                             # still payable; past it the job is gone
+QUEST_PAY_BANDS = {          # what the turn-in lump (and the gold) is worth
+    "quick": 1.15,           # by the day it lands. The premium is small on
+    "on time": 1.00,         # purpose: the clock is a pressure, not a
+    "late": 0.60,            # second economy. A late job still pays --
+    "expired": 0.0,          # walking away with nothing is the failure state
+}
+QUEST_REFILL_PER_DAY = 1     # new jobs a settlement posts per day once its
+                             # board has been seen; a board seen for the FIRST
+                             # time fills to its slot count (the land always
+                             # has work, plan.md)
 
 
 def threat_value(kind: str) -> float:
@@ -278,7 +307,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the roadside camp", "the toll bridge", "the old fort"),
              giver="the sheriff",
              epilogue="The bandits are dead. The road and bridge are safe "
-                      "again."),
+                      "again.",
+             failure_epilogue="The bandits are still on the road. Two carters "
+                              "are dead and the toll bridge is theirs now."),
         dict(title="Wolves Attack",
              desc="Wolves have killed sheep and a shepherd. Hunt the pack in "
                   "the hills and kill it.",
@@ -286,7 +317,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the high pasture", "the den in the hills"),
              giver="the head shepherd",
              epilogue="The wolves are dead. No sheep are lost for the rest of "
-                      "the season."),
+                      "the season.",
+             failure_epilogue="The pack moved down into the valley. Another "
+                              "shepherd is dead and the flocks are penned in."),
         dict(title="The Restless Crypt",
              desc="The dead rise from the village graveyard. Enter the crypt "
                   "and destroy them.",
@@ -294,7 +327,10 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the village graveyard", "the crypt below"),
              giver="the village priest",
              epilogue="The dead are destroyed. The priest blesses the graves "
-                      "again."),
+                      "again.",
+             failure_epilogue="The dead walk out of the graveyard now. The "
+                              "priest has locked the church and the village "
+                              "sleeps armed."),
         dict(title="Deserter Raiders",
              desc="Army deserters are raiding the villages they once guarded. "
                   "Find their camp and stop them.",
@@ -303,14 +339,18 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the burned farm", "the deserters' camp"),
              giver="the army captain",
              epilogue="The deserters are defeated. Their weapons return to "
-                      "the army."),
+                      "the army.",
+             failure_epilogue="The deserters burned another village and rode "
+                              "east. The army hunts its own men now."),
         dict(title="Renegade Wizards",
              desc="Renegade wizards have taken the tollhouse. They attack "
                   "travelers with fire and ice. Kill them and clear the road.",
              pool=CASTER_POOL, skins={},
              sites=("the tollhouse road", "the ruined guildhall"),
              giver="the bishop's mage hunter",
-             epilogue="The wizards are dead. Travelers use the road again."),
+             epilogue="The wizards are dead. Travelers use the road again.",
+             failure_epilogue="The wizards hold the tollhouse. The road is "
+                              "closed and traffic goes the long way round."),
     ],
     "elf": [
         dict(title="The Blighted Grove",
@@ -323,7 +363,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the outer grove", "the heart of the grove"),
              giver="the head warden",
              epilogue="The blight is gone. New plants grow at the edge of the "
-                      "grove."),
+                      "grove.",
+             failure_epilogue="The blight spread past the grove. The wardens "
+                              "have pulled back to the inner wood."),
         dict(title="Spiders in the Trees",
              desc="Giant spiders have covered the tree paths in webs. Several "
                   "wardens are missing. Clear the paths and find them.",
@@ -331,7 +373,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the lower branches", "the upper walkways"),
              giver="the walkway keeper",
              epilogue="The spiders are dead and the webs are gone. The "
-                      "missing wardens are brought home."),
+                      "missing wardens are brought home.",
+             failure_epilogue="The webs reached the main walkways. The "
+                              "missing wardens are not coming back."),
         dict(title="Blighted Beasts",
              desc="The blight has driven the boars and bears mad. They are "
                   "attacking the outer groves. Kill them.",
@@ -339,7 +383,9 @@ TEMPLATES: dict[str, list[dict]] = {
                                      "bear": "Blighted Bear"},
              sites=("the torn grove", "the beast den"),
              giver="the grove keeper",
-             epilogue="The beasts are dead. The groves are safe again."),
+             epilogue="The beasts are dead. The groves are safe again.",
+             failure_epilogue="The mad beasts came out of the groves and into "
+                              "the orchards. The outer paths are closed."),
         dict(title="Rogue Wardens",
              desc="A group of wardens has taken over the forest road. They "
                   "demand money from travelers. Stop them.",
@@ -351,7 +397,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the forest road", "the rogue lodge"),
              giver="the council judge",
              epilogue="The rogue wardens are defeated. The forest road is "
-                      "open again."),
+                      "open again.",
+             failure_epilogue="The rogue wardens hold the forest road and set "
+                              "their own price. The council pays it."),
         dict(title="The Mist Coven",
              desc="A group of mages stole forbidden songs from the circle. "
                   "Their magic covers the valley in mist. Find them and stop "
@@ -360,7 +408,9 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"hexer": "Mist Mage", "pyromancer": "Fire Mage"},
              sites=("the misty valley", "the stone circle"),
              giver="the circle elder",
-             epilogue="The mages are dead. The mist fades from the valley."),
+             epilogue="The mages are dead. The mist fades from the valley.",
+             failure_epilogue="The ritual finished. The mist lies over the "
+                              "whole valley and nobody walks in it."),
     ],
     "orc": [
         dict(title="The Great Hunt",
@@ -370,7 +420,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the hunting grounds", "the beast den"),
              giver="the clan's lead hunter",
              epilogue="The hide hangs in the clan hall. The clan honors the "
-                      "party."),
+                      "party.",
+             failure_epilogue="The beast was not taken. The hunt is called "
+                              "off and the clan eats winter stores early."),
         dict(title="Rival Warband",
              desc="A rival clan is raiding the herd trails. Find their camp "
                   "and defeat them.",
@@ -382,21 +434,27 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the raided trail", "the rival camp", "the war camp"),
              giver="the warchief",
              epilogue="The rival warband is defeated. The herd trails are "
-                      "safe again."),
+                      "safe again.",
+             failure_epilogue="The rival warband took the herd trails. The "
+                              "clan drives its beasts the long way now."),
         dict(title="Giants in the Pass",
              desc="Giants have blocked the mountain pass. They attack carts "
                   "and kill travelers. Find their cave and kill them.",
              pool=GIANTKIN_POOL, skins={},
              sites=("the boulder field", "the cave under the pass"),
              giver="the pass keeper",
-             epilogue="The giants are dead. Carts use the mountain pass again."),
+             epilogue="The giants are dead. Carts use the mountain pass again.",
+             failure_epilogue="The giants still hold the pass. The carts turn "
+                              "back and the goods rot at the road head."),
         dict(title="Dragon on the Mountain",
              desc="A dragon hunts the clan's herds from the high peaks. Climb "
                   "to its nest and kill it.",
              pool=DRAKE_POOL, skins={},
              sites=("the mountain slopes", "the dragon's nest"),
              giver="the clan elder",
-             epilogue="The dragon is dead. The herds return to the mountain."),
+             epilogue="The dragon is dead. The herds return to the mountain.",
+             failure_epilogue="The dragon took the rest of the herd. The clan "
+                              "moved its camp down off the mountain."),
         dict(title="Rebel Shamans",
              desc="A group of shamans has turned against the clan. They burn "
                   "the plains and attack the old shaman's followers. Defeat "
@@ -405,7 +463,9 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"hexer": "Ice Shaman", "pyromancer": "Fire Shaman"},
              sites=("the burned plains", "the rebel camp"),
              giver="the clan shaman",
-             epilogue="The rebels are defeated. Their ritual fire is put out."),
+             epilogue="The rebels are defeated. Their ritual fire is put out.",
+             failure_epilogue="The rebel shamans burned the plains black. The "
+                              "old shaman has lost half the followers."),
     ],
     "dwarf": [
         dict(title="Monsters in the Deep Road",
@@ -416,7 +476,10 @@ TEMPLATES: dict[str, list[dict]] = {
                     "dire wolf": "Tunnel Stalker"},
              sites=("the checkpoint", "the deep road", "the crossroads"),
              giver="the trade guild agent",
-             epilogue="The monsters are dead. The deep road is open again."),
+             epilogue="The monsters are dead. The deep road is open again.",
+             failure_epilogue="The deep road stays shut. The trade guild "
+                              "sends its goods over the surface at four times "
+                              "the price."),
         dict(title="The Lost Hold",
              desc="An old dwarf hold has drained after years under water. "
                   "Undead now walk its halls. Destroy them.",
@@ -427,7 +490,9 @@ TEMPLATES: dict[str, list[dict]] = {
                     "the central hall"),
              giver="the last heir of the hold",
              epilogue="The undead are destroyed. The entrance to the hold is "
-                      "sealed."),
+                      "sealed.",
+             failure_epilogue="The dead still walk the hold. The heir gave up "
+                              "the claim and sold the deed."),
         dict(title="Monster in the Mine",
              desc="A giant has taken over part of the mine. Kill it and clear "
                   "the tunnels.",
@@ -435,7 +500,9 @@ TEMPLATES: dict[str, list[dict]] = {
                                         "troll": "Stone Troll"},
              sites=("the mine tunnel", "the broken chamber"),
              giver="the mine foreman",
-             epilogue="The monster is dead. The miners return to work."),
+             epilogue="The monster is dead. The miners return to work.",
+             failure_epilogue="The mine stays half shut. The foreman moved "
+                              "the crews to a poorer seam."),
         dict(title="The Clan War",
              desc="A rival dwarf clan has attacked the gate and mine. Defeat "
                   "them and end the attack.",
@@ -447,7 +514,9 @@ TEMPLATES: dict[str, list[dict]] = {
              places=2,
              sites=("the main gate", "the mine entrance"),
              giver="the clan elder",
-             epilogue="The rival clan is defeated. The fighting ends."),
+             epilogue="The rival clan is defeated. The fighting ends.",
+             failure_epilogue="The rival clan holds the gate and the mine "
+                              "mouth. The fighting goes on without you."),
         dict(title="Mages in the Mine",
              desc="A group of mages has opened a magic fire in a sealed mine. "
                   "Kill them and put out the fire.",
@@ -455,7 +524,9 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"hexer": "Ice Mage", "pyromancer": "Fire Mage"},
              sites=("the sealed mine", "the magic vault"),
              giver="the head runesmith",
-             epilogue="The mages are dead. The vault is sealed again."),
+             epilogue="The mages are dead. The vault is sealed again.",
+             failure_epilogue="The magic fire burned through the vault. The "
+                              "seal is broken and the mine is written off."),
     ],
     "goblin": [
         dict(title="Hounds in the Factory",
@@ -466,7 +537,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the scrapyard", "the factory floor"),
              giver="the shift boss",
              epilogue="The hounds are dead. The factory workers return to "
-                      "work."),
+                      "work.",
+             failure_epilogue="The hounds still run the night floor. Two more "
+                              "workers are dead and the shift is cut."),
         dict(title="Stolen Workers",
              desc="A rival boss is kidnapping workers from the night shift. "
                   "Find the gang and stop them.",
@@ -478,7 +551,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the night market", "the gang hideout",
                     "the boss's tower"),
              giver="the night shift boss",
-             epilogue="The gang is defeated. The workers return home safely."),
+             epilogue="The gang is defeated. The workers return home safely.",
+             failure_epilogue="The gang cleared out the night shift. The "
+                              "rival boss has the workers and the contract."),
         dict(title="The Killer Machine",
              desc="A large machine has broken loose in the lower factory. "
                   "Destroy it.",
@@ -488,7 +563,10 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the lower factory", "the furnace hall"),
              giver="the factory boss",
              epilogue="The machine is destroyed. The lower factory opens "
-                      "again."),
+                      "again.",
+             failure_epilogue="The machine wrecked the lower factory. The "
+                              "floor is walled off and written down as a "
+                              "loss."),
         dict(title="Spiders Below",
              desc="Giant spiders have blocked the air shafts. Clear their "
                   "webs before the lower city runs out of air.",
@@ -496,7 +574,9 @@ TEMPLATES: dict[str, list[dict]] = {
              sites=("the air shafts", "the old cistern"),
              giver="the air keeper",
              epilogue="The spiders are dead. Air flows into the lower city "
-                      "again."),
+                      "again.",
+             failure_epilogue="The air shafts stayed blocked. The lower city "
+                              "has been emptied and its doors are sealed."),
         dict(title="The Boiler Cult",
              desc="A cult feeds workers to an old boiler. Enter their shrine "
                   "and kill them.",
@@ -504,7 +584,9 @@ TEMPLATES: dict[str, list[dict]] = {
              skins={"hexer": "Ice Tinker", "pyromancer": "Fire Tinker"},
              sites=("the boiler room", "the boiler shrine"),
              giver="the factory inspector",
-             epilogue="The cult is gone. The old boiler is shut down."),
+             epilogue="The cult is gone. The old boiler is shut down.",
+             failure_epilogue="The cult still feeds the boiler. The inspector "
+                              "has stopped filing reports."),
     ],
 }
 
@@ -518,21 +600,28 @@ EPIC_TEMPLATES: list[dict] = [
          sites=("the burned storehouses", "the mountain path",
                 "the dragon's cave"),
          giver="the king's general",
-         epilogue="The dragon is dead. The valley keeps its harvest."),
+         epilogue="The dragon is dead. The valley keeps its harvest.",
+         failure_epilogue="The valley pays the tribute. The storehouses go "
+                          "out to the mountain every month."),
     dict(title="The Giant at the Border",
          desc="A giant has destroyed several border forts. Track it to its "
               "stronghold and kill it.",
          pool=GIANTKIN_POOL, skins={}, places=2,
          sites=("the ruined fort", "the giant's hall"),
          giver="the border commander",
-         epilogue="The giant is dead. Soldiers return to the border forts."),
+         epilogue="The giant is dead. Soldiers return to the border forts.",
+         failure_epilogue="The giant took another fort. The border line has "
+                          "been pulled back ten miles."),
     dict(title="The Renegade Wizard",
          desc="A royal wizard has rebelled and taken control of a tower. Kill "
               "the wizard and stop the fires.",
          pool=MAGUS_POOL, skins={},
          sites=("the burned road", "the wizard's tower"),
          giver="the king's wizard",
-         epilogue="The renegade wizard is dead. The tower goes dark."),
+         epilogue="The renegade wizard is dead. The tower goes dark.",
+         failure_epilogue="The wizard holds the tower and the fires burn on. "
+                          "The king's wizard has stopped answering questions "
+                          "about it."),
 ]
 
 # Geographic routing for the existing quest families.  The encounter tables
@@ -663,34 +752,46 @@ DELIVERY_TEMPLATES: list[dict] = [
               "sealed letter to the envoy. Enemies may try to take it.",
          giver="the head courier", recipient="the royal envoy",
          epilogue="The envoy reads the letter. More guards are sent to the "
-                  "road."),
+                  "road.",
+         failure_epilogue="The letter never arrived. The envoy has left the "
+                          "city and the road stays unguarded."),
     dict(title="The Locked Chest", cargo="a locked chest",
          desc="A merchant guild must send payment to another city. Deliver "
               "the locked chest unopened.",
          giver="the guild agent", recipient="the merchant agent",
          epilogue="The chest arrives unopened. The guild records the party as "
-                  "reliable."),
+                  "reliable.",
+         failure_epilogue="The payment never came. The guild has cancelled "
+                          "the contract and hired other couriers."),
     dict(title="Medicine Delivery", cargo="a crate of medicine",
          desc="A plague has struck a city across the border. Deliver this "
               "medicine as quickly as possible.",
          giver="the town healer", recipient="the city healer",
          epilogue="The medicine reaches the sick. The number of deaths begins "
-                  "to fall."),
+                  "to fall.",
+         failure_epilogue="The medicine sat in the crate. The plague city has "
+                          "closed its gates and stopped counting."),
     dict(title="The Smith's Delivery", cargo="a wrapped blade",
          desc="A smith has finished a sword for a buyer in another land. "
               "Deliver it safely.",
          giver="the master smith", recipient="the buyer",
-         epilogue="The buyer accepts the sword. The job is complete."),
+         epilogue="The buyer accepts the sword. The job is complete.",
+         failure_epilogue="The blade was never carried. The buyer took the "
+                          "deposit back and the smith is short."),
     dict(title="Return the Ashes", cargo="a sealed urn",
          desc="A traveler died far from home. Carry the ashes back to the "
               "family.",
          giver="the traveler's friend", recipient="the family",
-         epilogue="The family buries the ashes. They thank the party."),
+         epilogue="The family buries the ashes. They thank the party.",
+         failure_epilogue="The urn is still here. The family has held the "
+                          "funeral without it."),
     dict(title="The Ransom Payment", cargo="a strongbox of ransom gold",
          desc="A town is paying to free a hostage across the border. Deliver "
               "the gold unopened.",
          giver="the town mayor", recipient="the kidnapper's agent",
-         epilogue="The gold is delivered. The hostage is released."),
+         epilogue="The gold is delivered. The hostage is released.",
+         failure_epilogue="The ransom was never paid. The kidnappers have "
+                          "sent the town a finger."),
 ]
 
 RACES = tuple(TEMPLATES)
@@ -747,6 +848,88 @@ def quest_gold_posted(quest: dict) -> int:
     if quest.get("align") == "dark":
         total = round(total * DARK_GOLD_MULT)
     return total
+
+
+# --------------------------------------------------------------------------- #
+# The clock on a posting (2026-07-26)
+# --------------------------------------------------------------------------- #
+# A quest carries `posted_day`, `window` and `deadline_day`, and nothing else:
+# every band below is derived, so a save written before the clocks (or a job
+# that deliberately has none -- the war waves, the shadow board's day-scoped
+# offers) reads as an untimed job and behaves exactly as it always did.
+
+def stamp_quest_clock(quest: dict, day: int, rng: random.Random,
+                      extra_days: int = 0) -> dict:
+    """Put a window on a posting. `extra_days` buys road time: a courier job
+    is due at the other end of a trip it has to walk first."""
+    window = rng.randint(*QUEST_WINDOW_DAYS) + extra_days
+    quest["posted_day"] = day
+    quest["window"] = window
+    quest["deadline_day"] = day + window
+    return quest
+
+
+def quest_days_left(quest: dict, day: int) -> int | None:
+    """Days to the deadline (0 = due today, negative = into the grace).
+    None when the job has no clock."""
+    deadline = quest.get("deadline_day")
+    return None if deadline is None else deadline - day
+
+
+def quest_band(quest: dict, day: int) -> str:
+    """Which pay band a turn-in on `day` lands in: quick / on time / late /
+    expired. An untimed job is always on time."""
+    deadline = quest.get("deadline_day")
+    if deadline is None:
+        return "on time"
+    posted = quest.get("posted_day", 0)
+    window = quest.get("window", deadline - posted)
+    if day <= posted + int(window * QUEST_QUICK_SHARE):
+        return "quick"
+    if day <= deadline:
+        return "on time"
+    if day <= deadline + QUEST_GRACE_DAYS:
+        return "late"
+    return "expired"
+
+
+def quest_pay_mult(quest: dict, day: int) -> float:
+    return QUEST_PAY_BANDS[quest_band(quest, day)]
+
+
+def quest_expired(quest: dict, day: int, taken: bool = False) -> bool:
+    """Is this posting past saving? An UNTAKEN job comes off the board the
+    day after its deadline -- nobody waits on a party that never came. A
+    TAKEN one keeps the grace: the party is out there working on it."""
+    deadline = quest.get("deadline_day")
+    if deadline is None:
+        return False
+    return day > deadline + (QUEST_GRACE_DAYS if taken else 0)
+
+
+def deadline_note(quest: dict, day: int) -> str:
+    """The board's clock column, terse enough for 40 columns."""
+    left = quest_days_left(quest, day)
+    if left is None:
+        return ""
+    if left > 1:
+        return f"{left} days left"
+    if left == 1:
+        return "due tomorrow"
+    if left == 0:
+        return "DUE TODAY"
+    grace = QUEST_GRACE_DAYS + left     # days of grace still ahead
+    if grace > 0:
+        return f"LATE ({grace} day(s) of grace)"
+    if grace == 0:
+        return "LATE -- LAST DAY"
+    return "EXPIRED"
+
+
+def failure_line(quest: dict) -> str:
+    """What the world says about a job nobody finished."""
+    return (quest.get("failure_epilogue")
+            or f"No one took {quest['name']}. The trouble stands.")
 
 
 # --------------------------------------------------------------------------- #
@@ -1229,12 +1412,53 @@ def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
     return name
 
 
+def next_quest_id(world: dict) -> str:
+    """The next free quest id. A monotonic counter, not a count: expired
+    postings are DELETED from world['quests'] (slice 2), so counting what is
+    left would hand a live job an id a released Site still remembers."""
+    seq = world.get("quest_seq", len(world["quests"])) + 1
+    while (f"q{seq:02d}" in world["quests"]
+           or any(f"q{seq:02d}" in site.get("quest_ids", ())
+                  for site in world["sites"].values())):
+        seq += 1
+    world["quest_seq"] = seq
+    return f"q{seq:02d}"
+
+
+def release_quest_places(world: dict, quest: dict) -> None:
+    """Give a dead posting's geography back to the world. A Site built FOR
+    this quest (and for no other) is deleted with its Rooms; a shared or
+    reused skeleton just forgets the quest. Called when an untaken job
+    expires -- without it a long career leaves a land littered with the
+    bandit camps of jobs nobody ever took."""
+    qid = quest["id"]
+    for site_id in list(quest.get("sites", ())):
+        site = world["sites"].get(site_id)
+        if site is None:
+            continue
+        others = [q for q in site.get("quest_ids", ()) if q != qid]
+        if others or f"quest-{qid}-" not in site_id:
+            site["quest_ids"] = others
+            for room in site_rooms(world, site):
+                room["quest_ids"] = [q for q in room.get("quest_ids", ())
+                                     if q != qid]
+            continue
+        for room_id in list(site.get("rooms", ())):
+            world["rooms"].pop(room_id, None)
+        area = world["areas"].get(site.get("area"))
+        if area is not None and site_id in area.get("sites", ()):
+            area["sites"].remove(site_id)
+        world["sites"].pop(site_id, None)
+
+
 def _post_quest(world: dict, settlement: dict, rng: random.Random,
-                used_people: set[str] | None = None) -> dict:
+                used_people: set[str] | None = None,
+                day: int = 0) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the race's table (the capital also draws the epics)
-    among those whose band contains the roll."""
+    among those whose band contains the roll. Since 2026-07-26 the posting is
+    stamped with the day and a window (`stamp_quest_clock`)."""
     lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
     level = rng.randint(lo, hi)
     race = land_race(world, settlement["land"])
@@ -1252,8 +1476,10 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     posted = {world["quests"][qid]["name"] for qid in settlement["quests"]}
     fresh = [t for t in fitting if t["title"] not in posted]
     tpl = rng.choice(fresh or fitting)
-    qid = f"q{len(world['quests']) + 1:02d}"
+    qid = next_quest_id(world)
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
+    stamp_quest_clock(quest, day, rng)
     attach_giver(quest, race, rng, role=tpl.get("giver"),
                  used_names=used_people)
     world["quests"][qid] = quest
@@ -1261,49 +1487,147 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     return quest
 
 
+def board_slots(settlement: dict) -> int:
+    """How many live jobs this settlement keeps posted (SETTLEMENT_KINDS)."""
+    return SETTLEMENT_KINDS[settlement["subtype"]][0]
+
+
+def open_quests(world: dict, settlement: dict, day: int | None = None) -> list:
+    """The settlement's live board. `day`, when given, also drops postings
+    whose window has closed but whose expiry has not been run yet (a distant
+    land's board, read off the map)."""
+    out = []
+    for qid in settlement.get("quests", ()):
+        q = world["quests"].get(qid)
+        if q is None or q["status"] != "open":
+            continue
+        if day is not None and quest_expired(q, day):
+            continue
+        out.append(q)
+    return out
+
+
+def board_forecast(world: dict, settlement: dict, day: int) -> int:
+    """How many live jobs the party would find if it walked in TODAY: what is
+    posted now, minus what has lapsed, plus what the refill owes. Readouts
+    (the map, `status`) use this rather than the raw count -- the clock only
+    runs where the party stands, so a land it left would otherwise decay to
+    "0 job(s)" on the map and read as a place with no work in it."""
+    live = len(open_quests(world, settlement, day))
+    seen = settlement.get("board_day")
+    owed = (board_slots(settlement) - live if seen is None
+            else QUEST_REFILL_PER_DAY * max(0, day - seen))
+    return min(board_slots(settlement), live + max(0, owed))
+
+
+def expire_settlement_board(world: dict, settlement: dict, day: int,
+                            taken: set[str] | frozenset = frozenset()
+                            ) -> list[dict]:
+    """Take the closed windows off one settlement's board. Returns the
+    expired postings (their `failure_epilogue` is the rumour the settlement
+    hears next). A TAKEN job is left alone here -- its clock is run by the
+    caller wherever the party is standing, and its geography must survive
+    with the party inside it."""
+    gone = []
+    for qid in list(settlement.get("quests", ())):
+        quest = world["quests"].get(qid)
+        if quest is None:
+            settlement["quests"].remove(qid)
+            continue
+        if quest["status"] != "open" or qid in taken:
+            continue
+        if not quest_expired(quest, day):
+            continue
+        quest["status"] = "expired"
+        quest["failed_day"] = day
+        release_quest_places(world, quest)
+        settlement["quests"].remove(qid)
+        world["quests"].pop(qid, None)
+        gone.append(quest)
+    return gone
+
+
+def refresh_settlement_board(world: dict, settlement: dict, day: int,
+                             rng: random.Random,
+                             used_people: set[str] | None = None
+                             ) -> list[dict]:
+    """The banded lazy refill: top this settlement back toward its slot
+    count. A board seen for the FIRST time fills up (the land has always had
+    work, the party has just never asked); after that it posts at most
+    QUEST_REFILL_PER_DAY per day elapsed, so the board is a place that
+    changes rather than a slot machine to re-roll."""
+    slots = board_slots(settlement)
+    live = len(open_quests(world, settlement))
+    seen = settlement.get("board_day")
+    room = slots - live
+    if seen is not None:
+        room = min(room, QUEST_REFILL_PER_DAY * max(0, day - seen))
+    settlement["board_day"] = day
+    return [_post_quest(world, settlement, rng, used_people, day=day)
+            for _ in range(max(0, room))]
+
+
 def generate_world(seed: int | None = None) -> dict:
-    """Create the six-Land persistent world, then route its quest inventory."""
+    """Create the six-Land persistent world and seed its quest inventory.
+
+    Since 2026-07-26 worldgen posts ONE job per settlement and stops. The
+    board is filled and kept filled by `refresh_settlement_board` as the
+    party actually looks at it: with clocks on every posting the old up-front
+    XP-coverage top-up asserted a total that expiry immediately made a lie.
+    A fresh world is therefore SMALL -- one job a settlement plus the
+    couriers -- and that is not the content budget, it is the seed."""
     rng = random.Random(seed)
     used_people: set[str] = set()   # one namespace for givers AND the cast:
                                     # two Ruriks in one town read as a bug
     world = create_geography(seed)
+    world["quest_seq"] = 0
     _cast_service_providers(world, rng, used_people)
     for polity, setts in settlements_by_land(world).items():
         _cast_the_land(world, polity, setts[0], rng, used_people)
 
-    # Seed every settlement with one local job.  The career-coverage loop
-    # then adds work without recreating the old arbitrary per-tier census.
     for settlement in settlements(world):
         _post_quest(world, settlement, rng, used_people)
 
-    target = WORLD_XP_MARGIN * xp_to_cap(1)
-    while (sum(quest_xp_posted(q) for q in world["quests"].values()) < target
-           and len(world["quests"]) < WORLD_MAX_QUESTS):
-        _post_quest(world, rng.choice(settlements(world)), rng, used_people)
-
-    # The deliveries go on last, ON TOP of the coverage target (courier work
-    # is travel pay, not the climb's XP).
     for _ in range(DELIVERIES_PER_WORLD):
         _post_delivery(world, rng, used_people)
     return world
 
 
+def refresh_deliveries(world: dict, day: int, rng: random.Random,
+                       used_people: set[str] | None = None,
+                       origins: list[dict] | None = None) -> list[dict]:
+    """Keep DELIVERIES_PER_WORLD courier jobs live. `origins` restricts the
+    posting to settlements the party can actually reach the news from (the
+    local land) -- the board's refill is lazy in the same way."""
+    live = sum(1 for q in world["quests"].values()
+               if q.get("kind") == "delivery" and q["status"] == "open"
+               and not quest_expired(q, day))
+    return [_post_delivery(world, rng, used_people, day=day, origins=origins)
+            for _ in range(max(0, DELIVERIES_PER_WORLD - live))]
+
+
 def _post_delivery(world: dict, rng: random.Random,
-                   used_people: set[str] | None = None) -> dict:
+                   used_people: set[str] | None = None,
+                   day: int = 0,
+                   origins: list[dict] | None = None) -> dict:
     """Roll one cross-land delivery onto a random settlement's board: a
     destination in another land, a fresh template if one is left, a giver
     face at the origin and a RECIPIENT face at the destination (the
     hand-off is the turn-in scene)."""
     from people import make_npc     # runtime import (cycle: RACES)
-    origin = rng.choice(settlements(world))
+    origin = rng.choice(origins or settlements(world))
     dests = [s for s in settlements(world) if s["land"] != origin["land"]]
     dest = rng.choice(dests)
     posted = {q["name"] for q in world["quests"].values()
-              if q.get("kind") == "delivery"}
+              if q.get("kind") == "delivery" and q["status"] == "open"}
     fresh = [t for t in DELIVERY_TEMPLATES if t["title"] not in posted]
     tpl = rng.choice(fresh or DELIVERY_TEMPLATES)
-    qid = f"q{len(world['quests']) + 1:02d}"
+    qid = next_quest_id(world)
     quest = build_delivery_quest(qid, tpl, origin, dest, rng)
+    quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
+    # A courier job's window buys the road it has to walk (both legs), so a
+    # cross-land run is not late before it starts.
+    stamp_quest_clock(quest, day, rng, extra_days=2 * quest["days"])
     attach_giver(quest, land_race(world, origin["land"]), rng,
                  role=tpl.get("giver"),
                  used_names=used_people)
@@ -1479,11 +1803,17 @@ def level_grade(quest: dict) -> str:
     return f"L{quest['level']:<2}"
 
 
-def quest_line(quest: dict) -> str:
-    """One board row: id, exact level, shape, pay, and status. A delivery has
+def quest_line(quest: dict, day: int | None = None) -> str:
+    """One board row: id, exact level, shape, pay, status, and -- since
+    2026-07-26, when `day` is given -- the clock. A delivery has
     no site level: DELIVERY stands where the level would (the road's danger
     is the road's own table)."""
-    mark = {"open": "", "done": "  [DONE]"}[quest["status"]]
+    mark = {"open": "", "done": "  [DONE]",
+            "failed": "  [FAILED]", "expired": "  [GONE]"}.get(
+                quest["status"], "")
+    if not mark and day is not None:
+        note = deadline_note(quest, day)
+        mark = f"  ({note})" if note else ""
     if quest.get("kind") == "delivery":
         return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
                 f"{quest['dest_name']}, {quest_shape(quest)}; pays "
@@ -1498,10 +1828,12 @@ def quest_line(quest: dict) -> str:
 
 
 def board_lines(world: dict,
-                settlement_key: str | None = None) -> list[str]:
+                settlement_key: str | None = None,
+                day: int | None = None) -> list[str]:
     """The DM's quest inventory per settlement (2026-07-12: in play there
     is no board -- each row shows WHOSE job it is, and the ask-around
-    funnel leads to that person, see dm.md). Levels always print exactly."""
+    funnel leads to that person, see dm.md). Levels always print exactly;
+    `day` adds each posting's clock."""
     lines = []
     for s in settlements(world):
         if settlement_key and s["key"] != settlement_key:
@@ -1509,10 +1841,14 @@ def board_lines(world: dict,
         land_name = world["lands"][s["land"]]["name"]
         lines.append(f"{s['name']} ({land_name} {s['subtype']}):")
         for qid in s["quests"]:
-            q = world["quests"][qid]
+            q = world["quests"].get(qid)
+            if q is None:
+                continue
             g = q.get("giver")
             who = f"    ({g['name']}, {g['role']})" if g else ""
-            lines.append("  " + quest_line(q) + who)
+            lines.append("  " + quest_line(q, day) + who)
+        if not s["quests"]:
+            lines.append("  (no work posted here just now)")
     return lines
 
 
@@ -1524,10 +1860,15 @@ def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
 
 
 def quest_detail_lines(world: dict, quest: dict,
-                       dm: bool = True) -> list[str]:
+                       dm: bool = True, day: int | None = None) -> list[str]:
     """The full quest view. `dm=False` withholds surprise twists; all public
     quest and site levels still print exactly."""
-    lines = [quest_line(quest), f"    {quest['desc']}"]
+    lines = [quest_line(quest, day), f"    {quest['desc']}"]
+    if day is not None and quest.get("deadline_day") is not None:
+        band = quest_band(quest, day)
+        lines.append(f"    due day {quest['deadline_day']} "
+                     f"({deadline_note(quest, day)}); turned in now it pays "
+                     f"{band} -- x{QUEST_PAY_BANDS[band]:g}")
     g = quest.get("giver")
     if g:
         traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
@@ -1584,14 +1925,25 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--demo", action="store_true",
                     help="also dump every quest's full rosters")
+    ap.add_argument("--day", type=int, default=0,
+                    help="run the board's clock forward to this day first")
     args = ap.parse_args()
     world = generate_world(args.seed)
+    rng = random.Random(args.seed)
+    for day in range(1, args.day + 1):
+        for s in settlements(world):
+            expire_settlement_board(world, s, day)
+            refresh_settlement_board(world, s, day, rng)
+        refresh_deliveries(world, day, rng)
     total = sum(quest_xp_posted(q) for q in world["quests"].values())
-    print(f"World (seed={args.seed}): {len(settlements(world))} settlements, "
-          f"{len(world['quests'])} quests, {total} XP on the board "
-          f"(a duo needs {xp_to_cap(1)} to L{LEVEL_CAP}).")
+    slots = sum(board_slots(s) for s in settlements(world))
+    print(f"World (seed={args.seed}), day {args.day}: "
+          f"{len(settlements(world))} settlements, "
+          f"{len(world['quests'])} quests posted, {total} XP standing "
+          f"(the board holds {slots} slots and refills as days pass; "
+          f"a duo needs {xp_to_cap(1)} to L{LEVEL_CAP}).")
     print()
-    for line in board_lines(world):
+    for line in board_lines(world, day=args.day):
         print(line)
     print()
     print("The central cast:")
@@ -1603,9 +1955,9 @@ def main() -> None:
         seat = world["areas"][npc["seat"]]["name"]
         print(f"  [{land_name}, at {seat}] {npc_line(npc)}")
     if args.demo:
-        for q in world["quests"].values():
+        for q in list(world["quests"].values()):
             print()
-            for line in quest_detail_lines(world, q):
+            for line in quest_detail_lines(world, q, day=args.day):
                 print(line)
 
 

@@ -141,9 +141,15 @@ def pick_name(rng: random.Random, race: str, sex: str,
     """A fresh name from the race/sex pool, avoiding `used` (name collisions
     would break the save's name-keyed lookups)."""
     pool = [n for n in NAMES[race][sex] if used is None or n not in used]
-    if not pool:
-        pool = [n + " II" for n in NAMES[race][sex]]
-        pool = [n for n in pool if used is None or n not in used]
+    suffix = 1
+    while not pool:
+        # The pool is finite (25 a race/sex) and the quest board CHURNS since
+        # 2026-07-26 -- a long campaign can genuinely ask for more faces than
+        # there are names. Number them rather than crashing on an empty pool.
+        suffix += 1
+        tag = " II" if suffix == 2 else f" {suffix}"
+        pool = [n + tag for n in NAMES[race][sex]
+                if used is None or n + tag not in used]
     name = rng.choice(pool)
     if used is not None:
         used.add(name)
