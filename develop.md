@@ -133,8 +133,9 @@ a pointer: what the file is, how it's run, where its docs are.
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
-  the deal order and round-robin, the companion tiebreak, the dead and the
-  lone hero, the drink thresholds and the deal/drink alternation, the PC's
+  the deal order and round-robin, the companion tiebreak, the lone hero,
+  recovering the fallen's kit, the fight-only drink fence (`drink=`), the
+  drink thresholds and the deal/drink alternation, the PC's
   healing-spell / War-Breath / Berserk gate, and the one-line hand-over
   report inside the 40-column wrap.
   `python -m unittest -v test_potions.py`.
@@ -550,11 +551,18 @@ mechanic *does* and *why* is rules.md's job.
   policy's numbers are unchanged), `drinks_own_potions` (companions always;
   the PC only without the healing spell / War-Breath / Berserk on that
   track), `_potion_need`, `deal_potions` (pool → worst-off-first
-  round-robin, ties to companions, silent and idempotent), `_kit_line`, and
-  `auto_potions` — the deal/drink/deal loop and the ONE entry point.
+  round-robin, ties to companions, silent and idempotent),
+  `recover_potions_from_the_fallen` (a dead companion's vials go back to
+  the party — the quality-steel doctrine), `_kit_line`, and
+  `auto_potions` — the recover/deal/drink/deal loop and the ONE entry
+  point. **`drink=` is the fight-only fence** (designer call, 2026-07-26):
+  it defaults to False, so every call DEALS and only the encounter paths
+  pass `drink=True`. A camp/shop/morning drink was the wrong trade — the
+  night heals free, so the vial is worth more unopened.
   `session.py` calls it wherever the stock changes out of combat, and those
-  call sites are the trigger list: `cmd_new` (the opening kit),
-  `finish_encounter` and `cmd_retreat`'s escape branch (post-fight),
+  call sites are the trigger list: `finish_encounter` and `cmd_retreat`'s
+  escape branch (**the two `drink=True` sites**), plus deal-only at
+  `cmd_new` (the opening kit),
   `night_upkeep` (every night path, after the rest and the brew),
   `cmd_buy` / `cmd_use` / `cmd_brew` (all gated on the primitive actually
   succeeding), `cmd_hire`, `cmd_dismiss`, `process_departures`. The sims

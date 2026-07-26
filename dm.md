@@ -594,8 +594,9 @@ bigger than the fights WITHOUT pages of narration:
   list them as a terse display line ("options: camp, press in, buy steel"),
   not a paragraph weighing each. A read on them is given when
   the player asks for one: straight, a sentence or two, done. (A carried
-  potion is no longer one of those options out of combat -- the
-  quartermaster pass has already drunk it, or the PC is holding it on
+  potion is rarely one of those options -- at a fight's end the
+  quartermaster pass has already drunk it, and anything still in the pack
+  is either the PC's own call or being saved for the next fight on
   purpose.)
 - **The default night is "camp until whole" -- WITH NO JOB IN HAND
   (2026-07-11; narrowed 2026-07-26).** When there is HP to heal, nothing
@@ -818,18 +819,22 @@ bigger than the fights WITHOUT pages of narration:
   every time the potion stock changes -- a `buy`, a `brew`, loot, the
   overnight scrounge, a `use`, a hire, a departure, and at every fight's
   end (retreat included) -- the party pools its healing potions and
-  stamina draughts, deals them out worst-off first and then in turn
-  (ties to the companions), and everyone drinks who is badly hurt (at or
-  below half HP) or Winded. The log prints the drinks and one
-  "shares out its potions" line; that display IS the report -- **do not
-  narrate the hand-over or comment on it.** THE ONE EXCEPTION: the player
-  character does NOT auto-drink on a track they have their own answer
-  for -- a PC who knows the **healing spell** keeps the wound decision,
-  a PC who knows **War-Breath or Berserk** keeps the stamina decision.
-  They are still dealt potions; they drink on the player's `use` call.
-  So `use` is now an OVERRIDE, not the routine step: don't offer it as
-  an option when the pass has already handled it, and don't ask the
-  player who should carry what.
+  stamina draughts and deals them out worst-off first and then in turn
+  (ties to the companions). A dead companion's vials are **taken up from
+  where they fell** and go back in the pool, like their quality steel.
+  **Drinking happens ONLY at a fight's end**, for anyone badly hurt (at
+  or below half HP) or Winded: at camp, over the morning fire, or at a
+  shop counter the pass only moves vials, because the night heals for
+  free and the potion is worth more unopened. The log prints the drinks
+  and one "shares out its potions" line; that display IS the report --
+  **do not narrate the hand-over or comment on it.** THE ONE EXCEPTION:
+  the player character does NOT auto-drink on a track they have their own
+  answer for -- a PC who knows the **healing spell** keeps the wound
+  decision, a PC who knows **War-Breath or Berserk** keeps the stamina
+  decision. They are still dealt potions; they drink on the player's
+  `use` call. So `use` is now an OVERRIDE, not the routine step: don't
+  offer it as an option when the pass has already handled it, and don't
+  ask the player who should carry what.
 - Recovery is between fights, and the NIGHT is all of it (2026-07-26 --
   the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
   and Power, ~1/7 max HP, the day advances. Nothing forces the day to end --

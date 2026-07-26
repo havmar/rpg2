@@ -1202,10 +1202,12 @@ def night_upkeep(state: dict, log: list[str]) -> None:
     (1) The 'needs meds' drain: a
     companion whose last dose is older than MEDS_INTERVAL_DAYS loses 1
     satisfaction per night until a dose is bought (`buy HERO meds`, capitals
-    only). (2) The QUARTERMASTER PASS: the night just changed the stock (the
-    kit scrounge, the alchemist's batch) and the wounds it answers, so the
-    party shares its potions out and drinks what it needs before the day
-    starts. Called last in every night path, after the rest and the brew."""
+    only). (2) The QUARTERMASTER PASS, DEAL ONLY: the night just changed the
+    stock (the kit scrounge, the alchemist's batch), so the party shares its
+    potions out before the day starts -- but nobody DRINKS at the morning
+    fire. The night heals for free and the vial is worth more unopened; the
+    fight's end is where the pass drinks (rpg.auto_potions). Called last in
+    every night path, after the rest and the brew."""
     clock = state["clock"]
     for h in state["party"][1:]:
         if h.dead or not satisfaction_tracked(h):
@@ -2456,9 +2458,10 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # (a game over needs no bookkeeping).
         satisfaction_after_fight(party, dead_before or [], log)
         # The quartermaster pass (2026-07-26): the fight just changed the
-        # stock (potions drunk at the pause, a potion looted) and who needs
-        # it. Share the kit out and let everyone the pass speaks for drink.
-        auto_potions(party, log)
+        # stock (potions drunk at the pause, a potion looted, a fallen
+        # companion's satchel) and who needs it. This is the ONE place that
+        # DRINKS -- fresh wounds, another door possibly an hour away.
+        auto_potions(party, log, drink=True)
         # A delivery's hand-off can come due here: the guaranteed
         # interception (or any other fight at the destination's gates)
         # settling with the party at the destination IS the arrival.
@@ -3617,7 +3620,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         if not wiped:
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
-            auto_potions(party, log)    # out of the fight: share the kit out
+            # Out of the fight, wounds and all: the pass drinks here too.
+            auto_potions(party, log, drink=True)
             # Fleeing the delivery's interception doesn't un-deliver: if the
             # party stands at the destination, the hand-off happens.
             deliver_if_arrived(state, log)

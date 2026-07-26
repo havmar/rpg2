@@ -1449,6 +1449,11 @@ untouched.
   fight's end (including a retreat). Never mid-fight: the pause and the
   standing orders own that decision, and nobody rummages through a
   comrade's satchel during an exchange.
+- **The fallen are emptied first.** A dead companion's healing potions and
+  draughts are **taken up from where they fell** and go back into the
+  party's stock — the same doctrine as the quality steel a fallen hero
+  leaves behind. Burying a full satchel is a loss nobody in the fiction
+  would accept; everything else stays with the body.
 - **The deal.** Healing potions and stamina draughts (`AUTO_POTION_KINDS`;
   the retired power potion and the alchemist's stat brews, bombs, and smoke
   are left where they lie) are pooled and dealt back out **worst-off
@@ -1459,12 +1464,17 @@ untouched.
   are flat, so the character closest to falling is the one with the fewest
   points left. **Ties go to the companions** — the player can always call
   for a potion, while the engine speaks for everyone else.
-- **The drink.** Anyone the pass speaks for drinks when **badly hurt** (at
-  or below half HP) or **Winded** (STA ≤ `WINDED_STA`) — the same lines the
-  sim policy has always used. Never at full: the overcharge (+2 above max)
-  stays a deliberate spend. Deal and drink alternate until nothing more is
-  wanted, so a hero standing at 0 can be stood up and topped off in one
-  pass.
+- **The drink — at a fight's end, and nowhere else.** Anyone the pass
+  speaks for drinks when **badly hurt** (at or below half HP) or **Winded**
+  (STA ≤ `WINDED_STA`) — the same lines the sim policy has always used —
+  but only on the encounter paths (a resolved fight, a retreat). The
+  morning fire, the camp, and the shop counter **deal only**: the night
+  heals for free and the next door is a day away, so an unopened vial is
+  worth more there than the HP it would buy. A potion is for the wound the
+  fight just opened. Never at full either way: the overcharge (+2 above
+  max) stays a deliberate spend. Deal and drink alternate until nothing
+  more is wanted, so a hero standing at 0 can be stood up and topped off in
+  one pass.
 - **Who it speaks for.** **Companions always** — nobody is playing them.
   **The player character only when they have no better answer of their
   own:** a PC who knows the **healing spell** owns the wound decision, and
@@ -1472,11 +1482,13 @@ untouched.
   draught is exactly what those conversions exist to save). Such a PC is
   still *dealt* potions — they simply drink them on the player's `use`
   call, not the engine's.
-- **The cost of it.** This is a small difficulty *give*: the party no
-  longer walks into a door at half HP with an unopened potion, and the
-  nightly kit line now reliably becomes HP. The lever if it proves too
-  generous is the drink threshold (`wants_potion`) or narrowing which
-  triggers wake the pass.
+- **The cost of it.** A small difficulty *give* — the party no longer walks
+  into the next door at half HP with an unopened potion — kept small by the
+  fight-end fence: the nightly kit line is banked, not burned, because the
+  morning never drinks. Recovering the fallen's kit cuts the other way from
+  where it looks: it softens a death, but a death still costs the
+  companion. The levers, if it proves too generous, are the drink threshold
+  (`wants_potion`) and which call sites pass `drink=True`.
 
 ---
 

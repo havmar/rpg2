@@ -451,11 +451,13 @@ DROP_GOLD_AMOUNT = POTION_PRICE // 2
 
 # The QUARTERMASTER PASS (2026-07-26): who carries which potion stopped being
 # a decision worth a command. Out of combat, whenever the stock CHANGES
-# (bought, brewed, looted, scrounged overnight, drunk, or walked off with by a
-# quitter), the party pools its healing potions and stamina draughts and deals
-# them back out worst-off first, one at a time and round-robin -- and everyone
-# who has no better answer of their own drinks when they are badly hurt or
-# Winded. See `auto_potions`. Mid-fight potions are NOT touched: the pause and
+# (bought, brewed, looted, scrounged overnight, drunk, taken up off a fallen
+# companion, or walked off with by a quitter), the party pools its healing
+# potions and stamina draughts and deals them back out worst-off first, one at
+# a time and round-robin. AT A FIGHT'S END it also DRINKS for everyone who has
+# no better answer of their own -- and only there: at camp or in a shop the
+# night heals for free and an unopened vial is worth more than the HP it would
+# buy. See `auto_potions`. Mid-fight potions are NOT touched: the pause and
 # the standing orders own that decision, and the fiction (rummaging through a
 # comrade's satchel mid-exchange) forbids the hand-over anyway.
 AUTO_POTION_KINDS = ("healing", "stamina")   # what the pass moves and drinks
@@ -6212,7 +6214,7 @@ def deal_potions(party: list[Entity]) -> int:
     reports the result once) and idempotent -- dealing an already-dealt kit
     moves nothing. Returns how many potions changed hands."""
     living = [h for h in party if not h.dead]
-    if len(living) < 2:
+    if not living:
         return 0
     moved = 0
     for kind in AUTO_POTION_KINDS:
@@ -6234,6 +6236,39 @@ def deal_potions(party: list[Entity]) -> int:
     return moved
 
 
+def recover_potions_from_the_fallen(party: list[Entity],
+                                    log: list[str]) -> int:
+    """Take the healing potions and stamina draughts out of a dead
+    companion's pack. Same doctrine as the quality steel a fallen hero
+    leaves behind (session.py's fight bookkeeping): the kit belongs to the
+    party, and burying a full satchel is a loss nobody in the fiction would
+    accept. The vials land with the living and the deal spreads them; the
+    body is left with everything else. Returns how many were taken up."""
+    living = [h for h in party if not h.dead]
+    fallen = [h for h in party if h.dead]
+    if not living or not fallen:
+        return 0
+    taken, names = 0, []
+    for h in fallen:
+        got = sum(h.items.get(k, 0) for k in AUTO_POTION_KINDS)
+        if not got:
+            continue
+        for kind in AUTO_POTION_KINDS:
+            living[0].items[kind] = (living[0].items.get(kind, 0)
+                                     + h.items.get(kind, 0))
+            h.items[kind] = 0
+        taken += got
+        names.append(h.name)
+    if taken:
+        who = " and ".join(names)
+        _play(log,
+              f"    {who}'s potions are taken up from where they fell "
+              f"({taken} vial(s) -- the kit stays with the party).",
+              fit_lines([f"{who}'s potions are taken up",
+                         f"from where they fell ({taken} vial(s))."]))
+    return taken
+
+
 def _kit_line(living: list[Entity]) -> tuple[str, list[str]]:
     """The hand-over readout: who ends the pass holding what. Empty when the
     party carries nothing (the drink lines already told that story)."""
@@ -6250,12 +6285,21 @@ def _kit_line(living: list[Entity]) -> tuple[str, list[str]]:
     return "; ".join(full), parts
 
 
-def auto_potions(party: list[Entity], log: list[str]) -> bool:
-    """THE QUARTERMASTER PASS -- out of combat only. Deal the party's
-    potions to whoever needs them most, let everyone the pass speaks for
-    drink what they need, and deal again (a drink changes both the stock
-    and who is worst off). Call it whenever the stock CHANGES: after loot,
-    a purchase, a brew, the overnight scrounge, a drink, or a departure.
+def auto_potions(party: list[Entity], log: list[str],
+                 drink: bool = False) -> bool:
+    """THE QUARTERMASTER PASS -- out of combat only. Take up what the fallen
+    were carrying, deal the party's potions to whoever needs them most and
+    -- with `drink` -- let everyone the pass speaks for drink what they
+    need, then deal again (a drink changes both the stock and who is worst
+    off). Call it whenever the stock CHANGES: after loot, a purchase, a
+    brew, the overnight scrounge, a drink, a hire, or a departure.
+
+    `drink` is for THE FIGHT ONLY -- the encounter paths pass it, nothing
+    else does (designer call, 2026-07-26). A potion answers a wound the
+    fight just opened, with the next door maybe an hour away; at camp, in a
+    shop, or over the morning fire the night heals for free and the vial is
+    worth more unopened. So the morning never drinks, and the party walks
+    out of a fight patched up.
 
     Drinking follows `wants_potion` (badly hurt / Winded) and
     `drinks_own_potions` (companions always; the PC only when they have no
@@ -6265,15 +6309,16 @@ def auto_potions(party: list[Entity], log: list[str]) -> bool:
     living = [h for h in party if not h.dead]
     if not living:
         return False
+    moved = recover_potions_from_the_fallen(party, log)
     # Each lap that continues drinks at least one potion, so the stock on
     # hand bounds the loop exactly.
     laps = 1 + sum(h.items.get(k, 0) for h in living
                    for k in AUTO_POTION_KINDS)
-    moved, drank = 0, False
+    drank = False
     for _ in range(laps):
         moved += deal_potions(party)
         thirsty = [(h, k) for h in living for k in AUTO_POTION_KINDS
-                   if (h.items.get(k, 0) > 0 and wants_potion(h, k)
+                   if (drink and h.items.get(k, 0) > 0 and wants_potion(h, k)
                        and drinks_own_potions(h, k))]
         if not thirsty:
             break
