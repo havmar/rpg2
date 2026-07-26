@@ -343,6 +343,17 @@ class TheTreatmentLadder(unittest.TestCase):
         self.assertTrue(h.wounds[0].treated)
         self.assertEqual(rpg.untreated_wounds(h), 0)
 
+    def test_a_rung_only_dresses_what_it_worked_on(self):
+        # The cap has to bite: wounds the healer never reached stay raw, and
+        # a salve packs the wound it went into, not the whole body.
+        h = _hero(hp=30)
+        rpg.add_wound(h, "gut", 3)
+        rpg.add_wound(h, "hand", 2)
+        rpg.healer_service([h], rpg.Purse(gold=1000), "village", [])
+        hand = next(w for w in h.wounds if w.location == "hand")
+        self.assertFalse(hand.treated)
+        self.assertGreater(rpg.untreated_wounds(h), 0)
+
     def test_a_salve_closes_one_wound_and_cannot_reach_a_maiming(self):
         h = _hero()
         rpg.add_wound(h, "flesh", 1)

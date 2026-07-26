@@ -3134,10 +3134,11 @@ def heal_wounds(e: Entity, severity: int, permanents: bool = False,
             w.name = wound_name(w.location, w.severity, w.permanent)
             w.penalty = wound_penalty_for(w.location, w.severity)
             if treat:
-                w.treated = True
-    if treat:
-        for w in e.wounds:
-            if permanents or not w.permanent:
+                # Only what this rung actually WORKED ON is dressed. A salve
+                # packs the wound it was poured into, not every scratch on
+                # the body -- and a healer who ran out of tier cap leaves the
+                # ones they never reached raw, which is exactly the pressure
+                # the cap is there to create.
                 w.treated = True
     _sync_wound_stats(e)
     if closed:
