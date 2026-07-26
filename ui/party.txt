@@ -2,30 +2,34 @@ RPG2 PARTY SHEET -- day 2, at Firascir >
   Sturford > the outer camp > outer
   watch
 purse: 0g
-party: 1/1 companion slot(s) filled (CHA
+party: 0/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Skiv (L1, training 0): DEX 4
-  STR 4  MIND 5  STA 4/6  HP 6/9 of 12
+(YOU)       Skiv (L1, training 0): DEX 3
+  STR 3  MIND 5  STA 3/6  HP 0/6 of 12
   Power 4/4  CHA 4  (alchemy 1; mace;
-  healingx1, staminax1)
+  healingx1, staminax1) [DEAD]
             Skiv -- goblin m, age 31;
               weakness: needs meds;
               speech: verbose; voice:
               loud
             XP 0/100 to L2 | skill
               points: 0
+            - a belly opened and packed
+              (sev 3)
+            - a torn eyelid (sev 2)
             - a deep gash across the
               back (sev 2)
+            - badly beaten (sev 1)
             - a split knuckle (sev 1)
-            HP ceiling 9/12 (3 wound
+            HP ceiling 6/12 (9 wound
               load)
 
 (companion) Pox (L1, training 0): DEX 6
-  STR 4  MIND 3  STA 5/7  HP 8/8  Power
+  STR 4  MIND 3  STA 2/7  HP 0/8  Power
   7/7  CHA 6  (spells: healing 1; wooden
-  staff; healingx1, staminax1)
-  [satisfaction 7/10]
+  staff; healingx1)  [satisfaction 7/10]
+  [DEAD]
             Pox -- goblin m, age 43;
               background: peasant;
               voice: loud; looks: sickly
@@ -39,5 +43,3 @@ active quest: [q42] L2 Guard the
 THE PACT: assignment [q42] Guard the
   Cultists at Ackham (grace runs to day
   5).
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
