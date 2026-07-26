@@ -12,7 +12,8 @@ THREAT_BASE, ROOM_SHARES, BOSS_ALLOWANCE are tuned against this file):
    worse) -- so a generated room speaks the same difficulty language as a
    hand-picked one.
 
-2. SITES: a full generated site (1-3 rooms, rising shares) vs the at-level
+2. SITES: a whole generated JOB in one place (1-3 encounters on the quest's
+   own QUEST_ENCOUNTERS roll since 2026-07-26, rising shares) vs the at-level
    duo under the usual sim policy (pauses answered, potions at rests, one
    return trip to a fled room). Target: at-level clear in the ballpark of
    the hand-built hideout-at-level experience (~50-70%), the -2 column a
@@ -20,8 +21,9 @@ THREAT_BASE, ROOM_SHARES, BOSS_ALLOWANCE are tuned against this file):
 
 3. CAREERS: a fresh duo in a fresh generated world plays the board to the
    level cap or the grave -- take the best reachable quest (highest level
-   <= party level + 1, else the lowest posted), run its sites via run_site,
-   camp up between sites, buy potions and quality steel when the gold is
+   <= party level + 1, else the lowest posted), fight its encounters,
+   camp up between them, collect the QUEST's turn-in lump when the last
+   place falls, buy potions and quality steel when the gold is
    there, spend points on doctrine v2 (rpg.autospend_points -- the sims'
    usual understatement of a
    real player). Reports how many careers reach the cap, die, or run out of
@@ -42,7 +44,8 @@ from sites import FOES, make_foe, run_site
 from bench_bestiary import reference_hero
 from quests import (TEMPLATES, EPIC_TEMPLATES, template_band, build_room,
                     build_site_rooms, room_budget, generate_world,
-                    quest_to_sites, quest_xp_total, xp_to_cap)
+                    quest_to_sites, quest_xp_posted, xp_to_cap,
+                    QUEST_ENCOUNTERS)
 
 ALL_TEMPLATES = [t for table in TEMPLATES.values() for t in table]
 ALL_TEMPLATES += EPIC_TEMPLATES
@@ -107,7 +110,9 @@ def run_generated_site(level: int, party_l: int, rng: random.Random) -> dict:
     through)."""
     from sites import Site
     pool = rng.choice(pools_for(level))
-    n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
+    # A whole JOB in one place: the quest's own encounter roll (2026-07-26),
+    # so this row measures what the board actually posts.
+    n_rooms = rng.choices(*QUEST_ENCOUNTERS)[0]
     rooms = tuple((rn, tuple(kinds)) for rn, kinds
                   in build_site_rooms(level, n_rooms, pool, rng))
     site = Site(key="bench", level=level, rooms=rooms,
@@ -126,8 +131,8 @@ def run_generated_site(level: int, party_l: int, rng: random.Random) -> dict:
 
 
 def bench_sites(trials: int) -> None:
-    print(f"\n--- generated SITES: full site (1-3 rooms) vs the reference "
-          f"duo, sim policy ({trials} trials/cell) ---")
+    print(f"\n--- generated JOBS: a whole quest (1-3 encounters) in one "
+          f"place vs the reference duo, sim policy ({trials} trials/cell) ---")
     print(f"{'site L':<8}{'clear-2':>9}{'clear@L':>9}{'clear+2':>9}"
           f"{'wipe@L':>8}{'down@L':>8}")
     for level in range(1, LEVEL_CAP + 1):
@@ -242,20 +247,18 @@ def _rest_up(party, clock, log) -> None:
         nights += 1
 
 
-def career_run_site(site, party, clock, purse, rng, log) -> bool:
-    """One site, room by room, camping up before every door (see _rest_up).
-    A fled room gets one rested return trip, then the site is abandoned.
-    Returns True on a full clear (pays the site's lump like run_site).
-    The momentum streak applies honestly: this policy's camps reset it, so
-    a career duo mostly earns the piecemeal (base) encounter rate -- the
-    price of its cautious pacing, same as it would be for a player's."""
+def career_run_site(site, party, clock, purse, rng, log,
+                    encounter_xp: int) -> bool:
+    """One PLACE of a quest, encounter by encounter, camping up before every
+    door (see _rest_up). A fled room gets one rested return trip, then the
+    place is abandoned. Returns True on a full clear.
+
+    Pay is the QUEST's (2026-07-26): each fight pays `encounter_xp`, flat,
+    and the turn-in lump is the caller's to hand over once the whole job is
+    done -- a place is no longer a pay grade of its own."""
     foe_n = 0
-    streak = 0
     for room_i, (room_name, roster) in enumerate(site.rooms):
-        day_before_rest = clock.day
         _rest_up(party, clock, log)
-        if clock.day != day_before_rest:
-            streak = 0
         attempts = 0
         foes = None
         while True:
@@ -276,19 +279,14 @@ def career_run_site(site, party, clock, purse, rng, log) -> bool:
                 if attempts >= rpg.SIM_MAX_ROOM_ATTEMPTS:
                     return False        # abandoned
                 _rest_up(party, clock, log)
-                if clock.day != day_before:
-                    streak = 0
                 rpg.auto_use_potions_on_rest(
                     [h for h in party if h.alive], log)
                 foes = rpg.refresh_foes_after_retreat(
                     foes, clock.day - day_before)
                 continue
             break
-        streak += 1
-        rpg.award_xp(party, site.encounter_xp(streak), log, "encounter")
+        rpg.award_xp(party, encounter_xp, log, "encounter")
         rpg.roll_loot(party, purse, rng, log)
-    rpg.award_quest(party, purse, site.quest_gold, site.quest_xp,
-                    log, site.quest_line)
     return True
 
 
@@ -329,9 +327,13 @@ def run_career(seed: int) -> dict:
                     "forced_up": forced_up}
         forced_up += was_forced
         cleared_all = True
+        level = quest["level"]
+        enc = quest.get("encounters", 1)
+        enc_xp = rpg.quest_encounter_xp(level, enc)
         for site in quest_to_sites(world, quest):
             log.clear()
-            cleared = career_run_site(site, party, clock, purse, rng, log)
+            cleared = career_run_site(site, party, clock, purse, rng, log,
+                                      enc_xp)
             if any(h.dead for h in party):
                 cleared_all = False     # a death ends the career (above)
                 break
@@ -339,6 +341,11 @@ def run_career(seed: int) -> dict:
                 cleared_all = False     # fled out / abandoned: drop the quest
                 break
             _shop_and_rest(party, clock, purse, rng, log)
+        if cleared_all and quest["sites"]:
+            # The turn-in: the whole job's lump, paid once (2026-07-26).
+            rpg.award_quest(party, purse, rpg.quest_gold(level, enc),
+                            rpg.quest_clear_xp(level, enc), log,
+                            quest["name"])
         quest["status"] = "done" if cleared_all else quest["status"]
         done.add(quest["id"])
         quests_cleared += cleared_all
@@ -374,7 +381,7 @@ def bench_careers(n: int) -> None:
     stalls = sum(r["forced_up"] for r in results)
     print(f"forced-up picks (nothing within party level +1 on the board): "
           f"{stalls / n:.2f} per career")
-    total = sum(quest_xp_total(q) for q in
+    total = sum(quest_xp_posted(q) for q in
                 generate_world(1)["quests"].values())
     print(f"(a fresh world posts ~{total} XP; a duo needs {xp_to_cap(1)} "
           f"to L{LEVEL_CAP})")

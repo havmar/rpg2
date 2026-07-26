@@ -248,14 +248,15 @@ is the rule for this file and it is what keeps the spec from rotting.
 
 ### Why: the problem and the spine
 
-The generator centres quests on **3.74 encounters** — sites roll 1/2/3 at
-45/40/15, then rooms roll 1/2/3 at 20/40/40 *per site*, so 47% of quests are
-four fights or more and the tail reaches nine. The target is **1 encounter by
-default, 2 for a middling job, 3 at most**, with sites used only when the
-fiction genuinely moves to a different place, never as the difficulty dial.
+The generator centred quests on **3.74 encounters** — sites rolled 1/2/3 at
+45/40/15, then rooms rolled 1/2/3 at 20/40/40 *per site*, so 47% of quests
+were four fights or more and the tail reached nine. The target was **1
+encounter by default, 2 for a middling job, 3 at most**, with sites used only
+when the fiction genuinely moves to a different place, never as the
+difficulty dial. *(Slice 1 shipped this: mean 1.66, hard max 3.)*
 
-Cutting encounters exposes the real problem underneath. Attrition currently
-lives *inside* a quest — press on through four rooms or camp and lose the XP
+Cutting encounters exposes the real problem underneath. Attrition used to
+live *inside* a quest — press on through four rooms or camp and lose the XP
 streak. With one fight per quest there is nothing left to attrit: the party
 wins, camps to full (`camp --heal` runs up to fourteen free nights, and
 `dm.md` names "camp until whole" as the played default), and HP never
@@ -304,7 +305,7 @@ survivable enough to carry that weight (mercy).
   punishment.
 - **Encounter count stays a weighted roll for now**; site count becomes a
   template-declared place count. Letting narrative content decide a job's
-  length is its own queued pass (below).
+  length is its own queued pass (below). *(Shipped in slice 1.)*
 
 Rejected in session, with reasons, so they stay rejected: **scaling tavern
 prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
@@ -313,94 +314,6 @@ prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
 they gain value for free once camping stops substituting for them);
 **retribution or patrol attacks as healing pressure** (re-adds the
 contentless combat this whole rework removes).
-
-### Slice 1 — quest shape, the pay rebase, three small fixes
-
-**Quest shape (`quests.py`).** Templates in `TEMPLATES`, `EPIC_TEMPLATES`,
-and `karma.py`'s DARK set gain **`places: int`** (default 1), set to 2 only
-where the fiction genuinely moves — `("the high pasture", "the den in the
-hills")` is two places, `("the village graveyard", "the crypt below")` is
-one. `build_quest` replaces its site roll with
-`n_places = min(tpl.get("places", 1), len(tpl["sites"]))` (the caper branch
-still forces `len(tpl["sites"])`), and adds a quest-level encounter roll
-`QUEST_ENCOUNTERS = ((1, 2, 3), (55, 30, 15))` floored at `n_places` — mean
-1.6, hard max 3. Encounters distribute front-light across places, so a
-3-encounter two-place job is 1 then 2 and the escalation ends at the
-destination. **`ROOM_SHARES` re-keys to the quest's encounter count**, values
-unchanged because they are already calibrated: `1: (1.25,)`,
-`2: (0.85, 1.10)`, `3: (0.55, 0.70, 0.85)`, assigned in quest order rather
-than restarting per place. **Drop the per-site level decrement** — one quest,
-one level; the rising shares already escalate, and the board stops showing a
-quest whose sites disagree about their own level. `_reusable_site`'s room
-gate must match the encounters allotted to that place; `forge_quest` takes
-`(places, encounters)`; the quest dict keeps `site_count` and replaces
-`room_count` with `encounters`.
-
-**The pay rebase (`rpg.py`).** Pay is per site today, so cutting to ~1.15
-sites/quest without touching it drops quest pay ~40% and pushes the career
-from ~38 quests to ~60 — fewer fights per quest but *more quests*, the wrong
-direction. Pay moves to the **quest**, scaled sub-linearly by encounter count
-because the fixed overhead (the trip, the giver, the turn-in) is per quest:
-
-```
-QUEST_XP_PER_LEVEL   = 60      # starting estimate; fit by bench_quests
-QUEST_GOLD_PER_LEVEL = 18      # starting estimate; fit by bench_quests
-ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
-ENCOUNTER_XP_SHARE   = 0.40    # paid as encounters fall; 0.60 on turn-in
-
-quest_xp_total(L, enc)     = QUEST_XP_PER_LEVEL * (L + 1) * ENCOUNTER_MULT[enc]
-quest_encounter_xp(L, enc) = quest_xp_total(...) * ENCOUNTER_XP_SHARE / enc   # flat
-quest_clear_xp(L, enc)     = quest_xp_total(...) - enc * quest_encounter_xp(...)
-quest_gold(L, enc)         = QUEST_GOLD_PER_LEVEL * L * ENCOUNTER_MULT[enc]
-```
-
-The `site_*` family **stays** for `sites.py`'s two hand-built anchors — they
-are dev/test calibration fixtures that `tune.py`, `bench_training.py`, and
-`run_site` are fitted to, and they are not part of a played campaign. Only
-the streak argument drops. Two deliberate ladders: the anchors are the
-fixtures, the quest formulas are the game. Comment them so nobody "unifies"
-them later.
-
-**Deletions.** *The XP streak* — `STREAK_STEP`, `streak_multiplier`, the
-streak argument on `site_encounter_xp`, `session.reset_streak`, the `streak`
-save key, the streak line in `tally_lines`, the camp/travel streak notices.
-Its job (make pressing on beat camping) transfers to the wound track, where
-camping restores stamina but never HP. *The short rest* —
-`SHORT_RESTS_PER_DAY`, `short_rest`, `Clock.short_rests_used` /
-`short_rests_left`, `STA_RECOVERY_BETWEEN_ROOMS`,
-`HP_RECOVERY_BETWEEN_ROOMS`, `POWER_RECOVERY_BETWEEN_ROOMS`, the slot reset
-in `long_rest`, the calls in `sites.run_site` and the benches, and session's
-`rest` subcommand. The day's shape becomes one thing: the night.
-
-**Three small fixes that belong here.**
-
-1. **Camp rolls the visitor BEFORE the night's recovery.** `cmd_camp` runs
-   `_long_rest` -> storyteller -> brew -> `night_upkeep` and only then
-   `wild_event`, so every night's healing is banked before the fight is
-   rolled. Invert it: roll first; if a fight fires, the night is spent on it
-   and `cmd_camp` returns without the recovery.
-2. **Travel encounters fire on the road, not at the destination gates.**
-   `cmd_travel` rolls *after* the position is updated, the arrival printed,
-   departures processed and war news posted — so a road fight is narrated at
-   the destination and draws from the **destination** land's pool. Move the
-   roll ahead of the arrival and read the **origin** land's pool. v1
-   behaviour on a fight: the trip is interrupted, the days are spent, the
-   party stays at the origin, the player re-issues `travel`. The *rates* are
-   correct and were measured (below) — do not "fix" them without a decision.
-3. **Cap the satisfaction ratchet.** Gains (+1 quest clear, +1 tavern, +1/+2
-   downtime) beat losses (-1 fled, -1 bloodied, -2 Down, -2 death witness) on
-   a normal cycle, so morale climbs to 10 and stays — and this slice makes it
-   worse by cutting fights and adding town nights. Add
-   `SAT_TAVERN_COOLDOWN_DAYS` (3); the injury-side drain lands in slice 3.
-
-**Acceptance.** Encounters per quest: mean 1.55-1.70, max 3, no tail.
-`bench_quests --part career`: quests to cap within ~10% of 38, median death
-level no worse than 7 (currently 8) — fit the two pay constants to hit it.
-Re-measure and benchlog `tune.py`, `bench_training.py`, `bench_party.py`;
-expect the hideout/barrow numbers to move, since removing the short rest
-makes `run_site` strictly harsher. That is a rebaseline, not a regression.
-`bench_weapons.py` / `bench_ranged.py` unchanged to the cell (controls).
-`test_places.py` quest-routing contracts still pass.
 
 ### Slice 2 — quest clocks and the banded refill
 
@@ -647,14 +560,17 @@ Additive to the schemas above — none of them requires redesigning anything.
 - **Infection / wound complications over time** — an untreated wound
   worsening rather than merely persisting; natural once disease exists.
 - **Removing HP from the MODEL.** v1 removes it from the display only.
-- **A true en-route travel position.** Slice 1 fixes the two real problems
-  but still bounces an interrupted trip back to the origin. Proper mid-road
+- **A true en-route travel position.** Slice 1 SHIPPED the two real fixes
+  (the roll happens on the road, off the origin land's pool) but still
+  bounces an interrupted trip back to the origin, and a road SIGHTING is
+  simply slipped past rather than offered as a choice. Proper mid-road
   positioning wants the local navigation layer and `ui/minimap.txt`.
 - **Road-encounter rate trim.** `TRAVEL_ENCOUNTER_CHANCE` 0.15/day,
   `EXPLORE_ENCOUNTER_CHANCE` 0.30, `CAMP_ENCOUNTER_CHANCE` 0.10 were sized
-  against 3.74-fight quests; after slice 1 the road is a larger *share* of
-  all combat and slice 2 adds town trips. Re-judge from played evidence; the
-  lever is a trim to ~0.10 / ~0.20, not a redesign.
+  against 3.74-fight quests; now that quests average 1.66 the road is a
+  much larger *share* of all combat, and slice 2 adds town trips. Re-judge
+  from played evidence; the lever is a trim to ~0.10 / ~0.20, not a
+  redesign.
 - **Wilds camping restoring less than full STA** (`CAMP_STA_FRACTION` ~0.75,
   a bed 1.0). Held at 1.0; pull it only if multi-encounter quests get chunked
   into one-fight days.
@@ -662,30 +578,24 @@ Additive to the schemas above — none of them requires redesigning anything.
 ### Build order, sessions, and doc propagation
 
 One build session per slice — deliberately. `rpg.py` is 332 KB and
-`session.py` 206 KB, and slices 1 and 3b each end in a bench rebaseline whose
+`session.py` 206 KB, and slice 3b ends in a bench rebaseline whose
 numbers need reading and judging **before** the next slice lands on top of
-them. The precedent is the levelling framework's sessions A/B/C.
+it. The precedent is the levelling framework's sessions A/B/C.
+**Slice 1 SHIPPED 2026-07-26** (benchlog has its rebaseline).
 
 | # | slice | ends with |
 |---|-------|-----------|
-| 1 | quest shape + pay rebase + the two deletions + three small fixes | fit the two pay constants; rebaseline `tune` / `bench_training` / `bench_party` / `bench_quests` |
 | 2 | quest clocks + banded lazy refill | career sim proves the board never runs dry |
 | 3a | the conditions framework | `bench_bestiary` re-fit for spider/pyromancer only |
 | 3b | the wound system | **full** rebaseline; the beatability curve must survive |
 | 4 | defeat without death | mercy converts wipes; median death level rises |
 
-Order is forced only where it must be: 2 needs 1's quest dict, 3b needs 3a.
-Slice 4 can slot in any time after 3b.
+Order is forced only where it must be: 2 builds on 1's quest dict (shipped),
+3b needs 3a. Slice 4 can slot in any time after 3b.
 
 **Each session closes by propagating outward and deleting its slice from
 here.** What each one owes:
 
-- **Slice 1** — `rules.md`: Quest System ("The shape", the threat-math note),
-  Progression & Economy (XP earning, the momentum-streak paragraph goes, the
-  gold section), Survival & Resources (the short-rest bullet in "The day /
-  run economy", "Resources at a glance", "Implementation notes"). `dm.md`:
-  the `rest` command, the streak advice. `develop.md`: dev map + balance
-  summary. `benchlog.md`: the rebaseline.
 - **Slice 2** — `rules.md`: Quest System (clocks, expiry, worldgen
   reframed). `dm.md`: board reading and deadlines. Delete the banded
   quest inventory section below.
@@ -700,8 +610,11 @@ here.** What each one owes:
 
 ### Measurements taken 2026-07-26 (do not re-derive)
 
-- **Encounters per quest today:** mean **3.74**; 1:9.0% 2:19.7% 3:24.4%
-  4:13.6% 5:14.9% 6:10.2% 7:4.3% 8:2.9% 9:0.9% — **47% are 4+**.
+- **Encounters per quest, before slice 1:** mean **3.74**; 1:9.0% 2:19.7%
+  3:24.4% 4:13.6% 5:14.9% 6:10.2% 7:4.3% 8:2.9% 9:0.9% — **47% were 4+**.
+  *After slice 1 (measured over 4900 generated quests): mean **1.657**;
+  1:49.3% 2:35.8% 3:14.9%, hard max 3, no tail. 9.8% of quests span two
+  places.*
 - **Travel encounters work**; they are rare, and the sighting valve is widest
   exactly where a new campaign is played. Real `notice_contest`, real wild
   pools, 20k rolls per party level:

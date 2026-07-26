@@ -34,7 +34,7 @@ from dataclasses import dataclass
 
 from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  WEAPONS, make_party, stat_line, outcome, start_fight,
-                 short_rest, long_rest, party_wiped,
+                 long_rest, party_wiped,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
                  autospend_points, auto_brew, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
@@ -468,11 +468,12 @@ class Site:
     abandon_line: str       # the sims' walk-away line
     intro: str              # the one-shot opening line
 
-    def encounter_xp(self, streak: int = 1) -> int:
-        """Per-encounter pay at streak position k (rpg.site_encounter_xp:
-        consecutive same-site encounters without a camp pay on a rising
-        multiplier; a camp resets to base)."""
-        return site_encounter_xp(self.level, len(self.rooms), streak)
+    @property
+    def encounter_xp(self) -> int:
+        """Per-encounter pay: an equal share of the fixture's encounter
+        budget (rpg.site_encounter_xp -- flat since the momentum streak was
+        deleted, 2026-07-26)."""
+        return site_encounter_xp(self.level, len(self.rooms))
 
     @property
     def quest_xp(self) -> int:
@@ -550,8 +551,7 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
 
     `rooms` overrides the site's layout (tune.py's sweep knob).
     reckless=True is the no-resource baseline: no pauses (so no drinks,
-    conversions, or retreats) and no potions drunk at rests -- short rests
-    still happen (pacing, not a consumable).
+    conversions, or retreats) and no potions drunk at rests.
     auto_train=False leaves banked skill points alone (bench_quests's career
     sim allocates them itself, reference-style, instead of the greedy
     training-only spend)."""
@@ -560,8 +560,6 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
     cleared_all = True
     room_i = 0
     attempts = 0
-    streak = 0      # encounters cleared here since the last night's camp
-                    # (the momentum multiplier's k; long_rest resets it)
     held_over: list[Entity] | None = None   # survivors of a room the party fled
     while room_i < len(rooms):
         room_name, roster = rooms[room_i]
@@ -606,14 +604,11 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
                 cleared_all = False
                 break
             # Rest up and go back in (the sims' determined-player policy):
-            # a short rest if a slot is left today, else camp overnight.
+            # the day has one recovery step now, so it is a night's camp.
             day_before = clock.day
-            survivors = [h for h in party if h.alive]
-            if not short_rest(survivors, clock, log):
-                long_rest(party, clock, log, rng=rng)
-                streak = 0      # a night's camp breaks the momentum streak
-                for h in party:
-                    auto_brew(h, rng, log)  # a herbalist/alchemist restocks
+            long_rest(party, clock, log, rng=rng)
+            for h in party:
+                auto_brew(h, rng, log)      # a herbalist/alchemist restocks
             auto_use_potions_on_rest([h for h in party if h.alive], log)
             held_over = refresh_foes_after_retreat(foes,
                                                    clock.day - day_before)
@@ -624,15 +619,12 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
             cleared_all = False
             break
 
-        streak += 1
-        award_xp(party, site.encounter_xp(streak), log,
-                 "encounter" if streak == 1 else f"encounter, streak {streak}")
+        award_xp(party, site.encounter_xp, log, "encounter")
         roll_loot(party, purse, rng, log)
 
         survivors = [h for h in party if h.alive]
         if survivors:
             log.append(f"  Room cleared. {len(survivors)} still standing.")
-            short_rest(survivors, clock, log)
             if not reckless:
                 auto_use_potions_on_rest(survivors, log)  # sim: sensible party
         room_i += 1

@@ -932,3 +932,137 @@ foe pools, XP formulas, and gold formulas did not change.
 **Reading:** this is the expected noisy shape from a deliberately small
 integration run. Place routing changes destination identity and persistence,
 not encounter weight or rewards. No retune and no standing-summary refresh.
+
+## 2026-07-26 — the attrition rework, SLICE 1: quest shape, the pay rebase, the two deletions
+
+**What changed.** The first slice of the attrition rework (plan.md's NEXT
+BUILD spec):
+
+1. **Quest shape.** A quest is now **1-3 encounters** rolled once at the
+   quest level (`quests.QUEST_ENCOUNTERS` = 1/2/3 at 55/30/15), and its
+   **place count is authored on the template** (`places`, default 1) instead
+   of rolled. `ROOM_SHARES` re-keyed from rooms-per-site to
+   encounters-per-QUEST, values unchanged, consumed in quest order and spread
+   front-light across places. The per-site level decrement is gone (one
+   quest, one level), `_reusable_site` now requires an exact room-count
+   match, and only four templates carry `places=2` (Wolves Attack, The Great
+   Hunt, The Clan War, The Giant at the Border).
+2. **The pay rebase.** Pay moved from the SITE to the QUEST
+   (`rpg.quest_xp_total` / `quest_encounter_xp` / `quest_clear_xp` /
+   `quest_gold`), scaled sub-linearly by encounter count
+   (`ENCOUNTER_MULT` 1.0 / 1.6 / 2.2). 40% of the XP falls per encounter,
+   flat; the remaining 60% plus ALL the gold lands at the turn-in. The
+   `site_*` family survives for sites.py's two hand-built fixtures only.
+3. **Two deletions.** The **XP momentum streak** (`STREAK_STEP`,
+   `streak_multiplier`, the `streak` save key, every notice and display) and
+   the **short rest** (`SHORT_RESTS_PER_DAY`, `short_rest`, the
+   `*_RECOVERY_BETWEEN_ROOMS` family, `Clock.short_rests_used`, session's
+   `rest` subcommand).
+4. **Three small fixes.** Camp rolls the night visitor BEFORE the night's
+   recovery (`survivalist_camp` split into `survivalist_ground` /
+   `survivalist_comfort` so the ground-reading check can precede the roll);
+   travel rolls its encounter ON THE ROAD off the ORIGIN land's pool, before
+   the arrival, and a fight interrupts the trip; `SAT_TAVERN_COOLDOWN_DAYS`
+   = 3 caps the tavern's morale ratchet.
+5. **The war waves** were brought under the same shape (`WAVE_ENCOUNTERS` =
+   3, replacing `WAVE_ROOMS`'s 4-8 rooms per wave) and pay on the quest
+   ladder like everything else.
+
+**The fit.** `QUEST_XP_PER_LEVEL` was swept against `bench_quests --part
+career` (500 careers/cell) at 60 / 48 / 44 / 40, giving 28 / 34 / 38 / 42
+quests to the cap. **44** was taken: the acceptance target was ~38, the
+pre-rework pace. `QUEST_GOLD_PER_LEVEL` stayed at the spec's 18 — at the
+measured encounter mix (mean multiplier ~1.39) it pays ~25 x L a quest, which
+is what the old 15 x L over ~1.6 sites paid, so career gold is unchanged by
+construction.
+
+**Shape (4900 generated quests, 120 worlds):**
+
+- Encounters per quest **mean 1.657** (1: 49.3% / 2: 35.8% / 3: 14.9%), hard
+  max 3, **no tail**. Was mean 3.74 with 47% at four or more and a tail to
+  nine. Acceptance band was 1.55-1.70.
+- **9.8%** of quests span two places; the rest are one.
+
+**Rebaseline — the fixtures got strictly harsher, as predicted.** Removing
+the short rest takes a whole recovery step out of `run_site`, which is the
+loop tune/training/party all run:
+
+| | before | after |
+|---|---|---|
+| hideout rank 0, clear / wipe | 57.2 / 12.5 | **50.8 / 15.6** |
+| hideout reckless wipe | 75.9 | **86.5** |
+| barrow [3,3,4], clear / wipe | 38.1 / 40.6 | **30.2 / 48.3** |
+| barrow reckless wipe | 98.3 | **99.8** |
+| training ladder, hideout | 57.5 / 74.4 / 87.2 / 94.2 | **51.2 / 71.0 / 83.8 / 92.4** |
+| training ladder, barrow | 38.3 / 71.3 / 90.2 / 97.4 | **31.0 / 63.1 / 87.4 / 96.8** |
+| party sweep, hideout 1/2/3/4 clear | — | **23.3 / 51.2 / 54.5 / 67.0** |
+| party sweep, barrow 1/2/3/4 clear | — | **2.2 / 31.0 / 70.1 / 89.4** |
+
+A rank still reads as a rank and the party-size ladder keeps its shape (solo
+death-trap, 3-4 cruise). This is a rebaseline, not a regression — but see the
+flags.
+
+**Controls: unchanged to the cell.** `bench_weapons.py` (zweihander tops the
+swarm everywhere, katana/zweihander split the duels) and `bench_ranged.py`
+(longbow 46.4 / 48.8 / 66.7 by field, sling still the floor) read exactly as
+before. Nothing leaked into the melee loop. `bench_bestiary.py` is likewise
+untouched — every row builds its party directly and resolves ONE fight, so
+neither the rest change nor the pay change can reach it; the annotated
+columns still sit in their 60-94% band.
+
+**Generated content (`bench_quests`, 300/cell):**
+
+- At-level ENCOUNTERS win **71-94%** across 1-20 (was 67-95): the encounter
+  builder at share 1.0 is untouched, and it shows.
+- At-level JOBS (a whole quest in one place) clear **85% at L1**, settling to
+  **60-80% mid-band** and **~63% at 19-20**. The old at-level SITE row ran
+  93 at L1 down to ~45 at the top. The curve is flatter and the top band much
+  less punishing, which is the intended effect of cutting a 3.74-fight job to
+  1.66: the top band's danger now lives in the fight, not in the fourth one.
+
+**The equal-cost matrix (`bench_abilities`, 400/cell)** tells the same story
+it always has, on a floor that dropped with the short rest: **all-in pools
+stays a trap** (L8 site row 7.5% against a row median of 38.8), **training
+and weapon top the site row** (53.0 / 56.5), saves fine from L8. The warrior-
+moves matchup still pays (L4 room 84.8 -> 96.5, L8 room 75.8 -> 93.8), disarm
+still beats telekinesis rank 1 at the same price (86.0 vs 69.2 duel win), and
+the alchemist is still a support career, not a bomber-carry (mixed duo 44.0 /
+24.0 / 28.8 against the two-fighter reference's 69.0 / 45.2 / 65.2). The
+absolute site-row numbers sit a few points under session C's because that row
+runs `run_site`, which lost a recovery step; the COLUMN ORDER — which is what
+this bench is for — is unchanged.
+
+**Careers (500):** reach **L5 85% / L8 70% / L11 40% / L14 17% / L17 8% /
+L20 6.4%**, median death **level 9**, capped median **81 days / 37 quests**
+(p10-p90 64-99 days). Standing pre-rework numbers were 83/60/36/12/-/4,
+median death L8, 158 days / 38 quests.
+
+**Reading, and the flags for the designer:**
+
+1. **The acceptance criteria are met.** 37 quests to cap is inside the ~38
+   ±10% band, and median death level went to 9 (the criterion was "no worse
+   than 7"). The beatability curve did not collapse; it moved slightly
+   SURVIVAL-ward in the mid band (L8 60 -> 70, L11 36 -> 40), which is
+   expected: a one-fight job is a much smaller HP commitment than a
+   four-fight one, and slice 3b's wound track is the thing designed to take
+   that back.
+2. **DAYS TO CAP FELL FROM 158 TO 81 — the biggest unbudgeted move, and
+   slice 2 has to answer it.** The career sim rests between every room, so
+   cutting rooms per quest by 2.25x cuts the camp nights with them. Gold per
+   QUEST is unchanged, so **gold per DAY roughly doubled**. Slice 2's own
+   acceptance ("days to cap within ~15% of the current ~158") now reads
+   against 81, not 158: quest clocks, the banded refill, and the travel the
+   refill implies are what have to put the days back. Worth a designer
+   decision before slice 2 starts — is 158 still the target, or is a faster
+   calendar with clocks on it the better game?
+3. **The hideout fixture fell out of its 55-65 band (50.8).** It is now a
+   dev/test calibration fixture and not played content, so this is a control
+   moving, not the game getting harder — but it is the reference the
+   `KIT_STAMINA` / `KIT_FORAGE_CHANCE` dial was fitted against, and the
+   standing "hideout in band" flag is REOPENED at fixture level. No lever
+   pulled: pulling one now would confound slice 3b's full rebaseline.
+4. **The barrow at 30.2 clear is the harshest number in the suite.** Same
+   cause (three rooms, no mid-day recovery at all now). It was always the
+   "suicide until trained" site and the rank ladder still climbs 31 -> 63 ->
+   87 -> 97, so it still teaches what it was built to teach.
+

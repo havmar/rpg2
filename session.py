@@ -1,6 +1,6 @@
 """DM session driver -- runs the game turn-by-turn from the terminal.
 
-rpg.py's primitives (start_fight, group_combat, short_rest, long_rest, ...)
+rpg.py's primitives (start_fight, group_combat, long_rest, ...)
 are meant to be called on purpose, in whatever order the story wants (see
 develop.md, "The feel we're going for"). But each terminal call is a fresh
 Python process, so something has to hold party/clock/purse state *between*
@@ -51,7 +51,7 @@ The shape of a playthrough:
                                                only since 2026-07-13; not
                                                part of a played campaign)
   resume [...] / retreat [--blink]          -- settle a paused fight
-  rest / camp / tavern / downtime / award / buy / give / train / use / heal
+  camp / tavern / downtime / award / buy / give / train / use / heal
   prices                                    -- the shop price sheet (DM ref)
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
@@ -87,16 +87,16 @@ from rpg import (
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
     standing_order,
     SATISFACTION_START, SAT_DOWNTIME, SAT_DOWNTIME_MATCH,
+    SAT_TAVERN_COOLDOWN_DAYS,
     MEDS_INTERVAL_DAYS, MEDS_PRICE,
     party_capacity, has_trait, satisfaction_tracked, wants_to_leave,
     adjust_satisfaction, satisfaction_after_fight,
     stat_line, progress_line, fallen_weapons_line,
-    xp_to_next, site_encounter_xp, site_clear_xp, site_gold,
-    streak_multiplier,
+    xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
     start_fight, group_combat, party_wiped,
     attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
-    short_rest as _short_rest, long_rest as _long_rest,
+    long_rest as _long_rest,
     tavern_rest as _tavern_rest,
     buy_potion as _buy_potion, cast_healing as _cast_healing,
     use_potion as _use_potion, buy_weapon as _buy_weapon,
@@ -113,7 +113,7 @@ from rpg import (
     DRINKABLE_KINDS,
     ABILITIES, ability_tags, training_cost,
     POOL_KINDS, POOL_BUY_CAP, SKILL_POINTS_PER_LEVEL,
-    storyteller_tale, survivalist_camp,
+    storyteller_tale, survivalist_ground, survivalist_comfort,
     blink_escape, casting_check,
     SPELLS, SPELL_RANK_MAX, SPELLBOOK_PRICE, VANISH_POWER_COST,
     SCRY_POWER_COST, TELEPORT_TRAVEL_COST_PER_DAY, TELEPORT_ESCAPE_COST,
@@ -127,7 +127,8 @@ import karma
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
-from quests import (generate_world, forge_quest, board_lines, site_gold_for,
+from quests import (generate_world, forge_quest, board_lines,
+                    quest_gold_posted,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade,
                     all_areas, settlements, settlements_by_land,
@@ -241,19 +242,6 @@ def clear_sighting(state: dict, quiet: bool = False) -> None:
         state["sighting"] = None
 
 
-def reset_streak(state: dict) -> None:
-    """A night's camp breaks the same-site momentum streak (see rpg.py,
-    STREAK_STEP): the next encounter pays base rate again."""
-    state["streak"] = {"site": None, "count": 0}
-
-
-def streak_pos_for(state: dict, site_key: str) -> int:
-    """The momentum position the NEXT cleared encounter at this site would
-    hold: one past the recorded run, or 1 after a camp / at another site."""
-    streak = state.get("streak") or {"site": None, "count": 0}
-    return streak["count"] + 1 if streak["site"] == site_key else 1
-
-
 def _settlement_by_key(world: dict, key: str) -> dict | None:
     area = world["areas"].get(key)
     return area if area and area["kind"] == "settlement" else None
@@ -354,7 +342,6 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "site": pending["site"],
         "room": pending["room"],
         "quest": pending.get("quest"),
-        "streak_pos": pending.get("streak_pos"),
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
         "align": pending.get("align", "neutral"),
@@ -375,7 +362,6 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "site": d["site"],
         "room": d["room"],
         "quest": d.get("quest"),
-        "streak_pos": d.get("streak_pos"),
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
         "align": d.get("align", "neutral"),
@@ -408,8 +394,7 @@ def party_sheet_lines(state: dict) -> list[str]:
     party, clock, purse = state["party"], state["clock"], state["purse"]
     loc = location_line(state) if state.get("position") else "nowhere yet"
     lines = [f"RPG2 PARTY SHEET -- day {clock.day}, at {loc}",
-             f"purse: {purse.gold}g | short rests left today: "
-             f"{clock.short_rests_left}"]
+             f"purse: {purse.gold}g"]
     if not party:
         lines.append("(no party yet -- `pick` a character)")
         return lines
@@ -445,10 +430,6 @@ def party_sheet_lines(state: dict) -> list[str]:
             lines.append(f"active quest: [{qid}] L{q['level']} {q['name']} "
                          f"-- next: {s['name']} (L{s['level']}), room "
                          f"{cur['room'] + 1}/{len(rooms)}")
-    streak = state.get("streak") or {"site": None, "count": 0}
-    if streak["count"]:
-        lines.append(f"momentum: {streak['count']} encounter(s) at "
-                     f"{streak['site']} since the last camp")
     k = state.get("karma")
     if k and k.get("bad_total"):
         lines.append(f"karma: {karma.karma_line(k, party_level(state))}")
@@ -645,8 +626,7 @@ def save(state: dict) -> None:
     rng_version, rng_internal, rng_gauss = state["rng"].getstate()
     doc = {
         "party": [_entity_to_dict(h) for h in party],
-        "clock": {"day": state["clock"].day,
-                  "short_rests_used": state["clock"].short_rests_used},
+        "clock": {"day": state["clock"].day},
         "purse": {"gold": state["purse"].gold},
         "foe_count": state["foe_count"],
         "active_quest": state.get("active_quest"),
@@ -655,7 +635,6 @@ def save(state: dict) -> None:
         "story": state.get("story"),
         "position": state.get("position"),
         "sighting": state.get("sighting"),
-        "streak": state.get("streak", {"site": None, "count": 0}),
         "site_clears": state.get("site_clears", {}),
         "recruits": state.get("recruits"),
         "visited": state.get("visited", []),
@@ -711,7 +690,6 @@ def load() -> dict:
         "story": doc.get("story"),
         "position": position,
         "sighting": doc.get("sighting"),
-        "streak": doc.get("streak", {"site": None, "count": 0}),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
         "visited": doc.get("visited")
@@ -793,8 +771,8 @@ def log_banner(log, full: str, parts: list[str]) -> None:
 def tally_lines(state: dict) -> list[str]:
     """The standard after-the-fight DISPLAY block, appended to every
     encounter's player log: the party's tracks and kit, the purse, the
-    day's rests, and -- for an active site -- how many rooms are LEFT
-    plus the streak's next multiplier. The numbers are SHOWN here so the
+    and -- for an active quest -- how many encounters are LEFT.
+    The numbers are SHOWN here so the
     DM's prose never has to carry them (dm.md, narration style); ahead of
     the party it gives a count only, never a roster -- upcoming room
     contents are DM eyes only."""
@@ -822,8 +800,7 @@ def tally_lines(state: dict) -> list[str]:
         if pens:
             lines.append(f"  ({', '.join(pens)} to rolls)")
         lines.append(f"  ({kit or 'no kit'})")
-    lines.append(f"Purse {purse.gold}g; {clock.short_rests_left} short "
-                 f"rest(s) left today.")
+    lines.append(f"Purse {purse.gold}g; day {clock.day}.")
     k = state.get("karma")
     if k and k.get("bad_total"):
         lines.append(f"Karma: {karma.karma_line(k, party_level(state))}.")
@@ -836,12 +813,12 @@ def tally_lines(state: dict) -> list[str]:
             s = quest_sites(world, q)[cur["site"]]
             left = len(site_rooms(world, s)) - cur["room"]
             sites_after = len(q["sites"]) - cur["site"] - 1
-            ahead = f"Ahead: {left} room(s) in {s['name']}"
+            ahead = f"Ahead: {left} fight(s) at {s['name']}"
             if sites_after:
-                ahead += f", then {sites_after} more site(s)"
-            site_key = f"{qid}/s{cur['site'] + 1}"
-            mult = streak_multiplier(streak_pos_for(state, site_key))
-            lines.append(f"{ahead}; the next pays x{mult:g}.")
+                ahead += f", then {sites_after} more place(s)"
+            lump = quest_clear_xp(q["level"], q.get("encounters", 1))
+            lines.append(f"{ahead}; the turn-in pays "
+                         f"{quest_gold_posted(q)}g, {lump} XP.")
     return lines
 
 
@@ -942,7 +919,7 @@ def cmd_new(args: argparse.Namespace) -> None:
              "story": story.init_story(world, rng, pc_race=pc.race),
              "position": _area_position(start),
              "sighting": None,
-             "streak": {"site": None, "count": 0}, "site_clears": {},
+             "site_clears": {},
              "recruits": None,
              "karma": karma.new_karma(), "dark_board": None,
              # THE HELL PACT (2026-07-19): the PC is a low-ranking
@@ -1244,8 +1221,8 @@ def process_departures(state: dict, log: list[str]) -> None:
 def cmd_status(args: argparse.Namespace) -> None:
     state = load()
     party, clock, purse = state["party"], state["clock"], state["purse"]
-    print(f"Day {clock.day}, {clock.short_rests_left} short rest(s) left today. "
-          f"Purse: {purse.gold}g. At: {location_line(state)}.")
+    print(f"Day {clock.day}. Purse: {purse.gold}g. "
+          f"At: {location_line(state)}.")
     pc = party[0] if party else None
     if pc is not None and pc.cha:
         companions = sum(1 for h in party[1:] if not h.dead)
@@ -1284,11 +1261,6 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"  Active quest: [{qid}] L{q['level']} {q['name']} -- "
                   f"next: {s['name']} (L{s['level']}), room "
                   f"{cur['room'] + 1}/{len(rooms)}. Fight it with `room`.")
-    streak = state.get("streak") or {"site": None, "count": 0}
-    if streak["count"]:
-        print(f"  Momentum: {streak['count']} encounter(s) cleared at "
-              f"{streak['site']} since the last camp -- the next pays more "
-              f"(a camp resets it).")
     k = state.get("karma")
     if k and (k.get("bad_total") or k.get("good_total")):
         print(f"  Karma: {karma.karma_line(k, party_level(state))} "
@@ -1543,7 +1515,6 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
                       room: int | None = None,
                       quest: str | None = None,
-                      streak_pos: int | None = None,
                       field: int = 0, align: str = "neutral",
                       mercy: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
@@ -1552,8 +1523,6 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     persist. On a pause the fight is saved as `pending` and the turn goes
     back to the player (resume / retreat next message). `quest` ties the
     encounter to a board quest: clearing the room advances its cursor.
-    `streak_pos` is the momentum position this encounter's XP was quoted at
-    (site encounters only) -- recorded on victory so the NEXT one pays more.
     `field` is the fight's opening gap (ranged combat: ROOM_FIELD indoors,
     the engagement's outcome in the wilds) -- persisted with a paused
     fight so the resume stands on the same ground. `mercy` ("law"/"hell")
@@ -1572,7 +1541,6 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
             "quest": quest, "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
-            "streak_pos": streak_pos,
             "dead_before": dead_before,
             "field": field,
             "align": align,
@@ -1584,7 +1552,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         save(state)
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
-                     quest=quest, streak_pos=streak_pos,
+                     quest=quest,
                      dead_before=dead_before, align=align, mercy=mercy)
 
 
@@ -1604,11 +1572,11 @@ def record_karma(state: dict, xp: int, align: str, log: list) -> None:
 
 
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
-    """The active quest's cleared room: move the cursor. Finishing a site
-    pays its clear lump + gold (each site pays its own way -- the level IS
-    the pay grade); finishing the last site closes the quest, day-stamps
-    it, and delivers the EPILOGUE (2026-07-12: the authored aftermath line
-    the giver's turn-in scene is narrated over -- dm.md)."""
+    """The active quest's cleared room: move the cursor. Finishing the last
+    room of a place moves on to the next place; finishing the LAST place
+    closes the quest, pays the turn-in lump, day-stamps it, and delivers the
+    EPILOGUE (2026-07-12: the authored aftermath line the giver's turn-in
+    scene is narrated over -- dm.md)."""
     quest = state["world"]["quests"][qid]
     cur = quest["next"]
     site = quest_sites(state["world"], quest)[cur["site"]]
@@ -1620,18 +1588,23 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
 
 def _close_site(state: dict, log: list[str], qid: str,
                 pay_mult: float = 1.0, note: str = "") -> None:
-    """Close the active quest's CURRENT site: pay its lump (scaled by
-    `pay_mult` -- the caper paths pay fractions: a settled twist), move
-    the cursor to the next site or complete the quest (day stamp, giver
-    prompt, EPILOGUE, war hook, the hell-pact ledger). advance_quest's
-    tail, split out (2026-07-19) so a deed done clean and a settled
-    twist can close a site without walking its rooms."""
+    """Close the active quest's CURRENT place: move the cursor on, and if it
+    was the LAST place, complete the quest -- the turn-in lump + the whole
+    job's gold (scaled by `pay_mult`, the caper paths' fraction: a settled
+    twist), the day stamp, the giver prompt, the EPILOGUE, the war hook, and
+    the hell-pact ledger. advance_quest's tail, split out (2026-07-19) so a
+    deed done clean and a settled twist can close a place without walking
+    its rooms.
+
+    Since 2026-07-26 pay lives on the QUEST, not the site: an intermediate
+    place clears with a banner and no purse (rpg.py, the two pay ladders).
+    Everything a job is worth beyond the per-fight shares is handed over at
+    the turn-in, once."""
     quest = state["world"]["quests"][qid]
     party, purse = state["party"], state["purse"]
     cur = quest["next"]
     sites = quest_sites(state["world"], quest)
     site = sites[cur["site"]]
-    n_rooms = len(site_rooms(state["world"], site))
     n_sites = len(quest["sites"])
     last_site = cur["site"] == n_sites - 1
     banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
@@ -1640,11 +1613,19 @@ def _close_site(state: dict, log: list[str], qid: str,
     # A multi-site quest names its position (site 1/2) in the banner so a
     # SITE CLEARED never reads as the whole job done (2026-07-19).
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
-    clear_xp = round(site_clear_xp(site["level"], n_rooms) * pay_mult)
-    gold = round(site_gold_for(quest, site) * pay_mult)
-    award_quest(party, purse, gold, clear_xp, log,
-                f"{quest['name']} -- {site['name']}{pos}", banner=banner)
-    record_karma(state, clear_xp, quest.get("align", "good"), log)
+    if last_site:
+        enc = quest.get("encounters", 1)
+        clear_xp = round(quest_clear_xp(quest["level"], enc) * pay_mult)
+        gold = round(quest_gold_posted(quest) * pay_mult)
+        award_quest(party, purse, gold, clear_xp, log,
+                    f"{quest['name']} -- {site['name']}{pos}", banner=banner)
+        record_karma(state, clear_xp, quest.get("align", "good"), log)
+    else:
+        log_banner(log,
+                   f"  *** {banner}: {site['name']}{pos} -- "
+                   f"the job goes on. ***",
+                   [f"*** {banner} ***", f"{site['name']}{pos} --",
+                    "the job goes on."])
     cur["site"] += 1
     cur["room"] = 0
     if last_site:
@@ -2241,7 +2222,6 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
                      quest: str | None = None,
-                     streak_pos: int | None = None,
                      dead_before: list[str] | None = None,
                      align: str = "neutral",
                      mercy: str | None = None) -> None:
@@ -2273,15 +2253,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                         f"{standing} standing foe(s) --",
                         "it will remember)"])
     elif not wiped:
-        reason = "encounter"
-        if streak_pos is not None and streak_pos > 1:
-            reason = f"encounter, streak {streak_pos}"
-        award_xp(party, encounter_xp, log, reason)
+        award_xp(party, encounter_xp, log, "encounter")
         record_karma(state, encounter_xp, align, log)
-        if site is not None and streak_pos is not None:
-            # Momentum recorded: the next same-site encounter without a camp
-            # between pays the next multiplier up.
-            state["streak"] = {"site": site, "count": streak_pos}
         roll_loot(party, purse, rng, log)
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
@@ -2419,9 +2392,8 @@ def cmd_site(args: argparse.Namespace) -> None:
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
-    k = streak_pos_for(state, site.key)
-    resolve_encounter(state, log, foes, site.encounter_xp(k),
-                      site=site.key, room=args.room, streak_pos=k,
+    resolve_encounter(state, log, foes, site.encounter_xp,
+                      site=site.key, room=args.room,
                       field=ROOM_FIELD)
 
 
@@ -2733,11 +2705,11 @@ def cmd_room(args: argparse.Namespace) -> None:
         for line in roster_lines([f for f in foes if f.alive]):
             log.append("  " + line)
 
-    k = streak_pos_for(state, site_key)
     resolve_encounter(state, log, foes,
-                      site_encounter_xp(site["level"], len(rooms), k),
+                      quest_encounter_xp(quest["level"],
+                                         quest.get("encounters", 1)),
                       site=site_key, room=room_i + 1, quest=qid,
-                      streak_pos=k, field=ROOM_FIELD,
+                      field=ROOM_FIELD,
                       align=quest.get("align", "good"))
 
 
@@ -2771,8 +2743,8 @@ def cmd_forge(args: argparse.Namespace) -> None:
            or f"q{n:02d}/s1" in world["sites"]):
         n += 1       # expired shadow jobs may leave persistent geography
     qid = f"q{n:02d}"
-    quest = forge_quest(world, qid, args.level, args.sites, args.rooms, kinds,
-                        args.name, state["rng"],
+    quest = forge_quest(world, qid, args.level, args.places, args.encounters,
+                        kinds, args.name, state["rng"],
                         area_key=area["key"],
                         align="dark" if args.dark else "good")
     world["quests"][qid] = quest
@@ -2906,8 +2878,42 @@ def cmd_travel(args: argparse.Namespace) -> None:
         storyteller_tale(state["party"], state["rng"], log)
         companions_brew(state, log)
         night_upkeep(state, log)
-    reset_streak(state)
     print_play(log)
+    # THE ROAD, before the gates (2026-07-26). The trip's encounter used to
+    # be rolled after the arrival was printed, so a road fight was narrated
+    # at the destination and drew its roster from the DESTINATION land's
+    # pool. It is rolled here instead, with the party still standing in the
+    # ORIGIN land -- what roams the road you are on is the road you left
+    # from. On a fight the trip is interrupted: the days are spent, the party
+    # is where it started, and the player re-issues `travel`. (A true
+    # mid-road position wants the local navigation layer -- plan.md parks
+    # it.) A sighting is slipped past: the party is moving, and moving on is
+    # what "any other move" has always meant.
+    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
+    dq = active_delivery(state)
+    if (dq is not None and target["key"] == dq["dest"]
+            and not dq.get("intercepted")):
+        # The delivery's guaranteed encounter: the leg that reaches the
+        # destination is watched. Rolled off the road's own table like any
+        # travel event (spotted/ambush valves included), just at chance 1.
+        dq["intercepted"] = True
+        print(f"  Word of {dq['cargo']} travelled faster than the party -- "
+              f"the road is watched.")
+        interrupted = wild_event(state, 1.0,
+                                 f"On the road to {target['name']}")
+    else:
+        interrupted = wild_event(state, chance,
+                                 f"On the road to {target['name']}")
+    if interrupted:
+        print(f"  The trip breaks off here -- the party is still at "
+              f"{location_line(state)}. `travel {target['key']}` again "
+              f"when the road is clear.")
+        return              # the fight machinery has already saved (the
+                            # position was never moved, so there is nothing
+                            # else to pin)
+    if state.get("sighting"):
+        clear_sighting(state, quiet=True)
+        print("  The party gives them a wide berth and keeps moving.")
     state["position"] = _area_position(target)
     target["visited"] = True
     if target.get("kind") == "settlement":
@@ -2926,23 +2932,6 @@ def cmd_travel(args: argparse.Namespace) -> None:
     if log:
         print("\n".join(log))
     maybe_post_wave(state)      # news travels; arrivals are where it lands
-    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
-    dq = active_delivery(state)
-    if (dq is not None and target["key"] == dq["dest"]
-            and not dq.get("intercepted")):
-        # The delivery's guaranteed encounter: the leg that reaches the
-        # destination is watched. Rolled off the road's own table like any
-        # travel event (spotted/ambush valves included), just at chance 1.
-        dq["intercepted"] = True
-        print(f"  Word of {dq['cargo']} travelled faster than the party -- "
-              f"the road is watched.")
-        if wild_event(state, 1.0,
-                      f"Intercepted on the road to {target['name']}"):
-            return      # the fight machinery saved; if it paused, the
-                        # hand-off lands when the fight settles
-                        # (deliver_if_arrived in finish_encounter/retreat)
-    elif wild_event(state, chance, f"On the road to {target['name']}"):
-        return
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
     if maybe_enforce(state):    # hell's enforcers travel the same roads
@@ -2974,7 +2963,6 @@ def cmd_explore(args: argparse.Namespace) -> None:
     storyteller_tale(party, rng, log)
     companions_brew(state, log)
     night_upkeep(state, log)
-    reset_streak(state)
     print_play(log)
     found_area = None
     found_site = None
@@ -3345,7 +3333,6 @@ def cmd_resume(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
-                     streak_pos=pending.get("streak_pos"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
                      mercy=pending.get("mercy"))
@@ -3440,21 +3427,9 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
-                     streak_pos=pending.get("streak_pos"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
                      mercy=pending.get("mercy"))
-
-
-def cmd_rest(args: argparse.Namespace) -> None:
-    state = load()
-    if not require_no_pending(state):
-        return
-    party, clock = state["party"], state["clock"]
-    log = CombatLog()
-    _short_rest([h for h in party if h.alive], clock, log)
-    print_play(log)
-    save(state)
 
 
 MAX_HEAL_CAMP_NIGHTS = 14   # `camp --heal` safety valve: HP knits at
@@ -3467,41 +3442,50 @@ def cmd_camp(args: argparse.Namespace) -> None:
     --heal` camps until every living hero's HP is full (2026-07-11 -- the
     played default is camping until whole, see dm.md). Each WILDS night
     rolls its own visitor and a fight interrupts the stay on the spot --
-    a long convalescence in the open is a real gamble, days x risk."""
+    a long convalescence in the open is a real gamble, days x risk.
+
+    The visitor is rolled BEFORE the night's recovery (2026-07-26): the
+    camp is pitched, the fire draws whatever it draws, and only a night that
+    passes undisturbed heals anybody. It used to run the other way round, so
+    every night's healing was banked before the fight was rolled and the
+    party met its visitor at full HP -- which is exactly the free recovery
+    the attrition rework exists to stop handing out."""
     state = load()
     if not require_no_pending(state):
         return
     party, clock = state["party"], state["clock"]
     nights = MAX_HEAL_CAMP_NIGHTS if args.heal else max(1, args.nights)
-    streak = state.get("streak") or {"site": None, "count": 0}
-    if streak["count"]:
-        print(f"    (the night breaks the momentum at {streak['site']} "
-              f"-- the next encounter pays base XP again)")
-    reset_streak(state)
     clear_sighting(state)
     for _ in range(nights):
         log = CombatLog()
-        _long_rest(party, clock, log, rng=state["rng"])
-        storyteller_tale(party, state["rng"], log)
-        companions_brew(state, log)
         in_wilds = (state.get("world")
                     and current_area(state)["kind"] != "settlement")
-        quiet = False
+        scout = None
         if in_wilds:
-            # Survivalist (the ability): a made MIND check turns the rough
-            # camp into a tavern night and halves the visitor chance.
-            quiet = survivalist_camp(party, state["rng"], log)
-        night_upkeep(state, log)
+            # Survivalist (the ability): a made MIND check picks ground that
+            # halves the visitor chance -- and, if the night holds, sleeps
+            # the party as warm as a tavern.
+            scout = survivalist_ground(party, state["rng"], log)
         print_play(log)
         if in_wilds:
             # A night in the wilds is not a night behind walls (2026-07-10):
-            # the fire can draw a visitor. Rolled after the night's recovery;
-            # a fight cuts the stay short -- what remains of it is the
-            # player's call again afterward.
-            chance = CAMP_ENCOUNTER_CHANCE / 2 if quiet else CAMP_ENCOUNTER_CHANCE
+            # the fire can draw a visitor. A fight cuts the stay short before
+            # anyone has slept -- the party fights it as tired as the day
+            # left them, and what remains of the night is the player's call
+            # again afterward.
+            chance = (CAMP_ENCOUNTER_CHANCE / 2 if scout
+                      else CAMP_ENCOUNTER_CHANCE)
             if wild_event(state, chance,
                           f"In the night at {current_area(state)['name']}"):
                 return
+        log = CombatLog()
+        _long_rest(party, clock, log, rng=state["rng"])
+        if scout is not None:
+            survivalist_comfort(party, scout, log)
+        storyteller_tale(party, state["rng"], log)
+        companions_brew(state, log)
+        night_upkeep(state, log)
+        print_play(log)
         if maybe_punish(state):     # posses track a camp too (karma)
             return
         if maybe_enforce(state):    # so do hell's enforcers (the pact)
@@ -3517,8 +3501,9 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     """A paid night at the inn (settlements only): long rest plus the one-day
     HP/STA overcharge (rpg.tavern_rest), +1 companion satisfaction, and the
     evening's company -- a fresh set of recruit candidates (the hiring
-    surface: rolled once per paid night). Resets the streak like any night;
-    anyone at the end of their patience walks at the morning."""
+    surface: rolled once per paid night). The bed's +1 satisfaction is on
+    a per-companion cooldown (rpg.SAT_TAVERN_COOLDOWN_DAYS); anyone at the
+    end of their patience walks at the morning."""
     state = load()
     if not require_no_pending(state):
         return
@@ -3538,11 +3523,6 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     storyteller_tale(state["party"], state["rng"], log)
     companions_brew(state, log)
     night_upkeep(state, log)
-    streak = state.get("streak") or {"site": None, "count": 0}
-    if streak["count"]:
-        log.append(f"    (the night breaks the momentum at {streak['site']} "
-                   f"-- the next encounter pays base XP again)")
-    reset_streak(state)
     clear_sighting(state)
     process_departures(state, log)
     # Candidates are no longer popped unasked (2026-07-13): when the
@@ -3562,7 +3542,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     controls): every companion gains SAT_DOWNTIME, or SAT_DOWNTIME_MATCH
     when the place suits a trait (an interest where it thrives, patriotic
     ground, a capital's temples for the religious). Ends in a free
-    settlement night (long rest, streak reset, day advances)."""
+    settlement night (long rest, the day advances)."""
     state = load()
     if not require_no_pending(state):
         return
@@ -3589,11 +3569,6 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     storyteller_tale(party, state["rng"], log)
     companions_brew(state, log)
     night_upkeep(state, log)
-    streak = state.get("streak") or {"site": None, "count": 0}
-    if streak["count"]:
-        log.append(f"    (the day breaks the momentum at {streak['site']} "
-                   f"-- the next encounter pays base XP again)")
-    reset_streak(state)
     clear_sighting(state)
     process_departures(state, log)
     maybe_post_wave(state, log)
@@ -4260,20 +4235,17 @@ def main() -> None:
     p.add_argument("--smoke", metavar="HERO", default=None)
     p.set_defaults(func=cmd_retreat)
 
-    p = sub.add_parser("rest", help="short rest: spends a daily slot for a small catch-breath")
-    p.set_defaults(func=cmd_rest)
-
     p = sub.add_parser(
         "camp",
-        help="long rest: full STA, weekly HP tick, advances a day -- and "
-             "RESETS the same-site momentum streak (consecutive same-site "
-             "encounters without a camp pay rising XP; camping mid-site "
-             "trades that pay for safety). `camp N` strings N nights "
-             "together; `camp --heal` camps until every living hero's HP "
-             "is full (the played default -- see dm.md). A night camped in "
-             "the WILDS (not at a settlement) risks a visitor "
+        help="long rest: full STA, weekly HP tick, advances a day -- the "
+             "day's ONLY recovery step (the short rest is gone). `camp N` "
+             "strings N nights together; `camp --heal` camps until every "
+             "living hero's HP is full. A night camped in "
+             "the WILDS (not at a settlement) rolls its visitor BEFORE the "
+             "night's recovery "
              f"(~{int(CAMP_ENCOUNTER_CHANCE * 100)}%% PER NIGHT, the "
-             f"road's table) and a fight cuts the stay short.")
+             f"road's table): a fight cuts the stay short and nobody heals "
+             f"that night.")
     p.add_argument("nights", type=int, nargs="?", default=1,
                    help="how many nights (default 1)")
     p.add_argument("--heal", action="store_true",
@@ -4287,8 +4259,9 @@ def main() -> None:
              f"plus a ONE-DAY OVERCHARGE -- everyone wakes with HP and STA "
              f"+{int(TAVERN_OVERCHARGE * 100)}%% of max (min 1) ABOVE their "
              f"caps; the excess can't be healed back and fades at the next "
-             f"night's rest. Also +1 companion satisfaction. Resets "
-             f"the momentum streak like any night. (Hiring candidates "
+             f"night's rest. Also +1 companion satisfaction, at most once "
+             f"every {SAT_TAVERN_COOLDOWN_DAYS} days per companion. "
+             f"(Hiring candidates "
              f"are `recruit`'s business, on request -- the tavern never "
              f"pops them unasked.)")
     p.set_defaults(func=cmd_tavern)
@@ -4298,9 +4271,9 @@ def main() -> None:
         help="a full day off in a settlement: +1 satisfaction to every "
              "companion (+2 where the place suits a trait -- an interest "
              "where it thrives, patriotic ground, a capital's temples), "
-             "then a free night (long rest, day advances, streak resets). "
-             "The deliberate morale lever -- it costs a day the streak "
-             "economy would rather spend fighting.")
+             "then a free night (long rest, the day advances). "
+             "The deliberate morale lever -- it costs a day, and days are "
+             "what a quest clock spends.")
     p.set_defaults(func=cmd_downtime)
 
     p = sub.add_parser(
@@ -4361,8 +4334,10 @@ def main() -> None:
         help=f"move to a known area (settlement or natural geography): "
              f"{TRAVEL_DAYS_IN_LAND} day within a land, {TRAVEL_DAYS_CROSS} "
              f"days to another land. Every travel day is a camp night "
-             f"(overnight recovery -- travel heals; it also resets the "
-             f"momentum streak) and risks a road encounter "
+             f"(overnight recovery -- travel heals) and risks a road "
+             f"encounter, rolled ON THE ROAD off the ORIGIN land's table "
+             f"before the party reaches the gates -- a fight interrupts the "
+             f"trip and leaves the party where it started "
              f"(~{int(TRAVEL_ENCOUNTER_CHANCE * 100)}%%/day, ANY level -- "
              f"the higher the rarer; foes far above the party are usually "
              f"spotted at range first, but can ambush, and ordinary "
@@ -4378,7 +4353,7 @@ def main() -> None:
              f"settlement, reveals the next finite natural Area; inside a "
              f"natural Area, reveals its next ordinary Site. A new place "
              f"pays {EXPLORE_XP} XP and persists; revisits do not. Camps "
-             f"rough (overnight recovery, streak reset), and beats more "
+             f"rough (overnight recovery), and beats more "
              f"bushes than the road "
              f"({int(EXPLORE_ENCOUNTER_CHANCE * 100)}%% encounter chance)")
     p.set_defaults(func=cmd_explore)
@@ -4483,9 +4458,12 @@ def main() -> None:
              "your choosing (same builder as worldgen) and place its sites "
              "in an area. Defaults to the current area.")
     p.add_argument("--level", type=int, required=True)
-    p.add_argument("--sites", type=int, default=1, choices=(1, 2, 3))
-    p.add_argument("--rooms", type=int, default=2, choices=(1, 2, 3),
-                   help="rooms per site")
+    p.add_argument("--places", type=int, default=1, choices=(1, 2, 3),
+                   help="how many sites the job spans (default 1 -- only "
+                        "where the fiction genuinely moves)")
+    p.add_argument("--encounters", type=int, default=1, choices=(1, 2, 3),
+                   help="fights in the whole job (default 1; floored at "
+                        "--places)")
     p.add_argument("--kinds", required=True,
                    help="comma-separated catalog foe kinds (the quest's pool)")
     p.add_argument("--name", required=True)

@@ -40,9 +40,10 @@ from __future__ import annotations
 import argparse
 import random
 
-from rpg import site_xp_total, site_gold
-from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL,
-                    build_site_rooms, threat_value, attach_giver,
+from rpg import quest_xp_total, quest_gold
+from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, ROOM_SHARES,
+                    build_site_rooms, split_encounters,
+                    threat_value, attach_giver,
                     new_site, new_room, quest_sites, site_rooms,
                     settlements, settlements_by_land,
                     quest_line, quest_detail_lines)
@@ -53,7 +54,14 @@ from places import land_race, slug
 # --------------------------------------------------------------------------- #
 
 WAVE_LEVELS = (2, 5, 8, 10)     # the pinned difficulty spine
-WAVE_ROOMS = ((2, 2), (2, 2, 3), (2, 3, 3), (2, 3, 3))  # rooms per site
+WAVE_ENCOUNTERS = 3     # a war wave is the BIGGEST job shape the game has
+                        # (2026-07-26, the attrition rework): three fights,
+                        # spread front-light across the wave's authored
+                        # places, paid on the same quest ladder as every
+                        # other job. It was 4-8 rooms per wave, which is the
+                        # exact quest length the rework exists to stop
+                        # spending -- and a war wave is not exempt from a
+                        # party's HP budget just because it is authored.
 AGGRESSORS = ("elf", "goblin", "human", "orc")
 
 # --------------------------------------------------------------------------- #
@@ -385,28 +393,33 @@ def post_wave(world: dict, story: dict, rng: random.Random,
              "level": level,
              "skins": dict(spec["skins"]),
              "sites": [], "site_count": len(wv["sites"]),
-             "room_count": sum(WAVE_ROOMS[i]),
-             "xp_total": 0, "gold_total": 0,
+             "encounters": WAVE_ENCOUNTERS,
+             "xp_total": quest_xp_total(level, WAVE_ENCOUNTERS),
+             "gold_total": quest_gold(level, WAVE_ENCOUNTERS),
              "next": {"site": 0, "room": 0},
              "status": "open",
              "epilogue": wv["epilogue"].format(**fmt),
              "story_wave": i}
     n_sites = len(wv["sites"])
-    for j, (stem, n_rooms) in enumerate(zip(wv["sites"], WAVE_ROOMS[i])):
-        site_level = max(1, level - (n_sites - 1 - j))
+    per_place = split_encounters(WAVE_ENCOUNTERS, n_sites)
+    shares = ROOM_SHARES[WAVE_ENCOUNTERS]
+    cut = 0
+    for j, stem in enumerate(wv["sites"]):
+        n_rooms = per_place[j]
         rooms = build_site_rooms(
-            site_level, n_rooms, spec["pool"], rng,
-            ("war road", "battle line", "enemy stronghold"))
+            level, n_rooms, spec["pool"], rng,
+            ("war road", "battle line", "enemy stronghold"),
+            shares=tuple(shares[cut:cut + n_rooms]),
+            final_room=j == n_sites - 1)
+        cut += n_rooms
         site_id = (f"site/{settlement['land']}/{slug(settlement['name'])}/"
                    f"war-{qid}-{j + 1}")
-        new_site(world, settlement["key"], site_id, stem, site_level,
+        new_site(world, settlement["key"], site_id, stem, level,
                  quest=qid, template="camp", domain="mixed")
         for k, (rn, kinds) in enumerate(rooms):
             new_room(world, site_id, f"{site_id}/{slug(rn)}", rn,
                      list(kinds), quest=qid)
         quest["sites"].append(site_id)
-        quest["xp_total"] += site_xp_total(site_level)
-        quest["gold_total"] += site_gold(site_level)
     boss_face = ([None, story["lieutenants"][0], story["lieutenants"][1],
                   story["conqueror"]][i])
     if boss_face is not None:

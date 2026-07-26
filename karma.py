@@ -86,9 +86,10 @@ from places import land_race
 # --------------------------------------------------------------------------- #
 
 KARMA_HEAT_STEP = 100   # bad karma per heat step is this * the PC's level:
-                        # a level-L quest quotes ~100L XP (site_xp_total),
-                        # so ONE at-level dark quest ~ one heat step, and
-                        # one honest at-level quest ~ one step of penance
+                        # a level-L quest quotes ~60(L+1)-130(L+1) XP
+                        # (rpg.quest_xp_total, by encounter count), so ONE
+                        # at-level dark quest is roughly one heat step, and
+                        # one honest at-level quest one step of penance
 HEAT_CAP = 3            # posses arrive at party level + heat, capped: +3
                         # is already a truly dangerous fight (the punching-
                         # up measurements); past it the number is noise
@@ -222,9 +223,13 @@ def karma_line(karma: dict, pc_level: int) -> str:
 #   twist = dict(text=..., accept=..., pay=0.5)
 #           -- attached to the LAST site: arriving there prints the
 #           authored complication and its priced terms. `settle` takes
-#           them (site closed at pay x lump); fighting on refuses them.
-# A template carrying either pins its site count (capers are authored
-# shapes, not rolled). Machinery: quests.build_quest + session.cmd_room /
+#           them (the quest closes at pay x its lump); fighting on refuses
+#           them.
+# A template carrying either pins its PLACE count to every stem it lists
+# (capers are authored shapes, not rolled) and its encounter count follows.
+# Every other dark template takes the default `places` = 1, like the honest
+# tables (quests.py): one job, one place, unless the fiction moves.
+# Machinery: quests.build_quest + session.cmd_room /
 # cmd_settle; rules.md's Karma & Heat add-on documents the math.
 
 DARK_TEMPLATES: list[dict] = [

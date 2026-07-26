@@ -32,7 +32,7 @@ owns the fiction register, and dm.md applies it at the table.
 **How play is driven:** the game is *two halves working together*.
 - **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
   library of mechanics primitives and content — `start_fight`,
-  `group_combat`, `short_rest`, `long_rest`, `party_wiped`, the foe
+  `group_combat`, `long_rest`, `party_wiped`, the foe
   catalog, the set sites, the quest generator and its world, the
   character generator and its races/traits.
 - **The agent (as DM)** calls those primitives *on purpose*, in whatever order the
@@ -153,7 +153,8 @@ a pointer: what the file is, how it's run, where its docs are.
 - `CLAUDE.md` — **a thin shim** that imports `AGENTS.md` so Claude Code
   loads the same dispatcher; put no content of its own here.
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
-  layer), weapons and breakage, the survival tracks and rests, progression,
+  layer), weapons and breakage, the survival tracks and the NIGHT (the short
+  rest is gone since 2026-07-26), progression,
   economy, random party generation, the Magic & Mind layer
   (2026-07-15: the MIND stat, the nine-spell catalog with ranks, the
   casting check, the openers, spellbooks — rules.md's
@@ -262,8 +263,8 @@ a pointer: what the file is, how it's run, where its docs are.
   `go` / `back` / `explore` / `house` / `place-state` / `hunt` / `engage` —
   breadcrumb position, finite Area/Site discovery, persistent ordinary
   houses, DM mutation,
-  macro and local navigation, local boards, road encounters, the momentum
-  streak; since 2026-07-10 also `tavern` (the paid settlement night with
+  macro and local navigation, local boards, road encounters;
+  since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
   ordinary-encounter spotted valve, and the hunt ambush. Since 2026-07-11
   also the party layer: `recruit` /
@@ -316,7 +317,7 @@ a pointer: what the file is, how it's run, where its docs are.
   `print_combat` flushes both snapshots' session tail). The block ends with the
   party tally (`tally_lines`: tracks, standing roll penalties -- shown
   HERE and in the pause menu since the fight lines dropped the numbers
-  -- kit/purse, rooms-left count, next streak multiplier), the standard
+  -- kit/purse, fights-left count and the turn-in quote), the standard
   between-encounters numbers display so the DM's prose never has to
   carry the numbers (dm.md, Narration style). Since 2026-07-17 (session C)
   also the alchemy surface: `brew HERO RECIPE` (once/day), `train HERO
@@ -430,8 +431,7 @@ mechanic *does* and *why* is rules.md's job.
 
 - **Tunable constants** — all at the top of `rpg.py`, grouped and commented:
   fatigue (`WINDED_STA`, `SPENT_PENALTY`, `STA_ATTACK_COST`), survival
-  (`SAVE_COST`, `FIRST_BLOOD_*`, potion restores, the
-  `*_RECOVERY_*` family, `REVIVE_HP`, `SHORT_RESTS_PER_DAY`, and the
+  (`SAVE_COST`, `FIRST_BLOOD_*`, potion restores, `REVIVE_HP`, and the
   self-restocking kit `KIT_HEALING` / `KIT_STAMINA` — 2026-07-11, every
   long rest tops each hero back up to the kit line), the pause layer
   (`PAUSE_STA_TRIGGER`, `PAUSE_HP_FRACTION`, `PAUSE_ACTION_DEF_PENALTY`,
@@ -456,19 +456,22 @@ mechanic *does* and *why* is rules.md's job.
   rider magnitudes `THRUST_ATK` / `FEINT_ATK` / `RIPOSTE_ATK` / `IAIDO_*`
   / `FINISHER_SEV` / `POMMEL_SEV` / `OFF_GUARD_PENALTY`, and
   `MOVE_LAND_MARGIN`), economy (`POTION_PRICE`, drop chances, and the
-  level-pay formulas `site_xp_total` / `site_encounter_xp` /
+  TWO level-pay ladders, deliberately separate since 2026-07-26 and
+  commented so nobody unifies them: the QUEST ladder `quest_xp_total` /
+  `quest_encounter_xp` / `quest_clear_xp` / `quest_gold` with
+  `QUEST_XP_PER_LEVEL` / `QUEST_GOLD_PER_LEVEL` / `ENCOUNTER_MULT` /
+  `QUEST_ENCOUNTER_SHARE` — this is the GAME's pay — and the site-FIXTURE
+  ladder `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
-  `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs), weapons (the
+  `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs, which now serves only
+  sites.py's two hand-built calibration fixtures), weapons (the
   `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
   hero stat generation (`HERO_*_RANGE` + `HERO_STAT_BUDGET` — since
   2026-07-13 a fixed surplus budget dealt by a shuffled priority order,
   not independent rolls; 11 since 2026-07-15, when MIND joined the
   budget) and the hero spiral gear (`HERO_PAIN`
   — trained fighters, both sides, take `hp_lost // 2` as the wound
-  penalty since 2026-07-09), the momentum streak (`STREAK_STEP` +
-  `streak_multiplier` — consecutive same-site encounters without a camp
-  pay rising XP; a full one-go run collects exactly the encounter share;
-  2.0 since 2026-07-10: x1/x3/x5 across three rooms), the magic layer
+  penalty since 2026-07-09), the magic layer
   (2026-07-15: the `SPELLS` catalog, `CAST_SEVERITY` / `CAST_POWER_COST`,
   the casting-check knobs `CAST_DC_BASE` / `CAST_DC_PER_RANK`,
   `AMBUSH_MARGIN`, the opener costs, `SPELLBOOK_PRICE`,
@@ -520,7 +523,7 @@ mechanic *does* and *why* is rules.md's job.
   outright — + ONE group chase roll; `pursues=False` foes never chase; a
   clean escape waives any fate debt), `refresh_foes_after_retreat`
   (fled-room persistence).
-- **Between fights** — `short_rest` / `long_rest` (the `Clock`; long_rest
+- **Between fights** — `long_rest` (the `Clock`; long_rest
   also re-arms the field medic's day), `use_potion`, `cast_healing` (the
   healing spell, 2026-07-17 — `use_heal` is gone), `buy_potion` /
   `buy_weapon` (the `Purse`), `equip_weapon` (keeps the staff's
@@ -758,7 +761,7 @@ mechanic *does* and *why* is rules.md's job.
   `pending` paused-fight record, `rooms` fled-encounter records, breadcrumb
   `position`, persistent geography under `world` (`lands` / `areas` / `sites`
   / `rooms`),
-  `sighting`, `streak` momentum record, `site_clears` set-site pay
+  `sighting`, `site_clears` set-site pay
   tracking, and `recruits` (the on-request candidate pool, keyed to its
   settlement and day); entities/
   weapons via the `_entity_*`/`_weapon_*` serializers).
@@ -784,14 +787,56 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-17, after the levelling framework session C —
-alchemy & the potion rework: the alchemy skill + the long-rest brew, the
-kit SHRINK (1 healing + 1 stamina per PARTY, was per hero, + a stamina
-forage roll), the overcharge doctrine, the strength/dexterity stat brews,
-the firebomb and the smoke vial. Sessions A/B — the point economy and the
-warrior moves — still underlie doctrine v2). The full dated report of every
-measured re-tuning lives in `benchlog.md`; this is only the standing
-summary — refresh it whenever a new entry lands there.**
+**Current state (2026-07-26, after the attrition rework's SLICE 1 — quest
+shape, the pay rebase, and the deletion of the XP streak and the short rest.
+Session C's alchemy layer and sessions A/B's point economy still underlie
+doctrine v2.) The full dated report of every measured re-tuning lives in
+`benchlog.md`; this is only the standing summary — refresh it whenever a new
+entry lands there.**
+
+**The slice-1 rebaseline (2026-07-26).** Every fixture number below moved
+because `run_site` lost a whole recovery step (the short rest is deleted), and
+the whole generated-content picture moved because a quest went from 3.74
+encounters to 1.66. Read the fixtures as CONTROLS that were re-zeroed, not as
+the game getting harder:
+
+- **Quest shape:** encounters per quest **mean 1.657** (1: 49.3% / 2: 35.8% /
+  3: 14.9%), hard max 3, no tail (was 3.74 with 47% at 4+ and a tail to
+  nine). **9.8%** of quests span two places; place count is authored on the
+  template now, never rolled.
+- **Pay:** per QUEST, not per site. `QUEST_XP_PER_LEVEL` = **44** (fitted:
+  60/48/44/40 gave 28/34/38/42 quests to the cap; 38 was the target),
+  `QUEST_GOLD_PER_LEVEL` = **18** (career gold deliberately unchanged).
+- **Hideout** (rank 0): clear **50.8** / wipe **15.6**; reckless wipe
+  **86.5** (was 57.2 / 12.5 / 75.9). **Barrow** `[3,3,4]`: clear **30.2** /
+  wipe **48.3**; reckless **99.8** (was 38.1 / 40.6 / 98.3).
+- **Training ladder:** hideout **51.2 -> 71.0 -> 83.8 -> 92.4**, barrow
+  **31.0 -> 63.1 -> 87.4 -> 96.8**. A rank still reads as a rank.
+- **Party-size sweep:** hideout 1/2/3/4 clear **23.3 / 51.2 / 54.5 / 67.0**;
+  barrow **2.2 / 31.0 / 70.1 / 89.4**. Solo death-trap, 3-4 cruise — shape
+  intact.
+- **Controls unchanged to the cell:** `bench_weapons.py`, `bench_ranged.py`,
+  and `bench_bestiary.py` (the last builds parties directly and resolves ONE
+  fight, so neither the rest nor the pay change can reach it).
+- **Generated content** (300/cell): at-level encounters win **71-94%**
+  (untouched builder); at-level whole JOBS clear **85% at L1**, **60-80%
+  mid**, **~63% at 19-20** — flatter than the old site row's 93 -> ~45,
+  because a job is no longer four fights deep.
+- **Careers** (500): reach **L5 85% / L8 70% / L11 40% / L14 17% / L20
+  6.4%**, median death **L9**, capped median **81 days / 37 quests**.
+- **The open flag: days to cap fell 158 -> 81** (gold per quest unchanged, so
+  gold per DAY roughly doubled). Slice 2's clocks and banded refill are what
+  have to put the calendar back; its own acceptance target now reads against
+  81, not 158. **Ask the designer before slice 2 whether 158 is still the
+  target.** The hideout fixture also fell out of its 55-65 band (50.8) — the
+  standing flag is reopened at fixture level, but no lever was pulled: doing
+  so now would confound slice 3b's full rebaseline.
+
+**Pre-rework state (2026-07-17, the levelling framework session C — the
+alchemy layer: the alchemy skill + the long-rest brew, the kit SHRINK, the
+overcharge doctrine, the stat brews, the firebomb and the smoke vial). Kept
+for comparison; every fixture number in it is superseded by the block
+above.**
 
 - **The kit shrink is a FRESH-DUO lever, not a campaign one.** The old
   per-hero kit floored a duo to 2 healing + 2 stamina every camp; the
@@ -888,15 +933,12 @@ summary — refresh it whenever a new entry lands there.**
   a no-op for every worldgen template). Don't spend bench rounds here
   until the dark path has actually been played.
 
-- **The attrition rework will rebaseline everything (2026-07-26, spec in
-  plan.md's NEXT BUILD section; nothing built yet).** Every number here is
-  measured against 3.74-encounter quests, a per-site pay ladder, the XP
-  streak, and the short rest — all four of which the rework removes or
-  replaces. Treat the summary above as the PRE-rework baseline and expect a
-  full re-measurement at slices 1 and 3b. The two controls
-  (`bench_weapons.py`, `bench_ranged.py`) should stay unchanged to the cell
-  throughout; if they move, something leaked into the melee loop that
-  shouldn't have.
+- **The attrition rework continues (spec in plan.md's NEXT BUILD section).**
+  Slice 1 shipped 2026-07-26 and is measured at the top of this section;
+  slices 2, 3a, 3b, and 4 are still ahead, and **slice 3b will rebaseline
+  everything again**. The two controls (`bench_weapons.py`,
+  `bench_ranged.py`) must stay unchanged to the cell throughout; if they
+  move, something leaked into the melee loop that shouldn't have.
 
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
@@ -1000,11 +1042,14 @@ face and a grudge), then conquest ticking. The old magic-phase remainder
 (stat transcendence + the wraith, armor — designer lean: probably never
 important — named weapon instances) still stands behind that, along with
 the career sim's finding that the 14-20 band lacks its player power until
-masterwork/magic-item content lands. **The next build is the attrition
-rework (2026-07-26; the full spec is plan.md's NEXT BUILD section)** —
-quests shrink to 1-3
-encounters, pay moves from the site to the quest, the XP streak and the
-short rest are deleted, quests get clocks over a lazily refilled banded
+masterwork/magic-item content lands. **The attrition rework is
+under way (spec in plan.md's NEXT BUILD section). SLICE 1 SHIPPED
+2026-07-26** — quests shrank to 1-3
+encounters (mean 1.66, from 3.74), pay moved from the site to the quest, and
+the XP streak and the short rest were deleted, along with three small fixes
+(camp rolls its visitor before the night's recovery, road encounters fire on
+the road off the origin land's pool, and the tavern's morale ratchet got a
+cooldown). Still ahead: quests get clocks over a lazily refilled banded
 board, damage starts persisting as named located wounds over a general
 conditions system, and defeat stops meaning a new character. Its design
 spine, in one line: *do not make rest expensive, make rest incomplete* —
