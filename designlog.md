@@ -679,11 +679,26 @@ wounds you can carry" becomes literally true. The displayed number can still
 vanish; that is a formatting pass, not a rewrite, and it buys the whole felt
 effect.
 
-*Wound penalties apply from the NEXT fight, maimings immediately.* The engine
-already runs an anonymous injury spiral in `wound_penalty`; stacking a second
-stat-penalty spiral on top of it would move lethality hard, and develop.md
-records enemy DEX as the sharpest lever in the game. The split is also
-simulation-honest — adrenaline covers the fight you are in.
+*Injury is ONE system with two time constants* — settled after a reversal
+worth recording. The first call was that wound stat-penalties should wait
+until the *next* fight, to keep the running fight's math on terms the bench
+already understands. The designer pushed back — he had understood the wound
+system as unified all along — and he was right, on two counts. First, the
+recap that reversal forced was itself wrong: `Entity.wound_penalty` is a live
+property, `hp_lost // pain`, so because HP carries across fights the existing
+penalty **already** carries across them; describing it as an "in-fight
+spiral" was simply inaccurate. Second, a leg wound that does not slow you
+until tomorrow is a bookkeeping entry, not the moment that locating wounds
+exists to produce. So: one system, split by how fast each channel fades, not
+by where it applies. HP is the fast channel (blood and shock, `wound_penalty`
+unchanged, refills to the ceiling). Wounds are the slow channel (named,
+located, ceiling-lowering, stat penalties). Both live in every fight,
+including the one where the wound lands, with no `fresh` flag and no seam.
+The real concern behind the original caution was magnitude, not architecture,
+and it has a proper answer: shift part of the roll-penalty budget out of the
+anonymous HP channel into the named wound channel by raising `HERO_PAIN`
+2 -> 3, so total pressure at a given injury level stays near the bench
+baseline while part of it becomes specific, located, and slow to heal.
 
 *Foes keep the scalar.* They do not persist between fights, so records buy
 nothing and would cost the entire bestiary calibration.
@@ -731,7 +746,11 @@ content decide a job's length is queued as its own design pass, to be
 scheduled after the clock and wound slices have actually been played — what a
 job's right length feels like is a play finding, not a desk one.
 
-**Outcome.** A four-slice build contract in `attrition.md`, one session each:
+**Outcome.** A four-slice build contract as plan.md's NEXT BUILD section —
+kept in the roadmap rather than a separate spec file, on the designer's call
+that another top-level doc would be one more thing to keep in sync; it
+propagates outward and is deleted slice by slice as each lands. One session
+each:
 quest shape and the pay rebase (with the streak and short rest deleted and
 the three small fixes), quest clocks with the banded refill, the conditions
 framework and then the wound system, and defeat-without-death built by

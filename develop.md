@@ -106,18 +106,6 @@ a pointer: what the file is, how it's run, where its docs are.
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
   stay settled. Append an entry after every major design session.
-- `attrition.md` — **the attrition rework's implementation specification**
-  (2026-07-26, the quest-length design session; NOT YET BUILT). The build
-  contract for four slices: quest shape + the pay rebase + the streak/short-
-  rest deletions, quest clocks + banded lazy refill, the conditions framework
-  + the wound system, and defeat-without-death. It carries the settled
-  decisions (HP stays the scalar; wounds are named located records on top;
-  foes keep the scalar; wound penalties apply from the NEXT fight except
-  maimings; the setback is a maiming, never a stat point), the per-slice file
-  and constant contracts, acceptance criteria, the park list, and the
-  session plan. **A build document, not a rules document** — `rules.md` must
-  not be taught any of it until the slice that implements it lands. Read
-  `develop.md` first, then only the one slice being built.
 - `placegen.md` — **the implemented place-generation MVP specification**
   (2026-07-23; content specification and implementation completed
   2026-07-25): the
@@ -901,7 +889,7 @@ summary — refresh it whenever a new entry lands there.**
   until the dark path has actually been played.
 
 - **The attrition rework will rebaseline everything (2026-07-26, spec in
-  `attrition.md`; nothing built yet).** Every number in this section is
+  plan.md's NEXT BUILD section; nothing built yet).** Every number here is
   measured against 3.74-encounter quests, a per-site pay ladder, the XP
   streak, and the short rest — all four of which the rework removes or
   replaces. Treat the summary above as the PRE-rework baseline and expect a
@@ -1013,7 +1001,8 @@ face and a grudge), then conquest ticking. The old magic-phase remainder
 important — named weapon instances) still stands behind that, along with
 the career sim's finding that the 14-20 band lacks its player power until
 masterwork/magic-item content lands. **The next build is the attrition
-rework (2026-07-26, spec in `attrition.md`)** — quests shrink to 1-3
+rework (2026-07-26; the full spec is plan.md's NEXT BUILD section)** —
+quests shrink to 1-3
 encounters, pay moves from the site to the quest, the XP streak and the
 short rest are deleted, quests get clocks over a lazily refilled banded
 board, damage starts persisting as named located wounds over a general

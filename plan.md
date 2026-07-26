@@ -239,53 +239,485 @@ grim); the **DEX potion** (rank 4/+1 under the standing +DEX warning).
 
 ## NEXT BUILD — the attrition rework (2026-07-26)
 
-**Full specification: `attrition.md`.** Four slices, one build session each,
-in order. The design spine, settled in the 2026-07-26 quest-length session:
-*do not make rest expensive, make rest incomplete* — gate recovery on rate
-and access, never on price, because price is the only thing that inflates
-(quest gold runs ~4 g/day at level 1 and ~75 g/day at level 20 while HP
-pools barely double).
+The full build contract for the four slices settled in the 2026-07-26
+quest-length design session. It lives here, in the roadmap, and propagates
+outward as each slice ships: mechanics to `rules.md`, play protocol to
+`dm.md`, dev map and balance numbers to `develop.md`, measured runs to
+`benchlog.md`. **Delete each slice from this section when it lands** — that
+is the rule for this file and it is what keeps the spec from rotting.
 
-1. **Quest shape + the pay rebase.** Encounters per quest drop from a
-   measured mean of 3.74 (47% of quests are 4+, tail to 9) to **1 by
-   default, 2 for a middling job, 3 at most**. Site count becomes a
-   template-declared **place** count — a job spans two sites only when the
-   fiction moves between two places, never for difficulty. Pay moves from
-   the site to the QUEST, scaled sub-linearly by encounter count, refitted
-   so the career still takes ~38 quests. **The XP streak and the short rest
-   are deleted** (the streak's press-on-vs-camp job transfers to the wound
-   track in slice 3). Carries three small fixes: camp rolls its visitor
-   BEFORE the night's healing, travel encounters fire on the road instead of
-   at the destination gates with the wrong land's pool, and the satisfaction
-   ratchet gets a tavern cooldown.
-2. **Quest clocks + banded lazy refill.** 3-7 day windows, pay banded by
-   quick / on time / late, expiry with a `failure_epilogue`. This is what
-   makes days cost something without a gold price: healing takes days, and
-   days cost you the job. **It pulls the banded quest inventory below
-   forward as a hard dependency** — once quests expire, worldgen's up-front
-   coverage assert is meaningless.
-3. **The conditions framework, then the wound system.** Two sessions. (3a)
-   A general `Condition` layer — bleed, poison, burn — ticking at end of
-   round, bounded stacking, never able to kill outright; first customers the
-   spider row's venom and the pyromancer's fire. (3b) Named, located wound
-   records on top of HP: HP stays the scalar and becomes the blood-and-shock
-   pool, wounds lower the ceiling a rest can refill to, penalties apply from
-   the NEXT fight (maimings immediately), a crippling blow to a vital kills
-   while the same blow to a limb maims, and treatment runs a rate-and-access
-   ladder — stabilize, a settlement bed, a tiered healer service, tiered
-   potions, magic for permanents. Wounds drain companion satisfaction, so
-   "the party walks if you are laid up for weeks" falls out of the existing
-   `wants_to_leave` machinery.
-4. **Defeat without death.** Generalize `apply_mercy` from posse losses to
-   any defeat, give `FoeSpec` a **ferocity** content field (bandits take
-   what they want and go; undead never break off), one left-for-dead per
-   character level, and make the permanent setback a **maiming** — curable
-   later by magic or a prosthetic — never a stat point.
+### Why: the problem and the spine
 
-Its park list lives in `attrition.md` §7 (damage types, magic bypassing
-protections, armour-on-wounds, foe wound records, prosthetics, disease,
-removing HP from the model, a true en-route travel position, the
-road-encounter rate trim, the wilds STA fraction).
+The generator centres quests on **3.74 encounters** — sites roll 1/2/3 at
+45/40/15, then rooms roll 1/2/3 at 20/40/40 *per site*, so 47% of quests are
+four fights or more and the tail reaches nine. The target is **1 encounter by
+default, 2 for a middling job, 3 at most**, with sites used only when the
+fiction genuinely moves to a different place, never as the difficulty dial.
+
+Cutting encounters exposes the real problem underneath. Attrition currently
+lives *inside* a quest — press on through four rooms or camp and lose the XP
+streak. With one fight per quest there is nothing left to attrit: the party
+wins, camps to full (`camp --heal` runs up to fourteen free nights, and
+`dm.md` names "camp until whole" as the played default), and HP never
+mattered. Every obvious fix is a gold price, and gold is the one quantity
+that inflates: quest gold is `15 x L` per site over roughly four days, so
+income runs about **4 g/day at level 1 and 75 g/day at level 20** while HP
+pools barely double (12-20 base, +10 buyable). Flat prices are brutal at the
+front door and rounding error at the back; scaled prices are a curve to
+re-tune forever, and a bed is a bed.
+
+> **The spine: do not make rest expensive. Make rest incomplete.**
+> Gate recovery on **rate and access**, never on price. Time and geography do
+> not inflate; a cap on what a night can restore is worth exactly as much at
+> level 20 as at level 1.
+
+Hence four slices: cut the encounters, make days cost something (quest
+clocks), make damage persist past a night (wounds), and make defeat
+survivable enough to carry that weight (mercy).
+
+### Settled decisions (do not reopen without a design session)
+
+- **HP stays the scalar.** Wounds are named located records layered *on top*
+  of it, not a replacement. Removing the scalar is a rewrite: it is
+  load-bearing in the bestiary's 25 bench-fitted `level`/`ref_pack`
+  annotations, the threat math (`THREAT_BASE ** level / ref_pack`), the
+  spiral (`Entity.wound_penalty`), the pause layer (`PAUSE_HP_FRACTION`,
+  `standing_order`, `fight_winding_down`, `sim_pause_policy`), and all five
+  bench harnesses. Removing the *displayed number* is a formatting pass, and
+  it buys the whole felt effect.
+- **Max HP is the constitution stat.** No new stat.
+- **Injury is ONE system with two time constants** — see "One injury system"
+  under slice 3b. *(This supersedes an earlier call in the same session that
+  wound penalties should wait until the next fight; the designer pushed back
+  and was right. There is no in-fight/between-fights seam.)*
+- **Wounds are recorded for the played party only.** Foes keep the scalar:
+  they do not persist between fights, so records buy nothing and would cost
+  the entire bestiary calibration. Foe wound *narration* is free.
+- **Conditions are built as a general system, not a bleed special case.** It
+  has been the named blocker behind varied enemies, venom, and varied magic
+  for three sessions; build it once, properly.
+- **Defeat's permanent setback is a maiming, not a stat point.** `rules.md`
+  fixes STR and DEX as immovable, and an unrecoverable stat point in a 1-20
+  ladder is a death spiral in disguise. A maiming is the same mechanical hit,
+  lives inside the wound system, narrates better, and is **curable** by
+  high-tier magic or a prosthetic — a story hook and a gold sink instead of a
+  punishment.
+- **Encounter count stays a weighted roll for now**; site count becomes a
+  template-declared place count. Letting narrative content decide a job's
+  length is its own queued pass (below).
+
+Rejected in session, with reasons, so they stay rejected: **scaling tavern
+prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
+(same inflation, and it taxes a resource with no other pressure on it);
+**changing potion prices** (potions are the overextension warning light, and
+they gain value for free once camping stops substituting for them);
+**retribution or patrol attacks as healing pressure** (re-adds the
+contentless combat this whole rework removes).
+
+### Slice 1 — quest shape, the pay rebase, three small fixes
+
+**Quest shape (`quests.py`).** Templates in `TEMPLATES`, `EPIC_TEMPLATES`,
+and `karma.py`'s DARK set gain **`places: int`** (default 1), set to 2 only
+where the fiction genuinely moves — `("the high pasture", "the den in the
+hills")` is two places, `("the village graveyard", "the crypt below")` is
+one. `build_quest` replaces its site roll with
+`n_places = min(tpl.get("places", 1), len(tpl["sites"]))` (the caper branch
+still forces `len(tpl["sites"])`), and adds a quest-level encounter roll
+`QUEST_ENCOUNTERS = ((1, 2, 3), (55, 30, 15))` floored at `n_places` — mean
+1.6, hard max 3. Encounters distribute front-light across places, so a
+3-encounter two-place job is 1 then 2 and the escalation ends at the
+destination. **`ROOM_SHARES` re-keys to the quest's encounter count**, values
+unchanged because they are already calibrated: `1: (1.25,)`,
+`2: (0.85, 1.10)`, `3: (0.55, 0.70, 0.85)`, assigned in quest order rather
+than restarting per place. **Drop the per-site level decrement** — one quest,
+one level; the rising shares already escalate, and the board stops showing a
+quest whose sites disagree about their own level. `_reusable_site`'s room
+gate must match the encounters allotted to that place; `forge_quest` takes
+`(places, encounters)`; the quest dict keeps `site_count` and replaces
+`room_count` with `encounters`.
+
+**The pay rebase (`rpg.py`).** Pay is per site today, so cutting to ~1.15
+sites/quest without touching it drops quest pay ~40% and pushes the career
+from ~38 quests to ~60 — fewer fights per quest but *more quests*, the wrong
+direction. Pay moves to the **quest**, scaled sub-linearly by encounter count
+because the fixed overhead (the trip, the giver, the turn-in) is per quest:
+
+```
+QUEST_XP_PER_LEVEL   = 60      # starting estimate; fit by bench_quests
+QUEST_GOLD_PER_LEVEL = 18      # starting estimate; fit by bench_quests
+ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
+ENCOUNTER_XP_SHARE   = 0.40    # paid as encounters fall; 0.60 on turn-in
+
+quest_xp_total(L, enc)     = QUEST_XP_PER_LEVEL * (L + 1) * ENCOUNTER_MULT[enc]
+quest_encounter_xp(L, enc) = quest_xp_total(...) * ENCOUNTER_XP_SHARE / enc   # flat
+quest_clear_xp(L, enc)     = quest_xp_total(...) - enc * quest_encounter_xp(...)
+quest_gold(L, enc)         = QUEST_GOLD_PER_LEVEL * L * ENCOUNTER_MULT[enc]
+```
+
+The `site_*` family **stays** for `sites.py`'s two hand-built anchors — they
+are dev/test calibration fixtures that `tune.py`, `bench_training.py`, and
+`run_site` are fitted to, and they are not part of a played campaign. Only
+the streak argument drops. Two deliberate ladders: the anchors are the
+fixtures, the quest formulas are the game. Comment them so nobody "unifies"
+them later.
+
+**Deletions.** *The XP streak* — `STREAK_STEP`, `streak_multiplier`, the
+streak argument on `site_encounter_xp`, `session.reset_streak`, the `streak`
+save key, the streak line in `tally_lines`, the camp/travel streak notices.
+Its job (make pressing on beat camping) transfers to the wound track, where
+camping restores stamina but never HP. *The short rest* —
+`SHORT_RESTS_PER_DAY`, `short_rest`, `Clock.short_rests_used` /
+`short_rests_left`, `STA_RECOVERY_BETWEEN_ROOMS`,
+`HP_RECOVERY_BETWEEN_ROOMS`, `POWER_RECOVERY_BETWEEN_ROOMS`, the slot reset
+in `long_rest`, the calls in `sites.run_site` and the benches, and session's
+`rest` subcommand. The day's shape becomes one thing: the night.
+
+**Three small fixes that belong here.**
+
+1. **Camp rolls the visitor BEFORE the night's recovery.** `cmd_camp` runs
+   `_long_rest` -> storyteller -> brew -> `night_upkeep` and only then
+   `wild_event`, so every night's healing is banked before the fight is
+   rolled. Invert it: roll first; if a fight fires, the night is spent on it
+   and `cmd_camp` returns without the recovery.
+2. **Travel encounters fire on the road, not at the destination gates.**
+   `cmd_travel` rolls *after* the position is updated, the arrival printed,
+   departures processed and war news posted — so a road fight is narrated at
+   the destination and draws from the **destination** land's pool. Move the
+   roll ahead of the arrival and read the **origin** land's pool. v1
+   behaviour on a fight: the trip is interrupted, the days are spent, the
+   party stays at the origin, the player re-issues `travel`. The *rates* are
+   correct and were measured (below) — do not "fix" them without a decision.
+3. **Cap the satisfaction ratchet.** Gains (+1 quest clear, +1 tavern, +1/+2
+   downtime) beat losses (-1 fled, -1 bloodied, -2 Down, -2 death witness) on
+   a normal cycle, so morale climbs to 10 and stays — and this slice makes it
+   worse by cutting fights and adding town nights. Add
+   `SAT_TAVERN_COOLDOWN_DAYS` (3); the injury-side drain lands in slice 3.
+
+**Acceptance.** Encounters per quest: mean 1.55-1.70, max 3, no tail.
+`bench_quests --part career`: quests to cap within ~10% of 38, median death
+level no worse than 7 (currently 8) — fit the two pay constants to hit it.
+Re-measure and benchlog `tune.py`, `bench_training.py`, `bench_party.py`;
+expect the hideout/barrow numbers to move, since removing the short rest
+makes `run_site` strictly harsher. That is a rebaseline, not a regression.
+`bench_weapons.py` / `bench_ranged.py` unchanged to the cell (controls).
+`test_places.py` quest-routing contracts still pass.
+
+### Slice 2 — quest clocks and the banded refill
+
+The piece that makes days cost something without a gold price: healing takes
+days, and days cost you the job.
+
+**Clocks.** `QUEST_WINDOW_DAYS = (3, 7)` rolled per quest at posting; the
+quest dict gains `posted_day` and `deadline_day`. Outcome bands on turn-in:
+**quick** (done within the first third of the window) x1.15, **on time** (by
+`deadline_day`) x1.00, **late** (within a +3 day grace) x0.60 with a late
+epilogue, **expired** (past the grace, or never taken) removed with a failure
+epilogue. Templates gain **`failure_epilogue`** beside `epilogue` — "the
+wolves moved on; two more shepherds are dead", `writing.md` register. Untaken
+quests expire off the board at `deadline_day` and surface their failure
+epilogue as a day-stamped rumour next time the party is in that settlement. A
+taken quest that expires mid-run closes as failed: encounter pay already
+earned stands, the turn-in lump does not. `session.expire_quests(state)` runs
+at every day advance (`_long_rest`, travel, camp) and on `board`; `board`
+shows days left per quest.
+
+**The hard dependency.** Worldgen posts the whole board up front against an
+asserted XP-coverage target (`WORLD_XP_MARGIN` 1.35, ~26k XP, `xp_to_cap`).
+Once quests expire that assert is meaningless and the world can run dry, so
+this slice must also land the **banded quest inventory** queued below: each
+settlement keeps a few live jobs per level band, rolled lazily per
+settlement-day and pruned as they expire or complete, with bands from
+`SETTLEMENT_KINDS` (capital 5 slots / 1-20, city 4 / 1-16, town 4 / 1-14,
+village 2 / 1-8). `karma.roll_dark_quest` is the working precedent — lazily
+rolled, never seen by worldgen, bench-invisible. Copy its shape and delete
+the up-front top-up and its assert.
+
+**Acceptance.** A world runs a full 1-20 career without exhausting posted
+work; quests visibly expire and refill across a simulated 150-day career;
+days to cap within ~15% of the current ~158.
+
+### Slice 3a — the conditions framework
+
+Built as a general system because it has been the standing blocker behind
+varied enemies, venom (the spider row currently carries poison in its raw
+damage), varied magic, and burn.
+
+```
+@dataclass
+class Condition:
+    kind: str        # "bleed" | "poison" | "burn" | ...
+    power: int       # magnitude per tick
+    rounds: int|None # None = persists past the fight until treated
+    source: str      # display/attribution
+```
+
+`Entity.conditions: list[Condition]`. **Tick point:** end of round in
+`group_combat`, beside `Entity.regen` — order regen -> conditions -> Winded /
+Spent crossings, so a tick can trip a pause the same round it lands.
+**Stacking is bounded:** a second condition of the same kind refreshes
+`rounds` and takes `max(power)`, never adds — unbounded stacking is how
+condition systems become the only strategy. **A tick can never kill
+outright:** taking an entity to 0 puts it **Down**, no crippling save
+involved; bleeding out is treatable, and a silent scalar killer would undo
+`rules.md`'s "lethality is real, then padded" intent. **Log:** one collapsed
+line per round in the player log, emitted `quiet=` so the quiet-round
+collapse still works, full arithmetic to the detailed log — the 40-column
+display must not grow a line per condition per entity per round.
+**Clearing:** `_clear_fight_states` clears every `rounds`-limited condition;
+`rounds=None` survives to the between-fights layer. **Stabilize:** a free
+automatic pass at fight end clears combat bleed on survivors, while
+wound-driven bleed and poison persist until treated — the designer's "after
+combat, stabilized, the wounds and penalties remain, blood pool remains
+lower, but the char wouldn't be actively dying". New knobs in their own
+block: `BLEED_POWER`, `POISON_*`, `BURN_*`, `CONDITION_STACK_RULE`. First
+customers: the spider row's venom and the pyromancer's fire.
+
+**Acceptance.** `bench_bestiary.py` re-run: the spider and pyromancer rows
+may need their `level` annotations re-fit; every other row unchanged to the
+cell.
+
+### Slice 3b — the wound system
+
+**One injury system, two time constants.** Today there is a single channel:
+HP. `Entity.wound_penalty` is a live property, `hp_lost // pain` with
+`hp_lost = max_hp - hp`, read on every `pressure()` roll and so applied to
+attack and defense alike. Because HP carries across fights, **that penalty
+already carries across fights too** — it is not an in-fight-only effect. It
+just heals away free over about seven nights of camping.
+
+The rework keeps one system and splits it by **how fast it fades**, not by
+where it applies:
+
+- **HP is the fast channel.** Mechanically unchanged: blood and shock,
+  `wound_penalty` still derived from it, refills with rest up to the ceiling.
+- **Wounds are the slow channel.** Named located records that lower the
+  ceiling and carry specific stat penalties.
+
+**Both channels are live in every fight, including the one where the wound is
+taken.** There is no seam and no `fresh` flag.
+
+What keeps that from double-charging a single blow is a **budget shift, not a
+delay**: move part of the roll-penalty budget out of the anonymous HP channel
+and into the named wound channel. Raise `HERO_PAIN` 2 -> 3 (a hero down 6 HP
+goes from -3 to -2 on all rolls) and let the located wound's -1 pay the
+difference. Total in-fight pressure at a given injury level stays near the
+bench baseline; what changes is that part of it is now **specific, located,
+and does not heal overnight**. That is the entire point of the system.
+
+State the asymmetry on purpose: heroes record wounds, foes do not, so a
+hero's penalty budget moves from fast-healing HP to slow-healing wounds while
+a foe's stays entirely fast. Over a career that is a net nerf to the party —
+which IS the attrition being added. If it proves too much, the dial is the
+treatment ladder's **rate** (bed nights per severity, healer tier caps), not
+the penalty magnitudes.
+
+```
+@dataclass
+class Wound:
+    location: str    # "head"|"eye"|"chest"|"gut"|"arm"|"hand"|"leg"|"flesh"
+    name: str        # authored display string, writing.md register
+    severity: int    # 1-3
+    penalty: dict    # stat -> int
+    bleed: int       # 0 = none
+    permanent: bool  # a maiming; only high-tier magic clears it
+    treated: bool
+```
+
+`Entity.wounds: list[Wound]`, `Entity.records_wounds: bool` (played party
+only). `wound_load` = sum of severities.
+**`hp_ceiling` = `max(max_hp // 2, max_hp - wound_load)`** — wounds can never
+take a character below half their pool. That floor is the anti-death-spiral
+guarantee and it is not optional. `long_rest` heals toward `hp_ceiling`,
+never past it; `camp --heal` becomes "camp until as whole as the wilds can
+make you".
+
+**Accrual**, in `_attack` where the tier is already computed (`TIER_HP`:
+graze 1 / wound 2 / grievous 4 / crippling blow 6):
+
+| tier | result |
+|------|--------|
+| graze | nothing recorded — blood loss only; grazes are never located |
+| wound | severity 1, located |
+| grievous | severity 2, located |
+| crippling, **vital** (head/chest/gut) | the lethal one — existing death/save path unchanged |
+| crippling, **limb/extremity** | **MAIMS**: severity 3, `permanent=True`, Down instead of dead |
+| going Down by any route | +1 severity, unlocated ("badly beaten") |
+
+Grazes staying unlocated is what keeps the reworked 40-column log readable,
+and it matches the designer's own split: cuts and grazes are blood loss, not
+disabling wounds.
+
+**Location table:** weighted — `flesh`/`arm`/`hand`/`leg` common,
+`chest`/`gut` uncommon, `head`/`eye` rare. Tune so vitals land ~15% of
+located hits. That fraction sets how often "crippling" reads as death rather
+than maiming, so it is a **primary lethality lever** — bench it.
+
+**Penalties** (`WOUND_PENALTIES`): arm -> STR -1 (and DEX -1 at severity 3);
+hand -> DEX -1; leg -> DEX -1; chest -> max STA -2; gut -> STR -1 + bleed;
+head -> DEX -1 and MIND -1; eye -> DEX -1.
+
+**Naming:** `WOUND_NAMES[location][severity]` — "a deep cut across the left
+forearm", "a gut wound, still seeping". `writing.md` register. This table is
+the narrative payoff of the whole system — it is what lets the agent refer
+back to an injury sessions later — so it gets a real content pass, not
+placeholders.
+
+**Display:** `tally_lines`, `cmd_status` and `ui/party.txt` carry the wound
+list; in play HP shows as a **state word** (`Bloodied`, `Failing`) with the
+digits available in `status` and `ui/fight-detailed.txt`. That is the
+designer's "no HP as a number" at display level, cheaply reversible.
+
+**Treatment ladder** — the anti-inflation spine. The gate is rate and access;
+the fee is a convenience and may stay flat forever.
+
+| source | clears | gate |
+|--------|--------|------|
+| field stabilize | bleed | free, automatic at fight end |
+| a bed in a settlement | 1 severity per night | **time** |
+| healer service | several severity, a day + a modest fee | **settlement tier** |
+| basic potion | HP / blood loss | gold (price unchanged) |
+| medium potion / salve | one non-permanent wound | alchemy rank, stock-capped |
+| epic potion / high healing magic | permanents and maimings | scarce, authored |
+
+New `healer` service kind in `places._service_kind` and the required-service
+sets in `_attach_services`; tier caps village 2 severity / town 4 / city 6 /
+capital all. The **cap** is the gate, which is why the fee never needs to
+scale. Potion tiers slot onto `STOCKED_POTION_KINDS`, `POTION_PRICE`, and the
+alchemy recipe/rank ladder (`brew_stock_cap` = rank + 2 is the pattern to
+copy). The healing spell's top rank clears permanents — the level-point
+sink's permanent career job.
+
+**Satisfaction** (the designer's "your party abandons you if it is more than
+x weeks"): `SAT_WOUNDED_DAY`, a per-day drain for each companion carrying an
+untreated wound, plus a `SAT_MAIMED` lump. With `SAT_TAVERN_COOLDOWN_DAYS`
+from slice 1, a long convalescence genuinely costs morale, and the existing
+`wants_to_leave` / `leave_threshold` carry it from there. No new departure
+machinery.
+
+**Acceptance.** Full rebaseline: `tune.py`, `bench_training.py`,
+`bench_bestiary.py`, `bench_quests.py` (all three parts),
+`bench_abilities.py`, `bench_party.py`, with `bench_weapons.py` /
+`bench_ranged.py` as controls. The career curve will move; the target is that
+the **beatability curve stays intact** (the kit-shrink precedent in
+`develop.md`) — reach-L8 and median death level must not collapse. The three
+dials, in order: `HERO_PAIN`, the vital-location fraction, and the treatment
+rate.
+
+### Slice 4 — defeat without death
+
+Small, and it is what makes slice 3b's lethality survivable. Most of it
+already exists. **`session.apply_mercy`** already implements exactly this for
+posse losses ("left for dead / the lesson", in place of `report_game_over`) —
+generalize it from the posse path to **any** defeat. **`FoeSpec.ferocity`**
+(0-2) is a content field, not a stat: 0 = takes what it wants and leaves
+(bandits, raiders); 1 = fights while it is winning and breaks off when it is
+not (most beasts); 2 = never breaks off (undead, demons, the conquest's
+waves). `pursues` is its existing bool ancestor. Zero new math, and it makes
+the bestiary say something. On a party defeat the roster's ferocity decides
+wipe vs **left for dead**. **One mercy per character level**, non-cumulative
+(`Entity.mercy_level`). Consequences: humanoid rosters take the purse and
+quality weapons; monster rosters take nothing but the party wakes carrying a
+**permanent maiming** on a random member — never a stat point. Ferocity-0/1
+rosters may also break off when badly beaten, reusing `attempt_retreat`'s
+chase machinery in reverse.
+
+**Acceptance.** Wipe rate in `bench_quests --part career` converts largely
+into mercy events; a career can absorb a defeat and continue; median death
+level rises relative to slice 3b. That is the point.
+
+### Parked out of the rework
+
+Additive to the schemas above — none of them requires redesigning anything.
+
+- **Damage types and weapon profiles** (cut / pierce / blunt / burn / poison
+  / magic). `Weapon` already carries `move_tags` and severity flats, so a
+  `damage_type` field is cheap once conditions exist.
+- **Magic energy bypassing protections.** Waits on damage types, and on
+  armour existing at all.
+- **Armour interacting with wounds** — a tier shift would now also decide
+  whether a crippling blow kills, maims, or merely wounds. Decide after 3b.
+- **Foe wound records.** Rejected for v1; revisit only if persistent named
+  enemies (the nemesis record) ever need scars.
+- **Prosthetics** — steampunk and magical limbs and eyes, including ones that
+  push a stat **above** the natural cap. Note the synergy: the queued *stat
+  transcendence + magic items* item is the membrane they need, and
+  prosthetics are its ideal first authored customer — a magic item with a
+  scar attached. Design `Wound` so a `prosthetic` field costs nothing later.
+- **Disease** as a third condition family beside poison and bleed.
+- **Infection / wound complications over time** — an untreated wound
+  worsening rather than merely persisting; natural once disease exists.
+- **Removing HP from the MODEL.** v1 removes it from the display only.
+- **A true en-route travel position.** Slice 1 fixes the two real problems
+  but still bounces an interrupted trip back to the origin. Proper mid-road
+  positioning wants the local navigation layer and `ui/minimap.txt`.
+- **Road-encounter rate trim.** `TRAVEL_ENCOUNTER_CHANCE` 0.15/day,
+  `EXPLORE_ENCOUNTER_CHANCE` 0.30, `CAMP_ENCOUNTER_CHANCE` 0.10 were sized
+  against 3.74-fight quests; after slice 1 the road is a larger *share* of
+  all combat and slice 2 adds town trips. Re-judge from played evidence; the
+  lever is a trim to ~0.10 / ~0.20, not a redesign.
+- **Wilds camping restoring less than full STA** (`CAMP_STA_FRACTION` ~0.75,
+  a bed 1.0). Held at 1.0; pull it only if multi-encounter quests get chunked
+  into one-fight days.
+
+### Build order, sessions, and doc propagation
+
+One build session per slice — deliberately. `rpg.py` is 332 KB and
+`session.py` 206 KB, and slices 1 and 3b each end in a bench rebaseline whose
+numbers need reading and judging **before** the next slice lands on top of
+them. The precedent is the levelling framework's sessions A/B/C.
+
+| # | slice | ends with |
+|---|-------|-----------|
+| 1 | quest shape + pay rebase + the two deletions + three small fixes | fit the two pay constants; rebaseline `tune` / `bench_training` / `bench_party` / `bench_quests` |
+| 2 | quest clocks + banded lazy refill | career sim proves the board never runs dry |
+| 3a | the conditions framework | `bench_bestiary` re-fit for spider/pyromancer only |
+| 3b | the wound system | **full** rebaseline; the beatability curve must survive |
+| 4 | defeat without death | mercy converts wipes; median death level rises |
+
+Order is forced only where it must be: 2 needs 1's quest dict, 3b needs 3a.
+Slice 4 can slot in any time after 3b.
+
+**Each session closes by propagating outward and deleting its slice from
+here.** What each one owes:
+
+- **Slice 1** — `rules.md`: Quest System ("The shape", the threat-math note),
+  Progression & Economy (XP earning, the momentum-streak paragraph goes, the
+  gold section), Survival & Resources (the short-rest bullet in "The day /
+  run economy", "Resources at a glance", "Implementation notes"). `dm.md`:
+  the `rest` command, the streak advice. `develop.md`: dev map + balance
+  summary. `benchlog.md`: the rebaseline.
+- **Slice 2** — `rules.md`: Quest System (clocks, expiry, worldgen
+  reframed). `dm.md`: board reading and deadlines. Delete the banded
+  quest inventory section below.
+- **Slice 3a** — a new `rules.md` **Conditions** add-on; `develop.md` dev map.
+- **Slice 3b** — a new `rules.md` **Wounds & Recovery** add-on, plus rewrites
+  of Survival's "Resources at a glance", "The two-buffer split" and "The day
+  / run economy". `dm.md`'s "camp until whole" default becomes wrong and must
+  be rewritten. `writing.md` gains the wound-naming register note.
+  `develop.md`: dev map, difficulty levers, full balance rebaseline.
+- **Slice 4** — `rules.md` near "Down, not dead" and "Fate's bargain";
+  `dm.md`: what to do when the party loses.
+
+### Measurements taken 2026-07-26 (do not re-derive)
+
+- **Encounters per quest today:** mean **3.74**; 1:9.0% 2:19.7% 3:24.4%
+  4:13.6% 5:14.9% 6:10.2% 7:4.3% 8:2.9% 9:0.9% — **47% are 4+**.
+- **Travel encounters work**; they are rare, and the sighting valve is widest
+  exactly where a new campaign is played. Real `notice_contest`, real wild
+  pools, 20k rolls per party level:
+
+  | party lvl | sighting (no fight) | ambush | met square | fight given a roll | per 1-day trip | per 2-day trip |
+  |---|---|---|---|---|---|---|
+  | 1 | 37.7% | 6.2% | 56.1% | 62.3% | **9.4%** | 17.3% |
+  | 3 | 24.8% | 4.3% | 70.9% | 75.2% | 11.3% | 20.9% |
+  | 5 | 13.1% | 11.3% | 75.5% | 86.9% | 13.0% | 24.1% |
+  | 8 | 8.0% | 6.3% | 85.6% | 92.0% | 13.8% | 25.5% |
+  | 12 | 4.7% | 13.9% | 81.3% | 95.3% | 14.3% | 26.4% |
+
+  One road fight per ~11 one-day trips at level 1.
+- **Total XP to level 20** is 19,000 quoted (`sum(100 * L)`, L = 1..19);
+  current mean quest pay is about `85 * L + 42`, giving the ~38 quests the
+  career sim reports.
 
 ---
 
