@@ -891,14 +891,16 @@ question; message 2 = `resume ...` (or `retreat`) to conclusion.
 per-hero interrupt: with 3–4 members each carrying two triggers, a long
 fight stopped up to 2N times, each stop a full chat round-trip. The
 designer's call: **an encounter pauses at most ONCE** — at the fight's
-**first wounds crossing** (any member's), because "someone is being cut
-apart, do we retreat?" is the one question that genuinely belongs to the
-player. Every other crossing — every stamina crossing, and wounds crossings
-after the pause is spent — is answered by the party's **standing orders**
-(below) without stopping the fight. The engine still detects every crossing
-per hero exactly as before (`standing_orders` is a session-side dispatch on
-top; the batch sims run the old every-crossing pause with their policy, so
-the benches answer the same questions they always did).
+**first wounds crossing** (any member's), or at Fate's intervention if that
+gets there first. The wounds question is "someone is being cut apart, do we
+retreat?"; Fate's special version asks only fight on / retreat. Whichever
+fires spends the same pause budget. Every other crossing — every stamina
+crossing, and wounds crossings after the pause is spent — is answered by the
+party's **standing orders** (below) without stopping the fight. The engine
+still detects every crossing per hero exactly as before (`standing_orders`
+is a session-side dispatch on top; the batch sims run the old every-crossing
+pause with their policy, so the benches answer the same questions they
+always did).
 
 **Triggers** (party side only; each fires at most **once per hero per
 fight**, so one hero's crisis never uses up the other's warning; checked at
@@ -1017,9 +1019,10 @@ one return trip per fled room — `sim_pause_policy` / `sim_fight`), so
 - **No mid-fight revival.** Recovery is a rest event: between fights the Down get
   back on their feet, but only *minimally* (a sliver of HP) — the wound itself
   heals slowly, over days of long rest, not instantly for the next encounter.
-- **Death happens only when the saves run dry** — a crippling blow lands with
-  no Power for Bulwark/Heal and no buffer left. Loss is rare, earned, and
-  specific to whoever was over-extended.
+- **A killing blow can still kill**, and a relentless roster can still finish
+  a defeated party. Slice 4's level-limited mercy below is the campaign
+  safety valve: defeat normally leaves damage, loss and a maiming instead of
+  demanding a new character.
 
 ---
 
@@ -1029,14 +1032,23 @@ Session play marks the PC (`party[0]`) as the **protagonist**, and one rule
 guards them: **a blow that would kill the PC is commuted to a Down while at
 least one companion still draws breath.** The log announces the reprieve and
 its terms (*"Fate has spared them; its price comes due if this fight is
-won"*). Then:
+won"*).
+
+If the encounter's one pause is still unspent, the bargain creates its
+**special fight-on/retreat interrupt** at the end of that round. It offers no
+potion or conversion actions. It **consumes the ordinary pause**; every later
+crossing runs on standing orders. If the wounds pause already happened, Fate
+does not create a second stop. Then:
 
 - **If the party goes on to WIN that fight**, the last foe's dying strength
   lands one final blow — and it kills **one random companion** (Down or
-  standing; fate is not particular). The trade is explicit: a companion's
-  life for the player's.
-- **If the party loses anyway** (everyone Down/dead), it is still a wipe and
-  still GAME OVER — fate spares no party that cannot win.
+  standing; fate is not particular). Fate then stands the PC at **exactly
+  1 HP**. Every wound and all other damage remain. The trade is literal: a
+  companion dies and the player character lives. In a duo, the result is a
+  badly wounded solo PC, **not** a fake reprieve followed by a wipe.
+- **If the party loses anyway**, the debt is not collected. That genuine loss
+  may receive defeat mercy under the roster's ferocity and the PC's
+  once-per-level allowance below.
 - **If the party retreats instead**, a clean escape **waives the debt**: no
   one died, nothing is owed — but the fight was given up, not won. (This is
   a real post-spare decision: press on and pay a companion, or flee with the
@@ -1044,11 +1056,60 @@ won"*). Then:
 
 The spare only intercepts actual deaths (an unsaved crippling blow at 0 HP);
 ordinary Downs are unchanged. A solo PC has nothing to trade and dies like
-anyone. The sims never set the flag, so tuning numbers are untouched — this
-is a session-play rule for why a *fragile PC build is viable at all*: the
-party is the PC's real HP bar, spent one member at a time. (It also
-implements the spirit of the parked "party members as lives" idea, without
-the level loss.)
+anyone. A **Fate-paid victory is a victory** and cannot then spend Slice 4's
+defeat mercy, even if Fate's victim was the party's last standing companion.
+The sims never set the protagonist flag, so their tuning numbers are
+untouched — this is a session-play rule for why a *fragile PC build is viable
+at all*: the party is the PC's real HP bar, spent one member at a time.
+
+---
+
+## Defeat without death — ferocity and mercy (2026-07-26, slice 4)
+
+The wound system made losses heavier on purpose. Defeat therefore stops
+meaning "roll a new character" by default, without making every enemy
+merciful. Each foe carries **`ferocity` (0–2)** as a content fact, never a
+combat modifier:
+
+| ferocity | conduct |
+|---|---|
+| **0 — takes spoils** | Bandits, raiders and ordinary humanoids rob the defeated and leave. |
+| **1 — breaks** | Most beasts fight while they are winning and break when badly beaten. |
+| **2 — relentless** | Undead, demons and the conquest waves neither break nor grant ordinary roster mercy. |
+
+The roster reads at its **highest** ferocity. One relentless member makes the
+whole defeat lethal.
+
+**The allowance is one mercy per PC character level, non-cumulative.** The
+first eligible defeat at level N marks `Entity.mercy_level = N`; another loss
+at that level is real. Reaching N+1 restores one allowance, never a bank of
+unused ones.
+
+On an eligible defeat (nobody left standing, or the PC truly slain):
+
+- everyone who entered that fight wakes at **1 HP**; older dead companions
+  stay dead;
+- wounds and every other lasting injury remain;
+- a **ferocity-0 humanoid roster** takes the entire purse and every quality
+  weapon, leaving ordinary steel alone (a quality wielder wakes unarmed);
+- a **ferocity-1 monster roster** takes nothing, but one random participant
+  wakes with a **permanent maiming**;
+- a **ferocity-2 roster**, or a second defeat at the same level, remains a
+  wipe / PC death and GAME OVER.
+
+Law and hell posses are the authored exception to the roster consequence —
+LAW also clears bad karma; HELL withdraws the refused task — but they spend
+this same once-per-level allowance. Their former unlimited mercy is gone.
+
+Ferocity also speaks before defeat. Once every living foe is below half HP or
+Spent, a ferocity-0/1 roster may make **one break attempt**: the party gets
+softened parting blows, then the same one-roll STA-weighted DEX chase used by
+retreat runs in reverse. Escape means the foes yield the field alive;
+ferocity 2 never tries.
+
+Fate and mercy do not stack into two reprieves. A lost Fate-bargain fight is
+a genuine defeat and can spend mercy. A **paid** Fate victory stands the PC
+at 1 HP, so the defeat predicate is false and mercy cannot fire.
 
 ---
 
@@ -3280,18 +3341,19 @@ hell is a fully supported campaign — the mechanics below only price it.
   for `BRIBE_DAYS` (10) of no new assignments and no enforcement. An
   open assignment survives the bribe; its grace runs fresh from the
   bribe's end.
-- **Left for dead (the mercy).** The PC is never killed by heroic
-  adventurers — or by hell's enforcers. A posse fight lost (wipe, or
-  the PC down for good) fires `apply_mercy` instead of GAME OVER: the
-  PC alone survives at 1 HP; the party and the purse are forfeit.
+- **Left for dead (the mercy).** Heroic adventurers and hell's enforcers use
+  the authored LAW/HELL form of Slice 4's mercy. On the PC's first eligible
+  defeat at each character level, `apply_mercy` replaces GAME OVER: the PC
+  alone survives at 1 HP; the party and purse are forfeit. A second loss at
+  that level is real.
   Against the **law**, all bad karma clears too — the heroes think him
   dead (or he ran, in shame; everyone in hell is laughing), and the
   ledger is considered settled: heat 0, a fresh start in one shoe.
   Against **hell**, the purse is the fine, the refused assignment is
-  withdrawn, and the karma stays. Ordinary fights (roads, quests,
-  hunts) still kill exactly as before — the mercy is the posses' rule,
-  not the world's. Related doctrine (dm.md): combat the fiction says
-  isn't lethal reads 0 HP as knocked out, same numbers.
+  withdrawn, and the karma stays. Ordinary fights now use their roster's
+  ferocity and the same level allowance; relentless enemies still kill.
+  Related doctrine (dm.md): combat the fiction says isn't lethal reads
+  0 HP as knocked out, same numbers.
 
 ### The caper structure (deeds & twists)
 

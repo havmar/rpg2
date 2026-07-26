@@ -757,3 +757,53 @@ framework and then the wound system, and defeat-without-death built by
 generalizing the mercy path that the karma layer already ships. Nothing
 implemented this session by design; rules.md and dm.md stay untouched until
 each slice lands, so the ruleset never describes a game that does not exist.
+
+---
+
+## 2026-07-26 (slice 4) — Literal Fate, one pause, survivable defeat
+
+**The playtest found a false promise in Fate's bargain.** In a duo, the old
+resolution killed the only companion after victory and left the PC Down, so
+the ordinary wipe check immediately finished the spared PC. A larger party
+did not guarantee safety either: if only one companion still stood, Fate
+could kill that survivor rather than a Down companion and produce the same
+wipe. The documented post-bargain retreat choice was also unreliable because
+Fate's intervention did not create a pause of its own.
+
+**The designer's recommendation was accepted:** make the trade literal. On a
+paid victory Fate kills one companion and restores the PC to exactly 1 HP.
+Wounds and all other damage remain. A duo therefore continues as a badly
+wounded solo character. A Fate-paid victory is a victory and cannot then
+spend Slice 4's defeat mercy; a genuinely lost Fate fight still can.
+
+**The pause refinement mattered.** The first implementation direction called
+the Fate decision independent of the wounds crossing. The designer clarified
+that it must still consume the ordinary pause. The settled invariant is one
+interrupt budget per encounter: the first ordinary wounds pause suppresses a
+later Fate interrupt, and an unused pause spent by Fate suppresses every
+later ordinary one. Fate's version offers only FIGHT ON / RETREAT because
+drinking, healing, and conversion are not the bargain's question.
+
+**Slice 4 generalized the existing posse mercy rather than adding another
+resurrection system.** `FoeSpec.ferocity` is content:
+
+- 0 — humanoids take the purse and quality weapons, then leave the party at
+  1 HP;
+- 1 — most beasts take nothing, but leave one random participant permanently
+  maimed;
+- 2 — undead, demons and conquest waves are relentless: no break and no
+  mercy.
+
+The allowance is one eligible mercy per PC character level and never banks.
+The authored LAW / HELL outcomes keep their save reshaping but spend that
+same allowance. Anyone dead before the encounter remains dead. Ferocity 0-1
+foes also get one reverse-retreat attempt when every survivor is below half
+HP or Spent; this reuses the party chase contest, and escaped foes are marked
+withdrawn rather than manufactured as corpses.
+
+**Measured outcome.** Across 500 careers, 500 defeat mercies fired and 86.2%
+of careers survived at least one; median death rose from level 8 to 9. The
+relentless barrow stayed at its old numbers, while the breaking-bandit
+hideout returned to its intended clear band. Focused tests pin the original
+failure cases explicitly: a paid duo victory, a depleted three-person party,
+no post-Fate mercy, and both possible pause orderings.

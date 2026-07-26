@@ -238,14 +238,11 @@ grim); the **DEX potion** (rank 4/+1 under the standing +DEX warning).
 
 ---
 
-## NEXT BUILD — the attrition rework (2026-07-26)
+## CLOSED DESIGN — the attrition rework (2026-07-26)
 
-The full build contract for the four slices settled in the 2026-07-26
-quest-length design session. It lives here, in the roadmap, and propagates
-outward as each slice ships: mechanics to `rules.md`, play protocol to
-`dm.md`, dev map and balance numbers to `develop.md`, measured runs to
-`benchlog.md`. **Delete each slice from this section when it lands** — that
-is the rule for this file and it is what keeps the spec from rotting.
+All four slices from the 2026-07-26 quest-length design session have shipped.
+The settled constraints remain here because they govern the parked follow-ons
+below; live mechanics are in `rules.md`.
 
 ### Why: the problem and the spine
 
@@ -273,12 +270,12 @@ re-tune forever, and a bed is a bed.
 > not inflate; a cap on what a night can restore is worth exactly as much at
 > level 20 as at level 1.
 
-*(Slices 2, 3a and 3b shipped the answer: a day costs a job, what a fight
+*(Slices 2, 3a, 3b and 4 shipped the answer: a day costs a job, what a fight
 leaves on you no longer stops at the door, and the night no longer makes
 anyone whole — HP knits only to the **wound ceiling**, and the wounds
 themselves come off only through the treatment ladder. `camp --heal` now
-means "camp until as whole as the wilds can make you". What remains of the
-rework is slice 4, which makes the added lethality survivable.)*
+means "camp until as whole as the wilds can make you", while ferocity and
+one mercy per character level make that added lethality survivable.)*
 
 Hence four slices: cut the encounters, make days cost something (quest
 clocks), make damage persist past a night (wounds), and make defeat
@@ -313,7 +310,8 @@ survivable enough to carry that weight (mercy).
   lives inside the wound system, narrates better, and is **curable** by
   high-tier magic or a prosthetic — a story hook and a gold sink instead of a
   punishment. *(The maiming itself shipped in slice 3b — a crippling blow to
-  a limb that would have killed. Slice 4 is its second customer.)*
+  a limb that would have killed. Slice 4 shipped its second use: beast
+  mercy.)*
 - **Encounter count stays a weighted roll for now**; site count becomes a
   template-declared place count. Letting narrative content decide a job's
   length is its own queued pass (below). *(Shipped in slice 1.)*
@@ -325,28 +323,6 @@ prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
 they gain value for free once camping stops substituting for them);
 **retribution or patrol attacks as healing pressure** (re-adds the
 contentless combat this whole rework removes).
-
-### Slice 4 — defeat without death
-
-Small, and it is what makes slice 3b's lethality survivable. Most of it
-already exists. **`session.apply_mercy`** already implements exactly this for
-posse losses ("left for dead / the lesson", in place of `report_game_over`) —
-generalize it from the posse path to **any** defeat. **`FoeSpec.ferocity`**
-(0-2) is a content field, not a stat: 0 = takes what it wants and leaves
-(bandits, raiders); 1 = fights while it is winning and breaks off when it is
-not (most beasts); 2 = never breaks off (undead, demons, the conquest's
-waves). `pursues` is its existing bool ancestor. Zero new math, and it makes
-the bestiary say something. On a party defeat the roster's ferocity decides
-wipe vs **left for dead**. **One mercy per character level**, non-cumulative
-(`Entity.mercy_level`). Consequences: humanoid rosters take the purse and
-quality weapons; monster rosters take nothing but the party wakes carrying a
-**permanent maiming** on a random member — never a stat point. Ferocity-0/1
-rosters may also break off when badly beaten, reusing `attempt_retreat`'s
-chase machinery in reverse.
-
-**Acceptance.** Wipe rate in `bench_quests --part career` converts largely
-into mercy events; a career can absorb a defeat and continue; median death
-level rises relative to slice 3b. That is the point.
 
 ### Parked out of the rework
 
@@ -399,27 +375,6 @@ Additive to the schemas above — none of them requires redesigning anything.
 - **Wilds camping restoring less than full STA** (`CAMP_STA_FRACTION` ~0.75,
   a bed 1.0). Held at 1.0; pull it only if multi-encounter quests get chunked
   into one-fight days.
-
-### Build order, sessions, and doc propagation
-
-One build session per slice — deliberately. The precedent is the levelling
-framework's sessions A/B/C. **Slices 1, 2, 3a and 3b SHIPPED 2026-07-26**
-(benchlog has all four measurement entries; 3b's is the full rebaseline).
-
-| # | slice | ends with |
-|---|-------|-----------|
-| 4 | defeat without death | mercy converts wipes; median death level rises |
-
-Slice 4 is the last of the rework, and slice 3b is what makes it necessary:
-the wound system raised lethality on purpose and put the MAIMING in place as
-the permanent setback slice 4 needs. Read 3b's rebaseline in benchlog before
-building it.
-
-**Each session closes by propagating outward and deleting its slice from
-here.** What slice 4 owes:
-
-- **Slice 4** — `rules.md` near "Down, not dead" and "Fate's bargain";
-  `dm.md`: what to do when the party loses.
 
 ### Measurements taken 2026-07-26 (do not re-derive)
 
@@ -629,7 +584,7 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Morale & surrender** — enemies breaking, yielding, bargaining.
   *(Pivot note: posse PARLEY — bribing the Watch, demanding surrender
   — wants this; build them together.)* *(2026-07-26: the attrition
-  rework's slice 4 ships its first half — `FoeSpec.ferocity` and
+  rework's slice 4 shipped its first half — `FoeSpec.ferocity` and
   low-ferocity rosters breaking off — so what remains here is the
   party-facing side: yielding, bargaining, parley.)*
 - **Story recruitment** — "the ogre yields and joins you", DM-driven.
@@ -679,7 +634,7 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   shipped as fate's bargain; watch whether recruit renewal softens it.
   *(2026-07-26: the attrition rework's slice 4 answers the wipe half a
   different way — left-for-dead once per character level, with a maiming
-  as the price. Re-judge this entry after that ships.)*
+  as the price. Re-judge this entry from play.)*
 - **A PC-centric career sim** — if played campaigns drift from the
   bench's even-duo story. *(Pivot note: a karma-playing career variant
   — dark quests + posses in the policy — is the natural check once the

@@ -160,6 +160,13 @@ a pointer: what the file is, how it's run, where its docs are.
   (including a pre-slice save with no `wounds` key), and the 40-column fit
   of every authored wound name.
   `python -m unittest -v test_wounds.py`.
+- `test_mercy.py` — the DEFEAT / FEROCITY / FATE contract suite
+  (2026-07-26, slice 4): catalog bands and 40-column tags; humanoid spoils,
+  beast maiming, relentless wipes and the non-cumulative one-mercy-per-level
+  allowance; LAW using that same allowance; Fate-paid duo and depleted-party
+  victories; the special Fate interrupt consuming the ordinary pause in both
+  orderings; reverse foe retreat; and old/new save compatibility.
+  `python -m unittest -v test_mercy.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
@@ -205,7 +212,11 @@ a pointer: what the file is, how it's run, where its docs are.
   `_attack` and the maiming rule, the treatment ladder's `heal_wounds` /
   `healer_service` / the salve and elixir tiers, `wound_morale`, and
   **`HERO_PAIN` 2 -> 3, the budget shift** — rules.md's Wounds & Recovery
-  add-on), and the batch-sim
+  add-on), DEFEAT WITHOUT DEATH (2026-07-26, slice 4:
+  `Entity.mercy_level` / `ferocity` / `withdrew` / `fate_paid`,
+  `party_defeated`,
+  `apply_defeat_mercy`, reverse retreat through `attempt_foe_retreat`, and
+  Fate's paid-victory restoration), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -216,7 +227,8 @@ a pointer: what the file is, how it's run, where its docs are.
   set sites (`SITES`: the bandit **hideout** = the starter, level 1; the
   skeleton **barrow** = the tough site, level 3; room layouts in
   `HIDEOUT_ROOMS` / `BARROW_ROOMS`; pay derives from `Site.level` via
-  rpg.py's site formulas), and `run_site`, the one site loop the one-shot
+  rpg.py's site formulas), the Slice 4 `FoeSpec.ferocity` content bands and
+  their roster tags, and `run_site`, the one site loop the one-shot
   run and the batch sims share. **Both sites are set encounters — the DM
   never invents their rosters — and since 2026-07-13 they are DEV/TEST
   calibration content only, no longer part of a played campaign** (the
@@ -477,6 +489,7 @@ python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_conditions.py  # the conditions framework contract
 python -m unittest -v test_wounds.py  # the wound system contract
+python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 ```
 
@@ -574,16 +587,21 @@ mechanic *does* and *why* is rules.md's job.
   None = every crossing pauses, the sims' path — `session.play_orders` is
   the played dispatch: first wounds crossing pauses, everything else runs
   `rpg.standing_order`; auto crossings sharing a round with an interrupt
-  are re-armed, not silently spent). Fate's bargain (2026-07-10) lives
-  here too: the fall
+  are re-armed, not silently spent). Fate's bargain (revised 2026-07-26)
+  lives here too: the fall
   handler commutes a protagonist's death to a Down (`Entity.protagonist` /
-  `fate_debt`; session marks `party[0]`), `_settle_fate_debt` collects the
-  companion's life at victory.
+  `fate_debt`; session marks `party[0]`). If the encounter pause is unused,
+  Fate returns `Pause(kind="fate")` and spends it; an earlier ordinary pause
+  suppresses that interrupt, and a Fate pause suppresses every later ordinary
+  one. `_settle_fate_debt` collects one companion's life at victory and
+  restores the PC to exactly 1 HP without touching wounds or other damage.
 - **Retreat** — `attempt_retreat` (parting blows — softened one wound tier
   since 2026-07-10 (`_attack(soften=True)`): the door maims, never kills
   outright — + ONE group chase roll; `pursues=False` foes never chase; a
-  clean escape waives any fate debt), `refresh_foes_after_retreat`
-  (fled-room persistence).
+  clean escape waives any fate debt), `attempt_foe_retreat` (the same chase
+  contest reflected across the field for ferocity-0/1 rosters; survivors are
+  `withdrew`, not dead), and `refresh_foes_after_retreat` (fled-room
+  persistence).
 - **The quartermaster pass** (2026-07-26 — rules.md's Gold and the potion
   economy, "The quartermaster pass") — `rpg.py`: `AUTO_POTION_KINDS` (in
   the potion-economy constants block), `wants_potion` (the badly-hurt /
@@ -868,8 +886,20 @@ mechanic *does* and *why* is rules.md's job.
   tail split out: deed-skips and settles close sites through it;
   also the hell-task completion ledger), and the MERCY thread —
   `mercy` through `resolve_encounter`/`pending`/resume/retreat,
-  `apply_mercy` (left for dead / the lesson) in place of
-  `report_game_over` on posse losses.
+  `apply_mercy` (left for dead / the lesson), now spending the same
+  one-per-level allowance as every ordinary mercy.
+- **Defeat without death** (2026-07-26, attrition slice 4 — rules.md's
+  Ferocity and Mercy section) — `rpg.py`: the ferocity constants,
+  `Entity.ferocity` / `withdrew` / `break_tried` / `mercy_level` /
+  `fate_paid`,
+  `party_defeated`, `roster_ferocity`, `defeat_mercy_kind`,
+  `mercy_available`, `apply_defeat_mercy`, `_chase_contest` and
+  `attempt_foe_retreat`. `sites.py`: every `FoeSpec` carries a content band;
+  humanoids are 0, most beasts 1, undead 2; hell enforcers and conquest waves
+  override authored humanoids to 2. `session.py`: mercy runs before
+  `party_wiped`, including a failed retreat, and LAW/HELL keep their special
+  save reshaping while sharing the level allowance. `bench_quests.py` counts
+  mercies and continues the career after one. `test_mercy.py` is the contract.
 - **Conditions** (2026-07-26, the attrition rework's slice 3a — rules.md's
   Conditions add-on) — `rpg.py`: the conditions constants block just under
   `TIER_HP` (`CONDITION_STACK_RULE`, `CONDITION_KINDS`, `BLEED_POWER`,
@@ -967,13 +997,35 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-26, after the attrition rework's SLICES 1, 2, 3a and
-3b — quest shape, the pay rebase, the two deletions; the quest clocks + the
-banded lazy refill; the conditions framework; and the WOUND SYSTEM, which
-rebaselined everything. Session C's alchemy layer and
+**Current state (2026-07-26, after the complete attrition rework: slices 1,
+2, 3a, 3b and 4 — quest shape, clocks, conditions, wounds, ferocity and
+defeat mercy. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**Slice 4 (2026-07-26) is a selective content rebaseline plus the career
+acceptance pass.** Ferocity-0/1 enemies may now escape a fight they are
+losing, while ferocity-2 rows run the old combat unchanged; defeat mercy
+belongs to the played/career layer and does not falsify the raw wipe columns.
+
+- **Relentless controls are unchanged:** skeleton **93.2%** and ghoul
+  **91.5%** annotated-level wins; the barrow rank-0 fixture remains
+  **27.4 clear / 50.8 wipe** (rounding-only against 27.4 / 50.7).
+- **Breaking content resolves sooner in the party's favor:** the hideout
+  rank-0 fixture is **54.3 clear / 18.6 wipe**, from slice 3b's 45.3 / 22.7.
+  Its training ladder is **54.3 → 75.2 → 86.4 → 93.9** and its party-size
+  sweep **22.1 / 54.3 / 64.1 / 76.3**. No stat or resource dial moved.
+- **Generated content** (300/cell): at-level encounters win **77.3-95.7%**;
+  at-level whole jobs clear **61.0-92.3%**. The rise is the visible effect
+  of non-relentless rosters breaking, not a pressure-math change.
+- **CAREERS — Slice 4's acceptance measurement.** 500 careers reach
+  **L5 86% / L8 70% / L11 35% / L14 10% / L17 3% / L20 1%**; median death
+  rises **L8 → L9**; capped median is **92 days / 36 quests**. There were
+  **500 defeat mercies (1.00/career)** and **86.2%** of careers survived at
+  least one. Turn-in bands are **42 / 49 / 7 / 2**. The acceptance criterion
+  — wipes largely become survivable events and median death level rises —
+  is met.
 
 **Slice 3b (2026-07-26) is the full rebaseline. The one-line reading: the
 SINGLE-FIGHT game barely moved and the CAREER moved a lot** — which is the
@@ -1207,13 +1259,6 @@ above.**
   a no-op for every worldgen template). Don't spend bench rounds here
   until the dark path has actually been played.
 
-- **The attrition rework continues (spec in plan.md's NEXT BUILD section).**
-  Slice 1 shipped 2026-07-26 and is measured at the top of this section;
-  slices 2, 3a, 3b, and 4 are still ahead, and **slice 3b will rebaseline
-  everything again**. The two controls (`bench_weapons.py`,
-  `bench_ranged.py`) must stay unchanged to the cell throughout; if they
-  move, something leaked into the melee loop that shouldn't have.
-
 **Difficulty levers, easiest first:** the room layouts
 (`sites.HIDEOUT_ROOMS` / `sites.BARROW_ROOMS`) and the quest generator's
 budget knobs (`quests.ROOM_SHARES`, `PACK_CAP`, `DUP_COST` — these move
@@ -1329,17 +1374,12 @@ face and a grudge), then conquest ticking. The old magic-phase remainder
 (stat transcendence + the wraith, armor — designer lean: probably never
 important — named weapon instances) still stands behind that, along with
 the career sim's finding that the 14-20 band lacks its player power until
-masterwork/magic-item content lands. **The attrition rework is
-under way (spec in plan.md's NEXT BUILD section). SLICE 1 SHIPPED
-2026-07-26** — quests shrank to 1-3
-encounters (mean 1.66, from 3.74), pay moved from the site to the quest, and
-the XP streak and the short rest were deleted, along with three small fixes
-(camp rolls its visitor before the night's recovery, road encounters fire on
-the road off the origin land's pool, and the tavern's morale ratchet got a
-cooldown). Still ahead: quests get clocks over a lazily refilled banded
-board, damage starts persisting as named located wounds over a general
-conditions system, and defeat stops meaning a new character. Its design
-spine, in one line: *do not make rest expensive, make rest incomplete* —
+masterwork/magic-item content lands. **The attrition rework shipped in full
+on 2026-07-26.** Quests are 1-3 encounters (mean 1.66, from 3.74), the live
+board and its clocks make days matter, conditions and named wounds make
+damage persist, and ferocity plus one mercy per character level lets a
+career carry one defeat without making relentless enemies harmless. Its
+design spine remains: *do not make rest expensive, make rest incomplete* —
 gate recovery on rate and access, never on price, because price is the only
-thing that inflates across a 1-20 career. See plan.md for the full roadmap
-and the parked-ideas list.
+thing that inflates across a 1-20 career. See plan.md for the parked
+follow-ons.
