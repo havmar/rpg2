@@ -139,6 +139,16 @@ a pointer: what the file is, how it's run, where its docs are.
   healing-spell / War-Breath / Berserk gate, and the one-line hand-over
   report inside the 40-column wrap.
   `python -m unittest -v test_potions.py`.
+- `test_conditions.py` — the CONDITIONS framework contract suite (2026-07-26,
+  slice 3a): the bounded stacking rule (refresh, never sum, untimed wins),
+  the tick's arithmetic and its position after regen, the never-kills-only-
+  Downs guarantee, the side-worded fall lines (the bench greps depend on
+  them), the one-collapsed-quiet-line-a-round display, what
+  `_clear_fight_states` / the field stabilize / a healing potion / the night
+  each clear, the two shipped customers (and the assertion that nothing else
+  in the catalog carries a rider), and the save round-trip including a
+  pre-slice save with no `conditions` key.
+  `python -m unittest -v test_conditions.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
@@ -175,7 +185,11 @@ a pointer: what the file is, how it's run, where its docs are.
   the firebomb in `group_combat`, the smoke vial in `attempt_retreat` —
   rules.md's Alchemy & the Potion Rework add-on), the QUARTERMASTER PASS
   (2026-07-26: `auto_potions` and its helpers — the out-of-combat potion
-  deal and auto-drink, played sessions only), and the batch-sim
+  deal and auto-drink, played sessions only), the CONDITIONS framework
+  (2026-07-26, the attrition rework's slice 3a: `Condition`,
+  `Entity.conditions` / `Entity.inflicts`, `apply_condition` /
+  `clear_conditions` / `_tick_conditions` / `_stabilize` — rules.md's
+  Conditions add-on), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -437,6 +451,7 @@ python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_potions.py # the quartermaster pass contract
+python -m unittest -v test_conditions.py  # the conditions framework contract
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 ```
 
@@ -678,8 +693,10 @@ mechanic *does* and *why* is rules.md's job.
   `FOES` (the bestiary: 25 stat blocks — six
   monster families + the humanoid ladder + the three casters — each row
   with a bench-calibrated
-  `level` annotation, `ref_pack`, and for the drilled soldiery a `training`
-  rank), `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
+  `level` annotation, `ref_pack`, for the drilled soldiery a `training`
+  rank, and since 2026-07-26 an `inflicts` condition rider on exactly two
+  rows — the great spider's venom and the pyromancer's clinging fire),
+  `NATURAL_WEAPONS` (fangs/claws — never break, never loot),
   `make_foe` (+ the `display` reskin hook), `SITES`, `HIDEOUT_ROOMS` /
   `BARROW_ROOMS`, `run_site` (the sim loop), `roster_lines`,
   `WEAPON_INDEX` (name -> Weapon, the save file's reference table).
@@ -828,6 +845,34 @@ mechanic *does* and *why* is rules.md's job.
   `mercy` through `resolve_encounter`/`pending`/resume/retreat,
   `apply_mercy` (left for dead / the lesson) in place of
   `report_game_over` on posse losses.
+- **Conditions** (2026-07-26, the attrition rework's slice 3a — rules.md's
+  Conditions add-on) — `rpg.py`: the conditions constants block just under
+  `TIER_HP` (`CONDITION_STACK_RULE`, `CONDITION_KINDS`, `BLEED_POWER`,
+  `POISON_POWER` / `POISON_ROUNDS` / `POISON_NIGHT_HP`, `BURN_POWER` /
+  `BURN_ROUNDS`, the `CONDITION_POWER` / `CONDITION_ROUNDS` tables,
+  `STABILIZE_CLEARS`, and the `CONDITION_TAG` / `CONDITION_ON_HIT_TAG`
+  vocabulary); the `Condition` dataclass beside `Purse`; `Entity.conditions`
+  and `Entity.inflicts`; the API block ahead of the melee (`condition_of` /
+  `condition_tags` / `apply_condition` / `clear_conditions` /
+  `_tick_conditions` / `_stabilize`). The TICK is called from
+  `group_combat`'s round end, between the regen loop and the reload clock —
+  that position is the spec, not an accident. `_clear_fight_states` drops
+  TIMED conditions only; `_stabilize` runs at every fight exit (resolution,
+  both clean-escape branches in `attempt_retreat`, `blink_escape`);
+  `refresh_foes_after_retreat` wipes a fled room's conditions outright.
+  Between fights: the sweat-it-out block in `long_rest` (which `tavern_rest`
+  inherits), the bleed clear in `use_potion`'s healing branch, and
+  `_mend_bleeding` off `cast_healing`. `sites.py`: `FoeSpec.inflicts` +
+  its `make_foe` pass-through, the great spider's `inflicts="poison"` and
+  the pyromancer's `inflicts="burn"`, the on-hit and live-condition tags in
+  `roster_lines`. `session.py`: the `Condition` round-trip in
+  `_entity_to_dict` / `_entity_from_dict` (an untimed condition outlives the
+  fight, so it has to outlive the save), and the `condition_tags` readouts in
+  `tally_lines` / `cmd_status` / `party_sheet_lines` / the pause menu.
+  **The one thing deliberately NOT here** is a school-wide cast rider
+  (`{"fire": "burn"}` on every bolt): measured, it moves every bestiary row
+  because the bench's reference duo rolls fire wizards. It is a one-line
+  addition for the magic content pass, with its own bench round.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `accepted` (the TAKEN-
   quest ids, since 2026-07-22 — `cmd_take` appends, `ui/map.txt` reads),
@@ -860,12 +905,38 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-26, after the attrition rework's SLICES 1 and 2 —
-quest shape, the pay rebase, the two deletions, and then the quest clocks +
-the banded lazy refill. Session C's alchemy layer and sessions A/B's point
-economy still underlie doctrine v2.) The full dated report of every measured
-re-tuning lives in `benchlog.md`; this is only the standing summary — refresh
-it whenever a new entry lands there.**
+**Current state (2026-07-26, after the attrition rework's SLICES 1, 2 and 3a —
+quest shape, the pay rebase, the two deletions; the quest clocks + the banded
+lazy refill; and the conditions framework. Session C's alchemy layer and
+sessions A/B's point economy still underlie doctrine v2.) The full dated
+report of every measured re-tuning lives in `benchlog.md`; this is only the
+standing summary — refresh it whenever a new entry lands there.**
+
+**Slice 3a (2026-07-26) moved exactly two bestiary rows and nothing else.**
+The conditions framework is inert wherever nothing inflicts a condition, and
+only two rows do:
+
+- **Great Spider** (annotated L3, 3x, 2000 trials a column): at level
+  **89.5% → 81.9%** win, wipe 0.8% → 5.2%, down 2.5% → 14.4%. The full
+  ladder now reads L1 34.6 / **L2 71.6** / L3 81.9 / L4 94.8.
+- **Pyromancer** (annotated L6, 2x): at level **92.4% → 87.7%** win, wipe
+  3.1% → 7.5%, down 10.2% → 25.6%. Ladder: L4 65.0 / **L5 74.0** / L6 87.7 /
+  L7 90.2.
+- **Both `level` annotations were left alone, deliberately.** The measured
+  best fit to the 55-75% band is L2 for the spider and L5 for the
+  pyromancer — but *most* of the catalog sits above that band at its
+  annotated level (archer 80.9, skeleton 93.0, dire wolf 93.5, ghoul 92.0,
+  giant 98.8...). Re-fitting two rows in isolation would make them outliers
+  the other way and would ripple into `quests.py`'s threat math without a
+  matching pass over the other 26. Both rows moved *toward* the target and
+  stayed in family; the catalog-wide re-annotation stays the parked item it
+  already was (plan.md, "Re-annotate the bestiary for the pain-2 party").
+- Every other row is identical **to the cell**, as are `tune.py`,
+  `bench_training.py`, and `python sites.py --seed 3` byte-for-byte.
+- **The dials**, if venom or fire needs to bite harder or softer:
+  `POISON_POWER` / `BURN_POWER` first (HP per tick), then `BURN_ROUNDS`,
+  then `POISON_NIGHT_HP` (what sleeping it off costs). `STABILIZE_CLEARS` is
+  not a dial — it is the anti-bleed-out guarantee.
 
 **Slice 2 (2026-07-26) changed no combat math and nothing in the fixtures
 moved** — `tune.py`, `bench_training.py`, `bench_party.py`,

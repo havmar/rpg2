@@ -40,7 +40,7 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
                  SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD,
-                 fit_lines)
+                 fit_lines, CONDITION_ON_HIT_TAG, condition_tags)
 
 
 # --------------------------------------------------------------------------- #
@@ -100,6 +100,11 @@ class FoeSpec:
                                 # (big monsters take 3-4: boss fights
                                 # stay full-party under the press)
     regen: int = 0          # HP knit per round while up (the troll)
+    inflicts: str = ""      # the CONDITION this row's attacks leave behind
+                            # (rpg.Entity.inflicts, slice 3a): "poison" for
+                            # the venomous rows, "burn" for the pyromancer.
+                            # ANY delivery -- fangs, a bolt, a shot -- the
+                            # rider belongs to the creature, not the swing
     sweep: int = 1          # max targets per attack (the giant's sweep,
                             # dragonfire); 1 = normal single attacks
     sweep_cost_power: int = 0   # Power per multi-target use; 0 = free
@@ -248,9 +253,14 @@ FOES = {
                           hp=10, ref_pack=2, pain=2, power=8, mind=11,
                           school="ice", school_rank=2,
                           weapon=WEAPONS["dagger"]),
+    # The pyromancer's fire CLINGS since 2026-07-26 (the conditions
+    # framework's second customer): its bolts leave the target burning for a
+    # couple of rounds. Row-scoped on purpose -- a school-wide rider would
+    # arm every hero fire wizard too and move the whole career curve; see the
+    # conditions constants block in rpg.py.
     "pyromancer": FoeSpec("Pyromancer", level=6,  dex=4, str_=2, sta=7,
                           hp=12, ref_pack=2, pain=2, power=8, mind=11,
-                          school="fire", school_rank=2,
+                          school="fire", school_rank=2, inflicts="burn",
                           weapon=WEAPONS["dagger"]),
     "magus":      FoeSpec("Magus",      level=10, dex=6, str_=4, sta=9,
                           hp=24, ref_pack=1, training=3, pain=2, power=11,
@@ -299,10 +309,13 @@ FOES = {
                          sweep_label="a mauling swipe",
                          weapon=NATURAL_WEAPONS["heavy claws"]),
     # --- Vermin grown large (level 3): the ambusher -- lands often, folds
-    # fast. (Venom is parked with the conditions system, plan.md; the bite
-    # itself carries the row for now.)
+    # fast, and since 2026-07-26 it VENOMS. The row's whole shape: it barely
+    # hurts you in the room and then follows you out of it (the poison is
+    # untimed -- first aid does nothing, only the night sweats it out). The
+    # conditions framework's first customer, and the reason the STR 2 bite
+    # no longer has to carry the row on its own.
     "great spider": FoeSpec("Great Spider", level=3, dex=6, str_=2, sta=7,
-                            hp=6, ref_pack=3,
+                            hp=6, ref_pack=3, inflicts="poison",
                             weapon=NATURAL_WEAPONS["fangs"]),
     # --- Giant-kin (levels 6-12): the severity cliff. Every landed blow is a
     # tier the party can't afford; the hole is a DEX that rarely lands it.
@@ -371,6 +384,7 @@ def make_foe(kind: str, n: int, rng: random.Random,
                if spec.school else {},
                spell_ward=spec.spell_ward,
                crowd_cap=spec.crowd_cap, regen=spec.regen,
+               inflicts=spec.inflicts,
                sweep=spec.sweep, sweep_cost_power=spec.sweep_cost_power,
                sweep_label=spec.sweep_label, weapon=weapon, items=items)
     return e
@@ -400,6 +414,12 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append("tireless")
         if e.regen:
             tags.append(f"wounds knit +{e.regen}/round")
+        # Conditions are announced BEFORE the first bite (slice 3a): the
+        # roster is the enemy introduction, and a venomous row that only
+        # reveals itself in the log has cheated the player out of the
+        # decision it exists to create.
+        if e.inflicts:
+            tags.append(CONDITION_ON_HIT_TAG.get(e.inflicts, e.inflicts))
         if e.spells:
             ranks = ", ".join(f"{n} {r}" for n, r in sorted(e.spells.items()))
             tags.append(f"caster: {ranks}; {e.power} Power")
@@ -407,6 +427,9 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append(f"spell-warded {e.spell_ward}")
         if e.sweep > 1:
             tags.append(e.sweep_label or "sweeping blows")
+        # What is already ON it (a resumed fight, a room the party came back
+        # to): a still-poisoned foe is worth knowing about at the door.
+        tags.extend(condition_tags(e))
         return tags
 
     def block(e: Entity, head: str) -> list[str]:
