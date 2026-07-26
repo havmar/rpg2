@@ -449,6 +449,18 @@ DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
 DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
 DROP_GOLD_AMOUNT = POTION_PRICE // 2
 
+# The QUARTERMASTER PASS (2026-07-26): who carries which potion stopped being
+# a decision worth a command. Out of combat, whenever the stock CHANGES
+# (bought, brewed, looted, scrounged overnight, drunk, or walked off with by a
+# quitter), the party pools its healing potions and stamina draughts and deals
+# them back out worst-off first, one at a time and round-robin -- and everyone
+# who has no better answer of their own drinks when they are badly hurt or
+# Winded. See `auto_potions`. Mid-fight potions are NOT touched: the pause and
+# the standing orders own that decision, and the fiction (rummaging through a
+# comrade's satchel mid-exchange) forbids the hand-over anyway.
+AUTO_POTION_KINDS = ("healing", "stamina")   # what the pass moves and drinks
+                        # (the retired power potion is left where it lies)
+
 # --- Alchemy & the potion rework (2026-07-17, levelling framework session C) -
 # Alchemy is a SKILL (Entity.alchemy, rank 0..ALCHEMY_MAX), open to all and
 # rolled off MIND (alchemy is its first non-magic customer): rank n costs 2n
@@ -6130,20 +6142,151 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
     return True
 
 
+def wants_potion(h: Entity, kind: str) -> bool:
+    """Is this character hurt or winded enough for a potion to be worth
+    spending? The 'sensible party' lines, shared by the sim rest policy and
+    the played quartermaster pass: badly hurt (at or below HALF HP) wants a
+    healing potion, Winded (STA <= WINDED_STA) wants a draught. Never true
+    at full -- the overcharge is a deliberate spend, never an automatic
+    one."""
+    if kind == "healing":
+        return h.hp <= h.max_hp // 2
+    if kind == "stamina":
+        return h.cur_sta <= WINDED_STA
+    return False
+
+
 def auto_use_potions_on_rest(survivors: list[Entity], log: list[str]) -> None:
     """The 'sensible party' rest-time policy for the sim / one-shot paths only
-    (sites.run_site) -- NOT for real play, which leaves every
-    potion to the DM via use_potion(). Drinks a healing potion when badly hurt,
+    (sites.run_site) -- played sessions run `auto_potions` instead (the
+    quartermaster pass, which also moves the stock around before drinking).
+    Drinks a healing potion when badly hurt,
     a stamina draught when winded, and a power potion when the save budget is
     nearly gone -- so tune.py / bench_training.py still model a party that uses
     its consumables."""
     for h in survivors:
-        if h.hp <= h.max_hp // 2 and h.items.get("healing", 0) > 0:
+        if wants_potion(h, "healing") and h.items.get("healing", 0) > 0:
             use_potion(h, "healing", log)
-        if h.cur_sta <= WINDED_STA and h.items.get("stamina", 0) > 0:
+        if wants_potion(h, "stamina") and h.items.get("stamina", 0) > 0:
             use_potion(h, "stamina", log)
         if h.cur_power <= SAVE_COST and h.items.get("power", 0) > 0:
             use_potion(h, "power", log)
+
+
+def drinks_own_potions(h: Entity, kind: str) -> bool:
+    """Does the quartermaster pass drink FOR this character?
+
+    Companions always: nobody is playing them, and a companion who bleeds
+    out holding three potions is a bug in the fiction, not a decision.
+
+    The PLAYER CHARACTER only when they have no better answer of their own.
+    A PC who knows the HEALING SPELL owns the wound decision (potion or
+    Power is a real trade, and the potion may be worth more in a
+    companion's hand); a PC who knows WAR-BREATH or BERSERK owns the
+    stamina decision the same way -- auto-drinking would spend the draught
+    the conversion exists to save. Those PCs still drink on the DM's `use`
+    call, and the pass still DEALS them potions to drink."""
+    if not h.protagonist:
+        return True
+    if kind == "healing":
+        return h.spell_rank("healing") <= 0
+    if kind == "stamina":
+        return not ({"war_breath", "berserk"} & h.abilities)
+    return True
+
+
+def _potion_need(h: Entity, kind: str) -> int:
+    """The pool a potion of this kind would fill -- lower is needier. Raw
+    current value, not a fraction: the restores are FLAT, so the character
+    closest to falling is the one with the fewest points left, whatever
+    their maximum."""
+    return h.hp if kind == "healing" else h.cur_sta
+
+
+def deal_potions(party: list[Entity]) -> int:
+    """Pool the party's healing potions and stamina draughts and deal them
+    back out, neediest first and then round-robin ('in turn'), so a deep
+    stock spreads across the whole party instead of riding in one satchel.
+    Ties go to the COMPANIONS: the player can always call for a potion,
+    while the engine speaks for everyone else. Silent by design (the caller
+    reports the result once) and idempotent -- dealing an already-dealt kit
+    moves nothing. Returns how many potions changed hands."""
+    living = [h for h in party if not h.dead]
+    if len(living) < 2:
+        return 0
+    moved = 0
+    for kind in AUTO_POTION_KINDS:
+        held = [h.items.get(kind, 0) for h in living]
+        stock = sum(held)
+        if stock <= 0:
+            continue
+        # Stable sort: equal need keeps the party's own order, so the deal
+        # is deterministic. `protagonist` sorts False < True -- the PC is
+        # served after the companions they tie with.
+        order = sorted(living, key=lambda h: (_potion_need(h, kind),
+                                              h.protagonist))
+        for h in living:
+            h.items[kind] = 0
+        for i in range(stock):
+            order[i % len(order)].items[kind] += 1
+        moved += sum(max(0, h.items[kind] - was)
+                     for h, was in zip(living, held))
+    return moved
+
+
+def _kit_line(living: list[Entity]) -> tuple[str, list[str]]:
+    """The hand-over readout: who ends the pass holding what. Empty when the
+    party carries nothing (the drink lines already told that story)."""
+    parts, full = [], []
+    for h in living:
+        carried = [f"{h.items.get(k, 0)} {k}" for k in AUTO_POTION_KINDS
+                   if h.items.get(k, 0) > 0]
+        if not carried:
+            continue
+        parts.append(f"{h.name.split()[0]}: {', '.join(carried)};")
+        full.append(f"{h.name}: {', '.join(carried)}")
+    if parts:
+        parts[-1] = parts[-1][:-1] + "."
+    return "; ".join(full), parts
+
+
+def auto_potions(party: list[Entity], log: list[str]) -> bool:
+    """THE QUARTERMASTER PASS -- out of combat only. Deal the party's
+    potions to whoever needs them most, let everyone the pass speaks for
+    drink what they need, and deal again (a drink changes both the stock
+    and who is worst off). Call it whenever the stock CHANGES: after loot,
+    a purchase, a brew, the overnight scrounge, a drink, or a departure.
+
+    Drinking follows `wants_potion` (badly hurt / Winded) and
+    `drinks_own_potions` (companions always; the PC only when they have no
+    spell or conversion of their own for that track). Nothing is drunk at
+    full: the overcharge stays a deliberate spend. Returns True if anything
+    moved or was drunk."""
+    living = [h for h in party if not h.dead]
+    if not living:
+        return False
+    # Each lap that continues drinks at least one potion, so the stock on
+    # hand bounds the loop exactly.
+    laps = 1 + sum(h.items.get(k, 0) for h in living
+                   for k in AUTO_POTION_KINDS)
+    moved, drank = 0, False
+    for _ in range(laps):
+        moved += deal_potions(party)
+        thirsty = [(h, k) for h in living for k in AUTO_POTION_KINDS
+                   if (h.items.get(k, 0) > 0 and wants_potion(h, k)
+                       and drinks_own_potions(h, k))]
+        if not thirsty:
+            break
+        for h, kind in thirsty:
+            if h.items.get(kind, 0) > 0 and wants_potion(h, kind):
+                drank = use_potion(h, kind, log) or drank
+    moved += deal_potions(party)        # settle after the last drink
+    full, parts = _kit_line(living)
+    if moved and full:
+        _play(log,
+              f"    The party shares out its potions -- {full}.",
+              fit_lines(["The party shares out its potions:"] + parts))
+    return bool(moved or drank)
 
 
 def start_fight(h: Entity, log: list[str]) -> None:

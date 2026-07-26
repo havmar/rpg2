@@ -778,10 +778,12 @@ These are the only edits to the existing rules:
 | **HP** | Carries across the run (never a per-fight reset) | A healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
-| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). |
+| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it and drinks for everyone who has no better answer (see "Gold and the potion economy"). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
-keeps build identity alive and makes "who am I about to lose" specific.
+keeps build identity alive and makes "who am I about to lose" specific. (The
+quartermaster pass moves *basic potions* between packs out of combat; the
+stocks stay per-character, and nothing else is ever pooled.)
 
 ---
 
@@ -1177,16 +1179,18 @@ On top of the existing build/allocation choices:
   (same shape as `buy_potion`) that spends `HEALING_CAST_COST` (3) Power
   through the casting check for the rank's mending (`HEALING_MEND`) on
   self or an ally.
-- **Potions are not automatic either.** Drinking a carried potion is a DM call,
-  `use_potion(hero, kind, ...)`, between fights only (same shape as `buy_potion`
-  / `cast_healing`): every potion takes effect **instantly on drink** -- *healing*
-  restores HP (`HEALING_POTION_RESTORE`), *stamina* restores STA. Only those
-  two kinds circulate (`STOCKED_POTION_KINDS`; the power potion is retired --
-  see the two-buffer split above). Nothing in the engine drinks on its own.
-  The one-shot / sim paths (`sites.run_site`) model a sensible
-  party via `auto_use_potions_on_rest` (heal when badly hurt, drink stamina
-  when winded), so `tune.py` / `bench_training.py` still reflect a party that
-  drinks when it should.
+- **Potions run themselves out of combat (2026-07-26 — the quartermaster
+  pass).** `use_potion(hero, kind, ...)` is still the deliberate call, and every
+  potion still takes effect **instantly on drink** — *healing* restores HP
+  (`HEALING_POTION_RESTORE`), *stamina* restores STA; only those two kinds
+  circulate (`STOCKED_POTION_KINDS`; the power potion is retired — see the
+  two-buffer split above). What is no longer a decision is *who carries which
+  vial* and *whether to drink one when you are visibly bleeding*: see
+  **"The quartermaster pass"** below. The one-shot / sim paths
+  (`sites.run_site`) keep their own, older policy —
+  `auto_use_potions_on_rest` (heal when badly hurt, drink stamina when
+  winded, on each hero's own stock, no hand-over) — so `tune.py` /
+  `bench_training.py` numbers describe the same party they always did.
 - **Outcome semantics changed.** "Died" now means *truly slain* (an unsaved
   crippling blow), which is rare. The everyday cost is **Down** counts and the
   drawdown of Power / STA / potions — that's the attrition `tune.py` now reports.
@@ -1390,7 +1394,9 @@ of spending get measured.
 
 ## Gold and the potion economy
 
-- **The purse is shared** (party-level); potions are per-hero.
+- **The purse is shared** (party-level); potions are per-hero — but since
+  2026-07-26 the party *manages* them as a shared stock (the quartermaster
+  pass, below).
 - **Income:**
   - **Quests:** a level-L quest pays **18 × L × ENCOUNTER_MULT** gold, all
     of it at the turn-in (2026-07-26) — ~25 × L at the measured encounter
@@ -1426,6 +1432,51 @@ of spending get measured.
   the two circulating kinds), plus the rolled starting weapon. From then on
   the stock moves through drops, purchases, use — and the kit's nightly
   top-up to 1+1 (2026-07-11).
+
+### The quartermaster pass (2026-07-26)
+
+**Carrying and drinking basic potions stopped being decisions.** Who holds
+which vial was never a choice with a wrong answer worth making, and a hero
+bleeding at 2 HP with a potion in the pack is bookkeeping, not tension. Out
+of combat the engine now runs both (`rpg.auto_potions`), and the potion
+decisions that *are* real — how deep a stock to buy before a push, when to
+spend the alchemist's day, whether to drink at the mid-fight pause — are
+untouched.
+
+- **When it runs:** whenever the party's potion stock **changes**, out of
+  combat — a purchase, a brewed batch, loot, the overnight kit scrounge, a
+  drink, a hire, a quitter walking off with their pack, and at every
+  fight's end (including a retreat). Never mid-fight: the pause and the
+  standing orders own that decision, and nobody rummages through a
+  comrade's satchel during an exchange.
+- **The deal.** Healing potions and stamina draughts (`AUTO_POTION_KINDS`;
+  the retired power potion and the alchemist's stat brews, bombs, and smoke
+  are left where they lie) are pooled and dealt back out **worst-off
+  first, then round-robin** — the neediest for that kind gets the first
+  one, the next-neediest the second, and a deep stock keeps spreading so
+  the whole party carries some of it. Need is the **raw current pool** (HP
+  for healing, STA for draughts), not a fraction of maximum: the restores
+  are flat, so the character closest to falling is the one with the fewest
+  points left. **Ties go to the companions** — the player can always call
+  for a potion, while the engine speaks for everyone else.
+- **The drink.** Anyone the pass speaks for drinks when **badly hurt** (at
+  or below half HP) or **Winded** (STA ≤ `WINDED_STA`) — the same lines the
+  sim policy has always used. Never at full: the overcharge (+2 above max)
+  stays a deliberate spend. Deal and drink alternate until nothing more is
+  wanted, so a hero standing at 0 can be stood up and topped off in one
+  pass.
+- **Who it speaks for.** **Companions always** — nobody is playing them.
+  **The player character only when they have no better answer of their
+  own:** a PC who knows the **healing spell** owns the wound decision, and
+  a PC who knows **War-Breath or Berserk** owns the stamina decision (the
+  draught is exactly what those conversions exist to save). Such a PC is
+  still *dealt* potions — they simply drink them on the player's `use`
+  call, not the engine's.
+- **The cost of it.** This is a small difficulty *give*: the party no
+  longer walks into a door at half HP with an unopened potion, and the
+  nightly kit line now reliably becomes HP. The lever if it proves too
+  generous is the drink threshold (`wants_potion`) or narrowing which
+  triggers wake the pass.
 
 ---
 

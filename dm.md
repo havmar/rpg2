@@ -261,8 +261,10 @@ the player's core decision:
 - The other heroes are **NPC companions**: the DM animates them (voice,
   small decisions, flavor -- their TRAITS are the material: a poetic
   whisperer and a swearing loudmouth should not read alike), but the player
-  directs them *tactically* -- who they focus, when they drink a potion,
-  whether they cast healing.
+  directs them *tactically* -- who they focus, whether they cast healing,
+  and their pause actions. (A companion's routine between-fights potion is
+  no longer one of those calls: the quartermaster pass drinks it -- see the
+  potion economy below.)
 
 ## The party -- recruiting, satisfaction, departures (2026-07-11)
 
@@ -565,7 +567,10 @@ bigger than the fights WITHOUT pages of narration:
   the readout, don't convert it -- STA is STA, not "good swings left" --
   and never turn the check into roster talk about what waits inside. The
   choice stays theirs.
-- **Player decisions -- present, don't push:** drinking a potion (`use`),
+- **Player decisions -- present, don't push:** drinking a potion the
+  quartermaster pass left alone (`use` -- the override, see the potion
+  economy above; the routine drink is automatic now and never worth a
+  prompt),
   the healing spell (`heal`), making camp
   (`camp` -- the day's only recovery step now; the short rest is gone),
   paying for the tavern instead of
@@ -586,9 +591,12 @@ bigger than the fights WITHOUT pages of narration:
   War-Breath / vanish / retreat or blink out).
   Lay the situation out -- the displays and the fiction carry the stakes --
   then hand the turn back and let it sit. When the options need listing,
-  list them as a terse display line ("options: heal potion (+5 HP), camp,
-  press in"), not a paragraph weighing each. A read on them is given when
-  the player asks for one: straight, a sentence or two, done.
+  list them as a terse display line ("options: camp, press in, buy steel"),
+  not a paragraph weighing each. A read on them is given when
+  the player asks for one: straight, a sentence or two, done. (A carried
+  potion is no longer one of those options out of combat -- the
+  quartermaster pass has already drunk it, or the PC is holding it on
+  purpose.)
 - **The default night is "camp until whole" -- WITH NO JOB IN HAND
   (2026-07-11; narrowed 2026-07-26).** When there is HP to heal, nothing
   is on the clock, and the player hasn't said otherwise, assume the party
@@ -713,8 +721,8 @@ bigger than the fights WITHOUT pages of narration:
       foes: fire casters. pay: 30g
 
       Torbera: HP 2/10
-      options: heal potion (+5 HP),
-        camp, press in
+      options: camp, tavern (1g/head),
+        press in
 
   One consistent shape keeps these scannable. **Keep composed blocks
   (and any log lines you edit or excerpt) within 40 columns** -- the
@@ -806,6 +814,22 @@ bigger than the fights WITHOUT pages of narration:
   BREW are how a party keeps a deeper stock. **Overcharge:** a potion
   drunk while a pool is already FULL grants +2 above max (spent-only, gone
   at the next camp) -- a small pre-bought buffer for tomorrow's door.
+- **The QUARTERMASTER PASS runs itself (2026-07-26).** Out of combat,
+  every time the potion stock changes -- a `buy`, a `brew`, loot, the
+  overnight scrounge, a `use`, a hire, a departure, and at every fight's
+  end (retreat included) -- the party pools its healing potions and
+  stamina draughts, deals them out worst-off first and then in turn
+  (ties to the companions), and everyone drinks who is badly hurt (at or
+  below half HP) or Winded. The log prints the drinks and one
+  "shares out its potions" line; that display IS the report -- **do not
+  narrate the hand-over or comment on it.** THE ONE EXCEPTION: the player
+  character does NOT auto-drink on a track they have their own answer
+  for -- a PC who knows the **healing spell** keeps the wound decision,
+  a PC who knows **War-Breath or Berserk** keeps the stamina decision.
+  They are still dealt potions; they drink on the player's `use` call.
+  So `use` is now an OVERRIDE, not the routine step: don't offer it as
+  an option when the pass has already handled it, and don't ask the
+  player who should carry what.
 - Recovery is between fights, and the NIGHT is all of it (2026-07-26 --
   the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
   and Power, ~1/7 max HP, the day advances. Nothing forces the day to end --
