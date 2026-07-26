@@ -967,12 +967,50 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-26, after the attrition rework's SLICES 1, 2 and 3a —
-quest shape, the pay rebase, the two deletions; the quest clocks + the banded
-lazy refill; and the conditions framework. Session C's alchemy layer and
+**Current state (2026-07-26, after the attrition rework's SLICES 1, 2, 3a and
+3b — quest shape, the pay rebase, the two deletions; the quest clocks + the
+banded lazy refill; the conditions framework; and the WOUND SYSTEM, which
+rebaselined everything. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**Slice 3b (2026-07-26) is the full rebaseline. The one-line reading: the
+SINGLE-FIGHT game barely moved and the CAREER moved a lot** — which is the
+budget shift (`HERO_PAIN` 2 → 3) working exactly as specified. In-fight
+pressure at a given injury level is unchanged; what changed is that part of
+it is now located, named, and does not heal overnight.
+
+- **Bestiary: within noise, row for row** (2000 trials a column, at the
+  annotated level): archer 80.9 → **81.3**, skeleton 93.0 → **93.2**, dire
+  wolf 93.5 → **94.2**, great spider 81.9 → **85.1**, ghoul 92.0 → **91.5**,
+  pyromancer 87.7 → **85.0**, giant 98.8 → **98.9**. Nothing moved more than
+  ~3 points and the moves go both ways. No annotation touched.
+- **Controls: also within noise** — `bench_weapons` keeps its column order
+  exactly (zweihander tops every swarm, katana/zweihander split the duels);
+  `bench_ranged` longbow **46.9 / 47.2 / 67.8** by field against 46.4 / 48.8 /
+  66.7. Both harnesses now build wound-recording fighters (they are heroes),
+  so these are live numbers, not frozen ones.
+- **The multi-encounter FIXTURES got harsher, as designed** — they are the
+  content the wound track exists to tax: hideout rank 0 clear/wipe **45.3 /
+  22.7** (was 50.8 / 15.6), barrow `[3,3,4]` **27.4 / 50.7** (was 30.2 /
+  48.3). Training ladder hideout **44.5 → 68.3 → 83.5 → 92.4**, barrow
+  **27.4 → 59.8 → 86.1 → 96.1**: a rank still reads as a rank. Party sweep
+  hideout **15.4 / 44.5 / 51.2 / 66.0**, barrow **2.2 / 27.4 / 67.4 / 87.3**:
+  the solo-death-trap / 3-4-cruise shape holds.
+- **Generated content** (300/cell): at-level encounters win **71.7-93.3%**;
+  at-level whole jobs clear **55-85%**, deepest in the L8-9 pocket (59.0 /
+  55.0), top band **61.0 / 66.7** at L19-20.
+- **The equal-cost matrix**: column order unchanged on a floor a few points
+  lower — L8 site row pools **5.2** vs median **34.9**, training **47.8**,
+  weapon **54.5** (was 7.5 / 38.8 / 53.0 / 56.5). Moves, disarm-vs-
+  telekinesis and the alchemist career all keep their verdicts.
+- **CAREERS — the acceptance measurement.** 500 careers: reach **L5 76% / L8 62% / L11 32% / L14 10% / L17 5% / L20 1.2%**, median death **L8**, capped median **96 days / 35 quests** (p10-p90 84-132). Against slice 2's 89/72/47/16/9/4.2, death L10, 78 days — and against the PRE-REWORK 83/60/36/12/-/4, death L8, 158 days / 38 quests. Read against the pre-rework curve the career is essentially where it started: **median death level returns to 8**, the number the whole rework was pointed at, and **days to cap recover to 96** from the 78 slice 1's flag was raised about — through convalescence rather than a longer grind, which is the inflation answer the rework exists for. Turn-in bands **quick 41 / on time 49 / late 8 / expired 2** (was 51/43/4/1): the quick premium stopped being nearly free. **No dial was pulled** — the acceptance criterion (reach-L8 and median death level must not collapse) is met.
+- **A harness trap worth remembering:** the first full run read reach-L8 5%
+  and median death L3. That was `bench_quests` camping until
+  `hp >= 0.8 * max_hp`, which a wounded hero can never reach, so both rest
+  loops burned their whole 14-night cap before every door. **Any harness that
+  reads a rest target off `max_hp` is now wrong** — use `hp_ceiling`.
 
 **Slice 3a (2026-07-26) moved exactly two bestiary rows and nothing else.**
 The conditions framework is inert wherever nothing inflicts a condition, and

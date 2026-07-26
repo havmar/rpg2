@@ -1254,3 +1254,153 @@ log wording.
    walking into the next room. Worth watching in play before touching
    anything; the honest fix if it grates is a treatment rung, which is
    exactly what 3b builds.
+
+---
+
+## 2026-07-26 — the attrition rework, SLICE 3b: the wound system (FULL REBASELINE)
+
+**What shipped.** The slow injury channel — named located `Wound` records
+that dock an HP ceiling, carry stat penalties, and come off only through a
+treatment ladder. Plus the budget shift that pays for it: **`HERO_PAIN` 2 ->
+3**. Full spec in rules.md's Wounds & Recovery add-on; the whole suite was
+re-run.
+
+**The one thing to read first: the single-fight game barely moved, and the
+CAREER moved a lot.** That is the design working. `bench_bestiary` resolves
+one fight from full HP, so the located wound's −1 and the pain divisor's
+relief cancel almost exactly; everything that accumulates ACROSS fights and
+nights is where the attrition landed.
+
+### A harness bug found and fixed on the way
+
+The first full run reported **reach-L8 5%, median death level 3, 59% of
+turn-ins expired**. That was not the game: `bench_quests`' two rest loops
+camped until `hp >= 0.8 * max_hp`, which a wounded hero *can never reach*, so
+both burned their whole 14-night `CAREER_REST_CAP` before every door. The
+career sim was measuring a calendar. `_fit_to_fight` now stops at
+`min(target, hp_ceiling)` — the same rule the engine's own `camp --heal`
+uses — and the between-quests step sleeps in a **bed** and pays the town
+healer when the load is worth the trip (without the ladder a career ratchets
+its ceilings to the half-pool floor and stays there, which is not the shipped
+game). Every career number below is post-fix. **Noted because it is the
+standing trap for slices to come: any harness that reads a rest target off
+`max_hp` is now wrong.**
+
+### The bestiary: within noise, row for row
+
+Against slice 3a, at the annotated level (2000 trials a column):
+
+| row | 3a | 3b |
+|---|---|---|
+| Archer L1 | 80.9 | **81.3** |
+| Skeleton L2 | 93.0 | **93.2** |
+| Dire Wolf L3 | 93.5 | **94.2** |
+| Great Spider L3 | 81.9 | **85.1** |
+| Ghoul L4 | 92.0 | **91.5** |
+| Pyromancer L6 | 87.7 | **85.0** |
+| Giant L12 | 98.8 | **98.9** |
+
+Nothing moved more than ~3 points and the moves go both ways. **This is the
+direct confirmation of the budget-shift claim**: total in-fight pressure at a
+given injury level is unchanged, and what changed is only that part of it is
+now specific, located, and does not heal overnight. No `level` annotation was
+touched; the catalog-wide re-annotation stays the parked item it was.
+
+### The controls: also within noise, which is the point
+
+`bench_weapons` — zweihander still tops every swarm cell, katana/zweihander
+still split the duels, no weapon tops every cell. `bench_ranged` — longbow
+**46.9 / 47.2 / 67.8** by field against slice 1's 46.4 / 48.8 / 66.7; sling
+still the floor, katana still 96.5 at every field. Both harnesses now build
+wound-recording fighters (they are heroes), so these are not frozen numbers —
+they moved by under two points, which says the same thing the bestiary does.
+
+### The fixtures: multi-encounter content got harsher, as designed
+
+| | slice 1/2/3a | slice 3b |
+|---|---|---|
+| hideout rank 0, clear / wipe | 50.8 / 15.6 | **45.3 / 22.7** |
+| hideout reckless wipe | 86.5 | **83.8** |
+| barrow [3,3,4], clear / wipe | 30.2 / 48.3 | **27.4 / 50.7** |
+| barrow reckless wipe | 99.8 | **99.6** |
+| training ladder, hideout | 51.2 / 71.0 / 83.8 / 92.4 | **44.5 / 68.3 / 83.5 / 92.4** |
+| training ladder, barrow | 31.0 / 63.1 / 87.4 / 96.8 | **27.4 / 59.8 / 86.1 / 96.1** |
+| party sweep, hideout 1/2/3/4 | 23.3 / 51.2 / 54.5 / 67.0 | **15.4 / 44.5 / 51.2 / 66.0** |
+| party sweep, barrow 1/2/3/4 | 2.2 / 31.0 / 70.1 / 89.4 | **2.2 / 27.4 / 67.4 / 87.3** |
+
+A rank still reads as a rank (the ladder climbs the same shape and converges
+at rank 3), and the party-size ladder keeps its solo-death-trap / 3-4-cruise
+shape. The hideout and barrow are three-room fixtures with camps between, so
+they are exactly the content the wound track was built to tax — that they are
+the harshest movers is the design landing, not a regression.
+
+**Generated content** (300/cell): at-level ENCOUNTERS win **71.7-93.3%**
+(unchanged in shape from slice 1's 71-94); at-level JOBS clear **55-85%**,
+with the L8-9 pocket the deepest (59.0 / 55.0) and the top band at **61.0 /
+66.7** at L19-20.
+
+### The equal-cost matrix: column order unchanged, floor a few points lower
+
+L8 site row — pools **5.2** against a row median of **34.9**, training
+**47.8**, weapon **54.5** (slice 1: 7.5 / 38.8 / 53.0 / 56.5). All-in pools
+is still the trap, training and weapon still top the row, saves still fine
+from L8. The warrior-moves matchup still pays (L4 room 83.2 -> 95.0, L8 room
+80.5 -> 89.5), disarm still beats telekinesis rank 1 at the same price (82.0
+vs 66.2), and the alchemist is still a support career, not a bomber-carry
+(mixed duo 50.5 / 24.8 / 34.5 against the two-fighter reference's 70.8 /
+48.5 / 65.0).
+
+### The careers: the acceptance measurement
+
+Read against **both** baselines, because slices 1-2 were a deliberate
+reshaping rather than a difficulty target:
+
+| | pre-rework | slice 2 | slice 3b |
+|---|---|---|---|
+| reach L5 / L8 / L11 / L14 / L17 / L20 | 83 / 60 / 36 / 12 / – / 4 | 89 / 72 / 47 / 16 / 9 / 4.2 | **76 / 62 / 32 / 10 / 5 / 1.2** |
+| median death level | 8 | 10 | **8** |
+| capped: days / quests | 158 / 38 | 78 / 34 | **96 / 35** |
+| turn-in bands (quick/on time/late/expired) | – | 51 / 43 / 4 / 1 | **41 / 49 / 8 / 2** |
+
+**The beatability curve survived, and the calendar came back.**
+
+1. **Against the PRE-REWORK curve the career is essentially where it
+   started.** Slice 1 made careers easier and faster; 3b takes that back.
+   Reach-L8 62 against the pre-rework 60; L11 32 against 36; L14 10 against
+   12; and **median death level returns to the pre-rework 8** — the number
+   the whole rework was pointed at. The drop that matters is against slice 2
+   (72 -> 62 at L8, death 10 -> 8), and slice 2 is the inflated reading, not
+   the target.
+2. **Days to cap recovered most of the loss slice 1 flagged as its biggest
+   unbudgeted move (158 -> 81).** Slice 2's clocks did not put the days back
+   (78); the wound track did — **96 days**, and it put them back the RIGHT
+   way, through convalescence rather than through a longer grind. Gold per
+   day falls with it, which is the inflation pressure this whole rework
+   exists to answer. Quests to cap held at 35 (was 34), so the recovered
+   days are recovery days, not extra work.
+3. **The turn-in bands got more honest.** The quick premium stopped being
+   nearly free, and "late" is now a band that happens. The travel caveat
+   still stands (the sim teleports between jobs), so read these as a floor on
+   lateness, not a ceiling.
+4. **No dial was pulled.** The three (in order: `HERO_PAIN`, the vital
+   fraction, the treatment rate) are all still at their shipped values, and
+   the acceptance criterion — reach-L8 and median death level must not
+   collapse — is met.
+
+### Flags for the designer
+
+1. **Hero death in WON fights is now much rarer**, by design: 85% of blows
+   that would have killed land on a limb and MAIM instead. A total-Down party
+   is still a wipe (`party_wiped` finishes the fallen), so this does not
+   rescue lost fights — it only changes what a survived one costs. The vital
+   fraction (15% of located hits) is the dial, and it is the one to reach for
+   if death starts feeling cheap at the table.
+2. **The hideout fixture fell further out of its 55-65 band (45.3).** Still a
+   dev/test fixture and not played content, and the flag was already open
+   from slice 1. No lever pulled — the honest fix is the catalog-wide
+   re-annotation, not another kit tweak.
+3. **The career sim now models the treatment ladder crudely** (bed nights
+   between quests, one town-healer visit when the load reaches 2). That
+   policy is a guess at how a player behaves, and it is now load-bearing for
+   every career number. If played convalescence looks nothing like it,
+   re-measure before trusting the days-to-cap figure.
