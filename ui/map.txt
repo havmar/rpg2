@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Firascir > Ackham
+RPG2 MAP -- day 2
+the party is at Firascir > Sturford >
+  the outer camp > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -14,9 +15,10 @@ the party is at Firascir > Ackham
   Walhaven (city) -- 4 job(s)
   Bradwhitchip (town) -- 4 job(s)
   Redflurton (town) -- 4 job(s)
-  Sturford (village) -- 2 job(s)
-  Ackham (village) -- 2 job(s)  <- the
+  Sturford (village) -- 2 job(s)  <- the
     party
+  Ackham (village) -- 2 job(s)
+    (visited)
   Flurham (village) -- 2 job(s)
 
 == Mortellaria ==
@@ -54,3 +56,8 @@ the party is at Firascir > Ackham
   Urkhal (village) -- 2 job(s)
   Aradun (village) -- 2 job(s)
   Kurugan (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q42] Guard the Cultists (L2) @ Ackham
+  - the outer camp (L2): here, room 1/1
