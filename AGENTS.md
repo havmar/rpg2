@@ -1,4 +1,4 @@
-# RPG2 — Combat Sim Prototype
+# RPG2 — Combat Simulation Prototype
 
 A mechanics-centered fantasy RPG played through a terminal coding agent
 (Claude Code, Codex CLI, …) in the style of a retro text adventure, with
