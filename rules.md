@@ -469,8 +469,12 @@ State crossings say only the state — `!! X is Winded.` / `!! X is
 SPENT.` — and wound lines carry no roll penalty. The numbers moved to
 the two decision surfaces instead: the **pause menu** and the
 **post-fight tally** both print each hero's standing penalties
-(`(wounds -2, Winded -2 to rolls)`). A number the player budgets around
+(`(hurt -2, Winded -2 to rolls)`). A number the player budgets around
 is a number the player sees — at the moments they actually budget.
+(Since 2026-07-26 that first term is labelled **hurt**, not "wounds":
+it is the HP-derived spiral — the fast channel — and the named located
+WOUNDS now print as their own list beneath it. Two channels, two
+displays, never one number wearing both names.)
 
 **Quiet rounds collapse.** A round in which nothing lands (all parries,
 deflections, circling) is not printed; consecutive quiet rounds compress

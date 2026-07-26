@@ -834,7 +834,10 @@ def tally_lines(state: dict) -> list[str]:
         # is where the player budgets around them.
         pens = []
         if h.wound_penalty:
-            pens.append(f"wounds -{h.wound_penalty}")
+            # "hurt", not "wounds" (slice 3b): this is the HP-derived spiral,
+            # the FAST channel. The named located records print below it, and
+            # the two must not read as the same number.
+            pens.append(f"hurt -{h.wound_penalty}")
         if h.spent:
             pens.append(f"Spent -{SPENT_PENALTY}")
         elif h.winded:
@@ -1411,7 +1414,10 @@ def print_pause_menu(state: dict) -> None:
               + f" STA {h.cur_sta}/{h.sta} Power {h.cur_power}/{h.power}")
         pens = []
         if h.wound_penalty:
-            pens.append(f"wounds -{h.wound_penalty}")
+            # "hurt", not "wounds" (slice 3b): this is the HP-derived spiral,
+            # the FAST channel. The named located records print below it, and
+            # the two must not read as the same number.
+            pens.append(f"hurt -{h.wound_penalty}")
         if h.spent:
             pens.append(f"Spent -{SPENT_PENALTY}")
         elif h.winded:
