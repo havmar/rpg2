@@ -256,6 +256,30 @@ recruit as an extra wave-3 tangible.)*
 - Later sim hook (parked): other heroes occasionally solve, or die to, a
   landmark problem while the player is elsewhere.
 
+---
+
+## Queued — quest shape from narrative content (its own design pass)
+
+*(2026-07-26, the quest-length session. That session cuts encounters per
+quest to 1 by default / 2 for a middling job / 3 at most, and moves site
+count to a template-declared place count — a job spans two sites only
+when the fiction genuinely moves between two places. The encounter count
+itself stays a weighted roll for now: a deliberate placeholder.)*
+
+- The designer's intent: **the narrative content should decide how long a
+  job is** — a template's premise, its stakes, and its place structure
+  imply whether it is one fight, a two-stage hunt, or a three-beat
+  escalation, and a rolled 1/2/3 only approximates that. The pass makes
+  the encounter count (and the shape of each encounter's role in the
+  quest) an authored property of the template, so the board's mix of
+  short and long work is designed rather than sampled.
+- Wants the same pass over the good templates in `quests.py`, the epics,
+  and the dark templates in `karma.py`, and it pairs naturally with the
+  quest-wording rework (retro roadmap item 2) — same files, same content
+  register (`writing.md`).
+- Schedule after the quest-clock and wound slices have been played: what
+  a job's *right* length feels like is a play finding, not a desk one.
+
 Story items on the shelf:
 
 - **The apocalypse questline — the L12-20 second spine.** Parked until
