@@ -28,6 +28,6 @@ party: 1/3 companion slot(s) filled (CHA
               points: 0 | abilities:
               bulwark
 
-THE PACT: no current assignment --
-  hell's next job comes any settlement
-  day now.
+THE PACT: assignment [q45] Guard the
+  Cultists at Sturford (grace runs to
+  day 5).
