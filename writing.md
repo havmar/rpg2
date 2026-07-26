@@ -144,6 +144,19 @@ For an **item or creature**, prefer a readable base noun plus one meaningful
 modifier: rust blade, ember hound, glass key, tollhouse ghost. Stack modifiers
 only when each one matters in play.
 
+For a **wound** (`rpg.WOUND_NAMES` / `WOUND_MAIM_NAMES`, 2026-07-26), name the
+injury the way a field surgeon would write it down: **body part, what was done
+to it, and its current state**, in that order, with no adjective of feeling. "A
+gut wound, still seeping" and "two fingers gone" are the register; "a searing
+agony in his side" and "a wound that would trouble him for years" are not. The
+name is a durable game object — it is printed on the sheet for as long as the
+wound lasts, and it is what lets the DM refer back to an injury sessions later
+— so it must stay true after fifty readings and must fit the 40-column
+display. A **maiming** loses the clinical detail and becomes a plain fact about
+the body: "a blind eye", "a withered arm". Severity 1 is a cut, severity 3 is a
+thing the character now lives with; say which without reaching for intensity
+words.
+
 ## Tone and comedy
 
 The world is light fantasy with room for cartoon villainy, pratfall evil, and

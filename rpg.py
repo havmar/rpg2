@@ -411,14 +411,21 @@ TRAINING_COST_MULT = 2  # rank n costs 2n points (was n): the measured
                         # economy. The OTHER session-A bench knob.
 
 # --- Gold & the potion economy ---------------------------------------------- #
-POTION_KINDS = ("healing", "power", "stamina")  # the full schema use_potion accepts
-STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and shops
-                        # actually circulate: the POWER POTION IS RETIRED from
-                        # circulation (design call, 2026-07) -- Power is never
-                        # the bottleneck in play, so the slot was dead weight.
-                        # Old saves may still carry and drink one; re-add the
-                        # kind here if Power ever becomes scarce.
-POTION_PRICE = 10       # gold per potion, any kind
+POTION_KINDS = ("healing", "power", "stamina", "salve", "elixir")
+                        # the full schema use_potion accepts
+STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and the
+                        # overnight kit actually circulate: the POWER POTION IS
+                        # RETIRED from circulation (design call, 2026-07) --
+                        # Power is never the bottleneck in play, so the slot was
+                        # dead weight. Old saves may still carry and drink one;
+                        # re-add the kind here if Power ever becomes scarce.
+                        # The wound tiers (slice 3b) deliberately stay OUT of
+                        # this tuple: a salve is bought, not scrounged, and
+                        # leaving creation/drops/kit alone keeps their RNG
+                        # streams -- and the bestiary calibration behind them --
+                        # exactly where they were.
+SHOP_POTION_KINDS = ("healing", "stamina", "salve")     # ...what a shop sells
+POTION_PRICE = 10       # gold per potion, the basic tiers
 STARTING_POTIONS = 2    # random potions rolled at character creation
 # The traveling kit (2026-07-11): basic potions replenish THEMSELVES -- every
 # long rest tops each living hero back up to the kit line (herbs brewed at the
@@ -485,7 +492,10 @@ ALCHEMY_BATCH = {1: 1, 2: 1, 3: 2, 4: 2, 5: 3}     # potions per made batch
 ALCHEMY_RECIPE_RANK = {     # the rank each recipe unlocks at (brewer's choice
     "healing": 1, "stamina": 1,     # among what's unlocked)
     "strength": 2,
-    "firebomb": 3,
+    "firebomb": 3, "salve": 3,      # the wound tier (slice 3b): the alchemist
+                                    # is the party's own middle rung of the
+                                    # treatment ladder, under the same
+                                    # freshness cap as everything else brewed
     "dexterity": 4, "smoke": 4,
 }
 BREWED_KINDS = ("strength", "dexterity", "firebomb", "smoke")   # alchemy-only
@@ -494,7 +504,8 @@ BREWED_KINDS = ("strength", "dexterity", "firebomb", "smoke")   # alchemy-only
 POTION_DISPLAY = {"healing": "healing potion", "stamina": "stamina draught",
                   "power": "power potion", "strength": "strength potion",
                   "dexterity": "dexterity potion", "firebomb": "firebomb",
-                  "smoke": "smoke vial"}
+                  "smoke": "smoke vial", "salve": "surgeon's salve",
+                  "elixir": "elixir of mending"}
 # The overcharge doctrine (ships the parked overfill idea; the tavern clamp is
 # the chassis): a potion drunk with the pool already at MAX grants a flat
 # +POTION_OVERCHARGE above max (HP or STA by kind) instead of being wasted --
@@ -1440,6 +1451,164 @@ CONDITION_NOUN = {"bleed": "the bleeding", "poison": "the poison",
 CONDITION_ON_HIT_TAG = {"bleed": "leaves wounds bleeding",
                         "poison": "venomous", "burn": "its fire clings"}
 
+# --- Wounds & recovery (2026-07-26, the attrition rework's slice 3b) -------- #
+# ONE injury system, TWO time constants. HP is the FAST channel (blood and
+# shock, refills with rest); WOUNDS are the SLOW one -- named located records
+# that lower the HP ceiling and carry specific stat penalties, and that a night
+# in the wilds does nothing for. Both channels are live in every fight,
+# INCLUDING the one where the wound is taken: there is no in-fight/between-
+# fights seam and no `fresh` flag.
+#
+# What keeps a single blow from being charged twice is a BUDGET SHIFT, not a
+# delay: HERO_PAIN moved 2 -> 3 (a hero down 6 HP goes from -3 to -2 on all
+# rolls) and the located wound's -1 pays the difference. Total in-fight
+# pressure at a given injury level stays near the bench baseline; what changes
+# is that part of it is now specific, located, and does NOT heal overnight.
+# That is the entire point of the system.
+#
+# THE ASYMMETRY IS DELIBERATE. Heroes record wounds; foes keep the scalar and
+# nothing else (they do not persist between fights, so records buy nothing and
+# would cost the bestiary's 25 bench-fitted annotations). So a hero's penalty
+# budget moves from fast-healing HP into slow-healing wounds while a foe's
+# stays entirely fast -- over a career that is a net nerf to the party, and
+# that net nerf IS the attrition this rework is adding. If it proves too much,
+# the dial is the treatment ladder's RATE (bed nights per severity, healer tier
+# caps), not the penalty magnitudes.
+
+# The location table. Weighted: flesh/arm/hand/leg common, chest/gut uncommon,
+# head/eye rare. The VITAL fraction is what decides how often a crippling blow
+# reads as death rather than maiming, so it is a PRIMARY LETHALITY LEVER -- it
+# is benched, not eyeballed. As set, vitals are 15% of located hits.
+WOUND_LOCATION_WEIGHTS = {
+    "flesh": 32,    # a body hit that is nothing more specific than blood lost
+    "arm": 18,
+    "leg": 18,
+    "hand": 13,
+    "chest": 7,     # vital
+    "gut": 5,       # vital
+    "eye": 4,       # rare, and never lethal -- an eye is a maiming, not a kill
+    "head": 3,      # vital
+}
+WOUND_VITALS = ("head", "chest", "gut")     # where a crippling blow KILLS;
+                                            # everywhere else it MAIMS instead
+WOUND_LIMBS = ("arm", "hand", "leg", "eye", "flesh")
+
+# Tier -> severity recorded. A GRAZE records NOTHING: grazes are blood loss,
+# not disabling wounds, and keeping them off the record is what keeps the
+# 40-column log (and the sheet) readable.
+WOUND_TIER_SEVERITY = {"wound": 1, "grievous": 2, "crippling blow": 3}
+WOUND_DOWN_SEVERITY = 1     # going Down by ANY route adds this much, unlocated
+                            # ("badly beaten") -- the fall is itself an injury
+WOUND_SEVERITY_MAX = 3
+
+# The stat penalties a location carries, by stat key ("str"/"dex"/"mind"/
+# "sta" -- sta is the MAX pool). Folded into the raw stats the way the brewed
+# buffs are (_sync_wound_stats), so every read site -- pressure, aim, severity,
+# the night's refill -- sees them without a special case.
+WOUND_PENALTIES = {
+    "flesh": {},
+    "arm": {"str": -1},
+    "hand": {"dex": -1},
+    "leg": {"dex": -1},
+    "chest": {"sta": -2},
+    "gut": {"str": -1},
+    "head": {"dex": -1, "mind": -1},
+    "eye": {"dex": -1},
+    "": {},                 # the unlocated "badly beaten" record
+}
+# What a severity-3 wound adds on top (a shattered arm is not a cut arm).
+WOUND_SEVERE_EXTRA = {"arm": {"dex": -1}}
+# Which locations keep bleeding while untreated -- re-derived at every fight's
+# start (refresh_wound_bleed), so the free field stabilize stops the blood and
+# the still-open wound opens it again next fight. The wound, not the condition,
+# is the thing that has to be treated.
+WOUND_BLEED = {"gut": BLEED_POWER}
+WOUND_STAT_FLOOR = 1        # no wound stack ever pushes a stat below this
+WOUND_HP_FLOOR_DIV = 2      # ...and wounds never take the HP ceiling below
+                            # max_hp // this. THE ANTI-DEATH-SPIRAL GUARANTEE,
+                            # and it is not optional: an injury track with no
+                            # floor is a career that ends by arithmetic.
+
+# The naming table -- the narrative payoff of the whole system. This is what
+# lets the agent refer back to an injury sessions later, so it is authored
+# content (writing.md's register: plain, specific, present, no purple), not
+# placeholders. Indexed [location][severity].
+WOUND_NAMES = {
+    "flesh": {1: "a shallow cut along the ribs",
+              2: "a deep gash across the back",
+              3: "a torn side, badly closed"},
+    "arm": {1: "a cut across the left forearm",
+            2: "a deep wound in the right arm",
+            3: "a shattered arm"},
+    "hand": {1: "a split knuckle",
+             2: "a cut through the palm",
+             3: "two fingers gone"},
+    "leg": {1: "a gash above the knee",
+            2: "a deep wound in the thigh",
+            3: "a broken leg, set crooked"},
+    "chest": {1: "a cracked rib",
+              2: "three ribs broken",
+              3: "a caved-in chest"},
+    "gut": {1: "a shallow belly wound",
+            2: "a gut wound, still seeping",
+            3: "a belly opened and packed"},
+    "head": {1: "a split scalp",
+             2: "a cracked skull",
+             3: "a caved temple"},
+    "eye": {1: "a cut brow, blood in the eye",
+            2: "a torn eyelid",
+            3: "a ruined eye"},
+    "": {1: "badly beaten", 2: "badly beaten", 3: "badly beaten"},
+}
+# The maiming line: what a permanent record reads as once it has set.
+WOUND_MAIM_NAMES = {"arm": "a withered arm", "hand": "a crippled hand",
+                    "leg": "a ruined leg", "eye": "a blind eye",
+                    "flesh": "a body that never healed right"}
+
+# THE TREATMENT LADDER -- the anti-inflation spine. The gate is RATE and
+# ACCESS, never price: a bed heals one severity a night wherever a bed is, and
+# a healer's reach is capped by the settlement's tier. That is why the fee can
+# stay flat forever (rules.md: "do not make rest expensive, make rest
+# incomplete") -- a flat 20g is worth nothing at level 20, but a village healer
+# who cannot touch your third wound is worth exactly as much then as now.
+BED_SEVERITY_PER_NIGHT = 1  # a night in a settlement bed knits this much
+                            # severity back. The WILDS knit NONE: camping
+                            # refills HP to the ceiling and stops there.
+HEALER_FEE = 20             # flat, per severity treated. Deliberately not
+                            # scaled -- see above.
+HEALER_DAYS = 1             # the visit costs a day (the quest clock prices it)
+HEALER_TIER_CAP = {"village": 2, "town": 4, "city": 6, "capital": None}
+                            # total severity one visit can clear, by settlement
+                            # subtype; None = everything non-permanent. THE
+                            # CAP IS THE GATE.
+SALVE_SEVERITY = 1          # the salve (the medium potion tier): closes one
+                            # non-permanent wound outright, worst first
+SALVE_PRICE = 40            # dearer than a healing potion, cheaper than a day
+SALVE_ALCHEMY_RANK = 3      # ...and brewable, under the same stock cap
+ELIXIR_SEVERITY = 3         # the epic tier: clears one wound of ANY kind,
+                            # permanents and maimings included. Scarce and
+                            # AUTHORED -- never stocked, never brewed, never
+                            # dropped. The DM places it (`give`), or the
+                            # rank-3 healing spell does the same work.
+# The healing spell's top rank is the permanent career job of the level-point
+# sink: at SPELL_RANK_MAX it clears a maiming (see cast_healing).
+
+SAT_WOUNDED_DAY = -1        # per DAY, for each companion carrying an untreated
+                            # wound -- a long convalescence genuinely costs
+                            # morale, and with SAT_TAVERN_COOLDOWN_DAYS the
+                            # bed cannot simply buy it back. wants_to_leave /
+                            # leave_threshold carry it from there; no new
+                            # departure machinery.
+SAT_MAIMED = -2             # ...plus a lump the day a permanent maiming lands
+
+# The DISPLAY call (the designer's "no HP as a number", cheaply reversible):
+# in play HP reads as a STATE WORD and the digits stay available in `status`
+# and ui/fight-detailed.txt. Bands are fractions of the CEILING, not of max_hp
+# -- a wounded hero at their ceiling is Steady, not permanently Bloodied.
+# ("Spent" is the STAMINA state word and is not reused here on purpose.)
+HP_STATE_BANDS = ((1.00, "Unhurt"), (0.75, "Scratched"), (0.50, "Bloodied"),
+                  (0.25, "Reeling"), (0.0, "Failing"))
+
 # --- Log vocabulary (the interpretive layer) -------------------------------- #
 # Every exchange logs two layers: a catchy headline (what a watcher would say)
 # and the raw numbers beneath it (every die, modifier, and source). See
@@ -1862,6 +2031,40 @@ class Condition:
     source: str = ""        # who or what put it there (display only)
 
 
+@dataclass
+class Wound:
+    """One named located injury riding one body (slice 3b -- see the wounds
+    constants block and rules.md's Wounds & Recovery add-on).
+
+    The SLOW channel of the one injury system. HP is the fast one: it refills
+    with rest. A wound lowers the HP ceiling by its severity, carries its
+    location's stat penalties, and only comes off through the treatment ladder
+    -- a bed knits one severity a night, a healer several in a day, a salve
+    closes one outright. A `permanent` wound (a maiming) comes off for nothing
+    below the epic tier.
+
+    `name` is authored display copy (WOUND_NAMES / WOUND_MAIM_NAMES); the
+    mechanics read `location`, `severity`, `penalty` and `bleed`."""
+    location: str           # a WOUND_LOCATION_WEIGHTS key, or "" (unlocated:
+                            # the "badly beaten" record a fall leaves)
+    name: str               # the authored display string (writing.md register)
+    severity: int           # 1..WOUND_SEVERITY_MAX
+    penalty: dict = field(default_factory=dict)   # stat key -> int (negative)
+    bleed: int = 0          # HP/round it re-opens with at a fight's start;
+                            # 0 = none. Re-derived every fight, so first aid
+                            # stops the blood and the wound opens it again.
+    permanent: bool = False # a MAIMING: the treatment ladder's ordinary rungs
+                            # (bed, healer, salve) cannot touch it -- only the
+                            # epic tier and the rank-3 healing spell can
+    treated: bool = False    # a healer has worked on it: it no longer bleeds
+                            # and no longer drains morale, but the severity is
+                            # still on the ceiling until it knits
+    mourned: bool = False   # the SAT_MAIMED lump has been paid for this
+                            # record (a maiming costs morale once, not nightly)
+    prosthetic: str = ""    # SCHEMA SEED (parked, plan.md): a steampunk or
+                            # magical limb hung on the maiming it replaces
+
+
 @dataclass(eq=False)
 class Entity:
     name: str               # short (combat-log) name -- "Inga", nothing
@@ -1999,6 +2202,29 @@ class Entity:
                                          # the room and waits for treatment.
                                          # At most one per kind (the bounded
                                          # stacking rule -- apply_condition).
+    wounds: list["Wound"] = field(default_factory=list)
+                                         # the SLOW injury channel (slice 3b):
+                                         # named located records that lower
+                                         # hp_ceiling and carry stat
+                                         # penalties. Nothing here is per-fight
+                                         # state -- only the treatment ladder
+                                         # takes one off.
+    records_wounds: bool = False        # whether blows on THIS body are
+                                         # recorded as wounds. The hero
+                                         # factories (make_human, develop_hero)
+                                         # set it; foes never do -- they do not
+                                         # persist between fights, so records
+                                         # buy nothing and would cost the whole
+                                         # bestiary calibration. Foe wound
+                                         # NARRATION is free and stays the DM's.
+    wound_stat_pen: dict = field(default_factory=dict)
+                                         # how much of each raw stat is
+                                         # currently folded away by wounds
+                                         # (the str_buff/dex_buff pattern, in
+                                         # the other direction). Bookkeeping
+                                         # only: _sync_wound_stats owns it, and
+                                         # it travels in the save so a reload
+                                         # never double-charges.
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
@@ -2164,6 +2390,47 @@ class Entity:
         # Floored at 0: tavern-overcharged HP (hp > max_hp) is a buffer, not
         # a bonus to rolls.
         return max(0, self.hp_lost) // self.pain
+
+    # --- wounds (slice 3b) ------------------------------------------------- #
+    @property
+    def wound_load(self) -> int:
+        """Total severity carried. The number the HP ceiling is docked by, and
+        the number a healer's tier cap is measured against."""
+        return sum(w.severity for w in self.wounds)
+
+    @property
+    def hp_ceiling(self) -> int:
+        """The highest HP rest can reach: max_hp docked by the wound load, and
+        NEVER below half the pool. That floor is the anti-death-spiral
+        guarantee (WOUND_HP_FLOOR_DIV) -- it is what makes a wound track a
+        cost instead of a countdown."""
+        if not self.wounds:
+            return self.max_hp
+        return max(self.max_hp // WOUND_HP_FLOOR_DIV,
+                   self.max_hp - self.wound_load)
+
+    @property
+    def maimed(self) -> bool:
+        """Carrying at least one permanent wound. Only the epic tier or the
+        rank-3 healing spell clears one."""
+        return any(w.permanent for w in self.wounds)
+
+    @property
+    def hp_state(self) -> str:
+        """HP as a STATE WORD, banded against the CEILING (a wounded hero
+        resting at their ceiling reads Unhurt, not permanently Bloodied).
+        The played displays show this; the digits stay in `status` and the
+        detailed log."""
+        if self.dead:
+            return "Dead"
+        if self.down:
+            return "Down"
+        ceiling = max(1, self.hp_ceiling)
+        frac = self.hp / ceiling
+        for threshold, word in HP_STATE_BANDS:
+            if frac >= threshold:
+                return word
+        return HP_STATE_BANDS[-1][1]
 
     @property
     def prof_rank(self) -> int:
@@ -2595,7 +2862,8 @@ def _tick_conditions(actors: list[Entity], party_set: set,
             if c.kind not in kinds:
                 kinds.append(c.kind)
         if e.hp <= 0:
-            e.down = True       # never dead: bleeding out stays treatable
+            go_down(e)          # never dead: bleeding out stays treatable
+                                # (the fall still records its beating -- 3b)
             felled.append(e)
         for c in e.conditions:
             if c.rounds is not None:
@@ -2636,6 +2904,258 @@ def _stabilize(entities: list[Entity], log: list[str]) -> None:
               f"    The bleeding is stopped: {', '.join(helped)}.",
               fit_lines(["The bleeding is stopped:"]
                         + _name_parts(helped, ".")))
+
+
+# --------------------------------------------------------------------------- #
+# Wounds (slice 3b): the slow injury channel
+# --------------------------------------------------------------------------- #
+
+# Which raw field each penalty key writes to. "sta" is the MAX pool (the
+# chest's crushed-ribs penalty), not the current track.
+_WOUND_STAT_ATTR = {"str": "str_", "dex": "dex", "mind": "mind", "sta": "sta"}
+
+
+def _sync_wound_stats(e: Entity) -> None:
+    """Fold the wound list's stat penalties into the raw stats.
+
+    The str_buff/dex_buff pattern run in the other direction, and chosen for
+    the same reason: every read site in the engine -- pressure, aim, the
+    severity soak, the night's STA refill -- goes on reading a plain field and
+    needs no wound special case. `wound_stat_pen` records exactly how much is
+    currently folded away, so this is idempotent, survives the save, and can
+    never double-charge. Called after ANY change to the wound list.
+
+    Nothing here touches HP: a wound docks the CEILING (hp_ceiling), and the
+    blow that made it already took its damage. Charging the same blow twice is
+    what the HERO_PAIN budget shift exists to avoid."""
+    want: dict[str, int] = {}
+    for w in e.wounds:
+        for stat, v in w.penalty.items():
+            want[stat] = want.get(stat, 0) + v
+    for stat, attr in _WOUND_STAT_ATTR.items():
+        applied = e.wound_stat_pen.get(stat, 0)
+        base = getattr(e, attr) - applied       # the unwounded value
+        # Never a bonus (min 0) and never below the floor -- and a stat that
+        # is ALREADY at or under the floor (a foe row with MIND 0) simply
+        # cannot be docked, rather than being pushed up to it.
+        new = min(0, max(min(0, want.get(stat, 0)), WOUND_STAT_FLOOR - base))
+        if new:
+            e.wound_stat_pen[stat] = new
+        else:
+            e.wound_stat_pen.pop(stat, None)
+        setattr(e, attr, base + new)
+    if e.cur_sta > e.sta:
+        e.cur_sta = e.sta       # a crushed chest shrinks the pool you are
+                                # standing in, not just the one you refill to
+
+
+def roll_wound_location(rng: random.Random) -> str:
+    """Where the blow landed, off WOUND_LOCATION_WEIGHTS. Vitals are ~15% of
+    located hits -- the primary lethality lever (bench it, don't eyeball it)."""
+    keys = list(WOUND_LOCATION_WEIGHTS)
+    total = sum(WOUND_LOCATION_WEIGHTS[k] for k in keys)
+    roll = rng.randint(1, total)
+    for k in keys:
+        roll -= WOUND_LOCATION_WEIGHTS[k]
+        if roll <= 0:
+            return k
+    return keys[-1]
+
+
+def wound_name(location: str, severity: int, permanent: bool = False) -> str:
+    """The authored display string for a record. A maiming gets its own,
+    shorter line -- it has stopped being an injury and become a fact about
+    the body."""
+    if permanent and location in WOUND_MAIM_NAMES:
+        return WOUND_MAIM_NAMES[location]
+    table = WOUND_NAMES.get(location) or WOUND_NAMES[""]
+    return table.get(min(severity, WOUND_SEVERITY_MAX), table[1])
+
+
+def wound_penalty_for(location: str, severity: int) -> dict:
+    """The stat penalties a record of this location and depth carries."""
+    pen = dict(WOUND_PENALTIES.get(location, {}))
+    if severity >= WOUND_SEVERITY_MAX:
+        for stat, v in WOUND_SEVERE_EXTRA.get(location, {}).items():
+            pen[stat] = pen.get(stat, 0) + v
+    return pen
+
+
+def add_wound(e: Entity, location: str, severity: int,
+              permanent: bool = False, log: list[str] | None = None,
+              quiet: bool = False) -> "Wound | None":
+    """Record a wound (or DEEPEN the one already at that location).
+
+    Stacking is bounded exactly as conditions are: a second cut to the same
+    arm does not open a second record, it makes the arm worse -- capped at
+    WOUND_SEVERITY_MAX. Unbounded records would bury both the sheet and the
+    40-column log, and would turn the HP ceiling into a countdown.
+
+    Returns the live record, or None when the body does not keep them (every
+    foe). Callers never need to check `records_wounds` themselves."""
+    if not e.records_wounds or severity <= 0:
+        return None
+    existing = next((w for w in e.wounds
+                     if w.location == location and w.permanent == permanent),
+                    None)
+    if existing is not None:
+        if existing.severity >= WOUND_SEVERITY_MAX and not permanent:
+            return existing
+        existing.severity = min(WOUND_SEVERITY_MAX,
+                                existing.severity + severity)
+        w = existing
+        w.treated = False       # it has been opened again
+    else:
+        w = Wound(location=location, name="", severity=min(severity,
+                                                           WOUND_SEVERITY_MAX),
+                  permanent=permanent)
+        e.wounds.append(w)
+    w.name = wound_name(location, w.severity, permanent)
+    w.penalty = wound_penalty_for(location, w.severity)
+    w.bleed = WOUND_BLEED.get(location, 0)
+    _sync_wound_stats(e)
+    # A ceiling is a ceiling: current HP can never sit above it. In ordinary
+    # play this clamp does nothing -- every tier's damage is at least its
+    # severity, so the blow that made the record has already taken more than
+    # the record costs. It bites only on a body sitting above its pool (the
+    # tavern's one-day overcharge, which a fresh wound spends) or on a
+    # hand-edited save, and in both cases the clamp is what keeps the sheet
+    # honest.
+    e.hp = min(e.hp, e.hp_ceiling)
+    if log is not None and not quiet:
+        what = "is MAIMED" if permanent else "takes a wound"
+        _play(log,
+              f"    {e.name} {what}: {w.name} "
+              f"(severity {w.severity}; HP ceiling {e.hp_ceiling}/{e.max_hp})",
+              fit_lines([f"{e.name.split()[0]} {what}:", f"{w.name}."]))
+    return w
+
+
+def record_hit_wound(defender: Entity, tier: str, rng: random.Random,
+                     log: list[str] | None = None) -> "Wound | None":
+    """The accrual hook, called from _attack once a blow has landed and its
+    tier is known (rules.md's Wounds & Recovery, "What a blow leaves"):
+
+      graze      -- nothing recorded. Grazes are blood loss, not disabling
+                    injuries, and keeping them off the record is what keeps
+                    the log and the sheet readable.
+      wound      -- severity 1, located
+      grievous   -- severity 2, located
+      crippling  -- severity 3, located. If the blow also DROPPED the body,
+                    the location decides the fate: a vital (head/chest/gut)
+                    is the killing one and the ordinary death path stands; a
+                    limb or extremity MAIMS instead -- permanent, and Down
+                    rather than dead. That is the whole of the "obliterating
+                    tier" the roadmap parked, bought for free.
+
+    Makes ZERO rng calls for a body that keeps no records, so foe-only
+    exchanges hold their exact RNG stream."""
+    if not defender.records_wounds:
+        return None
+    severity = WOUND_TIER_SEVERITY.get(tier, 0)
+    if severity <= 0:
+        return None
+    location = roll_wound_location(rng)
+    dropped = defender.hp <= 0
+    maims = (tier == "crippling blow" and dropped
+             and location not in WOUND_VITALS)
+    if maims:
+        defender.dead = False
+        defender.down = True
+    return add_wound(defender, location, severity, permanent=maims, log=log)
+
+
+def note_beaten(e: Entity, log: list[str] | None = None) -> "Wound | None":
+    """Going Down by ANY route -- steel, a bleed-out tick, a misfire -- is
+    itself an injury: WOUND_DOWN_SEVERITY, unlocated ("badly beaten"). It is
+    what makes a fall cost something past the fight it happened in."""
+    return add_wound(e, "", WOUND_DOWN_SEVERITY, log=log, quiet=True)
+
+
+def go_down(e: Entity, log: list[str] | None = None) -> None:
+    """Put a body on the floor and record the beating. The ONE place `down`
+    is set for anything that keeps records, so the fall wound can never be
+    missed by a new caller."""
+    e.down = True
+    note_beaten(e, log)
+
+
+def refresh_wound_bleed(entities: list[Entity]) -> None:
+    """Re-open what is still open, at every fight's start.
+
+    The wound -- not the condition -- is the thing that has to be treated: the
+    free field stabilize stops the blood when the steel stops, and an untreated
+    gut wound simply opens again the next time the body is asked to fight. A
+    TREATED wound (a healer packed it) does not."""
+    for e in entities:
+        for w in e.wounds:
+            if w.bleed and not w.treated:
+                apply_condition(e, "bleed", source=w.name, power=w.bleed)
+
+
+def _treatable(e: Entity, permanents: bool) -> list["Wound"]:
+    """The records a rung of the ladder may touch, WORST FIRST -- everything
+    treats the deepest wound it can reach before the scratches."""
+    return sorted((w for w in e.wounds if permanents or not w.permanent),
+                  key=lambda w: (-w.severity, w.location))
+
+
+def heal_wounds(e: Entity, severity: int, permanents: bool = False,
+                treat: bool = False) -> list[str]:
+    """The treatment ladder's ONE primitive: knit `severity` points of wound
+    load back, worst wound first, and return what closed (display copy) --
+    a record knitted to 0 comes off entirely.
+
+    Every rung calls this and differs only in its budget and its reach: a bed
+    spends BED_SEVERITY_PER_NIGHT a night and never touches a maiming, a
+    healer spends its tier cap in a day, a salve closes one wound outright,
+    the epic tier and the rank-3 healing spell pass `permanents=True`.
+    `treat=True` additionally marks what SURVIVES as packed and dressed: it
+    stops bleeding and stops draining morale while the severity knits."""
+    closed: list[str] = []
+    left = severity
+    for w in _treatable(e, permanents):
+        if left <= 0:
+            break
+        take = min(left, w.severity)
+        left -= take
+        w.severity -= take
+        if w.severity <= 0:
+            closed.append(w.name)
+            e.wounds.remove(w)
+        else:
+            w.name = wound_name(w.location, w.severity, w.permanent)
+            w.penalty = wound_penalty_for(w.location, w.severity)
+            if treat:
+                # Only what this rung actually WORKED ON is dressed. A salve
+                # packs the wound it was poured into, not every scratch on
+                # the body -- and a healer who ran out of tier cap leaves the
+                # ones they never reached raw, which is exactly the pressure
+                # the cap is there to create.
+                w.treated = True
+    _sync_wound_stats(e)
+    if closed:
+        clear_conditions(e, ("bleed",))
+    return closed
+
+
+def wound_tags(e: Entity) -> list[str]:
+    """Display lines for the records on this body, worst first -- the sheet,
+    the tally, `status` and the pause menu all read this."""
+    tags = []
+    for w in _treatable(e, permanents=True):
+        tag = w.name
+        if w.permanent:
+            tag += " [PERMANENT]"
+        elif w.treated:
+            tag += " (dressed)"
+        tags.append(f"{tag} (sev {w.severity})")
+    return tags
+
+
+def untreated_wounds(e: Entity) -> int:
+    """How many records are still raw -- what the morale drain counts."""
+    return sum(1 for w in e.wounds if not w.treated and not w.permanent)
 
 
 # --------------------------------------------------------------------------- #
@@ -2891,7 +3411,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                              f"(-{MISFIRE_BACKLASH_HP} HP to the caster)"]))
             _debug(log, pressure_line)
             if attacker.hp <= 0:
-                attacker.down = True
+                go_down(attacker)
                 _play(log,
                       f"    {attacker.name} goes down, out of the fight.",
                       f"{attacker.name} goes DOWN.")
@@ -3206,6 +3726,16 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         else:
             defender.down = True
 
+    # What the blow LEAVES (slice 3b), recorded on the played party only. This
+    # runs AFTER the death branch on purpose: a crippling blow to a limb is
+    # where the record commutes the kill into a MAIMING, and it can only do
+    # that once the ordinary path has had its say. A body that ends the
+    # exchange on the floor also takes the unlocated "badly beaten" record --
+    # the fall is an injury in its own right.
+    record_hit_wound(defender, tier, rng, log)
+    if defender.hp <= 0 and not defender.dead:
+        note_beaten(defender)
+
 
 def _pick_target(targets: list[Entity], rng: random.Random, focus: bool,
                  engaged: dict[Entity, int] | None = None,
@@ -3266,7 +3796,7 @@ def _first_blood(party: list[Entity], foes: list[Entity],
                              f"{target.name} takes "
                              f"{FIRST_BLOOD_HP} dmg."]))
             if not target.alive:
-                target.down = True
+                go_down(target)
                 _log_foe_fall(target, log)
 
 
@@ -3383,7 +3913,7 @@ def _try_field_medic(fallen: Entity, party: list[Entity],
                          "the bleeding cannot be stopped."]))
         return False
     fallen.dead = False
-    fallen.down = True
+    go_down(fallen)
     medic.stunned = max(medic.stunned, 1)
     _play(log,
           f"    *** {medic.name}'s hands find the wound -- rapid surgery "
@@ -3449,7 +3979,7 @@ def _misfire(caster: Entity, spell: str, log: list[str]) -> None:
           fit_lines([f"!! {caster.name}'s {spell} MISFIRES",
                      f"(-{MISFIRE_BACKLASH_HP} HP to the caster)"]))
     if caster.hp <= 0:
-        caster.down = True
+        go_down(caster)
         _play(log,
               f"    {caster.name} goes down, out of the fight.",
               f"{caster.name} goes DOWN.")
@@ -3837,7 +4367,7 @@ def _do_pause_action(h: Entity, action: str, log: list[str],
             return False
         h.items["healing"] -= 1
         before = h.hp
-        h.hp = recover(h.hp, HEALING_POTION_RESTORE, h.max_hp)
+        h.hp = recover(h.hp, HEALING_POTION_RESTORE, h.hp_ceiling)
         _play(log,
               f"    {h.name} downs a healing potion mid-fight "
               f"(HP {before} -> {h.hp}/{h.max_hp}, now "
@@ -4006,6 +4536,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
 
     if fired is None:
         fired = set()
+    if first_round == 1:
+        # An untreated open wound re-opens the moment the body is asked to
+        # fight again (slice 3b). The free field stabilize stops the blood
+        # when the steel stops; the WOUND is what has to be treated, so a gut
+        # wound nobody packed bleeds through every fight until it is.
+        refresh_wound_bleed([e for e in party + foes if e.alive])
     if pause_triggers and first_round == 1:
         # Crossing-only gating: a trigger whose condition already holds as
         # the fight opens is marked fired silently -- entering low was the
@@ -4584,7 +5120,7 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         # companion for the protagonist's life. A fight the
                         # rest can't win is still a wipe.
                         defender.dead = False
-                        defender.down = True
+                        go_down(defender)
                         defender.fate_debt = True
                         _play(log,
                               f"    *** The blow should be "
@@ -5102,7 +5638,16 @@ HERO_STAT_RANGE = (3, 6)      # DEX / STR
 # with nothing in between. Halving the spiral (both sides) keeps wounded
 # fighters dangerous, which is what populates the 25-75%-HP-lost middle.
 # pain 1 is now the SOFT tier (small critters that feel everything).
-HERO_PAIN = 2
+# 2026-07-26 (the attrition rework's slice 3b): 2 -> 3. THE BUDGET SHIFT.
+# Part of the anonymous HP channel's roll penalty moved into the named WOUND
+# channel: a hero down 6 HP now takes -2 instead of -3, and the located
+# wound's own -1 pays the difference. Total in-fight pressure at a given
+# injury level therefore stays near the bench baseline -- what changed is that
+# part of it is specific, located, and does not heal overnight. Foes stay at
+# pain 2 (sites.py sets each row's own), which is the asymmetry the wound
+# system is FOR: the party's penalty budget moved into a slow channel, theirs
+# did not. This is dial #1 if the career curve moves too far.
+HERO_PAIN = 3
 # STA gets its own, higher range: it is the second death-track (the swing
 # budget; running dry mid-fight is usually fatal), so its floor matters like
 # HP's floor -- a 4-STA hero is a 4-swing hero, and the batch sims show those
@@ -5256,6 +5801,8 @@ def make_human(rng: random.Random, name: str,
         alchemy=alchemy,
         moves={_starter_move(weapon)} if seed == "drilled" else set(),
         pain=HERO_PAIN,
+        records_wounds=True,    # heroes keep the slow channel; foes never do
+                                # (slice 3b -- the deliberate asymmetry)
         weapon=weapon,
         items=random_kit(rng),
     )
@@ -5314,9 +5861,14 @@ def stat_line(e: Entity) -> str:
     if e.moves:
         bits.append("moves: " + ", ".join(sorted(e.moves)))
     gift = "; ".join(bits) or "no gift"
+    # A wounded body shows its CEILING beside the pool: "HP 6/8 of 12" reads
+    # the whole slow channel at a glance (slice 3b). The stats printed here
+    # are already the wound-docked ones -- _sync_wound_stats folds them in.
+    hp = (f"HP {e.hp}/{e.hp_ceiling} of {e.max_hp}" if e.wounds
+          else f"HP {e.hp}/{e.max_hp}")
     line = (f"{e.name} (L{e.level}, training {e.training}): "
             f"DEX {e.dex}  STR {e.str_}  {mind}STA {e.cur_sta}/{e.sta}  "
-            f"HP {e.hp}/{e.max_hp}  Power {e.cur_power}/{e.power}  {cha}"
+            f"{hp}  Power {e.cur_power}/{e.power}  {cha}"
             f"({gift}; {weapon_tag(e)}; {kit})")
     if e.satisfaction is not None:
         line += f"  [satisfaction {e.satisfaction}/{SATISFACTION_MAX}]"
@@ -5583,6 +6135,31 @@ def satisfaction_after_fight(party: list[Entity], dead_before: list[str],
             adjust_satisfaction(partner, -partner.satisfaction, log,
                                 f"{d.name} is dead -- the heart goes out "
                                 f"of them")
+
+
+def wound_morale(party: list[Entity], log: list[str]) -> None:
+    """The convalescence drain (slice 3b), run once a night by session play's
+    night_upkeep: SAT_WOUNDED_DAY per tracked companion still carrying an
+    untreated wound, plus a one-off SAT_MAIMED the first night after a
+    maiming. This is the designer's "your party leaves you if it goes on more
+    than a few weeks", and it needs no new departure machinery -- with
+    SAT_TAVERN_COOLDOWN_DAYS capping what a bed buys back, wants_to_leave and
+    leave_threshold carry it from here.
+
+    A wound a healer has DRESSED costs nothing: paying for care is exactly
+    what stops the grumbling, which is the point of having a ladder at all."""
+    for h in party:
+        if h.dead or not satisfaction_tracked(h):
+            continue
+        raw = untreated_wounds(h)
+        if raw:
+            adjust_satisfaction(h, SAT_WOUNDED_DAY * raw, log,
+                                "carrying untended wounds", injury=True)
+        for w in h.wounds:
+            if w.permanent and not w.mourned:
+                w.mourned = True
+                adjust_satisfaction(h, SAT_MAIMED, log,
+                                    f"maimed -- {w.name}", injury=True)
 
 
 def award_xp(party: list[Entity], amount: int, log: list[str],
@@ -6172,23 +6749,104 @@ def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
             adjust_satisfaction(h, SAT_SITE_CLEAR, log, "a job paid out")
 
 
+def potion_price(kind: str) -> int:
+    """What a shop charges. Flat per tier and deliberately never scaled: the
+    treatment ladder gates on rate and access (bed nights, healer tier caps,
+    the alchemy rank), so its fees are allowed to become pocket change at
+    level 20 without the system losing its teeth."""
+    return SALVE_PRICE if kind == "salve" else POTION_PRICE
+
+
 def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
     """Buy one potion from the party purse. A between-adventures call the DM
     makes on the player's decision -- nothing in the engine buys automatically."""
     if kind not in POTION_KINDS:
         raise ValueError(f"unknown potion kind: {kind}")
-    if kind not in STOCKED_POTION_KINDS:
+    if kind not in SHOP_POTION_KINDS:
         log.append(f"    No shop stocks a {kind} potion.")
         return False
-    if purse.gold < POTION_PRICE:
-        log.append(f"    Not enough gold for a {kind} potion "
-                   f"({purse.gold}g / {POTION_PRICE}g).")
+    price = potion_price(kind)
+    if purse.gold < price:
+        log.append(f"    Not enough gold for a "
+                   f"{POTION_DISPLAY.get(kind, kind)} "
+                   f"({purse.gold}g / {price}g).")
         return False
-    purse.gold -= POTION_PRICE
+    purse.gold -= price
     h.items[kind] = h.items.get(kind, 0) + 1
-    log.append(f"    {h.name} buys a {kind} potion for {POTION_PRICE}g "
-               f"({kind} x{h.items[kind]}; purse: {purse.gold}g).")
+    log.append(f"    {h.name} buys a {POTION_DISPLAY.get(kind, kind)} for "
+               f"{price}g ({kind} x{h.items[kind]}; purse: {purse.gold}g).")
     return True
+
+
+def healer_service(party: list[Entity], purse: Purse, subtype: str,
+                   log: list[str]) -> tuple[int, int]:
+    """The settlement's healer -- the treatment ladder's ACCESS rung (slice
+    3b). Costs a day (the caller advances the clock, so the quest clock prices
+    the visit) and HEALER_FEE per severity closed, and clears the party's
+    worst wounds first up to the settlement's tier cap.
+
+    THE CAP IS THE GATE, not the fee. A village herb-wife reaches
+    HEALER_TIER_CAP["village"] severity and no further, however much gold is
+    on the table; a capital's surgeons clear everything short of a maiming.
+    That is why the fee never has to scale: geography does not inflate, and a
+    village that cannot touch your third wound is worth exactly as much at
+    level 20 as at level 1. Permanents are beyond every tier -- they want the
+    epic elixir or the rank-3 healing spell.
+
+    Returns (severity closed, gold spent)."""
+    cap = HEALER_TIER_CAP.get(subtype, HEALER_TIER_CAP["village"])
+    hurt = [h for h in party
+            if not h.dead and any(not w.permanent for w in h.wounds)]
+    if not hurt:
+        log.append("    Nobody in the party carries a wound the healer can "
+                   "work on.")
+        return 0, 0
+    budget = cap if cap is not None else sum(
+        w.severity for h in hurt for w in h.wounds if not w.permanent)
+    closed_total = spent = 0
+    # Worst first across the WHOLE party: the deepest wound in the room is
+    # what a healer with a day and a cap spends it on.
+    while budget > 0:
+        worst = max(
+            (w for h in hurt for w in h.wounds if not w.permanent),
+            key=lambda w: w.severity, default=None)
+        if worst is None or purse.gold < HEALER_FEE:
+            break
+        owner = next(h for h in hurt if worst in h.wounds)
+        step = min(budget, worst.severity)
+        affordable = min(step, purse.gold // HEALER_FEE)
+        if affordable <= 0:
+            break
+        name = worst.name
+        gone = heal_wounds(owner, affordable, treat=True)
+        purse.gold -= HEALER_FEE * affordable
+        spent += HEALER_FEE * affordable
+        closed_total += affordable
+        budget -= affordable
+        if gone:
+            log.append(f"    The healer works on {owner.name}: {name} -- "
+                       f"closed (HP ceiling {owner.hp_ceiling}/"
+                       f"{owner.max_hp}).")
+        else:
+            log.append(f"    The healer works on {owner.name}: {name} -- "
+                       f"down to severity {worst.severity}, packed and "
+                       f"dressed.")
+    if not closed_total:
+        log.append(f"    The healer wants {HEALER_FEE}g a wound and the "
+                   f"purse holds {purse.gold}g.")
+        return 0, 0
+    if cap is not None and budget <= 0:
+        log.append(f"    That is the whole of this {subtype}'s art "
+                   f"({cap} severity a visit) -- the rest wants a bigger "
+                   f"town, a salve, or time in a bed.")
+    log.append(f"    {closed_total} severity treated for {spent}g "
+               f"(purse: {purse.gold}g). It costs the day.")
+    maimed = [h.name for h in party if not h.dead and h.maimed]
+    if maimed:
+        log.append(f"    The healer can do nothing for "
+                   f"{', '.join(maimed)}'s maiming -- that is high magic's "
+                   f"work.")
+    return closed_total, spent
 
 
 def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
@@ -6303,7 +6961,8 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
         log.append(f"    {target.name} is down -- standing the fallen is "
                    f"the rank-3 art ({healer.name} knows rank {rank}).")
         return False
-    if not target.down and target.hp >= target.max_hp:
+    if (not target.down and target.hp >= target.hp_ceiling
+            and not (rank >= SPELL_RANK_MAX and target.wounds)):
         log.append(f"    {target.name} carries no wound to mend.")
         return False
     if healer.cur_power < HEALING_CAST_COST:
@@ -6334,11 +6993,11 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
                          f"{target.name} STANDS",
                          f"(HP {target.hp}/{target.max_hp}).",
                          f"[{healer.cur_power} Power left]"]))
-        _mend_bleeding(target, log)
+        _mend_bleeding(target, log, effective)
         return True
     amount = HEALING_MEND[effective]
     before = target.hp
-    target.hp = min(target.max_hp, target.hp + amount)
+    target.hp = min(target.hp_ceiling, target.hp + amount)
     note = " (a rough mending -- one rank down)" if result == "downgrade" else ""
     _play(log,
           f"    {healer.name} casts healing on {target.name}{note} "
@@ -6348,20 +7007,35 @@ def cast_healing(healer: Entity, target: Entity, rng: random.Random,
                      f"{target.name}:",
                      f"HP {target.hp}/{target.max_hp}.",
                      f"[{healer.cur_power} Power left]"]))
-    _mend_bleeding(target, log)
+    _mend_bleeding(target, log, effective)
     return True
 
 
-def _mend_bleeding(target: Entity, log: list[str]) -> None:
-    """Healing magic closes what is open (slice 3a's rung of the treatment
-    ladder): a landed mend stops any bleeding. Venom is a different art --
-    the antidote/healer tiers arrive with the wound system."""
+def _mend_bleeding(target: Entity, log: list[str],
+                   rank: int = 0) -> None:
+    """Healing magic closes what is open: a landed mend stops any bleeding
+    (slice 3a) and, at the TOP RANK, knits a wound proper -- maimings
+    included (slice 3b). That is the healing spell's permanent career job and
+    the level-point sink's answer to "what do I do with rank 3": nothing else
+    in the game clears a maiming except an authored elixir."""
     if clear_conditions(target, ("bleed",)):
         _play(log, f"    {target.name}'s bleeding closes over.",
               f"{target.name.split()[0]}'s bleeding closes over.")
+    if rank < SPELL_RANK_MAX or not target.wounds:
+        return
+    closed = heal_wounds(target, ELIXIR_SEVERITY, permanents=True, treat=True)
+    what = ", ".join(closed) if closed else "the deep hurt"
+    _play(log,
+          f"    The rank-{SPELL_RANK_MAX} art knits {target.name}'s "
+          f"{what} away (wound load {target.wound_load}; HP ceiling "
+          f"{target.hp_ceiling}/{target.max_hp})",
+          fit_lines([f"{target.name.split()[0]}'s {what}",
+                     "is knitted away.",
+                     f"HP ceiling {target.hp_ceiling}/{target.max_hp}."]))
 
 
-DRINKABLE_KINDS = ("healing", "stamina", "power", "strength", "dexterity")
+DRINKABLE_KINDS = ("healing", "stamina", "power", "strength", "dexterity",
+                   "salve", "elixir")
 
 
 def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
@@ -6374,7 +7048,15 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
                            spent-only, clamped at the next long rest)
       strength / dexterity -> +1 STR / +1 DEX until the next long rest (the
                            brewed stat buffs; DEX never exceeds +1)
-      power   -> restore Power now (the retired kind; an old save may carry it)"""
+      power   -> restore Power now (the retired kind; an old save may carry it)
+      salve   -> the WOUND tier (slice 3b): closes SALVE_SEVERITY of the worst
+                           non-permanent wound outright. Bought or brewed at
+                           alchemy rank 3; the middle rung of the treatment
+                           ladder, and the one the party can carry with them
+      elixir  -> the EPIC tier: clears ELIXIR_SEVERITY of ANY wound,
+                           permanents and maimings included. Never stocked,
+                           never brewed, never dropped -- authored placement
+                           only (the DM's `give`), like a named weapon"""
     if kind not in DRINKABLE_KINDS:
         raise ValueError(f"undrinkable potion kind: {kind}")
     if h.items.get(kind, 0) <= 0:
@@ -6386,13 +7068,26 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
                    f"potion adds nothing (DEX tops out at "
                    f"+{DEXTERITY_POTION_DEX}).")
         return False
+    if kind in ("salve", "elixir") and not h.wounds:
+        log.append(f"    {h.name} carries no wound for a "
+                   f"{POTION_DISPLAY[kind]} to close.")
+        return False
+    if kind == "salve" and not any(not w.permanent for w in h.wounds):
+        log.append(f"    A salve cannot touch a maiming -- {h.name} carries "
+                   f"nothing else (the epic tier or the rank-"
+                   f"{SPELL_RANK_MAX} healing spell is what answers it).")
+        return False
     h.items[kind] -= 1
     if kind in BREWED_KINDS:
         h.brewed = max(0, h.brewed - 1)
     first = h.name.split()[0]
     if kind == "healing":
         before = h.hp
-        if h.hp >= h.max_hp:
+        # The basic potion answers the FAST channel and stops at the wound
+        # ceiling like every other mend (slice 3b): blood, not bone. A hero
+        # already at their ceiling has nothing left for it to knit, so the
+        # vial overcharges rather than being wasted.
+        if h.hp >= h.hp_ceiling:
             h.hp += POTION_OVERCHARGE
             _play(log,
                   f"    {h.name} drinks a healing potion at full -- it "
@@ -6403,7 +7098,7 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
                              f"it overcharges: HP {h.hp}/{h.max_hp}",
                              f"({h.items['healing']} left)."]))
         else:
-            h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.max_hp)
+            h.hp = recover(max(h.hp, 0), HEALING_POTION_RESTORE, h.hp_ceiling)
             if h.hp > 0:
                 h.down = False
             _play(log,
@@ -6457,6 +7152,21 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
               f"next long rest; {h.items['dexterity']} left)",
               fit_lines([f"{first} drinks a dexterity potion:",
                          f"DEX {h.dex} until the next rest."]))
+    elif kind in ("salve", "elixir"):
+        # The wound tiers (slice 3b): the ladder's carried rungs. Both spend
+        # their reach on the WORST wound first; only the elixir may reach a
+        # maiming.
+        epic = kind == "elixir"
+        depth = ELIXIR_SEVERITY if epic else SALVE_SEVERITY
+        closed = heal_wounds(h, depth, permanents=epic, treat=True)
+        what = ", ".join(closed) if closed else "the worst of it"
+        _play(log,
+              f"    {h.name} uses a {POTION_DISPLAY[kind]} -- {what} closes "
+              f"(wound load {h.wound_load}; HP ceiling {h.hp_ceiling}/"
+              f"{h.max_hp}; {h.items[kind]} left)",
+              fit_lines([f"{first} uses a {POTION_DISPLAY[kind]}:",
+                         f"{what} closes.",
+                         f"HP ceiling {h.hp_ceiling}/{h.max_hp}."]))
     else:  # power (retired kind; old saves)
         before = h.cur_power
         h.cur_power = recover(h.cur_power, POWER_POTION_RESTORE, h.power)
@@ -6476,7 +7186,12 @@ def wants_potion(h: Entity, kind: str) -> bool:
     at full -- the overcharge is a deliberate spend, never an automatic
     one."""
     if kind == "healing":
-        return h.hp <= h.max_hp // 2
+        # ...and only while a potion can still DO something (slice 3b): a
+        # hero sitting at a wound-lowered ceiling is as whole as a vial can
+        # make them, and the quartermaster must not pour one down them every
+        # fight forever. For an unwounded body this second clause is always
+        # true, so no sim number moves.
+        return h.hp <= h.max_hp // 2 and h.hp < h.hp_ceiling
     if kind == "stamina":
         return h.cur_sta <= WINDED_STA
     return False
@@ -6663,7 +7378,7 @@ def start_fight(h: Entity, log: list[str]) -> None:
     reset -- wounds carry across rooms; healing comes from potions, spells, and
     resting between adventures, never a free per-fight top-up."""
     if h.down or h.hp <= 0:
-        h.hp = REVIVE_HP
+        h.hp = min(REVIVE_HP, h.hp_ceiling)     # never past the wound ceiling
         h.down = False
         _play(log,
               f"    {h.name} is helped back to their feet ({REVIVE_HP} HP).",
@@ -6673,7 +7388,8 @@ def start_fight(h: Entity, log: list[str]) -> None:
 
 def long_rest(party: list[Entity], clock: Clock, log: list[str],
               banner: str = "The party makes camp.",
-              rng: random.Random | None = None) -> None:
+              rng: random.Random | None = None,
+              bed: bool = False) -> None:
     """Make camp for the night. A deliberate, agent-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
@@ -6681,7 +7397,16 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
     `banner` reflavors the night line (the tavern sleeps under a roof).
     `rng`, when given, rolls the stamina forage (KIT_FORAGE_CHANCE for one
     extra draught) -- the deterministic callers (session, the sims) pass it;
-    a bare call skips the bonus."""
+    a bare call skips the bonus.
+
+    THE NIGHT IS NO LONGER WHOLE (slice 3b). HP knits toward the WOUND
+    CEILING, never past it: `camp --heal` stopped meaning "camp until whole"
+    and started meaning "camp until as whole as the wilds can make you".
+    `bed=True` is the settlement's own rung of the treatment ladder -- a real
+    bed knits BED_SEVERITY_PER_NIGHT of wound load back on top, which the
+    wilds never do. That is the geography gate the whole rework turns on:
+    time and geography do not inflate, so a night's cap is worth exactly as
+    much at level 20 as at level 1."""
     clock.day += 1
     _play(log,
           f"  --- {banner} Night passes; day {clock.day} dawns. ---",
@@ -6725,8 +7450,31 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
                                 [CONDITION_NOUN.get(k, k) for k in slept_off],
                                 ":")
                             + [f"-{cost} HP."]))
+        # A real bed is the settlement rung of the treatment ladder: it knits
+        # wound load back, worst wound first, at BED_SEVERITY_PER_NIGHT a
+        # night. A maiming is beyond it. The wilds knit NONE -- that is the
+        # access gate, and it is why convalescence is a place you go to.
+        if bed and h.wounds:
+            was = h.wound_load
+            closed = heal_wounds(h, BED_SEVERITY_PER_NIGHT)
+            if closed:
+                _play(log,
+                      f"    {h.name}: {', '.join(closed)} -- closed.",
+                      fit_lines([f"{h.name.split()[0]}:"]
+                                + _name_parts(closed, "")
+                                + ["-- closed."]))
+            elif h.wound_load < was:
+                _play(log,
+                      f"    {h.name} mends a little in the bed "
+                      f"(wound load {h.wound_load}; HP ceiling "
+                      f"{h.hp_ceiling}/{h.max_hp})",
+                      fit_lines([f"{h.name.split()[0]} mends a little.",
+                                 f"HP ceiling {h.hp_ceiling}/{h.max_hp}."]))
         before = h.hp
-        h.hp = min(h.max_hp, max(h.hp, 0) + h.hp_regen_per_night)
+        # ...and the night stops at the CEILING. This one clamp is the whole
+        # of "make rest incomplete": what a fight left on you is still on you
+        # in the morning unless something on the ladder answered it.
+        h.hp = min(h.hp_ceiling, max(h.hp, 0) + h.hp_regen_per_night)
         note = f"STA and Power full ({h.cur_sta}/{h.sta}, "
         note += f"{h.cur_power}/{h.power})"
         if h.hp > before:
@@ -6736,10 +7484,16 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
             note += f", the overcharge fades -> {h.hp}/{h.max_hp} HP"
         else:
             note += ", HP full"
+        if h.wounds and h.hp >= h.hp_ceiling and h.hp < h.max_hp:
+            note += (f" -- as whole as this night can make them "
+                     f"(ceiling {h.hp_ceiling}, {h.wound_load} wound load)")
         _play(log, f"    {h.name}: {note}",
               fit_lines([f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp}",
                          f"STA {h.cur_sta}/{h.sta}",
-                         f"Power {h.cur_power}/{h.power}"]))
+                         f"Power {h.cur_power}/{h.power}"]
+                        + ([f"(ceiling {h.hp_ceiling} -- "
+                            f"{h.wound_load} wound load)"]
+                           if h.wounds else [])))
     # The traveling kit replenishes itself, SHRUNK in session C (see KIT_*):
     # 1 healing + 1 stamina scrounged PER PARTY, not per hero -- a floor on
     # the party total (if they carry none of a kind, one is scrounged to the
@@ -6795,7 +7549,8 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
           fit_lines(["The party takes beds at the tavern",
                      f"({cost}g -- purse {purse.gold}g)."]))
     long_rest(party, clock, log,
-              banner="The party sleeps warm under a roof.", rng=rng)
+              banner="The party sleeps warm under a roof.", rng=rng,
+              bed=True)
     for h in boarders:
         hp_bonus = max(1, round(h.max_hp * TAVERN_OVERCHARGE))
         sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))

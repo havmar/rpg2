@@ -469,8 +469,12 @@ State crossings say only the state — `!! X is Winded.` / `!! X is
 SPENT.` — and wound lines carry no roll penalty. The numbers moved to
 the two decision surfaces instead: the **pause menu** and the
 **post-fight tally** both print each hero's standing penalties
-(`(wounds -2, Winded -2 to rolls)`). A number the player budgets around
+(`(hurt -2, Winded -2 to rolls)`). A number the player budgets around
 is a number the player sees — at the moments they actually budget.
+(Since 2026-07-26 that first term is labelled **hurt**, not "wounds":
+it is the HP-derived spiral — the fast channel — and the named located
+WOUNDS now print as their own list beneath it. Two channels, two
+displays, never one number wearing both names.)
 
 **Quiet rounds collapse.** A round in which nothing lands (all parries,
 deflections, circling) is not printed; consecutive quiet rounds compress
@@ -775,7 +779,8 @@ These are the only edits to the existing rules:
 
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
-| **HP** | Carries across the run (never a per-fight reset) | A healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
+| **HP** | Carries across the run (never a per-fight reset) | A healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week**, but only ever up to the **wound ceiling** (2026-07-26, slice 3b) | Lethal death-spiral inside a fight; a lasting wound between them. The FAST channel of the injury system. |
+| **Wounds** | Carry indefinitely — a night does nothing for them | Only the **treatment ladder**: a settlement bed (1 severity a night), the healer (tier-capped), a salve, or high magic for a maiming | The SLOW channel (2026-07-26, slice 3b): named located records that dock the HP ceiling and carry stat penalties. See the Wounds & Recovery add-on. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
 | **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it and drinks for everyone who has no better answer (see "Gold and the potion economy"). |
@@ -788,6 +793,11 @@ stocks stay per-character, and nothing else is ever pooled.)
 ---
 
 ## The two-buffer split
+
+*(2026-07-26, slice 3b: every HP mend below — potion, spell, rest — now fills
+toward the **wound ceiling** and stops there, and the ladder gained two new
+item rungs, the **surgeon's salve** and the authored **elixir of mending**.
+See the Wounds & Recovery add-on.)*
 
 **Between fights (items — slow to reach for, instant once drunk):**
 - **Healing potion** — drunk in the lull between fights, restores HP instantly
@@ -1078,6 +1088,12 @@ before dark.
   size — a big pool doesn't take proportionally longer). A long rest advances the
   day. Drinking potions is a *separate* deliberate act
   (see "In advance" above / `use_potion`), never folded into a rest.
+  **But the night is no longer whole (2026-07-26, slice 3b): HP knits toward
+  the WOUND CEILING, never past it.** What a fight left recorded on you is
+  still on you in the morning unless something on the treatment ladder
+  answered it — and in the wilds nothing does. A **settlement bed** (tavern,
+  downtime, a healer's day) additionally knits one severity a night; the
+  wilds knit none. That is the geography gate the whole rework turns on.
 - **Where the night is spent matters (2026-07-10):**
   - **Camping in the wilds** (anywhere that isn't a settlement) risks a
     **night visitor** (~10%, off the road's party-independent table with the
@@ -2221,6 +2237,193 @@ the 55-75% calibration band and both remain on its easy side, along with
 most of the catalog — the standing "re-annotate the bestiary for the pain-2
 party" item, not this slice's business. Every other row, `tune.py` and
 `bench_training.py` are unchanged.
+
+---
+
+# Wounds & Recovery — Add-on (2026-07-26, the attrition rework's slice 3b)
+
+**One injury system, two time constants.** HP is the **fast** channel: blood
+and shock, refilling with rest. **Wounds** are the **slow** one: named located
+records that lower the HP ceiling and carry specific stat penalties, and that
+a night in the wilds does nothing for.
+
+Both channels are live in **every** fight, including the one where the wound
+is taken. There is no in-fight/between-fights seam and no `fresh` flag —
+`Entity.wound_penalty` already carried across fights (it is derived from HP,
+and HP carries), so a delay would have been a fiction.
+
+`rpg.Wound` / `rpg.Entity.wounds`; the constants live in the wounds block at
+the top of `rpg.py`.
+
+## Why: rest had stopped being incomplete
+
+With quests down to one encounter (slice 1) there was nothing left inside a
+job to attrit: the party won, camped to full, and HP never mattered. Every
+obvious fix is a gold price — and gold is the one quantity that inflates
+(income runs ~4 g/day at level 1 and ~75 g/day at level 20 while HP pools
+barely double). So:
+
+> **Do not make rest expensive. Make rest incomplete.**
+> Gate recovery on **rate** and **access**, never on price. Time and geography
+> do not inflate; a cap on what a night can restore is worth exactly as much
+> at level 20 as at level 1.
+
+## The budget shift (why a blow is not charged twice)
+
+Part of the roll-penalty budget **moved out of the anonymous HP channel and
+into the named wound channel**. `HERO_PAIN` went **2 → 3**: a hero down 6 HP
+now takes −2 on all rolls instead of −3, and the located wound's own −1 pays
+the difference. Total in-fight pressure at a given injury level therefore
+stays near the bench baseline. What changed is that part of it is now
+**specific, located, and does not heal overnight**. That is the entire point.
+
+**The asymmetry is deliberate and stated on purpose.** Heroes record wounds;
+foes keep the scalar and stay at pain 2. Foes do not persist between fights,
+so records would buy nothing and would cost the bestiary's 25 bench-fitted
+`level`/`ref_pack` annotations. The consequence is that a hero's penalty
+budget moves from fast-healing HP into slow-healing wounds while a foe's stays
+entirely fast — over a career, a net nerf to the party, and that net nerf **is
+the attrition this rework is adding**. If it proves too much, the dial is the
+treatment ladder's **rate**, not the penalty magnitudes.
+
+Foe wound *narration* is free and stays the DM's.
+
+## The schema
+
+| field | meaning |
+|-------|---------|
+| `location` | `flesh` / `arm` / `hand` / `leg` / `chest` / `gut` / `head` / `eye`, or `""` (unlocated) |
+| `name` | the authored display string (`WOUND_NAMES`, writing.md's register) |
+| `severity` | 1–3 |
+| `penalty` | stat key → int (folded into the raw stats) |
+| `bleed` | HP/round it re-opens with; 0 = none |
+| `permanent` | a **maiming** — only the epic tier reaches it |
+| `treated` | a healer has packed it: it no longer bleeds, no longer drains morale |
+| `prosthetic` | schema seed only (plan.md's parked prosthetics) |
+
+## The HP ceiling
+
+**`hp_ceiling = max(max_hp // 2, max_hp − wound_load)`**, where `wound_load`
+is the sum of severities. Every mend — the night, a healing potion, the
+healing spell — fills *toward* the ceiling and stops there. `camp --heal`
+stopped meaning "camp until whole" and now means **"camp until as whole as
+the wilds can make you"**.
+
+**Wounds can never take a character below half their pool.** That floor is the
+anti-death-spiral guarantee and it is not optional: an injury track without
+one is a career that ends by arithmetic rather than by play.
+
+HP is never docked twice for one blow — a tier's damage is always at least its
+severity, so the blow that made the record has already taken more than the
+record costs.
+
+## What a blow leaves
+
+Rolled in `_attack`, where the tier is already known:
+
+| tier | result |
+|------|--------|
+| graze | **nothing recorded** — blood loss only; grazes are never located |
+| wound | severity 1, located |
+| grievous | severity 2, located |
+| crippling blow | severity 3, located — and if it also **dropped** the body, see below |
+| going Down by any route | **+1 severity, unlocated** ("badly beaten") |
+
+Grazes staying unlocated is what keeps the 40-column log and the sheet
+readable, and it matches the fiction: a cut is blood, not a disabling injury.
+
+A second hit to the same place **deepens** the record rather than opening a
+second one (bounded exactly as conditions are), capped at severity 3.
+
+**The maiming rule.** A crippling blow that drops the body reads off its
+location: a **vital** (head / chest / gut) is the killing one and the ordinary
+death path stands; a **limb or extremity** **MAIMS** instead — `permanent`,
+and **Down rather than dead**. A crippling blow that does *not* drop you never
+maims, which is what keeps maimings rare and meaningful: a maiming is what
+would have been a death. This is most of what the parked "obliterating tier"
+wanted, bought for free.
+
+**The location table is weighted** — flesh/arm/hand/leg common, chest/gut
+uncommon, head/eye rare — and vitals are **15% of located hits**. That
+fraction decides how often "crippling" reads as death rather than maiming, so
+it is a **primary lethality lever**: bench it, never eyeball it.
+
+## Penalties
+
+| location | penalty |
+|----------|---------|
+| arm | STR −1 (and DEX −1 at severity 3) |
+| hand | DEX −1 |
+| leg | DEX −1 |
+| chest | max STA −2 |
+| gut | STR −1, and it **bleeds** |
+| head | DEX −1, MIND −1 |
+| eye | DEX −1 |
+| flesh / unlocated | none — the ceiling loss is the whole cost |
+
+Penalties are **folded into the raw stats** (the same machinery as the brewed
+`str_buff` / `dex_buff`, run in the other direction), so every read site —
+the pressure roll, a cast's AIM, the severity soak, the night's STA refill —
+needs no wound special case. No stat is ever pushed below 1.
+
+**Bleeding is re-derived, not stored as a condition.** An untreated gut wound
+re-opens at the start of every fight; the free field stabilize stops the blood
+when the steel stops, and the wound opens it again next time. The *wound*, not
+the condition, is the thing that has to be treated.
+
+## The treatment ladder — the anti-inflation spine
+
+The gate is **rate and access**. The fee is a convenience and may stay flat
+forever.
+
+| source | clears | gate |
+|--------|--------|------|
+| field stabilize | bleed | free, automatic at fight end |
+| **a bed in a settlement** | 1 severity per night | **time** (the wilds knit none) |
+| **the healer** (`healer`) | several severity, a day + a flat fee | **settlement tier** |
+| basic potion | HP / blood loss, to the ceiling | gold (price unchanged) |
+| **surgeon's salve** | one non-permanent wound outright | gold, or alchemy rank 3 (stock-capped) |
+| **elixir of mending / rank-3 healing spell** | permanents and maimings | scarce, authored |
+
+**Healer tier caps: village 2 severity a visit, town 4, city 6, capital
+everything short of a maiming.** The **cap is the gate**, which is why the fee
+never needs to scale — a village that cannot touch your third wound is worth
+exactly as much at level 20 as at level 1. Treatment also *dresses* what it
+cannot close: a packed wound stops bleeding and stops draining morale while
+its severity knits.
+
+Every settlement has a healer service (`places._service_kind`, and
+`_attach_services` hangs one on the alchemist, the general shop or the inn
+where no building of its own exists) — the game gates on the **service's
+tier**, never on which door it is behind.
+
+The salve is shop-stocked and brewable; the elixir is neither, and neither
+ever enters creation rolls, drops, or the overnight kit. That was deliberate:
+leaving those streams alone is what keeps the bestiary calibration behind them
+where it was.
+
+## Morale
+
+`SAT_WOUNDED_DAY` per night for each companion carrying an **untended** wound,
+plus a one-off `SAT_MAIMED` the first night after a maiming. With the tavern's
+morale cooldown (`SAT_TAVERN_COOLDOWN_DAYS`) a long convalescence genuinely
+costs the party, and `wants_to_leave` / `leave_threshold` carry it from there
+— no new departure machinery. A wound a healer has dressed costs nothing:
+paying for care is exactly what stops the grumbling, which is the point of
+having a ladder at all.
+
+## Display
+
+In play HP reads as a **state word** — Unhurt / Scratched / Bloodied /
+Reeling / Failing, banded against the **ceiling**, so a wounded hero resting
+at their ceiling reads Unhurt rather than permanently Bloodied. The digits
+stay one command away in `status`, the pause menu, and
+`ui/fight-detailed.txt`. That is the designer's "no HP as a number" at display
+level only, and it is cheaply reversible — the model still has the scalar.
+
+The wound list itself appears in the post-fight tally, the pause menu,
+`status` and `ui/party.txt`, worst first, with `[PERMANENT]` and `(dressed)`
+markers.
 
 ---
 

@@ -149,6 +149,17 @@ a pointer: what the file is, how it's run, where its docs are.
   in the catalog carries a rider), and the save round-trip including a
   pre-slice save with no `conditions` key.
   `python -m unittest -v test_conditions.py`.
+- `test_wounds.py` — the WOUND system contract suite (2026-07-26, slice 3b):
+  the location table and its 15% vital fraction, the accrual table (and the
+  graze that deliberately records nothing), the bounded deepening, the
+  maiming rule and its one condition, the asymmetry (heroes record, foes
+  never do — including the assertion that a foe costs no rng call), the HP
+  ceiling and its half-pool floor, the stat fold's idempotence and its
+  floor, every rung of the treatment ladder and what each can and cannot
+  reach, the bleed re-derivation, the morale drain, the save round-trip
+  (including a pre-slice save with no `wounds` key), and the 40-column fit
+  of every authored wound name.
+  `python -m unittest -v test_wounds.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
@@ -189,7 +200,12 @@ a pointer: what the file is, how it's run, where its docs are.
   (2026-07-26, the attrition rework's slice 3a: `Condition`,
   `Entity.conditions` / `Entity.inflicts`, `apply_condition` /
   `clear_conditions` / `_tick_conditions` / `_stabilize` — rules.md's
-  Conditions add-on), and the batch-sim
+  Conditions add-on), the WOUND SYSTEM (2026-07-26, slice 3b: `Wound`,
+  `Entity.wounds` / `records_wounds` / `hp_ceiling`, the accrual in
+  `_attack` and the maiming rule, the treatment ladder's `heal_wounds` /
+  `healer_service` / the salve and elixir tiers, `wound_morale`, and
+  **`HERO_PAIN` 2 -> 3, the budget shift** — rules.md's Wounds & Recovery
+  add-on), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -361,7 +377,15 @@ a pointer: what the file is, how it's run, where its docs are.
   too (the free-allocation doctrine: no class gate). Since 2026-07-26 the
   QUARTERMASTER PASS is dispatched from here: `rpg.auto_potions` is called
   at every out-of-combat point where the potion stock changes (see the dev
-  map), so `use` became an override rather than the routine step.
+  map), so `use` became an override rather than the routine step. Also
+  since 2026-07-26 (slice 3b) the WOUND surface: **`healer`** (the day
+  with the settlement's healer — the treatment ladder's access rung),
+  `bed=True` on the settlement night paths (`downtime`, `camp` behind
+  walls; `tavern_rest` passes it in the engine), `camp --heal` stopping at
+  the wound CEILING instead of at full, the `wound_tags` readouts and the
+  banded `hp_state` word across `tally_lines` / `cmd_status` /
+  `party_sheet_lines` / the pause menu, and the salve/healer rows in
+  `prices`.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -452,6 +476,7 @@ python bench_quests.py   # generated rooms/sites honesty + the career sim
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_conditions.py  # the conditions framework contract
+python -m unittest -v test_wounds.py  # the wound system contract
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 ```
 
@@ -873,6 +898,43 @@ mechanic *does* and *why* is rules.md's job.
   (`{"fire": "burn"}` on every bolt): measured, it moves every bestiary row
   because the bench's reference duo rolls fire wizards. It is a one-line
   addition for the magic content pass, with its own bench round.
+- **Wounds & recovery** (2026-07-26, the attrition rework's slice 3b —
+  rules.md's Wounds & Recovery add-on) — `rpg.py`: the wounds constants
+  block just under the conditions one (`WOUND_LOCATION_WEIGHTS` /
+  `WOUND_VITALS` / `WOUND_LIMBS`, `WOUND_TIER_SEVERITY` /
+  `WOUND_DOWN_SEVERITY` / `WOUND_SEVERITY_MAX`, `WOUND_PENALTIES` /
+  `WOUND_SEVERE_EXTRA` / `WOUND_BLEED`, `WOUND_STAT_FLOOR` /
+  `WOUND_HP_FLOOR_DIV`, the authored `WOUND_NAMES` / `WOUND_MAIM_NAMES`,
+  the treatment ladder's `BED_SEVERITY_PER_NIGHT` / `HEALER_*` / `SALVE_*` /
+  `ELIXIR_SEVERITY`, `SAT_WOUNDED_DAY` / `SAT_MAIMED`, and
+  `HP_STATE_BANDS`); **`HERO_PAIN` 2 -> 3 is the budget shift** and sits
+  where it always did, in the hero-generation block. The `Wound` dataclass
+  beside `Condition`; `Entity.wounds` / `records_wounds` /
+  `wound_stat_pen` and the properties `wound_load` / `hp_ceiling` /
+  `maimed` / `hp_state`. The API block between the conditions helpers and
+  the melee: `_sync_wound_stats` (the stat fold — the `str_buff` pattern
+  run backwards, which is why no read site needs a wound special case),
+  `roll_wound_location`, `wound_name` / `wound_penalty_for`, `add_wound`,
+  `record_hit_wound` (the accrual hook and the MAIMING rule),
+  `note_beaten` / `go_down`, `refresh_wound_bleed`, `heal_wounds` (the ONE
+  treatment primitive every rung calls), `wound_tags` / `untreated_wounds`.
+  Accrual is called from the END of `_attack`, deliberately after the
+  death branch — that is where a crippling limb blow commutes a kill into
+  a maiming. **`go_down` replaced every bare `down = True`** so no future
+  caller can miss the fall's own record. `refresh_wound_bleed` runs at
+  `group_combat`'s round-1 setup; `long_rest` gained `bed=` (the
+  settlement rung) and the ceiling clamp; `use_potion` gained the
+  salve/elixir branches; `cast_healing`/`_mend_bleeding` gained the
+  rank-3 permanent clear; `healer_service` is the access rung;
+  `wound_morale` is the nightly convalescence drain. `places.py`: the
+  `healer` service kind and `_HEALER_HOSTS` (every settlement gets one —
+  the tier cap is the gate, not the building). `quests.py`: the healer's
+  role in `_cast_service_providers`. `session.py`: the `Wound` round-trip
+  in the serializers, `cmd_healer`, `bed=True` from `cmd_downtime`
+  (`tavern_rest` passes it in the engine), `wound_morale` in
+  `night_upkeep`, the `wound_tags` readouts and the `hp_state` word in
+  `tally_lines` / `cmd_status` / `party_sheet_lines` / the pause menu,
+  and the salve/healer rows in `prices`. `test_wounds.py` is the contract.
 - **Session state** — `session.py`: one JSON document in `save.json`
   (party, clock, purse, rng, world, `active_quest`, `accepted` (the TAKEN-
   quest ids, since 2026-07-22 — `cmd_take` appends, `ui/map.txt` reads),
@@ -905,12 +967,50 @@ about half the runs, and **not using resources should mostly mean death**.
 Levers pulled then: enemy DEX +1 across the board (who hits is DEX's job) and
 `SHORT_RESTS_PER_DAY` 2 -> 1.
 
-**Current state (2026-07-26, after the attrition rework's SLICES 1, 2 and 3a —
-quest shape, the pay rebase, the two deletions; the quest clocks + the banded
-lazy refill; and the conditions framework. Session C's alchemy layer and
+**Current state (2026-07-26, after the attrition rework's SLICES 1, 2, 3a and
+3b — quest shape, the pay rebase, the two deletions; the quest clocks + the
+banded lazy refill; the conditions framework; and the WOUND SYSTEM, which
+rebaselined everything. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**Slice 3b (2026-07-26) is the full rebaseline. The one-line reading: the
+SINGLE-FIGHT game barely moved and the CAREER moved a lot** — which is the
+budget shift (`HERO_PAIN` 2 → 3) working exactly as specified. In-fight
+pressure at a given injury level is unchanged; what changed is that part of
+it is now located, named, and does not heal overnight.
+
+- **Bestiary: within noise, row for row** (2000 trials a column, at the
+  annotated level): archer 80.9 → **81.3**, skeleton 93.0 → **93.2**, dire
+  wolf 93.5 → **94.2**, great spider 81.9 → **85.1**, ghoul 92.0 → **91.5**,
+  pyromancer 87.7 → **85.0**, giant 98.8 → **98.9**. Nothing moved more than
+  ~3 points and the moves go both ways. No annotation touched.
+- **Controls: also within noise** — `bench_weapons` keeps its column order
+  exactly (zweihander tops every swarm, katana/zweihander split the duels);
+  `bench_ranged` longbow **46.9 / 47.2 / 67.8** by field against 46.4 / 48.8 /
+  66.7. Both harnesses now build wound-recording fighters (they are heroes),
+  so these are live numbers, not frozen ones.
+- **The multi-encounter FIXTURES got harsher, as designed** — they are the
+  content the wound track exists to tax: hideout rank 0 clear/wipe **45.3 /
+  22.7** (was 50.8 / 15.6), barrow `[3,3,4]` **27.4 / 50.7** (was 30.2 /
+  48.3). Training ladder hideout **44.5 → 68.3 → 83.5 → 92.4**, barrow
+  **27.4 → 59.8 → 86.1 → 96.1**: a rank still reads as a rank. Party sweep
+  hideout **15.4 / 44.5 / 51.2 / 66.0**, barrow **2.2 / 27.4 / 67.4 / 87.3**:
+  the solo-death-trap / 3-4-cruise shape holds.
+- **Generated content** (300/cell): at-level encounters win **71.7-93.3%**;
+  at-level whole jobs clear **55-85%**, deepest in the L8-9 pocket (59.0 /
+  55.0), top band **61.0 / 66.7** at L19-20.
+- **The equal-cost matrix**: column order unchanged on a floor a few points
+  lower — L8 site row pools **5.2** vs median **34.9**, training **47.8**,
+  weapon **54.5** (was 7.5 / 38.8 / 53.0 / 56.5). Moves, disarm-vs-
+  telekinesis and the alchemist career all keep their verdicts.
+- **CAREERS — the acceptance measurement.** 500 careers: reach **L5 76% / L8 62% / L11 32% / L14 10% / L17 5% / L20 1.2%**, median death **L8**, capped median **96 days / 35 quests** (p10-p90 84-132). Against slice 2's 89/72/47/16/9/4.2, death L10, 78 days — and against the PRE-REWORK 83/60/36/12/-/4, death L8, 158 days / 38 quests. Read against the pre-rework curve the career is essentially where it started: **median death level returns to 8**, the number the whole rework was pointed at, and **days to cap recover to 96** from the 78 slice 1's flag was raised about — through convalescence rather than a longer grind, which is the inflation answer the rework exists for. Turn-in bands **quick 41 / on time 49 / late 8 / expired 2** (was 51/43/4/1): the quick premium stopped being nearly free. **No dial was pulled** — the acceptance criterion (reach-L8 and median death level must not collapse) is met.
+- **A harness trap worth remembering:** the first full run read reach-L8 5%
+  and median death L3. That was `bench_quests` camping until
+  `hp >= 0.8 * max_hp`, which a wounded hero can never reach, so both rest
+  loops burned their whole 14-night cap before every door. **Any harness that
+  reads a rest target off `max_hp` is now wrong** — use `hp_ceiling`.
 
 **Slice 3a (2026-07-26) moved exactly two bestiary rows and nothing else.**
 The conditions framework is inert wherever nothing inflicts a condition, and
@@ -1141,6 +1241,19 @@ sit with it at the top of `rpg.py`. The karma layer's knobs
 (`karma.KARMA_HEAT_STEP` / `HEAT_CAP` / `PUNISH_COOLDOWN_DAYS` /
 `PUNISH_CHANCE`, `quests.DARK_GOLD_MULT`) are PLAY-ONLY dials — no
 bench measures them; the felt game is their only meter for now.
+**The wound system (2026-07-26, slice 3b) adds three, and they have a
+declared order** — use them in it: (1) **`HERO_PAIN`** (the budget shift;
+3 now — dropping it back toward 2 hands the party its in-fight pressure
+back without touching the wound track), (2) **the vital fraction in
+`WOUND_LOCATION_WEIGHTS`** (15% of located hits today; it decides how often
+a crippling blow reads as death rather than as a maiming, so it is a
+*primary lethality lever* and moves the death/mercy mix directly), and
+(3) **the treatment RATE** (`BED_SEVERITY_PER_NIGHT`, `HEALER_TIER_CAP`,
+`SALVE_SEVERITY`). Reach for the rate before the penalty magnitudes: the
+whole design gates recovery on rate and access precisely so that the
+magnitudes never have to be re-tuned against an inflating economy.
+`WOUND_HP_FLOOR_DIV` is **not** a dial — the half-pool floor is the
+anti-death-spiral guarantee.
 **Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
 `bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
 `bench_quests.py` after touching any of these** — small changes swing

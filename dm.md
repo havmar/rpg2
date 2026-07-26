@@ -111,8 +111,11 @@ the player's core decision:
     without the party, and it is the whole point of the clock.
   - The board REFILLS: one new job a settlement a day, up to its size
     (village 2, town/city 4, capital 5). Nobody has to hoard work.
-  - **This is what makes convalescence cost something.** "Camp until
-    whole" is no longer free: `camp 6` is six days off every live window.
+  - **This is what makes convalescence cost something.** A long camp is
+    never free: `camp 6` is six days off every live window -- and since
+    2026-07-26 those nights cannot even mend a wound (only a settlement
+    can), so a wounded party with a job in hand is choosing between the
+    window and the ceiling.
     Say so when the player asks for a long rest with a job in hand -- one
     line, not a lecture ("the crypt job is wanted by day 9").
   - The war waves and the shadow board's offers carry NO clock (the war
@@ -227,7 +230,9 @@ the player's core decision:
 - **Nights have geography now** (2026-07-10). `camp` in the WILDS risks a
   night visitor (~10%, the road's table, spotted/ambush valves apply --
   rolled after the night's recovery, so the party at least wakes fresh);
-  behind settlement walls `camp` is safe and free. `tavern` (settlements
+  behind settlement walls `camp` is safe and free -- and, since 2026-07-26,
+  a night behind walls is the only kind that KNITS A WOUND (one severity a
+  night; the wilds knit none). `tavern` (settlements
   only, 1g per living member) buys the same night PLUS a one-day
   OVERCHARGE: everyone wakes with HP and STA ~10% of max (min +1) ABOVE
   their caps ("13/12 HP"). The excess can't be topped back up once spent
@@ -574,7 +579,10 @@ bigger than the fights WITHOUT pages of narration:
   the healing spell (`heal`), making camp
   (`camp` -- the day's only recovery step now; the short rest is gone),
   paying for the tavern instead of
-  camping free (`tavern`), buying potions, weapons, or meds (`buy`),
+  camping free (`tavern`), **spending a day with the healer** (`healer` --
+  the wound answer: a flat fee per severity, capped by the settlement's
+  size, and it costs the day), buying potions, weapons, or meds (`buy` --
+  including the **surgeon's salve**, which closes one wound outright),
   **who to hire and whether to hire at all** (`hire`),
   **who to let go** (`dismiss`), spending a day on
   companion morale (`downtime`),
@@ -598,12 +606,22 @@ bigger than the fights WITHOUT pages of narration:
   quartermaster pass has already drunk it, and anything still in the pack
   is either the PC's own call or being saved for the next fight on
   purpose.)
-- **The default night is "camp until whole" -- WITH NO JOB IN HAND
-  (2026-07-11; narrowed 2026-07-26).** When there is HP to heal, nothing
-  is on the clock, and the player hasn't said otherwise, assume the party
-  camps to full -- `camp --heal` runs the nights in one go and reports the
-  days passed (HP knits at ~max/7 a night, so it's often several). One
-  night only is the EXCEPTION the player asks for, not the default.
+- **The default night is "camp until as whole as the wilds allow" -- WITH
+  NO JOB IN HAND (2026-07-11; narrowed 2026-07-26; REWRITTEN 2026-07-26 by
+  the wound system).** When there is HP to heal, nothing is on the clock,
+  and the player hasn't said otherwise, assume the party camps -- `camp
+  --heal` runs the nights in one go and reports the days passed (HP knits
+  at ~max/7 a night, so it's often several). One night only is the
+  EXCEPTION the player asks for, not the default.
+  - **"Whole" is no longer a thing camping reaches.** HP stops at the
+    **wound ceiling**, and a night in the wilds knits no wound severity at
+    all. So a party carrying wounds camps to its ceiling and then STOPS
+    getting better out there -- going on camping is pure calendar. When
+    the tally shows a wound list, the next decision is a PLACE, not
+    another night: a settlement bed (1 severity a night, free), the
+    `healer` (a day and a flat fee, capped by the settlement's size), or a
+    salve. Say that in one line and hand the turn back; don't auto-loop
+    nights that cannot help.
   - **With a taken job it stops being a default and becomes a CHOICE.**
     Every night is a day off the window (see the quest clock above), so
     put the trade to the player in one line -- "the crypt job is wanted by
@@ -837,9 +855,10 @@ bigger than the fights WITHOUT pages of narration:
   ask the player who should carry what.
 - Recovery is between fights, and the NIGHT is all of it (2026-07-26 --
   the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
-  and Power, ~1/7 max HP, the day advances. Nothing forces the day to end --
+  and Power, ~1/7 max HP **up to the wound ceiling and no further**, the day
+  advances. Nothing forces the day to end --
   camping is the player's call, and the played default is `camp --heal`
-  (camp until whole) when nothing presses. With a job in hand something
+  (camp until the ceiling) when nothing presses. With a job in hand something
   DOES press: every night burns a day of its window (the quest clock) --
   see the turn protocol. In the
   WILDS the night's visitor is now rolled BEFORE the recovery: a camp that
@@ -848,8 +867,33 @@ bigger than the fights WITHOUT pages of narration:
   A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
-- **The death spiral is geared for trained fighters** (2026-07-09): heroes
-  and humanoid foes alike take `-(HP lost)/2` to rolls (the pain divisor).
+- **WOUNDS -- the slow injury channel (2026-07-26).** A landed blow above a
+  graze leaves a NAMED LOCATED record on a hero ("a gut wound, still
+  seeping"): it docks the HP ceiling by its severity, carries a stat
+  penalty, and a night in the wilds does nothing for it. Read the wound
+  list off the tally and NARRATE FROM IT -- that list is the whole point of
+  the system, and it is what lets you refer back to an injury sessions
+  later ("the arm still doesn't come up clean"). Two things to know at the
+  table: a crippling blow that would KILL but lands on a limb **maims**
+  instead (permanent, Down not dead -- a real story beat, give it its
+  moment), and wounds NEVER take anyone below half their pool. The ladder
+  the player buys off it: a settlement bed (1 severity a night), the
+  `healer` (a day, a flat fee, capped by the settlement's size -- village
+  2, town 4, city 6, capital everything short of a maiming), a **surgeon's
+  salve** (closes one outright; shops and alchemy rank 3), and for a
+  maiming only high magic -- the rank-3 healing spell or an authored
+  elixir. Foes take wounds in the FICTION and nowhere else: narrate a
+  broken foe arm freely, never track one.
+- **HP reads as a WORD in play, not a number (2026-07-26).** The tally and
+  the fight displays print Unhurt / Scratched / Bloodied / Reeling /
+  Failing, banded against the ceiling. The digits are still there when you
+  need them -- `status`, the pause menu, `ui/fight-detailed.txt` -- so
+  quote a number only when the player asks for one or a decision turns on
+  it.
+- **The death spiral is geared for trained fighters** (2026-07-09; the
+  hero divisor moved to 3 in 2026-07-26's wound rework -- part of the roll
+  penalty moved into the located wounds instead): heroes take
+  `-(HP lost)/3`, humanoid foes still `/2` (the pain divisor).
   Since 2026-07-21 the fight lines don't carry the number -- the pause menu
   and the post-fight tally print each hero's standing penalties -- so quote
   it from there when it matters ("Sela is at -3; every exchange leans wrong

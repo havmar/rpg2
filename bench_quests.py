@@ -176,6 +176,8 @@ def bench_sites(trials: int) -> None:
 CAREER_MAX_DAYS = 600           # safety valve
 CAREER_REST_TARGET = 0.8        # camp until everyone is at this HP fraction
 CAREER_REST_CAP = 14            # ...but never more nights than this at once
+CAREER_HEALER_LOAD = 2          # total wound severity that makes the town
+                                # healer worth a day and the fee (slice 3b)
 POTION_STOCK = 2                # buy up to this many of each kind per hero
 
 
@@ -190,19 +192,42 @@ def _allocate_points(party, log) -> None:
         rpg.autospend_points(h, log)
 
 
+def _fit_to_fight(h) -> bool:
+    """Rested enough to walk through a door: CAREER_REST_TARGET of the pool,
+    or the WOUND CEILING when wounds have put that out of reach (2026-07-26,
+    slice 3b).
+
+    Reading the target off `max_hp` alone was a harness bug the moment wounds
+    shipped: a hero whose ceiling sits below the target can never satisfy it,
+    so the rest loops burned their whole CAREER_REST_CAP before every single
+    door and the career sim measured a calendar, not a game. The engine's own
+    `camp --heal` stops at the ceiling for exactly this reason."""
+    return h.hp >= min(h.max_hp * CAREER_REST_TARGET, h.hp_ceiling)
+
+
 def _shop_and_rest(party, clock, purse, rng, log) -> None:
-    """The between-sites policy: camp up to strength, then spend gold -- one
-    potion of each kind per hero, then quality steel (the katana, the
-    benches' pick), then potion stockpiles. Crude on purpose: the sims
-    understate the player."""
+    """The between-QUESTS policy: this is the town step, so it camps in a BED
+    (the treatment ladder's free rung -- one wound severity a night), pays the
+    town healer when the party is carrying real damage and the purse can
+    stand it, and then spends gold -- one potion of each kind per hero, then
+    quality steel (the katana, the benches' pick), then potion stockpiles.
+    Crude on purpose: the sims understate the player."""
     nights = 0
     living = [h for h in party if not h.dead]
-    while (nights < CAREER_REST_CAP
-           and any(h.hp < h.max_hp * CAREER_REST_TARGET for h in living)):
-        rpg.long_rest(party, clock, log)
+    while nights < CAREER_REST_CAP and not all(_fit_to_fight(h)
+                                               for h in living):
+        rpg.long_rest(party, clock, log, bed=True)
         nights += 1
     if nights == 0:
-        rpg.long_rest(party, clock, log)    # at least sleep off the day
+        rpg.long_rest(party, clock, log, bed=True)  # at least sleep the day
+    # The healer, crudely: a career that never buys treatment ratchets its
+    # ceilings down to the half-pool floor and stays there, which is not the
+    # shipped game -- the ladder exists and a player uses it. One town visit
+    # (a day, HEALER_FEE per severity) whenever the load is worth the trip.
+    if (sum(h.wound_load for h in living) >= CAREER_HEALER_LOAD
+            and purse.gold >= rpg.HEALER_FEE * CAREER_HEALER_LOAD):
+        rpg.healer_service(party, purse, "town", log)
+        clock.day += rpg.HEALER_DAYS
     katana = rpg.WEAPONS["katana"]
     for stock in (1, POTION_STOCK):
         for h in living:
@@ -275,7 +300,7 @@ def _rest_up(party, clock, log) -> None:
     living = [h for h in party if not h.dead]
     nights = 0
     while (nights < CAREER_REST_CAP
-           and any(h.hp < h.max_hp * CAREER_REST_TARGET or h.cur_sta < h.sta
+           and any(not _fit_to_fight(h) or h.cur_sta < h.sta
                    for h in living)):
         rpg.long_rest(party, clock, log)
         nights += 1
