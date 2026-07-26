@@ -237,7 +237,63 @@ grim); the **DEX potion** (rank 4/+1 under the standing +DEX warning).
 
 ---
 
+## NEXT BUILD — the attrition rework (2026-07-26)
+
+**Full specification: `attrition.md`.** Four slices, one build session each,
+in order. The design spine, settled in the 2026-07-26 quest-length session:
+*do not make rest expensive, make rest incomplete* — gate recovery on rate
+and access, never on price, because price is the only thing that inflates
+(quest gold runs ~4 g/day at level 1 and ~75 g/day at level 20 while HP
+pools barely double).
+
+1. **Quest shape + the pay rebase.** Encounters per quest drop from a
+   measured mean of 3.74 (47% of quests are 4+, tail to 9) to **1 by
+   default, 2 for a middling job, 3 at most**. Site count becomes a
+   template-declared **place** count — a job spans two sites only when the
+   fiction moves between two places, never for difficulty. Pay moves from
+   the site to the QUEST, scaled sub-linearly by encounter count, refitted
+   so the career still takes ~38 quests. **The XP streak and the short rest
+   are deleted** (the streak's press-on-vs-camp job transfers to the wound
+   track in slice 3). Carries three small fixes: camp rolls its visitor
+   BEFORE the night's healing, travel encounters fire on the road instead of
+   at the destination gates with the wrong land's pool, and the satisfaction
+   ratchet gets a tavern cooldown.
+2. **Quest clocks + banded lazy refill.** 3-7 day windows, pay banded by
+   quick / on time / late, expiry with a `failure_epilogue`. This is what
+   makes days cost something without a gold price: healing takes days, and
+   days cost you the job. **It pulls the banded quest inventory below
+   forward as a hard dependency** — once quests expire, worldgen's up-front
+   coverage assert is meaningless.
+3. **The conditions framework, then the wound system.** Two sessions. (3a)
+   A general `Condition` layer — bleed, poison, burn — ticking at end of
+   round, bounded stacking, never able to kill outright; first customers the
+   spider row's venom and the pyromancer's fire. (3b) Named, located wound
+   records on top of HP: HP stays the scalar and becomes the blood-and-shock
+   pool, wounds lower the ceiling a rest can refill to, penalties apply from
+   the NEXT fight (maimings immediately), a crippling blow to a vital kills
+   while the same blow to a limb maims, and treatment runs a rate-and-access
+   ladder — stabilize, a settlement bed, a tiered healer service, tiered
+   potions, magic for permanents. Wounds drain companion satisfaction, so
+   "the party walks if you are laid up for weeks" falls out of the existing
+   `wants_to_leave` machinery.
+4. **Defeat without death.** Generalize `apply_mercy` from posse losses to
+   any defeat, give `FoeSpec` a **ferocity** content field (bandits take
+   what they want and go; undead never break off), one left-for-dead per
+   character level, and make the permanent setback a **maiming** — curable
+   later by magic or a prosthetic — never a stat point.
+
+Its park list lives in `attrition.md` §7 (damage types, magic bypassing
+protections, armour-on-wounds, foe wound records, prosthetics, disease,
+removing HP from the model, a true en-route travel position, the
+road-encounter rate trim, the wilds STA fraction).
+
+---
+
 ## Queued — the banded quest inventory (worldgen reframed)
+
+*(2026-07-26: PULLED FORWARD as a hard dependency of the attrition rework's
+slice 2 — quest expiry makes the up-front coverage assert meaningless. Build
+it there, not separately, and delete this section when it ships.)*
 
 *(Story-layer batches 1-2 shipped 2026-07-12; pacing anchors measured
 2026-07-12: played campaigns L10 ~ day 45-65 (~10-12 chat hours), L20 ~
@@ -313,6 +369,9 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 2. **Armor** — provisional design: shifts the incoming wound tier down
    at the cost of a DEX penalty and higher STA drain. *Status: adopt,
    simplify, or defer.* (Designer lean: probably never important.)
+   *(2026-07-26: if it is ever adopted, the attrition rework gives it a
+   far better home — a tier shift now also decides whether a crippling
+   blow kills, maims, or merely wounds. Decide after slice 3b.)*
 3. **Named & masterwork weapon instances** — the tiers exist in the
    schema; nothing placed yet. Named weapons carry authored provenance
    and are story beats, never drops. **The pivot leans on this item**:
@@ -327,7 +386,10 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 Foundations all shipped (magic, ranged, levelling); what stands:
 
 - **Conditions** (poison, bleed, disease) — the missing enabler behind
-  "more varied enemies"; varied magic wants it too.
+  "more varied enemies"; varied magic wants it too. *(2026-07-26:
+  SCHEDULED as the attrition rework's slice 3a — bleed and poison and burn
+  ship there as a general framework, disease stays parked. Designer:
+  "let's do bleed and conditions, it always comes up as a blocker.")*
 - **Free-play facilitation / overriding the mechanics** — mostly dm.md
   doctrine plus the override surfaces that already exist (`forge`,
   `give --as`, the hand-editable save). Cheap, worth doing early.
@@ -405,7 +467,10 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   collaborating with the aggressor; cheap authored beat.
 - **Morale & surrender** — enemies breaking, yielding, bargaining.
   *(Pivot note: posse PARLEY — bribing the Watch, demanding surrender
-  — wants this; build them together.)*
+  — wants this; build them together.)* *(2026-07-26: the attrition
+  rework's slice 4 ships its first half — `FoeSpec.ferocity` and
+  low-ferocity rosters breaking off — so what remains here is the
+  party-facing side: yielding, bargaining, parley.)*
 - **Story recruitment** — "the ogre yields and joins you", DM-driven.
 - **Weapon reach** — a small first-exchange modifier; distinct from the
   field.
@@ -425,27 +490,42 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Level requirements on masterwork/legendary weapons** — rejected;
   authored placement gates them.
 - **The "obliterating" wound tier** — parked until the top band is
-  authored.
+  authored. *(2026-07-26: slice 3b gets most of what it wanted for free
+  — a crippling blow to a vital already reads as the killing one, and
+  the same blow to a limb maims instead.)*
 - **Venom / conditions** — the bite carries the spider row until
-  conditions exist.
+  conditions exist. *(2026-07-26: scheduled — the spider row is slice
+  3a's first customer, and its `level` annotation gets re-fit there.)*
 - **Survival/adventure-sim pivot** (hunger, upkeep, inventory) — kept
   on the books as a possible deliberate pivot, but note 2026-07-19
   chose the GREED ECONOMY over food as the villain game's sink; this
   pivot is further away than it was. *(2026-07-21: the retro pivot is
   a sibling — macro decisions over a simulated world — so pieces of
   this may return through the macro-game design session.)*
+  *(2026-07-26: PARTLY CASHED. The attrition rework takes this pivot on
+  the WOUND axis, not the hunger axis: named located injuries, blood
+  loss, convalescence, maiming, prosthetics later. Food and upkeep stay
+  rejected as gold sinks for the reason this whole rework turns on —
+  flat prices inflate away. If rations ever return it is as carrying
+  CAPACITY on long wilderness trips, never as a price.)*
 - **Power potion re-stock** — if War-Breath ever makes Power scarce.
 - **Crit/fumble on the 2d6** — fattens both tails of every exchange;
   full bench re-run before judging.
 - **Party members as lives, the wipe version** — the in-fight half
   shipped as fate's bargain; watch whether recruit renewal softens it.
+  *(2026-07-26: the attrition rework's slice 4 answers the wipe half a
+  different way — left-for-dead once per character level, with a maiming
+  as the price. Re-judge this entry after that ships.)*
 - **A PC-centric career sim** — if played campaigns drift from the
   bench's even-duo story. *(Pivot note: a karma-playing career variant
   — dark quests + posses in the policy — is the natural check once the
   villain game has been played; today no sim sees karma at all.)*
 - **Quest history readout** — cheap; gives the save a memoir.
 - **Site persistence / repopulation** — the stick version of one-go
-  sites; only if the streak isn't pressure enough.
+  sites. *(2026-07-26: its old trigger is gone — the attrition rework
+  DELETES the XP streak. The new pressure is the wound track: camping
+  restores stamina but never HP, so a multi-encounter quest is a real HP
+  budget. Re-judge only if that proves too soft.)*
 - **Give the rapier its niche back** — do nothing until felt in play.
 - **Re-annotate the bestiary for the pain-2 party** — calibration
   polish, not a fire.

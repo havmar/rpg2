@@ -622,3 +622,119 @@ gate for four more Land sessions. The next build starts with the Firascir
 vertical slice, verifies stable generation, contents, quest placement,
 mutation, persistence, and output, then loads the other five catalogs through
 the same path.
+
+---
+
+## 2026-07-26 — Quest length, and the attrition rework
+
+**The trigger.** "There is too much combat per quest. 4 encounters for a
+quest feel extremely long." The target: 1 encounter by default, 2 for a
+middling job, 3 at most — and sites used only when the location genuinely
+differs, never as the difficulty dial. Measurement confirmed the complaint
+was structural, not a mood: the generator rolls sites 1/2/3 at 45/40/15 and
+then rooms 1/2/3 at 20/40/40 *per site*, centring quests on **3.74
+encounters**, with 47% at four or more and a tail reaching nine.
+
+**The real problem was underneath.** Attrition currently lives inside a
+quest — press through four rooms or camp and lose the XP streak. Cut to one
+fight and there is nothing left to attrit: the party wins, camps to full
+(`camp --heal` runs up to fourteen free nights; dm.md names "camp until
+whole" as the played default), and HP has never mattered. The designer named
+this himself: the goal is not a binary lose-win where winning means a free
+full heal, leaving potions and healing with no place.
+
+**Every cost-based fix dies on the same arithmetic.** Pricier taverns, food,
+per-day upkeep, dearer potions — all of them price recovery in gold, and gold
+is the one quantity that inflates. Quest gold is `15 x L` per site over
+roughly four days: about **4 g/day at level 1 and 75 g/day at level 20**,
+while HP pools barely double (12-20 base, +10 buyable). Flat prices are
+brutal at the front door and rounding error at the back; scaled prices are a
+curve to re-tune forever and, as the designer put it, make no sense — a bed
+is a bed. The session's answer: **do not make rest expensive, make rest
+incomplete.** Gate recovery on rate and access, never price. Time and
+geography do not inflate.
+
+**The wound system: two proposals met in the middle.** The first proposal was
+an anonymous integer — wounds as HP the body cannot self-restore, capping
+what a rest refills. The designer countered with a far more ambitious system:
+named wounds as the primary track, HP demoted or removed, injury locations
+with stat penalties, blood loss, lethal wounds at high severity, permanent
+maiming, prosthetics that push stats past the natural cap, and tiered
+potions. He was right that the anonymous integer was the balance-safe
+minimum and a poor fit for a game whose whole pitch is an agent narrating
+over engine output: the engine emits `deals 4 dmg, grievous` and the DM
+invents the rest, differently each time, with no memory. Named located
+wounds give the narration layer a persistent object it can refer back to
+sessions later.
+
+**Four decisions settled the scope.**
+
+*HP stays the scalar.* Removing it is a rewrite, not a slice: the bestiary's
+25 bench-fitted level/`ref_pack` annotations, the threat math, the death
+spiral (`wound_penalty` = `hp_lost // pain`), the pause layer, and all five
+bench harnesses are fitted against HP-as-a-number. Reframed instead — HP is
+the blood-and-shock pool, max HP is the constitution stat already asked for,
+and wounds lower the ceiling a rest can refill to. "HP only tracks how many
+wounds you can carry" becomes literally true. The displayed number can still
+vanish; that is a formatting pass, not a rewrite, and it buys the whole felt
+effect.
+
+*Wound penalties apply from the NEXT fight, maimings immediately.* The engine
+already runs an anonymous injury spiral in `wound_penalty`; stacking a second
+stat-penalty spiral on top of it would move lethality hard, and develop.md
+records enemy DEX as the sharpest lever in the game. The split is also
+simulation-honest — adrenaline covers the fight you are in.
+
+*Foes keep the scalar.* They do not persist between fights, so records buy
+nothing and would cost the entire bestiary calibration.
+
+*The permanent setback is a maiming, not a stat point.* rules.md fixes STR
+and DEX as immovable, and an unrecoverable stat point in a 1-20 ladder is a
+death spiral in disguise. A maiming is the same mechanical hit, lives inside
+the wound system, narrates better, and is curable — which turns a punishment
+into a story hook and a gold sink, and makes prosthetics the natural first
+customer of the already-queued stat-transcendence membrane.
+
+**Conditions got built properly rather than as a bleed special case.** It has
+been the named blocker behind varied enemies, venom, and varied magic for
+three sessions; the designer's call was to do it once, as a framework, with
+bleed and poison and burn as its first customers.
+
+**Quest clocks turned out to be core, not an optional lever.** The designer's
+insight, and a correction to the first proposal, which had filed day-costs as
+a phase-three nicety: 3-7 day windows with pay banded by quick / on time /
+late, and expiry with a failure epilogue, are what make days cost something
+without a gold price. Healing takes days; days cost the job. The hidden price
+is that quest expiry makes worldgen's up-front XP-coverage assert meaningless,
+so the banded lazy refill — already queued — becomes a hard dependency rather
+than a separate item.
+
+**Three findings from checking the code rather than reasoning about it.**
+Travel encounters are not broken, only rare and widest-valved exactly where a
+new campaign is played: 15% per travel day, and then a notice contest turns
+38% of level-1 rolls into a walk-away sighting, giving one road fight per
+~11 one-day trips. But the roll fires *after* arrival, so a road fight is
+narrated at the destination gates and draws from the destination land's pool
+— a real wart, and one that stops being harmless the moment travel days
+matter. `camp` likewise banks each night's healing *before* rolling the
+visitor, which the designer had already suspected. And satisfaction ratchets:
+gains (+1 quest clear, +1 tavern, +1/+2 downtime) beat losses (-1 fled, -1
+bloodied, -2 Down, -2 death witness) on a normal cycle, and the rework makes
+it worse by cutting fights and adding town nights — so the tavern bonus gets
+a cooldown in slice 1 and wounds drain morale in slice 3, which is also how
+"the party walks if you are laid up for weeks" arrives without new departure
+machinery.
+
+**Encounter count stays a weighted roll for now** (designer's call), with
+site count becoming a template-declared place count. Letting the narrative
+content decide a job's length is queued as its own design pass, to be
+scheduled after the clock and wound slices have actually been played — what a
+job's right length feels like is a play finding, not a desk one.
+
+**Outcome.** A four-slice build contract in `attrition.md`, one session each:
+quest shape and the pay rebase (with the streak and short rest deleted and
+the three small fixes), quest clocks with the banded refill, the conditions
+framework and then the wound system, and defeat-without-death built by
+generalizing the mercy path that the karma layer already ships. Nothing
+implemented this session by design; rules.md and dm.md stay untouched until
+each slice lands, so the ruleset never describes a game that does not exist.
