@@ -513,9 +513,9 @@ no balance intent (verified within noise on the tune sweep).
 
 Since 2026-07-14 every survived encounter's block closes with the **party
 tally** (`session.tally_lines`): each standing member's HP/STA/Power,
-their standing roll penalties (see above), kit, the purse, the day's
-remaining short rests, and -- with an active site -- the count of rooms
-left plus the streak's next multiplier. It is the standard
+their standing roll penalties (see above), kit, the purse, the day, and
+-- with an active quest -- the count of fights left and what the turn-in
+will pay. It is the standard
 between-encounters numbers display: the DM narrates around it instead of
 restating it, and it deliberately shows a *count* of what lies ahead,
 never the rosters (dm.md, Narration style).
@@ -739,7 +739,7 @@ These are the only edits to the existing rules:
 - **HP carries across the run (a lasting wound).** *(This supersedes the original
   "HP resets each fight" idea.)* HP still drives the in-fight death spiral, but it
   no longer refills between encounters: a wound persists until healed. Recovery is
-  a slow catch-breath on a short rest and a **weekly knit-back on long rests** (see
+  the **weekly knit-back on long rests** (see
   *The day / run economy*); potions/spells can top it up in a pinch.
 - **0 HP = Down, not Dead.** A character at 0 is out of *this* fight only (see
   *Down, not dead* below).
@@ -775,9 +775,9 @@ These are the only edits to the existing rules:
 
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
-| **HP** | Carries across the run (never a per-fight reset) | Trickle via short rest / a healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
-| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends, +3 per short rest (from empty, fight-end +1 plus a short rest only *just* clears Winded); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
-| **Power** | Per day | +1 per short rest, **full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
+| **HP** | Carries across the run (never a per-fight reset) | A healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week** | Lethal death-spiral inside a fight; a lasting wound between them. |
+| **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
+| **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
 | **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
@@ -1060,29 +1060,29 @@ fights *visibly* draws the stockpile down. The **day** is the natural unit of
 attrition: the grind-down expressed as depletion of *kit and Power* rather than
 HP.
 
-**Two tiers of rest, keyed to time:**
+**One tier of rest: the night** (2026-07-26 — the **short rest is deleted**).
+A mid-day breather that handed back +3 STA, a sliver of HP and +1 Power
+existed to pace a four-room site; with quests down to one or two encounters
+there is no mid-day left to pace, and every free top-up between fights is a
+top-up the wound track would have to fight. Recovery is the night's job now,
+and only the night's. The day's shape is still a sawtooth trending down —
+fights spend STA, and only the +1 at a fight's end gives any of it back
+before dark.
 
-- A **short rest** (~an hour or two of narrative time) is a limited within-day
-  resource — **one slot per day** (cut from two in the 2026-07 lethality
-  retune: one breather, then you press on depleted or pay the day). It gives
-  a real breather (+3 STA, a sliver of HP, +1 Power) but never a reset: with
-  the +1 a fight's end already gives,
-  a rest from empty lands you *just* past the Winded line. The day's shape is
-  a sawtooth trending down — the fights exhaust the characters faster than the
-  breaks give back. Drinking potions is a *separate* deliberate act
-  (see "In advance" above / `use_potion`), not folded into the rest. When the
-  slot is spent there is no more mid-day recovery: the party pushes on depleted
-  or makes camp.
-- A **long rest** (overnight, making camp) is the real recovery: **STA and
+- A **long rest** (overnight, making camp) is the recovery: **STA and
   Power recharge
   fully** and **HP knits back at a weekly rate** (a character's nightly heal is
   scaled to their HP pool, so a full bar returns over roughly a week regardless of
   size — a big pool doesn't take proportionally longer). A long rest advances the
-  day and refills the short-rest slot.
+  day. Drinking potions is a *separate* deliberate act
+  (see "In advance" above / `use_potion`), never folded into a rest.
 - **Where the night is spent matters (2026-07-10):**
   - **Camping in the wilds** (anywhere that isn't a settlement) risks a
-    **night visitor** (~10%, rolled after the night's recovery, off the
-    road's party-independent table with the same spotted/ambush valves).
+    **night visitor** (~10%, off the road's party-independent table with the
+    same spotted/ambush valves). Since 2026-07-26 the visitor is rolled
+    **before the night's recovery**: the camp is pitched, the fire draws
+    whatever it draws, and only a night that passes undisturbed heals
+    anybody — a fight is met at the HP the day left you with, not at full.
     Behind settlement walls the night is safe and free. (Only the
     deliberate `camp` rolls this; travel and explore nights already price
     their own encounter risk — no double-dipping.)
@@ -1135,8 +1135,8 @@ On top of the existing build/allocation choices:
 
 ## Implementation notes (how `rpg.py` realizes this)
 
-- **Time is a `Clock`** (a `day` counter plus a per-day budget of short-rest
-  slots, `SHORT_RESTS_PER_DAY` = 1). A dungeon run is a slice of a day. **HP
+- **Time is a `Clock`** (a `day` counter, and since 2026-07-26 nothing
+  else). A dungeon run is a slice of a day. **HP
   and STA
   both carry across rooms** (never a per-fight reset). STA moves as a sawtooth:
   attacks spend it (`sta_cost`, 1 per swing), the end of a fight gives
@@ -1210,49 +1210,49 @@ permanent ability, gold buys staying power** — never the reverse.
   levels together (the divisor counts the dead too: no XP windfall for
   losing a companion mid-run). A duo gets the listed numbers unchanged; a
   solo earns double; four split the wages. Awarded per **encounter won**
-  plus a lump for **completing a quest** (clearing a whole site).
+  plus a lump at the **turn-in** of the whole quest.
 - **The curve.** Level L → L+1 costs `100 × L` XP, capped at **level 20**
   (the 1–20 doctrine below).
-- **Pay scales with the site's level** (2026-07, the quest system): a
-  level-L site pays `site_xp_total(L) = 50 × (L + 1)` XP — ~45% paid per
-  encounter as rooms fall (on the momentum streak below), the rest as the
-  site-clear lump — and `15 × L` gold. The two rates this generalizes from:
-  - Bandit hideout (the **starter**, a level-1 site — living foes who play
-    by the party's rules): 5/15/25 XP across its three rooms in one go,
-    55 XP + 15 g for the clear — a full one-go clear is exactly 100 XP, so
-    the *first clear is a level-up*.
-  - The skeleton barrow (the **tough** site, level 3): 10/30/50 per room in
-    one go, 110 + 45 g for the clear.
+- **Pay scales with LEVEL, and it is quoted per JOB** (rebased 2026-07-26,
+  the attrition rework). There are **two deliberate ladders** in `rpg.py` —
+  do not unify them:
+  - **The quest ladder — the game.** A generated quest is 1-3 encounters
+    (below); its whole pay is
+    `quest_xp_total(L, enc) = 44 × (L + 1) × ENCOUNTER_MULT[enc]` XP and
+    `quest_gold(L, enc) = 18 × L × ENCOUNTER_MULT[enc]` gold, with
+    `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2}`. The multiplier rises
+    **sub-linearly** on purpose: the fixed overhead of a job — the trip out,
+    the giver, the turn-in — is paid once whether you fight once or three
+    times, so three fights are worth more than one but nothing like three
+    times more. **40%** of the XP falls as the encounters do (flat: every
+    fight on the job pays the same, wherever it stands); the remaining
+    **60%** plus **all** of the gold is the turn-in lump. An intermediate
+    place of a two-place job clears with a banner and no purse.
+  - **The site ladder — the fixtures.** `site_xp_total(L) = 50 × (L + 1)`,
+    45% split flat across the rooms, the rest as the clear lump, plus
+    `15 × L` gold. This ladder now serves ONLY the two hand-built sites in
+    `sites.py` (the bandit hideout at level 1, the skeleton barrow at level
+    3), which are dev/test calibration fixtures that `tune.py`,
+    `bench_training.py`, and `run_site` are fitted to — not played content.
+    A fixture whose pay moves stops being a control.
 
-  The shape is deliberate: pay grows by *half* the level-1 anchor per level
-  while the level cost grows by the full step, so **leveling slows with
-  rank** — one at-level site per level at the start, settling toward two
-  (~35 at-level site clears from 1 to 20). And because pay follows the
-  SITE'S level, not the party's, punching up pays above your weight class
-  and easy work pays less — no separate under/over-level bonus exists or is
-  needed.
-- **The momentum streak** (2026-07-09; steepened 2026-07-10). The
-  per-encounter share is paid on a rising multiplier: the k-th consecutive
-  encounter cleared **in the same site without a night's camp between**
-  pays `(1 + 2(k−1)) ×` the base (STREAK_STEP = 2: ×1 / ×3 / ×5 across a
-  three-room site). The base is sized so a full one-go run collects exactly
-  the ~45% encounter share; **camping mid-site resets the streak to base**,
-  so a camp-after-every-door clear collects **~70%** of the site's total
-  pay (it was ~78% at the original step of 1 — the designer wanted one-go
-  clears to *feel* like the paying line). *Why:* the party can always
-  retreat to camp, and a full night heals — so HP was cheap and healing,
-  potions, and defense had little to buy. The streak makes pressing on the
-  paying line — budgeting HP and STA across a whole site — while leaving
-  the camp available at a price, and with the clear lump (55%) gated behind
-  the site actually falling plus the top multiplier landing on the last
-  room, **the final encounter of a one-go run carries ~80% of the site's
-  total pay**. Off-script fights, road encounters, and hunts never streak
-  (they pay a site's *middle* room rate, which the step change deliberately
-  leaves unmoved); a retreat or an unresolved room doesn't reset the
-  streak (only the night does). **Multi-site quests streak per site**: each
-  site ramps ×1/×3/×5 on its own and pays its own lump — the streak never
-  carries across sites, so "one site per day" is the natural paying rhythm
-  and nothing forces marathoning a whole quest.
+  The shape is the same on both: pay grows by *half* the level-1 anchor per
+  level while the level cost grows by the full step, so **leveling slows
+  with rank** (~38 at-level quests from 1 to 20, measured). And because pay
+  follows the JOB'S level, not the party's, punching up pays above your
+  weight class and easy work pays less — no separate under/over-level bonus
+  exists or is needed.
+- **Off-script and road pay.** A won road encounter, hunt, or `fight N` pays
+  one encounter's share of a level-L *three-fight* quest — below board work
+  on purpose, since a road fight carries no turn-in lump. The wilds are the
+  farm; the board is the game.
+- **The momentum streak is GONE** (deleted 2026-07-26). It paid a rising
+  multiplier for consecutive encounters cleared in one site without a camp,
+  to make pressing on beat camping. With quests down to one or two fights
+  there is nothing left to press through, and the job it was doing — making
+  a night's rest cost something — belongs to the wound track instead
+  (camping restores stamina, never lost HP). Every encounter of a quest now
+  pays the same flat share.
 - **Level-ups grant skill points** (**3 per level** since 2026-07-17; 57
   banked by L20), spent on the menu below — free allocation, never
   use-based (the Fallout principle from the design record).
@@ -1392,8 +1392,14 @@ of spending get measured.
 
 - **The purse is shared** (party-level); potions are per-hero.
 - **Income:**
-  - **Quests:** a level-L site pays **15 × L gold** on the clear (the
-    hideout's 15 g and the barrow's 45 g are the L1 and L3 rates).
+  - **Quests:** a level-L quest pays **18 × L × ENCOUNTER_MULT** gold, all
+    of it at the turn-in (2026-07-26) — ~25 × L at the measured encounter
+    mix, which is what the old per-site ladder paid over its ~1.6 sites.
+    Career gold is deliberately unchanged by the rework: gold is the one
+    quantity that inflates across a 1–20 career, which is exactly why
+    recovery is never priced in it. The two hand-built site fixtures keep
+    the old **15 × L** on the clear (the hideout's 15 g and the barrow's
+    45 g are the L1 and L3 rates).
   - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
     potion) and **10%** chance of a stray potion (random kind, to a random
     hero). Trash-tier on purpose — drops season the run, quests fund it.
@@ -2056,12 +2062,35 @@ anchors the formulas were fitted to.
   farm, or road site, but the place remains part of the world after the job.
   Ordinary and quest-specific places use the same records, contents,
   knowledge, and state machinery.
-- **Quest shape:** a combat quest targets 1–3 **sites** (weighted toward
-  fewer), each with 1–3 **rooms** (encounters). Multi-site quests escalate:
-  earlier sites run at level −1, −2 from the quest's level. Clearing the
-  quest challenge at a site pays its own lump (XP + gold, the level formulas);
-  the site itself is geography and does not intrinsically pay merely for
-  existing. The last site completes the quest.
+- **Quest shape (rebased 2026-07-26, the attrition rework):** a combat quest
+  is **1–3 encounters** — 1 by default, 2 for a middling job, 3 at most —
+  rolled once at the QUEST level (`QUEST_ENCOUNTERS`, weights 55/30/15, mean
+  **1.66** measured). Its **place count is authored, not rolled**: a
+  template carries `places` (default 1) and spans two sites only where the
+  fiction genuinely moves between two places — the high pasture where the
+  wolves killed and the den in the hills you track them to. "The village
+  graveyard" and "the crypt below" are one place, and so is a mine and the
+  chamber at its end. **Place count is never a difficulty dial.**
+  - The generator used to roll sites 1/2/3 and then rooms 1/2/3 *per site*,
+    centring quests on **3.74** encounters with a tail to nine (47% were four
+    fights or more). Quest length was the difficulty dial, and length is
+    exactly what the attrition rework has to stop spending.
+  - **One quest, one level.** Every place of a job stands at the quest's own
+    level; the old per-site −1/−2 decrement is gone, so the board never shows
+    a job whose sites disagree about their own grade. The escalation is
+    carried by the rising `ROOM_SHARES` curve instead, now keyed to the
+    quest's ENCOUNTER count and consumed **in quest order** — a two-place job
+    does not restart the ramp at its second place, and the anchor (and the
+    boss allowance) lands at the destination.
+  - Encounters spread **front-light** across places, so a three-fight
+    two-place job is 1 then 2.
+  - **Pay is per QUEST**, not per site (see *XP and levels*): the encounter
+    shares fall as the fights do, and the whole turn-in lump plus all of the
+    gold is handed over when the LAST place closes. An intermediate place
+    clears with a banner and no purse.
+  - A **caper** (the dark templates' authored shapes — see the Karma & Heat
+    add-on) still pins its place count to every stem it lists, and its
+    encounter count follows.
 - **Quest placement follows place requirements.** Each family specifies
   acceptable Area tags, a Site template/domain, and a reuse policy. A wolf
   hunt selects forest, hills, pasture, or prairie; a mine job selects
@@ -2087,9 +2116,10 @@ anchors the formulas were fitted to.
 
 All of it lives in `quests.py` as tuned constants; `bench_quests.py` is the
 proof. One catalog level ≈ **×1.5 threat**; a member of a row is worth
-`1.5^level / ref_pack` units; a **site's whole roster is ~2 at-level
-reference encounters' worth**, split over its rooms in rising shares (the
-rule the hand-built sites turned out to already follow). Three hard lessons
+`1.5^level / ref_pack` units; a **quest's whole roster is ~2 at-level
+reference encounters' worth**, split over its encounters in rising shares
+(the rule the hand-built sites turned out to already follow; keyed to the
+quest since 2026-07-26). Three hard lessons
 the bench taught, now rules:
 
 - **Crowding surcharge:** room members are priced by pack-equivalents — a
@@ -2102,8 +2132,9 @@ the bench taught, now rules:
 - **Solo-boss rows (ref_pack 1) fight alone.** Their fairness against a duo
   IS the party's action-economy advantage; a second apex body deletes it.
 
-The final room of a site may carry an anchor up to ~1.35× its budget — the
-boss rule: the ogre quest ends with the ogre.
+The final room of the quest's LAST place may carry an anchor up to ~1.35× its
+budget — the boss rule: the ogre quest ends with the ogre. Earlier places of a
+multi-place job get no boss allowance; the anchor is still ahead of you.
 
 **Measured honesty** (`bench_quests.py`, 300/cell, after the 2026-07-09
 pain regear): generated at-level rooms win 61–93% against the reference duo
@@ -2118,7 +2149,7 @@ Current numbers live in develop.md ("Balance / tuning").
 ## What careers measure (updated 2026-07-09)
 
 The career sim (fresh duo, fresh world, grind-below-level policy, camps
-between rooms — so it mostly earns the piecemeal streak rate) reaches
+between rooms) reaches
 **L5 68% / L8 56% / L11 38% / L14 20% / L20 6%**; median death at level 8.
 The pain regear moved every number sharply survival-ward from 2026-07-08's
 roguelike curve (L5 46 / L11 14 / L20 ~0, median death L3-4): the rank-0
@@ -2253,10 +2284,14 @@ world creation. Natural Sites and ordinary houses materialize lazily.
 - **`travel AREA`** is the day-scale move: **1 day** between areas of the
   same land, **2 days** crossing into another land. It returns the position
   to area level. Every travel day is a camp night: the ordinary overnight
-  recovery applies, so *travel heals* — and every night on the road resets
-  the momentum streak, so leaving a half-cleared site costs its pay
-  escalation.
-- **The road rolls one encounter check per trip** (~15%/day, compounded).
+  recovery applies, so *travel heals*.
+- **The road rolls one encounter check per trip** (~15%/day, compounded),
+  rolled ON THE ROAD since 2026-07-26 — before the arrival, off the
+  **origin** land's pool. A road fight interrupts the trip: the days are
+  spent, the party is still where it set out from, and the player re-issues
+  `travel`. (A true mid-road position wants the local navigation layer;
+  plan.md parks it. A sighting is simply slipped past — the party is
+  moving.)
   The road's level table is **party-independent** (the OSR stance): any
   level can appear, geometrically weighted toward the low end — the rare
   high tail is how the world above the party's level stays real, met on the
@@ -2319,8 +2354,9 @@ world creation. Natural Sites and ordinary houses materialize lazily.
 - **`hunt`** is the always-available farm loop: stalk prey in the current
   land NOW (no day cost). The party chooses this fight, so unlike the road
   the level rolls at-or-below the party's (down to −2) — grinding XP, loot
-  rolls, and drops is always possible. It pays **wild rates** (a site's
-  mid-streak room rate, no clear lump), deliberately below board work: the
+  rolls, and drops is always possible. It pays **wild rates** (one
+  encounter's share of a three-fight quest, no turn-in lump), deliberately
+  below board work: the
   wilds are the farm, the board is the game. What actually roams a land is
   the union of its race's template pools — a land whose cheapest fauna is
   a dire wolf has rough hunting, and that is flavor, not a bug.
@@ -2478,14 +2514,14 @@ value per slot, correlated risk. `hire NAME` signs them on at
 
 ## Satisfaction — the retention track
 
-Companions only (never the PC), 0–10, floor −3. **The counter-pressure to
-the momentum streak**: the streak pays you to push on; satisfaction pays
-you to stop, sleep warm, and take days off.
+Companions only (never the PC), 0–10, floor −3. It is the layer that
+**prices stopping**: a party that never presses on and never takes a risk
+still has to keep its people fed, warm, and paid.
 
 | Event | Δ |
 |-------|---|
 | Site/quest lump paid out (`award_quest`) | +1 |
-| Tavern night | +1 |
+| Tavern night | +1, at most once every **3 days** per companion (`SAT_TAVERN_COOLDOWN_DAYS`, 2026-07-26) |
 | Downtime day (`downtime`, settlements only) | +1 |
 | Downtime day matching a trait (interest where it thrives — villages for plants/animals/hunting, capitals for art/history/fashion, towns+capitals for food/music; patriotic in their race's land; religious at a capital's temples) | +2 |
 | Fled a fight * | −1 |

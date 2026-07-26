@@ -45,8 +45,8 @@ import argparse
 import random
 import re
 
-from rpg import (LEVEL_CAP, xp_to_next, site_xp_total, site_encounter_xp,
-                 site_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
+from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
+                 quest_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
@@ -60,13 +60,29 @@ from places import (
 THREAT_BASE = 1.5   # one catalog level ~ x1.5 threat: calibrated on the
                     # barrow (4 skeletons ~ one level over 3) and checked by
                     # bench_quests.py across the whole 1-20 line
-ROOM_SHARES = {     # a site's roster budget as ~2 at-level reference
-                    # encounters, split over its rooms in rising shares --
-                    # the hand-built sites' observed shape
-    1: (1.25,),     # a one-room site is one HARD fight for full site pay
+ROOM_SHARES = {     # a QUEST's roster budget as ~2 at-level reference
+                    # encounters, split over its encounters in rising shares
+                    # -- the hand-built sites' observed shape. Since
+                    # 2026-07-26 the key is the quest's ENCOUNTER count and
+                    # the shares are consumed in QUEST order (a two-place job
+                    # does not restart the escalation at the second place):
+                    # one quest, one rising curve, ending at the destination.
+                    # The values are unchanged -- they were calibrated as a
+                    # unit and the bench reads them that way.
+    1: (1.25,),     # a one-encounter quest is one HARD fight for full pay
     2: (0.85, 1.10),
     3: (0.55, 0.70, 0.85),
 }
+QUEST_ENCOUNTERS = ((1, 2, 3), (55, 30, 15))    # how many fights a job is:
+                    # 1 by default, 2 for a middling job, 3 at most (mean
+                    # 1.6). Before 2026-07-26 sites rolled 1/2/3 and then
+                    # rooms rolled 1/2/3 PER SITE, centring quests on 3.74
+                    # encounters with a tail to nine -- the generator's
+                    # difficulty dial was quest LENGTH, and length is exactly
+                    # what the attrition rework has to stop spending.
+                    # (Deliberately still a roll: making the narrative
+                    # content decide a job's length is its own queued pass,
+                    # see plan.md.)
 BOSS_ALLOWANCE = 1.35   # the FINAL room's anchor may exceed its budget by
                         # this factor: the level-5 ogre quest ends with the
                         # ogre, not with the biggest thing that fit
@@ -175,14 +191,22 @@ ROOM_STAGES = ("the approach", "the way in", "the outer chamber",
 
 def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
                      rng: random.Random,
-                     room_roles: tuple[str, ...] | None = None
+                     room_roles: tuple[str, ...] | None = None,
+                     shares: tuple[float, ...] | None = None,
+                     final_room: bool = True
                      ) -> list[tuple[str, list[str]]]:
     """1-3 rooms escalating to the site's level: rising budget shares of the
-    ~2-reference-encounter site total, the last room carrying the anchor."""
-    shares = ROOM_SHARES[n_rooms]
+    ~2-reference-encounter total, the last room carrying the anchor.
+
+    `shares` overrides the ROOM_SHARES lookup -- a quest spanning two places
+    passes THIS place's slice of the quest's one rising curve (build_quest).
+    `final_room=False` says the anchor is still ahead (an earlier place of a
+    multi-place job), so no room here gets the boss allowance."""
+    if shares is None:
+        shares = ROOM_SHARES[n_rooms]
     rooms = []
     for i, share in enumerate(shares):
-        final = i == n_rooms - 1
+        final = final_room and i == len(shares) - 1
         if room_roles:
             name = room_roles[min(i, len(room_roles) - 1)]
         else:
@@ -198,7 +222,14 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 # One entry = a race stereotype x a themed foe pool (+ optional reskins:
 # kind -> display name). A template's usable level range derives from its
 # pool (template_band), so the wolf quest never rolls at level 18 and the
-# drake never at level 2. `sites` are name stems for the quest's 1-3 sites.
+# drake never at level 2. `sites` are name stems for the quest's sites, and
+# `places` (2026-07-26; default 1, and only the first `places` stems are
+# used) says how many of them a job actually spans. It is 2 only where the
+# FICTION genuinely moves between two places -- the high pasture where the
+# wolves killed and the den in the hills you track them to. "the village
+# graveyard" and "the crypt below" are one place; so is a mine and the
+# chamber at the end of it. Place count is not a difficulty dial: the fights
+# are QUEST_ENCOUNTERS' job.
 # Since 2026-07-12 each template also carries `giver` (the ROLE of the
 # person behind the job -- worldgen puts a generated face on it, see
 # attach_giver; in play there is no board, quests come from these people)
@@ -251,7 +282,7 @@ TEMPLATES: dict[str, list[dict]] = {
         dict(title="Wolves Attack",
              desc="Wolves have killed sheep and a shepherd. Hunt the pack in "
                   "the hills and kill it.",
-             pool=WOLF_POOL, skins={},
+             pool=WOLF_POOL, skins={}, places=2,
              sites=("the high pasture", "the den in the hills"),
              giver="the head shepherd",
              epilogue="The wolves are dead. No sheep are lost for the rest of "
@@ -335,7 +366,7 @@ TEMPLATES: dict[str, list[dict]] = {
         dict(title="The Great Hunt",
              desc="The clan has chosen a dangerous beast for the hunt. Kill "
                   "it and bring back its hide.",
-             pool=BEAST_POOL + ("dire wolf",), skins={},
+             pool=BEAST_POOL + ("dire wolf",), skins={}, places=2,
              sites=("the hunting grounds", "the beast den"),
              giver="the clan's lead hunter",
              epilogue="The hide hangs in the clan hall. The clan honors the "
@@ -413,6 +444,7 @@ TEMPLATES: dict[str, list[dict]] = {
                     "bruiser": "Rival Brute", "soldier": "Rival Soldier",
                     "veteran": "Rival Veteran", "champion": "Rival Captain",
                     "blademaster": "Rival Swordmaster"},
+             places=2,
              sites=("the main gate", "the mine entrance"),
              giver="the clan elder",
              epilogue="The rival clan is defeated. The fighting ends."),
@@ -490,8 +522,8 @@ EPIC_TEMPLATES: list[dict] = [
     dict(title="The Giant at the Border",
          desc="A giant has destroyed several border forts. Track it to its "
               "stronghold and kill it.",
-         pool=GIANTKIN_POOL, skins={},
-         sites=("the ruined fort", "the border camp", "the giant's hall"),
+         pool=GIANTKIN_POOL, skins={}, places=2,
+         sites=("the ruined fort", "the giant's hall"),
          giver="the border commander",
          epilogue="The giant is dead. Soldiers return to the border forts."),
     dict(title="The Renegade Wizard",
@@ -699,28 +731,22 @@ def xp_to_cap(level: int = 1) -> int:
     return sum(xp_to_next(l) for l in range(level, LEVEL_CAP))
 
 
-def quest_xp_total(quest: dict) -> int:
+# The board's QUOTES: what a posted quest says it pays. `quest_xp_total` /
+# `quest_gold` (rpg.py) are the FORMULAS -- these two read the numbers the
+# formulas already stamped on the quest dict, with the dark premium folded in.
+def quest_xp_posted(quest: dict) -> int:
     if quest.get("kind") == "delivery":
         return quest["xp"]
     return quest.get("xp_total", 0)
 
 
-def quest_gold_total(quest: dict) -> int:
+def quest_gold_posted(quest: dict) -> int:
     if quest.get("kind") == "delivery":
         return quest["gold"]
     total = quest.get("gold_total", 0)
     if quest.get("align") == "dark":
         total = round(total * DARK_GOLD_MULT)
     return total
-
-
-def site_gold_for(quest: dict, site: dict) -> int:
-    """One site's gold lump under the quest's alignment (the dark premium
-    applies per site so the per-site pay and the board quote agree)."""
-    gold = site_gold(site["level"])
-    if quest.get("align") == "dark":
-        gold = round(gold * DARK_GOLD_MULT)
-    return gold
 
 
 # --------------------------------------------------------------------------- #
@@ -875,7 +901,12 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
     return rng.choice(candidates)
 
 
-def _reusable_site(world: dict, area: dict, requirement: dict) -> dict | None:
+def _reusable_site(world: dict, area: dict, requirement: dict,
+                   n_rooms: int) -> dict | None:
+    """An existing compatible place skeleton to hang this quest on -- but only
+    if its room count is EXACTLY the encounter count this place was allotted
+    (2026-07-26): a reused three-room crypt would silently turn a one-fight
+    job back into a three-fight one."""
     if requirement.get("reuse") != "prefer":
         return None
     template = requirement["site_template"]
@@ -891,18 +922,21 @@ def _reusable_site(world: dict, area: dict, requirement: dict) -> dict | None:
         ]
         if (site.get("template") in compatible
                 and not active_quests
-                and 1 <= len(site.get("rooms", ())) <= 3):
+                and len(site.get("rooms", ())) == n_rooms):
             return site
     return None
 
 
 def _put_quest_in_site(world: dict, site: dict, qid: str, level: int,
-                       pool: tuple[str, ...], rng: random.Random) -> None:
+                       pool: tuple[str, ...], rng: random.Random,
+                       shares: tuple[float, ...],
+                       final_place: bool) -> None:
     """Attach calibrated rosters to an existing compatible place skeleton."""
     rooms = site_rooms(world, site)
     built = build_site_rooms(
         level, len(rooms), pool, rng,
-        tuple(room["name"] for room in rooms))
+        tuple(room["name"] for room in rooms),
+        shares=shares, final_room=final_place)
     site["level"] = level
     site["quest_ids"].append(qid)
     for room, (_name, kinds) in zip(rooms, built):
@@ -910,45 +944,66 @@ def _put_quest_in_site(world: dict, site: dict, qid: str, level: int,
         room["quest_ids"].append(qid)
 
 
+def split_encounters(encounters: int, places: int) -> list[int]:
+    """Spread a quest's fights across its places FRONT-LIGHT: a three-fight
+    two-place job is 1 then 2, so the escalation ends at the destination."""
+    base, rem = divmod(encounters, places)
+    return [base + (1 if j >= places - rem else 0) for j in range(places)]
+
+
 def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                 rng: random.Random) -> dict:
-    """Build calibrated encounters into compatible persistent geography."""
+    """Build calibrated encounters into compatible persistent geography.
+
+    Since 2026-07-26 (the attrition rework's slice 1) a quest is 1-3
+    ENCOUNTERS rolled at the QUEST level (QUEST_ENCOUNTERS), and its PLACE
+    count is authored on the template (`places`, default 1) rather than
+    rolled -- a job spans two sites only when the fiction genuinely moves
+    between two places, never as a difficulty dial. Every place of a quest
+    stands at the quest's own level: one quest, one level (the rising
+    ROOM_SHARES curve carries the escalation instead, and the board stops
+    showing a job whose sites disagree about their own grade)."""
     requirement = quest_place_requirement(tpl)
     target_area = _select_quest_area(world, area_key, requirement, rng)
-    n_sites = rng.choices((1, 2, 3), weights=(45, 40, 15))[0]
-    n_sites = min(n_sites, len(tpl["sites"]))
+    n_places = min(max(1, tpl.get("places", 1)), len(tpl["sites"]))
     if tpl.get("deed") or tpl.get("twist"):
         # The caper shapes (karma.py's dark templates, 2026-07-19) are
         # AUTHORED, not rolled: the deed belongs to the first site and
         # the twist to the last, so every stem must stand.
-        n_sites = len(tpl["sites"])
-    stems = list(tpl["sites"][:n_sites])
+        n_places = len(tpl["sites"])
+    encounters = rng.choices(*QUEST_ENCOUNTERS)[0]
+    encounters = min(max(encounters, n_places), max(ROOM_SHARES))
+    per_place = split_encounters(encounters, n_places)
+    shares = ROOM_SHARES[encounters]
+    stems = list(tpl["sites"][:n_places])
     site_ids = []
-    xp_total = 0
-    gold_total = 0
+    cut = 0
     for j, stem in enumerate(stems):
-        site_level = max(1, level - (n_sites - 1 - j))
-        reused = _reusable_site(world, target_area, requirement)
+        n_rooms = per_place[j]
+        place_shares = tuple(shares[cut:cut + n_rooms])
+        cut += n_rooms
+        last_place = j == n_places - 1
+        reused = _reusable_site(world, target_area, requirement, n_rooms)
         if reused is not None:
-            _put_quest_in_site(world, reused, qid, site_level, tpl["pool"],
-                               rng)
+            _put_quest_in_site(world, reused, qid, level, tpl["pool"], rng,
+                               place_shares, last_place)
             site_id = reused["id"]
         else:
-            n_rooms = rng.choices((1, 2, 3), weights=(20, 40, 40))[0]
             roles = tuple(SITE_TEMPLATES[requirement["site_template"]]
                           .get("room_roles", ()))
-            rooms = build_site_rooms(site_level, n_rooms, tpl["pool"], rng,
-                                     roles)
+            rooms = build_site_rooms(level, n_rooms, tpl["pool"], rng,
+                                     roles, shares=place_shares,
+                                     final_room=last_place)
             site_id = f"site/{target_area['land']}/{slug_name(target_area['name'])}/quest-{qid}-{j + 1}"
-            new_site(world, target_area["key"], site_id, stem, site_level,
+            new_site(world, target_area["key"], site_id, stem, level,
                      quest=qid, template=requirement["site_template"],
                      domain=requirement["domain"])
             for k, (name, kinds) in enumerate(rooms):
                 new_room(world, site_id, f"{site_id}/{slug_name(name)}",
                          name, kinds, quest=qid)
         site_ids.append(site_id)
-        xp_total += site_xp_total(site_level)
-        gold_total += site_gold(site_level)
+    xp_total = quest_xp_total(level, encounters)
+    gold_total = quest_gold(level, encounters)
     # The caper fields ride the site dicts (plain JSON, like everything):
     # deed on the FIRST site (the attempt comes before the fighting),
     # twist on the LAST (the complication waits at the end of the job).
@@ -968,8 +1023,7 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         "skins": dict(tpl["skins"]),
         "sites": site_ids,
         "site_count": len(site_ids),
-        "room_count": sum(len(world["sites"][sid]["rooms"])
-                          for sid in site_ids),
+        "encounters": encounters,
         "xp_total": xp_total,
         "gold_total": gold_total,
         "next": {"site": 0, "room": 0},     # the progress cursor
@@ -1045,39 +1099,49 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
     }
 
 
-def forge_quest(world: dict, qid: str, level: int, n_sites: int, n_rooms: int,
-                pool: tuple[str, ...], name: str, rng: random.Random,
-                area_key: str = "", align: str = "good") -> dict:
+def forge_quest(world: dict, qid: str, level: int, places: int,
+                encounters: int, pool: tuple[str, ...], name: str,
+                rng: random.Random, area_key: str = "",
+                align: str = "good") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
-    forges a shadow job (karma & heat: bad-karma XP, the gold premium)."""
+    forges a shadow job (karma & heat: bad-karma XP, the gold premium).
+
+    The shape is (places, encounters) since 2026-07-26 -- the same two
+    numbers a generated quest carries."""
     # Forge pins the shape, so build its world-owned places directly instead
     # of asking build_quest to roll and then discarding a second layout.
+    places = max(1, places)
+    encounters = min(max(encounters, places), max(ROOM_SHARES))
+    per_place = split_encounters(encounters, places)
+    shares = ROOM_SHARES[encounters]
     site_ids = []
-    xp_total = 0
-    gold_total = 0
-    for j in range(n_sites):
-        site_level = max(1, level - (n_sites - 1 - j))
+    cut = 0
+    for j in range(places):
+        n_rooms = per_place[j]
         rooms = build_site_rooms(
-            site_level, n_rooms, pool, rng,
-            tuple(SITE_TEMPLATES["wild"]["room_roles"]))
+            level, n_rooms, pool, rng,
+            tuple(SITE_TEMPLATES["wild"]["room_roles"]),
+            shares=tuple(shares[cut:cut + n_rooms]),
+            final_room=j == places - 1)
+        cut += n_rooms
         site_id = (f"site/{world['areas'][area_key]['land']}/"
                    f"{slug_name(world['areas'][area_key]['name'])}/"
                    f"quest-{qid}-{j + 1}")
-        new_site(world, area_key, site_id, f"site {j + 1}", site_level,
+        new_site(world, area_key, site_id, f"site {j + 1}", level,
                  quest=qid, template="wild", domain="mixed", source="dm")
         for k, (rn, kinds) in enumerate(rooms):
             new_room(world, site_id, f"{site_id}/{slug_name(rn)}", rn,
                      kinds, quest=qid)
         site_ids.append(site_id)
-        xp_total += site_xp_total(site_level)
-        gold_total += site_gold(site_level)
     return {"id": qid, "name": name, "desc": "(DM-forged)",
             "origin": area_key, "level": level,
-            "skins": {}, "sites": site_ids, "site_count": n_sites,
-            "room_count": n_sites * n_rooms, "xp_total": xp_total,
-            "gold_total": gold_total, "next": {"site": 0, "room": 0},
+            "skins": {}, "sites": site_ids, "site_count": places,
+            "encounters": encounters,
+            "xp_total": quest_xp_total(level, encounters),
+            "gold_total": quest_gold(level, encounters),
+            "next": {"site": 0, "room": 0},
             "status": "open", "align": align, "epilogue": ""}
 
 
@@ -1213,7 +1277,7 @@ def generate_world(seed: int | None = None) -> dict:
         _post_quest(world, settlement, rng, used_people)
 
     target = WORLD_XP_MARGIN * xp_to_cap(1)
-    while (sum(quest_xp_total(q) for q in world["quests"].values()) < target
+    while (sum(quest_xp_posted(q) for q in world["quests"].values()) < target
            and len(world["quests"]) < WORLD_MAX_QUESTS):
         _post_quest(world, rng.choice(settlements(world)), rng, used_people)
 
@@ -1367,10 +1431,11 @@ def build_wild_encounter(level: int, race: str,
 
 
 def wild_encounter_xp(level: int) -> int:
-    """What a won road/hunt encounter pays: a level-L site's MIDDLE
-    (streak-2) room rate -- 15 at L1, the historic off-script flat. Below
-    quest work on purpose: the wilds are the farm, the board is the game."""
-    return site_encounter_xp(level, 3, 2)
+    """What a won road/hunt encounter pays: one encounter's share of a
+    level-L three-fight quest. Below quest work on purpose (a road fight
+    carries no turn-in lump) -- the wilds are the farm, the board is the
+    game."""
+    return quest_encounter_xp(level, 3)
 
 
 def quest_to_sites(world: dict, quest: dict) -> list[Site]:
@@ -1402,10 +1467,10 @@ def quest_shape(quest: dict) -> str:
     if quest.get("kind") == "delivery":
         return (f"a road delivery, {quest['days']} "
                 f"day{'s' if quest['days'] > 1 else ''} out")
-    rooms = quest.get("room_count", 0)
+    enc = quest.get("encounters", 0)
     n = quest.get("site_count", len(quest.get("sites", [])))
     return (f"{n} site{'s' if n > 1 else ''}, "
-            f"{rooms} encounter{'s' if rooms > 1 else ''}")
+            f"{enc} encounter{'s' if enc > 1 else ''}")
 
 def level_grade(quest: dict) -> str:
     """The exact level column of a board row, or DELIVERY for a road job."""
@@ -1422,14 +1487,14 @@ def quest_line(quest: dict) -> str:
     if quest.get("kind") == "delivery":
         return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
                 f"{quest['dest_name']}, {quest_shape(quest)}; pays "
-                f"{quest_gold_total(quest)}g, "
-                f"{quest_xp_total(quest)} XP{mark}")
+                f"{quest_gold_posted(quest)}g, "
+                f"{quest_xp_posted(quest)} XP{mark}")
     dark = " DARK" if quest.get("align") == "dark" else ""
     xp_note = " (bad karma)" if dark else ""
     return (f"[{quest['id']}] {level_grade(quest)}{dark} "
             f"{quest['name']} -- "
-            f"{quest_shape(quest)}; pays {quest_gold_total(quest)}g, "
-            f"{quest_xp_total(quest)} XP{xp_note}{mark}")
+            f"{quest_shape(quest)}; pays {quest_gold_posted(quest)}g, "
+            f"{quest_xp_posted(quest)} XP{xp_note}{mark}")
 
 
 def board_lines(world: dict,
@@ -1521,7 +1586,7 @@ def main() -> None:
                     help="also dump every quest's full rosters")
     args = ap.parse_args()
     world = generate_world(args.seed)
-    total = sum(quest_xp_total(q) for q in world["quests"].values())
+    total = sum(quest_xp_posted(q) for q in world["quests"].values())
     print(f"World (seed={args.seed}): {len(settlements(world))} settlements, "
           f"{len(world['quests'])} quests, {total} XP on the board "
           f"(a duo needs {xp_to_cap(1)} to L{LEVEL_CAP}).")

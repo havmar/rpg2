@@ -101,8 +101,11 @@ the player's core decision:
 - `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
-  section below). Travel also RESETS the site momentum streak -- leaving a
-  half-cleared site costs its escalating pay.
+  section below). Since 2026-07-26 that encounter is rolled ON THE ROAD,
+  before the party reaches the gates, off the land they set OUT from: a
+  fight there interrupts the trip -- the days are spent, the party is still
+  at the origin, and `travel` again once it is settled. Narrate it as the
+  road, not as the destination.
 - `show QID` details one quest: description, sites, and what holds each
   room -- a DM readout. What the player hears about the road ahead is a
   COUNT of rooms and sites, never the rosters (see Narration style).
@@ -202,8 +205,9 @@ the player's core decision:
   their caps ("13/12 HP"). The excess can't be topped back up once spent
   and fades at the next night's rest -- it's a buffer for tomorrow's
   door, best bought the evening before a hard site. Whether to pay is the
-  player's call, like every rest decision; both taverns and camps reset
-  the momentum streak (any night does).
+  player's call, like every rest decision. The bed's +1 companion
+  satisfaction is on a 3-day cooldown per head (2026-07-26): sleeping
+  indoors every night stopped being a morale faucet.
 
 ## The player character
 
@@ -273,8 +277,8 @@ the player's core decision:
   Commons are buried with them.
 - **`downtime` is the deliberate morale lever**: a day off in a settlement,
   best spent where a companion's trait points (Meriele loves animals ->
-  a village day pays double). It costs a day and breaks the streak -- the
-  trade is real; put it in the player's hands, don't spend it for them.
+  a village day pays double). It costs a day -- the trade is real; put it
+  in the player's hands, don't spend it for them.
 - **The player can let companions go**: `dismiss NAME` (settlements only)
   -- the companion leaves on the quitter's terms (equal head-split of the
   purse, their gear; a bond partner walks too). Swapping the party out at
@@ -478,8 +482,8 @@ bigger than the fights WITHOUT pages of narration:
   your message as-is -- it IS the fight's mechanical account for the
   player, and it is also what YOU read: narrate from its shape (the
   turning points, the falls, the crossings). It ends with the party
-  TALLY (tracks, standing roll penalties, kit, purse, rooms left in the
-  site, the streak's next multiplier): the between-fights numbers,
+  TALLY (tracks, standing roll penalties, kit, purse, fights left on the
+  job and what the turn-in pays): the between-fights numbers,
   already in display form. Add your short narration around the block;
   the prose never restates what the tally shows. **Do not pipe an encounter
   through `tail` or otherwise discard its opening lines.** If terminal output
@@ -534,10 +538,9 @@ bigger than the fights WITHOUT pages of narration:
   and never turn the check into roster talk about what waits inside. The
   choice stays theirs.
 - **Player decisions -- present, don't push:** drinking a potion (`use`),
-  the healing spell (`heal`), taking a short rest (`rest`), making camp
-  (`camp` -- and since 2026-07-09 camping mid-site RESETS the momentum
-  streak: the tally already names the next room's multiplier, so one clause
-  on what a camp resets is plenty), paying for the tavern instead of
+  the healing spell (`heal`), making camp
+  (`camp` -- the day's only recovery step now; the short rest is gone),
+  paying for the tavern instead of
   camping free (`tavern`), buying potions, weapons, or meds (`buy`),
   **who to hire and whether to hire at all** (`hire`),
   **who to let go** (`dismiss`), spending a day on
@@ -694,7 +697,7 @@ bigger than the fights WITHOUT pages of narration:
   DM eyes only -- let the fiction hint at scale if it wants ("more voices
   beyond the wall"), and let the site's level speak for the danger.
 - **Assume full rules fluency.** The player built these systems: name
-  mechanics plainly ("streak x3 if you press on", "he'd go in Winded")
+  mechanics plainly ("that's the last fight on the job", "he'd go in Winded")
   and leave the teaching out. Rules recaps, option lists, and odds
   breakdowns appear when asked for; the script already prints the menus
   that matter (pause, levelup, recruit sheets) with their rules attached.
@@ -769,13 +772,14 @@ bigger than the fights WITHOUT pages of narration:
   BREW are how a party keeps a deeper stock. **Overcharge:** a potion
   drunk while a pool is already FULL grants +2 above max (spent-only, gone
   at the next camp) -- a small pre-bought buffer for tomorrow's door.
-- Recovery is between fights: fight end +1 STA; short rest +3 STA / +1 HP /
-  +1 Power
-  (**ONE slot per day**); long rest (camp) = full STA and Power, ~1/7 max HP,
-  day advances, the
-  slot refills. Nothing forces the day to end -- camping is the player's call,
-  and the played default is `camp --heal` (camp until whole) when nothing
-  presses -- see the turn protocol.
+- Recovery is between fights, and the NIGHT is all of it (2026-07-26 --
+  the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
+  and Power, ~1/7 max HP, the day advances. Nothing forces the day to end --
+  camping is the player's call, and the played default is `camp --heal`
+  (camp until whole) when nothing presses -- see the turn protocol. In the
+  WILDS the night's visitor is now rolled BEFORE the recovery: a camp that
+  draws a fight heals nobody, and the party meets it as tired as the day
+  left them.
   A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
@@ -955,19 +959,17 @@ bigger than the fights WITHOUT pages of narration:
   fiction; the log already says who's casting what.
 - **Quest levels are exact:** boards, rumors, `show`, and `take` all print
   the true level. MIND does not alter quest readouts.
-- **Pay scales with level everywhere** (a level-L site pays `50*(L+1)` XP
-  and `15*L` gold, split rooms-then-lump): punching up pays above your
-  weight class by construction, easy work pays less. **Per-encounter pay
-  rides the momentum streak** (steepened 2026-07-10): the k-th consecutive
-  encounter in the same site without a night's camp pays (1 + 2(k-1)) x
-  base -- x1/x3/x5, so the hideout's rooms pay 5/15/25 in one go but 5/5/5
-  camped-between (the clear lump is unchanged either way; piecemeal
-  collects ~70% of the site total, and the last room of a one-go run plus
-  the lump carries ~80% of it). Doing the whole site in one push IS the
-  paying line -- the tally names the next room's multiplier at every
-  fight's end.
-  Multi-site quests streak per site (each site ramps and pays on its own;
-  nothing forces marathoning a whole quest in one day). A level banks
+- **Pay scales with level, and it is quoted per JOB** (rebased 2026-07-26):
+  a level-L quest of `enc` fights pays `44*(L+1)*MULT` XP and `18*L*MULT`
+  gold, where MULT is 1.0 / 1.6 / 2.2 for 1 / 2 / 3 encounters -- the trip,
+  the giver, and the turn-in cost the same however many fights the job is,
+  so pay rises SUB-linearly with length. 40% of the XP falls as the fights
+  do, flat; the other 60% plus ALL of the gold lands at the turn-in.
+  Punching up pays above your weight class by construction, easy work pays
+  less. **The momentum streak is gone** -- there is no push-on multiplier
+  to name any more, and nothing forces marathoning a job in one day. A
+  two-place job's first place clears with a banner and no purse; the money
+  is at the end. A level banks
   3 skill points and grants NOTHING automatically (2026-07-17): pools,
   training, proficiency, spell ranks, abilities, and warrior moves are all
   bought from the same points at the levelup menu.

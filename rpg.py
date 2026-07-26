@@ -44,9 +44,9 @@ SPENT_PENALTY = 6       # roll penalty at 0 STA (replaces the Winded penalty)
 # so fights RESOLVE rather than stall. HP is how much you can bleed; STA is how
 # long you can fight WELL; whichever empties first in reach of a foe kills you.
 # Recovery otherwise happens BETWEEN fights, as a sawtooth that trends down
-# across the day: +1 when a fight ends, +3 on a short rest, full only on a long
-# rest (overnight). Tireless entities (undead) never spend STA and are never
-# Winded/Spent.
+# across the day: +1 when a fight ends, full only on a long rest (overnight --
+# since 2026-07-26 the only recovery step there is). Tireless entities
+# (undead) never spend STA and are never Winded/Spent.
 STA_ATTACK_COST = 1         # STA per swing (the pool is a swing budget now;
                             # halved from 2 when running dry became lethal, so
                             # a hero gets ~5-8 full-strength swings, not 2-3)
@@ -370,13 +370,6 @@ SPELLS = {s.name: s for s in [
 HEALING_POTION_RESTORE = 5      # HP restored instantly by a healing potion (between fights)
 POWER_POTION_RESTORE = 5
 STAMINA_DRAUGHT_RESTORE = 4
-STA_RECOVERY_BETWEEN_ROOMS = 3   # STA regained per SHORT rest (a real breather, but
-                                 # from 0 it only *just* clears Winded with the
-                                 # fight-end +1 -- the day still grinds down)
-HP_RECOVERY_BETWEEN_ROOMS = 1    # HP regained per SHORT rest (minimal; wounds carry)
-POWER_RECOVERY_BETWEEN_ROOMS = 1  # Power regained per SHORT rest (a long rest
-                                  # refills it fully -- Power recharges with
-                                  # rest, like STA, just never mid-fight)
 REVIVE_HP = 1                    # HP a Down hero stands back up with (minimal)
 
 # --- Progression (XP, levels, combat training) ------------------------------ #
@@ -512,79 +505,107 @@ BOMB_SEVERITY_R5 = 6
 BOMB_TARGETS = 2
 BOMB_TARGETS_R5 = 3
 
-# Site rewards scale with the SITE'S LEVEL, not with which site it happens to
-# be (2026-07, the quest system): the level on the board IS the pay grade, so
-# beating work above your level pays above your weight class by construction,
-# and easy work pays less -- no separate under/over-level bonus needed. The
-# anchor: a level-1 site (the bandit hideout: 3 encounters + quest) pays
-# exactly the level-1 -> 2 XP cost, so a fresh duo's first clear is a
-# level-up. From there pay grows by HALF the anchor per level --
-# site_xp_total(L) = SITE_XP_PER_LEVEL * (L + 1) -- while the level cost
-# grows by the full step, so leveling SLOWS with rank: one at-level site per
-# level at the start, settling toward two. (~35 at-level site clears from 1
-# to 20; see bench_quests.py for the measured career pace.)
-# Inside a site the hideout's split is kept: ~ENCOUNTER_XP_SHARE of the XP is
-# paid room by room as encounters fall, the rest as the site-clear lump.
-# THE MOMENTUM STREAK (2026-07-09): the per-encounter share is paid on a
-# rising multiplier -- the k-th consecutive encounter cleared IN THE SAME
-# SITE without a night's camp between pays (1 + STREAK_STEP*(k-1)) x the
-# base. A full one-go run collects exactly ENCOUNTER_XP_SHARE of the site
-# total (the anchor is preserved); camping mid-site resets the streak to
-# base, so a piecemeal clear pays noticeably less. This is the carrot that
-# makes "do the site in one go and budget HP across it" the paying line
-# without forbidding the camp -- the site-clear lump (the majority share)
-# still requires beating the site either way.
+# TWO DELIBERATE PAY LADDERS (2026-07-26, the attrition rework's slice 1).
+# Do not "unify" them -- they answer different questions:
+#
+#   site_* : the two hand-built anchors in sites.py (the hideout and the
+#            barrow). They are DEV/TEST CALIBRATION FIXTURES, not played
+#            content: tune.py, bench_training.py, bench_party.py, and
+#            sites.run_site are all fitted to them, and a fixture whose pay
+#            moves is a fixture that stops being a control.
+#   quest_*: the GAME. A generated quest's whole pay, quoted per QUEST and
+#            scaled sub-linearly by its encounter count, because the fixed
+#            overhead (the trip out, the giver, the turn-in) is per quest,
+#            not per fight.
+#
+# Rewards scale with LEVEL, not with shape: the level on the board IS the pay
+# grade, so beating work above your level pays above your weight class by
+# construction and easy work pays less -- no separate under/over-level bonus
+# needed. Pay grows by HALF the anchor per level while the level cost grows by
+# the full step, so leveling SLOWS with rank.
 SITE_XP_PER_LEVEL = 50
-ENCOUNTER_XP_SHARE = 0.45   # fraction of a site's XP paid per-encounter
-STREAK_STEP = 2.0           # per-consecutive-encounter multiplier growth
-                            # (x1, x3, x5 across a 3-room site in one go;
-                            # raised from 1.0 on 2026-07-10 -- the designer
-                            # wanted one-go clears to FEEL like the paying
-                            # line: piecemeal now collects ~70% of a site's
-                            # total instead of ~78%, and the middle room's
-                            # rate -- the wild/off-script anchor, 15 at L1 --
-                            # is unchanged by construction)
-GOLD_PER_SITE_LEVEL = 15    # a level-L site pays this * L gold on completion
-ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- equals
-                        # a level-1 three-room site's MIDDLE (streak-2) award
+ENCOUNTER_XP_SHARE = 0.45   # fraction of a SITE fixture's XP paid per-encounter
+GOLD_PER_SITE_LEVEL = 15    # a level-L site fixture pays this * L gold
+ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- the
+                        # historic level-1 room rate
 QUEST_XP = 55           # the level-1 site-clear lump (the hideout's quest pay)
 QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
 
+# The QUEST ladder (2026-07-26). A quest is 1-3 encounters (quests.py's
+# QUEST_ENCOUNTERS); its pay is a level curve times an encounter multiplier
+# that rises SUB-linearly, so a three-fight job pays more than a one-fight job
+# but nothing like three times more -- the trip, the giver, and the turn-in
+# cost the same either way. QUEST_ENCOUNTER_SHARE of the XP falls as the
+# fights do (flat per encounter -- no streak, no push-on carrot: attrition is
+# the wound track's job now, not the ledger's); the rest, plus ALL of the
+# gold, is the turn-in lump.
+QUEST_XP_PER_LEVEL   = 44   # fitted by bench_quests --part career (2026-07-26):
+                            # 38 quests to the cap, the pre-rework pace. The
+                            # spec's starting estimate of 60 ran the career in
+                            # 28.
+QUEST_GOLD_PER_LEVEL = 18   # the other career-pace knob. At the measured
+                            # encounter mix (mult ~1.39) this pays ~25 x L a
+                            # quest -- the old ladder's 15 x L over ~1.6 sites,
+                            # to within a coin. Career gold is deliberately
+                            # UNCHANGED: gold is the quantity that inflates,
+                            # and the rework's whole spine is not to price
+                            # recovery in it.
+ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
+QUEST_ENCOUNTER_SHARE = 0.40    # paid as the encounters fall; the rest on
+                                # turn-in
+
 
 def site_xp_total(level: int) -> int:
-    """Total XP a level-L site pays (encounters + site-clear lump), quoted at
-    the duo baseline like every award."""
+    """Total XP a level-L site FIXTURE pays (encounters + site-clear lump),
+    quoted at the duo baseline like every award."""
     return SITE_XP_PER_LEVEL * (level + 1)
 
 
-def streak_multiplier(streak: int) -> float:
-    """The momentum multiplier for the k-th consecutive encounter cleared in
-    the same site without a camp between (k >= 1)."""
-    return 1.0 + STREAK_STEP * (max(1, streak) - 1)
-
-
-def site_encounter_xp(level: int, rooms: int, streak: int = 1) -> int:
-    """The per-encounter pay of a level-L site at streak position k: the
-    base is sized so a FULL streak (1..rooms in one go) collects exactly
-    ENCOUNTER_XP_SHARE of the site total. L1 x 3 rooms pays 5/15/25 in one
-    go (sum 45, the hideout's historic share) and 5 per room piecemeal."""
-    weights = sum(streak_multiplier(k) for k in range(1, rooms + 1))
-    base = site_xp_total(level) * ENCOUNTER_XP_SHARE / weights
-    return max(1, round(base * streak_multiplier(streak)))
+def site_encounter_xp(level: int, rooms: int) -> int:
+    """The per-encounter pay of a level-L site fixture: ENCOUNTER_XP_SHARE of
+    the site total, split flat across its rooms. L1 x 3 rooms pays 15 a room
+    (sum 45, the hideout's historic share)."""
+    return max(1, round(site_xp_total(level) * ENCOUNTER_XP_SHARE / rooms))
 
 
 def site_clear_xp(level: int, rooms: int) -> int:
-    """The site-clear (quest) XP lump: whatever a full-streak run's encounter
-    awards leave of the site total. L1 x 3 rooms = 55, the hideout's
-    historic rate."""
-    return site_xp_total(level) - sum(site_encounter_xp(level, rooms, k)
-                                      for k in range(1, rooms + 1))
+    """The site-clear lump: whatever the encounter awards leave of the site
+    total. L1 x 3 rooms = 55, the hideout's historic rate."""
+    return site_xp_total(level) - rooms * site_encounter_xp(level, rooms)
 
 
 def site_gold(level: int) -> int:
-    """Gold a level-L site pays on completion (flat to the party purse).
-    L1 = 15 and L3 = 45: both hand-built sites' historic rates."""
+    """Gold a level-L site fixture pays on completion (flat to the party
+    purse). L1 = 15 and L3 = 45: both hand-built sites' historic rates."""
     return GOLD_PER_SITE_LEVEL * level
+
+
+def quest_xp_total(level: int, encounters: int) -> int:
+    """Total XP a level-L quest of `encounters` fights pays, quoted at the duo
+    baseline (encounter shares + the turn-in lump)."""
+    return round(QUEST_XP_PER_LEVEL * (level + 1)
+                 * ENCOUNTER_MULT[max(1, min(3, encounters))])
+
+
+def quest_encounter_xp(level: int, encounters: int) -> int:
+    """One encounter's share of a quest's XP -- flat: every fight on the job
+    pays the same, whichever place it stands in."""
+    enc = max(1, min(3, encounters))
+    return max(1, round(quest_xp_total(level, enc)
+                        * QUEST_ENCOUNTER_SHARE / enc))
+
+
+def quest_clear_xp(level: int, encounters: int) -> int:
+    """The turn-in lump: whatever the encounter shares leave of the total."""
+    enc = max(1, min(3, encounters))
+    return (quest_xp_total(level, enc)
+            - enc * quest_encounter_xp(level, enc))
+
+
+def quest_gold(level: int, encounters: int) -> int:
+    """A level-L quest's gold, paid whole at the turn-in."""
+    return round(QUEST_GOLD_PER_LEVEL * level
+                 * ENCOUNTER_MULT[max(1, min(3, encounters))])
 
 # --- Weapons (Phase 4 first slice) ------------------------------------------ #
 # A weapon is an OFFENSE package: it modifies the attack pressure roll, the
@@ -1169,16 +1190,16 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 
 
 # --- Time economy (the clock) ---------------------------------------------- #
-# A "day" is a slot budget, not a wall clock. The party gets a limited number of
-# SHORT rests -- each ~ an hour or two of narrative time -- between fights; when
-# those run out there is no more mid-day recovery and the party must make camp
-# for a LONG rest (overnight). Nothing forces the day's end: long_rest() is a
-# function the agent calls on purpose (see the module docstring / develop.md), never
-# automatic. A long rest recharges STA and Power fully and knits HP back at a
-# per-character weekly rate (~max_hp / 7 per night -> roughly a week to heal).
-SHORT_RESTS_PER_DAY = 1          # short-rest slots available each day (cut from
-                                 # 2 in the 2026-07 lethality retune: one
-                                 # breather a day, then you press on or camp)
+# The day has ONE shape: the night (2026-07-26, the attrition rework). The
+# short rest -- a mid-day breather that handed back a little STA, HP, and
+# Power -- is GONE. It existed to pace a four-room site; with quests down to
+# 1-3 encounters there is no mid-day to pace, and every free top-up between
+# fights is a top-up the wound track has to fight. Recovery is the night's
+# job now, and only the night's. Nothing forces the day's end: long_rest() is
+# a function the agent calls on purpose (see the module docstring /
+# develop.md), never automatic. A long rest recharges STA and Power fully and
+# knits HP back at a per-character weekly rate (~max_hp / 7 per night ->
+# roughly a week to heal).
 
 # --- The tavern night (2026-07-10) ------------------------------------------ #
 # A settlement's paid alternative to the free camp: a long rest plus a hot
@@ -1220,9 +1241,9 @@ def party_capacity(cha: int) -> int:
 # Entity.satisfaction stays None for the PC, foes, and every sim entity, so
 # the engine benches never see it). It rises with success and comfort, falls
 # with blood and fear, and at 0 the companion quits at the next settlement,
-# walking off with an equal head-split of the purse. This is the
-# counter-pressure to the momentum streak: the streak pays the party to push
-# on; satisfaction pays it to stop, sleep warm, and spend days off. There is
+# walking off with an equal head-split of the purse. It is the layer that
+# prices STOPPING: a party that never presses on and never takes a risk still
+# has to keep its people. There is
 # deliberately NO pay-to-raise knob (designer call, 2026-07-11: logical but
 # unfun) -- success, tavern nights, and downtime to a companion's liking are
 # the levers.
@@ -1233,6 +1254,14 @@ SATISFACTION_FLOOR = -3         # the track's hard floor; also where a LOYAL
                                 # companion finally leaves (others leave at 0)
 SAT_SITE_CLEAR = 1              # a site/quest lump paid out (award_quest)
 SAT_TAVERN = 1                  # a warm bed and a hot meal (tavern night)
+SAT_TAVERN_COOLDOWN_DAYS = 3    # ...but only once every this many days per
+                                # companion (2026-07-26): the ratchet cap.
+                                # Gains beat losses on a normal cycle, so
+                                # without a cooldown a party that sleeps
+                                # indoors sits at 10 forever -- and the
+                                # attrition rework adds town nights while
+                                # cutting fights. The bed still works; it
+                                # just stops being a morale faucet.
 SAT_DOWNTIME = 1                # a day off in a settlement...
 SAT_DOWNTIME_MATCH = 2          # ...doubled-ish when it suits their traits
                                 # (interest/patriotic/religious -- people.py)
@@ -1714,16 +1743,11 @@ class PressureRoll:
 
 @dataclass
 class Clock:
-    """Campaign time. Coarse on purpose: a `day` counter for the weekly HP math
-    plus the short-rest slots spent so far today. This is the seed of the
-    between-fights layer -- later it can grow finer (hours) without changing how
-    the rest functions are called."""
+    """Campaign time. Coarse on purpose: a `day` counter for the weekly HP
+    math, and nothing else since the short rest went (2026-07-26). This is
+    the seed of the between-fights layer -- later it can grow finer (hours)
+    without changing how the rest functions are called."""
     day: int = 1
-    short_rests_used: int = 0
-
-    @property
-    def short_rests_left(self) -> int:
-        return max(0, SHORT_RESTS_PER_DAY - self.short_rests_used)
 
 
 @dataclass
@@ -1972,6 +1996,9 @@ class Entity:
                                         # child" / "mentor and mentee" / ...
     last_dose_day: int = 0              # "needs meds" bookkeeping: the clock
                                         # day of the last dose bought
+    last_bed_day: int = 0               # the clock day this companion last
+                                        # took the tavern's +1 satisfaction
+                                        # (SAT_TAVERN_COOLDOWN_DAYS)
 
     def __post_init__(self) -> None:
         self.hp = self.max_hp
@@ -6132,49 +6159,18 @@ def start_fight(h: Entity, log: list[str]) -> None:
                          f"their feet ({REVIVE_HP} HP)."]))
 
 
-def short_rest(survivors: list[Entity], clock: Clock, log: list[str]) -> bool:
-    """A short rest (~an hour or two): a little STA, HP, and Power back. Costs
-    one of the day's short-rest slots. Returns False (no effect) once the day's
-    slots are spent -- there is no more mid-day recovery then; the party pushes
-    on depleted or the agent calls long_rest() to make camp. Potions are NOT drunk
-    here: that is a deliberate DM call (use_potion), never automatic."""
-    if clock.short_rests_left <= 0:
-        _play(log,
-              "    (no short rest left today -- the party must push on "
-              "or make camp)",
-              fit_lines(["(no short rest left today --",
-                         "push on or make camp)"]))
-        return False
-    clock.short_rests_used += 1
-    _play(log,
-          f"  The party takes a short rest "
-          f"({clock.short_rests_left} left today).",
-          fit_lines(["The party takes a short rest",
-                     f"({clock.short_rests_left} left today)."]))
-    for h in survivors:
-        # STA is the per-day clock: only a slow catch-breath, never a full reset.
-        h.cur_sta = recover(h.cur_sta, STA_RECOVERY_BETWEEN_ROOMS, h.sta)
-        # HP carries across rooms too: only a minimal catch-breath, not a reset.
-        h.hp = recover(h.hp, HP_RECOVERY_BETWEEN_ROOMS, h.max_hp)
-        # Power trickles back with rest too (2026-07): the budget refills like
-        # the condition does, slowly by day and fully overnight.
-        h.cur_power = recover(h.cur_power, POWER_RECOVERY_BETWEEN_ROOMS, h.power)
-    return True
-
-
 def long_rest(party: list[Entity], clock: Clock, log: list[str],
               banner: str = "The party makes camp.",
               rng: random.Random | None = None) -> None:
     """Make camp for the night. A deliberate, agent-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
-    advances and the short-rest slots refill. Only the truly Dead stay down.
+    advances. Only the truly Dead stay down.
     `banner` reflavors the night line (the tavern sleeps under a roof).
     `rng`, when given, rolls the stamina forage (KIT_FORAGE_CHANCE for one
     extra draught) -- the deterministic callers (session, the sims) pass it;
     a bare call skips the bonus."""
     clock.day += 1
-    clock.short_rests_used = 0
     _play(log,
           f"  --- {banner} Night passes; day {clock.day} dawns. ---",
           fit_lines([f"--- {banner}",
@@ -6281,6 +6277,11 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                          f"HP {h.hp}/{h.max_hp}",
                          f"STA {h.cur_sta}/{h.sta}"]))
     for h in boarders:
+        # The bed's morale gain is on a cooldown (2026-07-26): the first warm
+        # night in a while lands, a standing habit of them does not.
+        if clock.day - h.last_bed_day < SAT_TAVERN_COOLDOWN_DAYS:
+            continue
+        h.last_bed_day = clock.day
         adjust_satisfaction(h, SAT_TAVERN, log, "a warm bed and a hot meal")
     return True
 
@@ -6324,18 +6325,17 @@ def storyteller_tale(party: list[Entity], rng: random.Random,
     return True
 
 
-def survivalist_camp(party: list[Entity], rng: random.Random,
-                     log: list[str]) -> bool:
-    """Survivalist (the ability), rolled at a WILDS camp after the long
-    rest: the best-MIND survivalist reads the ground -- 2d6 + MIND vs DC
-    SURVIVALIST_DC. Success: the camp counts as a tavern night (the
-    HP/STA overcharge, TAVERN_OVERCHARGE of each maximum) and the caller
-    should HALVE the night-visitor chance (session's camp roll). Returns
-    whether the check was made."""
+def survivalist_ground(party: list[Entity], rng: random.Random,
+                       log: list[str]) -> Entity | None:
+    """Survivalist (the ability), rolled when a WILDS camp is PITCHED -- i.e.
+    before the night's visitor is rolled (2026-07-26): the best-MIND
+    survivalist reads the ground, 2d6 + MIND vs DC SURVIVALIST_DC. Returns
+    the scout on a make (the caller then HALVES the night-visitor chance and,
+    if the night passes undisturbed, calls survivalist_comfort), else None."""
     scouts = [h for h in party
               if not h.dead and "survivalist" in h.abilities]
     if not scouts:
-        return False
+        return None
     scout = max(scouts, key=lambda h: h.mind)
     dice = rng.randint(1, 6) + rng.randint(1, 6)
     total = dice + scout.mind
@@ -6344,7 +6344,15 @@ def survivalist_camp(party: list[Entity], rng: random.Random,
     if total < SURVIVALIST_DC:
         log.append(f"    {scout.name} picks the ground with care, but the "
                    f"wilds give nothing back tonight.")
-        return False
+        return None
+    return scout
+
+
+def survivalist_comfort(party: list[Entity], scout: Entity,
+                        log: list[str]) -> None:
+    """The made survivalist camp's payoff, applied AFTER the long rest (the
+    overcharge sits above the maxima the rest just topped up to): the camp
+    counts as a tavern night, TAVERN_OVERCHARGE of each maximum on top."""
     for h in party:
         if h.dead:
             continue
@@ -6356,7 +6364,6 @@ def survivalist_camp(party: list[Entity], rng: random.Random,
                f"sheltered hollow: the party sleeps as if under a roof "
                f"(the tavern overcharge -- a one-day edge) and the night "
                f"passes the quieter for it.")
-    return True
 
 
 def party_wiped(party: list[Entity], log: list[str]) -> bool:
