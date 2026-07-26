@@ -1,36 +1,34 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
+=== Guard the Cultists ===
+the outer camp (L2),
+room 1/1: outer watch
+Hero Archer 1 -- shortbow
+DEX 5  STR 2  STA 5  HP 6/6
+shoots to range 2
+2x Hero Warrior -- spear
+DEX 5  STR 4  STA 6  HP 10/10
 Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+The lines meet -- steel range.
+Hero Archer 1's arrow misses Skiv.
 Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+Skiv edges past Hero Warrior 2,
+deals 1 dmg.
+Pox attacks Hero Warrior 2, parried.
+Hero Warrior 2 (9/10)
+attacks Skiv, parried.
+Hero Warrior 3 attacks Skiv, parried.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
-The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
-
--- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
-  (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Skiv edges past Hero Warrior 2,
+deals 1 dmg.
+Pox outmaneuvers Hero Warrior 2,
+deals 2 dmg!
+!! Hero Archer 1 is Winded.
+Hero Archer 1's arrow outmaneuvers Skiv,
+deals 2 dmg!
+Skiv takes a wound: a split knuckle.
+Hero Warrior 2 (6/10)
+attacks Pox, parried.
+Hero Warrior 3 overwhelms Skiv,
+deals 4 dmg!!
+Skiv takes a wound:
+a deep gash across the back.
+== Skiv is badly cut up ==
