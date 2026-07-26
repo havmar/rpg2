@@ -1,0 +1,56 @@
+RPG2 MAP -- day 1
+the party is at Firascir > Sturford
+(travel: 1 day within a land, 2 days to
+  another)
+
+== Dvarvengrond ==
+  Bjorgheim (capital) -- 1 job(s)
+  Roros (town) -- 3 job(s)
+  Svalaver (town) -- 1 job(s)
+
+== Firascir ==  <- here
+  Tomburgh (capital) -- 1 job(s)
+  Leehaven (city) -- 1 job(s)
+  Walhaven (city) -- 1 job(s)
+  Bradwhitchip (town) -- 1 job(s)
+  Redflurton (town) -- 1 job(s)
+  Sturford (village) -- 1 job(s)  <- the
+    party
+  Ackham (village) -- 1 job(s)
+  Flurham (village) -- 1 job(s)
+
+== Mortellaria ==
+  Castavera (capital) -- 2 job(s)
+  Portomera (city) -- 1 job(s)
+  Belafonte (town) -- 1 job(s)
+  Montaro (town) -- 1 job(s)
+  Doramonte (village) -- 1 job(s)
+  Sanoro (village) -- 1 job(s)
+  Calavento (village) -- 1 job(s)
+
+== Ensimaa ==
+  Taivelle (capital) -- 1 job(s)
+  Dunmaelle (town) -- 1 job(s)
+  Kervaine (town) -- 1 job(s)
+  Ruunamont (town) -- 1 job(s)
+  Ailava (village) -- 2 job(s)
+  Aurenne (village) -- 1 job(s)
+  Yllenne (village) -- 2 job(s)
+
+== Gibili ==
+  Maketawa (capital) -- 1 job(s)
+  Potalu (town) -- 1 job(s)
+  Birikava (town) -- 1 job(s)
+  Boilaki (town) -- 1 job(s)
+  Barasalo (village) -- 1 job(s)
+  Pikitawa (village) -- 1 job(s)
+  Kopaka (village) -- 1 job(s)
+
+== Tergal ==
+  Ulus-Gal (capital) -- 1 job(s)
+  Kharuk (town) -- 1 job(s)
+  Temenur (town) -- 1 job(s)
+  Ordubal (town) -- 1 job(s)
+  Urkhal (village) -- 1 job(s)
+  Tumengal (village) -- 1 job(s)
+  Borkal (village) -- 1 job(s)
