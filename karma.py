@@ -36,9 +36,10 @@ Mechanically:
   with priced terms -- the fence's half-price offer; `settle` takes it,
   fighting on refuses it). The machinery lives in quests.build_quest
   and session.py; the templates below author the content.
-- **Left for dead.** The PC is never killed by the law's heroes or
-  hell's enforcers -- a lost posse fight costs the party, the purse,
-  and (against the law) all bad karma instead (session.apply_mercy).
+- **Left for dead.** On the first eligible defeat at each PC level, a lost
+  posse fight costs the party, the purse, and (against the law) all bad karma
+  instead of the PC's life (`session.apply_mercy`). Slice 4 made that the
+  shared non-cumulative mercy allowance; a second same-level loss is real.
 
 - **Heat is the throttle.** One at-level dark quest is ~one heat step
   (KARMA_HEAT_STEP * level bad karma per step; a level-L quest quotes

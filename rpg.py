@@ -1332,9 +1332,16 @@ MEDS_PRICE = 20                 # deliberately dear (two potions a dose)
 # fight is already winding down -- see fight_winding_down). The sims pass no
 # callback and keep the old every-crossing pause, so sim_pause_policy answers
 # exactly what it always answered.
+#
+# FATE'S INTERRUPT (2026-07-26, slice 4) is a special form of that one pause.
+# When fate commutes the protagonist's death, the fight stops at the end of
+# the round with exactly two choices: fight on and risk paying the companion,
+# or retreat and waive the debt. It consumes the encounter's ordinary pause;
+# every later crossing is answered by standing orders.
 PAUSE_STA_TRIGGER = 2       # a hero at/below this STA at round end -> pause
 PAUSE_HP_FRACTION = 0.5     # a hero at/below this fraction of max HP -> pause
 PAUSE_ACTION_DEF_PENALTY = 2    # the busy hero's defense penalty that round
+FATE_RESTORE_HP = 1         # a paid victory stands the protagonist at 1 HP
 
 # Retreat & chase. Deliberately ONE roll -- no multi-message chase scenes.
 # Breaking contact: every foe fit to swing (alive, not Winded, not Spent) gets
@@ -1348,6 +1355,13 @@ PAUSE_ACTION_DEF_PENALTY = 2    # the busy hero's defense penalty that round
 # still swing at the door but never give chase: retreat from the barrow
 # always succeeds once past it.
 FLEE_BONUS = 2
+
+# Defeat-without-death (2026-07-26, the attrition rework's slice 4).
+# Ferocity is CONTENT, not a pressure stat: it says what a roster does with a
+# beaten party, and whether it may break off when badly beaten itself.
+FEROCITY_TAKES_SPOILS = 0   # bandits/raiders: rob the fallen and leave
+FEROCITY_BREAKS = 1         # most beasts: fight while winning, break when not
+FEROCITY_RELENTLESS = 2     # undead/demons/war waves: no mercy, no break
 
 # --- Resource conversions (they ride the same pause) ------------------------- #
 # STA is the scarce, dynamic track; HP and Power mostly sit idle. Both
@@ -2152,6 +2166,11 @@ class Entity:
                                          # False for the barrow's undead (bound
                                          # to the grave -- they swing at the
                                          # door but never follow past it)
+    ferocity: int = FEROCITY_TAKES_SPOILS
+                                        # CONTENT disposition (slice 4), not a
+                                        # combat modifier: 0 takes spoils and
+                                        # leaves, 1 breaks when beaten, 2
+                                        # never breaks and grants no mercy
     crowd_cap: int = CROWD_CAP          # how many attackers can press THIS
                                          # target at once (the press, see
                                          # CROWD_CAP); big monsters take 3-4 --
@@ -2292,16 +2311,27 @@ class Entity:
                                             # inputs (hits recover better)
     down: bool = field(default=False)   # at 0 HP, out of this fight (recoverable)
     dead: bool = field(default=False)   # truly slain (unsaved crippling blow)
+    withdrew: bool = field(default=False)  # foe broke away from this fight;
+                                             # still alive in fiction, but no
+                                             # longer a combatant or a corpse
+    break_tried: bool = field(default=False)  # ferocity-0/1 roster has made
+                                               # its one reverse-retreat try
     fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
                                              # price (a companion's life) is
                                              # collected at victory, waived on
                                              # a fled or lost fight
+    fate_paid: bool = field(default=False)  # transient hand-off to the
+                                             # session tail: this victory paid
+                                             # Fate, so do not enter mercy
     items: dict[str, int] = field(default_factory=dict)
     hp_regen_per_night: int = field(default=0)  # HP knit back per long rest (derived)
     # Progression. Training is the veteran-vs-novice axis: a flat pressure bonus,
     # so it improves landing, avoiding, AND severity (margin feeds severity).
     level: int = field(default=1)
     xp: int = field(default=0)          # progress toward the NEXT level only
+    mercy_level: int = field(default=0) # last character level whose one
+                                         # defeat mercy was spent; mercies do
+                                         # not accumulate across levels
     skill_points: int = field(default=0)
     training: int = field(default=0)    # combat training rank (0..TRAINING_MAX)
     # Weapons. One wielded weapon, no inventory (heroic tone -- swaps are
@@ -2358,8 +2388,9 @@ class Entity:
     # --- derived state -------------------------------------------------- #
     @property
     def alive(self) -> bool:
-        # "Still in the fight." Down and Dead both sit at 0 HP.
-        return self.hp > 0
+        # "Still in the fight." Down and Dead both sit at 0 HP; a foe that
+        # successfully broke away keeps its HP but has left the encounter.
+        return self.hp > 0 and not self.withdrew
 
     @property
     def hp_lost(self) -> int:
@@ -4217,9 +4248,11 @@ class Pause:
     The fight is NOT over: call group_combat again with the same `fired` set,
     first_round=round+1, and any pause actions to resume -- or attempt_retreat
     to break away. `crossings` is what tripped the pause: (kind, hero) pairs,
-    kind in ("stamina", "wounds")."""
+    kind in ("stamina", "wounds", "fate"). `kind` distinguishes the ordinary
+    crossing interrupt from fate's special fight-on/retreat decision."""
     round: int
     crossings: list[tuple[str, Entity]]
+    kind: str = "normal"
 
 
 def _check_pause_triggers(party: list[Entity], foes: list[Entity],
@@ -4486,8 +4519,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
     of stalling (max_rounds is only a safety valve). When the fight ends the
     survivors catch their breath (+STA_RECOVERY_AFTER_FIGHT).
 
-    The pause (the interrupt primitive): with pause_triggers=True the fight
-    PAUSES at the end of a round in which a hero CROSSED STA <=
+    The ordinary pause (the interrupt primitive): with pause_triggers=True
+    the fight PAUSES at the end of a round in which a hero CROSSED STA <=
     PAUSE_STA_TRIGGER or HP <= half (each trigger once per hero per fight --
     `fired` carries the used (kind, hero) pairs across a resume; a condition
     already true at fight start is gated off, crossing-only). Returns a Pause
@@ -4507,6 +4540,18 @@ def group_combat(party: list[Entity], foes: list[Entity],
     interrupt and auto-orders, the auto crossings are RE-ARMED (removed from
     `fired`) instead of acted on, so the order isn't lost across the
     save/resume boundary -- they re-trip after the resume.
+
+    Fate's interrupt is special: a protagonist newly carrying `fate_debt`
+    pauses at the end of that round while both sides still stand, provided
+    the encounter's pause has not already been spent. It consumes that pause:
+    `("pause-spent", protagonist)` in `fired` makes every later crossing use
+    standing orders. The `("fate", protagonist)` key prevents the bargain
+    interrupt repeating. No standing order can answer it; session play offers
+    only fight on or retreat.
+
+    Ferocity (slice 4): a ferocity-0/1 roster that is badly beaten may try
+    one reverse retreat at round end. It uses the same parting-blow and chase
+    structure as the party's retreat. Ferocity 2 never breaks.
 
     Logging: when `log` is a CombatLog configured with `debug_path`, this
     function writes the detailed mechanics log to that snapshot before every
@@ -5246,18 +5291,80 @@ def group_combat(party: list[Entity], foes: list[Entity],
         _debug(log, _stamina_line(party, foes))
 
         if pause_triggers:
+            # Fate's bargain spends the encounter's one interrupt. It comes
+            # first: a
+            # badly-beaten foe line must not run away before the player gets
+            # the expressly promised fight-on/retreat decision.
+            fate_interrupts = [
+                ("fate", h) for h in party
+                if (h.fate_debt and ("fate", h) not in fired
+                    and not any(k == "pause-spent" for k, _ in fired))
+            ]
+            if (fate_interrupts
+                    and any(h.alive for h in party)
+                    and any(f.alive for f in foes)):
+                for _, h in fate_interrupts:
+                    fired.add(("fate", h))
+                    fired.add(("pause-spent", h))
+                    _play(
+                        log,
+                        f"    == Fate waits on {h.name}'s bargain -- "
+                        f"fight on and pay its price, or retreat and waive "
+                        f"the debt. ==",
+                        fit_lines([
+                            "== FATE'S BARGAIN:",
+                            "fight on and pay the price,",
+                            "or retreat and waive the debt. ==",
+                        ]),
+                    )
+                _finish_rounds(log)
+                _flush_debug(log)
+                return Pause(round=rnd, crossings=fate_interrupts,
+                             kind="fate")
+
+        # A beaten ferocity-0/1 roster gets one chance to leave. This runs
+        # after Fate's special interrupt but before the ordinary crossing:
+        # if the enemy is already quitting, there is no wounds decision left
+        # for the player to make.
+        standing_foes = [f for f in foes if f.alive]
+        if (standing_foes
+                and max(f.ferocity for f in standing_foes)
+                < FEROCITY_RELENTLESS
+                and fight_winding_down(foes)
+                and not any(f.break_tried for f in standing_foes)):
+            for f in standing_foes:
+                f.break_tried = True
+            attempt_foe_retreat(foes, party, rng, log, field=field)
+
+        if pause_triggers:
             crossings = _check_pause_triggers(party, foes, fired)
             if crossings:
                 interrupts: list[tuple[str, Entity]] = []
                 autos: list[tuple[str, Entity, str]] = []
                 for kind, h in crossings:
-                    order = ("pause" if standing_orders is None
-                             else standing_orders(kind, h, party, foes))
+                    ordinary_spent = any(k == "pause-spent"
+                                         for k, _ in fired)
+                    if ordinary_spent:
+                        # The one-pause budget is an engine invariant for
+                        # Fate: even a caller that accidentally asks to pause
+                        # again gets the ordinary standing order instead.
+                        order = standing_order(kind, h, foes)
+                    elif standing_orders is None:
+                        order = "pause"
+                    else:
+                        order = standing_orders(kind, h, party, foes)
                     if order == "pause":
                         interrupts.append((kind, h))
                     elif order is not None:
                         autos.append((kind, h, order))
                 if interrupts:
+                    # Session play supplies standing_orders and owns one
+                    # encounter pause. Mark it spent so a later Fate bargain
+                    # cannot create a second stop. The sim path supplies no
+                    # callback and deliberately keeps its legacy crossing
+                    # policy.
+                    if standing_orders is not None:
+                        fired.add(("pause-spent", interrupts[0][1]))
                     for kind, h in interrupts:
                         if kind == "stamina":
                             _play(log,
@@ -5279,7 +5386,8 @@ def group_combat(party: list[Entity], foes: list[Entity],
                         fired.discard((kind, h))
                     _finish_rounds(log)
                     _flush_debug(log)
-                    return Pause(round=rnd, crossings=interrupts)
+                    return Pause(round=rnd, crossings=interrupts,
+                                 kind="normal")
                 for kind, h, order in autos:
                     # One action per hero per round: a hero crossing both
                     # tracks at once acts on the later (wounds) order.
@@ -5358,6 +5466,7 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.disarm_tried = False
         e.rage_primed = False
         e.rage_exhausted = False
+        e.break_tried = False
         e.adv = 0
         e.reload_left = 0
         e.switched = False
@@ -5373,37 +5482,52 @@ def _clear_fight_states(entities: list[Entity]) -> None:
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
-                      rng: random.Random, log: list[str]) -> None:
+                      rng: random.Random, log: list[str]) -> bool:
     """Collect fate's price at the end of a melee (the protagonist bargain --
     see Entity.protagonist). Debts are cleared whatever happened; the price is
     only PAID on a victory: the last foe's dying strength kills one random
-    companion (Down or standing -- fate is not particular). A lost or
-    staggered-apart fight collects nothing (the wipe or the foes still
-    standing are punishment enough), and a clean retreat waives the debt in
-    attempt_retreat."""
+    companion (Down or standing -- fate is not particular), then stands the
+    protagonist at exactly FATE_RESTORE_HP. Wounds and every other point of
+    damage remain. This is what makes a paid duo victory a ruined SOLO
+    victory, not a fake reprieve followed by party_wiped.
+
+    A lost or staggered-apart fight collects nothing (the loss itself may
+    receive slice 4's defeat mercy), and a clean retreat waives the debt in
+    attempt_retreat. Returns True only when a victory paid the bargain."""
     debtors = [h for h in party if h.fate_debt]
     if not debtors:
-        return
+        return False
     for h in debtors:
         h.fate_debt = False
     if any(f.alive for f in foes):
-        return
+        return False
     victims = [h for h in party if not h.dead and not h.protagonist]
-    if not victims:
-        return
-    victim = rng.choice(victims)
-    victim.hp = 0
-    victim.down = False
-    victim.dead = True
-    _play(log,
-          f"    *** The last foe spends its dying strength on one final "
-          f"blow -- fate's price for {debtors[0].name}'s life. It finds "
-          f"{victim.name}. ***",
-          fit_lines(["*** The last foe's dying blow is",
-                     f"fate's price for {debtors[0].name}'s",
-                     f"life. It finds {victim.name}. ***"]))
-    _play(log, f"    *** {victim.name} is SLAIN. ***",
-          f"{victim.name} is SLAIN.")
+    if victims:
+        victim = rng.choice(victims)
+        victim.hp = 0
+        victim.down = False
+        victim.dead = True
+        _play(log,
+              f"    *** The last foe spends its dying strength on one final "
+              f"blow -- fate's price for {debtors[0].name}'s life. It finds "
+              f"{victim.name}. ***",
+              fit_lines(["*** The last foe's dying blow is",
+                         f"fate's price for {debtors[0].name}'s",
+                         f"life. It finds {victim.name}. ***"]))
+        _play(log, f"    *** {victim.name} is SLAIN. ***",
+              f"{victim.name} is SLAIN.")
+
+    for debtor in debtors:
+        debtor.dead = False
+        debtor.down = False
+        debtor.hp = min(FATE_RESTORE_HP, debtor.hp_ceiling)
+        debtor.fate_paid = True
+        _play(log,
+              f"    {debtor.name} rises at {debtor.hp} HP. Fate heals "
+              "nothing else.",
+              fit_lines([f"{debtor.name} rises at {debtor.hp} HP.",
+                         "Fate heals nothing else."]))
+    return True
 
 
 # --------------------------------------------------------------------------- #
@@ -5421,6 +5545,24 @@ def _chase_dex(group: list[Entity]) -> float:
     if total_weight == 0:
         return sum(dex(e) for e in group) / len(group)
     return sum(dex(e) * max(0, e.cur_sta) for e in group) / total_weight
+
+
+def _chase_contest(runners: list[Entity], pursuers: list[Entity],
+                   rng: random.Random, log: list[str]) -> bool:
+    """The one shared chase roll, used in both directions. True means the
+    runners get away. The escaping side always owns FLEE_BONUS: it picked the
+    instant and the ground, whether it is the party or a breaking foe line."""
+    flee_dex = _chase_dex(runners)
+    hunt_dex = _chase_dex(pursuers)
+    flee_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    hunt_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    flee_total = flee_dice + flee_dex + FLEE_BONUS
+    hunt_total = hunt_dice + hunt_dex
+    _debug(log, f"    the chase: flight {flee_total:.1f} (2d6={flee_dice}, "
+                f"+{flee_dex:.1f} DEX STA-weighted, +{FLEE_BONUS} head start) "
+                f"vs pursuit {hunt_total:.1f} (2d6={hunt_dice}, "
+                f"+{hunt_dex:.1f} DEX STA-weighted)")
+    return flee_total >= hunt_total
 
 
 def attempt_retreat(party: list[Entity], foes: list[Entity],
@@ -5519,17 +5661,7 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
         _catch_breath(runners, log)
         return True
 
-    flee_dex = _chase_dex(runners)
-    hunt_dex = _chase_dex(pursuers)
-    flee_dice = rng.randint(1, 6) + rng.randint(1, 6)
-    hunt_dice = rng.randint(1, 6) + rng.randint(1, 6)
-    flee_total = flee_dice + flee_dex + FLEE_BONUS
-    hunt_total = hunt_dice + hunt_dex
-    _debug(log, f"    the chase: flight {flee_total:.1f} (2d6={flee_dice}, "
-                f"+{flee_dex:.1f} DEX STA-weighted, +{FLEE_BONUS} head start) "
-                f"vs pursuit {hunt_total:.1f} (2d6={hunt_dice}, "
-                f"+{hunt_dex:.1f} DEX STA-weighted)")
-    if flee_total >= hunt_total:
+    if _chase_contest(runners, pursuers, rng, log):
         log.append("    They break away -- clean escape.")
         for h in party:
             h.fate_debt = False     # a fled fight is not a won one: waived
@@ -5543,6 +5675,70 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
           fit_lines(["*** RUN DOWN -- the pursuers catch",
                      "them; the fight resumes. ***"]))
     return False
+
+
+def attempt_foe_retreat(foes: list[Entity], party: list[Entity],
+                        rng: random.Random, log: list[str],
+                        field: int = 0) -> bool:
+    """A badly-beaten ferocity-0/1 roster breaks in the reverse direction.
+
+    This is the party retreat's machinery reflected across the field: every
+    hero still fit to swing gets one softened parting blow, then one
+    STA-weighted DEX chase contest decides whether the remaining foes escape.
+    A successful break marks them `withdrew` rather than Dead, so the
+    encounter can clear without manufacturing corpses or weapon drops.
+    Returns True when at least one foe gets away."""
+    runners = [f for f in foes if f.alive]
+    if not runners:
+        return False
+    _play(log,
+          "    The beaten foe line breaks and runs!",
+          "The beaten foes break and run!")
+
+    fit = [h for h in party if h.alive and not h.winded and not h.spent]
+    for h in fit:
+        targets = [f for f in foes if f.alive]
+        if not targets:
+            break
+        f = rng.choice(targets)
+        gap = max(0, field - h.adv - f.adv) if field > 0 else 0
+        if gap == 0:
+            _attack(h, f, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True)
+        elif h.shot_ready and gap <= h.ranged.range:
+            _attack(h, f, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True, shot=True)
+        elif h.default_cast() is not None and gap <= CAST_RANGE:
+            _attack(h, f, rng, log, def_mod=-PAUSE_ACTION_DEF_PENALTY,
+                    def_label="fleeing", soften=True)
+
+        if not f.alive:
+            if f.dead:
+                _play_tail(log, f"    *** {f.name} is SLAIN. ***",
+                           "SLAIN.", f"{f.name} is SLAIN.")
+            else:
+                _play_tail(log, f"    *** {f.name} falls. ***",
+                           "It falls.", f"{f.name} falls.")
+
+    runners = [f for f in foes if f.alive]
+    if not runners:
+        return False
+    pursuers = [h for h in fit if h.alive and h.pursues]
+    if pursuers and not _chase_contest(runners, pursuers, rng, log):
+        _play(log,
+              "    *** RUN DOWN -- the party catches the fleeing foes; "
+              "the fight resumes. ***",
+              fit_lines(["*** RUN DOWN -- the party catches",
+                         "the fleeing foes; the fight resumes. ***"]))
+        return False
+
+    for f in runners:
+        f.withdrew = True
+    _play(log,
+          "    The survivors escape. The field belongs to the party.",
+          fit_lines(["The survivors escape.",
+                     "The field belongs to the party."]))
+    return True
 
 
 def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
@@ -5605,6 +5801,7 @@ def refresh_foes_after_retreat(foes: list[Entity],
     survivors = [f for f in foes if not f.dead]
     _clear_fight_states(survivors)  # no spell state survives to a return trip
     for f in survivors:
+        f.withdrew = False
         f.conditions = []           # a room left alone binds its own wounds:
                                     # foes carry no condition to a return trip
                                     # (they keep the scalar and nothing else --
@@ -5905,7 +6102,8 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
     drops: dict[str, tuple[Weapon, int]] = {}
     for f in foes:
         w = f.weapon
-        if f.alive or w is None or f.weapon_broken or w.value <= 0:
+        if (f.alive or f.withdrew or w is None
+                or f.weapon_broken or w.value <= 0):
             continue
         drops[w.name] = (w, drops.get(w.name, (w, 0))[1] + 1)
     if not drops:
@@ -7377,6 +7575,9 @@ def start_fight(h: Entity, log: list[str]) -> None:
     """Per-fight prep: bring a Down hero back to their feet (minimally). HP is NOT
     reset -- wounds carry across rooms; healing comes from potions, spells, and
     resting between adventures, never a free per-fight top-up."""
+    h.withdrew = False
+    h.break_tried = False
+    h.fate_paid = False
     if h.down or h.hp <= 0:
         h.hp = min(REVIVE_HP, h.hp_ceiling)     # never past the wound ceiling
         h.down = False
@@ -7652,6 +7853,130 @@ def survivalist_comfort(party: list[Entity], scout: Entity,
                f"sheltered hollow: the party sleeps as if under a roof "
                f"(the tavern overcharge -- a one-day edge) and the night "
                f"passes the quieter for it.")
+
+
+def party_defeated(party: list[Entity]) -> bool:
+    """The played run's two losing states, before `party_wiped` destroys the
+    Down/dead distinction: nobody stands, or the player character is truly
+    dead even if a companion won the field."""
+    if not party:
+        return True
+    return not any(h.alive for h in party) or party[0].dead
+
+
+def roster_ferocity(foes: list[Entity]) -> int:
+    """The roster's content disposition. The most relentless member decides:
+    a single undead or war-wave captain does not let gentler allies turn a
+    loss into mercy."""
+    return max((f.ferocity for f in foes), default=FEROCITY_RELENTLESS)
+
+
+def mercy_available(pc: Entity) -> bool:
+    """One mercy at each character level, never banked."""
+    return pc.mercy_level != pc.level
+
+
+def defeat_mercy_kind(foes: list[Entity]) -> str | None:
+    """What a non-relentless roster does with a defeated party.
+
+    Ferocity 0 is the humanoid/spoils consequence; ferocity 1 is the
+    monster/maiming consequence. Ferocity 2 is a real wipe."""
+    ferocity = roster_ferocity(foes)
+    if ferocity >= FEROCITY_RELENTLESS:
+        return None
+    return "humanoid" if ferocity == FEROCITY_TAKES_SPOILS else "monster"
+
+
+def apply_defeat_mercy(party: list[Entity], foes: list[Entity],
+                       purse: Purse, rng: random.Random, log: list[str],
+                       participants: list[Entity] | None = None
+                       ) -> str | None:
+    """Convert one genuine loss into slice 4's level-limited mercy.
+
+    `participants` is the roster that entered THIS fight; pass it when a
+    party list retains older dead companions. Everyone who entered wakes at
+    1 HP, with every wound and all other damage intact. A ferocity-0
+    humanoid roster takes the purse and every quality weapon. A ferocity-1
+    monster roster takes nothing and leaves one random participant with a
+    permanent maiming. Returns "humanoid"/"monster" when it fires.
+
+    This deliberately refuses a Fate-paid victory: `_settle_fate_debt`
+    stands the protagonist at 1 HP, so `party_defeated` is false before this
+    function can spend the level's mercy."""
+    if not party_defeated(party):
+        return None
+    pc = party[0] if party else None
+    kind = defeat_mercy_kind(foes)
+    if pc is None or kind is None or not mercy_available(pc):
+        return None
+
+    active = list(participants) if participants is not None else list(party)
+    active = [h for h in active if h in party]
+    if pc not in active:
+        active.insert(0, pc)
+    pc.mercy_level = pc.level
+    for h in active:
+        h.dead = False
+        h.down = False
+        h.withdrew = False
+        h.hp = min(1, h.hp_ceiling)
+
+    if kind == "humanoid":
+        taken = purse.gold
+        purse.gold = 0
+        weapons = []
+        for h in active:
+            if h.weapon is not None and h.weapon.quality:
+                stolen = h.weapon
+                weapons.append(f"{h.name}'s {stolen.name}")
+                # The wooden staff is also a +Power focus. Losing it must use
+                # the same accounting as a weapon swap or the bonus survives
+                # after the item is gone.
+                if stolen.power_bonus:
+                    h.power = max(0, h.power - stolen.power_bonus)
+                    h.cur_power = min(h.cur_power, h.power)
+                h.weapon = None
+                h.weapon_broken = False
+                h.switched = False
+        _play(log,
+              f"  *** LEFT FOR DEAD -- the victors take {taken} g and "
+              f"{'the quality weapons' if weapons else 'no worthy steel'}, "
+              "then leave the party breathing. ***",
+              fit_lines(["*** LEFT FOR DEAD --",
+                         f"the victors take {taken} g",
+                         "and the quality weapons,"
+                         if weapons else "and find no worthy steel,",
+                         "then leave the party breathing. ***"]))
+        if weapons:
+            _play(log,
+                  "    Taken: " + ", ".join(weapons) + ".",
+                  fit_lines(["Taken:"] +
+                            [w + ("," if i < len(weapons) - 1 else ".")
+                             for i, w in enumerate(weapons)]))
+    else:
+        candidates = [(h, location) for h in active
+                      for location in WOUND_LIMBS
+                      if not any(w.permanent and w.location == location
+                                 for w in h.wounds)]
+        if not candidates:
+            candidates = [(h, location) for h in active
+                          for location in WOUND_LIMBS]
+        victim, location = rng.choice(candidates)
+        add_wound(victim, location, WOUND_SEVERITY_MAX,
+                  permanent=True, log=log)
+        _play(log,
+              "  *** LEFT FOR DEAD -- the beasts leave the party where it "
+              f"fell. {victim.name} wakes maimed; nothing was taken. ***",
+              fit_lines(["*** LEFT FOR DEAD --",
+                         "the beasts leave the party where it fell.",
+                         f"{victim.name.split()[0]} wakes maimed;",
+                         "nothing was taken. ***"]))
+
+    _play(log,
+          "    The beaten party rises at 1 HP. Its wounds remain.",
+          fit_lines(["The beaten party rises at 1 HP.",
+                     "Its wounds remain."]))
+    return kind
 
 
 def party_wiped(party: list[Entity], log: list[str]) -> bool:

@@ -1404,3 +1404,89 @@ reshaping rather than a difficulty target:
    policy is a guess at how a player behaves, and it is now load-bearing for
    every career number. If played convalescence looks nothing like it,
    re-measure before trusting the days-to-cap figure.
+
+---
+
+## 2026-07-26 — the attrition rework, SLICE 4: defeat without death
+
+**Change measured.** Every foe row gained a content-only ferocity band:
+humanoids take spoils (0), most beasts break when beaten and leave a maiming
+after defeat (1), and undead / demons / conquest waves are relentless (2).
+Bands 0-1 make one reverse retreat when all surviving foes are below half HP
+or Spent. In played sessions and the career harness, the first eligible
+defeat at each PC level becomes mercy before `party_wiped`: band 0 takes the
+purse and quality weapons, band 1 adds a permanent maiming, and band 2
+remains lethal. Fate's paid victory is separately corrected to kill one
+companion and restore the PC to 1 HP; it cannot spend mercy. Its special
+fight-on / retreat interrupt consumes the encounter's ordinary pause.
+
+**Runs.** Full bestiary at 2,000 trials per column; generated encounters and
+jobs at 300 per cell; `tune.py`; training and party sweeps at 5,000 per cell;
+and 500 complete careers. The full 138-test discovery suite also passed
+before measurement (the final focused suite has one additional reciprocal
+pause-order test). No stat, resource, roster, or threat-budget dial moved.
+
+### Selective combat rebaseline
+
+Relentless rows are the control. Their annotated-level readings stay on the
+Slice 3b cells: skeleton **93.2%** win and ghoul **91.5%**. The barrow is
+likewise unchanged apart from rounding:
+
+| fixture | Slice 3b clear / wipe | Slice 4 clear / wipe |
+|---|---:|---:|
+| barrow rank 0 (`tune`, policy) | 27.4 / 50.7 | **27.9 / 50.7** |
+
+`bench_training` independently keeps the barrow's rank-0 clear at **27.4%**
+(wipe 50.8% in the new run), and the party sweep keeps its duo clear at
+**27.4%**.
+
+Non-relentless rows may now resolve as a party victory when their survivors
+escape. That is deliberately visible in the fixtures:
+
+| fixture | Slice 3b | Slice 4 |
+|---|---:|---:|
+| hideout (`tune`), policy clear / wipe | 45.3 / 22.7 | **56.0 / 18.0** |
+| hideout training ladder, rank 0/1/2/3 | 44.5 / 68.3 / 83.5 / 92.4 | **54.3 / 75.2 / 86.4 / 93.9** |
+| hideout party sweep, size 1/2/3/4 | 15.4 / 44.5 / 51.2 / 66.0 | **22.1 / 54.3 / 64.1 / 76.3** |
+| hideout (`tune`), reckless clear / wipe | 16.2 / 83.8 | **30.9 / 69.1** |
+
+The starter fixture therefore returns to its intended 55-65% policy-clear
+band without a numerical retune. The cause is legible content behavior:
+bandits run; skeletons do not.
+
+Generated at-level encounters now win **77.3-95.7%** and at-level whole jobs
+clear **61.0-92.3%** (300/cell). Those are higher than Slice 3b's
+71.7-93.3 and 55-85 bands because a breaking roster can concede the field.
+The raw encounter/site harnesses still report real wipes; they do not apply
+campaign mercy.
+
+### Careers: the acceptance measurement
+
+| | Slice 3b | Slice 4 |
+|---|---:|---:|
+| reach L5 / L8 / L11 / L14 / L17 / L20 | 76 / 62 / 32 / 10 / 5 / 1.2 | **86 / 70 / 35 / 10 / 3 / 1** |
+| median death level | 8 | **9** |
+| capped median days / quests | 96 / 35 | **92 / 36** |
+| turn-in quick / on time / late / expired | 41 / 49 / 8 / 2 | **42 / 49 / 7 / 2** |
+| defeat mercies | none | **500 (1.00/career)** |
+| careers surviving at least one mercy | none | **86.2%** |
+
+The acceptance criterion lands literally: wipe outcomes convert largely into
+events a career survives, and median death rises one level. The total of 500
+mercies across 500 careers is not one scripted mercy each — 13.8% receive
+none, while survivors can earn a fresh one after levelling. The allowance
+does not accumulate.
+
+### Flags
+
+1. **Breaking is a meaningful difficulty lever.** It raises the humanoid
+   fixture and generated-content win bands substantially. That is intended
+   for this slice and restores the hideout target, but future ferocity
+   assignments must be treated as balance-bearing content.
+2. **Mercy is not included in bestiary, generated encounter, or generated
+   job clear rates.** Only the career harness applies it. This preserves the
+   raw combat lethality readings while measuring the campaign safety valve
+   where it actually matters.
+3. **Fate's duo/depleted-party correction is a contract result, not a Monte
+   Carlo result.** Focused tests assert PC 1 HP, one companion slain, wounds
+   unchanged, no wipe, no subsequent mercy, and both pause orderings.

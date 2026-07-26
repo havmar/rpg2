@@ -307,14 +307,16 @@ def _rest_up(party, clock, log) -> None:
 
 
 def career_run_site(site, party, clock, purse, rng, log,
-                    encounter_xp: int) -> bool:
+                    encounter_xp: int) -> str:
     """One PLACE of a quest, encounter by encounter, camping up before every
     door (see _rest_up). A fled room gets one rested return trip, then the
     place is abandoned. Returns True on a full clear.
 
     Pay is the QUEST's (2026-07-26): each fight pays `encounter_xp`, flat,
     and the turn-in lump is the caller's to hand over once the whole job is
-    done -- a place is no longer a pay grade of its own."""
+    done -- a place is no longer a pay grade of its own. Returns "cleared",
+    "abandoned", "mercy", or "dead"; Slice 4's mercy is applied here before
+    `party_wiped` destroys the Down/dead distinction."""
     foe_n = 0
     for room_i, (room_name, roster) in enumerate(site.rooms):
         _rest_up(party, clock, log)
@@ -332,11 +334,15 @@ def career_run_site(site, party, clock, purse, rng, log,
             for h in living:
                 rpg.start_fight(h, log)
             result = rpg.sim_fight(living, foes, rng, log)
+            mercy = rpg.apply_defeat_mercy(
+                party, foes, purse, rng, log, participants=living)
+            if mercy is not None:
+                return "mercy"
             if rpg.party_wiped(party, log) or any(h.dead for h in party):
-                return False
+                return "dead"
             if result == "fled" or any(f.alive for f in foes):
                 if attempts >= rpg.SIM_MAX_ROOM_ATTEMPTS:
-                    return False        # abandoned
+                    return "abandoned"
                 _rest_up(party, clock, log)
                 rpg.auto_use_potions_on_rest(
                     [h for h in party if h.alive], log)
@@ -346,7 +352,7 @@ def career_run_site(site, party, clock, purse, rng, log,
             break
         rpg.award_xp(party, encounter_xp, log, "encounter")
         rpg.roll_loot(party, purse, rng, log)
-    return True
+    return "cleared"
 
 
 def run_career(seed: int) -> dict:
@@ -360,6 +366,7 @@ def run_career(seed: int) -> dict:
     quests_cleared = 0
     forced_up = 0
     expired = 0                     # postings the board lost unfinished
+    mercies = 0                     # Slice 4 losses the career survived
     bands: Counter[str] = Counter() # what the turn-ins were worth
     clock_day = -1
     log: list[str] = []
@@ -370,7 +377,7 @@ def run_career(seed: int) -> dict:
     def result(end: str, level: int) -> dict:
         return {"end": end, "level": level, "days": clock.day,
                 "quests": quests_cleared, "forced_up": forced_up,
-                "expired": expired, "bands": bands,
+                "expired": expired, "mercies": mercies, "bands": bands,
                 "board": sum(1 for q in world["quests"].values()
                              if q["status"] == "open"
                              and not quest_expired(q, clock.day))}
@@ -401,12 +408,19 @@ def run_career(seed: int) -> dict:
         enc_xp = rpg.quest_encounter_xp(level, enc)
         for site in quest_to_sites(world, quest):
             log.clear()
-            cleared = career_run_site(site, party, clock, purse, rng, log,
-                                      enc_xp)
+            site_result = career_run_site(
+                site, party, clock, purse, rng, log, enc_xp)
             if any(h.dead for h in party):
                 cleared_all = False     # a death ends the career (above)
                 break
-            if not cleared:
+            if site_result == "mercy":
+                mercies += 1
+                # Left for dead ends the job, not the career. The bench has
+                # no travel layer, so this is its return-to-town recovery.
+                _shop_and_rest(party, clock, purse, rng, log)
+                cleared_all = False
+                break
+            if site_result != "cleared":
                 cleared_all = False     # fled out / abandoned: drop the quest
                 break
             _shop_and_rest(party, clock, purse, rng, log)
@@ -455,6 +469,11 @@ def bench_careers(n: int) -> None:
         lv = sorted(r["level"] for r in died)
         print(f"the dead: median level {lv[len(lv) // 2]} "
               f"(p10-p90: {lv[len(lv) // 10]}-{lv[9 * len(lv) // 10]})")
+    mercy_total = sum(r["mercies"] for r in results)
+    mercy_careers = sum(1 for r in results if r["mercies"])
+    print(f"defeat mercies: {mercy_total} total "
+          f"({mercy_total / n:.2f}/career); "
+          f"{100 * mercy_careers / n:.1f}% of careers survived at least one")
     stalls = sum(r["forced_up"] for r in results)
     print(f"forced-up picks (nothing within party level +1 on the board): "
           f"{stalls / n:.2f} per career")

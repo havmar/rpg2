@@ -97,7 +97,8 @@ from rpg import (
     adjust_satisfaction, satisfaction_after_fight,
     stat_line, progress_line, fallen_weapons_line,
     xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
-    start_fight, group_combat, party_wiped,
+    start_fight, group_combat, party_wiped, party_defeated,
+    apply_defeat_mercy, mercy_available, FEROCITY_RELENTLESS,
     attempt_retreat, refresh_foes_after_retreat,
     award_xp, roll_loot, award_quest,
     long_rest as _long_rest,
@@ -370,6 +371,8 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "field": pending.get("field", 0),
         "align": pending.get("align", "neutral"),
         "mercy": pending.get("mercy"),
+        "pause_kind": pending.get("pause_kind", "normal"),
+        "normal_pause_used": pending.get("normal_pause_used", True),
     }
 
 
@@ -377,11 +380,16 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     if d is None:
         return None
     by_name = {h.name: h for h in party}
+    crossings = [tuple(c) for c in d["crossings"]]
+    pause_kind = d.get(
+        "pause_kind",
+        "fate" if any(kind == "fate" for kind, _ in crossings) else "normal",
+    )
     return {
         "foes": [_entity_from_dict(f) for f in d["foes"]],
         "fired": {(kind, by_name[name]) for kind, name in d["fired"]},
         "round": d["round"],
-        "crossings": [tuple(c) for c in d["crossings"]],
+        "crossings": crossings,
         "xp": d["xp"],
         "site": d["site"],
         "room": d["room"],
@@ -390,6 +398,11 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "field": d.get("field", 0),
         "align": d.get("align", "neutral"),
         "mercy": d.get("mercy"),
+        "pause_kind": pause_kind,
+        # Fate now consumes the one ordinary pause. A pre-slice pending save
+        # was necessarily the old ordinary pause, so True is the safe default
+        # for either shape.
+        "normal_pause_used": d.get("normal_pause_used", True),
     }
 
 
@@ -909,9 +922,13 @@ def require_no_pending(state: dict) -> bool:
         print("No party in this save -- `new` starts a game.")
         return False
     if state.get("pending"):
-        print("A fight is PAUSED -- the party is mid-melee. Resolve it "
-              "first: resume [--drink HERO] [--heal HERO] [--berserk HERO] "
-              "[--warbreath HERO], or retreat.")
+        if state["pending"].get("pause_kind") == "fate":
+            print("A fight is PAUSED at Fate's bargain. Resolve it first: "
+                  "resume (fight on), or retreat.")
+        else:
+            print("A fight is PAUSED -- the party is mid-melee. Resolve it "
+                  "first: resume [--drink HERO] [--heal HERO] "
+                  "[--berserk HERO] [--warbreath HERO], or retreat.")
         return False
     return True
 
@@ -1392,13 +1409,19 @@ def print_pause_menu(state: dict) -> None:
     with its real cost -- presented, like `levelup`, instead of paraphrased."""
     pending = state["pending"]
     party = state["party"]
+    fate_pause = pending.get("pause_kind") == "fate"
     what = {"stamina": "is nearly out of breath",
-            "wounds": "is badly cut up"}
+            "wounds": "is badly cut up",
+            "fate": "was spared by Fate"}
     trips = "; ".join(f"{name} {what[kind]}"
                       for kind, name in pending["crossings"])
     print(f"*** FIGHT PAUSED (after round {pending['round']}): {trips}. ***")
-    print("  (the encounter's ONE pause -- after this it runs to its end, "
-          "the party acting on its standing orders)")
+    if fate_pause:
+        print("  (Fate's bargain spends the encounter's ONE pause; "
+              "only fight on or retreat)")
+    else:
+        print("  (the encounter's ONE pause -- after this it runs to its end, "
+              "the party acting on its standing orders)")
     standing = [f for f in pending["foes"] if f.alive]
     print("  Facing: " + ", ".join(
         f"{f.name} ({f.hp}/{f.max_hp} HP)" for f in standing))
@@ -1434,8 +1457,11 @@ def print_pause_menu(state: dict) -> None:
             print(f"    - {wtag}")
         print(f"    healing x{h.items.get('healing', 0)}, "
               f"stamina x{h.items.get('stamina', 0)}")
-    print("  The player's call (a pause action "
-          f"costs the round: defend at -{PAUSE_ACTION_DEF_PENALTY}):")
+    if fate_pause:
+        print("  The player's call:")
+    else:
+        print("  The player's call (a pause action "
+              f"costs the round: defend at -{PAUSE_ACTION_DEF_PENALTY}):")
 
     def option(cmd: str, desc: str) -> None:
         # One option per block: the command on its own line, its cost on
@@ -1444,23 +1470,25 @@ def print_pause_menu(state: dict) -> None:
         print(f"      {desc}")
 
     option("resume", "fight on")
-    option("resume --drink HERO",
-           f"stamina draught, +{STAMINA_DRAUGHT_RESTORE} STA now")
-    option("resume --heal HERO",
-           f"healing potion, +{HEALING_POTION_RESTORE} HP now "
-           f"(the wound penalty lightens)")
-    if any(not h.dead and "berserk" in h.abilities for h in party):
-        option("resume --berserk HERO",
-               f"{BERSERK_HP_COST} HP -> +{BERSERK_STA_GAIN} STA "
-               f"(the wound penalty deepens; knowers only)")
-    if any(not h.dead and "war_breath" in h.abilities for h in party):
-        option("resume --warbreath HERO",
-               f"{WAR_BREATH_POWER_COST} Power -> "
-               f"+{WAR_BREATH_STA_GAIN} STA (knowers only)")
-    if any(not h.dead and h.spell_rank("invisibility") >= 2 for h in party):
-        option("resume --vanish HERO",
-               f"{VANISH_POWER_COST} Power: fade from the melee "
-               f"(untargetable; the next strike lands as an ambush)")
+    if not fate_pause:
+        option("resume --drink HERO",
+               f"stamina draught, +{STAMINA_DRAUGHT_RESTORE} STA now")
+        option("resume --heal HERO",
+               f"healing potion, +{HEALING_POTION_RESTORE} HP now "
+               f"(the wound penalty lightens)")
+        if any(not h.dead and "berserk" in h.abilities for h in party):
+            option("resume --berserk HERO",
+                   f"{BERSERK_HP_COST} HP -> +{BERSERK_STA_GAIN} STA "
+                   f"(the wound penalty deepens; knowers only)")
+        if any(not h.dead and "war_breath" in h.abilities for h in party):
+            option("resume --warbreath HERO",
+                   f"{WAR_BREATH_POWER_COST} Power -> "
+                   f"+{WAR_BREATH_STA_GAIN} STA (knowers only)")
+        if any(not h.dead and h.spell_rank("invisibility") >= 2
+               for h in party):
+            option("resume --vanish HERO",
+                   f"{VANISH_POWER_COST} Power: fade from the melee "
+                   f"(untargetable; the next strike lands as an ambush)")
     blinker = next((h for h in party
                     if not h.dead and h.spell_rank("teleport") >= 2), None)
     option("retreat",
@@ -1622,8 +1650,8 @@ def play_orders(already_paused: bool):
     being cut apart, do we retreat?" pause, the player's -- and every other
     crossing runs the default standing order (rpg.standing_order: drink /
     heal / convert on their own, skipped when the fight is winding down).
-    At most ONE pause per encounter (designer call, 2026-07-11): a fight
-    with a `pending` record has had its pause, so resumes pass
+    At most ONE pause per encounter (designer call, 2026-07-11): an ordinary
+    wounds pause or slice 4's special Fate pause spends it, so resumes pass
     already_paused=True and never stop again."""
     def orders(kind, hero, party, foes):
         if kind == "wounds" and not already_paused:
@@ -1639,21 +1667,21 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       field: int = 0, align: str = "neutral",
                       mercy: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
-    PAUSE once, at the fight's first wounds crossing (see play_orders) --
-    then award and
+    PAUSE once, at the fight's first wounds crossing or at Fate's bargain
+    (see play_orders) -- then award and
     persist. On a pause the fight is saved as `pending` and the turn goes
     back to the player (resume / retreat next message). `quest` ties the
     encounter to a board quest: clearing the room advances its cursor.
     `field` is the fight's opening gap (ranged combat: ROOM_FIELD indoors,
     the engagement's outcome in the wilds) -- persisted with a paused
     fight so the resume stands on the same ground. `mercy` ("law"/"hell")
-    marks a POSSE fight: losing it fires apply_mercy, never GAME OVER."""
+    marks a POSSE fight: an eligible loss uses its authored mercy."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     dead_before = [h.name for h in party if h.dead]    # so the post-fight
                                                        # morale pass knows
                                                        # who died in THIS one
-    fired: set[str] = set()
+    fired: set[tuple[str, Entity]] = set()
     pause = group_combat(living, foes, rng, log, pause_triggers=True,
                          fired=fired, standing_orders=play_orders(False),
                          field=field)
@@ -1666,6 +1694,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "field": field,
             "align": align,
             "mercy": mercy,
+            "pause_kind": pause.kind,
+            # Fate's special interrupt consumes the same one-pause budget.
+            "normal_pause_used": True,
         }
         print_combat(log)
         print()
@@ -2256,7 +2287,8 @@ def maybe_enforce(state: dict) -> bool:
     for kind in kinds:
         state["foe_count"] += 1
         foes.append(make_foe(kind, state["foe_count"], rng,
-                             display=skins.get(kind)))
+                             display=skins.get(kind),
+                             ferocity=FEROCITY_RELENTLESS))
     foes[-1].name = leader["name"]
     for line in roster_lines(foes):
         log.append("  " + line)
@@ -2266,49 +2298,63 @@ def maybe_enforce(state: dict) -> bool:
     return True
 
 
-def apply_mercy(state: dict, wiped: bool, mercy: str | None) -> bool:
-    """LEFT FOR DEAD (2026-07-19, designer mandate): the PC is never
-    killed by heroic adventurers -- or by hell's enforcers. A posse
-    fight lost (wipe, or the PC down for good) ends in the mercy, not
-    GAME OVER: the PC alone survives at 1 HP; the party and the purse
-    are forfeit. Against the LAW all bad karma clears too -- the heroes
-    think him dead (or he ran, in shame), the ledger is considered
-    settled, and everyone in hell is laughing at him. Against HELL the
-    karma stays; the purse is the fine and the refused job is withdrawn.
-    Returns True when the mercy fired (the caller skips report_game_over);
-    saves the reshaped state itself."""
-    if not mercy:
-        return False
+def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
+                participants: list | None = None) -> bool:
+    """Apply Slice 4's one-mercy-per-character-level rule before
+    `party_wiped` finishes the Down.
+
+    Ordinary rosters derive their consequence from ferocity through
+    `rpg.apply_defeat_mercy`. Posse fights keep their authored LAW/HELL
+    reshaping, but now spend the same level mercy: a second genuine loss at
+    that level is GAME OVER. The encounter tail skips this function entirely
+    for a Fate-paid victory."""
     party = state["party"]
     pc = party[0] if party else None
-    if pc is None or not (wiped or pc.dead):
+    if pc is None or not party_defeated(party):
+        return False
+
+    if mercy not in ("law", "hell"):
+        fired = apply_defeat_mercy(
+            party, foes, state["purse"], state["rng"], log,
+            participants=participants,
+        )
+        if fired:
+            state["pending"] = None
+        return fired is not None
+
+    if not mercy_available(pc):
         return False
     day = state["clock"].day
+    pc.mercy_level = pc.level
     pc.dead = False
     pc.down = False
-    pc.hp = 1
+    pc.withdrew = False
+    pc.hp = min(1, pc.hp_ceiling)
     lost = [h.name for h in party[1:]]
     state["party"] = [pc]
     fine = state["purse"].gold
     state["purse"].gold = 0
     state["pending"] = None
-    print()
+
+    def emit(parts: list[str]) -> None:
+        for line in fit_lines(parts):
+            log.append(line)
+
     if mercy == "law":
         k = state["karma"]
         burned = k["bad"]
         k["bad"] = 0
-        print(f"*** LEFT FOR DEAD -- day {day}. The heroes think "
-              f"{pc.name} dead; the truer story is he ran, in shame. ***")
+        emit(["*** LEFT FOR DEAD --", f"day {day}.",
+              "The heroes think the PC dead. ***"])
         if lost:
-            print(f"  The party is lost: {', '.join(lost)} -- dead, "
-                  f"taken, or scattered (the DM's telling).")
-        print(f"  The purse is forfeit: {fine} g gone.")
+            emit(["The party is lost:"])
+            emit([name + "." for name in lost])
+        emit([f"The purse is forfeit: {fine} g gone."])
         if burned:
-            print(f"  The ledger is settled: all {burned} bad karma "
-                  f"cleared -- as far as the law knows, that villain "
-                  f"died here. Heat 0.")
-        print(f"  {pc.name} comes to in a ditch at 1 HP, alive, "
-              f"unhunted, and broke. Everyone in hell is laughing.")
+            emit([f"The ledger is settled: {burned}",
+                  "bad karma cleared. Heat 0."])
+        emit([f"{pc.name} wakes in a ditch at 1 HP.",
+              "Everyone in hell is laughing."])
     else:
         pact = state.get("pact")
         withdrawn = ""
@@ -2316,24 +2362,23 @@ def apply_mercy(state: dict, wiped: bool, mercy: str | None) -> bool:
             qid = pact["task"]
             q = state["world"]["quests"].get(qid)
             if q is not None:
-                withdrawn = f" [{qid}] {q['name']} is WITHDRAWN."
+                withdrawn = f"[{qid}] {q['name']} is WITHDRAWN."
                 if state.get("active_quest") == qid:
                     state["active_quest"] = None
                 del state["world"]["quests"][qid]
             pact["task"] = None
             pact["last_task_day"] = day
             pact["beatings"] = 0
-        print(f"*** THE LESSON -- day {day}. Hell's enforcers do not "
-              f"kill staff; they make their point at length. ***")
+        emit(["*** THE LESSON --", f"day {day}.",
+              "Hell's enforcers leave the PC alive. ***"])
         if lost:
-            print(f"  The party is lost: {', '.join(lost)} -- dead, "
-                  f"carried off, or run (the DM's telling).")
-        print(f"  The purse is collected as a fine: {fine} g."
-              + withdrawn)
-        print(f"  {pc.name} comes to at 1 HP. The bad karma, of course, "
-              f"stays -- hell forgives disobedience, never undoes "
-              f"wickedness.")
-    save(state)
+            emit(["The party is lost:"])
+            emit([name + "." for name in lost])
+        emit([f"The purse is collected: {fine} g."])
+        if withdrawn:
+            emit([withdrawn])
+        emit([f"{pc.name} wakes at 1 HP.",
+              "The bad karma remains."])
     return True
 
 
@@ -2468,14 +2513,32 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      dead_before: list[str] | None = None,
                      align: str = "neutral",
                      mercy: str | None = None) -> None:
-    """The melee actually ended: wipe check, awards, companion autolevel,
+    """The melee actually ended: defeat mercy/wipe check, awards,
+    companion autolevel,
     loot, the companion morale pass, persist -- and the PC's level-up
-    prints the spending menu on the spot (2026-07-13). A lost posse
-    fight (`mercy`) ends in apply_mercy, never GAME OVER."""
+    prints the spending menu on the spot (2026-07-13). Any genuine loss
+    gets the roster's level-limited Slice 4 mercy when eligible; LAW/HELL
+    posse fights keep their special consequences."""
     party, purse, rng = state["party"], state["purse"], state["rng"]
     pc = party[0] if party else None
     pc_level_before = pc.level if pc else 0
     state["pending"] = None
+    participants = [h for h in party if h.name not in (dead_before or [])]
+    # A Fate-paid victory is terminally a victory: do not even enter the
+    # defeat-mercy path. The transient marker is consumed before saving.
+    fate_paid = any(h.fate_paid for h in party)
+    for h in party:
+        h.fate_paid = False
+    mercy_fired = (
+        False if fate_paid
+        else apply_mercy(state, foes, mercy, log, participants=participants)
+    )
+    if mercy_fired:
+        append_tally(state, log)
+        print_combat(log)
+        save(state)
+        return
+
     wiped = party_wiped(party, log)
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
@@ -2550,8 +2613,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         print(f"*** {pc.name} reached level {pc.level} -- the spending "
               f"menu (show it to the player, dm.md): ***")
         print_levelup_menu([pc])
-    if not apply_mercy(state, wiped, mercy):
-        report_game_over(party, wiped)
+    report_game_over(party, wiped)
 
 
 def cmd_fight(args: argparse.Namespace) -> None:
@@ -2975,7 +3037,10 @@ def cmd_room(args: argparse.Namespace) -> None:
         for i, kind in enumerate(kinds):
             state["foe_count"] += 1
             foe = make_foe(kind, state["foe_count"], rng,
-                           display=quest["skins"].get(kind))
+                           display=quest["skins"].get(kind),
+                           ferocity=(FEROCITY_RELENTLESS
+                                     if quest.get("story_wave") is not None
+                                     else None))
             if i == boss_at:
                 foe.name = boss["display"]
             foes.append(foe)
@@ -3557,6 +3622,12 @@ def cmd_resume(args: argparse.Namespace) -> None:
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
 
+    if (pending.get("pause_kind") == "fate"
+            and any(getattr(args, flag) for flag in
+                    ("drink", "heal", "berserk", "warbreath", "vanish"))):
+        print("Fate's bargain allows only `resume` (fight on) or `retreat`.")
+        return
+
     actions: dict = {}
     for flag, action in (("drink", "drink"), ("heal", "heal"),
                          ("berserk", "berserk"),
@@ -3613,11 +3684,14 @@ def cmd_resume(args: argparse.Namespace) -> None:
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
                          actions=actions or None,
-                         standing_orders=play_orders(True),
+                         standing_orders=play_orders(
+                             pending.get("normal_pause_used", True)),
                          field=pending.get("field", 0))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
+        pending["pause_kind"] = pause.kind
+        pending["normal_pause_used"] = True
         print_combat(log)
         print()
         print_pause_menu(state)
@@ -3676,10 +3750,16 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     if not escaped:
         escaped = attempt_retreat(living, pending["foes"], rng, log,
                                   field=pending.get("field", 0), smoke=smoker)
-    wiped = party_wiped(party, log)
-    if wiped or escaped:
+    participants = [h for h in party
+                    if h.name not in (pending.get("dead_before") or [])]
+    mercy_fired = apply_mercy(
+        state, pending["foes"], pending.get("mercy"), log,
+        participants=participants,
+    )
+    wiped = False if mercy_fired else party_wiped(party, log)
+    if mercy_fired or wiped or escaped:
         state["pending"] = None
-        if escaped and not wiped:
+        if escaped and not wiped and not mercy_fired:
             site, room = pending["site"], pending["room"]
             if site is not None:
                 state.setdefault("rooms", {})[(site, room)] = {
@@ -3690,7 +3770,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             else:
                 log.append("  (the foes scatter -- an off-script encounter "
                            "is not kept)")
-        if not wiped:
+        if not wiped and not mercy_fired:
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
             # Out of the fight, wounds and all: the pass drinks here too.
@@ -3699,9 +3779,11 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             # party stands at the destination, the hand-off happens.
             deliver_if_arrived(state, log)
             append_tally(state, log)
+        elif mercy_fired:
+            append_tally(state, log)
         print_combat(log)
         save(state)
-        if not apply_mercy(state, wiped, pending.get("mercy")):
+        if not mercy_fired:
             report_game_over(party, wiped)
         return
 
@@ -3709,11 +3791,14 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     pause = group_combat(living, pending["foes"], rng, log,
                          pause_triggers=True, fired=pending["fired"],
                          first_round=pending["round"] + 1,
-                         standing_orders=play_orders(True),
+                         standing_orders=play_orders(
+                             pending.get("normal_pause_used", True)),
                          field=pending.get("field", 0))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
+        pending["pause_kind"] = pause.kind
+        pending["normal_pause_used"] = True
         print_combat(log)
         print()
         print_pause_menu(state)
@@ -4594,7 +4679,8 @@ def main() -> None:
              "--berserk HERO (HP -> STA), "
              "--warbreath HERO (Power -> STA). Plain resume = fight on. "
              "The fight then runs to its END -- an encounter pauses at most "
-             "once (its first wounds crossing); every later crossing is "
+             "once (its first wounds crossing, or Fate's bargain with only "
+             "fight on/retreat); every later crossing is "
              "answered by the party's standing orders (drink/heal/convert "
              "on their own, skipped when the fight is already winding down).")
     p.add_argument("--drink", action="append", metavar="HERO")

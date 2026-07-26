@@ -251,18 +251,31 @@ the player's core decision:
   are wrong twice (wrong character, wrong register). Traits are performed
   in the fiction, for everyone; the numbers stay in the readouts. The PC's
   sheet already suppresses the satisfaction annotations.
-- **If the PC dies, the game is over** -- even if a companion still stands
-  (`session.py` prints the GAME OVER line for you).
-- **Fate's bargain guards the PC (2026-07-10).** A blow that would kill the
+- **If the PC dies, the game is over unless defeat mercy fires** -- even if
+  a companion still stands. Relentless foes, or a second defeat at the same
+  character level, give no mercy (`session.py` prints the GAME OVER line).
+- **Fate's bargain guards the PC (2026-07-26).** A blow that would kill the
   PC is commuted to a Down while a companion still draws breath -- the log
   announces it ("Fate has spared them; its price comes due if this fight
-  is won"). If the party WINS that fight, the last foe's dying blow kills
-  one RANDOM companion: the trade is a companion's life for the player's,
-  and the engine prints it. If the party loses anyway, it's still a wipe
-  and GAME OVER; a clean retreat waives the debt (nothing owed, nothing
-  won). Play it with weight: the reprieve is a huge beat, and the
-  post-spare choice -- press on and pay a companion, or flee with the
-  downed PC -- belongs to the player. Never soften the price by fiat.
+  is won"). If the encounter's one pause is still unused, Fate immediately
+  spends it on a special FIGHT ON / RETREAT interrupt; it is not a bonus
+  pause, and no ordinary pause can follow. If the party WINS that fight,
+  the last foe's dying blow kills one RANDOM companion and Fate restores
+  the PC to exactly 1 HP. Wounds and every other injury remain. That is the
+  literal trade: a duo becomes a badly wounded solo PC, not a wipe. A
+  clean retreat waives the debt (nothing owed, nothing won). A genuine
+  loss may still receive defeat mercy; a Fate-paid victory never does.
+  Play the interrupt with weight: press on and pay a companion, or flee
+  with the downed PC. Never soften the price by fiat.
+- **Defeat mercy is one reprieve per PC level (2026-07-26).** It applies
+  only after a genuine defeat and only against foes whose roster is not
+  RELENTLESS. TAKE SPOILS foes leave the party alive at 1 HP, empty the
+  purse, and take quality weapons; ordinary steel is left alone. BREAKS
+  WHEN BEATEN beasts leave the purse but permanently maim one random party
+  member. Wounds and other damage remain. The engine chooses and prints
+  the consequence; do not substitute a gentler one. Once spent, another
+  defeat at that level is lethal. Reaching a new level earns one new
+  reprieve; they never accumulate. Anyone dead before the fight stays dead.
 - The other heroes are **NPC companions**: the DM animates them (voice,
   small decisions, flavor -- their TRAITS are the material: a poetic
   whisperer and a swearing loudmouth should not read alike), but the player
@@ -449,9 +462,10 @@ infernal reskins, and keep visits scene-sized.
   they announce, they mean it, retreat is the peaceful option. Cutting
   them down pays XP that is itself bad karma: say what that means once,
   then let the spiral be the player's own bed.
-- **Losing to a posse is never the end (2026-07-19).** The PC does not
-  get killed by heroic adventurers or by hell's enforcers -- the
-  script prints the mercy and reshapes the save. LEFT FOR DEAD (the
+- **A first same-level loss to a posse is not the end (2026-07-26).** Law
+  and hell use the same one-mercy-per-PC-level allowance as ordinary
+  defeat; a second loss at that level is real. When mercy is available,
+  the script prints it and reshapes the save. LEFT FOR DEAD (the
   law): the party and purse are forfeit and ALL bad karma clears; the
   heroes think him dead, or he ran in shame -- and everyone in hell is
   laughing at him. THE LESSON (hell): the purse is the fine, the
@@ -528,10 +542,14 @@ bigger than the fights WITHOUT pages of narration:
   every roll and modifier for post-mortems only (a death, a number that looks
   wrong). A new encounter replaces both files; resume/retreat appends to the
   paused fight, keeping that fight whole. `sheet` commits both.
-- **A fight pauses AT MOST ONCE (2026-07-11)** -- at its first WOUNDS
-  crossing (any member dropping past half HP mid-fight; crossing-only:
-  entering a fight already low does NOT trip it -- that was the player's
-  call at the door). That one pause is the retreat question; treat it so.
+- **A fight pauses AT MOST ONCE (2026-07-26)** -- either at its first
+  WOUNDS crossing or when Fate intervenes, whichever spends the pause
+  first. A WOUNDS crossing means any member dropping past half HP
+  mid-fight; entering already low does NOT trip it -- that was the
+  player's call at the door. Fate's interrupt offers only FIGHT ON or
+  RETREAT. It consumes the ordinary pause, and if the ordinary pause
+  already happened Fate does not create another. That one pause is the
+  retreat question; treat it so.
   The script prints the pause menu -- show it to the player and STOP; the
   choice is theirs, never yours. Next message: `resume` (fight on),
   `resume --drink HERO` (stamina draught mid-fight), `resume --heal HERO`
@@ -562,6 +580,11 @@ bigger than the fights WITHOUT pages of narration:
   room faces them again with their STA refreshed -- living foes heal their
   wounds after a day, skeletons stay hacked. "Come back tomorrow" is a
   legitimate plan; it costs the day.
+- **Beaten foes may run too.** TAKE SPOILS and BREAKS WHEN BEATEN rosters
+  make one reverse-retreat attempt when every survivor is badly wounded
+  or Spent. The party gets the parting blows and chase contest. RELENTLESS
+  foes never break. Use the roster's printed ferocity tag; it is rules
+  information, not hidden temperament.
 - **Check the party's STA before every door -- silently.** Going Spent (0
   STA mid-fight) is the main way characters die, and entering low no longer
   trips a round-1 pause: the door is where that decision happens. The tally
@@ -804,8 +827,11 @@ bigger than the fights WITHOUT pages of narration:
   spent sides cancel out and brawl to a finish, so fights still resolve.)
   STA is a second HP bar: whichever track empties first in a fight kills you.
 - **The pause:** a fight stops AT MOST ONCE, at its first WOUNDS crossing
-  (someone dropping past half HP in-fight; entering already low never
-  fires it) for the player's call. Pause actions (one per hero; cost the
+  or at Fate's intervention, whichever happens first. Fate spends that
+  ordinary pause on a FIGHT ON / RETREAT choice; it never creates a
+  second pause. A wounds crossing means someone dropping past half HP
+  in-fight; entering already low never fires it. Ordinary pause actions
+  (one per hero; cost the
   round's attack, defend at -2 while busy): drink a stamina draught
   (+4 STA -- even un-Spends), heal (a healing potion, +5 HP -- the wound
   penalty lightens), Berserk (2 HP -> +4 STA; the wound penalty deepens;
@@ -952,9 +978,10 @@ bigger than the fights WITHOUT pages of narration:
   the stats never change with the costume. Narrate the skin, trust the row.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved crippling blow (renamed from "killing blow" 2026-07-10 -- same
-  mechanic). Total party knockout = the Down are finished off. The PC's
-  death is intercepted by fate's bargain when a companion lives (see The
-  player character above).
+  mechanic). On a total party knockout, apply the roster's ferocity and the
+  PC's once-per-level mercy allowance before the Down are finished off. The
+  PC's death is intercepted by fate's bargain when a companion lives (see
+  The player character above).
 - **Weapons:** everyone wields exactly one (no inventory; swaps are narrative
   or `give`/`buy`). The quality four: rapier (+2 attack, -1 severity, always
   draws blood on a landed hit), katana (+1/+1, the all-rounder), zweihander
@@ -1122,8 +1149,11 @@ bigger than the fights WITHOUT pages of narration:
   for 10 quiet days. Deeds: PC 2d6+stat vs DC (usually 10-11); a
   botch adds +15 bad karma and starts the fight. `settle` takes a
   twist's terms at x0.5 of the site lump. Losing to any posse is the
-  mercy (left for dead / the lesson), never GAME OVER; ordinary
-  fights still kill as ever.
+  special mercy (left for dead / the lesson) when the PC has not spent
+  this level's one reprieve. A second same-level defeat is GAME OVER.
+  Ordinary defeats follow foe ferocity: TAKE SPOILS takes purse and
+  quality weapons, BREAKS WHEN BEATEN maims one member, and RELENTLESS
+  gives no mercy.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their

@@ -40,7 +40,9 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  sim_fight, refresh_foes_after_retreat,
                  site_encounter_xp, site_clear_xp, site_gold,
                  SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD,
-                 fit_lines, CONDITION_ON_HIT_TAG, condition_tags)
+                 fit_lines, CONDITION_ON_HIT_TAG, condition_tags,
+                 FEROCITY_TAKES_SPOILS, FEROCITY_BREAKS,
+                 FEROCITY_RELENTLESS)
 
 
 # --------------------------------------------------------------------------- #
@@ -79,6 +81,11 @@ class FoeSpec:
                             # the apex monsters)
     tireless: bool = False  # never spends STA, never Winded/Spent
     pursues: bool = True    # gives chase when the party retreats
+    ferocity: int = FEROCITY_TAKES_SPOILS
+                            # CONTENT, not a pressure stat (slice 4): 0 takes
+                            # spoils and leaves the fallen (humanoids), 1
+                            # breaks when beaten and leaves a maiming (most
+                            # beasts), 2 never breaks and grants no mercy
     power: int = 0          # ability fuel (dragonfire is paid for); for a
                             # CASTER row, the bolt ammo pool
     mind: int = 0           # the casting stat (Magic & Mind, 2026-07-15): a
@@ -277,11 +284,13 @@ FOES = {
     # good steel -- the barrow visibly eases as the party's gear improves.
     "skeleton":  FoeSpec("Skeleton",  level=2, dex=4, str_=2, sta=8, hp=5,
                          ref_pack=3, undead=True, pain=2, tireless=True,
-                         pursues=False, weapon=RUSTED_BLADE),
+                         pursues=False, ferocity=FEROCITY_RELENTLESS,
+                         weapon=RUSTED_BLADE),
     # The ghoul: the skeleton's upgrade with the barrow's one mercy removed --
     # hunger FOLLOWS (pursues). Meat on the bones: more HP, real claws.
     "ghoul":     FoeSpec("Ghoul",     level=4, dex=5, str_=3, sta=8, hp=8,
                          ref_pack=3, undead=True, pain=2, tireless=True,
+                         ferocity=FEROCITY_RELENTLESS,
                          weapon=NATURAL_WEAPONS["grave claws"]),
     # The wight: the tireless DUELIST -- a barrow-lord with a champion's DEX
     # and his burial blade (real, lootable steel). Grave-bound like his
@@ -289,23 +298,27 @@ FOES = {
     # doesn't.
     "wight":     FoeSpec("Wight",     level=8, dex=7, str_=5, sta=8, hp=16,
                          ref_pack=2, undead=True, pain=2, tireless=True,
-                         pursues=False, spell_ward=2,   # grave-cold will:
+                         pursues=False, ferocity=FEROCITY_RELENTLESS,
+                         spell_ward=2,   # grave-cold will:
                          # no ambushing what does not sleep, no stunning
                          # what does not feel (Magic & Mind)
                          weapon=BARROW_BLADE),
     # --- The wolves (levels 1-4): the pack. Fast, fragile, and they set the
     # pace -- and they PURSUE: retreating from wolves is how heroes die tired.
     "wolf":      FoeSpec("Wolf",      level=1, dex=4, str_=2, sta=8, hp=4,
-                         ref_pack=4, weapon=NATURAL_WEAPONS["fangs"]),
+                         ref_pack=4, ferocity=FEROCITY_BREAKS,
+                         weapon=NATURAL_WEAPONS["fangs"]),
     "dire wolf": FoeSpec("Dire Wolf", level=3, dex=6, str_=3, sta=10, hp=9,
-                         ref_pack=2, weapon=NATURAL_WEAPONS["fangs"]),
+                         ref_pack=2, ferocity=FEROCITY_BREAKS,
+                         weapon=NATURAL_WEAPONS["fangs"]),
     # --- The beasts (levels 2-5): the soak wall. Low DEX, heavy STR both
     # ways, slow to pain -- the first foes chip damage struggles against.
     "boar":      FoeSpec("Boar",      level=2, dex=3, str_=5, sta=6, hp=9,
-                         ref_pack=2, pain=2,
+                         ref_pack=2, pain=2, ferocity=FEROCITY_BREAKS,
                          weapon=NATURAL_WEAPONS["tusks"]),
     "bear":      FoeSpec("Bear",      level=4, dex=5, str_=7, sta=8, hp=22,
-                         ref_pack=1, pain=2, crowd_cap=3, sweep=2,
+                         ref_pack=1, pain=2, ferocity=FEROCITY_BREAKS,
+                         crowd_cap=3, sweep=2,
                          sweep_label="a mauling swipe",
                          weapon=NATURAL_WEAPONS["heavy claws"]),
     # --- Vermin grown large (level 3): the ambusher -- lands often, folds
@@ -316,23 +329,27 @@ FOES = {
     # no longer has to carry the row on its own.
     "great spider": FoeSpec("Great Spider", level=3, dex=6, str_=2, sta=7,
                             hp=6, ref_pack=3, inflicts="poison",
+                            ferocity=FEROCITY_BREAKS,
                             weapon=NATURAL_WEAPONS["fangs"]),
     # --- Giant-kin (levels 6-12): the severity cliff. Every landed blow is a
     # tier the party can't afford; the hole is a DEX that rarely lands it.
     "ogre":      FoeSpec("Ogre",      level=5, dex=6, str_=8, sta=8, hp=24,
-                         ref_pack=1, pain=2, crowd_cap=3,
+                         ref_pack=1, pain=2, ferocity=FEROCITY_BREAKS,
+                         crowd_cap=3,
                          weapon=NATURAL_WEAPONS["ogre club"]),
     # The troll: REGENERATION -- the anti-attrition puzzle. Chip damage and
     # camp-and-return both fail (a fled troll is a healed troll); you must
     # out-damage the knitting or lose to it.
     "troll":     FoeSpec("Troll",     level=8, dex=6, str_=7, sta=10, hp=22,
-                         ref_pack=1, pain=2, regen=3, crowd_cap=3,
+                         ref_pack=1, pain=2, regen=3,
+                         ferocity=FEROCITY_BREAKS, crowd_cap=3,
                          weapon=NATURAL_WEAPONS["heavy claws"]),
     # The giant: the cliff at full height, and the first SWEEP -- one blow,
     # two heroes. (The sweep is also the top end's party-size counterweight:
     # more swords in the line means more swords under the club.)
     "giant":     FoeSpec("Giant",     level=12, dex=6, str_=9, sta=10, hp=26,
-                         ref_pack=1, pain=3, crowd_cap=4, sweep=2,
+                         ref_pack=1, pain=3, ferocity=FEROCITY_BREAKS,
+                         crowd_cap=4, sweep=2,
                          spell_ward=1,  # too much creature to ambush clean
                          sweep_label="a great sweeping blow",
                          weapon=NATURAL_WEAPONS["giant's club"]),
@@ -340,16 +357,19 @@ FOES = {
     # frame -- the wyvern is the gate, the drake adds fire, the dragon has
     # no hole at all.
     "wyvern":    FoeSpec("Wyvern",    level=10, dex=8, str_=7, sta=10, hp=26,
-                         ref_pack=1, pain=2, crowd_cap=3, sweep=2,
+                         ref_pack=1, pain=2, ferocity=FEROCITY_BREAKS,
+                         crowd_cap=3, sweep=2,
                          sweep_label="a lashing tail",
                          weapon=NATURAL_WEAPONS["venomous sting"]),
     "drake":     FoeSpec("Drake",     level=14, dex=8, str_=7, sta=10, hp=30,
-                         ref_pack=1, pain=3, power=6, crowd_cap=4,
+                         ref_pack=1, pain=3, power=6,
+                         ferocity=FEROCITY_BREAKS, crowd_cap=4,
                          sweep=3, sweep_cost_power=2, spell_ward=2,
                          sweep_label="a gout of fire",
                          weapon=NATURAL_WEAPONS["fang and claw"]),
     "dragon":    FoeSpec("Dragon",    level=18, dex=8, str_=9, sta=12, hp=50,
-                         ref_pack=1, pain=4, power=12, crowd_cap=4,
+                         ref_pack=1, pain=4, power=12,
+                         ferocity=FEROCITY_BREAKS, crowd_cap=4,
                          sweep=4, sweep_cost_power=3, spell_ward=3,
                          # drake-kind is MADE of magic: wards rise with the
                          # band, and the dragon shrugs at assassin arts --
@@ -362,7 +382,8 @@ BANDIT_KINDS = ("archer", "bruiser", "cutthroat")   # the living-foe pool
 
 
 def make_foe(kind: str, n: int, rng: random.Random,
-             display: str | None = None) -> Entity:
+             display: str | None = None,
+             ferocity: int | None = None) -> Entity:
     """Stat block -> fighting Entity, numbered for the log ("Cutthroat 2").
 
     `display` reskins the row for the log ("Scrap-Hound 2" over the wolf
@@ -378,7 +399,9 @@ def make_foe(kind: str, n: int, rng: random.Random,
                sta=spec.sta, max_hp=spec.hp, training=spec.training,
                undead=spec.undead,
                pain=spec.pain, tireless=spec.tireless,
-               pursues=spec.pursues, power=spec.power, mind=spec.mind,
+               pursues=spec.pursues,
+               ferocity=spec.ferocity if ferocity is None else ferocity,
+               power=spec.power, mind=spec.mind,
                school=spec.school,
                spells={spec.school: spec.school_rank or 1}
                if spec.school else {},
@@ -412,6 +435,12 @@ def roster_lines(foes: list[Entity]) -> list[str]:
             tags.append("barely feels pain")
         if e.tireless:
             tags.append("tireless")
+        if e.ferocity == FEROCITY_RELENTLESS:
+            tags.append("relentless")
+        elif e.ferocity == FEROCITY_BREAKS:
+            tags.append("breaks when beaten")
+        else:
+            tags.append("takes spoils, leaves the fallen")
         if e.regen:
             tags.append(f"wounds knit +{e.regen}/round")
         # Conditions are announced BEFORE the first bite (slice 3a): the
