@@ -78,6 +78,9 @@ from pathlib import Path
 from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
     Condition, condition_tags,
+    Wound, wound_tags, wound_morale, healer_service as _healer_service,
+    HEALER_FEE, HEALER_TIER_CAP, HEALER_DAYS, SALVE_PRICE,
+    SHOP_POTION_KINDS, BED_SEVERITY_PER_NIGHT,
     POTION_PRICE,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX,
     STAMINA_DRAUGHT_RESTORE, HEALING_POTION_RESTORE,
@@ -321,7 +324,10 @@ def _entity_to_dict(e: Entity) -> dict:
     d["feint_target"] = None
     # Conditions (slice 3a) DO travel: an untimed one outlives the fight, so
     # it has to outlive the save too. dataclasses.asdict already flattened
-    # them into plain dicts.
+    # them into plain dicts -- and so are the WOUND records (slice 3b), which
+    # outlive rather more than a fight. `wound_stat_pen` travels with them:
+    # the raw stats are saved ALREADY docked, so the reload has to know how
+    # much is folded away or _sync_wound_stats would charge for it twice.
     return d
 
 
@@ -335,6 +341,11 @@ def _entity_from_dict(d: dict) -> Entity:
     # Conditions come back as dicts (and are simply absent in a pre-slice-3a
     # save, which is the same thing as carrying none).
     d["conditions"] = [Condition(**c) for c in d.get("conditions", ())]
+    # Wounds (slice 3b). Absent in a pre-slice save, which is the same thing
+    # as an unwounded party -- and since such a save's stats were never
+    # docked, its (missing) wound_stat_pen is correctly empty too.
+    d["wounds"] = [Wound(**w) for w in d.get("wounds", ())]
+    d["wound_stat_pen"] = dict(d.get("wound_stat_pen", {}))
     e = Entity(**d)
     # __post_init__ resets the live tracks to full; restore the saved state.
     e.hp = d["hp"]
@@ -427,6 +438,11 @@ def party_sheet_lines(state: dict) -> list[str]:
         lines.append(" " * 12 + progress_line(h))
         for ctag in condition_tags(h):
             lines.append(" " * 12 + f"[{ctag}]")
+        for wtag in wound_tags(h):
+            lines.append(" " * 12 + f"- {wtag}")
+        if h.wounds:
+            lines.append(" " * 12 + f"HP ceiling {h.hp_ceiling}/{h.max_hp} "
+                                    f"({h.wound_load} wound load)")
     lines.append("")
     world = state.get("world")
     qid = state.get("active_quest")
@@ -805,7 +821,10 @@ def tally_lines(state: dict) -> list[str]:
         if h.dead:
             continue
         kit = ", ".join(f"{k} x{v}" for k, v in h.items.items() if v)
-        lines.append(f"{h.name.split()[0]}: HP {h.hp}/{h.max_hp} "
+        # HP reads as a STATE WORD in play (slice 3b, the designer's "no HP
+        # as a number"): the digits stay one command away in `status` and in
+        # ui/fight-detailed.txt. Purely a display call, cheaply reversible.
+        lines.append(f"{h.name.split()[0]}: {h.hp_state} "
                      f"STA {h.cur_sta}/{h.sta} "
                      f"Power {h.cur_power}/{h.power}")
         if h.down:
@@ -827,6 +846,14 @@ def tally_lines(state: dict) -> list[str]:
         # healer) has to answer -- and it ticks again in the next room.
         for tag in condition_tags(h):
             lines.append(f"  [{tag}]")
+        # The SLOW channel (slice 3b): what a night in the wilds will NOT
+        # answer. This is the list the player budgets a bed, a salve or a
+        # healer's day against.
+        for tag in wound_tags(h):
+            lines.append(f"  - {tag}")
+        if h.wounds:
+            lines.append(f"  (HP ceiling {h.hp_ceiling}/{h.max_hp} "
+                         f"until they mend)")
         lines.append(f"  ({kit or 'no kit'})")
     lines.append(f"Purse {purse.gold}g; day {clock.day}.")
     k = state.get("karma")
@@ -1229,6 +1256,10 @@ def night_upkeep(state: dict, log: list[str]) -> None:
         if (has_trait(h, "needs meds")
                 and clock.day - h.last_dose_day > MEDS_INTERVAL_DAYS):
             adjust_satisfaction(h, -1, log, "out of their medicine")
+    # (3) The CONVALESCENCE drain (slice 3b): an untended wound costs morale
+    # every day it goes untended, and a maiming costs a lump once. A long
+    # recovery is meant to be felt in the party, not only on the sheet.
+    wound_morale(state["party"], log)
     auto_potions(state["party"], log)
 
 
@@ -1292,6 +1323,14 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(" " * 14 + progress_line(h))
         for ctag in condition_tags(h):
             print(" " * 14 + f"[{ctag}]")
+        # `status` is where the DIGITS live (slice 3b keeps them here on
+        # purpose: the played displays band HP into a state word, this one
+        # spells out the ceiling the wounds have set).
+        for wtag in wound_tags(h):
+            print(" " * 14 + f"- {wtag}")
+        if h.wounds:
+            print(" " * 14 + f"HP ceiling {h.hp_ceiling}/{h.max_hp} "
+                             f"({h.wound_load} wound load)")
     if local_recruits(state):
         print("  Candidates wait at the tavern -- `recruit` shows them.")
     world = state.get("world")
@@ -1364,8 +1403,12 @@ def print_pause_menu(state: dict) -> None:
         if h.dead:
             continue
         tag = " [DOWN]" if h.down else ""
-        print(f"  {h.name.split()[0]}{tag}: HP {h.hp}/{h.max_hp} "
-              f"STA {h.cur_sta}/{h.sta} Power {h.cur_power}/{h.power}")
+        # The pause is a DM-facing menu, so it keeps the digits AND adds the
+        # state word: the retreat decision is priced on both.
+        print(f"  {h.name.split()[0]}{tag}: {h.hp_state} "
+              f"HP {h.hp}/{h.hp_ceiling}"
+              + (f" (max {h.max_hp})" if h.wounds else "")
+              + f" STA {h.cur_sta}/{h.sta} Power {h.cur_power}/{h.power}")
         pens = []
         if h.wound_penalty:
             pens.append(f"wounds -{h.wound_penalty}")
@@ -1379,6 +1422,10 @@ def print_pause_menu(state: dict) -> None:
         # loses HP every round the fight goes on, whatever else happens.
         for ctag in condition_tags(h):
             print(f"    [{ctag}]")
+        # ...and so are the wounds already recorded: they are what the party
+        # walks out of this room carrying whatever it decides now.
+        for wtag in wound_tags(h):
+            print(f"    - {wtag}")
         print(f"    healing x{h.items.get('healing', 0)}, "
               f"stamina x{h.items.get('stamina', 0)}")
     print("  The player's call (a pause action "
@@ -3681,8 +3728,10 @@ MAX_HEAL_CAMP_NIGHTS = 14   # `camp --heal` safety valve: HP knits at
 
 def cmd_camp(args: argparse.Namespace) -> None:
     """One night by default; `camp N` strings several together and `camp
-    --heal` camps until every living hero's HP is full (2026-07-11 -- the
-    played default is camping until whole, see dm.md). Each WILDS night
+    --heal` camps until every living hero is at their WOUND CEILING
+    (2026-07-11; the ceiling since 2026-07-26 -- out here nothing knits a
+    wound, so "until whole" stopped being reachable, see dm.md). Each WILDS
+    night
     rolls its own visitor and a fight interrupts the stay on the spot --
     a long convalescence in the open is a real gamble, days x risk.
 
@@ -3721,7 +3770,10 @@ def cmd_camp(args: argparse.Namespace) -> None:
                           f"In the night at {current_area(state)['name']}"):
                 return
         log = CombatLog()
-        _long_rest(party, clock, log, rng=state["rng"])
+        # A night behind walls is a BED on the treatment ladder (slice 3b) --
+        # it knits a severity. A night in the wilds knits none, which is why
+        # `camp --heal` can no longer make anyone whole out there.
+        _long_rest(party, clock, log, rng=state["rng"], bed=not in_wilds)
         if scout is not None:
             survivalist_comfort(party, scout, log)
         storyteller_tale(party, state["rng"], log)
@@ -3734,10 +3786,20 @@ def cmd_camp(args: argparse.Namespace) -> None:
             return
         if maybe_enforce(state):    # so do hell's enforcers (the pact)
             return
-        if args.heal and all(h.dead or h.hp >= h.max_hp for h in party):
+        # "Whole" is the CEILING now (slice 3b): out here nothing knits a
+        # wound, so once everyone is at their ceiling further nights are
+        # pure calendar and the loop stops.
+        if args.heal and all(h.dead or h.hp >= h.hp_ceiling for h in party):
             break
     if args.heal:
-        print(f"  The party breaks camp whole on day {clock.day}.")
+        hurt = [h for h in party if not h.dead and h.wounds]
+        if hurt:
+            print(f"  The party breaks camp on day {clock.day} -- as whole "
+                  f"as the wilds can make them. Still carrying wounds: "
+                  f"{', '.join(h.name.split()[0] for h in hurt)}. A bed, a "
+                  f"`healer`, or a salve is what answers those.")
+        else:
+            print(f"  The party breaks camp whole on day {clock.day}.")
     save(state)
 
 
@@ -3810,7 +3872,11 @@ def cmd_downtime(args: argparse.Namespace) -> None:
             adjust_satisfaction(h, SAT_DOWNTIME_MATCH, log, why)
         else:
             adjust_satisfaction(h, SAT_DOWNTIME, log, "a day off their feet")
-    _long_rest(party, clock, log, rng=state["rng"])
+    # A downtime day is spent inside walls, so it counts as a BED night on the
+    # treatment ladder (slice 3b): the free settlement rung, one severity a
+    # night, and the reason convalescence is a place you stay rather than a
+    # number that ticks down anywhere.
+    _long_rest(party, clock, log, rng=state["rng"], bed=True)
     storyteller_tale(party, state["rng"], log)
     companions_brew(state, log)
     night_upkeep(state, log)
@@ -3822,6 +3888,55 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
     if maybe_enforce(state):    # for the law and for hell alike
+        return
+    maybe_assign_task(state)
+    save(state)
+
+
+def cmd_healer(args: argparse.Namespace) -> None:
+    """A day with the settlement's healer (slice 3b, the treatment ladder's
+    ACCESS rung). Costs the day and HEALER_FEE per severity closed, and the
+    settlement's TIER decides how far the art reaches -- a village herb-wife
+    stops where a capital's surgeons do not. The cap is the gate, so the fee
+    never has to scale: what the player is buying is reach, not HP."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    here = local_settlement(state)
+    if here is None:
+        print(f"No healer out here -- the party is at "
+              f"{location_line(state)}. In the wilds a wound waits.")
+        return
+    if occupied_here(state) is not None:
+        print(occupation_line(state, here))
+        return
+    if not any(h.wounds for h in state["party"] if not h.dead):
+        print("Nobody is carrying a wound. Save the fee.")
+        return
+    party, clock, purse = state["party"], state["clock"], state["purse"]
+    subtype = here.get("subtype", "village")
+    log = CombatLog()
+    log.append(f"  The party spends the day with {here['name']}'s healer.")
+    closed, spent = _healer_service(party, purse, subtype, log)
+    if not closed:
+        print("\n".join(log))
+        return
+    # The visit is a DAY, and a day is what a quest clock spends: it runs
+    # the whole night path so the calendar, the board and the morale
+    # bookkeeping all see it (a bed under a roof, on top of the treatment).
+    _long_rest(party, clock, log, banner="The party sleeps in the healer's "
+                                         "care.", rng=state["rng"], bed=True)
+    storyteller_tale(party, state["rng"], log)
+    companions_brew(state, log)
+    night_upkeep(state, log)
+    clear_sighting(state)
+    process_departures(state, log)
+    maybe_post_wave(state, log)
+    print_play(log)
+    print_board_clock(state)
+    if maybe_punish(state):
+        return
+    if maybe_enforce(state):
         return
     maybe_assign_task(state)
     save(state)
@@ -4084,6 +4199,16 @@ def cmd_prices(args: argparse.Namespace) -> None:
     points here). A pure readout: no save touched, callable any time."""
     print("-- SHOP PRICES (gold) --")
     print(f"potion (healing or stamina): {POTION_PRICE}g")
+    print(f"surgeon's salve (closes one wound): {SALVE_PRICE}g")
+    print(f"healer's day: {HEALER_FEE}g per severity, "
+          f"{HEALER_DAYS} day -- reach by settlement:")
+    for sub, cap in HEALER_TIER_CAP.items():
+        reach = ("everything short of a maiming" if cap is None
+                 else f"{cap} severity a visit")
+        print(f"  {sub}: {reach}")
+    print("  (a maiming wants the rank-3 healing spell or an authored "
+          "elixir; a bed knits "
+          f"{BED_SEVERITY_PER_NIGHT} severity a night for free)")
     print(f"spellbook (capitals only): {SPELLBOOK_PRICE}g")
     print(f"meds dose (capitals only, one per {MEDS_INTERVAL_DAYS} days): "
           f"{MEDS_PRICE}g")
@@ -4491,10 +4616,13 @@ def main() -> None:
 
     p = sub.add_parser(
         "camp",
-        help="long rest: full STA, weekly HP tick, advances a day -- the "
+        help="long rest: full STA, weekly HP tick UP TO THE WOUND CEILING, "
+             "advances a day -- the "
              "day's ONLY recovery step (the short rest is gone). `camp N` "
              "strings N nights together; `camp --heal` camps until every "
-             "living hero's HP is full. A night camped in "
+             "living hero is at their ceiling. A night behind SETTLEMENT "
+             "walls also knits one wound severity; a night in the wilds "
+             "knits none. A night camped in "
              "the WILDS (not at a settlement) rolls its visitor BEFORE the "
              "night's recovery "
              f"(~{int(CAMP_ENCOUNTER_CHANCE * 100)}%% PER NIGHT, the "
@@ -4503,7 +4631,9 @@ def main() -> None:
     p.add_argument("nights", type=int, nargs="?", default=1,
                    help="how many nights (default 1)")
     p.add_argument("--heal", action="store_true",
-                   help="camp until every living hero's HP is full")
+                   help="camp until every living hero is at their wound "
+                        "ceiling (out in the wilds that is as whole as they "
+                        "get -- wounds want a bed, a healer, or a salve)")
     p.set_defaults(func=cmd_camp)
 
     p = sub.add_parser(
@@ -4529,6 +4659,20 @@ def main() -> None:
              "The deliberate morale lever -- it costs a day, and days are "
              "what a quest clock spends.")
     p.set_defaults(func=cmd_downtime)
+
+    p = sub.add_parser(
+        "healer",
+        help=f"a day with the settlement's healer (the wound system's "
+             f"ACCESS rung): {HEALER_FEE}g per severity closed, worst wound "
+             f"first across the whole party, and it costs the day like any "
+             f"other night. How far the art reaches is set by the "
+             f"SETTLEMENT, not the purse -- village "
+             f"{HEALER_TIER_CAP['village']} severity a visit, town "
+             f"{HEALER_TIER_CAP['town']}, city {HEALER_TIER_CAP['city']}, "
+             f"a capital everything short of a maiming. A maiming wants the "
+             f"rank-3 healing spell or an authored elixir; a free bed knits "
+             f"{BED_SEVERITY_PER_NIGHT} severity a night on its own.")
+    p.set_defaults(func=cmd_healer)
 
     p = sub.add_parser(
         "board",

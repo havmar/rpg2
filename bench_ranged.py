@@ -58,15 +58,15 @@ def full_quiver(weapon_name: str) -> dict[str, int]:
 
 def shooter(name: str, weapon_name: str, frame: dict,
             power: int = 6) -> Entity:
-    return Entity(name=name, max_hp=HP, pain=HERO_PAIN, power=power,
-                  weapon=WEAPONS[weapon_name],
+    return Entity(name=name, max_hp=HP, pain=HERO_PAIN, records_wounds=True,
+                  power=power, weapon=WEAPONS[weapon_name],
                   items=full_quiver(weapon_name), **frame)
 
 
 def duel(weapon_name: str, frame: dict, field: int,
          rng: random.Random) -> bool:
     a = shooter("A", weapon_name, frame)
-    b = Entity(name="B", max_hp=HP, pain=HERO_PAIN,
+    b = Entity(name="B", max_hp=HP, pain=HERO_PAIN, records_wounds=True,
                weapon=WEAPONS[REFERENCE_WEAPON], **REFERENCE)
     group_combat([a], [b], rng, log=[], field=field)
     return a.alive and not b.alive
@@ -75,7 +75,7 @@ def duel(weapon_name: str, frame: dict, field: int,
 def escort(weapon_name: str, frame: dict, rng: random.Random) -> bool:
     """The played shape: archer + katana line vs 3 wolves at WILD_FIELD."""
     a = shooter("A", weapon_name, frame)
-    b = Entity(name="B", max_hp=HP, pain=HERO_PAIN,
+    b = Entity(name="B", max_hp=HP, pain=HERO_PAIN, records_wounds=True,
                weapon=WEAPONS["katana"], **MELEE_BASELINE[1])
     foes = [make_foe("wolf", i + 1, rng) for i in range(3)]
     group_combat([a, b], foes, rng, log=[], field=WILD_FIELD)

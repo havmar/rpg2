@@ -537,22 +537,45 @@ def _service_kind(site_name: str) -> list[str]:
         out.append("market")
     if any(x in low for x in ("hall", "office", "palace", "high council")):
         out.append("government")
+    if any(x in low for x in ("healer", "apothecar", "infirmar", "temple",
+                              "physician")):
+        out.append("healer")
     return out
+
+
+# Where the HEALER hangs when a settlement has no building of its own for one
+# (2026-07-26, the attrition rework's slice 3b). Every settlement has SOMEONE
+# who sets bones -- the herb-wife over the counter at the general store, the
+# apothecary behind the alchemist's shop -- and the treatment ladder gates on
+# the SERVICE's tier cap (rpg.HEALER_TIER_CAP), never on which door it is
+# behind. Preference order: the alchemist first (a capital's own apothecary),
+# then the general shop, then the inn.
+_HEALER_HOSTS = ("alchemist", "general_goods", "lodging")
 
 
 def _attach_services(area: dict, sites: list[dict]) -> None:
     seen = set()
+    by_kind: dict[str, dict] = {}
     for site in sites:
         for kind in _service_kind(site["name"]):
             if kind in seen:
                 continue
             seen.add(kind)
+            by_kind[kind] = site
             service = {"id": f"{area['id']}/service/{kind}",
                        "kind": kind, "label": kind.replace("_", " "),
                        "site": site["id"], "provider": None}
             area["services"].append(service)
             site["services"].append(kind)
-    required = {"lodging", "smith", "general_goods"}
+    if "healer" not in seen:
+        host = next((by_kind[k] for k in _HEALER_HOSTS if k in by_kind), None)
+        if host is not None:
+            seen.add("healer")
+            area["services"].append(
+                {"id": f"{area['id']}/service/healer", "kind": "healer",
+                 "label": "healer", "site": host["id"], "provider": None})
+            host["services"].append("healer")
+    required = {"lodging", "smith", "general_goods", "healer"}
     if area["subtype"] == "capital":
         required |= {"alchemist", "market", "government"}
     missing = required - seen

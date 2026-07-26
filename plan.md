@@ -273,12 +273,12 @@ re-tune forever, and a bed is a bed.
 > not inflate; a cap on what a night can restore is worth exactly as much at
 > level 20 as at level 1.
 
-*(Slices 2 and 3a shipped the first two thirds of the answer: a day now
-costs a job, and what a fight leaves on you no longer always stops at the
-door — venom follows you out of the room and only a night ends it. What is
-still missing is a night that restores LESS, which is slice 3b's whole job;
-until it lands `camp --heal` is expensive and slightly leaky rather than
-incomplete.)*
+*(Slices 2, 3a and 3b shipped the answer: a day costs a job, what a fight
+leaves on you no longer stops at the door, and the night no longer makes
+anyone whole — HP knits only to the **wound ceiling**, and the wounds
+themselves come off only through the treatment ladder. `camp --heal` now
+means "camp until as whole as the wilds can make you". What remains of the
+rework is slice 4, which makes the added lethality survivable.)*
 
 Hence four slices: cut the encounters, make days cost something (quest
 clocks), make damage persist past a night (wounds), and make defeat
@@ -295,22 +295,25 @@ survivable enough to carry that weight (mercy).
   bench harnesses. Removing the *displayed number* is a formatting pass, and
   it buys the whole felt effect.
 - **Max HP is the constitution stat.** No new stat.
-- **Injury is ONE system with two time constants** — see "One injury system"
-  under slice 3b. *(This supersedes an earlier call in the same session that
-  wound penalties should wait until the next fight; the designer pushed back
-  and was right. There is no in-fight/between-fights seam.)*
+- **Injury is ONE system with two time constants**, no in-fight/between-fights
+  seam. *(Shipped in slice 3b; rules.md's Wounds & Recovery add-on is the doc
+  of record. This superseded an earlier call in the same session that wound
+  penalties should wait until the next fight; the designer pushed back and
+  was right.)*
 - **Wounds are recorded for the played party only.** Foes keep the scalar:
   they do not persist between fights, so records buy nothing and would cost
-  the entire bestiary calibration. Foe wound *narration* is free.
+  the entire bestiary calibration. Foe wound *narration* is free. *(Shipped
+  in slice 3b.)*
 - **Conditions are built as a general system, not a bleed special case.** It
   has been the named blocker behind varied enemies, venom, and varied magic
-  for three sessions; build it once, properly.
+  for three sessions; build it once, properly. *(Shipped in slice 3a.)*
 - **Defeat's permanent setback is a maiming, not a stat point.** `rules.md`
   fixes STR and DEX as immovable, and an unrecoverable stat point in a 1-20
   ladder is a death spiral in disguise. A maiming is the same mechanical hit,
   lives inside the wound system, narrates better, and is **curable** by
   high-tier magic or a prosthetic — a story hook and a gold sink instead of a
-  punishment.
+  punishment. *(The maiming itself shipped in slice 3b — a crippling blow to
+  a limb that would have killed. Slice 4 is its second customer.)*
 - **Encounter count stays a weighted roll for now**; site count becomes a
   template-declared place count. Letting narrative content decide a job's
   length is its own queued pass (below). *(Shipped in slice 1.)*
@@ -322,133 +325,6 @@ prices** (a bed is a bed, and it inflates); **food or upkeep as a gold sink**
 they gain value for free once camping stops substituting for them);
 **retribution or patrol attacks as healing pressure** (re-adds the
 contentless combat this whole rework removes).
-
-### Slice 3b — the wound system
-
-**One injury system, two time constants.** Today there is a single channel:
-HP. `Entity.wound_penalty` is a live property, `hp_lost // pain` with
-`hp_lost = max_hp - hp`, read on every `pressure()` roll and so applied to
-attack and defense alike. Because HP carries across fights, **that penalty
-already carries across fights too** — it is not an in-fight-only effect. It
-just heals away free over about seven nights of camping.
-
-The rework keeps one system and splits it by **how fast it fades**, not by
-where it applies:
-
-- **HP is the fast channel.** Mechanically unchanged: blood and shock,
-  `wound_penalty` still derived from it, refills with rest up to the ceiling.
-- **Wounds are the slow channel.** Named located records that lower the
-  ceiling and carry specific stat penalties.
-
-**Both channels are live in every fight, including the one where the wound is
-taken.** There is no seam and no `fresh` flag.
-
-What keeps that from double-charging a single blow is a **budget shift, not a
-delay**: move part of the roll-penalty budget out of the anonymous HP channel
-and into the named wound channel. Raise `HERO_PAIN` 2 -> 3 (a hero down 6 HP
-goes from -3 to -2 on all rolls) and let the located wound's -1 pay the
-difference. Total in-fight pressure at a given injury level stays near the
-bench baseline; what changes is that part of it is now **specific, located,
-and does not heal overnight**. That is the entire point of the system.
-
-State the asymmetry on purpose: heroes record wounds, foes do not, so a
-hero's penalty budget moves from fast-healing HP to slow-healing wounds while
-a foe's stays entirely fast. Over a career that is a net nerf to the party —
-which IS the attrition being added. If it proves too much, the dial is the
-treatment ladder's **rate** (bed nights per severity, healer tier caps), not
-the penalty magnitudes.
-
-```
-@dataclass
-class Wound:
-    location: str    # "head"|"eye"|"chest"|"gut"|"arm"|"hand"|"leg"|"flesh"
-    name: str        # authored display string, writing.md register
-    severity: int    # 1-3
-    penalty: dict    # stat -> int
-    bleed: int       # 0 = none
-    permanent: bool  # a maiming; only high-tier magic clears it
-    treated: bool
-```
-
-`Entity.wounds: list[Wound]`, `Entity.records_wounds: bool` (played party
-only). `wound_load` = sum of severities.
-**`hp_ceiling` = `max(max_hp // 2, max_hp - wound_load)`** — wounds can never
-take a character below half their pool. That floor is the anti-death-spiral
-guarantee and it is not optional. `long_rest` heals toward `hp_ceiling`,
-never past it; `camp --heal` becomes "camp until as whole as the wilds can
-make you".
-
-**Accrual**, in `_attack` where the tier is already computed (`TIER_HP`:
-graze 1 / wound 2 / grievous 4 / crippling blow 6):
-
-| tier | result |
-|------|--------|
-| graze | nothing recorded — blood loss only; grazes are never located |
-| wound | severity 1, located |
-| grievous | severity 2, located |
-| crippling, **vital** (head/chest/gut) | the lethal one — existing death/save path unchanged |
-| crippling, **limb/extremity** | **MAIMS**: severity 3, `permanent=True`, Down instead of dead |
-| going Down by any route | +1 severity, unlocated ("badly beaten") |
-
-Grazes staying unlocated is what keeps the reworked 40-column log readable,
-and it matches the designer's own split: cuts and grazes are blood loss, not
-disabling wounds.
-
-**Location table:** weighted — `flesh`/`arm`/`hand`/`leg` common,
-`chest`/`gut` uncommon, `head`/`eye` rare. Tune so vitals land ~15% of
-located hits. That fraction sets how often "crippling" reads as death rather
-than maiming, so it is a **primary lethality lever** — bench it.
-
-**Penalties** (`WOUND_PENALTIES`): arm -> STR -1 (and DEX -1 at severity 3);
-hand -> DEX -1; leg -> DEX -1; chest -> max STA -2; gut -> STR -1 + bleed;
-head -> DEX -1 and MIND -1; eye -> DEX -1.
-
-**Naming:** `WOUND_NAMES[location][severity]` — "a deep cut across the left
-forearm", "a gut wound, still seeping". `writing.md` register. This table is
-the narrative payoff of the whole system — it is what lets the agent refer
-back to an injury sessions later — so it gets a real content pass, not
-placeholders.
-
-**Display:** `tally_lines`, `cmd_status` and `ui/party.txt` carry the wound
-list; in play HP shows as a **state word** (`Bloodied`, `Failing`) with the
-digits available in `status` and `ui/fight-detailed.txt`. That is the
-designer's "no HP as a number" at display level, cheaply reversible.
-
-**Treatment ladder** — the anti-inflation spine. The gate is rate and access;
-the fee is a convenience and may stay flat forever.
-
-| source | clears | gate |
-|--------|--------|------|
-| field stabilize | bleed | free, automatic at fight end |
-| a bed in a settlement | 1 severity per night | **time** |
-| healer service | several severity, a day + a modest fee | **settlement tier** |
-| basic potion | HP / blood loss | gold (price unchanged) |
-| medium potion / salve | one non-permanent wound | alchemy rank, stock-capped |
-| epic potion / high healing magic | permanents and maimings | scarce, authored |
-
-New `healer` service kind in `places._service_kind` and the required-service
-sets in `_attach_services`; tier caps village 2 severity / town 4 / city 6 /
-capital all. The **cap** is the gate, which is why the fee never needs to
-scale. Potion tiers slot onto `STOCKED_POTION_KINDS`, `POTION_PRICE`, and the
-alchemy recipe/rank ladder (`brew_stock_cap` = rank + 2 is the pattern to
-copy). The healing spell's top rank clears permanents — the level-point
-sink's permanent career job.
-
-**Satisfaction** (the designer's "your party abandons you if it is more than
-x weeks"): `SAT_WOUNDED_DAY`, a per-day drain for each companion carrying an
-untreated wound, plus a `SAT_MAIMED` lump. With `SAT_TAVERN_COOLDOWN_DAYS`
-from slice 1, a long convalescence genuinely costs morale, and the existing
-`wants_to_leave` / `leave_threshold` carry it from there. No new departure
-machinery.
-
-**Acceptance.** Full rebaseline: `tune.py`, `bench_training.py`,
-`bench_bestiary.py`, `bench_quests.py` (all three parts),
-`bench_abilities.py`, `bench_party.py`, with `bench_weapons.py` /
-`bench_ranged.py` as controls. The career curve will move; the target is that
-the **beatability curve stays intact** (the kit-shrink precedent in
-`develop.md`) — reach-L8 and median death level must not collapse. The three
-dials, in order: `HERO_PAIN`, the vital-location fraction, and the treatment
-rate.
 
 ### Slice 4 — defeat without death
 
@@ -481,19 +357,27 @@ Additive to the schemas above — none of them requires redesigning anything.
   `damage_type` field is cheap now that conditions exist (shipped 3a).
 - **Magic energy bypassing protections.** Waits on damage types, and on
   armour existing at all.
-- **Armour interacting with wounds** — a tier shift would now also decide
-  whether a crippling blow kills, maims, or merely wounds. Decide after 3b.
+- **Armour interacting with wounds** — UNBLOCKED 2026-07-26: with slice 3b
+  shipped, a tier shift also decides whether a crippling blow kills, maims,
+  or merely wounds, and whether the record is severity 1, 2 or 3. That is a
+  far better job than "+DEF", and it is the strongest argument armour has
+  ever had. Still the designer's call to adopt, simplify, or defer.
 - **Foe wound records.** Rejected for v1; revisit only if persistent named
   enemies (the nemesis record) ever need scars.
 - **Prosthetics** — steampunk and magical limbs and eyes, including ones that
   push a stat **above** the natural cap. Note the synergy: the queued *stat
   transcendence + magic items* item is the membrane they need, and
   prosthetics are its ideal first authored customer — a magic item with a
-  scar attached. Design `Wound` so a `prosthetic` field costs nothing later.
+  scar attached. `Wound.prosthetic` shipped as a seed field in slice 3b, so
+  the schema cost is already paid: what remains is the item content and the
+  above-cap rule.
 - **Disease** as a third condition family beside poison and bleed.
 - **Infection / wound complications over time** — an untreated wound
   worsening rather than merely persisting; natural once disease exists.
-- **Removing HP from the MODEL.** v1 removes it from the display only.
+- **Removing HP from the MODEL.** Slice 3b removed it from the DISPLAY only
+  (the played surfaces band it into a state word; `status`, the pause menu
+  and the detailed log keep the digits). The model keeps the scalar, and the
+  settled decision above says why.
 - **A true en-route travel position.** Slice 1 SHIPPED the two real fixes
   (the roll happens on the road, off the origin land's pool) but still
   bounces an interrupted trip back to the origin, and a road SIGHTING is
@@ -518,32 +402,22 @@ Additive to the schemas above — none of them requires redesigning anything.
 
 ### Build order, sessions, and doc propagation
 
-One build session per slice — deliberately. `rpg.py` is 332 KB and
-`session.py` 206 KB, and slice 3b ends in a bench rebaseline whose
-numbers need reading and judging **before** the next slice lands on top of
-it. The precedent is the levelling framework's sessions A/B/C.
-**Slices 1, 2 and 3a SHIPPED 2026-07-26** (benchlog has all three
-measurement entries).
+One build session per slice — deliberately. The precedent is the levelling
+framework's sessions A/B/C. **Slices 1, 2, 3a and 3b SHIPPED 2026-07-26**
+(benchlog has all four measurement entries; 3b's is the full rebaseline).
 
 | # | slice | ends with |
 |---|-------|-----------|
-| 3b | the wound system | **full** rebaseline; the beatability curve must survive |
 | 4 | defeat without death | mercy converts wipes; median death level rises |
 
-Slice 4 can slot in any time after 3b. **3a shipped 2026-07-26** — the
-conditions framework is in `rules.md`'s Conditions add-on, and 3b's
-`Wound.bleed` is now writing into a channel that already exists (the
-untimed-condition branch, the field stabilize, the potion/spell clears are
-all built and unused).
+Slice 4 is the last of the rework, and slice 3b is what makes it necessary:
+the wound system raised lethality on purpose and put the MAIMING in place as
+the permanent setback slice 4 needs. Read 3b's rebaseline in benchlog before
+building it.
 
 **Each session closes by propagating outward and deleting its slice from
-here.** What each one owes:
+here.** What slice 4 owes:
 
-- **Slice 3b** — a new `rules.md` **Wounds & Recovery** add-on, plus rewrites
-  of Survival's "Resources at a glance", "The two-buffer split" and "The day
-  / run economy". `dm.md`'s "camp until whole" default becomes wrong and must
-  be rewritten. `writing.md` gains the wound-naming register note.
-  `develop.md`: dev map, difficulty levers, full balance rebaseline.
 - **Slice 4** — `rules.md` near "Down, not dead" and "Fate's bargain";
   `dm.md`: what to do when the party loses.
 
@@ -652,9 +526,10 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 2. **Armor** — provisional design: shifts the incoming wound tier down
    at the cost of a DEX penalty and higher STA drain. *Status: adopt,
    simplify, or defer.* (Designer lean: probably never important.)
-   *(2026-07-26: if it is ever adopted, the attrition rework gives it a
-   far better home — a tier shift now also decides whether a crippling
-   blow kills, maims, or merely wounds. Decide after slice 3b.)*
+   *(2026-07-26, after slice 3b: the wound system gives armour a far better
+   home than "+DEF" — a tier shift now also decides whether a crippling blow
+   kills, maims, or merely wounds, and how deep a record it leaves. See the
+   attrition rework's parked list.)*
 3. **Named & masterwork weapon instances** — the tiers exist in the
    schema; nothing placed yet. Named weapons carry authored provenance
    and are story beats, never drops. **The pivot leans on this item**:
@@ -775,10 +650,10 @@ Foundations all shipped (magic, ranged, levelling); what stands:
 - **Per-weapon pressure dice** — rejected; 2d6 stays the one dial.
 - **Level requirements on masterwork/legendary weapons** — rejected;
   authored placement gates them.
-- **The "obliterating" wound tier** — parked until the top band is
-  authored. *(2026-07-26: slice 3b gets most of what it wanted for free
-  — a crippling blow to a vital already reads as the killing one, and
-  the same blow to a limb maims instead.)*
+- ~~**The "obliterating" wound tier**~~ — effectively ANSWERED by slice 3b
+  (2026-07-26): a crippling blow to a vital already reads as the killing
+  one, and the same blow to a limb maims instead. Re-open only if the top
+  band, once authored, still wants a fifth tier of its own.
 - ~~**Venom / conditions**~~ — SHIPPED 2026-07-26 (slice 3a). The great
   spider is venomous and the pyromancer's fire clings. The `level`
   annotations were deliberately NOT re-fit: both rows moved toward the

@@ -1381,6 +1381,9 @@ def _cast_service_providers(world: dict, rng: random.Random,
         "lodging": "innkeeper", "smith": "smith",
         "general_goods": "shopkeeper", "alchemist": "alchemist",
         "market": "market keeper", "government": "clerk",
+        "healer": "healer",     # slice 3b: every settlement has one, and its
+                                # SUBTYPE sets how far the art reaches
+                                # (rpg.HEALER_TIER_CAP)
     }
     for settlement in settlements(world):
         race = land_race(world, settlement["land"])
