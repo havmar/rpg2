@@ -3093,13 +3093,6 @@ def refresh_wound_bleed(entities: list[Entity]) -> None:
                 apply_condition(e, "bleed", source=w.name, power=w.bleed)
 
 
-def clear_wound(e: Entity, w: "Wound") -> None:
-    """Take one record off and re-fold the stats."""
-    if w in e.wounds:
-        e.wounds.remove(w)
-        _sync_wound_stats(e)
-
-
 def _treatable(e: Entity, permanents: bool) -> list["Wound"]:
     """The records a rung of the ladder may touch, WORST FIRST -- everything
     treats the deepest wound it can reach before the scratches."""
