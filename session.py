@@ -100,6 +100,7 @@ from rpg import (
     tavern_rest as _tavern_rest,
     buy_potion as _buy_potion, cast_healing as _cast_healing,
     use_potion as _use_potion, buy_weapon as _buy_weapon,
+    auto_potions,
     equip_weapon as _equip_weapon,
     train_combat_once as _train_combat_once,
     train_proficiency as _train_proficiency,
@@ -955,6 +956,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     if has_trait(ally, "needs meds"):
         ally.last_dose_day = state["clock"].day
     state["purse"].gold += joining_gold(pc) + joining_gold(ally)
+    kit_log: list[str] = []
+    auto_potions(state["party"], kit_log)    # the opening kit, shared out
     save(state)
     print(f"New game (seed={args.seed}).")
     print(f"You are {pc.name}.")
@@ -968,6 +971,8 @@ def cmd_new(args: argparse.Namespace) -> None:
         print("  " + line)
     if state["purse"].gold:
         print(f"The party purse holds {state['purse'].gold}g.")
+    for line in kit_log:
+        print(line.strip())
     print(f"The party stands at {location_line(state)} -- the local jobs "
           f"are `board`; the wider world is `map` and `travel`.")
     for line in opening_hook(state):
@@ -1124,6 +1129,7 @@ def cmd_hire(args: argparse.Namespace) -> None:
         # arrival points go on the doctrine right away.
         autospend_points(m, log)
     rec["options"].remove(match)
+    auto_potions(party, log)    # a new hand brings their own vials in
     print("\n".join(log))
     save(state)
 
@@ -1172,6 +1178,7 @@ def cmd_dismiss(args: argparse.Namespace) -> None:
         log.append(f"  {h.name} {why} at {place} -- taking their share "
                    f"of the purse ({share}g) and their gear.")
     log.append(f"    The purse holds {purse.gold}g.")
+    auto_potions(party, log)    # their potions walked out with them
     print("\n".join(log))
     save(state)
 
@@ -1191,10 +1198,16 @@ def companions_brew(state: dict, log: list[str]) -> None:
 
 
 def night_upkeep(state: dict, log: list[str]) -> None:
-    """Once per night slept, wherever it was: the 'needs meds' drain -- a
+    """Once per night slept, wherever it was -- the morning's bookkeeping.
+    (1) The 'needs meds' drain: a
     companion whose last dose is older than MEDS_INTERVAL_DAYS loses 1
     satisfaction per night until a dose is bought (`buy HERO meds`, capitals
-    only)."""
+    only). (2) The QUARTERMASTER PASS, DEAL ONLY: the night just changed the
+    stock (the kit scrounge, the alchemist's batch), so the party shares its
+    potions out before the day starts -- but nobody DRINKS at the morning
+    fire. The night heals for free and the vial is worth more unopened; the
+    fight's end is where the pass drinks (rpg.auto_potions). Called last in
+    every night path, after the rest and the brew."""
     clock = state["clock"]
     for h in state["party"][1:]:
         if h.dead or not satisfaction_tracked(h):
@@ -1202,6 +1215,7 @@ def night_upkeep(state: dict, log: list[str]) -> None:
         if (has_trait(h, "needs meds")
                 and clock.day - h.last_dose_day > MEDS_INTERVAL_DAYS):
             adjust_satisfaction(h, -1, log, "out of their medicine")
+    auto_potions(state["party"], log)
 
 
 def process_departures(state: dict, log: list[str]) -> None:
@@ -1239,6 +1253,9 @@ def process_departures(state: dict, log: list[str]) -> None:
         log.append(f"  *** {h.name} {why} at {place} -- taking their share "
                    f"of the purse ({share}g) and their gear. ***")
     log.append(f"    The purse holds {purse.gold}g.")
+    # A quitter walks off with the potions in their pack: what is left is
+    # shared out among the ones who stayed (the quartermaster pass).
+    auto_potions(party, log)
 
 
 def cmd_status(args: argparse.Namespace) -> None:
@@ -2440,6 +2457,11 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # The companion morale pass: blood and fear, whatever the outcome
         # (a game over needs no bookkeeping).
         satisfaction_after_fight(party, dead_before or [], log)
+        # The quartermaster pass (2026-07-26): the fight just changed the
+        # stock (potions drunk at the pause, a potion looted, a fallen
+        # companion's satchel) and who needs it. This is the ONE place that
+        # DRINKS -- fresh wounds, another door possibly an hour away.
+        auto_potions(party, log, drink=True)
         # A delivery's hand-off can come due here: the guaranteed
         # interception (or any other fight at the destination's gates)
         # settling with the party at the destination IS the arrival.
@@ -3598,6 +3620,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         if not wiped:
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
+            # Out of the fight, wounds and all: the pass drinks here too.
+            auto_potions(party, log, drink=True)
             # Fleeing the delivery's interception doesn't un-deliver: if the
             # party stands at the destination, the hand-off happens.
             deliver_if_arrived(state, log)
@@ -3896,7 +3920,12 @@ def cmd_buy(args: argparse.Namespace) -> None:
         return
     thing = " ".join(args.thing).lower()
     if thing in POTION_KINDS:
-        _buy_potion(hero, purse, thing, log)
+        # A bought potion belongs to the party, not to the buyer: the
+        # quartermaster pass puts it in the right hand (and drinks it if
+        # that hand needed it now). A purchase the purse couldn't cover
+        # changed nothing, so it wakes nothing.
+        if _buy_potion(hero, purse, thing, log):
+            auto_potions(party, log)
     elif thing in AMMO_LOTS:
         # Ammo by the lot (ranged combat): arrows/bolts by the sheaf,
         # shells and knives by the pair, up to the carry cap.
@@ -4066,7 +4095,8 @@ def cmd_use(args: argparse.Namespace) -> None:
     hero = find_hero(party, args.hero)
     if hero is None:
         return
-    _use_potion(hero, args.kind, log)
+    if _use_potion(hero, args.kind, log):
+        auto_potions(party, log)  # one fewer in the bag: re-share the rest
     print_play(log)
     save(state)
 
@@ -4098,8 +4128,10 @@ def cmd_brew(args: argparse.Namespace) -> None:
         print(f"{hero.name} has already brewed today -- the still needs the "
               f"night. (Brewing is one batch per long rest.)")
         return
-    _brew(hero, recipe, rng, log)       # a curdled batch still spends the day
+    made = _brew(hero, recipe, rng, log)  # a curdled batch still spends the day
     hero.last_brew_day = clock.day
+    if made:
+        auto_potions(party, log)  # a made batch is the party's, not the still's
     print_play(log)
     save(state)
 

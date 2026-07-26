@@ -132,6 +132,13 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
+- `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
+  the deal order and round-robin, the companion tiebreak, the lone hero,
+  recovering the fallen's kit, the fight-only drink fence (`drink=`), the
+  drink thresholds and the deal/drink alternation, the PC's
+  healing-spell / War-Breath / Berserk gate, and the one-line hand-over
+  report inside the 40-column wrap.
+  `python -m unittest -v test_potions.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
@@ -166,7 +173,9 @@ a pointer: what the file is, how it's run, where its docs are.
   ALCHEMY & the potion rework: `train_alchemy`/`brew`, the kit shrink +
   forage in `long_rest`, `use_potion`'s overcharge and stat-brew branches,
   the firebomb in `group_combat`, the smoke vial in `attempt_retreat` —
-  rules.md's Alchemy & the Potion Rework add-on), and the batch-sim
+  rules.md's Alchemy & the Potion Rework add-on), the QUARTERMASTER PASS
+  (2026-07-26: `auto_potions` and its helpers — the out-of-combat potion
+  deal and auto-drink, played sessions only), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -335,7 +344,10 @@ a pointer: what the file is, how it's run, where its docs are.
   the lowest-job contest and open the game on a high-level hook,
   ~59% of seeds), multi-site SITE CLEARED banners carry their position
   (site 1/2), and the levelup menu shows the moves section to wizards
-  too (the free-allocation doctrine: no class gate).
+  too (the free-allocation doctrine: no class gate). Since 2026-07-26 the
+  QUARTERMASTER PASS is dispatched from here: `rpg.auto_potions` is called
+  at every out-of-combat point where the potion stock changes (see the dev
+  map), so `use` became an override rather than the routine step.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -424,6 +436,7 @@ python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python -m unittest -v test_places.py  # procedural-place MVP contract
+python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 ```
 
@@ -531,6 +544,33 @@ mechanic *does* and *why* is rules.md's job.
   outright — + ONE group chase roll; `pursues=False` foes never chase; a
   clean escape waives any fate debt), `refresh_foes_after_retreat`
   (fled-room persistence).
+- **The quartermaster pass** (2026-07-26 — rules.md's Gold and the potion
+  economy, "The quartermaster pass") — `rpg.py`: `AUTO_POTION_KINDS` (in
+  the potion-economy constants block), `wants_potion` (the badly-hurt /
+  Winded lines, now shared with `auto_use_potions_on_rest` — the sim
+  policy's numbers are unchanged), `drinks_own_potions` (companions always;
+  the PC only without the healing spell / War-Breath / Berserk on that
+  track), `_potion_need`, `deal_potions` (pool → worst-off-first
+  round-robin, ties to companions, silent and idempotent),
+  `recover_potions_from_the_fallen` (a dead companion's vials go back to
+  the party — the quality-steel doctrine), `_kit_line`, and
+  `auto_potions` — the recover/deal/drink/deal loop and the ONE entry
+  point. **`drink=` is the fight-only fence** (designer call, 2026-07-26):
+  it defaults to False, so every call DEALS and only the encounter paths
+  pass `drink=True`. A camp/shop/morning drink was the wrong trade — the
+  night heals free, so the vial is worth more unopened.
+  `session.py` calls it wherever the stock changes out of combat, and those
+  call sites are the trigger list: `finish_encounter` and `cmd_retreat`'s
+  escape branch (**the two `drink=True` sites**), plus deal-only at
+  `cmd_new` (the opening kit),
+  `night_upkeep` (every night path, after the rest and the brew),
+  `cmd_buy` / `cmd_use` / `cmd_brew` (all gated on the primitive actually
+  succeeding), `cmd_hire`, `cmd_dismiss`, `process_departures`. The sims
+  and one-shots do NOT run it (`sites.run_site` keeps
+  `auto_use_potions_on_rest`) — a deliberate divergence, so tune/bench
+  numbers keep describing the party they were calibrated against;
+  `sites.py --seed 3` and `bench_training.py` were diffed byte-identical
+  across the change.
 - **Between fights** — `long_rest` (the `Clock`; long_rest
   also re-arms the field medic's day), `use_potion`, `cast_healing` (the
   healing spell, 2026-07-17 — `use_heal` is gone), `buy_potion` /
