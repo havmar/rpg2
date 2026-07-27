@@ -35,6 +35,12 @@ the checked-out copy already contains the latest UI or rules changes.
   writes or generates fictional content. Don't start a dev task from this
   file alone.
 
+> **Played reality (2026-07-27):** no playthrough has ever gone past
+> level 4. Getting further takes hours of play, and something important
+> to fix has always come up first. Treat everything above the low band
+> as unplayed: when designing, building, or testing, put whatever needs
+> to be learned or felt inside the first four or five levels.
+
 ## The documents
 
 - `dm.md` — the DM playbook (play protocol, application of the fiction
@@ -52,7 +58,7 @@ the checked-out copy already contains the latest UI or rules changes.
   behind plan.md's decisions; append after every major design session).
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
-`karma.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
+`karma.py`, `conquest.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 
 > Keep THIS file short and register-neutral: it is auto-injected into every

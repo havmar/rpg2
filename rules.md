@@ -2446,7 +2446,7 @@ forever.
 | **surgeon's salve** | one non-permanent wound outright | gold, or alchemy rank 3 (stock-capped) |
 | **elixir of mending / rank-3 healing spell** | permanents and maimings | scarce, authored |
 
-**Healer tier caps: village 2 severity a visit, town 4, city 6, capital
+**Healer tier caps: village 2 severity a visit, town 4, capital
 everything short of a maiming.** The **cap is the gate**, which is why the fee
 never needs to scale — a village that cannot touch your third wound is worth
 exactly as much at level 20 as at level 1. Treatment also *dresses* what it
@@ -2551,7 +2551,8 @@ anchors the formulas were fitted to.
   is not a census taken at worldgen — it is a **live inventory** that expires
   and refills (see *The clock*, below). Quest
   levels still roll uniformly in their settlement bands (village 1–8, town
-  1–14, city 1–16, capital 1–20). Too-easy and too-hard work both exists;
+  1–14, capital 1–20; the accidental "city" tier was merged into town
+  2026-07-27). Too-easy and too-hard work both exists;
   geography selects where it happens without changing its threat budget.
 
 ## The clock: windows, bands, and the live board (2026-07-26)
@@ -2591,7 +2592,7 @@ This is what makes a day cost something: a week of camping is a week the job
 did not wait through.
 
 **The board refills instead of being pre-posted.** Each settlement keeps its
-`SETTLEMENT_KINDS` slot count live — capital 5, city 4, town 4, village 2 —
+`SETTLEMENT_KINDS` slot count live — capital 5, town 4, village 2 —
 and posts back toward it as days pass: at most `QUEST_REFILL_PER_DAY` = 1 new
 job a day, except the first time a board is looked at, which fills it (the
 land has always had work; the party has just never asked). Only the current
@@ -3390,7 +3391,8 @@ career curve. Tune at the table; a karma career sim stays parked.
 
 ## Explicitly not in this slice (roadmap, plan.md)
 
-Conquest ticking (settlement ownership + tribute), hell as a VISITABLE
+~~Conquest ticking~~ (SHIPPED 2026-07-27 — the Conquest & Holdings
+add-on below), hell as a VISITABLE
 place (the gladiator pits, the castle bought in bones, bullying demons
 — walkable today as pure narration), a geographic wanted level
 (searched-for in one settlement / a land / all lands — heat is the
@@ -3403,3 +3405,111 @@ bribes now; the Watch doesn't yet), and any karma-gated power. Bad
 karma currently buys nothing but heat and gold-rich work — whether it
 should *unlock* anything (hell ranks, evil powers) is the next design
 decision.
+
+---
+
+# Conquest & Holdings — Add-on (2026-07-27, the domain layer's first slice)
+
+Plan.md's "conquest ticking" shipped. The player can TAKE a settlement,
+hold it with paid levies, and bleed it for tribute — the domain game
+opening at the level the game is actually played at (a village falls to a
+level 4-5 party), not parked at the endgame. Mechanics in `conquest.py`;
+the play surface in `session.py` (`conquer` / `garrison` / `holdings`).
+The sims never import it: like karma, the layer is play-surface only, its
+knobs hand-set and table-tuned.
+
+## Design spine
+
+- **The settlement is the unit of ownership.** No provinces, no tiles: the
+  map stays a list and ownership is a tag (`[YOURS]`), exactly the shape
+  the war's occupation layer prints. One object to point a quest at.
+- **Garrison levels are geography, not gates.** Each settlement rolls its
+  garrison level ONCE (stable-seeded): village 3–5, town 6–10, capital
+  11–15 — a contiguous ladder, so one land is a whole campaign: first
+  village around L4, towns through the mid band, the capital around
+  L13-15. Nothing forbids attacking early; the fight is the gate, the
+  board's straight-levels doctrine applied to conquest.
+- **The duel is the battle.** Conquest is won by the party breaking the
+  garrison in person; armies are NUMBERS around that fight, never rosters
+  in it. The engine only ever simulates the party's own melee.
+- **Holding costs levies, not heroes.** Recruits are freely rehired, so a
+  garrison is an army resource: one integer per holding, bought with gold.
+  This is gold's first standing job before L15.
+- **Conquest is dark work, priced by the machinery that exists.** Its XP
+  is bad karma, and the flag itself keeps a HEAT FLOOR up — holding land
+  is standing wickedness. The strategy opponent is the heat layer the
+  game already tuned, not a new AI.
+
+## Taking a settlement
+
+`conquer`, standing in the target settlement, builds the garrison job:
+an ordinary dark quest underneath (same schema, threat math and pay
+ladder), one place — "the garrison keep" — at the settlement's garrison
+level, with the land's cultural ladder pool. Village 1 encounter, town 2,
+capital 3 (the war waves' maximum). The last room is capped by a **named
+defender** (a generated face, per-race role: castellan, warden of the
+walls, gate warden, wall-crew boss, war-chief of the garrison) worn as a
+display name over the budget-honest strongest slot. The job has **no
+clock** (a keep does not lapse), **no giver**, and is **not posted on the
+board** — it exists because the player declared it, and is taken like a
+war wave (`take QID`, at the settlement).
+
+Winning the last room flips the tag: `*** NAME IS YOURS ***`. The quest's
+gold is the keep's strongbox (10 days of the settlement's tribute, with
+the dark premium on the turn-in); its XP is all bad karma. An
+aggressor-occupied settlement cannot be conquered — the yoke holds it,
+and the war decides.
+
+## Holding
+
+Each holding is a record in the save (`holdings`): garrison heads, the
+tribute meter, the raid clock.
+
+- **Tribute** accrues per held day (village 3g / town 8g / capital 20g)
+  and is collected automatically when the party stands in ANY holding —
+  the stewards bring every chest to the flag. A holding that falls loses
+  its uncollected tribute.
+- **Levies**: `garrison N`, at the holding, buys N heads at 5g each,
+  capped by the settlement (village 12 / town 24 / capital 48). A FULL
+  garrison always repels the worst raid its tier rolls.
+- **Raids**: the crown's counterstroke, rolled lazily over elapsed days at
+  the news points (arrivals, settlement nights, the board), ~6%/day per
+  holding, only where the party is NOT standing. Heads against heads: a
+  raid of strength S against garrison G is repelled when G >= S (costing
+  S/2 levies) and takes the holding when G < S. The party's own fights
+  remain the posse machinery's job.
+- **The heat floor**: each holding raises effective heat by 1 (capped at
+  HEAT_CAP). Zero bad karma with one holding still means the law calls at
+  party level +1 — and killing the posse is itself bad karma, so the flag
+  feeds the ratchet.
+- **The board goes shadow.** A held settlement posts no honest work for
+  its conqueror; `board --dark` serves. The tavern, the shops, recruiting
+  and downtime keep the party's custom — it is their town now.
+- **The yoke outranks the flag.** When the war's wave 3 fells a land, the
+  aggressor seizes the party's holdings there; retaking one after the war
+  turns is a fresh conquest.
+
+## Display
+
+`holdings` is the ledger (garrison, tribute rates, waiting chests, the
+heat floor); `status` carries a one-line summary; `map`/`ui/map.txt` tag
+held settlements `[YOURS]` and list the holdings under their own section.
+
+## The knobs (`conquest.py`, all hand-set)
+
+`GARRISON_BANDS` (3-5 / 6-10 / 11-15), `CONQUEST_ENCOUNTERS` (1/2/3),
+`TRIBUTE_PER_DAY` (3/8/20), `PLUNDER_MULT` 10, `GARRISON_HIRE_COST` 5,
+`GARRISON_CAP` (12/24/48), `RAID_CHANCE_PER_DAY` 0.06, `RAID_STRENGTH`
+(2-6 / 5-12 / 10-24), `RAID_GARRISON_LOSS` 2 (divisor),
+`HOLDING_HEAT_STEP` 1. `test_conquest.py` is the contract suite.
+
+## Explicitly not in this slice
+
+Armies that MOVE (rival powers taking provinces from each other — the
+macro-game session's question), army-vs-army battles beyond the raid
+roll, the good mirror (liberating occupied settlements for their own
+crown — the dual campaign's other skin), garrison QUALITY (veteran
+levies, a companion as castellan), vassal income buildings and the
+greed economy hookup, conquest-flavored quest content beyond the built
+job, and any narrative framing pass (chosen one / dark lord / prophet —
+the 2026-07-27 brainstorm's list waits on the new-setting session).

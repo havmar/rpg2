@@ -807,3 +807,88 @@ relentless barrow stayed at its old numbers, while the breaking-bandit
 hideout returned to its intended clear band. Focused tests pin the original
 failure cases explicitly: a paid duo victory, a depleted three-person party,
 no post-Fate mercy, and both possible pause orderings.
+
+## 2026-07-27 — Conquest slice 1: the domain game opens at level 4
+
+**Where it came from.** The designer opened a brainstorm (partly in a
+stray chat that lacked project context) about major additions: a 32x32
+tile world map shaped like Europe, armies as units, a darker new setting,
+and mechanics/quests ending with the world conquered by the level cap —
+importing domain ideas from Reign / Birthright / Exalted / Godbound. The
+out-of-context assistant's plan had good bones (prototype the loop, not
+the map; armies never enter the combat engine; the hero's duel IS the
+battle's resolution) but wrong premises: it warned about retrofitting a
+province object the game already has (the settlement), proposed pacing
+tiers the settlement bands already encode, and invented a `war.py` to
+integrate with (the war layer is `story.py`, and its occupation machinery
+is exactly the conquest chassis).
+
+**The session's calls, in order:**
+
+- **Map and new setting DEFERRED** — the designer's own call, first
+  message. Conquest ships in the old setting on the list map; the tile
+  map and the dark retheme wait for their own sessions.
+- **The settlement is the ownership unit.** 6 lands / 39 settlements;
+  the occupation layer already tags and gates settlements, so player
+  ownership is the same shape with the seat swapped.
+- **Do conquest FIRST, not after the arsenal.** The assistant initially
+  recommended weapons/luxury first (the L15-20 band being the planned
+  conquest home, and unplayable). The designer overruled with the
+  project's own precedent — broad systems before content, prototype
+  fast — and repointed conquest at the played band: village at 4-5,
+  towns 6-8+. That also produced the AGENTS.md "played reality" note
+  committed the same day: no playthrough has ever passed level 4;
+  design inside the first four or five levels.
+- **Garrison levels are fixed terrain, decoupled from posting bands.**
+  The designer floated rebanding SETTLEMENT_KINDS (capital 15 / city 12
+  / town 9 / village 6) and asked whether the city tier is even real
+  (it was an accident: three harbor settlements — MERGED into town this
+  session). Settled: a separate stable-seeded GARRISON band per
+  settlement (village 3-5, town 6-10, capital 11-15, "maybe randomly" —
+  the designer's numbers), so the quest economy's calibrated posting
+  bands never moved and no bench broke. The posting-band trim is parked
+  on its own merits.
+- **Garrisons are levies, not party members.** The assistant's first
+  "holding costs a body" idea died on a designer fact: recruits are
+  free and replaceable. The army-resource framing (the designer's) won:
+  one integer per holding, gold in, heads out, raids resolved
+  heads-against-heads off screen. The parked army mechanic's seed, and
+  gold's first standing job before L15.
+- **Heat is the strategy layer.** Holding land raises the heat floor
+  one step per holding (plan.md's 2026-07-19 suspicion, confirmed);
+  posses answer the flag even at zero karma, and killing them feeds the
+  karma ratchet. No new AI, no rival simulation — the crown's raids on
+  ungarrisoned holdings are the only new pressure, and they are one
+  rng roll.
+- **Idea (b) sharpened**: the designer worried army-simulation-buys-
+  easier-duels collapses into a difficulty slider. Answer adopted: the
+  army side sets TERMS, not difficulty — in slice 1 that is simply
+  garrison strength deciding retention, with richer terms (fighting the
+  general without his bodyguard, guaranteed retreats) left to the
+  army-movement session.
+- **Pacing falls out instead of being pegged**: one land is a whole
+  campaign (3 villages -> towns -> capital ~L14), answering "conquer a
+  country by 10 or 15?" with ~15. The other five lands are where
+  moving armies belong later — the player decapitates, armies do the
+  repetition. World conquest by cap stays the target; nothing above the
+  first land is designed yet, per the played-reality note.
+- **The narrative framings** (chosen one / dark lord / mad inventor /
+  imperial general / prophet) map almost 1:1 onto story.py's four
+  authored aggressor variants; "the player as the fifth aggressor" is
+  recorded as the cheap route when the content pass comes. Deferred
+  with the setting rework.
+
+**Shipped** (same session, "implementation using your best judgement"):
+`conquest.py` + session surface (`conquer` / `garrison` / `holdings`,
+conquest_news at the news points, the heat floor in maybe_punish, the
+[YOURS] map tag, the flip in _close_site), the city-tier merge,
+`test_conquest.py` (24 contracts), rules.md's Conquest & Holdings
+add-on, and a benchlog sanity run (city merge invisible at 100 careers).
+Every knob hand-set, sim-unverified, per the dark layer's standing
+directive.
+
+**The slice's play probe** (next): take one village by ~L5 on a fresh
+save, hold it through a raid and a reckoning, feel the tribute. Watch
+for: does the second conquest differ from the first; does the heat
+floor read as a throttle or a tax; is 6%/day raiding too quiet to
+notice or too loud to leave home.

@@ -289,6 +289,23 @@ a pointer: what the file is, how it's run, where its docs are.
   `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
   never import it. `python karma.py [--seed N]` prints sample shadow
   boards and posses (the eyeball check).
+- `conquest.py` — **the domain layer: player conquest** (2026-07-27,
+  rules.md's Conquest & Holdings add-on): fixed stable-seeded garrison
+  levels (village 3-5 / town 6-10 / capital 11-15), the garrison-job
+  builder (`build_conquest_quest` -- an ordinary dark quest with a named
+  defender over the strongest slot, no clock, never on the board), the
+  holdings ledger (`take_settlement` / `lose_holding`), tribute accrual
+  and collection, the lazy crown raids (`roll_raids` -- heads against
+  heads, the engine never sees them), the story-occupation seizure, and
+  `heat_floor`. The sims never import it; every knob is hand-set (the
+  karma layer's doctrine). `python conquest.py [--seed N]` dumps every
+  settlement's garrison level and one built job.
+- `test_conquest.py` — the CONQUEST contract suite (2026-07-27): garrison
+  bands and stability, the merged city tier, the job's shape/pricing/boss,
+  the holding ledger flips, tribute arithmetic, raid resolution (full
+  garrison always repels; unguarded always falls; present party is never
+  raided), the yoke's seizure, the save round-trip, display fit.
+  `python -m unittest -v test_conquest.py`.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): the five races' stat modifiers
   (floor-raise `RACE_MODS`; since 2026-07-13 also the goblin STR ceiling
@@ -491,6 +508,7 @@ python -m unittest -v test_conditions.py  # the conditions framework contract
 python -m unittest -v test_wounds.py  # the wound system contract
 python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
+python -m unittest -v test_conquest.py # the conquest domain layer contract
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -888,6 +906,21 @@ mechanic *does* and *why* is rules.md's job.
   `mercy` through `resolve_encounter`/`pending`/resume/retreat,
   `apply_mercy` (left for dead / the lesson), now spending the same
   one-per-level allowance as every ordinary mercy.
+- **The conquest domain layer** (2026-07-27 — rules.md's Conquest &
+  Holdings add-on) — `conquest.py`: everything (see Files). `session.py`:
+  `cmd_conquer` / `cmd_garrison` / `cmd_holdings`, `held_here` /
+  `holding_board_line` (the honest board refuses in a held settlement;
+  taverns/shops/hiring keep working), `effective_heat` (karma's meter
+  floored by holdings — `maybe_punish` reads it, and prints the flag
+  note when the floor drives the posse), `conquest_news` (seizures,
+  raids, tribute — called at travel arrivals, tavern and downtime
+  nights, and `board`), the flip hook in `_close_site` (a done quest
+  with a `conquest` key), the `[YOURS]` tag + holdings section in
+  `map_sheet_lines`, the summary line in `cmd_status`, and the
+  `holdings` save key. `quests.py`: the "city" settlement tier was
+  merged into "town" the same day (SETTLEMENT_KINDS; the catalog
+  retiered Leehaven, Walhaven and Portomera) — `rpg.HEALER_TIER_CAP`
+  lost its city row with it.
 - **Defeat without death** (2026-07-26, attrition slice 4 — rules.md's
   Ferocity and Mercy section) — `rpg.py`: the ferocity constants,
   `Entity.ferocity` / `withdrew` / `break_tried` / `mercy_level` /
@@ -972,7 +1005,9 @@ mechanic *does* and *why* is rules.md's job.
   `position`, persistent geography under `world` (`lands` / `areas` / `sites`
   / `rooms`),
   `sighting`, `site_clears` set-site pay
-  tracking, and `recruits` (the on-request candidate pool, keyed to its
+  tracking, `holdings` (the conquest ledger, 2026-07-27 — plain dict,
+  garrison heads + tribute/raid day stamps per held settlement), and
+  `recruits` (the on-request candidate pool, keyed to its
   settlement and day); entities/
   weapons via the `_entity_*`/`_weapon_*` serializers).
   A paused fight blocks every between-fights command until settled. Quest
@@ -1234,6 +1269,15 @@ above.**
   `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_GOLD_MULT` 1.5) are
   hand-set and SIM-UNVERIFIED — tune them at the table; a karma-playing
   career sim is parked in plan.md.
+- **The conquest layer is bench-invisible too (2026-07-27).** Same
+  construction as karma: play-surface only, no sim imports it, worldgen
+  posts nothing for it. Its knobs (garrison bands, tribute, raid
+  chance/strength, levy price, the heat floor) are hand-set and
+  SIM-UNVERIFIED — tune at the table. The same session merged the
+  accidental "city" settlement tier into "town" (three settlements:
+  Leehaven, Walhaven, Portomera): their posting band narrowed 1-16 ->
+  1-14 and their board slots held at 4, a change too small to move the
+  career curve (sanity-checked; benchlog 2026-07-27).
 - **The one-log rework's dying-swing reorder is within noise
   (2026-07-21).** The only engine-mechanical piece of the log rework
   (the felled fighter's dying swing resolving immediately after the
