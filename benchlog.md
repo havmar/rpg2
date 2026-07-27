@@ -1490,3 +1490,22 @@ does not accumulate.
 3. **Fate's duo/depleted-party correction is a contract result, not a Monte
    Carlo result.** Focused tests assert PC 1 HP, one companion slain, wounds
    unchanged, no wipe, no subsequent mercy, and both pause orderings.
+
+## 2026-07-27 — The city-tier merge sanity check (no retune)
+
+The conquest session merged the accidental "city" settlement tier into
+"town" (three settlements retiered in the catalog: Leehaven, Walhaven,
+Portomera; `SETTLEMENT_KINDS` lost its city row, `rpg.HEALER_TIER_CAP`
+likewise). Expected footprint: those three boards' posting band narrows
+1-16 -> 1-14, slots hold at 4, healer cap 6 -> 4. The conquest layer
+itself is bench-invisible by construction (no sim imports `conquest.py`;
+worldgen posts nothing for it — the karma layer's doctrine).
+
+Sanity career run (100 careers, `--part career`): reach **L5 89% / L8
+76% / L11 39% / L14 7% / L17 2% / L20 1%**, median death **L9**, capped
+median 104 days / 34 quests, mercies 0.99/career, turn-in bands **41 /
+49 / 8 / 2**. Against the standing slice-4 acceptance block (86/70/35/
+10/3/1, death L9, bands 42/49/7/2 at 500 careers) everything is within
+the noise a 100-career sample carries. **No dial moved; the standing
+summary in develop.md is unchanged.** Full-scale re-measurement can wait
+for the next real balance pass.

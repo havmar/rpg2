@@ -1591,7 +1591,7 @@ BED_SEVERITY_PER_NIGHT = 1  # a night in a settlement bed knits this much
 HEALER_FEE = 20             # flat, per severity treated. Deliberately not
                             # scaled -- see above.
 HEALER_DAYS = 1             # the visit costs a day (the quest clock prices it)
-HEALER_TIER_CAP = {"village": 2, "town": 4, "city": 6, "capital": None}
+HEALER_TIER_CAP = {"village": 2, "town": 4, "capital": None}
                             # total severity one visit can clear, by settlement
                             # subtype; None = everything non-permanent. THE
                             # CAP IS THE GATE.

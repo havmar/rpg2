@@ -812,10 +812,11 @@ NAME_PARTS = {
 
 SETTLEMENT_KINDS = {         # (quest slots, level band)
     "capital": (5, (1, LEVEL_CAP)),
-    "city":    (4, (1, 16)),
     "town":    (4, (1, 14)),
     "village": (2, (1, 8)),
-}
+}                            # the "city" tier was merged into "town"
+                             # 2026-07-27 -- it existed by accident (three
+                             # harbor settlements), never as a design rung
 
 
 def template_band(tpl: dict) -> tuple[int, int]:

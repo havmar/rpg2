@@ -187,15 +187,14 @@ level curve. Karma rides *beside* levels for now: merging them fully
    story instead of a random tax, and it is small enough to slot in
    mid-playtest the moment the first surviving leader is felt to be
    forgotten.*
-3. **Conquest ticking** — the `conquer` verb: beat a settlement's
-   garrison (a generated site at the settlement's band), flip an owner
-   tag on the map, collect a daily tribute trickle; occupied-by-you
-   settlements refuse honest boards but keep shadow ones. Reuses the
-   occupation machinery. Bad karma prices the deed; holding land should
-   probably RAISE the heat floor (standing wickedness). *Deliberately
-   after the play probe and the nemesis slice: it is the meatier build,
-   and its open calls (the heat-floor question, tribute rates) want a
-   played dark run behind them.*
+3. ~~**Conquest ticking**~~ — **SHIPPED 2026-07-27** (rules.md's
+   Conquest & Holdings add-on; designlog has the session): the `conquer`
+   verb over fixed garrison levels (village 3-5 / town 6-10 / capital
+   11-15), the owner tag, tribute, paid levy garrisons absorbing crown
+   raids, the heat floor per holding, shadow-only boards in held
+   settlements, and the yoke override. The 2026-07-19 open calls landed
+   as guessed: bad karma prices the deed and holding land raises the
+   heat floor. All knobs hand-set -- tune at the table.
 4. **The good-karma mirror — the dual campaign.** *Half-shipped
    2026-07-19*: hell's disciplinary posses exist (Chickening Out — they
    punish DISOBEDIENCE, an ignored assignment), and the PC frame is
@@ -514,16 +513,28 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   layers; its big multiplier is the parked off-screen event simulation.
   *(The nemesis record — villain roadmap item 2 — is this thread's
   first concrete customer.)*
-- **Domain play** — the endgame layer (holdings, followers, rulership);
-  the natural answer to "what is gold FOR at L15+". *(Pivot note:
-  conquest ticking is domain play's thin edge — build item 3 of the
-  villain roadmap first and let domain play grow out of whatever
-  tribute/holding state it creates.)*
+- **Domain play** — the fuller layer (followers, rulership, buildings);
+  the natural answer to "what is gold FOR at L15+". *(2026-07-27: its
+  thin edge SHIPPED as the conquest slice — holdings, tribute, and levy
+  garrisons already give gold a standing job. Grow the rest out of that
+  state; the greed economy is the natural next hookup.)*
 - **The content passes** — deliberately last within their threads.
 
 ---
 
 ## Parked ideas (agreed to exist, not scheduled)
+
+- **The posting-band trim** (2026-07-27, the conquest session) — the
+  designer floated lowering `SETTLEMENT_KINDS` posting caps (capital 15,
+  town ~9, village ~6). The conquest ladder that motivated it shipped as
+  the separate GARRISON bands instead, leaving the calibrated quest
+  economy untouched; the trim stands on its own merits only. Note the
+  cost before pulling it: capital 20 -> 15 means no L16-20 board work
+  ever posts, and it needs a bench re-run.
+- **The conquest mirror for the good campaign** (2026-07-27) —
+  liberating a war-occupied settlement for its own crown (or a
+  protectorate flavor of holding). One mechanic, two skins, like the
+  karma mirror; park until the dark conquest has been played.
 
 - **Hell as a place** (2026-07-19, dark-quests session) — walkable any
   time at no cost, dangerous, demons love bullying. Today it is pure
@@ -550,8 +561,11 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   aggressor") — already the dark content pass / war-integration item
   (villain roadmap 6); noted here so the brainstorm line has a home.
 - **An army mechanic** (2026-07-19) — "some army mechanic might be
-  good" for the conquest game; parked until conquest ticking has been
-  felt. The guard rail stands: one chat line per decision, or it's out.
+  good" for the conquest game. *2026-07-27: its SEED shipped with the
+  conquest slice — the garrison levy number, resolved heads-against-heads
+  off-screen. What stays parked is armies that MOVE (rival powers, fronts,
+  army-vs-army campaigns); feel out the shipped raids first.* The guard
+  rail stands: one chat line per decision, or it's out.
 - **Karma-gated powers / hell ranks** (2026-07-19) — bad karma
   currently buys nothing but heat and rich work; whether lifetime
   wickedness should UNLOCK anything (evil abilities, hell hierarchy

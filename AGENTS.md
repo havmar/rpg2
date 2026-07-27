@@ -58,7 +58,7 @@ the checked-out copy already contains the latest UI or rules changes.
   behind plan.md's decisions; append after every major design session).
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
-`karma.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
+`karma.py`, `conquest.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 
 > Keep THIS file short and register-neutral: it is auto-injected into every

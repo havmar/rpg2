@@ -769,10 +769,10 @@
         ],
         [
           "Leehaven",
-          "city",
+          "town",
           "northern_harbor_city",
           [
-            "city",
+            "town",
             "harbor",
             "coast",
             "fishing",
@@ -781,10 +781,10 @@
         ],
         [
           "Walhaven",
-          "city",
+          "town",
           "southern_harbor_city",
           [
-            "city",
+            "town",
             "harbor",
             "coast",
             "trade",
@@ -2366,10 +2366,10 @@
         ],
         [
           "Portomera",
-          "city",
+          "town",
           "harbor_city",
           [
-            "city",
+            "town",
             "harbor",
             "coast",
             "fishing",

@@ -46,6 +46,10 @@ The shape of a playthrough:
                                                the assignment ledger,
                                                greasing hell's hand, and
                                                taking a caper twist's terms
+  conquer / garrison N / holdings           -- the domain layer (2026-07-27):
+                                               take a settlement by its
+                                               garrison, hold it with paid
+                                               levies, collect tribute
   fight N                                   -- off-script encounters
   hideout ROOM / barrow ROOM                -- the two set sites (DEV/TEST
                                                only since 2026-07-13; not
@@ -130,6 +134,7 @@ from rpg import (
 )
 import story
 import karma
+import conquest
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
@@ -587,8 +592,10 @@ def map_sheet_lines(state: dict) -> list[str]:
                      if "discovered_day" in area else "")
             facts = active_known_facts(area)
             state_note = f" [{facts[0]['id']}]" if facts else ""
+            yours = (" [YOURS]"
+                     if area["key"] in (state.get("holdings") or {}) else "")
             lines.append(f"  {area['name']} ({kind}{found}){state_note}"
-                         f"{jobs}{where}")
+                         f"{yours}{jobs}{where}")
     taken = accepted_quests(state)
     if taken:
         lines.append("")
@@ -604,6 +611,11 @@ def map_sheet_lines(state: dict) -> list[str]:
             else:
                 lines.append(f"[{q['id']}] {q['name']} (L{q['level']}){posted}")
                 lines.extend(_quest_site_lines(world, q))
+    hold = conquest.holdings_lines(world, state.get("holdings") or {},
+                                   state["clock"].day)
+    if hold:
+        lines.append("")
+        lines.extend(hold)
     war = story.war_status_lines(world, st)
     if war:
         lines.append("")
@@ -693,6 +705,7 @@ def save(state: dict) -> None:
         "karma": state.get("karma") or karma.new_karma(),
         "dark_board": state.get("dark_board"),
         "pact": state.get("pact"),
+        "holdings": state.get("holdings", {}),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -753,6 +766,7 @@ def load() -> dict:
         # None = a pactless save (new --no-pact, or pre-pact): the hell
         # layer stays inert -- no default resurrect.
         "pact": doc.get("pact"),
+        "holdings": doc.get("holdings", {}),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -1389,6 +1403,13 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"  Karma: {karma.karma_line(k, party_level(state))} "
               f"(lifetime {k['bad_total']} wickedness / "
               f"{k['good_total']} penance; see `karma`).")
+    holdings = state.get("holdings") or {}
+    if holdings and world:
+        due = conquest.tribute_pending(world, holdings, clock.day)
+        floor = min(karma.HEAT_CAP, conquest.heat_floor(len(holdings)))
+        print(f"  Holdings: {len(holdings)} under the flag -- heat floor "
+              f"{floor}" + (f", {due}g tribute waiting" if due else "")
+              + " (see `holdings`).")
     for line in pact_lines(state):
         print("  " + line)
     if state.get("sighting"):
@@ -1912,6 +1933,15 @@ def _close_site(state: dict, log: list[str], qid: str,
             for line in story.on_wave_done(state["story"], quest,
                                            state["clock"].day):
                 log.append("  " + line)
+        ckey = quest.get("conquest")
+        if ckey:
+            # The garrison is broken: the tag flips (conquest.py). The
+            # strongbox was the quest's gold; tribute starts today.
+            holdings = state.setdefault("holdings", {})
+            for line in conquest.take_settlement(
+                    state["world"], holdings, state["world"]["areas"][ckey],
+                    state["clock"].day):
+                log.append("  " + line)
         pact = state.get("pact")
         if pact and quest.get("hell_task") and pact.get("task") == qid:
             # The assignment is done: hell's clock restarts, the
@@ -2026,6 +2056,62 @@ def occupation_line(state: dict, settlement: dict) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Conquest -- the player's domain layer (2026-07-27, conquest.py)
+# --------------------------------------------------------------------------- #
+
+def held_here(state: dict) -> dict | None:
+    """The local settlement when it flies the party's flag, else None."""
+    here = local_settlement(state)
+    if here is not None and here["key"] in (state.get("holdings") or {}):
+        return here
+    return None
+
+
+def holding_board_line(settlement: dict) -> str:
+    return (f"{settlement['name']} flies the party's flag -- the guilds "
+            f"post no honest work for their conqueror. The shadow board "
+            f"serves (`board --dark`); the tavern, the shops, and the "
+            f"hiring keep your custom.")
+
+
+def effective_heat(state: dict) -> int:
+    """Heat with the domain layer's floor folded in: holding land is
+    standing wickedness, so the flag alone keeps the law coming (one step
+    per holding, the same HEAT_CAP). Zero holdings = karma.heat exactly."""
+    k = state.get("karma") or karma.new_karma()
+    derived = karma.heat(k, party_level(state))
+    floor = conquest.heat_floor(len(state.get("holdings") or {}))
+    return min(karma.HEAT_CAP, max(derived, floor))
+
+
+def conquest_news(state: dict) -> None:
+    """The domain layer's day-settling, run where news lands (arrivals,
+    settlement nights, the board): the yoke's seizures, the crown's raids
+    on holdings the party is away from, and the tribute chests when the
+    party stands in a holding. Prints directly; every call site saves
+    afterward (or hands off to machinery that does)."""
+    holdings = state.get("holdings")
+    if not holdings:
+        return
+    world = state["world"]
+    day = state["clock"].day
+    lines = conquest.seize_by_occupation(world, holdings,
+                                         state.get("story"))
+    here = local_settlement(state)
+    here_key = here["key"] if here is not None else None
+    lines += conquest.roll_raids(world, holdings, state["rng"], day,
+                                 skip_key=here_key)
+    if here_key is not None and here_key in holdings:
+        gold = conquest.collect_tribute(world, holdings, day)
+        if gold:
+            state["purse"].gold += gold
+            lines.append(f"TRIBUTE: {gold}g collected -- the stewards "
+                         f"bring every holding's chest to the flag.")
+    if lines:
+        print("\n".join(lines))
+
+
+# --------------------------------------------------------------------------- #
 # Karma & heat (the villain layer, 2026-07-19 -- karma.py, rules.md add-on)
 # --------------------------------------------------------------------------- #
 
@@ -2045,7 +2131,8 @@ def maybe_punish(state: dict) -> bool:
     if not k or not living or state.get("pending"):
         return False
     lvl = party_level(state)
-    h = karma.heat(k, lvl)
+    h = effective_heat(state)   # karma's meter, floored by holdings (the
+                                # flag is standing wickedness -- conquest.py)
     if h < 1:
         return False
     day = state["clock"].day
@@ -2067,6 +2154,9 @@ def maybe_punish(state: dict) -> bool:
              else "at the party's fire")
     print(f"*** THE RECKONING -- day {day}: word of the party's deeds "
           f"has caught up ({karma.karma_line(k, lvl)}). ***")
+    if karma.heat(k, lvl) < h:
+        print(f"  (the flag draws them: {len(state.get('holdings') or {})} "
+              f"holding(s) keep the heat floor at {h})")
     print(f"  {label} find the party {where}, led by {npc_line(leader)}")
     print(f"  (no parley in v1 -- they mean to collect; retreat is the "
           f"peaceful option. Losing is not death: the law leaves the "
@@ -2759,6 +2849,7 @@ def cmd_board(args: argparse.Namespace) -> None:
                         # pipe mid-print must not lose the wave
     if state["party"] and maybe_assign_task(state):
         save(state)     # hell's mail lands where the party asks around
+    conquest_news(state)    # and so does word from the holdings
     clock_notices = board_clock(state)   # asking around IS reading the board:
     save(state)                          # closed windows, fresh postings
     key = None
@@ -2783,6 +2874,9 @@ def cmd_board(args: argparse.Namespace) -> None:
             return
         if occupied_here(state):
             print(occupation_line(state, here))
+            return
+        if held_here(state):
+            print(holding_board_line(here))
             return
         key = here["key"]
         if clock_notices:
@@ -3289,6 +3383,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
     print_board_clock(state)    # and the new land's boards are read on
                                 # arrival (a board's first look fills it)
     maybe_post_wave(state)      # news travels; arrivals are where it lands
+    conquest_news(state)        # word from the holdings travels with it
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
     if maybe_enforce(state):    # hell's enforcers travel the same roads
@@ -3927,6 +4022,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     maybe_post_wave(state, log)     # tavern talk is where war news lands
     print_play(log)
     print_board_clock(state)    # a bed costs a day like any other
+    conquest_news(state)        # tavern talk carries holding news too
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
     if maybe_enforce(state):    # and hell holds the mortgage on it
@@ -3976,6 +4072,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     maybe_post_wave(state, log)
     print_play(log)
     print_board_clock(state)    # so does an idle one
+    conquest_news(state)        # an idle day hears from the holdings
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
     if maybe_enforce(state):    # for the law and for hell alike
@@ -4128,11 +4225,121 @@ def cmd_karma(args: argparse.Namespace) -> None:
     if k.get("last_leader"):
         print(f"  Last posse led by {k['last_leader']} (day "
               f"{k['last_punish_day']}).")
-    h = karma.heat(k, lvl)
+    h = effective_heat(state)
+    if h > karma.heat(k, lvl):
+        print(f"  The flag is standing wickedness: "
+              f"{len(state.get('holdings') or {})} holding(s) keep the "
+              f"heat floor at {h} (see `holdings`).")
     if h >= 1:
         print(f"  Posses arrive at party level +{h} -- at arrivals and "
               f"nights, at most one per {karma.PUNISH_COOLDOWN_DAYS} "
               f"days. Honest quests burn bad karma 1:1.")
+
+
+def cmd_conquer(args: argparse.Namespace) -> None:
+    """Declare the assault on the settlement the party stands in: builds
+    the garrison job at the settlement's fixed garrison level
+    (conquest.py). The job is taken like a war wave -- at the settlement,
+    by id -- and its last room wears the named defender's face."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    here = local_settlement(state)
+    if here is None:
+        print(f"Conquest starts at the walls -- the party is at "
+              f"{location_line(state)}. Stand in the settlement you mean "
+              f"to take.")
+        return
+    if occupied_here(state) is not None:
+        print(f"{here['name']} lies under the "
+              f"{state['story']['aggressor']} yoke -- the war holds it, "
+              f"and the war decides. Break the occupation first.")
+        return
+    if here["key"] in (state.get("holdings") or {}):
+        print(f"{here['name']} already flies the party's flag. `holdings` "
+              f"reads the ledger; `garrison N` strengthens it.")
+        return
+    open_q = next((q for q in world["quests"].values()
+                   if q.get("conquest") == here["key"]
+                   and q["status"] == "open"), None)
+    if open_q is not None:
+        print(f"The assault is already declared: [{open_q['id']}] "
+              f"{open_q['name']} -- `take {open_q['id']}`, then `room`.")
+        return
+    quest = conquest.build_conquest_quest(world, here, state["rng"])
+    save(state)
+    role = conquest.DEFENDER_ROLES[land_race(world, here["land"])]
+    print(f"The party sizes up {here['name']}: the garrison holds the "
+          f"keep at L{quest['level']} -- {quest['encounters']} fight(s), "
+          f"and the last room is the {role}'s.")
+    for line in quest_detail_lines(world, quest, day=state["clock"].day):
+        print(line)
+    print(f"(`take {quest['id']}` opens the assault. Dark work: every XP "
+          f"it pays is bad karma, and a holding keeps the heat floor up. "
+          f"The keep's strongbox pays on the day it falls.)")
+
+
+def cmd_garrison(args: argparse.Namespace) -> None:
+    """Raise levies at the holding the party stands in: gold in, garrison
+    heads out. The garrison is an ARMY number, never party members -- it
+    absorbs the crown's raids while the party is elsewhere (conquest.py);
+    an unguarded holding falls to the first raid."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    here = held_here(state)
+    if here is None:
+        print("Levies are raised at a holding -- stand in a settlement "
+              "that flies the party's flag (`holdings` lists them; "
+              "`conquer` wins new ones).")
+        return
+    rec = state["holdings"][here["key"]]
+    cap = conquest.GARRISON_CAP[here["subtype"]]
+    if not args.heads:
+        print(f"{here['name']}: garrison {rec['garrison']}/{cap} "
+              f"({conquest.GARRISON_HIRE_COST}g a head -- `garrison N` "
+              f"hires).")
+        return
+    n = min(args.heads, cap - rec["garrison"])
+    if n <= 0:
+        print(f"{here['name']} quarters no more: garrison "
+              f"{rec['garrison']}/{cap}.")
+        return
+    cost = n * conquest.GARRISON_HIRE_COST
+    purse = state["purse"]
+    if purse.gold < cost:
+        print(f"{n} head(s) cost {cost}g -- the purse holds "
+              f"{purse.gold}g.")
+        return
+    purse.gold -= cost
+    rec["garrison"] += n
+    save(state)
+    print(f"{n} levies take the wall at {here['name']} (-{cost}g): "
+          f"garrison {rec['garrison']}/{cap}.")
+
+
+def cmd_holdings(args: argparse.Namespace) -> None:
+    """The domain ledger: every settlement under the party's flag, its
+    garrison, and the tribute waiting."""
+    state = load()
+    holdings = state.get("holdings") or {}
+    if not holdings:
+        print("The party holds nothing yet. `conquer` at a settlement "
+              "starts the domain game -- dark work, and the crown "
+              "answers.")
+        return
+    for line in conquest.holdings_lines(state["world"], holdings,
+                                        state["clock"].day):
+        print(line)
+    floor = min(karma.HEAT_CAP, conquest.heat_floor(len(holdings)))
+    print(f"(heat floor {floor} while the flag flies. Tribute is "
+          f"collected standing in any holding; raids strike where the "
+          f"party is not -- the garrison absorbs them or the holding "
+          f"falls.)")
 
 
 def cmd_buy(args: argparse.Namespace) -> None:
@@ -4760,7 +4967,7 @@ def main() -> None:
              f"other night. How far the art reaches is set by the "
              f"SETTLEMENT, not the purse -- village "
              f"{HEALER_TIER_CAP['village']} severity a visit, town "
-             f"{HEALER_TIER_CAP['town']}, city {HEALER_TIER_CAP['city']}, "
+             f"{HEALER_TIER_CAP['town']}, "
              f"a capital everything short of a maiming. A maiming wants the "
              f"rank-3 healing spell or an authored elixir; a free bed knits "
              f"{BED_SEVERITY_PER_NIGHT} severity a night on its own.")
@@ -4998,6 +5205,40 @@ def main() -> None:
     p.add_argument("amount", nargs="?", type=int, default=0)
     p.add_argument("why", nargs="*", default=[])
     p.set_defaults(func=cmd_karma)
+
+    p = sub.add_parser(
+        "conquer",
+        help="declare the assault on the settlement the party stands in "
+             "(the domain layer, 2026-07-27): builds the garrison job at "
+             "the settlement's FIXED garrison level (village 3-5, town "
+             "6-10, capital 11-15 -- rolled once, stable, geography not "
+             "gate), capped by a named defender. Take it like a war wave "
+             "(`take QID`), fight it with `room`; the last room's fall "
+             "flips the tag. Dark work: all its XP is bad karma, and "
+             "every holding keeps the heat floor up.")
+    p.set_defaults(func=cmd_conquer)
+
+    p = sub.add_parser(
+        "garrison",
+        help=f"raise levies at the holding the party stands in: "
+             f"{conquest.GARRISON_HIRE_COST}g a head, capped by the "
+             f"settlement (village {conquest.GARRISON_CAP['village']} / "
+             f"town {conquest.GARRISON_CAP['town']} / capital "
+             f"{conquest.GARRISON_CAP['capital']}). The garrison is an "
+             f"ARMY number, never party members: raids resolve heads "
+             f"against heads while the party is elsewhere -- an unguarded "
+             f"holding falls to the first raid. No argument shows the "
+             f"local count.")
+    p.add_argument("heads", nargs="?", type=int, default=0)
+    p.set_defaults(func=cmd_garrison)
+
+    p = sub.add_parser(
+        "holdings",
+        help="the domain ledger: every settlement under the party's flag, "
+             "garrison strength, tribute rates and what waits in the "
+             "chests. Tribute is collected standing in any holding; the "
+             "heat floor rises one step per holding.")
+    p.set_defaults(func=cmd_holdings)
 
     p = sub.add_parser(
         "buy",

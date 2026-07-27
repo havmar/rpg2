@@ -110,7 +110,7 @@ the player's core decision:
     of the work nobody took". Read them out -- that is the world moving
     without the party, and it is the whole point of the clock.
   - The board REFILLS: one new job a settlement a day, up to its size
-    (village 2, town/city 4, capital 5). Nobody has to hoard work.
+    (village 2, town 4, capital 5). Nobody has to hoard work.
   - **This is what makes convalescence cost something.** A long camp is
     never free: `camp 6` is six days off every live window -- and since
     2026-07-26 those nights cannot even mend a wound (only a settlement
@@ -492,6 +492,42 @@ infernal reskins, and keep visits scene-sized.
   Watch sergeant's suspicious squint slowly softening. (Hell notices
   too -- for now only as flavor; hell's own audit of a too-virtuous
   employee is roadmap.)
+
+## Conquest -- taking and holding settlements (2026-07-27)
+
+The domain layer: the party can TAKE any settlement it stands in and
+hold it for tribute. Dark work through and through -- it rides the karma
+machinery above. The scripts own all the numbers (rules.md's Conquest &
+Holdings add-on); your job is the scenes.
+
+- **`conquer` declares the assault** where the party stands: it prints
+  the garrison job (fixed level -- village 3-5, town 6-10, capital
+  11-15; the fight is the gate, there is no other). The player takes it
+  by id like a war wave and fights it with `room`. Narrate the walls,
+  the declaration, the moment the town understands. The last room's
+  named defender (the castellan, the wall-crew boss) is a scene-worthy
+  face: give him three lines before the steel.
+- **The flip is a banner** (`*** NAME IS YOURS ***`) -- let it land,
+  then show the town the morning after in one or two sentences: shut
+  shutters, a new flag, the tavern keeper's careful politeness. Do not
+  moralize; the karma meter already did.
+- **A held settlement serves its lord**: tavern, shops, hiring and
+  downtime all work; only the honest BOARD refuses (the shadow board
+  serves -- `board --dark`). The guild clerk's refusal is a one-line
+  scene, not a lecture.
+- **`garrison N` buys levies; `holdings` is the ledger.** Raids, lost
+  and repelled, arrive as news lines at arrivals, nights and the board
+  -- read them out as messengers and rumor, day-stamped. A holding lost
+  while the party was elsewhere is a story beat: who ran, who was
+  hanged, where the crown's banner flies again.
+- **Tribute collects itself** when the party stands in a holding; the
+  stewards' chest is a fine recurring one-line scene.
+- **The flag keeps the heat floor up**: posses come even at clean
+  karma -- narrate them as the crown's answer to a usurper, not as
+  bounty hunters after a criminal (the banner prints the difference).
+- **The war outranks the party**: an aggressor-occupied settlement
+  cannot be conquered, and wave 3's fall seizes the party's holdings in
+  the fallen land. That loss is authored drama -- use it.
 
 ## Flavor beats -- two per session rhythm, always brief (2026-07-12)
 
@@ -905,7 +941,7 @@ bigger than the fights WITHOUT pages of narration:
   moment), and wounds NEVER take anyone below half their pool. The ladder
   the player buys off it: a settlement bed (1 severity a night), the
   `healer` (a day, a flat fee, capped by the settlement's size -- village
-  2, town 4, city 6, capital everything short of a maiming), a **surgeon's
+  2, town 4, capital everything short of a maiming), a **surgeon's
   salve** (closes one outright; shops and alchemy rank 3), and for a
   maiming only high magic -- the rank-3 healing spell or an authored
   elixir. Foes take wounds in the FICTION and nowhere else: narrate a
