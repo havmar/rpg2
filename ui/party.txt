@@ -7,15 +7,17 @@ party: 1/1 companion slot(s) filled (CHA
 
 (YOU)       Imsh (L3, training 1): DEX 6
   STR 6  MIND 5  STA 4/7  HP 8/8  Power
-  4/4  CHA 4  (bulwark; moves: disarm;
-  rapier; healingx1, staminax1)
+  4/4  CHA 4  (bulwark, first_blood;
+  moves: disarm; rapier, prof 1;
+  healingx1, staminax1)
             Imsh -- orc m, age 26;
               interest: hunting; speech:
               swears a lot; dress:
               flamboyant
             XP 32/300 to L4 | skill
-              points: 3 | abilities:
-              bulwark
+              points: 0 | proficiency:
+              rapier 1 | abilities:
+              bulwark, first_blood
 
 (companion) Corvin (L3, training 1): DEX
   6  STR 4  MIND 3  STA 6/6  HP 9/10
