@@ -1,38 +1,39 @@
 RPG2 PARTY SHEET -- day 5, at Firascir >
-  Whitweld Forest > the outer camp
-purse: 51g
+  Whitweld Forest > the outer camp >
+  outer watch
+purse: 110g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Imsh (L2, training 1): DEX 6
-  STR 6  MIND 5  STA 7/7  HP 8/8  Power
+(YOU)       Imsh (L3, training 1): DEX 6
+  STR 6  MIND 5  STA 4/7  HP 8/8  Power
   4/4  CHA 4  (bulwark; moves: disarm;
   rapier; healingx1, staminax1)
             Imsh -- orc m, age 26;
               interest: hunting; speech:
               swears a lot; dress:
               flamboyant
-            XP 100/200 to L3 | skill
-              points: 0 | abilities:
+            XP 32/300 to L4 | skill
+              points: 3 | abilities:
               bulwark
 
-(companion) Corvin (L2, training 1): DEX
-  6  STR 4  MIND 3  STA 4/5  HP 9/9
-  Power 6/6  CHA 6  (bulwark; moves:
-  pommel; warhammer; staminax1)
-  [satisfaction 9/10]
+(companion) Corvin (L3, training 1): DEX
+  6  STR 4  MIND 3  STA 6/6  HP 9/10
+  Power 7/7  CHA 6  (bulwark; moves:
+  pommel; warhammer; no kit)
+  [satisfaction 10/10]
             Corvin -- human m, age 29;
               weakness: gambling;
               speech: formal; looks:
               sickly
-            XP 100/200 to L3 | skill
-              points: 0 | abilities:
-              bulwark
+            XP 32/300 to L4 | skill
+              points: 0 | pools bought:
+              hp +1, power +1, sta +1 |
+              abilities: bulwark
 
-active quest: [q66] L2 Guard the
-  Cultists -- next: the outer camp (L2),
-  room 1/1
-karma: bad karma 264; HEAT 1 --
+active quest [q66] Guard the Cultists is
+  COMPLETE
+karma: bad karma 396; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --

@@ -1,35 +1,102 @@
-=== The reckoning: the Watch ===
-(a level-3 posse)
-Walt -- longsword
-DEX 6  STR 5  STA 7  HP 13/13
+=== Guard the Cultists ===
+the outer camp (L2),
+room 1/1: outer watch
+Hero Archer 8 -- shortbow
+DEX 5  STR 2  STA 5  HP 6/6
+shoots to range 2,
 takes spoils, leaves the fallen
-Round 1-2: nothing lands.
-Round 3:
-Imsh: Disarm at Walt!
-Imsh outmaneuvers Walt, deals 2 dmg!
-*** Walt is DISARMED --
-the longsword is knocked away! ***
-Corvin edges past Walt, deals 1 dmg.
-Walt (10/13) attacks Imsh, parried.
-Round 4:
-Imsh overwhelms Walt, deals 4 dmg!!
+2x Hero Warrior -- spear
+DEX 5  STR 4  STA 6  HP 10/10
+takes spoils, leaves the fallen
+Round 1:
+The lines meet -- steel range.
+Hero Archer 8's arrow misses Imsh.
+Round 2:
+Imsh: Disarm at Hero Warrior 9!
+Imsh overwhelms Hero Warrior 9,
+deals 4 dmg!!
+*** Hero Warrior 9 is DISARMED --
+the spear is knocked away! ***
 !! Corvin is Winded.
-Corvin and Walt: Clash!
-Walt (6/13) attacks Corvin, parried.
-The beaten foes break and run!
-Imsh overwhelms Walt, deals 4 dmg!!
-The survivors escape.
-The field belongs to the party.
+Corvin outmaneuvers Hero Warrior 9,
+deals 2 dmg!
+Hero Warrior 9 (4/10)
+attacks Corvin, parried.
+Hero Warrior 10 edges past Corvin,
+deals 1 dmg.
+Round 3:
+Imsh overwhelms Hero Warrior 9,
+deals 6 dmg!!! SLAIN.
+Hero Warrior 9 strikes as they fall:
+Imsh parries.
+Corvin: Pommel Strike
+at Hero Warrior 10!
+Corvin and Hero Warrior 10: they circle.
+!! Hero Archer 8 is Winded.
+Hero Archer 8's arrow misses Imsh.
+Hero Warrior 10 attacks Corvin, parried.
+Round 4:
+Imsh overwhelms Hero Warrior 10,
+deals 6 dmg!!!
+Corvin (8/9)
+attacks Hero Warrior 10, parried.
+!! Hero Warrior 10 is Winded.
+Hero Warrior 10 (4/10)
+attacks Imsh, parried.
+Round 5:
+Corvin downs a stamina draught (0 left).
+Imsh overwhelms Hero Warrior 10,
+deals 4 dmg!! It falls.
+Hero Warrior 10 strikes as they fall:
+Corvin parries.
+Hero Archer 8's arrow misses Imsh.
+Round 6:
+The lines meet -- steel range.
+Hero Archer 8 is caught --
+the shortbow drops to a poor melee grip.
+Round 7:
+!! Imsh is Winded.
+Imsh overwhelms Hero Archer 8,
+deals 6 dmg!!! SLAIN.
+Hero Archer 8 strikes as they fall:
+Imsh parries.
 The party catches its breath (+1 STA)
-Imsh +52 XP (encounter) [100/200]
-Corvin +52 XP (encounter) [100/200]
-(dark work: +52 bad karma -- bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Imsh +53 XP (encounter) [153/200]
+Corvin +53 XP (encounter) [153/200]
+(dark work: +53 bad karma -- bad karma 317; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Left among the dead:
+a shortbow (+0 atk/+4 sev, 8g),
+a spear (+0 atk/+0 sev, 5g).
+
+*** QUEST COMPLETE:
+Guard the Cultists -- the outer camp.
+Reward: 54 gold. ***
+Imsh talks the pay up: +5g (59g in all).
+The party purse holds 110 gold.
+Imsh +79 XP (quest) [232/200]
+*** Imsh reaches level 3!
+(3 skill points unspent) ***
+Corvin +79 XP (quest) [232/200]
+*** Corvin reaches level 3!
+(3 skill points unspent) ***
+Corvin: satisfaction 9 -> 10/10
+(a job paid out)
+(dark work: +79 bad karma -- bad karma 396; HEAT 1 -- retribution hunts 1 level(s) above the party)
+(turn in to
+Hilde II, the masked collector --
+narrate the scene)
+EPILOGUE (day 5): A demon appears. It attacks the cultists. Hell calls the job complete.
+Corvin: +1 max HP (HP 9/10)
+[2 point(s) left]
+Corvin: +1 max STA (STA 6/6)
+[1 point(s) left]
+Corvin: +1 max POWER (Power 7/7)
+[0 point(s) left]
 
 -- the party --
-Imsh: Unhurt STA 7/7 Power 4/4
+Imsh: Unhurt STA 4/7 Power 4/4
   (healing x1, stamina x1)
-Corvin: Unhurt STA 4/5 Power 6/6
-  (stamina x1)
-Purse 51g; day 5.
-Karma: bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party.
-Ahead: 1 fight(s) at the outer camp; the turn-in pays 54g, 79 XP.
+Corvin: Scratched STA 6/6 Power 7/7
+  (no kit)
+Purse 110g; day 5.
+Karma: bad karma 396; HEAT 1 -- retribution hunts 1 level(s) above the party.

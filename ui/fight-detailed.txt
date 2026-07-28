@@ -1,51 +1,114 @@
-=== The reckoning: the Watch (a level-3 posse) ===
-  Walt -- longsword
-  DEX 6  STR 5  STA 7  HP 13/13
+=== Guard the Cultists -- the outer camp (L2), room 1/1: outer watch ===
+  Hero Archer 8 -- shortbow
+  DEX 5  STR 2  STA 5  HP 6/6
+  shoots to range 2,
+  takes spoils, leaves the fallen
+  2x Hero Warrior -- spear
+  DEX 5  STR 4  STA 6  HP 10/10
   takes spoils, leaves the fallen
   Round 1:
-    Imsh, Corvin, Walt close the distance (the gap narrows to 1).
-    stamina: Imsh 7/7, Corvin 5/5 | Walt 7/7
+    Imsh, Corvin, Hero Warrior 9, Hero Warrior 10 close the distance -- the lines meet!
+    Hero Archer 8 sends an arrow at Imsh -- who twists away.
+        pressure: Hero Archer 8: 10 (2d6=6, +4 AIM) vs Imsh: 15 (2d6=8, +6 DEX, +1 training) [arrows: 7 left]
+    stamina: Imsh 7/7, Corvin 4/5 | Hero Archer 8 4/5, Hero Warrior 9 6/6, Hero Warrior 10 6/6
   Round 2:
-    Imsh, Corvin, Walt close the distance -- the lines meet!
-    stamina: Imsh 7/7, Corvin 5/5 | Walt 7/7
-  Round 3:
-    Imsh works to bind and strip Walt's weapon. (+1 STA)
-    Imsh outmaneuvers Walt -- a solid wound! [Walt: 11/13 HP, -1 to rolls]
-        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Walt: 14 (2d6=8, +6 DEX)
-        severity: 3 = margin 3 +6 STR -1 rapier -5 soak -> wound (-2 HP)
-    *** Imsh binds and strips the longsword from Walt -- it clatters away (-2 attack pressure, -2 severity bare-handed). ***
-    Corvin edges past Walt -- a graze! [Walt: 10/13 HP, -1 to rolls]
-        pressure: Corvin: 15 (2d6=8, +6 DEX, +1 training) vs Walt: 13 (2d6=8, +6 DEX, -1 wounds)
-        severity: 2 = margin 2 +4 STR +1 warhammer -5 soak -> graze (-1 HP)
-    Walt attacks Imsh -- parried.
-        pressure: Walt: 8 (2d6=5, +6 DEX, -2 broken longsword, -1 wounds) vs Imsh: 16 (2d6=9, +6 DEX, +1 training)
-    stamina: Imsh 7/7, Corvin 4/5 | Walt 6/7
-  Round 4:
-    Imsh overwhelms Walt -- a grievous injury! [Walt: 6/13 HP, -3 to rolls]
-        pressure: Imsh: 18 (2d6=9, +6 DEX, +1 training, +2 rapier) vs Walt: 13 (2d6=8, +6 DEX, -1 wounds)
-        severity: 5 = margin 5 +6 STR -1 rapier -5 soak -> grievous (-4 HP)
+    Imsh works to bind and strip Hero Warrior 9's weapon. (+1 STA)
+    Imsh overwhelms Hero Warrior 9 -- a grievous injury! [Hero Warrior 9: 6/10 HP, -2 to rolls]
+        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Hero Warrior 9: 12 (2d6=7, +5 DEX)
+        severity: 6 = margin 5 +6 STR -1 rapier -4 soak -> grievous (-4 HP)
+    *** Imsh binds and strips the spear from Hero Warrior 9 -- it clatters away (-2 attack pressure, -2 severity bare-handed). ***
     !! Corvin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Corvin and Walt -- Clash! Steel rings; neither yields.
-        pressure: Corvin: 12 (2d6=7, +6 DEX, +1 training, -2 winded) vs Walt: 12 (2d6=9, +6 DEX, -3 wounds)
-    Walt attacks Corvin -- parried.
-        pressure: Walt: 10 (2d6=9, +6 DEX, -2 broken longsword, -3 wounds) vs Corvin: 13 (2d6=8, +6 DEX, +1 training, -2 winded)
-    stamina: Imsh 6/7, Corvin 3/5* | Walt 5/7   (* = Winded)
-    The beaten foe line breaks and runs!
-    Imsh overwhelms Walt -- a grievous injury! [Walt: 2/13 HP, -5 to rolls]
-        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Walt: 10 (2d6=9, +6 DEX, -3 wounds, -2 fleeing)
-        severity: 7 = margin 7 +6 STR -1 rapier -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    the chase: flight 18.0 (2d6=10, +6.0 DEX STA-weighted, +2 head start) vs pursuit 10.0 (2d6=4, +6.0 DEX STA-weighted)
-    The survivors escape. The field belongs to the party.
+    Corvin outmaneuvers Hero Warrior 9 -- a solid wound! [Hero Warrior 9: 4/10 HP, -3 to rolls]
+        pressure: Corvin: 10 (2d6=5, +6 DEX, +1 training, -2 winded) vs Hero Warrior 9: 7 (2d6=4, +5 DEX, -2 wounds)
+        severity: 4 = margin 3 +4 STR +1 warhammer -4 soak -> wound (-2 HP)
+    Hero Archer 8 works the shortbow's reload.
+    Hero Warrior 9 attacks Corvin -- parried.
+        pressure: Hero Warrior 9: 6 (2d6=6, +5 DEX, -2 broken spear, -3 wounds) vs Corvin: 14 (2d6=9, +6 DEX, +1 training, -2 winded)
+    Hero Warrior 10 edges past Corvin -- a graze! [Corvin: 8/9 HP, -0 to rolls]
+        pressure: Hero Warrior 10: 16 (2d6=11, +5 DEX) vs Corvin: 15 (2d6=10, +6 DEX, +1 training, -2 winded)
+        severity: 1 = margin 1 +4 STR -4 soak -> graze (-1 HP)
+    stamina: Imsh 7/7, Corvin 3/5* | Hero Archer 8 4/5, Hero Warrior 9 5/6, Hero Warrior 10 5/6   (* = Winded)
+  Round 3:
+    Imsh overwhelms Hero Warrior 9 -- a crippling blow! [Hero Warrior 9: 0/10 HP, -5 to rolls]
+        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Hero Warrior 9: 7 (2d6=5, +5 DEX, -3 wounds)
+        severity: 11 = margin 10 +6 STR -1 rapier -4 soak -> crippling blow (-6 HP)
+    *** Hero Warrior 9 is SLAIN. ***
+    (Hero Warrior 9 strikes even as they fall)
+    Hero Warrior 9 attacks Imsh -- parried.
+        pressure: Hero Warrior 9: 4 (2d6=4, +5 DEX, -2 broken spear, -3 wounds) vs Imsh: 13 (2d6=6, +6 DEX, +1 training)
+    Corvin rolls a pommel strike into Hero Warrior 10. (+1 STA)
+    Corvin and Hero Warrior 10 -- Lull. They circle, probing for an opening.
+        pressure: Corvin: 11 (2d6=6, +6 DEX, +1 training, -2 winded) vs Hero Warrior 10: 11 (2d6=6, +5 DEX)
+    !! Hero Archer 8 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Hero Archer 8 sends an arrow at Imsh -- who twists away.
+        pressure: Hero Archer 8: 5 (2d6=3, +4 AIM, -2 winded) vs Imsh: 9 (2d6=2, +6 DEX, +1 training) [arrows: 6 left]
+    Hero Warrior 10 attacks Corvin -- parried.
+        pressure: Hero Warrior 10: 12 (2d6=7, +5 DEX) vs Corvin: 14 (2d6=9, +6 DEX, +1 training, -2 winded)
+    stamina: Imsh 6/7, Corvin 3/5* | Hero Archer 8 3/5*, Hero Warrior 10 4/6   (* = Winded)
+  Round 4:
+    Imsh overwhelms Hero Warrior 10 -- a crippling blow! [Hero Warrior 10: 4/10 HP, -3 to rolls]
+        pressure: Imsh: 18 (2d6=9, +6 DEX, +1 training, +2 rapier) vs Hero Warrior 10: 12 (2d6=7, +5 DEX)
+        severity: 7 = margin 6 +6 STR -1 rapier -4 soak -> crippling blow (-6 HP)
+    Corvin attacks Hero Warrior 10 -- parried.
+        pressure: Corvin: 10 (2d6=5, +6 DEX, +1 training, -2 winded) vs Hero Warrior 10: 11 (2d6=9, +5 DEX, -3 wounds)
+    Hero Archer 8 works the shortbow's reload.
+    !! Hero Warrior 10 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Hero Warrior 10 attacks Imsh -- parried.
+        pressure: Hero Warrior 10: 7 (2d6=7, +5 DEX, -3 wounds, -2 winded) vs Imsh: 13 (2d6=6, +6 DEX, +1 training)
+    stamina: Imsh 5/7, Corvin 2/5* | Hero Archer 8 3/5*, Hero Warrior 10 3/6*   (* = Winded)
+  Round 5:
+    Corvin downs a stamina draught mid-fight (STA 2 -> 5/5; 0 left) -- no attack this round, -2 defending while they drink
+    Imsh overwhelms Hero Warrior 10 -- a grievous injury! [Hero Warrior 10: 0/10 HP, -5 to rolls]
+        pressure: Imsh: 14 (2d6=5, +6 DEX, +1 training, +2 rapier) vs Hero Warrior 10: 9 (2d6=9, +5 DEX, -3 wounds, -2 winded)
+        severity: 6 = margin 5 +6 STR -1 rapier -4 soak -> grievous (-4 HP)
+    *** Hero Warrior 10 falls. ***
+    (Hero Warrior 10 strikes even as they fall)
+    Hero Warrior 10 attacks Corvin -- parried.
+        pressure: Hero Warrior 10: 4 (2d6=4, +5 DEX, -3 wounds, -2 winded) vs Corvin: 14 (2d6=9, +6 DEX, +1 training, -2 drinking)
+    Hero Archer 8 sends an arrow at Imsh -- who twists away.
+        pressure: Hero Archer 8: 7 (2d6=5, +4 AIM, -2 winded) vs Imsh: 18 (2d6=11, +6 DEX, +1 training) [arrows: 5 left]
+    stamina: Imsh 4/7, Corvin 5/5 | Hero Archer 8 2/5*   (* = Winded)
+  Round 6:
+    Imsh, Corvin close the distance -- the lines meet!
+    Hero Archer 8 is caught at arm's length -- they drop the shortbow to a fighting grip (-2 atk/-2 sev, no shooting until there's room)!
+    stamina: Imsh 4/7, Corvin 5/5 | Hero Archer 8 2/5*   (* = Winded)
+  Round 7:
+    !! Imsh is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Imsh overwhelms Hero Archer 8 -- a crippling blow! [Hero Archer 8: 0/6 HP, -3 to rolls]
+        pressure: Imsh: 13 (2d6=6, +6 DEX, +1 training, +2 rapier, -2 winded) vs Hero Archer 8: 8 (2d6=5, +5 DEX, -2 winded)
+        severity: 8 = margin 5 +6 STR -1 rapier -2 soak -> crippling blow (-6 HP)
+    *** Hero Archer 8 is SLAIN. ***
+    (Hero Archer 8 strikes even as they fall)
+    Hero Archer 8 attacks Imsh -- parried.
+        pressure: Hero Archer 8: 8 (2d6=7, +5 DEX, -2 shortbow (in hand), -2 winded) vs Imsh: 11 (2d6=6, +6 DEX, +1 training, -2 winded)
+    stamina: Imsh 3/7*, Corvin 5/5   (* = Winded)
     The party catches its breath (+1 STA)
-    Imsh gains 52 XP (encounter) [100/200]
-    Corvin gains 52 XP (encounter) [100/200]
-    (dark work: +52 bad karma -- bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party)
+    Imsh gains 53 XP (encounter) [153/200]
+    Corvin gains 53 XP (encounter) [153/200]
+    (dark work: +53 bad karma -- bad karma 317; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Left among the dead:
+a shortbow (+0 atk/+4 sev, 8g),
+a spear (+0 atk/+0 sev, 5g).
+
+  *** QUEST COMPLETE: Guard the Cultists -- the outer camp. Reward: 54 gold. ***
+    Imsh talks the pay up: +5g (CHA 4 -- 59g in all).
+    The party purse holds 110 gold.
+    Imsh gains 79 XP (quest) [232/200]
+    *** Imsh reaches level 3! (+3 skill points, 3 unspent) ***
+    Corvin gains 79 XP (quest) [232/200]
+    *** Corvin reaches level 3! (+3 skill points, 3 unspent) ***
+    Corvin: satisfaction 9 -> 10/10 (a job paid out)
+    (dark work: +79 bad karma -- bad karma 396; HEAT 1 -- retribution hunts 1 level(s) above the party)
+  (turn in to Hilde II, the masked collector -- narrate the scene)
+  EPILOGUE (day 5): A demon appears. It attacks the cultists. Hell calls the job complete.
+    Corvin hardens the body: +1 max HP (HP 9/10; +1/10 bought) [2 point(s) left]
+    Corvin hardens the body: +1 max STA (STA 6/6; +1/10 bought) [1 point(s) left]
+    Corvin hardens the body: +1 max POWER (Power 7/7; +1/10 bought) [0 point(s) left]
 
 -- the party --
-Imsh: Unhurt STA 7/7 Power 4/4
+Imsh: Unhurt STA 4/7 Power 4/4
   (healing x1, stamina x1)
-Corvin: Unhurt STA 4/5 Power 6/6
-  (stamina x1)
-Purse 51g; day 5.
-Karma: bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party.
-Ahead: 1 fight(s) at the outer camp; the turn-in pays 54g, 79 XP.
+Corvin: Scratched STA 6/6 Power 7/7
+  (no kit)
+Purse 110g; day 5.
+Karma: bad karma 396; HEAT 1 -- retribution hunts 1 level(s) above the party.
