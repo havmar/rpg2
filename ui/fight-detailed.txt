@@ -62,3 +62,38 @@
     Corvin takes a wound: a broken leg, set crooked (severity 3; HP ceiling 6/9)
     stamina: Imsh 6/7, Corvin 2/5* | Bruiser 6 1/5*   (* = Winded)
     == Corvin is badly cut up (HP 3/9) -- the fight hangs for a heartbeat. ==
+  Round 5:
+    Corvin downs a healing potion mid-fight (HP 3 -> 6/9, now -1 to rolls; 0 left) -- no attack this round, -2 defending while they drink
+    Imsh overwhelms Bruiser 6 -- a grievous injury! [Bruiser 6: 4/9 HP, -2 to rolls]
+        pressure: Imsh: 13 (2d6=5, +6 DEX, +1 training, +2 rapier, -1 wounds) vs Bruiser 6: 7 (2d6=5, +4 DEX, -2 winded)
+        severity: 5 = margin 6 +5 STR -1 rapier -5 soak -> grievous (-4 HP)
+    !! Bruiser 6 is SPENT -- running on empty (-6 to all rolls until the fight ends)
+    Bruiser 6 attacks Imsh -- parried.
+        pressure: Bruiser 6: 2 (2d6=6, +4 DEX, -2 wounds, -6 spent) vs Imsh: 9 (2d6=3, +6 DEX, +1 training, -1 wounds)
+    stamina: Imsh 5/7, Corvin 2/5* | Bruiser 6 0/5!!   (* = Winded, !! = Spent)
+    The beaten foe line breaks and runs!
+    Imsh overwhelms Bruiser 6 -- a grievous injury! [Bruiser 6: 0/9 HP, -4 to rolls]
+        pressure: Imsh: 13 (2d6=5, +6 DEX, +1 training, +2 rapier, -1 wounds) vs Bruiser 6: 0 (2d6=6, +4 DEX, -2 wounds, -6 spent, -2 fleeing)
+        severity: 12 = margin 13 +5 STR -1 rapier -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** Bruiser 6 falls. ***
+    The party catches its breath (+1 STA)
+    Imsh gains 15 XP (encounter) [47/200]
+    Corvin gains 15 XP (encounter) [47/200]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+    Corvin downs a stamina draught (STA 3 -> 5; 0 left)
+    The party shares out its potions -- Corvin: 1 stamina.
+
+-- the party --
+Imsh: Bloodied STA 6/7 Power 4/4
+  (hurt -1 to rolls)
+  - a cut across the left forearm (sev 1)
+  (HP ceiling 7/8 until they mend)
+  (no kit)
+Corvin: Unhurt STA 5/5 Power 6/6
+  (hurt -1 to rolls)
+  - a broken leg, set crooked (sev 3)
+  (HP ceiling 6/9 until they mend)
+  (stamina x1)
+Purse 14g; day 2.
+Karma: bad karma 132/200; heat 0 -- lying low.

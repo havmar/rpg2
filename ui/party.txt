@@ -1,18 +1,18 @@
 RPG2 PARTY SHEET -- day 2, at Firascir >
   Ackham > the back alley > outer watch
-purse: 14g
+purse: 93g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Imsh (L2, training 1): DEX 6
   STR 5  MIND 5  STA 6/7  HP 5/7 of 8
   Power 4/4  CHA 4  (bulwark; moves:
-  disarm; rapier; staminax1)
+  disarm; rapier; no kit)
             Imsh -- orc m, age 26;
               interest: hunting; speech:
               swears a lot; dress:
               flamboyant
-            XP 32/200 to L3 | skill
+            XP 48/200 to L3 | skill
               points: 0 | abilities:
               bulwark
             - a cut across the left
@@ -21,15 +21,15 @@ party: 1/1 companion slot(s) filled (CHA
               load)
 
 (companion) Corvin (L2, training 1): DEX
-  5  STR 4  MIND 3  STA 2/5  HP 3/6 of 9
+  5  STR 4  MIND 3  STA 5/5  HP 6/6 of 9
   Power 6/6  CHA 6  (bulwark; moves:
-  pommel; light hammer; healingx1,
-  staminax1)  [satisfaction 8/10]
+  pommel; warhammer; staminax1)
+  [satisfaction 9/10]
             Corvin -- human m, age 29;
               weakness: gambling;
               speech: formal; looks:
               sickly
-            XP 32/200 to L3 | skill
+            XP 48/200 to L3 | skill
               points: 0 | abilities:
               bulwark
             - a broken leg, set crooked
@@ -39,12 +39,11 @@ party: 1/1 companion slot(s) filled (CHA
 
 active quest [q42] Kick the Puppy is
   COMPLETE
-karma: bad karma 132/200; heat 0 --
-  lying low
+karma: bad karma 212; HEAT 1 --
+  retribution hunts 1 level(s) above the
+  party
 THE PACT: no current assignment --
   hell's next job comes ~day 6, at a
   settlement.
   (1 assignment(s) completed -- the
     curriculum ledger; see `task`)
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***

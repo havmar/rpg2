@@ -45,3 +45,35 @@ deals 4 dmg!!
 Corvin takes a wound:
 a broken leg, set crooked.
 == Corvin is badly cut up ==
+Round 5:
+Corvin downs a healing potion (0 left).
+Imsh (5/8) overwhelms Bruiser 6,
+deals 4 dmg!!
+!! Bruiser 6 is SPENT.
+Bruiser 6 (4/9) attacks Imsh, parried.
+The beaten foes break and run!
+Imsh (5/8) overwhelms Bruiser 6,
+deals 4 dmg!! It falls.
+The party catches its breath (+1 STA)
+Imsh +15 XP (encounter) [47/200]
+Corvin +15 XP (encounter) [47/200]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+Corvin downs a stamina draught: STA 5/5
+(0 left).
+The party shares out its potions:
+Corvin: 1 stamina.
+
+-- the party --
+Imsh: Bloodied STA 6/7 Power 4/4
+  (hurt -1 to rolls)
+  - a cut across the left forearm (sev 1)
+  (HP ceiling 7/8 until they mend)
+  (no kit)
+Corvin: Unhurt STA 5/5 Power 6/6
+  (hurt -1 to rolls)
+  - a broken leg, set crooked (sev 3)
+  (HP ceiling 6/9 until they mend)
+  (stamina x1)
+Purse 14g; day 2.
+Karma: bad karma 132/200; heat 0 -- lying low.
