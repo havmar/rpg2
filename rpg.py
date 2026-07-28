@@ -103,56 +103,72 @@ ARROW_PARRY_DEF_2 = 3       # only; rank 2 extends to bullets and rises to +3
 class Ability:
     """One learnable ability: a single-buy trick bought with skill points
     (learn_ability). The behavior is engine code keyed by name; `blurb` is
-    the levelup-menu text. `requires` gates a deeper rank on its base
-    (arrow-parry 2)."""
+    the full learn-time text, `brief` the one-line levelup-menu description
+    (2026-07-28: the menu shows every ability in at most two 40-column
+    lines, so it needs a description that fits one). `requires` gates a
+    deeper rank on its base (arrow-parry 2)."""
     name: str               # catalog key ("war_breath")
     display: str            # menu name ("War-Breath")
     cost: int               # skill points
     blurb: str
     requires: str = ""      # ability key that must already be known
+    brief: str = ""         # one-line menu description (<= 36 chars)
 
 
 ABILITIES = {a.name: a for a in [
     Ability("bulwark", "Bulwark", 3,
             f"the mid-fight save: {SAVE_COST} Power steps an incoming "
-            f"grievous/crippling blow down one wound tier (automatic)"),
+            f"grievous/crippling blow down one wound tier (automatic)",
+            brief=f"{SAVE_COST} Power softens a deadly hit a tier"),
     Ability("first_blood", "First Blood", 2,
             f"auto opening strike: {FIRST_BLOOD_COST} Power for a "
-            f"guaranteed graze before the lines meet"),
+            f"guaranteed graze before the lines meet",
+            brief=f"{FIRST_BLOOD_COST} Power: a free graze before rd 1"),
     Ability("war_breath", "War-Breath", 2,
-            "the pause/standing-order conversion: 2 Power -> +3 STA"),
+            "the pause/standing-order conversion: 2 Power -> +3 STA",
+            brief="at a pause: 2 Power -> +3 STA"),
     Ability("berserk", "Berserk", 1,
             "the desperate conversion: 2 HP -> +4 STA (the wound "
-            "penalty deepens)"),
+            "penalty deepens)",
+            brief="2 HP -> +4 STA; wounds bite deeper"),
     Ability("rage", "Rage", 2,
             f"after slaying a foe: +{RAGE_ATK_BONUS} to the next "
             f"exchange; if it fails to slay, the following round is "
-            f"spent exhausted (no attack)"),
+            f"spent exhausted (no attack)",
+            brief=f"+{RAGE_ATK_BONUS} atk after a kill (a miss stalls)"),
     Ability("field_medic", "Field Medic", 3,
             f"once per day, when a companion would truly DIE nearby: "
             f"DEX check DC {FIELD_MEDIC_DC} commutes it to a Down "
-            f"(the surgery takes your next round)"),
+            f"(the surgery takes your next round)",
+            brief="1/day DEX check: death becomes Down"),
     Ability("storyteller", "Storyteller", 2,
             f"at a long rest: CHA check DC {STORYTELLER_DC} (+1 per "
             f"listener beyond the second) -- the whole party wakes with "
             f"+{STORYTELLER_POWER_BONUS} Power above max (spent-only, "
-            f"fades at the next night)"),
+            f"fades at the next night)",
+            brief=f"camp tale: party +{STORYTELLER_POWER_BONUS} Power "
+                  f"for a day"),
     Ability("survivalist", "Survivalist", 2,
             f"at a wilds camp: MIND check DC {SURVIVALIST_DC} -- the "
             f"camp counts as a tavern night (the overcharge) and the "
-            f"night-visitor chance is halved"),
+            f"night-visitor chance is halved",
+            brief="MIND check: camp rests as a tavern"),
     Ability("arrow_parry", "Arrow-Parry", 2,
             f"melee grip only: +{ARROW_PARRY_DEF} defense pressure "
-            f"against missiles (arrows, bolts, stones -- not bullets)"),
+            f"against missiles (arrows, bolts, stones -- not bullets)",
+            brief=f"+{ARROW_PARRY_DEF} defense vs arrows (melee grip)"),
     Ability("arrow_parry_2", "Arrow-Parry rank 2", 3,
             f"the parry extends to bullets and rises to "
-            f"+{ARROW_PARRY_DEF_2}", requires="arrow_parry"),
+            f"+{ARROW_PARRY_DEF_2}", requires="arrow_parry",
+            brief=f"parry bullets too, at +{ARROW_PARRY_DEF_2}"),
     Ability("point_blank", "Point-Blank Mastery", 3,
             "the ranged card shoots at gap 0 -- contact never forces "
-            "the switch to the melee grip"),
+            "the switch to the melee grip",
+            brief="ranged card keeps firing at contact"),
     Ability("rapid_reload", "Rapid Reload", 3,
             "cadence 0 on a ranged card that has 1 (a shot every "
-            "round; the crossbow's heavy draw still applies)"),
+            "round; the crossbow's heavy draw still applies)",
+            brief="fire every round on a reload-1 card"),
 ]}
 
 # --- Magic & Mind (2026-07-15; grew out of the 2026-07-14 placeholder) ------- #
@@ -1043,8 +1059,9 @@ class Move:
     (attacker, defender, near = living foes at contact, rnd). `field_only`
     marks the skirmisher's step -- a movement reaction, not a melee rider, so
     it is selected in the field phase, not the exchange. Behavior is engine
-    code keyed by name (build_move_rider / group_combat); `blurb` is menu
-    text."""
+    code keyed by name (build_move_rider / group_combat); `blurb` is the
+    full learn-time text, `brief` the one-line levelup-menu description
+    (2026-07-28, same doctrine as Ability.brief)."""
     name: str
     display: str
     cost: int
@@ -1052,6 +1069,7 @@ class Move:
     condition: object                   # callable(attacker, defender, near, rnd)
     blurb: str
     field_only: bool = False
+    brief: str = ""                     # one-line menu description (<= 36 chars)
 
     def weapon_ok(self, weapon: "Weapon | None") -> bool:
         if weapon is None:
@@ -1086,45 +1104,56 @@ def _atleast_frac(e: "Entity", num: int, den: int) -> bool:
 MOVES = {m.name: m for m in [
     Move("thrust", "Thrust", 1, ("pierce",),
          lambda a, d, near, rnd: True,
-         f"+{THRUST_ATK} attack pressure this exchange"),
+         f"+{THRUST_ATK} attack pressure this exchange",
+         brief=f"+{THRUST_ATK} attack pressure this exchange"),
     Move("sweep", "Sweep", 1, ("heavy",),
          lambda a, d, near, rnd: near >= 2,
          "with 2+ foes at contact: the swing catches a second of them "
-         "(the hero-side sweep)"),
+         "(the hero-side sweep)",
+         brief="vs 2+ at contact: hit a second foe"),
     Move("feint", "Feint", 1, ("blade",),
          lambda a, d, near, rnd: rnd >= 2,
-         f"round 2+: next round's attack on the same foe at +{FEINT_ATK}"),
+         f"round 2+: next round's attack on the same foe at +{FEINT_ATK}",
+         brief=f"sets up next round's attack at +{FEINT_ATK}"),
     Move("pommel", "Pommel Strike", 1, ("blade", "blunt"),
          lambda a, d, near, rnd: _atleast_frac(d, POMMEL_HP_NUM, POMMEL_HP_DEN),
          f"vs an unhurt foe, on a wounding hit: {POMMEL_SEV} severity but the "
-         f"foe loses its next attack (the stun rider)"),
+         f"foe loses its next attack (the stun rider)",
+         brief="softer hit stuns an unhurt foe"),
     Move("disarm", "Disarm", 1, ("blade", "pierce"),
          lambda a, d, near, rnd: (d.weapon is not None and not d.weapon.natural
                                   and not d.weapon_broken),
          f"vs an armed foe, on a decisive hit (margin >= {MOVE_LAND_MARGIN}): "
-         f"the weapon flies (mirrors telekinesis rank 1)"),
+         f"the weapon flies (mirrors telekinesis rank 1)",
+         brief="a decisive hit flings the weapon"),
     Move("kick", "Kick", 1, (),
          lambda a, d, near, rnd: True,
-         f"on a hit: the foe defends at -{OFF_GUARD_PENALTY} next round"),
+         f"on a hit: the foe defends at -{OFF_GUARD_PENALTY} next round",
+         brief=f"on a hit: foe defends -{OFF_GUARD_PENALTY} next round"),
     Move("trip", "Trip", 1, (),
          lambda a, d, near, rnd: rnd >= 2,
          f"round 2+, on a decisive hit (margin >= {MOVE_LAND_MARGIN}): the foe "
-         f"skips its next attack AND defends at -{OFF_GUARD_PENALTY} (prone)"),
+         f"skips its next attack AND defends at -{OFF_GUARD_PENALTY} (prone)",
+         brief="a decisive hit trips the foe a round"),
     Move("riposte", "Riposte", 1, ("blade", "pierce"),
          lambda a, d, near, rnd: a.parried_last,
-         f"the round after parrying a blow: +{RIPOSTE_ATK} attack pressure"),
+         f"the round after parrying a blow: +{RIPOSTE_ATK} attack pressure",
+         brief=f"+{RIPOSTE_ATK} attack the round after your parry"),
     Move("iaido", "Iaido", 2, ("blade",),      # katana-gated below, in weapon_ok
          lambda a, d, near, rnd: rnd == 1,
          f"round 1 (katana only): +{IAIDO_ATK} attack, +{IAIDO_SEV} severity -- "
-         f"then a round stanced (no attack). The katana's signature"),
+         f"then a round stanced (no attack). The katana's signature",
+         brief=f"+{IAIDO_ATK} atk +{IAIDO_SEV} sev round 1, then stanced"),
     Move("finisher", "Finisher", 2, (),        # special gate, _finisher_ok
          lambda a, d, near, rnd: _below_frac(d, FINISHER_HP_NUM, FINISHER_HP_DEN),
          f"vs a foe below 1/3 max HP: +{FINISHER_SEV} severity -- the almost-"
-         f"kill becomes the kill (Decapitate / Split Skull)"),
+         f"kill becomes the kill (Decapitate / Split Skull)",
+         brief=f"+{FINISHER_SEV} severity vs a foe below 1/3 HP"),
     Move("skirmisher_step", "Skirmisher's Step", 1, ("ranged",),
          lambda a, d, near, rnd: False,        # fired in the field phase
          "when a charger reaches contact: give ground to reopen the gap "
-         "(once per fight -- kiting, ability-framed)", field_only=True),
+         "(once per fight -- kiting, ability-framed)", field_only=True,
+         brief="reopen the gap when a charger closes"),
 ]}
 
 # Iaido is the katana's alone (a name gate on top of the blade tag); the

@@ -94,12 +94,12 @@ from rpg import (
     BERSERK_HP_COST, BERSERK_STA_GAIN,
     WAR_BREATH_POWER_COST, WAR_BREATH_STA_GAIN,
     standing_order,
-    SATISFACTION_START, SAT_DOWNTIME, SAT_DOWNTIME_MATCH,
+    SATISFACTION_START, SATISFACTION_MAX, SAT_DOWNTIME, SAT_DOWNTIME_MATCH,
     SAT_TAVERN_COOLDOWN_DAYS,
     MEDS_INTERVAL_DAYS, MEDS_PRICE,
     party_capacity, has_trait, satisfaction_tracked, wants_to_leave,
     adjust_satisfaction, satisfaction_after_fight,
-    stat_line, progress_line, fallen_weapons_line,
+    stat_line, fallen_weapons_line, weapon_tag,
     xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
     start_fight, group_combat, party_wiped, party_defeated,
     apply_defeat_mercy, mercy_available, FEROCITY_RELENTLESS,
@@ -428,6 +428,73 @@ UI_COMMIT_PATHS = (
 )
 
 
+def hero_block_lines(party: list, h) -> list[str]:
+    """One hero as a tidy 40-column block: a header naming who they are,
+    then short labeled rows all hanging exactly two spaces. Shared by the
+    party sheet and `status` so the two readouts never drift (2026-07-28
+    display pass: the old layout indented every row 12-14 spaces to sit
+    under the role tag -- a third of the phone's width spent on air, and
+    every wrapped row turned to confetti)."""
+    tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
+    if wants_to_leave(h):
+        tag += " [QUITTING at the next settlement]"
+    head = f"{role_tag(party, h)} {h.name}"
+    if h.nickname:
+        head += f' "{h.nickname}"'
+    if h.race:
+        head += f" -- {h.race} {h.sex}, age {h.age}"
+    lines = [head + tag]
+    lines.append(f"  L{h.level}  training {h.training}  "
+                 f"XP {h.xp}/{xp_to_next(h.level)}  points {h.skill_points}")
+    stats = f"  DEX {h.dex}  STR {h.str_}"
+    if h.mind:
+        stats += f"  MIND {h.mind}"
+    if h.cha:
+        stats += f"  CHA {h.cha}"
+    lines.append(stats)
+    # A wounded body shows its CEILING beside the pool (slice 3b's doctrine,
+    # same as stat_line): "HP 6/9 of 11" is the whole slow channel at once.
+    hp = (f"HP {h.hp}/{h.hp_ceiling} of {h.max_hp}" if h.wounds
+          else f"HP {h.hp}/{h.max_hp}")
+    lines.append(f"  {hp}  STA {h.cur_sta}/{h.sta}  "
+                 f"Power {h.cur_power}/{h.power}")
+    kit = ", ".join(f"{k}x{v}" for k, v in h.items.items() if v) or "no kit"
+    lines.append(f"  {weapon_tag(h)} | {kit}")
+    if h.spells:
+        lines.append("  spells: " + ", ".join(
+            f"{n} {r}" for n, r in sorted(h.spells.items())))
+    if h.abilities:
+        lines.append("  abilities: " + ", ".join(ability_tags(h)))
+    if h.moves:
+        lines.append("  moves: " + ", ".join(sorted(h.moves)))
+    if h.alchemy:
+        lines.append(f"  alchemy {h.alchemy}")
+    pools = ", ".join(f"{k} +{v}"
+                      for k, v in sorted(h.pool_bought.items()) if v)
+    if pools:
+        lines.append(f"  pools bought: {pools}")
+    dormant = ", ".join(f"{n} {r}" for n, r in sorted(h.proficiency.items())
+                        if r and (h.weapon is None or n != h.weapon.name))
+    if dormant:
+        lines.append(f"  drilled, not in hand: {dormant}")
+    if h.satisfaction is not None:
+        lines.append(f"  satisfaction {h.satisfaction}/{SATISFACTION_MAX}")
+    if h.race:
+        # person_line's trait sketch, minus the name and race/age already
+        # in the header (one source for the category order: people.py).
+        traits = person_line(h).split(" -- ", 1)[1].partition("; ")[2]
+        if traits:
+            lines.append(f"  {traits}")
+    for ctag in condition_tags(h):
+        lines.append(f"  [{ctag}]")
+    for wtag in wound_tags(h):
+        lines.append(f"  - {wtag}")
+    if h.wounds:
+        lines.append(f"  wound load {h.wound_load} -> "
+                     f"HP ceiling {h.hp_ceiling}/{h.max_hp}")
+    return lines
+
+
 def party_sheet_lines(state: dict) -> list[str]:
     """The full-party info sheet written to party.txt on every save: the
     whole between-fights board in one plain file (the designer reads it in
@@ -446,21 +513,8 @@ def party_sheet_lines(state: dict) -> list[str]:
         lines.append(f"party: {companions}/{party_capacity(pc.cha)} "
                      f"companion slot(s) filled (CHA {pc.cha})")
     for h in party:
-        tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
-        if wants_to_leave(h):
-            tag += " [QUITTING at the next settlement]"
         lines.append("")
-        lines.append(f"{role_tag(party, h)} {stat_line(h)}{tag}")
-        if h.race:
-            lines.append(" " * 12 + person_line(h))
-        lines.append(" " * 12 + progress_line(h))
-        for ctag in condition_tags(h):
-            lines.append(" " * 12 + f"[{ctag}]")
-        for wtag in wound_tags(h):
-            lines.append(" " * 12 + f"- {wtag}")
-        if h.wounds:
-            lines.append(" " * 12 + f"HP ceiling {h.hp_ceiling}/{h.max_hp} "
-                                    f"({h.wound_load} wound load)")
+        lines.extend(hero_block_lines(party, h))
     lines.append("")
     world = state.get("world")
     qid = state.get("active_quest")
@@ -773,8 +827,10 @@ def load() -> dict:
 
 
 def role_tag(party: list, h) -> str:
-    """party[0] is the player character; the rest are companions (see dm.md)."""
-    return "(YOU)      " if h is party[0] else "(companion)"
+    """party[0] is the player character; the rest are companions (see dm.md).
+    Unpadded since 2026-07-28 -- nothing aligns under it anymore (the hero
+    blocks hang everything two spaces, see hero_block_lines)."""
+    return "(YOU)" if h is party[0] else "(companion)"
 
 
 def find_hero(party: list, name: str):
@@ -1347,24 +1403,12 @@ def cmd_status(args: argparse.Namespace) -> None:
         companions = sum(1 for h in party[1:] if not h.dead)
         print(f"  Party: {companions}/{party_capacity(pc.cha)} companion "
               f"slot(s) filled (CHA {pc.cha}).")
+    # `status` is where the DIGITS live (slice 3b keeps them here on
+    # purpose: the played displays band HP into a state word, the hero
+    # block spells out the ceiling the wounds have set).
     for h in party:
-        tag = " [DEAD]" if h.dead else " [DOWN]" if h.down else ""
-        if wants_to_leave(h):
-            tag += " [QUITTING at the next settlement]"
-        print(f"  {role_tag(party, h)} " + stat_line(h) + tag)
-        if h.race:
-            print(" " * 14 + person_line(h))
-        print(" " * 14 + progress_line(h))
-        for ctag in condition_tags(h):
-            print(" " * 14 + f"[{ctag}]")
-        # `status` is where the DIGITS live (slice 3b keeps them here on
-        # purpose: the played displays band HP into a state word, this one
-        # spells out the ceiling the wounds have set).
-        for wtag in wound_tags(h):
-            print(" " * 14 + f"- {wtag}")
-        if h.wounds:
-            print(" " * 14 + f"HP ceiling {h.hp_ceiling}/{h.max_hp} "
-                             f"({h.wound_load} wound load)")
+        for line in hero_block_lines(party, h):
+            print(line)
     if local_recruits(state):
         print("  Candidates wait at the tavern -- `recruit` shows them.")
     world = state.get("world")
@@ -1535,102 +1579,93 @@ def print_levelup_menu(heroes: list) -> None:
     """The spending menu: what each hero's banked skill points can buy right
     now, with costs and effects -- printed automatically for the PC on every
     level-up (finish_encounter), instead of the DM paraphrasing the rules
-    from memory."""
+    from memory.
+
+    2026-07-28 display pass: one standardized row shape per buy --
+    `* item                cost` with the cost in a right-hand column and a
+    one-line brief under it (Ability.brief / Move.brief) -- in fixed
+    sections each headed by its command. Every item is at most two
+    40-column lines, so the whole menu scans on the phone."""
+    shown_one = False
     for h in heroes:
         if h.dead:
             continue
         first = h.name.split()[0]
-        print(f"{h.name} -- L{h.level}, {h.skill_points} skill point(s) banked "
-              f"(XP {h.xp}/{xp_to_next(h.level)} to L{h.level + 1})")
+
+        def row(label: str, cost, brief: str = "",
+                afford: bool | None = None) -> None:
+            if afford is None:
+                afford = isinstance(cost, int) and h.skill_points >= cost
+            print(f"{'*' if afford else ' '} {label:<33}{str(cost):>4}")
+            if brief:
+                print(f"    {brief}")
+
+        if shown_one:
+            print("")
+        shown_one = True
+        print(f"{h.name} -- L{h.level}, {h.skill_points} point(s) banked, "
+              f"XP {h.xp}/{xp_to_next(h.level)} to L{h.level + 1}")
+        print("(* = buyable now; costs in points)")
         # Sink 1: the pools (the old automatic growth, on the menu now).
-        pool_bits = []
-        for kind in POOL_KINDS:
-            bought = h.pool_bought.get(kind, 0)
-            pool_bits.append(f"{kind.upper()} +{bought}"
-                             + ("(CAP)" if bought >= POOL_BUY_CAP else ""))
-        print(f"  pools  +1 max HP/STA/Power  costs 1 each  "
-              f"(bought: {', '.join(pool_bits)}; cap +{POOL_BUY_CAP} per "
-              f"pool)  -> train {first} hp|sta|power")
+        print(f"POOLS -- train {first} hp|sta|power")
+        bought = ", ".join(f"{k} +{h.pool_bought.get(k, 0)}"
+                           for k in POOL_KINDS)
+        row(f"+1 max HP/STA/Power (cap +{POOL_BUY_CAP})", "1 ea",
+            f"bought {bought}", afford=h.skill_points >= 1)
         # Sink 2: combat training (+1 to ALL pressure rolls per rank).
+        print(f"TRAINING -- train {first} combat")
         if h.training >= TRAINING_MAX:
-            print(f"  combat training      rank {h.training} -- CAPPED")
+            row(f"combat rank {h.training}", "CAP")
         else:
-            cost = training_cost(h.training)
-            mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
-            print(f"  combat training      rank {h.training} -> "
-                  f"{h.training + 1}  costs {cost}  [{mark}]  "
-                  f"(+1 to ALL pressure rolls per rank, cap {TRAINING_MAX})"
-                  f"  -> train {first} combat")
-        # Sink 2 (wizards): SPELL ranks -- the caster's real offense and
-        # tricks (the weapon below is their out-of-Power fallback).
+            row(f"combat rank {h.training} -> {h.training + 1}",
+                training_cost(h.training),
+                f"+1 to every pressure roll (cap {TRAINING_MAX})")
+        # Sink 2 (casters): SPELL ranks -- the real offense and tricks of
+        # anyone who knows one (the weapon is the out-of-Power fallback).
         if h.spells:
+            print(f"SPELLS -- train {first} SPELL")
             for name, rank in sorted(h.spells.items()):
                 spell = SPELLS[name]
                 if rank >= spell.max_rank:
-                    print(f"  {name}  rank {rank} -- CAPPED")
+                    row(f"{name} rank {rank}", "CAP")
                 else:
-                    cost = rank + 1
-                    mark = ("CAN BUY" if h.skill_points >= cost
-                            else "can't afford yet")
-                    print(f"  {name}  rank {rank} -> {rank + 1}  costs "
-                          f"{cost}  [{mark}]  (next: {spell.ranks[rank]})"
-                          f"  -> train {first} {name}")
-            print(f"  (NEW spells come from spellbooks -- {SPELLBOOK_PRICE}g "
-                  f"in a capital: buy {first} book SPELL; spells: "
-                  f"{', '.join(sorted(SPELLS))})")
+                    row(f"{name} rank {rank} -> {rank + 1}", rank + 1,
+                        f"next: {spell.ranks[rank]}")
+            if h.is_wizard:
+                print(f"  (new spells: a spellbook teaches one --"
+                      f" {SPELLBOOK_PRICE}g in a capital, buy {first} "
+                      f"book SPELL)")
         # Sink 3: proficiency with the WIELDED weapon.
+        print(f"WEAPON -- train {first} weapon")
         if h.weapon is None or h.weapon_broken:
-            print("  weapon proficiency   (no whole weapon in hand to drill)")
+            print("  (no whole weapon in hand to drill)")
         else:
             rank = h.proficiency.get(h.weapon.name, 0)
             if rank >= PROFICIENCY_MAX:
-                print(f"  {h.weapon.name} proficiency  rank {rank} -- CAPPED")
+                row(f"{h.weapon.name} rank {rank}", "CAP")
             else:
-                cost = rank + 1
-                mark = ("CAN BUY" if h.skill_points >= cost
-                        else "can't afford yet")
-                print(f"  {h.weapon.name} proficiency  rank {rank} -> "
-                      f"{rank + 1}  costs {cost}  [{mark}]  "
-                      f"(+1 atk pressure & +1 severity with it, cap "
-                      f"{PROFICIENCY_MAX}; lost on weapon switch)"
-                      f"  -> train {first} weapon")
-        other = {n: r for n, r in h.proficiency.items()
-                 if r and (h.weapon is None or n != h.weapon.name)}
-        if other:
-            dormant = ", ".join(f"{n} {r}" for n, r in sorted(other.items()))
-            print(f"  (drilled but not in hand: {dormant})")
-        # Sink 5: the ability catalog (single buys -- learn HERO NAME).
-        known = ability_tags(h)
-        if known:
-            print(f"  abilities known: {', '.join(known)}")
-        buyable = []
-        for a in ABILITIES.values():
-            if (a.name in h.abilities
-                    or (a.requires and a.requires not in h.abilities)):
-                continue
-            mark = "*" if h.skill_points >= a.cost else ""
-            buyable.append(f"{a.name} {a.cost}{mark}")
-        if buyable:
-            print(f"  abilities to learn (cost, * = affordable; "
-                  f"learn {first} NAME): {', '.join(buyable)}")
+                row(f"{h.weapon.name} rank {rank} -> {rank + 1}", rank + 1,
+                    "+1 atk & sev; drops on switch")
+        dormant = ", ".join(f"{n} {r}" for n, r in sorted(h.proficiency.items())
+                            if r and (h.weapon is None or n != h.weapon.name))
+        if dormant:
+            print(f"  (drilled, not in hand: {dormant})")
         # Sink 7: alchemy (session C -- the brew skill; brew at camp, once
         # per long rest, off MIND). Open to all.
+        print(f"ALCHEMY -- train {first} alchemy")
         if h.alchemy >= ALCHEMY_MAX:
-            print(f"  alchemy              rank {h.alchemy} -- CAPPED "
-                  f"(batch {ALCHEMY_BATCH[h.alchemy]}, stock cap "
-                  f"{brew_stock_cap(h)})")
+            row(f"alchemy rank {h.alchemy}", "CAP",
+                f"batch {ALCHEMY_BATCH[h.alchemy]}, stock cap "
+                f"{brew_stock_cap(h)}")
         else:
-            cost = alchemy_cost(h.alchemy)
-            mark = "CAN BUY" if h.skill_points >= cost else "can't afford yet"
             nxt = h.alchemy + 1
             unlocks = [POTION_DISPLAY[r] for r, need in
                        ALCHEMY_RECIPE_RANK.items() if need == nxt]
-            gain = (f"; unlocks {', '.join(unlocks)}" if unlocks
-                    else "")
-            print(f"  alchemy              rank {h.alchemy} -> {nxt}  costs "
-                  f"{cost}  [{mark}]  (brew {ALCHEMY_BATCH.get(nxt)} a night, "
-                  f"stock cap {nxt + 2}{gain}; brew HERO RECIPE at camp)"
-                  f"  -> train {first} alchemy")
+            brief = f"brew {ALCHEMY_BATCH[nxt]}/night, stock {nxt + 2}"
+            if unlocks:
+                brief += f"; +{', '.join(unlocks)}"
+            row(f"alchemy rank {h.alchemy} -> {nxt}", alchemy_cost(h.alchemy),
+                brief)
         # Sink 6: the warrior moves (session B -- riders on the exchange, the
         # engine fires them; repertoire capped at combat training + 1, gated
         # by the wielded weapon's move tags). Shown to EVERYONE (2026-07-19
@@ -1638,24 +1673,30 @@ def print_levelup_menu(heroes: list) -> None:
         # gate -- the free-allocation doctrine has none; the only gates are
         # the weapon's tags and the training cap).
         cap = h.training + 1
+        print(f"MOVES -- train {first} move NAME "
+              f"({len(h.moves)}/{cap} known)")
         if h.moves:
-            print(f"  moves known ({len(h.moves)}/{cap}): "
-                  f"{', '.join(sorted(h.moves))}")
+            print(f"  known: {', '.join(sorted(h.moves))}")
         if len(h.moves) >= cap:
-            print(f"  moves: repertoire full ({len(h.moves)}/{cap}) -- "
-                  f"raise combat training for room")
+            print("  (repertoire full -- raise combat training for room)")
         else:
-            learnable = []
-            for name, m in MOVES.items():
-                if name in h.moves or not move_weapon_ok(name, h.weapon):
-                    continue
-                mark = "*" if h.skill_points >= m.cost else ""
-                learnable.append(f"{name} {m.cost}{mark}")
-            if learnable:
-                print(f"  moves to learn (cost, * = affordable; "
-                      f"train {first} move NAME): {', '.join(learnable)}")
-            elif h.weapon is not None:
-                print(f"  moves: none fit the {h.weapon.name}")
+            learnable = [m for name, m in MOVES.items()
+                         if name not in h.moves
+                         and move_weapon_ok(name, h.weapon)]
+            for m in learnable:
+                row(m.name, m.cost, m.brief or m.blurb)
+            if not learnable and h.weapon is not None:
+                print(f"  (none fit the {h.weapon.name})")
+        # Sink 5: the ability catalog (single buys -- learn HERO NAME).
+        print(f"ABILITIES -- learn {first} NAME")
+        known = ability_tags(h)
+        if known:
+            print(f"  known: {', '.join(known)}")
+        for a in ABILITIES.values():
+            if (a.name in h.abilities
+                    or (a.requires and a.requires not in h.abilities)):
+                continue
+            row(a.name, a.cost, a.brief or a.blurb)
 
 
 def cmd_levelup(args: argparse.Namespace) -> None:
