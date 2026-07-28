@@ -99,7 +99,8 @@ from rpg import (
     MEDS_INTERVAL_DAYS, MEDS_PRICE,
     party_capacity, has_trait, satisfaction_tracked, wants_to_leave,
     adjust_satisfaction, satisfaction_after_fight,
-    stat_line, fallen_weapons_line, weapon_tag,
+    stat_line, fallen_weapons_line, weapon_tag, prof_name,
+    random_trash_weapon, MASTERWORK_PRICE_MULT,
     xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
     start_fight, group_combat, party_wiped, party_defeated,
     apply_defeat_mercy, mercy_available, FEROCITY_RELENTLESS,
@@ -135,6 +136,7 @@ from rpg import (
 import story
 import karma
 import conquest
+import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
@@ -313,6 +315,7 @@ def _weapon_from(ref) -> Weapon | None:
         return WEAPON_INDEX[ref]
     ref = dict(ref)
     ref["tags"] = tuple(ref.get("tags", ()))
+    ref["move_tags"] = tuple(ref.get("move_tags", ()))
     return Weapon(**ref)
 
 
@@ -760,6 +763,7 @@ def save(state: dict) -> None:
         "dark_board": state.get("dark_board"),
         "pact": state.get("pact"),
         "holdings": state.get("holdings", {}),
+        "pending_reward": state.get("pending_reward"),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -821,6 +825,7 @@ def load() -> dict:
         # layer stays inert -- no default resurrect.
         "pact": doc.get("pact"),
         "holdings": doc.get("holdings", {}),
+        "pending_reward": doc.get("pending_reward"),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -1063,6 +1068,14 @@ def cmd_new(args: argparse.Namespace) -> None:
     ally = make_character(rng, level=1, used_names=used)
     ally.satisfaction = SATISFACTION_START
     ally.bond, ally.bond_kind = pc.name, "old companion"
+    # The trash start (2026-07-28, the weapon generation system): at
+    # chargen the pair carries TRASH arms -- club, knife, sling -- so the
+    # first looted soldier's blade is a felt upgrade. Casters keep the
+    # staff (deliberately poor steel, priced in support). Chargen only:
+    # recruits rolled later keep the ordinary table.
+    for h in (pc, ally):
+        if h.weapon is None or h.weapon.name != "wooden staff":
+            h.weapon = random_trash_weapon(rng)
     world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
                                             # whole playthrough, world and all
     world = generate_world(world_seed)
@@ -1640,14 +1653,15 @@ def print_levelup_menu(heroes: list) -> None:
         if h.weapon is None or h.weapon_broken:
             print("  (no whole weapon in hand to drill)")
         else:
-            rank = h.proficiency.get(h.weapon.name, 0)
+            rank = h.proficiency.get(prof_name(h.weapon), 0)
             if rank >= PROFICIENCY_MAX:
-                row(f"{h.weapon.name} rank {rank}", "CAP")
+                row(f"{prof_name(h.weapon)} rank {rank}", "CAP")
             else:
-                row(f"{h.weapon.name} rank {rank} -> {rank + 1}", rank + 1,
-                    "+1 atk & sev; drops on switch")
+                row(f"{prof_name(h.weapon)} rank {rank} -> {rank + 1}",
+                    rank + 1, "+1 atk & sev; drops on switch")
         dormant = ", ".join(f"{n} {r}" for n, r in sorted(h.proficiency.items())
-                            if r and (h.weapon is None or n != h.weapon.name))
+                            if r and (h.weapon is None
+                                      or n != prof_name(h.weapon)))
         if dormant:
             print(f"  (drilled, not in hand: {dormant})")
         # Sink 7: alchemy (session C -- the brew skill; brew at camp, once
@@ -1783,6 +1797,30 @@ def record_karma(state: dict, xp: int, align: str, log: list) -> None:
     if align in ("dark", "good"):
         karma.record_karma(state["karma"], xp, align, log,
                            party_level(state))
+
+
+def collect_weapon_quirks(state: dict, log: list[str]) -> None:
+    """Drain what the on-kill weapon quirks accrued this fight (the engine
+    only counts -- rpg.py's quirk_gold/quirk_karma): Midas gold lands in
+    the purse, dark-pact kills land on the karma ledger. Idempotent (the
+    counters zero on collection), so the fight-end and retreat paths can
+    both call it."""
+    purse = state["purse"]
+    for h in state["party"]:
+        wname = h.weapon.name if h.weapon is not None else "weapon"
+        if h.quirk_gold:
+            purse.gold += h.quirk_gold
+            log.append(f"    The {wname} pays out its kills: "
+                       f"+{h.quirk_gold}g (purse {purse.gold}g).")
+            h.quirk_gold = 0
+        if h.quirk_karma:
+            k = state["karma"]
+            k["bad"] += h.quirk_karma
+            k["bad_total"] += h.quirk_karma
+            log.append(f"    (the {wname} drinks its kills: "
+                       f"+{h.quirk_karma} bad karma -- "
+                       f"{karma.karma_line(k, party_level(state))})")
+            h.quirk_karma = 0
 
 
 SETTLEMENT_RUMOR_CAP = 4    # failure rumors a settlement remembers
@@ -1939,6 +1977,17 @@ def _close_site(state: dict, log: list[str], qid: str,
         award_quest(party, purse, gold, clear_xp, log,
                     f"{quest['name']} -- {site['name']}{pos}", banner=banner)
         record_karma(state, clear_xp, quest.get("align", "good"), log)
+        rw = quest.get("reward_weapon")
+        if rw:
+            # The weapon-reward mode (2026-07-28): the turn-in lump IS the
+            # weapon (the posting carried gold_total 0). It waits with the
+            # giver until a hand takes it up.
+            state["pending_reward"] = dict(rw)
+            log_banner(log,
+                       f"  The pay is the {rw['name']} itself -- "
+                       f"`claim HERO` takes it up.",
+                       [f"The pay is the {rw['name']} --",
+                        "`claim HERO` takes it up."])
         if quest.get("deadline_day") is not None and band != "on time":
             log_banner(log,
                        f"  (turned in {band.upper()} -- day {day} against a "
@@ -2702,6 +2751,9 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             pay_set_site_clear(state, log, site, room)
 
     if not wiped:
+        # The on-kill weapon quirks pay out (2026-07-28): Midas gold,
+        # dark karma -- whatever the engine counted during the melee.
+        collect_weapon_quirks(state, log)
         # Companions manage their own skill points (2026-07-13): any
         # points the awards just banked go on the doctrine now. The PC's
         # stay banked -- spending them is the player's decision.
@@ -3907,6 +3959,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                 log.append("  (the foes scatter -- an off-script encounter "
                            "is not kept)")
         if not wiped and not mercy_fired:
+            collect_weapon_quirks(state, log)   # kills before the break-away
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
             # Out of the fight, wounds and all: the pass drinks here too.
@@ -4404,6 +4457,15 @@ def cmd_buy(args: argparse.Namespace) -> None:
         # Ammo by the lot (ranged combat): arrows/bolts by the sheaf,
         # shells and knives by the pair, up to the carry cap.
         _buy_ammo(hero, purse, thing, log)
+    elif thing.startswith("masterwork "):
+        # The master smiths' nonmagical best (2026-07-28): shoppable, but
+        # only where master smiths work -- capitals, like spellbooks.
+        here = local_settlement(state)
+        if here is None or here.get("subtype") != "capital":
+            print(f"Masterwork steel is sold only in a capital -- the "
+                  f"party is at {location_line(state)}.")
+            return
+        _buy_weapon(hero, purse, thing, log)
     elif thing in WEAPONS:
         if thing == "revolver":
             # The magic gun is dwarf craft and dwarf commerce: sold only
@@ -4454,7 +4516,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
         print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
               f"Weapons: {', '.join(sorted(WEAPONS))}. Ammo: "
               f"{', '.join(sorted(AMMO_LOTS))}. Also: meds, "
-              f"book SPELL.")
+              f"book SPELL, masterwork WEAPON (capitals).")
         return
     print("\n".join(log))
     save(state)
@@ -4484,6 +4546,102 @@ def cmd_give(args: argparse.Namespace) -> None:
         log.append(f"  ({weapon.name}: a reskinned {name} -- catalog stats)")
     _equip_weapon(hero, weapon, log)
     grant_starter_ammo(hero, log)   # a DM-granted bow comes with a quiver
+    print("\n".join(log))
+    save(state)
+
+
+def ensure_weapon_layer(world: dict) -> None:
+    """A pre-2026-07-28 save has no armory or smiths: roll them lazily on
+    a fixed derived rng, so an old world gains the layer once, the same
+    way every time."""
+    if "armory" not in world:
+        wrng = random.Random("armory:legacy")
+        world["armory"] = weaponlib.roll_armory(world, wrng)
+        world["smiths"] = weaponlib.roll_smiths(world, wrng)
+
+
+def cmd_claim(args: argparse.Namespace) -> None:
+    """Take up a quest's weapon reward (the pay-band mode, 2026-07-28):
+    the turn-in banked it as pending_reward; this puts it in a hand."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    rw = state.get("pending_reward")
+    if not rw:
+        print("No weapon reward waits to be claimed.")
+        return
+    hero = find_hero(state["party"], args.hero)
+    if hero is None:
+        return
+    log: list[str] = []
+    _equip_weapon(hero, _weapon_from(rw), log)
+    grant_starter_ammo(hero, log)
+    state["pending_reward"] = None
+    print("\n".join(log))
+    save(state)
+
+
+def cmd_armory(args: argparse.Namespace) -> None:
+    """The DM's weapon-world inventory (2026-07-28): the famous armory
+    (all KNOWN -- rumor is free) and the legendary smiths. In play the
+    player hears of these through taverns and notables, not a list."""
+    state = load()
+    world = state["world"]
+    ensure_weapon_layer(world)
+    print("\n".join(weaponlib.armory_lines(world["armory"])))
+    print()
+    print("\n".join(weaponlib.smith_lines(world["smiths"])))
+    print("(a commission: `commission SMITH HERO [CHASSIS]` at the "
+          "smith's seat. The famous blades are never for sale -- steal, "
+          "rob, or quest for them, and their owners wield them.)")
+    save(state)
+
+
+def cmd_commission(args: argparse.Namespace) -> None:
+    """Commission a legendary smith (2026-07-28): magic steel at the
+    smith's own tier -- never below the pride floor (cap - 1). The one
+    way gold buys magic; the profile is the smith's art, not a menu."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    party, purse = state["party"], state["purse"]
+    world = state["world"]
+    ensure_weapon_layer(world)
+    hero = find_hero(party, args.hero)
+    if hero is None:
+        return
+    want = args.smith.lower()
+    smith = next((s for s in world["smiths"]
+                  if want in s["name"].lower()), None)
+    if smith is None:
+        names = ", ".join(s["name"] for s in world["smiths"])
+        print(f"No legendary smith called {args.smith!r}. Smiths: {names}.")
+        return
+    here = local_settlement(state)
+    if here is None or here["key"] != smith["seat"]:
+        print(f"{smith['name']} works at {smith['seat_name']} -- the "
+              f"party is at {location_line(state)}.")
+        return
+    chassis = " ".join(args.chassis).lower() if args.chassis else None
+    try:
+        w, price, days = weaponlib.commission_weapon(
+            smith, state["rng"], sp=args.sp, chassis=chassis)
+    except ValueError as e:
+        print(str(e))
+        return
+    if purse.gold < price:
+        print(f"Not enough gold for the commission ({purse.gold}g / "
+              f"{price}g).")
+        return
+    purse.gold -= price
+    log: list[str] = []
+    log.append(f"  {smith['name']} takes the commission: {price}g "
+               f"(purse {purse.gold}g), {days} day(s) at the forge.")
+    log.append("  (narrate the wait -- camp or downtime advance the "
+               "clock; the piece below is what comes off the anvil)")
+    for ln in weaponlib.weapon_lines(w):
+        log.append("  " + ln)
+    _equip_weapon(hero, w, log)
     print("\n".join(log))
     save(state)
 
@@ -4566,8 +4724,15 @@ def cmd_prices(args: argparse.Namespace) -> None:
     print("quality weapons:")
     for name, w in sorted(quality, key=lambda kv: (kv[1].value, kv[0])):
         print(f"  {name}: {w.value}g")
-    print("(the revolver sells in DWARVEN settlements only; masterwork and "
-          "legendary are never for sale; brewed potions can't be sold)")
+    print("masterwork weapons (capitals only; +1 attack, durability 5):")
+    for name, w in sorted(quality, key=lambda kv: (kv[1].value, kv[0])):
+        if not w.range or name == "longbow":
+            print(f"  masterwork {name}: "
+                  f"{w.value * MASTERWORK_PRICE_MULT}g")
+    print("(the revolver sells in DWARVEN settlements only; MAGIC steel is "
+          "never on a shelf -- quested, robbed, or COMMISSIONED from a "
+          "legendary smith (`armory` lists them; the famous named blades "
+          "are never for sale at any price); brewed potions can't be sold)")
 
 
 def cmd_use(args: argparse.Namespace) -> None:
@@ -5318,6 +5483,42 @@ def main() -> None:
     p.add_argument("--as", dest="as_name", default=None, metavar="NAME",
                    help="display name over the catalog profile")
     p.set_defaults(func=cmd_give)
+
+    p = sub.add_parser(
+        "claim",
+        help="take up a quest's WEAPON reward (the pay-band mode: some "
+             "jobs pay their turn-in lump as steel instead of gold -- the "
+             "board row says so). The piece waits with the giver until "
+             "claimed; claiming equips it on the spot.")
+    p.add_argument("hero")
+    p.set_defaults(func=cmd_claim)
+
+    p = sub.add_parser(
+        "armory",
+        help="the DM's weapon-world inventory: the world's famous magic "
+             "weapons (all KNOWN -- who carries each, where the rest "
+             "lie; steal, rob, or quest for them, never buy) and the "
+             "three legendary smiths with their tiers and prices. In "
+             "play this reaches the player as rumor, not a list.")
+    p.set_defaults(func=cmd_armory)
+
+    p = sub.add_parser(
+        "commission",
+        help="commission a legendary smith for a MAGIC weapon -- the one "
+             "way gold buys magic steel. Party must stand at the smith's "
+             "seat; the smith works only at their own tier (the pride "
+             "floor: nothing below cap-1). The profile that comes off "
+             "the anvil is the smith's art, not a menu.")
+    p.add_argument("smith", help="the smith's name (see `armory`)")
+    p.add_argument("hero", help="who the piece is fitted for (equips on "
+                                "the spot; narrate the forging days)")
+    p.add_argument("chassis", nargs="*",
+                   help="optional chassis (e.g. katana) -- must fit the "
+                        "smith's style")
+    p.add_argument("--sp", type=int, default=None,
+                   help="commission tier in severity-points (default: the "
+                        "smith's cap; the floor is cap-1)")
+    p.set_defaults(func=cmd_commission)
 
     p = sub.add_parser(
         "train",

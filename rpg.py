@@ -678,6 +678,35 @@ CRUDE_WEAPON_CHANCE = 0.50
 HEAVY_WEAPON_CHANCE = 0.05
 HEALER_STAFF_CHANCE = 0.50  # hedge-healer heroes often carry the wooden staff
 
+# --- The weapon ladder (2026-07-28, the weapon generation system) ------------ #
+# The design currency is the SEVERITY-POINT (sp), the exchange rate the
+# quality four already encode (rapier = katana = zweihander when priced at
+# atk 2 / sev 1 / def 2 -- all three sit at exactly 3 sp; weapons.py owns
+# the full table and the generator). The ladder in sp: trash -1, soldier 0,
+# heavy +1, quality 3, masterwork 5, magic 6-7, legendary 8-9, mythic 10.
+# The mythic cap is the transcendence doctrine's half: the player can double
+# a stat by design (natural 6 -> heroic 12) and HALF of that may come from
+# the weapon (+3 effective points on its signature axis).
+MASTERWORK_ATK_BONUS = 1    # masterwork = +1 attack pressure on the chassis
+                            # (+2 sp uniformly -- every quality chassis lands
+                            # at 5 sp; the old "+1 signature axis" priced
+                            # rapiers and zweihanders unequally)
+MASTERWORK_DURABILITY = 5
+MASTERWORK_PRICE_MULT = 5   # a masterwork piece costs 5x its plain chassis
+                            # (the gold curve is superlinear in sp on
+                            # purpose: career gold is ~thousands, and gold
+                            # must never buy DEX-axis power at HP-axis rates)
+MIDAS_FIGHT_CAP = 3         # a gold-on-kill weapon pays at most this many
+                            # kills per fight -- a swarm room is not a mint
+TRASH_WEAPONS = ("club", "dagger", "whip", "light hammer", "sling")
+                            # the chargen deal (2026-07-28): a level-1 PC and
+                            # his companion START with these -- the first
+                            # looted shortsword is a felt upgrade. Casters
+                            # keep the staff (deliberately poor steel, priced
+                            # in support -- the school's tool, not a head
+                            # start). Session-only: the sims and recruit
+                            # rolls keep the old table (random_common_weapon).
+
 # --- Ranged combat (2026-07-16) ---------------------------------------------- #
 # The distance model: every fight opens across a FIELD (an abstract gap in
 # "bounds" -- one round's movement each). Each entity carries an `adv`
@@ -789,7 +818,18 @@ class Weapon:
     sta_cost: int           # STA per swing (the burst/sustain knob)
     durability: int         # 1 crude .. 6 legendary; the lower may shatter on contact
     quality: bool = False
-    tier: str = "plain"     # plain | masterwork | legendary (plain is unlabeled in play)
+    tier: str = "plain"     # plain | masterwork | magic | legendary | mythic
+                            # (plain is unlabeled in play; masterwork is the
+                            # master smiths' nonmagical best -- shoppable in
+                            # capitals since 2026-07-28; the magic tiers are
+                            # found, quested, robbed, or commissioned)
+    base: str = ""          # the catalog CHASSIS this instance is built on
+                            # ("katana" under a masterwork or named magic
+                            # blade). Proficiency and the special move gates
+                            # follow the chassis (prof_name), so the reward
+                            # never costs the drilled ranks; a bare reskin
+                            # (`give --as`) leaves base empty on purpose --
+                            # reskin looted flavor, not a drilled blade.
     def_pressure: int = 0      # defense pressure modifier (the staff's parry niche;
                             # negative for the zweihander -- no parrying a girder)
     graze_floor: bool = False   # the rapier: a landed hit is never fully
@@ -802,6 +842,34 @@ class Weapon:
     power_bonus: int = 0    # +max Power while wielded (the staff: the focus
                             # is fuel, not surgery -- applied/removed on
                             # equip, see equip_weapon and make_human)
+    # The magic knobs (2026-07-28, the weapon generation system). Stat
+    # bonuses are the MEMBRANE: the one way steel pushes a stat past the
+    # natural cap. All are applied/removed on equip (equip_weapon keeps the
+    # books, like the staff's focus). +DEX is gated to the legendary tiers
+    # and priced 3 sp a point (the standing warning: a DEX point lands AND
+    # defends AND feeds severity through the margin).
+    dex_bonus: int = 0      # +DEX while wielded (legendary+ only, by doctrine)
+    str_bonus: int = 0      # +STR while wielded
+    sta_bonus: int = 0      # +max STA while wielded
+    hp_bonus: int = 0       # +max HP while wielded
+    # The rider: a condition this weapon's landed blows leave behind --
+    # the wielder-side mirror of Entity.inflicts (the body hook stays for
+    # creatures; the weapon hook is for steel). "rime" is the odd one out:
+    # it stacks the fight-only DEX debuff (the ice school's precedent)
+    # instead of a ticking condition.
+    rider: str = ""             # "" | bleed | poison | burn | rime
+    rider_power: int = 1        # HP per tick (rime: DEX lost per landed hit)
+    rider_rounds: int | None = None     # None = untimed (poison walks out of
+                                        # the room); burn riders set a count
+    # The quirks (at most one per weapon; priced 0 sp -- economy and story,
+    # never combat power):
+    lunge: bool = False     # the first attack of the fight may be delivered
+                            # at gap 1 as if the distance were already closed
+                            # (the flying lunge; once per fight)
+    gold_on_kill: int = 0   # the Midas quirk: gold per felled foe, capped at
+                            # MIDAS_FIGHT_CAP kills a fight (session collects)
+    karma_on_kill: int = 0  # the dark quirk: bad karma per felled foe (the
+                            # whip of bad karma -- session collects)
     # Ranged cards (2026-07-16; see the ranged-combat constants block).
     # range 0 = a melee weapon (everything above); range N = shoots targets
     # at gap 1..N and is USELESS at gap 0 (the melee grip below takes over
@@ -1008,6 +1076,41 @@ RUSTED_BLADE = Weapon("rusted blade", 0, 0, 1, durability=1, tags=("ancient",),
                       description="Grave-steel eaten by centuries. Snaps on honest metal.")
 
 
+def prof_name(w: "Weapon | None") -> str:
+    """The proficiency (and special-move-gate) key for a weapon: the CHASSIS
+    it is built on when it has one, else its own name. A masterwork or named
+    magic katana counts as a katana in every drilled hand -- the reward must
+    never cost the ranks -- while a bare `give --as` reskin (no base) still
+    follows the display name, by the reskin doctrine."""
+    if w is None:
+        return ""
+    return w.base or w.name
+
+
+def masterwork_of(name: str) -> Weapon:
+    """The master smiths' nonmagical best (2026-07-28): +1 attack pressure
+    on a QUALITY chassis, durability 5, five times the price. Shoppable in
+    capitals (the doctrine softening: rules.md, Craftsmanship tiers)."""
+    w = WEAPONS[name]
+    if not w.quality or w.tier != "plain":
+        raise ValueError(f"no masterwork is made of a {name}")
+    return replace(w, name=f"masterwork {w.name}", base=w.name,
+                   tier="masterwork",
+                   atk_pressure=w.atk_pressure + MASTERWORK_ATK_BONUS,
+                   durability=MASTERWORK_DURABILITY,
+                   value=w.value * MASTERWORK_PRICE_MULT,
+                   description=(f"A master smith's {w.name}: the same steel "
+                                f"role, a truer edge (+1 attack pressure), "
+                                f"and it does not break easily."))
+
+
+def random_trash_weapon(rng: random.Random) -> Weapon:
+    """The chargen deal (2026-07-28): one of the trash arms a level-1
+    nobody starts with -- club, knife, sling. Session-only (cmd_new); the
+    sims and recruit rolls keep random_common_weapon."""
+    return WEAPONS[rng.choice(TRASH_WEAPONS)]
+
+
 # --- Warrior moves (the levelling framework session B, 2026-07-17) ----------- #
 # Spells for warriors, under the autocombat doctrine: a MOVE is a rider on the
 # normal exchange, CHOSEN BY THE ENGINE, never a mid-fight decision (the same
@@ -1163,12 +1266,16 @@ MOVES = {m.name: m for m in [
 # the staff's classic trick) -- with its tag's pommel/kick/trip that gives
 # the caster's focus a real small repertoire without a killing arc.
 _MOVE_WEAPON_OK = {
-    "iaido": lambda w: w is not None and w.name == "katana",
+    # Special gates check the CHASSIS (prof_name), so a masterwork or named
+    # magic katana still draws iaido (2026-07-28).
+    "iaido": lambda w: w is not None and prof_name(w) == "katana",
     "finisher": _finisher_ok,
     "riposte": lambda w: (MOVES["riposte"].weapon_ok(w)
-                          or (w is not None and w.name == "wooden staff")),
+                          or (w is not None
+                              and prof_name(w) == "wooden staff")),
     "disarm": lambda w: (MOVES["disarm"].weapon_ok(w)
-                         or (w is not None and w.name == "wooden staff")),
+                         or (w is not None
+                             and prof_name(w) == "wooden staff")),
 }
 
 # Priority when several eligible moves pass their proc in one exchange: the
@@ -2276,6 +2383,15 @@ class Entity:
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
+    lunge_spent: bool = field(default=False)    # the lunge quirk's once-per-
+                                         # fight marker (per-fight state)
+    quirk_kills: int = field(default=0) # kills paid by an on-kill quirk THIS
+                                         # fight (per-fight; MIDAS_FIGHT_CAP)
+    quirk_gold: int = field(default=0)  # gold owed by a Midas weapon, until
+                                         # the session drains it to the purse
+                                         # (persists across a pause/save)
+    quirk_karma: int = field(default=0) # bad karma owed by a dark weapon,
+                                         # until the session records it
     # Per-fight spell states (all cleared by _clear_fight_states at fight
     # end / on a break-away -- nothing here crosses fights):
     unseen: bool = field(default=False)     # invisibility: untargetable; the
@@ -2502,7 +2618,7 @@ class Entity:
             return 0
         if self.switched and self.weapon.range:
             return 0
-        return self.proficiency.get(self.weapon.name, 0)
+        return self.proficiency.get(prof_name(self.weapon), 0)
 
     @property
     def swing_cost(self) -> int:
@@ -2583,7 +2699,20 @@ class Entity:
             r = self.ranged.range
         if self.default_cast() is not None:
             r = max(r, CAST_RANGE)
+        if self.lunge_ready:
+            # The lunge quirk: the first blow reaches one bound out, so the
+            # wielder holds ground at gap 1 instead of walking the last step.
+            r = max(r, 1)
         return r
+
+    @property
+    def lunge_ready(self) -> bool:
+        """The lunge quirk, still unspent: a melee weapon whose FIRST attack
+        of the fight may be delivered at gap 1 -- the flying lunge closes
+        the distance and strikes in the same motion (once per fight)."""
+        w = self.weapon
+        return (w is not None and w.lunge and not w.range
+                and not self.weapon_broken and not self.lunge_spent)
 
     def shot_severity_mods(self) -> list[tuple[int, str]]:
         """A shot's severity terms: the card's flat replaces STR entirely
@@ -3702,7 +3831,39 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
     # the pyromancer's clinging fire are the two shipped customers; a
     # school-wide rider is the queued generalization (see the conditions
     # constants block for why it is not in this slice).
+    # The weapon-side rider (2026-07-28, the weapon generation system): a
+    # magic weapon's landed blows leave a condition too -- the wielder-side
+    # mirror of the body hook, weapon-delivered only (a cast is the spell's
+    # business, and a broken blade delivers nothing but the stump).
+    wr = None
+    if (not cast and dmg > 0 and defender.alive
+            and attacker.weapon is not None and not attacker.weapon_broken
+            and attacker.weapon.rider):
+        wr = attacker.weapon
+    if wr is not None and wr.rider == "rime":
+        # The frost rider rides the ice school's own rail: a stacking
+        # fight-only DEX loss, never a ticking condition.
+        defender.dex_debuff += wr.rider_power
+        _play(log,
+              f"    {defender.name} is rimed with frost by the "
+              f"{wr.name} (-{defender.dex_debuff} DEX for this fight)",
+              f"{defender.name} is rimed with frost.")
+        wr = None
     left_behind = attacker.inflicts
+    if wr is not None and not left_behind:
+        had = condition_of(defender, wr.rider)
+        c = apply_condition(defender, wr.rider, source=wr.name,
+                            power=wr.rider_power, rounds=wr.rider_rounds)
+        if had is None or c.power > had.power:
+            note = ("until it is treated -- it does not stop with the fight"
+                    if c.rounds is None else f"{c.rounds} rounds")
+            _play(log,
+                  f"    {defender.name} is {CONDITION_TAG[wr.rider]} "
+                  f"by the {wr.name} "
+                  f"(-{c.power} HP at the end of each round, {note})",
+                  fit_lines([f"{defender.name} is "
+                             f"{CONDITION_TAG[wr.rider]}",
+                             f"(-{c.power} HP/round)."]))
     if left_behind and dmg > 0 and defender.alive:
         had = condition_of(defender, left_behind)
         c = apply_condition(defender, left_behind, source=attacker.name)
@@ -3785,6 +3946,23 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
             defender.dead = True
         else:
             defender.down = True
+        # The on-kill quirks (2026-07-28): a Midas or dark-pact weapon pays
+        # per felled foe, capped per fight so a swarm room is not a mint.
+        # The engine only accrues the counters; the session drains them at
+        # the fight's end (the purse and the karma ledger live there).
+        w = attacker.weapon
+        if (w is not None and not attacker.weapon_broken
+                and (w.gold_on_kill or w.karma_on_kill)
+                and attacker.quirk_kills < MIDAS_FIGHT_CAP):
+            attacker.quirk_kills += 1
+            attacker.quirk_gold += w.gold_on_kill
+            attacker.quirk_karma += w.karma_on_kill
+            if w.gold_on_kill:
+                _debug(log, f"    (the {w.name} pays the kill: "
+                            f"+{w.gold_on_kill}g owed)")
+            if w.karma_on_kill:
+                _debug(log, f"    (the {w.name} drinks the kill: "
+                            f"+{w.karma_on_kill} bad karma owed)")
 
     # What the blow LEAVES (slice 3b), recorded on the played party only. This
     # runs AFTER the death branch on purpose: a crippling blow to a limb is
@@ -4960,7 +5138,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     can_cast = (attacker.default_cast() is not None
                                 or (attacker.is_wizard
                                     and attacker.cur_power > 0))
-                    max_reach = CAST_RANGE if can_cast else 0
+                    # The lunge quirk (2026-07-28): the first blow of the
+                    # fight reaches one bound out -- delivered as if the
+                    # distance were already closed (and it is: the lunge
+                    # carries the wielder to contact).
+                    max_reach = (CAST_RANGE if can_cast
+                                 else 1 if attacker.lunge_ready else 0)
                     defender = _pick_target(
                         targets, rng, focus=friendly,
                         engaged=engaged, attacker=attacker,
@@ -4995,6 +5178,19 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                   f"{attacker.name} circles, crowded out.",
                                   quiet=True)
                         continue
+                    if (not can_cast and attacker.lunge_ready
+                            and _gap(attacker, defender) > 0):
+                        # The lunge fires: close the gap and strike in one
+                        # motion (once per fight; the swing resolves as an
+                        # ordinary melee exchange at contact).
+                        gap = _gap(attacker, defender)
+                        attacker.lunge_spent = True
+                        attacker.adv = min(field, attacker.adv + gap)
+                        _play(log,
+                              f"    {attacker.name} lunges across the gap "
+                              f"with the {attacker.weapon.name} -- distance "
+                              f"closed in one motion!",
+                              f"{attacker.name} lunges across the gap!")
                     if _gap(attacker, defender) == 0:
                         engaged[defender] = engaged.get(defender, 0) + 1
                     victims = [defender]
@@ -5496,6 +5692,10 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.rage_primed = False
         e.rage_exhausted = False
         e.break_tried = False
+        e.lunge_spent = False
+        e.quirk_kills = 0       # the per-fight payout cap only -- what is
+                                # OWED (quirk_gold/quirk_karma) persists
+                                # until the session drains it
         e.adv = 0
         e.reload_left = 0
         e.switched = False
@@ -6051,7 +6251,7 @@ def weapon_tag(e: Entity) -> str:
     if e.weapon is None:
         return "unarmed"
     tag = e.weapon.name + (" (BROKEN)" if e.weapon_broken else "")
-    rank = e.proficiency.get(e.weapon.name, 0)
+    rank = e.proficiency.get(prof_name(e.weapon), 0)
     if rank:
         tag += f", prof {rank}"
     return tag
@@ -6241,12 +6441,12 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
             rank += 1
         h.spells[h.school] = rank
     elif h.weapon is not None:
-        rank = h.proficiency.get(h.weapon.name, 0)
+        rank = h.proficiency.get(prof_name(h.weapon), 0)
         while rank < PROFICIENCY_MAX and points >= rank + 1:
             points -= rank + 1
             rank += 1
         if rank:
-            h.proficiency[h.weapon.name] = rank
+            h.proficiency[prof_name(h.weapon)] = rank
     buy_training(TRAINING_MAX)
     h.skill_points = points
     autolearn_moves(h, [])              # leftover points -> a repertoire (B)
@@ -6624,7 +6824,7 @@ def train_proficiency(h: Entity, log: list[str]) -> bool:
         log.append(f"    {h.name}'s {h.weapon.name} is broken -- "
                    f"nothing to drill with.")
         return False
-    name = h.weapon.name
+    name = prof_name(h.weapon)
     rank = h.proficiency.get(name, 0)
     if rank >= PROFICIENCY_MAX:
         log.append(f"    {h.name} has mastered the {name} "
@@ -6893,8 +7093,8 @@ def autospend_points(h: Entity, log: list[str]) -> bool:
             bought = True
     elif (h.weapon is not None and h.weapon.quality
             and not h.weapon_broken):
-        while (h.skill_points >= h.proficiency.get(h.weapon.name, 0) + 1
-               and h.proficiency.get(h.weapon.name, 0) < PROFICIENCY_MAX
+        while (h.skill_points >= h.proficiency.get(prof_name(h.weapon), 0) + 1
+               and h.proficiency.get(prof_name(h.weapon), 0) < PROFICIENCY_MAX
                and train_proficiency(h, log)):
             bought = True
     training_to(TRAINING_MAX)
@@ -7082,19 +7282,38 @@ def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
     no bookkeeping). A fresh weapon is whole (clears the broken flag).
     Proficiency is per weapon TYPE, so ranks with this type apply at once.
     The staff's focus bonus (+max Power while wielded, Weapon.power_bonus)
-    is applied and removed here."""
+    is applied and removed here -- and so are a magic weapon's stat bonuses
+    (2026-07-28): the membrane travels with the steel, on and off the body
+    as it changes hands."""
     old = h.weapon
-    old_bonus = old.power_bonus if old is not None else 0
-    delta = weapon.power_bonus - old_bonus
-    if delta:
-        h.power += delta
-        h.cur_power = max(0, min(h.cur_power + delta, h.power))
+
+    def _delta(attr: str) -> int:
+        return (getattr(weapon, attr)
+                - (getattr(old, attr) if old is not None else 0))
+
+    d = _delta("power_bonus")
+    if d:
+        h.power += d
+        h.cur_power = max(0, min(h.cur_power + d, h.power))
+    d = _delta("sta_bonus")
+    if d:
+        h.sta += d
+        h.cur_sta = max(0, min(h.cur_sta + d, h.sta))
+    d = _delta("hp_bonus")
+    if d:
+        h.max_hp += d
+        if h.hp > 0:
+            # A living body shifts with its pool (removal floors at 1 --
+            # setting a blade aside never kills); a Downed one stays down.
+            h.hp = max(1, min(h.hp + d, h.max_hp))
+    h.dex += _delta("dex_bonus")
+    h.str_ += _delta("str_bonus")
     h.weapon = weapon
     h.weapon_broken = False
     h.switched = False
     was = (f" (setting aside the {old.name})"
            if old is not None and old.name != weapon.name else "")
-    rank = h.proficiency.get(weapon.name, 0)
+    rank = h.proficiency.get(prof_name(weapon), 0)
     drilled = f" -- already drilled with it (prof {rank})" if rank else ""
     log.append(f"    {h.name} takes up the {weapon.name}{was}{drilled}.")
     if weapon.ammo in AMMO_CAPS and h.items.get(weapon.ammo, 0) <= 0:
@@ -7119,12 +7338,27 @@ def grant_starter_ammo(h: Entity, log: list[str]) -> None:
 
 def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
     """Buy a weapon from the party purse and wield it -- a between-adventures
-    DM call, same shape as buy_potion. Only plain-tier weapons are ever for
-    sale (masterwork/legendary are found or quested, never shopped)."""
-    w = WEAPONS.get(name)
+    DM call, same shape as buy_potion. Plain-tier weapons are for sale
+    anywhere weapons are sold; MASTERWORK is shoppable too since 2026-07-28
+    ("masterwork rapier" -- the master smiths' nonmagical best; session
+    gates it to capitals, like spellbooks). The magic tiers are never
+    shopped -- found, quested, robbed, or commissioned from a legendary
+    smith."""
+    if name.startswith("masterwork "):
+        chassis = name[len("masterwork "):]
+        base = WEAPONS.get(chassis)
+        if base is None:
+            raise ValueError(f"unknown weapon: {chassis}")
+        if not base.quality:
+            log.append(f"    No master smith bothers with a {chassis} -- "
+                       f"masterwork is quality steel only.")
+            return False
+        w = masterwork_of(chassis)
+    else:
+        w = WEAPONS.get(name)
     if w is None:
         raise ValueError(f"unknown weapon: {name}")
-    if w.tier != "plain":
+    if w.tier not in ("plain", "masterwork"):
         log.append(f"    No shop sells a {w.tier} weapon.")
         return False
     if purse.gold < w.value:

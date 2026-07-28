@@ -306,6 +306,25 @@ a pointer: what the file is, how it's run, where its docs are.
   garrison always repels; unguarded always falls; present party is never
   raided), the yoke's seizure, the save round-trip, display fit.
   `python -m unittest -v test_conquest.py`.
+- `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
+  Weapon Ladder & Generation add-on): the severity-point price table and
+  `weapon_sp`, the budgeted generator (`generate_weapon` — profile rule,
+  riders, quirks, the +DEX legendary gate), the quest reward ladder
+  (`reward_weapon_for_level`), the famous armory (`roll_armory`), the
+  legendary smiths (`roll_smiths` / `commission_weapon` — the pride
+  floor), and the 40-column readouts. The sims never import it; worldgen
+  calls it on DERIVED rngs so no bench stream moves. `python weapons.py
+  [--seed N]` prints one world's armory, smiths, and sample commissions
+  (the eyeball check).
+- `test_weapon_gen.py` — the WEAPON GENERATION contract suite
+  (2026-07-28): the sp identities (the quality four price at exactly
+  3 sp), generator budget honesty and the profile rule, the +DEX gate,
+  masterwork shape/price/shop doctrine, equip/unequip symmetry over every
+  bonus, the rider and rime hooks, the on-kill quirk counters and their
+  per-fight cap, proficiency-follows-the-chassis (and the reskin
+  exception), old/new save round-trips, armory determinism and 40-column
+  fit, the smiths' pride floor, the reward ladder, the trash chargen
+  pool. `python -m unittest -v test_weapon_gen.py`.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): the five races' stat modifiers
   (floor-raise `RACE_MODS`; since 2026-07-13 also the goblin STR ceiling
@@ -421,7 +440,14 @@ a pointer: what the file is, how it's run, where its docs are.
   the standardized `print_levelup_menu` (fixed command-headed sections,
   a right-hand cost column with the `*` affordability mark, and a
   one-line brief under every buy — rpg.py's `Ability.brief` /
-  `Move.brief`; the full blurbs stay the learn-time text).
+  `Move.brief`; the full blurbs stay the learn-time text). Since
+  2026-07-28 also the WEAPON-LAYER surface: the trash chargen deal in
+  `cmd_new`, `buy HERO masterwork WEAPON` (capitals), `claim HERO` (the
+  weapon-reward turn-in, `pending_reward` in the save), `armory` (the DM
+  inventory of famous weapons + smiths; `ensure_weapon_layer` lazily
+  arms an old save's world), `commission SMITH HERO [CHASSIS] [--sp N]`,
+  and `collect_weapon_quirks` (fight-end and retreat paths: Midas gold
+  to the purse, dark kills to the karma ledger).
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -509,6 +535,8 @@ python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
+python weapons.py --seed 1            # one world's armory + smiths (eyeball)
+python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_conditions.py  # the conditions framework contract
@@ -562,7 +590,14 @@ mechanic *does* and *why* is rules.md's job.
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs, which now serves only
   sites.py's two hand-built calibration fixtures), weapons (the
-  `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances),
+  `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances;
+  since 2026-07-28 also the weapon-ladder block — `MASTERWORK_*`,
+  `TRASH_WEAPONS`, `MIDAS_FIGHT_CAP` — plus `prof_name` /
+  `masterwork_of` / `random_trash_weapon` beside the catalog, the
+  `Weapon` magic knobs (stat bonuses, `rider`, `lunge`, the on-kill
+  quirks), the full equip bookkeeping in `equip_weapon`, the wielder
+  rider hook in `_attack`, and the lunge branch in `group_combat`; the
+  sp PRICES live at the top of `weapons.py`),
   hero stat generation (`HERO_*_RANGE` + `HERO_STAT_BUDGET` — since
   2026-07-13 a fixed surplus budget dealt by a shuffled priority order,
   not independent rolls; 11 since 2026-07-15, when MIND joined the
@@ -1045,6 +1080,21 @@ defeat mercy. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**The weapon generation system (2026-07-28) is bench-neutral by
+construction, with one honest economy shave.** Every engine hook is inert
+without a magic weapon in hand (the sims never hold one), both site
+fixtures were diffed byte-identical across the change, and worldgen's
+armory/smith/reward rolls ride DERIVED rngs so the posting streams the
+career sim consumes are unchanged. The one real effect: ~15% of postings
+now pay their turn-in lump as a weapon (`WEAPON_REWARD_CHANCE`), which the
+sim party cannot claim — career gold runs a shade leaner. A 30-career
+sanity run matched the slice-4 acceptance shape (L5 93% / L8 80% / L11
+33%; median death L9; capped 93 days / 38 quests — small-sample noise
+around the 500-career baseline). Owed before trusting the sp prices for
+tuning: a bench_weapons budget-honesty matrix (equal-sp columns, the
+bench_abilities pattern) and a top-band career re-bench with generated
+steel actually reaching sim hands.
 
 **Slice 4 (2026-07-26) is a selective content rebaseline plus the career
 acceptance pass.** Ferocity-0/1 enemies may now escape a fight they are
