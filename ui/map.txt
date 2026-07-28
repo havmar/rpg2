@@ -1,4 +1,4 @@
-RPG2 MAP -- day 2
+RPG2 MAP -- day 3
 the party is at Firascir > Ackham > the
   back alley > outer watch
 (travel: 1 day within a land, 2 days to
@@ -55,3 +55,7 @@ the party is at Firascir > Ackham > the
   Aradun (village) -- 2 job(s)
   Namuruk (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
+
+-- the war --
+THE WAR: [w1] L2 The Dead Rise -- raised
+  at Bjorgheim.
