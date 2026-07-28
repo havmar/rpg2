@@ -1,36 +1,93 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
+=== Kick the Puppy ===
+the back alley (L2),
+room 1/1: outer watch
+3x Very Big Dog -- fangs
 DEX 4  STR 2  STA 8  HP 4/4
-Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+breaks when beaten
+the Pup's Mother 4 -- fangs
+DEX 6  STR 3  STA 10  HP 9/9
+breaks when beaten
+Round 1: nothing lands.
 Round 2:
-Urzag outmaneuvers Wolf 1,
+Imsh outmaneuvers Very Big Dog 1,
 deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+Very Big Dog 1 strikes as they fall:
+Corvin parries.
+Corvin overwhelms Very Big Dog 2,
+deals 6 dmg!!! SLAIN.
+Very Big Dog 2 strikes as they fall:
+Corvin parries.
+Very Big Dog 3 and Imsh: they circle.
+the Pup's Mother 4
+attacks Imsh, parried.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
+Imsh attacks Very Big Dog 3, parried.
+!! Corvin is Winded.
+Corvin attacks Very Big Dog 3, parried.
+Very Big Dog 3 attacks Corvin, parried.
+the Pup's Mother 4 overwhelms Corvin,
+deals 2 dmg!
+Corvin takes a wound:
+a gash above the knee.
+Round 4:
+Imsh overwhelms Very Big Dog 3,
+deals 6 dmg!!! SLAIN.
+Very Big Dog 3 strikes as they fall:
+outmaneuvers Imsh, deals 1 dmg.
+Corvin (7/9)
+edges past the Pup's Mother 4,
+deals 1 dmg.
+the Pup's Mother 4 (8/9)
+attacks Imsh, deflected.
+Round 5:
+Corvin downs a stamina draught (1 left).
+!! Imsh is Winded.
+Imsh (7/8)
+overwhelms the Pup's Mother 4,
+deals 6 dmg!!!
+the Pup's Mother 4 (2/9)
+attacks Imsh, parried.
+The beaten foes break and run!
+Corvin (7/9)
+overwhelms the Pup's Mother 4,
+deals 4 dmg!! It falls.
 The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
+Imsh +53 XP (encounter) [53/100]
+Corvin +53 XP (encounter) [53/100]
+(dark work: +53 bad karma -- bad karma 53/100; heat 0 -- lying low)
+Loot: 5 gold (purse 5g).
+
+*** QUEST COMPLETE: Kick the Puppy --
+the back alley. Reward: 54 gold. ***
+Imsh talks the pay up: +5g (59g in all).
+The party purse holds 64 gold.
+Imsh +79 XP (quest) [132/100]
+*** Imsh reaches level 2!
+(3 skill points unspent) ***
+Corvin +79 XP (quest) [132/100]
+*** Corvin reaches level 2!
+(3 skill points unspent) ***
+Corvin: satisfaction 7 -> 8/10
+(a job paid out)
+(dark work: +79 bad karma -- bad karma 132/200; heat 0 -- lying low)
+(turn in to Theobald, the fixer --
+narrate the scene)
+EPILOGUE (day 2): The puppy limps home. The widow tells the town what the party did.
+(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
+Corvin trains: combat rank 1
+[1 point(s) left]
+Corvin drills a new move: Pommel Strike
+[0 point(s) left]
+The party shares out its potions:
+Imsh: 2 stamina;
+Corvin: 1 healing, 1 stamina.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Imsh: Scratched STA 4/7 Power 4/4
+  (stamina x2)
+Corvin: Scratched STA 5/5 Power 6/6
+  - a gash above the knee (sev 1)
+  (HP ceiling 8/9 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 64g; day 2.
+Karma: bad karma 132/200; heat 0 -- lying low.

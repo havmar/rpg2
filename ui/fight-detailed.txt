@@ -1,46 +1,104 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
+=== Kick the Puppy -- the back alley (L2), room 1/1: outer watch ===
+  3x Very Big Dog -- fangs
   DEX 4  STR 2  STA 8  HP 4/4
+  breaks when beaten
+  the Pup's Mother 4 -- fangs
+  DEX 6  STR 3  STA 10  HP 9/9
+  breaks when beaten
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Imsh, Corvin, Very Big Dog 1, Very Big Dog 2, Very Big Dog 3, the Pup's Mother 4 close the distance -- the lines meet!
+    stamina: Imsh 7/7, Corvin 5/5 | Very Big Dog 1 8/8, Very Big Dog 2 8/8, Very Big Dog 3 8/8, the Pup's Mother 4 10/10
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
+    Imsh outmaneuvers Very Big Dog 1 -- a crippling blow! [Very Big Dog 1: 0/4 HP, -4 to rolls]
+        pressure: Imsh: 10 (2d6=4, +6 DEX) vs Very Big Dog 1: 6 (2d6=2, +4 DEX)
         severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    *** Very Big Dog 1 is SLAIN. ***
+    (Very Big Dog 1 strikes even as they fall)
+    Very Big Dog 1 attacks Corvin -- parried.
+        pressure: Very Big Dog 1: 12 (2d6=8, +4 DEX) vs Corvin: 13 (2d6=7, +6 DEX)
+    Corvin overwhelms Very Big Dog 2 -- a crippling blow! [Very Big Dog 2: 0/4 HP, -4 to rolls]
+        pressure: Corvin: 16 (2d6=10, +6 DEX) vs Very Big Dog 2: 10 (2d6=6, +4 DEX)
+        severity: 7 = margin 6 +4 STR -1 light hammer -2 soak -> crippling blow (-6 HP)
+    *** Very Big Dog 2 is SLAIN. ***
+    (Very Big Dog 2 strikes even as they fall)
+    Very Big Dog 2 attacks Corvin -- parried.
+        pressure: Very Big Dog 2: 8 (2d6=4, +4 DEX) vs Corvin: 11 (2d6=5, +6 DEX)
+    Very Big Dog 3 and Imsh -- Lull. They circle, probing for an opening.
+        pressure: Very Big Dog 3: 10 (2d6=6, +4 DEX) vs Imsh: 10 (2d6=4, +6 DEX)
+    the Pup's Mother 4 attacks Imsh -- parried.
+        pressure: the Pup's Mother 4: 10 (2d6=4, +6 DEX) vs Imsh: 14 (2d6=8, +6 DEX)
+    stamina: Imsh 6/7, Corvin 4/5 | Very Big Dog 3 7/8, the Pup's Mother 4 9/10
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Imsh attacks Very Big Dog 3 -- parried.
+        pressure: Imsh: 9 (2d6=3, +6 DEX) vs Very Big Dog 3: 10 (2d6=6, +4 DEX)
+    !! Corvin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Corvin attacks Very Big Dog 3 -- parried.
+        pressure: Corvin: 9 (2d6=5, +6 DEX, -2 winded) vs Very Big Dog 3: 10 (2d6=6, +4 DEX)
+    Very Big Dog 3 attacks Corvin -- parried.
+        pressure: Very Big Dog 3: 9 (2d6=5, +4 DEX) vs Corvin: 10 (2d6=6, +6 DEX, -2 winded)
+    the Pup's Mother 4 overwhelms Corvin -- a solid wound! [Corvin: 7/9 HP, -0 to rolls]
+        pressure: the Pup's Mother 4: 16 (2d6=10, +6 DEX) vs Corvin: 11 (2d6=7, +6 DEX, -2 winded)
+        severity: 4 = margin 5 +3 STR -4 soak -> wound (-2 HP)
+    Corvin takes a wound: a gash above the knee (severity 1; HP ceiling 8/9)
+    stamina: Imsh 5/7, Corvin 3/5* | Very Big Dog 3 6/8, the Pup's Mother 4 8/10   (* = Winded)
+  Round 4:
+    Imsh overwhelms Very Big Dog 3 -- a crippling blow! [Very Big Dog 3: 0/4 HP, -4 to rolls]
+        pressure: Imsh: 14 (2d6=8, +6 DEX) vs Very Big Dog 3: 9 (2d6=5, +4 DEX)
+        severity: 8 = margin 5 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
+    *** Very Big Dog 3 is SLAIN. ***
+    (Very Big Dog 3 strikes even as they fall)
+    Very Big Dog 3 outmaneuvers Imsh -- a graze! [Imsh: 7/8 HP, -0 to rolls]
+        pressure: Very Big Dog 3: 13 (2d6=9, +4 DEX) vs Imsh: 10 (2d6=4, +6 DEX)
+        severity: -1 = margin 3 +2 STR -6 soak -> deflected -> a clean hit still cuts: graze (-1 HP)
+    Corvin edges past the Pup's Mother 4 -- a graze! [the Pup's Mother 4: 8/9 HP, -1 to rolls]
+        pressure: Corvin: 13 (2d6=10, +5 DEX, -2 winded) vs the Pup's Mother 4: 12 (2d6=6, +6 DEX)
+        severity: 1 = margin 1 +4 STR -1 light hammer -3 soak -> graze (-1 HP)
+    the Pup's Mother 4 edges past Imsh, but the blow glances off -- deflected.
+        pressure: the Pup's Mother 4: 15 (2d6=10, +6 DEX, -1 wounds) vs Imsh: 14 (2d6=8, +6 DEX)
+        severity: -2 = margin 1 +3 STR -6 soak -> deflected
+    stamina: Imsh 4/7, Corvin 2/5* | the Pup's Mother 4 7/10   (* = Winded)
+  Round 5:
+    Corvin downs a stamina draught mid-fight (STA 2 -> 5/5; 1 left) -- no attack this round, -2 defending while they drink
+    !! Imsh is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Imsh overwhelms the Pup's Mother 4 -- a crippling blow! [the Pup's Mother 4: 2/9 HP, -7 to rolls]
+        pressure: Imsh: 15 (2d6=11, +6 DEX, -2 winded) vs the Pup's Mother 4: 9 (2d6=4, +6 DEX, -1 wounds)
+        severity: 8 = margin 6 +6 STR -1 dagger -3 soak -> crippling blow (-6 HP)
+    the Pup's Mother 4 attacks Imsh -- parried.
+        pressure: the Pup's Mother 4: 5 (2d6=6, +6 DEX, -7 wounds) vs Imsh: 9 (2d6=5, +6 DEX, -2 winded)
+    stamina: Imsh 3/7*, Corvin 5/5 | the Pup's Mother 4 6/10   (* = Winded)
+    The beaten foe line breaks and runs!
+    Corvin overwhelms the Pup's Mother 4 -- a grievous injury! [the Pup's Mother 4: 0/9 HP, -9 to rolls]
+        pressure: Corvin: 13 (2d6=8, +5 DEX) vs the Pup's Mother 4: 2 (2d6=5, +6 DEX, -7 wounds, -2 fleeing)
+        severity: 11 = margin 11 +4 STR -1 light hammer -3 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** the Pup's Mother 4 falls. ***
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Imsh gains 53 XP (encounter) [53/100]
+    Corvin gains 53 XP (encounter) [53/100]
+    (dark work: +53 bad karma -- bad karma 53/100; heat 0 -- lying low)
+    Loot: 5 gold (purse 5g).
+
+  *** QUEST COMPLETE: Kick the Puppy -- the back alley. Reward: 54 gold. ***
+    Imsh talks the pay up: +5g (CHA 4 -- 59g in all).
+    The party purse holds 64 gold.
+    Imsh gains 79 XP (quest) [132/100]
+    *** Imsh reaches level 2! (+3 skill points, 3 unspent) ***
+    Corvin gains 79 XP (quest) [132/100]
+    *** Corvin reaches level 2! (+3 skill points, 3 unspent) ***
+    Corvin: satisfaction 7 -> 8/10 (a job paid out)
+    (dark work: +79 bad karma -- bad karma 132/200; heat 0 -- lying low)
+  (turn in to Theobald, the fixer -- narrate the scene)
+  EPILOGUE (day 2): The puppy limps home. The widow tells the town what the party did.
+  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
+    Corvin trains: combat training rank 1 (+1 to all pressure rolls) [1 point(s) left]
+    Corvin drills a new move -- Pommel Strike: vs an unhurt foe, on a wounding hit: -2 severity but the foe loses its next attack (the stun rider) [0 point(s) left]
+    The party shares out its potions -- Imsh: 2 stamina; Corvin: 1 healing, 1 stamina.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Imsh: Scratched STA 4/7 Power 4/4
+  (stamina x2)
+Corvin: Scratched STA 5/5 Power 6/6
+  - a gash above the knee (sev 1)
+  (HP ceiling 8/9 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 64g; day 2.
+Karma: bad karma 132/200; heat 0 -- lying low.
