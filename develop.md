@@ -414,7 +414,14 @@ a pointer: what the file is, how it's run, where its docs are.
   the wound CEILING instead of at full, the `wound_tags` readouts and the
   banded `hp_state` word across `tally_lines` / `cmd_status` /
   `party_sheet_lines` / the pause menu, and the salve/healer rows in
-  `prices`.
+  `prices`. The 2026-07-28 display pass rebuilt the two hero readouts
+  for the 40-column phone: `hero_block_lines` (shared by
+  `party_sheet_lines` and `status` — a header plus short labeled rows
+  hanging two spaces, replacing the old 12-space alignment column) and
+  the standardized `print_levelup_menu` (fixed command-headed sections,
+  a right-hand cost column with the `*` affordability mark, and a
+  one-line brief under every buy — rpg.py's `Ability.brief` /
+  `Move.brief`; the full blurbs stay the learn-time text).
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
