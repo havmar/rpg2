@@ -4,7 +4,7 @@ purse: 64g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Imsh (L2, training 0): DEX 6
+(YOU)       Imsh (L2, training 1): DEX 6
   STR 6  MIND 5  STA 4/7  HP 7/8  Power
   4/4  CHA 4  (bulwark; dagger;
   staminax2)
@@ -13,7 +13,7 @@ party: 1/1 companion slot(s) filled (CHA
               swears a lot; dress:
               flamboyant
             XP 32/200 to L3 | skill
-              points: 3 | abilities:
+              points: 1 | abilities:
               bulwark
 
 (companion) Corvin (L2, training 1): DEX
