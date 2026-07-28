@@ -1,5 +1,5 @@
-RPG2 PARTY SHEET -- day 4, at Firascir >
-  Ackham > the back alley > outer watch
+RPG2 PARTY SHEET -- day 5, at Firascir >
+  Whitweld Forest > the outer camp
 purse: 51g
 party: 1/1 companion slot(s) filled (CHA
   4)
@@ -12,12 +12,12 @@ party: 1/1 companion slot(s) filled (CHA
               interest: hunting; speech:
               swears a lot; dress:
               flamboyant
-            XP 48/200 to L3 | skill
+            XP 100/200 to L3 | skill
               points: 0 | abilities:
               bulwark
 
 (companion) Corvin (L2, training 1): DEX
-  6  STR 4  MIND 3  STA 5/5  HP 9/9
+  6  STR 4  MIND 3  STA 4/5  HP 9/9
   Power 6/6  CHA 6  (bulwark; moves:
   pommel; warhammer; staminax1)
   [satisfaction 9/10]
@@ -25,13 +25,14 @@ party: 1/1 companion slot(s) filled (CHA
               weakness: gambling;
               speech: formal; looks:
               sickly
-            XP 48/200 to L3 | skill
+            XP 100/200 to L3 | skill
               points: 0 | abilities:
               bulwark
 
-active quest [q42] Kick the Puppy is
-  COMPLETE
-karma: bad karma 212; HEAT 1 --
+active quest: [q66] L2 Guard the
+  Cultists -- next: the outer camp (L2),
+  room 1/1
+karma: bad karma 264; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --

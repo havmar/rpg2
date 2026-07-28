@@ -1,79 +1,35 @@
-Bruiser 5 -- morningstar
-DEX 4  STR 5  STA 5  HP 9/9
+=== The reckoning: the Watch ===
+(a level-3 posse)
+Walt -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
 takes spoils, leaves the fallen
-Bruiser 6 -- dagger
-DEX 4  STR 5  STA 5  HP 9/9
-takes spoils, leaves the fallen
-Round 1:
-!! Imsh is Winded.
-Imsh: Disarm at Bruiser 5!
-Imsh (7/8) overwhelms Bruiser 5,
-deals 4 dmg!!
-*** Bruiser 5 is DISARMED --
-the morningstar is knocked away! ***
-Corvin and Bruiser 5: they circle.
-Bruiser 5 (5/9) attacks Imsh, parried.
-Bruiser 6 attacks Corvin, parried.
-Round 2:
-!! Imsh is Winded.
-Imsh (7/8) edges past Bruiser 5,
-deals 1 dmg.
-!! Corvin is Winded.
-Corvin (7/9)
-attacks Bruiser 5, deflected.
-!! Bruiser 5 is Winded.
-Bruiser 5 (4/9) attacks Imsh, parried.
-!! Bruiser 6 is Winded.
-Bruiser 6 attacks Imsh, parried.
+Round 1-2: nothing lands.
 Round 3:
-Imsh (7/8) overwhelms Bruiser 5,
-deals 6 dmg!!! SLAIN.
-Bruiser 5 strikes as they fall:
-Corvin parries.
-Corvin: Pommel Strike at Bruiser 6!
-Corvin (7/9)
-attacks Bruiser 6, deflected.
-Bruiser 6 overwhelms Imsh, deals 2 dmg!
-Imsh takes a wound:
-a cut across the left forearm.
+Imsh: Disarm at Walt!
+Imsh outmaneuvers Walt, deals 2 dmg!
+*** Walt is DISARMED --
+the longsword is knocked away! ***
+Corvin edges past Walt, deals 1 dmg.
+Walt (10/13) attacks Imsh, parried.
 Round 4:
-Imsh downs a stamina draught (1 left).
-Corvin (7/9) outmaneuvers Bruiser 6,
-deals 1 dmg.
-Bruiser 6 (8/9) overwhelms Corvin,
-deals 4 dmg!!
-Corvin takes a wound:
-a broken leg, set crooked.
-== Corvin is badly cut up ==
-Round 5:
-Corvin downs a healing potion (0 left).
-Imsh (5/8) overwhelms Bruiser 6,
-deals 4 dmg!!
-!! Bruiser 6 is SPENT.
-Bruiser 6 (4/9) attacks Imsh, parried.
+Imsh overwhelms Walt, deals 4 dmg!!
+!! Corvin is Winded.
+Corvin and Walt: Clash!
+Walt (6/13) attacks Corvin, parried.
 The beaten foes break and run!
-Imsh (5/8) overwhelms Bruiser 6,
-deals 4 dmg!! It falls.
+Imsh overwhelms Walt, deals 4 dmg!!
+The survivors escape.
+The field belongs to the party.
 The party catches its breath (+1 STA)
-Imsh +15 XP (encounter) [47/200]
-Corvin +15 XP (encounter) [47/200]
-Left among the dead:
-a dagger (+0 atk/-1 sev, 2g).
-Corvin downs a stamina draught: STA 5/5
-(0 left).
-The party shares out its potions:
-Corvin: 1 stamina.
+Imsh +52 XP (encounter) [100/200]
+Corvin +52 XP (encounter) [100/200]
+(dark work: +52 bad karma -- bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party)
 
 -- the party --
-Imsh: Bloodied STA 6/7 Power 4/4
-  (hurt -1 to rolls)
-  - a cut across the left forearm (sev 1)
-  (HP ceiling 7/8 until they mend)
-  (no kit)
-Corvin: Unhurt STA 5/5 Power 6/6
-  (hurt -1 to rolls)
-  - a broken leg, set crooked (sev 3)
-  (HP ceiling 6/9 until they mend)
+Imsh: Unhurt STA 7/7 Power 4/4
+  (healing x1, stamina x1)
+Corvin: Unhurt STA 4/5 Power 6/6
   (stamina x1)
-Purse 14g; day 2.
-Karma: bad karma 132/200; heat 0 -- lying low.
+Purse 51g; day 5.
+Karma: bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party.
+Ahead: 1 fight(s) at the outer camp; the turn-in pays 54g, 79 XP.

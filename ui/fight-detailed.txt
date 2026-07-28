@@ -1,99 +1,51 @@
-  Bruiser 5 -- morningstar
-  DEX 4  STR 5  STA 5  HP 9/9
-  takes spoils, leaves the fallen
-  Bruiser 6 -- dagger
-  DEX 4  STR 5  STA 5  HP 9/9
+=== The reckoning: the Watch (a level-3 posse) ===
+  Walt -- longsword
+  DEX 6  STR 5  STA 7  HP 13/13
   takes spoils, leaves the fallen
   Round 1:
-    !! Imsh is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Imsh works to bind and strip Bruiser 5's weapon. (+1 STA)
-    Imsh overwhelms Bruiser 5 -- a grievous injury! [Bruiser 5: 5/9 HP, -2 to rolls]
-        pressure: Imsh: 16 (2d6=7, +6 DEX, +1 training, +2 rapier) vs Bruiser 5: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 5 +6 STR -1 rapier -5 soak -> grievous (-4 HP)
-    *** Imsh binds and strips the morningstar from Bruiser 5 -- it clatters away (-2 attack pressure, -2 severity bare-handed). ***
-    Corvin and Bruiser 5 -- Lull. They circle, probing for an opening.
-        pressure: Corvin: 8 (2d6=2, +5 DEX, +1 training) vs Bruiser 5: 8 (2d6=6, +4 DEX, -2 wounds)
-    Bruiser 5 attacks Imsh -- parried.
-        pressure: Bruiser 5: 4 (2d6=4, +4 DEX, -2 broken morningstar, -2 wounds) vs Imsh: 15 (2d6=8, +6 DEX, +1 training)
-    Bruiser 6 attacks Corvin -- parried.
-        pressure: Bruiser 6: 9 (2d6=5, +4 DEX) vs Corvin: 12 (2d6=6, +5 DEX, +1 training)
-    stamina: Imsh 4/7, Corvin 4/5 | Bruiser 5 4/5, Bruiser 6 4/5
+    Imsh, Corvin, Walt close the distance (the gap narrows to 1).
+    stamina: Imsh 7/7, Corvin 5/5 | Walt 7/7
   Round 2:
-    !! Imsh is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Imsh edges past Bruiser 5 -- a graze! [Bruiser 5: 4/9 HP, -2 to rolls]
-        pressure: Imsh: 11 (2d6=4, +6 DEX, +1 training, +2 rapier, -2 winded) vs Bruiser 5: 9 (2d6=7, +4 DEX, -2 wounds)
-        severity: 2 = margin 2 +6 STR -1 rapier -5 soak -> graze (-1 HP)
-    !! Corvin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Corvin edges past Bruiser 5, but the blow glances off -- deflected.
-        pressure: Corvin: 9 (2d6=5, +5 DEX, +1 training, -2 winded) vs Bruiser 5: 8 (2d6=6, +4 DEX, -2 wounds)
-        severity: -1 = margin 1 +4 STR -1 light hammer -5 soak -> deflected
-    !! Bruiser 5 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Bruiser 5 attacks Imsh -- parried.
-        pressure: Bruiser 5: 2 (2d6=4, +4 DEX, -2 broken morningstar, -2 wounds, -2 winded) vs Imsh: 13 (2d6=8, +6 DEX, +1 training, -2 winded)
-    !! Bruiser 6 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Bruiser 6 attacks Imsh -- parried.
-        pressure: Bruiser 6: 8 (2d6=6, +4 DEX, -2 winded) vs Imsh: 9 (2d6=4, +6 DEX, +1 training, -2 winded)
-    stamina: Imsh 3/7*, Corvin 3/5* | Bruiser 5 3/5*, Bruiser 6 3/5*   (* = Winded)
+    Imsh, Corvin, Walt close the distance -- the lines meet!
+    stamina: Imsh 7/7, Corvin 5/5 | Walt 7/7
   Round 3:
-    Imsh overwhelms Bruiser 5 -- a crippling blow! [Bruiser 5: 0/9 HP, -4 to rolls]
-        pressure: Imsh: 16 (2d6=9, +6 DEX, +1 training, +2 rapier, -2 winded) vs Bruiser 5: 7 (2d6=7, +4 DEX, -2 wounds, -2 winded)
-        severity: 9 = margin 9 +6 STR -1 rapier -5 soak -> crippling blow (-6 HP)
-    *** Bruiser 5 is SLAIN. ***
-    (Bruiser 5 strikes even as they fall)
-    Bruiser 5 attacks Corvin -- parried.
-        pressure: Bruiser 5: 6 (2d6=8, +4 DEX, -2 broken morningstar, -2 wounds, -2 winded) vs Corvin: 10 (2d6=6, +5 DEX, +1 training, -2 winded)
-    Corvin rolls a pommel strike into Bruiser 6. (+1 STA)
-    Corvin edges past Bruiser 6, but the blow glances off -- deflected.
-        pressure: Corvin: 12 (2d6=8, +5 DEX, +1 training, -2 winded) vs Bruiser 6: 11 (2d6=9, +4 DEX, -2 winded)
-        severity: -3 = margin 1 +4 STR -1 light hammer -2 Pommel Strike -5 soak -> deflected
-    Bruiser 6 overwhelms Imsh -- a solid wound! [Imsh: 5/8 HP, -1 to rolls]
-        pressure: Bruiser 6: 13 (2d6=11, +4 DEX, -2 winded) vs Imsh: 7 (2d6=2, +6 DEX, +1 training, -2 winded)
-        severity: 4 = margin 6 +5 STR -1 dagger -6 soak -> wound (-2 HP)
-    Imsh takes a wound: a cut across the left forearm (severity 1; HP ceiling 7/8)
-    stamina: Imsh 2/7*, Corvin 3/5* | Bruiser 6 2/5*   (* = Winded)
+    Imsh works to bind and strip Walt's weapon. (+1 STA)
+    Imsh outmaneuvers Walt -- a solid wound! [Walt: 11/13 HP, -1 to rolls]
+        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Walt: 14 (2d6=8, +6 DEX)
+        severity: 3 = margin 3 +6 STR -1 rapier -5 soak -> wound (-2 HP)
+    *** Imsh binds and strips the longsword from Walt -- it clatters away (-2 attack pressure, -2 severity bare-handed). ***
+    Corvin edges past Walt -- a graze! [Walt: 10/13 HP, -1 to rolls]
+        pressure: Corvin: 15 (2d6=8, +6 DEX, +1 training) vs Walt: 13 (2d6=8, +6 DEX, -1 wounds)
+        severity: 2 = margin 2 +4 STR +1 warhammer -5 soak -> graze (-1 HP)
+    Walt attacks Imsh -- parried.
+        pressure: Walt: 8 (2d6=5, +6 DEX, -2 broken longsword, -1 wounds) vs Imsh: 16 (2d6=9, +6 DEX, +1 training)
+    stamina: Imsh 7/7, Corvin 4/5 | Walt 6/7
   Round 4:
-    Imsh downs a stamina draught mid-fight (STA 2 -> 6/7; 1 left) -- no attack this round, -2 defending while they drink
-    Corvin outmaneuvers Bruiser 6 -- a graze! [Bruiser 6: 8/9 HP, -0 to rolls]
-        pressure: Corvin: 12 (2d6=8, +5 DEX, +1 training, -2 winded) vs Bruiser 6: 9 (2d6=7, +4 DEX, -2 winded)
-        severity: 1 = margin 3 +4 STR -1 light hammer -5 soak -> graze (-1 HP)
-    Bruiser 6 overwhelms Corvin -- a grievous injury! [Corvin: 3/9 HP, -2 to rolls]
-        pressure: Bruiser 6: 13 (2d6=11, +4 DEX, -2 winded) vs Corvin: 7 (2d6=3, +5 DEX, +1 training, -2 winded)
-        severity: 6 = margin 6 +5 STR -1 dagger -4 soak -> grievous (-4 HP)
-    Corvin takes a wound: a broken leg, set crooked (severity 3; HP ceiling 6/9)
-    stamina: Imsh 6/7, Corvin 2/5* | Bruiser 6 1/5*   (* = Winded)
-    == Corvin is badly cut up (HP 3/9) -- the fight hangs for a heartbeat. ==
-  Round 5:
-    Corvin downs a healing potion mid-fight (HP 3 -> 6/9, now -1 to rolls; 0 left) -- no attack this round, -2 defending while they drink
-    Imsh overwhelms Bruiser 6 -- a grievous injury! [Bruiser 6: 4/9 HP, -2 to rolls]
-        pressure: Imsh: 13 (2d6=5, +6 DEX, +1 training, +2 rapier, -1 wounds) vs Bruiser 6: 7 (2d6=5, +4 DEX, -2 winded)
-        severity: 5 = margin 6 +5 STR -1 rapier -5 soak -> grievous (-4 HP)
-    !! Bruiser 6 is SPENT -- running on empty (-6 to all rolls until the fight ends)
-    Bruiser 6 attacks Imsh -- parried.
-        pressure: Bruiser 6: 2 (2d6=6, +4 DEX, -2 wounds, -6 spent) vs Imsh: 9 (2d6=3, +6 DEX, +1 training, -1 wounds)
-    stamina: Imsh 5/7, Corvin 2/5* | Bruiser 6 0/5!!   (* = Winded, !! = Spent)
+    Imsh overwhelms Walt -- a grievous injury! [Walt: 6/13 HP, -3 to rolls]
+        pressure: Imsh: 18 (2d6=9, +6 DEX, +1 training, +2 rapier) vs Walt: 13 (2d6=8, +6 DEX, -1 wounds)
+        severity: 5 = margin 5 +6 STR -1 rapier -5 soak -> grievous (-4 HP)
+    !! Corvin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Corvin and Walt -- Clash! Steel rings; neither yields.
+        pressure: Corvin: 12 (2d6=7, +6 DEX, +1 training, -2 winded) vs Walt: 12 (2d6=9, +6 DEX, -3 wounds)
+    Walt attacks Corvin -- parried.
+        pressure: Walt: 10 (2d6=9, +6 DEX, -2 broken longsword, -3 wounds) vs Corvin: 13 (2d6=8, +6 DEX, +1 training, -2 winded)
+    stamina: Imsh 6/7, Corvin 3/5* | Walt 5/7   (* = Winded)
     The beaten foe line breaks and runs!
-    Imsh overwhelms Bruiser 6 -- a grievous injury! [Bruiser 6: 0/9 HP, -4 to rolls]
-        pressure: Imsh: 13 (2d6=5, +6 DEX, +1 training, +2 rapier, -1 wounds) vs Bruiser 6: 0 (2d6=6, +4 DEX, -2 wounds, -6 spent, -2 fleeing)
-        severity: 12 = margin 13 +5 STR -1 rapier -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Bruiser 6 falls. ***
+    Imsh overwhelms Walt -- a grievous injury! [Walt: 2/13 HP, -5 to rolls]
+        pressure: Imsh: 17 (2d6=8, +6 DEX, +1 training, +2 rapier) vs Walt: 10 (2d6=9, +6 DEX, -3 wounds, -2 fleeing)
+        severity: 7 = margin 7 +6 STR -1 rapier -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    the chase: flight 18.0 (2d6=10, +6.0 DEX STA-weighted, +2 head start) vs pursuit 10.0 (2d6=4, +6.0 DEX STA-weighted)
+    The survivors escape. The field belongs to the party.
     The party catches its breath (+1 STA)
-    Imsh gains 15 XP (encounter) [47/200]
-    Corvin gains 15 XP (encounter) [47/200]
-Left among the dead:
-a dagger (+0 atk/-1 sev, 2g).
-    Corvin downs a stamina draught (STA 3 -> 5; 0 left)
-    The party shares out its potions -- Corvin: 1 stamina.
+    Imsh gains 52 XP (encounter) [100/200]
+    Corvin gains 52 XP (encounter) [100/200]
+    (dark work: +52 bad karma -- bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party)
 
 -- the party --
-Imsh: Bloodied STA 6/7 Power 4/4
-  (hurt -1 to rolls)
-  - a cut across the left forearm (sev 1)
-  (HP ceiling 7/8 until they mend)
-  (no kit)
-Corvin: Unhurt STA 5/5 Power 6/6
-  (hurt -1 to rolls)
-  - a broken leg, set crooked (sev 3)
-  (HP ceiling 6/9 until they mend)
+Imsh: Unhurt STA 7/7 Power 4/4
+  (healing x1, stamina x1)
+Corvin: Unhurt STA 4/5 Power 6/6
   (stamina x1)
-Purse 14g; day 2.
-Karma: bad karma 132/200; heat 0 -- lying low.
+Purse 51g; day 5.
+Karma: bad karma 264; HEAT 1 -- retribution hunts 1 level(s) above the party.
+Ahead: 1 fight(s) at the outer camp; the turn-in pays 54g, 79 XP.
