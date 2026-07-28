@@ -1,13 +1,13 @@
-RPG2 PARTY SHEET -- day 3, at Firascir >
+RPG2 PARTY SHEET -- day 4, at Firascir >
   Ackham > the back alley > outer watch
-purse: 91g
+purse: 51g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Imsh (L2, training 1): DEX 6
-  STR 6  MIND 5  STA 8/7  HP 7/8  Power
+  STR 6  MIND 5  STA 7/7  HP 8/8  Power
   4/4  CHA 4  (bulwark; moves: disarm;
-  rapier; healingx1)
+  rapier; healingx1, staminax1)
             Imsh -- orc m, age 26;
               interest: hunting; speech:
               swears a lot; dress:
@@ -17,7 +17,7 @@ party: 1/1 companion slot(s) filled (CHA
               bulwark
 
 (companion) Corvin (L2, training 1): DEX
-  5  STR 4  MIND 3  STA 6/5  HP 8/7 of 9
+  6  STR 4  MIND 3  STA 5/5  HP 9/9
   Power 6/6  CHA 6  (bulwark; moves:
   pommel; warhammer; staminax1)
   [satisfaction 9/10]
@@ -28,10 +28,6 @@ party: 1/1 companion slot(s) filled (CHA
             XP 48/200 to L3 | skill
               points: 0 | abilities:
               bulwark
-            - a deep wound in the thigh
-              (sev 2)
-            HP ceiling 7/9 (2 wound
-              load)
 
 active quest [q42] Kick the Puppy is
   COMPLETE
