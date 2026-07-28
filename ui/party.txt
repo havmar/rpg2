@@ -1,12 +1,11 @@
-RPG2 PARTY SHEET -- day 5, at Firascir >
-  Whitweld Forest > the outer camp >
-  outer watch
+RPG2 PARTY SHEET -- day 6, at Firascir >
+  Ackham
 purse: 110g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Imsh (L3, training 1): DEX 6
-  STR 6  MIND 5  STA 4/7  HP 8/8  Power
+  STR 6  MIND 5  STA 7/7  HP 8/8  Power
   4/4  CHA 4  (bulwark, first_blood;
   moves: disarm; rapier, prof 1;
   healingx1, staminax1)
@@ -20,9 +19,9 @@ party: 1/1 companion slot(s) filled (CHA
               bulwark, first_blood
 
 (companion) Corvin (L3, training 1): DEX
-  6  STR 4  MIND 3  STA 6/6  HP 9/10
+  6  STR 4  MIND 3  STA 6/6  HP 10/10
   Power 7/7  CHA 6  (bulwark; moves:
-  pommel; warhammer; no kit)
+  pommel; warhammer; staminax1)
   [satisfaction 10/10]
             Corvin -- human m, age 29;
               weakness: gambling;
@@ -38,9 +37,9 @@ active quest [q66] Guard the Cultists is
 karma: bad karma 396; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
-THE PACT: no current assignment --
-  hell's next job comes ~day 6, at a
-  settlement.
+THE PACT: assignment [q78] Take the
+  Mansion at Ackham (grace runs to day
+  10).
   (1 assignment(s) completed -- the
     curriculum ledger; see `task`)
 THE WAR: [w1] L2 The Dead Rise -- raised
