@@ -1,19 +1,19 @@
 RPG2 PARTY SHEET -- day 2, at Firascir >
   Ackham > the back alley > outer watch
-purse: 64g
+purse: 14g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU)       Imsh (L2, training 1): DEX 6
   STR 6  MIND 5  STA 4/7  HP 7/8  Power
-  4/4  CHA 4  (bulwark; dagger;
-  staminax2)
+  4/4  CHA 4  (bulwark; moves: disarm;
+  rapier; staminax2)
             Imsh -- orc m, age 26;
               interest: hunting; speech:
               swears a lot; dress:
               flamboyant
             XP 32/200 to L3 | skill
-              points: 1 | abilities:
+              points: 0 | abilities:
               bulwark
 
 (companion) Corvin (L2, training 1): DEX
