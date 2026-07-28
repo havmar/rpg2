@@ -892,3 +892,72 @@ save, hold it through a raid and a reckoning, feel the tribute. Watch
 for: does the second conquest differ from the first; does the heat
 floor read as a throttle or a tax; is 6%/day raiding too quiet to
 notice or too loud to leave home.
+
+## 2026-07-28 — The weapon generation system: one currency, ten rungs
+
+**The ask** (designer): a full weapon assortment — trash chargen arms,
+lootable martial steel, purchasable quality, a nonsupernatural master-smith
+tier, then magic/legendary/mythic — with the design settled first: what is
+max weapon power, how do profiles stay characteristic, how are unlike
+advantages priced to equal value, how does the ladder map to levels, what
+do interesting extras cost (statuses, a first-strike-at-range quirk,
+gold/karma-per-kill oddities). Plus pregenerated famous magic weapons with
+known owners who wield them, 10-15 weapon-reward quests, and legendary
+smiths with a max tier and too much pride to work below it.
+
+**The road.** Three existing doctrines answered most of it before anything
+new was invented. (1) The transcendence doctrine already fixes the item
+budget: gear may push a stat to ~double natural, so the weapon's share was
+set at HALF of that — +3 signature-stat equivalents, the mythic cap.
+(2) The standing +DEX warning became the price list's spine: DEX-axis
+advantages cost 3x the severity unit and true +DEX is gated to legendary.
+(3) The decisive find: the quality four already ENCODE the exchange rate —
+they are bench-verified equal, and solving rapier = katana = zweihander
+gives atk 2 / def 2 / sev 1, all four chassis at exactly 3 severity-points.
+The sp became the design currency; gold derives from it superlinearly
+(doubling per sp) because career gold is ~thousands and a linear price
+would sell mythic steel for lunch money. The ladder came out at ~ten rungs
+(-1 trash to 10 mythic), not twenty — tiers map to level bands through the
+reward ladder instead of pretending one rung per level.
+
+**Decided** (designer: masterwork shoppable, no all-stats McGuffin; the
+rest delegated and called as follows):
+- Mythic cap +3 signature equivalents (~10 sp) — half the doubling.
+- True +DEX legendary+ only at 3 sp; attack pressure is the DEX axis
+  below that.
+- Masterwork = +1 attack pressure uniformly (+2 sp, so every chassis
+  lands at 5 sp — the old "+1 signature axis" priced rapiers and
+  zweihanders unequally), durability 5, 5x price, capitals only.
+- Weapon rewards are a PAY-BAND MODE of the existing generator (15% of
+  postings swap the turn-in gold lump for level-graded steel), not a
+  separate quest family.
+- Smith pride floor = cap - 1; three smiths per world at caps 7/8/9 with
+  styles; commissions at value x1.5 — the L15+ gold sink arriving early.
+- Riders priced off the measured shipped customers (burn/bleed 1 sp,
+  poison/rime 2 sp); quirks capped at one per weapon; the economy quirks
+  (Midas gold, karma-on-kill) cost 0 sp and are priced in story, with a
+  3-kill-per-fight engine cap so swarm rooms are not mints.
+- Profile rule: >= 2/3 of budget on the chassis's signature axis, at most
+  one rider, one quirk — "a rapier, but more so, with one twist".
+- The trash chargen deal is SESSION-ONLY (cmd_new); recruits and sims
+  keep the old table, so the whole bench suite stays byte-identical.
+
+**Shipped in the same session**: engine hooks (Weapon schema, equip
+bookkeeping, the wielder rider hook, the lunge, on-kill counters,
+proficiency-follows-the-chassis), weapons.py (generator + armory +
+smiths), worldgen attachment on derived rngs (posting streams verified
+byte-identical), the session surface (claim / armory / commission /
+masterwork buy / quirk collection), test_weapon_gen.py (33 contracts),
+and the docs. Deliberately NOT verified by sim: no magic weapon ever
+reaches a bench party yet — the reward ladder and smiths are played
+surfaces. The owed follow-ups: a top-band career re-bench once sim
+parties can hold generated steel, and a bench_weapons budget-honesty
+matrix (equal-sp columns on the bench_abilities pattern) before any
+tuning of the sp prices is trusted.
+
+**The play probe** (next, and inside the first five levels per the
+played-reality rule): feel the trash start's first looted shortsword;
+save toward quality by ~L3; hear the armory rumor at a tavern and check
+the pull of a named blade with a known address; post one weapon-reward
+job and see whether "pays a katana" reads better on the board than its
+gold would.

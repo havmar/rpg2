@@ -46,6 +46,7 @@ Run:  python quests.py [--seed N]     # print a generated world's board
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import random
 import re
 
@@ -1484,11 +1485,37 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
     quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
     stamp_quest_clock(quest, day, rng)
+    _maybe_attach_weapon_reward(quest, qid)
     attach_giver(quest, race, rng, role=tpl.get("giver"),
                  used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
     return quest
+
+
+WEAPON_REWARD_CHANCE = 0.15     # this share of posted jobs pays its turn-in
+                                # lump as a WEAPON instead of gold (2026-07-28,
+                                # the weapon generation system): the level is
+                                # the pay grade here as everywhere -- quality
+                                # steel in the low band, masterwork in the
+                                # middle, generated magic weapons at the top.
+                                # XP and the per-encounter shares are never
+                                # touched. Across a played campaign this is
+                                # the designer's "10-15 weapon jobs".
+
+
+def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
+    """Roll the weapon-reward mode onto a fresh posting. Runs on a rng
+    DERIVED from the quest id, so the shared posting stream (and every
+    career bench riding it) is untouched by the extra draws."""
+    import weapons                  # runtime import (weapons imports rpg)
+    wrng = random.Random(f"reward:{qid}")
+    if wrng.random() >= WEAPON_REWARD_CHANCE:
+        return
+    w = weapons.reward_weapon_for_level(quest["level"], wrng)
+    quest["reward_weapon"] = dataclasses.asdict(w)
+    quest["gold_total"] = 0         # the lump IS the weapon; the encounter
+                                    # shares still pay as they are earned
 
 
 def board_slots(settlement: dict) -> int:
@@ -1594,6 +1621,16 @@ def generate_world(seed: int | None = None) -> dict:
 
     for _ in range(DELIVERIES_PER_WORLD):
         _post_delivery(world, rng, used_people)
+
+    # The weapon layer (2026-07-28): the famous pregenerated armory and the
+    # legendary smiths. Rolled on a DERIVED rng so the main worldgen stream
+    # -- and every career bench seeded off it -- is byte-identical to the
+    # pre-armory worlds.
+    from weapons import roll_armory, roll_smiths    # runtime import
+                                                    # (weapons imports rpg)
+    wrng = random.Random(f"armory:{seed}")
+    world["armory"] = roll_armory(world, wrng)
+    world["smiths"] = roll_smiths(world, wrng)
     return world
 
 
@@ -1825,9 +1862,12 @@ def quest_line(quest: dict, day: int | None = None) -> str:
                 f"{quest_xp_posted(quest)} XP{mark}")
     dark = " DARK" if quest.get("align") == "dark" else ""
     xp_note = " (bad karma)" if dark else ""
+    rw = quest.get("reward_weapon")
+    pay = (f"pays a {rw['name']}" if rw
+           else f"pays {quest_gold_posted(quest)}g")
     return (f"[{quest['id']}] {level_grade(quest)}{dark} "
             f"{quest['name']} -- "
-            f"{quest_shape(quest)}; pays {quest_gold_posted(quest)}g, "
+            f"{quest_shape(quest)}; {pay}, "
             f"{quest_xp_posted(quest)} XP{xp_note}{mark}")
 
 
@@ -1868,6 +1908,10 @@ def quest_detail_lines(world: dict, quest: dict,
     """The full quest view. `dm=False` withholds surprise twists; all public
     quest and site levels still print exactly."""
     lines = [quest_line(quest, day), f"    {quest['desc']}"]
+    rw = quest.get("reward_weapon")
+    if rw:
+        lines.append(f"    the reward: a {rw['name']} in place of the "
+                     f"gold lump -- {rw['description']}")
     if day is not None and quest.get("deadline_day") is not None:
         band = quest_band(quest, day)
         lines.append(f"    due day {quest['deadline_day']} "

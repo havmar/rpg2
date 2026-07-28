@@ -1509,3 +1509,32 @@ median 104 days / 34 quests, mercies 0.99/career, turn-in bands **41 /
 the noise a 100-career sample carries. **No dial moved; the standing
 summary in develop.md is unchanged.** Full-scale re-measurement can wait
 for the next real balance pass.
+
+## 2026-07-28 — The weapon generation system: bench-neutrality check (no retune)
+
+The weapon layer (rules.md's Weapon Ladder & Generation add-on) is
+designed to be invisible to the suite: every engine hook is inert without
+a magic weapon in hand, the trash chargen deal is session-only, and
+worldgen's armory/smith/reward rolls ride rngs DERIVED from seeds and
+quest ids rather than the shared streams.
+
+- **Byte-identity controls:** `sites.py --seed 3` (barrow) and
+  `--site hideout --seed 3` diffed **byte-identical** before/after the
+  whole change; `quests.py --seed 1 --demo` differs ONLY in the six
+  reward-quest board rows now reading `pays a <weapon>` where they read
+  gold (same quests, levels, givers, sites — the posting stream is
+  untouched).
+- **Career sanity (30 careers, small on purpose):** reached
+  **L5 93% / L8 80% / L11 33% / L14 7% / L17 7% / L20 3%**; median death
+  **L9**; capped median **93 days / 38 quests**; mercies 0.87/career;
+  bands **39 / 50 / 8 / 3**. Within small-sample noise of the slice-4
+  acceptance block (86/70/35/10/3/1, death L9, 92 days / 36 quests at
+  500). The one real economy change rides here silently: ~15% of
+  postings pay steel instead of the gold lump, and the sim party cannot
+  claim steel — career gold runs a shade leaner by design.
+- **New suite:** `test_weapon_gen.py`, 33 contracts, green; all seven
+  existing suites green.
+
+**No dial moved.** Owed later: a bench_weapons equal-sp budget-honesty
+matrix before the sp prices are trusted for tuning, and a top-band career
+re-bench once sim parties can hold generated steel.

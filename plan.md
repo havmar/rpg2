@@ -210,8 +210,10 @@ level curve. Karma rides *beside* levels for now: merging them fully
    for" answer arriving early — coordinate with domain play.
 6. **Dark content pass**: race-flavored dark templates (the generic
    seven ship in the slice), war-integration (side WITH the story
-   layer's aggressor?), parley/bribery with posses, karma-flavored
-   named weapons riding item 5 below.
+   layer's aggressor?), parley/bribery with posses. *(Karma-flavored
+   weapons shipped 2026-07-28: the karma-on-kill quirk is a live
+   generator roll — what remains here is authoring SPECIFIC villain
+   pieces onto it.)*
 
 ---
 
@@ -457,11 +459,17 @@ Story items on the shelf:
   when the good-karma mirror lands.)*
 - **Progression frames** (guild advancement, the legendary-smith arc) —
   narrative wrappers around the same combat quests; cheap now that
-  questlines exist.
+  questlines exist. *(2026-07-28: the legendary smiths themselves shipped
+  as commission vendors — the weapon layer; what stays parked here is the
+  narrative ARC around one: winning a smith's respect, fetching the ore,
+  the rival buyer.)*
 
 **A career finding to design against**: the top band (15-20) is still
 the hard edge (per-quest wipe 40-65% at level) and still waits on
-masterwork gear, armor, and magic for its missing player power.
+armor and the rank-4 capstones for part of its missing player power —
+the gear half shipped 2026-07-28 (masterwork in shops, magic weapons on
+the reward ladder and the smiths' anvils); a top-band career re-bench
+with the new gear actually reaching sim hands is still owed.
 
 ---
 
@@ -471,12 +479,15 @@ masterwork gear, armor, and magic for its missing player power.
 deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 2026-07-16; party/CHA layer 2026-07-11 — mechanics all in rules.md.)*
 
-1. **What remains of the magic item**: stat transcendence + magic items
-   (the membrane: +stats to ~double the natural cap; +DEX an order of
-   magnitude rarer than +STR/+pool); **the wraith** (buildable now that
+1. **What remains of the magic item**: **the wraith** (buildable now that
    attack spells exist); **rank-4 capstones** (authored tomes/mentors —
    the 14-20 band's player power); **enemy spell use** (openers, not
-   just bolts); **flight ranks 3-4**.
+   just bolts); **flight ranks 3-4**. *(The stat-transcendence half —
+   +stats to ~double the natural cap through gear, +DEX an order of
+   magnitude dearer than +STR/+pool — SHIPPED 2026-07-28 as the weapon
+   generation system: rules.md's Weapon Ladder & Generation add-on.
+   Non-weapon magic items — rings, amulets — would reuse its sp table
+   if ever wanted.)*
 2. **Armor** — provisional design: shifts the incoming wound tier down
    at the cost of a DEX penalty and higher STA drain. *Status: adopt,
    simplify, or defer.* (Designer lean: probably never important.)
@@ -484,12 +495,16 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
    home than "+DEF" — a tier shift now also decides whether a crippling blow
    kills, maims, or merely wounds, and how deep a record it leaves. See the
    attrition rework's parked list.)*
-3. **Named & masterwork weapon instances** — the tiers exist in the
-   schema; nothing placed yet. Named weapons carry authored provenance
-   and are story beats, never drops. **The pivot leans on this item**:
-   the over-the-top villain arsenal (leech blades via the regen field,
-   the Midas sword's gold rider, the whip of bad karma paying karma on
-   kills) are named instances with authored riders — no renumbering.
+3. ~~**Named & masterwork weapon instances**~~ — **SHIPPED 2026-07-28**
+   (rules.md's Weapon Ladder & Generation add-on; designlog has the
+   session): the sp currency, the budgeted generator, masterwork
+   shoppable in capitals, the famous armory (owners wield their pieces),
+   the legendary smiths with the pride floor, weapon-reward quests, and
+   the villain arsenal's mechanics (the Midas gold quirk and the
+   karma-on-kill quirk are live generator rolls; a leech blade waits on
+   an authored regen rider). Remaining content work, not framework:
+   hand-authoring signature pieces where the fiction wants a SPECIFIC
+   blade rather than a rolled one.
 
 ---
 

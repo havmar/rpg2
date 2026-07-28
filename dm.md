@@ -713,8 +713,9 @@ bigger than the fights WITHOUT pages of narration:
 - **DM decisions:** off-script bonuses (`award GOLD XP NAME` -- board quests
   pay themselves), granting found/looted weapons
   (`give HERO WEAPON` -- e.g. the fallen bruiser's longsword; commons are
-  trivial loot, quality steel is a real find, masterwork/legendary are story
-  events), and general pacing -- but pacing choices that spend player
+  trivial loot, quality steel is a real find, magic steel is a story
+  event: a famous armory piece changes hands by robbery or questline,
+  never casually), and general pacing -- but pacing choices that spend player
   resources (rests, camping) belong to the player. **Reskinned drops
   (2026-07-13):** when a reskinned foe's loot line breaks the fiction (gun
   robots dropping "a whip"), `give HERO WEAPON --as "NAME"` grants the
@@ -1026,7 +1027,21 @@ bigger than the fights WITHOUT pages of narration:
   2026-07-17). Commons are named trash
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
-  ~1 training rank at the barrow; masterwork/legendary are never for sale.
+  ~1 training rank at the barrow. **The weapon ladder (2026-07-28):** a new
+  game STARTS on trash arms (the first looted shortsword is a felt
+  upgrade); MASTERWORK (+1 attack, doesn't break easily) is shoppable in
+  capitals at 5x the plain price (`buy HERO masterwork katana`); the MAGIC
+  tiers are never on a shelf -- quest rewards (`claim HERO` at the
+  turn-in when a board row says "pays a ..."), the world's famous named
+  weapons (`armory` -- ten per world, all known as rumor; their owners
+  WIELD them, so taking one is a robbery or a questline, priced by the
+  karma layer), or a legendary smith's commission (`commission SMITH HERO`
+  at the smith's seat -- expensive, days at the forge, and the smith
+  refuses work below their own tier out of pride). Magic pieces can carry
+  stat bonuses, condition riders (a blade whose cuts poison or burn), a
+  first-blow lunge, or a gold/karma-per-kill quirk -- the piece's
+  description says what it does in plain words; narrate it, never invent
+  numbers for it.
 - **Prices: `python session.py prices` is the price sheet** (2026-07-19)
   -- every shoppable weapon, potions (10g), spellbooks (120g, capitals),
   meds (20g, capitals), the tavern (1g a head), and ammo by the lot, read

@@ -84,7 +84,11 @@ the fight or around it?* During → lean simulation. Around → lean game.
 The rule that keeps the economy from going flat: **gold buys staying power,
 not power** — softened by decision (2026-07) to a guideline: the real intent
 is that XP and gold shouldn't feel like the same currency. Plain-tier quality
-weapons may be shopped for gold; masterwork/legendary stay found/quested.
+weapons may be shopped for gold; since 2026-07-28 masterwork is shoppable
+too (capitals, 5× price) and a legendary smith sells *commissions* at the
+superlinear gold curve — the L15+ "what is gold for" answer. The line that
+never softens: **the famous named weapons are not for sale at any price** —
+gold can commission new steel, it can never buy a story.
 
 **Stats are the simulated body, fixed at creation** — never raised by
 levelling. A genetic cap defines each stat's ceiling; only magic and rare
@@ -360,18 +364,33 @@ Soldier's arms are the engine's old implicit baseline (0/0/1), so the
 pre-weapons balance is the soldier's-arms balance. **Starting weapons**
 (heroes and bandits alike): 50% crude / 45% soldier's arms / 5% heavy; a
 hedge-healer (and a wizard) has a 50% chance to carry the wooden staff
-instead.
+instead. **The chargen deal is trashier on purpose (2026-07-28):** in a
+played game the level-1 PC and his long-time companion start with TRASH
+arms — club, knife, sling (`rpg.TRASH_WEAPONS`) — so the first looted
+soldier's blade is a felt upgrade; casters keep the staff (deliberately
+poor steel, priced in support). Session-only: recruits rolled later and
+every sim keep the table above.
 Skeletons swing **rusted blades** (0/0, durability 1 — grave-steel that snaps
 on honest metal).
 
-### Craftsmanship tiers
+### Craftsmanship tiers (reworked 2026-07-28 — the weapon ladder)
 
-`plain` / `masterwork` / `legendary` — and **plain is never spoken**: a weapon
-is just "a rapier"; special ones are "a masterwork rapier" or a named
-legendary blade. Masterwork (+1 on the weapon's signature axis, durability 5)
-and legendary (hand-authored, stat-transcending, durability 6) are
-**found or quested, never shopped**; only plain weapons are for sale. No
-level requirements — authored placement is the gate.
+`plain` / `masterwork` / `magic` / `legendary` / `mythic` — and **plain is
+never spoken**: a weapon is just "a rapier"; special ones are "a masterwork
+rapier" or a named blade. The full ladder, its severity-point currency, the
+generator, the famous armory, and the legendary smiths live in **The Weapon
+Ladder & Generation add-on** below. The short version:
+
+- **Masterwork** (+1 attack pressure on a quality chassis, durability 5) is
+  the master smiths' nonmagical best — **shoppable in capitals** since
+  2026-07-28 at five times the plain price (the deliberate second softening
+  of "gold never buys power"; the first was plain quality steel).
+- **The magic tiers** (magic / legendary / mythic) are generated on a
+  budget, carry the stat-transcending bonuses, and are **never on a
+  shelf** — found, quested, robbed from their famous owners, or
+  commissioned new from a legendary smith. No level requirements —
+  placement (the reward ladder, the armory, the smiths' prices) is the
+  gate.
 
 **Weapon reskins (2026-07-13).** The DM can grant any catalog profile
 under a display name (`give HERO club --as "shock prod"`) — the same
@@ -387,7 +406,8 @@ When steel meets steel — a **parry** or a **Clash** (high-dice tie) — the
 **lower-durability** weapon risks shattering:
 `P(break) = 0.25% × (durability gap)²` per contact; equal durability never
 breaks. Ladder: crude/rusted 1, military steel 2, wooden staff 3 (quality,
-but wood), quality steel 4, masterwork 5, legendary 6. **Natural weapons**
+but wood), quality steel 4, masterwork and magic 5, legendary and mythic 6.
+**Natural weapons**
 (fangs, claws — the monsters' armament) sit outside the ladder entirely:
 breakage is a steel-on-steel event, so a claw neither shatters nor shatters
 the blade that parries it.
@@ -650,6 +670,9 @@ monster band, and the Heroes table below IS that band. One warning stands
 for the magic phase: a +DEX item is worth several training ranks in one
 slot (enemy DEX moves clear rates by tens of percent per point) — +STR and
 +pool items can circulate an order of magnitude more freely than +DEX ones.
+*(Implemented 2026-07-28: weapon stat bonuses are that membrane — the
+Weapon Ladder add-on prices +DEX at 3 sp and gates it to the legendary
+tiers, with the weapon's share of transcendence capped at +3.)*
 
 ### Heroes — stats 6–10, HP 12–20 (the max-level destination)
 Superhuman because they **break the mortal tradeoff**: a hero can be high in
@@ -3513,3 +3536,131 @@ levies, a companion as castellan), vassal income buildings and the
 greed economy hookup, conquest-flavored quest content beyond the built
 job, and any narrative framing pass (chosen one / dark lord / prophet —
 the 2026-07-27 brainstorm's list waits on the new-setting session).
+
+---
+
+# The Weapon Ladder & Generation — Add-on (2026-07-28)
+
+The full assortment of weapons, trash to mythic: one design currency, one
+budgeted generator, a famous pregenerated armory, and the legendary smiths.
+`weapons.py` owns the generator and the world layer; the engine hooks
+(schema fields, equip bookkeeping, the rider and quirk hooks, the lunge)
+live in `rpg.py`. The sims never import `weapons.py`, and every generation
+rng is DERIVED (worldgen streams and the bench suite are byte-identical to
+the pre-weapons-layer world).
+
+## The severity-point (sp) — the design currency
+
+The shipped quality four already encoded the exchange rate: they are
+bench-verified equal ("suited, not ranked"), and setting rapier = katana =
+zweihander solves to **+1 attack pressure = 2 sp, +1 defense pressure =
+2 sp, +1 severity = 1 sp** — all four chassis land at exactly **3 sp** (the
+staff closes with its focus at 2 sp per +1 max Power). The full table
+(`weapons.py`):
+
+| Advantage | sp | Note |
+|-----------|----|------|
+| +1 severity | 1 | the base unit |
+| +1 attack pressure | 2 | proven by rapier = katana |
+| +1 defense pressure | 2 | proven by katana = zweihander |
+| +1 max Power | 2 | the staff's focus rate |
+| +1 max STA | 1 | the cheap pool axis |
+| +2 max HP | 1 | bought in pairs |
+| **+1 true STR** | 2 | severity AND soak; magic tiers up |
+| **+1 true DEX** | 3 | lands, defends, and feeds severity through the margin — **legendary tiers only** (the standing +DEX warning made law) |
+| rider: burn / bleed | 1 | priced off the pyromancer's measured shift |
+| rider: poison / rime | 2 | untimed venom follows you out; enemy-DEX is dear |
+| the lunge quirk | 1 | once per fight |
+| gold / karma on kill | 0 | economy and story, never combat power |
+
+Melee steel only: a ranged card's severity flat replaces STR entirely
+(the Ranged Combat add-on), so the cards sit off this scale on purpose.
+
+## The ladder (about ten rungs, not twenty)
+
+| Rung | Tier | sp | Acquired | Gold |
+|------|------|----|----------|------|
+| 1 | Trash (club, knife, sling) | −1 | **chargen** (the 2026-07-28 deal) | 1–2 g |
+| 2 | Soldier's arms | 0 | looted from humanoids | 5–8 g |
+| 3 | Heavy arms | +1 | looted, cheap shop | 15 g |
+| 4 | Quality four | 3 | shopped | 60 g |
+| 5 | Masterwork | 5 | **shopped, capitals** (+1 atk, dur 5) | 300 g |
+| 6–7 | Magic | 6–7 | quested, robbed, commissioned | ~480–960 g |
+| 8–9 | Legendary | 8–9 | the armory, the top smiths | ~1,900–3,800 g |
+| 10 | Mythic | 10 | one resting-place find per world | beyond price |
+
+**The mythic cap is the transcendence doctrine's half:** the player can by
+design double a stat (natural 6 → heroic 12), and HALF of that may come
+from the weapon — +3 effective points on its signature axis, never more.
+The gold curve is **superlinear** (roughly doubling per sp above quality,
+`value_for_sp`): career gold is ~thousands, and a linear price would sell
+mythic steel for lunch money — and let gold buy DEX-axis power at HP-axis
+rates. **There is no all-stats artifact** (designer call, 2026-07-28): the
+maximal weapon exists only as the yardstick that defines the budget.
+
+## The profile rule (how generated weapons stay legible)
+
+A generated weapon is a quality CHASSIS plus a budget: **at least
+two-thirds of the budget on the chassis's signature axis** (rapier/katana →
+the DEX axis, zweihander → the STR axis, staff → the Power axis), **at most
+one condition rider, at most one quirk**, per-axis caps (+3 DEX/STR at the
+very top). It reads as "a rapier, but more so, with one twist" — never a
+stat soup. Budget honesty is a test contract (`test_weapon_gen.py`): a
+generated weapon re-prices to exactly its tier's sp.
+
+## Riders and quirks (the engine hooks)
+
+- **Riders** are the wielder-side mirror of `Entity.inflicts`: a landed
+  weapon-delivered blow (never a cast, never the broken stump) applies the
+  condition with the weapon's own power/rounds. **Rime** rides the ice
+  school's rail instead — a stacking fight-only DEX debuff.
+- **The lunge** (`Weapon.lunge`): the wielder's first attack of the fight
+  reaches gap 1 — the flying lunge closes the distance and strikes in one
+  motion (it also holds ground in the movement phase, like any threat).
+  Once per fight; cleared with the per-fight states.
+- **On-kill quirks** (`gold_on_kill` / `karma_on_kill`): the engine only
+  counts (capped at `MIDAS_FIGHT_CAP` kills a fight — a swarm room is not
+  a mint); the session drains the counters at the fight's end into the
+  purse and the karma ledger.
+- **Stat bonuses** (`dex/str/sta/hp/power_bonus`) are the membrane made
+  steel: applied and removed by `equip_weapon`, symmetric by contract, and
+  an unequip never kills (the HP floor is 1).
+- **Proficiency follows the chassis** (`prof_name`: `Weapon.base`): a
+  masterwork or named magic katana counts as a katana in a drilled hand —
+  the reward never costs the ranks — and draws the chassis's special moves
+  (iaido). A bare `give --as` reskin has no base: the old
+  proficiency-follows-the-name doctrine still holds for costumes.
+
+## The world layer
+
+- **The famous armory** (`world["armory"]`, ten per world: six magic,
+  three legendary, one mythic): named pieces (Frostfang, Kingsbane...),
+  rolled at worldgen on a derived rng and **known from day one** — rumor
+  is free. Owners are drawn from the world's notables and **wield their
+  weapon in any fight over it** (the weapon guards itself); the rest lie
+  in named resting places, and the mythic piece is ALWAYS a resting-place
+  find — the endgame is going and getting it. Never for sale. Acquiring
+  an owned one is theft, robbery, or a questline — the karma layer prices
+  the dark routes. `armory` is the DM inventory; `python weapons.py` the
+  eyeball check.
+- **The legendary smiths** (`world["smiths"]`, three per world, seated in
+  distinct capitals): each has a style (blades only / war steel / any), a
+  CAP (sp 7 / 8 / 9) and **the pride floor — cap − 1 — below which they
+  refuse to work**. A commission (`commission SMITH HERO [CHASSIS]`) costs
+  the open value plus a pride premium (`COMMISSION_MULT` 1.5) and takes
+  sp − 3 forging days (narrated; the profile that comes off the anvil is
+  the smith's art, not a menu). This is the one way gold buys magic steel.
+- **Weapon-reward quests** (`quests.WEAPON_REWARD_CHANCE`, 15% of
+  postings): the job's turn-in **gold lump is replaced by a weapon** of
+  the level's grade (quality ≤L4, masterwork L5–9, magic L10–16, legendary
+  L17+) — XP and the per-encounter shares untouched, the board row says
+  `pays a masterwork rapier`, and the turn-in banks it for `claim HERO`.
+  Rolled on a per-quest derived rng: the posting stream never moves.
+
+## Save compatibility
+
+Everything serializes as before: catalog weapons by name, instances whole.
+Old saves load clean — missing weapon fields default to inert, missing
+quirk counters to zero, and a pre-armory world rolls its armory and smiths
+lazily on a fixed rng the first time the layer is asked for
+(`session.ensure_weapon_layer`).
