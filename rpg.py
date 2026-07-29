@@ -1471,13 +1471,16 @@ MEDS_PRICE = 20                 # deliberately dear (two potions a dose)
 #
 # FATE'S INTERRUPT (2026-07-26, slice 4) is a special form of that one pause.
 # When fate commutes the protagonist's death, the fight stops at the end of
-# the round with exactly two choices: fight on and risk paying the companion,
-# or retreat and waive the debt. It consumes the encounter's ordinary pause;
-# every later crossing is answered by standing orders.
+# the round with exactly two choices: fight on, or break off. As of
+# 2026-07-29 the price is UNCONDITIONAL -- win, loss, and clean retreat all
+# bury one companion -- so the interrupt asks only whether the room is still
+# worth trying, never whether the debt can be dodged. It consumes the
+# encounter's ordinary pause; every later crossing is answered by standing
+# orders.
 PAUSE_STA_TRIGGER = 2       # a hero at/below this STA at round end -> pause
 PAUSE_HP_FRACTION = 0.5     # a hero at/below this fraction of max HP -> pause
 PAUSE_ACTION_DEF_PENALTY = 2    # the busy hero's defense penalty that round
-FATE_RESTORE_HP = 1         # a paid victory stands the protagonist at 1 HP
+FATE_RESTORE_HP = 1         # a paid bargain stands the protagonist at 1 HP
 
 # Retreat & chase. Deliberately ONE roll -- no multi-message chase scenes.
 # Breaking contact: every foe fit to swing (alive, not Winded, not Spent) gets
@@ -2463,10 +2466,11 @@ class Entity:
                                                # its one reverse-retreat try
     fate_debt: bool = field(default=False)  # spared by fate THIS fight; the
                                              # price (a companion's life) is
-                                             # collected at victory, waived on
-                                             # a fled or lost fight
+                                             # collected on any fought-out
+                                             # fight, won or lost; only a
+                                             # clean retreat waives it
     fate_paid: bool = field(default=False)  # transient hand-off to the
-                                             # session tail: this victory paid
+                                             # session tail: this fight paid
                                              # Fate, so do not enter mercy
     items: dict[str, int] = field(default_factory=dict)
     hp_regen_per_night: int = field(default=0)  # HP knit back per long rest (derived)
@@ -5385,10 +5389,10 @@ def group_combat(party: list[Entity], foes: list[Entity],
                                     for h in party)):
                         # Fate's bargain (2026-07-10): the protagonist's
                         # death is commuted to a Down while a companion
-                        # still draws breath. The price is collected at
-                        # victory (_settle_fate_debt) -- one random
-                        # companion for the protagonist's life. A fight the
-                        # rest can't win is still a wipe.
+                        # still draws breath. The price is collected on any
+                        # fought-out fight (_settle_fate_debt) -- one random
+                        # companion for the protagonist's life. Only a clean
+                        # retreat waives it.
                         defender.dead = False
                         go_down(defender)
                         defender.fate_debt = True
@@ -5396,12 +5400,12 @@ def group_combat(party: list[Entity], foes: list[Entity],
                               f"    *** The blow should be "
                               f"{defender.name}'s death -- and is not. "
                               f"Fate has spared them; its price comes "
-                              f"due if this fight is won. ***",
+                              f"due unless this fight is broken off. ***",
                               fit_lines(["*** The blow should be",
                                          f"{defender.name}'s death --",
                                          "and is not.",
                                          "Fate's price comes due",
-                                         "if this fight is won. ***"]))
+                                         "unless you break off. ***"]))
                         _play(log,
                               f"    {defender.name} goes down, "
                               f"out of the fight.",
@@ -5533,13 +5537,13 @@ def group_combat(party: list[Entity], foes: list[Entity],
                     fired.add(("pause-spent", h))
                     _play(
                         log,
-                        f"    == Fate waits on {h.name}'s bargain -- "
-                        f"fight on and pay its price, or retreat and waive "
-                        f"the debt. ==",
+                        f"    == Fate waits on {h.name}'s bargain -- the "
+                        f"price is owed either way. Fight on, or break off "
+                        f"and pay it at the door. ==",
                         fit_lines([
                             "== FATE'S BARGAIN:",
-                            "fight on and pay the price,",
-                            "or retreat and waive the debt. ==",
+                            "the price is owed either way.",
+                            "Fight on, or break off. ==",
                         ]),
                     )
                 _finish_rounds(log)
@@ -5711,38 +5715,63 @@ def _clear_fight_states(entities: list[Entity]) -> None:
 
 
 def _settle_fate_debt(party: list[Entity], foes: list[Entity],
-                      rng: random.Random, log: list[str]) -> bool:
-    """Collect fate's price at the end of a melee (the protagonist bargain --
-    see Entity.protagonist). Debts are cleared whatever happened; the price is
-    only PAID on a victory: the last foe's dying strength kills one random
-    companion (Down or standing -- fate is not particular), then stands the
-    protagonist at exactly FATE_RESTORE_HP. Wounds and every other point of
-    damage remain. This is what makes a paid duo victory a ruined SOLO
-    victory, not a fake reprieve followed by party_wiped.
+                      rng: random.Random, log: list[str],
+                      fled: bool = False) -> bool:
+    """Collect fate's price once an encounter is over, however it ended (the
+    protagonist bargain -- see Entity.protagonist). **The debt is
+    unconditional (2026-07-29):** one random companion dies (Down or standing
+    -- fate is not particular) and the protagonist stands at exactly
+    FATE_RESTORE_HP. Wounds and every other point of damage remain. This is
+    what makes a paid duo victory a ruined SOLO victory, not a fake reprieve
+    followed by party_wiped.
 
-    A lost or staggered-apart fight collects nothing (the loss itself may
-    receive slice 4's defeat mercy), and a clean retreat waives the debt in
-    attempt_retreat. Returns True only when a victory paid the bargain."""
+    Fate is owed, not bargained down: a WIN, a LOSS, and a clean RETREAT
+    (`fled`, from attempt_retreat / blink_out) all pay the identical price.
+    What the outcome decides is only what the party got for the corpse -- a
+    win banks the fight, a loss leaves the foes standing, a flight gives up
+    the room. Nor may a paid fight also spend slice 4's defeat mercy: the
+    spare WAS the reprieve. Only a break that FAILS defers the debt, because
+    the fight is not over -- it settles at the real end.
+
+    Returns True when the bargain was paid."""
     debtors = [h for h in party if h.fate_debt]
     if not debtors:
         return False
     for h in debtors:
         h.fate_debt = False
-    if any(f.alive for f in foes):
-        return False
+    won = not fled and not any(f.alive for f in foes)
     victims = [h for h in party if not h.dead and not h.protagonist]
     if victims:
         victim = rng.choice(victims)
         victim.hp = 0
         victim.down = False
         victim.dead = True
-        _play(log,
-              f"    *** The last foe spends its dying strength on one final "
-              f"blow -- fate's price for {debtors[0].name}'s life. It finds "
-              f"{victim.name}. ***",
-              fit_lines(["*** The last foe's dying blow is",
-                         f"fate's price for {debtors[0].name}'s",
-                         f"life. It finds {victim.name}. ***"]))
+        if won:
+            _play(log,
+                  f"    *** The last foe spends its dying strength on one "
+                  f"final blow -- fate's price for {debtors[0].name}'s life. "
+                  f"It finds {victim.name}. ***",
+                  fit_lines(["*** The last foe's dying blow is",
+                             f"fate's price for {debtors[0].name}'s",
+                             f"life. It finds {victim.name}. ***"]))
+        elif fled:
+            _play(log,
+                  f"    *** The party is clear of the field. Fate is owed "
+                  f"regardless -- the price for {debtors[0].name}'s life "
+                  f"finds {victim.name} on the way out. ***",
+                  fit_lines(["*** The party is clear.",
+                             "Fate is owed regardless.",
+                             f"The price for {debtors[0].name}'s life",
+                             f"finds {victim.name}. ***"]))
+        else:
+            _play(log,
+                  f"    *** The field is lost. Fate is owed regardless -- "
+                  f"the price for {debtors[0].name}'s life finds "
+                  f"{victim.name}. ***",
+                  fit_lines(["*** The field is lost.",
+                             "Fate is owed regardless.",
+                             f"The price for {debtors[0].name}'s life",
+                             f"finds {victim.name}. ***"]))
         _play(log, f"    *** {victim.name} is SLAIN. ***",
               f"{victim.name} is SLAIN.")
 
@@ -5818,6 +5847,11 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     fight is over for them); False means the party is run down and the caller
     must resume the fight, the parting-blow damage already taken. Either way
     heroes can go Down or die here: check party_wiped afterward.
+
+    A clean escape SETTLES any fate debt (2026-07-29, `_settle_fate_debt(...,
+    fled=True)`): running does not buy the protagonist's life back. A failed
+    break defers it instead -- the fight is not over, so it settles at the
+    real end.
     """
     log.append("  The party breaks for safety!")
     fit = [f for f in foes if f.alive and not f.winded and not f.spent]
@@ -5883,20 +5917,21 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
                   "    No one is fit to give chase -- clean escape.",
                   fit_lines(["No one is fit to give chase --",
                              "clean escape."]))
-        for h in party:
-            h.fate_debt = False     # a fled fight is not a won one: waived
+        # Fate is owed even by a clean escape (2026-07-29). Settle before the
+        # breath so the restored protagonist catches it and the paid companion
+        # does not.
+        _settle_fate_debt(party, foes, rng, log, fled=True)
         _clear_fight_states(party)  # the spell states drop on the run
         _stabilize(party, log)      # ...and the bleeding is bound past the door
-        _catch_breath(runners, log)
+        _catch_breath([h for h in party if h.alive], log)
         return True
 
     if _chase_contest(runners, pursuers, rng, log):
         log.append("    They break away -- clean escape.")
-        for h in party:
-            h.fate_debt = False     # a fled fight is not a won one: waived
+        _settle_fate_debt(party, foes, rng, log, fled=True)
         _clear_fight_states(party)  # the spell states drop on the run
         _stabilize(party, log)      # ...and the bleeding is bound past the door
-        _catch_breath(runners, log)
+        _catch_breath([h for h in party if h.alive], log)
         return True
     _play(log,
           "    *** RUN DOWN -- the pursuers catch them, and the fight "
@@ -5978,7 +6013,8 @@ def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
     TELEPORT_ESCAPE_COST Power and rolls the casting check at rank 2; a
     fizzled door leaves the party standing at it -- the caller falls back
     to an honest retreat (attempt_retreat), blows and all. A clean blink
-    waives any fate debt like any clean escape."""
+    still PAYS any fate debt, like any other escape (2026-07-29): the Power
+    buys the party out of the room, never out of the bargain."""
     if wizard.spell_rank("teleport") < 2:
         log.append(f"    {wizard.name}'s teleport art can't carry a party "
                    f"out of a melee (rank 2 needed).")
@@ -6010,8 +6046,9 @@ def blink_escape(party: list[Entity], foes: list[Entity], wizard: Entity,
           fit_lines([f"*** {wizard.name} tears a door in",
                      "the air -- the party steps through",
                      "and is GONE. ***"]))
-    for h in party:
-        h.fate_debt = False     # a fled fight is not a won one: waived
+    # The door is clean, but fate is still owed (2026-07-29): the Power buys
+    # the party out of the room, not out of the bargain.
+    _settle_fate_debt(party, foes, rng, log, fled=True)
     _clear_fight_states(party)
     _stabilize(party, log)
     runners = [h for h in party if h.alive]

@@ -1063,25 +1063,41 @@ potion or conversion actions. It **consumes the ordinary pause**; every later
 crossing runs on standing orders. If the wounds pause already happened, Fate
 does not create a second stop. Then:
 
-- **If the party goes on to WIN that fight**, the last foe's dying strength
-  lands one final blow — and it kills **one random companion** (Down or
-  standing; fate is not particular). Fate then stands the PC at **exactly
-  1 HP**. Every wound and all other damage remain. The trade is literal: a
-  companion dies and the player character lives. In a duo, the result is a
-  badly wounded solo PC, **not** a fake reprieve followed by a wipe.
-- **If the party loses anyway**, the debt is not collected. That genuine loss
-  may receive defeat mercy under the roster's ferocity and the PC's
-  once-per-level allowance below.
-- **If the party retreats instead**, a clean escape **waives the debt**: no
-  one died, nothing is owed — but the fight was given up, not won. (This is
-  a real post-spare decision: press on and pay a companion, or flee with the
-  downed PC and pay in progress.)
+**The debt is UNCONDITIONAL (2026-07-29).** Fate is owed, not bargained down.
+Once the spare has fired, the encounter ends by killing **one random
+companion** (Down or standing; fate is not particular) and standing the PC at
+**exactly 1 HP** — whether the party won, lost, or walked away clean. Every
+wound and all other damage remain. The trade is literal: a companion dies and
+the player character lives. In a duo, the result is a badly wounded solo PC,
+**not** a fake reprieve followed by a wipe. The outcome decides only what the
+party got for the corpse:
+
+- **A WIN** banks the fight: the last foe's dying strength lands the final
+  blow, and the room, the pay, and the XP are the party's.
+- **A LOSS** pays exactly the same price and buys nothing. The foes are still
+  standing, so the encounter resolves UNCLEARED — no pay, no XP, and the room
+  keeps its survivors.
+- **A CLEAN RETREAT** pays it too, at the door — the ordinary break, a
+  smoke-vial break, and a rank-2 **blink-out** alike. The Power and the vial
+  buy the party out of the *room*, never out of the bargain. The room is given
+  up and remembered, as after any flight.
+- **The one deferral is a FAILED break.** Run down at the door, the fight
+  resumes and the debt is still owed; it settles at the fight's real end.
+- **None of these may also spend defeat mercy.** The spare was the reprieve
+  and a companion has already paid for it, so the roster's ferocity
+  consequence and the PC's once-per-level allowance below are both skipped.
+  Mechanically this falls out of the 1 HP restoration: `party_defeated` is
+  false by the time mercy is checked.
+
+So the interrupt is no longer a question about the debt — it is only *is this
+room still worth trying?* Press on for the pay, or break off and keep the
+damage you have. The companion is buried either way.
 
 The spare only intercepts actual deaths (an unsaved crippling blow at 0 HP);
 ordinary Downs are unchanged. A solo PC has nothing to trade and dies like
-anyone. A **Fate-paid victory is a victory** and cannot then spend Slice 4's
-defeat mercy, even if Fate's victim was the party's last standing companion.
-The sims never set the protagonist flag, so their tuning numbers are
+anyone. If every companion is already dead when the fight ends, the debt has
+no victim left to take: the price is treated as settled and the PC still
+rises at 1 HP. The sims never set the protagonist flag, so their tuning numbers are
 untouched — this is a session-play rule for why a *fragile PC build is viable
 at all*: the party is the PC's real HP bar, spent one member at a time.
 

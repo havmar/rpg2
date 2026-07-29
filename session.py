@@ -1497,6 +1497,8 @@ def print_pause_menu(state: dict) -> None:
     if fate_pause:
         print("  (Fate's bargain spends the encounter's ONE pause; "
               "only fight on or retreat)")
+        print("  (the price -- one companion -- is owed either way; "
+              "breaking off pays it at the door)")
     else:
         print("  (the encounter's ONE pause -- after this it runs to its end, "
               "the party acting on its standing orders)")
@@ -2487,7 +2489,7 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
     `rpg.apply_defeat_mercy`. Posse fights keep their authored LAW/HELL
     reshaping, but now spend the same level mercy: a second genuine loss at
     that level is GAME OVER. The encounter tail skips this function entirely
-    for a Fate-paid victory."""
+    for any fight that paid Fate's bargain -- won or lost."""
     party = state["party"]
     pc = party[0] if party else None
     if pc is None or not party_defeated(party):
@@ -2704,8 +2706,9 @@ def finish_encounter(state: dict, log: list[str], foes: list,
     pc_level_before = pc.level if pc else 0
     state["pending"] = None
     participants = [h for h in party if h.name not in (dead_before or [])]
-    # A Fate-paid victory is terminally a victory: do not even enter the
-    # defeat-mercy path. The transient marker is consumed before saving.
+    # A fight that paid Fate never also spends slice 4's mercy: the spare WAS
+    # the reprieve, and a companion already paid for it. True on a paid loss
+    # as well as a paid victory. The marker is consumed before saving.
     fate_paid = any(h.fate_paid for h in party)
     for h in party:
         h.fate_paid = False

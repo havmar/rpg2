@@ -254,19 +254,24 @@ the player's core decision:
 - **If the PC dies, the game is over unless defeat mercy fires** -- even if
   a companion still stands. Relentless foes, or a second defeat at the same
   character level, give no mercy (`session.py` prints the GAME OVER line).
-- **Fate's bargain guards the PC (2026-07-26).** A blow that would kill the
-  PC is commuted to a Down while a companion still draws breath -- the log
-  announces it ("Fate has spared them; its price comes due if this fight
-  is won"). If the encounter's one pause is still unused, Fate immediately
-  spends it on a special FIGHT ON / RETREAT interrupt; it is not a bonus
-  pause, and no ordinary pause can follow. If the party WINS that fight,
-  the last foe's dying blow kills one RANDOM companion and Fate restores
-  the PC to exactly 1 HP. Wounds and every other injury remain. That is the
-  literal trade: a duo becomes a badly wounded solo PC, not a wipe. A
-  clean retreat waives the debt (nothing owed, nothing won). A genuine
-  loss may still receive defeat mercy; a Fate-paid victory never does.
-  Play the interrupt with weight: press on and pay a companion, or flee
-  with the downed PC. Never soften the price by fiat.
+- **Fate's bargain guards the PC (2026-07-26; the debt made unconditional
+  2026-07-29).** A blow that would kill the PC is commuted to a Down while a
+  companion still draws breath -- the log announces it ("Fate has spared
+  them; its price comes due"). If the encounter's one pause is still unused,
+  Fate immediately spends it on a special FIGHT ON / RETREAT interrupt; it is
+  not a bonus pause, and no ordinary pause can follow. **The price is
+  UNCONDITIONAL:** one RANDOM companion dies and Fate restores the PC to
+  exactly 1 HP whether the party wins, loses, or breaks off clean -- retreat,
+  smoke vial, and blink-out all pay it at the door. Wounds and every other
+  injury remain. That is the literal trade: a duo becomes a badly wounded solo
+  PC, not a wipe. What the outcome buys is only the room: a WIN banks the pay
+  and the XP, a LOSS or a flight leaves the foes standing and the room
+  uncleared. None of them may also take defeat mercy -- the spare was the
+  reprieve, and the level's allowance is left unspent. The only deferral is a
+  FAILED break: run down at the door, the debt settles at the fight's real
+  end. So play the interrupt as one question -- **is this room still worth
+  trying?** -- and never as a way out. The companion is buried either way;
+  never soften that by fiat.
 - **Defeat mercy is one reprieve per PC level (2026-07-26).** It applies
   only after a genuine defeat and only against foes whose roster is not
   RELENTLESS. TAKE SPOILS foes leave the party alive at 1 HP, empty the
@@ -866,7 +871,9 @@ bigger than the fights WITHOUT pages of narration:
 - **The pause:** a fight stops AT MOST ONCE, at its first WOUNDS crossing
   or at Fate's intervention, whichever happens first. Fate spends that
   ordinary pause on a FIGHT ON / RETREAT choice; it never creates a
-  second pause. A wounds crossing means someone dropping past half HP
+  second pause. That bargain costs a companion's life whatever happens --
+  won, lost, or fled -- so the interrupt only asks whether the room is
+  still worth trying. A wounds crossing means someone dropping past half HP
   in-fight; entering already low never fires it. Ordinary pause actions
   (one per hero; cost the
   round's attack, defend at -2 while busy): drink a stamina draught
