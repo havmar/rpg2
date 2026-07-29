@@ -653,12 +653,18 @@ mechanic *does* and *why* is rules.md's job.
   `fate_debt`; session marks `party[0]`). If the encounter pause is unused,
   Fate returns `Pause(kind="fate")` and spends it; an earlier ordinary pause
   suppresses that interrupt, and a Fate pause suppresses every later ordinary
-  one. `_settle_fate_debt` collects one companion's life at victory and
-  restores the PC to exactly 1 HP without touching wounds or other damage.
+  one. `_settle_fate_debt(..., fled=False|True)` collects one companion's life
+  on EVERY ending — won, lost, staggered apart, or fled (2026-07-29: the debt
+  is unconditional; nothing waives it) — and restores the PC to exactly 1 HP
+  without touching wounds or other damage. Four call sites: the melee tail in
+  `group_combat`, both clean-escape branches of `attempt_retreat`, and
+  `blink_escape`. A FAILED break is the only deferral (the fight is not over).
+  The restoration is also what bars the level's defeat mercy:
+  `party_defeated` is false by the time `apply_mercy` is reached.
 - **Retreat** — `attempt_retreat` (parting blows — softened one wound tier
   since 2026-07-10 (`_attack(soften=True)`): the door maims, never kills
   outright — + ONE group chase roll; `pursues=False` foes never chase; a
-  clean escape waives any fate debt), `attempt_foe_retreat` (the same chase
+  clean escape SETTLES any fate debt), `attempt_foe_retreat` (the same chase
   contest reflected across the field for ferocity-0/1 rosters; survivors are
   `withdrew`, not dead), and `refresh_foes_after_retreat` (fled-room
   persistence).

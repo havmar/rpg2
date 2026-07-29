@@ -961,3 +961,106 @@ save toward quality by ~L3; hear the armory rumor at a tavern and check
 the pull of a named blade with a known address; post one weapon-reward
 job and see whether "pays a katana" reads better on the board than its
 gold would.
+
+---
+
+## 2026-07-29 — Fate's bargain: the debt made unconditional
+
+**Where it came from.** A play probe on a fresh save (Zonk, goblin
+wizard duo, L1) took hell's day-1 assignment — an L3 room, 2x Ice Demon
+— straight off the doorstep. Round 2 killed the PC and Fate commuted it;
+the interrupt offered FIGHT ON / RETREAT; the player fought on and lost
+in round 4. Feng took a crippling blow to a limb and was permanently
+maimed by the wound table, then the demons' TAKE SPOILS mercy (the Ice
+Demon is a hexer reskin, ferocity 0) took both staves and spent the
+level's allowance. Feng **lived**, and the designer's immediate reaction
+was that this was wrong: "the player got saved, party member must die."
+
+**What the code was doing.** Correctly, per the old spec:
+`_settle_fate_debt` cleared the debt but returned early while any foe
+still stood, so the price was collected only on a victory. rules.md said
+so explicitly ("If the party loses anyway, the debt is not collected.
+That genuine loss may receive defeat mercy").
+
+**Why that was a bug in the design, not just in taste.** It inverted the
+interrupt's own decision. At the pause the three exits priced out as:
+
+    win     -> a companion dies
+    retreat -> the fight is given up
+    lose    -> nothing owed
+
+So *losing was strictly cheaper than winning*, and the played instance
+proved it: fighting on with a Down PC and a bloodied companion against a
+full-HP L3 caster was not a bet on victory, and the loss was the
+outcome that kept the companion. Retreat was squeezed from both sides —
+it cost the fight to avoid a price a loss avoided for free. Worse, the
+loss branch made the spare *worthless* against a RELENTLESS roster: no
+mercy, `party_wiped`, PC dead a moment later — exactly the "fake
+reprieve followed by party_wiped" the docstring claimed to prevent.
+
+**The first decision (superseded within the hour — see below).** Fate is
+owed, not conditional: any fought-out fight pays, won or lost, while a
+clean retreat still waived. That priced the exits as:
+
+    win     -> a companion dies, fight banked
+    lose    -> a companion dies, nothing banked
+    retreat -> nobody dies, fight given up
+
+**The correction.** The designer read that and rejected the retreat
+carve-out on the spot: the bargain "should trigger also when retreating.
+doesn't make sense otherwise." Correct, and for the same reason the loss
+exemption was wrong — a waiver is an exit, and an exit is a discount on
+a price the fiction says is already owed. The PC's life was spent in
+round 2; nothing the party does in round 3 can un-spend it. Keeping the
+waiver would just have moved the exploit from "lose on purpose" to "flee
+on purpose", which is cheaper still (a flight costs less damage than a
+loss).
+
+So the debt is **unconditional**. Win, loss, staggered-apart, ordinary
+retreat, smoke break, and rank-2 blink-out all bury one companion:
+
+    win     -> a companion dies, fight banked
+    lose    -> a companion dies, nothing banked
+    retreat -> a companion dies, room given up
+
+The interrupt stops being a question about the debt and becomes the only
+question actually left: **is this room still worth trying?** Press on for
+the pay, or break off and keep the damage you have. That reading also
+makes the pause honest — it never again offers something it cannot
+deliver.
+
+**The one deferral** is a FAILED break: run down at the door, the fight
+is not over, so the debt settles at its real end instead. Anything else
+would collect twice.
+
+**The considered alternative** (rejected by the designer) was to leave
+the loss exemption and instead bar defeat mercy after a spare, making
+the spare itself the level's one reprieve. It closes the same exploit
+with a smaller diff, but it prices the spare in the PC's own safety
+rather than in a companion's life, which is not what the bargain says
+on the tin.
+
+**Interactions settled while implementing.** A paid fight never also
+spends slice 4's defeat mercy — and this needs no new guard, because the
+1 HP restoration makes `party_defeated` false before `apply_mercy` is
+reached; the existing `fate_paid` short-circuit in `finish_encounter`
+covers the rest. A paid LOSS therefore resolves as UNCLEARED (foes still
+standing): no pay, no XP, the room keeps its survivors, the purse and
+the quality steel are kept, and the level's allowance is left unspent.
+If every companion is already dead when the fight ends the debt has no
+victim left, and it is treated as settled — the PC still rises at 1 HP.
+
+`_settle_fate_debt` grew a `fled` flag and now has four call sites: the
+melee tail in `group_combat`, both clean-escape branches of
+`attempt_retreat`, and `blink_escape`. The escape branches settle
+*before* the breath, so the restored PC catches it and the paid companion
+does not. Three log wordings, one per ending (the dying blow, the lost
+field, the price finding someone on the way out) — the spare's own line
+no longer promises anything about winning, and the pause menu now states
+that breaking off pays at the door rather than offering a waiver.
+
+**Not a rebalance.** The sims never set the protagonist flag, so no
+bench number moves; the whole suite (201 tests) is green with five new
+Fate contracts — paid loss, paid retreat, paid blink-out, deferred failed
+break, and a session-tail integration test asserting a paid loss banks
+nothing.

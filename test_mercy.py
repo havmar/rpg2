@@ -238,6 +238,159 @@ class FateBargain(unittest.TestCase):
         mercy_path.assert_not_called()
         self.assertFalse(pc.fate_paid)
 
+    def test_a_lost_fight_pays_the_same_price_and_takes_no_mercy(self):
+        # 2026-07-29: losing used to waive the debt outright, which made a
+        # loss strictly cheaper than a win at the interrupt. Fate is owed.
+        pc = hero("PC")
+        companion = hero("Companion")
+        pc.protagonist = True
+        defeat(pc)
+        pc.fate_debt = True
+        foe = sites.make_foe("skeleton", 1, random.Random(1))
+        self.assertTrue(foe.alive)
+
+        paid = rpg._settle_fate_debt(
+            [pc, companion], [foe], random.Random(2), [])
+
+        self.assertTrue(paid)
+        self.assertTrue(companion.dead)
+        self.assertTrue(pc.alive)
+        self.assertEqual(pc.hp, 1)
+        self.assertFalse(pc.down)
+        self.assertTrue(pc.fate_paid)
+        # The 1 HP restoration is what bars the level's defeat mercy: the
+        # party is no longer defeated by the time mercy is checked.
+        self.assertFalse(rpg.party_defeated([pc, companion]))
+        self.assertIsNone(rpg.apply_defeat_mercy(
+            [pc, companion], [foe], rpg.Purse(), random.Random(3), [],
+            participants=[pc, companion],
+        ))
+        self.assertEqual(pc.mercy_level, 0)
+        # ...and it buys nothing: the foe is still standing, so the room is
+        # left uncleared rather than banked.
+        self.assertFalse(rpg.party_wiped([pc, companion], []))
+        self.assertTrue(foe.alive)
+
+    def test_the_session_tail_of_a_paid_loss_banks_nothing(self):
+        pc = hero("PC")
+        companion = hero("Companion")
+        pc.protagonist = True
+        defeat(pc)
+        pc.fate_debt = True
+        foe = sites.make_foe("skeleton", 1, random.Random(1))
+        rpg._settle_fate_debt([pc, companion], [foe], random.Random(2), [])
+
+        state = {
+            "party": [pc, companion],
+            "purse": rpg.Purse(),
+            "rng": random.Random(4),
+            "pending": None,
+            "rooms": {},
+            "clock": rpg.Clock(day=1),
+        }
+        log: list[str] = []
+        with (
+            mock.patch("session.award_xp") as award,
+            mock.patch("session.record_karma"),
+            mock.patch("session.roll_loot") as loot,
+            mock.patch("session.satisfaction_after_fight"),
+            mock.patch("session.auto_potions"),
+            mock.patch("session.deliver_if_arrived"),
+            mock.patch("session.collect_weapon_quirks"),
+            mock.patch("session.append_tally"),
+            mock.patch("session.print_combat"),
+            mock.patch("session.save"),
+            mock.patch("session.report_game_over") as game_over,
+        ):
+            session.finish_encounter(
+                state, log, [foe], encounter_xp=100,
+                site="the ritual ground", room=1)
+
+        # No wipe, no game over, and no pay for a fight that was lost.
+        # (report_game_over runs on every tail; it no-ops unless the party
+        # was wiped or the PC is dead, so assert on what it was told.)
+        game_over.assert_called_once()
+        self.assertFalse(game_over.call_args.args[1])   # wiped
+        self.assertTrue(pc.alive)
+        award.assert_not_called()
+        loot.assert_not_called()
+        self.assertEqual(pc.mercy_level, 0)
+        self.assertEqual(state["purse"].gold, 0)
+        # The room remembers its survivor, as after any staggered-apart fight.
+        self.assertIn(("the ritual ground", 1), state["rooms"])
+        self.assertTrue(
+            any("not cleared" in line for line in log), log)
+        self.assertFalse(pc.fate_paid)   # the transient marker is consumed
+
+    def test_a_clean_retreat_pays_the_debt_too(self):
+        # 2026-07-29: running does not buy the protagonist's life back.
+        # There is no exit from the bargain, only a choice of what it buys.
+        pc = hero("PC")
+        companion = hero("Companion")
+        pc.protagonist = True
+        defeat(pc)
+        pc.fate_debt = True
+        foe = sites.make_foe("skeleton", 1, random.Random(1))
+
+        with (
+            mock.patch("rpg._attack", return_value=False),
+            mock.patch("rpg._chase_contest", return_value=True),
+        ):
+            escaped = rpg.attempt_retreat(
+                [pc, companion], [foe], random.Random(2), [])
+
+        self.assertTrue(escaped)
+        self.assertFalse(pc.fate_debt)
+        self.assertTrue(companion.dead)
+        self.assertTrue(pc.alive)
+        self.assertEqual(pc.hp, 1)
+        self.assertTrue(pc.fate_paid)
+
+    def test_a_blink_out_pays_the_debt_too(self):
+        # The Power buys the party out of the room, not out of the bargain.
+        pc = hero("PC")
+        companion = hero("Companion")
+        pc.protagonist = True
+        pc.school = "fire"
+        pc.spells = {"teleport": 2}
+        pc.cur_power = 99
+        defeat(pc)
+        pc.fate_debt = True
+        foe = sites.make_foe("skeleton", 1, random.Random(1))
+
+        with mock.patch("rpg.casting_check", return_value="success"):
+            gone = rpg.blink_escape(
+                [pc, companion], [foe], pc, random.Random(2), [])
+
+        self.assertTrue(gone)
+        self.assertTrue(companion.dead)
+        self.assertTrue(pc.alive)
+        self.assertEqual(pc.hp, 1)
+
+    def test_a_failed_break_defers_the_debt_to_the_real_end(self):
+        # The fight is not over, so nothing is collected at the door.
+        # A pursuing roster is required for the chase to roll at all --
+        # the barrow's undead never chase, so fleeing them always works.
+        pc = hero("PC")
+        companion = hero("Companion")
+        pc.protagonist = True
+        defeat(pc)
+        pc.fate_debt = True
+        foe = sites.make_foe("cutthroat", 1, random.Random(1))
+        self.assertTrue(foe.pursues)
+
+        with (
+            mock.patch("rpg._attack", return_value=False),
+            mock.patch("rpg._chase_contest", return_value=False),
+        ):
+            escaped = rpg.attempt_retreat(
+                [pc, companion], [foe], random.Random(2), [])
+
+        self.assertFalse(escaped)
+        self.assertTrue(pc.fate_debt)      # still owed
+        self.assertFalse(companion.dead)
+        self.assertFalse(pc.fate_paid)
+
     def test_depleted_party_restores_pc_after_killing_last_companion(self):
         pc = hero("PC")
         already_dead = hero("Already Dead")
