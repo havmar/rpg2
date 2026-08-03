@@ -1,46 +1,99 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
+=== Loot the Village -- the village gate (L1), room 2/2: old trees ===
+  Village Thug 2 -- mace
+  DEX 5  STR 3  STA 5  HP 7/7
+  takes spoils, leaves the fallen
+  Militiaman 3 -- spear
+  DEX 5  STR 4  STA 6  HP 10/10
+  takes spoils, leaves the fallen
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Snagg, Mialee, Village Thug 2, Militiaman 3 close the distance -- the lines meet!
+    stamina: Snagg 8/8, Mialee 8/8 | Village Thug 2 5/5, Militiaman 3 6/6
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Snagg attacks Village Thug 2 -- parried.
+        pressure: Snagg: 7 (2d6=3, +4 DEX) vs Village Thug 2: 14 (2d6=9, +5 DEX)
+    Mialee edges past Village Thug 2 -- a solid wound! [Village Thug 2: 5/7 HP, -1 to rolls]
+        pressure: Mialee: 17 (2d6=11, +6 DEX) vs Village Thug 2: 15 (2d6=10, +5 DEX)
+        severity: 3 = margin 2 +5 STR -1 whip -3 soak -> wound (-2 HP)
+    Village Thug 2 attacks Mialee -- parried.
+        pressure: Village Thug 2: 11 (2d6=7, +5 DEX, -1 wounds) vs Mialee: 13 (2d6=7, +6 DEX)
+    Militiaman 3 attacks Mialee -- parried.
+        pressure: Militiaman 3: 9 (2d6=4, +5 DEX) vs Mialee: 13 (2d6=7, +6 DEX)
+    stamina: Snagg 7/8, Mialee 7/8 | Village Thug 2 4/5, Militiaman 3 5/6
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Snagg edges past Village Thug 2 -- a graze! [Village Thug 2: 4/7 HP, -1 to rolls]
+        pressure: Snagg: 15 (2d6=11, +4 DEX) vs Village Thug 2: 13 (2d6=9, +5 DEX, -1 wounds)
+        severity: 2 = margin 2 +4 STR -1 light hammer -3 soak -> graze (-1 HP)
+    Mialee outmaneuvers Village Thug 2 -- a grievous injury! [Village Thug 2: 0/7 HP, -3 to rolls]
+        pressure: Mialee: 17 (2d6=11, +6 DEX) vs Village Thug 2: 13 (2d6=9, +5 DEX, -1 wounds)
+        severity: 5 = margin 4 +5 STR -1 whip -3 soak -> grievous (-4 HP)
+    *** Village Thug 2 falls. ***
+    (Village Thug 2 strikes even as they fall)
+    Village Thug 2 attacks Mialee -- parried.
+        pressure: Village Thug 2: 6 (2d6=2, +5 DEX, -1 wounds) vs Mialee: 16 (2d6=10, +6 DEX)
+    Militiaman 3 attacks Snagg -- parried.
+        pressure: Militiaman 3: 10 (2d6=5, +5 DEX) vs Snagg: 12 (2d6=8, +4 DEX)
+    stamina: Snagg 6/8, Mialee 6/8 | Militiaman 3 4/6
+  Round 4:
+    Snagg edges past Militiaman 3, but the blow glances off -- deflected.
+        pressure: Snagg: 14 (2d6=10, +4 DEX) vs Militiaman 3: 13 (2d6=8, +5 DEX)
+        severity: 0 = margin 1 +4 STR -1 light hammer -4 soak -> deflected
+    Mialee outmaneuvers Militiaman 3 -- a solid wound! [Militiaman 3: 8/10 HP, -1 to rolls]
+        pressure: Mialee: 13 (2d6=7, +6 DEX) vs Militiaman 3: 10 (2d6=5, +5 DEX)
+        severity: 3 = margin 3 +5 STR -1 whip -4 soak -> wound (-2 HP)
+    !! Militiaman 3 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Militiaman 3 overwhelms Snagg -- a grievous injury! [Snagg: 8/12 HP, -1 to rolls]
+        pressure: Militiaman 3: 14 (2d6=12, +5 DEX, -1 wounds, -2 winded) vs Snagg: 8 (2d6=4, +4 DEX)
+        severity: 6 = margin 6 +4 STR -4 soak -> grievous (-4 HP)
+    Snagg takes a wound: a deep wound in the thigh (severity 2; HP ceiling 10/12)
+    stamina: Snagg 5/8, Mialee 5/8 | Militiaman 3 3/6*   (* = Winded)
+  Round 5:
+    Snagg attacks Militiaman 3 -- parried.
+        pressure: Snagg: 8 (2d6=6, +3 DEX, -1 wounds) vs Militiaman 3: 10 (2d6=8, +5 DEX, -1 wounds, -2 winded)
+    Mialee overwhelms Militiaman 3 -- a crippling blow! [Militiaman 3: 2/10 HP, -4 to rolls]
+        pressure: Mialee: 14 (2d6=8, +6 DEX) vs Militiaman 3: 6 (2d6=4, +5 DEX, -1 wounds, -2 winded)
+        severity: 8 = margin 8 +5 STR -1 whip -4 soak -> crippling blow (-6 HP)
+    Militiaman 3 attacks Snagg -- parried.
+        pressure: Militiaman 3: 7 (2d6=8, +5 DEX, -4 wounds, -2 winded) vs Snagg: 8 (2d6=6, +3 DEX, -1 wounds)
+    stamina: Snagg 4/8, Mialee 4/8 | Militiaman 3 2/6*   (* = Winded)
+    The beaten foe line breaks and runs!
+    Snagg outmaneuvers Militiaman 3, but the hurried blow at a fleeing back glances off -- deflected.
+        pressure: Snagg: 8 (2d6=6, +3 DEX, -1 wounds) vs Militiaman 3: 5 (2d6=8, +5 DEX, -4 wounds, -2 winded, -2 fleeing)
+        severity: 2 = margin 3 +4 STR -1 light hammer -4 soak -> graze -> a hurried blow at a fleeing back: deflected
+    Mialee overwhelms Militiaman 3 -- a grievous injury! [Militiaman 3: 0/10 HP, -5 to rolls]
+        pressure: Mialee: 11 (2d6=5, +6 DEX) vs Militiaman 3: 4 (2d6=7, +5 DEX, -4 wounds, -2 winded, -2 fleeing)
+        severity: 7 = margin 7 +5 STR -1 whip -4 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** Militiaman 3 falls. ***
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Snagg gains 28 XP (encounter) [56/100]
+    Mialee gains 28 XP (encounter) [56/100]
+    (dark work: +28 bad karma -- bad karma 56/100; heat 0 -- lying low)
+Left among the dead:
+a mace (+0 atk/+0 sev, 8g),
+a spear (+0 atk/+0 sev, 5g).
+
+  *** QUEST COMPLETE: Loot the Village -- the village gate. Reward: 51 gold. ***
+    Snagg talks the pay up: +15g (CHA 6 -- 66g in all).
+    The party purse holds 91 gold.
+    Snagg gains 98 XP (quest) [154/100]
+    *** Snagg reaches level 2! (+3 skill points, 3 unspent) ***
+    Mialee gains 98 XP (quest) [154/100]
+    *** Mialee reaches level 2! (+3 skill points, 3 unspent) ***
+    Mialee: satisfaction 7 -> 8/10 (a job paid out)
+    (dark work: +98 bad karma -- bad karma 154/200; heat 0 -- lying low)
+  (turned in QUICK -- day 2 against a deadline of day 6: x1.15 on the turn-in)
+  (turn in to Isolde, the gang lieutenant -- narrate the scene)
+  EPILOGUE (day 2): The party takes the village's gold. The survivors begin rebuilding.
+  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
+    Mialee trains: combat training rank 1 (+1 to all pressure rolls) [1 point(s) left]
+    Mialee drills a new move -- Kick: on a hit: the foe defends at -2 next round [0 point(s) left]
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Snagg: Scratched STA 5/8 Power 3/3
+  (hurt -1 to rolls)
+  - a deep wound in the thigh (sev 2)
+  (HP ceiling 10/12 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
+Mialee: Unhurt STA 5/8 Power 4/4
   (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 91g; day 2.
+Karma: bad karma 154/200; heat 0 -- lying low.

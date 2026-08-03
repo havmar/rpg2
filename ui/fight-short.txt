@@ -1,36 +1,90 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
-Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+=== Loot the Village ===
+the village gate (L1),
+room 2/2: old trees
+Village Thug 2 -- mace
+DEX 5  STR 3  STA 5  HP 7/7
+takes spoils, leaves the fallen
+Militiaman 3 -- spear
+DEX 5  STR 4  STA 6  HP 10/10
+takes spoils, leaves the fallen
+Round 1: nothing lands.
 Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+Snagg attacks Village Thug 2, parried.
+Mialee edges past Village Thug 2,
+deals 2 dmg!
+Village Thug 2 (5/7)
+attacks Mialee, parried.
+Militiaman 3 attacks Mialee, parried.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
+Snagg edges past Village Thug 2,
+deals 1 dmg.
+Mialee outmaneuvers Village Thug 2,
+deals 4 dmg!! It falls.
+Village Thug 2 strikes as they fall:
+Mialee parries.
+Militiaman 3 attacks Snagg, parried.
+Round 4:
+Snagg attacks Militiaman 3, deflected.
+Mialee outmaneuvers Militiaman 3,
+deals 2 dmg!
+!! Militiaman 3 is Winded.
+Militiaman 3 (8/10) overwhelms Snagg,
+deals 4 dmg!!
+Snagg takes a wound:
+a deep wound in the thigh.
+Round 5:
+Snagg (8/12)
+attacks Militiaman 3, parried.
+Mialee overwhelms Militiaman 3,
+deals 6 dmg!!!
+Militiaman 3 (2/10)
+attacks Snagg, parried.
+The beaten foes break and run!
+Snagg's parting blow at
+Militiaman 3 -- deflected.
+Mialee overwhelms Militiaman 3,
+deals 4 dmg!! It falls.
 The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
+Snagg +28 XP (encounter) [56/100]
+Mialee +28 XP (encounter) [56/100]
+(dark work: +28 bad karma -- bad karma 56/100; heat 0 -- lying low)
+Left among the dead:
+a mace (+0 atk/+0 sev, 8g),
+a spear (+0 atk/+0 sev, 5g).
+
+*** QUEST COMPLETE: Loot the Village --
+the village gate. Reward: 51 gold. ***
+Snagg talks the pay up:
++15g (66g in all).
+The party purse holds 91 gold.
+Snagg +98 XP (quest) [154/100]
+*** Snagg reaches level 2!
+(3 skill points unspent) ***
+Mialee +98 XP (quest) [154/100]
+*** Mialee reaches level 2!
+(3 skill points unspent) ***
+Mialee: satisfaction 7 -> 8/10
+(a job paid out)
+(dark work: +98 bad karma -- bad karma 154/200; heat 0 -- lying low)
+(QUICK turn-in: day 2, due day 6 --
+x1.15 on the lump)
+(turn in to
+Isolde, the gang lieutenant --
+narrate the scene)
+EPILOGUE (day 2): The party takes the village's gold. The survivors begin rebuilding.
+(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
+Mialee trains: combat rank 1
+[1 point(s) left]
+Mialee drills a new move: Kick
+[0 point(s) left]
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Snagg: Scratched STA 5/8 Power 3/3
+  (hurt -1 to rolls)
+  - a deep wound in the thigh (sev 2)
+  (HP ceiling 10/12 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
+Mialee: Unhurt STA 5/8 Power 4/4
   (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 91g; day 2.
+Karma: bad karma 154/200; heat 0 -- lying low.
