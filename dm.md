@@ -1205,9 +1205,9 @@ bigger than the fights WITHOUT pages of narration:
 - **The pact & karma in numbers (2026-07-19; the collections ladder
   2026-08-03):** dark XP = bad karma; heat = bad karma // (100 x party
   level), capped 3; the law's posses arrive at party level + heat
-  (cooldown 2d, chance 0.6, at arrivals and nights). Assignments: a
-  fresh one ~4 days after the last resolved (the first letter too),
-  serial, first-ever level 1, later ones party +0..+1. Grace ~4 days
+  (cooldown 2d, chance 0.6, at arrivals and nights). Assignments: the
+  first letter comes on day 1, then a fresh one ~4 days after the last
+  resolved; serial, first-ever level 1, later ones party +0..+1. Grace ~4 days
   to TAKE it; taking stamps a visible window (4-6 days + road days)
   and stops enforcement. Past either clock: PAST DUE -- one warning
   scene (no fight), then collections at party level, +1 per beaten

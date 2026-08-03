@@ -113,8 +113,8 @@ DARK_JOBS_PER_DAY = 3   # the shadow board's size, rolled per settlement day
 # numbers later (develop.md, Balance / tuning).
 TASK_INTERVAL_DAYS = 4  # a fresh assignment ~this long after the last one
                         # resolved (done, withdrawn, or bribed away); a
-                        # fresh pact's FIRST letter also waits this long
-                        # (new_pact seeds the clock at day 0)
+                        # fresh pact's FIRST letter comes on day 1
+                        # (new_pact backdates the clock)
 TASK_GRACE_DAYS = 4     # an assignment may sit UNTAKEN this long -- the
                         # grace covers taking it (the giver is local);
                         # past it the collections ladder starts (PAST DUE)
@@ -175,11 +175,13 @@ def new_pact() -> dict:
     switch): the PC is hell's employee from scene one."""
     return {"task": None,           # the current assignment's quest id
             "assigned_day": 0,      # when it landed (grace runs from here)
-            "last_task_day": 0,     # when the last one resolved -- the
+            "last_task_day": -99,   # when the last one resolved -- the
                                     # interval clock (fresh pact: hell's
-                                    # first letter comes ~day
-                                    # TASK_INTERVAL_DAYS, after the party
-                                    # has its feet)
+                                    # first letter comes on day 1, so the
+                                    # dark option is on the table from
+                                    # the start; it is fixed L1 and its
+                                    # grace only covers taking it, so the
+                                    # early letter costs nothing)
             "bribed_until": 0,      # no assignments/enforcement before this
             "last_enforce_day": -99,
             "warned": False,        # the one PAST DUE warning scene has

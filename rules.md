@@ -3360,8 +3360,10 @@ hell is a fully supported campaign — the mechanics below only price it.
 
 - **Assignments.** Hell assigns Dark Tasks on its own clock: a fresh
   one lands at a settlement `TASK_INTERVAL_DAYS` (4) after the last
-  resolved — the fresh pact's first letter waits the same interval —
-  printed as a WORD FROM BELOW block (delivery flavor rolled
+  resolved — the fresh pact's first letter comes on day 1, so the dark
+  option is on the table from the start (harmless now: it is fixed
+  level 1 and its grace only covers taking it) — printed as a WORD
+  FROM BELOW block (delivery flavor rolled
   from `HELL_MAIL`: unseen job boards — searched for by paladins —
   black-waxed letters, ember-eyed couriers). Assignments are strictly
   serial: no new letter while one is open. The task is an ordinary

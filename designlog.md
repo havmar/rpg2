@@ -1098,10 +1098,13 @@ deletes the visits, and with them both the threat and the comedy.
 **The shipped shape (the designer settled the open calls):**
 
 - **The first-ever assignment is fixed level 1** (`FIRST_TASK_LEVEL`; the
-  party always starts as a duo, so no scaling subtlety is needed), and the
-  fresh pact's letter now waits the ordinary interval (`new_pact` seeds
-  `last_task_day = 0`, so ~day 4) instead of arriving on day 1. Later
-  assignments soften from spread 0..+2 to 0..+1 (`TASK_SPREAD`).
+  party always starts as a duo, so no scaling subtlety is needed). Later
+  assignments soften from spread 0..+2 to 0..+1 (`TASK_SPREAD`). The
+  first letter was briefly moved to ~day 4, then put back to day 1 on
+  the designer's call the same session: with the job at L1 and the
+  grace covering only the taking, the early letter is a free OPTION on
+  the table, not a clock already running -- which is the point of the
+  pact frame.
 - **Grace covers TAKING, and taking stops enforcement.** The giver is
   local, so 4 days to take is honest. Taking stamps a **visible
   completion window** on the quest — `TASK_WINDOW_DAYS` (4-6) + the road
