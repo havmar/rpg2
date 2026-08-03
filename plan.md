@@ -134,8 +134,9 @@ session): the PC is a MORTAL of an ordinary race, a low-ranking
 employee of Hell under a pact with an evil god.** Not an imp. The pact
 rides every new save (`new --no-pact` opts out); rules.md's Karma &
 Heat add-on, "The Hell Pact", has the shipped mechanics (assignments,
-Chickening Out enforcement, bribes, the caper structure, the
-left-for-dead mercy, seventeen new dark templates).
+Past Due collections enforcement (reshaped 2026-08-03, was Chickening
+Out), bribes, the caper structure, the left-for-dead mercy, seventeen
+new dark templates).
 
 **The load-bearing mechanism (SHIPPED as the first slice, 2026-07-19 —
 rules.md's Karma & Heat add-on):** XP bucketed by the alignment of the
@@ -196,8 +197,9 @@ level curve. Karma rides *beside* levels for now: merging them fully
    as guessed: bad karma prices the deed and holding land raises the
    heat floor. All knobs hand-set -- tune at the table.
 4. **The good-karma mirror — the dual campaign.** *Half-shipped
-   2026-07-19*: hell's disciplinary posses exist (Chickening Out — they
-   punish DISOBEDIENCE, an ignored assignment), and the PC frame is
+   2026-07-19*: hell's disciplinary posses exist (Past Due collections
+   — they punish DISOBEDIENCE, an ignored assignment), and the PC
+   frame is
    settled (mortal pact-holder, default-on). What remains is the mirror
    proper: hell auditing a too-*virtuous* employee (good karma as the
    liability axis), so the hypocritical middle path (both meters hot)

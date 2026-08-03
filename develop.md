@@ -280,8 +280,11 @@ a pointer: what the file is, how it's run, where its docs are.
   generated leader face). **The hell pact (same day, second slice —
   rules.md's "The Hell Pact"):** `new_pact` + the assignment/
   enforcement knobs (`TASK_INTERVAL_DAYS`, `TASK_GRACE_DAYS`,
+  `FIRST_TASK_LEVEL`, `TASK_SPREAD`, `TASK_WINDOW_DAYS`,
   `ENFORCE_*`, `BRIBE_*`, `DEED_FAIL_KARMA`, `HELL_MAIL`), the hell
-  enforcers (`HELL_SKINS` / `build_hell_posse` — Chickening Out), and
+  collections posses (`HELL_SKINS` / `build_hell_posse` — Past Due,
+  the collections ladder; reshaped 2026-08-03, was Chickening
+  Out), and
   the CAPER schema on templates (`deed` = 2d6+stat vs DC gate, `twist`
   = priced terms; 24 dark templates total after the content pass). All
   other knobs at the top (`KARMA_HEAT_STEP`,

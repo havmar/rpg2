@@ -21,12 +21,19 @@ Mechanically:
   job boards unseen to ordinary men, black-waxed letters, ember-eyed
   couriers (HELL_MAIL). An assignment is an ordinary dark quest flagged
   `hell_task` -- take it, fight it, turn it in.
-- **Chickening Out.** An assignment may be IGNORED for TASK_GRACE_DAYS;
-  past that, infernal colleagues come to punish the disobedience
-  (build_hell_posse -- the lawful posses' mirror, at party level +1,
-  escalating with each beating survived). Beating them changes nothing:
-  the job still stands. LOSING to them is hell's lesson (the mercy in
-  session.py): the purse taken as a fine, the refused job withdrawn.
+- **Past Due (the collections ladder, 2026-08-03 -- was Chickening
+  Out).** An assignment may sit UNTAKEN for TASK_GRACE_DAYS -- the grace
+  covers getting to the local hand and taking the job. TAKING it stops
+  enforcement and stamps a visible completion window on the quest
+  (TASK_WINDOW_DAYS + the road days to its site, the honest deadline
+  machinery); hell only collects again if that window is blown. Past
+  either clock the ladder climbs: first ONE WARNING (a scene, no fight
+  -- the clerk with forms), then collections posses at PARTY LEVEL, +1
+  per visit survived, capped at party +2 (build_hell_posse -- the
+  lawful posses' mirror). Only the top rung is relentless; the earlier
+  rungs break when beaten. Beating them changes nothing: the job still
+  stands. LOSING to them is hell's lesson (the mercy in session.py):
+  the purse taken as a fine, the refused job withdrawn.
 - **Bribes.** Hell can be bribed to ease off for a while (`bribe`:
   BRIBE_GOLD_PER_LEVEL x party level buys BRIBE_DAYS of no assignments
   and no enforcement).
@@ -105,11 +112,30 @@ DARK_JOBS_PER_DAY = 3   # the shadow board's size, rolled per settlement day
 # the dark layer this session -- quest VARIETY first, the table tunes
 # numbers later (develop.md, Balance / tuning).
 TASK_INTERVAL_DAYS = 4  # a fresh assignment ~this long after the last one
-                        # resolved (done, withdrawn, or bribed away)
-TASK_GRACE_DAYS = 4     # an assignment may be ignored this long; past it,
-                        # Chickening Out -- hell's enforcers come calling
-ENFORCE_COOLDOWN_DAYS = 2   # hell's patience between beatings (mirrors
-ENFORCE_CHANCE = 0.6        # the law's cooldown + chance shape)
+                        # resolved (done, withdrawn, or bribed away); a
+                        # fresh pact's FIRST letter comes on day 1
+                        # (new_pact backdates the clock)
+TASK_GRACE_DAYS = 4     # an assignment may sit UNTAKEN this long -- the
+                        # grace covers taking it (the giver is local);
+                        # past it the collections ladder starts (PAST DUE)
+FIRST_TASK_LEVEL = 1    # the first-ever assignment is fixed level 1 --
+                        # the pact's tutorial job (the party always
+                        # starts as a duo; later ones level with them)
+TASK_SPREAD = (0, 1)    # later assignments: at the party, the margin of
+                        # error running upward (was 0..+2 -- the 2026-08-03
+                        # playtest found +2 brutal on a fresh party)
+TASK_WINDOW_DAYS = (4, 6)   # taking an assignment stamps a visible
+                            # completion window: this base + the road days
+                            # to the job's site (the honest deadline
+                            # machinery carries it -- late pays less,
+                            # but hell work is never LOST off the clock)
+ENFORCE_COOLDOWN_DAYS = 4   # hell's patience between collection visits
+ENFORCE_CHANCE = 0.6        # (the law's chance shape; cooldown was 2 --
+                            # the 2026-08-03 rework spaced the ladder out)
+ENFORCE_CAP_OVER = 2    # collections posses: party level on the first
+                        # fight, +1 per visit survived, capped this far
+                        # over (was +1 start / +3 cap -- too steep);
+                        # only the capped top rung is relentless
 BRIBE_GOLD_PER_LEVEL = 30   # `bribe`: this x party level buys...
 BRIBE_DAYS = 10             # ...this many days of no assignments and no
                             # enforcement (the task clock restarts after)
@@ -151,10 +177,16 @@ def new_pact() -> dict:
             "assigned_day": 0,      # when it landed (grace runs from here)
             "last_task_day": -99,   # when the last one resolved -- the
                                     # interval clock (fresh pact: hell's
-                                    # first letter comes early)
+                                    # first letter comes on day 1, so the
+                                    # dark option is on the table from
+                                    # the start; it is fixed L1 and its
+                                    # grace only covers taking it, so the
+                                    # early letter costs nothing)
             "bribed_until": 0,      # no assignments/enforcement before this
             "last_enforce_day": -99,
-            "beatings": 0,          # enforcer visits survived over the
+            "warned": False,        # the one PAST DUE warning scene has
+                                    # fired for the current refusal
+            "beatings": 0,          # collection visits fought over the
                                     # CURRENT refusal (escalates them)
             "done": 0}              # lifetime assignments completed (the
                                     # curriculum ledger -- titles later)
@@ -611,13 +643,15 @@ def build_posse(level: int, race: str, rng: random.Random,
 
 
 # --------------------------------------------------------------------------- #
-# Hell's enforcers (Chickening Out -- the hell pact, 2026-07-19)
+# Hell's collections (Past Due -- the hell pact, 2026-07-19; the ladder
+# reshaped 2026-08-03)
 # --------------------------------------------------------------------------- #
 # The lawful posses' mirror: budget-honest ladder rosters wearing INFERNAL
 # display names ("demons love bullying" -- and disobedient employees most
 # of all), led by a generated face in a borrowed body. One band for now
 # (hell's org chart is a later content pass); the escalation is the LEVEL
-# (party + 1, +1 per beating survived, capped at +3 over).
+# (party level on the first fight, +1 per visit survived, capped at
+# ENFORCE_CAP_OVER over -- and a no-fight warning scene comes first).
 
 HELL_SKINS = {
     "cutthroat": "Spite-Imp", "archer": "Barb-Flinger",
@@ -631,14 +665,15 @@ HELL_LEADER_ROLE = "collections agent of Hell (in a borrowed body)"
 def build_hell_posse(level: int, race: str, rng: random.Random,
                      used_names: set[str] | None = None
                      ) -> tuple[list[str], dict, dict, str]:
-    """One Chickening Out encounter at `level`: (kinds, skins, leader,
-    band label) -- build_posse's shape exactly, wearing hell's names."""
+    """One Past Due collections encounter at `level`: (kinds, skins,
+    leader, band label) -- build_posse's shape exactly, wearing hell's
+    names."""
     from people import make_npc     # runtime import (people imports quests)
     kinds = build_room(room_budget(level, 1.0), LADDER_POOL, rng,
                        final=True)
     leader = make_npc(rng, race, HELL_LEADER_ROLE, level=level,
                       used_names=used_names)
-    return kinds, HELL_SKINS, leader, "hell's enforcers"
+    return kinds, HELL_SKINS, leader, "hell's collections"
 
 
 def main() -> None:
@@ -663,7 +698,7 @@ def main() -> None:
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")
     print()
-    print("Sample hell enforcers (Chickening Out):")
+    print("Sample hell collections posses (Past Due):")
     for lvl in (4, 9):
         kinds, skins, leader, label = build_hell_posse(
             lvl, land_race(world, s["land"]), rng)

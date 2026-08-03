@@ -3360,27 +3360,49 @@ hell is a fully supported campaign — the mechanics below only price it.
 
 - **Assignments.** Hell assigns Dark Tasks on its own clock: a fresh
   one lands at a settlement `TASK_INTERVAL_DAYS` (4) after the last
-  resolved, printed as a WORD FROM BELOW block (delivery flavor rolled
+  resolved — the fresh pact's first letter comes on day 1, so the dark
+  option is on the table from the start (harmless now: it is fixed
+  level 1 and its grace only covers taking it) — printed as a WORD
+  FROM BELOW block (delivery flavor rolled
   from `HELL_MAIL`: unseen job boards — searched for by paladins —
-  black-waxed letters, ember-eyed couriers). The task is an ordinary
-  dark quest flagged `hell_task`, rolled AT the party with the margin
-  of error running UPWARD (spread 0..+2 — the fixer's −1..+2 belongs
-  to chosen shadow work). The curriculum doctrine: each task teaches a
-  type of destructive act; the shadow board and `forge --dark` are the
-  self-assigned version the player graduates into.
-- **Chickening Out.** An assignment may be ignored for
-  `TASK_GRACE_DAYS` (4). Past that, infernal colleagues are dispatched
-  at the posse stops (arrivals, nights; cooldown 2 d, chance 0.6):
-  budget-honest ladder rosters wearing infernal names (`HELL_SKINS`),
-  led by a generated face, at **party level + 1, +1 per beating
-  already survived (capped +3 over)**. Beating them changes nothing —
-  the job stands and the next visit is worse. Their XP is **neutral**:
-  cutting down devils is neither crime nor penance (farming them for
-  absolution would be a hole).
+  black-waxed letters, ember-eyed couriers). Assignments are strictly
+  serial: no new letter while one is open. The task is an ordinary
+  dark quest flagged `hell_task`; the **first-ever assignment is fixed
+  `FIRST_TASK_LEVEL` (1)** — the party always starts as a duo, and the
+  curriculum starts at page one — later ones are rolled AT the party
+  with the margin of error running UPWARD (`TASK_SPREAD`, 0..+1 — the
+  fixer's −1..+2 belongs to chosen shadow work). The curriculum
+  doctrine: each task teaches a type of destructive act; the shadow
+  board and `forge --dark` are the self-assigned version the player
+  graduates into.
+- **Past Due — the collections ladder (2026-08-03, was Chickening
+  Out).** The grace covers *taking* the job: an assignment may sit
+  untaken for `TASK_GRACE_DAYS` (4) — the giver is local, so the
+  window is honest. **Taking it stops enforcement** and stamps a
+  visible completion window on the quest: `TASK_WINDOW_DAYS` (4–6) +
+  the road days to its first site, carried by the ordinary deadline
+  machinery, so every board and readout prints the clock. Hell work is
+  never LOST off that clock: late pays the ordinary bands (×0.6, then
+  ×0 past the grace), but the job stands until it is done, withdrawn,
+  or bribed quiet — past the window the ladder resumes instead.
+  Untaken past grace, or taken and past the window, the job is PAST
+  DUE and the ladder climbs at the posse stops (arrivals, nights;
+  cooldown `ENFORCE_COOLDOWN_DAYS` (4), chance 0.6): first **one
+  WARNING** — a clerk from Hell, forms, no fight, fired at the first
+  eligible stop with no chance roll, naming the final-notice date —
+  then armed collections: budget-honest ladder rosters wearing
+  infernal names (`HELL_SKINS`), led by a generated face, at **party
+  level, +1 per visit already fought, capped `ENFORCE_CAP_OVER` (+2)
+  over**. Only the capped top rung is relentless; the earlier rungs
+  break when beaten. Beating them changes nothing — the job stands and
+  the next visit is worse. Their XP is **neutral**: cutting down
+  devils is neither crime nor penance (farming them for absolution
+  would be a hole).
 - **Bribes.** `bribe` pays `BRIBE_GOLD_PER_LEVEL` (30) × party level
   for `BRIBE_DAYS` (10) of no new assignments and no enforcement. An
   open assignment survives the bribe; its grace runs fresh from the
-  bribe's end.
+  bribe's end, the collections ladder resets (warning and all), and a
+  taken job's window stretches by the bought days.
 - **Left for dead (the mercy).** Heroic adventurers and hell's enforcers use
   the authored LAW/HELL form of Slice 4's mercy. On the PC's first eligible
   defeat at each character level, `apply_mercy` replaces GAME OVER: the PC
