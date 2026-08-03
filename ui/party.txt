@@ -1,4 +1,4 @@
-RPG2 PARTY SHEET -- day 7, at Firascir >
+RPG2 PARTY SHEET -- day 9, at Firascir >
   Tomburgh
 purse: 100g
 party: 1/3 companion slot(s) filled (CHA
@@ -6,39 +6,46 @@ party: 1/3 companion slot(s) filled (CHA
 
 (YOU) Snagg -- orc m, age 39
   L3  training 1  XP 92/300  points 0
-  DEX 4  STR 4  MIND 3  CHA 6
-  HP 10/11 of 12  STA 6/6  Power 1/3
+  DEX 3  STR 3  MIND 3  CHA 6
+  HP 5/8 of 12  STA 5/6  Power 1/3
   rapier | healingx2, staminax1
   abilities: arrow_parry, first_blood
   alchemy 1
   background: wealthy; speech: verbose;
     looks: ugly
+  - a deep wound in the right arm (sev
+    2)
   - a cracked rib (sev 1)
-  wound load 1 -> HP ceiling 11/12
+  - a cut brow, blood in the eye (sev 1)
+  wound load 4 -> HP ceiling 8/12
 
 (companion) Mialee -- elf f, age 26
   L3  training 1  XP 92/300  points 0
   DEX 5  STR 5  MIND 2  CHA 6
-  HP 7/8 of 9  STA 4/9  Power 5/5
+  HP 8/8 of 9  STA 9/9  Power 5/5
   katana | healingx2, staminax1
   moves: kick
   alchemy 1
   pools bought: hp +1, power +1, sta +1
-  satisfaction 10/10
+  satisfaction 8/10
   weakness: needs meds; voice: mumbling;
     dress: mismatched
   - a split scalp (sev 1)
   wound load 1 -> HP ceiling 8/9
 
-active quest [q68] Dine and Dash is
-  COMPLETE
+active quest: [q71] L2 The Restless
+  Crypt -- next: the village graveyard
+  (L2), room 1/1
+  due day 10 -- due tomorrow
 karma: bad karma 392; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: assignment [q78] Corrupt the
-  Holy Sword at Tomburgh (grace to take
-  it runs to day 11).
+  Holy Sword at Tomburgh (taken; hell
+  wants it by day 12).
   (1 assignment(s) completed -- the
     curriculum ledger; see `task`)
 THE WAR: [w1] L2 The Dead Rise -- raised
   at Ulus-Gal.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***

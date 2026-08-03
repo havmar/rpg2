@@ -1,4 +1,4 @@
-RPG2 MAP -- day 7
+RPG2 MAP -- day 9
 the party is at Firascir > Tomburgh
 (travel: 1 day within a land, 2 days to
   another)
@@ -11,13 +11,14 @@ the party is at Firascir > Tomburgh
 == Firascir ==  <- here
   Whitweld Forest (forest, found day 1)
     (visited)
+  Grendon Fields (farmland, found day 7)
   Stura River (river, found day 5)
     (visited)
   Tomburgh (capital) -- 3 job(s)  <- the
     party
-  Leehaven (town) -- 4 job(s)
+  Leehaven (town) -- 4 job(s)  (visited)
   Walhaven (town) -- 4 job(s)
-  Bradwhitchip (town) -- 4 job(s)
+  Bradwhitchip (town) -- 3 job(s)
   Redflurton (town) -- 4 job(s)
   Sturford (village) -- 2 job(s)
   Ackham (village) -- 2 job(s)
@@ -59,6 +60,16 @@ the party is at Firascir > Tomburgh
   Urkhal (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
   Aradun (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q71] The Restless Crypt (L2) @ Leehaven
+  - the village graveyard (L2): here,
+    room 1/1
+
+[q78] Corrupt the Holy Sword (L4) @
+  Tomburgh
+  - the temple road (L4): here, room 1/2
 
 -- the war --
 THE WAR: [w1] L2 The Dead Rise -- raised

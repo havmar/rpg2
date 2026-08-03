@@ -1,82 +1,28 @@
 === The reckoning: the bounty guild ===
 (a level-4 posse)
-Bounty Hunter 4 -- spear
-DEX 5  STR 4  STA 6  HP 10/10
+Bounty Archer 6 -- shortbow
+DEX 5  STR 2  STA 5  HP 6/6
+shoots to range 2,
 takes spoils, leaves the fallen
-Mira -- longsword
-DEX 6  STR 5  STA 7  HP 13/13
+3x Bounty Hunter -- spear
+DEX 5  STR 4  STA 6  HP 10/10
 takes spoils, leaves the fallen
 Round 1:
 Snagg uses First Blood!
-Bounty Hunter 4 takes 1 dmg.
-Snagg and Bounty Hunter 4: they circle.
-Mialee: Kick at Bounty Hunter 4!
-Mialee edges past Bounty Hunter 4,
-deals 1 dmg.
-Bounty Hunter 4 is kicked off balance.
-Bounty Hunter 4 (8/10)
-attacks Snagg, parried.
-Mira attacks Snagg, parried.
-Round 2:
-Snagg edges past Bounty Hunter 4,
-deals 1 dmg.
-Mialee edges past Bounty Hunter 4,
-deals 1 dmg.
-Bounty Hunter 4 (6/10)
-outmaneuvers Mialee, deals 2 dmg!
-Mialee takes a wound: a split scalp.
-Mira attacks Snagg, parried.
-Round 3:
-Snagg attacks Bounty Hunter 4, parried.
-Mialee (7/9) overwhelms Bounty Hunter 4,
+Bounty Archer 6 takes 1 dmg.
+Snagg and Bounty Archer 6: Clash!
+Mialee: Kick at Bounty Archer 6!
+Mialee (8/9) edges past Bounty Archer 6,
 deals 4 dmg!!
-!! Bounty Hunter 4 is Winded.
-Bounty Hunter 4 (2/10)
-attacks Snagg, parried.
-Mira edges past Snagg, deals 2 dmg!
-Snagg takes a wound: a cracked rib.
-Round 4:
-Snagg (10/12)
-outmaneuvers Bounty Hunter 4,
-deals 2 dmg! It falls.
-Bounty Hunter 4 strikes as they fall:
-Snagg parries.
-Mialee (7/9) attacks Mira, deflected.
-!! Mira is Winded.
-Mira attacks Snagg, parried.
-Round 5: nothing lands.
-!! Snagg is Winded.
-Round 6:
-Snagg (10/12) outmaneuvers Mira,
-deals 1 dmg.
-Mialee (7/9) attacks Mira, parried.
-Mira (12/13) attacks Mialee, parried.
-Round 7:
-Snagg downs a stamina draught (1 left).
-!! Mialee is Winded.
-Mialee (7/9) attacks Mira, parried.
-!! Mira is SPENT.
-Mira (12/13) attacks Snagg, parried.
-The beaten foes break and run!
-Snagg (10/12) overwhelms Mira,
-deals 4 dmg!!
-The survivors escape.
-The field belongs to the party.
-The party catches its breath (+1 STA)
-Snagg +65 XP (encounter) [92/300]
-Mialee +65 XP (encounter) [92/300]
-(dark work: +65 bad karma -- bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party)
-Left among the dead:
-a spear (+0 atk/+0 sev, 5g).
-
--- the party --
-Snagg: Scratched STA 6/6 Power 1/3
-  - a cracked rib (sev 1)
-  (HP ceiling 11/12 until they mend)
-  (healing x2, stamina x1)
-Mialee: Scratched STA 4/9 Power 5/5
-  - a split scalp (sev 1)
-  (HP ceiling 8/9 until they mend)
-  (healing x2, stamina x1)
-Purse 240g; day 7.
-Karma: bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party.
+Bounty Archer 6 is kicked off balance.
+Bounty Archer 6 is caught --
+the shortbow drops to a poor melee grip.
+Bounty Hunter 7 attacks Mialee, parried.
+Bounty Hunter 8 outmaneuvers Snagg,
+deals 2 dmg!
+Snagg takes a wound:
+a cut brow, blood in the eye.
+Inga overwhelms Snagg, deals 4 dmg!!
+Snagg takes a wound:
+a deep wound in the right arm.
+== Snagg is badly cut up ==
