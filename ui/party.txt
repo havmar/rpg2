@@ -1,43 +1,39 @@
-RPG2 PARTY SHEET -- day 9, at Firascir >
-  Tomburgh
-purse: 100g
+RPG2 PARTY SHEET -- day 10, at Firascir
+  > Tomburgh > the village graveyard >
+  graveyard
+purse: 0g
 party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU) Snagg -- orc m, age 39
   L3  training 1  XP 157/300  points 0
-  DEX 1  STR 3  MIND 3  CHA 6
-  HP 6/6 of 12  STA 6/6  Power 1/3
-  rapier | no kit
+  DEX 3  STR 4  MIND 3  CHA 6
+  HP 4/7 of 12  STA 6/8  Power 1/3
+  rapier | staminax1
   abilities: arrow_parry, first_blood
   alchemy 1
   background: wealthy; speech: verbose;
     looks: ugly
-  - a shattered arm (sev 3)
   - a crippled hand [PERMANENT] (sev 3)
-  - badly beaten (sev 1)
-  - a cracked rib (sev 1)
-  - a cut brow, blood in the eye (sev 1)
-  wound load 9 -> HP ceiling 6/12
+  - a deep gash across the back (sev 2)
+  wound load 5 -> HP ceiling 7/12
 
 (companion) Mialee -- elf f, age 26
   L3  training 1  XP 157/300  points 0
-  DEX 5  STR 5  MIND 2  CHA 6
-  HP 6/8 of 9  STA 4/9  Power 5/5
-  katana | healingx1, staminax1
+  DEX 6  STR 5  MIND 3  CHA 6
+  HP 7/9  STA 8/9  Power 5/5
+  katana | healingx1
   moves: kick
   alchemy 1
   pools bought: hp +1, power +1, sta +1
   satisfaction 8/10
   weakness: needs meds; voice: mumbling;
     dress: mismatched
-  - a split scalp (sev 1)
-  wound load 1 -> HP ceiling 8/9
 
 active quest: [q71] L2 The Restless
   Crypt -- next: the village graveyard
   (L2), room 1/1
-  due day 10 -- due tomorrow
+  due day 10 -- DUE TODAY
 karma: bad karma 457; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
@@ -48,3 +44,5 @@ THE PACT: assignment [q78] Corrupt the
     curriculum ledger; see `task`)
 THE WAR: [w1] L2 The Dead Rise -- raised
   at Ulus-Gal.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***
