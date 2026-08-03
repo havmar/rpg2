@@ -1,6 +1,6 @@
 RPG2 MAP -- day 12
 the party is at Firascir > Grendon
-  Fields
+  Fields > the temple road > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -67,7 +67,7 @@ the party is at Firascir > Grendon
 
 [q78] Corrupt the Holy Sword (L4) @
   Tomburgh
-  - the temple road (L4): here, room 1/2
+  - the temple road (L4): here, room 2/2
 
 -- the war --
 THE WAR: [w1] L2 The Dead Rise -- raised
