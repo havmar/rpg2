@@ -1,29 +1,26 @@
-RPG2 PARTY SHEET -- day 2, at Firascir >
-  Whitweld Forest > the village gate >
-  old trees
-purse: 91g
+RPG2 PARTY SHEET -- day 5, at Firascir >
+  Flurham
+purse: 87g
 party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU) Snagg -- orc m, age 39
-  L2  training 0  XP 54/200  points 3
-  DEX 3  STR 4  MIND 3  CHA 6
-  HP 8/10 of 12  STA 5/8  Power 3/3
-  light hammer | healingx1, staminax1
+  L2  training 1  XP 54/200  points 1
+  DEX 4  STR 4  MIND 3  CHA 6
+  HP 13/12  STA 9/8  Power 3/3
+  mace | healingx2, staminax1
   alchemy 1
   background: wealthy; speech: verbose;
     looks: ugly
-  - a deep wound in the thigh (sev 2)
-  wound load 2 -> HP ceiling 10/12
 
 (companion) Mialee -- elf f, age 26
   L2  training 1  XP 54/200  points 0
   DEX 6  STR 5  MIND 3  CHA 6
-  HP 8/8  STA 5/8  Power 4/4
-  whip | healingx1, staminax2
+  HP 9/8  STA 9/8  Power 4/4
+  whip | healingx2, staminax2
   moves: kick
   alchemy 1
-  satisfaction 8/10
+  satisfaction 9/10
   weakness: needs meds; voice: mumbling;
     dress: mismatched
 
@@ -36,3 +33,5 @@ THE PACT: no current assignment --
   settlement.
   (1 assignment(s) completed -- the
     curriculum ledger; see `task`)
+THE WAR: [w1] L2 The Dead Rise -- raised
+  at Ulus-Gal.
