@@ -636,7 +636,10 @@ def map_sheet_lines(state: dict) -> list[str]:
             # What a visit would FIND today, not what is stored: the board's
             # clock only runs where the party stands, so a raw count would
             # show a land it left decaying to zero (quests.board_forecast).
-            open_q = board_forecast(world, area, state["clock"].day)
+            # Settlements only -- wilderness has no board (no
+            # SETTLEMENT_KINDS row to forecast from).
+            open_q = (board_forecast(world, area, state["clock"].day)
+                      if area["kind"] == "settlement" else 0)
             if area["key"] == pos["area"]:
                 where = "  <- the party"
             elif area["key"] in visited or area.get("visited"):
@@ -684,29 +687,32 @@ def map_sheet_lines(state: dict) -> list[str]:
 
 def _write_party_sheet(state: dict) -> None:
     """Write party.txt (phone-wrapped, like all output) on every save.
-    NEVER raises: a broken disk must not take the game loop down with it.
+    NEVER raises on I/O: a broken disk must not take the game loop down
+    with it. Rendering runs OUTSIDE the guard on purpose -- a bug in the
+    sheet code must crash loudly, not freeze the page silently (the map
+    sheet spent days stuck on day 1 that way, 2026-08-03).
     COMMITTING the sheet is `sheet`'s job (2026-07-13): one commit at the
     end of every DM message, not one per command -- the designer reads the
     playthrough as message-sized diffs."""
+    text = _wrap_block("\n".join(party_sheet_lines(state))) + "\n"
     try:
         UI_DIR.mkdir(parents=True, exist_ok=True)
-        PARTY_SHEET_PATH.write_text(
-            _wrap_block("\n".join(party_sheet_lines(state))) + "\n",
-            encoding="utf-8")
+        PARTY_SHEET_PATH.write_text(text, encoding="utf-8")
     except Exception:
         return
 
 
 def _write_map_sheet(state: dict) -> None:
     """Write map.txt (the world-map UI page) on every save, beside party.txt.
-    NEVER raises, for the same reason `_write_party_sheet` doesn't -- a disk
-    hiccup must not sink the game loop. `sheet` commits it alongside the
-    party sheet."""
+    NEVER raises on I/O, for the same reason `_write_party_sheet` doesn't --
+    a disk hiccup must not sink the game loop. Rendering runs OUTSIDE the
+    guard: swallowing a render bug here is what froze map.txt at day 1 for
+    days after the first wilderness area was revealed (2026-08-03).
+    `sheet` commits it alongside the party sheet."""
+    text = _wrap_block("\n".join(map_sheet_lines(state))) + "\n"
     try:
         UI_DIR.mkdir(parents=True, exist_ok=True)
-        MAP_SHEET_PATH.write_text(
-            _wrap_block("\n".join(map_sheet_lines(state))) + "\n",
-            encoding="utf-8")
+        MAP_SHEET_PATH.write_text(text, encoding="utf-8")
     except Exception:
         return
 
