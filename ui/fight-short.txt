@@ -26,3 +26,100 @@ Inga overwhelms Snagg, deals 4 dmg!!
 Snagg takes a wound:
 a deep wound in the right arm.
 == Snagg is badly cut up ==
+Round 2:
+Snagg downs a healing potion (1 left).
+Mialee (8/9) overwhelms Bounty Archer 6,
+deals 6 dmg!!! SLAIN.
+Bounty Archer 6 strikes as they fall:
+Snagg parries.
+Bounty Hunter 7 edges past Snagg,
+deals 2 dmg!
+Snagg takes a wound: a shattered arm.
+Bounty Hunter 8 attacks Mialee, parried.
+Inga and Mialee: Clash!
+Round 3:
+Snagg (6/12)
+attacks Bounty Hunter 7, parried.
+Mialee (8/9) overwhelms Bounty Hunter 7,
+deals 6 dmg!!!
+!! Bounty Hunter 7 is Winded.
+Bounty Hunter 7 (4/10)
+attacks Mialee, parried.
+!! Bounty Hunter 8 is Winded.
+Bounty Hunter 8 edges past Mialee,
+deals 1 dmg.
+!! Inga is Winded.
+Inga and Snagg: Clash!
+Round 4:
+!! Snagg is Winded.
+Snagg (6/12)
+outmaneuvers Bounty Hunter 7,
+deals 1 dmg.
+Mialee (7/9) overwhelms Bounty Hunter 7,
+deals 6 dmg!!! SLAIN.
+Bounty Hunter 7 strikes as they fall:
+Snagg parries.
+Bounty Hunter 8 and Mialee: Clash!
+Inga overwhelms Snagg, deals 6 dmg!!!
+Snagg is MAIMED: a crippled hand.
+Snagg goes DOWN.
+Round 5:
+Mialee (7/9)
+outmaneuvers Bounty Hunter 8,
+deals 4 dmg!!
+Bounty Hunter 8 (6/10)
+edges past Mialee, deals 1 dmg.
+Inga and Mialee: Clash!
+Round 6:
+Mialee (6/9) overwhelms Bounty Hunter 8,
+deals 6 dmg!!! SLAIN.
+Bounty Hunter 8 strikes as they fall:
+Mialee parries.
+!! Inga is SPENT.
+Inga attacks Mialee, parried.
+The beaten foes break and run!
+Mialee (6/9) overwhelms Inga,
+deals 4 dmg!!
+*** RUN DOWN -- the party catches
+the fleeing foes; the fight resumes. ***
+Round 7:
+!! Mialee is Winded.
+Mialee (6/9) overwhelms Inga,
+deals 6 dmg!!! SLAIN.
+Inga strikes as they fall:
+Mialee parries.
+The party catches its breath (+1 STA)
+Snagg +65 XP (encounter) [157/300]
+Mialee +65 XP (encounter) [157/300]
+(dark work: +65 bad karma -- bad karma 457; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Left among the dead:
+a shortbow (+0 atk/+4 sev, 8g),
+3x spear (+0 atk/+0 sev, 5g).
+Snagg drinks a healing potion: HP 5/12
+(1 left).
+Snagg downs a stamina draught: STA 6/6
+(0 left).
+Snagg drinks a healing potion: HP 6/12
+(0 left).
+The party shares out its potions:
+Mialee: 1 healing, 1 stamina.
+
+-- the party --
+Snagg: Unhurt STA 6/6 Power 1/3
+  (hurt -2 to rolls)
+  - a shattered arm (sev 3)
+  - a crippled hand [PERMANENT] (sev 3)
+  - badly beaten (sev 1)
+  - a cracked rib (sev 1)
+  - a cut brow, blood in the eye (sev 1)
+  (HP ceiling 6/12 until they mend)
+  (no kit)
+Mialee: Scratched STA 4/9 Power 5/5
+  (hurt -1 to rolls)
+  - a split scalp (sev 1)
+  (HP ceiling 8/9 until they mend)
+  (healing x1, stamina x1)
+Purse 100g; day 9.
+Karma: bad karma 457; HEAT 1 -- retribution hunts 1 level(s) above the party.
+Ahead: 1 fight(s) at the village graveyard; the turn-in pays 36g, 79 XP.
+  (due day 10 -- due tomorrow; on time pay, x1)

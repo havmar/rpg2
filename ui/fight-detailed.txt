@@ -28,3 +28,127 @@
     Snagg takes a wound: a deep wound in the right arm (severity 2; HP ceiling 8/12)
     stamina: Snagg 5/6, Mialee 9/9 | Bounty Archer 6 5/5, Bounty Hunter 7 5/6, Bounty Hunter 8 5/6, Inga 5/6
     == Snagg is badly cut up (HP 5/12) -- the fight hangs for a heartbeat. ==
+  Round 2:
+    Snagg downs a healing potion mid-fight (HP 5 -> 8/12, now -1 to rolls; 1 left) -- no attack this round, -2 defending while they drink
+    Mialee overwhelms Bounty Archer 6 -- a crippling blow! [Bounty Archer 6: 0/6 HP, -3 to rolls]
+        pressure: Mialee: 10 (2d6=3, +5 DEX, +1 training, +1 katana) vs Bounty Archer 6: 5 (2d6=4, +5 DEX, -2 wounds, -2 off-balance)
+        severity: 9 = margin 5 +5 STR +1 katana -2 soak -> crippling blow (-6 HP)
+    *** Bounty Archer 6 is SLAIN. ***
+    (Bounty Archer 6 strikes even as they fall)
+    Bounty Archer 6 attacks Snagg -- parried.
+        pressure: Bounty Archer 6: 7 (2d6=6, +5 DEX, -2 shortbow (in hand), -2 wounds) vs Snagg: 9 (2d6=8, +3 DEX, +1 training, -1 wounds, -2 drinking)
+    Bounty Hunter 7 edges past Snagg -- a solid wound! [Snagg: 6/12 HP, -2 to rolls]
+        pressure: Bounty Hunter 7: 10 (2d6=5, +5 DEX) vs Snagg: 8 (2d6=7, +3 DEX, +1 training, -1 wounds, -2 drinking)
+        severity: 3 = margin 2 +4 STR -3 soak -> wound (-2 HP)
+    Snagg takes a wound: a shattered arm (severity 3; HP ceiling 7/12)
+    Bounty Hunter 8 attacks Mialee -- parried.
+        pressure: Bounty Hunter 8: 10 (2d6=5, +5 DEX) vs Mialee: 12 (2d6=6, +5 DEX, +1 training)
+    Inga and Mialee -- Clash! Steel rings; neither yields.
+        pressure: Inga: 15 (2d6=10, +5 DEX) vs Mialee: 15 (2d6=9, +5 DEX, +1 training)
+    stamina: Snagg 5/6, Mialee 8/9 | Bounty Hunter 7 4/6, Bounty Hunter 8 4/6, Inga 4/6
+  Round 3:
+    Snagg attacks Bounty Hunter 7 -- parried.
+        pressure: Snagg: 12 (2d6=9, +2 DEX, +1 training, +2 rapier, -2 wounds) vs Bounty Hunter 7: 14 (2d6=9, +5 DEX)
+    Mialee overwhelms Bounty Hunter 7 -- a crippling blow! [Bounty Hunter 7: 4/10 HP, -3 to rolls]
+        pressure: Mialee: 19 (2d6=12, +5 DEX, +1 training, +1 katana) vs Bounty Hunter 7: 10 (2d6=5, +5 DEX)
+        severity: 11 = margin 9 +5 STR +1 katana -4 soak -> crippling blow (-6 HP)
+    !! Bounty Hunter 7 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Bounty Hunter 7 attacks Mialee -- parried.
+        pressure: Bounty Hunter 7: 7 (2d6=7, +5 DEX, -3 wounds, -2 winded) vs Mialee: 15 (2d6=9, +5 DEX, +1 training)
+    !! Bounty Hunter 8 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Bounty Hunter 8 edges past Mialee -- a graze! [Mialee: 7/9 HP, -0 to rolls]
+        pressure: Bounty Hunter 8: 13 (2d6=10, +5 DEX, -2 winded) vs Mialee: 11 (2d6=5, +5 DEX, +1 training)
+        severity: 1 = margin 2 +4 STR -5 soak -> graze (-1 HP)
+    !! Inga is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Inga and Snagg -- Clash! Steel rings; neither yields.
+        pressure: Inga: 13 (2d6=10, +5 DEX, -2 winded) vs Snagg: 13 (2d6=12, +2 DEX, +1 training, -2 wounds)
+    stamina: Snagg 4/6, Mialee 7/9 | Bounty Hunter 7 3/6*, Bounty Hunter 8 3/6*, Inga 3/6*   (* = Winded)
+  Round 4:
+    !! Snagg is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Snagg outmaneuvers Bounty Hunter 7 -- a graze! [Bounty Hunter 7: 3/10 HP, -3 to rolls]
+        pressure: Snagg: 11 (2d6=10, +2 DEX, +1 training, +2 rapier, -2 wounds, -2 winded) vs Bounty Hunter 7: 8 (2d6=8, +5 DEX, -3 wounds, -2 winded)
+        severity: 1 = margin 3 +3 STR -1 rapier -4 soak -> graze (-1 HP)
+    Mialee overwhelms Bounty Hunter 7 -- a crippling blow! [Bounty Hunter 7: 0/10 HP, -5 to rolls]
+        pressure: Mialee: 17 (2d6=10, +5 DEX, +1 training, +1 katana) vs Bounty Hunter 7: 12 (2d6=12, +5 DEX, -3 wounds, -2 winded)
+        severity: 7 = margin 5 +5 STR +1 katana -4 soak -> crippling blow (-6 HP)
+    *** Bounty Hunter 7 is SLAIN. ***
+    (Bounty Hunter 7 strikes even as they fall)
+    Bounty Hunter 7 attacks Snagg -- parried.
+        pressure: Bounty Hunter 7: 5 (2d6=5, +5 DEX, -3 wounds, -2 winded) vs Snagg: 6 (2d6=7, +2 DEX, +1 training, -2 wounds, -2 winded)
+    Bounty Hunter 8 and Mialee -- Clash! Steel rings; neither yields.
+        pressure: Bounty Hunter 8: 12 (2d6=9, +5 DEX, -2 winded) vs Mialee: 12 (2d6=6, +5 DEX, +1 training)
+    Inga overwhelms Snagg -- a crippling blow! [Snagg: 0/12 HP, -4 to rolls]
+        pressure: Inga: 14 (2d6=11, +5 DEX, -2 winded) vs Snagg: 8 (2d6=9, +2 DEX, +1 training, -2 wounds, -2 winded)
+        severity: 7 = margin 6 +4 STR -3 soak -> crippling blow (-6 HP)
+    Snagg is MAIMED: a crippled hand (severity 3; HP ceiling 6/12)
+    Snagg goes down, out of the fight.
+    stamina: Mialee 6/9 | Bounty Hunter 8 2/6*, Inga 2/6*   (* = Winded)
+  Round 5:
+    Mialee outmaneuvers Bounty Hunter 8 -- a grievous injury! [Bounty Hunter 8: 6/10 HP, -2 to rolls]
+        pressure: Mialee: 15 (2d6=8, +5 DEX, +1 training, +1 katana) vs Bounty Hunter 8: 12 (2d6=9, +5 DEX, -2 winded)
+        severity: 5 = margin 3 +5 STR +1 katana -4 soak -> grievous (-4 HP)
+    Bounty Hunter 8 edges past Mialee -- a graze! [Mialee: 6/9 HP, -1 to rolls]
+        pressure: Bounty Hunter 8: 11 (2d6=10, +5 DEX, -2 wounds, -2 winded) vs Mialee: 9 (2d6=3, +5 DEX, +1 training)
+        severity: 1 = margin 2 +4 STR -5 soak -> graze (-1 HP)
+    Inga and Mialee -- Clash! Steel rings; neither yields.
+        pressure: Inga: 13 (2d6=10, +5 DEX, -2 winded) vs Mialee: 13 (2d6=8, +5 DEX, +1 training, -1 wounds)
+    stamina: Mialee 5/9 | Bounty Hunter 8 1/6*, Inga 1/6*   (* = Winded)
+  Round 6:
+    Mialee overwhelms Bounty Hunter 8 -- a crippling blow! [Bounty Hunter 8: 0/10 HP, -5 to rolls]
+        pressure: Mialee: 11 (2d6=5, +5 DEX, +1 training, +1 katana, -1 wounds) vs Bounty Hunter 8: 3 (2d6=2, +5 DEX, -2 wounds, -2 winded)
+        severity: 10 = margin 8 +5 STR +1 katana -4 soak -> crippling blow (-6 HP)
+    *** Bounty Hunter 8 is SLAIN. ***
+    (Bounty Hunter 8 strikes even as they fall)
+    Bounty Hunter 8 attacks Mialee -- parried.
+        pressure: Bounty Hunter 8: 8 (2d6=7, +5 DEX, -2 wounds, -2 winded) vs Mialee: 13 (2d6=8, +5 DEX, +1 training, -1 wounds)
+    !! Inga is SPENT -- running on empty (-6 to all rolls until the fight ends)
+    Inga attacks Mialee -- parried.
+        pressure: Inga: 5 (2d6=6, +5 DEX, -6 spent) vs Mialee: 12 (2d6=7, +5 DEX, +1 training, -1 wounds)
+    stamina: Mialee 4/9 | Inga 0/6!!   (!! = Spent)
+    The beaten foe line breaks and runs!
+    Mialee overwhelms Inga -- a grievous injury! [Inga: 6/10 HP, -2 to rolls]
+        pressure: Mialee: 14 (2d6=8, +5 DEX, +1 training, +1 katana, -1 wounds) vs Inga: 6 (2d6=9, +5 DEX, -6 spent, -2 fleeing)
+        severity: 10 = margin 8 +5 STR +1 katana -4 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    the chase: flight 10.0 (2d6=3, +5.0 DEX STA-weighted, +2 head start) vs pursuit 13.0 (2d6=8, +5.0 DEX STA-weighted)
+    *** RUN DOWN -- the party catches the fleeing foes; the fight resumes. ***
+  Round 7:
+    !! Mialee is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Mialee overwhelms Inga -- a crippling blow! [Inga: 0/10 HP, -5 to rolls]
+        pressure: Mialee: 11 (2d6=7, +5 DEX, +1 training, +1 katana, -1 wounds, -2 winded) vs Inga: 5 (2d6=8, +5 DEX, -2 wounds, -6 spent)
+        severity: 8 = margin 6 +5 STR +1 katana -4 soak -> crippling blow (-6 HP)
+    *** Inga is SLAIN. ***
+    (Inga strikes even as they fall)
+    Inga attacks Mialee -- parried.
+        pressure: Inga: 6 (2d6=9, +5 DEX, -2 wounds, -6 spent) vs Mialee: 13 (2d6=10, +5 DEX, +1 training, -1 wounds, -2 winded)
+    stamina: Mialee 3/9*   (* = Winded)
+    The party catches its breath (+1 STA)
+    Snagg gains 65 XP (encounter) [157/300]
+    Mialee gains 65 XP (encounter) [157/300]
+    (dark work: +65 bad karma -- bad karma 457; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Left among the dead:
+a shortbow (+0 atk/+4 sev, 8g),
+3x spear (+0 atk/+0 sev, 5g).
+    Snagg drinks a healing potion (HP 0 -> 5/12; 1 left)
+    Snagg downs a stamina draught (STA 3 -> 6; 0 left)
+    Snagg drinks a healing potion (HP 5 -> 6/12; 0 left)
+    The party shares out its potions -- Mialee: 1 healing, 1 stamina.
+
+-- the party --
+Snagg: Unhurt STA 6/6 Power 1/3
+  (hurt -2 to rolls)
+  - a shattered arm (sev 3)
+  - a crippled hand [PERMANENT] (sev 3)
+  - badly beaten (sev 1)
+  - a cracked rib (sev 1)
+  - a cut brow, blood in the eye (sev 1)
+  (HP ceiling 6/12 until they mend)
+  (no kit)
+Mialee: Scratched STA 4/9 Power 5/5
+  (hurt -1 to rolls)
+  - a split scalp (sev 1)
+  (HP ceiling 8/9 until they mend)
+  (healing x1, stamina x1)
+Purse 100g; day 9.
+Karma: bad karma 457; HEAT 1 -- retribution hunts 1 level(s) above the party.
+Ahead: 1 fight(s) at the village graveyard; the turn-in pays 36g, 79 XP.
+  (due day 10 -- due tomorrow; on time pay, x1)
