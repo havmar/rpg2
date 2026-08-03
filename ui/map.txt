@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Firascir > Flurham
+RPG2 MAP -- day 6
+the party is at Firascir > Stura River >
+  the owner's office > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -9,6 +10,10 @@ the party is at Firascir > Flurham
   Svalaver (town) -- 4 job(s)
 
 == Firascir ==  <- here
+  Whitweld Forest (forest, found day 1)
+    (visited)
+  Stura River (river, found day 5)  <-
+    the party
   Tomburgh (capital) -- 5 job(s)
   Leehaven (town) -- 4 job(s)
   Walhaven (town) -- 4 job(s)
@@ -16,8 +21,8 @@ the party is at Firascir > Flurham
   Redflurton (town) -- 4 job(s)
   Sturford (village) -- 2 job(s)
   Ackham (village) -- 2 job(s)
-  Flurham (village) -- 2 job(s)  <- the
-    party
+  Flurham (village) -- 2 job(s)
+    (visited)
 
 == Mortellaria ==
   Castavera (capital) -- 5 job(s)
@@ -54,3 +59,7 @@ the party is at Firascir > Flurham
   Urkhal (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
   Aradun (village) -- 2 job(s)
+
+-- the war --
+THE WAR: [w1] L2 The Dead Rise -- raised
+  at Ulus-Gal.
