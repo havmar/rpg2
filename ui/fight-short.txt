@@ -1,90 +1,82 @@
-=== Loot the Village ===
-the village gate (L1),
-room 2/2: old trees
-Village Thug 2 -- mace
-DEX 5  STR 3  STA 5  HP 7/7
-takes spoils, leaves the fallen
-Militiaman 3 -- spear
+=== The reckoning: the bounty guild ===
+(a level-4 posse)
+Bounty Hunter 4 -- spear
 DEX 5  STR 4  STA 6  HP 10/10
 takes spoils, leaves the fallen
-Round 1: nothing lands.
-Round 2:
-Snagg attacks Village Thug 2, parried.
-Mialee edges past Village Thug 2,
-deals 2 dmg!
-Village Thug 2 (5/7)
-attacks Mialee, parried.
-Militiaman 3 attacks Mialee, parried.
-Round 3:
-Snagg edges past Village Thug 2,
+Mira -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
+takes spoils, leaves the fallen
+Round 1:
+Snagg uses First Blood!
+Bounty Hunter 4 takes 1 dmg.
+Snagg and Bounty Hunter 4: they circle.
+Mialee: Kick at Bounty Hunter 4!
+Mialee edges past Bounty Hunter 4,
 deals 1 dmg.
-Mialee outmaneuvers Village Thug 2,
-deals 4 dmg!! It falls.
-Village Thug 2 strikes as they fall:
-Mialee parries.
-Militiaman 3 attacks Snagg, parried.
-Round 4:
-Snagg attacks Militiaman 3, deflected.
-Mialee outmaneuvers Militiaman 3,
-deals 2 dmg!
-!! Militiaman 3 is Winded.
-Militiaman 3 (8/10) overwhelms Snagg,
-deals 4 dmg!!
-Snagg takes a wound:
-a deep wound in the thigh.
-Round 5:
-Snagg (8/12)
-attacks Militiaman 3, parried.
-Mialee overwhelms Militiaman 3,
-deals 6 dmg!!!
-Militiaman 3 (2/10)
+Bounty Hunter 4 is kicked off balance.
+Bounty Hunter 4 (8/10)
 attacks Snagg, parried.
+Mira attacks Snagg, parried.
+Round 2:
+Snagg edges past Bounty Hunter 4,
+deals 1 dmg.
+Mialee edges past Bounty Hunter 4,
+deals 1 dmg.
+Bounty Hunter 4 (6/10)
+outmaneuvers Mialee, deals 2 dmg!
+Mialee takes a wound: a split scalp.
+Mira attacks Snagg, parried.
+Round 3:
+Snagg attacks Bounty Hunter 4, parried.
+Mialee (7/9) overwhelms Bounty Hunter 4,
+deals 4 dmg!!
+!! Bounty Hunter 4 is Winded.
+Bounty Hunter 4 (2/10)
+attacks Snagg, parried.
+Mira edges past Snagg, deals 2 dmg!
+Snagg takes a wound: a cracked rib.
+Round 4:
+Snagg (10/12)
+outmaneuvers Bounty Hunter 4,
+deals 2 dmg! It falls.
+Bounty Hunter 4 strikes as they fall:
+Snagg parries.
+Mialee (7/9) attacks Mira, deflected.
+!! Mira is Winded.
+Mira attacks Snagg, parried.
+Round 5: nothing lands.
+!! Snagg is Winded.
+Round 6:
+Snagg (10/12) outmaneuvers Mira,
+deals 1 dmg.
+Mialee (7/9) attacks Mira, parried.
+Mira (12/13) attacks Mialee, parried.
+Round 7:
+Snagg downs a stamina draught (1 left).
+!! Mialee is Winded.
+Mialee (7/9) attacks Mira, parried.
+!! Mira is SPENT.
+Mira (12/13) attacks Snagg, parried.
 The beaten foes break and run!
-Snagg's parting blow at
-Militiaman 3 -- deflected.
-Mialee overwhelms Militiaman 3,
-deals 4 dmg!! It falls.
+Snagg (10/12) overwhelms Mira,
+deals 4 dmg!!
+The survivors escape.
+The field belongs to the party.
 The party catches its breath (+1 STA)
-Snagg +28 XP (encounter) [56/100]
-Mialee +28 XP (encounter) [56/100]
-(dark work: +28 bad karma -- bad karma 56/100; heat 0 -- lying low)
+Snagg +65 XP (encounter) [92/300]
+Mialee +65 XP (encounter) [92/300]
+(dark work: +65 bad karma -- bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party)
 Left among the dead:
-a mace (+0 atk/+0 sev, 8g),
 a spear (+0 atk/+0 sev, 5g).
 
-*** QUEST COMPLETE: Loot the Village --
-the village gate. Reward: 51 gold. ***
-Snagg talks the pay up:
-+15g (66g in all).
-The party purse holds 91 gold.
-Snagg +98 XP (quest) [154/100]
-*** Snagg reaches level 2!
-(3 skill points unspent) ***
-Mialee +98 XP (quest) [154/100]
-*** Mialee reaches level 2!
-(3 skill points unspent) ***
-Mialee: satisfaction 7 -> 8/10
-(a job paid out)
-(dark work: +98 bad karma -- bad karma 154/200; heat 0 -- lying low)
-(QUICK turn-in: day 2, due day 6 --
-x1.15 on the lump)
-(turn in to
-Isolde, the gang lieutenant --
-narrate the scene)
-EPILOGUE (day 2): The party takes the village's gold. The survivors begin rebuilding.
-(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
-Mialee trains: combat rank 1
-[1 point(s) left]
-Mialee drills a new move: Kick
-[0 point(s) left]
-
 -- the party --
-Snagg: Scratched STA 5/8 Power 3/3
-  (hurt -1 to rolls)
-  - a deep wound in the thigh (sev 2)
-  (HP ceiling 10/12 until they mend)
-  (healing x1, stamina x1)
-Mialee: Unhurt STA 5/8 Power 4/4
-  (healing x1, stamina x2)
-Purse 91g; day 2.
-Karma: bad karma 154/200; heat 0 -- lying low.
+Snagg: Scratched STA 6/6 Power 1/3
+  - a cracked rib (sev 1)
+  (HP ceiling 11/12 until they mend)
+  (healing x2, stamina x1)
+Mialee: Scratched STA 4/9 Power 5/5
+  - a split scalp (sev 1)
+  (HP ceiling 8/9 until they mend)
+  (healing x2, stamina x1)
+Purse 240g; day 7.
+Karma: bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party.

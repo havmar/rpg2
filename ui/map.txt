@@ -1,6 +1,5 @@
-RPG2 MAP -- day 6
-the party is at Firascir > Stura River >
-  the owner's office > outer watch
+RPG2 MAP -- day 7
+the party is at Firascir > Tomburgh
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -12,9 +11,10 @@ the party is at Firascir > Stura River >
 == Firascir ==  <- here
   Whitweld Forest (forest, found day 1)
     (visited)
-  Stura River (river, found day 5)  <-
-    the party
-  Tomburgh (capital) -- 5 job(s)
+  Stura River (river, found day 5)
+    (visited)
+  Tomburgh (capital) -- 3 job(s)  <- the
+    party
   Leehaven (town) -- 4 job(s)
   Walhaven (town) -- 4 job(s)
   Bradwhitchip (town) -- 4 job(s)

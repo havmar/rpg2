@@ -1,99 +1,115 @@
-=== Loot the Village -- the village gate (L1), room 2/2: old trees ===
-  Village Thug 2 -- mace
-  DEX 5  STR 3  STA 5  HP 7/7
-  takes spoils, leaves the fallen
-  Militiaman 3 -- spear
+=== The reckoning: the bounty guild (a level-4 posse) ===
+  Bounty Hunter 4 -- spear
   DEX 5  STR 4  STA 6  HP 10/10
   takes spoils, leaves the fallen
+  Mira -- longsword
+  DEX 6  STR 5  STA 7  HP 13/13
+  takes spoils, leaves the fallen
   Round 1:
-    Snagg, Mialee, Village Thug 2, Militiaman 3 close the distance -- the lines meet!
-    stamina: Snagg 8/8, Mialee 8/8 | Village Thug 2 5/5, Militiaman 3 6/6
+    Snagg strikes before the lines meet -- First Blood! Bounty Hunter 4 is grazed (-1 HP -> 9/10, -0 to rolls) [2 Power spent, 1 left]
+    Snagg and Bounty Hunter 4 -- Lull. They circle, probing for an opening.
+        pressure: Snagg: 12 (2d6=7, +4 DEX, +1 training) vs Bounty Hunter 4: 12 (2d6=7, +5 DEX)
+    Mialee drives a boot into Bounty Hunter 4. (+1 STA)
+    Mialee edges past Bounty Hunter 4 -- a graze! [Bounty Hunter 4: 8/10 HP, -1 to rolls]
+        pressure: Mialee: 13 (2d6=6, +6 DEX, +1 training) vs Bounty Hunter 4: 11 (2d6=6, +5 DEX)
+        severity: 2 = margin 2 +5 STR -1 whip -4 soak -> graze (-1 HP)
+    Bounty Hunter 4 is kicked off balance (-2 defense next round).
+    Bounty Hunter 4 attacks Snagg -- parried.
+        pressure: Bounty Hunter 4: 9 (2d6=5, +5 DEX, -1 wounds) vs Snagg: 10 (2d6=5, +4 DEX, +1 training)
+    Mira attacks Snagg -- parried.
+        pressure: Mira: 10 (2d6=4, +6 DEX) vs Snagg: 12 (2d6=7, +4 DEX, +1 training)
+    stamina: Snagg 7/8, Mialee 9/9 | Bounty Hunter 4 5/6, Mira 6/7
   Round 2:
-    Snagg attacks Village Thug 2 -- parried.
-        pressure: Snagg: 7 (2d6=3, +4 DEX) vs Village Thug 2: 14 (2d6=9, +5 DEX)
-    Mialee edges past Village Thug 2 -- a solid wound! [Village Thug 2: 5/7 HP, -1 to rolls]
-        pressure: Mialee: 17 (2d6=11, +6 DEX) vs Village Thug 2: 15 (2d6=10, +5 DEX)
-        severity: 3 = margin 2 +5 STR -1 whip -3 soak -> wound (-2 HP)
-    Village Thug 2 attacks Mialee -- parried.
-        pressure: Village Thug 2: 11 (2d6=7, +5 DEX, -1 wounds) vs Mialee: 13 (2d6=7, +6 DEX)
-    Militiaman 3 attacks Mialee -- parried.
-        pressure: Militiaman 3: 9 (2d6=4, +5 DEX) vs Mialee: 13 (2d6=7, +6 DEX)
-    stamina: Snagg 7/8, Mialee 7/8 | Village Thug 2 4/5, Militiaman 3 5/6
+    Snagg edges past Bounty Hunter 4 -- a graze! [Bounty Hunter 4: 7/10 HP, -1 to rolls]
+        pressure: Snagg: 8 (2d6=3, +4 DEX, +1 training) vs Bounty Hunter 4: 7 (2d6=5, +5 DEX, -1 wounds, -2 off-balance)
+        severity: 1 = margin 1 +4 STR -4 soak -> graze (-1 HP)
+    Mialee edges past Bounty Hunter 4 -- a graze! [Bounty Hunter 4: 6/10 HP, -2 to rolls]
+        pressure: Mialee: 9 (2d6=2, +6 DEX, +1 training) vs Bounty Hunter 4: 8 (2d6=6, +5 DEX, -1 wounds, -2 off-balance)
+        severity: 1 = margin 1 +5 STR -1 whip -4 soak -> graze (-1 HP)
+    Bounty Hunter 4 outmaneuvers Mialee -- a solid wound! [Mialee: 7/9 HP, -0 to rolls]
+        pressure: Bounty Hunter 4: 13 (2d6=10, +5 DEX, -2 wounds) vs Mialee: 9 (2d6=2, +6 DEX, +1 training)
+        severity: 3 = margin 4 +4 STR -5 soak -> wound (-2 HP)
+    Mialee takes a wound: a split scalp (severity 1; HP ceiling 8/9)
+    Mira attacks Snagg -- parried.
+        pressure: Mira: 11 (2d6=5, +6 DEX) vs Snagg: 13 (2d6=8, +4 DEX, +1 training)
+    stamina: Snagg 6/8, Mialee 8/9 | Bounty Hunter 4 4/6, Mira 5/7
   Round 3:
-    Snagg edges past Village Thug 2 -- a graze! [Village Thug 2: 4/7 HP, -1 to rolls]
-        pressure: Snagg: 15 (2d6=11, +4 DEX) vs Village Thug 2: 13 (2d6=9, +5 DEX, -1 wounds)
-        severity: 2 = margin 2 +4 STR -1 light hammer -3 soak -> graze (-1 HP)
-    Mialee outmaneuvers Village Thug 2 -- a grievous injury! [Village Thug 2: 0/7 HP, -3 to rolls]
-        pressure: Mialee: 17 (2d6=11, +6 DEX) vs Village Thug 2: 13 (2d6=9, +5 DEX, -1 wounds)
-        severity: 5 = margin 4 +5 STR -1 whip -3 soak -> grievous (-4 HP)
-    *** Village Thug 2 falls. ***
-    (Village Thug 2 strikes even as they fall)
-    Village Thug 2 attacks Mialee -- parried.
-        pressure: Village Thug 2: 6 (2d6=2, +5 DEX, -1 wounds) vs Mialee: 16 (2d6=10, +6 DEX)
-    Militiaman 3 attacks Snagg -- parried.
-        pressure: Militiaman 3: 10 (2d6=5, +5 DEX) vs Snagg: 12 (2d6=8, +4 DEX)
-    stamina: Snagg 6/8, Mialee 6/8 | Militiaman 3 4/6
+    Snagg attacks Bounty Hunter 4 -- parried.
+        pressure: Snagg: 11 (2d6=6, +4 DEX, +1 training) vs Bounty Hunter 4: 12 (2d6=9, +5 DEX, -2 wounds)
+    Mialee overwhelms Bounty Hunter 4 -- a grievous injury! [Bounty Hunter 4: 2/10 HP, -4 to rolls]
+        pressure: Mialee: 15 (2d6=9, +5 DEX, +1 training) vs Bounty Hunter 4: 10 (2d6=7, +5 DEX, -2 wounds)
+        severity: 5 = margin 5 +5 STR -1 whip -4 soak -> grievous (-4 HP)
+    !! Bounty Hunter 4 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Bounty Hunter 4 attacks Snagg -- parried.
+        pressure: Bounty Hunter 4: 6 (2d6=7, +5 DEX, -4 wounds, -2 winded) vs Snagg: 14 (2d6=9, +4 DEX, +1 training)
+    Mira edges past Snagg -- a solid wound! [Snagg: 10/12 HP, -0 to rolls]
+        pressure: Mira: 14 (2d6=8, +6 DEX) vs Snagg: 12 (2d6=7, +4 DEX, +1 training)
+        severity: 4 = margin 2 +5 STR +1 longsword -4 soak -> wound (-2 HP)
+    Snagg takes a wound: a cracked rib (severity 1; HP ceiling 11/12)
+    stamina: Snagg 5/6, Mialee 7/9 | Bounty Hunter 4 3/6*, Mira 4/7   (* = Winded)
   Round 4:
-    Snagg edges past Militiaman 3, but the blow glances off -- deflected.
-        pressure: Snagg: 14 (2d6=10, +4 DEX) vs Militiaman 3: 13 (2d6=8, +5 DEX)
-        severity: 0 = margin 1 +4 STR -1 light hammer -4 soak -> deflected
-    Mialee outmaneuvers Militiaman 3 -- a solid wound! [Militiaman 3: 8/10 HP, -1 to rolls]
-        pressure: Mialee: 13 (2d6=7, +6 DEX) vs Militiaman 3: 10 (2d6=5, +5 DEX)
-        severity: 3 = margin 3 +5 STR -1 whip -4 soak -> wound (-2 HP)
-    !! Militiaman 3 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Militiaman 3 overwhelms Snagg -- a grievous injury! [Snagg: 8/12 HP, -1 to rolls]
-        pressure: Militiaman 3: 14 (2d6=12, +5 DEX, -1 wounds, -2 winded) vs Snagg: 8 (2d6=4, +4 DEX)
-        severity: 6 = margin 6 +4 STR -4 soak -> grievous (-4 HP)
-    Snagg takes a wound: a deep wound in the thigh (severity 2; HP ceiling 10/12)
-    stamina: Snagg 5/8, Mialee 5/8 | Militiaman 3 3/6*   (* = Winded)
+    Snagg outmaneuvers Bounty Hunter 4 -- a solid wound! [Bounty Hunter 4: 0/10 HP, -5 to rolls]
+        pressure: Snagg: 10 (2d6=5, +4 DEX, +1 training) vs Bounty Hunter 4: 6 (2d6=7, +5 DEX, -4 wounds, -2 winded)
+        severity: 4 = margin 4 +4 STR -4 soak -> wound (-2 HP)
+    *** Bounty Hunter 4 falls. ***
+    (Bounty Hunter 4 strikes even as they fall)
+    Bounty Hunter 4 attacks Snagg -- parried.
+        pressure: Bounty Hunter 4: 3 (2d6=4, +5 DEX, -4 wounds, -2 winded) vs Snagg: 15 (2d6=10, +4 DEX, +1 training)
+    Mialee edges past Mira, but the blow glances off -- deflected.
+        pressure: Mialee: 12 (2d6=6, +5 DEX, +1 training) vs Mira: 11 (2d6=5, +6 DEX)
+        severity: 0 = margin 1 +5 STR -1 whip -5 soak -> deflected
+    !! Mira is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Mira attacks Snagg -- parried.
+        pressure: Mira: 10 (2d6=6, +6 DEX, -2 winded) vs Snagg: 16 (2d6=11, +4 DEX, +1 training)
+    stamina: Snagg 4/6, Mialee 6/9 | Mira 3/7*   (* = Winded)
   Round 5:
-    Snagg attacks Militiaman 3 -- parried.
-        pressure: Snagg: 8 (2d6=6, +3 DEX, -1 wounds) vs Militiaman 3: 10 (2d6=8, +5 DEX, -1 wounds, -2 winded)
-    Mialee overwhelms Militiaman 3 -- a crippling blow! [Militiaman 3: 2/10 HP, -4 to rolls]
-        pressure: Mialee: 14 (2d6=8, +6 DEX) vs Militiaman 3: 6 (2d6=4, +5 DEX, -1 wounds, -2 winded)
-        severity: 8 = margin 8 +5 STR -1 whip -4 soak -> crippling blow (-6 HP)
-    Militiaman 3 attacks Snagg -- parried.
-        pressure: Militiaman 3: 7 (2d6=8, +5 DEX, -4 wounds, -2 winded) vs Snagg: 8 (2d6=6, +3 DEX, -1 wounds)
-    stamina: Snagg 4/8, Mialee 4/8 | Militiaman 3 2/6*   (* = Winded)
+    !! Snagg is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Snagg attacks Mira -- parried.
+        pressure: Snagg: 8 (2d6=5, +4 DEX, +1 training, -2 winded) vs Mira: 13 (2d6=9, +6 DEX, -2 winded)
+    Mialee and Mira -- Lull. They circle, probing for an opening.
+        pressure: Mialee: 11 (2d6=5, +5 DEX, +1 training) vs Mira: 11 (2d6=7, +6 DEX, -2 winded)
+    Mira attacks Mialee -- parried.
+        pressure: Mira: 12 (2d6=8, +6 DEX, -2 winded) vs Mialee: 13 (2d6=7, +5 DEX, +1 training)
+    stamina: Snagg 3/6*, Mialee 5/9 | Mira 2/7*   (* = Winded)
+  Round 6:
+    Snagg outmaneuvers Mira -- a graze! [Mira: 12/13 HP, -0 to rolls]
+        pressure: Snagg: 14 (2d6=11, +4 DEX, +1 training, -2 winded) vs Mira: 11 (2d6=7, +6 DEX, -2 winded)
+        severity: 2 = margin 3 +4 STR -5 soak -> graze (-1 HP)
+    Mialee attacks Mira -- parried.
+        pressure: Mialee: 12 (2d6=6, +5 DEX, +1 training) vs Mira: 14 (2d6=10, +6 DEX, -2 winded)
+    Mira attacks Mialee -- parried.
+        pressure: Mira: 11 (2d6=7, +6 DEX, -2 winded) vs Mialee: 13 (2d6=7, +5 DEX, +1 training)
+    stamina: Snagg 2/6*, Mialee 4/9 | Mira 1/7*   (* = Winded)
+  Round 7:
+    Snagg downs a stamina draught mid-fight (STA 2 -> 6/6; 1 left) -- no attack this round, -2 defending while they drink
+    !! Mialee is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Mialee attacks Mira -- parried.
+        pressure: Mialee: 9 (2d6=5, +5 DEX, +1 training, -2 winded) vs Mira: 13 (2d6=9, +6 DEX, -2 winded)
+    !! Mira is SPENT -- running on empty (-6 to all rolls until the fight ends)
+    Mira attacks Snagg -- parried.
+        pressure: Mira: 5 (2d6=5, +6 DEX, -6 spent) vs Snagg: 12 (2d6=9, +4 DEX, +1 training, -2 drinking)
+    stamina: Snagg 6/6, Mialee 3/9* | Mira 0/7!!   (* = Winded, !! = Spent)
     The beaten foe line breaks and runs!
-    Snagg outmaneuvers Militiaman 3, but the hurried blow at a fleeing back glances off -- deflected.
-        pressure: Snagg: 8 (2d6=6, +3 DEX, -1 wounds) vs Militiaman 3: 5 (2d6=8, +5 DEX, -4 wounds, -2 winded, -2 fleeing)
-        severity: 2 = margin 3 +4 STR -1 light hammer -4 soak -> graze -> a hurried blow at a fleeing back: deflected
-    Mialee overwhelms Militiaman 3 -- a grievous injury! [Militiaman 3: 0/10 HP, -5 to rolls]
-        pressure: Mialee: 11 (2d6=5, +6 DEX) vs Militiaman 3: 4 (2d6=7, +5 DEX, -4 wounds, -2 winded, -2 fleeing)
-        severity: 7 = margin 7 +5 STR -1 whip -4 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Militiaman 3 falls. ***
+    Snagg overwhelms Mira -- a grievous injury! [Mira: 8/13 HP, -2 to rolls]
+        pressure: Snagg: 13 (2d6=8, +4 DEX, +1 training) vs Mira: 3 (2d6=5, +6 DEX, -6 spent, -2 fleeing)
+        severity: 9 = margin 10 +4 STR -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    the chase: flight 18.0 (2d6=10, +6.0 DEX STA-weighted, +2 head start) vs pursuit 8.0 (2d6=4, +4.0 DEX STA-weighted)
+    The survivors escape. The field belongs to the party.
     The party catches its breath (+1 STA)
-    Snagg gains 28 XP (encounter) [56/100]
-    Mialee gains 28 XP (encounter) [56/100]
-    (dark work: +28 bad karma -- bad karma 56/100; heat 0 -- lying low)
+    Snagg gains 65 XP (encounter) [92/300]
+    Mialee gains 65 XP (encounter) [92/300]
+    (dark work: +65 bad karma -- bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party)
 Left among the dead:
-a mace (+0 atk/+0 sev, 8g),
 a spear (+0 atk/+0 sev, 5g).
 
-  *** QUEST COMPLETE: Loot the Village -- the village gate. Reward: 51 gold. ***
-    Snagg talks the pay up: +15g (CHA 6 -- 66g in all).
-    The party purse holds 91 gold.
-    Snagg gains 98 XP (quest) [154/100]
-    *** Snagg reaches level 2! (+3 skill points, 3 unspent) ***
-    Mialee gains 98 XP (quest) [154/100]
-    *** Mialee reaches level 2! (+3 skill points, 3 unspent) ***
-    Mialee: satisfaction 7 -> 8/10 (a job paid out)
-    (dark work: +98 bad karma -- bad karma 154/200; heat 0 -- lying low)
-  (turned in QUICK -- day 2 against a deadline of day 6: x1.15 on the turn-in)
-  (turn in to Isolde, the gang lieutenant -- narrate the scene)
-  EPILOGUE (day 2): The party takes the village's gold. The survivors begin rebuilding.
-  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next job comes in its own time.)
-    Mialee trains: combat training rank 1 (+1 to all pressure rolls) [1 point(s) left]
-    Mialee drills a new move -- Kick: on a hit: the foe defends at -2 next round [0 point(s) left]
-
 -- the party --
-Snagg: Scratched STA 5/8 Power 3/3
-  (hurt -1 to rolls)
-  - a deep wound in the thigh (sev 2)
-  (HP ceiling 10/12 until they mend)
-  (healing x1, stamina x1)
-Mialee: Unhurt STA 5/8 Power 4/4
-  (healing x1, stamina x2)
-Purse 91g; day 2.
-Karma: bad karma 154/200; heat 0 -- lying low.
+Snagg: Scratched STA 6/6 Power 1/3
+  - a cracked rib (sev 1)
+  (HP ceiling 11/12 until they mend)
+  (healing x2, stamina x1)
+Mialee: Scratched STA 4/9 Power 5/5
+  - a split scalp (sev 1)
+  (HP ceiling 8/9 until they mend)
+  (healing x2, stamina x1)
+Purse 240g; day 7.
+Karma: bad karma 392; HEAT 1 -- retribution hunts 1 level(s) above the party.
