@@ -40,3 +40,48 @@
         severity: -2 = margin 1 +2 STR -5 soak -> deflected
     stamina: Snagg 6/8, Mialee 8/9 | 1 tireless
     == Snagg is badly cut up (HP 4/12) -- the fight hangs for a heartbeat. ==
+  Round 4:
+    Snagg and Skeleton 12 -- Lull. They circle, probing for an opening.
+        pressure: Snagg: 11 (2d6=7, +3 DEX, +1 training, +2 rapier, -2 wounds) vs Skeleton 12: 11 (2d6=7, +4 DEX)
+    Mialee outmaneuvers Skeleton 12 -- a crippling blow! [Skeleton 12: 0/5 HP, -2 to rolls]
+        pressure: Mialee: 14 (2d6=6, +6 DEX, +1 training, +1 katana) vs Skeleton 12: 10 (2d6=6, +4 DEX)
+        severity: 8 = margin 4 +5 STR +1 katana -2 soak -> crippling blow (-6 HP)
+    *** Skeleton 12 is SLAIN. ***
+    (Skeleton 12 strikes even as they fall)
+    Skeleton 12 overwhelms Snagg -- a crippling blow! [Snagg: 0/12 HP, -4 to rolls]
+        pressure: Skeleton 12: 15 (2d6=11, +4 DEX) vs Snagg: 6 (2d6=4, +3 DEX, +1 training, -2 wounds)
+        severity: 7 = margin 9 +2 STR -4 soak -> crippling blow (-6 HP)
+    Snagg takes a wound: a caved-in chest (severity 3; HP ceiling 6/12)
+    *** The blow should be Snagg's death -- and is not. Fate has spared them; its price comes due unless this fight is broken off. ***
+    Snagg goes down, out of the fight.
+    stamina: Mialee 7/9
+    *** The last foe spends its dying strength on one final blow -- fate's price for Snagg's life. It finds Mialee. ***
+    *** Mialee is SLAIN. ***
+    Snagg rises at 1 HP. Fate heals nothing else.
+    The party catches its breath (+1 STA)
+    Snagg gains 53 XP (encounter) [210/300]
+    (penance: -53 bad karma -- bad karma 404; HEAT 1 -- retribution hunts 1 level(s) above the party)
+
+  *** QUEST COMPLETE: The Restless Crypt -- the village graveyard. Reward: 36 gold. ***
+    Snagg talks the pay up: +11g (CHA 6 -- 47g in all).
+    The party purse holds 47 gold.
+    Snagg gains 79 XP (quest) [289/300]
+    (penance: -79 bad karma -- bad karma 325; HEAT 1 -- retribution hunts 1 level(s) above the party)
+  (turn in to Walt II, the village priest -- narrate the scene)
+  EPILOGUE (day 10): The dead are destroyed. The priest blesses the graves again.
+  Mialee's katana is taken up from where they fell -- quality steel stays with the party (`give HERO katana`).
+    Mialee's potions are taken up from where they fell (1 vial(s) -- the kit stays with the party).
+    Snagg drinks a healing potion (HP 1 -> 6/12; 0 left)
+    The party shares out its potions -- Snagg: 1 stamina.
+
+-- the party --
+Snagg: Unhurt STA 6/6 Power 1/3
+  (hurt -2 to rolls)
+  - a caved-in chest (sev 3)
+  - a crippled hand [PERMANENT] (sev 3)
+  - a deep gash across the back (sev 2)
+  - badly beaten (sev 1)
+  (HP ceiling 6/12 until they mend)
+  (stamina x1)
+Purse 47g; day 10.
+Karma: bad karma 325; HEAT 1 -- retribution hunts 1 level(s) above the party.

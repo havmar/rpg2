@@ -17,7 +17,7 @@ the party is at Firascir > Tomburgh >
     (visited)
   Tomburgh (capital) -- 4 job(s)  <- the
     party
-  Leehaven (town) -- 4 job(s)  (visited)
+  Leehaven (town) -- 3 job(s)  (visited)
   Walhaven (town) -- 4 job(s)
   Bradwhitchip (town) -- 3 job(s)
   Redflurton (town) -- 4 job(s)
@@ -63,10 +63,6 @@ the party is at Firascir > Tomburgh >
   Aradun (village) -- 2 job(s)
 
 -- quests in hand (where they lead) --
-
-[q71] The Restless Crypt (L2) @ Leehaven
-  - the village graveyard (L2): here,
-    room 1/1
 
 [q78] Corrupt the Holy Sword (L4) @
   Tomburgh
