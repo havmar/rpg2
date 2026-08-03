@@ -415,16 +415,21 @@ infernal reskins, and keep visits scene-sized.
 - **Assignments (Dark Tasks).** Hell assigns work on its own clock: a
   WORD FROM BELOW block prints at settlements (unseen job boards --
   which paladins search for -- black-waxed letters, ember-eyed
-  couriers; the script rolls the delivery). The task is a dark quest
-  leveled AT the party with the margin of error running UPWARD; it is
-  a curriculum in vice -- each task teaches a type of destructive act,
-  and the player is meant to take a liking to some and do them
-  proactively (`board --dark` and `forge --dark` are exactly that:
-  self-assigned wickedness). An assignment may be ignored for its
-  GRACE (~4 days); past that comes CHICKENING OUT -- infernal
-  colleagues dispatched to punish the disobedience, worse each visit.
-  `bribe` buys quiet (30g x level, 10 days); `task` is the ledger.
-  Relay the whole bargain straight -- the choice only works informed.
+  couriers; the script rolls the delivery). The first-ever task is
+  level 1; later ones are leveled AT the party with the margin of
+  error running UPWARD. It is a curriculum in vice -- each task
+  teaches a type of destructive act, and the player is meant to take
+  a liking to some and do them proactively (`board --dark` and
+  `forge --dark` are exactly that: self-assigned wickedness).
+  Assignments are serial: no new letter while one is open. The GRACE
+  (~4 days) covers TAKING the job from its local hand; taking it
+  stamps a visible completion window (the road days are counted in)
+  and hell leaves a working party alone. Untaken past grace, or taken
+  and past the window, the job goes PAST DUE -- first ONE WARNING (a
+  clerk, three forms, no fight -- play the scene), then armed
+  collections, worse each visit. `bribe` buys quiet (30g x level, 10
+  days) and resets the ladder; `task` is the ledger. Relay the whole
+  bargain straight -- the choice only works informed.
 - **Capers: deeds and twists.** Dark jobs are not all door-kicking.
   A DEED site opens on a check (the lift, the long con, the plan):
   the script rolls the PC's 2d6+stat vs a DC set HIGH on purpose --
@@ -1197,14 +1202,21 @@ bigger than the fights WITHOUT pages of narration:
   templates say what it is. A courier job carries a window like any job,
   with the round trip's road days added on top, and the hand-off is banded
   the same way -- so a delivery is not a thing to sit on.
-- **The pact & karma in numbers (2026-07-19):** dark XP = bad karma;
-  heat = bad karma // (100 x party level), capped 3; the law's posses
-  arrive at party level + heat (cooldown 2d, chance 0.6, at arrivals
-  and nights). Assignments: a fresh one ~4 days after the last
-  resolved, leveled at the party +0..+2, grace ~4 days, then hell's
-  enforcers at party +1 (+1 per beaten visit, max +3; neutral XP --
-  demon-slaying is neither crime nor penance). `bribe` = 30g x level
-  for 10 quiet days. Deeds: PC 2d6+stat vs DC (usually 10-11); a
+- **The pact & karma in numbers (2026-07-19; the collections ladder
+  2026-08-03):** dark XP = bad karma; heat = bad karma // (100 x party
+  level), capped 3; the law's posses arrive at party level + heat
+  (cooldown 2d, chance 0.6, at arrivals and nights). Assignments: a
+  fresh one ~4 days after the last resolved (the first letter too),
+  serial, first-ever level 1, later ones party +0..+1. Grace ~4 days
+  to TAKE it; taking stamps a visible window (4-6 days + road days)
+  and stops enforcement. Past either clock: PAST DUE -- one warning
+  scene (no fight), then collections at party level, +1 per beaten
+  visit, capped +2 over, cooldown 4d, chance 0.6; only the top rung
+  is relentless, the rest break when beaten (neutral XP --
+  demon-slaying is neither crime nor penance). Hell work is never
+  LOST off the clock: late pays x0.6 then x0, but only done,
+  withdrawn, or bribed ends the ladder. `bribe` = 30g x level for 10
+  quiet days and a fresh ladder. Deeds: PC 2d6+stat vs DC (usually 10-11); a
   botch adds +15 bad karma and starts the fight. `settle` takes a
   twist's terms at x0.5 of the site lump. Losing to any posse is the
   special mercy (left for dead / the lesson) when the PC has not spent

@@ -1064,3 +1064,72 @@ bench number moves; the whole suite (201 tests) is green with five new
 Fate contracts — paid loss, paid retreat, paid blink-out, deferred failed
 break, and a session-tail integration test asserting a paid loss banks
 nothing.
+
+## 2026-08-03 — Past Due: the collections ladder (the pact's clock made fair)
+
+**The trigger was a playtest.** The first pact playthrough to actually
+answer hell's letter hit the enforcement machinery head-on, and it played
+as incoherent rather than hard. The sequence: the first assignment landed
+on day 1 at level 2 against a level-1 day-one duo (spread 0..+2 rolled
++1); the grace ran from that day, flat 4 days, while leveling up enough to
+survive the job — the sensible play — consumed all of it; the party then
+TOOK the job and was punished twice for "Chickening Out" *while traveling
+to the site*: a level-3 relentless posse on day 6 (a severity-2 wound) and
+a level-4 one on day 8 (a permanent maiming and a lost eye, one blow short
+of Fate's bargain). The designer's verdict: the expiry-and-injury dynamic
+was felt and partly enjoyed, but the design was wrong — compliance was
+being punished, and the name said so.
+
+**What was judged a coherence bug, not tuning.** Three things would have
+been wrong at any numbers: enforcement fired on a taken, actively-worked
+assignment (the check only looked at "not done"); the flat grace ignored
+geography in a world where reaching a job routinely costs road days; and
+the fresh pact's letter came on day 1, above level, with the clock already
+running. The escalation shape (+1 start, +1 per visit, cap +3 over,
+cooldown 2, all relentless) was ALSO too steep, but that part is tuning.
+
+**The mechanic stays — reshaped as debt collection.** Punishment posses
+were kept (without teeth, ignoring hell is free and the pact layer goes
+inert; and a collections agent of Hell in a borrowed body is exactly the
+register). The alternative — purely economic punishment, rising bribe
+costs and docked pay — was considered and rejected: coherent, but it
+deletes the visits, and with them both the threat and the comedy.
+
+**The shipped shape (the designer settled the open calls):**
+
+- **The first-ever assignment is fixed level 1** (`FIRST_TASK_LEVEL`; the
+  party always starts as a duo, so no scaling subtlety is needed), and the
+  fresh pact's letter now waits the ordinary interval (`new_pact` seeds
+  `last_task_day = 0`, so ~day 4) instead of arriving on day 1. Later
+  assignments soften from spread 0..+2 to 0..+1 (`TASK_SPREAD`).
+- **Grace covers TAKING, and taking stops enforcement.** The giver is
+  local, so 4 days to take is honest. Taking stamps a **visible
+  completion window** on the quest — `TASK_WINDOW_DAYS` (4-6) + the road
+  days to the first site — carried by the ordinary deadline machinery, so
+  every readout prints the clock (the designer chose visible over
+  hidden). Hell work is never LOST off that clock: `board_clock` skips
+  hell tasks, late turn-ins pay the ordinary bands down to x0, and only
+  done / withdrawn / bribed ends the matter. Past the window the ladder
+  resumes instead.
+- **The ladder warns once, then climbs gently.** First visit of a refusal
+  is a WARNING — a clerk from Hell, three forms, no weapon, no fight, no
+  chance roll (informing is the point), naming the final-notice date.
+  Fights then come at **party level, +1 per visit fought, capped +2
+  over** (`ENFORCE_CAP_OVER`), cooldown 4 days (was 2). Only the capped
+  top rung is relentless; earlier rungs break when beaten — junior
+  devils who run when it goes badly and come back with paperwork.
+  (One warning is enough — the designer's call; a blown taken-window
+  does not re-warn, the visible clock was the warning.)
+- **Assignments stay serial** (no letter while one is open — unchanged,
+  now documented as a design fact), and **`bribe` resets the ladder**
+  (warning and all) and stretches a taken job's window by the bought
+  days — ease that left the deadline blown would be no ease.
+- **Renamed.** "Chickening Out" was wrong twice — unclear on its own, and
+  it fired on non-chickens. The state is **PAST DUE**, the posse label
+  "hell's collections", the banner `*** PAST DUE ***`.
+
+**Explicitly left alone:** the honest board's windows (3-7 days, priced
+in gold, failure rumors working) — re-judge the overall time pressure
+after this lands; the posting-window knob (`QUEST_WINDOW_DAYS`) is the
+one lever if it still feels tight. The law's posses, the heat formula,
+and the LAW/HELL mercy reshaping are untouched.
