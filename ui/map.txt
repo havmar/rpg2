@@ -1,6 +1,6 @@
-RPG2 MAP -- day 10
-the party is at Firascir > Tomburgh >
-  the village graveyard > graveyard
+RPG2 MAP -- day 12
+the party is at Firascir > Grendon
+  Fields
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -13,13 +13,14 @@ the party is at Firascir > Tomburgh >
   Whitweld Forest (forest, found day 1)
     (visited)
   Grendon Fields (farmland, found day 7)
+    <- the party
   Stura River (river, found day 5)
     (visited)
-  Tomburgh (capital) -- 4 job(s)  <- the
-    party
-  Leehaven (town) -- 3 job(s)  (visited)
+  Tomburgh (capital) -- 5 job(s)
+    (visited)
+  Leehaven (town) -- 4 job(s)  (visited)
   Walhaven (town) -- 4 job(s)
-  Bradwhitchip (town) -- 3 job(s)
+  Bradwhitchip (town) -- 4 job(s)
   Redflurton (town) -- 4 job(s)
   Sturford (village) -- 2 job(s)
   Ackham (village) -- 2 job(s)
