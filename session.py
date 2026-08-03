@@ -636,7 +636,8 @@ def map_sheet_lines(state: dict) -> list[str]:
             # What a visit would FIND today, not what is stored: the board's
             # clock only runs where the party stands, so a raw count would
             # show a land it left decaying to zero (quests.board_forecast).
-            open_q = board_forecast(world, area, state["clock"].day)
+            open_q = (board_forecast(world, area, state["clock"].day)
+                      if area["kind"] == "settlement" else 0)
             if area["key"] == pos["area"]:
                 where = "  <- the party"
             elif area["key"] in visited or area.get("visited"):
