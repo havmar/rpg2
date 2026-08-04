@@ -1,56 +1,55 @@
 RPG2 MAP -- day 1
-the party is at Mortellaria > Ventoro
+the party is at Dvarvengrond > Roros
 (travel: 1 day within a land, 2 days to
   another)
 
-== Dvarvengrond ==
+== Dvarvengrond ==  <- here
   Bjorgheim (capital) -- 5 job(s)
-  Roros (town) -- 4 job(s)
+  Roros (town) -- 4 job(s)  <- the party
   Svalaver (town) -- 4 job(s)
 
 == Firascir ==
   Tomburgh (capital) -- 5 job(s)
-  Leehaven (city) -- 4 job(s)
-  Walhaven (city) -- 4 job(s)
+  Leehaven (town) -- 4 job(s)
+  Walhaven (town) -- 4 job(s)
   Bradwhitchip (town) -- 4 job(s)
   Redflurton (town) -- 4 job(s)
   Sturford (village) -- 2 job(s)
   Ackham (village) -- 2 job(s)
   Flurham (village) -- 2 job(s)
 
-== Mortellaria ==  <- here
+== Mortellaria ==
   Castavera (capital) -- 5 job(s)
-  Portomera (city) -- 4 job(s)
+  Portomera (town) -- 4 job(s)
   Belafonte (town) -- 4 job(s)
   Montaro (town) -- 4 job(s)
-  Ventoro (village) -- 2 job(s)  <- the
-    party
-  Lunaro (village) -- 2 job(s)
-  Toralba (village) -- 2 job(s)
+  Fontela (village) -- 2 job(s)
+  Oliveta (village) -- 2 job(s)
+  Rosavera (village) -- 2 job(s)
 
 == Ensimaa ==
   Taivelle (capital) -- 5 job(s)
   Dunmaelle (town) -- 4 job(s)
   Kervaine (town) -- 4 job(s)
   Ruunamont (town) -- 4 job(s)
-  Tervaine (village) -- 2 job(s)
-  Halivain (village) -- 2 job(s)
-  Briomaa (village) -- 2 job(s)
+  Kaelinne (village) -- 2 job(s)
+  Muirala (village) -- 2 job(s)
+  Aurenne (village) -- 2 job(s)
 
 == Gibili ==
   Maketawa (capital) -- 5 job(s)
   Potalu (town) -- 4 job(s)
   Birikava (town) -- 4 job(s)
   Boilaki (town) -- 4 job(s)
-  Kapalota (village) -- 2 job(s)
+  Kopaka (village) -- 2 job(s)
   Napaliki (village) -- 2 job(s)
-  Makelu (village) -- 2 job(s)
+  Kapalota (village) -- 2 job(s)
 
 == Tergal ==
   Ulus-Gal (capital) -- 5 job(s)
   Kharuk (town) -- 4 job(s)
   Temenur (town) -- 4 job(s)
   Ordubal (town) -- 4 job(s)
-  Aradun (village) -- 2 job(s)
-  Borkal (village) -- 2 job(s)
-  Kharnam (village) -- 2 job(s)
+  Sargul (village) -- 2 job(s)
+  Enkhar (village) -- 2 job(s)
+  Ordaki (village) -- 2 job(s)

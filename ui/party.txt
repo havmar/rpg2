@@ -1,40 +1,28 @@
 RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > Ventoro
+  Dvarvengrond > Roros
 purse: 0g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
-(YOU)       Delg (L1, training 0): DEX 5
-  STR 5  MIND 3  STA 6/6  HP 9/9 of 11
-  Power 5/5  CHA 4  (alchemy 1;
-  shortsword; healingx1)
-            Delg -- dwarf m, age 35;
-              weakness: needs meds;
-              speech: verbose; dress:
-              tattered
-            XP 0/100 to L2 | skill
-              points: 0
-            - a gut wound, still seeping
-              (sev 2)
-            HP ceiling 9/11 (2 wound
-              load)
+(YOU) Riardon -- elf m, age 34
+  L1  training 0  XP 0/100  points 0
+  DEX 4  STR 5  MIND 5  CHA 4
+  HP 9/9  STA 7/7  Power 6/6
+  club | staminax2
+  abilities: bulwark
+  interest: animals; speech: formal;
+    dress: professional
 
-(companion) Isolde (L1, training 0): DEX
-  2  STR 5  MIND 6  STA 6/6  HP 5/5 of 8
-  Power 5/5  CHA 6  (spells: ice 1;
-  whip; healingx2, staminax1)
-  [satisfaction 7/10]
-            Isolde -- human f, age 29;
-              background: scholar;
-              speech: formal; looks:
-              thin
-            XP 0/100 to L2 | skill
-              points: 0 | spells: ice 1
-            - a blind eye [PERMANENT]
-              (sev 3)
-            HP ceiling 5/8 (3 wound
-              load)
+(companion) Simon -- human m, age 18
+  L1  training 0  XP 0/100  points 0
+  DEX 6  STR 4  MIND 6  CHA 4
+  HP 8/8  STA 5/5  Power 6/6
+  club | staminax2
+  abilities: first_blood
+  satisfaction 7/10
+  weakness: gambling; dress: tattered;
+    looks: weathered
 
-THE PACT: assignment [q42] Sell the
-  Powder at Ventoro (grace runs to day
-  5).
+THE PACT: no current assignment (the
+  level-1 pin is due -- it lands at the
+  next settlement).
