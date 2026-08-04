@@ -92,7 +92,10 @@ Concretely:
    simple and straightforward, using `writing.md` — the current
    Pratchett-wry phrasing goes; the comedy that survives is situational
    and deadpan. The good-side templates in `quests.py` get the same
-   pass afterward where the clash is felt.
+   pass afterward where the clash is felt. *(2026-08-04: for karma.py
+   this is absorbed by THE DARK REWORK above — the occult ten get their
+   pass in its Session A, the crime scene copy in Session B; what
+   remains of this item is the quests.py good-template half.)*
 3. **Play the dark path in the new register** (absorbs villain roadmap
    item 1): the probe now tests the retro style AND the dark content at
    once — the first ten messages, the first three levels.
@@ -101,6 +104,304 @@ Concretely:
    Seeds already on the books: off-screen event simulation (parked),
    standing dark enterprises, conquest ticking / domain play. Schedule
    as its own session; nothing is committed yet beyond the direction.
+
+---
+
+## THE DARK REWORK (2026-08-04) — next up: assignments from Hell, crime as actions
+
+The 2026-08-04 design session (designlog has the reasoning trail). This
+section is the complete implementation spec: a fresh session should be
+able to build any slice from it without the conversation that produced
+it. Three sessions, in order — each leaves the game playable.
+
+**The resort.** The 24 dark templates conflate two different things, and
+they get sorted apart:
+
+- **Assignments from Hell** — the OCCULT work (hellgate, desecration,
+  blood sacrifice): few, level-pinned, longer-deadlined quests on the
+  war-wave model (`story.WAVE_LEVELS` is the proven shape). The pact's
+  spine.
+- **Crime** — everything else: no longer quests at all, but free ACTIONS
+  against a leveled world, resolved by a parametrized pipeline the DM can
+  adjust, gamified by a tally/history page instead of a board. The
+  questgiver frame GOES: the PC does the thing because they want to and
+  keeps whatever material gain directly follows. The shadow board
+  (`board --dark`) dies with it.
+
+**Rename:** bad karma → **SIN** (current sin / lifetime sin / penance),
+including the save keys. **develop.md's "No backwards compatibility"
+rule (2026-08-04) governs this whole rework**: rename keys freely, and
+delete old-save assertions and lazy-upgrade branches wherever a touched
+file carries them. No shims.
+
+### Settled decisions (2026-08-04 — reopen only with the designer)
+
+1. **Assignments pin at odd PC levels** — `TASK_PIN_LEVELS = (1, 3, 5,
+   7, 9, 11, 13, 15, 17, 19)`, ten per career ("more frequent" was the
+   designer's call over a sparser 1/3/5/8/13/18). The interval clock
+   (`TASK_INTERVAL_DAYS`) dies.
+2. **The occult templates form a ten-card DECK**, shuffled once per save;
+   each pin deals the next card. Order is RANDOM by directive — variety
+   over curriculum sense, because only the low levels ever get played
+   (the hellgate may well come at level 3; that is accepted).
+3. **Retribution is ONE visit, not a chain** (second pass, same day —
+   the punishment budget): one warning, then a SINGLE collections fight
+   at party level + a random 0..+2 (`ENFORCE_SPREAD`) — potentially
+   devastating, never dominating — then hell WRITES THE JOB OFF and
+   waits for the next pin. The first-draft chain of three (+0/+1/+2)
+   was rejected on encounter arithmetic — see "The punishment budget"
+   below. Hell quests are a HOOK into dark play, not the game; the
+   game stays as freeform as possible.
+4. **Crime difficulty comes from the MARK's level** — the conquest
+   doctrine (geography, not gates) applied to people: a mark's level
+   fixes both wealth and protection, availability is gated by settlement
+   kind, casing is free, and nothing auto-levels to the party. Farming
+   down is self-defeating because rewards scale off the mark.
+5. **Petty crime pays XP** (small, and all of it sin) — designer call.
+6. **The news cycle**: any single sin gain ≥ the heat step floors heat
+   at 1 for `NEWS_DAYS` regardless of penance. Anti-laundering for big
+   scores; petty sin stays dodgeable on purpose (the tithing
+   puppy-kicker is a comedy the game wants).
+7. **Monotony is per-category and TEMPORARY** (a day-stamp window), with
+   a first-time creativity bonus; gold never depreciates — the loot is
+   the loot, it is hell that gets bored.
+8. **Unlocks gate SUGGESTIONS, never permission** — crime is free; a
+   "locked" category committed anyway unlocks itself by deed. The
+   suggestion feed is advertising.
+9. **The law eases to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6
+   (chance stays 0.6). The 2026-07-19 cadence predates persistent
+   wounds and quest deadlines, which made it much harsher after the
+   fact; max-evil play should meet roughly one posse per level, not
+   one every other stop.
+
+### The template sort
+
+**Occult ten** (assignments — stay quests): Blood on the Altar,
+Sacrifice the Puppy, Steal the Temple Relic, Kill the Priest, Corrupt
+the Holy Sword, Find the Evil Sword, Guard the Cultists, Open the
+Hellgate, Capture the Beast (hell is the customer — occult by giver),
+plus ONE NEW template to author: **Desecrate the Shrine** (writing.md
+register; the desecration slot the list lacks).
+
+**Crime fifteen** (retire from the quest system; their skins, rosters
+and situations become Session B's scene fodder): Kick the Puppy, Collect
+Protection Money, Burn the Granary, Steal the Jewel, Collect the Debt,
+Rob the Tomb, Take Over the Road, Dine and Dash, Loot the Village, Rob
+the Vault, Poison the Feast, Take the Mansion, Betray an Old Friend,
+Sell the Powder, Take the Neighbor's Land.
+
+### The punishment budget (why decisions 3 and 9 — the analysis, kept)
+
+Levelling takes ~2–3 fights (one at-level quest ≈ one level step,
+quests average 1.66 encounters, the career sim runs ~2 quests/level
+plus road fights). Against that budget, both punishment layers
+dominated the "obvious" pure playthroughs:
+
+- **Sinless play vs hell**: the old shape harassed a refuser FOREVER
+  (the capped relentless rung re-fired every ≥4 days until done,
+  bribed, or lost — and the serial rule would have jammed every later
+  pin behind the refused job). Even the finite first-draft chain of
+  three came to 10 pins × 3 = 30 hell fights ≈ **1.6/level** — a third
+  of a campaign's combat spent on a layer the player opted out of.
+- **Max-evil play vs the law**: at sustained heat the posse fires every
+  ~2.5 days ≈ **~2/level** at early pacing (~5 days/level) — constant
+  invasions, and with persistent wounds and quest deadlines (both newer
+  than the 2026-07-19 tuning) that makes normal questing impossible.
+
+The target: **~0.5 punishment fights per level per side**. The single
+visit hits it — 10 pins × 1 ≈ 0.53/level — while keeping the pins
+frequent (the deck's variety survives in the only band ever played;
+the alternative, four pins with the chain of three, also lands near
+budget at ~0.6/level but starves levels 1–4 of variety and was
+rejected). The random 0..+2 keeps the visit *potentially devastating*
+without raising its count. The law's cooldown 2 → 6 brings its side to
+~0.8/level at sustained max heat. Per refused assignment the full
+price is now: one warning scene + one hell fight (neutral XP — no
+absolution farming), then the write-off and quiet until the next odd
+level. Accounts never stack and never jam: the visit closes the
+account however it ends, and pins crossed while an account was open
+are served as ONE fresh assignment at the first settlement stop after
+it closes (`last_pin_served`). Losing keeps the shipped mercy: purse
+as the fine, job withdrawn — the same closure.
+
+### Session A — the assignment ladder (karma.py, session.py + docs)
+
+- **Sort the templates.** `DARK_TEMPLATES` splits: `OCCULT_TEMPLATES`
+  (the ten above, incl. the new Desecrate the Shrine) is what
+  `roll_dark_quest` draws from; the crime fifteen move to a clearly
+  marked fodder block (unused by any roll — Session B consumes them).
+- **The deck.** `new_pact()` gains `deck` (a seeded shuffle of the ten
+  template indexes), `last_pin_served: 0`, `defied: 0`; drop `task`
+  bookkeeping that dies with the interval clock (`last_task_day`).
+  Dealing: take the next card in the deck whose `template_band` admits
+  the assignment level; if none fits, the nearest-band card. Skipped
+  cards stay in the deck. (Random order is wanted; a mechanically
+  unbuildable roster is not.)
+- **`maybe_assign_task`** (session.py): fires at settlement stops when
+  no task is open, no bribe holds, and some pin ≤ PC level is
+  > `last_pin_served`. Serves ONE assignment (never stacks skipped
+  pins), stamps `last_pin_served` to the highest crossed pin, levels the
+  quest at party level + `TASK_SPREAD` (0..+1, unchanged). `HELL_MAIL`
+  delivery flavor unchanged. `FIRST_TASK_LEVEL` dies — pin 1 fires at
+  level 1, which IS the tutorial job.
+- **Deadlines**: `TASK_GRACE_DAYS` 4 → **10** (a pin can be crossed
+  mid-wilds; a milestone quest must not be missable to a road delay);
+  `TASK_WINDOW_DAYS` (4, 6) → **(6, 8)** + road days, mechanism
+  unchanged (the honest deadline machinery; hell work never lapses off
+  the clock).
+- **`maybe_enforce`** (session.py): warning rung unchanged (the
+  final-notice date stays the cooldown's end). Then ONE collections
+  visit: level = party + rng `ENFORCE_SPREAD` (0..2), ferocity
+  breaks-when-beaten (retreat stays viable — the +2 roll is the
+  devastation, not relentlessness). When the visit RESOLVES — won,
+  lost, or fled; hell's point is made either way — the account closes:
+  quest withdrawn (release its places), `pact["task"] = None`,
+  `defied += 1`, a short authored write-off scene ("the account is
+  written off; hell's ledger remembers"). Losing keeps the shipped
+  mercy (purse as the fine) — the same closure. The `beatings`
+  counter, the +1-per-visit escalation, and `ENFORCE_CAP_OVER` die.
+  `defied` is a ledger for later content (hell's patience / pact
+  termination — parked, not built).
+- **Ease the law to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6 in
+  karma.py (chance unchanged); note the wound-era re-tune in rules.md's
+  Karma & Heat add-on.
+- **Kill the shadow board**: `roll_dark_board`, the `dark_board` save
+  key, `board --dark`, `DARK_JOBS_PER_DAY`. `roll_dark_quest` survives
+  (assignments + the `test_places` routing test). `forge --dark` stays
+  as the DM's freeform dark-quest tool; `DARK_GOLD_MULT` stays for
+  quests that remain dark (assignments, forges, conquest jobs).
+- **Conquest doctrine touch-up**: a held settlement's board line
+  ("`board --dark` serves") becomes "posts no honest work; crime and
+  the pact serve" — session.py's occupied-board text + rules.md's
+  Conquest add-on.
+- **Docs**: rules.md Karma & Heat add-on (Assignments / Past Due /
+  shadow-board bullets rewritten), dm.md quick reference, develop.md's
+  karma.py file entry. New template wording per writing.md.
+- **Tests**: update the `test_places` dark-quest routing test; delete
+  old-save compat assertions in any touched suite (the no-compat rule).
+
+### Session B — crime actions (new `crime.py`, session.py + docs)
+
+- **New module `crime.py`** (register in develop.md's Files): the mark
+  bands, the crime catalog, and the resolution helpers. session.py owns
+  the commands. No sim or bench imports it (the karma doctrine).
+- **Mark bands** (level fixes wealth AND protection; availability by
+  settlement kind, the garrison-band logic — village caps ~7, town ~12,
+  capital 20):
+
+  | mark | level | where |
+  |---|---|---|
+  | commoner / stray / unpaid lunch | 1–2 | anywhere |
+  | tradesman, innkeeper | 2–4 | anywhere |
+  | merchant, priest | 4–7 | town+ |
+  | guild master, noble | 8–12 | town / capital |
+  | magnate, high temple | 12–16 | capital |
+  | the royal vault | 16–20 | capital |
+
+- **Casing is free** (the OSR straight-board stance): `case CATEGORY`
+  rolls the local mark (seeded per settlement/day/category) and prints
+  level, expected take, the check, and a protection hint. `crime
+  CATEGORY` commits against the cased mark (rolls fresh if uncased).
+  `--npc NAME --level N` targets a named victim (giver, notable) — the
+  DM assigns the band; NPCs are freely attackable/robbable through this.
+- **Three shapes**, per category:
+  1. **petty** — trivial or no check, no roster (or a token one), flat
+     `PETTY_SIN` (10–15) quoted as XP (all sin), coin in pennies.
+  2. **deed** — 2d6 + stat vs DC (the caper machinery generalized).
+     Make: clean take, sin, no fight. Miss: the mark's protection
+     fights (a `build_room` budget at mark level wearing the recycled
+     skins) + `WITNESS_SIN` (reuse `DEED_FAIL_KARMA` 15).
+  3. **force** — no check; straight to the protection roster, then the
+     take. Fight XP is dark as usual, plus the crime lump.
+- **Formulas** (initial knobs, hand-set per the standing balance
+  directive): crime lump ≈ `CRIME_XP_PER_LEVEL` (50) × mark level ×
+  category mult (half an at-level quest — a crime is one scene); coin
+  crimes pay ≈ `CRIME_GOLD_PER_LEVEL` (20) × mark level; goods crimes
+  (jewels, relics, cattle) pay in goods fenced at `FENCE_RATE` (0.5).
+- **Monotony**: per category, day stamps within `MONOTONY_WINDOW` (10);
+  the sin/XP mult by count already in the window is `(1.0, 1.0, 0.5,
+  0.25)`, floor 0.25 — temporary by construction, stamps age out. Gold
+  never depreciates. Alternating two categories does NOT reset either —
+  each has its own window; that is intended (a two-crime loop should
+  stale; a portfolio, or honest days between sprees, stays fresh).
+- **First-time bonus**: a category's first-ever commission pays
+  `FIRST_TIME_MULT` (1.5) on sin/XP — the creativity carrot, pointing
+  at the suggestion feed.
+- **The news cycle** (karma.py): a single sin gain ≥ the heat step
+  (100 × level) stamps `hot_until = day + NEWS_DAYS` (6); `heat()`
+  floors at 1 until then, penance or no. Applies to quest turn-ins too
+  — occult assignments are exactly the big scores it exists for.
+- **Unlocks**: the `crimes` save ledger (per category: count, day
+  stamps, unlocked flag). The first COMPLETED hell assignment unlocks
+  one random suggestion; thereafter one per `CRIME_UNLOCK_STEP` (200)
+  lifetime sin, random order. Full list lands around 4,750 lifetime sin
+  — the derivation: the XP budget to L20 is 19,000 quoted; keeping heat
+  down means at most half can be sin (each point needs a penance
+  point), so 9,500; half of that again = the designer's target.
+- **The catalogue** (~24 categories; shape and check noted — DCs sit
+  10–11 against stats 3–5, the caper doctrine):
+  - *petty*: kick the puppy; dine and dash; cheat at dice (CHA);
+    petty vandalism; pickpocket a commoner (DEX, tiny take).
+  - *deed*: burglary (DEX); the vault heist (MIND); the con / false
+    relics (CHA); counterfeiting (MIND); blackmail (CHA); impersonate
+    an official (CHA); poison the feast (MIND); grave-robbing (DEX);
+    smuggling / the powder trade (MIND); cattle rustling (DEX).
+  - *force*: mugging; extortion / protection racket; strong-arm debt
+    collection; highway robbery; rob the tax collector (the crown's
+    own coin — posse magnet); arson; kidnapping for ransom; jailbreak
+    (frees a future recruit — hook); caravan robbery; the village
+    raid; the land grab (conquest-adjacent); betrayal (sell out an
+    ally's crew).
+  - Nothing grim (writing.md's cartoon register gates the list).
+- **Heat-pump note to watch at the table**: crime lumps are smaller
+  than quest lumps, so running hot now takes big marks or volume —
+  coherent (petty crime should not summon the crown's huntsmen), but
+  `CRIME_XP_PER_LEVEL` is the lever if heat gets too hard to reach.
+- **Docs**: rules.md gets a Crime section (in or beside Karma & Heat);
+  dm.md (crime at the table: the wickedness stays narration, the
+  engine only ever fights the protection); develop.md Files + dev map.
+
+### Session C — the surface: history page, tally, the sin rename
+
+- **`ui/history.txt`** — the fourth committed UI page (cashes the
+  parked "quest history readout"), rewritten on every save, committed
+  by `sheet` like party/map/fight. Sections: QUESTS DONE (day-stamped
+  one-liners with the epilogue), REMARKABLE (waves, conquests, mercies,
+  maimings, write-offs, named kills), THE TALLY OF SIN (category:
+  count, last day), SUGGESTIONS (2–3 unlocked-but-uncommitted
+  categories, seeded random order). Save keys: `history` (list of
+  day-stamped lines), plus Session B's `crimes` ledger. 40-column wrap.
+- **The rename**: karma save keys `bad` → `sin`, `bad_total` →
+  `sin_total`, `good_total` → `penance_total`; every display string
+  ("dark work: +N sin", "sin N; HEAT h", "lifetime sin"); the `karma`
+  command becomes `sin` (no alias — no compat); rules.md / dm.md sweep.
+  Heat stays heat (it is the law's meter, not hell's).
+- **`crimes` command** — the `prices` pattern: the catalog with
+  expected take / check / protection for the LOCAL marks, the tally,
+  and the suggestions. This is the player's crime surface; the DM's
+  numbers all live in `crime.py`'s knobs.
+- **Tests**: contracts for the history page (sections present, 40-col
+  fit), the unlock ledger, and the monotony math; finish deleting
+  old-save assertions in every suite this rework touched.
+
+### What dies (the full list)
+
+`TASK_INTERVAL_DAYS`, `FIRST_TASK_LEVEL`, `last_task_day`,
+`DARK_JOBS_PER_DAY`, `roll_dark_board` / the `dark_board` save key /
+`board --dark`, the fifteen crime templates as QUESTS (content
+recycled), the collections ladder (`beatings`, `ENFORCE_CAP_OVER`, the
++1-per-visit escalation and its relentless top rung — replaced by the
+one-visit write-off with `ENFORCE_SPREAD`), the `karma` command name,
+the old karma save keys.
+
+### Explicitly not in this rework (still parked / open)
+
+Hell ranks and karma-gated powers (lifetime sin now has its first job —
+the unlock feed — but buys no powers yet); the geographic wanted level;
+standing dark enterprises (the powder network earns as a crime category,
+not as a holding); nemesis persistence; race-flavored occult tables; a
+crime/karma career sim (the balance stance stays variety-first,
+table-tuned); parley with the law's posses.
 
 ---
 
@@ -114,7 +415,10 @@ for when/if it returns; item 1 moved into the retro roadmap; item 2 —
 the nemesis — is bumped way back, narrative-serving. Of the rest,
 conquest ticking and the greed economy are the most retro-compatible
 entries — macro decisions, world state — enter through them if the
-layer returns.)*
+layer returns. 2026-08-04: THE DARK REWORK above supersedes this
+layer's dark-quest SHAPE — the shadow board and the crime templates go,
+the occult assignments and free crime actions replace them; karma/heat/
+pact/posses stay the shipped spine.)*
 
 The 2026-07-19 design session reframed the game. The diagnosis: the game
 had become a difficulty curve with a purse — real decisions, but all the
@@ -566,8 +870,9 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   been felt at the table.
 - **Standing dark enterprises** (2026-07-19, dark-quests session) —
   the powder network (and rackets generally) as HOLDINGS that earn and
-  draw rivals over time, not one-shot quests. The Powder Trade
-  template ships the seed version; the standing layer feeds domain
+  draw rivals over time, not one-shot quests. *(2026-08-04: the Powder
+  Trade template retires with THE DARK REWORK; the smuggling/powder
+  crime category carries the seed.)* The standing layer feeds domain
   play / conquest ticking.
 - **The rot spell & evil magic content** (2026-07-19, dark-quests
   session) — "learn an evil spell that quickly rots the opponent
@@ -694,7 +999,9 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   Candidates: karma-gated abilities, hell ranks (titles + perks), the
   luxury economy's prices. The other half of the original "good and bad
   karma as xp unlocking abilities" idea — deliberately deferred out of
-  the first slice.
+  the first slice. *(2026-08-04: first customer planned — lifetime sin
+  drives THE DARK REWORK's crime-suggestion unlocks; powers/ranks still
+  open.)*
 - **The heat curve's numbers** — KARMA_HEAT_STEP 100, HEAT_CAP 3,
   cooldown 2 days, chance 0.6, dark gold ×1.5: all provisional,
   hand-set, sim-unverified (no sim plays dark). Tune at the table
