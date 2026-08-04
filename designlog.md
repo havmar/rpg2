@@ -1202,3 +1202,38 @@ the first big break and restart fresh — save compatibility is NEVER a
 design input, old-save shims and round-trip assertions are to be
 deleted as touched, never added. Optimize for the good game, not for
 old saves.
+
+## 2026-08-04 (later) — The punishment budget: one devastating visit
+
+Designer follow-up on the dark rework, opening the retribution question
+wider: how does punishment sit against the game's encounter budget?
+
+**The arithmetic.** Levelling takes ~2-3 fights (one at-level quest ~
+one level step; quests average 1.66 encounters; the career sim runs ~2
+quests/level plus road fights). Ten pins x the three-fight chain = 30
+hell fights ~ 1.6/level for a SINLESS career — a third of its combat
+spent on a layer it opted out of. The mirror is worse: at sustained
+heat the law fired every ~2.5 days ~ 2 posses/level at early pacing,
+and that cadence was tuned 2026-07-19, BEFORE persistent wounds and
+quest deadlines made every fight cost more — constant invasions that
+make normal questing and deadline-keeping impossible. Both pure
+playthroughs (max good, max evil) are the obvious ways to play; neither
+may be dominated by punishment. The designer's doctrine, recorded: hell
+quests are a HOOK into dark play, not the game; target ~0.5 punishment
+fights per level per side.
+
+**The decision.** Of the two candidate fixes — fewer pins (four total,
+keeping the chain of three, ~0.6/level) vs ONE visit per refusal
+(keeping the odd-level pins, 10/19 ~ 0.53/level) — the single visit
+won: it hits the budget AND keeps the deck's variety in the only band
+ever played (the four-pin variant would put one assignment before
+level 4, against the same session's variety directive). The visit
+rolls party level + 0..+2 (`ENFORCE_SPREAD`) — potentially devastating,
+never dominating — ferocity breaks-when-beaten (retreat stays viable;
+the +2 roll is the devastation, not relentlessness). The account
+closes when the visit resolves HOWEVER it ends (won, lost, fled —
+hell's point is made); losing keeps the mercy fine. The beatings
+counter and the +1-per-visit escalation die with the chain. The law
+eased to the same budget: PUNISH_COOLDOWN_DAYS 2 -> 6, ~0.8
+posses/level at sustained max heat. plan.md's THE DARK REWORK section
+updated in place (decisions 3 and 9, "The punishment budget").

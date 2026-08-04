@@ -144,11 +144,14 @@ file carries them. No shims.
    each pin deals the next card. Order is RANDOM by directive — variety
    over curriculum sense, because only the low levels ever get played
    (the hellgate may well come at level 3; that is accepted).
-3. **The retribution chain is FINITE**: one warning, then three
-   collection fights (party +0, +1, +2 — only the third relentless), then
-   hell WRITES THE JOB OFF and waits for the next pin. A good-alignment
-   refuser is priced, not permanently besieged (the old ladder repeated
-   the capped rung forever — see "The refuser's arc" below).
+3. **Retribution is ONE visit, not a chain** (second pass, same day —
+   the punishment budget): one warning, then a SINGLE collections fight
+   at party level + a random 0..+2 (`ENFORCE_SPREAD`) — potentially
+   devastating, never dominating — then hell WRITES THE JOB OFF and
+   waits for the next pin. The first-draft chain of three (+0/+1/+2)
+   was rejected on encounter arithmetic — see "The punishment budget"
+   below. Hell quests are a HOOK into dark play, not the game; the
+   game stays as freeform as possible.
 4. **Crime difficulty comes from the MARK's level** — the conquest
    doctrine (geography, not gates) applied to people: a mark's level
    fixes both wealth and protection, availability is gated by settlement
@@ -165,6 +168,11 @@ file carries them. No shims.
 8. **Unlocks gate SUGGESTIONS, never permission** — crime is free; a
    "locked" category committed anyway unlocks itself by deed. The
    suggestion feed is advertising.
+9. **The law eases to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6
+   (chance stays 0.6). The 2026-07-19 cadence predates persistent
+   wounds and quest deadlines, which made it much harsher after the
+   fact; max-evil play should meet roughly one posse per level, not
+   one every other stop.
 
 ### The template sort
 
@@ -182,22 +190,39 @@ Rob the Tomb, Take Over the Road, Dine and Dash, Loot the Village, Rob
 the Vault, Poison the Feast, Take the Mansion, Betray an Old Friend,
 Sell the Powder, Take the Neighbor's Land.
 
-### The refuser's arc (why decision 3 — the analysis, kept)
+### The punishment budget (why decisions 3 and 9 — the analysis, kept)
 
-Under the old shape, a player who ignores an assignment reaches the
-capped relentless rung and is then harassed forever (cooldown 4, chance
-0.6) until they do the job, bribe, or lose. Under pins that is worse:
-the serial rule would block every later pin behind the refused job, so a
-good-alignment campaign would spend its whole life fighting hell's
-capped posse. The finite chain fixes it: per refused assignment the
-price is one warning scene plus at most three hell fights (party +0,
-+1, +2 relentless; neutral XP — no absolution farming), spread over
-~8–16 days, then the write-off and quiet until the next odd level.
-Chains never stack and never reset mid-account: pins crossed while an
-account is open are noted, and ONE fresh assignment lands at the first
-settlement stop after the account closes (see `last_pin_served` below).
-Losing any visit keeps the shipped mercy: purse as the fine, job
-withdrawn, account closed.
+Levelling takes ~2–3 fights (one at-level quest ≈ one level step,
+quests average 1.66 encounters, the career sim runs ~2 quests/level
+plus road fights). Against that budget, both punishment layers
+dominated the "obvious" pure playthroughs:
+
+- **Sinless play vs hell**: the old shape harassed a refuser FOREVER
+  (the capped relentless rung re-fired every ≥4 days until done,
+  bribed, or lost — and the serial rule would have jammed every later
+  pin behind the refused job). Even the finite first-draft chain of
+  three came to 10 pins × 3 = 30 hell fights ≈ **1.6/level** — a third
+  of a campaign's combat spent on a layer the player opted out of.
+- **Max-evil play vs the law**: at sustained heat the posse fires every
+  ~2.5 days ≈ **~2/level** at early pacing (~5 days/level) — constant
+  invasions, and with persistent wounds and quest deadlines (both newer
+  than the 2026-07-19 tuning) that makes normal questing impossible.
+
+The target: **~0.5 punishment fights per level per side**. The single
+visit hits it — 10 pins × 1 ≈ 0.53/level — while keeping the pins
+frequent (the deck's variety survives in the only band ever played;
+the alternative, four pins with the chain of three, also lands near
+budget at ~0.6/level but starves levels 1–4 of variety and was
+rejected). The random 0..+2 keeps the visit *potentially devastating*
+without raising its count. The law's cooldown 2 → 6 brings its side to
+~0.8/level at sustained max heat. Per refused assignment the full
+price is now: one warning scene + one hell fight (neutral XP — no
+absolution farming), then the write-off and quiet until the next odd
+level. Accounts never stack and never jam: the visit closes the
+account however it ends, and pins crossed while an account was open
+are served as ONE fresh assignment at the first settlement stop after
+it closes (`last_pin_served`). Losing keeps the shipped mercy: purse
+as the fine, job withdrawn — the same closure.
 
 ### Session A — the assignment ladder (karma.py, session.py + docs)
 
@@ -224,14 +249,22 @@ withdrawn, account closed.
   `TASK_WINDOW_DAYS` (4, 6) → **(6, 8)** + road days, mechanism
   unchanged (the honest deadline machinery; hell work never lapses off
   the clock).
-- **`maybe_enforce`** (session.py): warning rung unchanged. Fights at
-  party +0/+1/+2 as shipped (`ENFORCE_CAP_OVER` 2, third fight
-  relentless). NEW: when the party survives the third fight (it
-  resolved without `apply_mercy`), hell WRITES OFF the job — quest
-  withdrawn (release its places), `pact["task"] = None`,
-  `defied += 1`, a short authored scene ("the account is written off;
-  hell's ledger remembers"). `defied` is a ledger for later content
-  (hell's patience / pact termination — parked, not built).
+- **`maybe_enforce`** (session.py): warning rung unchanged (the
+  final-notice date stays the cooldown's end). Then ONE collections
+  visit: level = party + rng `ENFORCE_SPREAD` (0..2), ferocity
+  breaks-when-beaten (retreat stays viable — the +2 roll is the
+  devastation, not relentlessness). When the visit RESOLVES — won,
+  lost, or fled; hell's point is made either way — the account closes:
+  quest withdrawn (release its places), `pact["task"] = None`,
+  `defied += 1`, a short authored write-off scene ("the account is
+  written off; hell's ledger remembers"). Losing keeps the shipped
+  mercy (purse as the fine) — the same closure. The `beatings`
+  counter, the +1-per-visit escalation, and `ENFORCE_CAP_OVER` die.
+  `defied` is a ledger for later content (hell's patience / pact
+  termination — parked, not built).
+- **Ease the law to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6 in
+  karma.py (chance unchanged); note the wound-era re-tune in rules.md's
+  Karma & Heat add-on.
 - **Kill the shadow board**: `roll_dark_board`, the `dark_board` save
   key, `board --dark`, `DARK_JOBS_PER_DAY`. `roll_dark_quest` survives
   (assignments + the `test_places` routing test). `forge --dark` stays
@@ -356,8 +389,10 @@ withdrawn, account closed.
 `TASK_INTERVAL_DAYS`, `FIRST_TASK_LEVEL`, `last_task_day`,
 `DARK_JOBS_PER_DAY`, `roll_dark_board` / the `dark_board` save key /
 `board --dark`, the fifteen crime templates as QUESTS (content
-recycled), the endless top-rung enforcement (replaced by the write-off),
-the `karma` command name, the old karma save keys.
+recycled), the collections ladder (`beatings`, `ENFORCE_CAP_OVER`, the
++1-per-visit escalation and its relentless top rung — replaced by the
+one-visit write-off with `ENFORCE_SPREAD`), the `karma` command name,
+the old karma save keys.
 
 ### Explicitly not in this rework (still parked / open)
 
