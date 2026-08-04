@@ -1,124 +1,26 @@
-=== Corrupt the Holy Sword -- the temple road (L4), room 2/2: campfire ===
-  Priest 15 -- dagger
-  DEX 4  STR 2  STA 6  HP 10/10
-  takes spoils, leaves the fallen,
-  caster: ice 2; 8 Power
-  Temple Guard Captain 16 -- longsword
+=== The reckoning: the bounty guild (a level-5 posse) ===
+  2x Seasoned Man-Hunter -- longsword
   DEX 6  STR 5  STA 7  HP 13/13
   takes spoils, leaves the fallen
   Round 1:
-    Snagg, Perrin, Sharn, Temple Guard Captain 16 close the distance -- the lines meet!
-    !! Dagna's fire bolt MISFIRES -- the spell collapses in their hands (-1 HP -> 9/11; the Power is wasted)
-        pressure: Dagna: 9 (2d6=2, +5 AIM, +1 training, +1 proficiency) vs Priest 15: 12 (2d6=8, +4 DEX) [fire bolt: -1 Power, 3 left]
-    Priest 15's ice bolt overwhelms Snagg -- a crippling blow! [Snagg: 0/12 HP, -4 to rolls]
-        pressure: Priest 15: 16 (2d6=6, +8 AIM, +2 proficiency) vs Snagg: 6 (2d6=5, +2 DEX, +1 training, -2 wounds) [ice bolt: -1 Power, 7 left]
-        severity: 11 = margin 10 +2 ice bolt +2 spell rank -3 soak -> crippling blow (-6 HP)
-    Snagg is MAIMED: a withered arm (severity 3; HP ceiling 6/12)
-    Snagg goes down, out of the fight.
-    stamina: Dagna 6/9, Perrin 9/9, Sharn 9/9 | Priest 15 5/6, Temple Guard Captain 16 7/7
-  Round 2:
+    Snagg strikes before the lines meet -- First Blood! Seasoned Man-Hunter 17 is grazed (-1 HP -> 12/13, -0 to rolls) [2 Power spent, 1 left]
+    Snagg lunges into a driving thrust at Seasoned Man-Hunter 17.
+    Snagg attacks Seasoned Man-Hunter 17 -- parried.
+        pressure: Snagg: 13 (2d6=7, +2 DEX, +1 training, +2 rapier, +1 proficiency, +2 Thrust, -2 wounds) vs Seasoned Man-Hunter 17: 15 (2d6=9, +6 DEX)
     !! Dagna's fire bolt MISFIRES -- the spell collapses in their hands (-1 HP -> 8/11; the Power is wasted)
-        pressure: Dagna: 9 (2d6=2, +5 AIM, +1 training, +1 proficiency) vs Priest 15: 10 (2d6=6, +4 DEX) [fire bolt: -1 Power, 2 left]
-    Perrin attacks Temple Guard Captain 16 -- parried.
-        pressure: Perrin: 10 (2d6=5, +3 DEX, +1 training, +1 proficiency) vs Temple Guard Captain 16: 13 (2d6=7, +6 DEX)
-    Sharn rolls a pommel strike into Temple Guard Captain 16. (+1 STA)
-    Sharn and Temple Guard Captain 16 -- Lull. They circle, probing for an opening.
-        pressure: Sharn: 12 (2d6=4, +5 DEX, +2 training, +1 zweihander) vs Temple Guard Captain 16: 12 (2d6=6, +6 DEX)
-    Priest 15 sends ice bolt at Perrin -- warded off.
-        pressure: Priest 15: 13 (2d6=3, +8 AIM, +2 proficiency) vs Perrin: 15 (2d6=10, +3 DEX, +1 training, +1 armor) [ice bolt: -1 Power, 6 left]
-    Temple Guard Captain 16 outmaneuvers Sharn -- a solid wound! [Sharn: 8/10 HP, -0 to rolls]
-        pressure: Temple Guard Captain 16: 14 (2d6=8, +6 DEX) vs Sharn: 11 (2d6=5, +5 DEX, +2 training, -1 zweihander)
+        pressure: Dagna: 9 (2d6=2, +5 AIM, +1 training, +1 proficiency) vs Seasoned Man-Hunter 17: 14 (2d6=8, +6 DEX) [fire bolt: -1 Power, 6 left]
+    Perrin attacks Jorik -- parried.
+        pressure: Perrin: 9 (2d6=4, +3 DEX, +1 training, +1 proficiency) vs Jorik: 14 (2d6=8, +6 DEX)
+    Sharn rolls a pommel strike into Jorik.
+    Sharn and Jorik -- Clash! Steel rings; neither yields.
+        pressure: Sharn: 14 (2d6=6, +5 DEX, +2 training, +1 zweihander) vs Jorik: 14 (2d6=8, +6 DEX)
+    Seasoned Man-Hunter 17 outmaneuvers Perrin -- a solid wound! [Perrin: 11/12 HP, -0 to rolls]
+        pressure: Seasoned Man-Hunter 17: 16 (2d6=10, +6 DEX) vs Perrin: 13 (2d6=8, +3 DEX, +1 training, +1 armor)
         severity: 3 = margin 3 +5 STR +1 longsword -6 soak -> wound (-2 HP)
-    Sharn takes a wound: a shallow cut along the ribs (severity 1; HP ceiling 9/10)
-    stamina: Dagna 5/9, Perrin 8/9, Sharn 9/9 | Priest 15 4/6, Temple Guard Captain 16 6/7
-  Round 3:
-    Dagna's fire bolt overwhelms Priest 15 -- a crippling blow! [Priest 15: 4/10 HP, -3 to rolls]
-        pressure: Dagna: 14 (2d6=8, +5 AIM, +1 training, +1 proficiency, -1 wounds) vs Priest 15: 9 (2d6=5, +4 DEX) [fire bolt: -1 Power, 1 left]
-        severity: 9 = margin 5 +5 fire bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
-    Perrin attacks Temple Guard Captain 16 -- parried.
-        pressure: Perrin: 14 (2d6=9, +3 DEX, +1 training, +1 proficiency) vs Temple Guard Captain 16: 15 (2d6=9, +6 DEX)
-    Sharn outmaneuvers Temple Guard Captain 16 -- a crippling blow! [Temple Guard Captain 16: 7/13 HP, -3 to rolls]
-        pressure: Sharn: 18 (2d6=10, +5 DEX, +2 training, +1 zweihander) vs Temple Guard Captain 16: 15 (2d6=9, +6 DEX)
-        severity: 7 = margin 3 +6 STR +3 zweihander -5 soak -> crippling blow (-6 HP)
-    !! Priest 15 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Priest 15's ice bolt overwhelms Dagna -- a grievous injury! [Dagna: 4/11 HP, -2 to rolls]
-        pressure: Priest 15: 15 (2d6=10, +8 AIM, +2 proficiency, -3 wounds, -2 winded) vs Dagna: 10 (2d6=7, +3 DEX, +1 training, -1 wounds) [ice bolt: -1 Power, 5 left]
-        severity: 5 = margin 5 +2 ice bolt +2 spell rank -4 soak -> grievous (-4 HP)
-    Dagna is rimed with frost (-1 DEX for this fight)
-    Dagna takes a wound: a deep gash across the back (severity 2; HP ceiling 9/11)
-    Temple Guard Captain 16 edges past Perrin -- a graze! [Perrin: 10/12 HP, -0 to rolls]
-        pressure: Temple Guard Captain 16: 13 (2d6=10, +6 DEX, -3 wounds) vs Perrin: 12 (2d6=7, +3 DEX, +1 training, +1 armor)
-        severity: 1 = margin 1 +5 STR +1 longsword -6 soak -> graze (-1 HP)
-    stamina: Dagna 4/9, Perrin 7/9, Sharn 8/9 | Priest 15 3/6*, Temple Guard Captain 16 5/7   (* = Winded)
+    Perrin takes a wound: a split knuckle (severity 1; HP ceiling 11/12)
+    Jorik outmaneuvers Dagna -- a grievous injury! [Dagna: 4/11 HP, -2 to rolls]
+        pressure: Jorik: 11 (2d6=5, +6 DEX) vs Dagna: 8 (2d6=5, +3 DEX, +1 training, -1 wounds)
+        severity: 5 = margin 3 +5 STR +1 longsword -4 soak -> grievous (-4 HP)
+    Dagna takes a wound: a torn side, badly closed (severity 3; HP ceiling 8/11)
+    stamina: Snagg 6/6, Dagna 9/9, Perrin 9/9, Sharn 9/9 | Seasoned Man-Hunter 17 6/7, Jorik 6/7
     == Dagna is badly cut up (HP 4/11) -- the fight hangs for a heartbeat. ==
-  Round 4:
-    !! Dagna is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Dagna sends fire bolt at Priest 15 -- warded off.
-        pressure: Dagna: 7 (2d6=4, +5 AIM, +1 training, +1 proficiency, -2 wounds, -2 winded) vs Priest 15: 9 (2d6=10, +4 DEX, -3 wounds, -2 winded) [fire bolt: -1 Power, 0 left]
-    Perrin attacks Temple Guard Captain 16 -- parried.
-        pressure: Perrin: 10 (2d6=5, +3 DEX, +1 training, +1 proficiency) vs Temple Guard Captain 16: 13 (2d6=10, +6 DEX, -3 wounds)
-    Sharn overwhelms Temple Guard Captain 16 -- a crippling blow! [Temple Guard Captain 16: 1/13 HP, -6 to rolls]
-        pressure: Sharn: 17 (2d6=9, +5 DEX, +2 training, +1 zweihander) vs Temple Guard Captain 16: 10 (2d6=7, +6 DEX, -3 wounds)
-        severity: 11 = margin 7 +6 STR +3 zweihander -5 soak -> crippling blow (-6 HP)
-    Priest 15 sends ice bolt at Sharn -- warded off.
-        pressure: Priest 15: 11 (2d6=6, +8 AIM, +2 proficiency, -3 wounds, -2 winded) vs Sharn: 13 (2d6=7, +5 DEX, +2 training, -1 zweihander) [ice bolt: -1 Power, 4 left]
-    Temple Guard Captain 16 attacks Perrin -- parried.
-        pressure: Temple Guard Captain 16: 10 (2d6=10, +6 DEX, -6 wounds) vs Perrin: 16 (2d6=11, +3 DEX, +1 training, +1 armor)
-    stamina: Dagna 3/9*, Perrin 6/9, Sharn 7/9 | Priest 15 2/6*, Temple Guard Captain 16 4/7   (* = Winded)
-    The beaten foe line breaks and runs!
-    Perrin overwhelms Temple Guard Captain 16 -- a grievous injury! [Temple Guard Captain 16: 0/13 HP, -6 to rolls]
-        pressure: Perrin: 14 (2d6=9, +3 DEX, +1 training, +1 proficiency) vs Temple Guard Captain 16: 6 (2d6=8, +6 DEX, -6 wounds, -2 fleeing)
-        severity: 10 = margin 8 +6 STR +1 proficiency -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Temple Guard Captain 16 falls. ***
-    the chase: flight 11.0 (2d6=5, +4.0 DEX STA-weighted, +2 head start) vs pursuit 7.1 (2d6=3, +4.1 DEX STA-weighted)
-    The survivors escape. The field belongs to the party.
-    The party catches its breath (+1 STA)
-    Snagg gains 35 XP (encounter) [59/400]
-    Dagna gains 35 XP (encounter) [70/300]
-    Perrin gains 35 XP (encounter) [70/300]
-    Sharn gains 35 XP (encounter) [70/400]
-    (dark work: +70 bad karma -- bad karma 465; HEAT 1 -- retribution hunts 1 level(s) above the party)
-Left among the dead:
-a longsword (+0 atk/+1 sev, 15g).
-
-  *** QUEST COMPLETE: Corrupt the Holy Sword -- the temple road. Reward: 172 gold. ***
-    Snagg talks the pay up: +52g (CHA 6 -- 224g in all).
-    The party purse holds 231 gold.
-    Snagg gains 106 XP (quest) [165/400]
-    Dagna gains 106 XP (quest) [176/300]
-    Perrin gains 106 XP (quest) [176/300]
-    Sharn gains 106 XP (quest) [176/400]
-    Dagna: satisfaction 7 -> 8/10 (a job paid out)
-    Perrin: satisfaction 7 -> 8/10 (a job paid out)
-    Sharn: satisfaction 7 -> 8/10 (a job paid out)
-    (dark work: +212 bad karma -- bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party)
-  (turn in to Jorik, the masked collector -- narrate the scene)
-  EPILOGUE (day 12): The sword looks unchanged, but its miracles stop. The temple closes.
-  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 2 completed. The next job comes in its own time.)
-    Dagna: satisfaction 8 -> 7/10 (badly bloodied)
-    The party shares out its potions -- Snagg: 1 stamina; Dagna: 2 stamina; Perrin: 1 stamina; Sharn: 1 stamina.
-
--- the party --
-Snagg: Down STA 6/6 Power 1/3
-  [DOWN]
-  (hurt -4 to rolls)
-  - badly beaten (sev 3)
-  - a withered arm [PERMANENT] (sev 3)
-  - a crippled hand [PERMANENT] (sev 3)
-  - a cracked rib (dressed) (sev 1)
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 6/12 until they mend)
-  (stamina x1)
-Dagna: Reeling STA 4/9 Power 0/7
-  (hurt -2 to rolls)
-  - a deep gash across the back (sev 2)
-  (HP ceiling 9/11 until they mend)
-  (stamina x2)
-Perrin: Scratched STA 7/9 Power 5/5
-  (stamina x1)
-Sharn: Scratched STA 8/9 Power 4/4
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 9/10 until they mend)
-  (stamina x1)
-Purse 231g; day 12.
-Karma: bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party.

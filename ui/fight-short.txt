@@ -1,126 +1,23 @@
-=== Corrupt the Holy Sword ===
-the temple road (L4), room 2/2: campfire
-Priest 15 -- dagger
-DEX 4  STR 2  STA 6  HP 10/10
-takes spoils, leaves the fallen,
-caster: ice 2; 8 Power
-Temple Guard Captain 16 -- longsword
+=== The reckoning: the bounty guild ===
+(a level-5 posse)
+2x Seasoned Man-Hunter -- longsword
 DEX 6  STR 5  STA 7  HP 13/13
 takes spoils, leaves the fallen
 Round 1:
-The lines meet -- steel range.
+Snagg uses First Blood!
+Seasoned Man-Hunter 17 takes 1 dmg.
+Snagg: Thrust at Seasoned Man-Hunter 17!
+Snagg (5/12)
+attacks Seasoned Man-Hunter 17, parried.
 !! Dagna's fire bolt MISFIRES
 (-1 HP to the caster)
-Priest 15's ice bolt overwhelms Snagg,
-deals 6 dmg!!! [7 Power left]
-Snagg is MAIMED: a withered arm.
-Snagg goes DOWN.
-Round 2:
-!! Dagna's fire bolt MISFIRES
-(-1 HP to the caster)
-Perrin (11/12)
-attacks Temple Guard Captain 16, parried.
-Sharn: Pommel Strike
-at Temple Guard Captain 16!
-Sharn and Temple Guard Captain 16:
-they circle.
-Priest 15's ice bolt is warded off.
-Temple Guard Captain 16
-outmaneuvers Sharn, deals 2 dmg!
-Sharn takes a wound:
-a shallow cut along the ribs.
-Round 3:
-Dagna's fire bolt overwhelms Priest 15,
-deals 6 dmg!!! [1 Power left]
-Perrin (11/12)
-attacks Temple Guard Captain 16, parried.
-Sharn (8/10)
-outmaneuvers Temple Guard Captain 16,
-deals 6 dmg!!!
-!! Priest 15 is Winded.
-Priest 15's ice bolt overwhelms Dagna,
-deals 4 dmg!! [5 Power left]
-Dagna is rimed with frost.
+Perrin attacks Jorik, parried.
+Sharn: Pommel Strike at Jorik!
+Sharn and Jorik: Clash!
+Seasoned Man-Hunter 17 (12/13)
+outmaneuvers Perrin, deals 2 dmg!
+Perrin takes a wound: a split knuckle.
+Jorik outmaneuvers Dagna, deals 4 dmg!!
 Dagna takes a wound:
-a deep gash across the back.
-Temple Guard Captain 16 (7/13)
-edges past Perrin, deals 1 dmg.
+a torn side, badly closed.
 == Dagna is badly cut up ==
-Round 4:
-!! Dagna is Winded.
-Dagna's fire bolt is warded off.
-Perrin (10/12)
-attacks Temple Guard Captain 16, parried.
-Sharn (8/10)
-overwhelms Temple Guard Captain 16,
-deals 6 dmg!!!
-Priest 15's ice bolt is warded off.
-Temple Guard Captain 16 (1/13)
-attacks Perrin, parried.
-The beaten foes break and run!
-Perrin (10/12)
-overwhelms Temple Guard Captain 16,
-deals 4 dmg!! It falls.
-The survivors escape.
-The field belongs to the party.
-The party catches its breath (+1 STA)
-Snagg +35 XP (encounter) [59/400]
-Dagna +35 XP (encounter) [70/300]
-Perrin +35 XP (encounter) [70/300]
-Sharn +35 XP (encounter) [70/400]
-(dark work: +70 bad karma -- bad karma 465; HEAT 1 -- retribution hunts 1 level(s) above the party)
-Left among the dead:
-a longsword (+0 atk/+1 sev, 15g).
-
-*** QUEST COMPLETE:
-Corrupt the Holy Sword --
-the temple road. Reward: 172 gold. ***
-Snagg talks the pay up:
-+52g (224g in all).
-The party purse holds 231 gold.
-Snagg +106 XP (quest) [165/400]
-Dagna +106 XP (quest) [176/300]
-Perrin +106 XP (quest) [176/300]
-Sharn +106 XP (quest) [176/400]
-Dagna: satisfaction 7 -> 8/10
-(a job paid out)
-Perrin: satisfaction 7 -> 8/10
-(a job paid out)
-Sharn: satisfaction 7 -> 8/10
-(a job paid out)
-(dark work: +212 bad karma -- bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party)
-(turn in to
-Jorik, the masked collector --
-narrate the scene)
-EPILOGUE (day 12): The sword looks unchanged, but its miracles stop. The temple closes.
-(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 2 completed. The next job comes in its own time.)
-Dagna: satisfaction 8 -> 7/10
-(badly bloodied)
-The party shares out its potions:
-Snagg: 1 stamina; Dagna: 2 stamina;
-Perrin: 1 stamina; Sharn: 1 stamina.
-
--- the party --
-Snagg: Down STA 6/6 Power 1/3
-  [DOWN]
-  (hurt -4 to rolls)
-  - badly beaten (sev 3)
-  - a withered arm [PERMANENT] (sev 3)
-  - a crippled hand [PERMANENT] (sev 3)
-  - a cracked rib (dressed) (sev 1)
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 6/12 until they mend)
-  (stamina x1)
-Dagna: Reeling STA 4/9 Power 0/7
-  (hurt -2 to rolls)
-  - a deep gash across the back (sev 2)
-  (HP ceiling 9/11 until they mend)
-  (stamina x2)
-Perrin: Scratched STA 7/9 Power 5/5
-  (stamina x1)
-Sharn: Scratched STA 8/9 Power 4/4
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 9/10 until they mend)
-  (stamina x1)
-Purse 231g; day 12.
-Karma: bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party.
