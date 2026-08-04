@@ -285,11 +285,6 @@ class SaveRoundTrip(unittest.TestCase):
             sorted((c.kind, c.power, c.rounds, c.source)
                    for c in h.conditions))
 
-    def test_a_pre_slice_save_loads_with_none(self):
-        d = session._entity_to_dict(_dummy("Old"))
-        del d["conditions"]
-        self.assertEqual(session._entity_from_dict(d).conditions, [])
-
 
 if __name__ == "__main__":
     unittest.main()

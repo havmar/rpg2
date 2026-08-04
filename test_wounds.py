@@ -7,7 +7,7 @@ condition, the HP ceiling and the half-pool floor that keeps it from being a
 death spiral, the stat fold and its idempotence, the asymmetry (heroes record,
 foes never do), every rung of the treatment ladder and what each one can and
 cannot reach, the bleed re-derivation, the morale drain, and the save
-round-trip -- including a pre-slice save with no `wounds` key.
+round-trip.
 
 Run:  python -m unittest -v test_wounds.py
 """
@@ -522,15 +522,6 @@ class TheSaveRoundTrip(unittest.TestCase):
         self.assertEqual((back.str_, back.dex), (h.str_, h.dex))
         rpg._sync_wound_stats(back)
         self.assertEqual((back.str_, back.dex), (h.str_, h.dex))
-
-    def test_a_pre_slice_save_loads_as_an_unwounded_party(self):
-        h = _hero()
-        d = session._entity_to_dict(h)
-        d.pop("wounds")
-        d.pop("wound_stat_pen")
-        back = session._entity_from_dict(d)
-        self.assertEqual(back.wounds, [])
-        self.assertEqual(back.hp_ceiling, back.max_hp)
 
 
 class TheDisplay(unittest.TestCase):

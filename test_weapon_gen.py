@@ -297,22 +297,6 @@ class TestSaveRoundTrip(unittest.TestCase):
         self.assertEqual(h2.quirk_gold, 4)
         self.assertEqual(rpg.prof_name(h2.weapon), w.base)
 
-    def test_pre_slice_weapon_dict_still_loads(self):
-        # An old save's one-off weapon dict has none of the new fields.
-        old = {"name": "shock prod", "atk_pressure": 1, "severity": 1,
-               "sta_cost": 1, "durability": 4, "quality": True,
-               "tier": "plain", "def_pressure": 0, "graze_floor": False,
-               "natural": False, "power_bonus": 0, "range": 0, "reload": 0,
-               "aim": "dex", "aim_flat": 0, "heavy_draw": 0, "ammo": "",
-               "missile": "", "melee_atk": -2, "melee_sev": -2, "bulk": 2,
-               "tags": [], "move_tags": ["blade", "pierce"], "value": 60,
-               "description": ""}
-        w = session._weapon_from(old)
-        self.assertEqual(w.base, "")
-        self.assertEqual(w.rider, "")
-        self.assertEqual(w.dex_bonus, 0)
-        self.assertFalse(w.lunge)
-
 
 class TestWorldLayer(unittest.TestCase):
     @classmethod

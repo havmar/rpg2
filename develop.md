@@ -294,26 +294,31 @@ a pointer: what the file is, how it's run, where its docs are.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
   Heat add-on; the direction it serves is plan.md's VILLAIN PIVOT):
   the karma state dict + heat math (`new_karma` / `heat` /
-  `record_karma` / `karma_line`), the DARK quest templates
-  + `roll_dark_quest` (lazy per-settlement-day shadow jobs — worldgen
-  never sees them; the `spread` param leans hell's assignments upward),
+  `record_karma` / `karma_line`), the quest templates + `roll_dark_quest`
+  (lazy — worldgen never sees a dark quest; `spread` leans hell's
+  assignments upward, `template` pins the deck's card),
   and the punishment posses (`POSSE_BANDS` /
   `build_posse`: ladder rosters wearing lawful display names, a
   generated leader face). **The hell pact (same day, second slice —
-  rules.md's "The Hell Pact"):** `new_pact` + the assignment/
-  enforcement knobs (`TASK_INTERVAL_DAYS`, `TASK_GRACE_DAYS`,
-  `FIRST_TASK_LEVEL`, `TASK_SPREAD`, `TASK_WINDOW_DAYS`,
-  `ENFORCE_*`, `BRIBE_*`, `DEED_FAIL_KARMA`, `HELL_MAIL`), the hell
-  collections posses (`HELL_SKINS` / `build_hell_posse` — Past Due,
-  the collections ladder; reshaped 2026-08-03, was Chickening
-  Out), and
+  rules.md's "The Hell Pact"):** `new_pact` (which shuffles the pact's
+  DECK off the run's rng) + `deal_card`, the assignment/enforcement
+  knobs (`TASK_PIN_LEVELS`, `TASK_GRACE_DAYS`, `TASK_SPREAD`,
+  `TASK_WINDOW_DAYS`, `ENFORCE_*` incl. `ENFORCE_SPREAD`, `BRIBE_*`,
+  `DEED_FAIL_KARMA`, `HELL_MAIL`), the hell collections posse
+  (`HELL_SKINS` / `build_hell_posse` — Past Due; ONE visit since
+  2026-08-04, was an escalating ladder), and
   the CAPER schema on templates (`deed` = 2d6+stat vs DC gate, `twist`
-  = priced terms; 24 dark templates total after the content pass). All
+  = priced terms).
+  **The 2026-08-04 template sort** (THE DARK REWORK, session A):
+  `OCCULT_TEMPLATES` is the pact's ten-card deck and the ONLY list any
+  roll draws from; `CRIME_FODDER` is the fifteen retired crime
+  templates, kept as authored scene material for session B's crime
+  actions and rolled by nothing. All
   other knobs at the top (`KARMA_HEAT_STEP`,
-  `HEAT_CAP`, `PUNISH_*`, `DARK_JOBS_PER_DAY`; the dark gold premium
+  `HEAT_CAP`, `PUNISH_*`; the dark gold premium
   `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
-  never import it. `python karma.py [--seed N]` prints sample shadow
-  boards and posses (the eyeball check).
+  never import it. `python karma.py [--seed N]` prints a shuffled deck,
+  sample assignments and posses (the eyeball check).
 - `conquest.py` — **the domain layer: player conquest** (2026-07-27,
   rules.md's Conquest & Holdings add-on): fixed stable-seeded garrison
   levels (village 3-5 / town 6-10 / capital 11-15), the garrison-job
@@ -331,6 +336,15 @@ a pointer: what the file is, how it's run, where its docs are.
   garrison always repels; unguarded always falls; present party is never
   raided), the yoke's seizure, the save round-trip, display fit.
   `python -m unittest -v test_conquest.py`.
+- `test_pact.py` — the HELL PACT assignment-ladder contract suite
+  (2026-08-04, THE DARK REWORK session A): the template sort (occult ten
+  vs. inert crime fodder — nothing rolls from the fodder), the per-save
+  deck (shuffle, one card per pin, band-fitting, skipped cards kept,
+  the nearest-band fallback), the pin schedule (odd levels, never
+  stacked, the highest crossed pin served once), the deadline clocks,
+  the punishment-budget knobs, and the write-off (`withdraw_assignment`:
+  the job leaves the world, its sites are released, `defied` ticks, the
+  next pin is not jammed). `python -m unittest -v test_pact.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
   `weapon_sp`, the budgeted generator (`generate_weapon` — profile rule,
@@ -569,6 +583,7 @@ python -m unittest -v test_wounds.py  # the wound system contract
 python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 python -m unittest -v test_conquest.py # the conquest domain layer contract
+python -m unittest -v test_pact.py    # hell's assignment ladder contract
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -960,9 +975,11 @@ mechanic *does* and *why* is rules.md's job.
   `finish_encounter`, `advance_quest`, `deliver_if_arrived`, `cmd_award`),
   the `align` thread through `resolve_encounter`/`pending`/resume/retreat
   serializers, `maybe_punish` (called at travel arrivals and
-  tavern/downtime/camp nights), `roll_dark_board` + `board --dark`,
+  tavern/downtime/camp nights),
   `forge --dark`, `award --dark/--good`, `cmd_karma`, the karma lines in
-  `tally_lines`/`cmd_status`, the `karma`/`dark_board` save keys.
+  `tally_lines`/`cmd_status`, the `karma` save key. (`roll_dark_board`,
+  `board --dark` and the `dark_board` save key died 2026-08-04 with the
+  shadow board.)
 - **The hell pact & the capers** (2026-07-19, second slice — rules.md's
   "The Hell Pact") — `karma.py`: the pact constants, `new_pact`,
   `HELL_MAIL`, `HELL_SKINS` / `build_hell_posse`, the `deed`/`twist`
@@ -970,9 +987,12 @@ mechanic *does* and *why* is rules.md's job.
   site count and copies `deed` → first site / `twist` → last site; the
   deed/twist lines in `quest_detail_lines` (twist is DM-eyes-only).
   `session.py`: the `pact` save key (None = pactless; `new --no-pact`),
-  `pact_task` / `pact_lines`, `maybe_assign_task` (arrivals, `board`,
+  `pact_task` / `pact_lines`, `pc_level` / `pending_pin` / `coming_pin`
+  (the pin schedule), `maybe_assign_task` (arrivals, `board`,
   settlement nights) + `maybe_enforce` (the posse stops, after
-  `maybe_punish`), `cmd_task` / `cmd_bribe`, THE DEED + THE TWIST
+  `maybe_punish`), `withdraw_assignment` / `close_hell_account` (the
+  write-off, called from `finish_encounter` and the retreat path on any
+  `mercy="hell"` fight), `cmd_task` / `cmd_bribe`, THE DEED + THE TWIST
   branches in `cmd_room`, `cmd_settle`, `_close_site` (advance_quest's
   tail split out: deed-skips and settles close sites through it;
   also the hell-task completion ledger), and the MERCY thread —
@@ -1418,6 +1438,15 @@ sit with it at the top of `rpg.py`. The karma layer's knobs
 (`karma.KARMA_HEAT_STEP` / `HEAT_CAP` / `PUNISH_COOLDOWN_DAYS` /
 `PUNISH_CHANCE`, `quests.DARK_GOLD_MULT`) are PLAY-ONLY dials — no
 bench measures them; the felt game is their only meter for now.
+**The punishment budget is the exception** (2026-08-04): both
+punishment layers are counted, not felt, against the levelling budget of
+2–3 fights per level, and both are held near 0.5 fights per level — hell
+by the one-visit write-off (`TASK_PIN_LEVELS` × one visit ≈ 0.53/level),
+the law by `PUNISH_COOLDOWN_DAYS` (6 → ~0.8/level at sustained max heat;
+2 came to ~2/level, which made normal questing impossible once
+persistent wounds and quest deadlines shipped). Change either knob and
+redo that arithmetic — it is what keeps a pure-refusal run and a
+max-evil run both playable.
 **The wound system (2026-07-26, slice 3b) adds three, and they have a
 declared order** — use them in it: (1) **`HERO_PAIN`** (the budget shift;
 3 now — dropping it back toward 2 hands the party its in-fight pressure

@@ -107,26 +107,33 @@ Concretely:
 
 ---
 
-## THE DARK REWORK (2026-08-04) — next up: assignments from Hell, crime as actions
+## THE DARK REWORK (2026-08-04) — session A SHIPPED; next up: crime as actions
 
 The 2026-08-04 design session (designlog has the reasoning trail). This
 section is the complete implementation spec: a fresh session should be
 able to build any slice from it without the conversation that produced
 it. Three sessions, in order — each leaves the game playable.
 
-**The resort.** The 24 dark templates conflate two different things, and
-they get sorted apart:
+**Status: Session A shipped 2026-08-04** (the assignment ladder — the
+template sort, the deck, the pins, the one-visit write-off, the law's
+eased cooldown, the shadow board's removal; rules.md's Karma & Heat
+add-on and dm.md carry the played rules, `test_pact.py` the contracts).
+Sessions B and C are unbuilt.
+
+**The resort** (done in session A). The 24 dark templates conflated two
+different things, and they were sorted apart:
 
 - **Assignments from Hell** — the OCCULT work (hellgate, desecration,
   blood sacrifice): few, level-pinned, longer-deadlined quests on the
   war-wave model (`story.WAVE_LEVELS` is the proven shape). The pact's
-  spine.
+  spine. SHIPPED.
 - **Crime** — everything else: no longer quests at all, but free ACTIONS
   against a leveled world, resolved by a parametrized pipeline the DM can
   adjust, gamified by a tally/history page instead of a board. The
   questgiver frame GOES: the PC does the thing because they want to and
   keeps whatever material gain directly follows. The shadow board
-  (`board --dark`) dies with it.
+  (`board --dark`) died with it in session A; the ACTIONS are session B,
+  still to build.
 
 **Rename:** bad karma → **SIN** (current sin / lifetime sin / penance),
 including the save keys. **develop.md's "No backwards compatibility"
@@ -136,22 +143,17 @@ file carries them. No shims.
 
 ### Settled decisions (2026-08-04 — reopen only with the designer)
 
-1. **Assignments pin at odd PC levels** — `TASK_PIN_LEVELS = (1, 3, 5,
-   7, 9, 11, 13, 15, 17, 19)`, ten per career ("more frequent" was the
-   designer's call over a sparser 1/3/5/8/13/18). The interval clock
-   (`TASK_INTERVAL_DAYS`) dies.
-2. **The occult templates form a ten-card DECK**, shuffled once per save;
-   each pin deals the next card. Order is RANDOM by directive — variety
-   over curriculum sense, because only the low levels ever get played
-   (the hellgate may well come at level 3; that is accepted).
-3. **Retribution is ONE visit, not a chain** (second pass, same day —
-   the punishment budget): one warning, then a SINGLE collections fight
-   at party level + a random 0..+2 (`ENFORCE_SPREAD`) — potentially
-   devastating, never dominating — then hell WRITES THE JOB OFF and
-   waits for the next pin. The first-draft chain of three (+0/+1/+2)
-   was rejected on encounter arithmetic — see "The punishment budget"
-   below. Hell quests are a HOOK into dark play, not the game; the
-   game stays as freeform as possible.
+1. ~~**Assignments pin at odd PC levels**~~ — SHIPPED (session A);
+   rules.md's Karma & Heat add-on documents the pinned ladder.
+2. ~~**The occult templates form a ten-card DECK**~~ — SHIPPED
+   (session A). Order is RANDOM by directive — variety over curriculum
+   sense, because only the low levels ever get played (the hellgate may
+   well come at level 3; that is accepted).
+3. ~~**Retribution is ONE visit, not a chain**~~ — SHIPPED (session A).
+   The reasoning is kept in "The punishment budget" below, because
+   session B's crime volume is measured against the same budget: hell
+   quests are a HOOK into dark play, not the game; the game stays as
+   freeform as possible.
 4. **Crime difficulty comes from the MARK's level** — the conquest
    doctrine (geography, not gates) applied to people: a mark's level
    fixes both wealth and protection, availability is gated by settlement
@@ -168,11 +170,8 @@ file carries them. No shims.
 8. **Unlocks gate SUGGESTIONS, never permission** — crime is free; a
    "locked" category committed anyway unlocks itself by deed. The
    suggestion feed is advertising.
-9. **The law eases to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6
-   (chance stays 0.6). The 2026-07-19 cadence predates persistent
-   wounds and quest deadlines, which made it much harsher after the
-   fact; max-evil play should meet roughly one posse per level, not
-   one every other stop.
+9. ~~**The law eases to the same budget**~~ — SHIPPED (session A):
+   `PUNISH_COOLDOWN_DAYS` 2 → 6, chance unchanged.
 
 ### The template sort
 
@@ -224,61 +223,37 @@ are served as ONE fresh assignment at the first settlement stop after
 it closes (`last_pin_served`). Losing keeps the shipped mercy: purse
 as the fine, job withdrawn — the same closure.
 
-### Session A — the assignment ladder (karma.py, session.py + docs)
+### Session A — the assignment ladder — SHIPPED 2026-08-04
 
-- **Sort the templates.** `DARK_TEMPLATES` splits: `OCCULT_TEMPLATES`
-  (the ten above, incl. the new Desecrate the Shrine) is what
-  `roll_dark_quest` draws from; the crime fifteen move to a clearly
-  marked fodder block (unused by any roll — Session B consumes them).
-- **The deck.** `new_pact()` gains `deck` (a seeded shuffle of the ten
-  template indexes), `last_pin_served: 0`, `defied: 0`; drop `task`
-  bookkeeping that dies with the interval clock (`last_task_day`).
-  Dealing: take the next card in the deck whose `template_band` admits
-  the assignment level; if none fits, the nearest-band card. Skipped
-  cards stay in the deck. (Random order is wanted; a mechanically
-  unbuildable roster is not.)
-- **`maybe_assign_task`** (session.py): fires at settlement stops when
-  no task is open, no bribe holds, and some pin ≤ PC level is
-  > `last_pin_served`. Serves ONE assignment (never stacks skipped
-  pins), stamps `last_pin_served` to the highest crossed pin, levels the
-  quest at party level + `TASK_SPREAD` (0..+1, unchanged). `HELL_MAIL`
-  delivery flavor unchanged. `FIRST_TASK_LEVEL` dies — pin 1 fires at
-  level 1, which IS the tutorial job.
-- **Deadlines**: `TASK_GRACE_DAYS` 4 → **10** (a pin can be crossed
-  mid-wilds; a milestone quest must not be missable to a road delay);
-  `TASK_WINDOW_DAYS` (4, 6) → **(6, 8)** + road days, mechanism
-  unchanged (the honest deadline machinery; hell work never lapses off
-  the clock).
-- **`maybe_enforce`** (session.py): warning rung unchanged (the
-  final-notice date stays the cooldown's end). Then ONE collections
-  visit: level = party + rng `ENFORCE_SPREAD` (0..2), ferocity
-  breaks-when-beaten (retreat stays viable — the +2 roll is the
-  devastation, not relentlessness). When the visit RESOLVES — won,
-  lost, or fled; hell's point is made either way — the account closes:
-  quest withdrawn (release its places), `pact["task"] = None`,
-  `defied += 1`, a short authored write-off scene ("the account is
-  written off; hell's ledger remembers"). Losing keeps the shipped
-  mercy (purse as the fine) — the same closure. The `beatings`
-  counter, the +1-per-visit escalation, and `ENFORCE_CAP_OVER` die.
-  `defied` is a ledger for later content (hell's patience / pact
-  termination — parked, not built).
-- **Ease the law to the same budget**: `PUNISH_COOLDOWN_DAYS` 2 → 6 in
-  karma.py (chance unchanged); note the wound-era re-tune in rules.md's
-  Karma & Heat add-on.
-- **Kill the shadow board**: `roll_dark_board`, the `dark_board` save
-  key, `board --dark`, `DARK_JOBS_PER_DAY`. `roll_dark_quest` survives
-  (assignments + the `test_places` routing test). `forge --dark` stays
-  as the DM's freeform dark-quest tool; `DARK_GOLD_MULT` stays for
-  quests that remain dark (assignments, forges, conquest jobs).
-- **Conquest doctrine touch-up**: a held settlement's board line
-  ("`board --dark` serves") becomes "posts no honest work; crime and
-  the pact serve" — session.py's occupied-board text + rules.md's
-  Conquest add-on.
-- **Docs**: rules.md Karma & Heat add-on (Assignments / Past Due /
-  shadow-board bullets rewritten), dm.md quick reference, develop.md's
-  karma.py file entry. New template wording per writing.md.
-- **Tests**: update the `test_places` dark-quest routing test; delete
-  old-save compat assertions in any touched suite (the no-compat rule).
+Built as specced: the template sort (`OCCULT_TEMPLATES` — the occult ten
+plus the new **Desecrate the Shrine** — is all `roll_dark_quest` draws
+from; `CRIME_FODDER` holds the retired fifteen, rolled by nothing and
+waiting for session B), the per-save shuffled deck (`karma.deal_card`),
+the pinned schedule (`TASK_PIN_LEVELS`, `last_pin_served`,
+`session.pending_pin` / `coming_pin`), the eased deadlines
+(`TASK_GRACE_DAYS` 10, `TASK_WINDOW_DAYS` 6–8), the one-visit Past Due
+with `ENFORCE_SPREAD` and the write-off (`session.withdraw_assignment` /
+`close_hell_account`, `defied`), `PUNISH_COOLDOWN_DAYS` 2 → 6, and the
+shadow board's removal (`roll_dark_board`, `board --dark`, the
+`dark_board` save key, `DARK_JOBS_PER_DAY`). The played rules live in
+rules.md's Karma & Heat add-on and dm.md; the contracts in
+`test_pact.py`.
+
+**Two decisions the spec left open, settled in the build:**
+
+- `deal_card` falls back to the NEAREST-band card when no card in the
+  deck admits the pin level (the high pins, where only the widest bands
+  reach) and the assignment levels into that band.
+- The account's closure is SHARED by the write-off and hell's mercy
+  (`withdraw_assignment`), so a LOST visit also releases the job's sites
+  back to the land — the old mercy deleted the quest without releasing
+  them.
+
+**What session B still needs from here:** the crime fifteen live in
+`karma.CRIME_FODDER` with their skins, rosters, situations and
+epilogues intact (byte-identical to their old template form); the
+occult ten are `karma.OCCULT_TEMPLATES` and are not to be drawn from by
+crime.
 
 ### Session B — crime actions (new `crime.py`, session.py + docs)
 
@@ -386,13 +361,16 @@ as the fine, job withdrawn — the same closure.
 
 ### What dies (the full list)
 
-`TASK_INTERVAL_DAYS`, `FIRST_TASK_LEVEL`, `last_task_day`,
-`DARK_JOBS_PER_DAY`, `roll_dark_board` / the `dark_board` save key /
-`board --dark`, the fifteen crime templates as QUESTS (content
-recycled), the collections ladder (`beatings`, `ENFORCE_CAP_OVER`, the
-+1-per-visit escalation and its relentless top rung — replaced by the
-one-visit write-off with `ENFORCE_SPREAD`), the `karma` command name,
-the old karma save keys.
+**Already gone (session A, 2026-08-04):** `TASK_INTERVAL_DAYS`,
+`FIRST_TASK_LEVEL`, `last_task_day`, `DARK_JOBS_PER_DAY`,
+`roll_dark_board` / the `dark_board` save key / `board --dark`, the
+fifteen crime templates as QUESTS (content recycled into
+`karma.CRIME_FODDER`), the collections ladder (`beatings`,
+`ENFORCE_CAP_OVER`, the +1-per-visit escalation and its relentless top
+rung — replaced by the one-visit write-off with `ENFORCE_SPREAD`).
+
+**Still to die (session C):** the `karma` command name, the old karma
+save keys.
 
 ### Explicitly not in this rework (still parked / open)
 

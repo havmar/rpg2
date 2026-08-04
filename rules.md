@@ -2636,8 +2636,8 @@ and posts back toward it as days pass: at most `QUEST_REFILL_PER_DAY` = 1 new
 job a day, except the first time a board is looked at, which fills it (the
 land has always had work; the party has just never asked). Only the current
 land's boards run their clock — a board nobody is looking at costs nothing to
-leave alone. `karma.roll_dark_quest`'s shadow board is the shape this copies:
-rolled lazily, never seen by worldgen.
+leave alone. `karma.roll_dark_quest` is the shape this copies: rolled lazily,
+never seen by worldgen.
 
 The old up-front XP-coverage top-up and its assert are **gone**. They
 asserted a total the board would carry forever, and expiry makes that total a
@@ -2645,10 +2645,11 @@ lie within a week. What replaces the guarantee is measured, not asserted: the
 career sim runs a full 1–20 career with the board never running dry
 (benchlog).
 
-Two kinds of job deliberately carry **no clock**: the war waves (an authored
-questline does not lapse) and the shadow board's offers (they are already
-day-scoped — "these offers last today only"). The DM's `forge` is timeless
-unless given `--days N`.
+One kind of job deliberately carries **no clock**: the war waves (an authored
+questline does not lapse). Hell's assignments carry their own pair of clocks
+instead — the grace to take one, then the completion window — and never lapse
+off the board (the Karma & Heat add-on). The DM's `forge` is timeless unless
+given `--days N`.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
   row is mechanics — a goblin "Scrap-Hound" is the wolf row, a dwarf
   "Hold-Lord" the wight. Balance never forks on a skin.
@@ -3298,9 +3299,9 @@ stays flat and concrete.
 ## The mechanics
 
 - **Alignment.** Every quest carries `align`: `good` (all worldgen
-  quests, deliveries, plain forges) or `dark` (shadow-board jobs,
-  `forge --dark`). Wild/hunt/explore fights and the set sites are
-  neutral — farming wolves is not penance.
+  quests, deliveries, plain forges) or `dark` (hell's assignments,
+  conquest jobs, `forge --dark`). Wild/hunt/explore fights and the set
+  sites are neutral — farming wolves is not penance.
 - **Bucketing.** Every QUOTED XP award from aligned work is recorded
   (`session.record_karma` → `karma.record_karma`): dark XP adds to
   **bad karma** (current) and **lifetime wickedness**; good XP adds to
@@ -3314,9 +3315,14 @@ stays flat and concrete.
   never stored; levelling up cools the party's old sins by itself.
 - **Punishment (the reckoning).** At heat ≥ 1, checked at travel
   arrivals, settlement nights (tavern/downtime), and camp nights — at
-  most one per `PUNISH_COOLDOWN_DAYS` (2), at `PUNISH_CHANCE` (0.6) per
+  most one per `PUNISH_COOLDOWN_DAYS` (**6** since 2026-08-04; 2 before,
+  a cadence set before persistent wounds and quest deadlines made it
+  much harsher after the fact), at `PUNISH_CHANCE` (0.6) per
   eligible stop, and never stacked on a stop that already fought (the
-  law is time-spaced by design). The posse is a full reference-encounter
+  law is time-spaced by design). The budget: at sustained max heat this
+  is ~0.8 posses per level, where the old cooldown came to ~2 — constant
+  invasion, against a levelling budget of 2–3 fights. The posse is a
+  full reference-encounter
   budget off the plain humanoid ladder at **party level + heat**,
   wearing the band's lawful display names — **the Watch** (to L3), **the
   bounty guild** (L4-8), **the crown's huntsmen** (L9-13), **heroes of
@@ -3324,13 +3330,15 @@ stays flat and concrete.
   (the conquest-boss doctrine: a name over a budget-honest row). The
   leader's name is kept (`last_leader`) as the nemesis seed. Retreat
   works normally — escaping the law is viable; the karma stays.
-- **The shadow board.** `board --dark` rolls `DARK_JOBS_PER_DAY` (3)
-  dark quests for the local settlement, once per settlement day, leveled
-  at the party (−1..+2) — the fixer offers what the taker can handle;
-  the OSR straight-board stance belongs to the honest world. Untaken
-  offers are pruned at the next roll (they melt back into the shadows);
-  taken ones are ordinary quests in every way (`show`/`take`/`room`,
-  progress cursor, giver turn-in, epilogue).
+- **No shadow board** (retired 2026-08-04). `board --dark` and its
+  three-jobs-a-day roll are gone. Dark quests now come from exactly two
+  places: hell's pinned **assignments** (below) and the DM's
+  `forge --dark`. Freelance wickedness is no longer a posting at all —
+  it is a free **crime action** against a leveled mark (plan.md, THE
+  DARK REWORK, session B). The fifteen crime templates were retired from
+  the quest system with the board; they survive in `karma.CRIME_FODDER`
+  as authored scene material for those actions, and nothing rolls from
+  them.
 - **Crime pays, in gold**: a dark quest's gold is ×`DARK_GOLD_MULT`
   (1.5). This is a **deliberate small breach of the "gold buys staying
   power" spine**: the premium is the temptation, and the XP-as-liability
@@ -3358,51 +3366,76 @@ new save; `new --no-pact` is the neutral game, and a pact-holder who quests
 honestly and stiff-arms
 hell is a fully supported campaign — the mechanics below only price it.
 
-- **Assignments.** Hell assigns Dark Tasks on its own clock: a fresh
-  one lands at a settlement `TASK_INTERVAL_DAYS` (4) after the last
-  resolved — the fresh pact's first letter comes on day 1, so the dark
-  option is on the table from the start (harmless now: it is fixed
-  level 1 and its grace only covers taking it) — printed as a WORD
-  FROM BELOW block (delivery flavor rolled
-  from `HELL_MAIL`: unseen job boards — searched for by paladins —
-  black-waxed letters, ember-eyed couriers). Assignments are strictly
-  serial: no new letter while one is open. The task is an ordinary
-  dark quest flagged `hell_task`; the **first-ever assignment is fixed
-  `FIRST_TASK_LEVEL` (1)** — the party always starts as a duo, and the
-  curriculum starts at page one — later ones are rolled AT the party
-  with the margin of error running UPWARD (`TASK_SPREAD`, 0..+1 — the
-  fixer's −1..+2 belongs to chosen shadow work). The curriculum
-  doctrine: each task teaches a type of destructive act; the shadow
-  board and `forge --dark` are the self-assigned version the player
-  graduates into.
-- **Past Due — the collections ladder (2026-08-03, was Chickening
-  Out).** The grace covers *taking* the job: an assignment may sit
-  untaken for `TASK_GRACE_DAYS` (4) — the giver is local, so the
-  window is honest. **Taking it stops enforcement** and stamps a
-  visible completion window on the quest: `TASK_WINDOW_DAYS` (4–6) +
+- **Assignments — the pinned ladder (2026-08-04, was an interval
+  clock).** Hell's work is **pinned to the PC's odd levels**:
+  `TASK_PIN_LEVELS` = 1, 3, 5 … 19, ten milestone jobs across a career,
+  on the war waves' proven shape (`story.WAVE_LEVELS`). Crossing an
+  unserved pin makes an assignment due; it lands at the next settlement
+  stop, printed as a WORD FROM BELOW block (delivery flavor rolled from
+  `HELL_MAIL`: unseen job boards — searched for by paladins —
+  black-waxed letters, ember-eyed couriers). Pin 1 fires at level 1 and
+  **is** the tutorial job.
+  - **The deck.** The **occult ten** (`karma.OCCULT_TEMPLATES` — blood
+    on the altar, the hellgate, the stolen and corrupted holy things,
+    the desecrated shrine) are shuffled once per save into the pact's
+    `deck`; each pin deals the next card whose band admits the level,
+    skipped cards staying in the deck for a pin they fit (past the
+    widest band, the nearest card is dealt and the job levels into its
+    band). **Order is random by directive** — variety over curriculum
+    sense, because only the low levels ever get played; the hellgate may
+    well come at level 3, and that is accepted.
+  - **Never stacked, never jammed.** Assignments stay strictly serial:
+    no second letter while one is open. Pins crossed while an account
+    was open (or while the party was in the wilds) are served as ONE
+    fresh assignment at the first settlement stop after it closes,
+    stamped at the highest crossed pin (`last_pin_served`).
+  - The task is an ordinary dark quest flagged `hell_task`, rolled AT
+    the party with the margin of error running UPWARD (`TASK_SPREAD`,
+    0..+1). `forge --dark` remains the DM's freeform dark-quest tool.
+- **Past Due — one visit, then the write-off (2026-08-04; was the
+  collections ladder).** The grace covers *taking* the job: an
+  assignment may sit untaken for `TASK_GRACE_DAYS` (**10** — a pin can
+  be crossed mid-wilds, and a milestone job must not be missable to a
+  road delay). **Taking it stops enforcement** and stamps a
+  visible completion window on the quest: `TASK_WINDOW_DAYS` (**6–8**) +
   the road days to its first site, carried by the ordinary deadline
   machinery, so every board and readout prints the clock. Hell work is
   never LOST off that clock: late pays the ordinary bands (×0.6, then
-  ×0 past the grace), but the job stands until it is done, withdrawn,
-  or bribed quiet — past the window the ladder resumes instead.
+  ×0 past the grace), but the job stands until it is done, written off,
+  or bribed quiet — past the window enforcement resumes instead.
   Untaken past grace, or taken and past the window, the job is PAST
-  DUE and the ladder climbs at the posse stops (arrivals, nights;
-  cooldown `ENFORCE_COOLDOWN_DAYS` (4), chance 0.6): first **one
-  WARNING** — a clerk from Hell, forms, no fight, fired at the first
-  eligible stop with no chance roll, naming the final-notice date —
-  then armed collections: budget-honest ladder rosters wearing
-  infernal names (`HELL_SKINS`), led by a generated face, at **party
-  level, +1 per visit already fought, capped `ENFORCE_CAP_OVER` (+2)
-  over**. Only the capped top rung is relentless; the earlier rungs
-  break when beaten. Beating them changes nothing — the job stands and
-  the next visit is worse. Their XP is **neutral**: cutting down
-  devils is neither crime nor penance (farming them for absolution
-  would be a hole).
+  DUE, and hell calls at the posse stops (arrivals, nights; cooldown
+  `ENFORCE_COOLDOWN_DAYS` (4), chance 0.6):
+  1. **One WARNING** — a clerk from Hell, forms, no fight, fired at the
+     first eligible stop with no chance roll, naming the final-notice
+     date.
+  2. **One collections visit** — a budget-honest ladder roster wearing
+     infernal names (`HELL_SKINS`), led by a generated face, at **party
+     level + a rolled `ENFORCE_SPREAD` (0..+2)**. The roll is where the
+     devastation lives; the roster **breaks when beaten**, so retreat
+     stays viable. Its XP is **neutral**: cutting down devils is
+     neither crime nor penance (farming them for absolution would be a
+     hole).
+  3. **The write-off.** However that visit resolves — won, lost, or fled;
+     hell's point is made either way — the account CLOSES: the quest is
+     withdrawn (its sites released), `defied` ticks on the ledger, and
+     hell is quiet until the next pin. LOSING keeps the shipped mercy
+     (the purse as the fine) — the same closure, bought with coin.
+     `defied` is a ledger for later content (hell's patience, pact
+     termination — parked, not built).
+
+  **The punishment budget** (the reasoning, kept): levelling takes ~2–3
+  fights. Ten pins × one visit ≈ **0.53 punishment fights per level** —
+  the target of ~0.5 per side. The rejected shapes: the old relentless
+  rung harassed a refuser forever, and even a finite chain of three came
+  to 10 × 3 ≈ 1.6/level, a third of a campaign spent on a layer the
+  player opted out of. Hell quests are a HOOK into dark play, not the
+  game.
 - **Bribes.** `bribe` pays `BRIBE_GOLD_PER_LEVEL` (30) × party level
   for `BRIBE_DAYS` (10) of no new assignments and no enforcement. An
   open assignment survives the bribe; its grace runs fresh from the
-  bribe's end, the collections ladder resets (warning and all), and a
-  taken job's window stretches by the bought days.
+  bribe's end, Past Due resets (warning and all), and a taken job's
+  window stretches by the bought days.
 - **Left for dead (the mercy).** Heroic adventurers and hell's enforcers use
   the authored LAW/HELL form of Slice 4's mercy. On the PC's first eligible
   defeat at each character level, `apply_mercy` replaces GAME OVER: the PC
@@ -3447,8 +3480,16 @@ fire identically however a site ends.
 now** — a good variety of quests does the game more good than tuned
 numbers. Every pact constant is hand-set and sim-unverified (no sim
 sees the pact, the capers, or the mercy — all play-surface); the
-seventeen-template content pass optimizes for texture, not for the
-career curve. Tune at the table; a karma career sim stays parked.
+content passes optimize for texture, not for the career curve. Tune at
+the table; a karma career sim stays parked.
+
+The one place arithmetic *is* load-bearing is the **punishment budget**
+(2026-08-04): both punishment layers are counted against the levelling
+budget of 2–3 fights per level, and both are held near **0.5 fights per
+level** — hell by the one-visit write-off (10 pins × 1 ≈ 0.53), the law
+by `PUNISH_COOLDOWN_DAYS` 6 (~0.8 at sustained max heat). That is a
+countable target, not a simulated one; it is what keeps a pure refusal
+run and a max-evil run both playable.
 
 ## Explicitly not in this slice (roadmap, plan.md)
 
@@ -3460,12 +3501,19 @@ place (the gladiator pits, the castle bought in bones, bullying demons
 global version), the good-karma mirror (hell auditing a *virtuous*
 employee — the dual campaign), nemesis persistence beyond the
 remembered name, race-flavored dark templates, standing dark
-enterprises (the powder network as a holding), the rot-spell and other
-evil magic content, parley/bribery with the LAW's posses (hell takes
-bribes now; the Watch doesn't yet), and any karma-gated power. Bad
-karma currently buys nothing but heat and gold-rich work — whether it
-should *unlock* anything (hell ranks, evil powers) is the next design
-decision.
+enterprises (the powder network earns as a crime category, not as a
+holding), the rot-spell and other evil magic content, parley/bribery
+with the LAW's posses (hell takes bribes now; the Watch doesn't yet),
+and any karma-gated power. Lifetime wickedness gets its first job in
+the rework's session C (the crime-suggestion unlock feed) but still
+buys no powers or ranks.
+
+**Coming in the rework** (plan.md, THE DARK REWORK — sessions B and C,
+not built yet): **crime as free actions** against leveled marks
+(`crime.py`, the mark bands, the ~24-category catalogue, monotony and
+first-time multipliers, the news cycle); the **history page**
+(`ui/history.txt`) with the tally of sin and the suggestion feed; and
+the **rename** of bad karma to SIN throughout, save keys included.
 
 ---
 
@@ -3543,9 +3591,9 @@ tribute meter, the raid clock.
   HEAT_CAP). Zero bad karma with one holding still means the law calls at
   party level +1 — and killing the posse is itself bad karma, so the flag
   feeds the ratchet.
-- **The board goes shadow.** A held settlement posts no honest work for
-  its conqueror; `board --dark` serves. The tavern, the shops, recruiting
-  and downtime keep the party's custom — it is their town now.
+- **The board goes dark.** A held settlement posts no honest work for
+  its conqueror; crime and the pact serve instead. The tavern, the shops,
+  recruiting and downtime keep the party's custom — it is their town now.
 - **The yoke outranks the flag.** When the war's wave 3 fells a land, the
   aggressor seizes the party's holdings there; retaking one after the war
   turns is a fresh conquest.

@@ -191,7 +191,7 @@ class PlaceGenerationTests(unittest.TestCase):
         if first["target_area"] == second["target_area"]:
             self.assertTrue(set(first["sites"]).intersection(second["sites"]))
 
-    def test_pruned_dark_quest_does_not_overwrite_its_place(self) -> None:
+    def test_pruned_assignment_does_not_overwrite_its_place(self) -> None:
         world = places.create_geography(18)
         origin = quests.settlements(world)[0]
         first = karma.roll_dark_quest(
@@ -202,6 +202,24 @@ class PlaceGenerationTests(unittest.TestCase):
             world, origin, 3, random.Random(2), spread=(0, 0))
         self.assertNotEqual(first["id"], second["id"])
         self.assertTrue(all(sid in world["sites"] for sid in first_sites))
+
+    def test_every_occult_template_routes_to_compatible_geography(self) -> None:
+        """The occult ten are the ONLY templates a pact assignment draws
+        from (2026-08-04), so each one has to find geography it fits at
+        the bottom of its own band -- the honest tables' contract, applied
+        to hell's deck."""
+        world = places.create_geography(19)
+        origin = quests.settlements(world)[0]
+        for n, template in enumerate(karma.OCCULT_TEMPLATES):
+            level = quests.template_band(template)[0]
+            quest = quests.build_quest(
+                world, f"occult-{n}", template, origin["id"], level,
+                random.Random(n))
+            target = world["areas"][quest["target_area"]]
+            self.assertTrue(
+                set(quest["place"]["area_any"]).intersection(target["tags"]),
+                template["title"])
+            self.assertTrue(quest["sites"], template["title"])
 
     def test_hidden_facts_stay_out_of_player_fact_selection(self) -> None:
         place = copy.deepcopy(
