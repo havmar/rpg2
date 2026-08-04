@@ -260,11 +260,6 @@ class SaveRoundTrip(unittest.TestCase):
         back = json.loads(json.dumps(holdings))
         self.assertEqual(back, holdings)
 
-    def test_pre_conquest_save_reads_as_no_holdings(self):
-        # load() defaults a missing key to {} -- the layer is inert until
-        # the first `conquer`, like karma before the first sin.
-        self.assertEqual(conquest.heat_floor(len({})), 0)
-
 
 class DisplayFit(unittest.TestCase):
     """Authored display copy stays legible at the 40-column wrap (the

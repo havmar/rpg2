@@ -15,25 +15,30 @@ and power promised in exchange for obedience in tasks that fray the
 orderly fabric of the universe (hell's long game: gates and summonings).
 Mechanically:
 
-- **Assignments.** Hell assigns Dark Tasks on its own clock (a fresh one
-  ~TASK_INTERVAL_DAYS after the last resolved), leveled AT the party
-  with the margin of error running UPWARD (spread 0..+2). They arrive by
-  job boards unseen to ordinary men, black-waxed letters, ember-eyed
-  couriers (HELL_MAIL). An assignment is an ordinary dark quest flagged
-  `hell_task` -- take it, fight it, turn it in.
-- **Past Due (the collections ladder, 2026-08-03 -- was Chickening
-  Out).** An assignment may sit UNTAKEN for TASK_GRACE_DAYS -- the grace
-  covers getting to the local hand and taking the job. TAKING it stops
+- **Assignments (the ladder, 2026-08-04 -- the dark rework).** Hell's
+  work is pinned to the PC's ODD LEVELS (TASK_PIN_LEVELS: 1, 3, 5 ...
+  19) -- ten milestone jobs across a career, on the war-wave model, no
+  interval clock. The OCCULT TEN below form a DECK, shuffled once per
+  save; each pin deals the next card whose band admits the level. They
+  arrive by job boards unseen to ordinary men, black-waxed letters,
+  ember-eyed couriers (HELL_MAIL). An assignment is an ordinary dark
+  quest flagged `hell_task`, leveled at the party with the margin of
+  error running upward (TASK_SPREAD) -- take it, fight it, turn it in.
+- **Past Due (ONE visit, 2026-08-04 -- was the collections ladder).**
+  An assignment may sit UNTAKEN for TASK_GRACE_DAYS -- the grace covers
+  getting to the local hand and taking the job. TAKING it stops
   enforcement and stamps a visible completion window on the quest
   (TASK_WINDOW_DAYS + the road days to its site, the honest deadline
   machinery); hell only collects again if that window is blown. Past
-  either clock the ladder climbs: first ONE WARNING (a scene, no fight
-  -- the clerk with forms), then collections posses at PARTY LEVEL, +1
-  per visit survived, capped at party +2 (build_hell_posse -- the
-  lawful posses' mirror). Only the top rung is relentless; the earlier
-  rungs break when beaten. Beating them changes nothing: the job still
-  stands. LOSING to them is hell's lesson (the mercy in session.py):
-  the purse taken as a fine, the refused job withdrawn.
+  either clock: first ONE WARNING (a scene, no fight -- the clerk with
+  forms), then a SINGLE collections visit at party level + a random
+  0..+2 (ENFORCE_SPREAD; build_hell_posse -- the lawful posses'
+  mirror), potentially devastating and never relentless. However that
+  visit resolves -- won, lost, or fled -- hell WRITES THE JOB OFF and
+  waits for the next pin (`defied` is the ledger). LOSING keeps hell's
+  lesson (the mercy in session.py): the purse taken as a fine, the
+  refused job withdrawn -- the same closure. The punishment budget
+  (plan.md) is ~0.5 punishment fights per level per side.
 - **Bribes.** Hell can be bribed to ease off for a while (`bribe`:
   BRIBE_GOLD_PER_LEVEL x party level buys BRIBE_DAYS of no assignments
   and no enforcement).
@@ -59,11 +64,11 @@ Mechanically:
   rosters wearing lawful display names, led by a generated face. Cutting
   them down pays XP like any road fight, and ALL of it is bad karma: the
   ratchet is the point.
-- **Dark quests are the same machinery flagged.** Templates below ride
-  build_quest/attach_giver unchanged; they are rolled LAZILY per
-  settlement day (`board --dark`, the recruits-on-request pattern), so
-  worldgen, the coverage assert, and every bench never see them. Crime
-  pays a gold premium (quests.DARK_GOLD_MULT); its XP is the liability.
+- **Dark quests are the same machinery flagged.** The occult templates
+  below ride build_quest/attach_giver unchanged; they are rolled LAZILY
+  (at a pin, or on a DM's `forge --dark`), so worldgen, the coverage
+  assert, and every bench never see them. Dark work pays a gold premium
+  (quests.DARK_GOLD_MULT); its XP is the liability.
 - **The fights stay honest.** A dark quest's foes are always people/things
   that fight back (guards, militia, an aggrieved parent dire wolf); the
   wickedness itself -- the theft, the arson, the kicked puppy -- is
@@ -74,7 +79,7 @@ The sims never import this file. State is one plain dict in the save
 (`karma`): current bad karma, the lifetime ledgers, the punishment day
 stamp, and the last posse leader's name (the future nemesis seed).
 
-Run:  python karma.py [--seed N]   # sample dark boards and posses
+Run:  python karma.py [--seed N]   # sample assignments and posses
 """
 
 from __future__ import annotations
@@ -101,41 +106,50 @@ KARMA_HEAT_STEP = 100   # bad karma per heat step is this * the PC's level:
 HEAT_CAP = 3            # posses arrive at party level + heat, capped: +3
                         # is already a truly dangerous fight (the punching-
                         # up measurements); past it the number is noise
-PUNISH_COOLDOWN_DAYS = 2   # the law is never instantaneous: at least this
-                           # many days between posses ("a bit time spaced")
+PUNISH_COOLDOWN_DAYS = 6   # the law is never instantaneous: at least this
+                           # many days between posses ("a bit time spaced").
+                           # 2 until 2026-08-04 -- the punishment budget
+                           # (plan.md) re-tuned it for the wound era: at
+                           # sustained max heat this is ~0.8 posses per
+                           # level, where 2 was ~2 (constant invasion,
+                           # a cadence set before persistent wounds and
+                           # quest deadlines made it much harsher)
 PUNISH_CHANCE = 0.6     # per eligible stop (arrival / settlement night /
                         # wilds camp) once the cooldown has passed
-DARK_JOBS_PER_DAY = 3   # the shadow board's size, rolled per settlement day
 
 # The hell pact's knobs (2026-07-19, second slice). ALL hand-set and
 # sim-unverified BY DIRECTIVE: the designer abandoned XP/gold balance for
 # the dark layer this session -- quest VARIETY first, the table tunes
 # numbers later (develop.md, Balance / tuning).
-TASK_INTERVAL_DAYS = 4  # a fresh assignment ~this long after the last one
-                        # resolved (done, withdrawn, or bribed away); a
-                        # fresh pact's FIRST letter comes on day 1
-                        # (new_pact backdates the clock)
-TASK_GRACE_DAYS = 4     # an assignment may sit UNTAKEN this long -- the
-                        # grace covers taking it (the giver is local);
-                        # past it the collections ladder starts (PAST DUE)
-FIRST_TASK_LEVEL = 1    # the first-ever assignment is fixed level 1 --
-                        # the pact's tutorial job (the party always
-                        # starts as a duo; later ones level with them)
-TASK_SPREAD = (0, 1)    # later assignments: at the party, the margin of
-                        # error running upward (was 0..+2 -- the 2026-08-03
+TASK_PIN_LEVELS = (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)
+                        # hell's work is PINNED to the PC's odd levels --
+                        # ten milestone jobs across a career, the war
+                        # waves' proven shape (story.WAVE_LEVELS). The
+                        # interval clock died with the 2026-08-04 rework;
+                        # pin 1 fires at level 1 and IS the tutorial job
+TASK_GRACE_DAYS = 10    # an assignment may sit UNTAKEN this long -- the
+                        # grace covers taking it (the giver is local, but
+                        # a pin can be crossed mid-wilds and a milestone
+                        # job must not be missable to a road delay; was 4
+                        # under the interval clock). Past it PAST DUE
+TASK_SPREAD = (0, 1)    # assignments: at the party, the margin of error
+                        # running upward (was 0..+2 -- the 2026-08-03
                         # playtest found +2 brutal on a fresh party)
-TASK_WINDOW_DAYS = (4, 6)   # taking an assignment stamps a visible
+TASK_WINDOW_DAYS = (6, 8)   # taking an assignment stamps a visible
                             # completion window: this base + the road days
                             # to the job's site (the honest deadline
                             # machinery carries it -- late pays less,
-                            # but hell work is never LOST off the clock)
-ENFORCE_COOLDOWN_DAYS = 4   # hell's patience between collection visits
-ENFORCE_CHANCE = 0.6        # (the law's chance shape; cooldown was 2 --
-                            # the 2026-08-03 rework spaced the ladder out)
-ENFORCE_CAP_OVER = 2    # collections posses: party level on the first
-                        # fight, +1 per visit survived, capped this far
-                        # over (was +1 start / +3 cap -- too steep);
-                        # only the capped top rung is relentless
+                            # but hell work is never LOST off the clock).
+                            # (4, 6) until 2026-08-04: the pins are
+                            # milestones, so their clocks are generous
+ENFORCE_COOLDOWN_DAYS = 4   # hell's patience between the warning and the
+ENFORCE_CHANCE = 0.6        # single collections visit (the law's shape)
+ENFORCE_SPREAD = (0, 2)     # that visit's level: party level + this roll.
+                            # ONE visit, potentially devastating (+2 on a
+                            # fresh party is a real fight), never
+                            # relentless and never repeated -- the
+                            # escalating ladder (+1 per beating, capped)
+                            # died 2026-08-04 on the punishment budget
 BRIBE_GOLD_PER_LEVEL = 30   # `bribe`: this x party level buys...
 BRIBE_DAYS = 10             # ...this many days of no assignments and no
                             # enforcement (the task clock restarts after)
@@ -169,25 +183,35 @@ def new_karma() -> dict:
                                    # nemesis seed (persistence is plan.md)
 
 
-def new_pact() -> dict:
+def new_pact(rng: random.Random | None = None) -> dict:
     """The hell pact's state (one plain dict in the save, `pact`). Rides
     every new game by default (`new --no-pact` is the neutral-adventurer
-    switch): the PC is hell's employee from scene one."""
+    switch): the PC is hell's employee from scene one.
+
+    The DECK (2026-08-04) is shuffled once, here: the occult ten in
+    random order, one card dealt per pin. Order is random BY DIRECTIVE
+    -- variety over curriculum sense, because only the low levels ever
+    get played (the hellgate may well come at level 3; that is
+    accepted)."""
+    rng = rng or random.Random()
+    deck = list(range(len(OCCULT_TEMPLATES)))
+    rng.shuffle(deck)
     return {"task": None,           # the current assignment's quest id
             "assigned_day": 0,      # when it landed (grace runs from here)
-            "last_task_day": -99,   # when the last one resolved -- the
-                                    # interval clock (fresh pact: hell's
-                                    # first letter comes on day 1, so the
-                                    # dark option is on the table from
-                                    # the start; it is fixed L1 and its
-                                    # grace only covers taking it, so the
-                                    # early letter costs nothing)
+            "deck": deck,           # the shuffled occult ten, by index --
+                                    # each pin deals the next fitting card
+            "last_pin_served": 0,   # the highest TASK_PIN_LEVELS pin that
+                                    # has been served; pins crossed while
+                                    # an account was open are served as
+                                    # ONE fresh assignment, never stacked
             "bribed_until": 0,      # no assignments/enforcement before this
             "last_enforce_day": -99,
             "warned": False,        # the one PAST DUE warning scene has
                                     # fired for the current refusal
-            "beatings": 0,          # collection visits fought over the
-                                    # CURRENT refusal (escalates them)
+            "defied": 0,            # assignments hell WROTE OFF after a
+                                    # collections visit -- the ledger for
+                                    # later content (hell's patience,
+                                    # pact termination: parked, not built)
             "done": 0}              # lifetime assignments completed (the
                                     # curriculum ledger -- titles later)
 
@@ -235,8 +259,16 @@ def karma_line(karma: dict, pc_level: int) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Dark quest templates
+# The occult ten -- ASSIGNMENTS FROM HELL (the deck, 2026-08-04)
 # --------------------------------------------------------------------------- #
+# What is left of the dark templates after the 2026-08-04 sort: the OCCULT
+# work -- hellgates, desecration, blood sacrifice, the stolen and corrupted
+# holy things. These are the pact's spine, and the only templates any roll
+# draws from. Ten of them, one per TASK_PIN_LEVELS pin, shuffled into a
+# per-save DECK (new_pact) and dealt by `deal_card`; everything else that
+# used to live here was CRIME, and crime is no longer a quest at all (see
+# CRIME_FODDER below).
+#
 # Race-agnostic on purpose (dark work is cosmopolitan; race-flavored dark
 # tables are a later content pass -- plan.md). Same schema as
 # quests.TEMPLATES plus `align: "dark"`; the foes are always someone who
@@ -265,7 +297,133 @@ def karma_line(karma: dict, pc_level: int) -> str:
 # Machinery: quests.build_quest + session.cmd_room /
 # cmd_settle; rules.md's Karma & Heat add-on documents the math.
 
-DARK_TEMPLATES: list[dict] = [
+OCCULT_TEMPLATES: list[dict] = [
+    dict(title="Blood on the Altar", align="dark",
+         desc="Put blood on the altar before dawn. Any blood will work, "
+              "including yours. Hell will know what you choose.",
+         pool=LADDER_POOL[:5],
+         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Old Knight"},
+         sites=("the midnight chapel",),
+         giver="the fixer",
+         epilogue="The priests clean and bless the altar. More people come to "
+                  "see it."),
+    dict(title="Sacrifice the Puppy", align="dark",
+         desc="Hell orders you to sacrifice a dire wolf puppy at a forest "
+              "shrine. Its pack is coming.",
+         pool=WOLF_POOL,
+         skins={"wolf": "Dire Wolf", "dire wolf": "Mother Dire Wolf"},
+         sites=("the shrine in the woods",),
+         giver="the fixer",
+         epilogue="The puppy is sacrificed and cooked. Hell approves."),
+    dict(title="Steal the Temple Relic", align="dark",
+         desc="A collector wants the gold relic inside the temple. Fight "
+              "through the guards and steal it.",
+         pool=LADDER_POOL[:6] + CASTER_POOL,
+         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Temple Guard Captain",
+                "champion": "Temple Champion",
+                "hexer": "Curse Mage", "pyromancer": "Fire Priest"},
+         sites=("the temple yard", "the relic vault"),
+         giver="the masked collector",
+         epilogue="The relic is gone. The priests ask for donations to "
+                  "replace it."),
+    dict(title="Kill the Priest", align="dark",
+         desc="Hell orders you to kill a corrupt priest at his own altar. He "
+              "ruined families with illegal loans. His guards will defend "
+              "him.",
+         pool=LADDER_POOL[:5] + CASTER_POOL,
+         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Old Knight",
+                "hexer": "Priest", "pyromancer": "Fire Priest"},
+         sites=("the priest's room", "the altar steps"),
+         giver="the fixer",
+         epilogue="The priest is dead. Someone burns his debt records."),
+    dict(title="Corrupt the Holy Sword", align="dark",
+         desc="A holy sword hangs in a temple. Perform a dark ritual on it. "
+              "The temple guards will try to stop you.",
+         pool=LADDER_POOL[:6] + CASTER_POOL,
+         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
+                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
+                "veteran": "Temple Guard Captain",
+                "champion": "Temple Champion",
+                "hexer": "Priest", "pyromancer": "Fire Priest"},
+         sites=("the temple road", "the holy shrine"),
+         giver="the masked collector",
+         epilogue="The sword looks unchanged, but its miracles stop. The "
+                  "temple closes."),
+    dict(title="Find the Evil Sword", align="dark",
+         desc="An evil sword is buried with its last owner. Enter the tomb "
+              "and bring it back to Hell.",
+         pool=UNDEAD_POOL, skins={},
+         sites=("the sealed tomb", "the burial chamber"),
+         giver="the grave robber",
+         epilogue="The sword hums when it is found. Dogs avoid it. (The DM "
+                  "uses a renamed quality weapon until named weapons are "
+                  "added.)"),
+    dict(title="Guard the Cultists", align="dark",
+         desc="Cultists are summoning a demon. Heroes are coming to stop "
+              "them. Hold the ritual site until the summoning is complete.",
+         pool=LADDER_POOL,
+         skins={"cutthroat": "Hero Scout", "archer": "Hero Archer",
+                "bruiser": "Strong Hero",
+                "soldier": "Hero Warrior", "veteran": "Veteran Hero",
+                "champion": "Famous Hero",
+                "blademaster": "Master Swordfighter",
+                "warlord": "Chosen Hero"},
+         sites=("the outer camp", "the ritual stones"),
+         giver="the masked collector",
+         epilogue="A demon appears. It attacks the cultists. Hell calls the "
+                  "job complete."),
+    dict(title="Open the Hellgate", align="dark",
+         desc="Open a hellgate at the marked location. The demons on the "
+              "other side do not know you work for Hell.",
+         pool=GIANTKIN_POOL + CASTER_POOL,
+         skins={"ogre": "Demon Brute", "troll": "Demon Troll",
+                "giant": "Demon Champion", "hexer": "Ice Demon",
+                "pyromancer": "Fire Demon"},
+         sites=("the ritual ground", "the open gate"),
+         giver="the fixer",
+         epilogue="The gate closes. Hell sends a written apology."),
+    dict(title="Capture the Beast", align="dark",
+         desc="Hell wants a rare beast alive. Trap it and take it to town. It "
+              "escapes at the gate.",
+         pool=BEAST_POOL + ("dire wolf",), skins={},
+         sites=("the wilderness trap", "the town gate"),
+         giver="the fixer",
+         epilogue="Hell takes the beast. The party receives a signed receipt."),
+    # --- the desecration slot the occult list lacked (2026-08-04) --- #
+    dict(title="Desecrate the Shrine", align="dark",
+         desc="A shrine of the Light stands over a spring on the hill "
+              "road. Hell wants it fouled: break the idol, salt the "
+              "water, cut the mark into the stone. The keepers sleep in "
+              "the yard.",
+         pool=LADDER_POOL[:5] + CASTER_POOL,
+         skins={"cutthroat": "Shrine Warden", "archer": "Hill Watchman",
+                "bruiser": "Pilgrim Brawler", "soldier": "Shrine Guard",
+                "veteran": "Old Keeper",
+                "hexer": "Shrine Priest", "pyromancer": "Sun-Priest"},
+         sites=("the hilltop shrine", "the spring below"),
+         giver="the fixer",
+         epilogue="The spring runs bitter. Pilgrims take the long road "
+                  "around the hill."),
+]
+
+# --------------------------------------------------------------------------- #
+# CRIME FODDER -- retired from the quest system (2026-08-04)
+# --------------------------------------------------------------------------- #
+# The fifteen templates below are NO LONGER QUESTS. Crime stopped being
+# work a questgiver hands out: the PC does the thing because they want
+# to and keeps whatever material gain follows, resolved as a free ACTION
+# against a leveled mark (plan.md, THE DARK REWORK -- Session B builds
+# `crime.py`). NOTHING ROLLS FROM THIS LIST. It is kept as authored
+# fodder: the skins, rosters, situations and epilogues here are the
+# scene material Session B's crime categories dress themselves in.
+
+CRIME_FODDER: list[dict] = [
     dict(title="Kick the Puppy", align="dark",
          desc="The fixer wants a widow's puppy driven away from his door. "
               "Kick it into the alley. Its mother is nearby.",
@@ -295,19 +453,25 @@ DARK_TEMPLATES: list[dict] = [
          sites=("the mill yard", "the granary floor"),
          giver="the wealthy rival",
          epilogue="The granary burns. Food prices double."),
-    dict(title="Steal the Temple Relic", align="dark",
-         desc="A collector wants the gold relic inside the temple. Fight "
-              "through the guards and steal it.",
-         pool=LADDER_POOL[:6] + CASTER_POOL,
-         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
-                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
-                "veteran": "Temple Guard Captain",
-                "champion": "Temple Champion",
-                "hexer": "Curse Mage", "pyromancer": "Fire Priest"},
-         sites=("the temple yard", "the relic vault"),
+    dict(title="Steal the Jewel", align="dark",
+         desc="A collector wants a valuable jewel. Steal it from a merchant's "
+              "vault, then sell it to the fence.",
+         pool=LADDER_POOL[:4],
+         skins={"cutthroat": "Store Guard", "archer": "Roof Guard",
+                "bruiser": "Vault Guard", "soldier": "Hired Guard"},
+         sites=("the merchant's vault", "the fence's cellar"),
+         deed=dict(stat="dex", dc=11, text="enter through the coal chute, "
+                                           "take the jewel, and leave without "
+                                           "touching anything else",
+                   fail="a shelf falls and wakes the whole house"),
+         twist=dict(text="The fence claims the jewel is damaged and offers "
+                         "half the price. His bodyguards wait for your "
+                         "answer.",
+                    accept="You accept half payment. The fence takes the "
+                           "jewel.", pay=0.5),
          giver="the masked collector",
-         epilogue="The relic is gone. The priests ask for donations to "
-                  "replace it."),
+         epilogue="The jewel is sold in another land. The merchant offers a "
+                  "reward for the thieves."),
     dict(title="Collect the Debt", align="dark",
          desc="A village stopped paying its debt. The moneylender will give "
               "you a share if you force the village to pay. The villagers "
@@ -340,33 +504,6 @@ DARK_TEMPLATES: list[dict] = [
          giver="the gang lieutenant",
          epilogue="The party controls the road for a week and takes the toll "
                   "money."),
-    # --- the 2026-07-19 dark-quests content pass (the curriculum) --- #
-    dict(title="Steal the Jewel", align="dark",
-         desc="A collector wants a valuable jewel. Steal it from a merchant's "
-              "vault, then sell it to the fence.",
-         pool=LADDER_POOL[:4],
-         skins={"cutthroat": "Store Guard", "archer": "Roof Guard",
-                "bruiser": "Vault Guard", "soldier": "Hired Guard"},
-         sites=("the merchant's vault", "the fence's cellar"),
-         deed=dict(stat="dex", dc=11, text="enter through the coal chute, "
-                                           "take the jewel, and leave without "
-                                           "touching anything else",
-                   fail="a shelf falls and wakes the whole house"),
-         twist=dict(text="The fence claims the jewel is damaged and offers "
-                         "half the price. His bodyguards wait for your "
-                         "answer.",
-                    accept="You accept half payment. The fence takes the "
-                           "jewel.", pay=0.5),
-         giver="the masked collector",
-         epilogue="The jewel is sold in another land. The merchant offers a "
-                  "reward for the thieves."),
-    dict(title="Capture the Beast", align="dark",
-         desc="Hell wants a rare beast alive. Trap it and take it to town. It "
-              "escapes at the gate.",
-         pool=BEAST_POOL + ("dire wolf",), skins={},
-         sites=("the wilderness trap", "the town gate"),
-         giver="the fixer",
-         epilogue="Hell takes the beast. The party receives a signed receipt."),
     dict(title="Dine and Dash", align="dark",
          desc="Eat an expensive meal, then rob the owner to pay the bill. The "
               "owner has guards.",
@@ -381,26 +518,6 @@ DARK_TEMPLATES: list[dict] = [
                    fail="the waiter recognizes you from a wanted poster"),
          giver="the wealthy rival",
          epilogue="The party robs the owner and leaves without paying."),
-    dict(title="Kill the Priest", align="dark",
-         desc="Hell orders you to kill a corrupt priest at his own altar. He "
-              "ruined families with illegal loans. His guards will defend "
-              "him.",
-         pool=LADDER_POOL[:5] + CASTER_POOL,
-         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
-                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
-                "veteran": "Old Knight",
-                "hexer": "Priest", "pyromancer": "Fire Priest"},
-         sites=("the priest's room", "the altar steps"),
-         giver="the fixer",
-         epilogue="The priest is dead. Someone burns his debt records."),
-    dict(title="Sacrifice the Puppy", align="dark",
-         desc="Hell orders you to sacrifice a dire wolf puppy at a forest "
-              "shrine. Its pack is coming.",
-         pool=WOLF_POOL,
-         skins={"wolf": "Dire Wolf", "dire wolf": "Mother Dire Wolf"},
-         sites=("the shrine in the woods",),
-         giver="the fixer",
-         epilogue="The puppy is sacrificed and cooked. Hell approves."),
     dict(title="Loot the Village", align="dark",
          desc="Attack a village at night and take its gold. The village has a "
               "wooden wall and a militia.",
@@ -456,39 +573,6 @@ DARK_TEMPLATES: list[dict] = [
          giver="the masked collector",
          epilogue="The owners are dead. The papers name the party as heirs, "
                   "and the staff stays."),
-    dict(title="Find the Evil Sword", align="dark",
-         desc="An evil sword is buried with its last owner. Enter the tomb "
-              "and bring it back to Hell.",
-         pool=UNDEAD_POOL, skins={},
-         sites=("the sealed tomb", "the burial chamber"),
-         giver="the grave robber",
-         epilogue="The sword hums when it is found. Dogs avoid it. (The DM "
-                  "uses a renamed quality weapon until named weapons are "
-                  "added.)"),
-    dict(title="Corrupt the Holy Sword", align="dark",
-         desc="A holy sword hangs in a temple. Perform a dark ritual on it. "
-              "The temple guards will try to stop you.",
-         pool=LADDER_POOL[:6] + CASTER_POOL,
-         skins={"cutthroat": "Temple Acolyte", "archer": "Temple Archer",
-                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
-                "veteran": "Temple Guard Captain",
-                "champion": "Temple Champion",
-                "hexer": "Priest", "pyromancer": "Fire Priest"},
-         sites=("the temple road", "the holy shrine"),
-         giver="the masked collector",
-         epilogue="The sword looks unchanged, but its miracles stop. The "
-                  "temple closes."),
-    dict(title="Blood on the Altar", align="dark",
-         desc="Put blood on the altar before dawn. Any blood will work, "
-              "including yours. Hell will know what you choose.",
-         pool=LADDER_POOL[:5],
-         skins={"cutthroat": "Angry Guard", "archer": "Tower Archer",
-                "bruiser": "Temple Brawler", "soldier": "Temple Guard",
-                "veteran": "Old Knight"},
-         sites=("the midnight chapel",),
-         giver="the fixer",
-         epilogue="The priests clean and bless the altar. More people come to "
-                  "see it."),
     dict(title="Betray an Old Friend", align="dark",
          desc="An old friend has been stealing from Hell. Tell the town guard "
               "where to find them, then help kill their crew. This friend "
@@ -502,30 +586,6 @@ DARK_TEMPLATES: list[dict] = [
          giver="the gang lieutenant",
          epilogue="The guard captain thanks the party in public. The old "
                   "friend is dead."),
-    dict(title="Guard the Cultists", align="dark",
-         desc="Cultists are summoning a demon. Heroes are coming to stop "
-              "them. Hold the ritual site until the summoning is complete.",
-         pool=LADDER_POOL,
-         skins={"cutthroat": "Hero Scout", "archer": "Hero Archer",
-                "bruiser": "Strong Hero",
-                "soldier": "Hero Warrior", "veteran": "Veteran Hero",
-                "champion": "Famous Hero",
-                "blademaster": "Master Swordfighter",
-                "warlord": "Chosen Hero"},
-         sites=("the outer camp", "the ritual stones"),
-         giver="the masked collector",
-         epilogue="A demon appears. It attacks the cultists. Hell calls the "
-                  "job complete."),
-    dict(title="Open the Hellgate", align="dark",
-         desc="Open a hellgate at the marked location. The demons on the "
-              "other side do not know you work for Hell.",
-         pool=GIANTKIN_POOL + CASTER_POOL,
-         skins={"ogre": "Demon Brute", "troll": "Demon Troll",
-                "giant": "Demon Champion", "hexer": "Ice Demon",
-                "pyromancer": "Fire Demon"},
-         sites=("the ritual ground", "the open gate"),
-         giver="the fixer",
-         epilogue="The gate closes. Hell sends a written apology."),
     dict(title="Sell the Powder", align="dark",
          desc="Hell gives you a drug recipe. Build a market in town. The "
               "local gang wants to stop you.",
@@ -556,27 +616,60 @@ DARK_TEMPLATES: list[dict] = [
 ]
 
 
+def deal_card(pact: dict, level: int, rng: random.Random) -> dict:
+    """Deal the pact's next assignment TEMPLATE off its deck: the first
+    card whose band admits `level`, skipped cards staying in the deck for
+    a later pin. If no card fits (the high pins, where only the widest
+    bands reach), the NEAREST-band card is dealt and the assignment
+    levels itself into that band -- random order is wanted, a
+    mechanically unbuildable roster is not.
+
+    The deck is dealt down, one card per pin; an exhausted deck reshuffles
+    (ten pins deal ten cards, so this only matters if a save outruns
+    TASK_PIN_LEVELS)."""
+    deck = pact.setdefault("deck", [])
+    if not deck:
+        deck.extend(range(len(OCCULT_TEMPLATES)))
+        rng.shuffle(deck)
+    for i, idx in enumerate(deck):
+        lo, hi = template_band(OCCULT_TEMPLATES[idx])
+        if lo <= level <= hi:
+            return OCCULT_TEMPLATES[deck.pop(i)]
+
+    def band_gap(idx: int) -> int:
+        lo, hi = template_band(OCCULT_TEMPLATES[idx])
+        return lo - level if level < lo else level - hi
+
+    nearest = min(range(len(deck)), key=lambda i: band_gap(deck[i]))
+    return OCCULT_TEMPLATES[deck.pop(nearest)]
+
+
 def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
                     rng: random.Random,
                     used_names: set[str] | None = None,
-                    spread: tuple[int, int] = (-1, 2)) -> dict:
-    """One shadow job: leveled AT the party (-1..+2 -- the fixer offers
-    what the taker can handle; the public board's OSR stance is about the
-    honest world), built by build_quest unchanged, flagged dark, given a
-    shady face. Registered in world['quests'] (so show/take work) but on
-    NO settlement board -- the shadow board lists it (session.py).
-    `spread` is the level roll around the party: hell's ASSIGNMENTS pass
-    (0, 2) -- suited to the taker, the margin of error running upward."""
+                    spread: tuple[int, int] = (-1, 2),
+                    template: dict | None = None) -> dict:
+    """One dark job: leveled AT the party (-1..+2 by default -- the DM's
+    `forge --dark` stance), built by build_quest unchanged, flagged dark,
+    given a shady face. Registered in world['quests'] (so show/take work)
+    but on NO settlement board. `spread` is the level roll around the
+    party: hell's ASSIGNMENTS pass TASK_SPREAD (0..+1) -- suited to the
+    taker, the margin of error running upward. `template` pins the
+    template (the pact's deck deals one, `deal_card`); left None, a
+    band-fitting occult template is rolled."""
     level = max(1, min(LEVEL_CAP, pc_level + rng.randint(*spread)))
-    fitting = [t for t in DARK_TEMPLATES
-               if template_band(t)[0] <= level <= template_band(t)[1]]
-    tpl = rng.choice(fitting or DARK_TEMPLATES)
+    tpl = template
+    if tpl is None:
+        fitting = [t for t in OCCULT_TEMPLATES
+                   if template_band(t)[0] <= level <= template_band(t)[1]]
+        tpl = rng.choice(fitting or OCCULT_TEMPLATES)
     lo, hi = template_band(tpl)
     level = max(lo, min(hi, level))
-    # The world's monotonic id counter (quests.next_quest_id): shadow jobs
-    # are PRUNED from world['quests'] and so are expired postings, while
-    # their persistent Sites remain, so a count would collide with either a
-    # surviving quest or a historical Site attachment.
+    # The world's monotonic id counter (quests.next_quest_id): dark jobs
+    # are PRUNED from world['quests'] (a written-off assignment) and so are
+    # expired postings, while their persistent Sites remain, so a count
+    # would collide with either a surviving quest or a historical Site
+    # attachment.
     qid = next_quest_id(world)
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
     attach_giver(quest, land_race(world, settlement["land"]), rng,
@@ -643,15 +736,16 @@ def build_posse(level: int, race: str, rng: random.Random,
 
 
 # --------------------------------------------------------------------------- #
-# Hell's collections (Past Due -- the hell pact, 2026-07-19; the ladder
-# reshaped 2026-08-03)
+# Hell's collections (Past Due -- the hell pact, 2026-07-19; ONE visit
+# since 2026-08-04)
 # --------------------------------------------------------------------------- #
 # The lawful posses' mirror: budget-honest ladder rosters wearing INFERNAL
 # display names ("demons love bullying" -- and disobedient employees most
 # of all), led by a generated face in a borrowed body. One band for now
-# (hell's org chart is a later content pass); the escalation is the LEVEL
-# (party level on the first fight, +1 per visit survived, capped at
-# ENFORCE_CAP_OVER over -- and a no-fight warning scene comes first).
+# (hell's org chart is a later content pass). ONE visit closes an account,
+# at party level + ENFORCE_SPREAD (0..+2, rolled) -- the roll is the
+# devastation, not relentlessness; the escalating ladder died on the
+# punishment budget (plan.md, THE DARK REWORK).
 
 HELL_SKINS = {
     "cutthroat": "Spite-Imp", "archer": "Barb-Flinger",
@@ -684,9 +778,16 @@ def main() -> None:
     from quests import generate_world, quest_detail_lines, settlements
     world = generate_world(rng.randrange(1 << 30))
     s = settlements(world)[0]
-    print(f"Sample shadow board at {s['name']} (PC level 3):")
-    for _ in range(DARK_JOBS_PER_DAY):
-        q = roll_dark_quest(world, s, 3, rng)
+    pact = new_pact(rng)
+    print(f"A pact's deck, in dealt order: "
+          + ", ".join(OCCULT_TEMPLATES[i]["title"] for i in pact["deck"]))
+    print()
+    print(f"Sample assignments at {s['name']} (the first three pins):")
+    for pin in TASK_PIN_LEVELS[:3]:
+        tpl = deal_card(pact, pin, rng)
+        q = roll_dark_quest(world, s, pin, rng, spread=TASK_SPREAD,
+                            template=tpl)
+        print(f"  (pin: PC level {pin})")
         for line in quest_detail_lines(world, q):
             print(line)
         print()

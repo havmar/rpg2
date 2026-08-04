@@ -536,8 +536,8 @@ class FoeBreak(unittest.TestCase):
         self.assertTrue(foe.alive)
 
 
-class SaveCompatibility(unittest.TestCase):
-    def test_new_fields_survive_and_old_saves_receive_safe_defaults(self):
+class SaveRoundTrip(unittest.TestCase):
+    def test_new_fields_survive_the_round_trip(self):
         e = hero("PC", level=4)
         e.mercy_level = 3
         e.ferocity = rpg.FEROCITY_RELENTLESS
@@ -549,18 +549,6 @@ class SaveCompatibility(unittest.TestCase):
         self.assertEqual(loaded.ferocity, rpg.FEROCITY_RELENTLESS)
         self.assertTrue(loaded.break_tried)
         self.assertTrue(loaded.fate_paid)
-
-        for key in (
-            "mercy_level", "ferocity", "withdrew", "break_tried",
-            "fate_paid",
-        ):
-            doc.pop(key, None)
-        old = session._entity_from_dict(doc)
-        self.assertEqual(old.mercy_level, 0)
-        self.assertEqual(old.ferocity, rpg.FEROCITY_TAKES_SPOILS)
-        self.assertFalse(old.withdrew)
-        self.assertFalse(old.break_tried)
-        self.assertFalse(old.fate_paid)
 
 
 if __name__ == "__main__":

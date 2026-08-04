@@ -118,8 +118,9 @@ the player's core decision:
     window and the ceiling.
     Say so when the player asks for a long rest with a job in hand -- one
     line, not a lecture ("the crypt job is wanted by day 9").
-  - The war waves and the shadow board's offers carry NO clock (the war
-    does not lapse; shadow work is already same-day only).
+  - The war waves carry NO clock (an authored questline does not lapse).
+    Hell's assignments carry their own pair instead -- the grace to take
+    one, then the completion window -- and never lapse off the board.
 - **Turn-ins pay an EPILOGUE**: the QUEST COMPLETE banner prints a
   day-stamped aftermath line and a turn-in prompt naming the giver.
   Narrate the turn-in scene over both -- the epilogue is what the world
@@ -412,24 +413,33 @@ mortal staff most of all. There is no hell map or content yet
 (plan.md): narrate hell scenes freeform, `forge` any fight there with
 infernal reskins, and keep visits scene-sized.
 
-- **Assignments (Dark Tasks).** Hell assigns work on its own clock: a
-  WORD FROM BELOW block prints at settlements (unseen job boards --
-  which paladins search for -- black-waxed letters, ember-eyed
-  couriers; the script rolls the delivery). The first-ever task is
-  level 1; later ones are leveled AT the party with the margin of
-  error running UPWARD. It is a curriculum in vice -- each task
-  teaches a type of destructive act, and the player is meant to take
-  a liking to some and do them proactively (`board --dark` and
-  `forge --dark` are exactly that: self-assigned wickedness).
-  Assignments are serial: no new letter while one is open. The GRACE
-  (~4 days) covers TAKING the job from its local hand; taking it
-  stamps a visible completion window (the road days are counted in)
-  and hell leaves a working party alone. Untaken past grace, or taken
-  and past the window, the job goes PAST DUE -- first ONE WARNING (a
-  clerk, three forms, no fight -- play the scene), then armed
-  collections, worse each visit. `bribe` buys quiet (30g x level, 10
-  days) and resets the ladder; `task` is the ledger. Relay the whole
-  bargain straight -- the choice only works informed.
+- **Assignments (the pinned ladder).** Hell's work comes at the PC's
+  ODD LEVELS -- 1, 3, 5 ... 19, ten milestone jobs in a career, like
+  the war's waves. Crossing a pin makes one due; it lands at the next
+  settlement as a WORD FROM BELOW block (unseen job boards -- which
+  paladins search for -- black-waxed letters, ember-eyed couriers; the
+  script rolls the delivery). They are the OCCULT work -- blood on the
+  altar, the hellgate, the corrupted holy sword, the desecrated shrine
+  -- dealt off a shuffled deck, so their order is genuinely random:
+  play the hellgate at level 3 as hell overreaching, not as a mistake.
+  Assignments are serial and never stack: pins crossed while one was
+  open are served as ONE fresh job afterwards. The GRACE (~10 days)
+  covers TAKING the job from its local hand; taking it stamps a
+  visible completion window (the road days are counted in) and hell
+  leaves a working party alone. Untaken past grace, or taken and past
+  the window, the job goes PAST DUE -- ONE WARNING (a clerk, three
+  forms, no fight -- play the scene), then ONE armed collections visit
+  (party level +0..+2, potentially brutal), and then hell WRITES THE
+  JOB OFF whatever happened and waits for the next pin. Play the
+  write-off dry and administrative: the ledger remembers, nobody
+  comes back. `bribe` buys quiet (30g x level, 10 days) and resets
+  Past Due; `task` is the ledger. Relay the whole bargain straight --
+  the choice only works informed.
+- **A refusal is a supported campaign.** The whole point of the
+  one-visit shape is that stiff-arming hell costs a warning and a
+  fight per pin, not a persecution. Never improvise extra enforcement
+  on top of it, and never jam a later assignment behind a refused one
+  -- the engine deliberately doesn't.
 - **Capers: deeds and twists.** Dark jobs are not all door-kicking.
   A DEED site opens on a check (the lift, the long con, the plan):
   the script rolls the PC's 2d6+stat vs a DC set HIGH on purpose --
@@ -440,12 +450,14 @@ infernal reskins, and keep visits scene-sized.
   bodyguards; the rival proposes a partnership): present them as the
   scene, then the player's call -- `settle` takes the terms, `room`
   refuses and fights. Play the counterparty from the giver line.
-- **The shadow board**: `board --dark` rolls the settlement's dark jobs
-  (fresh per day, leveled at the party). In the fiction there is no board
-  here either -- there is a WRONG TAVERN CORNER: the fixer, the veiled
-  collector, the grave-broker. Same one-message funnel, seedier cast.
-  Dark gold runs half again the honest rate; every XP a dark job pays is
-  BAD KARMA, and the meter prints itself (the tally, `karma`).
+- **There is no shadow board** (retired 2026-08-04). Freelance
+  wickedness is not a posting to be read: the PC does the thing
+  because they want to. Until the crime actions ship (plan.md, THE
+  DARK REWORK session B), run player-initiated crime as narration plus
+  `forge --dark` for whatever has to be fought, and `karma bad N` for
+  what the scene earned. Dark gold runs half again the honest rate;
+  every XP a dark job pays is BAD KARMA, and the meter prints itself
+  (the tally, `karma`).
 - **The register is CARTOON VILLAINY, never grimdark.** Discworld and
   Conan, not a war-crimes ledger: evil is theft, arson, extortion,
   hubris, kicked puppies, and fighting everyone who rightly objects.
@@ -522,9 +534,9 @@ Holdings add-on); your job is the scenes.
   shutters, a new flag, the tavern keeper's careful politeness. Do not
   moralize; the karma meter already did.
 - **A held settlement serves its lord**: tavern, shops, hiring and
-  downtime all work; only the honest BOARD refuses (the shadow board
-  serves -- `board --dark`). The guild clerk's refusal is a one-line
-  scene, not a lecture.
+  downtime all work; only the honest BOARD refuses -- crime and the pact
+  serve instead. The guild clerk's refusal is a one-line scene, not a
+  lecture.
 - **`garrison N` buys levies; `holdings` is the ledger.** Raids, lost
   and repelled, arrive as news lines at arrivals, nights and the board
   -- read them out as messengers and rumor, day-stamped. A holding lost
@@ -1202,21 +1214,23 @@ bigger than the fights WITHOUT pages of narration:
   templates say what it is. A courier job carries a window like any job,
   with the round trip's road days added on top, and the hand-off is banded
   the same way -- so a delivery is not a thing to sit on.
-- **The pact & karma in numbers (2026-07-19; the collections ladder
-  2026-08-03):** dark XP = bad karma; heat = bad karma // (100 x party
-  level), capped 3; the law's posses arrive at party level + heat
-  (cooldown 2d, chance 0.6, at arrivals and nights). Assignments: the
-  first letter comes on day 1, then a fresh one ~4 days after the last
-  resolved; serial, first-ever level 1, later ones party +0..+1. Grace ~4 days
-  to TAKE it; taking stamps a visible window (4-6 days + road days)
-  and stops enforcement. Past either clock: PAST DUE -- one warning
-  scene (no fight), then collections at party level, +1 per beaten
-  visit, capped +2 over, cooldown 4d, chance 0.6; only the top rung
-  is relentless, the rest break when beaten (neutral XP --
-  demon-slaying is neither crime nor penance). Hell work is never
-  LOST off the clock: late pays x0.6 then x0, but only done,
-  withdrawn, or bribed ends the ladder. `bribe` = 30g x level for 10
-  quiet days and a fresh ladder. Deeds: PC 2d6+stat vs DC (usually 10-11); a
+- **The pact & karma in numbers (2026-07-19; the pinned ladder and the
+  one-visit write-off 2026-08-04):** dark XP = bad karma; heat = bad
+  karma // (100 x party level), capped 3; the law's posses arrive at
+  party level + heat (cooldown 6d, chance 0.6, at arrivals and
+  nights). Assignments: pinned to the PC's ODD LEVELS (1, 3, 5 ... 19 --
+  ten a career), dealt off a shuffled deck of the occult ten, served at
+  the next settlement, leveled party +0..+1; serial, and crossed pins
+  never stack (the highest is served, once). Grace ~10 days to TAKE it;
+  taking stamps a visible window (6-8 days + road days) and stops
+  enforcement. Past either clock: PAST DUE -- one warning scene (no
+  fight), then ONE collections visit at party level +0..+2 (cooldown
+  4d, chance 0.6; breaks when beaten, neutral XP -- demon-slaying is
+  neither crime nor penance), and then the job is WRITTEN OFF however
+  that visit ended. Hell work is never LOST off the clock: late pays
+  x0.6 then x0, but only done, written off, or bribed ends it.
+  `bribe` = 30g x level for 10 quiet days and a fresh Past Due clock.
+  Deeds: PC 2d6+stat vs DC (usually 10-11); a
   botch adds +15 bad karma and starts the fight. `settle` takes a
   twist's terms at x0.5 of the site lump. Losing to any posse is the
   special mercy (left for dead / the lesson) when the PC has not spent

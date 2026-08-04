@@ -611,8 +611,8 @@ def map_sheet_lines(state: dict) -> list[str]:
     settlement open-job counts and a visited/here marker, and -- until the
     planned minimap takes over local detail -- in its own section the
     sites of every TAKEN quest with its progress. Player-facing, so it never
-    prints the DM-only board (dark jobs, hidden givers): only where the party
-    has been and where its accepted work leads."""
+    prints the DM-only board (untaken postings, hidden givers): only where
+    the party has been and where its accepted work leads."""
     world = state.get("world")
     if not world:
         return ["RPG2 MAP", "(no world yet -- start one with `new`)"]
@@ -767,7 +767,6 @@ def save(state: dict) -> None:
         "recruits": state.get("recruits"),
         "visited": state.get("visited", []),
         "karma": state.get("karma") or karma.new_karma(),
-        "dark_board": state.get("dark_board"),
         "pact": state.get("pact"),
         "holdings": state.get("holdings", {}),
         "pending_reward": state.get("pending_reward"),
@@ -812,24 +811,18 @@ def load() -> dict:
         "foe_count": doc["foe_count"],
         "active_quest": doc.get("active_quest"),
         # Quests the party has TAKEN (map.txt shows their sites; offered-but-
-        # -untaken jobs never appear). A pre-2026-07-22 save has no list -- seed
-        # it from the one active quest so the map still knows what's in hand.
-        "accepted": doc.get("accepted")
-        or ([doc["active_quest"]] if doc.get("active_quest") else []),
+        # -untaken jobs never appear).
+        "accepted": doc.get("accepted", []),
         "world": world,
         "story": doc.get("story"),
         "position": position,
         "sighting": doc.get("sighting"),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
-        "visited": doc.get("visited")
-        or ([position["area"]]
-            if position and world["areas"][position["area"]]["kind"]
-            == "settlement" else []),
+        "visited": doc.get("visited", []),
         "karma": doc.get("karma") or karma.new_karma(),
-        "dark_board": doc.get("dark_board"),
-        # None = a pactless save (new --no-pact, or pre-pact): the hell
-        # layer stays inert -- no default resurrect.
+        # None = a pactless save (new --no-pact): the hell layer stays
+        # inert -- no default resurrect.
         "pact": doc.get("pact"),
         "holdings": doc.get("holdings", {}),
         "pending_reward": doc.get("pending_reward"),
@@ -1096,11 +1089,13 @@ def cmd_new(args: argparse.Namespace) -> None:
              "sighting": None,
              "site_clears": {},
              "recruits": None,
-             "karma": karma.new_karma(), "dark_board": None,
+             "karma": karma.new_karma(),
              # THE HELL PACT (2026-07-19): the PC is a low-ranking
              # employee of Hell by default -- `--no-pact` is the
              # neutral-adventurer switch (and what the old game was).
-             "pact": None if args.no_pact else karma.new_pact(),
+             # The pact's DECK is shuffled here, off the run's rng, so
+             # `--seed` pins the assignment order with everything else.
+             "pact": None if args.no_pact else karma.new_pact(rng),
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
              "visited": [start["key"]]}
@@ -1133,9 +1128,10 @@ def cmd_new(args: argparse.Namespace) -> None:
           "dm.md, The war.)")
     if state.get("pact"):
         print(f"(THE PACT rides this save: {pc.name} is a low-ranking "
-              f"employee of Hell -- dm.md, The dark path. Hell's first "
-              f"assignment finds the party at a settlement soon; `task` "
-              f"shows the ledger. `new --no-pact` is the neutral game.)")
+              f"employee of Hell -- dm.md, The dark path. Hell's work is "
+              f"pinned to the odd levels, so the first assignment finds "
+              f"the party at a settlement now; `task` shows the ledger. "
+              f"`new --no-pact` is the neutral game.)")
 
 
 # --------------------------------------------------------------------------- #
@@ -1916,7 +1912,7 @@ def board_clock(state: dict) -> list[str]:
     # every giver the world ever had. With the board churning (~660 postings
     # a career) a persisted list would outgrow the race name pools inside a
     # single playthrough; a giver whose job lapsed forty days ago is free to
-    # be reused. Same shape as roll_dark_board's.
+    # be reused.
     used = {n["name"] for n in world.get("npcs", ())}
     used |= {q["giver"]["name"] for q in world["quests"].values()
              if q.get("giver")}
@@ -2049,16 +2045,19 @@ def _close_site(state: dict, log: list[str], qid: str,
                 log.append("  " + line)
         pact = state.get("pact")
         if pact and quest.get("hell_task") and pact.get("task") == qid:
-            # The assignment is done: hell's clock restarts, the
-            # curriculum ledger ticks (the pact, 2026-07-19).
+            # The assignment is done: the account closes clean and the
+            # curriculum ledger ticks. Hell's next job waits for the next
+            # PIN (2026-08-04) -- unless one was crossed while this was
+            # open, in which case it lands at the next settlement stop.
             pact["task"] = None
-            pact["last_task_day"] = state["clock"].day
-            pact["beatings"] = 0
             pact["warned"] = False
             pact["done"] = pact.get("done", 0) + 1
+            pin = coming_pin(pact)
+            when = (f"The next is pinned to PC level {pin}."
+                    if pin is not None else "Hell has no more work pinned.")
             log.append(f"  (THE ASSIGNMENT IS DONE -- hell is pleased; "
-                       f"the ledger reads {pact['done']} completed. The "
-                       f"next job comes in its own time.)")
+                       f"the ledger reads {pact['done']} completed. "
+                       f"{when})")
     else:
         nxt = sites[cur["site"]]
         nxt["known"] = True
@@ -2175,9 +2174,9 @@ def held_here(state: dict) -> dict | None:
 
 def holding_board_line(settlement: dict) -> str:
     return (f"{settlement['name']} flies the party's flag -- the guilds "
-            f"post no honest work for their conqueror. The shadow board "
-            f"serves (`board --dark`); the tavern, the shops, and the "
-            f"hiring keep your custom.")
+            f"post no honest work for their conqueror. Crime and the "
+            f"pact serve instead; the tavern, the shops, and the hiring "
+            f"keep your custom.")
 
 
 def effective_heat(state: dict) -> int:
@@ -2292,46 +2291,35 @@ def maybe_punish(state: dict) -> bool:
     return True
 
 
-def roll_dark_board(state: dict) -> dict | None:
-    """The SHADOW board (`board --dark`): rolled lazily, once per
-    settlement per day -- the recruits-on-request pattern, so worldgen
-    (and every bench) never sees a dark quest. Yesterday's untaken offers
-    melt back into the shadows: pruned from world['quests'] unless taken
-    (the active quest, or any quest already progressed/done, survives)."""
-    here = local_settlement(state)
-    if here is None:
-        return None
-    rec = state.get("dark_board")
-    day = state["clock"].day
-    if rec and rec["place"] == here["key"] and rec["day"] == day:
-        return rec
-    world = state["world"]
-    if rec:
-        for qid in rec["qids"]:
-            q = world["quests"].get(qid)
-            untouched = (q is not None and q["status"] == "open"
-                         and q["next"] == {"site": 0, "room": 0}
-                         and state.get("active_quest") != qid)
-            if untouched:
-                release_quest_places(world, q)   # 2026-07-26: an untaken
-                                                 # offer gives its Sites back
-                del world["quests"][qid]
-    used = {n["name"] for n in world.get("npcs", [])}
-    used |= {q["giver"]["name"] for q in world["quests"].values()
-             if q.get("giver")}
-    qids = []
-    for _ in range(karma.DARK_JOBS_PER_DAY):
-        q = karma.roll_dark_quest(world, here, party_level(state),
-                                  state["rng"], used_names=used)
-        qids.append(q["id"])
-    rec = {"place": here["key"], "day": day, "qids": qids}
-    state["dark_board"] = rec
-    return rec
+# --------------------------------------------------------------------------- #
+# The hell pact (2026-07-19, the dark-quests session; the PINNED ladder
+# 2026-08-04 -- karma.py, rules.md)
+# --------------------------------------------------------------------------- #
+
+def pc_level(state: dict) -> int:
+    """The PROTAGONIST's level -- what hell's pins are read against
+    (party_level is the party's best living level, the yardstick for
+    threat; the curriculum is the PC's own)."""
+    party = state.get("party") or []
+    return party[0].level if party else 1
 
 
-# --------------------------------------------------------------------------- #
-# The hell pact (2026-07-19, the dark-quests session -- karma.py, rules.md)
-# --------------------------------------------------------------------------- #
+def pending_pin(pact: dict, level: int) -> int | None:
+    """The highest TASK_PIN_LEVELS pin the PC has reached that hell has
+    not served, or None. Pins NEVER stack into a queue: several crossed
+    while an account was open (or while the party was in the wilds) are
+    served as ONE assignment, at the highest of them."""
+    served = pact.get("last_pin_served", 0)
+    crossed = [p for p in karma.TASK_PIN_LEVELS if served < p <= level]
+    return crossed[-1] if crossed else None
+
+
+def coming_pin(pact: dict) -> int | None:
+    """The next pin hell is waiting on (readouts), or None once the ten
+    are all served."""
+    served = pact.get("last_pin_served", 0)
+    return next((p for p in karma.TASK_PIN_LEVELS if p > served), None)
+
 
 def pact_task(state: dict) -> dict | None:
     """The current assignment's quest, or None (also self-heals a stale
@@ -2382,11 +2370,16 @@ def pact_lines(state: dict) -> list[str]:
         lines.append(f"THE PACT: hell eased off until day "
                      f"{pact['bribed_until']} (bribed).")
     else:
-        nxt = pact.get("last_task_day", -99) + karma.TASK_INTERVAL_DAYS
-        when = ("any settlement day now" if nxt <= day
-                else f"~day {nxt}, at a settlement")
-        lines.append(f"THE PACT: no current assignment -- hell's next "
-                     f"job comes {when}.")
+        due = pending_pin(pact, pc_level(state))
+        nxt = coming_pin(pact)
+        if due is not None:
+            when = (f"the level-{due} pin is due -- it lands at the next "
+                    f"settlement")
+        elif nxt is not None:
+            when = f"the next is pinned to PC level {nxt}"
+        else:
+            when = "hell's ten pinned jobs are all served"
+        lines.append(f"THE PACT: no current assignment ({when}).")
     if pact.get("done"):
         lines.append(f"  ({pact['done']} assignment(s) completed -- "
                      f"the curriculum ledger; see `task`)")
@@ -2394,14 +2387,17 @@ def pact_lines(state: dict) -> list[str]:
 
 
 def maybe_assign_task(state: dict) -> bool:
-    """Hell's curriculum clock: a fresh ASSIGNMENT finds the party at a
-    settlement -- TASK_INTERVAL_DAYS after the last one resolved, never
-    while one is open or a bribe holds. Assignments are strictly SERIAL:
-    hell never stacks a second job on an open one. The first-ever task
-    is fixed level FIRST_TASK_LEVEL (the tutorial job); later ones are
-    rolled at the party with the margin of error running upward
-    (TASK_SPREAD). The task is a dark quest flagged `hell_task`,
-    delivered by unseen job board / black-waxed letter / ember-eyed
+    """Hell's PINNED ladder (2026-08-04): an ASSIGNMENT finds the party at
+    a settlement whenever the PC has crossed a `TASK_PIN_LEVELS` pin hell
+    has not served -- the odd levels, ten a career, the war waves' shape.
+    Never while one is open, never while a bribe holds, never in an
+    occupied town. Assignments stay strictly SERIAL and never stack: pins
+    crossed while an account was open are served as ONE fresh job at the
+    first settlement stop after it closes, stamped at the highest crossed
+    pin (`last_pin_served`). The template comes off the pact's shuffled
+    DECK (karma.deal_card); the quest is levelled at the PARTY with the
+    margin of error running upward (TASK_SPREAD), flagged `hell_task`,
+    and delivered by unseen job board / black-waxed letter / ember-eyed
     courier (karma.HELL_MAIL). Prints the WORD FROM BELOW block; the
     caller saves. Returns True when one landed."""
     pact = state.get("pact")
@@ -2413,7 +2409,8 @@ def maybe_assign_task(state: dict) -> bool:
     day = state["clock"].day
     if day < pact.get("bribed_until", 0):
         return False
-    if day < pact.get("last_task_day", -99) + karma.TASK_INTERVAL_DAYS:
+    pin = pending_pin(pact, pc_level(state))
+    if pin is None:
         return False
     here = local_settlement(state)
     if here is None or occupied_here(state) is not None:
@@ -2422,19 +2419,14 @@ def maybe_assign_task(state: dict) -> bool:
     used = {n["name"] for n in world.get("npcs", [])}
     used |= {q["giver"]["name"] for q in world["quests"].values()
              if q.get("giver")}
-    if pact.get("done", 0) == 0:
-        # The pact's first job: fixed level, no roll -- the party always
-        # starts as a duo and the curriculum starts at page one.
-        q = karma.roll_dark_quest(world, here, karma.FIRST_TASK_LEVEL,
-                                  rng, used_names=used, spread=(0, 0))
-    else:
-        q = karma.roll_dark_quest(world, here, party_level(state), rng,
-                                  used_names=used,
-                                  spread=karma.TASK_SPREAD)
+    lvl = party_level(state)
+    tpl = karma.deal_card(pact, lvl, rng)
+    q = karma.roll_dark_quest(world, here, lvl, rng, used_names=used,
+                              spread=karma.TASK_SPREAD, template=tpl)
     q["hell_task"] = True
     pact["task"] = q["id"]
     pact["assigned_day"] = day
-    pact["beatings"] = 0
+    pact["last_pin_served"] = pin
     pact["warned"] = False
     how = rng.choice(karma.HELL_MAIL)
     print(f"*** WORD FROM BELOW -- day {day}: {how}. ***")
@@ -2442,18 +2434,21 @@ def maybe_assign_task(state: dict) -> bool:
     g = q.get("giver")
     if g:
         print(f"  (the local hand on the job: {npc_line(g)})")
+    print(f"  (the level-{pin} pin -- hell's work comes at the odd "
+          f"levels, ten in a career)")
     print(f"  `take {q['id']}` within ~{karma.TASK_GRACE_DAYS} days works "
           f"it -- taking it sets the completion clock and hell waits on "
           f"the road. Left untaken past the grace it goes PAST DUE: one "
-          f"warning, then collections. `bribe` "
-          f"(~{karma.BRIBE_GOLD_PER_LEVEL} g x level) buys "
-          f"{karma.BRIBE_DAYS} days of quiet; `task` shows the ledger.")
+          f"warning, then one collections visit, and then hell writes the "
+          f"job off. `bribe` (~{karma.BRIBE_GOLD_PER_LEVEL} g x level) "
+          f"buys {karma.BRIBE_DAYS} days of quiet; `task` shows the "
+          f"ledger.")
     return True
 
 
 def maybe_enforce(state: dict) -> bool:
-    """Past Due -- the collections ladder (reshaped 2026-08-03, was
-    Chickening Out). Checked at the same stops as the law's posses
+    """Past Due -- ONE collections visit (reshaped 2026-08-04, was the
+    escalating ladder). Checked at the same stops as the law's posses
     (arrivals and nights), never stacked on a stop that already fought.
     When enforcement fires at all:
 
@@ -2463,17 +2458,25 @@ def maybe_enforce(state: dict) -> bool:
       (`deadline_day`, set by `take`) -- a party working the job in its
       window is left alone; that is the whole point of taking it.
 
-    The ladder: the FIRST visit of a refusal is a WARNING -- a clerk, a
+    The shape: the FIRST visit of a refusal is a WARNING -- a clerk, a
     letter, no fight -- fired at the first eligible stop (no chance
-    roll: informing is the point). Fights follow on the usual
-    cooldown + chance, at PARTY LEVEL, +1 per visit already fought,
-    capped ENFORCE_CAP_OVER over; only the capped top rung is
-    relentless, the rest break when beaten. Beating them changes
-    nothing -- the job still stands, and the next visit is worse;
-    LOSING is hell's lesson (apply_mercy: the purse taken as a fine,
-    the refused job withdrawn). Their XP is NEUTRAL -- cutting down
-    devils is neither crime nor penance, and farming them for
-    absolution would be a hole."""
+    roll: informing is the point). Then ONE armed visit on the usual
+    cooldown + chance, at PARTY LEVEL + a rolled ENFORCE_SPREAD (0..+2):
+    potentially devastating, never dominating, and it breaks when beaten
+    (retreat stays viable -- the roll is the danger, not
+    relentlessness). However that visit RESOLVES -- won, lost, or fled;
+    hell's point is made either way -- the account CLOSES
+    (`close_hell_account`): the job is written off, `defied` ticks, and
+    nothing more comes until the next pin. LOSING keeps hell's shipped
+    lesson (apply_mercy: the purse taken as a fine, the job withdrawn) --
+    the same closure. Their XP is NEUTRAL -- cutting down devils is
+    neither crime nor penance, and farming them for absolution would be
+    a hole.
+
+    The budget behind the shape (plan.md, THE DARK REWORK): ten pins x
+    one visit is ~0.5 punishment fights per level, against a levelling
+    budget of 2-3 fights per level. A chain of three came to 1.6/level
+    -- a third of a campaign spent on a layer the player opted out of."""
     pact = state.get("pact")
     living = [h for h in state["party"] if not h.dead]
     if not pact or not living or state.get("pending"):
@@ -2507,21 +2510,22 @@ def maybe_enforce(state: dict) -> bool:
               f"due, and the word COLLECTIONS.")
         print(f"  (final notice: from day "
               f"{day + karma.ENFORCE_COOLDOWN_DAYS} collections come "
-              f"armed, and each visit beaten comes back worse. "
-              f"`take {q['id']}` / finishing the job or `bribe` "
-              f"(~{karma.BRIBE_GOLD_PER_LEVEL} g x level) are the "
-              f"ways out)")
+              f"armed, ONCE -- and whatever that visit costs, hell then "
+              f"writes the job off. `take {q['id']}` / finishing the job "
+              f"or `bribe` (~{karma.BRIBE_GOLD_PER_LEVEL} g x level) are "
+              f"the ways out)")
         save(state)     # the fight branches persist via resolve_encounter;
         return True     # the warning must persist itself
     if rng.random() >= karma.ENFORCE_CHANCE:
         return False
     pact["last_enforce_day"] = day
-    pact["beatings"] = pact.get("beatings", 0) + 1
     lvl = party_level(state)
-    over = min(karma.ENFORCE_CAP_OVER, pact["beatings"] - 1)
-    posse_level = min(karma.LEVEL_CAP, lvl + over)
-    ferocity = (FEROCITY_RELENTLESS if over >= karma.ENFORCE_CAP_OVER
-                else FEROCITY_BREAKS)
+    # ONE visit, its level rolled: party +0..+2. The roll is where the
+    # devastation lives -- a +2 collections posse on a party that just
+    # levelled is a real fight -- and it never comes back.
+    posse_level = min(karma.LEVEL_CAP,
+                      lvl + rng.randint(*karma.ENFORCE_SPREAD))
+    ferocity = FEROCITY_BREAKS
     land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_hell_posse(
@@ -2532,9 +2536,9 @@ def maybe_enforce(state: dict) -> bool:
     print(f"*** PAST DUE -- day {day}: collections on "
           f"[{q['id']}] {q['name']}. ***")
     print(f"  {label} find the party {where}, led by {npc_line(leader)}")
-    print(f"  (beat them and the job still stands -- the next visit "
-          f"comes worse; lose and hell collects its fine. `bribe` or "
-          f"the job itself are the ways out)")
+    print(f"  (this is the ONE visit: however it ends -- won, lost, or "
+          f"run from -- hell writes the job off afterwards. Lose and it "
+          f"collects its fine first.)")
     log = new_combat_log()
     for hero in living:
         start_fight(hero, log)
@@ -2556,6 +2560,56 @@ def maybe_enforce(state: dict) -> bool:
     resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
                       field=field, align="neutral", mercy="hell")
     return True
+
+
+def withdraw_assignment(state: dict) -> str:
+    """Pull the current assignment out of the world: the quest is
+    withdrawn (its Sites released back to the land), the pointer and the
+    warning cleared, and hell's WRITE-OFF ledger (`defied`) ticks.
+    Returns '[qid] Name' for the scene, or '' when no assignment stood.
+    Shared by the two ways an account closes -- the write-off after the
+    collections visit and hell's mercy on a lost one."""
+    pact = state.get("pact")
+    if not pact or not pact.get("task"):
+        return ""
+    qid = pact["task"]
+    world = state["world"]
+    q = world["quests"].get(qid)
+    label = ""
+    if q is not None:
+        label = f"[{qid}] {q['name']}"
+        release_quest_places(world, q)
+        del world["quests"][qid]
+    if state.get("active_quest") == qid:
+        state["active_quest"] = None
+    accepted = state.get("accepted") or []
+    if qid in accepted:
+        accepted.remove(qid)
+    pact["task"] = None
+    pact["warned"] = False
+    pact["defied"] = pact.get("defied", 0) + 1
+    return label
+
+
+def close_hell_account(state: dict, log: list) -> None:
+    """The collections visit RESOLVED (2026-08-04) -- won, lost, or fled;
+    hell's point is made either way. The account closes here: the
+    assignment is written off, the ledger remembers, and hell is quiet
+    until the next pin. Accounts never stack and never jam a later pin
+    behind a refused job."""
+    label = withdraw_assignment(state)
+    if not label:
+        return
+    pact = state["pact"]
+    pin = coming_pin(pact)
+    nxt = (f"The next comes at PC level {pin}." if pin is not None
+           else "Hell has no more work pinned.")
+    log_banner(log,
+               f"  *** WRITTEN OFF: {label}. The account is closed; "
+               f"hell's ledger remembers. {nxt} ***",
+               ["*** WRITTEN OFF ***", f"{label}",
+                "The account is closed; hell's",
+                "ledger remembers.", nxt])
 
 
 def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
@@ -2616,28 +2670,19 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
         emit([f"{pc.name} wakes in a ditch at 1 HP.",
               "Everyone in hell is laughing."])
     else:
-        pact = state.get("pact")
-        withdrawn = ""
-        if pact and pact.get("task"):
-            qid = pact["task"]
-            q = state["world"]["quests"].get(qid)
-            if q is not None:
-                withdrawn = f"[{qid}] {q['name']} is WITHDRAWN."
-                if state.get("active_quest") == qid:
-                    state["active_quest"] = None
-                del state["world"]["quests"][qid]
-            pact["task"] = None
-            pact["last_task_day"] = day
-            pact["beatings"] = 0
-            pact["warned"] = False
+        # Hell's mercy IS the account closing (2026-08-04): the fine, the
+        # withdrawal, the write-off -- the same closure the visit gets
+        # when it is won or run from, bought with the purse instead.
+        label = withdraw_assignment(state)
         emit(["*** THE LESSON --", f"day {day}.",
               "Hell's enforcers leave the PC alive. ***"])
         if lost:
             emit(["The party is lost:"])
             emit([name + "." for name in lost])
         emit([f"The purse is collected: {fine} g."])
-        if withdrawn:
-            emit([withdrawn])
+        if label:
+            emit([f"{label} is WITHDRAWN --",
+                  "the account is written off."])
         emit([f"{pc.name} wakes at 1 HP.",
               "The bad karma remains."])
     return True
@@ -2645,12 +2690,12 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
 
 def cmd_task(args: argparse.Namespace) -> None:
     """The pact's ledger: the current assignment (and its grace clock),
-    the bribe window, the completed-assignment count."""
+    the bribe window, the pin schedule, the lifetime counts."""
     state = load()
     pact = state.get("pact")
     if not pact:
-        print("No pact rides this save (a `new --no-pact` game, or an "
-              "old one) -- the party answers to nobody below.")
+        print("No pact rides this save (a `new --no-pact` game) -- the "
+              "party answers to nobody below.")
         return
     for line in pact_lines(state):
         print(line)
@@ -2659,15 +2704,18 @@ def cmd_task(args: argparse.Namespace) -> None:
         for line in quest_detail_lines(state["world"], q, dm=False):
             print(line)
         print(f"(left untaken past its grace -- or taken and past its "
-              f"window -- it goes PAST DUE: one warning, then armed "
-              f"collections at the roads and nights, cooldown "
-              f"{karma.ENFORCE_COOLDOWN_DAYS} d, each beaten visit "
-              f"back worse. Taking it and working the window keeps "
-              f"hell off the road. `bribe` buys {karma.BRIBE_DAYS} "
-              f"days of quiet.)")
+              f"window -- it goes PAST DUE: one warning, then ONE armed "
+              f"collections visit at a road or a night (cooldown "
+              f"{karma.ENFORCE_COOLDOWN_DAYS} d, level party +0..+2). "
+              f"However that visit ends, hell then writes the job off "
+              f"and waits for the next pin. Taking it and working the "
+              f"window keeps hell off the road; `bribe` buys "
+              f"{karma.BRIBE_DAYS} days of quiet.)")
+    pins = ", ".join(str(p) for p in karma.TASK_PIN_LEVELS)
+    print(f"The pins (PC levels): {pins} -- ten jobs a career, dealt off "
+          f"a shuffled deck of the occult ten.")
     print(f"Lifetime: {pact.get('done', 0)} assignment(s) completed; "
-          f"{pact.get('beatings', 0)} collection visit(s) fought on the "
-          f"current refusal.")
+          f"{pact.get('defied', 0)} written off after collections.")
 
 
 def cmd_bribe(args: argparse.Namespace) -> None:
@@ -2694,12 +2742,11 @@ def cmd_bribe(args: argparse.Namespace) -> None:
     pact["bribed_until"] = until
     if pact.get("task"):
         # The clock restarts when the coin runs out: the grace window
-        # reopens at the bribe's end, so the ease is real -- and the
-        # ladder resets with it (the coin buys fresh patience, warning
-        # and all; 2026-08-03).
+        # reopens at the bribe's end, so the ease is real -- and Past Due
+        # resets with it (the coin buys fresh patience, warning and all;
+        # 2026-08-03).
         pact["assigned_day"] = until
         pact["warned"] = False
-        pact["beatings"] = 0
         q = pact_task(state)
         if q is not None and q.get("deadline_day") is not None \
                 and q["id"] in (state.get("accepted") or []):
@@ -2849,6 +2896,12 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             pay_set_site_clear(state, log, site, room)
 
     if not wiped:
+        if mercy == "hell":
+            # The Past Due visit resolved (won, or fought to a
+            # standstill): hell's ONE visit is spent, so the job is
+            # written off. A LOST one closed the same account through
+            # apply_mercy above (that path returns early).
+            close_hell_account(state, log)
         # The on-kill weapon quirks pay out (2026-07-28): Midas gold,
         # dark karma -- whatever the engine counted during the melee.
         collect_weapon_quirks(state, log)
@@ -3003,37 +3056,6 @@ def cmd_board(args: argparse.Namespace) -> None:
     world = state.get("world")
     if not world:
         print("No world in this save -- start one with `new`.")
-        return
-    if getattr(args, "dark", False):
-        # The SHADOW board (karma & heat): the wrong tavern corner, the
-        # back room, the fence's cellar. Rolled on request, once per
-        # settlement day; its jobs are leveled AT the party (the fixer
-        # offers what the taker can handle -- the OSR straight-board
-        # stance is the honest world's).
-        here = local_settlement(state)
-        if here is None:
-            print(f"The shadows do business behind walls -- the party is "
-                  f"at {location_line(state)}. Find a settlement first.")
-            return
-        if occupied_here(state):
-            print(occupation_line(state, here))
-            return
-        rec = roll_dark_board(state)
-        save(state)
-        print(f"Day {state['clock'].day}. Asking around the wrong corners "
-              f"of {here['name']} (dark work: the gold runs half again "
-              f"the honest rate, but every XP is BAD KARMA -- heat "
-              f"follows, and the law collects):")
-        for qid in rec["qids"]:
-            q = world["quests"].get(qid)
-            if q is None:
-                continue
-            g = q.get("giver")
-            who = f"    ({g['name']}, {g['role']})" if g else ""
-            print("  " + quest_line(q) + who)
-        print(f"({karma.karma_line(state['karma'], party_level(state))}; "
-              f"these offers last today only -- take one like any "
-              f"quest: `take QID`)")
         return
     if state["party"] and maybe_post_wave(state):
         save(state)     # persist the posting BEFORE the readout: a broken
@@ -4086,6 +4108,11 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                 log.append("  (the foes scatter -- an off-script encounter "
                            "is not kept)")
         if not wiped and not mercy_fired:
+            if pending.get("mercy") == "hell":
+                # Running from the collections visit still RESOLVES it --
+                # hell's point is made either way (2026-08-04). The
+                # account closes and the job is written off.
+                close_hell_account(state, log)
             collect_weapon_quirks(state, log)   # kills before the break-away
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
@@ -5315,13 +5342,10 @@ def main() -> None:
              "in town, WORD FROM AROUND THE LAND (other open jobs in this "
              "land), and the war's status. Only local jobs can be taken "
              "here. `board all` / `board NAME` is the wider DM overview. "
-             "`board --dark` asks the WRONG corners instead: the shadow "
-             "board (karma & heat) -- 2-3 dark jobs leveled at the "
-             "party, rolled fresh per settlement day; a gold premium, "
-             "but every XP is BAD KARMA.")
+             "(There is no dark board since 2026-08-04: hell's own work "
+             "arrives as pinned ASSIGNMENTS -- `task` -- and freelance "
+             "crime is not a posting at all.)")
     p.add_argument("settlement", nargs="?", default=None)
-    p.add_argument("--dark", action="store_true",
-                   help="the shadow board: today's dark jobs here")
     p.set_defaults(func=cmd_board)
 
     p = sub.add_parser(
@@ -5467,13 +5491,16 @@ def main() -> None:
     p = sub.add_parser(
         "task",
         help="the hell pact's ledger: the current ASSIGNMENT (with its "
-             "grace clock and full detail), the bribe window, beatings "
-             "survived, assignments completed. Assignments are dark "
-             "quests hell rolls AT the party (margin of error upward; "
-             "the first-ever is level 1), delivered at settlements. "
-             "Taking one stamps a visible completion window and stops "
-             "enforcement; untaken past grace or taken past window it "
-             "goes PAST DUE -- one warning, then collections.")
+             "grace clock and full detail), the bribe window, the next "
+             "pin, assignments completed and written off. Assignments "
+             "are occult quests hell PINS to the PC's odd levels (1, 3, "
+             "5 ... 19 -- ten a career, dealt off a shuffled deck), "
+             "leveled at the party with the margin of error upward and "
+             "delivered at settlements. Taking one stamps a visible "
+             "completion window and stops enforcement; untaken past "
+             "grace or taken past window it goes PAST DUE -- one "
+             "warning, then ONE collections visit, then hell writes the "
+             "job off and waits for the next pin.")
     p.set_defaults(func=cmd_task)
 
     p = sub.add_parser(
