@@ -93,9 +93,10 @@ Concretely:
    Pratchett-wry phrasing goes; the comedy that survives is situational
    and deadpan. The good-side templates in `quests.py` get the same
    pass afterward where the clash is felt. *(2026-08-04: for karma.py
-   this is absorbed by THE DARK REWORK above — the occult ten get their
-   pass in its Session A, the crime scene copy in Session B; what
-   remains of this item is the quests.py good-template half.)*
+   this is absorbed by THE DARK REWORK above — the occult ten got their
+   pass in its Session A, and Session B wrote the crime layer's copy
+   fresh in `crime.py` rather than rewording the retired templates.
+   What remains of this item is the quests.py good-template half.)*
 3. **Play the dark path in the new register** (absorbs villain roadmap
    item 1): the probe now tests the retro style AND the dark content at
    once — the first ten messages, the first three levels.
@@ -107,18 +108,21 @@ Concretely:
 
 ---
 
-## THE DARK REWORK (2026-08-04) — session A SHIPPED; next up: crime as actions
+## THE DARK REWORK (2026-08-04) — sessions A and B SHIPPED; next up: the surface
 
 The 2026-08-04 design session (designlog has the reasoning trail). This
 section is the complete implementation spec: a fresh session should be
 able to build any slice from it without the conversation that produced
 it. Three sessions, in order — each leaves the game playable.
 
-**Status: Session A shipped 2026-08-04** (the assignment ladder — the
-template sort, the deck, the pins, the one-visit write-off, the law's
-eased cooldown, the shadow board's removal; rules.md's Karma & Heat
-add-on and dm.md carry the played rules, `test_pact.py` the contracts).
-Sessions B and C are unbuilt.
+**Status: Sessions A and B shipped 2026-08-04.** A was the assignment
+ladder (the template sort, the deck, the pins, the one-visit write-off,
+the law's eased cooldown, the shadow board's removal; rules.md's Karma &
+Heat add-on and dm.md carry the played rules, `test_pact.py` the
+contracts). B was crime as free actions (`crime.py`, `case`/`crime`, the
+news cycle, the unlock ledger; rules.md's **Crime add-on** is its doc of
+record, dm.md's "Crime -- the free actions" the table manner, and
+`test_crime.py` the contracts). Session C is unbuilt.
 
 **The resort** (done in session A). The 24 dark templates conflated two
 different things, and they were sorted apart:
@@ -132,8 +136,8 @@ different things, and they were sorted apart:
   adjust, gamified by a tally/history page instead of a board. The
   questgiver frame GOES: the PC does the thing because they want to and
   keeps whatever material gain directly follows. The shadow board
-  (`board --dark`) died with it in session A; the ACTIONS are session B,
-  still to build.
+  (`board --dark`) died with it in session A; the ACTIONS shipped in
+  session B (`crime.py`).
 
 **Rename:** bad karma → **SIN** (current sin / lifetime sin / penance),
 including the save keys. **develop.md's "No backwards compatibility"
@@ -249,92 +253,68 @@ rules.md's Karma & Heat add-on and dm.md; the contracts in
   back to the land — the old mercy deleted the quest without releasing
   them.
 
-**What session B still needs from here:** the crime fifteen live in
+**What session B took from here:** the crime fifteen live in
 `karma.CRIME_FODDER` with their skins, rosters, situations and
-epilogues intact (byte-identical to their old template form); the
-occult ten are `karma.OCCULT_TEMPLATES` and are not to be drawn from by
-crime.
+epilogues intact, and session B dresses each crime category's
+protection in one of them; the occult ten are
+`karma.OCCULT_TEMPLATES` and crime draws from neither list for its own
+copy.
 
-### Session B — crime actions (new `crime.py`, session.py + docs)
+### Session B — crime actions — SHIPPED 2026-08-04
 
-- **New module `crime.py`** (register in develop.md's Files): the mark
-  bands, the crime catalog, and the resolution helpers. session.py owns
-  the commands. No sim or bench imports it (the karma doctrine).
-- **Mark bands** (level fixes wealth AND protection; availability by
-  settlement kind, the garrison-band logic — village caps ~7, town ~12,
-  capital 20):
+Built as specced. `crime.py` holds the mark bands, the catalogue and the
+resolution helpers; session.py owns `case` and `crime`; no sim or bench
+imports it. rules.md's **Crime add-on** is the doc of record, dm.md's
+"Crime -- the free actions" the table manner, `test_crime.py` the
+contracts (54 of them). The mark bands, the three shapes, the formulas
+(`CRIME_XP_PER_LEVEL` 50 / `CRIME_GOLD_PER_LEVEL` 20 / `FENCE_RATE` 0.5
+/ flat `PETTY_SIN`), monotony's temporary per-category window, the
+first-time bonus, the news cycle (`karma.NEWS_DAYS`, `hot_until`, the
+heat floor of 1), the `crimes` unlock ledger and the ~24-category
+catalogue (27 as authored: 5 petty, 10 deeds, 12 force) all landed at
+their specced numbers.
 
-  | mark | level | where |
-  |---|---|---|
-  | commoner / stray / unpaid lunch | 1–2 | anywhere |
-  | tradesman, innkeeper | 2–4 | anywhere |
-  | merchant, priest | 4–7 | town+ |
-  | guild master, noble | 8–12 | town / capital |
-  | magnate, high temple | 12–16 | capital |
-  | the royal vault | 16–20 | capital |
+**Six decisions the spec left open, settled in the build:**
 
-- **Casing is free** (the OSR straight-board stance): `case CATEGORY`
-  rolls the local mark (seeded per settlement/day/category) and prints
-  level, expected take, the check, and a protection hint. `crime
-  CATEGORY` commits against the cased mark (rolls fresh if uncased).
-  `--npc NAME --level N` targets a named victim (giver, notable) — the
-  DM assigns the band; NPCs are freely attackable/robbable through this.
-- **Three shapes**, per category:
-  1. **petty** — trivial or no check, no roster (or a token one), flat
-     `PETTY_SIN` (10–15) quoted as XP (all sin), coin in pennies.
-  2. **deed** — 2d6 + stat vs DC (the caper machinery generalized).
-     Make: clean take, sin, no fight. Miss: the mark's protection
-     fights (a `build_room` budget at mark level wearing the recycled
-     skins) + `WITNESS_SIN` (reuse `DEED_FAIL_KARMA` 15).
-  3. **force** — no check; straight to the protection roster, then the
-     take. Fight XP is dark as usual, plus the crime lump.
-- **Formulas** (initial knobs, hand-set per the standing balance
-  directive): crime lump ≈ `CRIME_XP_PER_LEVEL` (50) × mark level ×
-  category mult (half an at-level quest — a crime is one scene); coin
-  crimes pay ≈ `CRIME_GOLD_PER_LEVEL` (20) × mark level; goods crimes
-  (jewels, relics, cattle) pay in goods fenced at `FENCE_RATE` (0.5).
-- **Monotony**: per category, day stamps within `MONOTONY_WINDOW` (10);
-  the sin/XP mult by count already in the window is `(1.0, 1.0, 0.5,
-  0.25)`, floor 0.25 — temporary by construction, stamps age out. Gold
-  never depreciates. Alternating two categories does NOT reset either —
-  each has its own window; that is intended (a two-crime loop should
-  stale; a portfolio, or honest days between sprees, stays fresh).
-- **First-time bonus**: a category's first-ever commission pays
-  `FIRST_TIME_MULT` (1.5) on sin/XP — the creativity carrot, pointing
-  at the suggestion feed.
-- **The news cycle** (karma.py): a single sin gain ≥ the heat step
-  (100 × level) stamps `hot_until = day + NEWS_DAYS` (6); `heat()`
-  floors at 1 until then, penance or no. Applies to quest turn-ins too
-  — occult assignments are exactly the big scores it exists for.
-- **Unlocks**: the `crimes` save ledger (per category: count, day
-  stamps, unlocked flag). The first COMPLETED hell assignment unlocks
-  one random suggestion; thereafter one per `CRIME_UNLOCK_STEP` (200)
-  lifetime sin, random order. Full list lands around 4,750 lifetime sin
-  — the derivation: the XP budget to L20 is 19,000 quoted; keeping heat
-  down means at most half can be sin (each point needs a penance
-  point), so 9,500; half of that again = the designer's target.
-- **The catalogue** (~24 categories; shape and check noted — DCs sit
-  10–11 against stats 3–5, the caper doctrine):
-  - *petty*: kick the puppy; dine and dash; cheat at dice (CHA);
-    petty vandalism; pickpocket a commoner (DEX, tiny take).
-  - *deed*: burglary (DEX); the vault heist (MIND); the con / false
-    relics (CHA); counterfeiting (MIND); blackmail (CHA); impersonate
-    an official (CHA); poison the feast (MIND); grave-robbing (DEX);
-    smuggling / the powder trade (MIND); cattle rustling (DEX).
-  - *force*: mugging; extortion / protection racket; strong-arm debt
-    collection; highway robbery; rob the tax collector (the crown's
-    own coin — posse magnet); arson; kidnapping for ransom; jailbreak
-    (frees a future recruit — hook); caravan robbery; the village
-    raid; the land grab (conquest-adjacent); betrayal (sell out an
-    ally's crew).
-  - Nothing grim (writing.md's cartoon register gates the list).
-- **Heat-pump note to watch at the table**: crime lumps are smaller
-  than quest lumps, so running hot now takes big marks or volume —
-  coherent (petty crime should not summon the crown's huntsmen), but
-  `CRIME_XP_PER_LEVEL` is the lever if heat gets too hard to reach.
-- **Docs**: rules.md gets a Crime section (in or beside Karma & Heat);
-  dm.md (crime at the table: the wickedness stays narration, the
-  engine only ever fights the protection); develop.md Files + dev map.
+- **Gold carries the category multiplier too.** The spec quoted the coin
+  formula without it; leaving it out made a level-1 petty pickpocket pay
+  the same 20g as a mugging. Petty stays FLAT (its own `PETTY_GOLD`
+  range) and everything else carries the same multiplier as the lump —
+  what gold never carries is monotony or the first-time bonus.
+- **The wilds are a crime market.** The spec's table gates availability
+  by settlement kind only, which would have put highway robbery and the
+  tax cart inside the walls. Mark bands now declare which place kinds
+  hold them (the travelling bands reach the road; nobles and magnates do
+  not), and each CATEGORY declares where it happens — road work is
+  wilds-only, and the default is settlements.
+- **A botched deed still pays if the fight is won.** The spec says a
+  miss puts the protection in the room; it does not say the take
+  evaporates. It does not: the crime happened, the hard way. A LOST
+  fight and a retreat both pay nothing.
+- **Casing stores nothing.** Because the mark is seeded off (world seed,
+  place, day, category), `crime` re-rolls exactly what `case` showed —
+  so "commits against the cased mark (rolls fresh if uncased)" needed no
+  state at all, and sleeping on it rolls a new mark by construction.
+- **The commission is stamped when the crime is COMMITTED**, not when
+  it pays: a force job the party is driven off, or a botched deed whose
+  fight is lost, still ticks its category's monotony window. Hell was
+  watching the attempt. It costs little in practice (the second stamp
+  in a window is still x1.0), and it keeps the ledger honest as a
+  record of what the party has *done*.
+- **The ledger separates GRANTS from by-deed unlocks** (`{"ledger":
+  {...}, "grants": N}`), so committing a locked category — which
+  unlocks it by deed, decision 8 — never eats a suggestion the ladder
+  still owes.
+
+**Two things to judge from play** (both recorded in rules.md's Crime
+add-on): the heat pump (crime lumps are smaller than quest lumps, so
+`CRIME_XP_PER_LEVEL` is the lever if heat proves hard to reach), and the
+FLAT DEED DC — a deed's check is 9-11 whatever the mark's level, so a
+low-level party can gamble one roll against a very rich mark. The make
+is a clean windfall and the miss is a roster far above its weight, which
+is the intended shape of "difficulty comes from the mark"; if the make
+proves too cheap, the levers are a DC that climbs with the mark or a
+lump the clean take only partly pays.
 
 ### Session C — the surface: history page, tally, the sin rename
 

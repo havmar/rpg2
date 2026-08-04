@@ -57,6 +57,15 @@ Mechanically:
   (KARMA_HEAT_STEP * level bad karma per step; a level-L quest quotes
   ~100L XP). The player pumps difficulty by sinning and bleeds it off by
   honest work -- difficulty selection by consequence, not by board-reading.
+- **The news cycle (2026-08-04).** A SINGLE sin gain at or above the heat
+  step floors heat at 1 for NEWS_DAYS, penance or no: a vault heist or an
+  occult assignment is a story, and a story cannot be laundered inside a
+  week. Petty sin stays dodgeable on purpose.
+- **Crime is not here.** Freelance wickedness stopped being a quest on
+  2026-08-04: it is a free ACTION against a leveled mark, and it lives in
+  `crime.py`. What this file keeps for it is CRIME_FODDER -- the fifteen
+  retired templates, whose rosters and skins dress the protection a crime
+  has to fight through.
 - **Punishment is people, not weather.** At heat >= 1, time-spaced posses
   (cooldown + a chance roll at arrivals and nights) hunt the party at
   party level + heat: the Watch first, then bounty hunters, the crown's
@@ -116,6 +125,16 @@ PUNISH_COOLDOWN_DAYS = 6   # the law is never instantaneous: at least this
                            # quest deadlines made it much harsher)
 PUNISH_CHANCE = 0.6     # per eligible stop (arrival / settlement night /
                         # wilds camp) once the cooldown has passed
+NEWS_DAYS = 6           # THE NEWS CYCLE (2026-08-04, the dark rework's
+                        # session B): a SINGLE sin gain at or above the
+                        # heat step is a story -- it floors heat at 1 for
+                        # this many days no matter how much penance is
+                        # bought in the meantime. Anti-laundering for big
+                        # scores: an occult assignment or a vault heist
+                        # cannot be honest-quested out of the town gossip
+                        # the same week. Petty sin stays dodgeable ON
+                        # PURPOSE -- the tithing puppy-kicker is a comedy
+                        # the game wants
 
 # The hell pact's knobs (2026-07-19, second slice). ALL hand-set and
 # sim-unverified BY DIRECTIVE: the designer abandoned XP/gold balance for
@@ -178,6 +197,8 @@ def new_karma() -> dict:
                                 # the player's badness level, for titles
                                 # and the DM's memory)
             "good_total": 0,    # lifetime penance (record only)
+            "hot_until": 0,     # the news cycle: heat floors at 1 until
+                                # this day, penance or no (NEWS_DAYS)
             "last_punish_day": -99,
             "last_leader": None}   # the last posse's named leader -- the
                                    # nemesis seed (persistence is plan.md)
@@ -216,40 +237,75 @@ def new_pact(rng: random.Random | None = None) -> dict:
                                     # curriculum ledger -- titles later)
 
 
-def heat(karma: dict, pc_level: int) -> int:
+def heat_step(pc_level: int) -> int:
+    """The bad karma one heat step costs at this level -- and, since
+    2026-08-04, the size a SINGLE sin has to reach to make the news."""
+    return KARMA_HEAT_STEP * max(1, pc_level)
+
+
+def in_the_news(karma: dict, day: int | None) -> bool:
+    """Is the party's last big score still being talked about?"""
+    return day is not None and day < karma.get("hot_until", 0)
+
+
+def heat(karma: dict, pc_level: int, day: int | None = None) -> int:
     """Current heat: how many levels above the party retribution arrives.
     Derived, never stored -- bad karma over KARMA_HEAT_STEP * level, so
     the same sins cool as the party's legend grows (the Watch that hunts
-    a level-2 puppy-kicker has better sense at level 10)."""
-    step = KARMA_HEAT_STEP * max(1, pc_level)
-    return min(HEAT_CAP, karma["bad"] // step)
+    a level-2 puppy-kicker has better sense at level 10).
+
+    THE NEWS CYCLE (2026-08-04): while a big score is still news, heat
+    cannot fall below 1 however fast the penance is bought. `day` left
+    None reads the meter without the calendar (displays that have no day
+    to hand) -- the floor simply does not apply."""
+    h = min(HEAT_CAP, karma["bad"] // heat_step(pc_level))
+    if in_the_news(karma, day):
+        return max(1, h)
+    return h
 
 
 def record_karma(karma: dict, xp: int, align: str, log: list,
-                 pc_level: int) -> None:
+                 pc_level: int, day: int | None = None) -> None:
     """Bucket a QUOTED XP award by the work's alignment: dark work accrues
     bad karma, good work burns it 1:1 (penance -- 'the basic quests delete
     the karma'). Neutral work (the wilds, the hunt) touches nothing.
-    Appends the bookkeeping line so the player always sees the meter."""
+    Appends the bookkeeping line so the player always sees the meter.
+
+    A single dark gain at or above the heat step STAMPS THE NEWS CYCLE
+    (NEWS_DAYS): the town talks, and heat holds at 1 or more until it
+    stops. `day` is what makes that possible -- omit it (displays, the
+    odd off-calendar call) and the gain is booked without the stamp."""
     if align == "dark" and xp > 0:
         karma["bad"] += xp
         karma["bad_total"] += xp
+        news = day is not None and xp >= heat_step(pc_level)
+        if news:
+            karma["hot_until"] = max(karma.get("hot_until", 0),
+                                     day + NEWS_DAYS)
         log.append(f"    (dark work: +{xp} bad karma -- "
-                   f"{karma_line(karma, pc_level)})")
+                   f"{karma_line(karma, pc_level, day)})")
+        if news:
+            log.append(f"    (that one is NEWS -- the town talks for "
+                       f"{NEWS_DAYS} days; heat holds at 1 or more "
+                       f"through day {karma['hot_until'] - 1}, penance "
+                       f"or no)")
     elif align == "good" and xp > 0:
         karma["good_total"] += xp
         if karma["bad"] > 0:
             burned = min(karma["bad"], xp)
             karma["bad"] -= burned
             log.append(f"    (penance: -{burned} bad karma -- "
-                       f"{karma_line(karma, pc_level)})")
+                       f"{karma_line(karma, pc_level, day)})")
 
 
-def karma_line(karma: dict, pc_level: int) -> str:
+def karma_line(karma: dict, pc_level: int, day: int | None = None) -> str:
     """The one-line meter for tallies and status readouts -- always
     self-contained (current bad karma + what it means)."""
-    h = heat(karma, pc_level)
-    step = KARMA_HEAT_STEP * max(1, pc_level)
+    h = heat(karma, pc_level, day)
+    step = heat_step(pc_level)
+    if in_the_news(karma, day) and karma["bad"] // step < h:
+        return (f"bad karma {karma['bad']}; HEAT {h} -- IN THE NEWS "
+                f"through day {karma['hot_until'] - 1}")
     if h >= 1:
         return (f"bad karma {karma['bad']}; HEAT {h} -- retribution "
                 f"hunts {h} level(s) above the party")

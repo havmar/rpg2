@@ -7181,7 +7181,8 @@ def cha_gold_bonus(party: list[Entity], gold: int) -> int:
 
 def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
                 log: list[str], name: str,
-                banner: str = "QUEST COMPLETE") -> None:
+                banner: str = "QUEST COMPLETE",
+                reason: str = "quest") -> None:
     """Clearing a whole site pays its lump: gold to the purse and an XP lump
     to everyone still alive (`banner` reads SITE CLEARED for the non-final
     sites of a multi-site quest). Skill points are BANKED, not auto-spent --
@@ -7207,7 +7208,7 @@ def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
                          f"+{bonus}g ({gold}g in all)."]))
     purse.gold += gold
     log.append(f"    The party purse holds {purse.gold} gold.")
-    award_xp(party, xp, log, "quest")
+    award_xp(party, xp, log, reason)
     for h in party:
         if not h.dead:
             adjust_satisfaction(h, SAT_SITE_CLEAR, log, "a job paid out")

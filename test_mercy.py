@@ -219,6 +219,7 @@ class FateBargain(unittest.TestCase):
             "party": [pc, companion],
             "purse": rpg.Purse(),
             "rng": random.Random(4),
+            "clock": rpg.Clock(),
             "pending": None,
         }
         with (
