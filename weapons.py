@@ -133,7 +133,7 @@ CAP_DEF = 1         # one point of guard is a niche, two is a wall
 RIDER_CHANCE = 0.6
 QUIRK_CHANCE = 0.3
 MIDAS_GOLD = 2      # gold per felled foe (capped per fight in the engine)
-DARK_KARMA = 2      # bad karma per felled foe
+DARK_KARMA = 2      # sin per felled foe
 
 # Name pools (writing.md: a readable base noun plus one meaningful
 # modifier). The generated form is "MODIFIER CHASSIS" -- "ember katana",
@@ -284,7 +284,7 @@ def generate_weapon(rng: random.Random, sp: int,
     elif quirk == "midas":
         parts.append(f"each kill pays {MIDAS_GOLD}g")
     elif quirk == "dark":
-        parts.append(f"each kill is {DARK_KARMA} bad karma")
+        parts.append(f"each kill is {DARK_KARMA} sin")
     desc = (f"A {tier} {chassis}, over the plain steel: "
             + "; ".join(parts) + ".")
 

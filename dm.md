@@ -27,25 +27,32 @@ play.
   is listed in `session.py --help`. The save is plain JSON on purpose:
   commit it and the playthrough travels with the repo. Every save also
   rewrites the standing **UI pages** in **`ui/`**: **`ui/party.txt`** (the
-  full party info sheet) and **`ui/map.txt`** (the macro world map -- lands
-  and known areas, with the existing taken-quest site summary). Combat also
+  full party info sheet), **`ui/map.txt`** (the macro world map -- lands
+  and known areas, with the existing taken-quest site summary) and
+  **`ui/history.txt`** (the campaign record -- jobs done, the remarkable,
+  the tally of sin, hell's suggestions). Combat also
   rewrites **`ui/fight-short.txt`** (the displayed last fight) and
-  **`ui/fight-detailed.txt`** (its full mechanics record). A fifth page,
+  **`ui/fight-detailed.txt`** (its full mechanics record). A sixth page,
   **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
   yet; `look` is the local display meanwhile. **End EVERY DM message with
   `python session.py sheet`**, which
   commits every existing page -- one commit per message, so the player
   follows the playthrough as message-sized diffs. Unchanged pages are a
   no-op; run it anyway.
-- **GitHub IS the player's UI.** The four pages are committed to the branch,
+- **GitHub IS the player's UI.** The five pages are committed to the branch,
   so the player and DM can read them as blob links. After the `sheet` at the
-  end of a message, drop the standing two player links (swap in the current
+  end of a message, drop the standing player links (swap in the current
   branch name):
   `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` and
   `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt`. The player
   keeps them open on a phone and refreshes -- the party sheet is the
   between-fights board, the map is where they are and where their taken
-  jobs lead. The fight pages live at the corresponding
+  jobs lead. Add
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/history.txt` when the
+  campaign has a record worth reading (after the first job, a conquest, a
+  run of crime) -- it is also YOUR continuity crib across sessions: what
+  the party did, who they killed, and what they are known for. The fight
+  pages live at the corresponding
   `ui/fight-short.txt` and `ui/fight-detailed.txt` links; use or share them
   when the combat record matters.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
@@ -444,7 +451,7 @@ infernal reskins, and keep visits scene-sized.
   A DEED site opens on a check (the lift, the long con, the plan):
   the script rolls the PC's 2d6+stat vs a DC set HIGH on purpose --
   the dex check will probably fail, and lead to a fight, with
-  witnesses (+15 bad karma). Narrate the attempt as the scene it is;
+  witnesses (+15 sin). Narrate the attempt as the scene it is;
   a CLEAN make is a heist told in one message, full pay, no blood. A
   TWIST site opens on printed terms (the fence offers half, backed by
   bodyguards; the rival proposes a partnership): present them as the
@@ -454,10 +461,10 @@ infernal reskins, and keep visits scene-sized.
   wickedness is not a posting to be read: the PC does the thing
   because they want to, and that is now a real subsystem -- `case`
   and `crime` (the next section). Dark gold runs half again the honest
-  rate; every XP a dark job pays is BAD KARMA, and the meter prints
-  itself (the tally, `karma`). What the crime layer does not cover,
+  rate; every XP a dark job pays is SIN, and the meter prints
+  itself (the tally, `sin`). What the crime layer does not cover,
   improvise as before: narration plus `forge --dark` for anything that
-  has to be fought and `karma bad N` for what the scene earned.
+  has to be fought and `sin dark N` for what the scene earned.
 - **The register is CARTOON VILLAINY, never grimdark.** Discworld and
   Conan, not a war-crimes ledger: evil is theft, arson, extortion,
   hubris, kicked puppies, and fighting everyone who rightly objects.
@@ -482,13 +489,13 @@ infernal reskins, and keep visits scene-sized.
   nights: the Watch, then the bounty guild, the crown's huntsmen, heroes
   of the realm), play the scene straight from the printed leader line --
   they announce, they mean it, retreat is the peaceful option. Cutting
-  them down pays XP that is itself bad karma: say what that means once,
+  them down pays XP that is itself sin: say what that means once,
   then let the spiral be the player's own bed.
 - **A first same-level loss to a posse is not the end (2026-07-26).** Law
   and hell use the same one-mercy-per-PC-level allowance as ordinary
   defeat; a second loss at that level is real. When mercy is available,
   the script prints it and reshapes the save. LEFT FOR DEAD (the
-  law): the party and purse are forfeit and ALL bad karma clears; the
+  law): the party and purse are forfeit and ALL sin clears; the
   heroes think him dead, or he ran in shame -- and everyone in hell is
   laughing at him. THE LESSON (hell): the purse is the fine, the
   refused job is withdrawn, the karma stays. Narrate the ditch, the
@@ -497,19 +504,21 @@ infernal reskins, and keep visits scene-sized.
   to tell (dead, jailed, scattered); mechanically they are gone.
 - **The posse leader is a person** -- generated face, name in the log.
   If the party flees (or the leader's row survives), remember the name:
-  `karma` keeps the last leader, and a returning face beats a fresh one
+  `sin` keeps the last leader, and a returning face beats a fresh one
   every time (formal nemesis persistence is plan.md; until then it is
   your memory and a reskin).
-- **Off-script sins and penance are `karma bad N` / `karma good N`**:
+- **Off-script sins and penance are `sin dark N` / `sin penance N`**:
   the improvised puppy-kick, the fenced heirloom, the coin pressed on
   the beggar. Petty ~15, serious ~50, an outrage ~100+ (one heat step
-  is 100 x party level). Quest work buckets itself -- these commands
+  is 100 x party level). Give a REASON on the line -- a named scene
+  lands a day-stamped entry in `ui/history.txt`, and a bare number
+  does not. Quest work and crime bucket themselves -- these commands
   are only for what you and the player improvise. Hell also
   occasionally wants FREEFORM wickedness ("do something really mean;
   be creative -- you will be graded on body count, not creativity"):
   run it as narration plus `forge --dark` for any fight it needs and
-  `karma bad N` for the deed itself.
-- **Redemption is mechanical**: honest quests burn bad karma 1:1. A
+  `sin dark N` for the deed itself.
+- **Redemption is mechanical**: honest quests burn sin 1:1. A
   villain lying low doing good works IS the game working -- narrate the
   Watch sergeant's suspicious squint slowly softening. (Hell notices
   too -- for now only as flavor; hell's own audit of a too-virtuous
@@ -567,6 +576,35 @@ against it -- and rules.md's Crime add-on has the numbers.
 - **A lost fight pays nothing, and neither does a retreat.** Say it
   plainly in the aftermath: the protection held, the take is still in
   the vault. Do not soften it with a consolation purse.
+- **`crimes` is the price sheet, `case` is the scope.** `crimes` prints
+  the whole local catalogue with what each band is worth -- hand it over
+  when the player asks "what is there to do here"; it is a menu, not a
+  board, and it commits to nothing. `case KEY` is still what reads the
+  actual mark before a job.
+
+## The record -- ui/history.txt (2026-08-04)
+
+The campaign's memory page, rewritten on every save and committed by
+`sheet` like the party and map pages. Four sections: QUESTS DONE (one
+day-stamped line per job with its epilogue), REMARKABLE (the war's
+waves, conquests, defeats survived, maimings, hell's write-offs, named
+kills), THE TALLY OF SIN (per crime category, plus the meter and the
+lifetime ledgers), and SUGGESTIONS.
+
+- **It writes itself.** Every entry above is booked by the code at the
+  moment it happens. Your only hand on it is `sin dark N REASON` -- a
+  NAMED off-script scene lands a line, a bare number does not -- and
+  editing `save.json`'s `history` list directly, which is the usual
+  override door.
+- **Use it as continuity, not as recap.** A playthrough spans days of
+  real time; before a scene that leans on the past (a mark who
+  remembers, a widow of a named kill, a town that saw the party's last
+  visit), read the page rather than the scrollback. Do NOT read it back
+  to the player as a summary -- it is a page they can open.
+- **Named kills are casting, not bookkeeping.** Anyone the record names
+  was somebody the fiction cast: a posse leader, a garrison's defender,
+  a quest's boss. Their families, crews and debts are the cheapest
+  hooks the game gives you.
 
 ## Conquest -- taking and holding settlements (2026-07-27)
 
@@ -1268,7 +1306,7 @@ bigger than the fights WITHOUT pages of narration:
   with the round trip's road days added on top, and the hand-off is banded
   the same way -- so a delivery is not a thing to sit on.
 - **The pact & karma in numbers (2026-07-19; the pinned ladder and the
-  one-visit write-off 2026-08-04):** dark XP = bad karma; heat = bad
+  one-visit write-off 2026-08-04):** dark XP = sin; heat = bad
   karma // (100 x party level), capped 3; the law's posses arrive at
   party level + heat (cooldown 6d, chance 0.6, at arrivals and
   nights). Assignments: pinned to the PC's ODD LEVELS (1, 3, 5 ... 19 --
@@ -1284,7 +1322,7 @@ bigger than the fights WITHOUT pages of narration:
   x0.6 then x0, but only done, written off, or bribed ends it.
   `bribe` = 30g x level for 10 quiet days and a fresh Past Due clock.
   Deeds: PC 2d6+stat vs DC (usually 10-11); a
-  botch adds +15 bad karma and starts the fight. `settle` takes a
+  botch adds +15 sin and starts the fight. `settle` takes a
   twist's terms at x0.5 of the site lump. Losing to any posse is the
   special mercy (left for dead / the lesson) when the PC has not spent
   this level's one reprieve. A second same-level defeat is GAME OVER.
@@ -1298,7 +1336,7 @@ bigger than the fights WITHOUT pages of narration:
   the bands that travel. The lump = 50 x mark level x the category's
   multiplier (half an at-level quest), coin = 20 x mark level x the
   same, goods fenced at x0.5; petty is flat (10-15 sin, 1-5g) and never
-  scales. Deed DCs sit 9-11; a botch adds +15 bad karma and starts the
+  scales. Deed DCs sit 9-11; a botch adds +15 sin and starts the
   fight, and winning it still pays. A category repeated inside 10 days
   pays x1 / x1 / x0.5 / x0.25 of its SIN and XP (gold never
   depreciates), and a first-ever category pays x1.5. A single sin gain

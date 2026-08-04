@@ -1237,3 +1237,56 @@ counter and the +1-per-visit escalation die with the chain. The law
 eased to the same budget: PUNISH_COOLDOWN_DAYS 2 -> 6, ~0.8
 posses/level at sustained max heat. plan.md's THE DARK REWORK section
 updated in place (decisions 3 and 9, "The punishment budget").
+
+## 2026-08-04 (session C) — The surface: the record, the sheet, the rename
+
+The dark rework's third and last slice, built from plan.md's spec. No
+new mechanics: session C is where the two shipped layers get a face.
+
+**The record.** `ui/history.txt` joins party.txt and map.txt as a
+rewritten-every-save, committed-by-`sheet` page. It cashes the parked
+"quest history readout" and reframes it: not a memoir, a CONTINUITY
+CRIB. A playthrough spans days of real time, and the chat scrollback is
+not a record — before a scene that leans on the past, the DM reads the
+page. Four sections (jobs done, the remarkable, the tally of sin, the
+suggestions), and every entry is booked by the code at the moment it
+happens; the DM's only hand on it is a NAMED `sin dark N REASON` and
+editing the save.
+
+**Three build decisions worth keeping.** (1) The tally's "last day"
+could not be read off the monotony window: those stamps prune
+themselves as they are read, which is exactly what makes monotony
+temporary, so the record keeps its own `last`. The general shape —
+*hell's boredom forgets, the record does not* — is the right split and
+should survive any retune of the window. (2) Maimings are SCANNED at
+save rather than hooked into `_attack`; the duplicate guard in
+`remember` is what makes that safe, and it costs nothing. (3) Named
+kills are detected by SHAPE (a foe whose name has no trailing catalog
+number is somebody the fiction cast) rather than by a new Entity flag —
+no serialization change, and it picks up every naming site for free:
+quest bosses, conquest defenders, posse leaders, the war's lieutenants.
+
+**The `crimes` sheet** is the `prices` pattern pointed at the dark
+side. The distinction it draws is the useful one: `case` reads TODAY'S
+rolled mark exactly (level, take, roster), `crimes` reads the BAND — it
+answers "what is worth doing here" without twenty-seven casings. It
+prints each category's authored what-stands-in-the-way line rather than
+its guard pool, because the roster is built at the mark's level anyway
+and a pool dump says nothing.
+
+**The rename** ran through the save keys (`bad`/`bad_total`/
+`good_total` → `sin`/`sin_total`/`penance_total`), every display
+string, and the command (`karma` → `sin`, no alias). Heat kept its
+name: it is the law's meter, not hell's. The sub-verbs became `sin dark
+N` / `sin penance N` — the rename's own vocabulary rather than the old
+bad/good pair. Applying the no-backwards-compatibility rule to the
+files this touched also took out `session.ensure_weapon_layer`, the
+last named lazy-upgrade branch in the codebase.
+
+**What this closes.** THE DARK REWORK is complete. Nothing in it is
+open, and the plan.md section stays only as the built spec. The next
+dark-side questions are the ones the rework explicitly parked (hell
+ranks and karma-gated powers, the geographic wanted level, standing
+enterprises, nemesis persistence) plus the two things the crime layer
+asked to judge from PLAY: the heat pump and the flat deed DC. All of
+that wants a playthrough before it wants a design session.

@@ -1137,7 +1137,7 @@ On an eligible defeat (nobody left standing, or the PC truly slain):
   wipe / PC death and GAME OVER.
 
 Law and hell posses are the authored exception to the roster consequence —
-LAW also clears bad karma; HELL withdraws the refused task — but they spend
+LAW also clears sin; HELL withdraws the refused task — but they spend
 this same once-per-level allowance. Their former unlimited mercy is gone.
 
 Ferocity also speaks before defeat. Once every living foe is below half HP or
@@ -3268,7 +3268,7 @@ roadmap, not rules.
 ## Design goals
 
 **1. Zero heat is the old game, exactly.** A party that never takes dark
-work never accrues bad karma, never sees heat, never meets a posse — no
+work never accrues sin, never sees heat, never meets a posse — no
 existing mechanic, bench, or sim moves. The whole layer is opt-in at the
 moment of taking a job, and it lives entirely in the play surface
 (`karma.py` + session wiring; worldgen and the engine are untouched).
@@ -3277,14 +3277,14 @@ moment of taking a job, and it lives entirely in the play surface
 problem it answers: "part of the game would be trying to gain power to
 do quests above your level." Instead of reading a board for a bigger
 number, the player *runs hot*: dark work pays a gold premium and bad
-karma; bad karma sets HEAT; heat sends retribution **at party level +
+karma; sin sets HEAT; heat sends retribution **at party level +
 heat**. Difficulty selection by consequence.
 
 **3. The ratchet.** Punishment fights pay XP like any road fight — and
-ALL of it is bad karma (cutting down the Watch is itself a crime). A
+ALL of it is sin (cutting down the Watch is itself a crime). A
 villain career escalates on its own: sin → posse → bigger sin → bigger
 posse. That self-driving spiral IS the villain campaign's level curve.
-The brakes are equally mechanical: **honest work burns bad karma 1:1**
+The brakes are equally mechanical: **honest work burns sin 1:1**
 (penance), and heat is measured against the party's level, so a grown
 legend needs proportionally more wickedness to stay hot.
 
@@ -3304,11 +3304,15 @@ stays flat and concrete.
   sites are neutral — farming wolves is not penance.
 - **Bucketing.** Every QUOTED XP award from aligned work is recorded
   (`session.record_karma` → `karma.record_karma`): dark XP adds to
-  **bad karma** (current) and **lifetime wickedness**; good XP adds to
-  **lifetime penance** and burns current bad karma 1:1. Quoted amounts,
-  not per-head shares — karma tracks the deed, not the head count. The
-  meter line prints with the award, in the tally, and in `status`.
-- **Heat** = `bad_karma // (KARMA_HEAT_STEP × party level)`, capped at
+  **current sin** (`sin`) and **lifetime sin** (`sin_total`); good XP
+  adds to **lifetime penance** (`penance_total`) and burns current sin
+  1:1. Quoted amounts, not per-head shares — the ledger tracks the deed,
+  not the head count. The meter line prints with the award, in the
+  tally, and in `status`. The words are the save keys: bad karma was
+  renamed **SIN** throughout on 2026-08-04 (session C), keys included,
+  with no aliases. Heat kept its name — it is the law's meter, not
+  hell's.
+- **Heat** = `sin // (KARMA_HEAT_STEP × party level)`, capped at
   `HEAT_CAP` (3). KARMA_HEAT_STEP is 100, and a level-L quest quotes
   ~100·L XP — so **one at-level dark quest ≈ one heat step**, and one
   honest at-level quest ≈ one step of penance, at any level. Derived,
@@ -3344,9 +3348,10 @@ stays flat and concrete.
   power" spine**: the premium is the temptation, and the XP-as-liability
   is the price tag. (The full greed economy — luxury display as a karma
   engine — is roadmap.)
-- **DM surface**: `karma` (the meter + lifetime ledgers), `karma bad N` /
-  `karma good N` (off-script sins/penance — guideline: petty ~15,
-  serious ~50, outrage ~100+), `award --dark/--good`, `forge --dark`.
+- **DM surface**: `sin` (the meter + lifetime ledgers), `sin dark N` /
+  `sin penance N` (off-script sins/penance — guideline: petty ~15,
+  serious ~50, outrage ~100+; a NAMED reason also lands one line in
+  `ui/history.txt`), `award --dark/--good`, `forge --dark`.
   State is one plain dict in the save (`karma`).
 
 ## The Hell Pact (2026-07-19, second slice — the dark-quests session)
@@ -3441,7 +3446,7 @@ hell is a fully supported campaign — the mechanics below only price it.
   defeat at each character level, `apply_mercy` replaces GAME OVER: the PC
   alone survives at 1 HP; the party and purse are forfeit. A second loss at
   that level is real.
-  Against the **law**, all bad karma clears too — the heroes think him
+  Against the **law**, all sin clears too — the heroes think him
   dead (or he ran, in shame; everyone in hell is laughing), and the
   ledger is considered settled: heat 0, a fresh start in one shoe.
   Against **hell**, the purse is the fine, the refused assignment is
@@ -3461,7 +3466,7 @@ optional authored fields on a template, riding the site dicts through
   DEED block). A make closes the site CLEAN — full lump, no fight, and
   (a happy accident kept on purpose) none of the rooms' encounter XP,
   so stealth runs karma-light. A miss is the complication: the fight
-  is on, and witnesses add `DEED_FAIL_KARMA` (15) flat bad karma. DCs
+  is on, and witnesses add `DEED_FAIL_KARMA` (15) flat sin. DCs
   sit at 10-11 against typical stats 3-5: *the dex check will probably
   fail, and lead to a fight* is the design sentence.
 - **Twist** (last site): `{text, accept, pay}`. Arriving prints THE
@@ -3511,7 +3516,7 @@ add-on below) but still buys no powers or ranks.
 **Coming in the rework** (plan.md, THE DARK REWORK — session C, not
 built yet): the **history page** (`ui/history.txt`) with the tally of
 sin and the suggestion feed, the `crimes` readout, and the **rename** of
-bad karma to SIN throughout, save keys included. *(Session B — crime as
+sin to SIN throughout, save keys included. *(Session B — crime as
 free actions — SHIPPED 2026-08-04; the Crime add-on below is its doc of
 record.)*
 
@@ -3701,13 +3706,84 @@ Two things to judge from play:
   but if the make proves too cheap the lever is a DC that climbs with the
   mark's level, or a lump the clean take only partly pays.
 
-## Explicitly not in this slice
+## The `crimes` sheet (2026-08-04, session C)
 
-The `crimes` readout page, the tally of sin and the history page
-(`ui/history.txt`) — all session C, which also does the SIN rename. Crime
-buys no powers or ranks; standing dark enterprises are still parked (the
-powder network earns as a category, not as a holding); and no sim or
-bench sees crime, by the karma layer's doctrine.
+The dark side's `prices` page, and the player's whole crime surface in
+one screen. It reads the **band**, not one rolled mark: every category
+available where the party stands, grouped by shape, each row quoting
+what its mark band is worth (gold, sin/XP with the current multiplier
+already applied), the check it asks for, and its authored
+what-stands-in-the-way line. Then the party's tally of sin, the meter,
+and hell's current suggestions.
+
+`case KEY` stays the exact read (today's rolled mark, its level and its
+roster); `crimes` answers "what is worth doing here" without
+twenty-seven casings. A pure readout — no save touched, every number off
+`crime.py`'s live knobs. Petty rows quote `PETTY_GOLD` / `PETTY_SIN`
+straight, because petty is flat by construction; everything else is a
+clean function of the mark's level, so the band's ends ARE the span.
+
+## Explicitly not in this layer
+
+Crime buys no powers or ranks; standing dark enterprises are still
+parked (the powder network earns as a category, not as a holding); and
+no sim or bench sees crime, by the karma layer's doctrine.
+
+---
+
+# The Campaign Record — Add-on (2026-08-04, THE DARK REWORK's session C)
+
+**`ui/history.txt`** — the fourth rewritten UI page, beside `party.txt`
+and `map.txt` and committed by `sheet` with them. The party sheet is the
+present and the map is the world; this is the MEMORY. It exists because a
+playthrough spans days of real time and the chat scrollback is not a
+record: what the party did, what it is known for, and what it owes are
+continuity the DM has to be able to look up.
+
+## The page
+
+Four sections, always all four (an empty one says so rather than
+vanishing), 40-column wrapped like every other page:
+
+- **QUESTS DONE** — one day-stamped line per job, carrying the epilogue
+  that closed it. Dark work is tagged `[DARK]`. A job LOST to its window
+  is recorded here too, with the giver's failure line: the section is
+  the campaign's job record, not a trophy case.
+- **REMARKABLE** — the war's waves broken (and the scripted fall, and
+  the war's end), conquests taken and holdings lost, hell's assignments
+  served and its write-offs, defeats survived (the level's one mercy,
+  LEFT FOR DEAD, THE LESSON), maimings, named kills, and the DM's own
+  named off-script sins.
+- **THE TALLY OF SIN** — per crime category: the count and the last day
+  it was done, busiest first; then the total, the meter line, and the
+  lifetime sin / penance ledgers.
+- **SUGGESTIONS** — up to `SUGGESTIONS_SHOWN` (3) unlocked-but-never-
+  committed categories, in an order seeded off the world and the DAY.
+  Catalogue order would advertise the same two petty crimes forever;
+  seeding it means the feed rotates without storing anything.
+
+## The state
+
+`history` in the save: a list of day-stamped records, oldest first, each
+`{day, kind, line}` plus an optional `note` (the epilogue). Two kinds —
+`quest` and `remarkable` — because the page has two narrative sections.
+`session.remember` is the only writer. It drops an exact duplicate of the
+most recent record of its kind on the same day, which is what lets the
+maiming SCAN be safe: a maiming lands deep inside `_attack`, so rather
+than hooking the melee, `save` re-scans the party's permanent wounds
+every time and the guard absorbs the repeats. Records are trimmed **per
+kind** at `HISTORY_CAP` (60): a career of jobs must never push the
+write-offs and the maimings off the page.
+
+**Named kills** are detected by shape, not by a flag: ordinary rows are
+numbered off the catalog ("Cutthroat 2"), so a dead foe whose name has no
+trailing number is somebody the fiction cast — a quest boss, a conquest
+defender, a posse leader, one of the war's lieutenants.
+
+The **tally's `last` day** is stored separately from the monotony
+window's day stamps (`crime.stamp`). The window prunes itself as it is
+read — that is what makes monotony temporary — so reading the last day
+off it would forget a career-defining crime ten days after it happened.
 
 ---
 
@@ -3739,7 +3815,7 @@ knobs hand-set and table-tuned.
   garrison is an army resource: one integer per holding, bought with gold.
   This is gold's first standing job before L15.
 - **Conquest is dark work, priced by the machinery that exists.** Its XP
-  is bad karma, and the flag itself keeps a HEAT FLOOR up — holding land
+  is sin, and the flag itself keeps a HEAT FLOOR up — holding land
   is standing wickedness. The strategy opponent is the heat layer the
   game already tuned, not a new AI.
 
@@ -3759,7 +3835,7 @@ war wave (`take QID`, at the settlement).
 
 Winning the last room flips the tag: `*** NAME IS YOURS ***`. The quest's
 gold is the keep's strongbox (10 days of the settlement's tribute, with
-the dark premium on the turn-in); its XP is all bad karma. An
+the dark premium on the turn-in); its XP is all sin. An
 aggressor-occupied settlement cannot be conquered — the yoke holds it,
 and the war decides.
 
@@ -3782,8 +3858,8 @@ tribute meter, the raid clock.
   S/2 levies) and takes the holding when G < S. The party's own fights
   remain the posse machinery's job.
 - **The heat floor**: each holding raises effective heat by 1 (capped at
-  HEAT_CAP). Zero bad karma with one holding still means the law calls at
-  party level +1 — and killing the posse is itself bad karma, so the flag
+  HEAT_CAP). Zero sin with one holding still means the law calls at
+  party level +1 — and killing the posse is itself sin, so the flag
   feeds the ratchet.
 - **The board goes dark.** A held settlement posts no honest work for
   its conqueror; crime and the pact serve instead. The tavern, the shops,
@@ -3937,10 +4013,8 @@ generated weapon re-prices to exactly its tier's sp.
   `pays a masterwork rapier`, and the turn-in banks it for `claim HERO`.
   Rolled on a per-quest derived rng: the posting stream never moves.
 
-## Save compatibility
+## Serialization
 
-Everything serializes as before: catalog weapons by name, instances whole.
-Old saves load clean — missing weapon fields default to inert, missing
-quirk counters to zero, and a pre-armory world rolls its armory and smiths
-lazily on a fixed rng the first time the layer is asked for
-(`session.ensure_weapon_layer`).
+Catalog weapons serialize by name, generated instances whole. There is no
+old-save path and no lazy backfill: worldgen rolls the armory and the
+smiths for every world (develop.md, "No backwards compatibility").

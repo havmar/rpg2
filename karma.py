@@ -3,8 +3,8 @@
 The design (rules.md, the Karma & Heat add-on, has the full spine): the
 game learns to be PLAYED WICKEDLY without forking into a second ruleset.
 XP is bucketed by the ALIGNMENT of the work that paid it -- dark work
-accrues BAD KARMA, honest work burns it 1:1 (penance) -- and the party's
-current bad karma sets its HEAT: how many levels above the party the
+accrues SIN, honest work burns it 1:1 (penance) -- and the party's
+current sin sets its HEAT: how many levels above the party the
 world's retribution arrives. Zero heat is the old game exactly; the whole
 layer is inert until the player takes dark work.
 
@@ -49,12 +49,12 @@ Mechanically:
   fighting on refuses it). The machinery lives in quests.build_quest
   and session.py; the templates below author the content.
 - **Left for dead.** On the first eligible defeat at each PC level, a lost
-  posse fight costs the party, the purse, and (against the law) all bad karma
+  posse fight costs the party, the purse, and (against the law) all sin
   instead of the PC's life (`session.apply_mercy`). Slice 4 made that the
   shared non-cumulative mercy allowance; a second same-level loss is real.
 
 - **Heat is the throttle.** One at-level dark quest is ~one heat step
-  (KARMA_HEAT_STEP * level bad karma per step; a level-L quest quotes
+  (KARMA_HEAT_STEP * level sin per step; a level-L quest quotes
   ~100L XP). The player pumps difficulty by sinning and bleeds it off by
   honest work -- difficulty selection by consequence, not by board-reading.
 - **The news cycle (2026-08-04).** A SINGLE sin gain at or above the heat
@@ -71,7 +71,7 @@ Mechanically:
   party level + heat: the Watch first, then bounty hunters, the crown's
   huntsmen, finally heroes of the realm -- all budget-honest ladder
   rosters wearing lawful display names, led by a generated face. Cutting
-  them down pays XP like any road fight, and ALL of it is bad karma: the
+  them down pays XP like any road fight, and ALL of it is sin: the
   ratchet is the point.
 - **Dark quests are the same machinery flagged.** The occult templates
   below ride build_quest/attach_giver unchanged; they are rolled LAZILY
@@ -85,7 +85,7 @@ Mechanically:
   never grim).
 
 The sims never import this file. State is one plain dict in the save
-(`karma`): current bad karma, the lifetime ledgers, the punishment day
+(`karma`): current sin, the lifetime ledgers, the punishment day
 stamp, and the last posse leader's name (the future nemesis seed).
 
 Run:  python karma.py [--seed N]   # sample assignments and posses
@@ -107,7 +107,7 @@ from places import land_race
 # Constants (the villain layer's knobs)
 # --------------------------------------------------------------------------- #
 
-KARMA_HEAT_STEP = 100   # bad karma per heat step is this * the PC's level:
+KARMA_HEAT_STEP = 100   # sin per heat step is this * the PC's level:
                         # a level-L quest quotes ~60(L+1)-130(L+1) XP
                         # (rpg.quest_xp_total, by encounter count), so ONE
                         # at-level dark quest is roughly one heat step, and
@@ -173,7 +173,7 @@ BRIBE_GOLD_PER_LEVEL = 30   # `bribe`: this x party level buys...
 BRIBE_DAYS = 10             # ...this many days of no assignments and no
                             # enforcement (the task clock restarts after)
 DEED_FAIL_KARMA = 15    # witnesses are hard to avoid: a BOTCHED deed is
-                        # talked about -- flat bad karma on top of the fight
+                        # talked about -- flat sin on top of the fight
 
 # How WORD FROM BELOW arrives (rolled flavor for the assignment scene).
 HELL_MAIL = (
@@ -192,11 +192,12 @@ HELL_MAIL = (
 
 
 def new_karma() -> dict:
-    return {"bad": 0,           # current, burnable -- drives heat
-            "bad_total": 0,     # lifetime wickedness (never decreases --
-                                # the player's badness level, for titles
-                                # and the DM's memory)
-            "good_total": 0,    # lifetime penance (record only)
+    return {"sin": 0,           # current, burnable -- drives heat
+            "sin_total": 0,     # LIFETIME SIN (never decreases -- the
+                                # player's badness level: it buys the
+                                # crime layer's suggestion feed, and the
+                                # DM's memory reads it for titles)
+            "penance_total": 0,    # lifetime penance (record only)
             "hot_until": 0,     # the news cycle: heat floors at 1 until
                                 # this day, penance or no (NEWS_DAYS)
             "last_punish_day": -99,
@@ -238,7 +239,7 @@ def new_pact(rng: random.Random | None = None) -> dict:
 
 
 def heat_step(pc_level: int) -> int:
-    """The bad karma one heat step costs at this level -- and, since
+    """The sin one heat step costs at this level -- and, since
     2026-08-04, the size a SINGLE sin has to reach to make the news."""
     return KARMA_HEAT_STEP * max(1, pc_level)
 
@@ -250,7 +251,7 @@ def in_the_news(karma: dict, day: int | None) -> bool:
 
 def heat(karma: dict, pc_level: int, day: int | None = None) -> int:
     """Current heat: how many levels above the party retribution arrives.
-    Derived, never stored -- bad karma over KARMA_HEAT_STEP * level, so
+    Derived, never stored -- sin over KARMA_HEAT_STEP * level, so
     the same sins cool as the party's legend grows (the Watch that hunts
     a level-2 puppy-kicker has better sense at level 10).
 
@@ -258,7 +259,7 @@ def heat(karma: dict, pc_level: int, day: int | None = None) -> int:
     cannot fall below 1 however fast the penance is bought. `day` left
     None reads the meter without the calendar (displays that have no day
     to hand) -- the floor simply does not apply."""
-    h = min(HEAT_CAP, karma["bad"] // heat_step(pc_level))
+    h = min(HEAT_CAP, karma["sin"] // heat_step(pc_level))
     if in_the_news(karma, day):
         return max(1, h)
     return h
@@ -267,7 +268,7 @@ def heat(karma: dict, pc_level: int, day: int | None = None) -> int:
 def record_karma(karma: dict, xp: int, align: str, log: list,
                  pc_level: int, day: int | None = None) -> None:
     """Bucket a QUOTED XP award by the work's alignment: dark work accrues
-    bad karma, good work burns it 1:1 (penance -- 'the basic quests delete
+    sin, good work burns it 1:1 (penance -- 'the basic quests delete
     the karma'). Neutral work (the wilds, the hunt) touches nothing.
     Appends the bookkeeping line so the player always sees the meter.
 
@@ -276,13 +277,13 @@ def record_karma(karma: dict, xp: int, align: str, log: list,
     stops. `day` is what makes that possible -- omit it (displays, the
     odd off-calendar call) and the gain is booked without the stamp."""
     if align == "dark" and xp > 0:
-        karma["bad"] += xp
-        karma["bad_total"] += xp
+        karma["sin"] += xp
+        karma["sin_total"] += xp
         news = day is not None and xp >= heat_step(pc_level)
         if news:
             karma["hot_until"] = max(karma.get("hot_until", 0),
                                      day + NEWS_DAYS)
-        log.append(f"    (dark work: +{xp} bad karma -- "
+        log.append(f"    (dark work: +{xp} sin -- "
                    f"{karma_line(karma, pc_level, day)})")
         if news:
             log.append(f"    (that one is NEWS -- the town talks for "
@@ -290,27 +291,27 @@ def record_karma(karma: dict, xp: int, align: str, log: list,
                        f"through day {karma['hot_until'] - 1}, penance "
                        f"or no)")
     elif align == "good" and xp > 0:
-        karma["good_total"] += xp
-        if karma["bad"] > 0:
-            burned = min(karma["bad"], xp)
-            karma["bad"] -= burned
-            log.append(f"    (penance: -{burned} bad karma -- "
+        karma["penance_total"] += xp
+        if karma["sin"] > 0:
+            burned = min(karma["sin"], xp)
+            karma["sin"] -= burned
+            log.append(f"    (penance: -{burned} sin -- "
                        f"{karma_line(karma, pc_level, day)})")
 
 
 def karma_line(karma: dict, pc_level: int, day: int | None = None) -> str:
     """The one-line meter for tallies and status readouts -- always
-    self-contained (current bad karma + what it means)."""
+    self-contained (current sin + what it means)."""
     h = heat(karma, pc_level, day)
     step = heat_step(pc_level)
-    if in_the_news(karma, day) and karma["bad"] // step < h:
-        return (f"bad karma {karma['bad']}; HEAT {h} -- IN THE NEWS "
+    if in_the_news(karma, day) and karma["sin"] // step < h:
+        return (f"sin {karma['sin']}; HEAT {h} -- IN THE NEWS "
                 f"through day {karma['hot_until'] - 1}")
     if h >= 1:
-        return (f"bad karma {karma['bad']}; HEAT {h} -- retribution "
+        return (f"sin {karma['sin']}; HEAT {h} -- retribution "
                 f"hunts {h} level(s) above the party")
-    if karma["bad"] > 0:
-        return (f"bad karma {karma['bad']}/{step}; heat 0 -- lying low")
+    if karma["sin"] > 0:
+        return (f"sin {karma['sin']}/{step}; heat 0 -- lying low")
     return "clean; heat 0"
 
 
@@ -338,7 +339,7 @@ def karma_line(karma: dict, pc_level: int, day: int | None = None) -> str:
 #           -- attached to the quest's FIRST site: before its first fight,
 #           the PC rolls 2d6 + stat vs dc. A make does the site CLEAN
 #           (site closed, full lump, no fight); a miss botches it into
-#           the fight, with witnesses (+DEED_FAIL_KARMA bad karma). DCs
+#           the fight, with witnesses (+DEED_FAIL_KARMA sin). DCs
 #           sit high on purpose: "the dex check will probably fail, and
 #           lead to a fight" is the design sentence.
 #   twist = dict(text=..., accept=..., pay=0.5)
