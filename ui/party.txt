@@ -1,14 +1,14 @@
 RPG2 PARTY SHEET -- day 14, at Firascir
   > Tomburgh
-purse: 27g
+purse: 32g
 party: 3/3 companion slot(s) filled (CHA
   6)
 
 (YOU) Snagg -- orc m, age 39
-  L4  training 1  XP 165/400  points 1
+  L4  training 1  XP 203/400  points 1
   DEX 2  STR 3  MIND 3  CHA 6
-  HP 5/6 of 12  STA 6/6  Power 1/3
-  rapier, prof 1 | healingx2, staminax3
+  HP 6/6 of 12  STA 4/6  Power 1/3
+  rapier, prof 1 | healingx1, staminax3
   abilities: arrow_parry, first_blood
   moves: thrust
   alchemy 1
@@ -22,24 +22,25 @@ party: 3/3 companion slot(s) filled (CHA
   wound load 10 -> HP ceiling 6/12
 
 (companion) Dagna -- dwarf f, age 17
-  L3  training 1  XP 176/300  points 1
-  DEX 3  STR 4  MIND 6  CHA 3
-  HP 4/8 of 11  STA 9/9  Power 6/7
+  L3  training 1  XP 214/300  points 1
+  DEX 2  STR 4  MIND 6  CHA 3
+  HP 5/5 of 11  STA 8/9  Power 3/7
   katana | healingx1, staminax2
   spells: fire 1, healing 1
   pools bought: hp +1, power +1, sta +1
-  satisfaction 6/10
+  satisfaction 5/10
   quirk: has a child (with them:
     Mardred, age 9); speech: formal;
     looks: thin
   - a torn side, badly closed (sev 3)
-  wound load 3 -> HP ceiling 8/11
+  - a broken leg, set crooked (sev 3)
+  wound load 6 -> HP ceiling 5/11
 
 (companion) Perrin -- human m, age 31
-  L3  training 1  XP 176/300  points 0
+  L3  training 1  XP 214/300  points 0
   DEX 2  STR 6  MIND 3  CHA 4
-  HP 11/11 of 12  STA 9/9  Power 5/5
-  flail, prof 1 | healingx1, staminax2
+  HP 11/11 of 12  STA 7/9  Power 5/5
+  flail, prof 1 | staminax2
   abilities: bulwark
   pools bought: hp +1, power +1, sta +1
   satisfaction 9/10
@@ -49,10 +50,10 @@ party: 3/3 companion slot(s) filled (CHA
   wound load 1 -> HP ceiling 11/12
 
 (companion) Sharn -- orc f, age 43
-  L4  training 2  XP 176/400  points 0
+  L4  training 2  XP 214/400  points 0
   DEX 5  STR 6  MIND 5  CHA 4
-  HP 11/10  STA 9/9  Power 4/4
-  zweihander | healingx1, staminax2
+  HP 10/10  STA 7/9  Power 4/4
+  zweihander | staminax2
   moves: pommel
   pools bought: hp +1, power +1, sta +1
   satisfaction 8/10
@@ -61,7 +62,7 @@ party: 3/3 companion slot(s) filled (CHA
 
 active quest [q78] Corrupt the Holy
   Sword is COMPLETE
-karma: bad karma 677; HEAT 1 --
+karma: bad karma 754; HEAT 1 --
   retribution hunts 1 level(s) above the
   party
 THE PACT: no current assignment --
@@ -71,5 +72,3 @@ THE PACT: no current assignment --
     curriculum ledger; see `task`)
 THE WAR: [w1] L2 The Dead Rise -- raised
   at Ulus-Gal.
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
