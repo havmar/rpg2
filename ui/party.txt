@@ -6,10 +6,10 @@ party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Riardon -- elf m, age 34
-  L2  training 0  XP 41/200  points 3
+  L2  training 1  XP 41/200  points 1
   DEX 3  STR 5  MIND 5  CHA 4
   HP 5/8 of 9  STA 7/7  Power 6/6
-  club | healingx1
+  shortsword | healingx1
   abilities: bulwark
   interest: animals; speech: formal;
     dress: professional
@@ -20,7 +20,7 @@ party: 1/1 companion slot(s) filled (CHA
   L2  training 1  XP 41/200  points 0
   DEX 6  STR 4  MIND 6  CHA 4
   HP 6/8  STA 5/5  Power 2/6
-  club | no kit
+  spear | no kit
   abilities: first_blood
   moves: pommel
   satisfaction 8/10
