@@ -1,75 +1,48 @@
 === Corrupt the Holy Sword ===
-the temple road (L4),
-room 1/2: outer watch
-2x Priest -- dagger
+the temple road (L4), room 2/2: campfire
+Priest 15 -- dagger
 DEX 4  STR 2  STA 6  HP 10/10
 takes spoils, leaves the fallen,
 caster: ice 2; 8 Power
+Temple Guard Captain 16 -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
+takes spoils, leaves the fallen
 Round 1:
-Snagg uses First Blood!
-Priest 13 takes 1 dmg.
-The lines close.
-Dagna's fire bolt overwhelms Priest 13,
-deals 6 dmg!!! [6 Power left]
-Priest 13's ice bolt is deflected.
-Priest 14's ice bolt overwhelms Snagg,
+The lines meet -- steel range.
+!! Dagna's fire bolt MISFIRES
+(-1 HP to the caster)
+Priest 15's ice bolt overwhelms Snagg,
 deals 6 dmg!!! [7 Power left]
 Snagg is MAIMED: a withered arm.
 Snagg goes DOWN.
 Round 2:
-The lines meet -- steel range.
-Dagna's fire bolt overwhelms Priest 13,
-deals 6 dmg!!! [5 Power left]
-Priest 13 is SLAIN.
-Priest 13's ice bolt is warded off.
-Priest 14's ice bolt edges past Dagna,
-deals 1 dmg. [6 Power left]
-Dagna is rimed with frost.
+!! Dagna's fire bolt MISFIRES
+(-1 HP to the caster)
+Perrin (11/12)
+attacks Temple Guard Captain 16, parried.
+Sharn: Pommel Strike
+at Temple Guard Captain 16!
+Sharn and Temple Guard Captain 16:
+they circle.
+Priest 15's ice bolt is warded off.
+Temple Guard Captain 16
+outmaneuvers Sharn, deals 2 dmg!
+Sharn takes a wound:
+a shallow cut along the ribs.
 Round 3:
-Dagna's fire bolt
-outmaneuvers Priest 14, deals 6 dmg!!!
-[4 Power left]
-Perrin overwhelms Priest 14,
-deals 6 dmg!!! SLAIN.
-Priest 14's dying ice bolt
-outmaneuvers Perrin, deals 1 dmg.
-[5 Power left]
-Perrin is rimed with frost.
-The party catches its breath (+1 STA)
-Snagg +35 XP (encounter) [324/300]
-*** Snagg reaches level 4!
-(3 skill points unspent) ***
-Dagna +35 XP (encounter) [35/300]
-Perrin +35 XP (encounter) [35/300]
-Sharn +35 XP (encounter) [35/400]
-(dark work: +70 bad karma -- bad karma 395/400; heat 0 -- lying low)
-Left among the dead:
-2x dagger (+0 atk/-1 sev, 2g).
-Snagg drinks a healing potion: HP 5/12
-(0 left).
-Snagg drinks a healing potion: HP 6/12
-(0 left).
-The party shares out its potions:
-Snagg: 2 stamina; Dagna: 1 stamina;
-Perrin: 1 stamina; Sharn: 1 stamina.
-
--- the party --
-Snagg: Unhurt STA 6/6 Power 1/3
-  (hurt -2 to rolls)
-  - a withered arm [PERMANENT] (sev 3)
-  - a crippled hand [PERMANENT] (sev 3)
-  - badly beaten (sev 2)
-  - a cracked rib (dressed) (sev 1)
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 6/12 until they mend)
-  (stamina x2)
-Dagna: Scratched STA 7/9 Power 4/7
-  (stamina x1)
-Perrin: Scratched STA 9/9 Power 5/5
-  (stamina x1)
-Sharn: Unhurt STA 9/9 Power 4/4
-  (stamina x1)
-Purse 7g; day 12.
-Karma: bad karma 395/400; heat 0 -- lying low.
-Ahead: 1 fight(s) at the temple road; the turn-in pays 172g, 212 XP.
-  (due day 12 -- DUE TODAY; on time pay, x1)
+Dagna's fire bolt overwhelms Priest 15,
+deals 6 dmg!!! [1 Power left]
+Perrin (11/12)
+attacks Temple Guard Captain 16, parried.
+Sharn (8/10)
+outmaneuvers Temple Guard Captain 16,
+deals 6 dmg!!!
+!! Priest 15 is Winded.
+Priest 15's ice bolt overwhelms Dagna,
+deals 4 dmg!! [5 Power left]
+Dagna is rimed with frost.
+Dagna takes a wound:
+a deep gash across the back.
+Temple Guard Captain 16 (7/13)
+edges past Perrin, deals 1 dmg.
+== Dagna is badly cut up ==

@@ -1,6 +1,6 @@
 RPG2 MAP -- day 12
 the party is at Firascir > Grendon
-  Fields > the temple road > outer watch
+  Fields > the temple road > campfire
 (travel: 1 day within a land, 2 days to
   another)
 
