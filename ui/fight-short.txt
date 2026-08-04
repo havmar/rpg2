@@ -43,3 +43,34 @@ attacks Riardon, parried.
 Guard Captain 7 circles, crowded out.
 Guard Captain 8 circles, crowded out.
 == Riardon is badly cut up ==
+The party breaks for safety!
+Guard Captain 5 (12/13)
+outmaneuvers Riardon, deals 2 dmg!
+Riardon takes a wound:
+a torn side, badly closed.
+Guard Captain 6 overwhelms Riardon,
+but Bulwark blunts it: deals 2 dmg!
+Riardon goes DOWN.
+*** LEFT FOR DEAD --
+the victors take 35 g
+and find no worthy steel,
+then leave the party breathing. ***
+The beaten party rises at 1 HP.
+Its wounds remain.
+
+-- the party --
+Riardon: Failing STA 5/7 Power 2/6
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - badly beaten (sev 1)
+  (HP ceiling 5/9 until they mend)
+  (stamina x1)
+Simon: Reeling STA 4/5 Power 4/6
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  (HP ceiling 4/8 until they mend)
+  (healing x1, stamina x1)
+Purse 0g; day 4.
+Sin: sin 15/200; heat 0 -- lying low.

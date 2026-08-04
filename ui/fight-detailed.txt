@@ -47,3 +47,31 @@
     Guard Captain 8 circles, crowded out of the press.
     stamina: Riardon 5/7 | Guard Captain 5 4/7, Guard Captain 6 4/7, Guard Captain 7 6/7, Guard Captain 8 6/7
     == Riardon is badly cut up (HP 3/9) -- the fight hangs for a heartbeat. ==
+  The party breaks for safety!
+    Guard Captain 5 outmaneuvers Riardon -- a solid wound! [Riardon: 1/9 HP, -2 to rolls]
+        pressure: Guard Captain 5: 11 (2d6=5, +6 DEX) vs Riardon: 7 (2d6=6, +4 DEX, +1 training, -2 wounds, -2 fleeing)
+        severity: 5 = margin 4 +5 STR +1 longsword -5 soak -> grievous -> a hurried blow at a fleeing back: wound (-2 HP)
+    Riardon takes a wound: a torn side, badly closed (severity 3; HP ceiling 6/9)
+    Guard Captain 6 overwhelms Riardon -- a grievous injury... Riardon's Bulwark flares! Reduced to wound. [Riardon: 0/9 HP, -3 to rolls; 2 Power left]
+        pressure: Guard Captain 6: 16 (2d6=10, +6 DEX) vs Riardon: 9 (2d6=8, +4 DEX, +1 training, -2 wounds, -2 fleeing)
+        severity: 8 = margin 7 +5 STR +1 longsword -5 soak -> crippling blow -> a hurried blow at a fleeing back: grievous, Bulwark save -> wound (-2 HP)
+    Riardon goes down, out of the fight.
+  *** LEFT FOR DEAD -- the victors take 35 g and no worthy steel, then leave the party breathing. ***
+    The beaten party rises at 1 HP. Its wounds remain.
+
+-- the party --
+Riardon: Failing STA 5/7 Power 2/6
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - badly beaten (sev 1)
+  (HP ceiling 5/9 until they mend)
+  (stamina x1)
+Simon: Reeling STA 4/5 Power 4/6
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  (HP ceiling 4/8 until they mend)
+  (healing x1, stamina x1)
+Purse 0g; day 4.
+Sin: sin 15/200; heat 0 -- lying low.
