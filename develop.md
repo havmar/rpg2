@@ -312,8 +312,12 @@ a pointer: what the file is, how it's run, where its docs are.
   **The 2026-08-04 template sort** (THE DARK REWORK, session A):
   `OCCULT_TEMPLATES` is the pact's ten-card deck and the ONLY list any
   roll draws from; `CRIME_FODDER` is the fifteen retired crime
-  templates, kept as authored scene material for session B's crime
-  actions and rolled by nothing. All
+  templates, rolled by nothing and kept as authored scene material --
+  since 2026-08-04 they are what `crime.py` dresses a mark's protection
+  in. Also the NEWS CYCLE (same day, session B): `NEWS_DAYS`, the
+  `hot_until` karma key, `heat_step` / `in_the_news`, and the optional
+  `day` on `heat` / `record_karma` / `karma_line` that a big single sin
+  stamps and a heat floor of 1 reads. All
   other knobs at the top (`KARMA_HEAT_STEP`,
   `HEAT_CAP`, `PUNISH_*`; the dark gold premium
   `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
@@ -345,6 +349,38 @@ a pointer: what the file is, how it's run, where its docs are.
   the punishment-budget knobs, and the write-off (`withdraw_assignment`:
   the job leaves the world, its sites are released, `defied` ticks, the
   next pin is not jammed). `python -m unittest -v test_pact.py`.
+- `crime.py` — **the crime layer: free ACTIONS against a leveled world**
+  (2026-08-04, THE DARK REWORK's session B; rules.md's Crime add-on is
+  the doc of record, dm.md the table manner). Crime stopped being a quest
+  in session A; this is what replaced it. The MARK BANDS (`MARK_BANDS` —
+  level fixes wealth AND protection, availability by place kind, the
+  wilds admitting the bands that travel), the 27-category CATALOGUE
+  (`CATEGORIES` / `BY_KEY` — 5 petty, 10 deeds, 12 force, each declaring
+  its shape, check, bands, pay kind, multiplier and the retired
+  `karma.CRIME_FODDER` template whose roster and skins dress its
+  protection), the seeded mark roll (`roll_mark` / `npc_mark` /
+  `build_mark` off `places.stable_seed` — casing is free AND honest
+  because `case` and `crime` share the stream), the take formulas
+  (`take_of` — `CRIME_XP_PER_LEVEL` 50, `CRIME_GOLD_PER_LEVEL` 20,
+  `FENCE_RATE` 0.5, flat `PETTY_SIN`/`PETTY_GOLD`), the monotony window
+  and first-time bonus (`sin_mult` / `monotony_mult` / `stamp` /
+  `recent_days` — temporary by construction, sin and XP only, never
+  gold), and the unlock ledger (`new_crimes` / `record_for` / `peek` /
+  `refresh_unlocks` / `suggestions` / `tally_rows` — suggestions, never
+  permission). All knobs hand-set; the sims and benches never import it.
+  `python crime.py [--seed N]` prints the catalogue and one day's local
+  marks at each place kind (the eyeball check).
+- `test_crime.py` — the CRIME contract suite (2026-08-04, session B): the
+  catalogue's shape and the fodder it recycles, the mark bands and their
+  place gating, the casing guarantee (stable per settlement/day/category,
+  fresh tomorrow), the take formulas including the fence rate and petty's
+  flatness, monotony's temporary window / floor / per-category
+  independence and the first-time bonus, the unlock ledger (grants from
+  assignments and lifetime sin; a by-deed unlock eats no grant; `peek`
+  never writes), the news cycle's heat floor and petty's exemption from
+  it, the 40-column fit of every authored string, and the session wiring
+  (the take rides `pending`, the ledger is a save key).
+  `python -m unittest -v test_crime.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
   `weapon_sp`, the budgeted generator (`generate_weapon` — profile rule,
@@ -486,7 +522,13 @@ a pointer: what the file is, how it's run, where its docs are.
   inventory of famous weapons + smiths; `ensure_weapon_layer` lazily
   arms an old save's world), `commission SMITH HERO [CHASSIS] [--sp N]`,
   and `collect_weapon_quirks` (fight-end and retreat paths: Midas gold
-  to the purse, dark kills to the karma ledger).
+  to the purse, dark kills to the karma ledger). Since 2026-08-04 the
+  CRIME surface (THE DARK REWORK's session B): `case [KEY]` (the free,
+  honest casing report and the local catalogue) and `crime KEY` (the
+  commission -- petty / deed / force), both taking
+  `--npc NAME --level N` to put a named victim on the table, plus the
+  `crimes` save ledger and the suggestion feed that rides the settlement
+  scenes beside `conquest_news`.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -584,6 +626,8 @@ python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 python -m unittest -v test_conquest.py # the conquest domain layer contract
 python -m unittest -v test_pact.py    # hell's assignment ladder contract
+python crime.py --seed 1              # the crime catalogue + local marks
+python -m unittest -v test_crime.py   # the crime layer contract
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -999,6 +1043,29 @@ mechanic *does* and *why* is rules.md's job.
   `mercy` through `resolve_encounter`/`pending`/resume/retreat,
   `apply_mercy` (left for dead / the lesson), now spending the same
   one-per-level allowance as every ordinary mercy.
+- **Crime — the free actions** (2026-08-04, THE DARK REWORK's session B
+  — rules.md's Crime add-on) — `crime.py`: everything (the bands, the
+  27-category catalogue, the seeded mark roll, the take formulas, the
+  monotony window, the unlock ledger — see Files). `karma.py`: the NEWS
+  CYCLE (`NEWS_DAYS`, the `hot_until` key on `new_karma`, `heat_step` /
+  `in_the_news`, the stamp in `record_karma` and the floor in `heat` —
+  all three now take an optional `day`, and the karma displays thread it
+  through), and `CRIME_FODDER`, which crime dresses its protection in.
+  `session.py`: `cmd_case` / `cmd_crime` (the whole play surface),
+  `crimes_state` / `place_kind` / `place_id` / `world_seed`,
+  `crime_news` (the suggestion feed — called wherever `conquest_news`
+  is: travel arrivals, `board`, tavern and downtime nights),
+  `local_mark` / `no_mark_line` / `case_lines` / `mult_note`,
+  `crime_record` (books the commission and freezes the payoff numbers),
+  `pay_crime` (the take, and every point of its XP as sin),
+  `crime_fight` (the protection roster through `resolve_encounter`),
+  `pc_levelup_prompt`, the `crime_take` thread through
+  `resolve_encounter`/`pending`/`finish_encounter` and both resume
+  serializers, and the `crimes` save key. `rpg.py`: `award_quest` grew a
+  `reason` argument so the take's XP line reads "crime" instead of
+  "quest" — the only engine-side change, and behaviourally a no-op
+  (`sites.py --seed 3` and `bench_quests --part enc` were diffed
+  byte-identical across the slice).
 - **The conquest domain layer** (2026-07-27 — rules.md's Conquest &
   Holdings add-on) — `conquest.py`: everything (see Files). `session.py`:
   `cmd_conquer` / `cmd_garrison` / `cmd_holdings`, `held_here` /

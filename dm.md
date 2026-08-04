@@ -452,12 +452,12 @@ infernal reskins, and keep visits scene-sized.
   refuses and fights. Play the counterparty from the giver line.
 - **There is no shadow board** (retired 2026-08-04). Freelance
   wickedness is not a posting to be read: the PC does the thing
-  because they want to. Until the crime actions ship (plan.md, THE
-  DARK REWORK session B), run player-initiated crime as narration plus
-  `forge --dark` for whatever has to be fought, and `karma bad N` for
-  what the scene earned. Dark gold runs half again the honest rate;
-  every XP a dark job pays is BAD KARMA, and the meter prints itself
-  (the tally, `karma`).
+  because they want to, and that is now a real subsystem -- `case`
+  and `crime` (the next section). Dark gold runs half again the honest
+  rate; every XP a dark job pays is BAD KARMA, and the meter prints
+  itself (the tally, `karma`). What the crime layer does not cover,
+  improvise as before: narration plus `forge --dark` for anything that
+  has to be fought and `karma bad N` for what the scene earned.
 - **The register is CARTOON VILLAINY, never grimdark.** Discworld and
   Conan, not a war-crimes ledger: evil is theft, arson, extortion,
   hubris, kicked puppies, and fighting everyone who rightly objects.
@@ -514,6 +514,59 @@ infernal reskins, and keep visits scene-sized.
   Watch sergeant's suspicious squint slowly softening. (Hell notices
   too -- for now only as flavor; hell's own audit of a too-virtuous
   employee is roadmap.)
+
+## Crime -- the free actions (2026-08-04)
+
+**Crime is not a job and never a posting.** Nobody hands it out, there
+is no turn-in, and there is nothing to accept: the PC does the thing
+because they want to and keeps what follows. Two commands carry the
+whole layer -- `case` reads the local mark for free, `crime` commits
+against it -- and rules.md's Crime add-on has the numbers.
+
+- **Offer it, never push it.** Crime is available from scene one and
+  nothing is locked; what the unlock feed buys is ADVERTISING, so when
+  a SUGGESTION FROM BELOW prints, play it as hell nudging an employee
+  ("you have never tried arson") and drop it. Refusing crime forever is
+  a supported campaign, exactly like refusing assignments.
+- **`case` first, always.** Casing is free and honest: the mark, its
+  level, the take, the check and the actual protection roster all
+  print, and committing today faces exactly that. Show the block, let
+  the player decide, and do not editorialize about the odds -- the
+  straight board is the point. Sleeping on it rolls a new mark
+  tomorrow, and that is a real option to name.
+- **Name the mark as a person.** The script prints a role ("a wool
+  factor", "a widow's puppy", "the crown's tax cart"); give them a
+  face, a grievance and one line. A mark the player robs twice should
+  be the same person the second time. Named NPCs the fiction already
+  put on the table are robbable with `crime KEY --npc NAME --level N`
+  -- you assign the band by naming the level, and that is the override
+  surface for "I rob the questgiver".
+- **The three shapes play differently.** PETTY is a beat, not a scene:
+  one line, the pennies, move on. A DEED is a heist told in one
+  message when it makes -- narrate the plan and the clean walk away --
+  and a scramble when it misses, because the botch is what puts the
+  protection in the room. FORCE is the door coming off its hinges;
+  there is no check to build tension on, so the tension is the roster.
+- **The engine only ever fights the protection.** Guards, militia,
+  outriders, gaolers, an aggrieved herdsman. The wickedness itself --
+  the torched barn, the pocketed rings, the kicked puppy -- is your
+  narration and it stays comic (writing.md): victims are indignant,
+  not brutalized. Nothing grim, nothing lingering.
+- **Repetition is hell being bored, not the world reacting.** When the
+  multiplier note prints ("hell is bored: x0.5"), say it in hell's
+  voice -- a memo, a sigh from below, a note in the file -- never as
+  the town wising up. The coin is unchanged on purpose: the loot is
+  the loot. Alternating two crimes does not help; a portfolio or a few
+  honest days does, and it is fair to say so once.
+- **A big score is NEWS.** When the news line prints, the town talks
+  for six days: guards double at the gate, the innkeeper repeats the
+  story wrong, prices stiffen. Heat holds at 1 or more through it no
+  matter how much penance is bought -- narrate the penance working
+  and the gossip not caring. Petty crime never makes the news, which
+  is why the tithing puppy-kicker is funny.
+- **A lost fight pays nothing, and neither does a retreat.** Say it
+  plainly in the aftermath: the protection held, the take is still in
+  the vault. Do not soften it with a consolation purse.
 
 ## Conquest -- taking and holding settlements (2026-07-27)
 
@@ -1238,6 +1291,21 @@ bigger than the fights WITHOUT pages of narration:
   Ordinary defeats follow foe ferocity: TAKE SPOILS takes purse and
   quality weapons, BREAKS WHEN BEATEN maims one member, and RELENTLESS
   gives no mercy.
+- **Crime in numbers (2026-08-04):** the MARK's level fixes both the
+  take and the protection -- commoner 1-2 / tradesman 2-4 anywhere,
+  merchant 4-7 town+, guild master or noble 8-12 town or capital,
+  magnate 12-16 and the royal vault 16-20 in a capital; the wilds hold
+  the bands that travel. The lump = 50 x mark level x the category's
+  multiplier (half an at-level quest), coin = 20 x mark level x the
+  same, goods fenced at x0.5; petty is flat (10-15 sin, 1-5g) and never
+  scales. Deed DCs sit 9-11; a botch adds +15 bad karma and starts the
+  fight, and winning it still pays. A category repeated inside 10 days
+  pays x1 / x1 / x0.5 / x0.25 of its SIN and XP (gold never
+  depreciates), and a first-ever category pays x1.5. A single sin gain
+  at or above the heat step floors heat at 1 for 6 days, penance or no.
+  Hell suggests one category on the first completed assignment and one
+  more per 200 lifetime sin -- suggestions only; nothing is ever
+  locked.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content since 2026-07-13**, not part of a
   played campaign: the board's generated quests are the game. Their

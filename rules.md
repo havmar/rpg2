@@ -3504,16 +3504,210 @@ remembered name, race-flavored dark templates, standing dark
 enterprises (the powder network earns as a crime category, not as a
 holding), the rot-spell and other evil magic content, parley/bribery
 with the LAW's posses (hell takes bribes now; the Watch doesn't yet),
-and any karma-gated power. Lifetime wickedness gets its first job in
-the rework's session C (the crime-suggestion unlock feed) but still
-buys no powers or ranks.
+and any karma-gated power. Lifetime wickedness got its first job in
+the rework's session B (the crime-suggestion unlock feed — the Crime
+add-on below) but still buys no powers or ranks.
 
-**Coming in the rework** (plan.md, THE DARK REWORK — sessions B and C,
-not built yet): **crime as free actions** against leveled marks
-(`crime.py`, the mark bands, the ~24-category catalogue, monotony and
-first-time multipliers, the news cycle); the **history page**
-(`ui/history.txt`) with the tally of sin and the suggestion feed; and
-the **rename** of bad karma to SIN throughout, save keys included.
+**Coming in the rework** (plan.md, THE DARK REWORK — session C, not
+built yet): the **history page** (`ui/history.txt`) with the tally of
+sin and the suggestion feed, the `crimes` readout, and the **rename** of
+bad karma to SIN throughout, save keys included. *(Session B — crime as
+free actions — SHIPPED 2026-08-04; the Crime add-on below is its doc of
+record.)*
+
+---
+
+# Crime — Add-on (2026-08-04, THE DARK REWORK's session B)
+
+Freelance wickedness stopped being a quest. Until this slice, crime was
+fifteen dark TEMPLATES a questgiver handed out and a shadow board posted;
+the 2026-08-04 design session sorted the dark content apart and found
+that two different things had been conflated. What hell *wants* is the
+occult work — hellgates, desecration, blood on the altar — and that stays
+a quest (the pinned assignment ladder above). Everything else was crime,
+and crime is not work anyone hands out:
+
+> **The PC does the thing because they want to, and keeps whatever
+> material gain directly follows.**
+
+So there is no giver, no posting, no turn-in and no board. There is a
+CATEGORY, a MARK, and a resolution. `crime.py` holds the bands, the
+catalogue and every knob; `session.py` owns the two commands. The sims
+never import it (the karma layer's doctrine — no sim plays dark), and
+every number here is hand-set and table-tuned.
+
+## The mark is the difficulty dial
+
+The conquest doctrine — **geography, not gates** — applied to people. A
+mark's LEVEL fixes both its wealth and its protection; nothing scales to
+the party, and nothing is locked.
+
+| mark | level | where |
+|---|---|---|
+| commoner / stray / unpaid lunch | 1–2 | anywhere |
+| tradesman, innkeeper | 2–4 | anywhere |
+| merchant, priest | 4–7 | town+ |
+| guild master, noble | 8–12 | town / capital |
+| magnate, high temple | 12–16 | capital |
+| the royal vault | 16–20 | capital |
+
+Availability is by settlement kind — the garrison-band logic applied to
+people, so a village holds nobody worth a heist. The **wilds** admit the
+bands that TRAVEL (commoner through merchant, and the crown's tax cart),
+which is what makes road work a real ladder instead of a village-capped
+one; a category also declares WHERE it happens, so a caravan is robbed on
+the road and never inside the walls.
+
+**Farming down is self-defeating**, and that is the whole point of
+pricing off the mark: robbing commoners forever pays commoner money
+forever. Reaching up is the only way the take grows — and reaching up is
+how the protection kills you.
+
+A named victim is a first-class mark: `--npc NAME --level N` puts a
+giver, a notable, or anyone the fiction has already animated on the
+table, with the DM assigning the band by naming the level. NPCs are
+freely attackable and robbable through that door.
+
+## Casing is free — and honest
+
+`case` with no argument lists what has a mark where the party stands,
+grouped by shape, with hell's current suggestions; `case CATEGORY` prints
+that mark's level, the take, the check, and the protection roster.
+
+The mark is **seeded** off (world seed, place, day, category). Nothing is
+stored between casing and committing, and nothing needs to be: the same
+seed rolls the same mark, the same take and the same roster, so
+committing today faces exactly what the casing showed. Sleeping on it
+rolls a new mark tomorrow. This is the OSR straight-board stance the
+quest board already takes — the numbers are on the table, and the
+decision is the game.
+
+## Three shapes
+
+- **Petty** — a trivial check or none at all, and **never a fight**. Flat
+  sin (`PETTY_SIN`, 10–15) quoted as XP, coin in pennies (`PETTY_GOLD`);
+  the mark's level buys it nothing, which is exactly why petty crime is a
+  dead end. A miss is simply a miss: no take, no sin, no ledger stamp.
+  The token roster the fiction may want — the pup's mother, the indignant
+  innkeeper — is the DM's `forge`, not the engine's.
+- **Deed** — 2d6 + stat vs DC, the caper machinery generalized (DCs sit
+  9–11 against stats 3–5). A **make** takes it clean: the lump, the sin,
+  no blood, the whole crime in one message. A **miss** botches it into
+  the mark's protection with witnesses (`WITNESS_SIN`, the caper's own
+  `DEED_FAIL_KARMA` 15) — and winning that fight still pays the take,
+  because the crime happened, the hard way.
+- **Force** — no check at all: straight to the protection, then the take.
+  The fight pays its own XP as dark work, and the crime lump lands on
+  top.
+
+A commission is booked when the crime is **committed**, not when it
+pays: a force job the party is driven off, and a botched deed whose
+fight is lost, still stamp the category's monotony window. Hell was
+watching the attempt.
+
+The protection is always **people who fight back** — a `build_room`
+budget at the MARK's level wearing the retired templates' rosters and
+skins (`karma.CRIME_FODDER`, kept for exactly this). The wickedness
+itself stays narration; the engine only ever resolves honest fights. A
+lost fight pays nothing, and so does a retreat.
+
+## What it pays
+
+- The crime **lump** is `CRIME_XP_PER_LEVEL` (50) × the mark's level ×
+  the category's multiplier — about **half an at-level quest**, because a
+  crime is one scene and not an expedition. Every point of it is sin.
+- **Coin** crimes pay `CRIME_GOLD_PER_LEVEL` (20) × mark level × the same
+  multiplier. **Goods** crimes (jewels, relics, cattle, a wagon's
+  freight) pay what the FENCE gives, `FENCE_RATE` 0.5 — the gap between
+  the two is the reason coin crimes exist. The fence takes its half out
+  of the coin only: the sin is what the deed was, not what the fence paid
+  for it.
+
+## Monotony, and the creativity carrot
+
+Every commission day-stamps its category. Stamps still inside
+`MONOTONY_WINDOW` (10 days) cut the next one's **sin and XP** by
+`MONOTONY_MULTS` — (1.0, 1.0, 0.5, 0.25) by how many are already in the
+window, floor 0.25.
+
+- **Gold never depreciates.** The loot is the loot; it is hell that gets
+  bored.
+- **It is temporary by construction.** The stamps age out — nothing has
+  to be reset, and nothing is remembered forever.
+- **Alternating two categories resets neither.** Each window is its own.
+  A two-crime loop is *supposed* to stale; a portfolio, or honest days
+  between sprees, stays fresh.
+- A category's **first-ever** commission pays `FIRST_TIME_MULT` (1.5) —
+  the carrot that points at the suggestion feed.
+
+## The news cycle (`karma.py`)
+
+A **single** sin gain at or above the heat step (100 × level) stamps
+`hot_until = day + NEWS_DAYS` (6), and heat cannot fall below 1 until
+then however fast the penance is bought. Anti-laundering for big scores:
+a vault heist or an occult assignment is a story, and a story cannot be
+honest-quested out of the town gossip inside a week. It applies to quest
+turn-ins too — the occult assignments are exactly the scores it exists
+for. **Petty sin stays dodgeable on purpose**: the tithing puppy-kicker
+is a comedy the game wants.
+
+## Unlocks gate suggestions, never permission
+
+Every category is committable from scene one. What the ledger buys is
+**advertising**: hell suggests one new category on the first COMPLETED
+assignment, and one more per `CRIME_UNLOCK_STEP` (200) of lifetime sin,
+in random order. A "locked" category committed anyway unlocks itself by
+deed and never consumes a grant.
+
+The full catalogue lands around **4,750 lifetime sin** — the derivation:
+the XP budget to level 20 is 19,000 quoted, at most half of it can be sin
+if heat is ever to come down (each sin point wants a penance point), and
+half of that again is the target.
+
+## The catalogue (27 categories)
+
+Nothing grim: `writing.md`'s cartoon register gates the list. Theft,
+arson, extortion, hubris and kicked puppies — indignant victims, never
+brutalized ones.
+
+- **Petty (5):** kick the puppy, dine and dash, cheat at dice,
+  petty vandalism, pickpocket a commoner.
+- **Deeds (10):** burglary, the vault heist, the con, counterfeiting,
+  blackmail, impersonate an official, poison the feast, grave-robbing,
+  the powder trade, cattle rustling.
+- **Force (12):** mugging, the protection racket, strong-arm debt
+  collection, highway robbery, rob the tax collector, arson, kidnapping
+  for ransom, jailbreak, caravan robbery, the village raid, the land
+  grab, betrayal.
+
+## The knobs, and what to watch
+
+All hand-set (`crime.py`): `CRIME_XP_PER_LEVEL` 50, `CRIME_GOLD_PER_LEVEL`
+20, `FENCE_RATE` 0.5, `PETTY_SIN` (10, 15), `PETTY_GOLD` (1, 5),
+`MONOTONY_WINDOW` 10, `MONOTONY_MULTS` (1.0, 1.0, 0.5, 0.25),
+`FIRST_TIME_MULT` 1.5, `CRIME_UNLOCK_STEP` 200, `WITNESS_SIN` 15; plus
+`karma.NEWS_DAYS` 6.
+
+Two things to judge from play:
+
+- **The heat pump.** Crime lumps are smaller than quest lumps, so running
+  hot now takes big marks or volume. That is coherent — petty crime
+  should not summon the crown's huntsmen — but `CRIME_XP_PER_LEVEL` is
+  the lever if heat proves too hard to reach.
+- **The flat DC.** A deed's check is 9–11 whatever the mark's level, so a
+  low-level party can gamble one roll against a very rich mark: a make is
+  a clean windfall, a miss is a protection roster far above its weight.
+  That gamble is the intended shape of "difficulty comes from the mark",
+  but if the make proves too cheap the lever is a DC that climbs with the
+  mark's level, or a lump the clean take only partly pays.
+
+## Explicitly not in this slice
+
+The `crimes` readout page, the tally of sin and the history page
+(`ui/history.txt`) — all session C, which also does the SIN rename. Crime
+buys no powers or ranks; standing dark enterprises are still parked (the
+powder network earns as a category, not as a holding); and no sim or
+bench sees crime, by the karma layer's doctrine.
 
 ---
 

@@ -46,6 +46,10 @@ The shape of a playthrough:
                                                the assignment ledger,
                                                greasing hell's hand, and
                                                taking a caper twist's terms
+  case [KEY] / crime KEY                    -- the crime layer (2026-08-04):
+                                               free honest casing of the
+                                               local mark, then the deed
+                                               itself (no giver, no board)
   conquer / garrison N / holdings           -- the domain layer (2026-07-27):
                                                take a settlement by its
                                                garrison, hold it with paid
@@ -136,6 +140,7 @@ from rpg import (
 )
 import story
 import karma
+import crime
 import conquest
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
@@ -376,6 +381,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "site": pending["site"],
         "room": pending["room"],
         "quest": pending.get("quest"),
+        "crime": pending.get("crime"),
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
         "align": pending.get("align", "neutral"),
@@ -403,6 +409,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "site": d["site"],
         "room": d["room"],
         "quest": d.get("quest"),
+        "crime": d.get("crime"),
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
         "align": d.get("align", "neutral"),
@@ -545,7 +552,8 @@ def party_sheet_lines(state: dict) -> list[str]:
             lines.append(f"  due day {q['deadline_day']} -- {note}")
     k = state.get("karma")
     if k and k.get("bad_total"):
-        lines.append(f"karma: {karma.karma_line(k, party_level(state))}")
+        meter = karma.karma_line(k, party_level(state), state["clock"].day)
+        lines.append(f"karma: {meter}")
     lines.extend(pact_lines(state))
     if state.get("sighting"):
         lines.append(f"sighted: {state['sighting']['line']}")
@@ -768,6 +776,7 @@ def save(state: dict) -> None:
         "visited": state.get("visited", []),
         "karma": state.get("karma") or karma.new_karma(),
         "pact": state.get("pact"),
+        "crimes": state.get("crimes") or crime.new_crimes(),
         "holdings": state.get("holdings", {}),
         "pending_reward": state.get("pending_reward"),
         "pending": _pending_to_dict(state.get("pending"), party),
@@ -824,6 +833,9 @@ def load() -> dict:
         # None = a pactless save (new --no-pact): the hell layer stays
         # inert -- no default resurrect.
         "pact": doc.get("pact"),
+        # The crime ledger (2026-08-04): counts, day stamps and the
+        # suggestion feed's unlocked flags. crime.py owns its shape.
+        "crimes": doc.get("crimes") or crime.new_crimes(),
         "holdings": doc.get("holdings", {}),
         "pending_reward": doc.get("pending_reward"),
         "pending": _pending_from_dict(doc.get("pending"), party),
@@ -949,7 +961,8 @@ def tally_lines(state: dict) -> list[str]:
     lines.append(f"Purse {purse.gold}g; day {clock.day}.")
     k = state.get("karma")
     if k and k.get("bad_total"):
-        lines.append(f"Karma: {karma.karma_line(k, party_level(state))}.")
+        meter = karma.karma_line(k, party_level(state), state["clock"].day)
+        lines.append(f"Karma: {meter}.")
     qid = state.get("active_quest")
     world = state.get("world")
     if qid and world:
@@ -1096,6 +1109,10 @@ def cmd_new(args: argparse.Namespace) -> None:
              # The pact's DECK is shuffled here, off the run's rng, so
              # `--seed` pins the assignment order with everything else.
              "pact": None if args.no_pact else karma.new_pact(rng),
+             # The crime ledger (2026-08-04): counts, day stamps and the
+             # suggestion feed. Empty is a clean record, not an inert
+             # layer -- every category is committable from scene one.
+             "crimes": crime.new_crimes(),
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
              "visited": [start["key"]]}
@@ -1460,7 +1477,8 @@ def cmd_status(args: argparse.Namespace) -> None:
                   f"{quest_band(q, state['clock'].day)} pay)")
     k = state.get("karma")
     if k and (k.get("bad_total") or k.get("good_total")):
-        print(f"  Karma: {karma.karma_line(k, party_level(state))} "
+        print(f"  Karma: "
+              f"{karma.karma_line(k, party_level(state), clock.day)} "
               f"(lifetime {k['bad_total']} wickedness / "
               f"{k['good_total']} penance; see `karma`).")
     holdings = state.get("holdings") or {}
@@ -1745,6 +1763,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       encounter_xp: int, site: str | None = None,
                       room: int | None = None,
                       quest: str | None = None,
+                      crime_take: dict | None = None,
                       field: int = 0, align: str = "neutral",
                       mercy: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
@@ -1769,7 +1788,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
-            "quest": quest, "fired": fired, "round": pause.round,
+            "quest": quest, "crime": crime_take,
+            "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
             "dead_before": dead_before,
             "field": field,
@@ -1785,7 +1805,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         save(state)
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
-                     quest=quest,
+                     quest=quest, crime_take=crime_take,
                      dead_before=dead_before, align=align, mercy=mercy)
 
 
@@ -1801,7 +1821,7 @@ def record_karma(state: dict, xp: int, align: str, log: list) -> None:
     passes through), the meter line appended to the log."""
     if align in ("dark", "good"):
         karma.record_karma(state["karma"], xp, align, log,
-                           party_level(state))
+                           party_level(state), state["clock"].day)
 
 
 def collect_weapon_quirks(state: dict, log: list[str]) -> None:
@@ -1811,6 +1831,7 @@ def collect_weapon_quirks(state: dict, log: list[str]) -> None:
     counters zero on collection), so the fight-end and retreat paths can
     both call it."""
     purse = state["purse"]
+    day = state["clock"].day
     for h in state["party"]:
         wname = h.weapon.name if h.weapon is not None else "weapon"
         if h.quirk_gold:
@@ -1824,7 +1845,7 @@ def collect_weapon_quirks(state: dict, log: list[str]) -> None:
             k["bad_total"] += h.quirk_karma
             log.append(f"    (the {wname} drinks its kills: "
                        f"+{h.quirk_karma} bad karma -- "
-                       f"{karma.karma_line(k, party_level(state))})")
+                       f"{karma.karma_line(k, party_level(state), day)})")
             h.quirk_karma = 0
 
 
@@ -2184,7 +2205,7 @@ def effective_heat(state: dict) -> int:
     standing wickedness, so the flag alone keeps the law coming (one step
     per holding, the same HEAT_CAP). Zero holdings = karma.heat exactly."""
     k = state.get("karma") or karma.new_karma()
-    derived = karma.heat(k, party_level(state))
+    derived = karma.heat(k, party_level(state), state["clock"].day)
     floor = conquest.heat_floor(len(state.get("holdings") or {}))
     return min(karma.HEAT_CAP, max(derived, floor))
 
@@ -2258,8 +2279,8 @@ def maybe_punish(state: dict) -> bool:
     where = (f"at {here['name']}'s gates" if here is not None
              else "at the party's fire")
     print(f"*** THE RECKONING -- day {day}: word of the party's deeds "
-          f"has caught up ({karma.karma_line(k, lvl)}). ***")
-    if karma.heat(k, lvl) < h:
+          f"has caught up ({karma.karma_line(k, lvl, day)}). ***")
+    if karma.heat(k, lvl, day) < h:
         print(f"  (the flag draws them: {len(state.get('holdings') or {})} "
               f"holding(s) keep the heat floor at {h})")
     print(f"  {label} find the party {where}, led by {npc_line(leader)}")
@@ -2765,6 +2786,319 @@ def cmd_bribe(args: argparse.Namespace) -> None:
     print(f"The party purse holds {purse.gold} g.")
 
 
+# --------------------------------------------------------------------------- #
+# Crime -- free actions against a leveled world (2026-08-04, THE DARK
+# REWORK's session B; crime.py holds the bands, the catalogue and every
+# knob, rules.md's Crime add-on the played rules, dm.md the table manner)
+# --------------------------------------------------------------------------- #
+# Crime is not a job anyone hands out and not a posting anyone reads: the
+# PC does the thing because they want to and keeps what follows. Two
+# commands carry the whole layer -- `case` reads the local mark for free,
+# `crime` commits against it -- and everything difficult about a crime is
+# the MARK's level, never a gate.
+
+
+def crimes_state(state: dict) -> dict:
+    """The `crimes` save ledger, made on demand (a save that never
+    committed a crime carries an empty one)."""
+    rec = state.get("crimes")
+    if not rec:
+        rec = crime.new_crimes()
+        state["crimes"] = rec
+    return rec
+
+
+def place_kind(state: dict) -> str:
+    """Which crime market the party stands in: a settlement's subtype, or
+    the wilds (where the road work lives)."""
+    here = local_settlement(state)
+    return here["subtype"] if here is not None else "wilds"
+
+
+def place_id(state: dict) -> str:
+    """The mark seed's place component -- the settlement key, or the area
+    the party is crossing. Stable, so casing and committing agree."""
+    here = local_settlement(state)
+    if here is not None:
+        return here["key"]
+    return str(_area_position(current_area(state)).get("area")
+               or state["position"].get("area") or "the road")
+
+
+def world_seed(state: dict) -> int | None:
+    return (state.get("world") or {}).get("seed")
+
+
+def crime_news(state: dict) -> None:
+    """Hand out whatever suggestions hell owes and announce them. Unlocks
+    gate SUGGESTIONS, never permission (decision 8): this is advertising,
+    and every category is committable from day one whether or not it has
+    ever been advertised."""
+    if not state.get("pact"):
+        return
+    fresh = crime.refresh_unlocks(crimes_state(state), state["karma"],
+                                  state["pact"], state["rng"])
+    if not fresh:
+        return
+    print("*** A SUGGESTION FROM BELOW ***")
+    for c in fresh:
+        print(f"  {c['name']} -- {c['line']} (`case {c['key']}`)")
+
+
+def local_mark(state: dict, cat: dict, npc: str | None,
+               level: int | None) -> dict | None:
+    """The mark this category has where the party stands -- or the NAMED
+    victim the DM assigned. None means the crime has no mark here."""
+    day = state["clock"].day
+    if npc:
+        return crime.npc_mark(cat, world_seed(state), npc,
+                              level or party_level(state), day)
+    return crime.roll_mark(cat, world_seed(state), place_id(state),
+                           place_kind(state), day)
+
+
+def no_mark_line(state: dict, cat: dict) -> str:
+    """Why this crime has nobody to do it to here -- the two reasons read
+    differently, and the player should not have to guess which it is."""
+    kind = place_kind(state)
+    tail = " (`--npc NAME --level N` names a victim anywhere.)"
+    if kind not in crime.where_of(cat):
+        return (f"{cat['name']} does not happen at a {kind} -- it wants "
+                f"{', '.join(crime.where_of(cat))}." + tail)
+    bands = ", ".join(crime.band_of(k)["label"] for k in cat["bands"])
+    return (f"{cat['name']} finds no mark at a {kind}: it wants a "
+            f"{bands}, and none of those live here." + tail)
+
+
+def case_lines(state: dict, cat: dict, mark: dict) -> list[str]:
+    """The casing report -- free, and honest: the same seed rolls the
+    mark, the take and the roster that committing will face."""
+    rec = crime.peek(crimes_state(state), cat["key"])
+    day = state["clock"].day
+    mult = crime.sin_mult(rec, day)
+    lines = [f"-- CASING: {cat['name']} --",
+             f"  the shape: {cat['shape']}",
+             f"  {cat['line']}",
+             f"  the mark: {mark['role']} (L{mark['level']})",
+             f"  the take: {mark['gold']}g, "
+             f"{round(mark['xp'] * mult)} XP (all of it sin)",
+             f"  the check: {crime.check_line(cat)}",
+             f"  protection: {crime.roster_hint(mark)}",
+             f"  ({cat['hint']})"]
+    if mult != 1.0:
+        lines.append(f"  {mult_note(rec, mult, day)}")
+    return lines
+
+
+def mult_note(rec: dict, mult: float, day: int) -> str:
+    """Why the sin is not face value. Gold NEVER carries these -- the loot
+    is the loot; it is hell that gets bored."""
+    if rec.get("count", 0) == 0:
+        return (f"first time: x{mult:g} on the sin and XP (the coin is "
+                f"unchanged)")
+    n = len(crime.recent_days(rec, day))
+    return (f"hell is bored: x{mult:g} on the sin and XP -- {n} of these "
+            f"in the last {crime.MONOTONY_WINDOW} days (the coin is "
+            f"unchanged)")
+
+
+def cmd_case(args: argparse.Namespace) -> None:
+    """Case a crime -- free, always. With no category it lists what has a
+    mark where the party stands; with one it prints that mark's level,
+    take, check and protection. Casing costs nothing and hides nothing
+    (the straight-board stance): the mark is seeded per settlement, day
+    and category, so committing today faces exactly what the casing
+    showed, and sleeping on it rolls a new one tomorrow."""
+    state = load()
+    crime_news(state)
+    kind, day = place_kind(state), state["clock"].day
+    if not args.category:
+        crimes = crimes_state(state)
+        print(f"-- CRIME, day {day}, at a {kind} --")
+        for shape in crime.SHAPES:
+            here = [c for c in crime.available(kind) if c["shape"] == shape]
+            if not here:
+                continue
+            print(f"  {shape}:")
+            for c in here:
+                rec = crime.peek(crimes, c["key"])
+                if rec["count"]:
+                    tag = f" (x{rec['count']})"
+                elif rec["unlocked"]:
+                    tag = " (suggested)"
+                else:
+                    tag = ""
+                print(f"    {c['key']} -- {c['name']}{tag}")
+        feed = crime.suggestions(crimes)
+        if feed:
+            print("  hell suggests: "
+                  + ", ".join(c["key"] for c in feed))
+        print("  (`case KEY` reads the local mark; `crime KEY` commits. "
+              "Nothing is locked -- a suggestion is advertising.)")
+        save(state)
+        return
+    cat = crime.category(args.category)
+    if cat is None:
+        print(f"No such crime: {args.category}. `case` lists them.")
+        return
+    mark = local_mark(state, cat, args.npc, args.level)
+    if mark is None:
+        print(no_mark_line(state, cat))
+        return
+    for line in case_lines(state, cat, mark):
+        print(line)
+    save(state)
+
+
+def crime_record(state: dict, cat: dict, mark: dict) -> dict:
+    """Book the commission and return the payoff record: what the take
+    is worth AFTER the sin multipliers, and the note explaining it. The
+    ledger is stamped HERE, when the crime is committed -- a fight that
+    goes badly does not un-commit it."""
+    day = state["clock"].day
+    crimes = crimes_state(state)
+    rec = crime.record_for(crimes, cat["key"])
+    mult = crime.sin_mult(rec, day)
+    note = mult_note(rec, mult, day) if mult != 1.0 else ""
+    crime.stamp(crimes, cat["key"], day)
+    return {"key": cat["key"], "name": cat["name"], "role": mark["role"],
+            "level": mark["level"], "gold": mark["gold"],
+            "xp": round(mark["xp"] * mult), "note": note}
+
+
+def pay_crime(state: dict, log: list, rec: dict) -> None:
+    """The take lands: gold to the purse, the lump as XP -- and every
+    point of it sin, because a crime is dark work by construction."""
+    if rec.get("note"):
+        log.append(f"    ({rec['note']})")
+    award_quest(state["party"], state["purse"], rec["gold"], rec["xp"],
+                log, f"{rec['name']} -- {rec['role']}", banner="THE TAKE",
+                reason="crime")
+    record_karma(state, rec["xp"], "dark", log)
+
+
+def crime_fight(state: dict, cat: dict, mark: dict, rec: dict,
+                banner: str) -> None:
+    """Send the party through the mark's protection. Ordinary people who
+    object, at the MARK's level -- the engine only ever fights things that
+    fight back, and the wickedness itself stays narration (dm.md). The
+    crime record rides the encounter, so the take pays out when the fight
+    is won (and pays nothing when it is not)."""
+    party, rng = state["party"], state["rng"]
+    log = new_combat_log()
+    for h in [h for h in party if not h.dead]:
+        start_fight(h, log)
+    log_banner(log,
+               f"=== {banner}: {mark['role']} (L{mark['level']}) ===",
+               [f"=== {banner}:", f"{mark['role']} (L{mark['level']}) ==="])
+    foes = []
+    for kind in mark["kinds"]:
+        state["foe_count"] += 1
+        foes.append(make_foe(kind, state["foe_count"], rng,
+                             display=mark["skins"].get(kind)))
+    for line in roster_lines(foes):
+        log.append("  " + line)
+    field = 0 if local_settlement(state) is not None else WILD_FIELD
+    resolve_encounter(state, log, foes, wild_encounter_xp(mark["level"]),
+                      field=field, align="dark", crime_take=rec)
+
+
+def cmd_crime(args: argparse.Namespace) -> None:
+    """Commit a crime against the local mark (or a named victim). Three
+    shapes: PETTY does it or fumbles it and never fights; a DEED rolls
+    2d6+stat vs its DC -- a make takes it clean, a miss botches it into
+    the protection with witnesses; FORCE skips the check and goes through
+    the protection to get at the take."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    crime_news(state)
+    cat = crime.category(args.category)
+    if cat is None:
+        print(f"No such crime: {args.category}. `case` lists them.")
+        return
+    mark = local_mark(state, cat, args.npc, args.level)
+    if mark is None:
+        print(no_mark_line(state, cat))
+        return
+    party, rng = state["party"], state["rng"]
+    pc = party[0]
+    pc_level_before = pc.level
+    print(f"*** {cat['name'].upper()} -- {mark['role']} "
+          f"(L{mark['level']}) ***")
+    print(f"  {cat['line']}")
+
+    # --- the check (petty may carry a trivial one; a deed always does) --- #
+    made = True
+    if cat["stat"]:
+        stat = {"str": pc.str_, "dex": pc.dex, "mind": pc.mind,
+                "cha": pc.cha}[cat["stat"]]
+        roll = rng.randint(1, 6) + rng.randint(1, 6)
+        total = roll + stat
+        made = total >= cat["dc"]
+        print(f"  {pc.name} rolls 2d6+{cat['stat'].upper()}: {roll}+"
+              f"{stat} = {total} vs DC {cat['dc']} -- "
+              f"{'CLEAN' if made else 'BOTCHED'}.")
+
+    if cat["shape"] == "petty":
+        # Petty crime never fights. A miss is simply a miss: no take, no
+        # sin, no stamp -- the scene (the indignant innkeeper, the pup's
+        # mother) is the DM's to narrate and `forge` if it wants dice.
+        if not made:
+            print("  It does not come off. Nothing taken, nothing "
+                  "gained -- the scene is yours (dm.md).")
+            save(state)
+            return
+        rec = crime_record(state, cat, mark)
+        log: list[str] = []
+        pay_crime(state, log, rec)
+        print("\n".join(log))
+        save(state)
+        pc_levelup_prompt(pc, pc_level_before)
+        return
+
+    rec = crime_record(state, cat, mark)
+
+    if cat["shape"] == "deed" and made:
+        # The clean take: the whole crime in one message, no blood.
+        log = ["  No alarm, no blood, no witnesses -- it is done and the "
+               "party is three streets away."]
+        pay_crime(state, log, rec)
+        for h in party[1:]:
+            if not h.dead:
+                autospend_points(h, log)
+        print("\n".join(log))
+        save(state)
+        pc_levelup_prompt(pc, pc_level_before)
+        return
+
+    if cat["shape"] == "deed":
+        klog: list[str] = []
+        karma.record_karma(state["karma"], crime.WITNESS_SIN, "dark",
+                           klog, party_level(state), state["clock"].day)
+        print(f"  {cat['hint']} -- and now they have seen the party's "
+              f"faces (+{crime.WITNESS_SIN} bad karma). The take is "
+              f"still there for whoever is standing at the end.")
+        for line in klog:
+            print(line)
+        banner = f"{cat['name']} botched"
+    else:
+        print(f"  No plan, no patience: {cat['hint'].lower()}")
+        banner = cat["name"]
+    crime_fight(state, cat, mark, rec, banner)
+
+
+def pc_levelup_prompt(pc, level_before: int) -> None:
+    """Print the spending menu if the PC just crossed a level -- the same
+    prompt the quest and encounter award paths end with."""
+    if pc.dead or pc.level <= level_before:
+        return
+    print()
+    print(f"*** {pc.name} reached level {pc.level} -- the spending "
+          f"menu (show it to the player, dm.md): ***")
+    print_levelup_menu([pc])
+
+
 def cmd_settle(args: argparse.Namespace) -> None:
     """Take a TWIST's terms (the caper structure): the current site
     closes without a fight at the twist's pay fraction of its lump.
@@ -2834,6 +3168,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
                      quest: str | None = None,
+                     crime_take: dict | None = None,
                      dead_before: list[str] | None = None,
                      align: str = "neutral",
                      mercy: str | None = None) -> None:
@@ -2894,6 +3229,12 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             advance_quest(state, log, quest)
         elif site is not None:
             pay_set_site_clear(state, log, site, room)
+        elif crime_take is not None:
+            # The protection is down, so the take is the party's (the
+            # crime layer, 2026-08-04). A LOST fight pays nothing, and
+            # neither does a retreat: this branch only runs on a clean
+            # win.
+            pay_crime(state, log, crime_take)
 
     if not wiped:
         if mercy == "hell":
@@ -3063,6 +3404,7 @@ def cmd_board(args: argparse.Namespace) -> None:
     if state["party"] and maybe_assign_task(state):
         save(state)     # hell's mail lands where the party asks around
     conquest_news(state)    # and so does word from the holdings
+    crime_news(state)       # ...and hell's crime suggestions
     clock_notices = board_clock(state)   # asking around IS reading the board:
     save(state)                          # closed windows, fresh postings
     key = None
@@ -3341,7 +3683,7 @@ def cmd_room(args: argparse.Namespace) -> None:
             return
         klog: list[str] = []
         karma.record_karma(state["karma"], karma.DEED_FAIL_KARMA, "dark",
-                           klog, party_level(state))
+                           klog, party_level(state), state["clock"].day)
         print(f"  {deed['fail']} -- witnesses are hard to avoid "
               f"(+{karma.DEED_FAIL_KARMA} bad karma), and the fight is "
               f"on.")
@@ -3626,6 +3968,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
                                 # arrival (a board's first look fills it)
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     conquest_news(state)        # word from the holdings travels with it
+    crime_news(state)           # hell suggests work on arrival too
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
     if maybe_enforce(state):    # hell's collections travel the same roads
@@ -4037,6 +4380,7 @@ def cmd_resume(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
+                     crime_take=pending.get("crime"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
                      mercy=pending.get("mercy"))
@@ -4150,6 +4494,7 @@ def cmd_retreat(args: argparse.Namespace) -> None:
     finish_encounter(state, log, pending["foes"], pending["xp"],
                      site=pending["site"], room=pending["room"],
                      quest=pending.get("quest"),
+                     crime_take=pending.get("crime"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
                      mercy=pending.get("mercy"))
@@ -4271,6 +4616,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     print_play(log)
     print_board_clock(state)    # a bed costs a day like any other
     conquest_news(state)        # tavern talk carries holding news too
+    crime_news(state)           # and what hell would like tried
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
     if maybe_enforce(state):    # and hell holds the mortgage on it
@@ -4321,6 +4667,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     print_play(log)
     print_board_clock(state)    # so does an idle one
     conquest_news(state)        # an idle day hears from the holdings
+    crime_news(state)           # and hell fills the idle hands
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
     if maybe_enforce(state):    # for the law and for hell alike
@@ -4453,6 +4800,7 @@ def cmd_karma(args: argparse.Namespace) -> None:
     state = load()
     k = state["karma"]
     lvl = party_level(state)
+    day = state["clock"].day
     if args.kind:
         if args.amount <= 0:
             print("Usage: karma bad N [reason...] / karma good N "
@@ -4460,21 +4808,21 @@ def cmd_karma(args: argparse.Namespace) -> None:
             return
         log: list[str] = []
         align = "dark" if args.kind == "bad" else "good"
-        karma.record_karma(k, args.amount, align, log, lvl)
+        karma.record_karma(k, args.amount, align, log, lvl, day)
         why = " ".join(args.why)
         word = "Sin" if align == "dark" else "Penance"
         print(f"{word} recorded" + (f": {why}" if why else "") + ".")
         for line in log:
             print(line)
         save(state)
-    print(f"Karma: {karma.karma_line(k, lvl)}")
+    print(f"Karma: {karma.karma_line(k, lvl, day)}")
     print(f"  lifetime: {k['bad_total']} wickedness, {k['good_total']} "
           f"penance.")
     if k.get("last_leader"):
         print(f"  Last posse led by {k['last_leader']} (day "
               f"{k['last_punish_day']}).")
     h = effective_heat(state)
-    if h > karma.heat(k, lvl):
+    if h > karma.heat(k, lvl, day):
         print(f"  The flag is standing wickedness: "
               f"{len(state.get('holdings') or {})} holding(s) keep the "
               f"heat floor at {h} (see `holdings`).")
@@ -5567,6 +5915,54 @@ def main() -> None:
     p.add_argument("amount", nargs="?", type=int, default=0)
     p.add_argument("why", nargs="*", default=[])
     p.set_defaults(func=cmd_karma)
+
+    p = sub.add_parser(
+        "case",
+        help="CASE a crime, free and honest (the crime layer, "
+             "2026-08-04). No argument lists what has a mark where the "
+             "party stands, grouped by shape (petty / deed / force), "
+             "with hell's current suggestions. `case KEY` prints that "
+             "category's local MARK: who, at what level, what the take "
+             "is worth, the check, and the protection that will have to "
+             "be fought. The mark is seeded per settlement, day and "
+             "category -- committing today faces exactly what the "
+             "casing showed, and tomorrow rolls a new one. Casing costs "
+             "nothing and is never wrong.")
+    p.add_argument("category", nargs="?",
+                   help="a category key or name (`case` lists them)")
+    p.add_argument("--npc", default=None,
+                   help="case a NAMED victim instead of the local slot "
+                        "(a giver, a notable, anyone the fiction put on "
+                        "the table)")
+    p.add_argument("--level", type=int, default=None,
+                   help="--npc's level: the DM assigns the band, and it "
+                        "fixes both the take and the protection")
+    p.set_defaults(func=cmd_case)
+
+    p = sub.add_parser(
+        "crime",
+        help="COMMIT a crime against the local mark (the crime layer, "
+             "2026-08-04): no giver, no posting, no turn-in -- the PC "
+             "does the thing and keeps what follows. PETTY does it or "
+             "fumbles it and never fights (flat small sin, coin in "
+             "pennies). A DEED rolls 2d6+stat vs its DC: a make takes it "
+             "clean, a miss botches it into the protection with "
+             f"witnesses (+{crime.WITNESS_SIN} bad karma). FORCE skips "
+             "the check and goes through the protection to the take. "
+             "Difficulty is the MARK's level, never a gate: nothing is "
+             "locked, and nothing scales to the party. All the XP is "
+             "sin; a category repeated inside "
+             f"{crime.MONOTONY_WINDOW} days pays less of it (the coin "
+             "never depreciates), and a first-ever category pays "
+             f"x{crime.FIRST_TIME_MULT:g}.")
+    p.add_argument("category", help="a category key or name (`case` lists "
+                                    "them)")
+    p.add_argument("--npc", default=None,
+                   help="rob/attack a NAMED victim instead of the local "
+                        "slot")
+    p.add_argument("--level", type=int, default=None,
+                   help="--npc's level (the DM assigns the band)")
+    p.set_defaults(func=cmd_crime)
 
     p = sub.add_parser(
         "conquer",
