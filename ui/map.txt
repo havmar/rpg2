@@ -1,12 +1,11 @@
-RPG2 MAP -- day 2
+RPG2 MAP -- day 3
 the party is at Dvarvengrond > Svalaver
-  > the mine entrance > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
 == Dvarvengrond ==  <- here
   Bjorgheim (capital) -- 5 job(s)
-  Roros (town) -- 3 job(s)  (visited)
+  Roros (town) -- 4 job(s)  (visited)
   Svalaver (town) -- 4 job(s)  <- the
     party
 
@@ -55,3 +54,7 @@ the party is at Dvarvengrond > Svalaver
   Sargul (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
   Ordaki (village) -- 2 job(s)
+
+-- the war --
+THE WAR: [w1] L2 Stolen Parts -- raised
+  at Bjorgheim.

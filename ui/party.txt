@@ -1,29 +1,27 @@
-RPG2 PARTY SHEET -- day 2, at
-  Dvarvengrond > Svalaver > the mine
-  entrance > outer watch
-purse: 37g
+RPG2 PARTY SHEET -- day 3, at
+  Dvarvengrond > Svalaver
+purse: 35g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Riardon -- elf m, age 34
-  L2  training 1  XP 41/200  points 1
-  DEX 3  STR 5  MIND 5  CHA 4
-  HP 5/8 of 9  STA 7/7  Power 6/6
-  shortsword | healingx1
+  L2  training 1  XP 41/200  points 0
+  DEX 4  STR 5  MIND 5  CHA 4
+  HP 7/9  STA 8/7  Power 6/6
+  shortsword | healingx1, staminax1
   abilities: bulwark
+  moves: trip
   interest: animals; speech: formal;
     dress: professional
-  - a split knuckle (sev 1)
-  wound load 1 -> HP ceiling 8/9
 
 (companion) Simon -- human m, age 18
   L2  training 1  XP 41/200  points 0
   DEX 6  STR 4  MIND 6  CHA 4
-  HP 6/8  STA 5/5  Power 2/6
-  spear | no kit
+  HP 8/8  STA 6/5  Power 6/6
+  spear | staminax1
   abilities: first_blood
   moves: pommel
-  satisfaction 8/10
+  satisfaction 9/10
   weakness: gambling; dress: tattered;
     looks: weathered
 
@@ -32,3 +30,5 @@ active quest [q02] The Clan War is
 THE PACT: assignment [q52] Blood on the
   Altar at Svalaver (grace to take it
   runs to day 12).
+THE WAR: [w1] L2 Stolen Parts -- raised
+  at Bjorgheim.
