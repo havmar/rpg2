@@ -1,13 +1,13 @@
-RPG2 MAP -- day 3
-the party is at Dvarvengrond > Svalaver
+RPG2 MAP -- day 4
+the party is at Dvarvengrond > Bjorgheim
 (travel: 1 day within a land, 2 days to
   another)
 
 == Dvarvengrond ==  <- here
-  Bjorgheim (capital) -- 5 job(s)
+  Bjorgheim (capital) -- 5 job(s)  <-
+    the party
   Roros (town) -- 4 job(s)  (visited)
-  Svalaver (town) -- 4 job(s)  <- the
-    party
+  Svalaver (town) -- 4 job(s)  (visited)
 
 == Firascir ==
   Tomburgh (capital) -- 5 job(s)
