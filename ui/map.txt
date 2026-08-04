@@ -1,12 +1,14 @@
-RPG2 MAP -- day 1
-the party is at Dvarvengrond > Roros
+RPG2 MAP -- day 2
+the party is at Dvarvengrond > Svalaver
+  > the mine entrance > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
 == Dvarvengrond ==  <- here
   Bjorgheim (capital) -- 5 job(s)
-  Roros (town) -- 4 job(s)  <- the party
-  Svalaver (town) -- 4 job(s)
+  Roros (town) -- 3 job(s)  (visited)
+  Svalaver (town) -- 4 job(s)  <- the
+    party
 
 == Firascir ==
   Tomburgh (capital) -- 5 job(s)

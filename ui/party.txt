@@ -1,28 +1,34 @@
-RPG2 PARTY SHEET -- day 1, at
-  Dvarvengrond > Roros
-purse: 0g
+RPG2 PARTY SHEET -- day 2, at
+  Dvarvengrond > Svalaver > the mine
+  entrance > outer watch
+purse: 37g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Riardon -- elf m, age 34
-  L1  training 0  XP 0/100  points 0
-  DEX 4  STR 5  MIND 5  CHA 4
-  HP 9/9  STA 7/7  Power 6/6
-  club | staminax2
+  L2  training 0  XP 41/200  points 3
+  DEX 3  STR 5  MIND 5  CHA 4
+  HP 5/8 of 9  STA 7/7  Power 6/6
+  club | healingx1
   abilities: bulwark
   interest: animals; speech: formal;
     dress: professional
+  - a split knuckle (sev 1)
+  wound load 1 -> HP ceiling 8/9
 
 (companion) Simon -- human m, age 18
-  L1  training 0  XP 0/100  points 0
+  L2  training 1  XP 41/200  points 0
   DEX 6  STR 4  MIND 6  CHA 4
-  HP 8/8  STA 5/5  Power 6/6
-  club | staminax2
+  HP 6/8  STA 5/5  Power 2/6
+  club | no kit
   abilities: first_blood
-  satisfaction 7/10
+  moves: pommel
+  satisfaction 8/10
   weakness: gambling; dress: tattered;
     looks: weathered
 
-THE PACT: no current assignment (the
-  level-1 pin is due -- it lands at the
-  next settlement).
+active quest [q02] The Clan War is
+  COMPLETE
+THE PACT: assignment [q52] Blood on the
+  Altar at Svalaver (grace to take it
+  runs to day 12).

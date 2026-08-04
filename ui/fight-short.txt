@@ -1,36 +1,102 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
+=== The Clan War ===
+the mine entrance (L1),
+room 1/1: outer watch
+Rival Scout 3 -- light hammer
+DEX 5  STR 3  STA 5  HP 7/7
+takes spoils, leaves the fallen
+Rival Soldier 4 -- spear
+DEX 5  STR 4  STA 6  HP 10/10
+takes spoils, leaves the fallen
 Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+Simon uses First Blood!
+Rival Scout 3 takes 1 dmg.
 Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+Riardon (8/9) edges past Rival Scout 3,
+deals 2 dmg!
+Simon (7/8) overwhelms Rival Scout 3,
+deals 4 dmg!! It falls.
+Rival Scout 3 strikes as they fall:
+Simon parries.
+Rival Soldier 4 outmaneuvers Riardon,
+deals 1 dmg.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
+Riardon (7/9)
+outmaneuvers Rival Soldier 4,
+deals 2 dmg!
+!! Simon is Winded.
+Simon (7/8)
+attacks Rival Soldier 4, parried.
+Rival Soldier 4 (8/10)
+attacks Simon, parried.
+Round 4:
+Riardon (7/9)
+outmaneuvers Rival Soldier 4,
+deals 2 dmg!
+Simon (7/8)
+outmaneuvers Rival Soldier 4,
+deals 1 dmg.
+!! Rival Soldier 4 is Winded.
+Rival Soldier 4 (5/10)
+outmaneuvers Riardon, deals 2 dmg!
+Riardon takes a wound: a split knuckle.
+Round 5:
+Simon downs a stamina draught (0 left).
+!! Riardon is Winded.
+Riardon (5/9)
+attacks Rival Soldier 4, parried.
+Rival Soldier 4 (5/10) edges past Simon,
+deals 1 dmg.
+Round 6:
+Riardon (5/9)
+attacks Rival Soldier 4, parried.
+Simon (6/8)
+outmaneuvers Rival Soldier 4,
+deals 1 dmg.
+Rival Soldier 4 (4/10)
+attacks Simon, parried.
+The beaten foes break and run!
+Simon (6/8) overwhelms Rival Soldier 4,
+deals 4 dmg!! It falls.
 The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
+Riardon +28 XP (encounter) [56/100]
+Simon +28 XP (encounter) [56/100]
+Loot: 5 gold (purse 5g).
+Left among the dead:
+a light hammer (+0 atk/-1 sev, 2g),
+a spear (+0 atk/+0 sev, 5g).
+
+*** QUEST COMPLETE: The Clan War --
+the mine entrance (site 2/2).
+Reward: 29 gold. ***
+Riardon talks the pay up:
++3g (32g in all).
+The party purse holds 37 gold.
+Riardon +85 XP (quest) [141/100]
+*** Riardon reaches level 2!
+(3 skill points unspent) ***
+Simon +85 XP (quest) [141/100]
+*** Simon reaches level 2!
+(3 skill points unspent) ***
+Simon: satisfaction 7 -> 8/10
+(a job paid out)
+(turn in to Kildrak, the clan elder --
+narrate the scene)
+EPILOGUE (day 2): The rival clan is defeated. The fighting ends.
+Simon trains: combat rank 1
+[1 point(s) left]
+Simon drills a new move: Pommel Strike
+[0 point(s) left]
+Riardon downs a stamina draught: STA 7/7
+(0 left).
+The party shares out its potions:
+Riardon: 1 healing.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
-  (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Riardon: Bloodied STA 7/7 Power 6/6
+  (hurt -1 to rolls)
+  - a split knuckle (sev 1)
+  (HP ceiling 8/9 until they mend)
+  (healing x1)
+Simon: Scratched STA 5/5 Power 2/6
+  (no kit)
+Purse 37g; day 2.
