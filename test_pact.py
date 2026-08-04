@@ -20,6 +20,7 @@ import unittest
 
 import karma
 import quests
+import rpg
 import session
 
 
@@ -236,8 +237,11 @@ class TheWriteOff(unittest.TestCase):
         q["hell_task"] = True
         pact["task"] = q["id"]
         pact["warned"] = True
+        # The clock rides along because the write-off writes a day-stamped
+        # line into the campaign history (session C's ui/history.txt).
         return {"world": world, "pact": pact, "active_quest": q["id"],
-                "accepted": [q["id"]]}, q
+                "accepted": [q["id"]], "clock": rpg.Clock(day=12),
+                "history": []}, q
 
     def test_the_assignment_leaves_the_world(self):
         state, q = self._state()

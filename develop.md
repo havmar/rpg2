@@ -94,8 +94,10 @@ saves would be optimizing the wrong thing. Therefore:
   a pre-slice save loads clean (`test_conditions`, `test_wounds`,
   `test_mercy`, `test_weapon_gen`, `test_conquest`) — those assertions
   documented past caution, not a standing requirement. Delete them (and
-  any lazy-upgrade branch they cover, e.g. `ensure_weapon_layer`-style
-  backfills) whenever you touch their files; never add new ones.
+  any lazy-upgrade branch they cover) whenever you touch their files;
+  never add new ones. `ensure_weapon_layer` — the named example — went
+  in session C of the dark rework; worldgen has armed every world since
+  2026-07-28.
 - **Optimize for the good game.** If a change is better for play and
   breaks every existing save, it is simply better. The same spirit applies
   inside the codebase: refactor freely — the test suites and benches are
@@ -366,8 +368,11 @@ a pointer: what the file is, how it's run, where its docs are.
   and first-time bonus (`sin_mult` / `monotony_mult` / `stamp` /
   `recent_days` — temporary by construction, sin and XP only, never
   gold), and the unlock ledger (`new_crimes` / `record_for` / `peek` /
-  `refresh_unlocks` / `suggestions` / `tally_rows` — suggestions, never
-  permission). All knobs hand-set; the sims and benches never import it.
+  `refresh_unlocks` / `suggestions` — optionally SHUFFLED off a passed
+  rng since session C — / `tally_rows` / `total_crimes` — suggestions,
+  never permission; the tally reads the record's own `last` day, never
+  the monotony window's self-pruning day stamps). All knobs hand-set;
+  the sims and benches never import it.
   `python crime.py [--seed N]` prints the catalogue and one day's local
   marks at each place kind (the eyeball check).
 - `test_crime.py` — the CRIME contract suite (2026-08-04, session B): the
@@ -381,6 +386,16 @@ a pointer: what the file is, how it's run, where its docs are.
   it, the 40-column fit of every authored string, and the session wiring
   (the take rides `pending`, the ledger is a save key).
   `python -m unittest -v test_crime.py`.
+- `test_history.py` — the CAMPAIGN RECORD contract suite (2026-08-04,
+  THE DARK REWORK's session C): `session.remember` (the day stamp, the
+  two kinds, the duplicate guard, the per-kind trim), the named-kill and
+  maiming scanners, the four sections of `ui/history.txt` and their
+  40-column/ASCII fit, the page's place in the save/`sheet` lifecycle,
+  the tally's honesty about a category's last day, the seeded
+  suggestion order, the `crimes` sheet's band quotes, and the SIN
+  RENAME (the karma keys, the display words, the `sin` command with no
+  `karma` alias — read off `session.build_parser`).
+  `python -m unittest -v test_history.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
   `weapon_sp`, the budgeted generator (`generate_weapon` — profile rule,
@@ -471,11 +486,15 @@ a pointer: what the file is, how it's run, where its docs are.
   planned `ui/minimap.txt` takes over local detail, the sites of every TAKEN
   quest with
   its progress cursor; `accepted_quests` gates it on the new `accepted`
-  save key — offered-but-untaken jobs never appear) are rewritten on every
+  save key — offered-but-untaken jobs never appear) and, since
+  2026-08-04 (session C), **`ui/history.txt`** (`history_sheet_lines` —
+  QUESTS DONE / REMARKABLE / THE TALLY OF SIN / SUGGESTIONS, over the
+  `history` save key that `remember` writes and `_note_maimings`
+  re-scans into) are rewritten on every
   save. Combat writes two last-fight snapshots:
   **`ui/fight-short.txt`** (the exact displayed log and DM fallback) and
   **`ui/fight-detailed.txt`** (every roll and modifier). A new encounter
-  replaces them; resume/retreat appends to the paused encounter. All four
+  replaces them; resume/retreat appends to the paused encounter. All five
   are **committed to the branch, not gitignored: they are the GitHub UI**
   (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
@@ -519,8 +538,8 @@ a pointer: what the file is, how it's run, where its docs are.
   2026-07-28 also the WEAPON-LAYER surface: the trash chargen deal in
   `cmd_new`, `buy HERO masterwork WEAPON` (capitals), `claim HERO` (the
   weapon-reward turn-in, `pending_reward` in the save), `armory` (the DM
-  inventory of famous weapons + smiths; `ensure_weapon_layer` lazily
-  arms an old save's world), `commission SMITH HERO [CHASSIS] [--sp N]`,
+  inventory of famous weapons + smiths), `commission SMITH HERO
+  [CHASSIS] [--sp N]`,
   and `collect_weapon_quirks` (fight-end and retreat paths: Midas gold
   to the purse, dark kills to the karma ledger). Since 2026-08-04 the
   CRIME surface (THE DARK REWORK's session B): `case [KEY]` (the free,
@@ -528,7 +547,15 @@ a pointer: what the file is, how it's run, where its docs are.
   commission -- petty / deed / force), both taking
   `--npc NAME --level N` to put a named victim on the table, plus the
   `crimes` save ledger and the suggestion feed that rides the settlement
-  scenes beside `conquest_news`.
+  scenes beside `conquest_news`. Session C (same day) added the SURFACE:
+  **`crimes`** (`cmd_crimes` / `take_span` — the `prices` pattern for
+  the dark side: the local catalogue quoted at the mark BAND, then the
+  tally and the feed), the **`sin`** command (`cmd_sin`, replacing
+  `karma` with no alias — the bad-karma-to-SIN rename runs through the
+  save keys and every display string), the campaign record
+  (`remember` / `history_sheet_lines` / `_write_history_sheet` /
+  `_named_dead` / `_note_maimings`), and `build_parser`, split out of
+  `main` so the command surface is testable.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -628,6 +655,7 @@ python -m unittest -v test_conquest.py # the conquest domain layer contract
 python -m unittest -v test_pact.py    # hell's assignment ladder contract
 python crime.py --seed 1              # the crime catalogue + local marks
 python -m unittest -v test_crime.py   # the crime layer contract
+python -m unittest -v test_history.py # the campaign record + the sin rename
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -1020,10 +1048,12 @@ mechanic *does* and *why* is rules.md's job.
   the `align` thread through `resolve_encounter`/`pending`/resume/retreat
   serializers, `maybe_punish` (called at travel arrivals and
   tavern/downtime/camp nights),
-  `forge --dark`, `award --dark/--good`, `cmd_karma`, the karma lines in
-  `tally_lines`/`cmd_status`, the `karma` save key. (`roll_dark_board`,
-  `board --dark` and the `dark_board` save key died 2026-08-04 with the
-  shadow board.)
+  `forge --dark`, `award --dark/--good`, `cmd_sin` (the `sin` command --
+  was `cmd_karma`/`karma` before session C's rename), the sin lines in
+  `tally_lines`/`cmd_status`, the `karma` save key (whose sub-keys are
+  `sin` / `sin_total` / `penance_total` since 2026-08-04).
+  (`roll_dark_board`, `board --dark` and the `dark_board` save key died
+  2026-08-04 with the shadow board.)
 - **The hell pact & the capers** (2026-07-19, second slice — rules.md's
   "The Hell Pact") — `karma.py`: the pact constants, `new_pact`,
   `HELL_MAIL`, `HELL_SKINS` / `build_hell_posse`, the `deed`/`twist`
@@ -1066,6 +1096,27 @@ mechanic *does* and *why* is rules.md's job.
   "quest" — the only engine-side change, and behaviourally a no-op
   (`sites.py --seed 3` and `bench_quests --part enc` were diffed
   byte-identical across the slice).
+- **The campaign record & the sin rename** (2026-08-04, THE DARK
+  REWORK's session C — rules.md's The Campaign Record add-on) —
+  `session.py`: `remember` (the ONLY writer; the day stamp, the
+  quest/remarkable kinds, the same-day duplicate guard, the per-kind
+  `HISTORY_CAP` trim), `history_sheet_lines` /
+  `_write_history_sheet` / `HISTORY_SHEET_PATH` (in `UI_COMMIT_PATHS`,
+  written by `save` and `cmd_sheet` beside party/map), `_named_dead`
+  (the by-shape named-kill detector, read in `finish_encounter`),
+  `_note_maimings` (the scan, called at the top of `save` so it lands
+  BEFORE the JSON dump), the `history` save key, and the `remember`
+  call sites — `_close_site` (jobs done, waves, conquests, hell's
+  assignments), `board_clock` (jobs lost), `deliver_if_arrived`,
+  `withdraw_assignment` (write-offs), `apply_mercy` (all three defeat
+  paths), `conquest_news` (holdings lost), `cmd_sin` (a NAMED
+  off-script sin only). Also `cmd_crimes` / `take_span` (the crime
+  price sheet) and `build_parser`, split out of `main`. `crime.py`:
+  `stamp`'s `last` field (the tally outlives the monotony window),
+  `total_crimes`, and `suggestions`' optional rng. The RENAME touched
+  `karma.new_karma`'s keys and every display string across
+  `karma.py` / `crime.py` / `quests.py` / `rpg.py` / `conquest.py` /
+  `weapons.py` / `session.py`.
 - **The conquest domain layer** (2026-07-27 — rules.md's Conquest &
   Holdings add-on) — `conquest.py`: everything (see Files). `session.py`:
   `cmd_conquer` / `cmd_garrison` / `cmd_holdings`, `held_here` /

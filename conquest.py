@@ -14,7 +14,7 @@ hold it, and bleed it for tribute. The design calls settled in the
   the board's straight levels. Win the last room and the tag flips. The
   defender is a named face over a budget-honest roster (the story layer's
   boss doctrine -- stats never fork on a skin).
-- **Conquest is dark work.** Every XP a garrison job pays is bad karma, and
+- **Conquest is dark work.** Every XP a garrison job pays is sin, and
   each holding RAISES THE HEAT FLOOR by one step: holding land is standing
   wickedness, and the law comes collecting whether or not the party sins
   again. The strategy layer is the heat machinery the game already has.
@@ -354,7 +354,7 @@ def main() -> None:
     site = world["sites"][quest["sites"][0]]
     print(f"  boss: {site['boss']['display']} "
           f"(over the {site['boss']['kind']} row)")
-    print(f"  pay: {quest['xp_total']} xp (all bad karma), "
+    print(f"  pay: {quest['xp_total']} xp (all sin), "
           f"{quest['gold_total']}g strongbox")
 
 

@@ -46,10 +46,12 @@ The shape of a playthrough:
                                                the assignment ledger,
                                                greasing hell's hand, and
                                                taking a caper twist's terms
-  case [KEY] / crime KEY                    -- the crime layer (2026-08-04):
+  case [KEY] / crime KEY / crimes            -- the crime layer (2026-08-04):
                                                free honest casing of the
                                                local mark, then the deed
-                                               itself (no giver, no board)
+                                               itself (no giver, no board);
+                                               `crimes` is the price sheet
+  sin [dark|penance N ...]                  -- the sin & heat meter
   conquer / garrison N / holdings           -- the domain layer (2026-07-27):
                                                take a settlement by its
                                                garrison, hold it with paid
@@ -64,7 +66,7 @@ The shape of a playthrough:
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
-  sheet                                     -- commit the four ui/*.txt pages
+  sheet                                     -- commit the five ui/*.txt pages
                                                (run at the END of every DM
                                                message)
 
@@ -429,11 +431,13 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
 UI_DIR = Path(__file__).parent / "ui"
 PARTY_SHEET_PATH = UI_DIR / "party.txt"
 MAP_SHEET_PATH = UI_DIR / "map.txt"
+HISTORY_SHEET_PATH = UI_DIR / "history.txt"
 FIGHT_DETAILED_PATH = UI_DIR / "fight-detailed.txt"
 FIGHT_SHORT_PATH = UI_DIR / "fight-short.txt"
 UI_COMMIT_PATHS = (
     "ui/party.txt",
     "ui/map.txt",
+    "ui/history.txt",
     "ui/fight-short.txt",
     "ui/fight-detailed.txt",
 )
@@ -551,9 +555,9 @@ def party_sheet_lines(state: dict) -> list[str]:
         if note:
             lines.append(f"  due day {q['deadline_day']} -- {note}")
     k = state.get("karma")
-    if k and k.get("bad_total"):
+    if k and k.get("sin_total"):
         meter = karma.karma_line(k, party_level(state), state["clock"].day)
-        lines.append(f"karma: {meter}")
+        lines.append(f"sin: {meter}")
     lines.extend(pact_lines(state))
     if state.get("sighting"):
         lines.append(f"sighted: {state['sighting']['line']}")
@@ -693,6 +697,133 @@ def map_sheet_lines(state: dict) -> list[str]:
     return lines
 
 
+# --------------------------------------------------------------------------- #
+# The history page (2026-08-04, THE DARK REWORK's session C)
+# --------------------------------------------------------------------------- #
+# The fourth committed UI page: what this campaign has DONE. The party
+# sheet is the present and the map is the world; this is the memory --
+# the jobs finished, the things that will be remembered, and the tally of
+# sin the crime layer keeps. It is also the DM's continuity crib: a
+# playthrough spans days of real time and the record has to outlive the
+# chat scrollback.
+#
+# `history` is the save key: a list of day-stamped records, oldest first.
+# Two kinds, because the page has two narrative sections -- "quest" (the
+# job record, done and lost alike) and "remarkable" (everything else
+# worth a line). Nothing writes here automatically except what the code
+# below names on purpose; the DM's own entries come through `sin dark N
+# REASON` and hand-editing the save.
+
+HISTORY_CAP = 60        # records kept PER KIND -- the page is a phone
+                        # page, and a career runs hundreds of jobs. The
+                        # oldest fall off the top; the tally never does.
+
+
+def history_log(state: dict) -> list[dict]:
+    return state.setdefault("history", [])
+
+
+def remember(state: dict, line: str, kind: str = "remarkable",
+             note: str = "", day: int | None = None) -> None:
+    """Write one day-stamped record into the campaign history. Silently
+    ignores an exact duplicate of the most recent record of its kind, so
+    a command run twice (or a re-scan like `_note_maimings`) never
+    doubles the page."""
+    log = history_log(state)
+    rec = {"day": state["clock"].day if day is None else day,
+           "kind": kind, "line": line}
+    if note:
+        rec["note"] = note
+    for old in reversed(log):
+        if old.get("kind") != kind:
+            continue
+        if old.get("line") == line and old.get("day") == rec["day"]:
+            return
+        break
+    log.append(rec)
+    # Trim per kind, oldest first: a career of quests must never push the
+    # write-offs and the maimings off the page.
+    kept = [r for r in log if r.get("kind") == kind]
+    for dead in kept[:-HISTORY_CAP]:
+        log.remove(dead)
+
+
+def _note_maimings(state: dict) -> None:
+    """A maiming is permanent, so it is history the moment it lands.
+    Scanned rather than hooked: maimings accrue deep inside `_attack`,
+    and `remember`'s duplicate guard makes the scan idempotent."""
+    for h in state.get("party") or []:
+        for w in getattr(h, "wounds", ()) or ():
+            if w.permanent:
+                remember(state, f"{h.name} is MAIMED -- {w.name}.")
+
+
+def _named_dead(foes: list) -> list[str]:
+    """The named foes that fell: quest bosses, conquest defenders, posse
+    leaders, the war's lieutenants. Ordinary rows are numbered off the
+    catalog ('Cutthroat 2'); a name without its number is somebody the
+    fiction bothered to cast."""
+    return [f.name for f in foes
+            if f.dead and not re.search(r" \d+$", f.name)]
+
+
+def history_sheet_lines(state: dict) -> list[str]:
+    """ui/history.txt: the campaign's record in four sections -- the jobs,
+    the remarkable, the tally of sin, and what hell is currently
+    advertising. Player-facing and 40-column, like every UI page."""
+    day = state["clock"].day
+    lines = [f"RPG2 HISTORY -- day {day}",
+             "(what this campaign has done)"]
+
+    def section(title: str, body: list[str], empty: str) -> None:
+        lines.append("")
+        lines.append(f"-- {title} --")
+        lines.extend(body or [f"  ({empty})"])
+
+    def entries(kind: str) -> list[str]:
+        out = []
+        for rec in history_log(state):
+            if rec.get("kind") != kind:
+                continue
+            out.append(f"day {rec['day']}: {rec['line']}")
+            if rec.get("note"):
+                out.append(f"  {rec['note']}")
+        return out
+
+    section("QUESTS DONE", entries("quest"), "no job finished yet")
+    section("REMARKABLE", entries("remarkable"), "nothing yet")
+
+    crimes = state.get("crimes") or crime.new_crimes()
+    rows = crime.tally_rows(crimes)
+    tally = []
+    for name, count, last in rows:
+        when = f", last day {last}" if last >= 0 else ""
+        tally.append(f"  {name}: {count}{when}")
+    if rows:
+        kinds = "category" if len(rows) == 1 else "categories"
+        tally.append(f"  ({crime.total_crimes(crimes)} crime(s) in "
+                     f"{len(rows)} {kinds})")
+    else:
+        tally.append("  (no crime committed yet)")
+    k = state.get("karma")
+    if k:
+        tally.append(f"  {karma.karma_line(k, party_level(state), day)}")
+        tally.append(f"  lifetime sin {k.get('sin_total', 0)} / penance "
+                     f"{k.get('penance_total', 0)}")
+    section("THE TALLY OF SIN", tally, "no sin on the books")
+
+    # Seeded off the world and the day: the same page rewritten twice in
+    # one day shows the same three, and tomorrow advertises differently
+    # (catalogue order would sell the same two petty crimes forever).
+    feed = crime.suggestions(
+        crimes, rng=crime.mark_rng(world_seed(state), "history", day,
+                                   "suggestions"))
+    section("SUGGESTIONS", [f"  {c['key']} -- {c['name']}: {c['line']}"
+                            for c in feed],
+            "hell is not advertising -- `case` lists everything anyway")
+    return lines
+
+
 def _write_party_sheet(state: dict) -> None:
     """Write party.txt (phone-wrapped, like all output) on every save.
     NEVER raises on I/O: a broken disk must not take the game loop down
@@ -725,15 +856,29 @@ def _write_map_sheet(state: dict) -> None:
         return
 
 
+def _write_history_sheet(state: dict) -> None:
+    """Write history.txt (the campaign record) on every save, beside the
+    party and map pages. Same contract as those two: rendering runs
+    OUTSIDE the I/O guard so a render bug crashes loudly instead of
+    freezing the page."""
+    text = _wrap_block("\n".join(history_sheet_lines(state))) + "\n"
+    try:
+        UI_DIR.mkdir(parents=True, exist_ok=True)
+        HISTORY_SHEET_PATH.write_text(text, encoding="utf-8")
+    except Exception:
+        return
+
+
 def cmd_sheet(args: argparse.Namespace) -> None:
-    """Rewrite party/map and commit every existing ui/*.txt game page.
+    """Rewrite party/map/history and commit every existing ui/*.txt page.
 
     Fight pages do not exist until the first encounter. Once written, they
-    join the same end-of-message commit as party.txt and map.txt.
+    join the same end-of-message commit as the three rewritten pages.
     """
     state = load()
     _write_party_sheet(state)
     _write_map_sheet(state)
+    _write_history_sheet(state)
     day = state["clock"].day
     where = (current_area(state)["name"]
              if state.get("position") else "nowhere")
@@ -759,6 +904,9 @@ def cmd_sheet(args: argparse.Namespace) -> None:
 
 def save(state: dict) -> None:
     party = state["party"]
+    # A maiming is permanent and lands deep inside the melee: catch it
+    # here, where every path that could have caused one passes through.
+    _note_maimings(state)
     rng_version, rng_internal, rng_gauss = state["rng"].getstate()
     doc = {
         "party": [_entity_to_dict(h) for h in party],
@@ -777,6 +925,7 @@ def save(state: dict) -> None:
         "karma": state.get("karma") or karma.new_karma(),
         "pact": state.get("pact"),
         "crimes": state.get("crimes") or crime.new_crimes(),
+        "history": state.get("history", []),
         "holdings": state.get("holdings", {}),
         "pending_reward": state.get("pending_reward"),
         "pending": _pending_to_dict(state.get("pending"), party),
@@ -791,6 +940,7 @@ def save(state: dict) -> None:
         f.write("\n")
     _write_party_sheet(state)
     _write_map_sheet(state)
+    _write_history_sheet(state)
 
 
 def load() -> dict:
@@ -836,6 +986,9 @@ def load() -> dict:
         # The crime ledger (2026-08-04): counts, day stamps and the
         # suggestion feed's unlocked flags. crime.py owns its shape.
         "crimes": doc.get("crimes") or crime.new_crimes(),
+        # The campaign record (2026-08-04, session C): day-stamped
+        # "quest" and "remarkable" lines behind ui/history.txt.
+        "history": doc.get("history") or [],
         "holdings": doc.get("holdings", {}),
         "pending_reward": doc.get("pending_reward"),
         "pending": _pending_from_dict(doc.get("pending"), party),
@@ -960,9 +1113,9 @@ def tally_lines(state: dict) -> list[str]:
         lines.append(f"  ({kit or 'no kit'})")
     lines.append(f"Purse {purse.gold}g; day {clock.day}.")
     k = state.get("karma")
-    if k and k.get("bad_total"):
+    if k and k.get("sin_total"):
         meter = karma.karma_line(k, party_level(state), state["clock"].day)
-        lines.append(f"Karma: {meter}.")
+        lines.append(f"Sin: {meter}.")
     qid = state.get("active_quest")
     world = state.get("world")
     if qid and world:
@@ -1476,11 +1629,11 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"    (due day {q['deadline_day']} -- {note}; "
                   f"{quest_band(q, state['clock'].day)} pay)")
     k = state.get("karma")
-    if k and (k.get("bad_total") or k.get("good_total")):
-        print(f"  Karma: "
+    if k and (k.get("sin_total") or k.get("penance_total")):
+        print(f"  Sin: "
               f"{karma.karma_line(k, party_level(state), clock.day)} "
-              f"(lifetime {k['bad_total']} wickedness / "
-              f"{k['good_total']} penance; see `karma`).")
+              f"(lifetime sin {k['sin_total']} / penance "
+              f"{k['penance_total']}; see `sin`).")
     holdings = state.get("holdings") or {}
     if holdings and world:
         due = conquest.tribute_pending(world, holdings, clock.day)
@@ -1841,10 +1994,10 @@ def collect_weapon_quirks(state: dict, log: list[str]) -> None:
             h.quirk_gold = 0
         if h.quirk_karma:
             k = state["karma"]
-            k["bad"] += h.quirk_karma
-            k["bad_total"] += h.quirk_karma
+            k["sin"] += h.quirk_karma
+            k["sin_total"] += h.quirk_karma
             log.append(f"    (the {wname} drinks its kills: "
-                       f"+{h.quirk_karma} bad karma -- "
+                       f"+{h.quirk_karma} sin -- "
                        f"{karma.karma_line(k, party_level(state), day)})")
             h.quirk_karma = 0
 
@@ -1925,6 +2078,9 @@ def board_clock(state: dict) -> list[str]:
                        f"No turn-in, no lump -- what the fighting already "
                        f"paid is kept.")
         notices.append(f"  EPILOGUE (day {day}): {failure_line(quest)}")
+        remember(state, f"[{qid}] {quest['name']} (L{quest['level']}) "
+                        f"-- LOST, the window closed.",
+                 kind="quest", note=failure_line(quest))
     position = state.get("position") or {}
     local = settlements_by_land(world).get(position.get("land"), [])
     if not local:
@@ -2051,15 +2207,30 @@ def _close_site(state: dict, log: list[str], qid: str,
         if quest.get("epilogue"):
             log.append(f"  EPILOGUE (day {state['clock'].day}): "
                        f"{quest['epilogue']}")
+        # The campaign record (session C): one day-stamped line per job,
+        # carrying the epilogue that closed it.
+        dark = " [DARK]" if quest.get("align") == "dark" else ""
+        remember(state,
+                 f"[{qid}] {quest['name']} (L{quest['level']}){dark} "
+                 f"-- done.",
+                 kind="quest", note=quest.get("epilogue", ""))
         if quest.get("story_wave") is not None and state.get("story"):
+            remember(state, f"THE WAR: wave {quest['story_wave'] + 1} "
+                            f"broken -- {quest['name']}.")
             for line in story.on_wave_done(state["story"], quest,
                                            state["clock"].day):
                 log.append("  " + line)
+                # The scripted fall and the war's end are the two lines
+                # the record must carry (story.py authors both).
+                remember(state, line.strip("* ").rstrip())
         ckey = quest.get("conquest")
         if ckey:
             # The garrison is broken: the tag flips (conquest.py). The
             # strongbox was the quest's gold; tribute starts today.
             holdings = state.setdefault("holdings", {})
+            remember(state, f"CONQUEST: "
+                            f"{state['world']['areas'][ckey]['name']} "
+                            f"falls under the party's flag.")
             for line in conquest.take_settlement(
                     state["world"], holdings, state["world"]["areas"][ckey],
                     state["clock"].day):
@@ -2073,6 +2244,8 @@ def _close_site(state: dict, log: list[str], qid: str,
             pact["task"] = None
             pact["warned"] = False
             pact["done"] = pact.get("done", 0) + 1
+            remember(state, f"HELL'S ASSIGNMENT {pact['done']} served: "
+                            f"{quest['name']}.")
             pin = coming_pin(pact)
             when = (f"The next is pinned to PC level {pin}."
                     if pin is not None else "Hell has no more work pinned.")
@@ -2137,6 +2310,9 @@ def deliver_if_arrived(state: dict, log: list[str]) -> bool:
                    f"scene: {npc_line(r)})")
     if q.get("epilogue"):
         log.append(f"  EPILOGUE (day {state['clock'].day}): {q['epilogue']}")
+    remember(state, f"[{q['id']}] DELIVERY {q['name']} -- {q['cargo']} "
+                    f"carried to {q['dest_name']}.",
+             kind="quest", note=q.get("epilogue", ""))
     return True
 
 
@@ -2221,12 +2397,19 @@ def conquest_news(state: dict) -> None:
         return
     world = state["world"]
     day = state["clock"].day
+    held_before = set(holdings)
     lines = conquest.seize_by_occupation(world, holdings,
                                          state.get("story"))
     here = local_settlement(state)
     here_key = here["key"] if here is not None else None
     lines += conquest.roll_raids(world, holdings, state["rng"], day,
                                  skip_key=here_key)
+    # A holding lost is history whichever way it went (the crown's raid
+    # or the aggressor's yoke) -- the flag came down, that is the record.
+    for key in sorted(held_before - set(holdings)):
+        area = world["areas"].get(key) or {}
+        remember(state, f"HOLDING LOST: {area.get('name', key)} is out "
+                        f"of the party's hands.")
     if here_key is not None and here_key in holdings:
         gold = conquest.collect_tribute(world, holdings, day)
         if gold:
@@ -2249,7 +2432,7 @@ def maybe_punish(state: dict) -> bool:
     the plain ladder wearing the band's lawful names (the Watch -> bounty
     guild -> crown's huntsmen -> heroes of the realm), led by a generated
     face (the nemesis seed). It pays wild XP like any road fight and ALL
-    of it is bad karma -- cutting down the law is itself a crime; that
+    of it is sin -- cutting down the law is itself a crime; that
     ratchet is the design. Returns True when a fight ran (the encounter
     machinery has printed and saved)."""
     k = state.get("karma")
@@ -2286,7 +2469,7 @@ def maybe_punish(state: dict) -> bool:
     print(f"  {label} find the party {where}, led by {npc_line(leader)}")
     print(f"  (no parley in v1 -- they mean to collect; retreat is the "
           f"peaceful option. Losing is not death: the law leaves the "
-          f"PC for dead -- party, purse, and bad karma all forfeit)")
+          f"PC for dead -- party, purse, and sin all forfeit)")
     log = new_combat_log()
     for hero in living:
         start_fight(hero, log)
@@ -2609,6 +2792,8 @@ def withdraw_assignment(state: dict) -> str:
     pact["task"] = None
     pact["warned"] = False
     pact["defied"] = pact.get("defied", 0) + 1
+    remember(state, f"WRITTEN OFF: {label} -- hell closed the account "
+                    f"(write-off {pact['defied']}).")
     return label
 
 
@@ -2655,6 +2840,9 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
         )
         if fired:
             state["pending"] = None
+            remember(state, f"DEFEAT at L{pc.level}: the party went down "
+                            f"and lived -- a {fired} roster took its "
+                            f"price. The level's one mercy is spent.")
         return fired is not None
 
     if not mercy_available(pc):
@@ -2677,8 +2865,8 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
 
     if mercy == "law":
         k = state["karma"]
-        burned = k["bad"]
-        k["bad"] = 0
+        burned = k["sin"]
+        k["sin"] = 0
         emit(["*** LEFT FOR DEAD --", f"day {day}.",
               "The heroes think the PC dead. ***"])
         if lost:
@@ -2687,9 +2875,12 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
         emit([f"The purse is forfeit: {fine} g gone."])
         if burned:
             emit([f"The ledger is settled: {burned}",
-                  "bad karma cleared. Heat 0."])
+                  "sin cleared. Heat 0."])
         emit([f"{pc.name} wakes in a ditch at 1 HP.",
               "Everyone in hell is laughing."])
+        remember(state, f"LEFT FOR DEAD by the law at L{pc.level}: "
+                        f"{fine}g and {len(lost)} companion(s) gone, "
+                        f"{burned} sin cleared.")
     else:
         # Hell's mercy IS the account closing (2026-08-04): the fine, the
         # withdrawal, the write-off -- the same closure the visit gets
@@ -2705,7 +2896,10 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
             emit([f"{label} is WITHDRAWN --",
                   "the account is written off."])
         emit([f"{pc.name} wakes at 1 HP.",
-              "The bad karma remains."])
+              "The sin remains."])
+        remember(state, f"THE LESSON at L{pc.level}: hell's collectors "
+                        f"took {fine}g and {len(lost)} companion(s). "
+                        f"The sin remains.")
     return True
 
 
@@ -2902,6 +3096,84 @@ def mult_note(rec: dict, mult: float, day: int) -> str:
             f"unchanged)")
 
 
+def cmd_crimes(args: argparse.Namespace) -> None:
+    """The crime PRICE SHEET (2026-08-04, session C -- the `prices`
+    pattern): the whole catalogue with what each category is worth
+    against the LOCAL marks, then the tally of what the party has already
+    done and what hell is currently advertising.
+
+    `case KEY` reads one mark exactly (the rolled level, the rolled
+    roster); this reads the BAND, so it answers 'what is worth doing
+    here' without twenty-seven casings. A pure readout: no save touched,
+    and every number comes off crime.py's live knobs."""
+    state = load()
+    kind, day = place_kind(state), state["clock"].day
+    crimes = crimes_state(state)
+    print(f"-- THE CRIME SHEET, day {day}, at a {kind} --")
+    print(f"  (the take is quoted at the MARK's level -- difficulty is "
+          f"who you rob, never a gate; petty crime is flat and pays in "
+          f"pennies. All the XP is sin.)")
+    for shape in crime.SHAPES:
+        here = [c for c in crime.available(kind) if c["shape"] == shape]
+        if not here:
+            continue
+        print(f"  {shape}:")
+        for c in here:
+            rec = crime.peek(crimes, c["key"])
+            mult = crime.sin_mult(rec, day)
+            done = f" [x{rec['count']}]" if rec["count"] else ""
+            tag = "" if rec["count"] or not rec["unlocked"] else " (suggested)"
+            print(f"    {c['key']} -- {c['name']}{done}{tag}")
+            print(f"      {take_span(c, kind, mult)}")
+            print(f"      {crime.check_line(c)}")
+            # `hint` IS the authored what-stands-in-the-way line; a pool
+            # dump would print eight guard skins and say nothing about
+            # the roster, which is built at the MARK's level anyway.
+            print(f"      {c['hint']}")
+    rows = crime.tally_rows(crimes)
+    if rows:
+        print("  -- the tally --")
+        for name, count, last in rows:
+            when = f", last day {last}" if last >= 0 else ""
+            print(f"    {name}: {count}{when}")
+    k = state.get("karma")
+    if k:
+        print(f"  {karma.karma_line(k, party_level(state), day)}; "
+              f"lifetime sin {k.get('sin_total', 0)}")
+    feed = crime.suggestions(crimes)
+    if feed:
+        print("  hell suggests: " + ", ".join(c["key"] for c in feed))
+    print("  (`case KEY` reads today's actual mark; `crime KEY` commits. "
+          "Nothing is locked -- a suggestion is advertising. The full "
+          "record is ui/history.txt.)")
+
+
+def take_span(cat: dict, place_kind: str, mult: float) -> str:
+    """What a category is worth against the mark BAND it draws here --
+    the range, not one rolled mark (`case` is the exact read). Petty is
+    flat by construction, so it quotes its own constants; everything else
+    is a clean function of the mark's level, so the band's ends ARE the
+    span."""
+    if cat["shape"] == "petty":
+        coin = ("no coin" if cat["pay"] is None
+                else f"{crime.PETTY_GOLD[0]}-{crime.PETTY_GOLD[1]}g")
+        lo, hi = crime.PETTY_SIN
+        return (f"flat: {coin}, {round(lo * mult)}-{round(hi * mult)} "
+                f"sin/XP" + (f" (x{mult:g})" if mult != 1.0 else ""))
+    bands = crime.bands_here(cat, place_kind)
+    lo = min(b["levels"][0] for b in bands)
+    hi = max(b["levels"][1] for b in bands)
+    g_lo, x_lo = crime.take_of(cat, lo, random.Random(0))
+    g_hi, x_hi = crime.take_of(cat, hi, random.Random(0))
+    span = f"L{lo}" if lo == hi else f"L{lo}-{hi}"
+    coin = "no coin" if not g_hi else (f"{g_lo}g" if g_lo == g_hi
+                                       else f"{g_lo}-{g_hi}g")
+    xp = (f"{round(x_lo * mult)}" if x_lo == x_hi
+          else f"{round(x_lo * mult)}-{round(x_hi * mult)}")
+    return (f"marks {span}: {coin}, {xp} sin/XP"
+            + (f" (x{mult:g})" if mult != 1.0 else ""))
+
+
 def cmd_case(args: argparse.Namespace) -> None:
     """Case a crime -- free, always. With no category it lists what has a
     mark where the party stands; with one it prints that mark's level,
@@ -3077,7 +3349,7 @@ def cmd_crime(args: argparse.Namespace) -> None:
         karma.record_karma(state["karma"], crime.WITNESS_SIN, "dark",
                            klog, party_level(state), state["clock"].day)
         print(f"  {cat['hint']} -- and now they have seen the party's "
-              f"faces (+{crime.WITNESS_SIN} bad karma). The take is "
+              f"faces (+{crime.WITNESS_SIN} sin). The take is "
               f"still there for whoever is standing at the end.")
         for line in klog:
             print(line)
@@ -3237,6 +3509,11 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             pay_crime(state, log, crime_take)
 
     if not wiped:
+        # Named kills (session C): the roster's cast members -- quest
+        # bosses, conquest defenders, posse leaders, the war's
+        # lieutenants -- are the ones the record keeps.
+        for name in _named_dead(foes):
+            remember(state, f"KILLED: {name}.")
         if mercy == "hell":
             # The Past Due visit resolved (won, or fought to a
             # standstill): hell's ONE visit is spent, so the job is
@@ -3592,9 +3869,9 @@ def cmd_take(args: argparse.Namespace) -> None:
               f"`travel {target_area['name']}`, `go {first['name']}`, then "
               f"`room` faces its next encounter.")
     if quest.get("align") == "dark":
-        print("(dark work: every XP it pays is BAD KARMA -- heat rises, "
-              "and the law comes collecting. Honest jobs burn bad karma "
-              "1:1; `karma` shows the meter.)")
+        print("(dark work: every XP it pays is SIN -- heat rises, "
+              "and the law comes collecting. Honest jobs burn sin "
+              "1:1; `sin` shows the meter.)")
     save(state)
 
 
@@ -3685,7 +3962,7 @@ def cmd_room(args: argparse.Namespace) -> None:
         karma.record_karma(state["karma"], karma.DEED_FAIL_KARMA, "dark",
                            klog, party_level(state), state["clock"].day)
         print(f"  {deed['fail']} -- witnesses are hard to avoid "
-              f"(+{karma.DEED_FAIL_KARMA} bad karma), and the fight is "
+              f"(+{karma.DEED_FAIL_KARMA} sin), and the fight is "
               f"on.")
         for line in klog:
             print(line)
@@ -4792,31 +5069,35 @@ def cmd_award(args: argparse.Namespace) -> None:
         print_levelup_menu([pc])
 
 
-def cmd_karma(args: argparse.Namespace) -> None:
-    """The karma & heat meter, and the DM's off-script sin/penance entry
-    (quest work buckets itself -- this is for improvised wickedness or
-    roleplayed virtue: the kicked puppy, the fenced heirloom, the coin
-    pressed into the beggar's hand)."""
+def cmd_sin(args: argparse.Namespace) -> None:
+    """The SIN & heat meter, and the DM's off-script sin/penance entry
+    (quest work and crime bucket themselves -- this is for improvised
+    wickedness or roleplayed virtue: the kicked puppy, the fenced
+    heirloom, the coin pressed into the beggar's hand)."""
     state = load()
     k = state["karma"]
     lvl = party_level(state)
     day = state["clock"].day
     if args.kind:
         if args.amount <= 0:
-            print("Usage: karma bad N [reason...] / karma good N "
+            print("Usage: sin dark N [reason...] / sin penance N "
                   "[reason...] -- N must be positive.")
             return
         log: list[str] = []
-        align = "dark" if args.kind == "bad" else "good"
+        align = "dark" if args.kind == "dark" else "good"
         karma.record_karma(k, args.amount, align, log, lvl, day)
         why = " ".join(args.why)
         word = "Sin" if align == "dark" else "Penance"
+        if why:
+            # An off-script scene the DM bothered to name is worth
+            # remembering; a bare number is bookkeeping, not history.
+            remember(state, f"{word} ({args.amount}): {why}")
         print(f"{word} recorded" + (f": {why}" if why else "") + ".")
         for line in log:
             print(line)
         save(state)
-    print(f"Karma: {karma.karma_line(k, lvl, day)}")
-    print(f"  lifetime: {k['bad_total']} wickedness, {k['good_total']} "
+    print(f"Sin: {karma.karma_line(k, lvl, day)}")
+    print(f"  lifetime: {k['sin_total']} sin, {k['penance_total']} "
           f"penance.")
     if k.get("last_leader"):
         print(f"  Last posse led by {k['last_leader']} (day "
@@ -4829,7 +5110,7 @@ def cmd_karma(args: argparse.Namespace) -> None:
     if h >= 1:
         print(f"  Posses arrive at party level +{h} -- at arrivals and "
               f"nights, at most one per {karma.PUNISH_COOLDOWN_DAYS} "
-              f"days. Honest quests burn bad karma 1:1.")
+              f"days. Honest quests burn sin 1:1.")
 
 
 def cmd_conquer(args: argparse.Namespace) -> None:
@@ -4875,7 +5156,7 @@ def cmd_conquer(args: argparse.Namespace) -> None:
     for line in quest_detail_lines(world, quest, day=state["clock"].day):
         print(line)
     print(f"(`take {quest['id']}` opens the assault. Dark work: every XP "
-          f"it pays is bad karma, and a holding keeps the heat floor up. "
+          f"it pays is sin, and a holding keeps the heat floor up. "
           f"The keep's strongbox pays on the day it falls.)")
 
 
@@ -5052,16 +5333,6 @@ def cmd_give(args: argparse.Namespace) -> None:
     save(state)
 
 
-def ensure_weapon_layer(world: dict) -> None:
-    """A pre-2026-07-28 save has no armory or smiths: roll them lazily on
-    a fixed derived rng, so an old world gains the layer once, the same
-    way every time."""
-    if "armory" not in world:
-        wrng = random.Random("armory:legacy")
-        world["armory"] = weaponlib.roll_armory(world, wrng)
-        world["smiths"] = weaponlib.roll_smiths(world, wrng)
-
-
 def cmd_claim(args: argparse.Namespace) -> None:
     """Take up a quest's weapon reward (the pay-band mode, 2026-07-28):
     the turn-in banked it as pending_reward; this puts it in a hand."""
@@ -5089,7 +5360,6 @@ def cmd_armory(args: argparse.Namespace) -> None:
     player hears of these through taverns and notables, not a list."""
     state = load()
     world = state["world"]
-    ensure_weapon_layer(world)
     print("\n".join(weaponlib.armory_lines(world["armory"])))
     print()
     print("\n".join(weaponlib.smith_lines(world["smiths"])))
@@ -5108,7 +5378,6 @@ def cmd_commission(args: argparse.Namespace) -> None:
         return
     party, purse = state["party"], state["purse"]
     world = state["world"]
-    ensure_weapon_layer(world)
     hero = find_hero(party, args.hero)
     if hero is None:
         return
@@ -5490,7 +5759,10 @@ def cmd_cast(args: argparse.Namespace) -> None:
     save(state)
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """Every subcommand and its rules. Split out from `main` (2026-08-04,
+    session C) so the command SURFACE is testable without running a
+    command -- `test_history` reads it to pin the karma -> sin rename."""
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -5890,31 +6162,32 @@ def main() -> None:
         "award",
         help="off-script bonus: award gold + an XP lump by hand (board "
              "quests pay themselves -- this is for improvised scenes). "
-             "--dark buckets the XP as BAD KARMA, --good as penance "
+             "--dark buckets the XP as SIN, --good as penance "
              "(karma & heat); plain awards touch neither.")
     p.add_argument("gold", type=int)
     p.add_argument("xp", type=int)
     p.add_argument("name")
     p.add_argument("--dark", action="store_true",
-                   help="the scene was wicked: its XP is bad karma")
+                   help="the scene was wicked: its XP is sin")
     p.add_argument("--good", action="store_true",
-                   help="the scene was virtuous: its XP burns bad karma")
+                   help="the scene was virtuous: its XP burns sin")
     p.set_defaults(func=cmd_award)
 
     p = sub.add_parser(
-        "karma",
-        help="the karma & heat meter (the villain layer): current bad "
-             "karma, heat, lifetime ledgers, the last posse's leader. "
-             "`karma bad N [reason]` / `karma good N [reason]` record an "
-             "off-script sin or penance by hand -- quest work buckets "
-             "itself; this is for improvised wickedness (the kicked "
-             "puppy) or roleplayed virtue. Guideline sizes: petty ~15, "
-             "serious ~50, an outrage ~100+ (one heat step is 100 x "
-             "party level).")
-    p.add_argument("kind", nargs="?", choices=("bad", "good"), default=None)
+        "sin",
+        help="the SIN & heat meter (the villain layer): current sin, "
+             "heat, the lifetime ledgers, the last posse's leader. "
+             "`sin dark N [reason]` / `sin penance N [reason]` record an "
+             "off-script sin or penance by hand -- quest work and crime "
+             "bucket themselves; this is for improvised wickedness (the "
+             "kicked puppy) or roleplayed virtue. Guideline sizes: petty "
+             "~15, serious ~50, an outrage ~100+ (one heat step is 100 x "
+             "party level). A named reason lands in ui/history.txt.")
+    p.add_argument("kind", nargs="?", choices=("dark", "penance"),
+                   default=None)
     p.add_argument("amount", nargs="?", type=int, default=0)
     p.add_argument("why", nargs="*", default=[])
-    p.set_defaults(func=cmd_karma)
+    p.set_defaults(func=cmd_sin)
 
     p = sub.add_parser(
         "case",
@@ -5947,7 +6220,7 @@ def main() -> None:
              "fumbles it and never fights (flat small sin, coin in "
              "pennies). A DEED rolls 2d6+stat vs its DC: a make takes it "
              "clean, a miss botches it into the protection with "
-             f"witnesses (+{crime.WITNESS_SIN} bad karma). FORCE skips "
+             f"witnesses (+{crime.WITNESS_SIN} sin). FORCE skips "
              "the check and goes through the protection to the take. "
              "Difficulty is the MARK's level, never a gate: nothing is "
              "locked, and nothing scales to the party. All the XP is "
@@ -5965,6 +6238,19 @@ def main() -> None:
     p.set_defaults(func=cmd_crime)
 
     p = sub.add_parser(
+        "crimes",
+        help="the CRIME SHEET (2026-08-04, session C -- the `prices` "
+             "pattern for the dark side): the whole catalogue available "
+             "where the party stands, each row quoting what its mark "
+             "BAND is worth (gold, sin/XP with the current multiplier), "
+             "the check it asks for and the protection it wears -- then "
+             "the party's tally of sin and hell's current suggestions. "
+             "`case KEY` reads TODAY'S rolled mark exactly; this reads "
+             "the band, so it answers 'what is worth doing here' in one "
+             "screen. A pure readout: no save touched.")
+    p.set_defaults(func=cmd_crimes)
+
+    p = sub.add_parser(
         "conquer",
         help="declare the assault on the settlement the party stands in "
              "(the domain layer, 2026-07-27): builds the garrison job at "
@@ -5972,7 +6258,7 @@ def main() -> None:
              "6-10, capital 11-15 -- rolled once, stable, geography not "
              "gate), capped by a named defender. Take it like a war wave "
              "(`take QID`), fight it with `room`; the last room's fall "
-             "flips the tag. Dark work: all its XP is bad karma, and "
+             "flips the tag. Dark work: all its XP is sin, and "
              "every holding keeps the heat floor up.")
     p.set_defaults(func=cmd_conquer)
 
@@ -6159,13 +6445,17 @@ def main() -> None:
 
     p = sub.add_parser(
         "sheet",
-        help="rewrite party/map and COMMIT every existing ui/*.txt page, "
-             "including the last-fight short and detailed logs. Run at the "
-             "END of every DM message; committing unchanged pages is a "
-             "harmless no-op.")
+        help="rewrite party/map/history and COMMIT every existing "
+             "ui/*.txt page, including the last-fight short and detailed "
+             "logs. Run at the END of every DM message; committing "
+             "unchanged pages is a harmless no-op.")
     p.set_defaults(func=cmd_sheet)
 
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> None:
+    args = build_parser().parse_args()
     args.func(args)
 
 

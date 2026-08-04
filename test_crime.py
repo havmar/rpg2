@@ -296,7 +296,7 @@ class Monotony(unittest.TestCase):
 class Unlocks(unittest.TestCase):
     def state(self, done=0, sin=0):
         k = karma.new_karma()
-        k["bad_total"] = sin
+        k["sin_total"] = sin
         return crime.new_crimes(), k, {"done": done}
 
     def test_nothing_is_advertised_before_the_first_assignment(self):
@@ -379,7 +379,7 @@ class TheNewsCycle(unittest.TestCase):
         self.assertEqual(k["hot_until"], 10 + karma.NEWS_DAYS)
         # Buy every point of it off the same day...
         karma.record_karma(k, step, "good", log, 3, day=10)
-        self.assertEqual(k["bad"], 0)
+        self.assertEqual(k["sin"], 0)
         # ...and the town still talks.
         self.assertEqual(karma.heat(k, 3, day=10), 1)
         self.assertEqual(karma.heat(k, 3, day=10 + karma.NEWS_DAYS - 1), 1)
@@ -398,7 +398,7 @@ class TheNewsCycle(unittest.TestCase):
 
     def test_the_news_never_lowers_real_heat(self):
         k = karma.new_karma()
-        k["bad"] = karma.heat_step(2) * 3
+        k["sin"] = karma.heat_step(2) * 3
         k["hot_until"] = 99
         self.assertEqual(karma.heat(k, 2, day=1), karma.HEAT_CAP)
 
@@ -412,7 +412,7 @@ class TheNewsCycle(unittest.TestCase):
         k = karma.new_karma()
         log: list[str] = []
         karma.record_karma(k, karma.heat_step(4) * 2, "dark", log, 4)
-        self.assertEqual(k["bad_total"], karma.heat_step(4) * 2)
+        self.assertEqual(k["sin_total"], karma.heat_step(4) * 2)
         self.assertEqual(k["hot_until"], 0)
 
     def test_a_fresh_karma_dict_carries_the_key(self):

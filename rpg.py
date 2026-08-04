@@ -868,8 +868,8 @@ class Weapon:
                             # (the flying lunge; once per fight)
     gold_on_kill: int = 0   # the Midas quirk: gold per felled foe, capped at
                             # MIDAS_FIGHT_CAP kills a fight (session collects)
-    karma_on_kill: int = 0  # the dark quirk: bad karma per felled foe (the
-                            # whip of bad karma -- session collects)
+    karma_on_kill: int = 0  # the dark quirk: sin per felled foe (the
+                            # whip of sin -- session collects)
     # Ranged cards (2026-07-16; see the ranged-combat constants block).
     # range 0 = a melee weapon (everything above); range N = shoots targets
     # at gap 1..N and is USELESS at gap 0 (the melee grip below takes over
@@ -2393,7 +2393,7 @@ class Entity:
     quirk_gold: int = field(default=0)  # gold owed by a Midas weapon, until
                                          # the session drains it to the purse
                                          # (persists across a pause/save)
-    quirk_karma: int = field(default=0) # bad karma owed by a dark weapon,
+    quirk_karma: int = field(default=0) # sin owed by a dark weapon,
                                          # until the session records it
     # Per-fight spell states (all cleared by _clear_fight_states at fight
     # end / on a break-away -- nothing here crosses fights):
@@ -3966,7 +3966,7 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
                             f"+{w.gold_on_kill}g owed)")
             if w.karma_on_kill:
                 _debug(log, f"    (the {w.name} drinks the kill: "
-                            f"+{w.karma_on_kill} bad karma owed)")
+                            f"+{w.karma_on_kill} sin owed)")
 
     # What the blow LEAVES (slice 3b), recorded on the played party only. This
     # runs AFTER the death branch on purpose: a crippling blow to a limb is

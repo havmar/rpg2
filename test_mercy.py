@@ -163,7 +163,7 @@ class DefeatMercy(unittest.TestCase):
             "purse": rpg.Purse(12),
             "rng": random.Random(1),
             "clock": rpg.Clock(),
-            "karma": {"bad": 25},
+            "karma": {"sin": 25},
             "pending": {},
         }
         foes = [sites.make_foe("cutthroat", 1, random.Random(1))]
@@ -172,7 +172,7 @@ class DefeatMercy(unittest.TestCase):
             state, foes, "law", [], participants=party))
         self.assertEqual(state["party"], [pc])
         self.assertEqual(state["purse"].gold, 0)
-        self.assertEqual(state["karma"]["bad"], 0)
+        self.assertEqual(state["karma"]["sin"], 0)
         defeat(pc)
         self.assertFalse(session.apply_mercy(
             state, foes, "law", [], participants=[pc]))

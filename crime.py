@@ -440,15 +440,18 @@ def category(key: str) -> dict | None:
 
 
 def new_crimes() -> dict:
-    return {"ledger": {},    # category key -> {count, days, unlocked}
+    return {"ledger": {},    # category key -> {count, days, last, unlocked}
             "grants": 0}     # suggestions handed out so far
+
+
+EMPTY_RECORD = {"count": 0, "days": [], "last": -1, "unlocked": False}
 
 
 def record_for(crimes: dict, key: str) -> dict:
     """The live record, created on demand. Use `peek` for displays --
     every call here writes a row into the save."""
-    return crimes.setdefault("ledger", {}).setdefault(
-        key, {"count": 0, "days": [], "unlocked": False})
+    return crimes.setdefault("ledger", {}).setdefault(key,
+                                                      dict(EMPTY_RECORD))
 
 
 def peek(crimes: dict, key: str) -> dict:
@@ -456,8 +459,7 @@ def peek(crimes: dict, key: str) -> dict:
     empty record when there is none. Reading the catalogue must not write
     27 empty rows into the save."""
     rec = (crimes.get("ledger") or {}).get(key)
-    return rec if rec is not None else {"count": 0, "days": [],
-                                        "unlocked": False}
+    return rec if rec is not None else dict(EMPTY_RECORD)
 
 
 def recent_days(rec: dict, day: int) -> list[int]:
@@ -489,17 +491,24 @@ def stamp(crimes: dict, key: str, day: int) -> dict:
     """Book one commission: the count, the day stamp, and the by-deed
     unlock (a crime the player found on their own is never locked again).
     Call AFTER reading sin_mult -- the multipliers describe the state the
-    crime was committed against."""
+    crime was committed against.
+
+    `last` is kept SEPARATELY from `days` (2026-08-04, session C): the
+    day stamps age out of the monotony window by design, so the tally's
+    'last done' column would forget a career-defining crime ten days
+    after it happened. The window is hell's boredom; the tally is the
+    record."""
     rec = record_for(crimes, key)
     recent_days(rec, day)
     rec["count"] += 1
     rec["days"].append(day)
+    rec["last"] = max(rec.get("last", -1), day)
     rec["unlocked"] = True
     return rec
 
 
 def lifetime_sin(karma_state: dict) -> int:
-    return karma_state.get("bad_total", 0)
+    return karma_state.get("sin_total", 0)
 
 
 def unlocks_due(karma_state: dict, pact: dict | None) -> int:
@@ -531,28 +540,46 @@ def refresh_unlocks(crimes: dict, karma_state: dict, pact: dict | None,
     return fresh
 
 
-def suggestions(crimes: dict, n: int = SUGGESTIONS_SHOWN) -> list[dict]:
+def suggestions(crimes: dict, n: int = SUGGESTIONS_SHOWN,
+                rng: random.Random | None = None) -> list[dict]:
     """The feed: unlocked categories the party has never committed. This
-    is advertising, not permission -- everything is always available."""
+    is advertising, not permission -- everything is always available.
+
+    Pass an `rng` for a SHUFFLED feed (session C's history page seeds one
+    off the world and the day): catalogue order would advertise the same
+    two petty crimes forever, because the catalogue is sorted by shape."""
     out = []
     for c in CATEGORIES:
         rec = peek(crimes, c["key"])
         if rec["unlocked"] and rec["count"] == 0:
             out.append(c)
+    if rng is not None:
+        rng.shuffle(out)
     return out[:n]
 
 
 def tally_rows(crimes: dict) -> list[tuple[str, int, int]]:
     """(category name, count, last day) for every committed category,
-    busiest first -- THE TALLY OF SIN's rows (session C's history page)."""
+    busiest first -- THE TALLY OF SIN's rows (session C's history page).
+    Reads `last`, not the monotony window's day stamps: the window
+    forgets on purpose and the tally never does."""
     rows = []
     for c in CATEGORIES:
-        rec = crimes.get("ledger", {}).get(c["key"])
+        rec = (crimes.get("ledger") or {}).get(c["key"])
         if rec and rec["count"]:
-            last = max(rec["days"]) if rec["days"] else -1
+            last = rec.get("last", -1)
+            if last < 0 and rec.get("days"):
+                last = max(rec["days"])
             rows.append((c["name"], rec["count"], last))
     rows.sort(key=lambda r: (-r[1], r[0]))
     return rows
+
+
+def total_crimes(crimes: dict) -> int:
+    """Every commission the ledger has ever booked -- counted off the
+    same rows the tally prints, so the total and the rows can never
+    disagree (a key the catalogue no longer carries is not a crime)."""
+    return sum(count for _, count, _ in tally_rows(crimes))
 
 
 # --------------------------------------------------------------------------- #

@@ -743,7 +743,7 @@ DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
 
 # Crime pays (karma & heat, 2026-07-19): a DARK quest's gold is multiplied
 # -- the shadow economy's premium. Its XP is the liability instead (every
-# point is BAD KARMA; karma.py). Dark quests never come from worldgen (the
+# point is SIN; karma.py). Dark quests never come from worldgen (the
 # shadow board rolls them lazily, session.py), so no bench sees this knob.
 DARK_GOLD_MULT = 1.5
 
@@ -1861,7 +1861,7 @@ def quest_line(quest: dict, day: int | None = None) -> str:
                 f"{quest_gold_posted(quest)}g, "
                 f"{quest_xp_posted(quest)} XP{mark}")
     dark = " DARK" if quest.get("align") == "dark" else ""
-    xp_note = " (bad karma)" if dark else ""
+    xp_note = " (sin)" if dark else ""
     rw = quest.get("reward_weapon")
     pay = (f"pays a {rw['name']}" if rw
            else f"pays {quest_gold_posted(quest)}g")

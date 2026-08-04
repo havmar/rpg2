@@ -78,8 +78,9 @@ Concretely:
      past the width. The `fit_lines` helper and the tally/pause
      penalty display are the pattern to reuse.
    - **Local map page:** add **`ui/minimap.txt`** beside the shipped
-     `ui/map.txt`. `map.txt` is the macro Land/Area view; the minimap is the
-     current Area/Site/Room branch, visible exits, and local quest markers.
+     `ui/map.txt` and `ui/history.txt`. `map.txt` is the macro Land/Area
+     view; the minimap is the current Area/Site/Room branch, visible
+     exits, and local quest markers.
      It should use the shipped `look`/breadcrumb data and join the same
      rewrite + `sheet` commit lifecycle. This is UI only; the persistent
      Land -> Area -> Site -> Room foundation shipped 2026-07-22.
@@ -108,21 +109,25 @@ Concretely:
 
 ---
 
-## THE DARK REWORK (2026-08-04) — sessions A and B SHIPPED; next up: the surface
+## THE DARK REWORK (2026-08-04) — COMPLETE (sessions A, B and C shipped)
 
 The 2026-08-04 design session (designlog has the reasoning trail). This
 section is the complete implementation spec: a fresh session should be
 able to build any slice from it without the conversation that produced
 it. Three sessions, in order — each leaves the game playable.
 
-**Status: Sessions A and B shipped 2026-08-04.** A was the assignment
+**Status: all three sessions shipped 2026-08-04.** A was the assignment
 ladder (the template sort, the deck, the pins, the one-visit write-off,
 the law's eased cooldown, the shadow board's removal; rules.md's Karma &
 Heat add-on and dm.md carry the played rules, `test_pact.py` the
 contracts). B was crime as free actions (`crime.py`, `case`/`crime`, the
 news cycle, the unlock ledger; rules.md's **Crime add-on** is its doc of
 record, dm.md's "Crime -- the free actions" the table manner, and
-`test_crime.py` the contracts). Session C is unbuilt.
+`test_crime.py` the contracts). C was the surface: `ui/history.txt`, the
+`crimes` sheet and the SIN rename (rules.md's **The Campaign Record**
+add-on and its `crimes` section, dm.md's "The record", `test_history.py`
+the contracts). What remains of the rework is nothing — the section is
+kept as the built spec, not as work.
 
 **The resort** (done in session A). The 24 dark templates conflated two
 different things, and they were sorted apart:
@@ -139,11 +144,13 @@ different things, and they were sorted apart:
   (`board --dark`) died with it in session A; the ACTIONS shipped in
   session B (`crime.py`).
 
-**Rename:** bad karma → **SIN** (current sin / lifetime sin / penance),
-including the save keys. **develop.md's "No backwards compatibility"
-rule (2026-08-04) governs this whole rework**: rename keys freely, and
-delete old-save assertions and lazy-upgrade branches wherever a touched
-file carries them. No shims.
+**Rename (SHIPPED, session C):** bad karma → **SIN** (current sin /
+lifetime sin / penance), save keys included (`sin` / `sin_total` /
+`penance_total`), the `karma` command gone in favour of `sin` with no
+alias. **develop.md's "No backwards compatibility" rule (2026-08-04)
+governed this whole rework**: keys were renamed freely, and session C
+also deleted `ensure_weapon_layer`, the last named lazy-upgrade branch.
+No shims.
 
 ### Settled decisions (2026-08-04 — reopen only with the designer)
 
@@ -316,32 +323,52 @@ is the intended shape of "difficulty comes from the mark"; if the make
 proves too cheap, the levers are a DC that climbs with the mark or a
 lump the clean take only partly pays.
 
-### Session C — the surface: history page, tally, the sin rename
+### Session C — the surface — SHIPPED 2026-08-04
 
-- **`ui/history.txt`** — the fourth committed UI page (cashes the
-  parked "quest history readout"), rewritten on every save, committed
-  by `sheet` like party/map/fight. Sections: QUESTS DONE (day-stamped
-  one-liners with the epilogue), REMARKABLE (waves, conquests, mercies,
-  maimings, write-offs, named kills), THE TALLY OF SIN (category:
-  count, last day), SUGGESTIONS (2–3 unlocked-but-uncommitted
-  categories, seeded random order). Save keys: `history` (list of
-  day-stamped lines), plus Session B's `crimes` ledger. 40-column wrap.
-- **The rename**: karma save keys `bad` → `sin`, `bad_total` →
-  `sin_total`, `good_total` → `penance_total`; every display string
-  ("dark work: +N sin", "sin N; HEAT h", "lifetime sin"); the `karma`
-  command becomes `sin` (no alias — no compat); rules.md / dm.md sweep.
-  Heat stays heat (it is the law's meter, not hell's).
-- **`crimes` command** — the `prices` pattern: the catalog with
-  expected take / check / protection for the LOCAL marks, the tally,
-  and the suggestions. This is the player's crime surface; the DM's
-  numbers all live in `crime.py`'s knobs.
-- **Tests**: contracts for the history page (sections present, 40-col
-  fit), the unlock ledger, and the monotony math; finish deleting
-  old-save assertions in every suite this rework touched.
+Built as specced. **`ui/history.txt`** is the fourth rewritten UI page
+(the parked "quest history readout", cashed) with the four specced
+sections over the new `history` save key; the **`crimes`** sheet is the
+`prices` pattern for the dark side; the **SIN rename** ran through the
+save keys, every display string, and the `karma` command (now `sin`,
+no alias). rules.md's **The Campaign Record** add-on and the `crimes`
+section of the Crime add-on are the docs of record, dm.md's "The
+record" the table manner, `test_history.py` the contracts (52).
 
-### What dies (the full list)
+**Five decisions the spec left open, settled in the build:**
 
-**Already gone (session A, 2026-08-04):** `TASK_INTERVAL_DAYS`,
+- **The tally's "last day" is its own field.** The spec's `(category:
+  count, last day)` cannot be read off the monotony window: those day
+  stamps prune themselves as they are read — that is what makes
+  monotony temporary — so a career-defining crime would go dayless ten
+  days after it happened. `crime.stamp` now keeps `last` beside `days`.
+- **`history` records carry a KIND.** The spec says "list of
+  day-stamped lines", but the page has two narrative sections, so each
+  record is `{day, kind, line}` (+ an optional `note` for the
+  epilogue), and the CAP (60) is applied per kind — a career of jobs
+  must never push the write-offs and maimings off the page.
+- **Maimings are scanned, not hooked.** A maiming lands deep inside
+  `_attack`; rather than thread a recorder through the melee, `save`
+  re-scans the party's permanent wounds and `remember`'s duplicate
+  guard absorbs the repeats.
+- **Named kills are detected by SHAPE.** Ordinary rows are numbered off
+  the catalog ("Cutthroat 2"), so a dead foe with no trailing number is
+  somebody the fiction cast. No new Entity flag, no serialization
+  change.
+- **A hand-entered sin lands in the record only when it is NAMED.**
+  `sin dark 40 burned the tax rolls` writes a line; a bare `sin dark
+  40` is bookkeeping, not history.
+
+Also folded in: the **`crimes` sheet reads the BAND, not a rolled
+mark** (`case` stays the exact read) and quotes each category's
+authored what-stands-in-the-way line rather than dumping its guard
+pool; `suggestions` takes an optional rng so the feed can be shuffled
+(catalogue order would advertise the same two petty crimes forever);
+and `main` was split into `build_parser` + `main` so the command
+surface is testable.
+
+### What died (the full list)
+
+**Session A (2026-08-04):** `TASK_INTERVAL_DAYS`,
 `FIRST_TASK_LEVEL`, `last_task_day`, `DARK_JOBS_PER_DAY`,
 `roll_dark_board` / the `dark_board` save key / `board --dark`, the
 fifteen crime templates as QUESTS (content recycled into
@@ -349,8 +376,10 @@ fifteen crime templates as QUESTS (content recycled into
 `ENFORCE_CAP_OVER`, the +1-per-visit escalation and its relentless top
 rung — replaced by the one-visit write-off with `ENFORCE_SPREAD`).
 
-**Still to die (session C):** the `karma` command name, the old karma
-save keys.
+**Session C (2026-08-04):** the `karma` command name, the karma save
+keys `bad` / `bad_total` / `good_total`, and — the rework's
+no-backwards-compatibility rule applied to a file it touched —
+`session.ensure_weapon_layer`, the lazy pre-2026-07-28 armory backfill.
 
 ### Explicitly not in this rework (still parked / open)
 
@@ -933,7 +962,6 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   bench's even-duo story. *(Pivot note: a karma-playing career variant
   — dark quests + posses in the policy — is the natural check once the
   villain game has been played; today no sim sees karma at all.)*
-- **Quest history readout** — cheap; gives the save a memoir.
 - **Site persistence / repopulation** — the stick version of one-go
   sites. *(2026-07-26: its old trigger is gone — the attrition rework
   DELETES the XP streak. The new pressure is the wound track: camping
