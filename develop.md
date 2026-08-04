@@ -79,6 +79,28 @@ his own design back to him.
   terse: the shared guide governs words *inside the game*, not explanations
   about the game.
 
+## No backwards compatibility — ever (2026-08-04, designer directive)
+
+This project has exactly ONE player: the designer. His loop is to playtest
+until something big or breaking surfaces, change the game, and **start a
+new game**. The game is in early development; optimizing it around old
+saves would be optimizing the wrong thing. Therefore:
+
+- **Save compatibility is never a design input.** Never write migration
+  shims, lazy upgrades, or missing-key fallbacks whose only purpose is
+  loading an old `save.json`. When a better key name or state shape wins,
+  take it and let old saves break.
+- **Old-save round-trip tests are historical.** Several suites assert that
+  a pre-slice save loads clean (`test_conditions`, `test_wounds`,
+  `test_mercy`, `test_weapon_gen`, `test_conquest`) — those assertions
+  documented past caution, not a standing requirement. Delete them (and
+  any lazy-upgrade branch they cover, e.g. `ensure_weapon_layer`-style
+  backfills) whenever you touch their files; never add new ones.
+- **Optimize for the good game.** If a change is better for play and
+  breaks every existing save, it is simply better. The same spirit applies
+  inside the codebase: refactor freely — the test suites and benches are
+  the safety net, not frozen interfaces.
+
 ## Files
 
 **Mechanics detail lives in `rules.md`, not in this list.** Each entry here is

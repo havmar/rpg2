@@ -1136,3 +1136,69 @@ in gold, failure rumors working) — re-judge the overall time pressure
 after this lands; the posting-window knob (`QUEST_WINDOW_DAYS`) is the
 one lever if it still feels tight. The law's posses, the heat formula,
 and the LAW/HELL mercy reshaping are untouched.
+
+## 2026-08-04 — The dark rework: assignments from Hell, crime as actions
+
+**The designer's brainstorm.** Dark quests should be sorted into two
+different things. Actual assignments from hell should be FEW, like the
+war waves — pinned levels, longer deadlines, occult content (hellgate,
+desecration, blood sacrifice) — with refusal triggering a retribution
+chain of three attacks at same level / +1 / +2. Crime, meanwhile,
+should stop being quests at all: free actions the PC takes because they
+want to (NPCs freely attacked or robbed, puppies kicked, lunches left
+unpaid), the whole questgiver frame gone, material gain flowing directly
+from the deed. Wanted from the session: a crime catalogue with
+mechanics (XP/karma, gold, fights, checks), an answer to crime
+difficulty that avoids both auto-levelling and impossible/trivial
+noise, gamification (a log/history page with a crime tally and
+suggestion unlocks), a bad-karma→sin rename, a monotony/creativity
+mechanism, and an answer to the karma-neutralization dodge.
+
+**The analysis that shaped the answers.** Most of the machinery already
+existed: the requested retribution chain IS the shipped Past Due ladder
+(+0/+1/+2 capped, warning first); level pins have the war-wave model;
+the crime ability check is the caper deed generalized; leveled
+individuals are the conquest garrison doctrine (geography, not gates)
+applied to people. The refuser analysis found the real gap: under pins,
+the old endless top-rung enforcement plus the serial rule would leave a
+good-alignment campaign permanently besieged behind one refused job —
+hence the FINITE chain with a write-off and a `defied` ledger.
+Neutralization: the dodge is real (only good work burns, instantly,
+1:1; small crime lumps make staying under the step easy), but lifetime
+sin never burns, so the unlock spine is laundering-proof; the fix
+chosen is a NEWS CYCLE (a big single score floors heat at 1 for a few
+days regardless of penance) rather than a 2:1 penance rate, which would
+break the tuned one-quest-one-step symmetry everywhere.
+
+**Decided** (the full implementation spec is plan.md's THE DARK REWORK
+section — three sessions, A assignments / B crime actions / C surface):
+
+- Pins at ODD levels 1–19, ten per career — the designer chose "more
+  frequent" over the proposed sparser six.
+- The occult ten (nine existing + a new Desecrate the Shrine) form a
+  per-save shuffled DECK dealt one per pin, in RANDOM order by
+  directive: the proposed thematic curriculum arc (hellgate last) was
+  overruled with the played-reality argument turned back on it — only
+  the first levels ever get played, so variety beats sense. Band
+  feasibility still gates the deal (skip-and-keep).
+- The finite retribution chain: warning + three fights, then write-off.
+- Crime difficulty by MARK level (banded wealth+protection, settlement
+  kind gates the top, casing free); the posse/heat layer stays the
+  world's aftermath pushback.
+- Petty crime pays (small) XP, all sin — designer call.
+- Monotony: per-category day-stamp window (temporary by construction;
+  alternating two categories does NOT reset — intended), plus a
+  first-time ×1.5 creativity bonus; gold never depreciates.
+- Unlocks gate suggestions, never permission; full list ~4,750 lifetime
+  sin (half of half the 19,000 XP budget), first suggestion unlocked by
+  the first completed assignment.
+- The news cycle for neutralization; petty laundering stays viable on
+  purpose.
+- Bad karma → SIN, save keys included.
+
+**The no-backwards-compatibility directive** (recorded as a standing
+rule, develop.md): the designer is the only player, playtests end at
+the first big break and restart fresh — save compatibility is NEVER a
+design input, old-save shims and round-trip assertions are to be
+deleted as touched, never added. Optimize for the good game, not for
+old saves.
