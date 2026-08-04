@@ -63,12 +63,6 @@ the party is at Firascir > Grendon
   Enkhar (village) -- 2 job(s)
   Aradun (village) -- 2 job(s)
 
--- quests in hand (where they lead) --
-
-[q78] Corrupt the Holy Sword (L4) @
-  Tomburgh
-  - the temple road (L4): here, room 2/2
-
 -- the war --
 THE WAR: [w1] L2 The Dead Rise -- raised
   at Ulus-Gal.

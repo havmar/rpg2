@@ -46,3 +46,81 @@ a deep gash across the back.
 Temple Guard Captain 16 (7/13)
 edges past Perrin, deals 1 dmg.
 == Dagna is badly cut up ==
+Round 4:
+!! Dagna is Winded.
+Dagna's fire bolt is warded off.
+Perrin (10/12)
+attacks Temple Guard Captain 16, parried.
+Sharn (8/10)
+overwhelms Temple Guard Captain 16,
+deals 6 dmg!!!
+Priest 15's ice bolt is warded off.
+Temple Guard Captain 16 (1/13)
+attacks Perrin, parried.
+The beaten foes break and run!
+Perrin (10/12)
+overwhelms Temple Guard Captain 16,
+deals 4 dmg!! It falls.
+The survivors escape.
+The field belongs to the party.
+The party catches its breath (+1 STA)
+Snagg +35 XP (encounter) [59/400]
+Dagna +35 XP (encounter) [70/300]
+Perrin +35 XP (encounter) [70/300]
+Sharn +35 XP (encounter) [70/400]
+(dark work: +70 bad karma -- bad karma 465; HEAT 1 -- retribution hunts 1 level(s) above the party)
+Left among the dead:
+a longsword (+0 atk/+1 sev, 15g).
+
+*** QUEST COMPLETE:
+Corrupt the Holy Sword --
+the temple road. Reward: 172 gold. ***
+Snagg talks the pay up:
++52g (224g in all).
+The party purse holds 231 gold.
+Snagg +106 XP (quest) [165/400]
+Dagna +106 XP (quest) [176/300]
+Perrin +106 XP (quest) [176/300]
+Sharn +106 XP (quest) [176/400]
+Dagna: satisfaction 7 -> 8/10
+(a job paid out)
+Perrin: satisfaction 7 -> 8/10
+(a job paid out)
+Sharn: satisfaction 7 -> 8/10
+(a job paid out)
+(dark work: +212 bad karma -- bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party)
+(turn in to
+Jorik, the masked collector --
+narrate the scene)
+EPILOGUE (day 12): The sword looks unchanged, but its miracles stop. The temple closes.
+(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 2 completed. The next job comes in its own time.)
+Dagna: satisfaction 8 -> 7/10
+(badly bloodied)
+The party shares out its potions:
+Snagg: 1 stamina; Dagna: 2 stamina;
+Perrin: 1 stamina; Sharn: 1 stamina.
+
+-- the party --
+Snagg: Down STA 6/6 Power 1/3
+  [DOWN]
+  (hurt -4 to rolls)
+  - badly beaten (sev 3)
+  - a withered arm [PERMANENT] (sev 3)
+  - a crippled hand [PERMANENT] (sev 3)
+  - a cracked rib (dressed) (sev 1)
+  - a shallow cut along the ribs (sev 1)
+  (HP ceiling 6/12 until they mend)
+  (stamina x1)
+Dagna: Reeling STA 4/9 Power 0/7
+  (hurt -2 to rolls)
+  - a deep gash across the back (sev 2)
+  (HP ceiling 9/11 until they mend)
+  (stamina x2)
+Perrin: Scratched STA 7/9 Power 5/5
+  (stamina x1)
+Sharn: Scratched STA 8/9 Power 4/4
+  - a shallow cut along the ribs (sev 1)
+  (HP ceiling 9/10 until they mend)
+  (stamina x1)
+Purse 231g; day 12.
+Karma: bad karma 677; HEAT 1 -- retribution hunts 1 level(s) above the party.
