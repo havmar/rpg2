@@ -1,102 +1,45 @@
-=== The Clan War ===
-the mine entrance (L1),
-room 1/1: outer watch
-Rival Scout 3 -- light hammer
-DEX 5  STR 3  STA 5  HP 7/7
-takes spoils, leaves the fallen
-Rival Soldier 4 -- spear
-DEX 5  STR 4  STA 6  HP 10/10
+=== The Vault Heist botched:
+the dragon of the valley (L14) ===
+4x Guard Captain -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
 takes spoils, leaves the fallen
 Round 1:
 Simon uses First Blood!
-Rival Scout 3 takes 1 dmg.
-Round 2:
-Riardon (8/9) edges past Rival Scout 3,
-deals 2 dmg!
-Simon (7/8) overwhelms Rival Scout 3,
-deals 4 dmg!! It falls.
-Rival Scout 3 strikes as they fall:
-Simon parries.
-Rival Soldier 4 outmaneuvers Riardon,
+Guard Captain 5 takes 1 dmg.
+Riardon (8/9)
+attacks Guard Captain 5, parried.
+Simon attacks Guard Captain 5, parried.
+Guard Captain 5 (12/13)
+overwhelms Simon, deals 6 dmg!!!
+Simon takes a wound:
+a torn side, badly closed.
+Guard Captain 6 edges past Riardon,
 deals 1 dmg.
+Guard Captain 7
+attacks Riardon, parried.
+Guard Captain 8 outmaneuvers Simon,
+deals 4 dmg!!
+Simon takes a wound:
+a deep wound in the thigh. They go DOWN.
+Round 2:
+Riardon: Trip at Guard Captain 5!
+Riardon (7/9)
+attacks Guard Captain 5, parried.
+Guard Captain 5 (12/13)
+attacks Riardon, parried.
+Guard Captain 6 and Riardon: Clash!
+Guard Captain 7 circles, crowded out.
+Guard Captain 8 circles, crowded out.
 Round 3:
 Riardon (7/9)
-outmaneuvers Rival Soldier 4,
-deals 2 dmg!
-!! Simon is Winded.
-Simon (7/8)
-attacks Rival Soldier 4, parried.
-Rival Soldier 4 (8/10)
-attacks Simon, parried.
-Round 4:
-Riardon (7/9)
-outmaneuvers Rival Soldier 4,
-deals 2 dmg!
-Simon (7/8)
-outmaneuvers Rival Soldier 4,
-deals 1 dmg.
-!! Rival Soldier 4 is Winded.
-Rival Soldier 4 (5/10)
-outmaneuvers Riardon, deals 2 dmg!
-Riardon takes a wound: a split knuckle.
-Round 5:
-Simon downs a stamina draught (0 left).
-!! Riardon is Winded.
-Riardon (5/9)
-attacks Rival Soldier 4, parried.
-Rival Soldier 4 (5/10) edges past Simon,
-deals 1 dmg.
-Round 6:
-Riardon (5/9)
-attacks Rival Soldier 4, parried.
-Simon (6/8)
-outmaneuvers Rival Soldier 4,
-deals 1 dmg.
-Rival Soldier 4 (4/10)
-attacks Simon, parried.
-The beaten foes break and run!
-Simon (6/8) overwhelms Rival Soldier 4,
-deals 4 dmg!! It falls.
-The party catches its breath (+1 STA)
-Riardon +28 XP (encounter) [56/100]
-Simon +28 XP (encounter) [56/100]
-Loot: 5 gold (purse 5g).
-Left among the dead:
-a light hammer (+0 atk/-1 sev, 2g),
-a spear (+0 atk/+0 sev, 5g).
-
-*** QUEST COMPLETE: The Clan War --
-the mine entrance (site 2/2).
-Reward: 29 gold. ***
-Riardon talks the pay up:
-+3g (32g in all).
-The party purse holds 37 gold.
-Riardon +85 XP (quest) [141/100]
-*** Riardon reaches level 2!
-(3 skill points unspent) ***
-Simon +85 XP (quest) [141/100]
-*** Simon reaches level 2!
-(3 skill points unspent) ***
-Simon: satisfaction 7 -> 8/10
-(a job paid out)
-(turn in to Kildrak, the clan elder --
-narrate the scene)
-EPILOGUE (day 2): The rival clan is defeated. The fighting ends.
-Simon trains: combat rank 1
-[1 point(s) left]
-Simon drills a new move: Pommel Strike
-[0 point(s) left]
-Riardon downs a stamina draught: STA 7/7
-(0 left).
-The party shares out its potions:
-Riardon: 1 healing.
-
--- the party --
-Riardon: Bloodied STA 7/7 Power 6/6
-  (hurt -1 to rolls)
-  - a split knuckle (sev 1)
-  (HP ceiling 8/9 until they mend)
-  (healing x1)
-Simon: Scratched STA 5/5 Power 2/6
-  (no kit)
-Purse 37g; day 2.
+attacks Guard Captain 5, parried.
+Guard Captain 5 (12/13)
+overwhelms Riardon,
+but Bulwark blunts it: deals 4 dmg!!
+Riardon takes a wound:
+a deep gash across the back.
+Guard Captain 6
+attacks Riardon, parried.
+Guard Captain 7 circles, crowded out.
+Guard Captain 8 circles, crowded out.
+== Riardon is badly cut up ==

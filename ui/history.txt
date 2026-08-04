@@ -10,9 +10,10 @@ day 2: [q02] The Clan War (L1) -- done.
   (nothing yet)
 
 -- THE TALLY OF SIN --
-  (no crime committed yet)
-  clean; heat 0
-  lifetime sin 0 / penance 141
+  The Vault Heist: 1, last day 4
+  (1 crime(s) in 1 category)
+  sin 15/200; heat 0 -- lying low
+  lifetime sin 15 / penance 141
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

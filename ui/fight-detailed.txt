@@ -1,104 +1,49 @@
-=== The Clan War -- the mine entrance (L1), room 1/1: outer watch ===
-  Rival Scout 3 -- light hammer
-  DEX 5  STR 3  STA 5  HP 7/7
-  takes spoils, leaves the fallen
-  Rival Soldier 4 -- spear
-  DEX 5  STR 4  STA 6  HP 10/10
+=== The Vault Heist botched: the dragon of the valley (L14) ===
+  4x Guard Captain -- longsword
+  DEX 6  STR 5  STA 7  HP 13/13
   takes spoils, leaves the fallen
   Round 1:
-    Simon strikes before the lines meet -- First Blood! Rival Scout 3 is grazed (-1 HP -> 6/7, -0 to rolls) [2 Power spent, 2 left]
-    Riardon, Simon, Rival Scout 3, Rival Soldier 4 close the distance -- the lines meet!
-    stamina: Riardon 7/7, Simon 5/5 | Rival Scout 3 5/5, Rival Soldier 4 6/6
+    Simon strikes before the lines meet -- First Blood! Guard Captain 5 is grazed (-1 HP -> 12/13, -0 to rolls) [2 Power spent, 4 left]
+    Riardon attacks Guard Captain 5 -- parried.
+        pressure: Riardon: 11 (2d6=6, +4 DEX, +1 training) vs Guard Captain 5: 17 (2d6=11, +6 DEX)
+    Simon attacks Guard Captain 5 -- parried.
+        pressure: Simon: 11 (2d6=4, +6 DEX, +1 training) vs Guard Captain 5: 16 (2d6=10, +6 DEX)
+    Guard Captain 5 overwhelms Simon -- a crippling blow! [Simon: 2/8 HP, -2 to rolls]
+        pressure: Guard Captain 5: 15 (2d6=9, +6 DEX) vs Simon: 9 (2d6=2, +6 DEX, +1 training)
+        severity: 8 = margin 6 +5 STR +1 longsword -4 soak -> crippling blow (-6 HP)
+    Simon takes a wound: a torn side, badly closed (severity 3; HP ceiling 5/8)
+    Guard Captain 6 edges past Riardon -- a graze! [Riardon: 7/9 HP, -0 to rolls]
+        pressure: Guard Captain 6: 16 (2d6=10, +6 DEX) vs Riardon: 15 (2d6=10, +4 DEX, +1 training)
+        severity: 2 = margin 1 +5 STR +1 longsword -5 soak -> graze (-1 HP)
+    Guard Captain 7 attacks Riardon -- parried.
+        pressure: Guard Captain 7: 12 (2d6=6, +6 DEX) vs Riardon: 15 (2d6=10, +4 DEX, +1 training)
+    Guard Captain 8 outmaneuvers Simon -- a grievous injury! [Simon: 0/8 HP, -2 to rolls]
+        pressure: Guard Captain 8: 13 (2d6=7, +6 DEX) vs Simon: 10 (2d6=5, +6 DEX, +1 training, -2 wounds)
+        severity: 5 = margin 3 +5 STR +1 longsword -4 soak -> grievous (-4 HP)
+    Simon takes a wound: a deep wound in the thigh (severity 2; HP ceiling 4/8)
+    Simon goes down, out of the fight.
+    stamina: Riardon 6/7 | Guard Captain 5 6/7, Guard Captain 6 6/7, Guard Captain 7 6/7, Guard Captain 8 6/7
   Round 2:
-    Riardon edges past Rival Scout 3 -- a solid wound! [Rival Scout 3: 4/7 HP, -1 to rolls]
-        pressure: Riardon: 11 (2d6=7, +4 DEX) vs Rival Scout 3: 9 (2d6=4, +5 DEX)
-        severity: 3 = margin 2 +5 STR -1 club -3 soak -> wound (-2 HP)
-    Simon overwhelms Rival Scout 3 -- a grievous injury! [Rival Scout 3: 0/7 HP, -3 to rolls]
-        pressure: Simon: 13 (2d6=7, +6 DEX) vs Rival Scout 3: 8 (2d6=4, +5 DEX, -1 wounds)
-        severity: 5 = margin 5 +4 STR -1 club -3 soak -> grievous (-4 HP)
-    *** Rival Scout 3 falls. ***
-    (Rival Scout 3 strikes even as they fall)
-    Rival Scout 3 attacks Simon -- parried.
-        pressure: Rival Scout 3: 11 (2d6=6, +5 DEX) vs Simon: 15 (2d6=9, +6 DEX)
-    Rival Soldier 4 outmaneuvers Riardon -- a graze! [Riardon: 7/9 HP, -0 to rolls]
-        pressure: Rival Soldier 4: 13 (2d6=8, +5 DEX) vs Riardon: 10 (2d6=6, +4 DEX)
-        severity: 2 = margin 3 +4 STR -5 soak -> graze (-1 HP)
-    stamina: Riardon 6/7, Simon 4/5 | Rival Soldier 4 5/6
+    Riardon sweeps low at Guard Captain 5's legs. (+1 STA)
+    Riardon attacks Guard Captain 5 -- parried.
+        pressure: Riardon: 10 (2d6=5, +4 DEX, +1 training) vs Guard Captain 5: 14 (2d6=8, +6 DEX)
+    Guard Captain 5 attacks Riardon -- parried.
+        pressure: Guard Captain 5: 12 (2d6=6, +6 DEX) vs Riardon: 13 (2d6=8, +4 DEX, +1 training)
+    Guard Captain 6 and Riardon -- Clash! Steel rings; neither yields.
+        pressure: Guard Captain 6: 15 (2d6=9, +6 DEX) vs Riardon: 15 (2d6=10, +4 DEX, +1 training)
+    Guard Captain 7 circles, crowded out of the press.
+    Guard Captain 8 circles, crowded out of the press.
+    stamina: Riardon 6/7 | Guard Captain 5 5/7, Guard Captain 6 5/7, Guard Captain 7 6/7, Guard Captain 8 6/7
   Round 3:
-    Riardon outmaneuvers Rival Soldier 4 -- a solid wound! [Rival Soldier 4: 8/10 HP, -1 to rolls]
-        pressure: Riardon: 13 (2d6=9, +4 DEX) vs Rival Soldier 4: 9 (2d6=4, +5 DEX)
-        severity: 4 = margin 4 +5 STR -1 club -4 soak -> wound (-2 HP)
-    !! Simon is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Simon attacks Rival Soldier 4 -- parried.
-        pressure: Simon: 9 (2d6=5, +6 DEX, -2 winded) vs Rival Soldier 4: 11 (2d6=7, +5 DEX, -1 wounds)
-    Rival Soldier 4 attacks Simon -- parried.
-        pressure: Rival Soldier 4: 10 (2d6=6, +5 DEX, -1 wounds) vs Simon: 11 (2d6=7, +6 DEX, -2 winded)
-    stamina: Riardon 5/7, Simon 3/5* | Rival Soldier 4 4/6   (* = Winded)
-  Round 4:
-    Riardon outmaneuvers Rival Soldier 4 -- a solid wound! [Rival Soldier 4: 6/10 HP, -2 to rolls]
-        pressure: Riardon: 11 (2d6=7, +4 DEX) vs Rival Soldier 4: 7 (2d6=3, +5 DEX, -1 wounds)
-        severity: 4 = margin 4 +5 STR -1 club -4 soak -> wound (-2 HP)
-    Simon outmaneuvers Rival Soldier 4 -- a graze! [Rival Soldier 4: 5/10 HP, -2 to rolls]
-        pressure: Simon: 9 (2d6=5, +6 DEX, -2 winded) vs Rival Soldier 4: 6 (2d6=3, +5 DEX, -2 wounds)
-        severity: 2 = margin 3 +4 STR -1 club -4 soak -> graze (-1 HP)
-    !! Rival Soldier 4 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Rival Soldier 4 outmaneuvers Riardon -- a solid wound! [Riardon: 5/9 HP, -1 to rolls]
-        pressure: Rival Soldier 4: 10 (2d6=9, +5 DEX, -2 wounds, -2 winded) vs Riardon: 6 (2d6=2, +4 DEX)
-        severity: 3 = margin 4 +4 STR -5 soak -> wound (-2 HP)
-    Riardon takes a wound: a split knuckle (severity 1; HP ceiling 8/9)
-    stamina: Riardon 4/7, Simon 2/5* | Rival Soldier 4 3/6*   (* = Winded)
-  Round 5:
-    Simon downs a stamina draught mid-fight (STA 2 -> 5/5; 0 left) -- no attack this round, -2 defending while they drink
-    !! Riardon is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Riardon attacks Rival Soldier 4 -- parried.
-        pressure: Riardon: 6 (2d6=6, +3 DEX, -1 wounds, -2 winded) vs Rival Soldier 4: 9 (2d6=8, +5 DEX, -2 wounds, -2 winded)
-    Rival Soldier 4 edges past Simon -- a graze! [Simon: 6/8 HP, -0 to rolls]
-        pressure: Rival Soldier 4: 11 (2d6=10, +5 DEX, -2 wounds, -2 winded) vs Simon: 10 (2d6=6, +6 DEX, -2 drinking)
-        severity: 1 = margin 1 +4 STR -4 soak -> graze (-1 HP)
-    stamina: Riardon 3/7*, Simon 5/5 | Rival Soldier 4 2/6*   (* = Winded)
-  Round 6:
-    Riardon attacks Rival Soldier 4 -- parried.
-        pressure: Riardon: 5 (2d6=5, +3 DEX, -1 wounds, -2 winded) vs Rival Soldier 4: 11 (2d6=10, +5 DEX, -2 wounds, -2 winded)
-    Simon outmaneuvers Rival Soldier 4 -- a graze! [Rival Soldier 4: 4/10 HP, -3 to rolls]
-        pressure: Simon: 13 (2d6=7, +6 DEX) vs Rival Soldier 4: 10 (2d6=9, +5 DEX, -2 wounds, -2 winded)
-        severity: 2 = margin 3 +4 STR -1 club -4 soak -> graze (-1 HP)
-    Rival Soldier 4 attacks Simon -- parried.
-        pressure: Rival Soldier 4: 7 (2d6=7, +5 DEX, -3 wounds, -2 winded) vs Simon: 14 (2d6=8, +6 DEX)
-    stamina: Riardon 2/7*, Simon 4/5 | Rival Soldier 4 1/6*   (* = Winded)
-    The beaten foe line breaks and runs!
-    Simon overwhelms Rival Soldier 4 -- a grievous injury! [Rival Soldier 4: 0/10 HP, -5 to rolls]
-        pressure: Simon: 12 (2d6=6, +6 DEX) vs Rival Soldier 4: 1 (2d6=3, +5 DEX, -3 wounds, -2 winded, -2 fleeing)
-        severity: 10 = margin 11 +4 STR -1 club -4 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Rival Soldier 4 falls. ***
-    The party catches its breath (+1 STA)
-    Riardon gains 28 XP (encounter) [56/100]
-    Simon gains 28 XP (encounter) [56/100]
-    Loot: 5 gold (purse 5g).
-Left among the dead:
-a light hammer (+0 atk/-1 sev, 2g),
-a spear (+0 atk/+0 sev, 5g).
-
-  *** QUEST COMPLETE: The Clan War -- the mine entrance (site 2/2). Reward: 29 gold. ***
-    Riardon talks the pay up: +3g (CHA 4 -- 32g in all).
-    The party purse holds 37 gold.
-    Riardon gains 85 XP (quest) [141/100]
-    *** Riardon reaches level 2! (+3 skill points, 3 unspent) ***
-    Simon gains 85 XP (quest) [141/100]
-    *** Simon reaches level 2! (+3 skill points, 3 unspent) ***
-    Simon: satisfaction 7 -> 8/10 (a job paid out)
-  (turn in to Kildrak, the clan elder -- narrate the scene)
-  EPILOGUE (day 2): The rival clan is defeated. The fighting ends.
-    Simon trains: combat training rank 1 (+1 to all pressure rolls) [1 point(s) left]
-    Simon drills a new move -- Pommel Strike: vs an unhurt foe, on a wounding hit: -2 severity but the foe loses its next attack (the stun rider) [0 point(s) left]
-    Riardon downs a stamina draught (STA 3 -> 7; 0 left)
-    The party shares out its potions -- Riardon: 1 healing.
-
--- the party --
-Riardon: Bloodied STA 7/7 Power 6/6
-  (hurt -1 to rolls)
-  - a split knuckle (sev 1)
-  (HP ceiling 8/9 until they mend)
-  (healing x1)
-Simon: Scratched STA 5/5 Power 2/6
-  (no kit)
-Purse 37g; day 2.
+    Riardon attacks Guard Captain 5 -- parried.
+        pressure: Riardon: 8 (2d6=3, +4 DEX, +1 training) vs Guard Captain 5: 16 (2d6=10, +6 DEX)
+    Guard Captain 5 overwhelms Riardon -- a crippling blow... Riardon's Bulwark flares! Reduced to grievous. [Riardon: 3/9 HP, -2 to rolls; 4 Power left]
+        pressure: Guard Captain 5: 14 (2d6=8, +6 DEX) vs Riardon: 7 (2d6=2, +4 DEX, +1 training)
+        severity: 8 = margin 7 +5 STR +1 longsword -5 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
+    Riardon takes a wound: a deep gash across the back (severity 2; HP ceiling 7/9)
+    Guard Captain 6 attacks Riardon -- parried.
+        pressure: Guard Captain 6: 9 (2d6=3, +6 DEX) vs Riardon: 13 (2d6=10, +4 DEX, +1 training, -2 wounds)
+    Guard Captain 7 circles, crowded out of the press.
+    Guard Captain 8 circles, crowded out of the press.
+    stamina: Riardon 5/7 | Guard Captain 5 4/7, Guard Captain 6 4/7, Guard Captain 7 6/7, Guard Captain 8 6/7
+    == Riardon is badly cut up (HP 3/9) -- the fight hangs for a heartbeat. ==

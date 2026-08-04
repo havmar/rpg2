@@ -7,28 +7,38 @@ party: 1/1 companion slot(s) filled (CHA
 (YOU) Riardon -- elf m, age 34
   L2  training 1  XP 41/200  points 0
   DEX 4  STR 5  MIND 5  CHA 4
-  HP 8/9  STA 7/7  Power 6/6
+  HP 3/7 of 9  STA 5/7  Power 4/6
   shortsword | staminax1
   abilities: bulwark
   moves: trip
   interest: animals; speech: formal;
     dress: professional
+  - a deep gash across the back (sev 2)
+  wound load 2 -> HP ceiling 7/9
 
 (companion) Simon -- human m, age 18
+  [DOWN]
   L2  training 1  XP 41/200  points 0
-  DEX 6  STR 4  MIND 6  CHA 4
-  HP 8/8  STA 5/5  Power 6/6
+  DEX 5  STR 4  MIND 6  CHA 4
+  HP 0/4 of 8  STA 4/5  Power 4/6
   spear | healingx1, staminax1
   abilities: first_blood
   moves: pommel
   satisfaction 9/10
   weakness: gambling; dress: tattered;
     looks: weathered
+  - a torn side, badly closed (sev 3)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  wound load 6 -> HP ceiling 4/8
 
 active quest [q02] The Clan War is
   COMPLETE
+sin: sin 15/200; heat 0 -- lying low
 THE PACT: assignment [q52] Blood on the
   Altar at Svalaver (grace to take it
   runs to day 12).
 THE WAR: [w1] L2 Stolen Parts -- raised
   at Bjorgheim.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***
