@@ -1833,7 +1833,11 @@ doctrine holds for wizards too. Its jobs:
   wizard** (CHA and POWER stay out of the comparison — one is social,
   the other is fuel). ~23% of rolls. A wizard rolls a **school** (fire or
   ice, 50/50) instead of an ability and starts knowing that one spell at
-  rank 1; wizards often carry the wooden staff (50%).
+  rank 1; wizards often carry the wooden staff (50%). **The PC always has
+  it (2026-08-05)**: `new` rerolls the stat budget until the gift lands,
+  because the gift is the one thing nothing later can grant, while every
+  warrior sink stays open to a wizard — see *The player character* in the
+  Party add-on.
 - **The casting check's stat** (unaimed spells, below).
 - **Half the AIM of a thrown cast** (aimed spells, below).
 - **The notice contest's party stat** — a watchful mind sees road trouble
@@ -2178,7 +2182,8 @@ inputs (the notice contest):
   `2d6 + notice stat` against `8 + the other side's conspicuousness`.
   **Conspicuousness** = group size + a point per showy trait (armored,
   loud, colorful, flamboyant, luxurious — the presentation tables'
-  first mechanics) + a clumsy-stealth point per point its *worst* DEX
+  first mechanics; the PC carries no traits, so what the party is noticed
+  for is its companions) + a clumsy-stealth point per point its *worst* DEX
   sits under 4 (stealth is a weakest-link property). The party notices
   with its **best MIND** (the watchful mind); beasts and foes sense with
   the sharper of MIND and DEX.
@@ -2810,8 +2815,10 @@ world creation. Natural Sites and ordinary houses materialize lazily.
 - **Position.** The save carries a breadcrumb with `land`, `area`, and
   optional `site` / `room` IDs. Status and `look` print it as, for example,
   `Elven Lands > Far Forest > Wizard's Tower > Library`. A new game starts
-  in the settlement area posting the world's lowest-level open quest
-  (2026-07-13 — the opening hook must be takeable). The two hand-built set
+  in the settlement area posting the open quest closest to the party's
+  level (2026-07-13 — the opening hook must be takeable; generalized
+  2026-08-05 when the start level became a roll, and identical to the old
+  lowest-posting rule at level 1). The two hand-built set
   sites (hideout, barrow) lie outside
   the **capital** (the first settlement worldgen made) and are **DEV/TEST
   calibration content only** since 2026-07-13 — presented alongside
@@ -2967,33 +2974,86 @@ Companions roll CHA too (it shows on their sheet) but it does nothing yet
 
 `new` **generates ONE PC** (male, by designer fiat for now) — the old
 three-candidate pick is gone (streamlining: the real choices are the
-party's jobs and hires, not a stat-sheet beauty contest). Two guarantees
-replace the pick's safety valves:
+party's jobs and hires, not a stat-sheet beauty contest). Three
+guarantees replace the pick's safety valves:
 
 - **Minimum capacity 1**: the roll rerolls until the PC's CHA holds at
   least one companion. The capacity-0 solo game was a trap dressed as a
   choice; it no longer occurs.
-- **No relatives**: the PC never rolls the family-generating quirks
-  ("has a child"); a lone sword with a kid in tow was the wrong opening
-  premise. "Has an enemy" stays — an enemy is story fuel, not luggage.
-
-His sheet prints **without the satisfaction-mechanics annotations** (he
-has no satisfaction track; the notes baited mechanics talk into his
-introduction). A wealthy/luxurious PC starts with his trait gold in the
-purse.
+- **Always a magic user (2026-08-05)**: the roll rerolls until MIND comes
+  out strictly above both DEX and STR — the gift's own test (Magic & Mind).
+  The reason is asymmetry, not power: **the gift is the one thing a
+  character can never acquire** (a spellbook is diagrams to a non-wizard),
+  while steel is open to everyone — a wizard trains combat, drills a
+  weapon and buys the move repertoire like anybody else. A magic user can
+  be levelled as a warrior; a warrior can never be levelled into a magic
+  user. Starting the PC with the gift therefore closes no door and opens
+  one. The stats are the NATURAL roll, rerolled until it lands — nothing
+  is nudged afterwards, so a PC wizard's shape is a wizard's shape.
+- **No trait sketch (2026-08-05)**: the PC rolls no traits at all (see
+  *Traits — the companion layer* below), which retired the old
+  no-relatives rule with it: there is no quirk to roll away. His sheet is
+  his person line, his stats, his kit and his banked points.
 
 **The long-time companion (2026-07-13 reframe of the starter ally).** One
-random level-1 companion is generated WITH the PC and presented as having
-been **at his side for years** — nobody "joins" in the first scene. Hire's
-normal terms otherwise (satisfaction 7, joining gold to the purse,
-bond-linked to the PC). The game starts PLAYABLE — a duo walks straight
-out the gate — while recruiting still fills the remaining slots.
+random companion at the PC's own level is generated WITH the PC and
+presented as having been **at his side for years** — nobody "joins" in
+the first scene. Hire's normal terms otherwise (satisfaction 7, joining
+gold to the purse, bond-linked to the PC, **traits included** — his is
+the layer traits are for). The game starts PLAYABLE — a duo walks
+straight out the gate — while recruiting still fills the remaining slots.
 
-**The opening (2026-07-13).** A new game starts at the settlement posting
-the world's **lowest-level open quest**, and `new` prints that job as the
-**OPENING HOOK** — the game opens at a combat quest's doorstep (giver
-mid-pitch), not in a tavern. Taking it stays the player's call; the hook
-is a doorstep, not a railroad.
+## The starting level — rolled, or asked for (2026-08-05)
+
+A new game no longer always starts at level 1. `new` **rolls the party's
+level 1–18** off the run's own rng (so `--seed` still pins the whole
+playthrough), and `new --level N` fixes it anywhere in 1–20 when a session
+is testing one band. The reason is played reality: no campaign has ever
+gone past level 4, and hours of play stand between a fresh save and the
+bands the ladder is built for — a start that lands anywhere on it is how
+the rest of the game gets seen at all. The roll stops at 18 so there is
+always ladder left above the party. `--race R` fixes the PC's race.
+
+**The career a level-N start arrives with.** Everything above level 1 is
+autogenerated history, not a bonus:
+
+- **The points** are spent by the reference doctrine (`develop_hero`, then
+  `autospend_points` for the leftovers) — for BOTH heroes, PC included.
+  The levelup menu is for played progression; nobody wants to page through
+  thirty banked points before scene one. What the doctrine bought prints
+  as a one-line `career:` summary under each sheet.
+- **The arms** are what those levels bought: quality steel from L4, plus
+  the PC claiming his band's job-reward weapon
+  (`weapons.reward_weapon_for_level` — plain chassis low, masterwork mid,
+  generated magic steel at the top). A PC on a **focus staff** claims the
+  staff of that band instead of rolling the chassis: his staff is his
+  quality weapon, so the upgrade has to keep the focus rather than trade
+  it for steel that has none.
+- **The books**: one spellbook per 5 levels, each learned at rank 1 (what
+  a book teaches; ranks are skill points, and the doctrine already spent
+  those on the school). A level-18 wizard who knows exactly one spell is
+  not what that band looks like from the inside.
+- **The purse**: a fifth of what the jobs on the way up would have paid
+  (`quest_gold` at the career pace of ~2 quests a level). A played party
+  has spent most of what it earned; this is testing convenience, not
+  economy fidelity.
+- **Hell's ledger** is stamped as though it had been collecting all
+  along: every pin BELOW the starting level counts as served, so a career
+  start opens with no backlog. The pin AT the level is live — which is
+  why the level-1 game still opens on hell's tutorial job, a level-5 start
+  is pinned at once, and a level-4 one waits for 5.
+- **Level 1 is the game that always was**: trash arms, an empty purse,
+  hell's first pin due, no career line.
+
+**The opening (2026-07-13, generalized 2026-08-05).** A new game starts at
+the settlement posting the open combat quest **closest to the party's
+level**, and `new` prints that job as the **OPENING HOOK** — the game
+opens at a combat quest's doorstep (giver mid-pitch), not in a tavern. At
+level 1 closest-to-level IS the world's lowest posting, so the ordinary
+opening is unchanged. Taking it stays the player's call; the hook is a
+doorstep, not a railroad. The story layer's war waves gate on party level,
+so a career start finds the war's first word already due at the next
+settlement stop.
 
 ## Character generation (recruits, and NPCs with DM edits)
 
@@ -3021,12 +3081,21 @@ is a doorstep, not a railroad.
   nickname system yet.
 - **Age**: 2d20+10 (the Cairn roll, 12–50). Twelve-year-old sellswords
   happen; anime logic, designer-blessed.
-- **Traits — a sketch, not a census**: ONE behavior category (temperament /
-  quirk / interest / weakness / background) + TWO presentation categories
-  (speech / voice / dress / looks), one trait each. What isn't described is
-  typical for the archetype; the DM edits any generated contradiction
-  before presenting. Most traits are DM-performed fiction; the mechanical
-  few:
+- **Traits — a sketch, not a census, and the COMPANION layer only**: ONE
+  behavior category (temperament / quirk / interest / weakness /
+  background) + TWO presentation categories (speech / voice / dress /
+  looks), one trait each. What isn't described is typical for the
+  archetype; the DM edits any generated contradiction before presenting.
+  **Who rolls them (2026-08-05, designer directive):** hireable
+  companions — recruits, the pairs, the long-time ally — and nobody else.
+  The PC and every dict NPC (givers, recipients, notables, service faces,
+  posse leaders, residents, smiths) carry none. The criterion is the
+  world thread's characteristic criterion: a companion's traits are
+  **chosen against** at hiring and several of them **move numbers**, so
+  they earn their keep; on a giver's face the same three lines were
+  unbacked flavor the DM had to perform. What a dict NPC carries instead
+  (a want, a problem, a disposition with teeth) is plan.md's open
+  question. Most traits are DM-performed fiction; the mechanical few:
   - **loyal** — leaves at −3 instead of 0; **cowardly** — injury-side
     satisfaction losses ×2; **brave** — halved (toward zero).
   - **armored** (dress) — +1 defense pressure (`Entity.def_bonus`).
@@ -3132,9 +3201,9 @@ the sims never see any of it.
 
 ## Quest givers & the funnel (there is no board)
 
-Every quest carries a **giver**: a generated face (name, race, sex, age,
-personality traits) whose ROLE the template authors (the reeve, the
-grudge-keeper, the vent-warden). The board survives only as the **DM's
+Every quest carries a **giver**: a generated face (name, race, sex, age)
+whose ROLE the template authors (the reeve, the grudge-keeper, the
+vent-warden). The board survives only as the **DM's
 inventory readout** (`board` — each row shows whose job it is); in the
 fiction there is no board at all. The protocol is the **one-message
 funnel**: the party asks around — the tavern keeper knows, any local
@@ -3161,13 +3230,15 @@ events in a world instead of pay lines.
 Party members are rolled whole — race, background, everything — because
 the dice casting the person IS the recruiting game. NPCs are the
 opposite: the DM already knows the constable is a middle-aged local, so
-the caller **fixes race, role, and optionally sex/age**, and the dice
-roll only the name and the personality (the same 1-behavior +
-2-presentation trait sketch companions get; presentation deliberately
-stays fully random — a flamboyantly dressed constable is a feature).
-NPCs are plain dicts with **no stat block**: if one must fight, forge the
-encounter or borrow a leveled body from `make_character`. `NPC_MIN_AGE`
-(20) floors the age roll for anyone with a job title.
+the caller **fixes race, role, and optionally sex/age** (and a level where
+the fiction knows one — posse leaders, hell's collectors, the famous
+smiths), and the dice roll only the name. **No trait sketch since
+2026-08-05**: a giver's temperament, voice and dress were three lines of
+flavor per face that no rule read and the DM had to perform on top of the
+scene — the rollback stops paying for them (see *Traits* above). NPCs are
+plain dicts with **no stat block**: if one must fight, forge the encounter
+or borrow a leveled body from `make_character`. `NPC_MIN_AGE` (20) floors
+the age roll for anyone with a job title.
 
 ## The central cast
 

@@ -120,8 +120,10 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the roadmap: planned features only**, in build order (next
-  up: the world & NPC simulation thread — the 2026-08-05 framing and its
-  two ready specs live there), plus parked ideas and open questions.
+  up: the world & NPC simulation thread — the 2026-08-05 framing lives
+  there; its two ready specs shipped the same day, so what is left is the
+  settlement trim and the design session), plus parked ideas and open
+  questions.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
@@ -403,6 +405,18 @@ a pointer: what the file is, how it's run, where its docs are.
   RENAME (the karma keys, the display words, the `sin` command with no
   `karma` alias — read off `session.build_parser`).
   `python -m unittest -v test_history.py`.
+- `test_start.py` — the GAME START contract suite (2026-08-05, plan.md's
+  specs A and B): the level roll (`1..START_LEVEL_ROLL_MAX`, seeded, and
+  `--level` / `--race` with their refusals), the PC's two guarantees (the
+  gift always, the sketch never — plus the asymmetry that motivates them:
+  a wizard trains steel, a warrior can never learn a spell), the career a
+  level-N start arrives with (doctrine points, the reward weapon and the
+  focus-staff rule, the spellbooks, the purse, the opening kit), hell's
+  stamped ledger, the opening ground, and the trait rollback across every
+  casting path (givers, recipients, notables, service faces, posse
+  leaders, residents, smiths). It drives `cmd_new` end to end against a
+  temp save — never the playthrough's.
+  `python -m unittest -v test_start.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
   `weapon_sp`, the budgeted generator (`generate_weapon` — profile rule,
@@ -429,13 +443,18 @@ a pointer: what the file is, how it's run, where its docs are.
   `RACE_TRAIT_SUBS`), the 25+25 per-race name pools, the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
-  2026-07-13), `make_character` (any
-  level, via rpg.develop_hero; `no_family=True` is the PC switch),
+  2026-07-13) — **COMPANIONS only since 2026-08-05**: `with_traits=False`
+  is the PC's setting and dict NPCs never roll one (the rollback; it
+  retired the old `no_family` switch, which existed to keep a child out
+  of the PC's opening scene), `make_character` (any
+  level, via rpg.develop_hero; `wizard=True` rerolls the stat budget
+  until the gift lands — the PC is always a magic user),
   `make_pair` (bonded recruit pairs), the
   candidate sheets, and the downtime-matching rules; since 2026-07-12
   also `make_npc` / `npc_line` (the TARGETED generator: the caller fixes
-  race/role/sex/age, the dice roll name + personality — dict NPCs, no
-  stat blocks, `NPC_MIN_AGE` floors anyone with a job title). Content
+  race/role/sex/age and optionally a level, the dice roll the name —
+  dict NPCs, no stat blocks, no sketch, `NPC_MIN_AGE` floors anyone with
+  a job title). Content
   only — the satisfaction/CHA mechanics it hangs on live in rpg.py; the
   sims import it only through worldgen's giver/cast generation.
   `python people.py [--seed N] [--level L]` prints a sample
@@ -475,9 +494,10 @@ a pointer: what the file is, how it's run, where its docs are.
   `occupied_here` gates on
   board/take/tavern/downtime, the boss-name spawn in `room`, `story` in
   the save). Reworked 2026-07-13 (the streamlining batch): `new`
-  GENERATES the PC (no `pick`; min capacity 1, no family quirks, the
-  long-time companion, the OPENING HOOK at the lowest-level-quest
-  settlement, aggressor excludes the PC race), `recruit` rolls candidates
+  GENERATES the PC (no `pick`; min capacity 1, the long-time companion,
+  the OPENING HOOK at the closest-level-quest settlement, aggressor
+  excludes the PC race — and since 2026-08-05 a rolled start level, an
+  always-wizard PC and no trait sketch on him), `recruit` rolls candidates
   ON REQUEST (once per settlement/day; the tavern stopped popping them),
   companions AUTOLEVEL after fights/hire (`rpg.autospend_points`) while
   the PC's level-up auto-prints the `levelup` menu, `maybe_post_wave` is
@@ -676,6 +696,7 @@ python -m unittest -v test_pact.py    # hell's assignment ladder contract
 python crime.py --seed 1              # the crime catalogue + local marks
 python -m unittest -v test_crime.py   # the crime layer contract
 python -m unittest -v test_history.py # the campaign record + the sin rename
+python -m unittest -v test_start.py   # the start level, the wizard PC, traits
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
@@ -1137,6 +1158,28 @@ mechanic *does* and *why* is rules.md's job.
   `karma.new_karma`'s keys and every display string across
   `karma.py` / `crime.py` / `quests.py` / `rpg.py` / `conquest.py` /
   `weapons.py` / `session.py`.
+- **The game start at any level & the trait rollback** (2026-08-05,
+  plan.md's ready specs A and B plus the designer's two amendments —
+  rules.md's Party add-on, *The starting level* and *The player
+  character*) — `session.py`: the start block
+  (`START_LEVEL_ROLL_MAX` = 18, `START_QUESTS_PER_LEVEL`,
+  `START_PURSE_SHARE`, `START_SPELL_LEVELS`, `start_level`,
+  `career_purse`, `career_kit`, `_start_pact`, `career_line`),
+  `cmd_new` rebuilt around them (the `--level` / `--race` flags and
+  their refusals, the always-wizard trait-less PC, the trash arms now
+  level-1 only, the war and pact lines that no longer promise level 2),
+  `_starting_settlement(world, level)` and `opening_hook` picking the
+  posting CLOSEST to the party's level (identical to the old
+  lowest-posting rule at level 1), and `cmd_chatter` skipping heroes
+  with no sketch. `people.py`: `make_character`'s `with_traits` /
+  `wizard` switches (`WIZARD_ROLL_TRIES`), `roll_traits` minus
+  `no_family`, `make_npc` minus the sketch (plus the optional `level`
+  key), `npc_line`, `character_sheet` minus the dead `for_pc` switch and
+  `SATISFACTION_NOTE_TRAITS`. `weapons.py`: `reward_weapon_for_level`'s
+  optional `chassis` (the caster's staff). `quests.py`: the giver and
+  recipient trait dumps deleted from `quest_detail_lines`.
+  `test_start.py` is the contract suite. Nothing here touches the
+  engine or the sims — bench numbers are untouched by construction.
 - **The conquest domain layer** (2026-07-27 — rules.md's Conquest &
   Holdings add-on) — `conquest.py`: everything (see Files). `session.py`:
   `cmd_conquer` / `cmd_garrison` / `cmd_holdings`, `held_here` /

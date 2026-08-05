@@ -21,7 +21,7 @@ on a final line under it.
 
 > new game
 
-You are Delg: a dwarf, 35, an alchemist a long way from the mountain. Your coat is out at the elbows and your chest is bad without its medicine. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
+You are Delg: a dwarf, 35, a long way from the mountain, with fire in your hands that nobody taught you. Your coat is out at the elbows and your purse is light. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
 
 Isolde walks beside you: human, a scholar thrown out of somewhere, ice at her fingertips when she is angry. She has watched your back for years.
 
@@ -31,7 +31,7 @@ Rosa the well-keeper stops you there. The rope is cut, the bucket is gone, and s
 
 ```
   job: The Thing in the Well -- L1
-  giver: Rosa, well-keeper (blunt)
+  giver: Rosa, well-keeper
   pay: 18g. due day 6.
 ```
 
@@ -71,7 +71,7 @@ breaks when beaten
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/<branch>/ui/fight-short.txt)
 
-Delg opens the first rat's skull on the cistern rim. The second gets its teeth into Isolde's forearm before her rime bolt cracks it dead. Short and ugly, the way well work is.
+Delg's fire takes the lead rat off the cistern rim. The second gets its teeth into Isolde's forearm before her rime bolt cracks it dead. Short and ugly, the way well work is.
 
 ```
 The party catches its breath (+1 STA)

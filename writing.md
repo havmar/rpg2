@@ -142,8 +142,11 @@ only, and retain a plain English type noun when it makes the place immediately
 legible: `Drunurnar Mountains`, `Krokskogur Forest`, `Lake Hornindal`.
 
 For a **person**, lead with role and immediate intent. Add one visible or
-behavioral marker that can recur. Generated traits are prompts for conduct,
-not invitations to write a biography or a speech about the trait.
+behavioral marker that can recur. A COMPANION's generated traits are
+prompts for conduct, not invitations to write a biography or a speech
+about the trait. Everyone else -- givers, notables, keepers, the marks --
+comes with a role and no sketch (2026-08-05): invent only the marker the
+scene needs, and keep it if they come back.
 
 For an **item or creature**, prefer a readable base noun plus one meaningful
 modifier: rust blade, ember hound, glass key, tollhouse ghost. Stack modifiers

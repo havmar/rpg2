@@ -2,11 +2,11 @@
 
 rpg.py owns the mechanics a character RUNS ON (stats, CHA/capacity, the
 satisfaction track and its constants); this file owns the person: which race
-they are, what they're called, how old they are, and the three-trait sketch
-that makes an archetype specific. session.py uses it for the PC candidates
-at game start and the tavern recruits; the sims never import it (their
-throwaway duos come from rpg.make_party), so nothing here can move a bench
-number.
+they are, what they're called, how old they are, and -- for COMPANIONS --
+the three-trait sketch that makes an archetype specific. session.py uses it
+for the PC at game start and the tavern recruits; the sims never import it
+(their throwaway duos come from rpg.make_party), so nothing here can move a
+bench number.
 
 The design (2026-07-11, designer-vetted):
 
@@ -23,6 +23,13 @@ The design (2026-07-11, designer-vetted):
   contradiction before presenting. Most traits are mechanics-free labels
   the DM performs; the few mechanical ones are documented in TRAIT_NOTES
   and checked by name (rpg.has_trait).
+- **Traits are the COMPANION layer, and only that** (2026-08-05, designer
+  directive -- the characteristic criterion of plan.md's world thread): a
+  companion's traits are CHOSEN AGAINST at hiring and several of them are
+  mechanical (armored, wealthy, the interests, the satisfaction hooks), so
+  they earn their keep. On a dict NPC or on the PC they were unbacked
+  flavor the DM had to perform, so neither rolls them any more:
+  `make_npc` casts a face without a sketch and the PC's sheet is his stats.
 - **Pairs**: a quarter of recruit options are a bonded pair (parent/child,
   couple, mentor/mentee, old friends) -- one option slot, TWO heads against
   the CHA capacity, joining and leaving together.
@@ -254,18 +261,15 @@ def _detail_traits(traits: dict[str, str], rng: random.Random, race: str,
 
 
 def roll_traits(rng: random.Random, race: str, level: int,
-                used: set[str] | None = None,
-                no_family: bool = False) -> dict[str, str]:
+                used: set[str] | None = None) -> dict[str, str]:
     """The three-trait sketch: 1 behavior category + 2 distinct presentation
-    categories, one trait each. `no_family` rerolls away the relative-
-    generating quirks (the PC never starts with a child in tow --
-    2026-07-13)."""
+    categories, one trait each. COMPANIONS only since 2026-08-05 -- the PC
+    and dict NPCs carry no sketch (see the module docstring), which is what
+    retired the old `no_family` switch: the PC rolled it to keep a child
+    out of the opening scene, and now he rolls nothing at all."""
     traits: dict[str, str] = {}
     bcat = rng.choice(sorted(BEHAVIOR_TRAITS))
-    pool = BEHAVIOR_TRAITS[bcat]
-    if no_family:
-        pool = tuple(t for t in pool if t != "has a child") or pool
-    traits[bcat] = rng.choice(pool)
+    traits[bcat] = rng.choice(BEHAVIOR_TRAITS[bcat])
     for pcat in rng.sample(sorted(PRESENTATION_TRAITS), 2):
         traits[pcat] = rng.choice(PRESENTATION_TRAITS[pcat])
     subs = RACE_TRAIT_SUBS.get(race, {})
@@ -287,21 +291,43 @@ def joining_gold(e: Entity) -> int:
 # The generator
 # --------------------------------------------------------------------------- #
 
+WIZARD_ROLL_TRIES = 200     # make_character(wizard=True) rerolls the stat
+                            # budget until MIND comes out strictly highest
+                            # (rpg.make_human's gift test). A natural wizard
+                            # is a ~14-24% roll depending on the race's floor
+                            # mods, so this ceiling is never approached; it
+                            # exists so a future stat change can't hang the
+                            # generator in a loop.
+
+
 def make_character(rng: random.Random, level: int = 1,
                    race: str | None = None, sex: str | None = None,
                    used_names: set[str] | None = None,
-                   no_family: bool = False) -> Entity:
+                   with_traits: bool = True,
+                   wizard: bool = False) -> Entity:
     """One person, any level: race/sex/name/age, the three-trait sketch,
     stats budgeted with the racial + trait floor/ceiling shifts, then grown
     to `level` by the reference progression doctrine (rpg.develop_hero --
     points mostly pre-spent, quality steel from L4). Works for recruits and,
     with DM edits, for non-adventurer NPCs. Satisfaction stays None until
-    the character is actually HIRED (session sets it). `no_family` is the
-    PC switch: no relative-generating quirks."""
+    the character is actually HIRED (session sets it).
+
+    `with_traits=False` casts the person WITHOUT the sketch -- the PC's
+    setting since 2026-08-05 (traits are the companion layer; see the
+    module docstring). A trait-less roll takes no trait floor/ceiling
+    shifts and no trait mechanics, so "big"/"short"/"armored" simply do
+    not happen to him.
+
+    `wizard=True` REROLLS the stat budget until the gift lands (MIND
+    strictly above both DEX and STR -- rpg.make_human's test), which is
+    how the PC is always a magic user. The reroll keeps the natural shape
+    of a wizard's stats: nothing is nudged after the fact, an unlucky
+    budget is simply thrown away."""
     race = race or rng.choice(RACES)
     sex = sex or rng.choice(SEXES)
     name = pick_name(rng, race, sex, used_names)
-    traits = roll_traits(rng, race, level, used_names, no_family=no_family)
+    traits = (roll_traits(rng, race, level, used_names)
+              if with_traits else {})
     floors = dict(RACE_MODS[race])
     ceilings = dict(RACE_MODS_CEIL.get(race, {}))
     if "big" in traits.values():
@@ -309,6 +335,10 @@ def make_character(rng: random.Random, level: int = 1,
     if "short" in traits.values():
         ceilings["str"] = ceilings.get("str", 0) + 1
     h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
+    for _ in range(WIZARD_ROLL_TRIES if wizard else 0):
+        if h.school:
+            break
+        h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
     h.race, h.sex, h.age, h.traits = race, sex, roll_age(rng), traits
     if "armored" in traits.values():
         h.def_bonus = ARMORED_DEF_BONUS
@@ -357,10 +387,15 @@ def make_pair(rng: random.Random, level: int,
 # body and borrow the face. The split from make_character is deliberate: for
 # PARTY members race and background are random (the dice cast the whole
 # person); for NPCs the DM already knows the race, the job, and roughly the
-# age -- the caller FIXES those and the dice roll only the personality (the
-# same three-trait sketch companions get) and the name. Presentation stays
-# fully random on purpose: a constable in flamboyant dress is a feature, a
-# twelve-year-old constable is not (NPC_MIN_AGE).
+# age -- the caller FIXES those and the dice roll only what is left, the
+# name.
+#
+# The sketch is GONE from this path (2026-08-05, designer directive): a
+# giver's temperament, voice and dress were three lines of flavor per face
+# that no rule read and the DM had to perform on top of the scene. What a
+# dict NPC carries instead -- a want, a problem, a disposition with
+# mechanical teeth -- is the world thread's open question (plan.md); this
+# side of it just stops paying for the flavor.
 
 NPC_MIN_AGE = 20    # roll_age (2d20+10) floored here for NPCs with a JOB;
                     # callers pass an exact age when the fiction knows better
@@ -368,27 +403,26 @@ NPC_MIN_AGE = 20    # roll_age (2d20+10) floored here for NPCs with a JOB;
 
 def make_npc(rng: random.Random, race: str, role: str,
              sex: str | None = None, age: int | None = None,
-             level: int = 1, used_names: set[str] | None = None) -> dict:
-    """One cast NPC: fixed race/role (and optionally sex/age) in, rolled
-    name + personality out. `level` only colors the has-an-enemy quirk."""
+             level: int | None = None,
+             used_names: set[str] | None = None) -> dict:
+    """One cast NPC: fixed race/role (and optionally sex/age) in, a rolled
+    name out. `level` is recorded when the caller knows one (posse and hell
+    leaders, the famous smiths) and left off the dict otherwise."""
     sex = sex or rng.choice(SEXES)
     name = pick_name(rng, race, sex, used_names)
-    traits = roll_traits(rng, race, level, used_names)
     if age is None:
         age = max(NPC_MIN_AGE, roll_age(rng))
-    return {"name": name, "race": race, "sex": sex, "age": age,
-            "role": role, "traits": traits}
+    npc = {"name": name, "race": race, "sex": sex, "age": age, "role": role}
+    if level is not None:
+        npc["level"] = level
+    return npc
 
 
 def npc_line(npc: dict) -> str:
     """One line of who this NPC is -- the person_line sibling for dict NPCs
     (quest givers, the central cast). The DM riffs the scene off it."""
-    bits = [f"{npc['race']} {npc['sex']}, age {npc['age']}"]
-    for cat in ("temperament", "quirk", "interest", "weakness", "background",
-                "speech", "voice", "dress", "looks"):
-        if cat in npc["traits"]:
-            bits.append(f"{cat}: {npc['traits'][cat]}")
-    return f"{npc['name']} ({npc['role']}) -- " + "; ".join(bits)
+    return (f"{npc['name']} ({npc['role']}) -- "
+            f"{npc['race']} {npc['sex']}, age {npc['age']}")
 
 
 # --------------------------------------------------------------------------- #
@@ -408,7 +442,8 @@ def trait_note(value: str) -> str:
 
 def person_line(e: Entity) -> str:
     """One line of who this is (the sheet/status companion to rpg.stat_line's
-    body readout): race, sex, age, and the trait sketch."""
+    body readout): race, sex, age, and -- for a companion -- the trait
+    sketch. The PC carries no sketch, so his line stops at the age."""
     nick = f' "{e.nickname}"' if e.nickname else ""
     bits = [f"{e.race} {e.sex}, age {e.age}"] if e.race else []
     for cat in ("temperament", "quirk", "interest", "weakness", "background",
@@ -418,26 +453,16 @@ def person_line(e: Entity) -> str:
     return f"{e.name}{nick} -- " + "; ".join(bits)
 
 
-# The trait annotations that only mean anything on a SATISFACTION track --
-# the PC has none (rpg.satisfaction_tracked), so his sheet suppresses them
-# (2026-07-13: they baited the DM into narrating morale mechanics at the PC).
-SATISFACTION_NOTE_TRAITS = ("loyal", "cowardly", "brave", "needs meds",
-                            "patriotic", "religious")
-
-
-def character_sheet(e: Entity, for_pc: bool = False) -> list[str]:
+def character_sheet(e: Entity) -> list[str]:
     """The full sheet the player sees before hiring (yes, all of it --
     transparency over realism, same stance as straight-shown quest levels).
-    `for_pc` drops the satisfaction-mechanics annotations -- the PC has no
-    satisfaction track, so a note like 'downtime suits them' is noise."""
+    The PC's sheet runs through the same call: with no traits to annotate
+    it is simply his person line, his stats and his banked points (the old
+    `for_pc` switch existed to suppress satisfaction-trait notes on a sheet
+    that no longer has traits to suppress)."""
     def wanted(value: str) -> bool:
-        if not trait_note(value) or value in TRAIT_GOLD:
-            return False    # the gold traits get their own line below
-        if not for_pc:
-            return True
-        name = value.split(" (")[0]
-        return (name not in SATISFACTION_NOTE_TRAITS
-                and name not in INTEREST_PLACES)
+        # the gold traits get their own line below
+        return bool(trait_note(value)) and value not in TRAIT_GOLD
 
     lines = [person_line(e), "  " + rpg.stat_line(e)]
     notes = [f"{e.traits[cat]}{trait_note(e.traits[cat])}"
@@ -484,7 +509,8 @@ def main() -> None:
     args = ap.parse_args()
     rng = random.Random(args.seed)
     used: set[str] = set()
-    print(f"--- six generated characters (level {args.level}) ---")
+    print(f"--- six recruits (level {args.level}; companions keep the "
+          f"sketch) ---")
     for _ in range(6):
         for line in character_sheet(make_character(rng, args.level,
                                                    used_names=used)):
@@ -496,6 +522,14 @@ def main() -> None:
         for line in character_sheet(e):
             print(line)
         print()
+    print(f"--- a PC roll (no sketch, always the gift: level "
+          f"{args.level}) ---")
+    for line in character_sheet(make_character(rng, args.level, sex="m",
+                                               used_names=used,
+                                               with_traits=False,
+                                               wizard=True)):
+        print(line)
+    print()
     print("--- two cast NPCs (targeted: the DM fixes race/role) ---")
     print(npc_line(make_npc(rng, "human", "chief constable", used_names=used)))
     print(npc_line(make_npc(rng, "dwarf", "mine-masters' speaker",
