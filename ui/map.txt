@@ -1,6 +1,6 @@
 RPG2 MAP -- day 3
 the party is at Tergal > Ordubal > the
-  ritual ground > outer watch
+  ritual ground > campfire
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -62,7 +62,7 @@ the party is at Tergal > Ordubal > the
 
 [q42] Open the Hellgate (L13) @ Ordubal
   - the ritual ground (L13): here, room
-    2/3
+    3/3
 
 -- the war --
 THE WAR: [w1] L2 Stolen Parts -- raised

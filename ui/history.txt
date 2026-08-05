@@ -12,8 +12,8 @@ day 2: [q36] Dragon on the Mountain
 
 -- THE TALLY OF SIN --
   (no crime committed yet)
-  sin 181/1300; heat 0 -- lying low
-  lifetime sin 181 / penance 616
+  sin 362/1300; heat 0 -- lying low
+  lifetime sin 362 / penance 616
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`
