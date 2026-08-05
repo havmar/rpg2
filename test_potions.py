@@ -1,10 +1,12 @@
 """Contract suite for the QUARTERMASTER PASS (rpg.auto_potions, 2026-07-26):
 the out-of-combat potion deal and auto-drink. Pure policy, so it is worth
 pinning exactly -- the deal order, the round-robin, the companion tiebreak,
-the PC's spell/ability gate, and the thresholds.
+the PC's spell/ability gate, the thresholds, and (2026-08-05) the fence that
+keeps the drink at a fight's OPENING and nowhere else.
 
 `python -m unittest -v test_potions.py`
 """
+import pathlib
 import unittest
 
 import rpg
@@ -102,14 +104,15 @@ class TheFallenTests(unittest.TestCase):
 
 
 class DrinkTests(unittest.TestCase):
-    """`drink=True` is the fight's end and nothing else -- the default pass
-    only moves vials around."""
+    """`drink=True` is the fight's OPENING and nothing else (2026-08-05) --
+    every other pass only moves vials around."""
 
-    def test_the_morning_pass_deals_but_never_drinks(self):
+    def test_a_pass_outside_the_opening_deals_but_never_drinks(self):
         party = [hero("PC", pc=True), hero("Ally", hp=3, cur_sta=1,
                                            healing=2, stamina=2)]
         log = []
-        rpg.auto_potions(party, log)        # no drink= : the camp/shop pass
+        rpg.auto_potions(party, log)        # no drink=: camp, shop, or the
+                                            # pass at a fight's END
         self.assertEqual(party[1].hp, 3)
         self.assertEqual(party[1].cur_sta, 1)
         self.assertEqual(kit(party, "healing"), [1, 1])
@@ -187,6 +190,45 @@ class PlayerCharacterGateTests(unittest.TestCase):
                       spells={"healing": 3}, abilities=("war_breath",))]
         rpg.auto_potions(party, [], drink=True)
         self.assertEqual(party[1].items, {"healing": 0, "stamina": 0})
+
+
+class OpeningTests(unittest.TestCase):
+    """`rpg.open_fight` is where the drink lives now (2026-08-05): a wound
+    is spent on at the START of a fight, never on the way out of one."""
+
+    def test_the_opening_stands_them_up_then_drinks(self):
+        party = [hero("PC", pc=True), hero("Ally", hp=0, healing=2)]
+        party[1].down = True
+        log = []
+        rpg.open_fight(party, log)
+        self.assertFalse(party[1].down)
+        # Prep revives first, so the pass reads the real HP and tops it off.
+        self.assertGreater(party[1].hp, rpg.REVIVE_HP)
+
+    def test_the_opening_leaves_a_whole_party_alone(self):
+        party = [hero("PC", pc=True, healing=1), hero("Ally", healing=1)]
+        log = []
+        rpg.open_fight(party, log)
+        self.assertEqual(kit(party, "healing"), [1, 1])
+
+    def test_the_dead_are_not_prepped(self):
+        party = [hero("PC", pc=True), hero("Fallen", hp=0, healing=1)]
+        party[1].dead = True
+        rpg.open_fight(party, [])
+        self.assertEqual(party[1].hp, 0)          # no revive for the dead
+        self.assertEqual(party[0].items["healing"], 1)   # their kit comes back
+
+    def test_the_opening_is_the_only_caller_that_drinks(self):
+        """The fence, pinned in the source: nothing outside `open_fight`
+        may pass `drink=True` -- a drink anywhere else is a vial the night
+        would have saved."""
+        root = pathlib.Path(__file__).parent
+        self.assertEqual(
+            (root / "session.py").read_text(encoding="utf-8")
+            .count("drink=True"), 0)
+        self.assertEqual(
+            (root / "rpg.py").read_text(encoding="utf-8")
+            .count("drink=True"), 1)
 
 
 class ReportTests(unittest.TestCase):

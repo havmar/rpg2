@@ -31,7 +31,7 @@ owns the fiction register, and dm.md applies it at the table.
 
 **How play is driven:** the game is *two halves working together*.
 - **The scripts (`rpg.py`, `sites.py`, `quests.py`, `people.py`)** are a
-  library of mechanics primitives and content — `start_fight`,
+  library of mechanics primitives and content — `open_fight`,
   `group_combat`, `long_rest`, `party_wiped`, the foe
   catalog, the set sites, the quest generator and its world, the
   character generator and its races/traits.
@@ -160,8 +160,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `python -m unittest -v test_places.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
-  recovering the fallen's kit, the fight-only drink fence (`drink=`), the
-  drink thresholds and the deal/drink alternation, the PC's
+  recovering the fallen's kit, the opening-only drink fence (`drink=`,
+  pinned in the source since 2026-08-05), `open_fight`'s prep-then-drink
+  order, the drink thresholds and the deal/drink alternation, the PC's
   healing-spell / War-Breath / Berserk gate, and the one-line hand-over
   report inside the 40-column wrap.
   `python -m unittest -v test_potions.py`.
@@ -236,7 +237,8 @@ a pointer: what the file is, how it's run, where its docs are.
   the firebomb in `group_combat`, the smoke vial in `attempt_retreat` —
   rules.md's Alchemy & the Potion Rework add-on), the QUARTERMASTER PASS
   (2026-07-26: `auto_potions` and its helpers — the out-of-combat potion
-  deal and auto-drink, played sessions only), the CONDITIONS framework
+  deal, plus `open_fight`'s drink at a fight's opening, played sessions
+  only), the CONDITIONS framework
   (2026-07-26, the attrition rework's slice 3a: `Condition`,
   `Entity.conditions` / `Entity.inflicts`, `apply_condition` /
   `clear_conditions` / `_tick_conditions` / `_stabilize` — rules.md's
@@ -559,7 +561,9 @@ a pointer: what the file is, how it's run, where its docs are.
   too (the free-allocation doctrine: no class gate). Since 2026-07-26 the
   QUARTERMASTER PASS is dispatched from here: `rpg.auto_potions` is called
   at every out-of-combat point where the potion stock changes (see the dev
-  map), so `use` became an override rather than the routine step. Also
+  map), so `use` became an override rather than the routine step. Since
+  2026-08-05 every played encounter opens through `rpg.open_fight` (prep +
+  the one drinking pass) instead of a bare `start_fight` loop. Also
   since 2026-07-26 (slice 3b) the WOUND surface: **`healer`** (the day
   with the settlement's healer — the treatment ladder's access rung),
   `bed=True` on the settlement night paths (`downtime`, `camp` behind
@@ -832,18 +836,27 @@ mechanic *does* and *why* is rules.md's job.
   `recover_potions_from_the_fallen` (a dead companion's vials go back to
   the party — the quality-steel doctrine), `_kit_line`, and
   `auto_potions` — the recover/deal/drink/deal loop and the ONE entry
-  point. **`drink=` is the fight-only fence** (designer call, 2026-07-26):
-  it defaults to False, so every call DEALS and only the encounter paths
-  pass `drink=True`. A camp/shop/morning drink was the wrong trade — the
-  night heals free, so the vial is worth more unopened.
-  `session.py` calls it wherever the stock changes out of combat, and those
-  call sites are the trigger list: `finish_encounter` and `cmd_retreat`'s
-  escape branch (**the two `drink=True` sites**), plus deal-only at
+  point — and `open_fight` (prep every living hero, then the one drinking
+  pass). **`drink=` is the OPENING-only fence** (designer call, 2026-08-05,
+  revising the fight-end fence of 2026-07-26): it defaults to False, so
+  every call DEALS and exactly one caller — `open_fight` — passes
+  `drink=True`; `test_potions.py` pins that count in the source. A drink at
+  a fight's END was the wrong trade for the same reason a camp/shop/morning
+  drink is: the party can camp from there and the night heals free, so the
+  vial is worth more unopened. Carried into the NEXT fight the wound is
+  what kills, so that is where it is spent.
+  `session.py` calls `auto_potions` wherever the stock changes out of
+  combat, and those call sites are the trigger list — all deal-only now:
+  `finish_encounter` and `cmd_retreat`'s escape branch,
   `cmd_new` (the opening kit),
   `night_upkeep` (every night path, after the rest and the brew),
   `cmd_buy` / `cmd_use` / `cmd_brew` (all gated on the primitive actually
-  succeeding), `cmd_hire`, `cmd_dismiss`, `process_departures`. The sims
-  and one-shots do NOT run it (`sites.run_site` keeps
+  succeeding), `cmd_hire`, `cmd_dismiss`, `process_departures`. The drink
+  rides `open_fight` instead, called by all seven played encounter openings
+  (`maybe_punish`, `maybe_enforce`, `crime_fight`, `cmd_fight`, `cmd_site`,
+  `cmd_room`, `fight_wild_encounter`) — a resume
+  after a pause does NOT re-open, so a paused fight never drinks twice. The
+  sims and one-shots do NOT run it (`sites.run_site` keeps
   `auto_use_potions_on_rest`) — a deliberate divergence, so tune/bench
   numbers keep describing the party they were calibrated against;
   `sites.py --seed 3` and `bench_training.py` were diffed byte-identical
@@ -859,7 +872,9 @@ mechanic *does* and *why* is rules.md's job.
   points; the sims and companions auto-spend via `autospend_points`,
   doctrine v2 — `train_combat` the greedy trainer is gone),
   `storyteller_tale` / `survivalist_camp` (the night abilities; session's
-  night paths call them), `party_wiped`, `start_fight` (revive-only).
+  night paths call them), `party_wiped`, `start_fight` (per-hero,
+  revive-only) and `open_fight` (the party-level opening the played paths
+  call: prep + the quartermaster drink).
 - **Alchemy & the potion rework** (2026-07-17, levelling session C —
   rules.md's Alchemy & the Potion Rework add-on) — `rpg.py`: the alchemy
   constants block (`ALCHEMY_*`, `BREWED_KINDS`, `POTION_DISPLAY`,
