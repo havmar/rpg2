@@ -58,12 +58,13 @@ catchphrase.
   metonymy: "The priest pays you to destroy them" is clearer than "the parish
   purse opens." Epilogues state what changed and stop; they do not add a clever
   final beat merely to give the line flavor.
-- **Keep game output ASCII, plain text, and wrapped at 40 columns.** The DM's
-  message is a text page read as a GitHub blob (2026-08-05, `dm.md`'s scene
-  page): the whole page -- prose and displays alike -- wraps at 40 like the
-  engine's output, with no markdown of any kind (no code fences, no bold, no
-  headings). A URL sits alone on its own line and is never split. Prose stored
-  only in development documentation need not wrap at 40.
+- **Keep game output ASCII, and fit display copy to 40 columns.** The width
+  limit is for displays -- code-authored output and DM-composed blocks, where
+  a broken line ruins a table. Narration prose is never hard-wrapped: on the
+  scene page (`dm.md`) it is written as plain unwrapped paragraphs and the
+  reader's screen does the wrapping. The page carries no markdown of any kind
+  (no code fences, no bold, no headings), and a URL sits alone on its own
+  line, never split.
 
 ## The three writing layers
 
@@ -147,7 +148,7 @@ For an **item or creature**, prefer a readable base noun plus one meaningful
 modifier: rust blade, ember hound, glass key, tollhouse ghost. Stack modifiers
 only when each one matters in play.
 
-For a **wound** (`rpg.WOUND_NAMES` / `WOUND_MAIM_NAMES`, 2026-07-26), name the
+For a **wound** (`rpg.WOUND_NAMES` / `WOUND_MAIM_NAMES`), name the
 injury the way a field surgeon would write it down: **body part, what was done
 to it, and its current state**, in that order, with no adjective of feeling. "A
 gut wound, still seeping" and "two fingers gone" are the register; "a searing

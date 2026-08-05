@@ -198,8 +198,9 @@ a pointer: what the file is, how it's run, where its docs are.
 - `scene-example.txt` — **the worked scene-page model** (2026-08-05): a game
   start and a fight turn in writing.md's voice and dm.md's scene-page format
   (the three-turn page, the start+link+end fight display, no markdown).
-  Referenced by dm.md and writing.md; it is play-facing copy, so it obeys the
-  40-column/ASCII rules itself (URLs exempt).
+  Referenced by dm.md and writing.md; it is play-facing copy, so it follows
+  the page rules itself (displays at 40 columns, prose unwrapped, ASCII, no
+  markdown).
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
   translation-style view of one Land's player/DM-facing names, descriptions,
   Site and Room labels, and visible content strings. It carries only enough
