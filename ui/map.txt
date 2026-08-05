@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Mortellaria > Portomera
+RPG2 MAP -- day 2
+the party is at Mortellaria > Doramonte
+  > the burned farm > outer watch
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -20,13 +21,14 @@ the party is at Mortellaria > Portomera
 
 == Mortellaria ==  <- here
   Castavera (capital) -- 5 job(s)
-  Portomera (town) -- 4 job(s)  <- the
-    party
+  Portomera (town) -- 3 job(s)
+    (visited)
   Belafonte (town) -- 4 job(s)
   Montaro (town) -- 4 job(s)
   Lunaro (village) -- 2 job(s)
   Beloro (village) -- 2 job(s)
-  Doramonte (village) -- 2 job(s)
+  Doramonte (village) -- 2 job(s)  <-
+    the party
 
 == Ensimaa ==
   Taivelle (capital) -- 5 job(s)

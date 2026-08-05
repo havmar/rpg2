@@ -1,46 +1,59 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
+=== Deserter Raiders -- the burned farm (L1), room 1/1: outer watch ===
+  Bruiser 1 -- spear
+  DEX 4  STR 5  STA 5  HP 9/9
+  takes spoils, leaves the fallen
+  Bruiser 2 -- dagger
+  DEX 4  STR 5  STA 5  HP 9/9
+  takes spoils, leaves the fallen
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Bruiser 1, Bruiser 2 close the distance (the gap narrows to 1).
+    Caladrel's fire bolt edges past Bruiser 1 -- a solid wound! [Bruiser 1: 7/9 HP, -1 to rolls]
+        pressure: Caladrel: 15 (2d6=9, +5 AIM, +1 proficiency) vs Bruiser 1: 13 (2d6=9, +4 DEX) [fire bolt: -1 Power, 3 left]
+        severity: 3 = margin 2 +5 fire bolt +1 spell rank -5 soak -> wound (-2 HP)
+    Corvin sends fire bolt at Bruiser 1 -- warded off.
+        pressure: Corvin: 11 (2d6=5, +5 AIM, +1 proficiency) vs Bruiser 1: 15 (2d6=12, +4 DEX, -1 wounds) [fire bolt: -1 Power, 4 left]
+    stamina: Caladrel 7/8, Corvin 6/7 | Bruiser 1 5/5, Bruiser 2 5/5
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Bruiser 1, Bruiser 2 close the distance -- the lines meet!
+    Caladrel's fire bolt overwhelms Bruiser 1 -- a grievous injury! [Bruiser 1: 3/9 HP, -3 to rolls]
+        pressure: Caladrel: 15 (2d6=9, +5 AIM, +1 proficiency) vs Bruiser 1: 10 (2d6=7, +4 DEX, -1 wounds) [fire bolt: -1 Power, 2 left]
+        severity: 6 = margin 5 +5 fire bolt +1 spell rank -5 soak -> grievous (-4 HP)
+    Corvin's fire bolt overwhelms Bruiser 1 -- a crippling blow! [Bruiser 1: 0/9 HP, -4 to rolls]
+        pressure: Corvin: 13 (2d6=7, +5 AIM, +1 proficiency) vs Bruiser 1: 6 (2d6=5, +4 DEX, -3 wounds) [fire bolt: -1 Power, 3 left]
+        severity: 8 = margin 7 +5 fire bolt +1 spell rank -5 soak -> crippling blow (-6 HP)
+    *** Bruiser 1 is SLAIN. ***
+    stamina: Caladrel 6/8, Corvin 5/7 | Bruiser 2 5/5
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Caladrel's fire bolt outmaneuvers Bruiser 2 -- a grievous injury! [Bruiser 2: 5/9 HP, -2 to rolls]
+        pressure: Caladrel: 16 (2d6=10, +5 AIM, +1 proficiency) vs Bruiser 2: 12 (2d6=8, +4 DEX) [fire bolt: -1 Power, 1 left]
+        severity: 5 = margin 4 +5 fire bolt +1 spell rank -5 soak -> grievous (-4 HP)
+    Corvin's fire bolt overwhelms Bruiser 2 -- a crippling blow! [Bruiser 2: 0/9 HP, -4 to rolls]
+        pressure: Corvin: 16 (2d6=10, +5 AIM, +1 proficiency) vs Bruiser 2: 7 (2d6=5, +4 DEX, -2 wounds) [fire bolt: -1 Power, 2 left]
+        severity: 10 = margin 9 +5 fire bolt +1 spell rank -5 soak -> crippling blow (-6 HP)
+    *** Bruiser 2 is SLAIN. ***
+    (Bruiser 2 strikes even as they fall)
+    Bruiser 2 attacks Corvin -- parried.
+        pressure: Bruiser 2: 9 (2d6=5, +4 DEX) vs Corvin: 12 (2d6=8, +4 DEX)
+    stamina: Caladrel 5/8, Corvin 4/7
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Caladrel gains 35 XP (encounter) [35/100]
+    Corvin gains 35 XP (encounter) [35/100]
+Left among the dead:
+a spear (+0 atk/+0 sev, 5g),
+a dagger (+0 atk/-1 sev, 2g).
+
+  *** QUEST COMPLETE: Deserter Raiders -- the burned farm. Reward: 18 gold. ***
+    Caladrel talks the pay up: +2g (CHA 4 -- 20g in all).
+    The party purse holds 20 gold.
+    Caladrel gains 53 XP (quest) [88/100]
+    Corvin gains 53 XP (quest) [88/100]
+    Corvin: satisfaction 7 -> 8/10 (a job paid out)
+  (turn in to Hale, the army captain -- narrate the scene)
+  EPILOGUE (day 2): The deserters are defeated. Their weapons return to the army.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
-  (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
+Caladrel: Unhurt STA 6/8 Power 1/4
+  (stamina x1)
+Corvin: Unhurt STA 5/7 Power 2/5
   (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 20g; day 2.

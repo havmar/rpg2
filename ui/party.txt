@@ -1,28 +1,31 @@
-RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > Portomera
-purse: 0g
+RPG2 PARTY SHEET -- day 2, at
+  Mortellaria > Doramonte > the burned
+  farm > outer watch
+purse: 20g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Caladrel -- elf m, age 38
-  L1  training 0  XP 0/100  points 0
+  L1  training 0  XP 88/100  points 0
   DEX 4  STR 5  MIND 6  CHA 4
-  HP 9/9  STA 8/8  Power 4/4
+  HP 9/9  STA 6/8  Power 1/4
   light hammer | staminax1
   spells: fire 1
   temperament: mean; speech: verbose;
     voice: whispering
 
 (companion) Corvin -- human m, age 27
-  L1  training 0  XP 0/100  points 0
+  L1  training 0  XP 88/100  points 0
   DEX 4  STR 5  MIND 6  CHA 3
-  HP 9/9  STA 7/7  Power 5/5
+  HP 9/9  STA 5/7  Power 2/5
   whip | healingx1, staminax2
   spells: fire 1
-  satisfaction 7/10
+  satisfaction 8/10
   interest: food; speech: formal; dress:
     professional
 
+active quest [q13] Deserter Raiders is
+  COMPLETE
 THE PACT: assignment [q42] Capture the
   Beast at Portomera (grace to take it
   runs to day 11).
