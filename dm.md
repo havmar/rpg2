@@ -33,8 +33,8 @@ play.
   the tally of sin, hell's suggestions). Combat also
   rewrites **`ui/fight-short.txt`** (the displayed last fight) and
   **`ui/fight-detailed.txt`** (its full mechanics record). Two pages are
-  YOURS to write, not the engine's: **`ui/scene.txt`** (the DM message
-  itself -- see The scene page below) and **`ui/transcript.txt`** (the
+  YOURS to write, not the engine's: **`ui/scene.md`** (the DM message
+  itself -- see The scene page below) and **`ui/transcript.md`** (the
   append-only play log behind it). A further page,
   **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
   yet; `look` is the local display meanwhile. **End EVERY DM message with
@@ -45,22 +45,18 @@ play.
   page below.)
 - **GitHub IS the player's UI.** The pages are committed to the branch,
   so the player and DM can read them as blob pages. The one the player
-  lives on is **`ui/scene.txt`** -- kept open on a phone and refreshed
+  lives on is **`ui/scene.md`** -- kept open on a phone and refreshed
   after every turn; the scene link posted in chat each message (see The
-  scene page below) is the clickable way back in. Drop the other
-  standing links ONCE, in chat, at game start (swap in the current
-  branch name):
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` (the
-  between-fights board) and
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt` (where they
-  are and where their taken jobs lead). Add
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/history.txt` when the
-  campaign has a record worth reading (after the first job, a conquest, a
-  run of crime) -- it is also YOUR continuity crib across sessions: what
-  the party did, who they killed, and what they are known for.
-  `ui/fight-short.txt` is linked FROM the scene page at every fight (see
-  the turn protocol); `ui/fight-detailed.txt` is shared on request, when
-  the full mechanics record matters.
+  scene page below) is the clickable way back in, and the page's own
+  footer links reach the rest: `ui/party.txt` (the between-fights
+  board), `ui/map.txt` (where they are and where their taken jobs
+  lead), and `ui/history.txt` once the campaign has a record worth
+  reading (after the first job, a conquest, a run of crime) -- that
+  last one is also YOUR continuity crib across sessions: what the
+  party did, who they killed, and what they are known for.
+  `ui/fight-short.txt` is linked FROM the scene page at every fight
+  (see the turn protocol); `ui/fight-detailed.txt` is shared on
+  request, when the full mechanics record matters.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between
@@ -71,55 +67,64 @@ play.
 ## The scene page -- the DM message is a file
 
 The chat is not where the game is told. **Everything you would say as DM
-goes into `ui/scene.txt`**; your chat message is ONE line -- the scene
+goes into `ui/scene.md`**; your chat message is ONE line -- the scene
 page's blob link. The player's inputs stay in chat; the game's prose
 lives on the page. The point of the detour is REVISION: a page can be
 reread and edited before the player sees it, a chat message cannot --
 and the style drift of a long session is caught in that reread.
 
 - **Draft, then review, then commit.** Write the full message into
-  `ui/scene.txt`, reread the draft against `writing.md` (its Final
-  check is the checklist), and edit what fails it -- register, width,
-  markdown leaking in, prose restating a display. Gameplay
+  `ui/scene.md`, reread the draft against `writing.md` (its Final
+  check is the checklist), and edit what fails it -- register, stray
+  formatting, prose restating a display. Gameplay
   inconsistencies (a contradicted fact, a wrong name, a scene that
   ignores where the party stands) are caught and edited the same way.
   Only then run `sheet`. A page shipped without the reread defeats the
   design.
-- **Format: plain ASCII text, no markdown.** The page is a GitHub text
-  blob read on a phone: no code fences, no bold, no headings -- the
-  engine's display conventions (`===` banners, ALL CAPS state changes,
-  `>` for input) are the whole toolkit, and blocks are separated by
-  blank lines. DISPLAYS keep the engine's 40-column shape (its blocks
-  arrive that way; match it in blocks you compose -- a broken line
-  ruins a table). PROSE is never hard-wrapped: write each paragraph as
-  one plain line and let the phone wrap it. A URL sits alone on its
-  own line, never split.
+- **Format: rendered Markdown, structure only.** Raw text has no good
+  reading surface (the phone app breaks words at the margin; 40-column
+  text is a ribbon on a PC), so the page is `.md` and is read RENDERED,
+  reflowing to any screen. Markdown is used for structure and nothing
+  else: a `## turn N (day D)` heading opens each turn, the player's
+  input follows as a `>` blockquote line, links are real markdown
+  links, and EVERY display block -- engine output pasted as printed,
+  and any block you compose -- sits in a code fence, which is what
+  keeps a 40-column display aligned in the rendered view. PROSE stays
+  plain paragraphs: no bold, no italics, no lists, no headings inside
+  the fiction -- the voice does the work (writing.md). Never hard-wrap
+  prose; escape a literal `*` or `_` if the fiction ever needs one;
+  keep everything ASCII.
 - **Structure: the page is the transcript's tail.** The page carries
   the last THREE turns, chronological, newest at the bottom -- the
   player's latest words sit directly above the newest scene, and the
   two turns before them are the lookback. A turn is one exchange, in
   this shape:
 
-      === turn 14 (day 3) ===
+      ## turn 14 (day 3)
+
       > press on to the den
 
       (the DM text of the turn)
 
   The `>` line is the player's chat input, verbatim (trim only
   pleasantries); turn numbers count exchanges from game start.
-- **`ui/transcript.txt` is the full record**: every turn appended in
+- **End the page with the standing links**: one line of markdown
+  links, current branch -- party and map always, history once it has
+  a record worth reading. The pinned page is the player's front door;
+  the footer is how they hop to the boards.
+- **`ui/transcript.md` is the full record**: every turn appended in
   the same shape, never rewritten. What falls off the scene page stays
   here. `new` starts both files fresh -- the old game lives on in its
   own branch.
 - **End-of-message order, every message:** finish the commands, write
-  `ui/scene.txt`, append the new turn to `ui/transcript.txt`, run
+  `ui/scene.md`, append the new turn to `ui/transcript.md`, run
   `python session.py sheet` (it commits both with the other pages),
   then post the link in chat (swap in the branch):
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/scene.txt`
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/scene.md`
   Nothing else goes in the chat message. Out-of-game talk -- errors,
   design questions when the player raises them -- stays in chat and
   never on a page.
-- **`scene-example.txt` is the worked model** (a game start and a
+- **`scene-example.md` is the worked model** (a game start and a
   fight turn, in this format and writing.md's voice). Imitate its
   shape when in doubt.
 
@@ -740,8 +745,9 @@ bigger than the fights WITHOUT pages of narration:
   the display log -- 40 columns, no dice math, damage as
   `deals 4 dmg!!`, quiet rounds collapsed -- and **`ui/fight-short.txt`**
   holds it exactly. On the page, copy the fight's OPENING block (the
-  `===` banner, the site/room line, the foe roster with its tags), then
-  the fight page's blob URL on its own line, then everything AFTER the
+  `===` banner, the site/room line, the foe roster with its tags) into
+  a code fence, then a markdown link to the fight page, then -- fenced
+  again -- everything AFTER the
   last round: the catch-of-breath, XP lines, banners, epilogue and
   turn-in prompt, a level-up menu if one printed, and the closing party
   TALLY (tracks, standing roll penalties, kit, purse, fights left on
@@ -929,7 +935,7 @@ bigger than the fights WITHOUT pages of narration:
   prose. Humor survives
   only in the material itself (the situation, an epilogue line),
   delivered deadpan. `writing.md` also governs any quest, place, NPC,
-  item, or epilogue invented during play; `scene-example.txt` shows
+  item, or epilogue invented during play; `scene-example.md` shows
   the voice at full page length -- imitate it when a line feels off.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes
@@ -986,7 +992,8 @@ bigger than the fights WITHOUT pages of narration:
   (and any log lines you edit or excerpt) within 40 columns** -- the
   scripts hard-wrap everything they print at 40 for the designer's
   phone, and a DM-composed display wider than the engine's breaks the
-  page. The fiction around the
+  page. On the scene page a composed block sits in a code fence like
+  the engine's output. The fiction around the
   block stays fiction; a single number that fits a clause may stay in
   the sentence. The line never to cross: mechanics dressed as story
   ("a touch above your green weight" for a level, "they hit like hot

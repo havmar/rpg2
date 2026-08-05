@@ -66,10 +66,10 @@ The shape of a playthrough:
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
-  sheet                                     -- commit every ui/*.txt page
+  sheet                                     -- commit every ui/ page
                                                (run at the END of every DM
                                                message, after writing
-                                               ui/scene.txt -- dm.md)
+                                               ui/scene.md -- dm.md)
 
 All output is wrapped at WRAP_WIDTH columns (the designer plays on a phone
 whose code blocks show ~41 characters and never soft-wrap).
@@ -444,8 +444,8 @@ UI_COMMIT_PATHS = (
     "ui/history.txt",
     "ui/fight-short.txt",
     "ui/fight-detailed.txt",
-    "ui/scene.txt",
-    "ui/transcript.txt",
+    "ui/scene.md",
+    "ui/transcript.md",
 )
 
 
@@ -876,7 +876,7 @@ def _write_history_sheet(state: dict) -> None:
 
 
 def cmd_sheet(args: argparse.Namespace) -> None:
-    """Rewrite party/map/history and commit every existing ui/*.txt page.
+    """Rewrite party/map/history and commit every existing ui/ page.
 
     Fight pages do not exist until the first encounter. Once written, they
     join the same end-of-message commit as the three rewritten pages.
@@ -6452,9 +6452,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "sheet",
         help="rewrite party/map/history and COMMIT every existing "
-             "ui/*.txt page, including the last-fight logs and the "
+             "ui/ page, including the last-fight logs and the "
              "DM-written scene/transcript pages. Run at the END of every "
-             "DM message, after writing ui/scene.txt (dm.md, The scene "
+             "DM message, after writing ui/scene.md (dm.md, The scene "
              "page); committing unchanged pages is a harmless no-op.")
     p.set_defaults(func=cmd_sheet)
 

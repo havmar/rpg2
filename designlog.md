@@ -1371,3 +1371,24 @@ words, night rules), 07-27/07-28 (conquest, the weapon ladder),
 08-04 (the dark rework: crime, the record, the shadow board's
 retirement), 08-05 (the scene page). New dm.md text gets no date
 markers; this log carries the when.
+
+## 2026-08-05 (session C) — The scene page becomes Markdown
+
+Raw text turned out to have no good reading surface: the GitHub app
+character-wraps txt blobs (words cut at the margin), and the 40-column
+alternative reads as a ribbon on a PC. The scene page and transcript
+are now **`ui/scene.md`** / **`ui/transcript.md`** — rendered
+markdown, reflowing to any screen — and the links became real:
+the fight log is a clickable link, and the page ends with a standing
+party | map (| history) footer, so the pinned page hops to the boards
+(the chat-once link drop is retired).
+
+Markdown is STRUCTURE ONLY: a `## turn N (day D)` heading per turn,
+the player's input as a `>` blockquote, links, and code fences around
+every display block. Session A's "no code blocks" call is reversed
+for displays alone — a fence is exactly what keeps a 40-column table
+aligned in a rendered view — while prose stays plain paragraphs, no
+emphasis, unwrapped, ASCII. The engine's own pages stay .txt: they
+are pure displays and the code view suits them. scene-example.md
+reworked to match; dm.md, writing.md, develop.md, AGENTS.md,
+`UI_COMMIT_PATHS` and its test renamed along.

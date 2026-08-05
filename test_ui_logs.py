@@ -52,8 +52,8 @@ class CombatSnapshotTests(unittest.TestCase):
     def test_sheet_commit_set_contains_dm_written_pages(self):
         # The scene page and the transcript are DM-authored (dm.md, The
         # scene page); the engine never writes them but must commit them.
-        self.assertIn("ui/scene.txt", UI_COMMIT_PATHS)
-        self.assertIn("ui/transcript.txt", UI_COMMIT_PATHS)
+        self.assertIn("ui/scene.md", UI_COMMIT_PATHS)
+        self.assertIn("ui/transcript.md", UI_COMMIT_PATHS)
 
 
 class ExactQuestLevelTests(unittest.TestCase):
