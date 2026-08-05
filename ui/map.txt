@@ -1,6 +1,6 @@
-RPG2 MAP -- day 3
+RPG2 MAP -- day 4
 the party is at Tergal > Ordubal > the
-  ritual ground > campfire
+  ritual ground > leader's shelter
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -57,12 +57,6 @@ the party is at Tergal > Ordubal > the
   Zamutar (village) -- 2 job(s)
   Tumengal (village) -- 2 job(s)
   Urkhal (village) -- 2 job(s)
-
--- quests in hand (where they lead) --
-
-[q42] Open the Hellgate (L13) @ Ordubal
-  - the ritual ground (L13): here, room
-    3/3
 
 -- the war --
 THE WAR: [w1] L2 Stolen Parts -- raised

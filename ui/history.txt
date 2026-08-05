@@ -1,4 +1,4 @@
-RPG2 HISTORY -- day 3
+RPG2 HISTORY -- day 4
 (what this campaign has done)
 
 -- QUESTS DONE --
@@ -6,14 +6,20 @@ day 2: [q36] Dragon on the Mountain
   (L13) -- done.
   The dragon is dead. The herds return
     to the mountain.
+day 4: [q42] Open the Hellgate (L13)
+  [DARK] -- done.
+  The gate closes. Hell sends a written
+    apology.
 
 -- REMARKABLE --
-  (nothing yet)
+day 4: HELL'S ASSIGNMENT 1 served: Open
+  the Hellgate.
 
 -- THE TALLY OF SIN --
   (no crime committed yet)
-  sin 362/1300; heat 0 -- lying low
-  lifetime sin 362 / penance 616
+  sin 1477; HEAT 1 -- retribution hunts
+    1 level(s) above the party
+  lifetime sin 1477 / penance 616
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

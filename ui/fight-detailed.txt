@@ -1,53 +1,68 @@
-=== Open the Hellgate -- the ritual ground (L13), room 2/3: campfire ===
-  Demon Troll 3 -- heavy claws
+=== Open the Hellgate -- the ritual ground (L13), room 3/3: leader's shelter ===
+  Demon Troll 4 -- heavy claws
   DEX 6  STR 7  STA 10  HP 22/22
   breaks when beaten, wounds knit +3/round
   Round 1:
-    Gwen, Demon Troll 3 close the distance -- the lines meet!
-    !! Martel's fire bolt MISFIRES -- the spell collapses in their hands (-1 HP -> 14/15; the Power is wasted)
-        pressure: Martel: 12 (2d6=2, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 3: 14 (2d6=8, +6 DEX) [fire bolt: -1 Power, 8 left]
-    stamina: Martel 10/14, Gwen 10/12 | Demon Troll 3 10/10
+    Gwen, Demon Troll 4 close the distance -- the lines meet!
+    Martel and Demon Troll 4 -- the fire bolt splashes wide; neither yields.
+        pressure: Martel: 16 (2d6=6, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 4: 16 (2d6=10, +6 DEX) [fire bolt: -1 Power, 13 left]
+    stamina: Martel 13/14, Gwen 12/12 | Demon Troll 4 10/10
   Round 2:
-    Martel's fire bolt overwhelms Demon Troll 3 -- a grievous injury! [Demon Troll 3: 18/22 HP, -2 to rolls]
-        pressure: Martel: 20 (2d6=10, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 3: 15 (2d6=9, +6 DEX) [fire bolt: -1 Power, 7 left]
-        severity: 6 = margin 5 +5 fire bolt +3 spell rank -7 soak -> grievous (-4 HP)
-    Gwen outmaneuvers Demon Troll 3 -- a grievous injury! [Demon Troll 3: 14/22 HP, -4 to rolls]
-        pressure: Gwen: 15 (2d6=3, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 3: 12 (2d6=8, +6 DEX, -2 wounds)
-        severity: 5 = margin 3 +5 STR +1 katana +3 proficiency -7 soak -> grievous (-4 HP)
-    Demon Troll 3 attacks Gwen -- parried.
-        pressure: Demon Troll 3: 12 (2d6=10, +6 DEX, -4 wounds) vs Gwen: 19 (2d6=11, +5 DEX, +3 training)
-    Demon Troll 3's wounds knit closed before their eyes (+3 HP -> 17/22, -2 to rolls)
-    stamina: Martel 9/14, Gwen 9/12 | Demon Troll 3 9/10
+    Martel's fire bolt outmaneuvers Demon Troll 4 -- a grievous injury! [Demon Troll 4: 18/22 HP, -2 to rolls]
+        pressure: Martel: 20 (2d6=10, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 4: 16 (2d6=10, +6 DEX) [fire bolt: -1 Power, 12 left]
+        severity: 5 = margin 4 +5 fire bolt +3 spell rank -7 soak -> grievous (-4 HP)
+    Gwen outmaneuvers Demon Troll 4 -- a grievous injury! [Demon Troll 4: 14/22 HP, -4 to rolls]
+        pressure: Gwen: 19 (2d6=7, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 4: 15 (2d6=11, +6 DEX, -2 wounds)
+        severity: 6 = margin 4 +5 STR +1 katana +3 proficiency -7 soak -> grievous (-4 HP)
+    Demon Troll 4 attacks Gwen -- parried.
+        pressure: Demon Troll 4: 9 (2d6=7, +6 DEX, -4 wounds) vs Gwen: 15 (2d6=7, +5 DEX, +3 training)
+    Demon Troll 4's wounds knit closed before their eyes (+3 HP -> 17/22, -2 to rolls)
+    stamina: Martel 12/14, Gwen 11/12 | Demon Troll 4 9/10
   Round 3:
-    Martel's fire bolt overwhelms Demon Troll 3 -- a crippling blow! [Demon Troll 3: 11/22 HP, -5 to rolls]
-        pressure: Martel: 18 (2d6=8, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 3: 11 (2d6=7, +6 DEX, -2 wounds) [fire bolt: -1 Power, 6 left]
+    Martel's fire bolt overwhelms Demon Troll 4 -- a crippling blow! [Demon Troll 4: 11/22 HP, -5 to rolls]
+        pressure: Martel: 14 (2d6=4, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 4: 7 (2d6=3, +6 DEX, -2 wounds) [fire bolt: -1 Power, 11 left]
         severity: 8 = margin 7 +5 fire bolt +3 spell rank -7 soak -> crippling blow (-6 HP)
-    Gwen overwhelms Demon Troll 3 -- a crippling blow! [Demon Troll 3: 5/22 HP, -8 to rolls]
-        pressure: Gwen: 15 (2d6=3, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 3: 8 (2d6=7, +6 DEX, -5 wounds)
-        severity: 9 = margin 7 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow (-6 HP)
-    Demon Troll 3 attacks Gwen -- parried.
-        pressure: Demon Troll 3: 4 (2d6=6, +6 DEX, -8 wounds) vs Gwen: 13 (2d6=5, +5 DEX, +3 training)
-    Demon Troll 3's wounds knit closed before their eyes (+3 HP -> 8/22, -7 to rolls)
-    stamina: Martel 8/14, Gwen 8/12 | Demon Troll 3 8/10
+    Gwen overwhelms Demon Troll 4 -- a crippling blow! [Demon Troll 4: 5/22 HP, -8 to rolls]
+        pressure: Gwen: 22 (2d6=10, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 4: 10 (2d6=9, +6 DEX, -5 wounds)
+        severity: 14 = margin 12 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow (-6 HP)
+    Demon Troll 4 attacks Gwen -- parried.
+        pressure: Demon Troll 4: 2 (2d6=4, +6 DEX, -8 wounds) vs Gwen: 13 (2d6=5, +5 DEX, +3 training)
+    Demon Troll 4's wounds knit closed before their eyes (+3 HP -> 8/22, -7 to rolls)
+    stamina: Martel 11/14, Gwen 10/12 | Demon Troll 4 8/10
     The beaten foe line breaks and runs!
-    Martel's fire bolt overwhelms Demon Troll 3 -- a grievous injury! [Demon Troll 3: 4/22 HP, -9 to rolls]
-        pressure: Martel: 14 (2d6=4, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 3: -1 (2d6=2, +6 DEX, -7 wounds, -2 fleeing) [fire bolt: -1 Power, 5 left]
-        severity: 16 = margin 15 +5 fire bolt +3 spell rank -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    Gwen overwhelms Demon Troll 3 -- a grievous injury! [Demon Troll 3: 0/22 HP, -11 to rolls]
-        pressure: Gwen: 21 (2d6=9, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 3: 6 (2d6=11, +6 DEX, -9 wounds, -2 fleeing)
-        severity: 17 = margin 15 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Demon Troll 3 falls. ***
+    Martel's fire bolt overwhelms Demon Troll 4 -- a grievous injury! [Demon Troll 4: 4/22 HP, -9 to rolls]
+        pressure: Martel: 17 (2d6=7, +4 AIM, +3 training, +3 proficiency) vs Demon Troll 4: 8 (2d6=11, +6 DEX, -7 wounds, -2 fleeing) [fire bolt: -1 Power, 10 left]
+        severity: 10 = margin 9 +5 fire bolt +3 spell rank -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    Gwen overwhelms Demon Troll 4 -- a grievous injury! [Demon Troll 4: 0/22 HP, -11 to rolls]
+        pressure: Gwen: 17 (2d6=5, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Demon Troll 4: 1 (2d6=6, +6 DEX, -9 wounds, -2 fleeing)
+        severity: 18 = margin 16 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** Demon Troll 4 falls. ***
     The party catches its breath (+1 STA)
-    Martel gains 181 XP (encounter) [978/1300]
-    Gwen gains 181 XP (encounter) [978/1300]
-    (dark work: +181 sin -- sin 362/1300; heat 0 -- lying low)
+    Martel gains 181 XP (encounter) [1159/1300]
+    Gwen gains 181 XP (encounter) [1159/1300]
+    (dark work: +181 sin -- sin 543/1300; heat 0 -- lying low)
+
+  *** QUEST COMPLETE: Open the Hellgate -- the ritual ground. Reward: 888 gold. ***
+    Martel talks the pay up: +89g (CHA 4 -- 977g in all).
+    The party purse holds 2133 gold.
+    Martel gains 934 XP (quest) [2093/1300]
+    *** Martel reaches level 14! (+3 skill points, 4 unspent) ***
+    Gwen gains 934 XP (quest) [2093/1300]
+    *** Gwen reaches level 14! (+3 skill points, 3 unspent) ***
+    Gwen: satisfaction 8 -> 9/10 (a job paid out)
+    (dark work: +934 sin -- sin 1477; HEAT 1 -- retribution hunts 1 level(s) above the party)
+  (turned in QUICK -- day 4 against a deadline of day 10: x1.15 on the turn-in)
+  (turn in to Myev, the fixer -- narrate the scene)
+  EPILOGUE (day 4): The gate closes. Hell sends a written apology.
+  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next is pinned to PC level 15.)
+    Gwen drills a new move -- Thrust: +2 attack pressure this exchange [2 point(s) left]
+    Gwen drills a new move -- Feint: round 2+: next round's attack on the same foe at +3 [1 point(s) left]
+    Gwen drills a new move -- Pommel Strike: vs an unhurt foe, on a wounding hit: -2 severity but the foe loses its next attack (the stun rider) [0 point(s) left]
 
 -- the party --
-Martel: Scratched STA 9/14 Power 5/14
+Martel: Unhurt STA 12/14 Power 10/14
   (healing x1, stamina x1)
-Gwen: Unhurt STA 9/12 Power 10/10
+Gwen: Unhurt STA 11/12 Power 10/10
   (healing x1, stamina x1)
-Purse 1156g; day 3.
-Sin: sin 362/1300; heat 0 -- lying low.
-Ahead: 1 fight(s) at the ritual ground; the turn-in pays 888g, 934 XP.
-  (due day 10 -- 7 days left; quick pay, x1.15)
+Purse 2133g; day 4.
+Sin: sin 1477; HEAT 1 -- retribution hunts 1 level(s) above the party.
