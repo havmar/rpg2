@@ -6,16 +6,17 @@ party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU) Gardain -- dwarf m, age 22
-  L2  training 0  XP 41/200  points 3
+  L2  training 0  XP 41/200  points 0
   DEX 5  STR 3  MIND 4  CHA 6
-  HP 2/10 of 11  STA 5/7  Power 1/3
+  HP 3/11 of 12  STA 5/7  Power 1/3
   light hammer | staminax1
-  abilities: first_blood
+  abilities: first_blood, survivalist
+  pools bought: hp +1
   weakness: gambling; dress:
     professional; looks: beautiful
   [poisoned -1 HP/round]
   - a shallow belly wound (sev 1)
-  wound load 1 -> HP ceiling 10/11
+  wound load 1 -> HP ceiling 11/12
 
 (companion) Ghor -- orc m, age 28
   L2  training 1  XP 41/200  points 1
