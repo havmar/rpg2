@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Tergal > Ordubal
+RPG2 MAP -- day 2
+the party is at Tergal > Borugal Hills >
+  the mountain slopes > tracks
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -46,11 +47,12 @@ the party is at Tergal > Ordubal
   Kikawa (village) -- 2 job(s)
 
 == Tergal ==  <- here
+  Borugal Hills (hills, found day 1)  <-
+    the party
   Ulus-Gal (capital) -- 5 job(s)
   Kharuk (town) -- 4 job(s)
   Temenur (town) -- 4 job(s)
-  Ordubal (town) -- 4 job(s)  <- the
-    party
+  Ordubal (town) -- 3 job(s)  (visited)
   Zamutar (village) -- 2 job(s)
   Tumengal (village) -- 2 job(s)
   Urkhal (village) -- 2 job(s)

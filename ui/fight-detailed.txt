@@ -1,46 +1,56 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
+=== Dragon on the Mountain -- the mountain slopes (L13), room 1/1: tracks ===
+  Wyvern 1 -- venomous sting
+  DEX 8  STR 7  STA 10  HP 26/26
+  breaks when beaten, a lashing tail
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Gwen, Wyvern 1 close the distance -- the lines meet!
+    Martel and Wyvern 1 -- the fire bolt splashes wide; neither yields.
+        pressure: Martel: 18 (2d6=8, +4 AIM, +3 training, +3 proficiency) vs Wyvern 1: 18 (2d6=10, +8 DEX) [fire bolt: -1 Power, 13 left]
+    stamina: Martel 13/14, Gwen 12/12 | Wyvern 1 10/10
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Martel's fire bolt outmaneuvers Wyvern 1 -- a grievous injury! [Wyvern 1: 22/26 HP, -2 to rolls]
+        pressure: Martel: 18 (2d6=8, +4 AIM, +3 training, +3 proficiency) vs Wyvern 1: 14 (2d6=6, +8 DEX) [fire bolt: -1 Power, 12 left]
+        severity: 5 = margin 4 +5 fire bolt +3 spell rank -7 soak -> grievous (-4 HP)
+    Gwen edges past Wyvern 1 -- a solid wound! [Wyvern 1: 20/26 HP, -3 to rolls]
+        pressure: Gwen: 16 (2d6=4, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Wyvern 1: 15 (2d6=9, +8 DEX, -2 wounds)
+        severity: 3 = margin 1 +5 STR +1 katana +3 proficiency -7 soak -> wound (-2 HP)
+    Wyvern 1 attacks Gwen -- parried.
+        pressure: Wyvern 1: 11 (2d6=6, +8 DEX, -3 wounds) vs Gwen: 13 (2d6=5, +5 DEX, +3 training)
+    stamina: Martel 12/14, Gwen 11/12 | Wyvern 1 9/10
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Martel's fire bolt overwhelms Wyvern 1 -- a crippling blow! [Wyvern 1: 14/26 HP, -6 to rolls]
+        pressure: Martel: 18 (2d6=8, +4 AIM, +3 training, +3 proficiency) vs Wyvern 1: 10 (2d6=5, +8 DEX, -3 wounds) [fire bolt: -1 Power, 11 left]
+        severity: 9 = margin 8 +5 fire bolt +3 spell rank -7 soak -> crippling blow (-6 HP)
+    Gwen overwhelms Wyvern 1 -- a crippling blow! [Wyvern 1: 8/26 HP, -9 to rolls]
+        pressure: Gwen: 24 (2d6=12, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Wyvern 1: 14 (2d6=12, +8 DEX, -6 wounds)
+        severity: 12 = margin 10 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow (-6 HP)
+    Wyvern 1 attacks Gwen -- parried.
+        pressure: Wyvern 1: 4 (2d6=5, +8 DEX, -9 wounds) vs Gwen: 15 (2d6=7, +5 DEX, +3 training)
+    stamina: Martel 11/14, Gwen 10/12 | Wyvern 1 8/10
+    The beaten foe line breaks and runs!
+    Martel's fire bolt overwhelms Wyvern 1 -- a grievous injury! [Wyvern 1: 4/26 HP, -11 to rolls]
+        pressure: Martel: 17 (2d6=7, +4 AIM, +3 training, +3 proficiency) vs Wyvern 1: 6 (2d6=9, +8 DEX, -9 wounds, -2 fleeing) [fire bolt: -1 Power, 10 left]
+        severity: 12 = margin 11 +5 fire bolt +3 spell rank -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    Gwen overwhelms Wyvern 1 -- a grievous injury! [Wyvern 1: 0/26 HP, -13 to rolls]
+        pressure: Gwen: 22 (2d6=10, +5 DEX, +3 training, +1 katana, +3 proficiency) vs Wyvern 1: 6 (2d6=11, +8 DEX, -11 wounds, -2 fleeing)
+        severity: 18 = margin 16 +5 STR +1 katana +3 proficiency -7 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** Wyvern 1 falls. ***
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Martel gains 246 XP (encounter) [246/1300]
+    Gwen gains 246 XP (encounter) [246/1300]
+
+  *** QUEST COMPLETE: Dragon on the Mountain -- the mountain slopes. Reward: 234 gold. ***
+    Martel talks the pay up: +23g (CHA 4 -- 257g in all).
+    The party purse holds 1156 gold.
+    Martel gains 370 XP (quest) [616/1300]
+    Gwen gains 370 XP (quest) [616/1300]
+    Gwen: satisfaction 7 -> 8/10 (a job paid out)
+  (turn in to Sharn, the clan elder -- narrate the scene)
+  EPILOGUE (day 2): The dragon is dead. The herds return to the mountain.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Martel: Unhurt STA 12/14 Power 10/14
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Gwen: Unhurt STA 11/12 Power 10/10
+  (healing x1, stamina x1)
+Purse 1156g; day 2.

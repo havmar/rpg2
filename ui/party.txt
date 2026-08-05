@@ -1,28 +1,31 @@
-RPG2 PARTY SHEET -- day 1, at Tergal >
-  Ordubal
-purse: 899g
+RPG2 PARTY SHEET -- day 2, at Tergal >
+  Borugal Hills > the mountain slopes >
+  tracks
+purse: 1156g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Martel -- human m, age 38
-  L13  training 3  XP 0/1300  points 1
+  L13  training 3  XP 616/1300  points 1
   DEX 3  STR 4  MIND 5  CHA 4
-  HP 15/15  STA 14/14  Power 14/14
+  HP 15/15  STA 12/14  Power 10/14
   focused staff | healingx1, staminax1
   spells: fire 3, healing 1, scry 1
   pools bought: hp +6, power +6, sta +6
 
 (companion) Gwen -- human f, age 31
-  L13  training 3  XP 0/1300  points 0
+  L13  training 3  XP 616/1300  points 0
   DEX 5  STR 5  MIND 3  CHA 6
-  HP 16/16  STA 12/12  Power 10/10
+  HP 16/16  STA 11/12  Power 10/10
   katana, prof 3 | healingx1, staminax1
   abilities: bulwark
   pools bought: hp +6, power +6, sta +6
-  satisfaction 7/10
+  satisfaction 8/10
   temperament: cowardly; dress: elegant;
     looks: sickly
 
+active quest [q36] Dragon on the
+  Mountain is COMPLETE
 THE PACT: assignment [q42] Open the
   Hellgate at Ordubal (grace to take it
   runs to day 11).
