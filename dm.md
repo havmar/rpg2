@@ -9,8 +9,8 @@ play.
 ## Starting and continuing
 
 - New game: `python session.py new` (add `--seed N` for a reproducible game
-  -- `new` also generates the playthrough's whole quest world). Since
-  2026-07-13 the PC is **GENERATED, not chosen**: one character (his CHA
+  -- `new` also generates the playthrough's whole quest world). The
+  PC is **GENERATED, not chosen**: one character (his CHA
   always holds at least one companion), with a **long-time companion
   already at his side** -- introduce them as shared history ("X has
   watched your back for years"), never as someone joining in scene one.
@@ -32,35 +32,96 @@ play.
   **`ui/history.txt`** (the campaign record -- jobs done, the remarkable,
   the tally of sin, hell's suggestions). Combat also
   rewrites **`ui/fight-short.txt`** (the displayed last fight) and
-  **`ui/fight-detailed.txt`** (its full mechanics record). A sixth page,
+  **`ui/fight-detailed.txt`** (its full mechanics record). Two pages are
+  YOURS to write, not the engine's: **`ui/scene.txt`** (the DM message
+  itself -- see The scene page below) and **`ui/transcript.txt`** (the
+  append-only play log behind it). A further page,
   **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
   yet; `look` is the local display meanwhile. **End EVERY DM message with
   `python session.py sheet`**, which
   commits every existing page -- one commit per message, so the player
   follows the playthrough as message-sized diffs. Unchanged pages are a
-  no-op; run it anyway.
-- **GitHub IS the player's UI.** The five pages are committed to the branch,
-  so the player and DM can read them as blob links. After the `sheet` at the
-  end of a message, drop the standing player links (swap in the current
+  no-op; run it anyway. (The full end-of-message order is in The scene
+  page below.)
+- **GitHub IS the player's UI.** The pages are committed to the branch,
+  so the player and DM can read them as blob pages. The one the player
+  lives on is **`ui/scene.txt`** -- kept open on a phone and refreshed
+  after every turn; the scene link posted in chat each message (see The
+  scene page below) is the clickable way back in. Drop the other
+  standing links ONCE, in chat, at game start (swap in the current
   branch name):
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` and
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt`. The player
-  keeps them open on a phone and refreshes -- the party sheet is the
-  between-fights board, the map is where they are and where their taken
-  jobs lead. Add
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt` (the
+  between-fights board) and
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt` (where they
+  are and where their taken jobs lead). Add
   `https://github.com/havmar/rpg2/blob/<branch>/ui/history.txt` when the
   campaign has a record worth reading (after the first job, a conquest, a
   run of crime) -- it is also YOUR continuity crib across sessions: what
-  the party did, who they killed, and what they are known for. The fight
-  pages live at the corresponding
-  `ui/fight-short.txt` and `ui/fight-detailed.txt` links; use or share them
-  when the combat record matters.
+  the party did, who they killed, and what they are known for.
+  `ui/fight-short.txt` is linked FROM the scene page at every fight (see
+  the turn protocol); `ui/fight-detailed.txt` is shared on request, when
+  the full mechanics record matters.
 - **Editing `save.json` by hand is the DM's override.** When the story needs
   what no command provides -- grant gold, mend a wound, hand out a potion,
   resurrect a companion the fiction says survived -- edit the file between
   commands; every command reloads it fresh. Weapons are stored by catalog
   name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use it for
   story, not convenience: the numbers are the game.
+
+## The scene page -- the DM message is a file
+
+The chat is not where the game is told. **Everything you would say as DM
+goes into `ui/scene.txt`**; your chat message is ONE line -- the scene
+page's blob link. The player's inputs stay in chat; the game's prose
+lives on the page. The point of the detour is REVISION: a page can be
+reread and edited before the player sees it, a chat message cannot --
+and the style drift of a long session is caught in that reread.
+
+- **Draft, then review, then commit.** Write the full message into
+  `ui/scene.txt`, reread the draft against `writing.md` (its Final
+  check is the checklist), and edit what fails it -- register, width,
+  markdown leaking in, prose restating a display. Gameplay
+  inconsistencies (a contradicted fact, a wrong name, a scene that
+  ignores where the party stands) are caught and edited the same way.
+  Only then run `sheet`. A page shipped without the reread defeats the
+  design.
+- **Format: plain ASCII text, no markdown.** The page is a GitHub text
+  blob read on a phone: no code fences, no bold, no headings -- the
+  engine's display conventions (`===` banners, ALL CAPS state changes,
+  `>` for input) are the whole toolkit, and blocks are separated by
+  blank lines. DISPLAYS keep the engine's 40-column shape (its blocks
+  arrive that way; match it in blocks you compose -- a broken line
+  ruins a table). PROSE is never hard-wrapped: write each paragraph as
+  one plain line and let the phone wrap it. A URL sits alone on its
+  own line, never split.
+- **Structure: the page is the transcript's tail.** The page carries
+  the last THREE turns, chronological, newest at the bottom -- the
+  player's latest words sit directly above the newest scene, and the
+  two turns before them are the lookback. A turn is one exchange, in
+  this shape:
+
+      === turn 14 (day 3) ===
+      > press on to the den
+
+      (the DM text of the turn)
+
+  The `>` line is the player's chat input, verbatim (trim only
+  pleasantries); turn numbers count exchanges from game start.
+- **`ui/transcript.txt` is the full record**: every turn appended in
+  the same shape, never rewritten. What falls off the scene page stays
+  here. `new` starts both files fresh -- the old game lives on in its
+  own branch.
+- **End-of-message order, every message:** finish the commands, write
+  `ui/scene.txt`, append the new turn to `ui/transcript.txt`, run
+  `python session.py sheet` (it commits both with the other pages),
+  then post the link in chat (swap in the branch):
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/scene.txt`
+  Nothing else goes in the chat message. Out-of-game talk -- errors,
+  design questions when the player raises them -- stays in chat and
+  never on a page.
+- **`scene-example.txt` is the worked model** (a game start and a
+  fight turn, in this format and writing.md's voice). Imitate its
+  shape when in doubt.
 
 ## The world and the quests (the game's spine)
 
@@ -79,7 +140,7 @@ the player's core decision:
   one local level outward. `look --dm` is the full fact record, including
   seeds, hidden facts, occupants, and quest attachments. Local moves cost no
   day. `travel AREA` is the day-scale move.
-- **There is NO quest board in the fiction (2026-07-12): quests come from
+- **There is NO quest board in the fiction: quests come from
   PEOPLE.** `board` is YOUR inventory readout -- each row shows the job,
   its level, pay, and WHOSE job it is (every quest has a generated giver:
   name, role, personality). **Quest and site levels always print exactly.**
@@ -101,7 +162,7 @@ the player's core decision:
   town** -- the land's recurring cast (ruler, sage, wildcard): use them
   for color, rumor, and war scenes; they persist all campaign.
   (`board all` / `board NAME` is your wider overview for pacing.)
-- **Every job has a DEADLINE (2026-07-26).** A posting is wanted within
+- **Every job has a DEADLINE.** A posting is wanted within
   3-7 days of the day it went up, and the board prints the clock on every
   row ("4 days left", "DUE TODAY", "LATE (2 day(s) of grace)"). Relay it
   like the level and the pay -- straight, in the giver's mouth ("she wants
@@ -119,8 +180,8 @@ the player's core decision:
   - The board REFILLS: one new job a settlement a day, up to its size
     (village 2, town 4, capital 5). Nobody has to hoard work.
   - **This is what makes convalescence cost something.** A long camp is
-    never free: `camp 6` is six days off every live window -- and since
-    2026-07-26 those nights cannot even mend a wound (only a settlement
+    never free: `camp 6` is six days off every live window -- and
+    those nights cannot even mend a wound (only a settlement
     can), so a wounded party with a job in hand is choosing between the
     window and the ceiling.
     Say so when the player asks for a long rest with a job in hand -- one
@@ -137,7 +198,7 @@ the player's core decision:
 - `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
-  section below). Since 2026-07-26 that encounter is rolled ON THE ROAD,
+  section below). The encounter is rolled ON THE ROAD,
   before the party reaches the gates, off the land they set OUT from: a
   fight there interrupts the trip -- the days are spent, the party is still
   at the origin, and `travel` again once it is settled. Narrate it as the
@@ -154,7 +215,7 @@ the player's core decision:
   may change its state.
   Progress is remembered per quest -- switching quests and returning later
   is fine. Future quests can span areas because each site names its own area.
-- **Taking a job starts it (2026-07-19).** If the first Site is local, the
+- **Taking a job starts it.** If the first Site is local, the
   SAME DM message runs `look`, `go SITE`, then `room` and opens the first
   encounter (or the deed/twist block a caper prints): a sentence of walking
   up to the door, then the fight. If the target Area is elsewhere, run
@@ -170,7 +231,7 @@ the player's core decision:
   `status` (the `At:` field) or the active-quest line first; if the job's
   target area is elsewhere, the road IS the next scene: narrate setting
   out, run `travel`, then frame the arrival.
-- **Pay is per QUEST, not per site (2026-07-26).** Each fight pays its flat
+- **Pay is per QUEST, not per site.** Each fight pays its flat
   encounter share as it is won; everything else -- the turn-in lump and ALL
   of the gold -- lands once, when the last place falls, banded by the day it
   lands. An intermediate place clears with a SITE CLEARED banner and no
@@ -199,8 +260,8 @@ the player's core decision:
   job is to say plainly that running is the answer: the first pause is the
   exit, `retreat` is the move, and surviving an ambush by something
   unbeatable IS the story.
-- **Ordinary trouble runs the NOTICE CONTEST** (2026-07-16, replacing the
-  flat 25%): party best MIND vs the foes' senses, each against the other
+- **Ordinary trouble runs the NOTICE CONTEST**: party best MIND vs the
+  foes' senses, each against the other
   side's conspicuousness (group size, showy dress, a clumsy low-DEX
   straggler -- rules.md's Ranged Combat add-on). Three outcomes, all
   printed by the script: `Spotted first` (same protocol as the big
@@ -230,16 +291,16 @@ the player's core decision:
   but no free recovery either. NOTE: what roams a Land comes from its
   people-race adapter's template pools -- in some Lands the cheapest prey is
   a level-3 dire wolf, and a fresh duo should hear about it before the pounce.
-  **~10% of hunts the hunter is the hunted** (2026-07-10): an AMBUSH off
+  **~10% of hunts the hunter is the hunted**: an AMBUSH off
   the road's any-level table, met blade-first (the script prints it). The
   farm is never entirely safe -- a fact worth one flat mention the first
   time `hunt` comes up, not a recurring warning -- and when the ambush is
   far over their weight, running is the answer, as on the road.
-- **Nights have geography now** (2026-07-10). `camp` in the WILDS risks a
+- **Nights have geography.** `camp` in the WILDS risks a
   night visitor (~10%, the road's table, spotted/ambush valves apply --
   rolled after the night's recovery, so the party at least wakes fresh);
-  behind settlement walls `camp` is safe and free -- and, since 2026-07-26,
-  a night behind walls is the only kind that KNITS A WOUND (one severity a
+  behind settlement walls `camp` is safe and free -- and a
+  night behind walls is the only kind that KNITS A WOUND (one severity a
   night; the wilds knit none). `tavern` (settlements
   only, 1g per living member) buys the same night PLUS a one-day
   OVERCHARGE: everyone wakes with HP and STA ~10% of max (min +1) ABOVE
@@ -247,7 +308,7 @@ the player's core decision:
   and fades at the next night's rest -- it's a buffer for tomorrow's
   door, best bought the evening before a hard site. Whether to pay is the
   player's call, like every rest decision. The bed's +1 companion
-  satisfaction is on a 3-day cooldown per head (2026-07-26): sleeping
+  satisfaction is on a 3-day cooldown per head: sleeping
   indoors every night stopped being a morale faucet.
 
 ## The player character
@@ -262,8 +323,8 @@ the player's core decision:
 - **If the PC dies, the game is over unless defeat mercy fires** -- even if
   a companion still stands. Relentless foes, or a second defeat at the same
   character level, give no mercy (`session.py` prints the GAME OVER line).
-- **Fate's bargain guards the PC (2026-07-26; the debt made unconditional
-  2026-07-29).** A blow that would kill the PC is commuted to a Down while a
+- **Fate's bargain guards the PC.** A blow that would kill the PC is
+  commuted to a Down while a
   companion still draws breath -- the log announces it ("Fate has spared
   them; its price comes due"). If the encounter's one pause is still unused,
   Fate immediately spends it on a special FIGHT ON / RETREAT interrupt; it is
@@ -280,7 +341,7 @@ the player's core decision:
   end. So play the interrupt as one question -- **is this room still worth
   trying?** -- and never as a way out. The companion is buried either way;
   never soften that by fiat.
-- **Defeat mercy is one reprieve per PC level (2026-07-26).** It applies
+- **Defeat mercy is one reprieve per PC level.** It applies
   only after a genuine defeat and only against foes whose roster is not
   RELENTLESS. TAKE SPOILS foes leave the party alive at 1 HP, empty the
   purse, and take quality weapons; ordinary steel is left alone. BREAKS
@@ -297,12 +358,12 @@ the player's core decision:
   no longer one of those calls: the quartermaster pass drinks it -- see the
   potion economy below.)
 
-## The party -- recruiting, satisfaction, departures (2026-07-11)
+## The party -- recruiting, satisfaction, departures
 
 - **Capacity is the PC's CHA, and it is a hard cap** (CHA-3, 0..3 -- the
   scripts enforce it). A capacity-0 PC plays alone; say plainly at creation
   what that means (no fate's bargain, the solo numbers are brutal).
-- **Recruiting happens ON REQUEST (2026-07-13).** When the player is at a
+- **Recruiting happens ON REQUEST.** When the player is at a
   settlement and SAYS they want to hire, `recruit` gathers the day's
   candidates (as many options as capacity, leveled to the PC +-1; ~a
   quarter are bonded pairs -- one option, TWO heads, they join and leave
@@ -327,7 +388,7 @@ the player's core decision:
   companion walking out with a quarter of the party's gold IS a story beat.
   Anything that lifts them above the line before the walls (a quest lump, a
   tavern bed) genuinely saves them -- say so when it's close.
-- **Deaths in the party are NORMAL attrition (2026-07-13) -- downplay
+- **Deaths in the party are NORMAL attrition -- downplay
   them.** The mechanics price a death (the morale hit, the burial, the
   empty slot); the narration doesn't pile tragedy on top: report it
   plainly in a line or two, give the burial one respectful sentence at
@@ -353,7 +414,7 @@ the player's core decision:
   the script prints the negotiation line; give it a sentence of fiction
   when it fires.
 
-## The war -- the conquest questline (2026-07-12)
+## The war -- the conquest questline
 
 Every world seeds ONE war at `new`: an aggressor race (elf steampunk
 fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
@@ -361,7 +422,7 @@ fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
 **2 / 5 / 8 / 10**. The scripts run the clock; your job is the telling:
 
 - **Waves post themselves** when the previous wave is done, the party
-  hits the level, AND the party is in a settlement (2026-07-13: war news
+  hits the level, AND the party is in a settlement (war news
   never finds them mid-quest in the middle of nowhere) -- the script
   prints a `*** WORD OF THE WAR ***` block (herald line + the ruler
   raising the call) at boards, arrivals, and settlement nights.
@@ -391,7 +452,7 @@ fascists / goblin chaos-tech / the human Deathless Crown / the orc horde
   print the war's current line; the player may always ignore the war
   and do local work -- the war waits.
 
-## The dark path -- the pact with Hell, villainy, karma & heat (2026-07-19)
+## The dark path -- the pact with Hell, villainy, karma & heat
 
 **The frame: the PC is not a neutral adventurer.** He is a LOW-RANKING
 EMPLOYEE OF HELL -- a mortal of an ordinary race (never an imp) bound
@@ -457,7 +518,7 @@ infernal reskins, and keep visits scene-sized.
   bodyguards; the rival proposes a partnership): present them as the
   scene, then the player's call -- `settle` takes the terms, `room`
   refuses and fights. Play the counterparty from the giver line.
-- **There is no shadow board** (retired 2026-08-04). Freelance
+- **There is no shadow board.** Freelance
   wickedness is not a posting to be read: the PC does the thing
   because they want to, and that is now a real subsystem -- `case`
   and `crime` (the next section). Dark gold runs half again the honest
@@ -491,7 +552,7 @@ infernal reskins, and keep visits scene-sized.
   they announce, they mean it, retreat is the peaceful option. Cutting
   them down pays XP that is itself sin: say what that means once,
   then let the spiral be the player's own bed.
-- **A first same-level loss to a posse is not the end (2026-07-26).** Law
+- **A first same-level loss to a posse is not the end.** Law
   and hell use the same one-mercy-per-PC-level allowance as ordinary
   defeat; a second loss at that level is real. When mercy is available,
   the script prints it and reshapes the save. LEFT FOR DEAD (the
@@ -524,7 +585,7 @@ infernal reskins, and keep visits scene-sized.
   too -- for now only as flavor; hell's own audit of a too-virtuous
   employee is roadmap.)
 
-## Crime -- the free actions (2026-08-04)
+## Crime -- the free actions
 
 **Crime is not a job and never a posting.** Nobody hands it out, there
 is no turn-in, and there is nothing to accept: the PC does the thing
@@ -582,7 +643,7 @@ against it -- and rules.md's Crime add-on has the numbers.
   board, and it commits to nothing. `case KEY` is still what reads the
   actual mark before a job.
 
-## The record -- ui/history.txt (2026-08-04)
+## The record -- ui/history.txt
 
 The campaign's memory page, rewritten on every save and committed by
 `sheet` like the party and map pages. Four sections: QUESTS DONE (one
@@ -606,7 +667,7 @@ lifetime ledgers), and SUGGESTIONS.
   a quest's boss. Their families, crews and debts are the cheapest
   hooks the game gives you.
 
-## Conquest -- taking and holding settlements (2026-07-27)
+## Conquest -- taking and holding settlements
 
 The domain layer: the party can TAKE any settlement it stands in and
 hold it for tribute. Dark work through and through -- it rides the karma
@@ -642,7 +703,7 @@ Holdings add-on); your job is the scenes.
   cannot be conquered, and wave 3's fall seizes the party's holdings in
   the fallen land. That loss is authored drama -- use it.
 
-## Flavor beats -- two per session rhythm, always brief (2026-07-12)
+## Flavor beats -- two per session rhythm, always brief
 
 The game is combat-centered; these two beats are how the world stays
 bigger than the fights WITHOUT pages of narration:
@@ -651,7 +712,7 @@ bigger than the fights WITHOUT pages of narration:
   new room chain, a camp), 2-3 lines of what is SEEN -- one wide shot,
   one detail that stands out, done. No lore dumps; the detail can carry
   the war, the race, or the season. **Between scene changes the camera
-  stays on** (2026-07-19): MOST messages carry one sentence of where the
+  stays on**: MOST messages carry one sentence of where the
   party stands and what they see -- the torchlit hall, the rain on the
   road, the giver's cluttered shopfront. One sentence, not a paragraph;
   a message of pure mechanics resolution with no sense of place is the
@@ -669,29 +730,35 @@ bigger than the fights WITHOUT pages of narration:
 - Resolve **at most one encounter** (`room` / `fight`)
   per DM message, then stop and hand the turn back to the player. Never chain
   fights, even if the next room seems obvious. **The one exception
-  (2026-07-13, quality of life):** if the encounter ends with the party
+  (quality of life):** if the encounter ends with the party
   essentially untouched -- at most 1 HP and 1 STA missing per member, no
   pause spent, no level-up pending -- run the NEXT room of the same job in
   the same message. A walkover isn't a decision point; don't make the
   player say "go on" after a fight that cost nothing.
-- **Paste the printed combat log into the chat.** Every encounter command
-  prints ONE log (2026-07-21): the display log -- 40 columns, no dice
-  math, damage as `deals 4 dmg!!`, quiet rounds collapsed. Copy it into
-  your message as-is -- it IS the fight's mechanical account for the
-  player, and it is also what YOU read: narrate from its shape (the
-  turning points, the falls, the crossings). It ends with the party
-  TALLY (tracks, standing roll penalties, kit, purse, fights left on the
-  job and what the turn-in pays): the between-fights numbers,
-  already in display form. Add your short narration around the block;
-  the prose never restates what the tally shows. **Do not pipe an encounter
-  through `tail` or otherwise discard its opening lines.** If terminal output
-  is clipped or you inherited a command that did, read the complete
-  **`ui/fight-short.txt`** snapshot before narrating; it is the authoritative
-  backup of exactly what should be pasted. **`ui/fight-detailed.txt`** carries
+- **The fight goes on the scene page as START + LINK + END.** Every
+  encounter command prints ONE log:
+  the display log -- 40 columns, no dice math, damage as
+  `deals 4 dmg!!`, quiet rounds collapsed -- and **`ui/fight-short.txt`**
+  holds it exactly. On the page, copy the fight's OPENING block (the
+  `===` banner, the site/room line, the foe roster with its tags), then
+  the fight page's blob URL on its own line, then everything AFTER the
+  last round: the catch-of-breath, XP lines, banners, epilogue and
+  turn-in prompt, a level-up menu if one printed, and the closing party
+  TALLY (tracks, standing roll penalties, kit, purse, fights left on
+  the job and what the turn-in pays -- the between-fights numbers,
+  already in display form). The round-by-round middle lives behind the
+  link only. YOU still read the whole log: narrate from its shape (the
+  turning points, the falls, the crossings) in the 2-4 sentences around
+  the blocks; the prose never restates what the tally shows. A PAUSED
+  fight is the same shape cut short: opening block, link, then the
+  printed pause menu and party state -- and stop. **Do not pipe an
+  encounter through `tail` or otherwise discard its opening lines** --
+  if terminal output is clipped, `ui/fight-short.txt` is the
+  authoritative record. **`ui/fight-detailed.txt`** carries
   every roll and modifier for post-mortems only (a death, a number that looks
   wrong). A new encounter replaces both files; resume/retreat appends to the
   paused fight, keeping that fight whole. `sheet` commits both.
-- **A fight pauses AT MOST ONCE (2026-07-26)** -- either at its first
+- **A fight pauses AT MOST ONCE** -- either at its first
   WOUNDS crossing or when Fate intervenes, whichever spends the pause
   first. A WOUNDS crossing means any member dropping past half HP
   mid-fight; entering already low does NOT trip it -- that was the
@@ -719,7 +786,7 @@ bigger than the fights WITHOUT pages of narration:
   as the party fighting smart; they are not decision points and the fight
   does not stop for them.
 - **Retreat is a real option now -- offer it.** Parting blows from every foe
-  still fit to swing -- softened ONE wound tier since 2026-07-10 (a hasty
+  still fit to swing -- softened ONE wound tier (a hasty
   swing at a fleeing back: it can still Down a hero, but never lands the
   crippling tier, so breaking off when low is no longer a guaranteed
   mauling) -- then ONE group chase roll (the barrow's undead never
@@ -779,8 +846,7 @@ bigger than the fights WITHOUT pages of narration:
   is either the PC's own call or being saved for the next fight on
   purpose.)
 - **The default night is "camp until as whole as the wilds allow" -- WITH
-  NO JOB IN HAND (2026-07-11; narrowed 2026-07-26; REWRITTEN 2026-07-26 by
-  the wound system).** When there is HP to heal, nothing is on the clock,
+  NO JOB IN HAND.** When there is HP to heal, nothing is on the clock,
   and the player hasn't said otherwise, assume the party camps -- `camp
   --heal` runs the nights in one go and reports the days passed (HP knits
   at ~max/7 a night, so it's often several). One night only is the
@@ -803,11 +869,11 @@ bigger than the fights WITHOUT pages of narration:
     ~10% visitor, so a long convalescence in the open is a real gamble --
     put THAT choice to the player ("limp back to town, or risk the nights
     here?") instead of auto-looping it.
-- **Level-ups run themselves (2026-07-13).** The PC's level-up prints the
+- **Level-ups run themselves.** The PC's level-up prints the
   spending menu automatically right after the fight -- SHOW it to the
   player and wait for their `train` / `learn` call; don't paraphrase the
-  rules from memory (`levelup` re-prints it). A level is 3 points now
-  (2026-07-17) and EVERYTHING is on the menu -- pools (+1 max HP/STA/Power
+  rules from memory (`levelup` re-prints it). A level is 3
+  points and EVERYTHING is on the menu -- pools (+1 max HP/STA/Power
   at 1 each), training (rank n costs 2n), proficiency and spell ranks
   (n), the ability catalog (`learn`), warrior moves (`train HERO move
   NAME`), and alchemy (`train HERO alchemy`, rank n = 2n); nothing grows
@@ -829,8 +895,8 @@ bigger than the fights WITHOUT pages of narration:
   trivial loot, quality steel is a real find, magic steel is a story
   event: a famous armory piece changes hands by robbery or questline,
   never casually), and general pacing -- but pacing choices that spend player
-  resources (rests, camping) belong to the player. **Reskinned drops
-  (2026-07-13):** when a reskinned foe's loot line breaks the fiction (gun
+  resources (rests, camping) belong to the player. **Reskinned drops:**
+  when a reskinned foe's loot line breaks the fiction (gun
   robots dropping "a whip"), `give HERO WEAPON --as "NAME"` grants the
   catalog profile under a fitting name -- the display is fiction, the
   stats never change with the costume, same doctrine as foe reskins.
@@ -843,14 +909,14 @@ bigger than the fights WITHOUT pages of narration:
   wolves is the level-1 fight, ONE troll the level-8 one). Off-script
   monsters far above the party's level are a narrative tool ("you are not
   winning this; run"), not an encounter. **The two hand-built sites
-  (`hideout` / `barrow`) are DEV/TEST content since 2026-07-13** -- the
+  (`hideout` / `barrow`) are DEV/TEST content** -- the
   benches calibrate on them, but they are NOT part of a played campaign;
   don't offer them alongside board quests.
 
 ## Narration style
 
-- **The register is the RETRO TEXT RPG voice in `writing.md` (expanded
-  2026-07-22) -- the governing style rule of this whole file.** The world
+- **The register is the RETRO TEXT RPG voice in `writing.md` -- the
+  governing style rule of this whole file.** The world
   prose uses the parser-adventure backbone: minimalist, terse,
   matter-of-fact, present tense, second person, short declarative sentences,
   concrete nouns. Displays may use its battle-announcer accent: abrupt event
@@ -860,11 +926,11 @@ bigger than the fights WITHOUT pages of narration:
   noticed you." Prose states the situation,
   the result, and what can be done; the script displays carry
   everything else. NOT wry Terry Pratchett, NOT generic-fantasy purple
-  prose -- where an older line in this file leans either way ("pulp
-  with a wink", "a little flavor"), THIS rule wins. Humor survives
+  prose. Humor survives
   only in the material itself (the situation, an epilogue line),
   delivered deadpan. `writing.md` also governs any quest, place, NPC,
-  item, or epilogue invented during play.
+  item, or epilogue invented during play; `scene-example.txt` shows
+  the voice at full page length -- imitate it when a line feels off.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes
   below"). Companions and NPCs are third person by name. Never narrate
@@ -876,7 +942,7 @@ bigger than the fights WITHOUT pages of narration:
   town, `hunt`, a tavern night). A terse display block of the options,
   a line of fiction, hand the turn over. The world proposes; the player
   disposes.
-- **Options live in the block, never in a closing sentence (2026-07-19).**
+- **Options live in the block, never in a closing sentence.**
   Don't weave the choices into prose ("the board is here, the war waits
   two lands east, Hell's clock is ticking, and there's the wrong corner
   too -- where to?") -- that is a display worn as a sentence, and it
@@ -891,12 +957,12 @@ bigger than the fights WITHOUT pages of narration:
   keep it out of play too. When he wants the co-designer chair's opinion
   ("how did that fight feel?", "any friction?"), he will prompt for it --
   answer THEN, candidly. Unprompted, stay in the game.
-- **Concise and mechanics-focused, with a little flavor.** A fight = the
-  pasted combat-log block plus a 2-4 sentence summary: the turning points
-  (Winded crossings, Bulwark saves,
+- **Concise and mechanics-focused.** A fight = the opening block, the
+  fight link, the end blocks, plus a 2-4 sentence summary: the turning
+  points (Winded crossings, Bulwark saves,
   First Blood, kills, anyone Down) and the end state. Don't re-tell every
-  round in prose -- the log already shows it.
-- **Numbers live in displays; prose carries fiction (2026-07-14).** The
+  round in prose -- the linked log already shows it.
+- **Numbers live in displays; prose carries fiction.** The
   combat log's closing tally IS the between-fights readout, and `status`
   and the script-printed menus cover the rest. Keep the registers
   separate: narration may QUOTE a displayed number when it matters
@@ -945,8 +1011,8 @@ bigger than the fights WITHOUT pages of narration:
   lethal line rates ONE flat flag ("room 3 on empty is a grave"), through
   one channel -- a companion's mouth or your own, not both -- and then
   the subject is closed.
-- **The tone stays light; the telling goes FLAT (2026-07-21, was
-  "wry" 2026-07-19).** The content register is unchanged -- cartoon
+- **The tone stays light; the telling goes FLAT.** The content register
+  is unchanged -- cartoon
   villainy, pratfall evil, never grimdark realism -- but the narrator
   no longer performs it: no winks, no wry asides, and still none of
   the weight-adding moves (dread foreshadowing, portentous echoes,
@@ -960,7 +1026,7 @@ bigger than the fights WITHOUT pages of narration:
   concrete nouns, short sentences, at most one image per beat. If a line
   reads like ad copy for the fight, cut it down.
 - Scene-setting between fights: a couple of sentences, not paragraphs.
-- **One scene beat per message (2026-07-19).** When several things land
+- **One scene beat per message.** When several things land
   at once (an arrival, war news, a WORD FROM BELOW), give ONE of them
   the scene and compress the rest to a line of fiction plus their
   display block -- not a full dramatic staging apiece. NPCs speak in
@@ -987,7 +1053,7 @@ bigger than the fights WITHOUT pages of narration:
   round's attack, defend at -2 while busy): drink a stamina draught
   (+4 STA -- even un-Spends), heal (a healing potion, +5 HP -- the wound
   penalty lightens), Berserk (2 HP -> +4 STA; the wound penalty deepens;
-  KNOWERS ONLY since 2026-07-17), War-Breath (2 Power -> +3 STA; knowers
+  KNOWERS ONLY), War-Breath (2 Power -> +3 STA; knowers
   only). The conversions are learned abilities now -- a hero with neither
   answers a stamina crossing with a draught or fights on, and that
   pressure is the design. Retreat: parting blows, one chase roll
@@ -1003,7 +1069,7 @@ bigger than the fights WITHOUT pages of narration:
   least grazes, whatever the soak (the rapier grazes on ANY landed hit).
   Fresh, high-soak heroes now bleed a little instead of being untouchable.
 - Only healing and stamina potions circulate at shops (the power potion is
-  retired). **The kit restocks itself, thinly (SHRUNK 2026-07-17):** every
+  retired). **The kit restocks itself, thinly:** every
   long rest the PARTY scrounges up to 1 healing + 1 stamina TOTAL (per
   party now, not per hero), plus a chance at one extra stamina draught --
   the log prints what was found. A real difficulty lever: the free faucet
@@ -1011,7 +1077,7 @@ bigger than the fights WITHOUT pages of narration:
   BREW are how a party keeps a deeper stock. **Overcharge:** a potion
   drunk while a pool is already FULL grants +2 above max (spent-only, gone
   at the next camp) -- a small pre-bought buffer for tomorrow's door.
-- **The QUARTERMASTER PASS runs itself (2026-07-26).** Out of combat,
+- **The QUARTERMASTER PASS runs itself.** Out of combat,
   every time the potion stock changes -- a `buy`, a `brew`, loot, the
   overnight scrounge, a `use`, a hire, a departure, and at every fight's
   end (retreat included) -- the party pools its healing potions and
@@ -1031,8 +1097,8 @@ bigger than the fights WITHOUT pages of narration:
   `use` call. So `use` is now an OVERRIDE, not the routine step: don't
   offer it as an option when the pass has already handled it, and don't
   ask the player who should carry what.
-- Recovery is between fights, and the NIGHT is all of it (2026-07-26 --
-  the short rest is deleted): fight end +1 STA; long rest (camp) = full STA
+- Recovery is between fights, and the NIGHT is all of it (there
+  is no short rest): fight end +1 STA; long rest (camp) = full STA
   and Power, ~1/7 max HP **up to the wound ceiling and no further**, the day
   advances. Nothing forces the day to end --
   camping is the player's call, and the played default is `camp --heal`
@@ -1045,7 +1111,7 @@ bigger than the fights WITHOUT pages of narration:
   A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
-- **WOUNDS -- the slow injury channel (2026-07-26).** A landed blow above a
+- **WOUNDS -- the slow injury channel.** A landed blow above a
   graze leaves a NAMED LOCATED record on a hero ("a gut wound, still
   seeping"): it docks the HP ceiling by its severity, carries a stat
   penalty, and a night in the wilds does nothing for it. Read the wound
@@ -1062,22 +1128,20 @@ bigger than the fights WITHOUT pages of narration:
   maiming only high magic -- the rank-3 healing spell or an authored
   elixir. Foes take wounds in the FICTION and nowhere else: narrate a
   broken foe arm freely, never track one.
-- **HP reads as a WORD in play, not a number (2026-07-26).** The tally and
+- **HP reads as a WORD in play, not a number.** The tally and
   the fight displays print Unhurt / Scratched / Bloodied / Reeling /
   Failing, banded against the ceiling. The digits are still there when you
   need them -- `status`, the pause menu, `ui/fight-detailed.txt` -- so
   quote a number only when the player asks for one or a decision turns on
   it.
-- **The death spiral is geared for trained fighters** (2026-07-09; the
-  hero divisor moved to 3 in 2026-07-26's wound rework -- part of the roll
-  penalty moved into the located wounds instead): heroes take
+- **The death spiral is geared for trained fighters**: heroes take
   `-(HP lost)/3`, humanoid foes still `/2` (the pain divisor).
-  Since 2026-07-21 the fight lines don't carry the number -- the pause menu
+  The fight lines don't carry the number -- the pause menu
   and the post-fight tally print each hero's standing penalties -- so quote
   it from there when it matters ("Sela is at -3; every exchange leans wrong
   now"). Small beasts (wolves, spiders) still feel every point; apex
   monsters divide by 3-4.
-- **Conditions -- bleed, poison, burn (2026-07-26).** They tick at the end of
+- **Conditions -- bleed, poison, burn.** They tick at the end of
   every round for their power in HP, and a tick can only ever put someone
   **Down**, never kill. The log folds them into one line a round
   ("`Poisoned: Gard -1.`") -- read it, don't restate it. What the player has
@@ -1100,7 +1164,7 @@ bigger than the fights WITHOUT pages of narration:
   is an endurance war you can lose by simply running dry.
 - Bandits are living fighters under exactly the party's rules (they tire and
   go Spent too) -- hideout logs read with no special cases.
-- **CHA & the party** (2026-07-11): capacity = PC's CHA - 3 (hard cap,
+- **CHA & the party**: capacity = PC's CHA - 3 (hard cap,
   0..3); quest gold +10%/CHA point above 3 (max +30%, never XP). Companion
   satisfaction 0-10: +1 job lumps / tavern nights / downtime days (+2 when
   the place suits a trait), -1 fled or bloodied, -2 Down or a death
@@ -1129,8 +1193,8 @@ bigger than the fights WITHOUT pages of narration:
   wolf row, an orc "Deathblade" the blademaster; the display name is flavor,
   the stats never change with the costume. Narrate the skin, trust the row.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
-  an unsaved crippling blow (renamed from "killing blow" 2026-07-10 -- same
-  mechanic). On a total party knockout, apply the roster's ferocity and the
+  an unsaved crippling blow. On a total party knockout, apply the
+  roster's ferocity and the
   PC's once-per-level mercy allowance before the Down are finished off. The
   PC's death is intercepted by fate's bargain when a companion lives (see
   The player character above).
@@ -1138,11 +1202,11 @@ bigger than the fights WITHOUT pages of narration:
   or `give`/`buy`). The quality four: rapier (+2 attack, -1 severity, always
   draws blood on a landed hit), katana (+1/+1, the all-rounder), zweihander
   (+1/+3 but -1 on defense -- the crowd-breaker), wooden staff (+1 parry,
-  +1 max Power while wielded, weak steel -- the caster's focus,
-  2026-07-17). Commons are named trash
+  +1 max Power while wielded, weak steel -- the caster's
+  focus). Commons are named trash
   (club/dagger... -1 severity; shortsword/spear... baseline; longsword/
   halberd... +1). Plain quality steel costs 60 g -- a real saving goal worth
-  ~1 training rank at the barrow. **The weapon ladder (2026-07-28):** a new
+  ~1 training rank at the barrow. **The weapon ladder:** a new
   game STARTS on trash arms (the first looted shortsword is a felt
   upgrade); MASTERWORK (+1 attack, doesn't break easily) is shoppable in
   capitals at 5x the plain price (`buy HERO masterwork katana`); the MAGIC
@@ -1157,12 +1221,12 @@ bigger than the fights WITHOUT pages of narration:
   first-blow lunge, or a gold/karma-per-kill quirk -- the piece's
   description says what it does in plain words; narrate it, never invent
   numbers for it.
-- **Prices: `python session.py prices` is the price sheet** (2026-07-19)
+- **Prices: `python session.py prices` is the price sheet**
   -- every shoppable weapon, potions (10g), spellbooks (120g, capitals),
   meds (20g, capitals), the tavern (1g a head), and ammo by the lot, read
   from the live constants. Answer "what does X cost" from that readout,
   never from memory and never by searching the code.
-- **Ranged combat & the field (2026-07-16):** fights open across a GAP --
+- **Ranged combat & the field:** fights open across a GAP --
   rooms at field 2, the road at field 3, `engage`/hunt at the party's
   preferred range, 0 = at the door. Movement is automatic (moving costs
   the action; the log prints "the lines close/meet"): melee closes,
@@ -1191,7 +1255,7 @@ bigger than the fights WITHOUT pages of narration:
 - Proficiency: `train HERO weapon` drills the WIELDED weapon type (+1 attack
   pressure & +1 severity per rank, cap 3, rank n costs n points). It stays with
   the weapon type -- switching weapons drops the bonus until re-drilled.
-- **Warrior moves (2026-07-17): spells for fighters, and just as automatic.**
+- **Warrior moves: spells for fighters, and just as automatic.**
   A move is a RIDER the engine fires on the normal exchange -- never a
   decision the fight stops for, exactly like a wizard's casts. `train HERO
   move NAME` buys them (1 point, iaido/finisher 2; repertoire capped at
@@ -1205,13 +1269,13 @@ bigger than the fights WITHOUT pages of narration:
   step) -- NARRATE OVER IT: "Rhea feints, the cutthroat bites; her thrust
   finds the gap." Companions pick up a suited move or two from leftover
   points on their own; the PC's are the player's buys. Hero-side only for
-  now -- enemies don't use moves yet. **No class gate** (2026-07-19): a
+  now -- enemies don't use moves yet. **No class gate**: a
   wizard with the points drills any move their weapon performs -- the
   wizard/warrior split is fiction, not mechanics (the wooden staff does
   pommel, kick, trip, riposte, and disarm: quarterstaff play). Wizard
   COMPANIONS just don't buy moves on their own (autolevel points go to
   the school); the player may `train` them one any time.
-- **Alchemy (2026-07-17): the brewer's career, open to all.** A skill
+- **Alchemy: the brewer's career, open to all.** A skill
   (`train HERO alchemy`, rank n = 2n, cap 5) rolled off MIND; the herbalist
   seed starts at rank 1. At camp, `brew HERO RECIPE` rolls 2d6 + MIND +
   rank vs DC 9 (a make = the batch, a big beat = double, a miss curdles) --
@@ -1227,12 +1291,12 @@ bigger than the fights WITHOUT pages of narration:
   drunk between fights before a hard door. The alchemist is a SUPPORT
   career -- its value is the kit it makes the (now-thin) party carry, not
   out-fighting a trained blade; play it as the party's quartermaster.
-- **Wizards (Magic & Mind, 2026-07-15):** MIND strictly highest of
+- **Wizards (Magic & Mind):** MIND strictly highest of
   MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
   rank 1 instead of an archetype seed, rolled for PC, companions, and
   recruits alike. POWER is the fuel (qi, not iq -- it never comes from
   MIND). Spells rank 1-3: `train HERO SPELL` buys ranks (rank n = n
-  points; since 2026-07-17 ANYONE can deepen a spell they know -- books
+  points; ANYONE can deepen a spell they know -- books
   stay wizard-only), `buy HERO book SPELL` (120g, capitals) teaches new
   spells; rank 3 is an attack spell's signature technique and usually a
   utility spell's roleplay tier. Ten spells: fire (bolts -> FIREBALL),
@@ -1241,9 +1305,9 @@ bigger than the fights WITHOUT pages of narration:
   entry / vanish / ghost-walk), stop time (stolen strikes), possession
   (a foe fights for the party), flight (rounds aloft), scry (rooms
   ahead), healing (mend 3/5/7 HP between fights, `heal HEALER TARGET`;
-  rank 3 stands a Downed ally to 3 HP -- the old Heal ability, become
-  magic 2026-07-17; the hedge-healer starting roll is the non-wizard
-  door). Costs are Power on top of the normal swing STA; a parried or
+  rank 3 stands a Downed ally to 3 HP; the hedge-healer
+  starting roll is the non-wizard door). Costs are Power on top of the
+  normal swing STA; a parried or
   fizzled cast still burns it.
   **In the melee everything is automatic** -- openers fire as the lines
   meet (one per wizard, skipped vs beaten foes), attack spells follow
@@ -1257,8 +1321,8 @@ bigger than the fights WITHOUT pages of narration:
   openers) auto-wins its exchange but the wound TABLE caps it: mooks
   drop, bosses soak it and turn around, and anything spell-warded
   (dragon-kind, the magus, the wight) meets it as an honest exchange.
-- **Magic OUT of combat is DM-adjudicated roleplay** (2026-07-15,
-  designer intent: invisibility, stop time, and teleport are roleplay
+- **Magic OUT of combat is DM-adjudicated roleplay** (designer
+  intent: invisibility, stop time, and teleport are roleplay
   tools too). Ghost-walking past a checkpoint, a stolen moment to
   palm a key, blinking over a wall, far-seeing a question: charge the
   spell's Power by hand (edit the save or narrate the drain), roll the
@@ -1279,7 +1343,7 @@ bigger than the fights WITHOUT pages of narration:
   fiction; the log already says who's casting what.
 - **Quest levels are exact:** boards, rumors, `show`, and `take` all print
   the true level. MIND does not alter quest readouts.
-- **Pay scales with level, and it is quoted per JOB** (rebased 2026-07-26):
+- **Pay scales with level, and it is quoted per JOB**:
   a level-L quest of `enc` fights pays `44*(L+1)*MULT` XP and `18*L*MULT`
   gold, where MULT is 1.0 / 1.6 / 2.2 for 1 / 2 / 3 encounters -- the trip,
   the giver, and the turn-in cost the same however many fights the job is,
@@ -1290,10 +1354,10 @@ bigger than the fights WITHOUT pages of narration:
   to name any more, and nothing forces marathoning a job in one day. A
   two-place job's first place clears with a banner and no purse; the money
   is at the end. A level banks
-  3 skill points and grants NOTHING automatically (2026-07-17): pools,
+  3 skill points and grants NOTHING automatically: pools,
   training, proficiency, spell ranks, abilities, and warrior moves are all
   bought from the same points at the levelup menu.
-- **Deliveries (2026-07-14):** the board's DELIVERY rows are cross-land
+- **Deliveries:** the board's DELIVERY rows are cross-land
   courier jobs -- taken from their giver at the origin, paid by a named
   RECIPIENT at a settlement in another land (both faces are on the quest;
   narrate the hand-off like a turn-in). No rooms: `take`, then `travel`
@@ -1305,8 +1369,7 @@ bigger than the fights WITHOUT pages of narration:
   templates say what it is. A courier job carries a window like any job,
   with the round trip's road days added on top, and the hand-off is banded
   the same way -- so a delivery is not a thing to sit on.
-- **The pact & karma in numbers (2026-07-19; the pinned ladder and the
-  one-visit write-off 2026-08-04):** dark XP = sin; heat = bad
+- **The pact & karma in numbers:** dark XP = sin; heat = bad
   karma // (100 x party level), capped 3; the law's posses arrive at
   party level + heat (cooldown 6d, chance 0.6, at arrivals and
   nights). Assignments: pinned to the PC's ODD LEVELS (1, 3, 5 ... 19 --
@@ -1329,7 +1392,7 @@ bigger than the fights WITHOUT pages of narration:
   Ordinary defeats follow foe ferocity: TAKE SPOILS takes purse and
   quality weapons, BREAKS WHEN BEATEN maims one member, and RELENTLESS
   gives no mercy.
-- **Crime in numbers (2026-08-04):** the MARK's level fixes both the
+- **Crime in numbers:** the MARK's level fixes both the
   take and the protection -- commoner 1-2 / tradesman 2-4 anywhere,
   merchant 4-7 town+, guild master or noble 8-12 town or capital,
   magnate 12-16 and the royal vault 16-20 in a capital; the wilds hold
@@ -1345,7 +1408,7 @@ bigger than the fights WITHOUT pages of narration:
   more per 200 lifetime sin -- suggestions only; nothing is ever
   locked.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
-  are **DEV/TEST calibration content since 2026-07-13**, not part of a
+  are **DEV/TEST calibration content**, not part of a
   played campaign: the board's generated quests are the game. Their
   numbers live in develop.md.
 - Enemies land more than they used to (skeletons DEX 4, cutthroats/archers

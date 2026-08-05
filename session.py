@@ -66,9 +66,10 @@ The shape of a playthrough:
   cast HERO scry|teleport                   -- the between-fights layer
                                                (cast = wizard utility magic)
   forge                                     -- DM-built quest, off the board
-  sheet                                     -- commit the five ui/*.txt pages
+  sheet                                     -- commit every ui/*.txt page
                                                (run at the END of every DM
-                                               message)
+                                               message, after writing
+                                               ui/scene.txt -- dm.md)
 
 All output is wrapped at WRAP_WIDTH columns (the designer plays on a phone
 whose code blocks show ~41 characters and never soft-wrap).
@@ -424,10 +425,13 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     }
 
 
-# The player-facing display files: the game's GitHub UI. The party/map pages
-# are rewritten on every save; the two fight pages are last-fight snapshots.
-# `sheet` commits every page that exists so the player and DM can read them as
-# blob pages on the branch. See dm.md.
+# The player-facing display files: the game's GitHub UI. The party/map/
+# history pages are rewritten on every save; the two fight pages are
+# last-fight snapshots; the scene page and the transcript are DM-AUTHORED
+# (dm.md, The scene page: the DM message itself is a file) -- the engine
+# never writes those two, it only commits them. `sheet` commits every page
+# that exists so the player and DM can read them as blob pages on the
+# branch. See dm.md.
 UI_DIR = Path(__file__).parent / "ui"
 PARTY_SHEET_PATH = UI_DIR / "party.txt"
 MAP_SHEET_PATH = UI_DIR / "map.txt"
@@ -440,6 +444,8 @@ UI_COMMIT_PATHS = (
     "ui/history.txt",
     "ui/fight-short.txt",
     "ui/fight-detailed.txt",
+    "ui/scene.txt",
+    "ui/transcript.txt",
 )
 
 
@@ -6446,9 +6452,10 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "sheet",
         help="rewrite party/map/history and COMMIT every existing "
-             "ui/*.txt page, including the last-fight short and detailed "
-             "logs. Run at the END of every DM message; committing "
-             "unchanged pages is a harmless no-op.")
+             "ui/*.txt page, including the last-fight logs and the "
+             "DM-written scene/transcript pages. Run at the END of every "
+             "DM message, after writing ui/scene.txt (dm.md, The scene "
+             "page); committing unchanged pages is a harmless no-op.")
     p.set_defaults(func=cmd_sheet)
 
     return ap

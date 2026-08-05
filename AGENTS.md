@@ -47,6 +47,8 @@ the checked-out copy already contains the latest UI or rules changes.
   style at the table, quick mechanics reference).
 - `writing.md` — shared fiction and content style for DM prose and authored
   or generated quests, places, people, items, and event lines.
+- `scene-example.txt` — the worked model of the DM's scene page: a game
+  start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
 - `plan.md` — the roadmap: planned features only, plus parked ideas.

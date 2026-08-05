@@ -1290,3 +1290,84 @@ ranks and karma-gated powers, the geographic wanted level, standing
 enterprises, nemesis persistence) plus the two things the crime layer
 asked to judge from PLAY: the heat pump and the flat deed DC. All of
 that wants a playthrough before it wants a design session.
+
+## 2026-08-05 — The scene page: the DM message becomes a file
+
+The problem on the table: the DM model does not hold writing.md's
+register in chat. The guide is read once at session start and each
+message is generated once, unrevised — by mid-session the voice has
+drifted wry or purple and nothing in the loop pushes back.
+
+**The fix is a medium change, not more instructions.** The DM message
+moves out of chat into `ui/scene.txt`: draft, REREAD against
+writing.md's Final check, edit, then commit — revision is possible in
+a file and impossible in a sent message, and the reread is where both
+style drift and gameplay inconsistencies get caught. The chat carries
+the player's input and one link. The page holds the last three turns
+(the lookback window, player input quoted as `>` lines);
+`ui/transcript.txt` keeps the whole run, append-only. Both are
+DM-authored; `sheet` commits them with the other pages
+(`UI_COMMIT_PATHS` grew by two, plus a registration test).
+
+**The fight display shrinks to start + link + end.** The scene page
+carries the opening block (banner, room line, roster) and everything
+after the last round (XP, banners, epilogue, tally); the
+round-by-round middle stays behind the `ui/fight-short.txt` blob
+link. The player's decisions live between fights, so the
+between-fights numbers stay in front of them and the blow-by-blow
+becomes opt-in.
+
+**No markdown anywhere on a page.** The pages are GitHub text blobs:
+code fences are noise there, and the engine's 40-column displays
+render aligned without them. The whole page — prose included — wraps
+at 40; a URL alone on its line is the one allowed overflow.
+
+**`scene-example.txt` is the new worked model** (a game start and a
+fight turn): "retro text adventure" is now answered by two full pages
+to imitate rather than by rule text alone. dm.md's two stale style
+lines died in the same pass ("with a little flavor", the
+pulp-with-a-wink caveat) — the flat retro register no longer has
+in-file competition.
+
+Known trade-offs, accepted: URLs in a text blob are not clickable
+(the player pins the scene page and refreshes; the chat link is the
+way in), and the transcript is hand-maintained (the end-of-message
+order in dm.md is the guard; engine-side turn bookkeeping is the
+fallback if it proves leaky — parked).
+
+## 2026-08-05 (session B) — Width corrected; dm.md sheds its dates
+
+**The width rule, corrected same day.** Session A over-applied 40
+columns to the whole scene page. The designer's phone soft-wraps plain
+text; hard-wrapping prose just fossilizes ragged lines. The corrected
+rule everywhere (dm.md, writing.md, scene-example.txt): 40 columns is
+for DISPLAYS — engine printouts and DM-composed blocks, where a broken
+line ruins a table — and narration prose is never hard-wrapped, one
+plain line per paragraph, the screen does the rest. (The old
+40-for-everything reasoning came from chat code blocks, which the
+scene page retired anyway.)
+
+**dm.md's inline history markers moved here.** Every dated marker —
+"(2026-07-26)", "since 2026-07-13", "REWRITTEN ... by the wound
+system", the renamed-from and replacing-the-flat-25% asides — is gone
+from dm.md (writing.md's two went with them): the play docs now state
+current law only. The dates were archaeology, they padded an already
+long file, and `git log -p dm.md` recovers any exact attachment. For
+the record, the ~70 removed markers clustered on the reworks this log
+and benchlog.md already date: 07-09/07-10 (death spiral, retreat
+softening, night geography, hunt ambush), 07-11 (party, CHA, the camp
+default), 07-12 (the war, no-quest-board, flavor beats), 07-13 (the
+streamlining batch: generated PC, on-request recruiting, autolevel,
+reskinned drops, walkover chaining, set sites to DEV/TEST, level-up
+menus), 07-14 (deliveries, numbers-live-in-displays), 07-15 (wizards,
+out-of-combat magic), 07-16 (ranged combat, the notice contest),
+07-17 (the 3-point level, moves, alchemy, kit shrink, knowers-only
+conversions), 07-19 (the pact, prices, one-scene-beat, options-in-
+the-block, taking-starts-it, no class gate), 07-21 (the one-log
+rework, the flat telling), 07-22 (the retro register), 07-26 (the
+wound system and everything it rewrote: deadlines, fate's bargain,
+defeat mercy, quartermaster pass, per-quest pay, conditions, HP
+words, night rules), 07-27/07-28 (conquest, the weapon ladder),
+08-04 (the dark rework: crime, the record, the shadow board's
+retirement), 08-05 (the scene page). New dm.md text gets no date
+markers; this log carries the when.
