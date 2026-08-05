@@ -1,5 +1,6 @@
 RPG2 PARTY SHEET -- day 1, at Ensimaa >
-  Dunmaelle
+  Dunmaelle > the forest road > road
+  approach
 purse: 644g
 party: 1/3 companion slot(s) filled (CHA
   6)
@@ -7,7 +8,7 @@ party: 1/3 companion slot(s) filled (CHA
 (YOU) Imsh -- orc m, age 29
   L11  training 3  XP 0/1100  points 1
   DEX 4  STR 5  MIND 6  CHA 6
-  HP 14/14  STA 10/10  Power 10/10
+  HP 14/14  STA 6/10  Power 2/10
   cruel katana | healingx1, staminax1
   spells: ice 2, invisibility 1,
     possession 1
@@ -15,8 +16,8 @@ party: 1/3 companion slot(s) filled (CHA
 
 (companion) Urzoth -- orc f, age 29
   L11  training 3  XP 0/1100  points 0
-  DEX 4  STR 5  MIND 4  CHA 4
-  HP 17/17  STA 10/10  Power 11/11
+  DEX 3  STR 5  MIND 3  CHA 4
+  HP 5/12 of 17  STA 7/10  Power 9/11
   zweihander, prof 2 | healingx1,
     staminax1
   abilities: bulwark
@@ -24,9 +25,17 @@ party: 1/3 companion slot(s) filled (CHA
   satisfaction 7/10
   background: craftsman; voice:
     mumbling; dress: luxurious
+  - a torn side, badly closed (sev 3)
+  - a cracked skull (sev 2)
+  wound load 5 -> HP ceiling 12/17
 
+active quest: [q20] L11 Rogue Wardens --
+  next: the forest road (L11), room 1/2
+  due day 6 -- 5 days left
 THE PACT: assignment [q42] Guard the
   Cultists at Dunmaelle (grace to take
   it runs to day 11).
 THE WAR: [w1] L2 Stolen Parts -- raised
   at Tomburgh.
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***

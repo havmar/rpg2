@@ -1,5 +1,6 @@
 RPG2 MAP -- day 1
-the party is at Ensimaa > Dunmaelle
+the party is at Ensimaa > Dunmaelle >
+  the forest road > road approach
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -54,6 +55,12 @@ the party is at Ensimaa > Dunmaelle
   Kharnam (village) -- 2 job(s)
   Ordaki (village) -- 2 job(s)
   Sargul (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q20] Rogue Wardens (L11) @ Dunmaelle
+  - the forest road (L11): here, room
+    1/2
 
 -- the war --
 THE WAR: [w1] L2 Stolen Parts -- raised

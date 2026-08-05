@@ -1,36 +1,66 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
+=== Rogue Wardens ===
+the forest road (L11),
+room 1/2: road approach
+Warden Captain 1 -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
+takes spoils, leaves the fallen
+2x Forest Champion -- longsword
+DEX 7  STR 6  STA 8  HP 17/17
+drilled +2,
+takes spoils, leaves the fallen
 Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+*** Imsh seizes
+Forest Champion 2's mind --
+a puppet for 1 round(s)! ***
+[6 Power left]
+The lines meet -- steel range.
+Imsh's ice bolt
+overwhelms Warden Captain 1,
+deals 6 dmg!!! [5 Power left]
+Warden Captain 1 is rimed with frost.
+Forest Champion 2
+overwhelms Warden Captain 1,
+deals 6 dmg!!!
+*** Forest Champion 2 shakes free of the
+possession -- and is FURIOUS. ***
 Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+The lines close.
+Imsh's ice bolt
+overwhelms Warden Captain 1,
+deals 6 dmg!!! [4 Power left]
+Warden Captain 1 is SLAIN.
+Warden Captain 1 strikes as they fall:
+Urzoth parries.
+Urzoth edges past Forest Champion 2,
+deals 4 dmg!!
+Forest Champion 3 outmaneuvers Urzoth,
+deals 4 dmg!!
+Urzoth takes a wound:
+a deep gash across the back.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
-The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
-
--- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
-  (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Imsh's ice bolt
+overwhelms Forest Champion 2,
+deals 4 dmg!! [3 Power left]
+Forest Champion 2 is rimed with frost.
+Urzoth (13/17)
+overwhelms Forest Champion 2,
+deals 6 dmg!!!
+Forest Champion 2 (3/17)
+attacks Urzoth, parried.
+Forest Champion 3 overwhelms Urzoth,
+but Bulwark blunts it: deals 4 dmg!!
+Urzoth takes a wound: a cracked skull.
+Round 4:
+Imsh's ice bolt
+overwhelms Forest Champion 2,
+deals 6 dmg!!! [2 Power left]
+Forest Champion 2 is SLAIN.
+Forest Champion 2 strikes as they fall:
+Urzoth parries.
+Urzoth (9/17)
+attacks Forest Champion 3, parried.
+Forest Champion 3 outmaneuvers Urzoth,
+deals 4 dmg!!
+Urzoth takes a wound:
+a torn side, badly closed.
+== Urzoth is badly cut up ==
