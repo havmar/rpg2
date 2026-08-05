@@ -60,11 +60,12 @@ catchphrase.
   final beat merely to give the line flavor.
 - **Keep game output ASCII, and fit display copy to 40 columns.** The width
   limit is for displays -- code-authored output and DM-composed blocks, where
-  a broken line ruins a table. Narration prose is never hard-wrapped: on the
-  scene page (`dm.md`) it is written as plain unwrapped paragraphs and the
-  reader's screen does the wrapping. The page carries no markdown of any kind
-  (no code fences, no bold, no headings), and a URL sits alone on its own
-  line, never split.
+  a broken line ruins a table; on the scene page (`dm.md`) each display sits
+  in a code fence that preserves its shape. Narration prose is never
+  hard-wrapped: plain paragraphs, reflowed by the reader's screen. Markdown
+  in the DM's prose is structure only -- turn headings, the input quote,
+  fences, links -- never bold or italics for emphasis; the voice does the
+  emphasis.
 
 ## The three writing layers
 
@@ -212,7 +213,7 @@ Use:
 
 > A clerk from Hell waits outside your room. He has three forms and no weapon.
 
-**A full page.** `scene-example.txt` shows this voice at message length -- a
+**A full page.** `scene-example.md` shows this voice at message length -- a
 game start and a fight turn, in the scene-page format `dm.md` specifies. When
 a line will not come out right, find its nearest neighbor there and imitate
 it.
