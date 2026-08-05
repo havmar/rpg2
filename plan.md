@@ -118,7 +118,10 @@ furniture the board abstracts into level numbers, givers are faces
 attached after the roll, the land notables do nothing, and the
 three-trait sketch on NPCs is unbacked flavor the DM has to perform.
 Combat, levelling and the quest system are judged good; this thread is
-where the world catches up.
+where the world catches up. The thread's content companion is
+**`worldsim.md`** (2026-08-05): the record-kind framework, the weather
+system sketch, and the designer's curated land economy packets,
+awaiting the design session.
 
 ### The framing (settled 2026-08-05)
 
@@ -164,7 +167,10 @@ where the world catches up.
   discrete states plus events that flip them. The premade simulated
   cast is REJECTED as overkill — events name the actors they need,
   and those persist (the record page and named-kill detection are the
-  persistence surfaces).
+  persistence surfaces). Cross-land RELATIONS are authored directed
+  edges read at roll time (who imports grain, who rents land, who
+  pays tribute) — lookups feeding derived states, never traded
+  quantities (`worldsim.md`).
 
 ### The two short specs — SHIPPED 2026-08-05 (nothing left here)
 
@@ -188,26 +194,39 @@ second time.
 
 ### The remaining order
 
-1. **The settlement trim (the axe pass).** Precedes the sim and needs
-   no design input: fewer, more distinct places make everything later
-   cheaper — content, contracts, and the sim's entity count. Blocked
-   only on the designer picking counts (the felt target: no two
-   interchangeable settlements in a land; the generated villages are
-   the obvious cut). Sized costs: `place_catalog.json` records,
-   placegen.md's counts and village-role lists, `test_places`'
-   count/ID contracts. Conquest is unaffected beyond fewer holdings
-   (garrisons are per-settlement stable-seeded); the quest economy's
-   posting bands do not move (the parked posting-band trim stays a
-   separate item). No save survives anyway (the standing rule).
+1. **The settlement trim — settled 2026-08-05 as NEED-TO-EXIST
+   creation.** The designer's shape supersedes count-picking: a land
+   BEGINS with three settlements — one capital, one town, one village
+   — and further settlements materialize only when something needs
+   them to exist (a relation names a rival center of power, a card
+   needs a counterparty port), created generic with few unique
+   features. The authored catalog stops being the world's initial
+   census and becomes the RESERVE POOL those materializations draw
+   names and skeletons from — the same lazy-materialization pattern
+   places.py already runs for Sites and houses, lifted one tier.
+   Sized costs: `place_catalog.json` handling, placegen.md's counts,
+   `test_places`' count/ID contracts; worldgen posts one job per
+   settlement, so the opening board shrinks (the refill covers it);
+   conquest just has fewer holdings (garrisons are per-settlement
+   stable-seeded); the posting bands do not move (the parked
+   posting-band trim stays a separate item). No save survives anyway
+   (the standing rule).
 2. **The design session.** What it must settle, in order:
-   - **The identity schema** — the fields a settlement carries and
-     what reads each one. Candidates: economy DERIVED from the
-     existing catalog tags (today only quest routing reads them) plus
-     a prosperity band; ONE authority (kind, disposition, standing
-     tension); the visible mutable states events flip.
+   - **The identity schema** — now THREE-LEVELED (2026-08-05,
+     `worldsim.md`): LAND character is AUTHORED (the packets — a
+     problem axis, standing facts, relations), land WEALTH is a
+     rolled state (weighted middle: crisis / normal / prosperous),
+     and a land in trouble draws from its authored CRISIS DECK (the
+     pact-deck pattern). Settlement identity derives from the land
+     packet plus local tags and the settlement-level rolls: ONE
+     authority (kind, disposition, standing tension) and the visible
+     mutable states events flip. Normal and prosperous stay mostly
+     invisible — crisis is where content lives.
    - **The event vocabulary** — the template shape (admitting
      tags/states, a clock, the five-outlet effect list, a news line)
-     and the first ~20 templates.
+     and the first ~20 templates. `worldsim.md` holds the raw
+     material: the weather sketch and the six land economy packets;
+     the session turns the designer's cut of them into records.
    - **Jerkify / the disposition axis** — NPC and authority
      disposition with mechanical teeth: sin/heat modifiers by desert
      (robbing the extortionist books less; the beloved healer more,

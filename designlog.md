@@ -1637,3 +1637,81 @@ walks into steel still bleeding.
 drink (the wounds crossing) partly redundant is untested — both are
 cheap, and the redundancy only shows in a fight long enough to cross
 twice.
+
+## 2026-08-05 — Weather and the land economies: the first content packets
+
+**Where it started.** The designer's second world-sim sitting brought
+two idea dumps and a structural proposal. The proposal: places are
+created on a NEED-TO-EXIST basis — a land starts with one capital, one
+town, one village, and a further settlement materializes only when a
+field demands a counterparty (a rival center of power), arriving
+generic with few unique features. The dumps: WEATHER events (big rain
+with a shelter-cabin table and a satisfaction dip; colds that deepen to
+pneumonia; storm penalties on ranged and movement, with a dwarven
+snowstorm variant; supernatural fog raising skeletons traced by rumor
+to a necromancer; flooded fords and tolled bridges; drought hitting the
+agricultural exporters and the orcs), and ECONOMY IDENTITIES for all
+six lands from historical analogues — elves as 21st-century decadence
+and manpower trouble, orcs as nomadic gift-economy herders whose lost
+herds mean raids, dwarves as mining dynamics (deposit lifecycles, clan
+claims, company-shop labor politics), Firascir as manorial feudalism
+and crown debt, Mortellaria as baroque finance (paper money, banks,
+tariffs, a colony), Gibili as stateless industrial labor-vs-capital —
+with a weighted wealth roll (crisis / normal / prosperous) and the
+principle that normal and prosperous stay mostly invisible. Questions
+asked: is the direction good; is the material enough for the game
+elements and agent-side content creation; should lands get similar
+amounts; realistic detail beside generic-fantasy lands; can lazy
+generation handle always-true / optional / wealth-dependent /
+mutually-exclusive / relational entries.
+
+**The calls.**
+
+1. *Direction endorsed.* The packets are vocabulary-first, crisis-
+   centered, and historically anchored — coherent trouble-bundles
+   rather than random adjectives, which is exactly what the
+   characteristic criterion demands. Crisis-as-content confirmed:
+   prosperity shows through prices and the absence of trouble.
+2. *The identity model resolved three-leveled*, refining the session
+   agenda's earlier settlement-first sketch: authored LAND character
+   (the packets), rolled land WEALTH state (weighted middle), an
+   authored per-land CRISIS DECK drawn on need (the pact-deck
+   pattern). Settlement identity derives from the land packet plus
+   local tags plus the settlement-level rolls the session still owes
+   (authority, disposition, tension).
+3. *Need-to-exist settlements adopted as the trim's settled shape*,
+   superseding count-picking: three seeded settlements per land, the
+   authored catalog demoted to a reserve pool for lazy
+   materialization — places.py's Site/house pattern lifted one tier.
+4. *Lazy generation confirmed sufficient*, with the designer's five
+   entry classes formalized as record kinds — fact / option / state /
+   card / relation. Relations are authored directed edges read at
+   roll time (derived states, never traded quantities); mutual
+   exclusion is exclusive slots plus deck draws; the one guard rule:
+   no quantity that needs per-day updating.
+5. *Asymmetry doctrine*: lands do not need equal material — a floor
+   (wealth roll, three-plus cards, one or two relations, one flavor
+   anchor), depth above it following designer interest, generic-
+   fantasy lands legitimate as contrast. The overlap guard for the
+   four modern-flavored societies is the named PROBLEM AXIS per land.
+6. *The cold cashes the parked DISEASE seed* — the attrition rework's
+   third condition family arrives as weather fallout, with pneumonia
+   as bounded deepening.
+7. *Layer order recommended* for the dumps still to come: politics
+   first (the authority/disposition schema needs it and half the
+   economy cards lean on a political actor), religion folded into
+   politics where it overlaps, monsters/fauna as assignment onto the
+   existing per-land pools, magic and science riding the packets as
+   flavor anchors until a card demands mechanics.
+8. *Curation stance*: the designer hand-picks; assistant additions
+   are few and marked [PROPOSED] (five in this pass — wildfire, dust
+   storm, smog, the bank run, the herd drive). Flagged designer
+   calls preserved in place: orc horse aesthetics, elven robot tone,
+   dwarven sulfur sold to Hell.
+
+**Recorded.** `worldsim.md` created as the thread's content resource
+and framework (registered in develop.md's Files); plan.md's thread
+section updated — the worldsim pointer, relations added to the
+architecture doctrine, the trim entry rewritten to the need-to-exist
+model, the identity-schema agenda bullet rewritten three-leveled.
+Implementation deliberately deferred to its own session.
