@@ -1,40 +1,30 @@
-RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > Ventoro
+RPG2 PARTY SHEET -- day 1, at Firascir >
+  Tomburgh
 purse: 0g
-party: 1/1 companion slot(s) filled (CHA
-  4)
+party: 1/2 companion slot(s) filled (CHA
+  5)
 
-(YOU)       Delg (L1, training 0): DEX 5
-  STR 5  MIND 3  STA 6/6  HP 9/9 of 11
-  Power 5/5  CHA 4  (alchemy 1;
-  shortsword; healingx1)
-            Delg -- dwarf m, age 35;
-              weakness: needs meds;
-              speech: verbose; dress:
-              tattered
-            XP 0/100 to L2 | skill
-              points: 0
-            - a gut wound, still seeping
-              (sev 2)
-            HP ceiling 9/11 (2 wound
-              load)
+(YOU) Ivellios -- elf m, age 25
+  L1  training 0  XP 0/100  points 0
+  DEX 5  STR 5  MIND 5  CHA 5
+  HP 10/10  STA 7/7  Power 3/3
+  whip | staminax2
+  alchemy 1
+  temperament: loyal; dress: elegant;
+    looks: thin
 
-(companion) Isolde (L1, training 0): DEX
-  2  STR 5  MIND 6  STA 6/6  HP 5/5 of 8
-  Power 5/5  CHA 6  (spells: ice 1;
-  whip; healingx2, staminax1)
-  [satisfaction 7/10]
-            Isolde -- human f, age 29;
-              background: scholar;
-              speech: formal; looks:
-              thin
-            XP 0/100 to L2 | skill
-              points: 0 | spells: ice 1
-            - a blind eye [PERMANENT]
-              (sev 3)
-            HP ceiling 5/8 (3 wound
-              load)
+(companion) Dain -- dwarf m, age 34
+  L1  training 0  XP 0/100  points 0
+  DEX 5  STR 4  MIND 3  CHA 4
+  HP 10/10  STA 8/8  Power 6/6
+  dagger | healingx1, staminax1
+  abilities: first_blood
+  satisfaction 7/10
+  quirk: has an enemy (Ilde, a dwarf
+    duelist, level 3, out there
+    somewhere); speech: verbose; voice:
+    whispering
 
-THE PACT: assignment [q42] Sell the
-  Powder at Ventoro (grace runs to day
-  5).
+THE PACT: assignment [q42] Sacrifice the
+  Puppy at Tomburgh (grace to take it
+  runs to day 11).

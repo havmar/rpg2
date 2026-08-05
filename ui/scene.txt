@@ -1,0 +1,34 @@
+=== turn 1 (day 1) ===
+> new game
+
+You are Ivellios: an elf, twenty-five, thin, and dressed well above your means. A whip is coiled at your belt and a herbalist's kit rides in your coat. Some years ago you signed a contract with Hell. Wealth and power were promised. Nothing has arrived yet.
+
+Dain walks beside you: a dwarf, thirty-four, a long-winded man who says everything in a whisper. He has watched your back for years. A duelist named Ilde is somewhere out in the world with his name on her list.
+
+You are in Tomburgh, the walled capital of Firascir. The Flumenpur runs through the middle of it and the great east road crosses on a stone bridge. Carts are backed up at the east gate. Under the bridge arch a man beats wool in the shallows.
+
+Doran stops you on the bridge road. He is the head shepherd, his coat is out at both shoulders, and he has a fine voice for bad news. Wolves came down into the high pasture. They killed sheep, then they killed a shepherd. He will not go back up there himself and he says so without shame.
+
+  job: Wolves Attack -- L1
+  giver: Doran, head shepherd
+  2 sites, 2 fights. pay: 29g
+  due day 7
+
+He is not the only one asking. The priest at the village graveyard has been standing in the road all morning telling people the dead are getting out.
+
+  job: The Restless Crypt -- L1
+  giver: Brand II, village priest
+  1 site, 3 fights. pay: 40g
+  due day 6
+
+By the tannery wall there is a job board that was not there yesterday. Nobody else looks at it. One notice is addressed to you.
+
+  WORD FROM BELOW: Sacrifice the Puppy
+    at Tomburgh -- take it by day 11.
+    the local hand: Aldric, a fixer
+
+  options: the wolves, the crypt,
+    the notice from below, the board
+    (3 harder jobs), hunt, travel
+
+What do you do?
