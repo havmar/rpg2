@@ -6,11 +6,12 @@ party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Martel -- human m, age 38
-  L14  training 3  XP 793/1400  points 4
+  L14  training 3  XP 793/1400  points 0
   DEX 3  STR 4  MIND 5  CHA 4
   HP 15/15  STA 12/14  Power 10/14
   focused staff | healingx1, staminax1
-  spells: fire 3, healing 1, scry 1
+  spells: fire 3, healing 2, scry 1
+  alchemy 1
   pools bought: hp +6, power +6, sta +6
 
 (companion) Gwen -- human f, age 31

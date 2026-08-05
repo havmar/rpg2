@@ -22,5 +22,12 @@ day 4: HELL'S ASSIGNMENT 1 served: Open
   lifetime sin 1477 / penance 616
 
 -- SUGGESTIONS --
-  (hell is not advertising -- `case`
-    lists everything anyway)
+  heist -- The Vault Heist: The vault
+    opens between patrols, or it does
+    not open.
+  racket -- Protection Racket: A fine
+    shop. It would be a shame. Collect
+    weekly.
+  powder -- The Powder Trade: Move the
+    sacks at night. Take the price at
+    dawn.
