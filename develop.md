@@ -145,6 +145,15 @@ a pointer: what the file is, how it's run, where its docs are.
   stable materialization, quest routing, readouts, and minimum verification.
   Pirate, wilderness, Caelum, and special-feature content remain post-MVP;
   shipped behavior belongs in `rules.md`.
+- `worldsim.md` — **the world-simulation content resource & framework**
+  (2026-08-05, THE WORLD & NPC SIMULATION thread): the record kinds
+  (fact / option / state / card / relation), the wealth roll and the
+  per-land crisis decks, the lazy-generation requirements, the
+  need-to-exist settlement model, the weather system sketch, and the
+  six curated land economy packets (designer-authored,
+  assistant-classified; additions marked [PROPOSED] for the designer
+  to cut). Pre-implementation — plan.md's design session consumes it;
+  shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes required settlements/lazy natural Sites/ordinary houses,
