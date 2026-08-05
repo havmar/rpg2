@@ -1242,8 +1242,9 @@ def attach_giver(quest: dict, race: str, rng: random.Random,
     play there is NO board -- asking around funnels to this person in one
     message (dm.md), taking the quest is talking to them, and they receive
     the turn-in. Role comes from the template; the face is a targeted NPC
-    (people.make_npc: race/role fixed, personality rolled). Stored as a
-    plain dict on the quest, so it rides the save like everything else."""
+    (people.make_npc: race/role fixed, the name rolled -- a giver carries
+    no trait sketch since 2026-08-05). Stored as a plain dict on the quest,
+    so it rides the save like everything else."""
     from people import make_npc     # runtime import: people imports quests
                                     # (RACES), so top-level would be a cycle
     quest["giver"] = make_npc(rng, race, role or "the local patron",
@@ -1919,9 +1920,8 @@ def quest_detail_lines(world: dict, quest: dict,
                      f"{band} -- x{QUEST_PAY_BANDS[band]:g}")
     g = quest.get("giver")
     if g:
-        traits = "; ".join(f"{k}: {v}" for k, v in g["traits"].items())
         lines.append(f"    giver: {g['name']}, {g['role']} ({g['race']} "
-                     f"{g['sex']}, age {g['age']}; {traits})")
+                     f"{g['sex']}, age {g['age']})")
     if quest.get("kind") == "delivery":
         lines.append(f"    the job: carry {quest['cargo']} to "
                      f"{quest['dest_name']} ({quest['days']} day(s) on the "
@@ -1929,10 +1929,8 @@ def quest_detail_lines(world: dict, quest: dict,
                      f"is the turn-in")
         r = quest.get("recipient")
         if r:
-            traits = "; ".join(f"{k}: {v}" for k, v in r["traits"].items())
             lines.append(f"    recipient: {r['name']}, {r['role']} "
-                         f"({r['race']} {r['sex']}, age {r['age']}; "
-                         f"{traits})")
+                         f"({r['race']} {r['sex']}, age {r['age']})")
         return lines
     for i, s in enumerate(quest_sites(world, quest)):
         cur = quest["next"]

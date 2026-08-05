@@ -39,7 +39,9 @@ the checked-out copy already contains the latest UI or rules changes.
 > level 4. Getting further takes hours of play, and something important
 > to fix has always come up first. Treat everything above the low band
 > as unplayed: when designing, building, or testing, put whatever needs
-> to be learned or felt inside the first four or five levels.
+> to be learned or felt inside the first four or five levels. (Since
+> 2026-08-05 `new` rolls the starting level 1-18 and `new --level N`
+> fixes it, so an unplayed band can at least be LOOKED at directly.)
 
 ## The documents
 

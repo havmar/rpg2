@@ -313,16 +313,22 @@ def generate_weapon(rng: random.Random, sp: int,
 # A weapon reward REPLACES the turn-in gold lump (never the XP, never the
 # per-encounter shares): the level is the pay grade here as everywhere.
 
-def reward_weapon_for_level(level: int, rng: random.Random) -> Weapon:
-    """The weapon a level-L job may post instead of its gold lump."""
+def reward_weapon_for_level(level: int, rng: random.Random,
+                            chassis: str | None = None) -> Weapon:
+    """The weapon a level-L job may post instead of its gold lump.
+
+    `chassis` fixes what the piece is BUILT ON instead of rolling it (the
+    quest board never passes one -- it wants the whole table). session's
+    career start does: a caster on his focus staff is owed the staff of
+    his band, not a rapier that would cost him the focus."""
     if level <= 4:
-        return WEAPONS[rng.choice(CHASSIS)]
+        return WEAPONS[chassis or rng.choice(CHASSIS)]
     if level <= 9:
-        return masterwork_of(rng.choice(CHASSIS))
+        return masterwork_of(chassis or rng.choice(CHASSIS))
     sp = (6 if level <= 13 else
           7 if level <= 16 else
           8 if level <= 18 else 9)
-    return generate_weapon(rng, sp)
+    return generate_weapon(rng, sp, chassis=chassis)
 
 
 # --------------------------------------------------------------------------- #

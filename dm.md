@@ -11,11 +11,19 @@ play.
 - New game: `python session.py new` (add `--seed N` for a reproducible game
   -- `new` also generates the playthrough's whole quest world). The
   PC is **GENERATED, not chosen**: one character (his CHA
-  always holds at least one companion), with a **long-time companion
-  already at his side** -- introduce them as shared history ("X has
-  watched your back for years"), never as someone joining in scene one.
-  Present the PC's sheet without mechanics chatter (see The player
-  character below).
+  always holds at least one companion), always a **magic user**, with a
+  **long-time companion already at his side** -- introduce them as shared
+  history ("X has watched your back for years"), never as someone joining
+  in scene one. Present the PC's sheet without mechanics chatter (see The
+  player character below).
+- **The party's LEVEL is rolled 1-18** unless the player asks for one
+  (`new --level N`, 1-20; `--race R` fixes the PC's race). Above level 1
+  the pair arrives with the career those levels bought -- points spent,
+  quality steel, a job-reward weapon, spellbooks, a purse -- and the
+  opening hook is a job at THEIR level. Play a career start as a party
+  with a past: they have been doing this for years, the fiction just
+  starts here. Don't invent a backstory they can't act on; if the player
+  wants one, build it with him.
 - **Open at the hook.** `new` prints an OPENING HOOK: the most
   level-appropriate local job and its giver. Frame the first scene at that
   job's doorstep -- the giver mid-pitch, the trouble already concrete --
@@ -172,8 +180,10 @@ the player's core decision:
   message lands them in front of the giver, who lays out the job ("you
   ask at the taproom; the mayor waves you on to the chief constable, a
   loud woman in flamboyant dress, who tells you about the crypt").
-  Roleplay the giver from their trait line (edit any contradiction before
-  presenting); they stay talkable while the quest runs, and the turn-in
+  A giver's line is name, role, race, sex and age -- no trait sketch
+  (2026-08-05): play them off their ROLE and the job they need done,
+  inventing only what the scene needs and keeping it consistent if they
+  come back. They stay talkable while the quest runs, and the turn-in
   is THEIR scene. Present 2-3 jobs per ask unless the player wants the
   full slate; relay levels and pay straight, answer questions about them
   straight, then let them pick. A job's mechanics (level, pay, foe kind
@@ -337,11 +347,17 @@ the player's core decision:
 
 - **The first hero rolled (`party[0]`) is the player character (PC).** Narrate
   the PC in second person: "you". `session.py` marks them `(YOU)`.
-- **Never narrate mechanics at the PC's traits.** The PC has NO
-  satisfaction track -- lines like "his love of music raises satisfaction"
-  are wrong twice (wrong character, wrong register). Traits are performed
-  in the fiction, for everyone; the numbers stay in the readouts. The PC's
-  sheet already suppresses the satisfaction annotations.
+- **The PC has no trait sketch and no satisfaction track** (2026-08-05:
+  traits are the companion layer). His sheet is his stats, his kit and his
+  banked points; who he is, is the player's to play. Never narrate morale
+  mechanics at him -- lines like "his love of music raises satisfaction"
+  are wrong twice (wrong character, wrong register). Companions DO carry
+  traits: perform them in the fiction, keep the numbers in the readouts.
+- **The PC is always a magic user.** He has a school from scene one, and
+  he can level as a warrior all the same -- combat training, weapon
+  proficiency and moves are all on his menu (a non-wizard can never go the
+  other way; a spellbook is diagrams to him). Let the player build in
+  either direction and narrate the magic as his, not as a class.
 - **If the PC dies, the game is over unless defeat mercy fires** -- even if
   a companion still stands. Relentless foes, or a second defeat at the same
   character level, give no mercy (`session.py` prints the GAME OVER line).
@@ -513,7 +529,10 @@ infernal reskins, and keep visits scene-sized.
   -- dealt off a shuffled deck, so their order is genuinely random:
   play the hellgate at level 3 as hell overreaching, not as a mistake.
   Assignments are serial and never stack: pins crossed while one was
-  open are served as ONE fresh job afterwards. The GRACE (~10 days)
+  open are served as ONE fresh job afterwards. On a CAREER start
+  (`new --level N`) every pin below N counts as already served -- hell
+  has been collecting for years -- so an even-level start waits for its
+  next odd level and an odd one is pinned at once; `new` says which. The GRACE (~10 days)
   covers TAKING the job from its local hand; taking it stamps a
   visible completion window (the road days are counted in) and hell
   leaves a working party alone. Untaken past grace, or taken and past
@@ -1317,8 +1336,10 @@ bigger than the fights WITHOUT pages of narration:
   out-fighting a trained blade; play it as the party's quartermaster.
 - **Wizards (Magic & Mind):** MIND strictly highest of
   MIND/DEX/STR at creation = a wizard -- a SCHOOL spell (fire or ice) at
-  rank 1 instead of an archetype seed, rolled for PC, companions, and
-  recruits alike. POWER is the fuel (qi, not iq -- it never comes from
+  rank 1 instead of an archetype seed, rolled for companions and recruits;
+  the **PC always has it** (2026-08-05: `new` rerolls until the gift
+  lands, because nothing later can grant it, while every warrior sink
+  stays open to a wizard). POWER is the fuel (qi, not iq -- it never comes from
   MIND). Spells rank 1-3: `train HERO SPELL` buys ranks (rank n = n
   points; ANYONE can deepen a spell they know -- books
   stay wizard-only), `buy HERO book SPELL` (120g, capitals) teaches new

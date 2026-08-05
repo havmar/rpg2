@@ -1508,3 +1508,83 @@ the design session itself scheduled next, agenda in plan.md.
 **Open.** The trim's counts; every identity field and event template;
 the disposition mechanics' numbers; the bully's spawn hook; what dict
 NPCs carry instead of traits; the landmark-problems tie-in.
+
+---
+
+## 2026-08-05 (build session) — The start at any level; traits become the companion layer
+
+**Where it started.** The designer asked for plan.md's two ready specs
+to be built — the high-level test start (spec A) and the NPC trait
+rollback (spec B) — and amended both in the same breath. Three
+amendments, each of which changed the shape of what shipped:
+
+1. *The start level is ROLLED by default*, not asked for. Spec A had
+   `--level N` on demand against an unchanged level-1 default; the
+   designer wants a plain `new` to roll 1-18, with the flag as the
+   override for a session testing one band.
+2. *The PC is always a magic user* — with the designer's own reasoning
+   attached as a question: a magic user can be levelled as a warrior,
+   but not the other way around, right?
+3. *The PC loses his traits too.* Spec B stopped at dict NPCs and said
+   heroes keep the sketch; the amendment scopes traits to PARTY MEMBERS
+   OTHER THAN THE PC.
+
+**The road.**
+
+- *The asymmetry checked, and it holds* (amendment 2's premise): the
+  gift is rolled at creation and `learn_spell` refuses a non-wizard
+  outright — a spellbook is diagrams to him — while nothing anywhere
+  gates combat training, weapon proficiency or the move repertoire on
+  being a non-caster. `autolearn_moves` skips wizards, but that is the
+  autospend DOCTRINE choosing for a companion, not a rule about the
+  player's menu. So the guarantee closes no door and opens the one door
+  that cannot be opened later. It is implemented as a REROLL of the stat
+  budget until MIND lands strictly highest (a ~23% roll, so a handful of
+  tries), never as a nudge afterwards: a PC wizard's stats keep a
+  wizard's natural shape.
+- *Amendment 3 follows the same criterion that killed the giver sketch*
+  (plan.md's characteristic criterion). Companion traits are chosen
+  against at hiring and several move numbers; the PC's were neither —
+  nobody hires him, and his sheet already suppressed the morale
+  annotations because they baited mechanics talk at a character with no
+  satisfaction track. Removing them retired `no_family` with them (the
+  switch existed only to keep a child out of his opening scene) and made
+  the `for_pc` sheet flag dead code.
+- *A career start had to be more than a level number.* Points alone
+  would have put a level-18 party in trash arms with an empty purse, so
+  the start now hands the pair what those levels bought: the doctrine's
+  spend (both heroes, PC included — the levelup menu is for played
+  progression), quality steel plus the PC's band job-reward weapon, a
+  purse at a fifth of the career's earnings, and the standard kit.
+- *Two implementer's calls, both flagged for reversal.* (a) A FOCUS
+  RULE: since the PC is now always a caster, handing him a rolled rapier
+  would strip the staff's +Power — so a PC on the staff claims the STAFF
+  of his band instead (`reward_weapon_for_level` took an optional
+  chassis). (b) CAREER SPELLBOOKS: one per five levels at rank 1, because
+  a level-18 wizard knowing exactly one spell is not what that band looks
+  like from the inside. One constant turns it off.
+- *A spec correction found by building it.* Spec A said stamp the pact's
+  ledger to the highest pin "at or below" N. With level 1 now running
+  through the same path, that would have marked pin 1 served and
+  cancelled hell's tutorial job. Stamped STRICTLY BELOW instead: an even
+  start waits for its next odd level, an odd start is pinned at once, and
+  level 1 is untouched.
+- *The opening ground generalized*: the start settlement and the opening
+  hook now take the posting CLOSEST to the party's level. At level 1 that
+  is arithmetically the old lowest-posting rule, so the ordinary opening
+  did not move.
+
+**Decided.** Both specs shipped with the three amendments (plan.md's
+section rewritten as the built spec; rules.md's Party add-on carries the
+played rules; `test_start.py` is the contract suite, 50 tests, and all
+twelve suites pass). Traits are now the companion layer and only that.
+The default `new` is a rolled level 1-18, `--level N` and `--race R` the
+overrides.
+
+**Open.** What dict NPCs carry instead of the sketch is still the design
+session's question — and the PC's now-blank sheet asks it a second time:
+he has no characteristics either, and whether he should (a background
+chosen by the player, rather than rolled flavor) is a real question the
+session can take. Whether the rolled band should be weighted rather than
+uniform (the low levels are the played ones) is untested. The high bands
+themselves remain unplayed — that is what the start exists to fix.
