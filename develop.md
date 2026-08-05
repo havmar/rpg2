@@ -195,6 +195,11 @@ a pointer: what the file is, how it's run, where its docs are.
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
   `python -m unittest -v test_ui_logs.py`.
+- `scene-example.txt` — **the worked scene-page model** (2026-08-05): a game
+  start and a fight turn in writing.md's voice and dm.md's scene-page format
+  (the three-turn page, the start+link+end fight display, no markdown).
+  Referenced by dm.md and writing.md; it is play-facing copy, so it obeys the
+  40-column/ASCII rules itself (URLs exempt).
 - `placegen_review.txt` — **the current string-review worksheet**: a minimal,
   translation-style view of one Land's player/DM-facing names, descriptions,
   Site and Room labels, and visible content strings. It carries only enough
@@ -494,11 +499,18 @@ a pointer: what the file is, how it's run, where its docs are.
   save. Combat writes two last-fight snapshots:
   **`ui/fight-short.txt`** (the exact displayed log and DM fallback) and
   **`ui/fight-detailed.txt`** (every roll and modifier). A new encounter
-  replaces them; resume/retreat appends to the paused encounter. All five
+  replaces them; resume/retreat appends to the paused encounter. Since
+  2026-08-05 the DM's message itself is a page too: **`ui/scene.txt`**
+  (the last three turns, newest at the bottom) and **`ui/transcript.txt`**
+  (the append-only play log) are DM-AUTHORED — the engine never writes
+  them, `sheet` just commits them (`UI_COMMIT_PATHS`; dm.md, The scene
+  page; the worked model is `scene-example.txt`). All seven
   are **committed to the branch, not gitignored: they are the GitHub UI**
   (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
-  the player-facing display the DM pastes into chat as-is, while the
+  the player-facing display whose opening and closing blocks the DM
+  copies onto the scene page — the round-by-round middle stays behind
+  the `ui/fight-short.txt` blob link (dm.md, 2026-08-05) — while the
   detailed version goes to **`ui/fight-detailed.txt`**
   (`group_combat` flushes the configured log at pause/resolution and
   `print_combat` flushes both snapshots' session tail). The block ends with the

@@ -58,9 +58,12 @@ catchphrase.
   metonymy: "The priest pays you to destroy them" is clearer than "the parish
   purse opens." Epilogues state what changed and stop; they do not add a clever
   final beat merely to give the line flavor.
-- **Keep game output ASCII and fit display copy to 40 columns.** This width
-  limit applies to code-authored output and DM-composed display lines. It does
-  not require prose stored only in development documentation to wrap at 40.
+- **Keep game output ASCII, plain text, and wrapped at 40 columns.** The DM's
+  message is a text page read as a GitHub blob (2026-08-05, `dm.md`'s scene
+  page): the whole page -- prose and displays alike -- wraps at 40 like the
+  engine's output, with no markdown of any kind (no code fences, no bold, no
+  headings). A URL sits alone on its own line and is never split. Prose stored
+  only in development documentation need not wrap at 40.
 
 ## The three writing layers
 
@@ -207,6 +210,11 @@ Avoid:
 Use:
 
 > A clerk from Hell waits outside your room. He has three forms and no weapon.
+
+**A full page.** `scene-example.txt` shows this voice at message length -- a
+game start and a fight turn, in the scene-page format `dm.md` specifies. When
+a line will not come out right, find its nearest neighbor there and imitate
+it.
 
 ## Final check
 
