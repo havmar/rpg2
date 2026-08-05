@@ -806,7 +806,7 @@ These are the only edits to the existing rules:
 | **Wounds** | Carry indefinitely — a night does nothing for them | Only the **treatment ladder**: a settlement bed (1 severity a night), the healer (tier-capped), a salve, or high magic for a maiming | The SLOW channel (2026-07-26, slice 3b): named located records that dock the HP ceiling and carry stat penalties. See the Wounds & Recovery add-on. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
-| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it and drinks for everyone who has no better answer (see "Gold and the potion economy"). |
+| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it, and at a fight's OPENING (2026-08-05) drinks for everyone who has no better answer (see "Gold and the potion economy"). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
 keeps build identity alive and makes "who am I about to lose" specific. (The
@@ -1301,7 +1301,8 @@ On top of the existing build/allocation choices:
   (`HEALING_POTION_RESTORE`), *stamina* restores STA; only those two kinds
   circulate (`STOCKED_POTION_KINDS`; the power potion is retired — see the
   two-buffer split above). What is no longer a decision is *who carries which
-  vial* and *whether to drink one when you are visibly bleeding*: see
+  vial* and *whether to drink one when you walk into a fight already
+  bleeding*: see
   **"The quartermaster pass"** below. The one-shot / sim paths
   (`sites.run_site`) keep their own, older policy —
   `auto_use_potions_on_rest` (heal when badly hurt, drink stamina when
@@ -1549,7 +1550,7 @@ of spending get measured.
   the stock moves through drops, purchases, use — and the kit's nightly
   top-up to 1+1 (2026-07-11).
 
-### The quartermaster pass (2026-07-26)
+### The quartermaster pass (2026-07-26; the drink moved to a fight's opening 2026-08-05)
 
 **Carrying and drinking basic potions stopped being decisions.** Who holds
 which vial was never a choice with a wrong answer worth making, and a hero
@@ -1561,10 +1562,10 @@ untouched.
 
 - **When it runs:** whenever the party's potion stock **changes**, out of
   combat — a purchase, a brewed batch, loot, the overnight kit scrounge, a
-  drink, a hire, a quitter walking off with their pack, and at every
-  fight's end (including a retreat). Never mid-fight: the pause and the
-  standing orders own that decision, and nobody rummages through a
-  comrade's satchel during an exchange.
+  drink, a hire, a quitter walking off with their pack, at every fight's end
+  (including a retreat), and at every fight's **opening**. Never mid-fight:
+  the pause and the standing orders own that decision, and nobody rummages
+  through a comrade's satchel during an exchange.
 - **The fallen are emptied first.** A dead companion's healing potions and
   draughts are **taken up from where they fell** and go back into the
   party's stock — the same doctrine as the quality steel a fallen hero
@@ -1580,17 +1581,20 @@ untouched.
   are flat, so the character closest to falling is the one with the fewest
   points left. **Ties go to the companions** — the player can always call
   for a potion, while the engine speaks for everyone else.
-- **The drink — at a fight's end, and nowhere else.** Anyone the pass
-  speaks for drinks when **badly hurt** (at or below half HP) or **Winded**
-  (STA ≤ `WINDED_STA`) — the same lines the sim policy has always used —
-  but only on the encounter paths (a resolved fight, a retreat). The
-  morning fire, the camp, and the shop counter **deal only**: the night
-  heals for free and the next door is a day away, so an unopened vial is
-  worth more there than the HP it would buy. A potion is for the wound the
-  fight just opened. Never at full either way: the overcharge (+2 above
-  max) stays a deliberate spend. Deal and drink alternate until nothing
-  more is wanted, so a hero standing at 0 can be stood up and topped off in
-  one pass.
+- **The drink — at a fight's OPENING, and nowhere else** (2026-08-05;
+  it used to be the fight's *end*). Anyone the pass speaks for drinks when
+  **badly hurt** (at or below half HP) or **Winded** (STA ≤ `WINDED_STA`) —
+  the same lines the sim policy has always used — but only in `open_fight`,
+  the step between "there they are" and the first blow. Every other pass
+  **deals only**, the fight's end included: once the last foe is down the
+  party can camp, and the night knits HP back for free, so a vial poured
+  down a hero on the way OUT of a fight is one the morning would have
+  saved. Carried INTO the next fight, the same wound is what gets them
+  killed — that is where the vial is worth its price. Never at full either
+  way: the overcharge (+2 above max) stays a deliberate spend. Prep stands
+  the Down back up first, then deal and drink alternate until nothing more
+  is wanted, so a hero who went down last room can be stood up and topped
+  off in one opening.
 - **Who it speaks for.** **Companions always** — nobody is playing them.
   **The player character only when they have no better answer of their
   own:** a PC who knows the **healing spell** owns the wound decision, and
@@ -1600,11 +1604,19 @@ untouched.
   call, not the engine's.
 - **The cost of it.** A small difficulty *give* — the party no longer walks
   into the next door at half HP with an unopened potion — kept small by the
-  fight-end fence: the nightly kit line is banked, not burned, because the
-  morning never drinks. Recovering the fallen's kit cuts the other way from
-  where it looks: it softens a death, but a death still costs the
-  companion. The levers, if it proves too generous, are the drink threshold
-  (`wants_potion`) and which call sites pass `drink=True`.
+  opening fence: the nightly kit line is banked, not burned, because
+  nothing drinks at camp, at a shop, or on the way out of a fight. Moving
+  the drink from the fight's end to its opening (2026-08-05) barely moves
+  the numbers where two fights run back to back — the same vial is spent,
+  minutes later — and *saves* it outright wherever the player camps,
+  travels, or visits the healer in between. **A wound is now visible in
+  `status` between fights**: heroes carry their HP as it is and crack the
+  vial when steel comes out, which is also the honest reading of the
+  fiction. Recovering the fallen's kit cuts the other way from where it
+  looks: it softens a death, but a death still costs the companion. The
+  levers, if it proves too generous, are the drink threshold
+  (`wants_potion`) and which call sites pass `drink=True` (exactly one:
+  `rpg.open_fight`).
 
 ---
 

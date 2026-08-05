@@ -1,6 +1,6 @@
 """DM session driver -- runs the game turn-by-turn from the terminal.
 
-rpg.py's primitives (start_fight, group_combat, long_rest, ...)
+rpg.py's primitives (open_fight, group_combat, long_rest, ...)
 are meant to be called on purpose, in whatever order the story wants (see
 develop.md, "The feel we're going for"). But each terminal call is a fresh
 Python process, so something has to hold party/clock/purse state *between*
@@ -109,7 +109,7 @@ from rpg import (
     stat_line, fallen_weapons_line, weapon_tag, prof_name,
     random_trash_weapon, MASTERWORK_PRICE_MULT,
     xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
-    start_fight, group_combat, party_wiped, party_defeated,
+    open_fight, group_combat, party_wiped, party_defeated,
     apply_defeat_mercy, mercy_available, FEROCITY_RELENTLESS,
     FEROCITY_BREAKS,
     attempt_retreat, refresh_foes_after_retreat,
@@ -2640,8 +2640,7 @@ def maybe_punish(state: dict) -> bool:
           f"peaceful option. Losing is not death: the law leaves the "
           f"PC for dead -- party, purse, and sin all forfeit)")
     log = new_combat_log()
-    for hero in living:
-        start_fight(hero, log)
+    open_fight(state["party"], log)
     log_banner(log,
                f"=== The reckoning: {label} "
                f"(a level-{posse_level} posse) ===",
@@ -2913,8 +2912,7 @@ def maybe_enforce(state: dict) -> bool:
           f"run from -- hell writes the job off afterwards. Lose and it "
           f"collects its fine first.)")
     log = new_combat_log()
-    for hero in living:
-        start_fight(hero, log)
+    open_fight(state["party"], log)
     log_banner(log,
                f"=== Past Due: {label} "
                f"(a level-{posse_level} posse) ===",
@@ -3427,8 +3425,7 @@ def crime_fight(state: dict, cat: dict, mark: dict, rec: dict,
     is won (and pays nothing when it is not)."""
     party, rng = state["party"], state["rng"]
     log = new_combat_log()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
+    open_fight(party, log)
     log_banner(log,
                f"=== {banner}: {mark['role']} (L{mark['level']}) ===",
                [f"=== {banner}:", f"{mark['role']} (L{mark['level']}) ==="])
@@ -3716,9 +3713,11 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         satisfaction_after_fight(party, dead_before or [], log)
         # The quartermaster pass (2026-07-26): the fight just changed the
         # stock (potions drunk at the pause, a potion looted, a fallen
-        # companion's satchel) and who needs it. This is the ONE place that
-        # DRINKS -- fresh wounds, another door possibly an hour away.
-        auto_potions(party, log, drink=True)
+        # companion's satchel) and who needs it. It DEALS only -- nobody
+        # drinks on the way out of a fight (2026-08-05): the party can camp
+        # from here and the night knits HP back for free, so the vial keeps.
+        # The drink waits for the next fight's opening (rpg.open_fight).
+        auto_potions(party, log)
         # A delivery's hand-off can come due here: the guaranteed
         # interception (or any other fight at the destination's gates)
         # settling with the party at the destination IS the arrival.
@@ -3743,8 +3742,7 @@ def cmd_fight(args: argparse.Namespace) -> None:
         return
     party, rng = state["party"], state["rng"]
     log = new_combat_log()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
+    open_fight(party, log)
 
     foes = []
     for _ in range(args.n):
@@ -3795,8 +3793,7 @@ def cmd_site(args: argparse.Namespace) -> None:
                   f"first.")
             return
     log = new_combat_log()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
+    open_fight(party, log)
 
     room_name, roster = site.rooms[args.room - 1]
     held = reclaim_room(state, site.key, args.room)
@@ -4137,8 +4134,7 @@ def cmd_room(args: argparse.Namespace) -> None:
             print(line)
 
     log = new_combat_log()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
+    open_fight(party, log)
 
     held = reclaim_room(state, site_key, room_i + 1)
     banner = (f"=== {quest['name']} -- {site['name']} (L{site['level']}), "
@@ -4261,8 +4257,7 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
     is the engagement's opening gap (who noticed whom decides it)."""
     party = state["party"]
     log = new_combat_log()
-    for h in [h for h in party if not h.dead]:
-        start_fight(h, log)
+    open_fight(party, log)
     log_banner(log, f"=== {banner} (a level-{level} encounter) ===",
                [f"=== {banner} ===", f"(a level-{level} encounter)"])
     foes = _spawn_wild_foes(state, kinds)
@@ -4906,8 +4901,10 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             collect_weapon_quirks(state, log)   # kills before the break-away
             satisfaction_after_fight(party, pending.get("dead_before") or [],
                                      log, fled=True)
-            # Out of the fight, wounds and all: the pass drinks here too.
-            auto_potions(party, log, drink=True)
+            # Out of the fight, wounds and all -- and the pass deals only
+            # here too: a hero who broke away can camp, and the vial is
+            # worth more unopened than the HP it would buy right now.
+            auto_potions(party, log)
             # Fleeing the delivery's interception doesn't un-deliver: if the
             # party stands at the destination, the hand-off happens.
             deliver_if_arrived(state, log)

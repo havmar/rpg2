@@ -7832,12 +7832,14 @@ def auto_potions(party: list[Entity], log: list[str],
     off). Call it whenever the stock CHANGES: after loot, a purchase, a
     brew, the overnight scrounge, a drink, a hire, or a departure.
 
-    `drink` is for THE FIGHT ONLY -- the encounter paths pass it, nothing
-    else does (designer call, 2026-07-26). A potion answers a wound the
-    fight just opened, with the next door maybe an hour away; at camp, in a
-    shop, or over the morning fire the night heals for free and the vial is
-    worth more unopened. So the morning never drinks, and the party walks
-    out of a fight patched up.
+    `drink` is for THE FIGHT'S OPENING ONLY -- `open_fight` passes it,
+    nothing else does (designer call, 2026-08-05, revising 2026-07-26). A
+    potion is drunk when steel is about to come out and the wound is
+    already there, never on the way out of a fight: after the last foe
+    falls the party can camp, and the night heals for free, so a vial
+    poured down a hero at a fight's END is one the morning would have
+    saved. Everywhere else -- loot, a purchase, a brew, the morning fire, a
+    hire, a departure -- the pass DEALS only.
 
     Drinking follows `wants_potion` (badly hurt / Winded) and
     `drinks_own_potions` (companions always; the PC only when they have no
@@ -7886,6 +7888,30 @@ def start_fight(h: Entity, log: list[str]) -> None:
               f"    {h.name} is helped back to their feet ({REVIVE_HP} HP).",
               fit_lines([f"{h.name} is helped back to",
                          f"their feet ({REVIVE_HP} HP)."]))
+
+
+def open_fight(party: list[Entity], log: list[str]) -> None:
+    """THE OPENING: everything the party does between 'there they are' and
+    the first blow. Per-hero prep (`start_fight`) for everyone still
+    standing, then the quartermaster pass WITH the drink -- the one place
+    that drinks on its own (2026-08-05).
+
+    The drink sits here and not at the fight's end because a wound carried
+    out of a fight is not urgent: the party can camp, and the night knits HP
+    back for free, so a vial poured down a hero on the way out is a vial
+    wasted. Carried INTO a fight the same wound is the thing that gets them
+    killed, and a companion who bleeds out with three potions in their pack
+    is a bug in the fiction, not a decision. Order matters: prep stands the
+    Down back up first, so the pass sees them at their real HP and can top
+    them off before the roster is read.
+
+    The played encounter paths (session.py) all open through here. The
+    sim / one-shot paths keep their own rest-time policy
+    (`auto_use_potions_on_rest`)."""
+    for h in party:
+        if not h.dead:
+            start_fight(h, log)
+    auto_potions(party, log, drink=True)
 
 
 def long_rest(party: list[Entity], clock: Clock, log: list[str],

@@ -1588,3 +1588,52 @@ chosen by the player, rather than rolled flavor) is a real question the
 session can take. Whether the rolled band should be weighted rather than
 uniform (the low levels are the played ones) is untested. The high bands
 themselves remain unplayed — that is what the start exists to fix.
+
+---
+
+## 2026-08-05 — The drink moves to the fight's opening
+
+**Where it started.** A player note, one sentence: the party auto-drinks
+potions after a fight, and that doesn't make sense. It doesn't. The
+quartermaster pass (2026-07-26) put the drink at a fight's END on the
+reasoning that a potion answers the wound the fight just opened and the
+next door may be an hour away. Played, the next thing after a fight is
+usually not a door — it is `camp --heal`, or the road, or the healer. So
+the pass was pouring a bought vial into a hero the NIGHT would have
+healed for free. The old doctrine's own argument ("the vial is worth
+more unopened when the night heals free") was aimed at the morning fire
+and the shop counter; nobody noticed it points at the fight's end just
+as hard.
+
+**The road.** Three options were weighed. (a) Never auto-drink: every
+drink a deliberate `use`. Clean, but it hands back exactly the
+bookkeeping the pass was built to remove, and a companion bleeding out
+with three potions in their pack is a bug in the fiction, not a
+decision. (b) Keep the fight-end drink but narrow it to companions:
+smallest change, keeps the waste. (c) Move the drink to the fight's
+OPENING. The wound the pass exists to answer is the one a hero carries
+INTO a fight, not out of one; and if the party camps, travels, or pays
+the healer in between, the vial is simply never spent.
+
+**Decided — (c).** `rpg.open_fight(party, log)` is the new party-level
+opening: prep every living hero (`start_fight`, revive-only), then the
+one drinking quartermaster pass. All seven played encounter openings go
+through it; the two fight-END sites (`finish_encounter`, `cmd_retreat`'s
+escape branch) deal only now, like every other trigger. `drink=True` has
+exactly one caller in the whole codebase, and `test_potions.py` pins
+that count in the source so the fence can't quietly widen again.
+
+**What it costs.** Almost nothing in the numbers where two fights run
+back to back — the same vial is spent, minutes later, and the standing
+orders still drink mid-fight at the wounds crossing. It saves the vial
+outright wherever a rest intervenes, which is most of the time. The one
+visible change at the table: a hurt party now READS hurt between fights.
+That is correct, and dm.md says so — don't prompt for a potion, and
+don't read a low HP line as a problem needing a vial now; `camp --heal`
+is the cheap answer, and the opening will spend the vial if the player
+walks into steel still bleeding.
+
+**Open.** Whether the opening drink makes the mid-fight standing-order
+drink (the wounds crossing) partly redundant is untested — both are
+cheap, and the redundancy only shows in a fight long enough to cross
+twice.

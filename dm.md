@@ -392,9 +392,9 @@ the player's core decision:
   small decisions, flavor -- their TRAITS are the material: a poetic
   whisperer and a swearing loudmouth should not read alike), but the player
   directs them *tactically* -- who they focus, whether they cast healing,
-  and their pause actions. (A companion's routine between-fights potion is
-  no longer one of those calls: the quartermaster pass drinks it -- see the
-  potion economy below.)
+  and their pause actions. (A companion's routine potion is no longer one
+  of those calls: the quartermaster pass drinks it as the next fight opens
+  -- see the potion economy below.)
 
 ## The party -- recruiting, satisfaction, departures
 
@@ -853,10 +853,10 @@ bigger than the fights WITHOUT pages of narration:
   the readout, don't convert it -- STA is STA, not "good swings left" --
   and never turn the check into roster talk about what waits inside. The
   choice stays theirs.
-- **Player decisions -- present, don't push:** drinking a potion the
-  quartermaster pass left alone (`use` -- the override, see the potion
-  economy above; the routine drink is automatic now and never worth a
-  prompt),
+- **Player decisions -- present, don't push:** drinking a potion between
+  fights instead of waiting for the next one to open it (`use` -- the
+  override, see the potion economy above; the routine drink runs itself at
+  the next fight's opening and is never worth a prompt),
   the healing spell (`heal`), making camp
   (`camp` -- the day's only recovery step now; the short rest is gone),
   paying for the tavern instead of
@@ -883,10 +883,11 @@ bigger than the fights WITHOUT pages of narration:
   list them as a terse display line ("options: camp, press in, buy steel"),
   not a paragraph weighing each. A read on them is given when
   the player asks for one: straight, a sentence or two, done. (A carried
-  potion is rarely one of those options -- at a fight's end the
-  quartermaster pass has already drunk it, and anything still in the pack
-  is either the PC's own call or being saved for the next fight on
-  purpose.)
+  potion is rarely one of those options -- a wound that still matters when
+  the next fight opens is drunk on there by the quartermaster pass, so a
+  vial still in the pack is either the PC's own call or a wound the night
+  will close for free. Don't prompt for it, and don't read a hurt hero
+  between fights as a problem needing a vial NOW.)
 - **The default night is "camp until as whole as the wilds allow" -- WITH
   NO JOB IN HAND.** When there is HP to heal, nothing is on the clock,
   and the player hasn't said otherwise, assume the party camps -- `camp
@@ -1122,17 +1123,22 @@ bigger than the fights WITHOUT pages of narration:
   at the next camp) -- a small pre-bought buffer for tomorrow's door.
 - **The QUARTERMASTER PASS runs itself.** Out of combat,
   every time the potion stock changes -- a `buy`, a `brew`, loot, the
-  overnight scrounge, a `use`, a hire, a departure, and at every fight's
-  end (retreat included) -- the party pools its healing potions and
-  stamina draughts and deals them out worst-off first and then in turn
-  (ties to the companions). A dead companion's vials are **taken up from
-  where they fell** and go back in the pool, like their quality steel.
-  **Drinking happens ONLY at a fight's end**, for anyone badly hurt (at
-  or below half HP) or Winded: at camp, over the morning fire, or at a
-  shop counter the pass only moves vials, because the night heals for
-  free and the potion is worth more unopened. The log prints the drinks
-  and one "shares out its potions" line; that display IS the report --
-  **do not narrate the hand-over or comment on it.** THE ONE EXCEPTION:
+  overnight scrounge, a `use`, a hire, a departure, at every fight's
+  end (retreat included), and as every fight OPENS -- the party pools its
+  healing potions and stamina draughts and deals them out worst-off first
+  and then in turn (ties to the companions). A dead companion's vials are
+  **taken up from where they fell** and go back in the pool, like their
+  quality steel.
+  **Drinking happens ONLY as a fight OPENS** (2026-08-05), for anyone
+  badly hurt (at or below half HP) or Winded: at camp, over the morning
+  fire, at a shop counter -- and at a fight's END -- the pass only moves
+  vials, because the party can camp from there and the night heals for
+  free, so the potion is worth more unopened. So the party walks OUT of a
+  fight carrying its wounds (that is correct, not a bug: `camp --heal` is
+  the cheap answer) and walks INTO the next one patched up. The log prints
+  the drinks and one "shares out its potions" line; that display IS the
+  report -- **do not narrate the hand-over or comment on it.** THE ONE
+  EXCEPTION:
   the player character does NOT auto-drink on a track they have their own
   answer for -- a PC who knows the **healing spell** keeps the wound
   decision, a PC who knows **War-Breath or Berserk** keeps the stamina
