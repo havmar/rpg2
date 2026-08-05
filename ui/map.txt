@@ -1,6 +1,5 @@
-RPG2 MAP -- day 3
-the party is at Ensimaa > Avelune River
-  > the outer grove > old trees
+RPG2 MAP -- day 4
+the party is at Ensimaa > Kervaine
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -30,10 +29,11 @@ the party is at Ensimaa > Avelune River
 
 == Ensimaa ==  <- here
   Avelune River (river, found day 1)
-    [recovering]  <- the party
+    [recovering]  (visited)
   Taivelle (capital) -- 5 job(s)
   Dunmaelle (town) -- 4 job(s)
-  Kervaine (town) -- 3 job(s)  (visited)
+  Kervaine (town) -- 4 job(s)  <- the
+    party
   Ruunamont (town) -- 4 job(s)
   Ailava (village) -- 2 job(s)
   Vaelora (village) -- 2 job(s)
@@ -56,3 +56,7 @@ the party is at Ensimaa > Avelune River
   Tumengal (village) -- 2 job(s)
   Borkal (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
+
+-- the war --
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Tomburgh.

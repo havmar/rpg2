@@ -1,6 +1,5 @@
-RPG2 PARTY SHEET -- day 3, at Ensimaa >
-  Avelune River > the outer grove > old
-  trees
+RPG2 PARTY SHEET -- day 4, at Ensimaa >
+  Kervaine
 purse: 43g
 party: 1/3 companion slot(s) filled (CHA
   6)
@@ -8,20 +7,19 @@ party: 1/3 companion slot(s) filled (CHA
 (YOU) Gardain -- dwarf m, age 22
   L2  training 0  XP 41/200  points 0
   DEX 5  STR 3  MIND 4  CHA 6
-  HP 3/11 of 12  STA 5/7  Power 1/3
-  light hammer | staminax1
+  HP 3/11 of 12  STA 7/7  Power 3/3
+  light hammer | healingx1, staminax1
   abilities: first_blood, survivalist
   pools bought: hp +1
   weakness: gambling; dress:
     professional; looks: beautiful
-  [poisoned -1 HP/round]
   - a shallow belly wound (sev 1)
   wound load 1 -> HP ceiling 11/12
 
 (companion) Ghor -- orc m, age 28
   L2  training 1  XP 41/200  points 1
   DEX 5  STR 6  MIND 6  CHA 4
-  HP 10/10  STA 4/6  Power 3/3
+  HP 10/10  STA 6/6  Power 3/3
   sling | staminax2
   abilities: bulwark
   satisfaction 8/10
@@ -33,3 +31,5 @@ active quest [q21] The Blighted Grove is
 THE PACT: assignment [q42] Kill the
   Priest at Kervaine (grace to take it
   runs to day 11).
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Tomburgh.
