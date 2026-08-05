@@ -9,6 +9,10 @@ lines are illustrative, not exact script output; their formats follow
 shape; prose is plain paragraphs, never hard-wrapped, with no markdown beyond
 structure. Swap `<branch>` for the current branch in the links.
 
+The chat message for turn 2 is turn 2's own text copied back verbatim --
+everything below its `>` line, down to (and not including) the footer --
+with the scene page's link on a final line under it.
+
 ---
 
 ## turn 1 (day 1)

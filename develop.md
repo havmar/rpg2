@@ -507,7 +507,10 @@ a pointer: what the file is, how it's run, where its docs are.
   them, `sheet` just commits them (`UI_COMMIT_PATHS`; dm.md, The scene
   page; the worked model is `scene-example.md`). Rendered markdown, not
   txt — the app character-wraps raw text blobs — with every display in
-  a code fence. All seven
+  a code fence. The page is the DRAFTING surface, not a substitute for
+  the chat: since 2026-08-05 the reviewed new turn is copied back into
+  the chat message verbatim, with the page link under it (the page
+  still holds the last three turns, rendered). All seven
   are **committed to the branch, not gitignored: they are the GitHub UI**
   (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
