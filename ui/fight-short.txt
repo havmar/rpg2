@@ -1,36 +1,55 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
+=== The Blighted Grove ===
+the outer grove (L1),
+room 1/2: grove edge
+Blighted Spider 1 -- fangs
+DEX 6  STR 2  STA 7  HP 6/6
+breaks when beaten, venomous
 Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
+Gardain uses First Blood!
+Blighted Spider 1 takes 1 dmg.
+The lines meet -- steel range.
+Ghor's sling stone misses Blighted Spider 1.
 Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+Gardain
+attacks Blighted Spider 1, parried.
+Blighted Spider 1 (5/6)
+overwhelms Gardain, deals 2 dmg!
+Gardain is poisoned (-1 HP/round).
+Gardain takes a wound:
+a shallow belly wound.
+Poisoned: Gardain -1.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
+Gardain (8/11)
+edges past Blighted Spider 1,
+deals 1 dmg.
+Ghor's sling stone
+outmaneuvers Blighted Spider 1,
+deals 2 dmg!
+Blighted Spider 1 (2/6)
+attacks Gardain, parried.
+Poisoned: Gardain -1.
+The beaten foes break and run!
+Gardain's parting blow at
+Blighted Spider 1 -- deflected.
+The survivors escape.
+The field belongs to the party.
 The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
+Gardain +28 XP (encounter) [28/100]
+Ghor +28 XP (encounter) [28/100]
+Loot: 5 gold (purse 5g).
+The party shares out its potions:
+Gardain: 1 healing, 1 stamina;
+Ghor: 2 stamina.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Gardain: Bloodied STA 6/7 Power 1/3
+  (hurt -1 to rolls)
+  [poisoned -1 HP/round]
+  - a shallow belly wound (sev 1)
+  (HP ceiling 10/11 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
+Ghor: Unhurt STA 5/6 Power 3/3
+  (stamina x2)
+Purse 5g; day 2.
+Ahead: 1 fight(s) at the outer grove; the turn-in pays 33g, 98 XP.
   (due day 7 -- 5 days left; quick pay, x1.15)

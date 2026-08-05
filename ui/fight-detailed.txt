@@ -1,46 +1,58 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
+=== The Blighted Grove -- the outer grove (L1), room 1/2: grove edge ===
+  Blighted Spider 1 -- fangs
+  DEX 6  STR 2  STA 7  HP 6/6
+  breaks when beaten, venomous
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
+    Gardain strikes before the lines meet -- First Blood! Blighted Spider 1 is grazed (-1 HP -> 5/6, -1 to rolls) [2 Power spent, 1 left]
+    Gardain, Blighted Spider 1 close the distance -- the lines meet!
+    Ghor sends a sling stone at Blighted Spider 1 -- who twists away.
+        pressure: Ghor: 9 (2d6=5, +5 AIM, -1 sling) vs Blighted Spider 1: 13 (2d6=8, +6 DEX, -1 wounds)
+    stamina: Gardain 7/7, Ghor 5/6 | Blighted Spider 1 7/7
   Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
-    *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Gardain attacks Blighted Spider 1 -- parried.
+        pressure: Gardain: 11 (2d6=6, +5 DEX) vs Blighted Spider 1: 12 (2d6=7, +6 DEX, -1 wounds)
+    Ghor works the sling's reload.
+    Blighted Spider 1 overwhelms Gardain -- a solid wound! [Gardain: 9/11 HP, -0 to rolls]
+        pressure: Blighted Spider 1: 15 (2d6=10, +6 DEX, -1 wounds) vs Gardain: 9 (2d6=4, +5 DEX)
+        severity: 4 = margin 6 +2 STR -4 soak -> wound (-2 HP)
+    Gardain is poisoned (-1 HP at the end of each round, until it is treated -- it does not stop with the fight)
+    Gardain takes a wound: a shallow belly wound (severity 1; HP ceiling 10/11)
+        conditions: Gardain -1 HP [poison 1] -> 8/11, -1 to rolls
+    Poisoned: Gardain -1.
+    stamina: Gardain 6/7, Ghor 5/6 | Blighted Spider 1 6/7
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Gardain edges past Blighted Spider 1 -- a graze! [Blighted Spider 1: 4/6 HP, -2 to rolls]
+        pressure: Gardain: 11 (2d6=7, +5 DEX, -1 wounds) vs Blighted Spider 1: 9 (2d6=4, +6 DEX, -1 wounds)
+        severity: 2 = margin 2 +3 STR -1 light hammer -2 soak -> graze (-1 HP)
+    Ghor's sling stone outmaneuvers Blighted Spider 1 -- a solid wound! [Blighted Spider 1: 2/6 HP, -4 to rolls]
+        pressure: Ghor: 15 (2d6=11, +5 AIM, -1 sling) vs Blighted Spider 1: 12 (2d6=8, +6 DEX, -2 wounds)
+        severity: 4 = margin 3 +3 sling -2 soak -> wound (-2 HP)
+    Blighted Spider 1 attacks Gardain -- parried.
+        pressure: Blighted Spider 1: 4 (2d6=2, +6 DEX, -4 wounds) vs Gardain: 14 (2d6=10, +5 DEX, -1 wounds)
+        conditions: Gardain -1 HP [poison 1] -> 7/11, -1 to rolls
+    Poisoned: Gardain -1.
+    stamina: Gardain 5/7, Ghor 4/6 | Blighted Spider 1 5/7
+    The beaten foe line breaks and runs!
+    Gardain edges past Blighted Spider 1, but the hurried blow at a fleeing back glances off -- deflected.
+        pressure: Gardain: 7 (2d6=3, +5 DEX, -1 wounds) vs Blighted Spider 1: 5 (2d6=5, +6 DEX, -4 wounds, -2 fleeing)
+        severity: 2 = margin 2 +3 STR -1 light hammer -2 soak -> graze -> a hurried blow at a fleeing back: deflected
+    the chase: flight 13.0 (2d6=5, +6.0 DEX STA-weighted, +2 head start) vs pursuit 10.0 (2d6=5, +5.0 DEX STA-weighted)
+    The survivors escape. The field belongs to the party.
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Gardain gains 28 XP (encounter) [28/100]
+    Ghor gains 28 XP (encounter) [28/100]
+    Loot: 5 gold (purse 5g).
+    The party shares out its potions -- Gardain: 1 healing, 1 stamina; Ghor: 2 stamina.
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Gardain: Bloodied STA 6/7 Power 1/3
+  (hurt -1 to rolls)
+  [poisoned -1 HP/round]
+  - a shallow belly wound (sev 1)
+  (HP ceiling 10/11 until they mend)
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
+Ghor: Unhurt STA 5/6 Power 3/3
+  (stamina x2)
+Purse 5g; day 2.
+Ahead: 1 fight(s) at the outer grove; the turn-in pays 33g, 98 XP.
   (due day 7 -- 5 days left; quick pay, x1.15)

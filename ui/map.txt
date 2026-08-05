@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Ensimaa > Kervaine
+RPG2 MAP -- day 2
+the party is at Ensimaa > Avelune River
+  > the outer grove > grove edge
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -28,10 +29,11 @@ the party is at Ensimaa > Kervaine
   Toralba (village) -- 2 job(s)
 
 == Ensimaa ==  <- here
+  Avelune River (river, found day 1)
+    [blighted]  <- the party
   Taivelle (capital) -- 5 job(s)
   Dunmaelle (town) -- 4 job(s)
-  Kervaine (town) -- 4 job(s)  <- the
-    party
+  Kervaine (town) -- 4 job(s)  (visited)
   Ruunamont (town) -- 4 job(s)
   Ailava (village) -- 2 job(s)
   Vaelora (village) -- 2 job(s)
@@ -54,3 +56,8 @@ the party is at Ensimaa > Kervaine
   Tumengal (village) -- 2 job(s)
   Borkal (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q21] The Blighted Grove (L1) @ Kervaine
+  - the outer grove (L1): here, room 2/2
