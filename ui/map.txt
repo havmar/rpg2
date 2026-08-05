@@ -1,6 +1,6 @@
-RPG2 MAP -- day 2
+RPG2 MAP -- day 3
 the party is at Ensimaa > Avelune River
-  > the outer grove > grove edge
+  > the outer grove > old trees
 (travel: 1 day within a land, 2 days to
   another)
 

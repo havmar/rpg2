@@ -1,6 +1,6 @@
-RPG2 PARTY SHEET -- day 2, at Ensimaa >
-  Avelune River > the outer grove >
-  grove edge
+RPG2 PARTY SHEET -- day 3, at Ensimaa >
+  Avelune River > the outer grove > old
+  trees
 purse: 5g
 party: 1/3 companion slot(s) filled (CHA
   6)
@@ -8,12 +8,12 @@ party: 1/3 companion slot(s) filled (CHA
 (YOU) Gardain -- dwarf m, age 22
   L1  training 0  XP 28/100  points 0
   DEX 5  STR 3  MIND 4  CHA 6
-  HP 7/10 of 11  STA 6/7  Power 1/3
+  HP 5/10 of 11  STA 6/7  Power 1/3
   light hammer | healingx1, staminax1
   abilities: first_blood
   weakness: gambling; dress:
     professional; looks: beautiful
-  [poisoned -1 HP/round]
+  [bleeding -1 HP/round]
   - a shallow belly wound (sev 1)
   wound load 1 -> HP ceiling 10/11
 
@@ -30,7 +30,9 @@ party: 1/3 companion slot(s) filled (CHA
 active quest: [q21] L1 The Blighted
   Grove -- next: the outer grove (L1),
   room 2/2
-  due day 7 -- 5 days left
+  due day 7 -- 4 days left
 THE PACT: assignment [q42] Kill the
   Priest at Kervaine (grace to take it
   runs to day 11).
+*** A FIGHT IS PAUSED -- resume or
+  retreat ***
