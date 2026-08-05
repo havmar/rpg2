@@ -2,7 +2,10 @@ RPG2 HISTORY -- day 3
 (what this campaign has done)
 
 -- QUESTS DONE --
-  (no job finished yet)
+day 3: [q21] The Blighted Grove (L1) --
+  done.
+  The blight is gone. New plants grow at
+    the edge of the grove.
 
 -- REMARKABLE --
   (nothing yet)
@@ -10,7 +13,7 @@ RPG2 HISTORY -- day 3
 -- THE TALLY OF SIN --
   (no crime committed yet)
   clean; heat 0
-  lifetime sin 0 / penance 28
+  lifetime sin 0 / penance 141
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

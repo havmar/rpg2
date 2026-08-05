@@ -30,10 +30,10 @@ the party is at Ensimaa > Avelune River
 
 == Ensimaa ==  <- here
   Avelune River (river, found day 1)
-    [blighted]  <- the party
+    [recovering]  <- the party
   Taivelle (capital) -- 5 job(s)
   Dunmaelle (town) -- 4 job(s)
-  Kervaine (town) -- 4 job(s)  (visited)
+  Kervaine (town) -- 3 job(s)  (visited)
   Ruunamont (town) -- 4 job(s)
   Ailava (village) -- 2 job(s)
   Vaelora (village) -- 2 job(s)
@@ -56,8 +56,3 @@ the party is at Ensimaa > Avelune River
   Tumengal (village) -- 2 job(s)
   Borkal (village) -- 2 job(s)
   Enkhar (village) -- 2 job(s)
-
--- quests in hand (where they lead) --
-
-[q21] The Blighted Grove (L1) @ Kervaine
-  - the outer grove (L1): here, room 2/2

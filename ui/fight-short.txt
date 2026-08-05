@@ -23,3 +23,68 @@ Blighted Spider 3 (5/6)
 attacks Gardain, parried.
 Bleeding: Gardain -1.
 == Gardain is badly cut up ==
+Round 3:
+Gardain downs a healing potion (0 left).
+Ghor's sling stone
+outmaneuvers Blighted Spider 3,
+deals 2 dmg!
+Blighted Spider 3 (3/6)
+edges past Gardain, deals 1 dmg.
+Gardain is poisoned (-1 HP/round).
+Bleeding, poisoned: Gardain -2.
+Round 4:
+Gardain (7/11)
+attacks Blighted Spider 3, parried.
+Blighted Spider 3 (3/6)
+edges past Gardain, deals 1 dmg.
+Bleeding, poisoned: Gardain -2.
+Round 5:
+Gardain (4/11)
+outmaneuvers Blighted Spider 3,
+deals 2 dmg!
+!! Ghor is Winded.
+Ghor's sling stone hisses past.
+!! Blighted Spider 3 is Winded.
+Blighted Spider 3 (1/6)
+attacks Gardain, parried.
+Bleeding, poisoned: Gardain -2.
+The beaten foes break and run!
+Gardain (2/11)
+outmaneuvers Blighted Spider 3,
+deals 1 dmg. It falls.
+The bleeding is stopped: Gardain.
+The party catches its breath (+1 STA)
+Gardain +28 XP (encounter) [56/100]
+Ghor +28 XP (encounter) [56/100]
+
+*** QUEST COMPLETE:
+The Blighted Grove -- the outer grove.
+Reward: 29 gold. ***
+Gardain talks the pay up:
++9g (38g in all).
+The party purse holds 43 gold.
+Gardain +85 XP (quest) [141/100]
+*** Gardain reaches level 2!
+(3 skill points unspent) ***
+Ghor +85 XP (quest) [141/100]
+*** Ghor reaches level 2!
+(3 skill points unspent) ***
+Ghor: satisfaction 7 -> 8/10
+(a job paid out)
+(turn in to
+Galinndan, the head warden --
+narrate the scene)
+EPILOGUE (day 3): The blight is gone. New plants grow at the edge of the grove.
+Ghor trains: combat rank 1
+[1 point(s) left]
+
+-- the party --
+Gardain: Failing STA 5/7 Power 1/3
+  (hurt -3 to rolls)
+  [poisoned -1 HP/round]
+  - a shallow belly wound (sev 1)
+  (HP ceiling 10/11 until they mend)
+  (stamina x1)
+Ghor: Unhurt STA 4/6 Power 3/3
+  (stamina x2)
+Purse 43g; day 3.
