@@ -1409,13 +1409,19 @@ into chat with the page link under it. The order is the whole point —
 the chat copy is a copy of committed text, never a first draft, or the
 detour buys nothing.
 
-Copied back: the new turn only, everything below its `>` line, prose and
-fences and inline links as committed. Left off: the turn heading, the
-quote of the player's own input, the two lookback turns, the standing
-footer — the chat already has those or reaches them through the link.
-The page remains the pinned, rendered, scrollable record of the last
-three turns and the front door to party | map | history; the chat is
-where the newest scene is read. Duplication between the two is the
-feature, not waste: they are identical by construction, and a fix after
-posting is an edit plus a plain correction line, never a silent
-divergence.
+Copied back: the turn's text, everything between the `>` line and the
+footer, prose and fences and inline links as committed. Left off: the
+turn heading, the quote of the player's own input, the standing footer —
+the chat already has those or reaches them through the link.
+
+**And the page drops to ONE turn.** Session B gave it a three-turn tail
+because the chat had nothing in it: the page had to carry the lookback.
+With the turn back in chat, the scrollback IS the lookback, and keeping
+three turns on the page would mean the same text sitting in both places
+two and three times over. So `ui/scene.md` is rewritten whole each
+message and holds the current turn alone — rendered, wide-screen and
+phone-legible, with the party | map | history footer. `ui/transcript.md`
+was always the full record and now carries that job unshared. What is
+left is one turn duplicated between chat and page, which is the point,
+not waste: identical by construction, so a fix after posting is an edit
+plus a plain correction line, never a silent divergence.

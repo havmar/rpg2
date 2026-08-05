@@ -72,10 +72,11 @@ only the FINISHED text is spoken in chat. The point of the detour is
 REVISION: a page can be reread and edited before the player sees it, a
 chat message cannot -- and the style drift of a long session is caught
 in that reread. The page is written, reviewed, committed, and THEN the
-new turn is copied back into chat verbatim, with the page's link under
-it. So the player reads the scene where they are -- in the chat, with
-no tab to open -- and the page stays the pinned, rendered, scrollable
-record of the last three turns.
+turn is copied back into chat verbatim, with the page's link under it.
+So the player reads the scene where they are -- in the chat, with no
+tab to open -- and the page holds THAT ONE TURN, rendered, for the
+phone, the wide screen, and the footer links. The chat scrollback is
+the lookback; the page has no reason to repeat it.
 
 - **Draft, review, commit, then copy back.** Write the full message
   into `ui/scene.md`, reread the draft against `writing.md` (its Final
@@ -89,14 +90,13 @@ record of the last three turns.
   If a fix occurs to you after pasting, edit the page, `sheet` again,
   and say the correction in a plain line -- do not silently diverge
   the two.
-- **What gets copied: the new turn's DM text, and nothing else.**
-  Paste everything below the newest turn's `>` line -- prose, code
+- **What gets copied: the turn's DM text, and nothing else.**
+  Paste everything between the `>` line and the footer -- prose, code
   fences, the inline fight-log link -- exactly as committed. Leave OUT
-  the `## turn` heading, the `>` quote of the player's own words, the
-  two lookback turns, and the standing footer: the chat has all of
-  that already or gets it from the link. Then the link on its own
-  final line. The two texts are identical by construction; never
-  reword one for the other.
+  the `## turn` heading, the `>` quote of the player's own words, and
+  the standing footer: the chat has all of that already or gets it
+  from the link. Then the link on its own final line. The two texts
+  are identical by construction; never reword one for the other.
 - **Format: rendered Markdown, structure only.** Raw text has no good
   reading surface (the phone app breaks words at the margin; 40-column
   text is a ribbon on a PC), so the page is `.md` and is read RENDERED,
@@ -110,11 +110,9 @@ record of the last three turns.
   the fiction -- the voice does the work (writing.md). Never hard-wrap
   prose; escape a literal `*` or `_` if the fiction ever needs one;
   keep everything ASCII.
-- **Structure: the page is the transcript's tail.** The page carries
-  the last THREE turns, chronological, newest at the bottom -- the
-  player's latest words sit directly above the newest scene, and the
-  two turns before them are the lookback. A turn is one exchange, in
-  this shape:
+- **Structure: the page is the CURRENT turn.** It is rewritten whole
+  every message and holds one exchange -- the turn the player is
+  reading right now, nothing older. The whole shape:
 
       ## turn 14 (day 3)
 
@@ -129,9 +127,10 @@ record of the last three turns.
   a record worth reading. The pinned page is the player's front door;
   the footer is how they hop to the boards.
 - **`ui/transcript.md` is the full record**: every turn appended in
-  the same shape, never rewritten. What falls off the scene page stays
-  here. `new` starts both files fresh -- the old game lives on in its
-  own branch.
+  the same shape, never rewritten. The scene page keeps only the
+  newest turn, so the transcript is where the game's past lives -- the
+  page's history and yours. `new` starts both files fresh -- the old
+  game lives on in its own branch.
 - **End-of-message order, every message:** finish the commands, write
   `ui/scene.md`, append the new turn to `ui/transcript.md`, run
   `python session.py sheet` (it commits both with the other pages),
