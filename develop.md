@@ -120,8 +120,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the roadmap: planned features only**, in build order (next
-  up: the levelling framework — points, abilities, moves, alchemy; the
-  2026-07-16 spec lives there), plus parked ideas and open questions.
+  up: the world & NPC simulation thread — the 2026-08-05 framing and its
+  two ready specs live there), plus parked ideas and open questions.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
