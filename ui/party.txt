@@ -6,36 +6,38 @@ party: 1/3 companion slot(s) filled (CHA
   6)
 
 (YOU) Imsh -- orc m, age 29
-  L11  training 3  XP 0/1100  points 1
-  DEX 4  STR 5  MIND 6  CHA 6
-  HP 14/14  STA 6/10  Power 2/10
-  cruel katana | healingx1, staminax1
+  L11  training 3  XP 169/1100  points 1
+  DEX 3  STR 5  MIND 6  CHA 6
+  HP 9/12 of 14  STA 7/10  Power 0/10
+  cruel katana | no kit
   spells: ice 2, invisibility 1,
     possession 1
   pools bought: hp +5, power +5, sta +5
+  - a cut through the palm (sev 2)
+  wound load 2 -> HP ceiling 12/14
 
 (companion) Urzoth -- orc f, age 29
-  L11  training 3  XP 0/1100  points 0
-  DEX 3  STR 5  MIND 3  CHA 4
-  HP 5/12 of 17  STA 7/10  Power 9/11
-  zweihander, prof 2 | healingx1,
-    staminax1
+  L11  training 3  XP 169/1100  points 0
+  DEX 3  STR 4  MIND 3  CHA 4
+  HP 9/11 of 17  STA 4/10  Power 9/11
+  zweihander, prof 2 | staminax1
   abilities: bulwark
   pools bought: hp +5, power +5, sta +5
-  satisfaction 7/10
+  satisfaction 6/10
   background: craftsman; voice:
     mumbling; dress: luxurious
   - a torn side, badly closed (sev 3)
   - a cracked skull (sev 2)
-  wound load 5 -> HP ceiling 12/17
+  - a cut across the left forearm (sev
+    1)
+  wound load 6 -> HP ceiling 11/17
 
 active quest: [q20] L11 Rogue Wardens --
-  next: the forest road (L11), room 1/2
+  next: the forest road (L11), room 2/2
   due day 6 -- 5 days left
+sin: sin 4/1100; heat 0 -- lying low
 THE PACT: assignment [q42] Guard the
   Cultists at Dunmaelle (grace to take
   it runs to day 11).
 THE WAR: [w1] L2 Stolen Parts -- raised
   at Tomburgh.
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***

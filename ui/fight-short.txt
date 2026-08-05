@@ -64,3 +64,79 @@ deals 4 dmg!!
 Urzoth takes a wound:
 a torn side, badly closed.
 == Urzoth is badly cut up ==
+Round 5:
+Urzoth downs a healing potion (0 left).
+Imsh's ice bolt is deflected.
+Forest Champion 3 outmaneuvers Urzoth,
+deals 4 dmg!!
+Round 6:
+!! Imsh's ice bolt MISFIRES
+(-1 HP to the caster)
+Urzoth (6/17)
+attacks Forest Champion 3, parried.
+!! Forest Champion 3 is Winded.
+Forest Champion 3 edges past Urzoth,
+deals 2 dmg!
+Urzoth takes a wound:
+a cut across the left forearm.
+Round 7: nothing lands.
+Round 8:
+!! Imsh is Winded.
+Imsh (13/14)
+outmaneuvers Forest Champion 3,
+deals 2 dmg!
+Forest Champion 3 is bleeding
+(-1 HP/round).
+Urzoth (4/17)
+attacks Forest Champion 3, parried.
+Forest Champion 3 (15/17)
+edges past Imsh, deals 2 dmg!
+Imsh takes a wound: a split knuckle.
+Bleeding: Forest Champion 3 -1.
+Round 9:
+Imsh and Forest Champion 3: Clash!
+!! Urzoth is Winded.
+Urzoth (4/17)
+edges past Forest Champion 3,
+deals 2 dmg!
+!! Forest Champion 3 is SPENT.
+Forest Champion 3 (12/17)
+edges past Imsh, deals 2 dmg!
+Imsh takes a wound:
+a cut through the palm.
+Bleeding: Forest Champion 3 -1.
+The beaten foes break and run!
+The survivors escape.
+The field belongs to the party.
+The party catches its breath (+1 STA)
+Imsh +169 XP (encounter) [169/1100]
+Urzoth +169 XP (encounter) [169/1100]
+Left among the dead:
+2x longsword (+0 atk/+1 sev, 15g).
+(the cruel katana drinks its kills: +4 sin -- sin 4/1100; heat 0 -- lying low)
+Urzoth: satisfaction 7 -> 6/10
+(badly bloodied)
+Imsh downs a stamina draught: STA 7/10
+(0 left).
+Urzoth drinks a healing potion: HP 9/17
+(0 left).
+The party shares out its potions:
+Urzoth: 1 stamina.
+
+-- the party --
+Imsh: Scratched STA 7/10 Power 0/10
+  (hurt -1 to rolls)
+  - a cut through the palm (sev 2)
+  (HP ceiling 12/14 until they mend)
+  (no kit)
+Urzoth: Scratched STA 4/10 Power 9/11
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - a cracked skull (sev 2)
+  - a cut across the left forearm (sev 1)
+  (HP ceiling 11/17 until they mend)
+  (stamina x1)
+Purse 644g; day 1.
+Sin: sin 4/1100; heat 0 -- lying low.
+Ahead: 1 fight(s) at the forest road; the turn-in pays 365g, 583 XP.
+  (due day 6 -- 5 days left; quick pay, x1.15)
