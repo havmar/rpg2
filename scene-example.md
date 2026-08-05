@@ -2,12 +2,18 @@
 
 A reference model, not live game state: two turns in writing.md's voice and
 dm.md's scene-page format -- a game start, then the fight turn that follows
-it. Below the rule is exactly what `ui/scene.md` would show after turn 2 of a
-real game (the page keeps the last three turns, oldest first). The engine
-lines are illustrative, not exact script output; their formats follow
-`ui/fight-short.txt`. Displays sit in code fences at their printed 40-column
-shape; prose is plain paragraphs, never hard-wrapped, with no markdown beyond
-structure. Swap `<branch>` for the current branch in the links.
+it. `ui/scene.md` holds ONE turn, rewritten whole every message, so the two
+sections below the rule are two successive states of the page, not one page:
+the first is the whole file after turn 1, the second replaces it after turn 2.
+The engine lines are illustrative, not exact script output; their formats
+follow `ui/fight-short.txt`. Displays sit in code fences at their printed
+40-column shape; prose is plain paragraphs, never hard-wrapped, with no
+markdown beyond structure. Swap `<branch>` for the current branch in the
+links.
+
+Each turn's chat message is that turn's own text copied back verbatim --
+everything between the `>` line and the footer -- with the scene page's link
+on a final line under it.
 
 ---
 
@@ -43,6 +49,10 @@ A letter finds you at the fountain. Black wax, no courier in sight. Work from be
 ```
 
 What do you do?
+
+[party](https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt)
+
+---
 
 ## turn 2 (day 1)
 

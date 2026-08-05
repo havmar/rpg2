@@ -197,7 +197,8 @@ a pointer: what the file is, how it's run, where its docs are.
   `python -m unittest -v test_ui_logs.py`.
 - `scene-example.md` — **the worked scene-page model** (2026-08-05): a game
   start and a fight turn in writing.md's voice and dm.md's scene-page format
-  (the three-turn page, fenced displays, the start+link+end fight shape).
+  (the one-turn page shown in two successive states, fenced displays, the
+  start+link+end fight shape).
   Referenced by dm.md and writing.md; it is play-facing copy, so it follows
   the page rules itself (displays fenced at 40 columns, prose unwrapped,
   markdown for structure only, ASCII).
@@ -502,12 +503,16 @@ a pointer: what the file is, how it's run, where its docs are.
   **`ui/fight-detailed.txt`** (every roll and modifier). A new encounter
   replaces them; resume/retreat appends to the paused encounter. Since
   2026-08-05 the DM's message itself is a page too: **`ui/scene.md`**
-  (the last three turns, newest at the bottom) and **`ui/transcript.md`**
+  (the current turn, rewritten whole) and **`ui/transcript.md`**
   (the append-only play log) are DM-AUTHORED — the engine never writes
   them, `sheet` just commits them (`UI_COMMIT_PATHS`; dm.md, The scene
   page; the worked model is `scene-example.md`). Rendered markdown, not
   txt — the app character-wraps raw text blobs — with every display in
-  a code fence. All seven
+  a code fence. The page is the DRAFTING surface, not a substitute for
+  the chat: the reviewed turn is copied back into the chat message
+  verbatim, with the page link under it, and the page keeps that one
+  turn only — the chat scrollback is the lookback, the transcript is
+  the record. All seven
   are **committed to the branch, not gitignored: they are the GitHub UI**
   (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):

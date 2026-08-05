@@ -34,7 +34,8 @@ play.
   rewrites **`ui/fight-short.txt`** (the displayed last fight) and
   **`ui/fight-detailed.txt`** (its full mechanics record). Two pages are
   YOURS to write, not the engine's: **`ui/scene.md`** (the DM message
-  itself -- see The scene page below) and **`ui/transcript.md`** (the
+  itself, drafted and reviewed there before it is said in chat -- see
+  The scene page below) and **`ui/transcript.md`** (the
   append-only play log behind it). A further page,
   **`ui/minimap.txt`**, is planned for local Site/Room detail but is not built
   yet; `look` is the local display meanwhile. **End EVERY DM message with
@@ -46,8 +47,8 @@ play.
 - **GitHub IS the player's UI.** The pages are committed to the branch,
   so the player and DM can read them as blob pages. The one the player
   lives on is **`ui/scene.md`** -- kept open on a phone and refreshed
-  after every turn; the scene link posted in chat each message (see The
-  scene page below) is the clickable way back in, and the page's own
+  after every turn; the scene link posted under every chat message (see
+  The scene page below) is the clickable way back in, and the page's own
   footer links reach the rest: `ui/party.txt` (the between-fights
   board), `ui/map.txt` (where they are and where their taken jobs
   lead), and `ui/history.txt` once the campaign has a record worth
@@ -66,21 +67,36 @@ play.
 
 ## The scene page -- the DM message is a file
 
-The chat is not where the game is told. **Everything you would say as DM
-goes into `ui/scene.md`**; your chat message is ONE line -- the scene
-page's blob link. The player's inputs stay in chat; the game's prose
-lives on the page. The point of the detour is REVISION: a page can be
-reread and edited before the player sees it, a chat message cannot --
-and the style drift of a long session is caught in that reread.
+**Everything you would say as DM goes into `ui/scene.md` first**, and
+only the FINISHED text is spoken in chat. The point of the detour is
+REVISION: a page can be reread and edited before the player sees it, a
+chat message cannot -- and the style drift of a long session is caught
+in that reread. The page is written, reviewed, committed, and THEN the
+turn is copied back into chat verbatim, with the page's link under it.
+So the player reads the scene where they are -- in the chat, with no
+tab to open -- and the page holds THAT ONE TURN, rendered, for the
+phone, the wide screen, and the footer links. The chat scrollback is
+the lookback; the page has no reason to repeat it.
 
-- **Draft, then review, then commit.** Write the full message into
-  `ui/scene.md`, reread the draft against `writing.md` (its Final
+- **Draft, review, commit, then copy back.** Write the full message
+  into `ui/scene.md`, reread the draft against `writing.md` (its Final
   check is the checklist), and edit what fails it -- register, stray
   formatting, prose restating a display. Gameplay
   inconsistencies (a contradicted fact, a wrong name, a scene that
   ignores where the party stands) are caught and edited the same way.
-  Only then run `sheet`. A page shipped without the reread defeats the
-  design.
+  Only then run `sheet`, and only then paste. A page shipped without
+  the reread defeats the design, and so does a chat message written
+  before the reread: **the chat copy is a COPY, never a first draft.**
+  If a fix occurs to you after pasting, edit the page, `sheet` again,
+  and say the correction in a plain line -- do not silently diverge
+  the two.
+- **What gets copied: the turn's DM text, and nothing else.**
+  Paste everything between the `>` line and the footer -- prose, code
+  fences, the inline fight-log link -- exactly as committed. Leave OUT
+  the `## turn` heading, the `>` quote of the player's own words, and
+  the standing footer: the chat has all of that already or gets it
+  from the link. Then the link on its own final line. The two texts
+  are identical by construction; never reword one for the other.
 - **Format: rendered Markdown, structure only.** Raw text has no good
   reading surface (the phone app breaks words at the margin; 40-column
   text is a ribbon on a PC), so the page is `.md` and is read RENDERED,
@@ -94,11 +110,9 @@ and the style drift of a long session is caught in that reread.
   the fiction -- the voice does the work (writing.md). Never hard-wrap
   prose; escape a literal `*` or `_` if the fiction ever needs one;
   keep everything ASCII.
-- **Structure: the page is the transcript's tail.** The page carries
-  the last THREE turns, chronological, newest at the bottom -- the
-  player's latest words sit directly above the newest scene, and the
-  two turns before them are the lookback. A turn is one exchange, in
-  this shape:
+- **Structure: the page is the CURRENT turn.** It is rewritten whole
+  every message and holds one exchange -- the turn the player is
+  reading right now, nothing older. The whole shape:
 
       ## turn 14 (day 3)
 
@@ -113,17 +127,20 @@ and the style drift of a long session is caught in that reread.
   a record worth reading. The pinned page is the player's front door;
   the footer is how they hop to the boards.
 - **`ui/transcript.md` is the full record**: every turn appended in
-  the same shape, never rewritten. What falls off the scene page stays
-  here. `new` starts both files fresh -- the old game lives on in its
-  own branch.
+  the same shape, never rewritten. The scene page keeps only the
+  newest turn, so the transcript is where the game's past lives -- the
+  page's history and yours. `new` starts both files fresh -- the old
+  game lives on in its own branch.
 - **End-of-message order, every message:** finish the commands, write
   `ui/scene.md`, append the new turn to `ui/transcript.md`, run
   `python session.py sheet` (it commits both with the other pages),
-  then post the link in chat (swap in the branch):
+  then post in chat: the new turn's text as committed, and under it
+  the link (swap in the branch):
   `https://github.com/havmar/rpg2/blob/<branch>/ui/scene.md`
-  Nothing else goes in the chat message. Out-of-game talk -- errors,
-  design questions when the player raises them -- stays in chat and
-  never on a page.
+  Nothing else goes in the chat message -- no preamble, no note on
+  what you edited, no design talk. Out-of-game talk -- errors, design
+  questions when the player raises them -- stays in chat and never on
+  a page.
 - **`scene-example.md` is the worked model** (a game start and a
   fight turn, in this format and writing.md's voice). Imitate its
   shape when in doubt.

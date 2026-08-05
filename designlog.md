@@ -1392,3 +1392,36 @@ emphasis, unwrapped, ASCII. The engine's own pages stay .txt: they
 are pure displays and the code view suits them. scene-example.md
 reworked to match; dm.md, writing.md, develop.md, AGENTS.md,
 `UI_COMMIT_PATHS` and its test renamed along.
+
+## 2026-08-05 (session D) — The scene page copies back to chat
+
+Sessions B and C moved the DM's message onto a page for ONE reason: a
+file can be reread and edited before the player sees it, a chat message
+cannot. The side effect was not intended — the chat went silent, one
+bare link per turn, and the player had to leave the conversation to read
+the game. The revision workflow was the goal; the empty chat was the
+price, and it turns out nothing charges it.
+
+So the page keeps its job as the drafting and review surface, and the
+finished turn is copied back: write `ui/scene.md`, reread it against
+writing.md's Final check, edit, `sheet`, THEN paste the new turn's text
+into chat with the page link under it. The order is the whole point —
+the chat copy is a copy of committed text, never a first draft, or the
+detour buys nothing.
+
+Copied back: the turn's text, everything between the `>` line and the
+footer, prose and fences and inline links as committed. Left off: the
+turn heading, the quote of the player's own input, the standing footer —
+the chat already has those or reaches them through the link.
+
+**And the page drops to ONE turn.** Session B gave it a three-turn tail
+because the chat had nothing in it: the page had to carry the lookback.
+With the turn back in chat, the scrollback IS the lookback, and keeping
+three turns on the page would mean the same text sitting in both places
+two and three times over. So `ui/scene.md` is rewritten whole each
+message and holds the current turn alone — rendered, wide-screen and
+phone-legible, with the party | map | history footer. `ui/transcript.md`
+was always the full record and now carries that job unshared. What is
+left is one turn duplicated between chat and page, which is the point,
+not waste: identical by construction, so a fix after posting is an edit
+plus a plain correction line, never a silent divergence.
