@@ -149,10 +149,16 @@ a pointer: what the file is, how it's run, where its docs are.
   (2026-08-05, THE WORLD & NPC SIMULATION thread): the record kinds
   (fact / option / state / card / relation), the wealth roll and the
   per-land crisis decks, the lazy-generation requirements, the
-  need-to-exist settlement model, the weather system sketch, and the
+  need-to-exist settlement model, the weather system sketch, the
   six curated land economy packets (designer-authored,
   assistant-classified; additions marked [PROPOSED] for the designer
-  to cut). Pre-implementation — plan.md's design session consumes it;
+  to cut), and — since 2026-08-06 — THE RULER CHARACTER, the politics
+  dump's person half: the rollable trait sheet (axes with unnamed
+  neutral middles, flags, the moral-tag consistency rule and derived
+  `heart`, the 3-5 trait window, scope marks), its annotated merge
+  ledger over the designer's historical-monarch catalog, and the
+  empty probability columns a parallel monarch-dataset session
+  fills. Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,

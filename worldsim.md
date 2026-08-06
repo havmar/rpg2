@@ -4,7 +4,8 @@ The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
 build order and the design-session agenda; designlog's 2026-08-05
 entries own the reasoning; THIS file holds the pre-implementation
 material — the record framework the design session will formalize, the
-weather system sketch, and the curated land economy packets. Nothing
+weather system sketch, the curated land economy packets, and the ruler
+character schema (the politics dump's person half, 2026-08-06). Nothing
 here is shipped. When a piece ships, its rules move to rules.md and
 its entry here is cut (the plan.md convention).
 
@@ -346,12 +347,324 @@ Sillon industriel analogue: crowded, industrial, chaotic.
 
 ---
 
+## THE RULER CHARACTER — the politics dump, part 1: the person (2026-08-06)
+
+The politics layer's first half: WHO holds power, as a rollable
+character schema. The other half — authority KIND, standing tension,
+and the wiring of a person's traits into cards — stays with the
+design session's identity-schema agenda. Provenance: the designer's
+historical-monarch trait catalog (~130 raw entries across ten
+headings), merged and classified this session; a parallel session is
+coding a dataset of real European monarchs against this sheet to
+produce the probability column. This section fixes only the SHAPE —
+no probabilities, by directive.
+
+What a ruler's traits are FOR — the merge criterion used throughout:
+political land identity, possible PC interaction, and rumor fuel. A
+trait that cannot show up through one of the six outlets was cut or
+merged (the characteristic criterion applied to people).
+
+### The shape
+
+- **Axes and flags.** An AXIS is two named poles around an unnamed
+  neutral middle (doting — silence — harsh at home); a FLAG is one
+  named pole and silence (an art patron exists; a hater-of-arts does
+  not). Neutral is NEVER mentioned in play — neutral is silence.
+- **The trait list is words.** A rolled character stores its named
+  poles and flags in one flat `traits` list — pole names are unique
+  across the whole vocabulary, so a card or rumor line can admit on
+  a bare word (`"cruel" in ruler["traits"]`). Only two companion
+  keys exist: derived `heart` (below) and `puppeteer` (only beside
+  `puppet`).
+- **Count.** Rulers carry 3-5 named traits, center-weighted on 4;
+  lesser named authorities (a lord, a sheriff, a guild master) carry
+  1-3, center 2. The roll is per-axis independent against the
+  probability sheet, then CLAMPED to the window: short characters
+  top up with weighted draws from the unrolled axes, long ones drop
+  overflow at random. Because the dataset's marginals describe real
+  monarchs — who each support far more than four adjectives — the
+  sheet's percentages pass through one global scale knob, tuned so
+  the expected named count lands near the window's center. The
+  dataset supplies RELATIVE frequency; the knob supplies volume.
+- **Scope.** Nearly the whole vocabulary applies to ANY authority —
+  deliberate, so one sheet rolls a king, a border lord, and a
+  toll-sheriff (the settlement authority the identity schema needs).
+  The `crown` scope marks the exceptions; the finding is that there
+  is almost none (itinerant alone).
+- **Extreme steps.** A pole may carry one rarer EXTREME variant that
+  occupies the same axis slot (a zealot IS devout, further out). The
+  sheet demonstrates the mechanism once — faith's zealot row — and
+  extremity is otherwise priced by the probability column alone:
+  the dramatic words stay in the vocabulary, their cells just stay
+  small.
+- **Tribes later.** Orcish (and any tribal) societies will reword or
+  zero some axes; per-race probability columns are the intended
+  mechanism, deferred by directive. The dataset's European monarchs
+  fill the HUMAN-CROWN baseline column.
+
+### Consistency — three rules, no engine
+
+1. **One pole per axis** — structural; the roll picks at most one.
+2. **Moral tags.** Nine poles are tagged `good` or `dark` (marked in
+   the sheet). A character never holds both a good-tagged and a
+   dark-tagged trait: honorable and harsh-at-home do not meet in one
+   person, however historical the combination — a four-word
+   character must read as ONE person. Untagged traits mix freely
+   with either side (grasping + honorable is a real king; lecherous
+   + merciful is fine). `heart` is DERIVED, never rolled: any
+   dark-tagged trait makes it `dark`, any good-tagged `good`,
+   neither `mixed`. Heart stays hidden in play, and it is the crime
+   layer's desert anchor (jerkify: sin books lighter against the
+   dark-hearted crown, heavier against the good one).
+3. **Row exclusions.** A handful of `never with` notes on the flag
+   sheet (gifted x spell-fearing, mad x troubled), plus one cap: at
+   most TWO afflictions (sickly / drunkard / troubled / mad) on one
+   character — a pile-up reads as parody.
+
+Implementation note for the roll: evaluate axes in a per-character
+shuffled order, so skip-on-conflict does not systematically starve
+the sheet's later rows.
+
+### The fill sheet — axes
+
+One row per axis; each named pole gets a probability cell; neutral is
+the unwritten remainder (100 - %A - %B). The dataset session codes
+each monarch per axis as A / neutral / B and each flag as yes/no; the
+cell is the share of monarchs. Tags ride the pole word.
+
+| axis      | pole A            | %A | pole B               | %B | scope |
+|-----------|-------------------|----|----------------------|----|-------|
+| ambition  | ambitious         |    | content              |    | any   |
+| industry  | tireless          |    | idle                 |    | any   |
+| nerve     | bold              |    | craven               |    | any   |
+| trust     | trusting          |    | suspicious           |    | any   |
+| mercy     | merciful (good)   |    | cruel (dark)         |    | any   |
+| honor     | honorable (good)  |    | faithless (dark)     |    | any   |
+| purse     | austere           |    | lavish               |    | any   |
+| greed     | openhanded (good) |    | grasping             |    | any   |
+| faith     | devout            |    | godless              |    | any   |
+| faith+    | zealot (extreme step: counts as devout) | | |    | any   |
+| rule      | lawful (good)     |    | arbitrary (dark)     |    | any   |
+| custom    | traditionalist    |    | reformer             |    | any   |
+| door      | accessible        |    | walled               |    | any   |
+| appetites | chaste            |    | lecherous            |    | any   |
+| hearth    | doting (good)     |    | harsh at home (dark) |    | any   |
+| strangers | welcoming         |    | race-proud           |    | any   |
+| sorcery   | spell-friendly    |    | spell-fearing        |    | any   |
+| war       | martial           |    | unblooded            |    | any   |
+| wits      | brilliant         |    | dull                 |    | any   |
+| looks [PROPOSED] | striking   |    | ill-favored          |    | any   |
+
+### The fill sheet — flags
+
+| flag         | % | scope | never with    |
+|--------------|---|-------|---------------|
+| charismatic  |   | any   |               |
+| witty        |   | any   |               |
+| cultivated   |   | any   |               |
+| tinkerer     |   | any   |               |
+| populist     |   | any   |               |
+| nepotist     |   | any   |               |
+| puppet       |   | any   |               |
+| itinerant    |   | crown |               |
+| trade-minded |   | any   |               |
+| gifted       |   | any   | spell-fearing |
+| sickly       |   | any   |               |
+| drunkard     |   | any   |               |
+| troubled     |   | any   | mad           |
+| mad          |   | any   | troubled      |
+
+Affliction cap: at most two of sickly / drunkard / troubled / mad.
+
+### The vocabulary, annotated (the merge ledger)
+
+The dataset session codes monarchs against THIS list; each entry
+names what it absorbed from the raw catalog and what it feeds. Pole
+words are idea-level — the writing.md pass happens at implementation.
+
+- **ambition** (ambitious / content): absorbs expansionist,
+  persistent claimant, warlike-as-policy; defensive-minded and
+  peace-seeking fold into content. Feeds the war layer's aggressor
+  logic, border cards, usurpation rumor.
+- **industry** (tireless / idle): absorbs diligent, disciplined,
+  hands-on, micromanaging; indolent, neglectful. Whether the realm
+  is actually governed; idle beside any strong minister is a
+  who-rules story without needing the puppet flag.
+- **nerve** (bold / craven): absorbs courageous, personally
+  valorous; timid. Reckless/cautious commander are combo readings
+  with martial, not entries. How the ruler answers a threat —
+  including one the PC delivers.
+- **trust** (trusting / suspicious): absorbs extreme suspiciousness
+  (the far end of the same pole); naive folds into trusting, with
+  dull nearby when rolled. Purge and spy rumor, betrayal cards,
+  whether the PC's word is taken.
+- **mercy** (merciful / cruel): absorbs vindictive, ruthless,
+  tolerates-suffering. Jerkify desert, punishments as sights,
+  revolt cards.
+- **honor** (honorable / faithless): absorbs oath-breaking,
+  deceitful, scapegoating on the faithless side; loyal-to-servants
+  on the honorable side. Whether a promised reward is real — the
+  most directly PC-facing axis on the sheet.
+- **purse** (austere / lavish): absorbs extravagant, profligate,
+  propagandistic display; fiscally prudent. Treasury cards (debt,
+  the tax turn), what the court LOOKS like on arrival.
+- **greed** (openhanded / grasping): absorbs generous patron;
+  corrupt/venal, taxing aggressively. Deliberately separate from
+  purse: purse is what he spends on himself, greed is what he takes
+  from others — the miser-taker and the spendthrift-giver are both
+  real. Bribery terms on the priced menu, reward flavor. Grasping
+  is left untagged on purpose: the honest miser king exists.
+- **faith** (devout / godless; extreme step: zealot): absorbs
+  personally devout, publicly pious, providential; religiously
+  indifferent. Zealot absorbs zealous and religious dogmatism.
+  Clerical deference/assertion is cut as derived (faith x industry
+  covers the readable cases). Temple authority relations, the
+  templar move, persecution cards — and hell-pact resonance.
+- **rule** (lawful / arbitrary): absorbs legalistic; autocratic,
+  tyrannical (tyranny = arbitrary + cruel, a combo reading). What
+  justice the PC faces; seizure and rights cards.
+- **custom** (traditionalist / reformer): absorbs culturally
+  conservative/innovative, centralizing/decentralizing,
+  institution-building, reforming. Strike, revolt, and new-court
+  cards; which faction hates him.
+- **door** (accessible / walled): absorbs accessible; secretive.
+  The most mechanical axis here: an accessible ruler is an audience
+  the PC can simply GET; a walled one makes the audience itself a
+  quest.
+- **appetites** (chaste / lecherous): absorbs sexually restrained;
+  licentious. Scandal rumor, bastard claimants, the succession
+  mess; chaste is notable in the other direction (no heir coming).
+- **hearth** (doting / harsh at home): absorbs devoted spouse,
+  affectionate parent; abusive spouse, sexual/emotional jealousy,
+  neglectful parent. The catalog's whole home-life cluster in one
+  axis — rumor fuel both ways, the estranged-queen card.
+- **strangers** (welcoming / race-proud) **[PROPOSED]**: new,
+  world-specific. Ensimaa's foreigner-community state already needs
+  it, and a mixed party stands before every throne — this axis
+  decides how court receives them.
+- **sorcery** (spell-friendly / spell-fearing): the requested magic
+  entry, shaped as a stance axis because the PC IS always a caster —
+  a spell-fearing court is a direct PC problem, a spell-friendly one
+  a door. Absorbs heterodox (its occult reading). Witch-trial
+  cards, the court wizard's standing.
+- **war** (martial / unblooded): absorbs martial interest, military
+  strategy, battlefield command; chivalric is a combo reading
+  (martial + honorable). Who leads the waves in the field, duel
+  challenges, how conquest reads.
+- **wits** (brilliant / dull): the requested dumb/smart entry.
+  Absorbs the whole Competence heading (administrative, political,
+  diplomatic, fiscal, military-strategic, judicial, crisis,
+  personnel, public performance as ability), politically astute,
+  shrewd, strategically minded, patronage-skilled. Brilliant + idle
+  and dull + tireless are the delicious combos.
+- **looks** (striking / ill-favored) **[PROPOSED]**: the catalog
+  has no appearance entry at all, yet epithet history runs on it
+  (the Fair, the Hunchback). Pure rumor and epithet fuel; cheap.
+
+Flags:
+
+- **charismatic**: absorbs charismatic, communication and public
+  performance as presence. Loyalty that survives crisis; crowds and
+  armies love him.
+- **witty**: absorbs humorous. Cheap court color; the one flag kept
+  purely for voice.
+- **cultivated**: absorbs intellectual, well-educated, curious,
+  art patron, learning patron, linguistically gifted. One flag —
+  the game does not need to distinguish the reader from the builder
+  of libraries. Commissions, elven regard.
+- **tinkerer**: absorbs technically minded. Kept apart from
+  cultivated because engines and guns are their own flavor in this
+  world (Gibili, the dwarves). Gadget and works cards.
+- **populist**: absorbs populist, hostile to entrenched elites. The
+  commons shield him; the lords plot.
+- **nepotist**: absorbs nepotistic, factional, favorite-prone. The
+  hated kinsman in office — standing rumor with an address.
+- **puppet** (+ `puppeteer`): absorbs favorite-dependent,
+  minister-dependent, elite-captured, easily influenced, dominated
+  by mother. The puppeteer field carries the color (the queen
+  mother, the chancellor, the favorite, the high priest) and is the
+  REAL door for PC dealings; who-rules rumor.
+- **itinerant** [crown]: governs from the saddle — the one
+  crown-scope entry. The king can be MET (or robbed) on the road;
+  his arrival is a settlement event.
+- **trade-minded**: absorbs commercially minded. Charters, ports,
+  tariffs, banks — this world runs on its economy packets, so the
+  stance earns a flag.
+- **gifted** (never with spell-fearing): the crowned caster — rare
+  and world-bending by design; a small cell.
+- **sickly**: absorbs chronic physical illness, frail health,
+  chronic pain, physical disability, recurrent incapacitation. The
+  game does not distinguish them — the rumor is the same: the
+  succession clock is ticking. Robust health is the neutral, cut.
+- **drunkard**: absorbs alcohol misuse, drug or medication
+  dependence. Court sights, indiscretion, a lever for others.
+- **troubled** (never with mad): absorbs depressive symptoms,
+  pathological anxiety, sleep disturbance, severe grief, trauma
+  symptoms. The shut-away ruler; moody audiences.
+- **mad** (never with troubled): absorbs delusional or psychotic
+  symptoms, hallucination-like experiences, severe mood
+  instability, manic episodes, illness-associated personality
+  change, cognitive decline. The mad-crown card set — prime drama,
+  kept rare by its cell.
+
+### Cut from the catalog
+
+- **As derived combos, not entries:** tyrannical (arbitrary +
+  cruel), chivalric (martial + honorable), reckless and cautious
+  commander (nerve x martial), clerical deference/assertion (faith
+  x industry), naive (trusting + dull).
+- **As too managerial to show through any outlet:** consultative /
+  autocratic (the readable ends live in rule and puppet),
+  court-focused, centralizing / decentralizing, patronage-skilled,
+  institution-building (folded into reformer), fortification-minded.
+- **As register misses for this game:** self-harming or suicidal
+  behavior, disordered eating, neurological episodes and seizures,
+  memory impairment as its own entry (mad covers the readable
+  presentation). The clinical rows served the historical dataset;
+  the game keeps four affliction flags.
+- **As neutral defaults:** robust health, providential (devout
+  color), propagandistic (lavish color).
+- **Moved to circumstances:** fratricidal — history, not
+  disposition; see below.
+
+### Circumstances, not traits
+
+The catalog's footer list stands as the non-trait record: age at
+accession, mode of accession, strength of initial legitimacy,
+minority or regency, religious division, quality of ministers,
+captivity or exile. Two additions:
+
+- **succession state** (secure / disputed / heirless) **[PROPOSED]**
+  — the most card-rich single fact about any crown, and it reads
+  appetites, hearth, and sickly for free.
+- **kin-blood accession** — absorbs fratricidal: "took the throne
+  over his brother's body" is a mode of accession, and better rumor
+  than any disposition word.
+
+### What this does NOT decide
+
+- Probabilities — the parallel monarch-dataset session fills the
+  sheet; this section only fixed the rows.
+- The wiring — which cards admit on which words, the authority
+  kind/tension schema, and whether the land RULER notable (the
+  first intended consumer, doing nothing since 2026-07-12) rolls
+  this at worldgen: the design session's business.
+- Ordinary dict NPCs stay BLANK — givers and service faces carry no
+  traits (spec B's rollback stands; the characteristic criterion:
+  rulers are card-backed, givers are not). The schema serves the
+  authority tier and named actors that cards create. The PC's own
+  blank sheet remains an open question.
+
+---
+
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
 technology.** Politics first: the design session's authority /
 disposition / tension schema (jerkify, bullies) already needs it, and
-half the economy cards above lean on a political actor. Religion can
+half the economy cards above lean on a political actor. (2026-08-06:
+politics' PERSON half is dumped — THE RULER CHARACTER above; the
+authority-kind/tension half and the trait-to-card wiring remain.) Religion can
 fold into politics where it overlaps (the templar move, the temple as
 authority) and keep only what stands alone. Monsters & fauna is
 mostly ASSIGNMENT — the per-land encounter pools already exist; the
