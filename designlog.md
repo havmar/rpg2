@@ -1843,3 +1843,67 @@ instructions themselves must not be able to sand this off.
 **Recorded.** worldsim.md's fill sheets, merge ledger, cut list, cap,
 and the new Range doctrine subsection; writing.md's Tone and comedy
 section; develop.md's worldsim.md Files entry line.
+
+## 2026-08-06 (session C) — The dataset lands: the Firascir baseline and the pool roll
+
+**Where it started.** The parallel session delivered the numbers: 734
+European rulers coded against the sheet, 443 carrying at least one
+trait at the kept resolution (the traitless discarded as minor), max
+14 traits per ruler, average 3, percentages rounded up. The designer
+brought the data and a roll proposal — floor the zeroed traits at 1,
+number the summed list, roll three dice over it for three traits, or
+compress to a d100 to bias the rare tail — plus one suspicion
+(populist looks bland: what would it do for the game?) and, on
+review, two amendments: the roll must respect axis opposites, and the
+good/dark exclusion is not actually wanted — contradictions can work.
+
+**The calls.**
+
+1. *The pool roll adopted*, superseding session A's per-axis
+   Bernoulli + clamp + global-knob machinery wholesale: one weighted
+   list (total 357, magic included), three draws per ruler, two per
+   lesser authority. The identity that makes it faithful: the
+   dataset's average count was 3, so three weighted draws reproduce
+   the measured marginals almost exactly (~27% rolled ambitious vs
+   32% measured). A fourth ruler draw is the one thinness knob.
+2. *Axis opposites and never-withs handled by the SHRINKING POOL* —
+   the designer's own d351-style instinct: a drawn trait, its axis
+   opposite, and its never-with partners leave the pool and the die
+   shrinks by their weights (ambitious drawn on the d357 → the next
+   roll is a d324). Exactly equivalent to rerolling invalid draws;
+   terminates by construction; keeps remaining weights proportional.
+3. *The moral tags demoted from law to bookkeeping* (designer call):
+   an honorable cruel king is a contradiction the fiction can play,
+   and the range doctrine would rather have him than not. The tags
+   now only derive `heart` (both sides present → mixed); jerkify's
+   desert anchor survives unchanged.
+4. *No d100 compression.* Re-rounding to 100 either deletes the rare
+   tail or triples it, and code reads a 357-list as easily as a
+   100-list. To fatten the tail later: raise the floor at full
+   resolution.
+5. *The floor applied to the vivid zeros only* — godless, eats
+   nothing, sees visions at weight 1 — not to populist.
+6. *Populist cut.* Zero hits in 443 rulers, and the blandness
+   suspicion confirmed on inspection: everything it would do in play
+   is reformer + charismatic wearing different clothes. Its one
+   usable idea (a reformer's enemies are the entrenched elites)
+   moved into custom's annotation.
+7. *The magic cells hand-set* [PROPOSED]: spell-friendly 2,
+   spell-fearing 3, gifted 1 — witch-fear slightly ahead of
+   patronage in a plain human land; prime per-land modifier targets.
+8. *Strangers and looks graduate from [PROPOSED]* — the designer
+   collected data for both (welcoming 4 / race-proud-as-`exclusive`
+   3; striking 3 / ill-favored 1).
+9. *Data notes for later, not action now:* reformer 25 vs
+   traditionalist 7 and brilliant 18 vs dull 1 carry chronicle bias
+   (history records the remarkable); honorable/faithless at 2/2 is
+   thin for the axis the PC's deals lean on — watch in play, adjust
+   with the land mods if needed. About a quarter of rolled rulers
+   land some affliction — vivid, and roughly what the data says.
+
+**Recorded.** worldsim.md's sheets carry the weights (fl = floored
+zero, hs = hand-set magic); the shape section describes the pool
+roll, the floor, and the hand-set cells; the consistency section is
+rewritten around the shrinking pool and the demoted tags; the cut
+list gains populist; develop.md's Files line and plan.md's agenda
+pointer updated.

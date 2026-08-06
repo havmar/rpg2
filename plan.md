@@ -247,8 +247,10 @@ second time.
      the removal 2026-08-05; the replacement is still open, and now the
      PC's own blank sheet asks the same question a second time). For the
      AUTHORITY tier the answer is drafted: worldsim.md's THE RULER
-     CHARACTER (2026-08-06) — the rollable trait sheet awaiting the
-     monarch-dataset percentages. Ordinary givers and service faces
+     CHARACTER (2026-08-06) — the rollable trait sheet, now carrying
+     the human-crown / Firascir baseline weights measured from the
+     designer's 443-ruler dataset and the shrinking-pool draw;
+     per-land modifier columns pending. Ordinary givers and service faces
      stay blank (the characteristic criterion: rulers are card-backed,
      givers are not).
    - **The landmark-problems tie-in** (the queued section below): a
