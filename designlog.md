@@ -1907,3 +1907,82 @@ roll, the floor, and the hand-set cells; the consistency section is
 rewritten around the shrinking pool and the demoted tags; the cut
 list gains populist; develop.md's Files line and plan.md's agenda
 pointer updated.
+
+## 2026-08-06 (session D) — The politics packets: the dump's power half
+
+**Where it started.** The designer delivered politics dump part 2 —
+the power half: a per-land brainstorm (Firascir's casus belli,
+diplomacy instruments, and centralization note; manor, temple,
+nobleman, and city event lists; Mortellaria's absolutist material;
+Gibili's paralyzed buffer state with a faction-edge sketch; two
+Ensimaa passes — the 21st-century satire and a regrounded
+isolationist-theocracy pass; the Dvarvengrond ledger-state; the
+Tergal set the designer judged strongest for its clear historical
+analogues) plus a 120-entry three-era addendum (medieval / baroque /
+industrial x four layers). Directives: aggressive editing and
+selection over coverage; watch econ overlap; and the design intent
+is COLOR BY RANDOM SELECTION — the fantasy stereotype stays the
+constant and worldgen rolls which political elements a land wears,
+so no land carries all its weirdness at once. Defaults for the
+crowned lands: Firascir decentralized feudalism, Mortellaria
+absolutism, Ensimaa constitutional monarchy, with Polish-style
+aristocratic anarchy as the maximally decentralized option.
+
+**The calls.**
+
+1. *The selection intent formalized as three idea-level pieces,*
+   all the design session's to adopt or overrule: the CONSTITUTION
+   SLOT (exclusive, default-heavy die, per-land variants; cards
+   never flip it), the TENSION ROLL (one standing tension per land;
+   political cards admit on tensions the way econ cards admit on
+   states, into the SAME crisis deck — no second pile), and FACTION
+   EDGES (directed verb edges as the in-land `relation`; the
+   designer's sketch kept as the worked model; the notables cast
+   supplies faces).
+2. *The dedupe doctrine:* econ owns flows, prices, livelihoods;
+   politics owns right, office, allegiance. Dump entries that were
+   econ cards in political clothes (banalities, the company town
+   and scrip, pistolerismo, guild monopolies, the smuggling
+   markets) stayed in econ and are referenced, not duplicated.
+3. *The Ensimaa merge:* both passes kept, merged on the shared
+   spine — a perfected society defending its stillness. The satire
+   keeps the frame (it continues the econ axis and the
+   constitutional-monarchy default); the theocracy pass supplies
+   the mechanisms (purity writs, shunning as the capital
+   punishment, the sealed-realm variant, the reincarnate search,
+   fraternal polyandry, the floating quarter). Dropped to keep
+   one-per-world: compulsory court attendance (Mortellaria's gilded
+   cage owns it) and the dual throne (the puppet flag rolls it).
+4. *Dvarvengrond's mining-only worry answered, not padded:* the
+   property-registry state IS the distinct thing — the Grand
+   Ledger, eternal claims, the dead founders' veto (literal in this
+   world — one [PROPOSED] card), the marriage of veins, the Shorn,
+   the surface envoys. No breadth borrowed from other civs.
+5. *A war-layer feed extracted land-agnostic:* the casus belli
+   pool, the diplomatic instruments (courtly hostage, tribute,
+   marriage pact, personal union), and the succession-crisis
+   cluster — wired to the ruler sheet's succession-state
+   circumstance, which gains its consumer.
+6. *Cross-layer wiring noted wherever the material lands on shipped
+   machinery:* wergild as the karma layer's lawful price list;
+   outlawry / the Shorn as protection-zero crime bands; sanctuary
+   as a priced heat valve; counting coup on the mercy/ferocity
+   layer; the black chamber on delivery quests; trial by combat on
+   the duel machinery; the royal progress on the itinerant flag.
+7. *The cut side:* roughly a quarter of the raw material cut
+   outright (era-pure administrivia, entries with no PC-sized
+   handle, redundant restatements), a quarter folded as clauses.
+   Deliberate exclusions flagged for the designer: the slave-trade
+   contract (the colony stays offstage per econ's design) and the
+   eugenics entry (low game value for its weight). Strong cuts
+   named as rescue candidates in the session report: heriot, the
+   castellation license, tournament ransom, the Peace of God, the
+   seance parlor (a religion-dump candidate — mediums in a world
+   where necromancy works).
+
+**Recorded.** worldsim.md gained THE LAND PACKETS — POLITICS (the
+selection doctrine, the war feed, six packets); its intro and
+layers-to-dump notes updated — politics is now dumped BOTH halves,
+and religion's future dump shrinks by what politics ate.
+develop.md's worldsim.md Files entry extended; plan.md's
+identity-schema and event-vocabulary bullets point at the packets.

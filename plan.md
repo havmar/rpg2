@@ -222,14 +222,18 @@ second time.
      authority (kind, disposition, standing tension) and the visible
      mutable states events flip. The authority's PERSON now has a
      drafted schema — worldsim.md's THE RULER CHARACTER (2026-08-06),
-     one trait vocabulary serving crown, lord, and sheriff alike;
-     kind and tension are still this session's to settle. Normal and prosperous stay mostly
+     one trait vocabulary serving crown, lord, and sheriff alike —
+     and kind/tension now have their raw material too: worldsim.md's
+     politics packets (2026-08-06 — the constitution slot, the
+     standing-tension roll, the faction-edge sketch); the session's
+     job is formalizing them into records. Normal and prosperous stay mostly
      invisible — crisis is where content lives.
    - **The event vocabulary** — the template shape (admitting
      tags/states, a clock, the five-outlet effect list, a news line)
      and the first ~20 templates. `worldsim.md` holds the raw
-     material: the weather sketch and the six land economy packets;
-     the session turns the designer's cut of them into records.
+     material: the weather sketch and the six land economy and
+     politics packets; the session turns the designer's cut of them
+     into records.
    - **Jerkify / the disposition axis** — NPC and authority
      disposition with mechanical teeth: sin/heat modifiers by desert
      (robbing the extortionist books less; the beloved healer more,

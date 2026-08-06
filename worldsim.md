@@ -4,9 +4,10 @@ The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
 build order and the design-session agenda; designlog's 2026-08-05
 entries own the reasoning; THIS file holds the pre-implementation
 material — the record framework the design session will formalize, the
-weather system sketch, the curated land economy packets, and the ruler
-character schema (the politics dump's person half, 2026-08-06). Nothing
-here is shipped. When a piece ships, its rules move to rules.md and
+weather system sketch, the curated land economy packets, the ruler
+character schema (the politics dump's person half, 2026-08-06), and
+the politics land packets with the constitution/tension/faction frame
+(the dump's power half, same day). Nothing here is shipped. When a piece ships, its rules move to rules.md and
 its entry here is cut (the plan.md convention).
 
 Register note: entries are IDEA-LEVEL, in the dev register. Final
@@ -753,16 +754,753 @@ captivity or exile. Two additions:
 
 ---
 
+## THE LAND PACKETS — POLITICS — the politics dump, part 2: the power (2026-08-06)
+
+THE RULER CHARACTER above is WHO holds power; this is what he sits
+on and who is pulling at it — authority kind, standing tension, and
+the political event material: the second half of the design
+session's identity-schema agenda (plan.md). Provenance: the
+designer's 2026-08-06 politics brainstorm — the per-land dump, the
+120-entry three-era addendum (medieval / baroque / industrial, four
+layers each), and the regrounded elven pass — aggressively cut,
+merged, and rewritten here: roughly half kept, a quarter folded
+into other entries, a quarter cut (the cut list and its rescue
+candidates are in the session report, designlog 2026-08-06 D). The
+historical anchor rides each entry in parentheses as design
+shorthand; player-facing words get the writing.md pass at
+implementation (sheriff, not reeve — the CRPG-vocabulary rule).
+Assistant additions are marked **[PROPOSED]**, cut-on-sight as
+ever.
+
+**The selection doctrine (the designer's framing).** A packet is a
+POOL, not a description. The stereotype is the constant — feudal
+humans, herding orcs, mining dwarves — and worldgen ROLLS the
+color, so no single land carries all its weirdness in one
+playthrough, and the same land comes up a different flavor of
+itself across playthroughs. Three pieces make that concrete, all
+idea-level until the design session formalizes or overrules them:
+
+- **The constitution slot** — one per land, exclusive (the
+  wealth-band pattern), rolled at worldgen on a default-heavy die.
+  Defaults per the designer: Firascir DECENTRALIZED FEUDALISM,
+  Mortellaria ABSOLUTISM, Ensimaa CONSTITUTIONAL MONARCHY; the
+  maximally decentralized option for a crowned land is
+  ARISTOCRATIC ANARCHY — the Polish shape: elective crown, magnate
+  veto, rule of independent barons (carried in Firascir's packet).
+  The other three lands' defaults read from their packets. Cards
+  never flip the slot; the rare card that would (the junta, the
+  commune) says so explicitly.
+- **The tension roll** — each packet lists STANDING TENSIONS: two
+  named blocs and what they fight over. A land rolls ONE at
+  worldgen (**[PROPOSED]** a second under CRISIS wealth), and only
+  cards whose tension holds enter the land's crisis deck — the
+  SAME deck as the econ cards, no second pile. Political cards
+  admit on tensions the way econ cards admit on states; the
+  tension is the gate that keeps the pool wide and each rolled
+  world specific.
+- **Factions and edges** — the in-land counterpart of `relation`:
+  the rolled tension implies a small faction cast, and authored
+  directed verb edges carry the wiring. The designer's edge
+  sketch, kept as the worked model (a crowned frame over Gibili's
+  cast — the formalism must serve both): crown INFLUENCES
+  aristocracy; crown FUNDS secret police; secret police INFILTRATE
+  anarchists; anarchists SABOTAGE steel barons; steel barons LOBBY
+  crown and HIRE mercenaries; mercenaries GUARD steel barons.
+  Cards admit on an edge; the notables cast (quests.py's RULER /
+  SAGE / WILDCARD) supplies faction faces for free.
+
+**What politics owns vs the econ packets.** Econ owns flows,
+prices, and livelihoods; politics owns right, office, and
+allegiance. Where a dump entry was an econ card wearing a crown —
+the lord's mill (banalities), the company town and its scrip,
+pistolerismo policing, guild monopolies, the smuggling markets —
+it stays in the econ packet and is referenced, not duplicated.
+
+### The war layer's feed (land-agnostic)
+
+story.py rolls an aggressor and wages waves; conquest.py already
+does tribute and raids. What the war lacks is the WHY line and the
+endings — cheap to add, high rumor value.
+
+- **CASUS BELLI pool** (rolled beside the aggressor; feeds herald
+  and news lines): border dispute; broken betrothal; succession
+  claim pressed from abroad; religious conflict; embargo answered;
+  foreign merchants' goods seized; **[PROPOSED]** a harbored
+  pretender, a bought wardship enforced, prospectors over the
+  border (the Dvarvengrond edge) — and Tergal's standing one, the
+  Sky's mandate (its packet: neighbors are rebels, not equals).
+- **DIPLOMATIC INSTRUMENTS** (how wars end and stay ended; each an
+  authored relation edge with cards in it): a truce sealed with a
+  COURTLY HOSTAGE — the hostage grows up in the enemy's hall, a
+  person the party can guard, meet, or steal back; YEARLY TRIBUTE
+  (danegeld — conquest.py's tribute machinery models the player
+  side, NPC edges reuse the shape, and econ's Tergal packet
+  already carries one); a MARRIAGE PACT (**[PROPOSED]** as the
+  instrument whose breaking is the betrothal casus belli);
+  PERSONAL UNION — two crowns on one head, separate laws and
+  parliaments (the succession jackpot: the union inherits both
+  lands' tensions).
+- **SUCCESSION CRISES** (cards; they admit on the ruler sheet's
+  succession-state circumstance — this cluster is the consumer
+  that [PROPOSED] entry was waiting for): the infant heir and the
+  regency council knife-fight (puppet/puppeteer wiring for free);
+  three branches of the family, three readings of the inheritance
+  law; the dead king returns from a crusade — or a pretender
+  wearing his face does; the bought recognition — a lifetime of
+  bribes to make the neighbors accept a daughter's succession, all
+  void the day the king dies (the pragmatic sanction;
+  Mortellaria's natural shape). Per-land shapes: Tergal's tanistry
+  makes EVERY succession a scramble by design; Dvarvengrond's is
+  the deadlocked electors' conclave; Ensimaa's, at most once an
+  age, is THE SEARCH (its packet); Gibili has no crown to pass —
+  its version is the junta.
+
+### Ensimaa — elves. Politics axis: FACE, PURITY & THE FROZEN LADDER
+
+The two brainstorm passes — the polished 21st-century satire and
+the regrounded isolationist-theocracy pass (island isolation,
+mountain theocracy, purity-church discipline) — merged on their
+shared spine: a perfected society defending its stillness. The
+satire keeps the frame (it continues the econ axis and the
+designer's constitutional-monarchy default); the regrounding
+supplies the mechanisms. Dropped from the theocracy pass to keep
+one-per-world: compulsory court attendance (Mortellaria's gilded
+cage owns it) and the ceremonial/working dual throne (the ruler
+sheet's puppet flag already rolls it).
+
+- **Constitution (exclusive slot).** Default CONSTITUTIONAL
+  MONARCHY: an ancient crown that reigns serenely and rules
+  nothing, over a parliament of infinite performative debate —
+  every micro-faction holds a free veto, so nothing passes, and
+  debate itself is formalized verbal combat: stylized, clapped,
+  and shouted in the courtyards (the monastic debate form — the
+  parliament is a sport the state mistakes for governing).
+  Variants: COUNCIL OF ELDERS — the crown set aside, pure
+  gerontocracy; THE SEALED REALM — isolation made law, entry a
+  capital offense, exit permanent exile (arms the exile cards
+  below).
+- **Standing tensions:** the ageless elders vs the merely young;
+  the purity establishment vs the authenticity fringe; the
+  automation's dependents vs the primitivists who would break it.
+- **fact THE FROZEN LADDER**: the elite hoard life-extending and
+  aesthetic magic, wealth, seats, and precedence — three millennia
+  of compound advantage that looks twenty years old. Nothing opens
+  because nobody dies and nobody yields; the "young" (a mere
+  century old) own nothing and matter nothing.
+- **fact FACE IS THE CURRENCY**: standing writs — purity
+  certificates renewed by interview — gate office, contract, and
+  polite existence (temple recommends); the neighborhood
+  association watches and reports as a civic duty. Ruin is
+  reputational, not judicial.
+- **fact SHUNNING IS THE CAPITAL PUNISHMENT**: the erased elf is
+  looked through, unnamed, contract-void — social death in a
+  society where nothing else dies (disfellowship; the satire's
+  deplatforming, same mechanism). WIRING: an elven heat that
+  posses never enforce — the crime layer's Ensimaa flavor.
+- **fact THE MALAISE**: the automation meets every need and asks
+  nothing back; the commons are safe, idle, and meaning-starved
+  (econ's decadence worn politically — the designer's anchor: the
+  idle young gentleman and his valet).
+- **card THE WRIT REVOKED**: a grandee's purity certificate is
+  denied over an old association; offices, tenants, and name
+  cascade away inside a season. Someone arranged it — work on both
+  sides: prove the sin, or prove the frame.
+- **card THE SEARCH** (rare by construction): the crown actually
+  dies — the first succession in an age. Doctrine says the
+  sovereign returns in a newborn; the factions each produce their
+  own infant, and a regency of decades begins (the reincarnate
+  search, landing on a race that had forgotten succession exists).
+- **card ONE HEIR, FOUR BROTHERS**: great houses concentrate on a
+  single heir across several brothers to keep the estate whole
+  (fraternal polyandry bent to the manpower axis) — scandal,
+  inheritance knives, and one child everyone owns.
+- **card THE UNEARTHED RECORD**: a document surfaces contradicting
+  the elders' account of the founding — and the elders were THERE.
+  The scandal is not discovery but proof of curation: living
+  memory shown to be an edited thing (the treasure-revealer, aimed
+  at people who remember).
+- **card THE MORTALITY CLUB**: young elves who idolize the
+  short-lived — un-warded fights, real scars, borrowed grime. A
+  patron pays the party to be WATCHED at work, or to take one
+  along and keep it alive anyway (the fetish is the employer;
+  direct PC interaction).
+- **card THE PRIMITIVISTS**: woodland-ways purists foraging on a
+  manicured private reserve with healing wards on standby —
+  comedy, until one band goes genuinely feral. The real thing
+  exists too: unsanctioned wild hermits the polished state quietly
+  fears — the primitivists cosplay what the hermits are, and each
+  hates being confused for the other.
+- **card THE HUNTERS SENT AFTER**: under the sealed realm, exit is
+  exile and prominent exiles are followed — quiet fanatics sent
+  abroad to erase the escaped. Fires in OTHER lands: the party
+  meets the target, or the hunters, on somebody else's road
+  (cross-land encounter outlet).
+- **option THE FLOATING QUARTER**: one walled district where face
+  is suspended — pleasure, Powder, debt, every hypocrisy,
+  unmentionable outside its gate (the floating world; econ's drug
+  market has its address here).
+- **card THE INVISIBLE STAFF**: the black market in mortal
+  laborers who do the maintenance elves will not — unseen by
+  custom, and therefore the best-informed network in the land
+  (nobody guards their tongue around furniture). Econ's rented
+  concessions and robot servants are this card's legal face.
+- **relation** The exile edge: Ensimaa's erased and escaped pool
+  in every neighbor — Gibili's cafes, Mortellaria's ports — and
+  the hunters follow (the emigre entries abroad read this edge).
+
+### Tergal — orcs. Politics axis: AUTHORITY IS PERSONAL
+
+The strongest dump, by the designer's read and this pass's:
+Mongol, plains-nations, and Germanic mechanisms carried near
+verbatim. Authority here is charisma, kinship, and obligation —
+never an office; the wars are over summer valleys and winter
+shelter, never lines on a map.
+
+- **Constitution (exclusive slot).** Default THE CLAN CONFEDERACY:
+  sovereign clans under a GREAT COUNCIL (the kurultai) that elects
+  the high chief, arbitrates the feuds it was founded to outlaw
+  (the Great Law of Peace reading), and votes war. Attendance is
+  law — the empty saddle at council IS the declaration of civil
+  war. The high chief's court is a moving city of tents; foreign
+  envoys chase the capital across the seasons (the orda).
+  Variants: THE GREAT KHAN — a unifier holds the whole steppe
+  under the Sky's mandate and reorganizes the warbands across clan
+  lines (the decimal reform); story.py's orc aggressor is this
+  variant in motion; TWO CHIEFS — a peace chief for law and
+  seasons, a war chief who commands only while the banner is up
+  (the white/red split); THE FRACTURED CLANS — no high chief, the
+  feuds running unarbitrated.
+- **Standing tensions:** clan against clan over pasture and
+  precedence; the chiefs against the clan mothers; the confederacy
+  against its own outlaw fringe.
+- **fact TANISTRY**: the ablest kinsman inherits, never merely the
+  eldest son — strong chiefs by design, and a succession scramble
+  by design, every single time.
+- **fact THE SKY'S MANDATE**: the high chief is destined to rule
+  everything under the sky; neighboring realms are not equals but
+  rebels who have not yet submitted (the standing casus belli).
+  The sky speaks through readers of bones — and an omen can halt a
+  campaign the council already voted (the shamanic veto).
+- **fact WERGILD**: every life and limb has a price in livestock,
+  payable to the wronged kin; the alternative is the blood feud,
+  and the feud binds every cousin. WIRING: in Tergal sin can be
+  SETTLED — the karma layer's bribe machinery reads as the lawful
+  price list; unpaid, it reads as the feud.
+- **fact GUEST RIGHT**: whoever eats at the fire is safe, blood
+  enemies included; breaking it is the one sin no wergild covers
+  (per-land sin weighting — the elven-murder pattern).
+- **fact THE CLAN MOTHERS**: lineage and the herds run through the
+  women; the mothers seat chiefs and can unseat them (the
+  matrilineal veto) — the power behind every tent that the
+  barbarian stereotype misses.
+- **fact THE DOG SOLDIERS**: a warrior society polices the camps
+  and the migrations with absolute authority over any rank, chiefs
+  included — law enforcement with a face, and not the chief's.
+- **fact PRESTIGE IS GIVEN AWAY**: authority is earned by
+  charisma, mediation, and open hands, and lost overnight when the
+  giving stops (the big man); rivals are buried under gifts they
+  cannot repay (the potlatch). Dvarvengrond's mirror image — the
+  hoard and the giveaway are the two nonhuman answers to the same
+  question.
+- **fact VOTING WITH THE FEET**: a cruel or failing chief wakes to
+  empty grass — families fold their tents in the night and ride to
+  a rival. The commons' whole franchise, and it is enough.
+- **card THE HOSTAGE GUARD**: the high chief's bodyguard is drawn
+  from the rival chiefs' sons — elite corps and hostage crop in
+  one (the keshig). A son flees; a father wavers; a guard's
+  loyalty splits. Card fuel with named faces, and the courtly-
+  hostage instrument's home culture.
+- **card SWORN BROTHERS**: two chiefs cut palms and become
+  brothers-by-oath across clan lines (anda) — a super-faction
+  overnight; the council tilts, and both clans' mothers object.
+- **card COUNTING COUP**: prestige for touching the enemy and
+  living, above killing him — the duel where the party is judged
+  by orcish rules. WIRING: the mercy/ferocity layer already models
+  capture-over-kill; here mercy SCORES, and slaughter loses face.
+- **card THE MOURNING WAR**: a raid to seize people, not plunder —
+  captives to fill the tents the last sickness or war emptied
+  (demographic war; reads econ's desperate-herd state). The camp's
+  thrall underclass is its residue — and its own quiet politics.
+- **card THE SHAMING POLE**: a carved pole and a formal curse make
+  a named enemy a pariah (the nithing pole) — shame as a siege
+  weapon, aimable at a chief, a clan, or the party.
+- **card THE GHOST DANCE**: when the herds fail and the tribute
+  chiefs fatten, a revitalization faith sweeps the camps — against
+  the settled lands AND the old chiefs at once (reads econ's
+  lost-herd desperation; the apocalyptic turn).
+- **fact OUTLAWRY**: the cast-out is stripped of law entirely —
+  anyone may kill him without price (the wolfshead; wergild's
+  shadow). WIRING: Tergal's crime layer runs on outlawry, not
+  posses — no jail, no fine, just the declaration and whoever
+  feels lucky.
+- **fact THE COMPANIONS**: free warriors who abandon clan to swear
+  to a charismatic nobody (the nokhor; the sworn-band oath that
+  outranks blood) — the outlaw meritocracy that has, before now,
+  taken the whole steppe. WIRING: this is exactly what a PC party
+  IS in Tergal's eyes — the land reads the party as a
+  companion-band and judges its chief.
+- **option THE SINGERS**: wandering skalds own the oral record —
+  praise and mockery ARE the propaganda layer, and chiefs court
+  and fear them (rumor outlet with a face; a singer hired against
+  a chief is a card in waiting).
+- **relation** Border market towns — treaty-neutral posts where
+  steppe law meets settled law (econ's trading-outpost card is one
+  of them mid-escalation); hostage and tribute edges to every
+  frightened neighbor (econ carries the tribute edge; the courtly
+  hostage above upgrades it); the mercenary edge — warbands abroad
+  under foreign coin (econ's returned-mercenary card comes home
+  along it, and Firascir's settled-warband card is its far end).
+
+### Dvarvengrond — dwarves. Politics axis: THE LEDGER IS THE STATE
+
+The designer flagged this packet as hard — a polity built on
+mining alone. The read here: that IS the distinct thing, not a
+gap. The econ axis (everything follows from mining) extends
+cleanly into a state that is a property registry with an army; no
+other land has that.
+
+- **Constitution (exclusive slot).** Default THE ARBITER CROWN:
+  the King under the Mountain is chairman, not autocrat — keeper
+  of the GRAND LEDGER (the sacred registry of every claim, vein,
+  and water right) and arbiter-in-chief whose real function is
+  keeping the clans out of civil war. The council of clan heads
+  convenes only to set claim borders, split water, or vote a
+  unified war when something outside threatens the mountain.
+  Variants: THE WAR KING — an external threat hands the arbiter
+  real command, and the clans already fear what he will keep when
+  it ends; **[PROPOSED]** THE EMPTY THRONE — the electors'
+  conclave deadlocks for years and the Ledger's clerks quietly run
+  everything.
+- **Standing tensions:** clan against clan along every shared
+  wall; the deep clans against the surface envoys; the clans
+  against the unclanned fringe.
+- **fact GEOLOGICAL LAW**: all law is extraction law. Murder is a
+  crime; collapsing a rival's gallery is HIGH TREASON (per-land
+  sin weighting — the elven-murder pattern, in stone).
+- **fact CLAIMS ARE ETERNAL**: a claim binds to blood and to the
+  dead who first cut it — clans cannot simply sell; rezoning one
+  tunnel needs the living AND rites to release the founders' dead.
+  Politics at glacial pace, by construction.
+- **fact HOARDING IS STATESMANSHIP**: the mightiest thanes hold
+  court inside their own unmined veins — power displayed by NOT
+  extracting (Tergal's mirror; the potlatch inverted).
+- **fact BLOOD AND QUOTAS**: a commoner owes the clan tonnage, and
+  standing tracks it — a missed quota is a spiritual failing
+  before the ancestors, not merely a debt (econ's strike, scrip,
+  and company-shop cards sit on this fact).
+- **card THE MARRIAGE OF VEINS**: betrothal as claim consolidation
+  — the neighboring clan owns the other half of the iron seam. The
+  couple is the smallest thing in the room, and one of them may be
+  paying the party.
+- **card THE FOUNDER SAYS NO [PROPOSED]**: the rites to release a
+  dead founder's tunnel are performed — and the dead REFUSES. In
+  this world that is no metaphor: the ancestor speaks, the claim
+  freezes, and someone wants a second opinion — the priestly way
+  or the necromancer's way.
+- **card THE ARBITRATION**: two great clans at the brink over one
+  silver vein; the king must rule; both sides have sworn to defy
+  him — and the crown survives only if the ruling is too clever to
+  defy. Work on every side, including the king's.
+- **fact THE WILDCATTERS**: claim-jumpers mining the condemned
+  upper galleries and the unmapped deep — persecuted less as
+  thieves than as structural traitors (an unregulated tunnel
+  threatens everyone's). Encounter and employer both.
+- **fact THE SHORN**: the unclanned — name stripped, no legal
+  person, killable without price (outlawry under the mountain;
+  Tergal's wolfshead parallel). Day-labor, mercenary meat, and the
+  recruiting pool for anyone hiring deniable hands. WIRING: a
+  protection-zero band for the crime layer's mark tables.
+- **fact THE SURFACE ENVOYS**: the despised caste that handles
+  everything above ground — rich, indispensable, "sun-addled"
+  traitors to the traditionalists. Nearly every dwarf the party
+  meets ABROAD is one: standing color for every other land.
+- **relation** Prospecting edges: dwarven claim-law walks abroad
+  in boots — Firascir's silver-vein card (its packet) is
+  finders-keepers to the prospectors and the-lord's-land to
+  Firascir law; the Ensimaa crystal concession (econ) has the same
+  collision sleeping in it.
+
+### Firascir — humans. Politics axis: CUSTOM AGAINST PREROGATIVE
+
+The baseline land takes the deepest packet (the asymmetry
+doctrine; the ruler sheet's weights are already Firascir's).
+Rights here are OLD — written nowhere, or somewhere flammable —
+and every scale of the land is a tug-of-war between ancient custom
+and someone's prerogative. Entries grouped by scale. The manor
+tension is STANDING (it is the econ packet's oppression axis); the
+realm rolls one tension from the list.
+
+- **Constitution (exclusive slot).** Default DECENTRALIZED
+  FEUDALISM: a crown among great lords, strong on its own manors
+  and weak beyond them. Variants: THE CENTRALIZING CROWN — royal
+  judges riding circuit, castle licenses enforced, shield money
+  taken instead of service (scutage): the king slowly winning, and
+  every crown-vs-lords card armed; ARISTOCRATIC ANARCHY — the
+  maximally decentralized pole (the designer's Polish shape): an
+  elective crown, a magnate veto, rule of independent barons — the
+  king may convene, preside, and beg; THE REGENCY — an infant
+  king, the council governing (succession cluster standing; puppet
+  wiring for free).
+- **Standing realm tensions (roll one):** the crown vs the great
+  lords; the crown vs the merchant guilds' wealth; the temple vs
+  the crown (who names the bishops — the investiture fight; the
+  militant order is its armed edge); old blood vs the new men
+  (risen clerks and bought titles in velvet).
+
+REALM & CROWN:
+
+- **card THE INTERDICT**: the temple closes the land — no rites,
+  no weddings, no burials — until the crown submits (the
+  investiture fight's nuclear option). Every settlement feels it
+  the same week: services stop, and the dead wait (news + state
+  flip; reads temple-vs-crown).
+- **card THE ORDER'S OWN LAW**: the militant religious order hangs
+  a local man under its own court and its own gallows; the county
+  demands the body and the precedent (an order answering only to
+  the church, garrisoned in a land that thinks otherwise). Econ's
+  templar move is the crown's eventual answer; this card is the
+  provocation years earlier.
+- **card THE ROYAL PROGRESS**: the itinerant court arrives — a
+  hundred mouths with precedence, eating a lord toward ruin as a
+  loyalty test. WIRING: the ruler sheet's `itinerant` flag
+  promised this settlement event; here it is.
+- **card THE BAN**: the crown declares a rebel lord legally dead —
+  lands forfeit, killable by anyone (the imperial ban: outlawry at
+  lord scale). A posse card where the posse is EVERYONE — and the
+  banned lord is hiring.
+- **card THE SETTLED WARBAND**: the crown (or a desperate march
+  lord) grants border land to an orc warband in exchange for
+  service (foederati). The neighbors are terrified; the warband
+  keeps its own law; both sides are right about each other
+  (Tergal's mercenary edge, landed).
+- **card THE BADGE**: a lord pays armed men to wear his livery and
+  lean on the courts (bastard feudalism) — and by the time the
+  crown's inspectors arrive to break the private army up, the
+  badge-men ARE the local law (jerkify on both ends).
+- **card THE WARD**: a neighbor lord dies leaving a child heir;
+  the crown auctions the wardship — raise the child, drain the
+  estate, marry it to your own son at majority. The child is a
+  person, an asset, and a quest object in one, and everyone
+  bidding knows it.
+
+MANOR & VILLAGE (the standing tension; econ's mill, toll, and
+revolt-chain cards live here already — these are the rights-side
+additions):
+
+- **card THE CUSTOM STRIKE**: the bailiff demands extra harvest
+  days; the village cites the manor's ancient custom, shows up on
+  time, and works at a crawl (work-to-custom as a weapon — the
+  go-slow the lord cannot quite punish).
+- **card BURNING THE ROLLS**: in a bad season the mob does not
+  kill the lord — it burns the manor's COURT ROLLS, the written
+  proof of who owes what and who was born unfree. Every debt and
+  every servile birth, ash — unless the clerk kept a second copy,
+  which is suddenly the most valuable object in the land.
+- **card A YEAR AND A DAY**: a skilled smith flees the manor to a
+  chartered town — town air makes free after a year and a day, and
+  the guild will not give him up. The lord's men are at the gate;
+  the clock is public knowledge; the party fits on either side of
+  it.
+- **card WHILE THE LORD IS AWAY**: the bailiff invents fines (bad
+  ale, gathered deadwood) and runs the manor court as his purse;
+  the village-elected reeve, meanwhile, sells the lord's grain and
+  books the shortfall to blight. Petty tyranny and petty theft
+  feeding each other until the lord returns — or someone writes to
+  him (two jerks, one address each).
+- **card THE RENT STRIKE**: the village hides its coin and pleads
+  a blight (reads the actual drought/blight state — some years it
+  is TRUE); the bailiff cannot evict everyone at once and knows
+  it. Casing work in reverse: is the plea honest?
+- **card THE WIDOW'S HOLDING**: a rich widow pays the yearly fine
+  to stay unmarried and keeps prime land out of every scheming
+  hand — suitors, heirs, and the lord's own plans circle her (a
+  person with an address, holding against the tide).
+- **card THE PEASANT MERGER**: two big village families betroth
+  their strips into a local monopoly on the best soil — the
+  balance of power wobbles from BELOW (the marriage-of-veins
+  pattern, in dirt; the lord notices late).
+- **card THE JURY THAT LIES**: the manor court's jury — the
+  accused's neighbors — swears an heir true-born, or a starving
+  thief innocent, in the law's teeth and at their own risk of
+  fines (nullification: the community closing ranks; the party's
+  testimony tips it either way).
+- **card THE CRY IGNORED**: the forester raises the hue and cry on
+  the beloved poacher and the village goes conveniently deaf —
+  failing the cry is itself a collective fine, and everyone is
+  counting on nobody testifying. WIRING: the crime layer's posse
+  machinery, refused from below.
+- **card FOREST LAW**: the royal woods stand outside common law —
+  draconian foresters, savage penalties for deer, the customary
+  take (forage, deadwood, gleaning after harvest) fenced off year
+  by year. The revolt's demand is the OLD rights back; the
+  nobleman version is the poaching war — dead deer, hanged
+  "poachers," then retinue skirmishes between two lords' woods.
+- **card THE SILVER VEIN**: a strike on the local lord's land
+  makes him suddenly, dangerously rich — armed men, bought judges,
+  new walls, new appetites. Option, per the designer: DWARVEN
+  prospectors found it, and their claim-law says finding is
+  keeping (the Dvarvengrond relation; two legal cultures, one hole
+  in the ground).
+- **card TRIAL BY COMBAT**: the loophole standing wide open —
+  wealthy knights answer lawsuits at swordpoint through hired
+  champions. WIRING: champion-for-hire is a quest shape the duel
+  machinery already supports; the party IS the loophole.
+
+TOWN:
+
+- **card THE CHARTER RUN**: a market town secretly pools silver to
+  buy a royal charter out from under its lord; the lord blockades
+  the roads to stop the purse reaching the king. The payload is a
+  DELIVERY — the courier machinery with politics on top, and both
+  sides hiring.
+- **card THE MAYOR IN VELVET**: a wool merchant elected mayor
+  dresses past his blood, rides a warhorse, and demands equal
+  address; the insulted barons choke the town's grain to starve
+  him down (old blood vs new men, made local; reads econ's food
+  states — econ's fair and pie-powder court give the town its
+  stage).
+
+TEMPLE & PARISH:
+
+- **card THE TITHE WAR**: the village tithes its sickliest lambs
+  and lightest sheaves, systematically; the priest's barn keeps
+  the evidence (passive resistance with an audit trail — casing
+  work again).
+- **card THE SCANDALOUS PRIEST**: the concubine at the rectory,
+  church funds buying land for his children, the pious elite
+  petitioning the bishop — who has a price for acting. Jerkify:
+  the priest may still be the village's best friend.
+- **card THE WITCH-FINDER**: a self-appointed inquisitor arrives
+  offering to find the village's witch — for a fee, and he always
+  finds one (moved here from the baroque pile: witch-fear is
+  genre-true in the medieval land). WIRING: the ruler sheet's
+  spell-fearing cell — and the PC is ALWAYS a caster, so this card
+  aims at the party by construction.
+- **card THE DANCING PLAGUE**: a street of villagers cannot stop
+  dancing; flagellant columns arrive behind the news. The temple
+  calls it penance, the wise woman calls it poison — and the
+  fog-necromancer pattern applies: the cause may have an ADDRESS,
+  and rumor lines lead there (mass hysteria as a landmark-lite
+  problem).
+- **option SANCTUARY**: a fugitive who reaches the altar cannot be
+  taken for forty days — then walks barefoot to the border into
+  exile. WIRING: a priced, timed heat valve the crime layer can
+  quote (the party WILL use this), and a card when the posse
+  decides not to wait out the clock.
+- **card THE FREE COMPANY**: the war winds down and the unpaid
+  company does not — a mercenary micro-state on the roads, tolling
+  bridges and renting itself to whichever tension pays (encounter,
+  employer, and target in one; Tergal's mercenary edge feeds it,
+  econ's robber-baron tolls are its business model).
+- **card THE MIDNIGHT COURT**: where the lawful courts are bought,
+  a secret tribunal of masked freemen tries and hangs by night
+  (the vehmic court). The vigilante option with a membership list
+  — the party can be hired by it, sent against it, or JUDGED by
+  it.
+
+### Mortellaria — humans. Politics axis: ONE KING, ONE LAW, ONE FAITH
+
+The absolutist project, and everyone it grinds: the centralized
+state against its own nobility, its provinces, and its heretics —
+with the finance axis (econ) as its bloodstream.
+
+- **Constitution (exclusive slot).** Default ABSOLUTISM: the
+  centralized state — royal commissioners (intendants) over the
+  old courts, the sun-court palace over the old seats. Variants:
+  MINISTERIAL RULE — the crown reigns, the cardinal governs (the
+  puppeteer made office); THE FRONDE STATE — the princes openly in
+  arms to CONTROL the crown, never to depose it (civil war as
+  court politics by other means); **[PROPOSED]** THE BANKRUPT
+  SUMMONS — the treasury empty, the ancient estates called for the
+  first time in living memory, every faction arriving with a
+  grievance list.
+- **Standing tensions:** sword vs robe — ancient, proud, poor
+  blood against purchased office and new money; the crown vs the
+  minority faith it has resolved to erase; the court vs the
+  provinces that pay for it.
+- **fact THE GILDED CAGE**: the high nobility must attend the
+  palace — precedence wars, ruinous mandatory wardrobe, bedchamber
+  offices (handing the king his shirt is a ministry), the salons
+  as unofficial ministries run by hostesses — kept beautifully
+  broke and far from their power bases. The ruined duke's heir is
+  suddenly available to a rich commoner's daughter, and every
+  salon discusses it.
+- **fact EVERYTHING IS FOR SALE**: offices, titles, judgeships,
+  colonelcies — the crown mints dignities to cover its debts
+  (venality; the robe nobility is this fact compounding). The
+  absurd office is real power: the Grand Inspector of Barrels can
+  stop every cooper in the city until paid.
+- **fact THE BLACK CHAMBER**: the post is read — every sealed
+  letter through the capital is opened, copied, and resealed by
+  the crown's cryptographers. WIRING: the game's delivery quests
+  pass through this fact; carried letters are not safe, and
+  knowing so is a job qualification.
+- **card THE REVOCATION**: the tolerated minority faith is made
+  illegal overnight — dragoons quartered in refusers' homes, the
+  skilled trades fleeing abroad with their capital (state flip:
+  wealth drops within a season — econ feels it first).
+  Priest-holes in the manors, services in the cellars, informers
+  paid by the head: the hidden-faith fringe arrives with the
+  edict.
+- **card THE DUELING EDICT**: the code duello made a capital
+  crime; two grandees fight anyway; one is dead, and the survivor
+  — estate in limbo, family baying — is on the road: abroad,
+  hireable, and hunted (cross-land encounter fuel).
+- **card THE SEALED WARRANT**: blank royal arrest orders exist,
+  and they can be BOUGHT (lettres de cachet) — a rival vanishes
+  into a fortress without charge or trial. WIRING: the crime
+  layer's legal disappearance — a priced menu entry for the
+  connected, a fate to rescue someone from, a paper the party
+  might be carrying unopened.
+- **card THE TONTINE**: an elite investment pool where the last
+  survivor takes everything — and the survivors have begun dying
+  in interesting ways (the murder mystery that names its own
+  motive).
+- **card THE MONOPOLY BUBBLE**: the crown grants a colony-trade
+  monopoly; the shares go mad; the crash ruins half the merchant
+  quarter overnight. The POLITICAL act is the grant (econ's
+  bank-run card is this card's neighbor, and sometimes its morning
+  after).
+- **card THE ALCHEMISTS' WING**: the crown funds a stable of
+  alchemists to transmute the war debt away (moved from the
+  village list — it is a crown project, and gold-at-the-center is
+  this land's axis). Option, per the designer: IT WORKS — and the
+  treasury's triumph is finance's apocalypse: what is gold worth
+  the day after? WIRING: the game's alchemy layer gives the
+  project texture for free.
+- **card THE FLOUR WAR**: the crown lifts bread price controls in
+  a lean year — prices quintuple, bakeries are sacked, merchants
+  lynched as hoarders; the act is read to the crowd, the hour runs
+  out, and the musketeers fire (the decree-made famine; econ's
+  famine chain is the harvest-made one).
+- **card THE SALT REVOLT**: the salt tax rises once too often; a
+  province butchers its tax collectors; the army answers with
+  burned villages and hanged ringleaders (reads
+  court-vs-provinces; econ's tax-farmer card is the standing
+  cause).
+- **card THE AUTO-DA-FE**: the faith's tribunal arrests a mountain
+  village wholesale — heresy, witchcraft, the old religion — and
+  stages the penance-and-execution spectacle in the capital square
+  as political theater (reads crown-vs-faith; the spell-fearing
+  wiring aims it at casters, the PC included).
+- **card THE BANDIT KING**: enclosure and debt made him, charisma
+  armed him, and he robs ONLY tax shipments and the rich — so the
+  peasants hide him, the magistrates hang whoever they catch
+  instead, and both sides pay for road work (the two-sided
+  standing employer).
+- **fact THE OARS**: the state's galleys are rowed by the
+  sentenced — vagrants, heretics, debtors — and the port's press
+  gangs take the rest on a bad night (a punishment with a place in
+  it, and a rescue shape; grim Mediterranean color the axis
+  earns).
+- **option LETTERS OF MARQUE**: the colony war licenses privateers
+  — state piracy with paperwork, a legal employer for violence at
+  sea, one revoked commission away from ordinary piracy.
+- **fact THE SMUGGLER STATE**: the internal tariffs and the salt
+  price built a parallel nation — armed syndicates better funded
+  than the coast guard, bankrolled by respectable money (econ's
+  smuggling option at political scale: in the smuggler country,
+  THEY are the magistrates).
+- **relation** The seditious print: Gibili's basement presses
+  print what Mortellaria's censors burn, and the pamphlets ride
+  the smuggler roads back in (the reverse of the arms flow). The
+  emigre edge: the Revocation's exiles and the edict's duelists
+  pool in Gibili's cafes (its packet).
+
+### Gibili — goblins. Politics axis: THE STATE THAT ISN'T
+
+Econ already owns labor vs capital (the strikes, the company
+police, the scrip); politics adds the paralyzed state above it,
+the split loyalties inside it, and the foreigners feeding on it.
+
+- **Constitution (exclusive slot).** Default THE PAPER STATE: a
+  flag, a parliament, an army — and no writ that runs past the
+  mill gates; corporate power governs in fact (econ's founding
+  fact, made constitutional). Variants: THE JUNTA — the generals
+  lose patience (the split-army fact resolving upward); THE
+  COMMUNE — a syndicate city wins and keeps itself: schools,
+  courts, rations, firing squads (the barricade state made
+  permanent); OCCUPATION — Mortellaria's big econ card, worn as
+  the constitution.
+- **Standing tensions:** the parliament's three-way deadlock
+  (restorationists / mill liberals / socialists); the army against
+  its own ranks; the syndicates against each other.
+- **fact THE PARLIAMENT OF CHAOS**: deadlocked, brawling,
+  inkwell-throwing — and OWNED: seats sit on depopulated rotten
+  districts where one landlord commands all three voters, and
+  ministers are priced like any other commodity. The barons' tool,
+  which occasionally bites its owner.
+- **fact THE BUFFER DOCTRINE**: the whole foreign policy is "give
+  the empire no excuse." Mortellaria buys the cannon, prefers the
+  mills cheap and the state weak, and quietly funds rival radical
+  groups to keep them so — the occupation card is what happens the
+  day the doctrine fails.
+- **fact THE SPLIT ARMY**: aristocrat generals who despise the
+  mill barons command slum-drafted ranks who sympathize with the
+  strikers they are ordered to shoot. Every crowd order is a coin
+  flip. WIRING: econ's uprising card gains its
+  which-way-do-the-soldiers-point read; the junta and the commune
+  are the two ways the coin lands.
+- **fact THE SYNDICATES AS SHADOW STATE**: the unions run schools,
+  clinics, courts, and dues in the districts the state forgot —
+  parallel government is not a metaphor here (econ's strike
+  machinery sits on this fact).
+- **card THE GENERAL STRIKE**: every industry at once — the nation
+  simply stops (the escalation past econ's per-town STRIKE state;
+  admits on strike-on plus a spark). It begins, as ever, with the
+  poisoned trades — the match-workers the phosphorus is eating —
+  and ends however the split army decides.
+- **card THE PROVOCATEUR**: the secret police's card-catalog
+  archive has a man in every cell — and this bomb plot was HIS
+  idea (the agent provocateur; the archive is the one organ of the
+  state that works). Work for every side: expose him, protect him,
+  become him.
+- **card THE MANUFACTURED ATROCITY**: a press baron fabricates an
+  outrage to sell papers and force the war party's hand — and
+  under the buffer doctrine a manufactured border incident can
+  bring the empire in for real (yellow journalism with existential
+  stakes).
+- **card THE BARRICADE DAYS**: a district overturns its trams,
+  pries up its cobbles, and declares itself autonomous (the
+  commune in miniature). Inside, three flags argue — anarchist,
+  socialist, reformist — and shoot at each other nearly as readily
+  as at the police (the fractured left: two-sided work INSIDE the
+  barricade, not just across it).
+- **card THE MACHINE-BREAKERS**: a fringe that wants no wage rise
+  — they want the engines DEAD (the saboteur heresy; econ's
+  sabotage angle worn as faith). The unions fear them more than
+  the barons do: every broken loom is the strike blamed.
+- **option THE EMIGRE CAFES**: deposed royals, cashiered generals,
+  spy-masters, and duel fugitives plot restorations over credit —
+  every neighbor's exiles end up HERE (Mortellaria's heretics and
+  duelists, Ensimaa's erased), and half of them are somebody's
+  informant. Standing employer fauna.
+- **option THE BASEMENT PRESSES**: seditious print for every
+  appetite — manifesto, bomb manual, scandal sheet — smuggled into
+  Mortellaria against the censors (the reverse arms trade; the
+  relation edge sits in Mortellaria's packet).
+- **card THE MUCKRAKER**: a journalist goes undercover into a mill
+  or an asylum and comes out with a story someone will kill to
+  keep unprinted — escort it, suppress it, or finish it (one quest
+  shape, three employers).
+
+---
+
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
 technology.** Politics first: the design session's authority /
 disposition / tension schema (jerkify, bullies) already needs it, and
 half the economy cards above lean on a political actor. (2026-08-06:
-politics' PERSON half is dumped — THE RULER CHARACTER above; the
-authority-kind/tension half and the trait-to-card wiring remain.) Religion can
-fold into politics where it overlaps (the templar move, the temple as
-authority) and keep only what stands alone. Monsters & fauna is
+BOTH halves are dumped — THE RULER CHARACTER and THE LAND PACKETS —
+POLITICS above; what remains is the design session's formalization —
+the constitution/tension/faction records, the trait-to-card wiring —
+and the per-land ruler modifier columns.) Religion's dump shrinks
+accordingly: the politics packets already ate its political overlap
+(the interdict, the militant order, the witch-finder, the auto-da-fe,
+the Revocation, the ghost dance, the Sky's mandate) — what stands
+alone is cosmology, the temple as a service layer, and whatever the
+hell pact's church looks like. Monsters & fauna is
 mostly ASSIGNMENT — the per-land encounter pools already exist; the
 dump picks distinctive regional creatures and ties cards to them
 (the fog necromancer pattern). Magic and science/technology should
