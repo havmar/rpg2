@@ -162,7 +162,15 @@ a pointer: what the file is, how it's run, where its docs are.
   its annotated merge ledger over the designer's historical-monarch
   catalog, and the human-crown / Firascir baseline weights measured
   2026-08-06 from the designer's 443-ruler dataset (pool 357;
-  per-land modifier columns pending). Pre-implementation — plan.md's design session consumes it;
+  per-land modifier columns pending) — and, same day, THE LAND
+  PACKETS — POLITICS, the dump's power half: the selection doctrine
+  (packets are pools; worldgen rolls the color), the constitution
+  slot with per-land defaults and variants, the standing-tension
+  roll gating each land's one crisis deck, the faction-edge sketch
+  (the designer's worked model), the land-agnostic war feed (casus
+  belli, diplomatic instruments, succession crises), and six curated
+  political packets cross-wired into the econ packets, the ruler
+  sheet, and the crime/mercy/war layers. Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
