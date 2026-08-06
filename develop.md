@@ -155,10 +155,11 @@ a pointer: what the file is, how it's run, where its docs are.
   to cut), and — since 2026-08-06 — THE RULER CHARACTER, the politics
   dump's person half: the rollable trait sheet (axes with unnamed
   neutral middles, flags, the moral-tag consistency rule and derived
-  `heart`, the 3-5 trait window, scope marks), its annotated merge
-  ledger over the designer's historical-monarch catalog, and the
-  empty probability columns a parallel monarch-dataset session
-  fills. Pre-implementation — plan.md's design session consumes it;
+  `heart`, the 3-5 trait window, scope marks), the range doctrine
+  (vivid over generic; rarity priced by cells, never cut — the
+  afflictions stay uncollapsed), its annotated merge ledger over the
+  designer's historical-monarch catalog, and the empty probability
+  columns a parallel monarch-dataset session fills. Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,

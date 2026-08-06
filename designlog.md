@@ -1797,3 +1797,49 @@ ledger, the cut list, circumstances); its intro and layers-to-dump
 note now show politics half-dumped. develop.md's worldsim.md Files
 entry extended; plan.md's identity-schema and what-dict-NPCs-carry
 agenda bullets point at the draft.
+
+## 2026-08-06 (session B) — Range over restraint: the afflictions uncollapsed
+
+**Where it started.** Reviewing the morning's ruler-character section,
+the designer overruled two of its calls: the register-miss cut
+(suicidal behavior, disordered eating, seizures, and memory impairment
+removed as "register misses for this game") and the health collapse
+(one `mad`, one `troubled` flag). The direction behind the reversal:
+the game has been moving away from generic heroic fantasy — injuries,
+crime, realistic economic trouble — and the priority is memorable,
+vivid content. A suicidal or eating-disordered king is exactly the
+rumor that is remembered; with a planned ~1% probability floor for
+rare things, specific entries cost nothing. And the content
+instructions themselves must not be able to sand this off.
+
+**The calls.**
+
+1. *The affliction family uncollapsed.* Melancholy, manic, sees
+   visions, delusions, death-wish, failing mind, and sleepless
+   replace `troubled` and `mad`; crippled and falling-sickness split
+   out of sickly; the table axis (glutton / eats nothing) restores
+   disordered eating widened to both extremes. "Mad King" is demoted
+   to a fiction READING over the specific rolled words — cards that
+   want the family admit on any-of; the specific word is what rolls.
+2. *The register-miss cut deleted* and a RANGE DOCTRINE subsection
+   written in its place: the widest range the catalog allows,
+   scandalous and clinical included; rarity is the probability
+   column's job, never the vocabulary's; no register or writing pass
+   may collapse vivid specifics into a safer generic word.
+3. *writing.md's Tone section rewritten to match.* "It is never
+   grimdark realism" was a blanket over material; it now bans
+   grimdark DELIVERY only — dark material is in range, wallowing is
+   not, and restraint governs how a line is written, never which
+   facts may exist.
+4. *The affliction cap eased* from two to three of the family, with
+   coherent combos welcomed as one story (melancholy + sleepless +
+   drunkard is a person, not a pile-up). The mad x troubled
+   exclusion died with the collapse.
+5. *Two free-color notes added:* any affliction may carry a dated
+   origin ("since the fever", "since the queen died" — absorbing
+   illness-associated personality change), and persecutory shades of
+   delusion may roll beside suspicious.
+
+**Recorded.** worldsim.md's fill sheets, merge ledger, cut list, cap,
+and the new Range doctrine subsection; writing.md's Tone and comedy
+section; develop.md's worldsim.md Files entry line.

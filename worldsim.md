@@ -402,6 +402,21 @@ merged (the characteristic criterion applied to people).
   mechanism, deferred by directive. The dataset's European monarchs
   fill the HUMAN-CROWN baseline column.
 
+### Range doctrine (2026-08-06, designer directive)
+
+The game has left generic heroic fantasy — named wounds, crime that
+pays, realistic economic trouble — and the sheet follows: its job is
+MEMORABLE, VIVID rulers, so the vocabulary keeps the widest range
+the catalog allows, the scandalous and the clinical included. A king
+who starves himself, or who tried to die by his own hand, is exactly
+the rumor that is remembered. Rarity is the probability column's
+whole job — a rare entry gets a small cell (the designer plans a ~1%
+floor for rare things), never deletion — and no register or writing
+pass may collapse specific vivid entries into a safer generic word.
+This is range, not grimdark: writing.md's restraint governs how a
+line is DELIVERED, never which facts may exist (its Tone section
+says the same since this directive).
+
 ### Consistency — three rules, no engine
 
 1. **One pole per axis** — structural; the roll picks at most one.
@@ -417,9 +432,10 @@ merged (the characteristic criterion applied to people).
    layer's desert anchor (jerkify: sin books lighter against the
    dark-hearted crown, heavier against the good one).
 3. **Row exclusions.** A handful of `never with` notes on the flag
-   sheet (gifted x spell-fearing, mad x troubled), plus one cap: at
-   most TWO afflictions (sickly / drunkard / troubled / mad) on one
-   character — a pile-up reads as parody.
+   sheet (gifted x spell-fearing), plus one cap: at most THREE of
+   the affliction family on one character. Within the cap, combos
+   are content, not noise — melancholy + sleepless + drunkard reads
+   as one story.
 
 Implementation note for the roll: evaluate axes in a per-character
 shuffled order, so skip-on-conflict does not systematically starve
@@ -448,6 +464,7 @@ cell is the share of monarchs. Tags ride the pole word.
 | custom    | traditionalist    |    | reformer             |    | any   |
 | door      | accessible        |    | walled               |    | any   |
 | appetites | chaste            |    | lecherous            |    | any   |
+| table     | glutton           |    | eats nothing         |    | any   |
 | hearth    | doting (good)     |    | harsh at home (dark) |    | any   |
 | strangers | welcoming         |    | race-proud           |    | any   |
 | sorcery   | spell-friendly    |    | spell-fearing        |    | any   |
@@ -468,13 +485,23 @@ cell is the share of monarchs. Tags ride the pole word.
 | puppet       |   | any   |               |
 | itinerant    |   | crown |               |
 | trade-minded |   | any   |               |
-| gifted       |   | any   | spell-fearing |
-| sickly       |   | any   |               |
-| drunkard     |   | any   |               |
-| troubled     |   | any   | mad           |
-| mad          |   | any   | troubled      |
+| gifted           |   | any   | spell-fearing |
+| sickly           |   | any   |               |
+| crippled         |   | any   |               |
+| falling-sickness |   | any   |               |
+| drunkard         |   | any   |               |
+| melancholy       |   | any   |               |
+| manic            |   | any   |               |
+| sees visions     |   | any   |               |
+| delusions        |   | any   |               |
+| death-wish       |   | any   |               |
+| failing mind     |   | any   |               |
+| sleepless        |   | any   |               |
 
-Affliction cap: at most two of sickly / drunkard / troubled / mad.
+Affliction cap: at most three of the affliction family (sickly,
+crippled, falling-sickness, drunkard, glutton, eats nothing,
+melancholy, manic, sees visions, delusions, death-wish, failing
+mind, sleepless) on one character.
 
 ### The vocabulary, annotated (the merge ledger)
 
@@ -534,6 +561,10 @@ words are idea-level — the writing.md pass happens at implementation.
 - **appetites** (chaste / lecherous): absorbs sexually restrained;
   licentious. Scandal rumor, bastard claimants, the succession
   mess; chaste is notable in the other direction (no heir coming).
+- **table** (glutton / eats nothing): absorbs disordered eating,
+  widened to both extremes — the gorging court and the fasting
+  crown are equally strong rumor. Feasts as sights, the taster's
+  job, the physician's despair.
 - **hearth** (doting / harsh at home): absorbs devoted spouse,
   affectionate parent; abusive spouse, sexual/emotional jealousy,
   neglectful parent. The catalog's whole home-life cluster in one
@@ -593,19 +624,51 @@ Flags:
 - **gifted** (never with spell-fearing): the crowned caster — rare
   and world-bending by design; a small cell.
 - **sickly**: absorbs chronic physical illness, frail health,
-  chronic pain, physical disability, recurrent incapacitation. The
-  game does not distinguish them — the rumor is the same: the
+  chronic pain, recurrent incapacitation. The game does not
+  distinguish illness from frailty — the rumor is the same: the
   succession clock is ticking. Robust health is the neutral, cut.
+- **crippled**: absorbs physical disability, split out of sickly by
+  directive — a lame leg is not a sick body, and the epithet is
+  different. The withered arm, the lame king; what he cannot do and
+  what the court pretends not to see.
+- **falling-sickness**: absorbs neurological episodes and seizures,
+  under the historical name. A fit before the full court is a
+  scene; "God touches him" and "he is cursed" are both live rumors.
 - **drunkard**: absorbs alcohol misuse, drug or medication
   dependence. Court sights, indiscretion, a lever for others.
-- **troubled** (never with mad): absorbs depressive symptoms,
-  pathological anxiety, sleep disturbance, severe grief, trauma
-  symptoms. The shut-away ruler; moody audiences.
-- **mad** (never with troubled): absorbs delusional or psychotic
-  symptoms, hallucination-like experiences, severe mood
-  instability, manic episodes, illness-associated personality
-  change, cognitive decline. The mad-crown card set — prime drama,
-  kept rare by its cell.
+- **melancholy**: absorbs depressive symptoms, pathological
+  anxiety, severe grief reaction, trauma symptoms. The shut-away
+  crown, the black months, audiences refused.
+- **manic**: absorbs manic or unusually elevated episodes. Grand
+  schemes, sudden works, spending fevers; rolled beside melancholy
+  it is the unstable crown (severe mood instability lives in that
+  pair, not in an entry of its own).
+- **sees visions**: absorbs hallucination-like experiences. In this
+  world the best kind of ambiguous — madness, or a true seeing?
+  Cards can play it either way; the fog necromancer pattern has a
+  royal cousin here.
+- **delusions**: absorbs delusional or psychotic symptoms — the
+  fixed false belief: the king who is made of glass, the chosen of
+  God, the poisoned bloodline. (Persecutory shades border
+  suspicious's far end; both may roll.)
+- **death-wish**: absorbs self-harming or suicidal behavior. "The
+  priests hushed what happened in the tower" — grave, rare, and
+  exactly the rumor that is remembered.
+- **failing mind**: absorbs cognitive decline, memory impairment.
+  Forgets faces, repeats yesterday's audience; the court governs
+  around him — and someone answers in his name.
+- **sleepless**: absorbs sleep disturbance. Lamps burn in the
+  king's window all night; audiences at dawn or not at all.
+
+Two notes on the affliction family. Any affliction may be stamped
+with a dated origin at generation time ("since the fever", "since
+the queen died") — this absorbs illness-associated personality
+change and gives the rumor its story for free. And MAD is a
+READING, not a rolled word: the fiction may crown anyone "the Mad
+King" over sees visions, delusions, or the melancholy-manic pair,
+but the specific word is what rolls and what cards admit on —
+uncollapsed by directive; a card that wants the whole family admits
+on any-of.
 
 ### Cut from the catalog
 
@@ -617,11 +680,6 @@ Flags:
   autocratic (the readable ends live in rule and puppet),
   court-focused, centralizing / decentralizing, patronage-skilled,
   institution-building (folded into reformer), fortification-minded.
-- **As register misses for this game:** self-harming or suicidal
-  behavior, disordered eating, neurological episodes and seizures,
-  memory impairment as its own entry (mad covers the readable
-  presentation). The clinical rows served the historical dataset;
-  the game keeps four affliction flags.
 - **As neutral defaults:** robust health, providential (devout
   color), propagandistic (lavish color).
 - **Moved to circumstances:** fratricidal — history, not
