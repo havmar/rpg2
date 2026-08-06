@@ -7,7 +7,8 @@ material — the record framework the design session will formalize, the
 weather system sketch, the curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
-(the dump's power half, same day). Nothing here is shipped. When a piece ships, its rules move to rules.md and
+(the dump's power half, same day), and the religion land packets (the
+worship dump, same day). Nothing here is shipped. When a piece ships, its rules move to rules.md and
 its entry here is cut (the plan.md convention).
 
 Register note: entries are IDEA-LEVEL, in the dev register. Final
@@ -1486,6 +1487,326 @@ the split loyalties inside it, and the foreigners feeding on it.
 
 ---
 
+## THE LAND PACKETS — RELIGION (2026-08-06)
+
+Provenance: the designer's 2026-08-06 religion notes — a register per
+race (shamanic orcs; pagan-Germanic, stereotypical-fantasy dwarves;
+folksy, superstitious, cult-like goblin business religions — showy,
+busy, loud, self-help and multi-level-marketing shaped; secular /
+philosophical / nondual elves whose religion stays personal and
+fragmented even under a totalitarian state; a Christian-coded Sun
+religion of the One God for both human lands, Mortellaria's version
+obsessed with death imagery and Dionysian hedonism as two aspects of
+the one, carnival and day-of-the-dead vibes) — expanded by the
+assistant on the approved mapping method: find the real-world
+version and carry its realistic or quirky detail, never the
+generic-fantasy filler. Written in two rounds (outline, feedback,
+writeup — all 2026-08-06); the feedback is folded in below. Entries
+beyond the approved outline are marked **[PROPOSED]**, cut-on-sight
+as ever. All of it is a first version, to be playtested before it
+hardens.
+
+Three directives from the feedback round govern the whole section:
+
+- **The pact stays out.** The player's hell pact is a gameplay
+  frame that predates the detailed worldbuilding, and it is NOT
+  lore: nobody in the world knows of it, nothing can sense it, and
+  no religion entry reacts to it — dark play is an option offered,
+  never a mark that makes the party conspicuous. Hell as a place,
+  actor, or church waits for its own later treatment (the
+  Caelum/pirates pattern — parked, deliberately unharmonized).
+- **Temple services are deferred.** Temples are option material
+  (healing, burial, blessing as priced-menu entries where a packet
+  says so), but the sin/penance wiring is deliberately NOT designed
+  here — the karma layer's mechanics are their own open question,
+  and the worldbuilding leans on none of them for now.
+- **No theology ruling.** The game never decides which land's
+  religion is true. Each is written from inside, on its own terms;
+  they contradict each other exactly the way real religions do, and
+  the contradictions are content (the disputation, the schism, the
+  mission), never errors to reconcile.
+
+**What politics already ate** (reference, don't duplicate — the
+dedupe doctrine): the interdict, the investiture tension and the
+militant order, the witch-finder, the dancing plague, sanctuary, the
+scandalous priest, and the tithe war (Firascir); the auto-da-fé and
+the Revocation (Mortellaria); the Sky's mandate, the bone-readers'
+veto, and the ghost dance (Tergal); the founders' dead and their
+release rites (Dvarvengrond); the purity writs, shunning, and the
+hermits (Ensimaa). Religion owns worship, rite, and the parish's
+daily texture; politics keeps church POWER.
+
+### The Sun communion (the two human lands, one church)
+
+One church, two rites — the outline round's lean, adopted: Firascir
+and Mortellaria worship the same One God of the Sun in one nominal
+communion, because the standing argument between two rites is better
+content than two sealed religions (the Latin/Greek shape: one
+communion in name, two liturgical worlds, the schism always one
+insult away).
+
+- **fact** The shared spine: one God, whose visible face is the
+  sun; dawn services; the solar year as the liturgical calendar.
+  Everything else the rites contest.
+- **relation** THE SCHISM CLOCK: the northern rite calls
+  Mortellaria's death-face devotion creeping heresy — an accusation
+  with teeth in a world where a king corrupted by a hungry god is a
+  thing that happens (the war layer's Deathless Crown variant is
+  the nightmare version, and both rites know it). Mortellaria
+  answers that a faith that refuses death its face is what MAKES
+  death monstrous. Both are right, neither yields, and every joint
+  synod ends one insult short of the split (the Photian shape).
+  Cards on this edge fire in both lands.
+
+### Ensimaa — elves. Religion axis: REVERENCE WITHOUT WORSHIP
+
+Reworked on the feedback round's directive: recognizable high
+fantasy elves — grace, refinement, gravity; the superhuman race
+whose one big flaw keeps the short-lived races on the board — with
+the notes' secular/nondual spine worn as ancient contemplative
+dignity, not modern satire. (The same directive flags the rest of
+the elven material for a later coherence-and-subtlety pass.)
+
+- **fact** THE UNPETITIONED HEAVEN: elves acknowledge the powers
+  humans call gods — they are old enough to have met a few — and do
+  not worship them. Their reverence goes to the whole of things,
+  never to a person in it (the nondual reading); asking a power for
+  favors strikes them as a category error, and watching humans pray
+  embarrasses them faintly, the way watching someone beg does.
+- **fact** THE STAR-COURTS: the land's only religious architecture
+  — open-roofed white marble courts, silent by custom, no clergy,
+  no services, no images. An elf sits with the night sky; that is
+  the whole liturgy. Visitors are admitted, and the silence is kept
+  without one posted rule.
+- **fact** THE SCHOOLS: a handful of contemplative disciplines
+  older than human civilization — teacher lineages, essays
+  exchanged a decade apart, membership as personal as a human's
+  parish. From outside the schools are indistinguishable; inside, a
+  one-word difference in one old text is a gulf. This is why even
+  the sealed-realm state never seized a church: there has never
+  been one to seize (the designer's note, kept as the axis's
+  political face).
+- **fact** MEMORY IS THE AFTERLIFE: the dead are not prayed to but
+  remembered EXACTLY — recited, name by name, deed by deed, for
+  millennia. WIRING: the politics packet's unearthed-record scandal
+  cuts as deep as it does because curated memory is sacrilege in
+  the one place elves keep something sacred.
+- **card** THE FUNERAL: an elf actually dies — once a century,
+  and murder's graver weight (econ) means it is usually a crime
+  too. The land stops. The rite is long, closed to outsiders, and
+  the grief is not graceful: an ageless people has no practice at
+  endings, and the composure the whole culture stands on fails in
+  public. The big flaw, worn liturgically.
+- **card [PROPOSED]** THE MISSION: a Sun-church mission has stood
+  in the capital for four hundred years and converted no one. The
+  elves send polite questions the missionaries cannot answer, and
+  fix the mission's roof when it leaks. Both sides consider the
+  arrangement a success.
+- **relation** THE ONES WHO GO TO LEARN ENDINGS: young elves — the
+  Mortality Club's quieter cousins — travel to Mortellaria's death
+  feast to stand where death has a face. The elders call it a
+  sickness; a few are old enough to remember going.
+
+### Tergal — orcs. Religion axis: THE PRACTICE, NOT THE CREED
+
+Shamanism as technique (Tengrist, Siberian, and plains-nations
+mechanisms, near verbatim). Politics owns the Sky's mandate, the
+bone-readers, and the ghost dance; religion keeps the daily
+practice a camp actually lives by.
+
+- **fact** THE CALL: shamans do not choose — a sickness or madness
+  takes the marked one, and initiation under a living shaman is the
+  only cure; refusal ends in death or a broken mind (the Siberian
+  shaman-sickness, verbatim).
+- **card** THE CALLED CHILD: a chief's child has the call; the
+  family hires escort to a distant teacher — or hires hands to hide
+  the child from the spirits, which every shaman says cannot be
+  done.
+- **fact** TABOO LAW: running water is never fouled (wash in a
+  river and answer for it — the Mongol water taboos), a tent's
+  threshold is never stepped on, the dead's names go unspoken. The
+  party WILL trip one — a standing scene machine, guest right's
+  ritual sibling, and the fine is paid in livestock like everything
+  else (wergild's little cousin).
+- **fact** THE SKY BURIAL: the dead go to the birds on exposure
+  platforms; burying a body in earth MAKES a ghost. A foreign
+  graveyard is an abomination the camps detour around — and a
+  native haunting means someone skipped the rites, with an address
+  at the end of the rumor line (the fog-necromancer pattern).
+- **option** THE WEATHER-WORKER: rain stones (the jada): a shaman
+  who moves weather can be HIRED — drought relief, or a storm
+  dropped on an enemy's grazing. The weather system's day roll
+  gains a priced thumb on the scale.
+- **fact** WHITE AND BLACK: the healer-shaman everyone loves, and
+  the one who deals with the dark spirits — needed, paid double,
+  and made to camp outside the ring of tents. The useful pariah:
+  when the herds sicken or the dead walk, everyone knows whose
+  tent to visit, after dark.
+- **fact** OWNER-SPIRITS: every spring, pass, and mountain has one
+  (the land-wights); travelers add a stone to the cairn at every
+  pass (the ovoo) — cheap travel-leg color, and an offended owner
+  starts the misfortune chain the shaman is paid to end.
+
+### Dvarvengrond — dwarves. Religion axis: THE DEAD ARE THE CHURCH
+
+Norse pagan practice over an ancestor cult, with the mining
+folklore worn as liturgy — the stereotypical fantasy dwarf, built
+from the real superstition catalog.
+
+- **fact** The gods are far away and the ancestors are RIGHT HERE:
+  formal worship is thin — a hall blessing, a seasonal sacrifice
+  (the blót) — and the working faith is the dead in the stone,
+  consulted, fed, and still holding claims (politics' founders'
+  veto is this fact's legal face). The deepest galleries are tombs,
+  and the tombs are the holiest ground in the mountain.
+- **fact** THE KNOCKERS: the mine-spirits knock before a collapse,
+  and are paid for it — the last bite of every meal left at the
+  working face — and WHISTLING UNDERGROUND IS FORBIDDEN (the
+  Cornish tommyknockers' superstition catalog, verbatim). Skeptics
+  exist; they are assigned the unluckiest shifts.
+- **fact** THE OATH RING: an oath sworn on the shrine's iron ring
+  binds in LAW (the hof ring) — the Grand Ledger's sacred sibling,
+  and oath-breaking the one crime the priests own outright.
+- **card** THE SEERESS: a traveling prophetess (the völva) whose
+  visit even thanes prepare for — the high seat built, the
+  questions submitted in order, no second answers. Her word on a
+  vein or a succession moves markets, and someone always wants the
+  question asked again.
+- **card** THE DRAUGR: a dead founder who will not stay down — in
+  his own gallery, on his own hoard, and by claim-law still its
+  HOLDER. The priestly answer, the practical answer, and the legal
+  question of whose vein it is now: all three for hire (monsters &
+  fauna will assign the creature row — the card names it).
+- **fact** GRAVE GOODS: wealth is buried with the dead — hoarding
+  as statesmanship continued past death (the politics fact's
+  liturgical face). The mountain's richest rooms are its tombs,
+  tomb-robbing is the deepest sacrilege on the books, and the
+  crime layer's most lucrative marks are its worst ideas.
+
+### Firascir — humans. Religion axis: THE PARISH IS THE SECOND STATE
+
+Medieval Latin Christianity played straight, as the land plays its
+economics — the baseline church the other five lands deviate from.
+
+- **fact** THE PARISH GRID: every village its priest, every life
+  its rites, baptism to burial; the church is the one institution
+  that reaches every hearth in the land (the manor reaches the
+  body; the parish reaches everything else).
+- **fact** THE CALENDAR RULES WORK: feast days claim a third of
+  the year, and working them is an offense — the harvest standing
+  ripe under a week of obligatory feasts is a card in waiting (the
+  real medieval count, kept because it is barely believable).
+- **option** THE PILGRIM ROADS: shrine circuits, pilgrim badges,
+  the inns that live on them — standing escort work, and a coin
+  inflow the econ packet never counted.
+- **card** FURTA SACRA: a town steals a rival shrine's relic to
+  capture its pilgrim trade — and doctrine holds the SAINT
+  CONSENTED, or the theft could not have succeeded (the
+  translation of St Nicholas, near verbatim). Work on every side,
+  theology included.
+- **card** THE THIRD SKULL: three shrines own the same saint's
+  skull; a synod orders authentication by miracle — and two of the
+  three abbots already know what the test will find.
+- **card** THE UNLICENSED MIRACLE: a well starts healing before
+  the church has ruled on it — license it, suppress it, or quietly
+  improve it; the innkeepers have opinions, and so does the parish
+  priest whose font sits empty.
+- **card** THE ANCHORITE: a hermit walled into the church wall
+  with one street-facing window (the anchoress, verbatim) — the
+  village's live-in saint, its advice window, and the one witness
+  who has watched the whole street every day for thirty years.
+- **card** THE OBLATE: a child given to the abbey at seven wants
+  out at fifteen; the abbey holds his labor, his inheritance, and
+  the law. A YEAR AND A DAY's church-side cousin, and both sides
+  will hire.
+
+### Mortellaria — humans. Religion axis: WHICH FACE RULES
+
+The same One God, the southern rite: the sun DIES every evening
+and is born every dawn — Death and the Feast are the god's two
+faces, and every argument in the land is over their proper share.
+The extremes — debauchery and self-flagellation — are BOTH
+arguably orthodox (the designer's note, kept as the axis): this is
+a religion whose internal argument its own scripture cannot
+settle. Tension candidate for the politics frame's roll: the
+penitent wing vs the carnival wing.
+
+- **fact** THE PENDULUM CALENDAR: the year swings between the
+  penitential season — hooded processions, flagellant columns, the
+  veiled statues (Semana Santa) — and CARNIVAL: masks, license,
+  the world upside down. Each wing calls the other the corruption;
+  attendance at both is near universal.
+- **fact** BONE ARCHITECTURE: ossuary chapels walled in skulls
+  (the Capela dos Ossos), catacomb saints dressed in jewels and
+  gold wire (the katakombenheilige) — memento mori as the national
+  art style, and the crime layer's strangest marks.
+- **card** THE DAY OF THE DEAD: one night a year the dead are
+  GUESTS — tombs picnicked in, plates set at family tables, the
+  graveyard lit like a fair. (Flagged: designer's call whether the
+  dead ever actually attend — the rite works either way, and the
+  family that swears grandmother came is content in both.)
+- **card** THE CARNIVAL AMNESTY: sins confessed masked, during
+  carnival, are absolved wholesale — the custom old, the theology
+  contested, and the season's last night the year's best time to
+  be forgiven or to disappear. (Mechanical reading deferred with
+  the rest of the temple-services wiring.)
+- **fact/option** THE BURIAL BROTHERHOODS: hooded lay
+  confraternities (the Misericordia) bury the poor and the plague
+  dead on dues and donations — anonymous by rule, ubiquitous by
+  custom, and the hood is perfect cover. Card: two brotherhoods
+  claim one notable corpse, and the standoff is conducted in full
+  regalia.
+- **card** THE DISPUTATION RIOT: a public theology debate on the
+  two faces — staged as entertainment, wagered on like a duel —
+  ends in faction fighting in the square: the argument the axis
+  names, with clubs.
+
+### Gibili — goblins. Religion axis: SALVATION AS BUSINESS
+
+No church — a MARKET (prosperity gospel, the multi-level marketing
+shape, the tiered-enlightenment ladder, spiritualist parlors,
+Victorian burial societies, street millenarians). Showy, busy,
+loud — the designer's three words, constitutional.
+
+- **fact** THE RELIGION MARKET: storefront temples, revival tents,
+  rival processions with brass bands, jingles, handbills (the
+  basement presses print scripture too, and tract-against-tract
+  wars sell papers). Congregations are founded, merge, split, and
+  fail like firms — weekly.
+- **fact** THE LADDER FAITHS: enlightenment sold in ranked tiers,
+  each rank's secrets priced above the last, the top tiers' price
+  never printed (the Scientology shape); recruiting five converts
+  is itself a sacrament, and the downline IS the congregation (the
+  MLM worn as church order).
+- **fact/option** THE BURIAL CLUBS: weekly dues, a grand funeral
+  guaranteed — plumes, band, the good hearse (the Victorian burial
+  societies, verbatim; a goblin funeral is the one show everyone
+  gets). Cards: the embezzled fund; two clubs claim one corpse.
+- **card** THE SEANCE PARLOR: mediumship as parlor business — most
+  are knee-under-the-table frauds, a few are real necromancers
+  moonlighting (the fog-necromancer pattern), and telling which is
+  which is the job (session D's flagged rescue candidate, landed).
+- **card** THE PROSPERITY PYRAMID: "the One God wants YOU rich" —
+  tithes promised back tenfold, early tithers paid from late
+  tithers' offerings, until the collapse (econ's bank-run card's
+  ugly street cousin).
+- **card** THE GREAT DISAPPOINTMENT: a street prophet dates the
+  End; believers quit the mills, sell everything, and climb the
+  slag hill in white robes. The card is the DAY AFTER (the
+  Millerites, verbatim): the debts, the emptied houses, the
+  prophet's recalculation — and the fringe insisting it worked,
+  invisibly.
+- **option [PROPOSED]** THE CHARM TRADE: amulets, blessed
+  machine-oil, curse insurance with printed policies — folk
+  superstition as light industry, sold door to door (the patent
+  medicine show's spiritual arm).
+- **relation [PROPOSED]** THE FRANCHISE MISSION: a ladder faith
+  opens a branch in a Firascir market town; the parish priest's
+  reaction writes itself (the reverse of Ensimaa's Sun-church
+  mission — Gibili exports religion the way it exports guns).
+
+---
+
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
@@ -1495,15 +1816,17 @@ half the economy cards above lean on a political actor. (2026-08-06:
 BOTH halves are dumped — THE RULER CHARACTER and THE LAND PACKETS —
 POLITICS above; what remains is the design session's formalization —
 the constitution/tension/faction records, the trait-to-card wiring —
-and the per-land ruler modifier columns.) Religion's dump shrinks
-accordingly: the politics packets already ate its political overlap
-(the interdict, the militant order, the witch-finder, the auto-da-fe,
-the Revocation, the ghost dance, the Sky's mandate) — what stands
-alone is cosmology, the temple as a service layer, and whatever the
-hell pact's church looks like. Monsters & fauna is
+and the per-land ruler modifier columns.) Religion is dumped too
+(2026-08-06, THE LAND PACKETS — RELIGION above): worship and rite
+only, the political overlap having gone to politics; the
+temple-service/penance wiring and anything hell-shaped are
+deliberately deferred, per the session's directives. Monsters &
+fauna is next, and
 mostly ASSIGNMENT — the per-land encounter pools already exist; the
 dump picks distinctive regional creatures and ties cards to them
-(the fog necromancer pattern). Magic and science/technology should
+(the fog necromancer pattern) — and the religion packets pre-order
+three (the draugr, the knockers, Tergal's grave-made ghosts).
+Magic and science/technology should
 ride the land packets as flavor anchors first (elven robots, dwarven
 methods, goblin gadgets are already in them) and get mechanics only
 where a card demands one.

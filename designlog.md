@@ -1986,3 +1986,75 @@ layers-to-dump notes updated — politics is now dumped BOTH halves,
 and religion's future dump shrinks by what politics ate.
 develop.md's worldsim.md Files entry extended; plan.md's
 identity-schema and event-vocabulary bullets point at the packets.
+
+## 2026-08-06 (session E) — The religion packets: the worship dump
+
+**Where it started.** The designer delivered the religion notes —
+one register per race: shamanic orcs; pagan-Germanic,
+stereotypical-fantasy dwarves; folksy, superstitious, cult-like
+goblin business religions (showy, busy, loud; self-help and MLM
+shapes); secular / philosophical / nondual elves whose religion
+stays personal and fragmented even under a totalitarian state; and
+a Christian-coded Sun religion of the One God for both human
+lands, Mortellaria's version obsessed with death imagery and
+Dionysian hedonism as two aspects of the one (carnival and
+day-of-the-dead vibes), with debauchery and self-flagellation both
+arguably supported by scripture. Method directive: the mapping
+doctrine, confirmed fruitful — find the real-world version and
+carry its realistic or quirky detail rather than producing generic
+fantasy. Protocol: two rounds — an assistant outline, designer
+feedback, then the writeup.
+
+**The feedback round's calls** (all three are standing directives,
+not one-off edits):
+
+1. *The pact isolation directive.* The player's hell pact predates
+   the detailed worldbuilding and is a gameplay-focused gimmick,
+   not lore: NOBODY in the world knows of it or can sense it, and
+   no world content reacts to it — dark play is an option offered,
+   never a mark that makes the party conspicuous. Hell as a place,
+   actor, or church is parked for its own later treatment (the
+   Caelum/pirates pattern). The outline's pact-reception frame
+   (per-land reactions to a pact-holder) was cut wholesale, along
+   with every entry that touched it (the black shaman smelling the
+   pact, the dwarven contract review, Gibili's pact upsell).
+2. *Penance deemphasized.* The designer is unsure what penance/sin
+   mechanics currently are or should be; the worldbuilding must
+   not lean on them for now. The outline's per-land
+   penance-interface table was cut; temples stay option-level
+   service material (healing, burial, blessing) with the karma
+   wiring an explicitly open question.
+3. *The elven regrounding.* The outline's modern-wellness satire
+   (the retreat industry, the shun-immune enlightened one) was
+   rejected as too clever and too modern. Target: recognizable
+   high fantasy elves — a culture of grace and refinement with a
+   few subtle twists of weirdness, projecting gravity: superhuman
+   beings with one big flaw that puts the other races militarily
+   on equal footing, quantity against their quality. The religion
+   packet was rewritten to that register (reverence without
+   worship, the star-courts, the contemplative schools, memory as
+   the afterlife, the funeral as the flaw worn liturgically) — and
+   the directive stands as a flag over the REST of the elven
+   material, which the designer wants made more coherent, more
+   subtle, and a bit more normal in a later pass.
+
+4. *Adopted from the outline unopposed:* the Sun communion as ONE
+   church with two contesting rites (the Latin/Greek shape) and
+   the schism-clock relation; the no-theology-ruling doctrine (no
+   religion is ever confirmed true; contradictions are content);
+   the real-world anchors throughout (Tengrist/Siberian practice,
+   the Cornish knockers and the völva, furta sacra and the
+   anchoress, Semana Santa / Día de los Muertos / the Misericordia
+   confraternities, the Millerites and the burial societies —
+   including session D's flagged séance-parlor rescue, landed in
+   Gibili). One flag left open for the designer: whether
+   Mortellaria's dead ever actually attend the Day of the Dead.
+
+**Recorded.** worldsim.md gained THE LAND PACKETS — RELIGION (the
+three directives, the Sun communion frame, six packets); its intro
+and layers-to-dump notes updated — religion is dumped, monsters &
+fauna is next, with three creatures pre-ordered (the draugr, the
+knockers, Tergal's grave-made ghosts). develop.md's worldsim.md
+Files entry extended; plan.md's event-vocabulary bullet counts the
+religion packets. All of it is a first version, to be playtested
+before it hardens.

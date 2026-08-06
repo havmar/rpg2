@@ -170,7 +170,14 @@ a pointer: what the file is, how it's run, where its docs are.
   (the designer's worked model), the land-agnostic war feed (casus
   belli, diplomatic instruments, succession crises), and six curated
   political packets cross-wired into the econ packets, the ruler
-  sheet, and the crime/mercy/war layers. Pre-implementation — plan.md's design session consumes it;
+  sheet, and the crime/mercy/war layers — and, same day, THE LAND
+  PACKETS — RELIGION: six worship/rite packets on the real-world
+  mapping method (the Sun communion's two contesting rites, orcish
+  shamanic practice, the dwarven ancestor church, the goblin
+  religion market, elven reverence-without-worship), under three
+  feedback-round directives — the player pact stays out of the
+  lore, temple-service/penance wiring deferred, no theology ruling.
+  Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
