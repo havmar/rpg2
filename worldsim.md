@@ -354,10 +354,13 @@ character schema. The other half — authority KIND, standing tension,
 and the wiring of a person's traits into cards — stays with the
 design session's identity-schema agenda. Provenance: the designer's
 historical-monarch trait catalog (~130 raw entries across ten
-headings), merged and classified this session; a parallel session is
-coding a dataset of real European monarchs against this sheet to
-produce the probability column. This section fixes only the SHAPE —
-no probabilities, by directive.
+headings), merged and classified 2026-08-06; the probability column
+landed the same day from the parallel dataset session — 734 European
+rulers coded, 443 carrying at least one trait at the kept resolution
+(the traitless discarded as minor), max 14 traits per ruler, average
+3, percentages rounded up. Those numbers are the weights in the
+sheets below: the HUMAN-CROWN / FIRASCIR BASELINE. Other lands and
+races get modifier columns later.
 
 What a ruler's traits are FOR — the merge criterion used throughout:
 political land identity, possible PC interaction, and rumor fuel. A
@@ -376,16 +379,32 @@ merged (the characteristic criterion applied to people).
   a bare word (`"cruel" in ruler["traits"]`). Only two companion
   keys exist: derived `heart` (below) and `puppeteer` (only beside
   `puppet`).
-- **Count.** Rulers carry 3-5 named traits, center-weighted on 4;
-  lesser named authorities (a lord, a sheriff, a guild master) carry
-  1-3, center 2. The roll is per-axis independent against the
-  probability sheet, then CLAMPED to the window: short characters
-  top up with weighted draws from the unrolled axes, long ones drop
-  overflow at random. Because the dataset's marginals describe real
-  monarchs — who each support far more than four adjectives — the
-  sheet's percentages pass through one global scale knob, tuned so
-  the expected named count lands near the window's center. The
-  dataset supplies RELATIVE frequency; the knob supplies volume.
+- **The pool roll (2026-08-06, dataset in hand — supersedes the
+  per-axis roll and its scale knob).** All named entries form ONE
+  weighted pool; the weight is the sheet number, the pool totals
+  357 (the magic cells included). A ruler DRAWS THREE: d357 against
+  the cumulative list, and between draws the drawn word, its axis
+  opposite, and its never-with partners leave the pool while the
+  die shrinks by their weights (Consistency below) — so three draws
+  always land three distinct compatible words. Lesser named
+  authorities (a lord, a sheriff, a guild master) draw TWO from the
+  crown-less pool (355). The identity that makes this faithful: the dataset's average
+  trait count was 3, so three weighted draws reproduce the measured
+  per-trait marginals almost exactly (ambitious lands on ~27% of
+  rolled rulers; the dataset said 32%). If rulers feel thin in
+  play, a fourth draw is the one knob — it scales every marginal by
+  4/3.
+- **The floor.** Vivid entries the dataset zeroed — godless, eats
+  nothing, sees visions — enter the pool at weight 1: the range
+  doctrine's ~1% floor made real. To fatten the rare tail later,
+  RAISE the floor at full resolution (+2, +3); never compress the
+  pool to a d100 — re-rounding either deletes the tail or triples
+  it, and code reads a 357-list as easily as a 100-list.
+- **The magic cells are hand-set** — history offers no data:
+  spell-friendly 2, spell-fearing 3, gifted 1 **[PROPOSED]**.
+  Witch-fear slightly ahead of patronage in a plain human land, the
+  crowned caster at the floor; all three are prime per-land
+  modifier targets.
 - **Scope.** Nearly the whole vocabulary applies to ANY authority —
   deliberate, so one sheet rolls a king, a border lord, and a
   toll-sheriff (the settlement authority the identity schema needs).
@@ -417,86 +436,96 @@ This is range, not grimdark: writing.md's restraint governs how a
 line is DELIVERED, never which facts may exist (its Tone section
 says the same since this directive).
 
-### Consistency — three rules, no engine
+### Consistency — two rules, a shrinking pool, no engine
 
-1. **One pole per axis** — structural; the roll picks at most one.
-2. **Moral tags.** Nine poles are tagged `good` or `dark` (marked in
-   the sheet). A character never holds both a good-tagged and a
-   dark-tagged trait: honorable and harsh-at-home do not meet in one
-   person, however historical the combination — a four-word
-   character must read as ONE person. Untagged traits mix freely
-   with either side (grasping + honorable is a real king; lecherous
-   + merciful is fine). `heart` is DERIVED, never rolled: any
-   dark-tagged trait makes it `dark`, any good-tagged `good`,
-   neither `mixed`. Heart stays hidden in play, and it is the crime
-   layer's desert anchor (jerkify: sin books lighter against the
-   dark-hearted crown, heavier against the good one).
-3. **Row exclusions.** A handful of `never with` notes on the flag
-   sheet (gifted x spell-fearing), plus one cap: at most THREE of
-   the affliction family on one character. Within the cap, combos
-   are content, not noise — melancholy + sleepless + drunkard reads
-   as one story.
+1. **One pole per axis.** Enforced by the draw itself: a drawn
+   trait AND its axis opposite leave the pool, and their weights
+   leave the die — draw ambitious on the d357 and ambitious 32 +
+   content 1 are gone; the next roll is a d324. Zealot occupies the
+   whole faith axis: drawing it removes devout and godless;
+   drawing devout removes godless and zealot.
+2. **Row exclusions, the same way.** A drawn trait also removes
+   whatever its `never with` column names (gifted removes
+   spell-fearing and vice versa); a character holding three of the
+   affliction family removes the rest of that family; and
+   out-of-scope entries never enter the die at all — a village
+   sheriff rolls the crown-less pool (355). Within the cap,
+   affliction combos are content, not noise — melancholy +
+   sleepless + drunkard reads as one story.
 
-Implementation note for the roll: evaluate axes in a per-character
-shuffled order, so skip-on-conflict does not systematically starve
-the sheet's later rows.
+**Moral tags are bookkeeping now, not law (2026-08-06, designer
+call).** Nine poles still carry `good` or `dark` in the sheet, but
+they forbid NOTHING — an honorable cruel king is a contradiction,
+and contradictions can work; the range doctrine would rather have
+him than not. The tags exist only to derive `heart`: dark-tagged
+traits present and no good ones → `dark`; good and no dark →
+`good`; both or neither → `mixed` (the contradictory ruler reads
+as complicated, which is what mixed means). Heart stays hidden in
+play, and it is the crime layer's desert anchor (jerkify: sin
+books lighter against the dark-hearted crown, heavier against the
+good one).
+
+The shrinking pool is exactly equivalent to rerolling invalid
+draws against the full die; implement whichever is cleaner. The
+removals terminate by construction and keep every remaining weight
+in its measured proportion.
 
 ### The fill sheet — axes
 
-One row per axis; each named pole gets a probability cell; neutral is
-the unwritten remainder (100 - %A - %B). The dataset session codes
-each monarch per axis as A / neutral / B and each flag as yes/no; the
-cell is the share of monarchs. Tags ride the pole word.
+One row per axis; the number beside each pole is its measured share
+of the 443 traited rulers (rounded up), serving directly as its pool
+weight. Neutral is the unwritten remainder. Tags ride the pole word;
+`fl` marks a dataset zero entered at the floor, `hs` a hand-set
+magic cell. All weights across both sheets sum to 357 — the pool.
 
-| axis      | pole A            | %A | pole B               | %B | scope |
+| axis      | pole A            | w  | pole B               | w  | scope |
 |-----------|-------------------|----|----------------------|----|-------|
-| ambition  | ambitious         |    | content              |    | any   |
-| industry  | tireless          |    | idle                 |    | any   |
-| nerve     | bold              |    | craven               |    | any   |
-| trust     | trusting          |    | suspicious           |    | any   |
-| mercy     | merciful (good)   |    | cruel (dark)         |    | any   |
-| honor     | honorable (good)  |    | faithless (dark)     |    | any   |
-| purse     | austere           |    | lavish               |    | any   |
-| greed     | openhanded (good) |    | grasping             |    | any   |
-| faith     | devout            |    | godless              |    | any   |
-| faith+    | zealot (extreme step: counts as devout) | | |    | any   |
-| rule      | lawful (good)     |    | arbitrary (dark)     |    | any   |
-| custom    | traditionalist    |    | reformer             |    | any   |
-| door      | accessible        |    | walled               |    | any   |
-| appetites | chaste            |    | lecherous            |    | any   |
-| table     | glutton           |    | eats nothing         |    | any   |
-| hearth    | doting (good)     |    | harsh at home (dark) |    | any   |
-| strangers | welcoming         |    | race-proud           |    | any   |
-| sorcery   | spell-friendly    |    | spell-fearing        |    | any   |
-| war       | martial           |    | unblooded            |    | any   |
-| wits      | brilliant         |    | dull                 |    | any   |
-| looks [PROPOSED] | striking   |    | ill-favored          |    | any   |
+| ambition  | ambitious         | 32 | content              | 1  | any   |
+| industry  | tireless          | 15 | idle                 | 2  | any   |
+| nerve     | bold              | 15 | craven               | 1  | any   |
+| trust     | trusting          | 2  | suspicious           | 7  | any   |
+| mercy     | merciful (good)   | 3  | cruel (dark)         | 10 | any   |
+| honor     | honorable (good)  | 2  | faithless (dark)     | 2  | any   |
+| purse     | austere           | 5  | lavish               | 5  | any   |
+| greed     | openhanded (good) | 2  | grasping             | 2  | any   |
+| faith     | devout            | 31 | godless              | 1 fl | any |
+| faith+    | zealot (extreme step: counts as devout) | 17 | | | any |
+| rule      | lawful (good)     | 12 | arbitrary (dark)     | 14 | any   |
+| custom    | traditionalist    | 7  | reformer             | 25 | any   |
+| door      | accessible        | 2  | walled               | 3  | any   |
+| appetites | chaste            | 2  | lecherous            | 3  | any   |
+| table     | glutton           | 2  | eats nothing         | 1 fl | any |
+| hearth    | doting (good)     | 3  | harsh at home (dark) | 1  | any   |
+| strangers | welcoming         | 4  | race-proud           | 3  | any   |
+| sorcery   | spell-friendly    | 2 hs | spell-fearing      | 3 hs | any |
+| war       | martial           | 28 | unblooded            | 1  | any   |
+| wits      | brilliant         | 18 | dull                 | 1  | any   |
+| looks     | striking          | 3  | ill-favored          | 1  | any   |
 
 ### The fill sheet — flags
 
-| flag         | % | scope | never with    |
-|--------------|---|-------|---------------|
-| charismatic  |   | any   |               |
-| witty        |   | any   |               |
-| cultivated   |   | any   |               |
-| tinkerer     |   | any   |               |
-| populist     |   | any   |               |
-| nepotist     |   | any   |               |
-| puppet       |   | any   |               |
-| itinerant    |   | crown |               |
-| trade-minded |   | any   |               |
-| gifted           |   | any   | spell-fearing |
-| sickly           |   | any   |               |
-| crippled         |   | any   |               |
-| falling-sickness |   | any   |               |
-| drunkard         |   | any   |               |
-| melancholy       |   | any   |               |
-| manic            |   | any   |               |
-| sees visions     |   | any   |               |
-| delusions        |   | any   |               |
-| death-wish       |   | any   |               |
-| failing mind     |   | any   |               |
-| sleepless        |   | any   |               |
+| flag             | w    | scope | never with    |
+|------------------|------|-------|---------------|
+| charismatic      | 7    | any   |               |
+| witty            | 2    | any   |               |
+| cultivated       | 14   | any   |               |
+| tinkerer         | 1    | any   |               |
+| nepotist         | 1    | any   |               |
+| puppet           | 4    | any   |               |
+| itinerant        | 2    | crown |               |
+| trade-minded     | 3    | any   |               |
+| gifted           | 1 hs | any   | spell-fearing |
+| sickly           | 7    | any   |               |
+| crippled         | 4    | any   |               |
+| falling-sickness | 3    | any   |               |
+| drunkard         | 2    | any   |               |
+| melancholy       | 3    | any   |               |
+| manic            | 1    | any   |               |
+| sees visions     | 1 fl | any   |               |
+| delusions        | 3    | any   |               |
+| death-wish       | 1    | any   |               |
+| failing mind     | 2    | any   |               |
+| sleepless        | 1    | any   |               |
 
 Affliction cap: at most three of the affliction family (sickly,
 crippled, falling-sickness, drunkard, glutton, eats nothing,
@@ -540,7 +569,8 @@ words are idea-level — the writing.md pass happens at implementation.
   purse: purse is what he spends on himself, greed is what he takes
   from others — the miser-taker and the spendthrift-giver are both
   real. Bribery terms on the priced menu, reward flavor. Grasping
-  is left untagged on purpose: the honest miser king exists.
+  is left untagged on purpose: taking hard is not dark-hearted by
+  itself.
 - **faith** (devout / godless; extreme step: zealot): absorbs
   personally devout, publicly pious, providential; religiously
   indifferent. Zealot absorbs zealous and religious dogmatism.
@@ -552,8 +582,11 @@ words are idea-level — the writing.md pass happens at implementation.
   justice the PC faces; seizure and rights cards.
 - **custom** (traditionalist / reformer): absorbs culturally
   conservative/innovative, centralizing/decentralizing,
-  institution-building, reforming. Strike, revolt, and new-court
-  cards; which faction hates him.
+  institution-building, reforming — and, since the dataset pass,
+  populist's one usable idea: a reformer's natural enemies are the
+  entrenched elites, and charisma decides whether the commons
+  shield him. Strike, revolt, and new-court cards; which faction
+  hates him.
 - **door** (accessible / walled): absorbs accessible; secretive.
   The most mechanical axis here: an accessible ruler is an audience
   the PC can simply GET; a walled one makes the audience itself a
@@ -569,10 +602,11 @@ words are idea-level — the writing.md pass happens at implementation.
   affectionate parent; abusive spouse, sexual/emotional jealousy,
   neglectful parent. The catalog's whole home-life cluster in one
   axis — rumor fuel both ways, the estranged-queen card.
-- **strangers** (welcoming / race-proud) **[PROPOSED]**: new,
-  world-specific. Ensimaa's foreigner-community state already needs
-  it, and a mixed party stands before every throne — this axis
-  decides how court receives them.
+- **strangers** (welcoming / race-proud): world-specific, adopted
+  with the dataset (the dataset's column name for race-proud is
+  `exclusive` — same slot). Ensimaa's foreigner-community state
+  already needs it, and a mixed party stands before every throne —
+  this axis decides how court receives them.
 - **sorcery** (spell-friendly / spell-fearing): the requested magic
   entry, shaped as a stance axis because the PC IS always a caster —
   a spell-fearing court is a direct PC problem, a spell-friendly one
@@ -588,9 +622,9 @@ words are idea-level — the writing.md pass happens at implementation.
   personnel, public performance as ability), politically astute,
   shrewd, strategically minded, patronage-skilled. Brilliant + idle
   and dull + tireless are the delicious combos.
-- **looks** (striking / ill-favored) **[PROPOSED]**: the catalog
-  has no appearance entry at all, yet epithet history runs on it
-  (the Fair, the Hunchback). Pure rumor and epithet fuel; cheap.
+- **looks** (striking / ill-favored): adopted with the dataset —
+  the catalog had no appearance entry, yet epithet history runs on
+  it (the Fair, the Hunchback). Pure rumor and epithet fuel; cheap.
 
 Flags:
 
@@ -606,8 +640,6 @@ Flags:
 - **tinkerer**: absorbs technically minded. Kept apart from
   cultivated because engines and guns are their own flavor in this
   world (Gibili, the dwarves). Gadget and works cards.
-- **populist**: absorbs populist, hostile to entrenched elites. The
-  commons shield him; the lords plot.
 - **nepotist**: absorbs nepotistic, factional, favorite-prone. The
   hated kinsman in office — standing rumor with an address.
 - **puppet** (+ `puppeteer`): absorbs favorite-dependent,
@@ -682,6 +714,11 @@ on any-of.
   institution-building (folded into reformer), fortification-minded.
 - **As neutral defaults:** robust health, providential (devout
   color), propagandistic (lavish color).
+- **As blander than its neighbors (2026-08-06, dataset in hand):**
+  populist — zero hits in 443 rulers, and on inspection everything
+  it would do in play is reformer + charismatic wearing different
+  clothes; its one usable idea moved into custom's annotation. The
+  designer's suspicion, confirmed.
 - **Moved to circumstances:** fratricidal — history, not
   disposition; see below.
 
@@ -701,8 +738,9 @@ captivity or exile. Two additions:
 
 ### What this does NOT decide
 
-- Probabilities — the parallel monarch-dataset session fills the
-  sheet; this section only fixed the rows.
+- Per-land and per-race probabilities — the sheet carries the
+  human-crown / Firascir baseline only; the other lands' modifier
+  columns and the tribal rewording are still to author.
 - The wiring — which cards admit on which words, the authority
   kind/tension schema, and whether the land RULER notable (the
   first intended consumer, doing nothing since 2026-07-12) rolls

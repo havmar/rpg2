@@ -154,12 +154,15 @@ a pointer: what the file is, how it's run, where its docs are.
   assistant-classified; additions marked [PROPOSED] for the designer
   to cut), and — since 2026-08-06 — THE RULER CHARACTER, the politics
   dump's person half: the rollable trait sheet (axes with unnamed
-  neutral middles, flags, the moral-tag consistency rule and derived
-  `heart`, the 3-5 trait window, scope marks), the range doctrine
-  (vivid over generic; rarity priced by cells, never cut — the
-  afflictions stay uncollapsed), its annotated merge ledger over the
-  designer's historical-monarch catalog, and the empty probability
-  columns a parallel monarch-dataset session fills. Pre-implementation — plan.md's design session consumes it;
+  neutral middles, flags, scope marks, `heart` derived from demoted
+  moral tags), the shrinking-pool draw (three traits per ruler, two
+  per lesser authority; opposites and never-withs leave the die
+  between draws), the range doctrine (vivid over generic; rarity
+  priced by cells, never cut — the afflictions stay uncollapsed),
+  its annotated merge ledger over the designer's historical-monarch
+  catalog, and the human-crown / Firascir baseline weights measured
+  2026-08-06 from the designer's 443-ruler dataset (pool 357;
+  per-land modifier columns pending). Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
