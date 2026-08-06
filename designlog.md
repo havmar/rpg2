@@ -1715,3 +1715,131 @@ section updated — the worldsim pointer, relations added to the
 architecture doctrine, the trim entry rewritten to the need-to-exist
 model, the identity-schema agenda bullet rewritten three-leveled.
 Implementation deliberately deferred to its own session.
+
+## 2026-08-06 — The ruler character: the politics dump's person half
+
+**Where it started.** The designer opened the politics layer with a
+historical-monarch trait catalog (~130 raw entries across ten
+headings — personal character, intellect, religion, governing style,
+political conduct, competence, war, health, relationships, plus a
+non-trait circumstances footer), built to be filled with real
+percentages: a parallel session is coding a dataset of European
+monarchs to get the statistical distribution. This session's task was
+the SHAPE only. The framing questions he brought: most entries are
+scales of three (trait — unnamed neutral — opposite) while some are
+binary (art patron has no hate-arts); how many named traits should an
+NPC leader carry (3-5?); mark what is crown-only; merge duplicates
+against the three uses — political land identity, PC interaction,
+rumor fuel (frail health vs chronic illness need not be
+distinguished); cut what cannot matter; find a SIMPLE consistency
+guard so honorable and abusive never meet (goodness meta-tags?); what
+to add (dumb/smart, something magic); tribal orc societies deferred;
+keep it colorful but let extremes generate rarely; deliver fillable
+column headers.
+
+**The calls.**
+
+1. *Axes and flags formalized.* An axis is two named poles around an
+   unnamed neutral middle; a flag is one named pole and silence;
+   neutral is never spoken. The fill-sheet answer to the presentation
+   question: one row per axis, a probability cell per pole, neutral
+   the unwritten remainder.
+2. *The object is a flat word list.* Pole names are globally unique,
+   so cards and rumor lines admit on bare words; the only companion
+   keys are derived `heart` and `puppeteer`.
+3. *Consistency by moral tags, not machinery.* Nine poles carry
+   `good` or `dark`; one rule — never both tags on one person —
+   blocks honorable+harsh-at-home while letting untagged traits mix
+   freely (the honest miser king survives). `heart` is DERIVED from
+   the tags, never rolled, stays hidden, and doubles as jerkify's
+   desert anchor. Rejected alternatives: pairwise exclusion tables
+   (bookkeeping), a rolled goodness core (a whole extra die for what
+   derivation gives free). Plus a few row-level `never with` notes
+   and an affliction cap of two.
+4. *Count: rulers 3-5 centered on 4; lesser authorities 1-3 centered
+   on 2.* Independent per-axis rolls off the dataset marginals,
+   clamped to the window; one global scale knob reconciles real
+   monarchs' trait density with the game's volume — the dataset
+   supplies relative frequency, the knob supplies volume.
+5. *Scope finding: one vocabulary serves the whole ladder.* Nearly
+   every entry applies to any authority — king, border lord,
+   toll-sheriff — which is exactly what the settlement identity
+   roll needs; itinerant is the lone crown-only entry.
+6. *Extremes are priced, not engineered.* Dramatic words stay in the
+   vocabulary with small probability cells; the one structural
+   extreme step (zealot, occupying faith's slot) demonstrates the
+   mechanism without generalizing it.
+7. *The big merges* (the full ledger lives in worldsim.md): the
+   entire Competence heading collapsed into the wits axis; the
+   24-entry health catalog into four affliction flags (sickly /
+   drunkard / troubled / mad); the home-life cluster into hearth;
+   the puppeteer crowd (mother, minister, favorite, elite capture)
+   into one puppet flag whose `puppeteer` field carries the color;
+   fratricidal moved out of traits into a kin-blood accession
+   circumstance.
+8. *Additions:* wits and the sorcery axis by request — sorcery
+   shaped as a STANCE (spell-friendly / spell-fearing) plus a rare
+   `gifted` flag, because the PC is always a caster and a
+   spell-fearing court is a direct PC problem. Marked [PROPOSED]
+   for the designer's cut: the strangers axis (how court receives a
+   mixed party; Ensimaa's foreigner states already want it), the
+   looks axis (epithet history runs on appearance), and the
+   succession-state circumstance.
+9. *Deferred by directive:* all probabilities (the dataset session's
+   work — European monarchs fill the human-crown baseline column);
+   orc/tribal rewording via later per-race probability columns; the
+   trait-to-card wiring and the authority kind/tension schema (the
+   design session still owns those).
+
+**Recorded.** worldsim.md gained THE RULER CHARACTER section (the
+shape, the consistency rules, both fill sheets, the annotated merge
+ledger, the cut list, circumstances); its intro and layers-to-dump
+note now show politics half-dumped. develop.md's worldsim.md Files
+entry extended; plan.md's identity-schema and what-dict-NPCs-carry
+agenda bullets point at the draft.
+
+## 2026-08-06 (session B) — Range over restraint: the afflictions uncollapsed
+
+**Where it started.** Reviewing the morning's ruler-character section,
+the designer overruled two of its calls: the register-miss cut
+(suicidal behavior, disordered eating, seizures, and memory impairment
+removed as "register misses for this game") and the health collapse
+(one `mad`, one `troubled` flag). The direction behind the reversal:
+the game has been moving away from generic heroic fantasy — injuries,
+crime, realistic economic trouble — and the priority is memorable,
+vivid content. A suicidal or eating-disordered king is exactly the
+rumor that is remembered; with a planned ~1% probability floor for
+rare things, specific entries cost nothing. And the content
+instructions themselves must not be able to sand this off.
+
+**The calls.**
+
+1. *The affliction family uncollapsed.* Melancholy, manic, sees
+   visions, delusions, death-wish, failing mind, and sleepless
+   replace `troubled` and `mad`; crippled and falling-sickness split
+   out of sickly; the table axis (glutton / eats nothing) restores
+   disordered eating widened to both extremes. "Mad King" is demoted
+   to a fiction READING over the specific rolled words — cards that
+   want the family admit on any-of; the specific word is what rolls.
+2. *The register-miss cut deleted* and a RANGE DOCTRINE subsection
+   written in its place: the widest range the catalog allows,
+   scandalous and clinical included; rarity is the probability
+   column's job, never the vocabulary's; no register or writing pass
+   may collapse vivid specifics into a safer generic word.
+3. *writing.md's Tone section rewritten to match.* "It is never
+   grimdark realism" was a blanket over material; it now bans
+   grimdark DELIVERY only — dark material is in range, wallowing is
+   not, and restraint governs how a line is written, never which
+   facts may exist.
+4. *The affliction cap eased* from two to three of the family, with
+   coherent combos welcomed as one story (melancholy + sleepless +
+   drunkard is a person, not a pile-up). The mad x troubled
+   exclusion died with the collapse.
+5. *Two free-color notes added:* any affliction may carry a dated
+   origin ("since the fever", "since the queen died" — absorbing
+   illness-associated personality change), and persecutory shades of
+   delusion may roll beside suspicious.
+
+**Recorded.** worldsim.md's fill sheets, merge ledger, cut list, cap,
+and the new Range doctrine subsection; writing.md's Tone and comedy
+section; develop.md's worldsim.md Files entry line.

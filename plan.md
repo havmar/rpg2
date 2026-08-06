@@ -220,7 +220,10 @@ second time.
      pact-deck pattern). Settlement identity derives from the land
      packet plus local tags and the settlement-level rolls: ONE
      authority (kind, disposition, standing tension) and the visible
-     mutable states events flip. Normal and prosperous stay mostly
+     mutable states events flip. The authority's PERSON now has a
+     drafted schema — worldsim.md's THE RULER CHARACTER (2026-08-06),
+     one trait vocabulary serving crown, lord, and sheriff alike;
+     kind and tension are still this session's to settle. Normal and prosperous stay mostly
      invisible — crisis is where content lives.
    - **The event vocabulary** — the template shape (admitting
      tags/states, a clock, the five-outlet effect list, a news line)
@@ -242,7 +245,12 @@ second time.
      fixes its motivation problem.
    - **What dict NPCs carry** in place of the trait sketch (spec B shipped
      the removal 2026-08-05; the replacement is still open, and now the
-     PC's own blank sheet asks the same question a second time).
+     PC's own blank sheet asks the same question a second time). For the
+     AUTHORITY tier the answer is drafted: worldsim.md's THE RULER
+     CHARACTER (2026-08-06) — the rollable trait sheet awaiting the
+     monarch-dataset percentages. Ordinary givers and service faces
+     stay blank (the characteristic criterion: rulers are card-backed,
+     givers are not).
    - **The landmark-problems tie-in** (the queued section below): a
      standing authored problem is the strongest identity a natural
      Area can carry; decide whether it rides this thread.

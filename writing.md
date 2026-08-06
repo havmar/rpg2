@@ -167,15 +167,23 @@ words.
 
 ## Tone and comedy
 
-The world is light fantasy with room for cartoon villainy, pratfall evil, and
-large archetypes. It is never grimdark realism. The comedy lives in the
-**material**: goblins collecting a bridge toll, Hell sending a polite audit,
-a necromancer whose dead will not follow instructions. The sentence reports
-the fact straight. No punchline, wink, or knowing comparison is required.
+The world is light-handed fantasy with room for cartoon villainy, pratfall
+evil, and large archetypes — and, on the same shelf, for named wounds, crime
+that pays, debt, hunger, and a king who has not eaten in a week. Keep the
+range of material as wide as possible: vivid and specific beat safe and
+generic, and no tone rule in this guide is license to cut or soften a fact
+the game rolled (2026-08-06 directive; worldsim.md's range doctrine is the
+companion piece). The comedy lives in the **material**: goblins collecting a
+bridge toll, Hell sending a polite audit, a necromancer whose dead will not
+follow instructions. The sentence reports the fact straight. No punchline,
+wink, or knowing comparison is required.
 
-Consequences remain concrete. A village burns, a companion dies, or a tyrant
-wins without the prose becoming solemn, gruesome, or portentous. Flat delivery
-does not erase the event; it trusts the event.
+What the game never becomes is grimdark in DELIVERY. Dark material is in
+range; wallowing is not. Consequences remain concrete. A village burns, a
+companion dies, a tyrant wins, the rumor says the old duke tried to hang
+himself — without the prose becoming solemn, gruesome, or portentous. Flat
+delivery does not erase the event; it trusts the event. Restraint governs
+how a line is written, never which facts may exist.
 
 ## Examples
 
