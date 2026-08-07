@@ -7208,7 +7208,8 @@ def learn_spell(h: Entity, name: str, log: list[str]) -> bool:
     return True
 
 
-def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
+def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str],
+                  markup: float = 1.0) -> bool:
     """Buy the spellbook that teaches `name` and learn it on the spot -- a
     between-adventures DM call (same shape as buy_weapon; session gates it
     to capitals). SPELLBOOK_PRICE gold from the party purse."""
@@ -7219,13 +7220,14 @@ def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
         return False
     if not h.is_wizard or name in h.spells:
         return learn_spell(h, name, log)    # emits the right refusal
-    if purse.gold < SPELLBOOK_PRICE:
+    price = marked_up(SPELLBOOK_PRICE, markup)
+    if purse.gold < price:
         log.append(f"    Not enough gold for the {name} spellbook "
-                   f"({purse.gold}g / {SPELLBOOK_PRICE}g).")
+                   f"({purse.gold}g / {price}g).")
         return False
-    purse.gold -= SPELLBOOK_PRICE
+    purse.gold -= price
     log.append(f"    {h.name} buys the {name} spellbook for "
-               f"{SPELLBOOK_PRICE}g (purse: {purse.gold}g).")
+               f"{price}g (purse: {purse.gold}g).")
     return learn_spell(h, name, log)
 
 
@@ -7483,7 +7485,20 @@ def potion_price(kind: str) -> int:
     return SALVE_PRICE if kind == "salve" else POTION_PRICE
 
 
-def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
+def marked_up(base: int, markup: float = 1.0) -> int:
+    """A catalog price as a LOCAL price (2026-08-09, the world layer's
+    priced menu). `markup` is whatever `worldsim.menu_terms` says this land
+    is charging today -- 1.0 everywhere the world is not doing anything, and
+    never below 1 gold: the world moves a price, it does not abolish one.
+
+    The engine takes the number and never asks where it came from, which is
+    what keeps the sims and benches (who always pass 1.0) out of the world
+    layer entirely."""
+    return max(1, round(base * markup))
+
+
+def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str],
+               markup: float = 1.0) -> bool:
     """Buy one potion from the party purse. A between-adventures call the DM
     makes on the player's decision -- nothing in the engine buys automatically."""
     if kind not in POTION_KINDS:
@@ -7491,7 +7506,7 @@ def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
     if kind not in SHOP_POTION_KINDS:
         log.append(f"    No shop stocks a {kind} potion.")
         return False
-    price = potion_price(kind)
+    price = marked_up(potion_price(kind), markup)
     if purse.gold < price:
         log.append(f"    Not enough gold for a "
                    f"{POTION_DISPLAY.get(kind, kind)} "
@@ -7505,7 +7520,7 @@ def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
 
 
 def healer_service(party: list[Entity], purse: Purse, subtype: str,
-                   log: list[str]) -> tuple[int, int]:
+                   log: list[str], markup: float = 1.0) -> tuple[int, int]:
     """The settlement's healer -- the treatment ladder's ACCESS rung (slice
     3b). Costs a day (the caller advances the clock, so the quest clock prices
     the visit) and HEALER_FEE per severity closed, and clears the party's
@@ -7519,7 +7534,12 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
     level 20 as at level 1. Permanents are beyond every tier -- they want the
     epic elixir or the rank-3 healing spell.
 
+    Since 2026-08-09 the FEE (never the cap) can be marked up by the world
+    layer -- a mill town under smog charges what a town full of coughing
+    people will pay. The cap stays geography and geography does not inflate.
+
     Returns (severity closed, gold spent)."""
+    fee = marked_up(HEALER_FEE, markup)
     cap = HEALER_TIER_CAP.get(subtype, HEALER_TIER_CAP["village"])
     hurt = [h for h in party
             if not h.dead and any(not w.permanent for w in h.wounds)]
@@ -7536,17 +7556,17 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
         worst = max(
             (w for h in hurt for w in h.wounds if not w.permanent),
             key=lambda w: w.severity, default=None)
-        if worst is None or purse.gold < HEALER_FEE:
+        if worst is None or purse.gold < fee:
             break
         owner = next(h for h in hurt if worst in h.wounds)
         step = min(budget, worst.severity)
-        affordable = min(step, purse.gold // HEALER_FEE)
+        affordable = min(step, purse.gold // fee)
         if affordable <= 0:
             break
         name = worst.name
         gone = heal_wounds(owner, affordable, treat=True)
-        purse.gold -= HEALER_FEE * affordable
-        spent += HEALER_FEE * affordable
+        purse.gold -= fee * affordable
+        spent += fee * affordable
         closed_total += affordable
         budget -= affordable
         if gone:
@@ -7558,7 +7578,7 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
                        f"down to severity {worst.severity}, packed and "
                        f"dressed.")
     if not closed_total:
-        log.append(f"    The healer wants {HEALER_FEE}g a wound and the "
+        log.append(f"    The healer wants {fee}g a wound and the "
                    f"purse holds {purse.gold}g.")
         return 0, 0
     if cap is not None and budget <= 0:
@@ -7635,7 +7655,8 @@ def grant_starter_ammo(h: Entity, log: list[str]) -> None:
                    f"{want} carried)")
 
 
-def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
+def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str],
+               markup: float = 1.0) -> bool:
     """Buy a weapon from the party purse and wield it -- a between-adventures
     DM call, same shape as buy_potion. Plain-tier weapons are for sale
     anywhere weapons are sold; MASTERWORK is shoppable too since 2026-07-28
@@ -7660,19 +7681,21 @@ def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str]) -> bool:
     if w.tier not in ("plain", "masterwork"):
         log.append(f"    No shop sells a {w.tier} weapon.")
         return False
-    if purse.gold < w.value:
+    price = marked_up(w.value, markup)
+    if purse.gold < price:
         log.append(f"    Not enough gold for a {name} "
-                   f"({purse.gold}g / {w.value}g).")
+                   f"({purse.gold}g / {price}g).")
         return False
-    purse.gold -= w.value
-    log.append(f"    {h.name} buys a {name} for {w.value}g "
+    purse.gold -= price
+    log.append(f"    {h.name} buys a {name} for {price}g "
                f"(purse: {purse.gold}g).")
     equip_weapon(h, w, log)
     grant_starter_ammo(h, log)
     return True
 
 
-def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
+def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str],
+             markup: float = 1.0) -> bool:
     """Buy one LOT of ammo (AMMO_LOTS: arrows/bolts by the sheaf, shells
     and knives by the pair) from the party purse, up to the carry cap.
     Sling stones are never bought -- the ground is full of them."""
@@ -7680,6 +7703,7 @@ def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str]) -> bool:
         log.append(f"    No shop sells {kind!r}.")
         return False
     lot, price = AMMO_LOTS[kind]
+    price = marked_up(price, markup)
     cap = AMMO_CAPS[kind]
     have = h.items.get(kind, 0)
     if have >= cap:
@@ -8359,7 +8383,7 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
 
 def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                 log: list[str], rng: random.Random | None = None,
-                sky: str = "") -> bool:
+                sky: str = "", markup: float = 1.0) -> bool:
     """A night at the inn (session play gates it to settlements): a long rest
     plus a hot meal and a real bed, TAVERN_COST_PER_HERO gold per living
     member from the purse. The party wakes OVERCHARGED: current HP and STA
@@ -8370,10 +8394,11 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
     Returns False (nothing happens, no rest) when the purse can't pay --
     camping is always free."""
     boarders = [h for h in party if not h.dead]
-    cost = TAVERN_COST_PER_HERO * len(boarders)
+    head = marked_up(TAVERN_COST_PER_HERO, markup)
+    cost = head * len(boarders)
     if purse.gold < cost:
         log.append(f"    Not enough gold for beds ({purse.gold}g / {cost}g "
-                   f"at {TAVERN_COST_PER_HERO}g a head) -- the party can "
+                   f"at {head}g a head) -- the party can "
                    f"still camp for free.")
         return False
     purse.gold -= cost

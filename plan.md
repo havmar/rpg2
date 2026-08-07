@@ -84,11 +84,14 @@ are quest furniture the board abstracts into level numbers, givers are
 faces attached after the roll, and the land notables do nothing. Combat,
 levelling and the quest system are judged good; this thread is where the
 world catches up. Its content companion is **`worldsim.md`** — what is
-still unbuilt of it: the designer's curated
-land packets (economy, politics with the ruler character, religion,
-magic). The record kinds it opened with are `worldsim.py` and rules.md's
-The World Layer now, and the weather it sketched is rules.md's Weather.
-The remaining order below is the ladder that
+still unbuilt of it: the designer's curated land packets for politics
+(with the ruler character), religion and magic, plus the economy
+packets' leftovers (the standing facts, and the options that want a
+priced-menu entry of their own rather than a multiplier on an existing
+one). The record kinds it opened with are `worldsim.py` and rules.md's
+The World Layer now, the weather it sketched is rules.md's Weather, and
+its economy packets are rules.md's The Economy Floor. The remaining
+order below is the ladder that
 implements the rest. (designlog carries the trail: the 2026-08-05 framing, the
 2026-08-06..07 content dumps, the 2026-08-07 sessions C and D that
 turned the thread into this build, and the rungs shipped since.)
@@ -185,7 +188,7 @@ the PC's blank sheet stays open, parked below.
 
 ### The ladder
 
-Three sessions, in order — together they implement what is left of
+Two sessions, in order — together they implement what is left of
 worldsim.md, minus the waits above. Each leaves the game playable and lands its
 contracts in `test_worldsim.py`, the build's own suite, which no sim or
 bench imports (the karma doctrine). Per-session lifecycle: played rules
@@ -202,31 +205,22 @@ the world does not hold yet (the settlement trim, 2026-08-07); the
 world frame itself (same day) — `worldsim.card` / `worldsim.relation`,
 the per-land wealth band, day-stamped states with their exclusive slots,
 the crisis deck's draw on need, the relations table, the roll points
-inside `board_clock`, and the two shipped surfaces (the `WORD FROM
-<LAND>` news line, the state diff on `map` and `world`); and the WEATHER
+inside `board_clock`, and the two surfaces it shipped (the `WORD FROM
+<LAND>` news line, the state diff on `map` and `world`); the WEATHER
 (2026-08-08) — the day roll off the environment profiles, the three
 card TRACKS (a weather and a season deck beside the crisis one, so a
 storm never blocks a harvest failing), the `wet`/`dry` spell admits, the
-DISEASE family in `rpg.py`, and the DROUGHT state the relations below are
-to read. The sessions below AUTHOR CARDS AND EDGES against that frame;
-the three outlets the frame carries but does not apply — quest, priced
-menu, encounter table — are the economy floor's to wire.
+DISEASE family in `rpg.py`, and the DROUGHT state the relations read;
+and the ECONOMY FLOOR (2026-08-09) — ALL FIVE OUTLETS now apply, so a
+card below can post, cancel or reprice board work (`worldsim.job`),
+move any of six priced terms, and put its own people on a road, and a
+STATE can carry the last two by itself (`STATE_MENU` /
+`STATE_ENCOUNTERS`, which is how a derived state reaches a price). Card
+CHAINS are a shipped pattern with five worked examples, one of them
+across a relation. The sessions below AUTHOR CARDS AND EDGES against all
+of that; nothing in the frame is theirs to build.
 
-1. **The economy floor.** The thread's two invariants land here: the
-   BOARD reacts to world state, and something moves WITHOUT the player
-   taking a job — visibly on return. Per-land floor content from the
-   econ packets, up from the frame's seed of two to four a land, to the
-   asymmetry doctrine's floor and the ~20-template first pass (one
-   flavor anchor per land included), and the THREE OUTLETS THE FRAME
-   CARRIES BUT DOES NOT APPLY: post / cancel / reprice on the board,
-   priced-menu terms reading states, local encounter-table entries. The
-   news line and the state flip already work. Relations grow past the
-   frame's nine edges (a Firascir drought joining the failed harvest at
-   the head of the grain edges), and card CHAINS arrive — a card setting
-   the states the next card admits on, which the frame's admitting
-   conditions already read. The two waiting cards (the robot servants,
-   sulfur-to-Hell) stay in worldsim.md under their rulings.
-2. **Politics & the ruler roll.** The constitution slot and the land
+1. **Politics & the ruler roll.** The constitution slot and the land
    tension roll at worldgen (the gate admitting politics cards to the
    deck — nothing before this session needs either, which is what kept
    the frame lean), the faction edges as authored data, THE RULER CHARACTER rolled
@@ -239,7 +233,7 @@ menu, encounter table — are the economy floor's to wire.
    text, and the war feed: casus belli lines beside story.py's rolled
    aggressor, the diplomatic instruments as relation edges, the
    succession cluster on the adopted succession-state circumstance.
-3. **Religion & magic.** The Sun communion frame and the per-land
+2. **Religion & magic.** The Sun communion frame and the per-land
    worship facts and options — temple services as plain priced-menu
    entries (healing, burial, blessing; no sin/penance wiring) — and the
    religion cards that need no new creature rows. The magic packets: the
@@ -277,6 +271,14 @@ of it blocks the ladder.
   per-rite flavor on penance). Deliberately undesigned at the designer's
   2026-08-06 direction; temples stay plain priced services until it gets
   its own design round.
+- **The econ packets' standing OPTIONS** — the four things the economy
+  floor identified as wanting a priced-menu entry of their OWN rather
+  than a multiplier on an existing price (worldsim.md holds the list):
+  paid mercenary hiring in Tergal, Mortellaria's banking (paper-to-gold,
+  credit), the two drug markets, and smuggling / the gadget-and-arms
+  trade. The last two belong with the crime layer's smuggling category
+  rather than a shop counter; the first two want a counter that does not
+  exist yet. None of them blocks the ladder.
 - **Hell's own treatment**; **the per-land ruler modifier columns and
   the tribal rewording**; **the landmark-problems tie-in** (re-raise
   once the build is played); **the PC's blank sheet** (a player-chosen

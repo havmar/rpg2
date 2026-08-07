@@ -2,9 +2,8 @@
 
 The dev guide for the combat-sim prototype: workflow, the file index, the
 dev map, conventions, tuning levers, and the current measured balance
-numbers. `AGENTS.md` is only the auto-loaded dispatcher (Claude Code imports
-it through `CLAUDE.md`); THIS file is the real development entry point —
-read it before changing the game.
+numbers. `CLAUDE.md` is only the auto-loaded dispatcher; THIS file is the
+real development entry point — read it before changing the game.
 
 > **PLAYING, NOT DEVELOPING? Read `dm.md` and `writing.md` instead** — they
 > are the entire instruction set for running a game. Nothing in this file
@@ -102,6 +101,20 @@ saves would be optimizing the wrong thing. Therefore:
   breaks every existing save, it is simply better. The same spirit applies
   inside the codebase: refactor freely — the test suites and benches are
   the safety net, not frozen interfaces.
+- **Never soften a reader for a state the code cannot produce**
+  (2026-08-09, added after the economy floor shipped one). The rule above
+  is usually read as being about `save.json`, but the same reflex shows up
+  with no save in sight: a getter that returns a neutral 1.0, a 0, or an
+  empty list when a record it depends on is missing. If worldgen — or any
+  constructor — always builds that record, the missing case is not
+  compatibility, it is a BUG, and a neutral answer makes it invisible. Let
+  it raise. The tell that this has happened: the fallback's only caller is
+  a test. **A test that needs the system in a state the game never builds
+  should build a LEGAL one instead** (`test_worldsim._flat_world` is the
+  worked example — a world whose layer is rolled and then quieted, rather
+  than a world with no layer). Optional AUTHORED fields are a different
+  thing and are fine: a card that declares no `slots` genuinely has none,
+  and `spec.get("slots", 0)` is reading a schema, not tolerating damage.
 
 ## Where a finished feature is written up (2026-08-07, designer directive)
 
@@ -165,9 +178,9 @@ a pointer: what the file is, how it's run, where its docs are.
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
   is a ladder implementing what is left of worldsim.md —
-  the economy floor → politics & the ruler roll →
-  religion & magic; the settlement trim and the world frame shipped
-  2026-08-07 and the weather 2026-08-08 — every settleable call settled
+  politics & the ruler roll → religion & magic; the settlement trim and
+  the world frame shipped 2026-08-07, the weather 2026-08-08 and the
+  economy floor 2026-08-09 — every settleable call settled
   up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
   technology postponed past the build). The ladder RENUMBERS itself as
@@ -307,7 +320,26 @@ a pointer: what the file is, how it's run, where its docs are.
   costing a day to a ford or a dust storm), and `cabin` /
   `shelter_roll` (the storm night's table, a sight plus a DM-eyes note).
   `card()` grew `track` / `chance` / `wet` / `dry` / `sky` / `hook`, and
-  `land` now takes a tuple or `ANY_LAND`. The sims and benches never
+  `land` now takes a tuple or `ANY_LAND`. **The economy floor rung**
+  (2026-08-09) wired the THREE OUTLETS the frame carried but did not
+  apply, all of them READERS (nothing writes to the save, so an edge or a
+  knob can be re-authored without a migration): the board
+  (`board_shift` / `board_pay` / `board_postings` off `BAND_SLOTS` /
+  `BAND_PAY` and the cards' `slots` / `reprice` / `post` terms; `job()` is
+  the posted-quest template constructor), the priced menu
+  (`menu_terms` / `term` / `priced` / `menu_lines` / `road_charges` off
+  `MENU_TERMS` / `BAND_MENU` / `STATE_MENU` — the only road a DERIVED
+  state has to a price — clamped by `MENU_FLOOR`/`MENU_CEILING`), and the
+  local encounter table (`encounter_entries` / `local_encounter` off the
+  cards and `STATE_ENCOUNTERS`). Every reader is STRICT — a land with no
+  layer under it is a state worldgen cannot produce, so asking about one
+  raises rather than answering neutrally. The content bill
+  went with it: 30 crisis cards (five or six a land, one flavor anchor
+  each), five card CHAINS plus one that crosses a relation, and 17
+  authored edges. `_validate_quest` / `_validate_menu` /
+  `_validate_encounter` / `_validate_menu_tables` police the new payload
+  shapes at import (including the no-double-charging rule between a card's
+  own `menu` and `STATE_MENU`). The sims and benches never
   import it; every knob is hand-set.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
@@ -341,6 +373,22 @@ a pointer: what the file is, how it's run, where its docs are.
   state diff, the cabin table whose sinister row never announces itself,
   the road that costs a day, and the storm riding a paused fight to its
   resume.
+  *The economy floor* (2026-08-09): the board reacting to the band (slots,
+  pay, and the floor that keeps a settlement a place with work), the three
+  quest verbs (a card's own job posted once per board with its key, its
+  premium, its own window and never a weapon reward; the negative-slots
+  cancel; the reprice), the priced menu (a quiet land charging the
+  catalog, the band on the shelf, a card pricing what it is about, a
+  RELATION reaching a price three lands away, the clamps, and the engine
+  taking a float and asking nothing), the road's tolls, the local
+  encounter table (a card's own people, a derived state's, the entry's own
+  chance, who-not-how-hard, and the skin that is fiction over an unchanged
+  row), the five chains plus the one that crosses a relation, the authored
+  content's own contracts (the five-card floor, a flavor anchor a land,
+  the culturally clean pools, the drought at the head of the grain edges),
+  and the wiring — the shop asking the land, the price sheet, the arrival
+  note, the road meeting the card's people, and the board moving while
+  nobody is looking.
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -397,14 +445,24 @@ a pointer: what the file is, how it's run, where its docs are.
   temperate human basic pass as the last dedicated review record. No further
   Land worksheet blocks the MVP implementation; reuse the format for focused
   wording or later special-feature review when useful.
-- `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
+- `CLAUDE.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
-  including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and
-  other AGENTS.md-aware agents read it directly) — keep it short and
-  register-neutral; shared fiction style belongs in writing.md, dev content
-  in this file, and play protocol in dm.md.
-- `CLAUDE.md` — **a thin shim** that imports `AGENTS.md` so Claude Code
-  loads the same dispatcher; put no content of its own here.
+  including play — keep it short and register-neutral; shared fiction style
+  belongs in writing.md, dev content in this file, and play protocol in
+  dm.md. **It carries no agent's name in its body on purpose**, so it can
+  be copied to another agent's instruction filename verbatim.
+  *(2026-08-09: `AGENTS.md` was folded into this file at the designer's
+  direction — it used to hold the text while `CLAUDE.md` was a six-line
+  `@AGENTS.md` shim. The cost is that AGENTS.md-aware agents no longer
+  auto-load anything from this repo. **To restore the two-file
+  arrangement**, no rewriting is needed: `cp CLAUDE.md AGENTS.md`, replace
+  `CLAUDE.md` with a pointer paragraph plus the single line `@AGENTS.md`,
+  and change this entry's key back to `AGENTS.md` with a `CLAUDE.md` shim
+  entry under it. The old text is also recoverable directly —
+  `git log --oneline -- AGENTS.md` finds the fold commit and
+  `git show <its parent>:AGENTS.md` prints the file. Note `git log
+  --follow CLAUDE.md` does NOT cross the fold: `CLAUDE.md` already existed,
+  so git recorded a delete plus a modify rather than a rename.)*
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and the NIGHT (the short
   rest is gone since 2026-07-26), progression,
@@ -474,7 +532,16 @@ a pointer: what the file is, how it's run, where its docs are.
   `WILDCARD_ROLES`, `world["npcs"]`). Since 2026-07-14 also the
   cross-land deliveries (`DELIVERY_TEMPLATES`, `build_delivery_quest`,
   `_post_delivery` — the site-less courier kind, two per world; rules.md's
-  Quest System add-on, "Cross-land deliveries"). `python quests.py
+  Quest System add-on, "Cross-land deliveries"). Since 2026-08-09 (the
+  economy floor) it imports `worldsim` at module level and the BOARD READS
+  THE WORLD: `board_slots(world, settlement)` takes the band's shift over
+  the tier's own count, `_world_pay` stamps the band's and the live cards'
+  pay multiplier into every posting's `gold_total` at posting time, and
+  `refresh_settlement_board` puts the standing cards' OWN jobs up first
+  and outside the refill rule (`_post_card_quest`, keyed by `world_card`
+  so one board never carries two copies). `generate_world` therefore calls
+  `worldsim.open_world` FIRST, before the opening postings, instead of
+  last. `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Four aggressor
@@ -783,7 +850,20 @@ a pointer: what the file is, how it's run, where its docs are.
   save keys and every display string), the campaign record
   (`remember` / `history_sheet_lines` / `_write_history_sheet` /
   `_named_dead` / `_note_maimings`), and `build_parser`, split out of
-  `main` so the command surface is testable.
+  `main` so the command surface is testable. Since 2026-08-09 (the economy
+  floor) it is where the world layer meets the player's wallet and the
+  road: `local_term` (one priced term over the land the party stands in,
+  1.0 when there is nothing to say) feeds a `markup=` argument into every
+  shop call — `buy` (goods/steel), `tavern` (lodging), `healer` +
+  `heal_the_sick` (healer), `commission` (steel), the meds dose — `prices`
+  became THE PRICED MENU (`local_prices`, the whole sheet quoted at what
+  this land charges, with `worldsim.menu_lines` over it), `price_note`
+  prints the same block on arrival, `cmd_travel` charges
+  `worldsim.road_charges` before the leg, and `wild_event` takes a
+  `where=` ground and asks `worldsim.local_encounter` for the roster
+  before falling back to the land's own wildlife (`skins` ride through
+  `fight_wild_encounter` / `_spawn_wild_foes` and the stored sighting, so
+  `engage` meets the same faces).
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -1297,8 +1377,9 @@ mechanic *does* and *why* is rules.md's job.
   `CARD_DAYS`, `NEWS_KEPT` / `NEWS_TOLD`. `places.py`: `_fact` gained
   `since` (the day stamp) and `slot`, and `add_state` / `replace_state`
   pass them — one state record shape for places and lands alike.
-  `quests.py`: `generate_world` calls `worldsim.open_world` last, on the
-  layer's own derived seeds (the armory's rule — no worldgen stream
+  `quests.py`: `generate_world` calls `worldsim.open_world` FIRST (it was
+  last until the economy floor made the board read it), on the layer's own
+  derived seeds (the armory's rule — no worldgen stream
   moves). `session.py`: `worldsim.roll_world` inside `board_clock` (the
   day-advance spine, silent), `world_news` beside `conquest_news` at the
   four points news lands (travel arrivals, tavern, downtime, board), the
@@ -1325,6 +1406,26 @@ mechanic *does* and *why* is rules.md's job.
   `heal_the_sick` in `cmd_healer`, and `weather` carried through
   `resolve_encounter` and the `pending` save so a paused storm fight
   resumes in the same storm. `test_worldsim.py` is the contract.
+- **The economy floor** (2026-08-09, the worldsim ladder's second content
+  rung — rules.md's The Economy Floor add-on) — `worldsim.py`: the three
+  outlet readers and the content bill (see Files); the knobs are
+  `BAND_SLOTS` / `BAND_PAY` / `BOARD_SLOTS_FLOOR`, `BAND_MENU` /
+  `STATE_MENU` / `MENU_FLOOR` / `MENU_CEILING`, `ROAD_TOLL_GOLD` /
+  `ROAD_FERRY_GOLD`, `ENCOUNTER_CHANCE` / `STATE_ENCOUNTERS`, and each
+  card's own `quest` / `menu` / `encounter` payload. `quests.py`:
+  `board_slots(world, settlement)`, `_world_pay` stamping the pay
+  multiplier into every posting, `_post_card_quest` +
+  `refresh_settlement_board` putting the live cards' own jobs up,
+  `build_wild_encounter(pool=)`, and `generate_world` opening the layer
+  first. `rpg.py`: `marked_up` (the one price helper) and a `markup=`
+  argument on `buy_potion` / `buy_weapon` / `buy_ammo` / `buy_spellbook` /
+  `healer_service` / `tavern_rest` — the engine takes a float and never
+  learns where it came from, which is how the sims stay out of the world
+  layer. `session.py`: `local_term` / `local_prices` / `price_note`, the
+  markups threaded into every shop path, `worldsim.road_charges` in
+  `cmd_travel`, and `wild_event(where=)` + the `skins` thread through
+  `fight_wild_encounter` / `_spawn_wild_foes` / the sighting / `engage`.
+  `test_worldsim.py` is the contract.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -1874,6 +1975,29 @@ above.**
   reads too punishing is `EXPOSURE_DC`** — every value there is one
   2d6 step, and STR is flat 3–6 across all twenty levels, which is why
   the family reads STR and not the STA pool.
+- **The economy floor is the first worldsim rung the career sim CAN see
+  (2026-08-09), and it is still within noise.** The frame and the weather
+  were bench-invisible by construction; this one cannot be — "the board
+  reacts to world state" is the invariant it exists to land, and
+  `bench_quests`' career sim plays that board. What it moves is exactly
+  one field, `gold_total`, stamped at posting time from the land's wealth
+  band (pinned by `test_worldsim`'s two paired tests: everything ELSE is
+  still byte-identical with the layer stubbed out). Measured against a
+  neutralized-band control in the same process, 120 careers each: reach
+  L5 81 vs 84 / L8 71 vs 69 / L11 38 vs 36 / L14 15 vs 11 / L17 5 vs 6 /
+  L20 3.3 vs 2.5, median death L9 both, turn-in bands and expiry
+  unchanged — noise at this sample. The one directional read is PACE: a
+  capped career runs ~94 days against ~92, because crisis lands post
+  shorter boards. Nothing was retuned. Its knobs are hand-set and
+  SIM-UNVERIFIED: `BAND_SLOTS` (−1/0/+1 postings) and `BAND_PAY`
+  (0.85/1.00/1.15) with `BOARD_SLOTS_FLOOR` 1; `BAND_MENU` and
+  `STATE_MENU` clamped to `MENU_FLOOR` 0.5 / `MENU_CEILING` 4.0;
+  `ROAD_TOLL_GOLD` 6 and `ROAD_FERRY_GOLD` 4 (deliberately small — the
+  fords cost a DAY, and days are the expensive currency);
+  `ENCOUNTER_CHANCE` 0.5 with per-entry overrides; and each card's own
+  `pay` (1.10–1.35), `slots` and `reprice`. **The dial if the world's
+  hand on the wallet reads too heavy is `BAND_MENU`** — it is on every
+  land every day, where a card's terms are on one land for a fortnight.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

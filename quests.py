@@ -58,6 +58,12 @@ from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
     materialize_settlement, stable_seed, land_race, add_state, replace_state,
 )
+import worldsim                  # the world layer (2026-08-09, the economy
+                                 # floor): the board asks it how big it is,
+                                 # what it pays, and what the cards standing
+                                 # over the land are putting up. worldsim
+                                 # imports places and sites only, so this is
+                                 # one-directional
 
 # --------------------------------------------------------------------------- #
 # The threat math (the encounter builder's whole theory)
@@ -1510,6 +1516,12 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     qid = next_quest_id(world)
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
     quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
+    # THE BOARD REACTS TO WORLD STATE (2026-08-09): a poor land pays poorly
+    # and a rich one pays well, and a card standing over the land can move
+    # both -- the crown's war debts pay 0.85, a province paying its swords
+    # in paper notes quotes 1.5. Stamped in, not read out, so the job keeps
+    # the terms it was taken at.
+    quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"])
     stamp_quest_clock(quest, day, rng)
     _maybe_attach_weapon_reward(quest, qid)
     attach_giver(quest, race, rng, role=tpl.get("giver"),
@@ -1544,9 +1556,15 @@ def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
                                     # shares still pay as they are earned
 
 
-def board_slots(settlement: dict) -> int:
-    """How many live jobs this settlement keeps posted (SETTLEMENT_KINDS)."""
-    return SETTLEMENT_KINDS[settlement["subtype"]][0]
+def board_slots(world: dict, settlement: dict) -> int:
+    """How many live jobs this settlement keeps posted: its tier's own count
+    (SETTLEMENT_KINDS), moved by the world layer (2026-08-09, the economy
+    floor). A prosperous land posts more work and a land in crisis posts
+    less ORDINARY work -- its crises post their own on top. The floor keeps
+    every settlement a place with something in it."""
+    base = SETTLEMENT_KINDS[settlement["subtype"]][0]
+    shift = worldsim.board_shift(world, settlement["land"])
+    return max(worldsim.BOARD_SLOTS_FLOOR, base + shift)
 
 
 def open_quests(world: dict, settlement: dict, day: int | None = None) -> list:
@@ -1571,10 +1589,11 @@ def board_forecast(world: dict, settlement: dict, day: int) -> int:
     runs where the party stands, so a land it left would otherwise decay to
     "0 job(s)" on the map and read as a place with no work in it."""
     live = len(open_quests(world, settlement, day))
+    slots = board_slots(world, settlement)
     seen = settlement.get("board_day")
-    owed = (board_slots(settlement) - live if seen is None
+    owed = (slots - live if seen is None
             else QUEST_REFILL_PER_DAY * max(0, day - seen))
-    return min(board_slots(settlement), live + max(0, owed))
+    return min(slots, live + max(0, owed))
 
 
 def expire_settlement_board(world: dict, settlement: dict, day: int,
@@ -1604,6 +1623,48 @@ def expire_settlement_board(world: dict, settlement: dict, day: int,
     return gone
 
 
+def _post_card_quest(world: dict, settlement: dict, posting: dict,
+                     rng: random.Random,
+                     used_people: set[str] | None = None,
+                     day: int = 0) -> dict:
+    """Put one live world card's own job on a settlement's board (the QUEST
+    outlet's POST verb, 2026-08-09). The template is authored on the card
+    (`worldsim.job`); everything else -- the geography, the giver's face,
+    the clock, the pay grade -- is the ordinary generator's, because a
+    card's work is work, not a special case.
+
+    The level is the settlement's own band clamped into the template's, the
+    same clamp a rolled posting gets. No WEAPON REWARD rides a card job: the
+    reward mode is a flat share of the ordinary board, and a card that pays
+    a premium in gold should not silently pay it in steel instead."""
+    tpl = posting["job"]
+    lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
+    t_lo, t_hi = template_band(tpl)
+    level = max(t_lo, min(t_hi, rng.randint(lo, hi)))
+    qid = next_quest_id(world)
+    quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
+    quest["world_card"] = posting["key"]
+    quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"],
+                                     posting["pay"])
+    stamp_quest_clock(quest, day, rng)
+    attach_giver(quest, land_race(world, settlement["land"]), rng,
+                 role=tpl.get("giver"), used_names=used_people)
+    world["quests"][qid] = quest
+    settlement["quests"].append(qid)
+    return quest
+
+
+def _world_pay(world: dict, settlement: dict, gold: int,
+               premium: float = 1.0) -> int:
+    """What the world layer does to a posting's quoted lump: the land's
+    band and whatever its live cards reprice, times the card's own premium
+    where a card put the job up. Applied ONCE, at posting time -- the
+    board's terms are the terms it was posted at."""
+    mult = worldsim.board_pay(world, settlement["land"]) * premium
+    return max(1, round(gold * mult))
+
+
 def refresh_settlement_board(world: dict, settlement: dict, day: int,
                              rng: random.Random,
                              used_people: set[str] | None = None
@@ -1612,16 +1673,33 @@ def refresh_settlement_board(world: dict, settlement: dict, day: int,
     count. A board seen for the FIRST time fills up (the land has always had
     work, the party has just never asked); after that it posts at most
     QUEST_REFILL_PER_DAY per day elapsed, so the board is a place that
-    changes rather than a slot machine to re-roll."""
-    slots = board_slots(settlement)
+    changes rather than a slot machine to re-roll.
+
+    Since the economy floor (2026-08-09) the CARDS standing over the land go
+    up first and outside the refill rule: a world event is news, and news
+    does not wait for a slot to open. A card's job carries its key, so one
+    board never runs two copies of it; it lapses on its own window like any
+    other posting, and the card puts it back up for as long as it stands."""
+    slots = board_slots(world, settlement)
+    posted = []
+    have = {world["quests"][qid].get("world_card")
+            for qid in settlement.get("quests", ())
+            if qid in world["quests"]}
+    for posting in worldsim.board_postings(world, settlement["land"]):
+        if posting["key"] in have:
+            continue
+        if len(open_quests(world, settlement)) >= slots:
+            break
+        posted.append(_post_card_quest(world, settlement, posting, rng,
+                                       used_people, day=day))
     live = len(open_quests(world, settlement))
     seen = settlement.get("board_day")
     room = slots - live
     if seen is not None:
         room = min(room, QUEST_REFILL_PER_DAY * max(0, day - seen))
     settlement["board_day"] = day
-    return [_post_quest(world, settlement, rng, used_people, day=day)
-            for _ in range(max(0, room))]
+    return posted + [_post_quest(world, settlement, rng, used_people, day=day)
+                     for _ in range(max(0, room))]
 
 
 def generate_world(seed: int | None = None) -> dict:
@@ -1637,6 +1715,13 @@ def generate_world(seed: int | None = None) -> dict:
     used_people: set[str] = set()   # one namespace for givers AND the cast:
                                     # two Ruriks in one town read as a bug
     world = create_geography(seed)
+    # The world layer (2026-08-07, the worldsim build's frame): every land's
+    # wealth band, its three shuffled decks, and the opening card a land in
+    # crisis is already living through. Seeded off the world seed inside
+    # worldsim.py -- it draws nothing from this stream. It is rolled HERE,
+    # before the first posting, because since the economy floor the board
+    # READS it: a land in crisis quotes crisis money on day one.
+    worldsim.open_world(world)
     world["quest_seq"] = 0
     for settlement in settlements(world):
         cast_service_providers(world, settlement, rng)
@@ -1658,13 +1743,6 @@ def generate_world(seed: int | None = None) -> dict:
     wrng = random.Random(f"armory:{seed}")
     world["armory"] = roll_armory(world, wrng)
     world["smiths"] = roll_smiths(world, wrng)
-
-    # The world layer (2026-08-07, the worldsim build's frame): every land's
-    # wealth band, its shuffled crisis deck, and the opening card a land in
-    # crisis is already living through. Seeded off the world seed inside
-    # worldsim.py -- it draws nothing from this stream either.
-    import worldsim                                 # runtime import
-    worldsim.open_world(world)
     return world
 
 
@@ -1820,12 +1898,18 @@ def foes_preferred_field(kinds: list[str]) -> int:
     return best
 
 
-def build_wild_encounter(level: int, race: str,
-                         rng: random.Random) -> list[str]:
+def build_wild_encounter(level: int, race: str, rng: random.Random,
+                         pool: tuple[str, ...] | None = None) -> list[str]:
     """One wilderness encounter at `level` from the land's pool: a full
     reference-encounter budget (share 1.0), boss allowance on -- the road
-    fight is a whole outing, not a room share."""
-    return build_room(room_budget(level, 1.0), wild_pool(race), rng,
+    fight is a whole outing, not a room share.
+
+    `pool` overrides what roams here: a live world card's local
+    encounter-table entry (2026-08-09, the economy floor) names its own
+    rows -- the baron's toll-men, the loggers holding their camp, riders off
+    the border. It never overrides the LEVEL, which stays the road's own
+    party-independent roll."""
+    return build_room(room_budget(level, 1.0), pool or wild_pool(race), rng,
                       final=True)
 
 

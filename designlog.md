@@ -2942,3 +2942,175 @@ shipped-frame header rewritten to cover the weather API; plan.md's
 weather rung DELETED, the ladder renumbered to three, and the parked
 DISEASE item replaced by the now-unblocked infection one; benchlog's
 2026-08-08 entry.
+
+---
+
+## 2026-08-09 — The economy floor: the world layer starts costing money
+
+**The rung.** plan.md's worldsim ladder, second content session. The
+frame (2026-08-07) built the card and the relation and applied two of
+the five outlets — the news line and the state flip. The weather
+(2026-08-08) put a sky over every land on a second and third track.
+This session wired **the three outlets the frame carried but did not
+apply** — the quest board, the priced menu, the local encounter table —
+and took the per-land card bill up to the asymmetry doctrine's floor
+with chains running through it.
+
+The thread's two invariants (2026-08-05 framing) land here, and they
+were the whole brief: **the BOARD must react to world state**, and
+**something must move WITHOUT the player taking a job, and be visible on
+return.**
+
+### What was built
+
+**The board — three verbs.** A card's `quest` payload now carries
+`post` (an authored quest template, via the new `worldsim.job()`), a
+`slots` integer (negative is the CANCEL verb: a town whose mills are
+cold stops hiring) and a `reprice` multiplier. Under all three sits the
+WEALTH BAND, which is the baseline: prosperous posts one more job a
+settlement and pays 1.15, crisis posts one fewer and pays 0.85, with a
+floor of one posting so a settlement is never a place with no work in
+it. A crisis board is short of *ordinary* work, not of work — its cards
+post their own back on top.
+
+**The priced menu — six terms.** `goods`, `steel`, `lodging`, `healer`,
+`toll`, `ferry`, each a multiplier on a price the game already charges,
+so the world layer never owns a price, only moves one. Three sources
+multiply: the band, the STATES the land holds or derives, and the live
+cards' own terms. `prices` became the priced menu — it quotes the whole
+sheet at what this land charges today, and every `buy`, bed, healer's
+day, commission and dose pays it.
+
+**The encounter table.** A live card or a derived state can put its own
+people on the land's ground, filtered by ground (`road` / `wilds`) and
+rolled at its own chance. It replaces WHO the party meets and never how
+hard: the level stays the road's party-independent roll.
+
+**The content.** 30 crisis cards (five or six a land, up from two to
+four), one flavor anchor per land that is not trouble at all, 17
+relation edges (up from nine), and five card CHAINS — one of which
+crosses a relation.
+
+### The calls the spec left open that the build had to settle
+
+- **The frame's `menu={"paper_rate": 0.25}` and `quest={"post": "grain
+  escort"}` placeholders were not implementable as written**, and the
+  `encounter={"kinds": ("bandit",)}` payloads named a foe row that does
+  not exist. All three payload shapes were re-authored and are now
+  validated at import against `sites.FOES`, `MENU_TERMS` and the quest
+  verbs. `worldsim.py` imports `sites` for this; it is one-directional.
+- **A card's posted job is a full quest template, not a title.** The
+  alternative — retitling a rolled template — produced jobs whose
+  description contradicted their name. Authoring the template on the
+  card costs ~10 lines a card and buys real geography, a real giver's
+  face and a real epilogue through the ordinary generator.
+- **Card jobs never carry a weapon reward.** The reward mode zeroes
+  `gold_total`, which would have silently eaten the card's pay premium.
+- **Pay is stamped at posting time, not read out at turn-in.** A job
+  taken keeps the terms it was posted at — which is what makes a good
+  week on somebody else's board worth walking to, and what keeps the
+  save honest.
+- **The menu had to read STATES, not only cards.** Cards alone cannot
+  reach a DERIVED state, because no card in the target land ever names
+  it — and a relation reaching a price is the entire point of having a
+  relations table. `STATE_MENU` is that road. Its risk is
+  double-charging (a card and the state it sets both moving `goods`), so
+  `_validate_menu_tables` makes the clash an import error.
+- **The world layer's readers are STRICT** — asking about a land with no
+  layer under it raises. The first cut had a `has_layer` guard that
+  answered neutrally instead, and it was wrong for the reason the
+  no-backcompat directive names: worldgen opens the layer before it posts
+  anything, so a land without one is a state the game cannot produce, and
+  a reader that returns a neutral answer for it is indistinguishable from
+  a bug that returns a neutral answer. It existed only to keep one test's
+  monkeypatched world loading; the test now builds a legal QUIET world
+  (`_flat_world`: layer rolled, every land normal, no card, no state)
+  instead, which is both a truer control and a stronger assertion. The
+  directive gained a bullet naming this species (develop.md).
+- **`generate_world` now opens the world layer FIRST, not last.** The
+  board reads it, so it has to exist before the opening postings. A land
+  in crisis quotes crisis money on day one.
+- **The frame's "the layer moves no worldgen stream" contract had to be
+  restated, not kept.** It is incompatible with "the board reacts to
+  world state" — the plan chose the latter. The contract is now: the
+  stream is untouched (same geography, cast, templates, levels, clocks,
+  armory) and `gold_total` is the ONE field the layer moves, by exactly
+  the band's multiplier. Two paired tests pin both halves.
+- **Two content knobs moved during the session, for coverage rather than
+  balance.** `ensimaa/rented-land` opened from crisis-only to crisis or
+  normal, and the Ensimaa→Gibili timber edge now also reads
+  `eviction-on`. Before them the cross-relation chain fired zero times in
+  24 000 land-days; content that ships and is never observed did not
+  ship.
+- **The `lodging` term cannot discount.** `TAVERN_COST_PER_HERO` is 1g
+  and prices never round to zero, so a 0.80 multiplier is invisible.
+  Left alone: the base price is the engine's, not the world layer's.
+
+### What it costs, measured
+
+Full numbers in benchlog.md. This is the first worldsim rung the career
+sim can see, and the honest read is that it is still noise: 120 careers
+against a neutralized-band control give L5 81 vs 84, L8 71 vs 69, L11 38
+vs 36, median death L9 both, turn-in bands and expiry unchanged. The one
+directional read is PACE — a capped career runs ~94 days against ~92,
+because crisis lands post shorter boards. Nothing was retuned.
+
+The layer's own pacing over 43 200 land-days: a card is posting work on
+22% of them, some price is moved on 65%, and somebody the world put
+there is on the roads on 10%.
+
+### What it buys at the table
+
+The map page is the tell. Before this session it read the same board
+counts in every land; now a prosperous Gibili shows 6/5/3 jobs beside a
+Firascir in crisis showing 4/3/1, and the difference was not put there
+by the player. Walk into a land whose lord has shut the hand-mills and
+the potion costs fourteen instead of ten, the board is one row shorter,
+the row that IS there is *The Bailiff's Round*, and the giver is the
+bailiff. Cross a bridge his toll-men hold and the road takes twelve gold
+before the trip starts, and the encounter it rolls is those same
+toll-men. That is one card, reaching the player through four of the six
+outlets in one afternoon — which is what the framing meant by RECURRENCE
+being the property that makes an NPC exist.
+
+**Recorded.** rules.md's new *The Economy Floor* add-on; dm.md's "What
+the land costs" play protocol under "The land itself" and its
+quick-reference numbers; develop.md's Files (`worldsim.py`, `quests.py`,
+`session.py`, `test_worldsim.py`), dev map and Balance section;
+worldsim.md's ECONOMY land packets section CUT; plan.md's economy-floor
+rung DELETED and the ladder renumbered to two; benchlog's 2026-08-09
+entry.
+
+### Two follow-ups the designer called the same day
+
+**The no-backcompat directive got a bullet it was missing.** Reviewing
+the session, the designer asked whether the "nothing writes to the save,
+so an edge can be re-authored without a migration" framing had smuggled
+a compatibility shim in. It had, in a form the directive did not name:
+`worldsim.has_layer`, a guard that made every outlet reader answer
+neutrally for a land with no world layer under it. No save was involved
+— but the failure mode is identical, because worldgen builds that layer
+before it posts anything, so the missing case is unreachable and a
+neutral answer for it is indistinguishable from a bug returning a
+neutral answer. Its only real consumer was a test that monkeypatched
+`open_world` away. **Fixed**: the guard is deleted, the readers raise,
+and the test now builds a legal QUIET world instead of a broken one
+(`_flat_world` — the layer rolled, then every land set normal with no
+card and no state), which is both a truer control and a stronger
+assertion. develop.md's "No backwards compatibility — ever" gained a
+bullet naming the species, with the distinction that keeps it usable: an
+optional AUTHORED field with a default is reading a schema, not
+tolerating damage. `cmd_engage`'s `sighting.get("skins")` — a real
+old-save fallback — was tightened in the same pass.
+
+**`AGENTS.md` folded into `CLAUDE.md`.** Designer direction: one
+instruction file, not a file plus a shim. `CLAUDE.md` now holds the
+dispatcher text, and its body was scrubbed of every agent's proper name,
+so restoring the two-file arrangement is a copy plus a six-line shim and
+no rewriting. develop.md's Files entry carries the recipe — including the
+correction that `git log --follow CLAUDE.md` does NOT cross the fold
+(`CLAUDE.md` already existed, so git recorded a delete plus a modify, not
+a rename); `git log -- AGENTS.md` plus `git show <parent>:AGENTS.md` is
+what actually recovers the old file. The cost is stated plainly:
+AGENTS.md-aware agents no longer auto-load anything from this repo until
+the file is restored.

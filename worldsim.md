@@ -3,17 +3,17 @@
 The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
 build order — since 2026-08-07 the worldsim-build ladder, the
 monolithic design session dissolved and everything settleable settled
-in plan.md's rulings block; designlog's 2026-08-05..08 entries own
-the reasoning; THIS file holds what is still UNBUILT — the
-curated land economy packets, the ruler
+in plan.md's rulings block; designlog's 2026-08-05..09 entries own
+the reasoning; THIS file holds what is still UNBUILT — the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
 (the dump's power half, same day), and the religion land packets (the
 worship dump, same day), and the magic land packets (the arcane dump,
 2026-08-07). When a piece ships, its rules move to rules.md and
 its entry here is cut (the plan.md convention) — the record framework
-went that way on 2026-08-07, and the summary of what it became now
-heads this file so the packets below can be read against it.
+went that way on 2026-08-07 and the six ECONOMY land packets on
+2026-08-09, and the summary of what they became now heads this file so
+the packets below can be read against it.
 
 Register note: entries are IDEA-LEVEL, in the dev register. Final
 player-facing strings are written at implementation time under
@@ -26,26 +26,38 @@ on 2026-08-07 the designer adopted the [PROPOSED] set WHOLESALE —
 implement it like everything else — so the marks (here and in every
 later section) are provenance only now, not a cut list.
 
-## The frame and the weather SHIPPED — what the packets are written against
+## The frame, the weather and the economy floor SHIPPED — what the packets are written against
 
 The five record kinds, the wealth roll, the crisis deck, the relations
-table and the lazy day-stamped rolls are BUILT (2026-08-07), and so is
-the whole WEATHER system this file used to sketch (2026-08-08):
-`worldsim.py`, with the played rules in rules.md's *The World Layer* and
-*Weather* and the code index in develop.md. What was cut from here is
-there; what remains below is the content still to author against it.
+table and the lazy day-stamped rolls are BUILT (2026-08-07); so is the
+whole WEATHER system this file used to sketch (2026-08-08); and so, since
+2026-08-09, is the ECONOMY FLOOR — the three outlets the frame carried
+but did not apply, the six econ packets' cards and edges, and the card
+CHAINS. It is all `worldsim.py`, with the played rules in rules.md's
+*The World Layer*, *Weather* and *The Economy Floor* and the code index
+in develop.md. What was cut from here is there; what remains below is the
+content still to author against it.
 
 The API facts an entry in this file needs to know:
 
 - **A card is `worldsim.card(key, name, land, ...)`** — admitting
   conditions (`wealth`, `states`, `without`, `weather`, `wet`/`dry`), up
   to five outlet effects (`quest` / `menu` / `encounter` / `news` /
-  `state`), and an optional day-stamp clock (`days`). The frame applies
-  `news` and `state`; the other three are carried and validated until the
-  economy floor session wires them. A state effect is
+  `state`), and an optional day-stamp clock (`days`). ALL FIVE are
+  applied now. A state effect is
   `{"set", "while", "clear", "slot", "wealth", "wealth_while"}` — what
   a card SETS outlives it, what it sets WHILE it stands comes off with
   it, and slot members are exclusive.
+- **The three wired outlets.** `quest=` takes `post` (a job template
+  built by `worldsim.job(...)`), `slots` (negative cancels work) and
+  `reprice`; `menu=` takes `MENU_TERMS` (goods / steel / lodging /
+  healer / toll / ferry) as multipliers; `encounter=` takes `kinds`,
+  `where` ("road" / "wilds"), `skins` and `as`. A state can carry the
+  last two by itself through `STATE_MENU` / `STATE_ENCOUNTERS`, which is
+  how a DERIVED state reaches a price or a road.
+- **A CHAIN is a card SETTING a state the next card ADMITS on** and
+  clears as it fires — no extra machinery. One shipped chain crosses a
+  relation.
 - **`land` takes one land, several, or `worldsim.ANY_LAND`**, and
   `track=` picks which of a land's three decks the card sits in:
   `crisis` (drawn off the wealth band), `weather` (drawn off the day's
@@ -65,217 +77,69 @@ card or relation calls when it needs a place to exist.
 
 Lands do NOT need similar amounts of material. The floor every land
 needs: the wealth roll, three-plus crisis cards, one or two
-relations, one flavor anchor. (The frame seeded two to four cards a
-land and nine edges against it; the economy floor session takes them
-the rest of the way.) Above the floor, depth follows the
+relations, one flavor anchor. (The economy floor session reached it:
+five or six crisis cards a land, an anchor each, 17 edges.) Above the
+floor, depth follows the
 designer's interest — a plainer generic-fantasy land beside a
 detailed one is contrast, not neglect. The overlap guard for the four
 modern-flavored societies (Ensimaa, Dvarvengrond, Gibili,
 Mortellaria) is the PROBLEM AXIS named at the head of each packet:
 a land's troubles must come from its own axis.
 
----
+## THE LAND PACKETS — ECONOMY: what did NOT ship (2026-08-05, trimmed 2026-08-09)
 
-## THE LAND PACKETS — ECONOMY (2026-08-05)
+The economy floor session (designlog, 2026-08-09) built the six econ
+packets' CARDS, their relation edges and the chains between them; those
+entries are cut, and the played rules are rules.md's *The Economy Floor*.
+What is left here is the part of the packets no session has consumed
+yet — the standing FACTS a DM reads (they cost nothing at runtime and the
+engine never sees them), the OPTIONS that want a priced-menu entry of
+their own rather than a multiplier on an existing one, and the two cards
+plan.md's rulings park.
 
-### Ensimaa — elves. Axis: MANPOWER & DECADENCE
+**Facts — the standing colour of each land's economy.** Ensimaa: the
+economy is rare artisanal and artistic output, small and irreplaceable;
+values with teeth (murder graver than among humans, property crime
+lighter — the jerkify machinery read at LAND level); dwelling anchors of
+hellenic white marble, giant treehouses, the impossibly tall thin tower.
+Tergal: wealth moves on the hoof and cannot be accumulated, so gifts and
+obligations do the work of savings, and demands of favours and
+accusations of ingratitude are standing hooks; law is thin (lower
+protection and heat, rougher self-help); imports metal, textiles and
+grain, exports animals, herd products and MERCENARIES. Dvarvengrond: a
+mining economy that needs food and timber imports to live. Firascir:
+manorial agriculture under lords, guilds in the towns. Mortellaria:
+finance exists here and nowhere else — shares, banks, paper money,
+credit, one abstract tropical colony offstage — and its villas and
+palaces are the crime layer's richest marks. Gibili: smoke, steel mills,
+glassworks, textile mills, firearms largely for Mortellaria, and no state
+power to speak of — law is company enforcers.
 
-21st-century vibes and first-world problems, worn by an ancient race.
+**Options still wanting their own priced-menu entries.** The economy
+floor wired the six TERMS that move prices the game already charges; each
+of these is a NEW thing to buy, and wants either the crime layer's
+categories or a counter of its own:
 
-- **fact** The economy is rare artisanal and artistic output — small,
-  precious, irreplaceable.
-- **fact** Values with teeth: murder weighs even graver than among
-  humans; property crime weighs lighter — the enlightened and
-  long-lived can replace things. (Mechanically: the land's
-  sin/heat modifiers per crime family — the jerkify machinery read
-  at LAND level.)
-- **fact** Dwelling anchors: hellenic white marble; giant-treehouse
-  architecture; the impossibly tall and thin tower.
-- **option** The art market attracts thieves and robbers — standing
-  high-value marks for the crime layer, and standing guard/recovery
-  work for the honest board.
-- **option** The drug problem: smoking and Powder use — a standing
-  market for the smuggling category.
-- **state** Foreigner communities (service providers past or
-  present): welcome, tolerated, or no longer welcome.
-- **state** If poor: indebted to other lands for food.
-- **card** An old master artisan dies; an export a town relied on can
-  no longer be made — the town's income state drops, recovery hooks
-  (the apprentice, the last commission, the secret).
-- **card** Rented-land tensions: goblins run logging, dwarves mine
-  magical crystals on elven ground. The foreigners are out of line —
-  or they aren't, and the elves want them gone anyway. Two-sided
-  jerkify: work exists on both sides of the eviction.
-- **card** The dark clan that steals children — manpower's ugliest
-  answer; a standing dark problem with an address.
-- **card** Robot servants, built by elves or with goblin science —
-  the manpower fix that walks; construct encounters and who-answers-
-  for-it questions. *(2026-08-07: WAITS for the science & technology
-  layer — its tone/tech question is that layer's magical-vs-mundane
-  boundary call.)*
-- **relation** Food imports from Firascir and Mortellaria (drought
-  there = crisis here). Land rented to Gibili (logging) and
-  Dvarvengrond (crystals). Human trader enclaves. Powder inflow.
+- **Mercenary hiring in Tergal** — the land's own export, sold across the
+  border. The nearest shipped machinery is `recruit`/`hire`, which is
+  free and CHA-capped; a paid mercenary is a different transaction.
+- **Banking in Mortellaria** — paper-to-gold conversion and credit. The
+  bank-run card already knows what worthless paper is; nobody sells the
+  service yet.
+- **The drug markets** — Ensimaa's smoking and Powder problem (a standing
+  smuggling market) and Tergal's prestige smoking (expensive, severe,
+  chieftains only, a question of status).
+- **Smuggling** against Firascir's guild monopolies and Mortellaria's
+  tariffs; **the gadget market and the arms trade** in Gibili. All four
+  belong with the crime layer's smuggling category rather than a shop.
 
-### Tergal — orcs. Axis: PASTURE & OBLIGATION
-
-Nomadic-herding analogues: Mongolian, native American, Roman-era
-Germanic, the D&D barbarian.
-
-- **fact** Herding economy — horses, buffalo, goats; wealth moves on
-  the hoof and cannot be accumulated, so gifts and obligations do the
-  work of savings. Demands of favors and accusations of ingratitude
-  are standing hooks. *(Flag resolved 2026-08-07: horses stay as
-  written; re-judge at the table if the aesthetic clashes.)*
-- **fact** Law is thin: less organized action against crime — lower
-  protection and heat, rougher self-help.
-- **fact** Imports metal, textiles, grain; exports animals, herd
-  products, and MERCENARIES.
-- **option** Mercenary hiring — the export is a priced-menu entry.
-- **option** Prestige smoking: unaffordable for most; chieftains
-  smoke as a question of status — an expensive, severe drug market.
-- **state** PASTURE and THE HERD: drought or lost grazing puts the
-  tribe's herd in danger; a tribe that loses its herd turns
-  desperate and very aggressive — the raiding state that reaches the
-  neighboring lands.
-- **card** The returned mercenary: back from abroad a level of badass
-  richer — dwarven guns and steel, elven magic, goblin gadgets, human
-  religion — and disrupting the order. A bully/rival seed with a
-  name.
-- **card** Tribute politics: another land bribes a chieftain not to
-  attack; the chieftain uses the money to oppress the other clans —
-  jerkify at the top, and a bridge to the politics layer.
-- **card** Trading-outpost tensions: another land's post grows
-  significant — protection, resentment, seizure.
-- **[PROPOSED] card** The great herd drive (a positive/normal card):
-  the seasonal movement of the herds — escort work, ford crossings,
-  rustlers.
-- **relation** Grain/metal/textile imports from the settled lands;
-  raiding targets when desperate; tribute edges from frightened
-  neighbors to chieftains.
-
-### Dvarvengrond — dwarves. Axis: EXTRACTION & CLAN CLAIMS
-
-Everything follows from mining.
-
-- **fact** Mining economy; needs food and timber imports to live.
-- **state** Per-settlement DEPOSIT STAGE (exclusive slot): normal /
-  freshly found (tensions) / drying up (panic) / long dead — the
-  ghost city of the poor and the scavengers, or a still-ceremonial
-  seat of power.
-- **card** A new deposit is found: claims collide — the discoverer,
-  the clan whose territory it is, the clan strong enough to actually
-  mine it. Clan conflict with work on every side.
-- **card** The food caravan: incoming grain is treasure on wheels —
-  rival clans, bandits, and political opponents all reach for it.
-- **card** Famine by relation: the human harvest fails and the
-  mountain starves — or the inversion: the mountain HAS deep
-  reserves while the humans who grew the food go hungry. Price and
-  conscience play.
-- **card** Social justice: exploited workers, a scrip economy, the
-  company shop. Strikes — rumor of a big new find, the workers want
-  their share before the clan books it.
-- **card** Gold rush: a flashy strike that dries up quick; the poor
-  flock in, the drugs follow.
-- **card** Toxic runoff crosses the border — environmental damage as
-  an international incident.
-- **card** Fuel crisis: is there coal under the mountain? Are the
-  forests above already stripped? Incursions into elven woods; timber
-  deals with the humans.
-- **card** Digging too deep: the lucrative vein next to the thing
-  best left sleeping — the land's landmark problem.
-- **card** The half-feral goblin tribe in the deep tunnels —
-  coexistence, incidents, go-betweens.
-- **card** Air and water: ventilation shafts controlled by one
-  powerful clan — plots and blackmail over who breathes.
-- **card** The vein that sustains a whole city is running out —
-  panic, denial, exodus. Its mirror: a dwarf discovers a method that
-  could reopen dead veins — disruption in the other direction.
-- **card** Evacuation: a community sits in the way of new deposits,
-  or the underground lake is about to cave in on them.
-- **card** Sulfur mined and sold to Hell. *(Flagged: designer marked
-  it "controversial?" — note the pact frame already makes Hell an
-  economic actor, so it is coherent. 2026-08-07: WAITS with hell's
-  own parked treatment.)*
-- **relation** Food from Firascir; timber from Firascir and Ensimaa;
-  the crystal claim in Ensimaa; sulfur to Hell.
-
-### Firascir — humans. Axis: MANORIAL OPPRESSION & THE CROWN'S DEBTS
-
-Typical middle-ages agricultural feudal economics, played straight.
-
-- **fact** Manorial agriculture under lords; guilds in the towns.
-- **card** The lord's monopoly infrastructure: the mill, the oven,
-  the wine press — use them and pay, or grind at home and answer for
-  it. Jerkify's quintessence: oppression with an address.
-- **card** The plague chain: plague → labor shortage → wage demands →
-  wage freeze → peasant revolt. (Cards can CHAIN by setting the
-  states the next card admits on.)
-- **card** The famine chain: bad harvest → price gouging → bread
-  revolt.
-- **card** The king's war debts: orcish skirmishes → overtaxation;
-  orcish mercenaries hired (the Tergal edge); the indebted crown
-  turns on the merchant-paladin order (the templar move); or on a
-  merchant city (the hansa-against-the-crown shape).
-- **card** The annual fair: chaos, enforcers, the pie-powder court —
-  a positive/normal card with crime and comedy in it.
-- **card** Small frauds in hard times: counterfeit coin, watered ale,
-  sawdust bread — petty-crime color and market events.
-- **card** Robber barons and excessive tolls — the toll-reeve worked
-  example (plan.md) lives here.
-- **option** Smuggling against guild monopolies.
-- **relation** THE GRANARY: grain exports to Ensimaa, Dvarvengrond,
-  and Gibili — a Firascir drought is everyone's problem. Timber to
-  Dvarvengrond. Hires Tergal mercenaries when the crown fights.
-
-### Mortellaria — humans. Axis: FINANCE & THE ABSOLUTIST STATE
-
-Baroque analogue; mediterranean agriculture; gold at the center.
-
-- **fact** Finance exists here and nowhere else: corporate shares,
-  banks, paper money, credit. One abstract tropical COLONY offstage.
-- **fact** Enticing villas and palaces — the crime layer's richest
-  marks live here.
-- **option** Banking: paper-to-gold conversion, credit — priced-menu
-  entries.
-- **option** Smuggling against the centralized state's high tariffs.
-- **card** Paid in paper: the PC receives double payment in paper
-  money — worth face value only at a bank at the end of a dangerous
-  road. A quest shape no other land can offer.
-- **card** The tax farmer: the state needs an army and sells the
-  right to squeeze a province — jerkify with a ledger.
-- **card** Counterfeiting of paper money — crime category and market
-  event both.
-- **card** Occupation of Gibili for resources — the big card; ties
-  into the war layer's machinery.
-- **[PROPOSED] card** The bank fails: a run, frozen deposits, paper
-  suddenly worth its weight — and the party's savings are wherever
-  they left them.
-- **relation** The colony (abstract); firearms imports from Gibili;
-  food exports north; covetous eyes on Gibili.
-
-### Gibili — goblins. Axis: LABOR vs CAPITAL, NO STATE
-
-Sillon industriel analogue: crowded, industrial, chaotic.
-
-- **fact** Smoke, steel mills, glassworks, textile mills. No state
-  power to speak of — corporate power only; law is company
-  enforcers.
-- **fact** Firearms production, largely for Mortellaria.
-- **option** The gadget market; the arms trade.
-- **state** STRIKE / UPRISING; under-occupation.
-- **card** Worker uprising — the town stops, both sides hire.
-- **card** Unions against factory owners, with pistolerismo-style
-  company police — jerkify two-sided: pick whose thug you are, or
-  whose thug you break.
-- **card** The firearms contract: a convoy for Mortellaria worth
-  guarding, robbing, or sabotaging.
-- **card** Foreign occupation by Mortellaria for resources — the
-  other end of Mortellaria's big card.
-- **relation** Arms to Mortellaria; the logging concession in
-  Ensimaa; science lent to elven robot-making; food imports.
-
----
+**The two parked cards.** *Robot servants* built by elves or with goblin
+science — the manpower fix that walks; construct encounters and
+who-answers-for-it questions. WAITS for the science & technology layer:
+its tone/tech question is that layer's magical-vs-mundane boundary call.
+*Sulfur mined and sold to Hell* out of Dvarvengrond — coherent with the
+pact frame, which already makes Hell an economic actor. WAITS with hell's
+own parked treatment.
 
 ## THE RULER CHARACTER — the politics dump, part 1: the person (2026-08-06)
 
