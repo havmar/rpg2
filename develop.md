@@ -2,9 +2,8 @@
 
 The dev guide for the combat-sim prototype: workflow, the file index, the
 dev map, conventions, tuning levers, and the current measured balance
-numbers. `AGENTS.md` is only the auto-loaded dispatcher (Claude Code imports
-it through `CLAUDE.md`); THIS file is the real development entry point —
-read it before changing the game.
+numbers. `CLAUDE.md` is only the auto-loaded dispatcher; THIS file is the
+real development entry point — read it before changing the game.
 
 > **PLAYING, NOT DEVELOPING? Read `dm.md` and `writing.md` instead** — they
 > are the entire instruction set for running a game. Nothing in this file
@@ -102,6 +101,20 @@ saves would be optimizing the wrong thing. Therefore:
   breaks every existing save, it is simply better. The same spirit applies
   inside the codebase: refactor freely — the test suites and benches are
   the safety net, not frozen interfaces.
+- **Never soften a reader for a state the code cannot produce**
+  (2026-08-09, added after the economy floor shipped one). The rule above
+  is usually read as being about `save.json`, but the same reflex shows up
+  with no save in sight: a getter that returns a neutral 1.0, a 0, or an
+  empty list when a record it depends on is missing. If worldgen — or any
+  constructor — always builds that record, the missing case is not
+  compatibility, it is a BUG, and a neutral answer makes it invisible. Let
+  it raise. The tell that this has happened: the fallback's only caller is
+  a test. **A test that needs the system in a state the game never builds
+  should build a LEGAL one instead** (`test_worldsim._flat_world` is the
+  worked example — a world whose layer is rolled and then quieted, rather
+  than a world with no layer). Optional AUTHORED fields are a different
+  thing and are fine: a card that declares no `slots` genuinely has none,
+  and `spec.get("slots", 0)` is reading a schema, not tolerating damage.
 
 ## Where a finished feature is written up (2026-08-07, designer directive)
 
@@ -318,8 +331,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `MENU_TERMS` / `BAND_MENU` / `STATE_MENU` — the only road a DERIVED
   state has to a price — clamped by `MENU_FLOOR`/`MENU_CEILING`), and the
   local encounter table (`encounter_entries` / `local_encounter` off the
-  cards and `STATE_ENCOUNTERS`). `has_layer` is the neutral fallback every
-  reader answers with when a land has no layer under it. The content bill
+  cards and `STATE_ENCOUNTERS`). Every reader is STRICT — a land with no
+  layer under it is a state worldgen cannot produce, so asking about one
+  raises rather than answering neutrally. The content bill
   went with it: 30 crisis cards (five or six a land, one flavor anchor
   each), five card CHAINS plus one that crosses a relation, and 17
   authored edges. `_validate_quest` / `_validate_menu` /
@@ -431,14 +445,19 @@ a pointer: what the file is, how it's run, where its docs are.
   temperate human basic pass as the last dedicated review record. No further
   Land worksheet blocks the MVP implementation; reuse the format for focused
   wording or later special-feature review when useful.
-- `AGENTS.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
+- `CLAUDE.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
-  including play (Claude Code imports it through `CLAUDE.md`; Codex CLI and
-  other AGENTS.md-aware agents read it directly) — keep it short and
-  register-neutral; shared fiction style belongs in writing.md, dev content
-  in this file, and play protocol in dm.md.
-- `CLAUDE.md` — **a thin shim** that imports `AGENTS.md` so Claude Code
-  loads the same dispatcher; put no content of its own here.
+  including play — keep it short and register-neutral; shared fiction style
+  belongs in writing.md, dev content in this file, and play protocol in
+  dm.md. **It carries no agent's name in its body on purpose**, so it can
+  be copied to another agent's instruction filename verbatim.
+  *(2026-08-09: `AGENTS.md` was folded into this file at the designer's
+  direction — it used to hold the text while `CLAUDE.md` was a one-line
+  `@AGENTS.md` shim. Restoring the two-file arrangement is three steps and
+  no rewriting: `git mv CLAUDE.md AGENTS.md`, write a new `CLAUDE.md`
+  containing a pointer paragraph and the line `@AGENTS.md`, and change this
+  entry's key back. `git log --follow CLAUDE.md` reaches the AGENTS.md
+  history; the fold is a tracked rename, so nothing is lost.)*
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and the NIGHT (the short
   rest is gone since 2026-07-26), progression,

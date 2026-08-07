@@ -60,6 +60,39 @@ def _world(seed: int = 4471) -> dict:
     return quests.generate_world(seed)
 
 
+def _flat_world(seed: int = 4471) -> dict:
+    """A world whose layer is rolled and then QUIETED at worldgen: every
+    land normal, no card standing, no state held, no news. It is the world
+    the game shows on a boring day, built LEGALLY -- the layer is present
+    and complete, it simply has nothing to say.
+
+    This is the control the derived-seed contract measures against. It is
+    deliberately not "a world with no layer": worldgen opens the layer
+    before it posts anything, so a land without one is a state the game
+    cannot produce, and `worldsim`'s readers are strict about it rather
+    than answering neutrally and hiding a bug (develop.md, "No backwards
+    compatibility -- ever")."""
+    opened = worldsim.open_world
+
+    def quiet(world: dict) -> dict:
+        opened(world)
+        for polity, land in world["lands"].items():
+            land["states"] = []         # assigned, never cleared: a
+            layer = land["world"]       # `clear_state` would log an event
+            layer["wealth"] = "normal"  # the comparison would then see
+            layer["drawn"] = []
+            layer["news"] = []
+            for track in worldsim.TRACKS:
+                layer[worldsim.LIVE_KEY[track]] = None
+        return world
+
+    worldsim.open_world = quiet
+    try:
+        return quests.generate_world(seed)
+    finally:
+        worldsim.open_world = opened
+
+
 def _settlements(world: dict, polity: str) -> list[dict]:
     return [world["areas"][aid] for aid in world["lands"][polity]["areas"]
             if world["areas"][aid]["kind"] == "settlement"]
@@ -420,14 +453,19 @@ class TheWealthRoll(unittest.TestCase):
     def test_the_world_layer_moves_no_worldgen_stream(self) -> None:
         """The armory's rule: the layer rolls off DERIVED seeds, so the
         WHOLE world every career bench rides -- board, cast, geography,
-        armory -- is identical with the layer taken away.
+        armory -- is identical when the layer has nothing to say.
 
         Since the economy floor (2026-08-09) there is exactly ONE exception,
         and it is the point of that session: what a posting QUOTES reads the
         land's wealth band. The stream is still untouched -- same
         geography, same cast, same templates, same levels, same clocks --
-        so `gold_total` is what this comparison lifts out and the test
-        below is what pins it instead."""
+        so `gold_total` is what this comparison lifts out, and the test
+        below is what pins it instead.
+
+        The control is a world whose layer is rolled and then QUIETED, not
+        one built without a layer: every land normal, no card standing, no
+        state held. That is a state the game produces all the time, and the
+        readers are strict about the one it never produces."""
         def stripped(world: dict) -> str:
             world = json.loads(json.dumps(world))
             for land in world["lands"].values():
@@ -439,23 +477,14 @@ class TheWealthRoll(unittest.TestCase):
                                if e["action"] != "add_state"]
             return json.dumps(world, sort_keys=True)
 
-        opened = worldsim.open_world
-        with_layer = stripped(_world(2026))
-        try:
-            worldsim.open_world = lambda world: world
-            self.assertEqual(stripped(_world(2026)), with_layer)
-        finally:
-            worldsim.open_world = opened
+        self.assertEqual(stripped(_flat_world(2026)),
+                         stripped(_world(2026)))
 
     def test_the_quoted_gold_is_the_one_thing_the_layer_moves(self) -> None:
         """...and it moves it by exactly the band's own multiplier."""
-        opened = worldsim.open_world
-        try:
-            worldsim.open_world = lambda world: world
-            bare = {q["id"]: q.get("gold_total", 0)
-                    for q in _world(2026)["quests"].values()}
-        finally:
-            worldsim.open_world = opened
+        quiet = {q["id"]: q["gold_total"]
+                 for q in _flat_world(2026)["quests"].values()
+                 if q.get("kind") != "delivery"}
         world = _world(2026)
         for quest in world["quests"].values():
             if quest.get("kind") == "delivery":
@@ -466,7 +495,7 @@ class TheWealthRoll(unittest.TestCase):
                 worldsim.wealth_of(world, world["areas"][
                     quest["origin"]]["land"])]
             self.assertEqual(quest["gold_total"],
-                             max(1, round(bare[quest["id"]] * band)),
+                             max(1, round(quiet[quest["id"]] * band)),
                              quest["id"])
 
     def test_a_band_a_card_moved_for_its_clock_comes_back(self) -> None:

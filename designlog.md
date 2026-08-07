@@ -3016,10 +3016,17 @@ crosses a relation.
   relations table. `STATE_MENU` is that road. Its risk is
   double-charging (a card and the state it sets both moving `goods`), so
   `_validate_menu_tables` makes the clash an import error.
-- **The world layer's readers answer NEUTRALLY when a land has no layer
-  under it** (`has_layer`). This keeps the frame's own derived-seed
-  contract testable: a world generated with `open_world` stubbed out is
-  the world the game had before the layer existed.
+- **The world layer's readers are STRICT** — asking about a land with no
+  layer under it raises. The first cut had a `has_layer` guard that
+  answered neutrally instead, and it was wrong for the reason the
+  no-backcompat directive names: worldgen opens the layer before it posts
+  anything, so a land without one is a state the game cannot produce, and
+  a reader that returns a neutral answer for it is indistinguishable from
+  a bug that returns a neutral answer. It existed only to keep one test's
+  monkeypatched world loading; the test now builds a legal QUIET world
+  (`_flat_world`: layer rolled, every land normal, no card, no state)
+  instead, which is both a truer control and a stronger assertion. The
+  directive gained a bullet naming this species (develop.md).
 - **`generate_world` now opens the world layer FIRST, not last.** The
   board reads it, so it has to exist before the opening postings. A land
   in crisis quotes crisis money on day one.
@@ -3073,3 +3080,34 @@ quick-reference numbers; develop.md's Files (`worldsim.py`, `quests.py`,
 worldsim.md's ECONOMY land packets section CUT; plan.md's economy-floor
 rung DELETED and the ladder renumbered to two; benchlog's 2026-08-09
 entry.
+
+### Two follow-ups the designer called the same day
+
+**The no-backcompat directive got a bullet it was missing.** Reviewing
+the session, the designer asked whether the "nothing writes to the save,
+so an edge can be re-authored without a migration" framing had smuggled
+a compatibility shim in. It had, in a form the directive did not name:
+`worldsim.has_layer`, a guard that made every outlet reader answer
+neutrally for a land with no world layer under it. No save was involved
+— but the failure mode is identical, because worldgen builds that layer
+before it posts anything, so the missing case is unreachable and a
+neutral answer for it is indistinguishable from a bug returning a
+neutral answer. Its only real consumer was a test that monkeypatched
+`open_world` away. **Fixed**: the guard is deleted, the readers raise,
+and the test now builds a legal QUIET world instead of a broken one
+(`_flat_world` — the layer rolled, then every land set normal with no
+card and no state), which is both a truer control and a stronger
+assertion. develop.md's "No backwards compatibility — ever" gained a
+bullet naming the species, with the distinction that keeps it usable: an
+optional AUTHORED field with a default is reading a schema, not
+tolerating damage. `cmd_engage`'s `sighting.get("skins")` — a real
+old-save fallback — was tightened in the same pass.
+
+**`AGENTS.md` folded into `CLAUDE.md`.** Designer direction: one
+instruction file, not a file plus a shim. `CLAUDE.md` now holds the
+dispatcher text verbatim (a tracked rename, so `git log --follow` still
+reaches it) and its body was scrubbed of every agent's proper name, so
+restoring the two-file arrangement is a `git mv` plus a six-line shim and
+no rewriting. develop.md's Files entry carries the recipe. The cost is
+stated plainly: AGENTS.md-aware agents no longer auto-load anything from
+this repo until the file is restored.

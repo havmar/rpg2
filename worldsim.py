@@ -1727,19 +1727,8 @@ def take_news(world: dict, polity: str, day: int) -> list[str]:
 # an edge can be re-authored, a knob re-tuned, or a card added without a
 # migration -- the same reason the relations table derives instead of storing.
 
-def has_layer(world: dict, polity: str) -> bool:
-    """Is there a world layer under this land at all? Every reader below
-    answers NEUTRALLY when there is not -- no shift, no markup, catalog pay
-    -- so a caller never has to check first, and a world built with the
-    layer stubbed out (the derived-seed contract's own test) is the world
-    the game had before the layer existed."""
-    return bool(world) and "world" in world.get("lands", {}).get(polity, {})
-
-
 def live_cards(world: dict, polity: str) -> list[dict]:
     """Every card standing over the land right now, one per track."""
-    if not has_layer(world, polity):
-        return []
     layer = land_layer(world, polity)
     out = []
     for track in TRACKS:
@@ -1761,9 +1750,7 @@ def board_shift(world: dict, polity: str) -> int:
     wealth band, plus every live card's `slots`. A fair or a fleet in adds
     work; cold mills take it away. The floor is applied by the caller
     (`quests.board_slots`) -- a settlement is never a place with no work."""
-    if not has_layer(world, polity):
-        return 0
-    shift = BAND_SLOTS.get(wealth_of(world, polity), 0)
+    shift = BAND_SLOTS[wealth_of(world, polity)]
     for spec in _outlet(world, polity, "quest"):
         shift += int(spec.get("slots", 0))
     return shift
@@ -1774,9 +1761,7 @@ def board_pay(world: dict, polity: str) -> float:
     hand, times every live card's `reprice`. Applied once, at posting time
     -- a job taken keeps the terms it was posted at, which is what makes a
     good week on the board worth walking to."""
-    if not has_layer(world, polity):
-        return 1.0
-    pay = BAND_PAY.get(wealth_of(world, polity), 1.0)
+    pay = BAND_PAY[wealth_of(world, polity)]
     for spec in _outlet(world, polity, "quest"):
         pay *= float(spec.get("reprice", 1.0))
     return pay
@@ -1812,14 +1797,12 @@ def menu_terms(world: dict, polity: str) -> dict[str, float]:
     never absurd. A term nobody moved is simply absent -- callers that ask
     for one get 1.0 (`term`), which is what an untouched price is."""
     terms: dict[str, float] = {}
-    if not has_layer(world, polity):
-        return terms
 
     def apply(table) -> None:
         for name, mult in table.items():
             terms[name] = terms.get(name, 1.0) * float(mult)
 
-    apply(BAND_MENU.get(wealth_of(world, polity), {}))
+    apply(BAND_MENU[wealth_of(world, polity)])
     for state_id in state_ids(world, polity):
         apply(STATE_MENU.get(state_id, {}))
     for payload in _outlet(world, polity, "menu"):
@@ -1829,9 +1812,10 @@ def menu_terms(world: dict, polity: str) -> dict[str, float]:
 
 
 def term(world: dict, polity: str, name: str) -> float:
-    """One priced term over one land. 1.0 -- the untouched price -- when
-    there is no world layer under the question at all, so every caller can
-    ask without checking first."""
+    """One priced term over one land. 1.0 is the untouched catalog price --
+    what a land nothing is happening to charges. A land the world layer has
+    never been rolled onto is not a case: `quests.generate_world` opens the
+    layer before it posts anything, so every land in every world has one."""
     return menu_terms(world, polity).get(name, 1.0)
 
 
@@ -1907,8 +1891,6 @@ def encounter_entries(world: dict, polity: str,
 
     `where` filters by ground: "road" is a travel leg, "wilds" is a day
     afield or a night camped, and an entry marked "any" answers to both."""
-    if not has_layer(world, polity):
-        return []
     entries = [dict(e) for e in _outlet(world, polity, "encounter")]
     for state_id in state_ids(world, polity):
         entry = STATE_ENCOUNTERS.get(state_id)
