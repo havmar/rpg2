@@ -232,8 +232,8 @@ second time.
      tags/states, a clock, the five-outlet effect list, a news line)
      and the first ~20 templates. `worldsim.md` holds the raw
      material: the weather sketch and the six land economy, politics,
-     and religion packets; the session turns the designer's cut of
-     them into records.
+     religion, and magic packets; the session turns the designer's
+     cut of them into records.
    - **Jerkify / the disposition axis** — NPC and authority
      disposition with mechanical teeth: sin/heat modifiers by desert
      (robbing the extortionist books less; the beloved healer more,
@@ -937,12 +937,20 @@ deliveries 2026-07-14; Magic & MIND 2026-07-15; ranged combat & guns
 1. **What remains of the magic item**: **the wraith** (buildable now that
    attack spells exist); **rank-4 capstones** (authored tomes/mentors —
    the 14-20 band's player power); **enemy spell use** (openers, not
-   just bolts); **flight ranks 3-4**. *(The stat-transcendence half —
+   just bolts); **flight ranks 3-4**; **the mid-game caster** (ruled
+   2026-08-07: cannot-become-a-caster-later is unintentional — the game
+   should stay open and fun, and realism doesn't restrict the player
+   this far, so the 2026-08-05 never-acquire asymmetry is softened to a
+   temporary fact of the build. Open casterhood after creation;
+   mechanism the implementer's call — a latent-gift awakening event is
+   the cheapest fiction; worldsim.md's magic packets carry the ruling).
+   *(The stat-transcendence half —
    +stats to ~double the natural cap through gear, +DEX an order of
    magnitude dearer than +STR/+pool — SHIPPED 2026-07-28 as the weapon
    generation system: rules.md's Weapon Ladder & Generation add-on.
    Non-weapon magic items — rings, amulets — would reuse its sp table
-   if ever wanted.)*
+   if ever wanted, and worldsim's CURSED WORK note (2026-08-07) names
+   their first flavor: the cursed ring, power with a receipt.)*
 2. **Armor** — provisional design: shifts the incoming wound tier down
    at the cost of a DEX penalty and higher STA drain. *Status: adopt,
    simplify, or defer.* (Designer lean: probably never important.)

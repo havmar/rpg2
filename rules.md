@@ -3002,6 +3002,10 @@ guarantees replace the pick's safety valves:
   user. Starting the PC with the gift therefore closes no door and opens
   one. The stats are the NATURAL roll, rerolled until it lands — nothing
   is nudged afterwards, so a PC wizard's shape is a wizard's shape.
+  *(2026-08-07: the never-acquire asymmetry is now a temporary fact of
+  the build, not doctrine — the designer ruled that becoming a caster
+  mid-game should open, for gameplay openness; plan.md carries the item.
+  The reroll and the wizard gate stand until that ships.)*
 - **No trait sketch (2026-08-05)**: the PC rolls no traits at all (see
   *Traits — the companion layer* below), which retired the old
   no-relatives rule with it: there is no quirk to roll away. His sheet is
