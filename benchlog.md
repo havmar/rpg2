@@ -1538,3 +1538,33 @@ quest ids rather than the shared streams.
 **No dial moved.** Owed later: a bench_weapons equal-sp budget-honesty
 matrix before the sp prices are trusted for tuning, and a top-band career
 re-bench once sim parties can hold generated steel.
+
+## 2026-08-07 — re-homed: the 2026-07-26 travel-encounter measurement
+
+Not a new run. These numbers were measured during the 2026-07-26
+quest-length session and had been parked in plan.md's attrition-rework
+section; they move here under the new doc rule (measured numbers live in
+the benchlog, plan.md holds only planned work). **Do not re-derive
+them.**
+
+**Travel encounters work** — they are rare, and the sighting valve is
+widest exactly where a new campaign is played. Real `notice_contest`,
+real wild pools, 20k rolls per party level:
+
+| party lvl | sighting (no fight) | ambush | met square | fight given a roll | per 1-day trip | per 2-day trip |
+|---|---|---|---|---|---|---|
+| 1 | 37.7% | 6.2% | 56.1% | 62.3% | **9.4%** | 17.3% |
+| 3 | 24.8% | 4.3% | 70.9% | 75.2% | 11.3% | 20.9% |
+| 5 | 13.1% | 11.3% | 75.5% | 86.9% | 13.0% | 24.1% |
+| 8 | 8.0% | 6.3% | 85.6% | 92.0% | 13.8% | 25.5% |
+| 12 | 4.7% | 13.9% | 81.3% | 95.3% | 14.3% | 26.4% |
+
+One road fight per ~11 one-day trips at level 1. The parked
+road-encounter rate trim (plan.md) is judged against this table: the
+rates were sized against 3.74-fight quests, and a 1.66-fight quest makes
+the road a much larger share of all combat.
+
+**The XP frame from the same session:** total XP to level 20 is
+**19,000** quoted (`sum(100 * L)`, L = 1..19), against a mean quest pay
+of about `85 * L + 42` — which is where the career sim's ~38 quests to
+the cap come from.

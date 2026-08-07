@@ -103,6 +103,48 @@ saves would be optimizing the wrong thing. Therefore:
   inside the codebase: refactor freely — the test suites and benches are
   the safety net, not frozen interfaces.
 
+## Where a finished feature is written up (2026-08-07, designer directive)
+
+Every dev session that ships something ends with the same paperwork, and
+the load-bearing half of it is a DELETION. **`plan.md` is planned
+features and parked ideas only.** The moment an item is implemented it
+comes OUT of the roadmap — not struck through, not annotated "SHIPPED",
+not kept "as the built spec" — and its write-up goes to the designlog.
+A roadmap that carries its own history stops being readable as a
+roadmap.
+
+Where each part of the record goes:
+
+- **`designlog.md`** — the dated session entry, appended (newest last):
+  what was discussed, the road the discussion took, what was decided,
+  what shipped, and **the calls the spec left open that the build had to
+  settle**. That last part is the one nobody else records; write it down
+  or it is lost. This file is the archive of what was built and why.
+- **`rules.md`** — the played rules and the design spine (the "why"
+  behind the numbers). If the game now behaves differently at the table,
+  it is documented here or it does not exist.
+- **`dm.md`** — the play protocol and table manner for anything the DM
+  now runs; **`writing.md`** if the register itself moved.
+- **This file** — new modules in **Files**, new mechanics in the **dev
+  map**, new knobs in **Balance / tuning**.
+- **`benchlog.md`** — every measured number, including sanity runs that
+  moved nothing. Measurements never live in plan.md.
+- **Spec companions** (`worldsim.md`, `placegen.md`) — the same rule as
+  plan.md: a spec section is CUT when its session lands, so what remains
+  in the file is what remains to build.
+- **`plan.md`** — loses the shipped entry. Where a planned or parked
+  item genuinely leans on what just shipped, leave a one-line pointer to
+  the doc that owns it, never a copy of the spec. Items the work
+  *un-blocks* or newly parks are added here in the same pass — that is
+  the roadmap staying current, not history creeping back in.
+
+Two failure modes to watch for, both of which produced the 2026-08-07
+cleanup: a section titled COMPLETE or SHIPPED that nobody deletes
+because it reads like documentation, and build detail (the open calls, a
+death list of removed constants) recorded only in the roadmap because
+that is where the spec happened to be written. The first belongs
+nowhere; the second belongs in the designlog entry.
+
 ## Files
 
 **Mechanics detail lives in `rules.md`, not in this list.** Each entry here is
@@ -119,14 +161,17 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the roadmap: planned features only**, in build order (next
-  up: the world & NPC simulation thread — the 2026-08-05 framing lives
-  there; since 2026-08-07 its remaining order is THE WORLDSIM BUILD, a
-  six-session ladder implementing worldsim.md whole — trim → world frame
-  → weather → economy floor → politics & the ruler roll → religion &
-  magic — every settleable call settled up front in its rulings block;
-  jerkify, bullies, monsters & fauna, and science & technology postponed
-  past the build), plus parked ideas and open questions.
+- `plan.md` — **the roadmap: planned features, parked ideas and open
+  questions ONLY**, in build order (next up: the world & NPC simulation
+  thread — the 2026-08-05 framing lives there, and its remaining order
+  is a six-session ladder implementing worldsim.md whole — trim → world
+  frame → weather → economy floor → politics & the ruler roll →
+  religion & magic — every settleable call settled up front in its
+  rulings block; jerkify, bullies, monsters & fauna, and science &
+  technology postponed past the build). **Nothing implemented lives
+  there**: when a feature ships, delete its entry and write the session
+  up in designlog.md — see "Where a finished feature is written up"
+  above.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
@@ -134,7 +179,10 @@ a pointer: what the file is, how it's run, where its docs are.
 - `designlog.md` — **the dated design-session history** (2026-07-19):
   what was discussed, the road the discussion took, what was decided —
   the reasoning trail behind plan.md's decisions, so settled questions
-  stay settled. Append an entry after every major design session.
+  stay settled. Append an entry after every major design session, and
+  after every session that SHIPS something: the designlog is where a
+  finished feature's write-up goes when plan.md loses its entry,
+  including the calls the spec left open that the build had to settle.
 - `placegen.md` — **the implemented place-generation MVP specification**
   (2026-07-23; content specification and implementation completed
   2026-07-25): the
@@ -1777,15 +1825,20 @@ party + a forage roll, which CLOSED the standing hideout flag to the
 55-65 band), the overcharge doctrine, the strength/dexterity stat brews,
 the firebomb and the smoke vial, plus the `bench_abilities` alchemist
 column. **The villain layer's first slices are in (2026-07-19)** — karma & heat,
-the shadow board, the punishment posses, the hell pact and its capers.
-Next per plan.md's villain roadmap (reordered 2026-07-19): play the dark
-path first (the no-code tone probe), then **nemesis persistence** (the
-cheap, high-leverage slice — a surviving posse leader who returns with a
-face and a grudge), then conquest ticking. The old magic-phase remainder
-(stat transcendence + the wraith, armor — designer lean: probably never
-important — named weapon instances) still stands behind that, along with
-the career sim's finding that the 14-20 band lacks its player power until
-masterwork/magic-item content lands. **The attrition rework shipped in full
+the punishment posses, the hell pact and its capers — and **the dark
+rework reshaped it (2026-08-04)**: occult assignments on a pinned deck,
+crime as free actions (`crime.py`), the campaign record and the sin
+rename, with the shadow board retired. **Conquest & holdings shipped
+2026-07-27** and **the weapon generation system 2026-07-28** (masterwork
+in shops, magic weapons on the reward ladder, the legendary smiths — the
+old "stat transcendence" item). What the layer still owes is plan.md's
+short list: nemesis persistence (bumped way back with the layer), the
+good-karma mirror, the greed economy, and the dark content pass. The
+magic remainder (the wraith, rank-4 capstones, enemy spell use, flight
+3-4, the mid-game caster) and armor — designer lean: probably never
+important — stand behind that, along with the career sim's finding that
+the 14-20 band lacks its player power until the capstones land and the
+generated steel actually reaches sim hands. **The attrition rework shipped in full
 on 2026-07-26.** Quests are 1-3 encounters (mean 1.66, from 3.74), the live
 board and its clocks make days matter, conditions and named wounds make
 damage persist, and ferocity plus one mercy per character level lets a
@@ -1793,4 +1846,5 @@ career carry one defeat without making relentless enemies harmless. Its
 design spine remains: *do not make rest expensive, make rest incomplete* —
 gate recovery on rate and access, never on price, because price is the only
 thing that inflates across a 1-20 career. See plan.md for the parked
-follow-ons.
+follow-ons — and for the active thread, the world & NPC simulation build
+(worldsim.md is its content companion).
