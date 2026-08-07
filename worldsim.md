@@ -8,7 +8,8 @@ weather system sketch, the curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
 (the dump's power half, same day), and the religion land packets (the
-worship dump, same day). Nothing here is shipped. When a piece ships, its rules move to rules.md and
+worship dump, same day), and the magic land packets (the arcane dump,
+2026-08-07). Nothing here is shipped. When a piece ships, its rules move to rules.md and
 its entry here is cut (the plan.md convention).
 
 Register note: entries are IDEA-LEVEL, in the dev register. Final
@@ -1807,6 +1808,300 @@ loud — the designer's three words, constitutional.
 
 ---
 
+## THE LAND PACKETS — MAGIC (2026-08-07)
+
+Provenance: the designer's 2026-08-07 magic brainstorm — the healing
+question and its supernatural-affliction answer, the five scarcity
+limits, the margin stance, the no-persecution requirement, the
+organization sketches per land, and the discipline analogy —
+rewritten and classified. Dumped ahead of monsters & fauna (the
+recommended order) on the designer's initiative; the layer's other
+half — science & technology — is NOT here and keeps its slot in the
+order. Assistant additions are marked **[PROPOSED]**, cut-on-sight
+as ever.
+
+**Two development demotions** (recorded so nothing downstream
+mistakes them for lore):
+
+- **The conquest questlines are not lore.** They predate the
+  detailed worldbuilding; their narrative beats were throwaway
+  main-conflict scaffolding for the early game. The human kingdoms'
+  undead army can stay for now, but it is not valuable lore — no
+  packet owes it consistency. (Mortellaria's necromantic strand,
+  the fog necromancer, and the Deathless Crown stand on their own.)
+- **The magic-user start is a development matter.** The current
+  start generates a caster for magic-content testing; that carries
+  no worldbuilding significance. The designer adds that
+  cannot-become-a-caster-later is unintentional, to be fixed later.
+  **(Flagged — collision:** rules.md's Magic & Mind and plan.md
+  record the always-caster start as a design principle, not a test
+  rig — "the gift is the one thing a character can never acquire"
+  is the stated reason the reroll closes no door — and this file
+  leans on it twice (the sorcery axis annotation; the witch-finder
+  card's "aims at the party by construction"). M1 below also pulls
+  the recorded way: if training alone can make a caster, the
+  inborn-gift limit loses its teeth. A LATENT gift that can awaken
+  after creation would honor both statements — inborn and rare,
+  grantable mid-career as an event, never bought as training.
+  Designer's ruling needed before any doc moves.)
+
+### The five limits — what keeps magic scarce
+
+- **M1 THE GIFT IS BORN.** Real magic needs rare inborn ability; no
+  diligence substitutes. The gift ignores rank — it lands on
+  peasants and princes alike, which is most of the trouble below.
+- **M2 THE THEORY.** The gift untrained is a hazard, not a career:
+  a proper wizard takes years of practice and access to good
+  theory, and good theory is hoarded — every organization below is,
+  among other things, a gate around it.
+- **M3 THE COSTS.** Great workings want rare and expensive
+  reagents, and personal Power is limited — as in gameplay: the
+  pool is real, the burst is budgeted, and nobody casts all day.
+- **M4 THE DANGER.** Magic worked untrained, or with too much
+  ambition and too little caution, exacts its own price: madness,
+  incurable magical sickness, physical ruin (the affliction
+  doctrine below). The orcish reading is already canon — religion's
+  THE CALL, the shaman-sickness that kills or breaks the
+  uninitiated, is M4 in camp clothes.
+- **M5 THE DARK SHORTCUT.** Loss as the price, not the accident:
+  blood, body parts, and family members can be traded for Power —
+  hell usually involved (hell's own treatment stays parked; at this
+  layer that is what practitioners believe, not a mapped place).
+  The shortcut works, which is exactly the problem: it is the fast
+  road the gifted-and-poor are offered first, and the conduct that
+  gets a caster hunted (below).
+
+### The stance doctrines
+
+- **THE MARGIN.** Magic is real, known, and SMALL — a gamble, not a
+  pillar. Everyone is secondhand familiar with its minor forms (the
+  healer's mending, a charm that works) and almost no one has seen
+  a great working; it is not wonder to people, and it is not
+  dominion either. M1–M3 keep it from being a definitive
+  world-forming force over politics or economics, and its
+  reputation — useful and powerful; unpredictable and dangerous —
+  balances out to wary respect. No throne, market, or war is
+  decided by magic alone.
+- **CONDUCT, NOT CREED.** This world has NO analogue of the
+  christian stance that magic is from the devil, and no inquisition
+  against casting as such — a deliberate design requirement: a
+  caster playthrough must never be dominated by automatic hostility
+  from civilization. What gets a caster hunted is what they DID:
+  dark workings draw witchhunters (a paid trade, not a holy
+  office), hired adventurers, or plain soldiers — a murderer's
+  treatment with a specialist's surcharge. WIRING, rereading two
+  politics cards under the doctrine (text unchanged): the
+  WITCH-FINDER is a con man whose "witch" is almost never a real
+  caster — real ones are rare, the friendless are not; the
+  AUTO-DA-FE prosecutes heresy — "witchcraft" on its charge sheet
+  means harm by hidden means, and the academy teaching openly in
+  the same capital is the doctrine made visible. The ruler sheet's
+  spell-fearing cell stays a PERSONAL stance some authorities roll,
+  never a civilization's.
+- **PERSONAL AND EMBEDDED.** Personal casting is rare; embedded
+  magic is common wherever money is: a large portion of the world's
+  functional technology is magical at the core — devices, potions,
+  charms (elven automation, dwarven artifice, goblin gadgets: the
+  econ packets already carry them). This is how the margin survives
+  the technology: a device amortizes one wizard's rare work across
+  decades of use.
+- **THE DISCIPLINE.** Wizard magic is maths, physics, programming:
+  an interface exists for changing the world with thought, but
+  building the access, directing the process, and fueling it takes
+  complex abstract law learnt deeply and used in long connected
+  chains. Some of the difficulty can be outsourced to physical
+  substrates — a device or a potion carries a pre-solved working in
+  matter. The analogy completes the margin: everyone uses the
+  products, few can do the work, and the ones who can are well-paid
+  professionals, not kings. And the PC's gift reads in-world as
+  PRODIGY: very strong inborn talent that turns a little theory
+  into new and stronger practice fast — the in-world reading of the
+  spellbook economy, where a 120g book makes the PC dangerous and
+  makes an academy student a sophomore.
+- **SCALE: PERSONS, NEVER POPULATIONS [PROPOSED].** Healing magic
+  mends the body in front of the caster, at standard-service
+  prices — and no working scales to a plague, a famine, or a
+  season (the weather-worker's rain stone buys a day of rain, not a
+  harvest; religion's Tergal option already prices exactly that).
+  One line, and every epidemic, famine, and drought card is safe
+  from the question the ruler sheet asked. Companion line: NOBODY
+  COMES BACK — necromancy animates bodies and interrogates echoes;
+  it never returns the person (the draugr is the founder's corpse
+  and the founder's temper, not the founder). Death keeps its full
+  weight: the succession cluster, the elven funeral, and murder's
+  gravity all stand on it.
+- **THE SUPERNATURAL AFFLICTION** (the ruler sheet's healing
+  question, answered the designer's way). Ordinary hurts yield to
+  ordinary healing — that is why the healer is a standard service
+  and no king is one bad fall from a crippled reign. But sickness
+  and disability can THEMSELVES be supernatural, and the ordinary
+  healing arts do not touch those. The origin list, each a rumor
+  and sometimes an address: exposure to a working or a place of
+  power; gifted blood's inheritance (lines that bred for the gift —
+  an advantage on the road to a throne — bred its twists in with
+  it); the ruler's own magical experiment gone wrong; magical
+  poisoning by an enemy; a bargain's price, health traded away; a
+  saint's curse (the vedic shape — the holy man's anger lands and
+  stays); a witch's curse; divine punishment. Magic itself comes
+  out dark and potentially costly — the intended note, and later
+  gameplay (CURSED WORK below). WIRING — the residue rule
+  [PROPOSED]: wealth cures the curable, so among the great the
+  afflictions that PERSIST are precisely the supernatural, the
+  bargained, and the divine. The ruler sheet's affliction family
+  keeps its measured weights (what history counted is what magic
+  could not cure), the origin stamp extends to the new origins
+  ("since the working"; "cursed by the hermit he evicted"), and
+  every afflicted ruler upgrades to a standing rumor: why can the
+  king not be healed? Among the poor the read stays mundane —
+  sickness is sickness where nobody can pay — and the two-tier read
+  is itself color.
+
+### Land-agnostic material
+
+- **fact THE RECRUITERS.** M1 + M2 make gifted children a resource:
+  talent born poor stays untrained, so wizard organizations look
+  for gifted children to raise into proper wizards. The scout at
+  the fair, the family paid off, the tested orphan — standing hook
+  fauna in every settled land; Mortellaria's academy runs the
+  formal version (its packet).
+- **card THE WILD TALENT.** Great M1 and no M2: a poor peasant in a
+  traumatic moment explodes a harasser with magic — and runs. A
+  dangerous, half-mad fugitive with an uncontrollable power: posse,
+  recruiters, witchhunters, and pity all converge, and the party
+  fits on every side — hunt, rescue, or deliver to a teacher: three
+  employers, one target. **[PROPOSED]** the true-positive variant
+  of the WITCH-FINDER card: sometimes there IS one behind the
+  burned barn, and the fraud has accidentally found a real fire.
+  Orcish cousin, already canon: THE CALLED CHILD (religion) — the
+  call is the wild talent in a culture with a working cure.
+- **fact THE REAGENT TRADE (M3).** Rare magical resources exist and
+  move: crystals, plants, specific animal parts, the wool of golden
+  sheep. Compact, high-value, provenance-sensitive — natural heist
+  marks and the smuggling category's luxury end (crime-layer
+  wiring); the dwarven crystal concession in Ensimaa (econ) is the
+  trade's visible end, the alchemists' wing (politics) a
+  state-scale buyer.
+- **option THE HUNT.** Witchhunting is a trade: posted work against
+  a named dark caster, taken by specialists, hired adventurers, or
+  soldiers when the target is loud enough. The party is the natural
+  contractor — and on a dark path, in time, the natural quarry.
+- **wiring CURSED WORK [PROPOSED].** The designer's gameplay
+  integration — the cursed ring that grants +3 DEX and takes 1
+  point of natural DEX — is the affliction doctrine sized to an
+  item: power with a receipt. It slots into plan.md's parked
+  non-weapon magic items row (rings/amulets reusing the weapon sp
+  table); idea-level here, priced there.
+- **wiring THE RULER CELLS.** The sheet's hand-set magic cells
+  (spell-friendly / spell-fearing / gifted) were flagged as prime
+  per-land modifier targets; these packets now supply each land's
+  direction (deferred with the modifier columns, as ever).
+
+### The organizations — the guild frame
+
+**fact** Where wizards organize — the human and goblin lands — the
+organization is GUILD-SHAPED: charters, dues, masters and
+journeymen, jealously held privileges; a powerful guild among
+guilds, never a fifth estate. Three local flavors below; the elves
+and dwarves organize otherwise (their entries).
+
+### Ensimaa — elves. Magic: THE INTEGRATED ART
+
+- **fact** Much more magic, and no profession fencing it in: the
+  automation, the wards, the life-extending and aesthetic magic the
+  frozen ladder hoards are one continuous fabric with everyday life
+  (econ and politics already carry all three). A visitor sees more
+  working magic in a market morning here than in a Firascir year.
+- **fact** The frozen ladder applies to the art itself: the best
+  magic sits where every other advantage sits — at the top, hoarded
+  by the ageless.
+- **option** TEACHING THE OUTSIDER: possible, and priced twice —
+  high fees AND standing in their society: a ladder of quests,
+  sponsors, and interviews first (face is the currency; the
+  purity-writ machinery is the natural gate). What is taught is
+  real; how long the ladder runs depends on who is asking.
+
+### Tergal — orcs. Magic: THE PRACTICE (reference)
+
+Religion owns orcish magic whole — shamanic, intuitive, elemental:
+the call, the white and black shamans, the weather-worker, taboo
+law (the dedupe doctrine). This packet adds two facts and an edge:
+
+- **fact** MAGIC IS A WEAPON: a warband counts its shaman in its
+  strength, and chiefs court spirit-workers the way settled lands
+  court engineers — in war the shaman is armament, and valued
+  exactly so.
+- **fact** MAGIC IS PERFORMED: where there is a ritual there is an
+  art — the fire dance; the flicker dance, a dancer blinking in and
+  out of sight or across the circle (invisibility and teleportation
+  as performance). Display magic is prestige, and prestige is power
+  here.
+- **relation** THE OLD PRACTICE: the voodoo strand — spirits, minor
+  gods, and demons dealt with by name — is shared inheritance with
+  the goblins' preindustrial past. Tergal runs it at full strength,
+  Gibili's margins keep its residue (its packet), and practitioners
+  recognize each other across the border.
+
+### Dvarvengrond — dwarves. Magic: THE PRACTICAL ARTS
+
+- **fact** Primarily artificing, alchemy, and healing — pragmatic
+  to the bone: magic is a trade skill inside the clan and guild
+  structures, worked in workshops rather than towers, priced like
+  smithing and inspected like it too. The embedded tier's center of
+  mass: runes in the work, not fire from the hand. (Religion keeps
+  the knockers, the dead, and the seeress.)
+
+### Firascir — humans. Magic: THE TOWERS
+
+- **fact** Barely an organization: grumpy old wizards in scattered
+  towers, experimenting and hoarding books and knowledge, meeting
+  rarely and mostly to feud. No formal teaching track exists.
+- **option** THE TOWER DOOR: an offer of gold might open it;
+  volunteering as the subject of a dangerous experiment opens it
+  faster. An apprenticeship is personal, rare, and ends at the
+  master's whim. The land with talent and no ladder — the wild
+  talent's natural home ground, and the witch-finder's natural
+  market (where real magic is rarest, the fraud sells best).
+
+### Mortellaria — humans. Magic: THE ACADEMY
+
+- **fact** The archetypical wizarding academy: a university —
+  faculties, examinations, robes — with the bureaucracy and class
+  discrimination of the land it serves. The gifted commoner is
+  admitted (talent is talent) and made to feel the admission daily.
+  The crown is patron and leash at once (the alchemists' wing reads
+  naturally as an academy contract).
+- **card** THE BASEMENT CHILDREN: the academy's scouts run the
+  recruiter fact at scale, and the designer's hook lands here —
+  neglected adopted children in the basement of the wizarding
+  academy, taken young for the gift and raised by an institution
+  that wanted the talent, not the child. Ward, witness, and time
+  bomb in one; the wild-talent card's indoor variant.
+- **fact** THE NECROMANTIC AFFINITY: necromancy keeps surfacing
+  here — a cultural affinity, very controversial, and periodically
+  winning some degree of acceptance before the next scandal buries
+  it again. WIRING: the death-face rite makes it locally thinkable
+  (religion's axis); the northern rite cites it as proof of the
+  creeping heresy (the schism clock's best fuel); and the seance
+  parlors' moonlighting necromancers (Gibili) trained somewhere —
+  usually here.
+
+### Gibili — goblins. Magic: THE MASTERS FOR HIRE
+
+- **fact** Open and transactional: any master teaches — for a
+  price, or for quests run on the master's errands. Buyer beware,
+  constitutionally: the useless book sold dear, the master who
+  vanishes with the fee, the master who delegated his dirty work
+  and now prefers the errand-runner disappeared. (Dedupe: religion
+  owns salvation-shaped commerce — the charm trade, the ladder
+  faiths; magic owns capability-shaped commerce — teaching,
+  devices, and the real necromancers behind the parlor fronts.)
+- **fact** THE OLD PRACTICE'S RESIDUE: the preindustrial goblin
+  past's spirit-practice — voodoo dealing with spirits, minor gods,
+  demons — survives at the margins, the residue end of Tergal's OLD
+  PRACTICE relation (its packet).
+
+---
+
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
@@ -1826,7 +2121,14 @@ mostly ASSIGNMENT — the per-land encounter pools already exist; the
 dump picks distinctive regional creatures and ties cards to them
 (the fog necromancer pattern) — and the religion packets pre-order
 three (the draugr, the knockers, Tergal's grave-made ghosts).
-Magic and science/technology should
+Magic is dumped too (2026-08-07, THE LAND PACKETS — MAGIC above,
+taken ahead of monsters & fauna on the designer's initiative: the
+scarcity limits, the stance doctrines — the supernatural-affliction
+answer to the ruler sheet's healing question among them — and the
+per-land organization packets). Science/technology is the layer's
+remaining half; it should still
 ride the land packets as flavor anchors first (elven robots, dwarven
 methods, goblin gadgets are already in them) and get mechanics only
-where a card demands one.
+where a card demands one — and it now owes the magic packets one
+boundary when it lands: which technology is magical at the core (the
+embedded tier) and which is mundane (the robot question, the guns).

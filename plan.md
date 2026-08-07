@@ -232,8 +232,8 @@ second time.
      tags/states, a clock, the five-outlet effect list, a news line)
      and the first ~20 templates. `worldsim.md` holds the raw
      material: the weather sketch and the six land economy, politics,
-     and religion packets; the session turns the designer's cut of
-     them into records.
+     religion, and magic packets; the session turns the designer's
+     cut of them into records.
    - **Jerkify / the disposition axis** — NPC and authority
      disposition with mechanical teeth: sin/heat modifiers by desert
      (robbing the extortionist books less; the beloved healer more,

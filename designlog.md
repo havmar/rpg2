@@ -2058,3 +2058,96 @@ knockers, Tergal's grave-made ghosts). develop.md's worldsim.md
 Files entry extended; plan.md's event-vocabulary bullet counts the
 religion packets. All of it is a first version, to be playtested
 before it hardens.
+
+## 2026-08-07 — The magic packets: the arcane dump
+
+**Where it started.** The designer delivered the magic brainstorm,
+asking for the same processing the economy and politics dumps got,
+plus feedback. Its contents: the healing question (a world of
+standard-service magical healing generates sickly and crippled
+kings — why can't they buy a cure?) and the designer's chosen answer
+(don't delete the traits; make sickness and disability THEMSELVES
+possibly supernatural, immune to ordinary healing magic, with an
+origin list: exposure, gifted blood's mutations, botched experiments,
+magical poisoning, bargains paid in health, saints' and witches'
+curses, divine punishment); five scarcity limits (M1 rare inborn
+gift, M2 theory and long training, M3 reagents and bounded Power, M4
+the madness/sickness danger of untrained or reckless work, M5 the
+dark-sacrifice shortcut); the margin stance (magic small, known,
+never a world-forming force; useful-and-dangerous balancing to wary
+respect); an explicit no-persecution requirement (no
+magic-is-from-the-devil doctrine, no inquisitors — a caster
+playthrough must not be dominated by automatic hostility); the
+organization sketches (Firascir tower hermits, Mortellaria's
+academy-university with its class discrimination and necromantic
+affinity, Gibili's unreliable masters-for-hire, dwarven
+artificing/alchemy/healing pragmatism, elven integration priced in
+fees plus standing, orcish shamanic/voodoo practice valued as weapon
+and performed as art); the gifted-children recruitment hook and the
+wild-talent fugitive; the maths/physics/programming analogy with
+device/potion substrates and "a large portion of the functional
+technology of the world is magical"; the PC-as-prodigy reading;
+reagent examples; and two development demotions (conquest questlines
+are not lore; the magic-user start is a dev matter).
+
+**The calls.**
+
+1. *Classified into the packet shape:* the five limits and six
+   stance doctrines land-agnostic at the head, four land-agnostic
+   entries (the recruiters, the wild talent, the reagent trade, the
+   hunt), the guild frame, and six land entries in the standing
+   order — deduped against religion (Tergal reference-only: religion
+   owns the practice, magic adds weapon-value, performance, and the
+   voodoo relation to Gibili; Gibili split on a
+   salvation-vs-capability commerce line).
+2. *The affliction doctrine wired to the ruler sheet,* with the
+   residue rule [PROPOSED]: wealth cures the curable, so the
+   afflictions that persist on the great are exactly the
+   supernatural, the bargained, and the divine — the sheet's
+   measured weights survive unchanged (what history counted is what
+   magic could not cure), the origin stamp extends ("since the
+   working"), and every afflicted ruler gains the standing rumor
+   "why can the king not be healed?".
+3. *A scale doctrine added [PROPOSED]:* persons, never populations —
+   healing is retail, no working scales to a plague, famine, or
+   season — protecting every epidemic/famine/drought card from the
+   ruler sheet's question; and NOBODY COMES BACK (necromancy
+   animates, never returns the person), keeping death's full weight
+   under the succession cluster, the elven funeral, and murder's
+   gravity.
+4. *Conduct-not-creed formalized* as the doctrine answering the
+   designer's inquisitor worry, with rereads (not rewrites) of the
+   two inquisition-adjacent politics cards: the witch-finder is a
+   fraud whose victims are almost never real casters, and the
+   auto-da-fé prosecutes heresy with witchcraft as a charge of harm,
+   the academy in the same capital proving magic itself is legal.
+   The spell-fearing cell stays a personal stance, never a norm.
+5. *The margin vs magical-technology tension resolved on the
+   designer's own analogy:* the personal/embedded split — casting is
+   rare, devices amortize rare work across decades, and the
+   discipline's practitioners are well-paid professionals, not
+   kings, exactly like the analogy's engineers.
+6. *M5's hell mention kept rumor-level* — "hell usually involved"
+   stands as practitioner belief; hell as place/actor/church stays
+   parked (the pact-isolation directive holds untouched).
+7. *THE FLAG (the session's one open collision):* the dump demotes
+   the always-caster start to a dev matter and calls
+   cannot-become-a-caster-later unintentional — but rules.md and
+   plan.md record that start as a design principle ("the gift is the
+   one thing a character can never acquire"), and worldsim leans on
+   it twice (the sorcery axis, the witch-finder wiring). M1 pulls
+   the recorded way. Proposed reconciliation: a latent gift that can
+   AWAKEN mid-career as an event — inborn and rare, never bought as
+   training. Designer's ruling needed before rules.md, plan.md, or
+   the annotations move.
+
+**Recorded.** worldsim.md gained THE LAND PACKETS — MAGIC (the two
+demotions with the flag, the five limits, the stance doctrines, the
+land-agnostic material with the cursed-work and ruler-cell wiring
+notes, the guild frame, six packets); its intro and layers-to-dump
+notes updated — magic is dumped out of the recommended order,
+monsters & fauna stays next, science & technology is the layer's
+remaining half and owes the magic packets the
+magical-vs-mundane-technology boundary. develop.md's worldsim.md
+Files entry extended; plan.md's event-vocabulary bullet counts the
+magic packets. All of it idea-level, awaiting the designer's cut.
