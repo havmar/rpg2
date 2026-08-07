@@ -2151,3 +2151,45 @@ remaining half and owes the magic packets the
 magical-vs-mundane-technology boundary. develop.md's worldsim.md
 Files entry extended; plan.md's event-vocabulary bullet counts the
 magic packets. All of it idea-level, awaiting the designer's cut.
+
+## 2026-08-07 (session B) — Three rulings on the magic packets
+
+**Where it started.** The feedback round on the arcane dump came
+back with three rulings, all now worked into the docs.
+
+**The rulings.**
+
+1. *Mid-game casterhood opens (the flag resolved).* Becoming a
+   caster halfway into the game is not a big design challenge — it
+   is simply to keep the game open and fun. Realism makes the world
+   interesting but does not restrict the player to this extent:
+   gameplay openness outranks M1 at the character sheet, and the
+   2026-08-05 never-acquire asymmetry is downgraded from doctrine
+   to a temporary fact of the build. Worked in: the worldsim
+   demotion note carries the ruling (M1 stays a worldbuilding fact,
+   not a player gate); rules.md's always-a-magic-user bullet gains
+   the dated softening (the reroll and wizard gate stand until the
+   opening ships); plan.md's magic-remnant list gains THE MID-GAME
+   CASTER (mechanism the implementer's call — a latent-gift
+   awakening event is the cheapest fiction); the sorcery-axis
+   annotation drops its "always."
+2. *The price rule (why magic fixes nothing at scale).* The
+   designer's own answer replaces the assistant's [PROPOSED] scale
+   doctrine as the general principle: magic CAN'T, or it would cost
+   twice as much as any mundane solution — there is no spell to
+   create lots of food for free, or to fix the harvest. Retail
+   healing and the persons-not-populations corollary now hang off
+   it; NOBODY COMES BACK stays a [PROPOSED] companion line.
+3. *Doctrine over cards.* The no-inquisitor requirement takes
+   priority over the two inquisition-adjacent politics cards, which
+   are assistant-written and lower priority: where they conflict
+   they bend or go at implementation. Both cards subordinated in
+   place (the witch-finder loses the word "inquisitor" and gains
+   the fraud reading in its own wiring; the auto-da-fé's wiring now
+   reads heresy-first, casting legal, the academy the proof).
+
+**Recorded.** worldsim.md (the demotion ruling, M1's clause, CAN'T
+OR COSTS DOUBLE, doctrine-outranks-cards, both card wirings, the
+sorcery axis), rules.md (the dated softening), plan.md (the
+mid-game caster item; the cursed-ring pointer on the non-weapon
+magic items note), develop.md (the Files entry tracks the rulings).

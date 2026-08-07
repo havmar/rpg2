@@ -611,7 +611,7 @@ words are idea-level — the writing.md pass happens at implementation.
   already needs it, and a mixed party stands before every throne —
   this axis decides how court receives them.
 - **sorcery** (spell-friendly / spell-fearing): the requested magic
-  entry, shaped as a stance axis because the PC IS always a caster —
+  entry, shaped as a stance axis because the PC plays a caster —
   a spell-fearing court is a direct PC problem, a spell-friendly one
   a door. Absorbs heterodox (its occult reading). Witch-trial
   cards, the court wizard's standing.
@@ -1272,12 +1272,14 @@ TEMPLE & PARISH:
   church funds buying land for his children, the pious elite
   petitioning the bishop — who has a price for acting. Jerkify:
   the priest may still be the village's best friend.
-- **card THE WITCH-FINDER**: a self-appointed inquisitor arrives
-  offering to find the village's witch — for a fee, and he always
-  finds one (moved here from the baroque pile: witch-fear is
-  genre-true in the medieval land). WIRING: the ruler sheet's
-  spell-fearing cell — and the PC is ALWAYS a caster, so this card
-  aims at the party by construction.
+- **card THE WITCH-FINDER**: a self-appointed finder of witches
+  arrives offering to root out the village's witch — for a fee, and
+  he always finds one (moved here from the baroque pile: witch-fear
+  is genre-true in the medieval land). WIRING: the ruler sheet's
+  spell-fearing cell — and SUBORDINATE to the magic packets'
+  CONDUCT, NOT CREED doctrine (2026-08-07): the finder is a fraud,
+  his "witch" is almost never a real caster, and a caster party is
+  a mark for his con, never a magnet for the land's hostility.
 - **card THE DANCING PLAGUE**: a street of villagers cannot stop
   dancing; flagellant columns arrive behind the news. The temple
   calls it penance, the wise woman calls it poison — and the
@@ -1383,8 +1385,11 @@ with the finance axis (econ) as its bloodstream.
 - **card THE AUTO-DA-FE**: the faith's tribunal arrests a mountain
   village wholesale — heresy, witchcraft, the old religion — and
   stages the penance-and-execution spectacle in the capital square
-  as political theater (reads crown-vs-faith; the spell-fearing
-  wiring aims it at casters, the PC included).
+  as political theater (reads crown-vs-faith; SUBORDINATE to the
+  magic packets' CONDUCT, NOT CREED doctrine, 2026-08-07 — the
+  tribunal prosecutes heresy, "witchcraft" meaning harm by hidden
+  means; casting as such stays legal, the capital's academy the
+  proof).
 - **card THE BANDIT KING**: enclosure and debt made him, charisma
   armed him, and he robs ONLY tax shipments and the rich — so the
   peasants hide him, the magistrates hang whoever they catch
@@ -1829,27 +1834,28 @@ mistakes them for lore):
   undead army can stay for now, but it is not valuable lore — no
   packet owes it consistency. (Mortellaria's necromantic strand,
   the fog necromancer, and the Deathless Crown stand on their own.)
-- **The magic-user start is a development matter.** The current
-  start generates a caster for magic-content testing; that carries
-  no worldbuilding significance. The designer adds that
-  cannot-become-a-caster-later is unintentional, to be fixed later.
-  **(Flagged — collision:** rules.md's Magic & Mind and plan.md
-  record the always-caster start as a design principle, not a test
-  rig — "the gift is the one thing a character can never acquire"
-  is the stated reason the reroll closes no door — and this file
-  leans on it twice (the sorcery axis annotation; the witch-finder
-  card's "aims at the party by construction"). M1 below also pulls
-  the recorded way: if training alone can make a caster, the
-  inborn-gift limit loses its teeth. A LATENT gift that can awaken
-  after creation would honor both statements — inborn and rare,
-  grantable mid-career as an event, never bought as training.
-  Designer's ruling needed before any doc moves.)
+- **The magic-user start is a development matter, and casterhood
+  opens mid-game (ruled 2026-08-07).** The current start generates
+  a caster for magic-content testing; that carries no worldbuilding
+  significance. Cannot-become-a-caster-later is unintentional, and
+  the flagged collision with the recorded 2026-08-05 always-caster
+  rationale is settled the designer's way: becoming a caster
+  halfway into the game is no big design challenge — it is simply
+  to keep the game open and fun. Realism makes the world
+  interesting but does not restrict the player to that extent:
+  GAMEPLAY OPENNESS OUTRANKS M1 at the character sheet. plan.md
+  carries the roadmap line; rules.md's never-acquire rationale
+  carries the dated softening; the mechanism (and its in-fiction
+  reading — a latent gift waking is the cheapest) is the build's
+  call when it ships.
 
 ### The five limits — what keeps magic scarce
 
 - **M1 THE GIFT IS BORN.** Real magic needs rare inborn ability; no
   diligence substitutes. The gift ignores rank — it lands on
   peasants and princes alike, which is most of the trouble below.
+  (A worldbuilding fact, not a player gate — the 2026-08-07 ruling
+  in the demotions above.)
 - **M2 THE THEORY.** The gift untrained is a hazard, not a career:
   a proper wizard takes years of practice and access to good
   theory, and good theory is hoarded — every organization below is,
@@ -1889,15 +1895,17 @@ mistakes them for lore):
   from civilization. What gets a caster hunted is what they DID:
   dark workings draw witchhunters (a paid trade, not a holy
   office), hired adventurers, or plain soldiers — a murderer's
-  treatment with a specialist's surcharge. WIRING, rereading two
-  politics cards under the doctrine (text unchanged): the
-  WITCH-FINDER is a con man whose "witch" is almost never a real
-  caster — real ones are rare, the friendless are not; the
-  AUTO-DA-FE prosecutes heresy — "witchcraft" on its charge sheet
-  means harm by hidden means, and the academy teaching openly in
-  the same capital is the doctrine made visible. The ruler sheet's
-  spell-fearing cell stays a PERSONAL stance some authorities roll,
-  never a civilization's.
+  treatment with a specialist's surcharge. THE DOCTRINE OUTRANKS
+  THE CARDS (ruled 2026-08-07): the two inquisition-adjacent
+  politics cards are assistant-written, lower-priority material —
+  where they conflict with this requirement they bend or go at
+  implementation. The readings that keep them: the WITCH-FINDER is
+  a con man whose "witch" is almost never a real caster — real ones
+  are rare, the friendless are not; the AUTO-DA-FE prosecutes
+  heresy — "witchcraft" on its charge sheet means harm by hidden
+  means, and the academy teaching openly in the same capital is the
+  doctrine made visible. The ruler sheet's spell-fearing cell stays
+  a PERSONAL stance some authorities roll, never a civilization's.
 - **PERSONAL AND EMBEDDED.** Personal casting is rare; embedded
   magic is common wherever money is: a large portion of the world's
   functional technology is magical at the core — devices, potions,
@@ -1918,18 +1926,24 @@ mistakes them for lore):
   into new and stronger practice fast — the in-world reading of the
   spellbook economy, where a 120g book makes the PC dangerous and
   makes an academy student a sophomore.
-- **SCALE: PERSONS, NEVER POPULATIONS [PROPOSED].** Healing magic
-  mends the body in front of the caster, at standard-service
-  prices — and no working scales to a plague, a famine, or a
-  season (the weather-worker's rain stone buys a day of rain, not a
-  harvest; religion's Tergal option already prices exactly that).
-  One line, and every epidemic, famine, and drought card is safe
-  from the question the ruler sheet asked. Companion line: NOBODY
-  COMES BACK — necromancy animates bodies and interrogates echoes;
-  it never returns the person (the draugr is the founder's corpse
-  and the founder's temper, not the founder). Death keeps its full
-  weight: the succession cluster, the elven funeral, and murder's
-  gravity all stand on it.
+- **CAN'T, OR COSTS DOUBLE (the price rule — designer's answer,
+  2026-08-07).** Why doesn't every problem get fixed by magic?
+  Simply: it can't, or it would be twice as expensive as any
+  mundane solution. There is no spell to create lots of food for
+  free, or to fix the harvest — and where a working does exist, the
+  mundane fix underbids it, so nobody sane buys the spell. The
+  corollary at body scale: healing is retail — it mends the person
+  in front of the caster at standard-service prices, and nothing
+  scales to a plague, a famine, or a season (the weather-worker's
+  rain stone buys a day of rain, not a harvest; religion's Tergal
+  option already prices exactly that). Every epidemic, famine, and
+  drought card is safe from the question the ruler sheet asked.
+  Companion line [PROPOSED]: NOBODY COMES BACK — necromancy
+  animates bodies and interrogates echoes; it never returns the
+  person (the draugr is the founder's corpse and the founder's
+  temper, not the founder). Death keeps its full weight: the
+  succession cluster, the elven funeral, and murder's gravity all
+  stand on it.
 - **THE SUPERNATURAL AFFLICTION** (the ruler sheet's healing
   question, answered the designer's way). Ordinary hurts yield to
   ordinary healing — that is why the healer is a standard service

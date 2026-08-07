@@ -181,14 +181,17 @@ a pointer: what the file is, how it's run, where its docs are.
   dump): the five scarcity limits (inborn gift, theory, costs, the
   danger, the dark shortcut), the stance doctrines (the margin;
   conduct-not-creed — no inquisition against casting as such; the
-  personal/embedded split; the discipline analogy; persons-never-
-  populations scale; the supernatural-affliction answer to the
-  ruler sheet's healing question, with the residue rule), the
-  land-agnostic recruiter/wild-talent/reagent/hunt material, and
-  six organization packets deduped against religion — under two
-  development demotions (conquest questlines are not lore; the
-  magic-user start is a dev matter — FLAGGED against the recorded
-  2026-08-05 always-caster call, designer's ruling pending).
+  personal/embedded split; the discipline analogy; the price rule —
+  magic can't, or costs double the mundane fix; the
+  supernatural-affliction answer to the ruler sheet's healing
+  question, with the residue rule), the land-agnostic
+  recruiter/wild-talent/reagent/hunt material, and six organization
+  packets deduped against religion — under two development
+  demotions (conquest questlines are not lore; the magic-user start
+  is a dev matter) and the same-day rulings: mid-game casterhood
+  opens (gameplay openness outranks the 2026-08-05 never-acquire
+  asymmetry — rules.md softened, plan.md carries the item), and
+  conduct-not-creed OUTRANKS the inquisition-adjacent cards.
   Pre-implementation — plan.md's design session consumes it;
   shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
