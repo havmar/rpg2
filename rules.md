@@ -4169,16 +4169,15 @@ are `worldsim.md`'s.
 ## The card (the event pulse)
 
 - **Admitting conditions** over land, wealth band, states held (its own
-  or derived), states forbidden, and weather — the weather axis is the
-  hook the weather session fills.
+  or derived), states forbidden, and weather (the sky and the wet/dry
+  spell behind it — the Weather add-on below).
 - **Up to five outlet effects**: post/cancel/reprice a quest, adjust the
   priced menu, add a local encounter-table entry, emit a **news line**,
-  flip a **state**. The frame applies the last two; the first three are
-  authored, carried and validated, and the economy floor session wires
-  them.
-- **An optional day-stamp clock.** One card stands over a land at a time,
-  so the news stays legible and the states stay coherent; a card with no
-  clock leaves its mark and stands over nothing.
+  flip a **state**. The frame applied the last two; all five apply since
+  the economy floor (its add-on below owns the first three).
+- **An optional day-stamp clock.** One card stands over a land *per
+  track* at a time, so the news stays legible and the states stay
+  coherent; a card with no clock leaves its mark and stands over nothing.
 - The deck is **drawn on need, not shuffled through**: the first card the
   land admits, with skipped cards left in the deck for a later day (the
   hell pact's deck pattern). An exhausted deck reshuffles.
@@ -4358,3 +4357,121 @@ away. That line is never read aloud (dm.md).
   companion's grumble after a night out in a storm.
 - **`world`** carries the sky, the spell, all three tracks' live cards, and
   the fog's named necromancer if the land has one.
+
+---
+
+# The Economy Floor — Add-on (2026-08-09, the worldsim build's second content rung)
+
+The world layer stops being a readout. The three outlets the frame carried
+but did not apply — the **quest board**, the **priced menu** and the
+**local encounter table** — are wired, and the thread's two invariants
+land with them:
+
+- **The board reacts to world state.** How much work a settlement posts,
+  what it pays, and what work is even *there* now depend on the land's
+  wealth band and the cards standing over it.
+- **Something moves without the player taking a job, and it is visible on
+  return.** The news and the state diff shipped with the frame; now the
+  board is a different board, the prices are different prices, and the
+  road has different people on it.
+
+`worldsim.py` owns the readers; `quests.py` owns the board, `rpg.py` the
+prices, `session.py` the road. The content it is drawn from is
+`worldsim.md`'s six economy packets.
+
+## The board (the quest outlet)
+
+Three verbs, all authored on a card and all read at the moment the board
+refills:
+
+| verb | what it is | example |
+|---|---|---|
+| **post** | the card puts its OWN job up | the failed harvest posts *The Grain Road* |
+| **cancel** | a negative `slots`: the town stops hiring | cold mills take two postings off |
+| **reprice** | a multiplier on every posting's quoted lump | the crown's war debts pay 0.85 |
+
+- **The band is the baseline.** A **prosperous** land posts one more job a
+  settlement and pays **1.15**; a land in **crisis** posts one fewer and
+  pays **0.85** — its crises post their own work back on top, so a crisis
+  board is short of *ordinary* work, not of work. A settlement never drops
+  below **one** posting however bad it gets.
+- **A card's job is an ordinary job**: a real template, real geography, a
+  real giver's face, a real epilogue, a real window. It carries the card's
+  key so one board never runs two copies of it, it pays the card's own
+  premium (1.10–1.35), it lapses on its own clock like anything else — and
+  the card puts it back up for as long as the card stands. A card job
+  never pays in **steel**: the weapon-reward mode is a flat share of the
+  ordinary board.
+- **The pay is stamped in at posting time**, not read out at turn-in: a job
+  taken keeps the terms it was posted at, which is what makes a good week
+  on somebody else's board worth walking to.
+
+## The priced menu (the menu outlet)
+
+Six **terms**, each a multiplier on a price the game already charges:
+`goods` (potions, salve, ammo, doses), `steel` (weapons, masterwork, a
+commission), `lodging`, `healer`, `toll`, `ferry`. Three sources multiply
+into each, and the result is clamped to **0.5–4.0** — a bad month is
+expensive, never absurd, and a price never goes to nothing:
+
+1. **the wealth band** — crisis puts the shelf up and the beds down,
+   prosperity does the reverse;
+2. **the states the land holds or derives** — this is the only road a
+   RELATION has to a price, and it is the point: the elves throw the
+   loggers out, and a dwarven smith three lands away puts his prices up;
+3. **the live cards' own terms** — the doubled toll, the ferryman's price,
+   the fair's cheap week.
+
+**The road takes its own.** A leg through a land holding a toll squeeze or
+a washed-out ford is charged in gold before it is walked (small on purpose
+— the fords cost a *day*, and days are the expensive currency). A purse
+that cannot pay walks anyway and owes nothing: the bridge is not a wall.
+
+## The local encounter table (the encounter outlet)
+
+A live card, or a state the relations table derived, can put **its own
+people** on the land's ground: the baron's toll-men on the bridges, loggers
+holding their camp, claim-jumpers off the new workings, riders off the
+border, what the fog put on its feet.
+
+- An entry is filtered by **ground** — `road` (a travel leg) or `wilds` (a
+  day afield, a night camped) — and rolled at its own chance when an
+  encounter is about to happen.
+- **It changes WHO, never how hard.** The level is still the road's
+  party-independent roll; the deadly-but-avoidable contract and the
+  notice/ambush valves are untouched.
+- The roster is **reskinned, not reforged**: a Toll-Man is a cutthroat in
+  the baron's livery. Display name is fiction, the stat row is mechanics.
+
+## Chains
+
+**A card sets a state that outlives it; the next card admits on that state
+and clears it as it fires.** No new machinery — the frame's admitting
+conditions already read what the last card left behind. Five ship:
+
+| land | first card | the link it leaves | second card |
+|---|---|---|---|
+| Firascir | the harvest fails | bread is dear | the bread riot |
+| Mortellaria | the bank fails | forged notes are about | the note-hunters |
+| Ensimaa | the rented land turns | foreigners unwelcome | the evictions |
+| Dvarvengrond | a new seam is found | the seam (a slot) | the rush and the bust |
+| Tergal | the herds die | the grass has not come back | the clans ride |
+
+One more crosses a **relation**: the Gibili mills run cold because the
+*elves* threw the loggers out, and `concession lost` is a derived state
+like any other.
+
+## Where the player meets it
+
+- **On the board** — fewer or more rows, better or worse pay, and the
+  land's own trouble posted as work with a name.
+- **At the counter** — `prices` is the priced menu now: it prints what the
+  land is charging today over the catalog sheet, and every `buy`, bed,
+  healer's day and commission pays it.
+- **On arrival** — one short block naming what the world did to the prices,
+  printed only when it did something.
+- **On the road** — the toll line before the trip, and whoever the world has
+  put on that ground when the trip rolls an encounter.
+- **`world`** carries all three outlets per land for the DM: the board's
+  shift and pay, what each live card is posting, the priced terms, and who
+  is out there.

@@ -1781,3 +1781,88 @@ ladder's geography gate doing exactly what it does for wounds.
 sim-unverified; the dial if the road reads punishing is `EXPOSURE_DC`
 (each value is one 2d6 step), and the dial if the sky reads absent is
 the weather cards' own `chance`.
+
+---
+
+## 2026-08-09 — The economy floor: the first rung the career sim can see
+
+The worldsim ladder's second content rung (designlog, the economy floor
+session) wired the three outlets the frame carried but did not apply —
+the board, the priced menu, the local encounter table. The frame and the
+weather were **bench-invisible by construction**; this one cannot be, and
+should not be: *the board reacts to world state* is the invariant the
+session exists to land, and `bench_quests`' career sim plays that board.
+
+**What it moves, exactly.** One field: `gold_total`, stamped at posting
+time from the land's wealth band (times any live card's `reprice`). The
+structural proof is a pair of contract tests rather than a bench —
+`test_worldsim.TheWealthRoll.test_the_world_layer_moves_no_worldgen_stream`
+still regenerates a world with `open_world` stubbed out and asserts
+everything else (geography, cast, templates, levels, clocks, armory,
+smiths, event log) is byte-identical with `gold_total` lifted out, and
+`..._the_quoted_gold_is_the_one_thing_the_layer_moves` asserts every
+posting's lump is exactly `round(catalog × BAND_PAY[band])`.
+
+**The career, measured against a neutralized control.** Both runs are 120
+careers in the same process; the control monkeypatches `BAND_SLOTS` to 0,
+`BAND_PAY` to 1.0 and strips the cards' `quest` payloads, so the only
+difference is the session's own wiring.
+
+| | control | economy floor |
+|---|---:|---:|
+| reached L20 | 2.5% | 3.3% |
+| L5 / L8 / L11 | 84 / 69 / 36 | 81 / 71 / 38 |
+| L14 / L17 / L20 | 11 / 6 / 2 | 15 / 5 / 3 |
+| median death level | 9 | 9 |
+| capped: days / quests | 92 / 33 | 94 / 34 |
+| turn-ins quick/on time/late/expired | 35/50/12/4 | 34/51/11/4 |
+| expired postings per career | 423.1 | 428.3 |
+| boards exhausted | 0% | 0% |
+
+Every column is noise at this sample. The one directional read is **pace**:
+a capped career runs ~94 days against ~92, because crisis lands post
+shorter boards and the sim has to find its work elsewhere. **Nothing was
+retuned.** `bench_quests --part enc` re-run at 200 trials reads in family.
+
+**The layer's own pacing**, 120 worlds × 60 days = 43 200 land-days:
+
+| what the world is doing | share of land-days |
+|---|---:|
+| a card is posting work | 22.2% |
+| some price is moved | 65.3% |
+| somebody the world put there is on the roads | 9.5% |
+
+Per term: goods 56.0%, lodging 53.1%, steel 47.6%, healer 19.1%, ferry
+3.1%, toll 1.6%. Board slot shift across 2160 settlements: −3 (4), −2
+(12), −1 (407), 0 (1335), +1 (381), +2 (21). Board pay spread: min 0.68,
+median 1.00, max 1.72.
+
+**The chains.** Over 120 worlds × 200 days, every one of the 40 cards
+fires at least once, and every chain's second link resolves:
+
+| chain | first → second |
+|---|---:|
+| Firascir famine | 66 → 37 |
+| Mortellaria forgery | 19 → 19 |
+| Ensimaa eviction | 74 → 47 |
+| Dvarvengrond rush | 90 → 61 |
+| Tergal raid | 27 → 27 |
+| Ensimaa → Gibili (crosses a relation) | 74 → 21 |
+
+Two content knobs were moved to get there, both during this session and
+both authoring rather than tuning: `ensimaa/rented-land` opened from
+`crisis` to `crisis, normal` (the rented-ground tension is Ensimaa's
+signature axis and should not need a crisis), and the
+`ensimaa → gibili` timber edge now also reads `eviction-on`, so the
+concession stays lost while the evictions run. Before those, the
+cross-relation chain fired **zero** times in 24 000 land-days — content
+that ships and is never observed is content that did not ship.
+
+**What to watch at the table, and the dial.** Some price is moved on two
+land-days in three, which is a lot of "the world has an opinion about
+your purse". It is small each time (the band alone is ±10–20%), but it is
+always on. **If the world's hand on the wallet reads too heavy, the dial
+is `BAND_MENU`** — it applies to every land every day, where a card's
+terms apply to one land for a fortnight. The road's own charges are
+deliberately tiny (a doubled toll is 12g, a ferry 12g): the fords cost a
+DAY, and days are the expensive currency in this game.

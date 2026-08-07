@@ -52,6 +52,7 @@ from contextlib import redirect_stdout
 import conquest
 import places
 import quests
+import rpg
 import worldsim
 
 
@@ -263,7 +264,8 @@ class TheNeedToExistDraw(unittest.TestCase):
                                        need="a rival center of power", day=6)
         posted = quests.refresh_settlement_board(world, area, 6, rng)
         self.assertTrue(posted)
-        self.assertEqual(len(area["quests"]), quests.board_slots(area))
+        self.assertEqual(len(area["quests"]),
+                         quests.board_slots(world, area))
         lo, hi = conquest.GARRISON_BANDS[area["subtype"]]
         self.assertTrue(lo <= conquest.garrison_level(world, area) <= hi)
         clone = json.loads(json.dumps(world))
@@ -418,12 +420,21 @@ class TheWealthRoll(unittest.TestCase):
     def test_the_world_layer_moves_no_worldgen_stream(self) -> None:
         """The armory's rule: the layer rolls off DERIVED seeds, so the
         WHOLE world every career bench rides -- board, cast, geography,
-        armory -- is identical with the layer taken away."""
+        armory -- is identical with the layer taken away.
+
+        Since the economy floor (2026-08-09) there is exactly ONE exception,
+        and it is the point of that session: what a posting QUOTES reads the
+        land's wealth band. The stream is still untouched -- same
+        geography, same cast, same templates, same levels, same clocks --
+        so `gold_total` is what this comparison lifts out and the test
+        below is what pins it instead."""
         def stripped(world: dict) -> str:
             world = json.loads(json.dumps(world))
             for land in world["lands"].values():
                 land.pop("world", None)
                 land["states"] = []
+            for quest in world["quests"].values():
+                quest.pop("gold_total", None)
             world["events"] = [e for e in world["events"]
                                if e["action"] != "add_state"]
             return json.dumps(world, sort_keys=True)
@@ -435,6 +446,28 @@ class TheWealthRoll(unittest.TestCase):
             self.assertEqual(stripped(_world(2026)), with_layer)
         finally:
             worldsim.open_world = opened
+
+    def test_the_quoted_gold_is_the_one_thing_the_layer_moves(self) -> None:
+        """...and it moves it by exactly the band's own multiplier."""
+        opened = worldsim.open_world
+        try:
+            worldsim.open_world = lambda world: world
+            bare = {q["id"]: q.get("gold_total", 0)
+                    for q in _world(2026)["quests"].values()}
+        finally:
+            worldsim.open_world = opened
+        world = _world(2026)
+        for quest in world["quests"].values():
+            if quest.get("kind") == "delivery":
+                continue        # the road pays by the day, not by the land
+            if quest.get("reward_weapon"):
+                continue        # ...and a job paying in steel quotes no gold
+            band = worldsim.BAND_PAY[
+                worldsim.wealth_of(world, world["areas"][
+                    quest["origin"]]["land"])]
+            self.assertEqual(quest["gold_total"],
+                             max(1, round(bare[quest["id"]] * band)),
+                             quest["id"])
 
     def test_a_band_a_card_moved_for_its_clock_comes_back(self) -> None:
         world = _world(3)
@@ -686,7 +719,8 @@ class TheRelations(unittest.TestCase):
     def test_the_edge_names_its_cause_for_the_readout(self) -> None:
         world = _world()
         worldsim.set_state(world, "gibili", "mills-stopped", 3)
-        derived = worldsim.derived_states(world, "mortellaria")[0]
+        derived = next(s for s in worldsim.derived_states(world, "mortellaria")
+                       if s["id"] == "arms-scarce")
         self.assertEqual(derived["from"], "gibili")
         self.assertIn(derived["because"], worldsim.state_line(derived))
 
@@ -1417,6 +1451,588 @@ class TheWeatherSessionWiring(unittest.TestCase):
         self.assertEqual(wire["weather"], "storm")
         self.assertEqual(session._pending_from_dict(
             json.loads(json.dumps(wire)), [])["weather"], "storm")
+
+
+# =========================================================================== #
+# THE ECONOMY FLOOR (2026-08-09) -- the three outlets the frame carried
+# =========================================================================== #
+
+def _quiet(world: dict, polity: str, band: str = "normal") -> None:
+    """Take everything off a land: no band effect, no card, no state. The
+    outlet tests need a zero to measure from, and a generated world hands
+    out crises it did not ask for."""
+    layer = _layer(world, polity)
+    for track in worldsim.TRACKS:
+        layer[worldsim.LIVE_KEY[track]] = None
+    for entry in list(worldsim.held_states(world, polity)):
+        worldsim.drop_state(world, polity, entry["id"], 0)
+    layer["wealth"] = band
+
+
+def _all_quiet(world: dict) -> None:
+    for polity in world["lands"]:
+        _quiet(world, polity)
+
+
+class TheBoardOutlet(unittest.TestCase):
+    """THE FIRST INVARIANT: the board reacts to world state."""
+
+    def test_the_band_moves_the_slot_count(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        town = quests.settlements_by_land(world)["firascir"][0]
+        base = quests.SETTLEMENT_KINDS[town["subtype"]][0]
+        for band, want in worldsim.BAND_SLOTS.items():
+            _quiet(world, "firascir", band)
+            self.assertEqual(quests.board_slots(world, town), base + want,
+                             band)
+
+    def test_a_settlement_is_never_a_place_with_no_work(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        village = next(s for s in quests.settlements_by_land(world)["gibili"]
+                       if s["subtype"] == "village")
+        _quiet(world, "gibili", "crisis")
+        _fire(world, "gibili", "gibili/timber-short", 4)    # slots -2 on top
+        self.assertLess(worldsim.board_shift(world, "gibili"), 0)
+        self.assertGreaterEqual(quests.board_slots(world, village),
+                                worldsim.BOARD_SLOTS_FLOOR)
+
+    def test_the_band_moves_what_a_posting_quotes(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        for band, want in worldsim.BAND_PAY.items():
+            _quiet(world, "firascir", band)
+            self.assertAlmostEqual(worldsim.board_pay(world, "firascir"),
+                                   want)
+
+    def test_a_card_reprices_the_whole_board(self) -> None:
+        # THE REPRICE VERB. Mortellaria paying its swords in notes quotes
+        # half again as much for everything on the board.
+        world = _world()
+        _all_quiet(world)
+        before = worldsim.board_pay(world, "mortellaria")
+        _fire(world, "mortellaria", "mortellaria/paid-in-paper", 3)
+        self.assertGreater(worldsim.board_pay(world, "mortellaria"), before)
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/war-debts", 3)   # ...and down
+        self.assertLess(worldsim.board_pay(world, "firascir"), 1.0)
+
+    def test_a_card_puts_its_own_job_up(self) -> None:
+        # THE POST VERB, end to end: the card fires, the board refills, and
+        # the job is on it with the card's key, its title and its premium.
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "tergal", "tergal/tribute", 4)
+        town = quests.settlements_by_land(world)["tergal"][0]
+        posted = quests.refresh_settlement_board(world, town, 4,
+                                                 random.Random(5))
+        mine = [q for q in posted if q.get("world_card") == "tergal/tribute"]
+        self.assertEqual(len(mine), 1)
+        self.assertEqual(mine[0]["name"], "The Chief's New Men")
+        self.assertTrue(mine[0]["giver"])
+        self.assertTrue(mine[0]["sites"])
+        self.assertIsNotNone(mine[0].get("deadline_day"))
+
+    def test_one_board_never_runs_two_copies_of_one_card_s_job(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "tergal", "tergal/tribute", 4)
+        town = quests.settlements_by_land(world)["tergal"][0]
+        for day in range(4, 9):
+            quests.refresh_settlement_board(world, town, day,
+                                            random.Random(day))
+        keys = [world["quests"][qid].get("world_card")
+                for qid in town["quests"] if qid in world["quests"]]
+        self.assertEqual(keys.count("tergal/tribute"), 1)
+
+    def test_a_card_job_pays_its_premium_over_the_going_rate(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "dvarvengrond", "dvarvengrond/food-caravan", 4)
+        town = quests.settlements_by_land(world)["dvarvengrond"][0]
+        posted = quests.refresh_settlement_board(world, town, 4,
+                                                 random.Random(6))
+        job = next(q for q in posted
+                   if q.get("world_card") == "dvarvengrond/food-caravan")
+        plain = rpg.quest_gold(job["level"], job["encounters"])
+        pay = worldsim.CARDS_BY_KEY[
+            "dvarvengrond/food-caravan"]["outlets"]["quest"]["pay"]
+        self.assertEqual(job["gold_total"], max(1, round(plain * pay)))
+        self.assertGreater(job["gold_total"], plain)
+
+    def test_the_card_s_job_lapses_and_the_card_puts_it_back(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "tergal", "tergal/tribute", 1)
+        town = quests.settlements_by_land(world)["tergal"][0]
+        quests.refresh_settlement_board(world, town, 1, random.Random(5))
+        first = next(qid for qid in town["quests"]
+                     if world["quests"][qid].get("world_card"))
+        late = world["quests"][first]["deadline_day"] + 2
+        quests.expire_settlement_board(world, town, late)
+        self.assertNotIn(first, town["quests"])
+        quests.refresh_settlement_board(world, town, late, random.Random(5))
+        again = [world["quests"][qid].get("world_card")
+                 for qid in town["quests"] if qid in world["quests"]]
+        self.assertIn("tergal/tribute", again)
+
+    def test_a_card_job_never_pays_in_steel_instead(self) -> None:
+        # The weapon-reward mode is a flat share of the ORDINARY board; a
+        # card that pays a gold premium must not silently pay it in a blade.
+        world = _world()
+        _all_quiet(world)
+        posted = []
+        for polity in world["lands"]:
+            for key in [c["key"] for c in worldsim.CARDS
+                        if worldsim.in_land(c, polity)
+                        and (c["outlets"].get("quest") or {}).get("post")
+                        and c["track"] == "crisis"]:
+                _quiet(world, polity)
+                _fire(world, polity, key, 3)
+                town = quests.settlements_by_land(world)[polity][0]
+                posted += [q for q in quests.refresh_settlement_board(
+                    world, town, 3, random.Random(7))
+                    if q.get("world_card")]
+        self.assertTrue(posted)
+        for quest in posted:
+            self.assertIsNone(quest.get("reward_weapon"), quest["name"])
+
+
+class TheMenuOutlet(unittest.TestCase):
+    """THE PRICED MENU: standing actions whose terms local state sets."""
+
+    def test_a_quiet_land_charges_the_catalog(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        self.assertEqual(worldsim.menu_terms(world, "firascir"), {})
+        self.assertEqual(worldsim.term(world, "firascir", "goods"), 1.0)
+        self.assertEqual(worldsim.priced(world, "firascir", "goods", 40), 40)
+
+    def test_the_band_is_on_the_shelf(self) -> None:
+        world = _world()
+        _quiet(world, "gibili", "prosperous")
+        rich = worldsim.menu_terms(world, "gibili")
+        _quiet(world, "gibili", "crisis")
+        poor = worldsim.menu_terms(world, "gibili")
+        self.assertLess(rich["goods"], poor["goods"])
+        self.assertGreater(rich["lodging"], poor["lodging"])
+
+    def test_a_card_prices_what_it_is_about(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        self.assertEqual(worldsim.term(world, "firascir", "toll"), 2.0)
+        _all_quiet(world)
+        _fire(world, "gibili", "gibili/gadget-fair", 3)
+        self.assertLess(worldsim.term(world, "gibili", "steel"), 1.0)
+
+    def test_a_relation_reaches_a_price_three_lands_away(self) -> None:
+        """The whole reason the menu reads STATES and not just cards: the
+        elves throw the loggers out, and a dwarven smith puts his prices
+        up because the mountain's own timber road runs through it."""
+        world = _world()
+        _all_quiet(world)
+        base = worldsim.term(world, "dvarvengrond", "steel")
+        worldsim.set_state(world, "ensimaa", "foreigners-unwelcome", 5)
+        self.assertIn("claims-revoked",
+                      worldsim.state_ids(world, "dvarvengrond"))
+        self.assertGreater(worldsim.term(world, "dvarvengrond", "steel"),
+                           base)
+
+    def test_the_terms_are_clamped_at_both_ends(self) -> None:
+        world = _world()
+        _quiet(world, "dvarvengrond", "crisis")
+        for state_id in ("strike", "deposit-dead", "grain-scarce"):
+            worldsim.set_state(world, "dvarvengrond", state_id, 5)
+        for mult in worldsim.menu_terms(world, "dvarvengrond").values():
+            self.assertGreaterEqual(mult, worldsim.MENU_FLOOR)
+            self.assertLessEqual(mult, worldsim.MENU_CEILING)
+
+    def test_a_price_never_goes_to_nothing(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "gibili", "gibili/gadget-fair", 3)
+        self.assertGreaterEqual(worldsim.priced(world, "gibili", "goods", 1),
+                                1)
+
+    def test_the_engine_takes_the_number_and_asks_nothing(self) -> None:
+        # rpg.py never imports worldsim: the markup arrives as a float and
+        # the default is the catalog price the benches have always paid.
+        purse = rpg.Purse(gold=500)
+        hero = _party(1)[0]
+        log: list[str] = []
+        rpg.buy_potion(hero, purse, "healing", log)
+        plain = 500 - purse.gold
+        rpg.buy_potion(hero, purse, "healing", log, markup=2.0)
+        self.assertEqual(500 - purse.gold, plain + plain * 2)
+
+    def test_the_road_takes_its_toll(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        self.assertEqual(worldsim.road_charges(world, ["firascir"])[0], 0)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        gold, lines = worldsim.road_charges(world,
+                                            ["firascir", "mortellaria"])
+        self.assertGreater(gold, 0)
+        self.assertTrue(any("toll" in line for line in lines))
+        # ...and a land is charged once however often the leg names it.
+        twice = worldsim.road_charges(world, ["firascir", "firascir"])[0]
+        self.assertEqual(twice, gold)
+
+    def test_the_price_sheet_says_what_the_world_did(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        self.assertEqual(worldsim.menu_lines(world, "firascir"), [])
+        _fire(world, "firascir", "firascir/tolls", 3)
+        lines = worldsim.menu_lines(world, "firascir")
+        self.assertTrue(lines)
+        for line in lines:
+            self.assertLessEqual(len(line), WIDTH, line)
+            self.assertTrue(line.isascii(), line)
+
+
+class TheEncounterOutlet(unittest.TestCase):
+    """The local encounter table: what the world puts on the road."""
+
+    def test_a_quiet_land_has_the_road_s_own_wildlife(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        self.assertEqual(worldsim.encounter_entries(world, "firascir"), [])
+        self.assertIsNone(worldsim.local_encounter(world, "firascir", "road",
+                                                   random.Random(1)))
+
+    def test_a_card_puts_its_own_people_on_the_ground(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        road = worldsim.encounter_entries(world, "firascir", "road")
+        self.assertEqual(len(road), 1)
+        self.assertIn("toll-men", road[0]["as"])
+        # ...and only on the ground it named.
+        self.assertEqual(worldsim.encounter_entries(world, "firascir",
+                                                    "wilds"), [])
+
+    def test_a_derived_state_gets_onto_a_road_too(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        worldsim.set_state(world, "tergal", "raiding", 5)
+        self.assertIn("raiders-out", worldsim.state_ids(world, "firascir"))
+        road = worldsim.encounter_entries(world, "firascir", "road")
+        self.assertEqual([e["as"] for e in road],
+                         [worldsim.STATE_ENCOUNTERS["raiders-out"]["as"]])
+
+    def test_the_entry_is_rolled_at_its_own_chance(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        rng = random.Random(11)
+        hits = sum(1 for _ in range(2000)
+                   if worldsim.local_encounter(world, "firascir", "road", rng))
+        want = worldsim.CARDS_BY_KEY[
+            "firascir/tolls"]["outlets"]["encounter"]["chance"]
+        self.assertAlmostEqual(hits / 2000, want, delta=0.05)
+
+    def test_it_changes_who_and_never_how_hard(self) -> None:
+        """The party-independent danger curve is a contract: a world card
+        picks the faces, the road still rolls the level."""
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        entry = worldsim.encounter_entries(world, "firascir", "road")[0]
+        for level in (1, 4, 9):
+            kinds = quests.build_wild_encounter(level, "firascir",
+                                                random.Random(level),
+                                                pool=tuple(entry["kinds"]))
+            self.assertTrue(kinds)
+            for kind in kinds:
+                self.assertIn(kind, entry["kinds"])
+
+    def test_the_skin_is_fiction_and_the_row_is_mechanics(self) -> None:
+        import sites
+        entry = worldsim.CARDS_BY_KEY[
+            "firascir/tolls"]["outlets"]["encounter"]
+        plain = sites.make_foe("cutthroat", 1, random.Random(3))
+        dressed = sites.make_foe("cutthroat", 1, random.Random(3),
+                                 display=entry["skins"]["cutthroat"])
+        self.assertIn("Toll-Man", dressed.name)
+        self.assertEqual((dressed.dex, dressed.str_, dressed.max_hp),
+                         (plain.dex, plain.str_, plain.max_hp))
+
+
+class TheChains(unittest.TestCase):
+    """A card sets the state the next card admits on -- and no new
+    machinery under it."""
+
+    CHAINS = (
+        ("firascir", "firascir/bad-harvest", "bread-dear",
+         "firascir/bread-revolt"),
+        ("mortellaria", "mortellaria/bank-run", "bad-paper",
+         "mortellaria/counterfeit"),
+        ("ensimaa", "ensimaa/rented-land", "foreigners-unwelcome",
+         "ensimaa/eviction"),
+        ("dvarvengrond", "dvarvengrond/new-seam", "deposit-found",
+         "dvarvengrond/gold-rush"),
+        ("tergal", "tergal/herd-fails", "grass-gone", "tergal/raid"),
+    )
+
+    def test_the_link_outlives_the_card_that_set_it(self) -> None:
+        for polity, first, link, _second in self.CHAINS:
+            world = _world()
+            _all_quiet(world)
+            _fire(world, polity, first, 3)
+            worldsim._end(world, polity, 60,
+                          worldsim.CARDS_BY_KEY[first]["track"])
+            self.assertIn(link, worldsim.state_ids(world, polity),
+                          (polity, first))
+
+    def test_the_next_card_admits_on_it_and_could_not_before(self) -> None:
+        for polity, first, _link, second in self.CHAINS:
+            world = _world()
+            _all_quiet(world)
+            spec = worldsim.CARDS_BY_KEY[second]["admits"]
+            self.assertFalse(worldsim.admits(world, polity, spec),
+                             (polity, second))
+            _fire(world, polity, first, 3)
+            worldsim._end(world, polity, 60,
+                          worldsim.CARDS_BY_KEY[first]["track"])
+            self.assertTrue(worldsim.admits(world, polity, spec),
+                            (polity, second))
+
+    def test_the_second_card_consumes_the_link(self) -> None:
+        for polity, first, link, second in self.CHAINS:
+            world = _world()
+            _all_quiet(world)
+            _fire(world, polity, first, 3)
+            worldsim._end(world, polity, 60,
+                          worldsim.CARDS_BY_KEY[first]["track"])
+            _fire(world, polity, second, 61)
+            self.assertNotIn(link, worldsim.state_ids(world, polity),
+                             (polity, second))
+
+    def test_the_first_card_does_not_stack_its_own_link(self) -> None:
+        for polity, first, link, _second in self.CHAINS:
+            spec = worldsim.CARDS_BY_KEY[first]
+            state = spec["outlets"]["state"]
+            if link in (state.get("slot") or {}).values():
+                continue        # an exclusive slot cannot stack by
+                                # construction (`_says_nothing_new`)
+            self.assertIn(link, spec["admits"]["without"], first)
+
+    def test_one_chain_crosses_a_relation(self) -> None:
+        """The Gibili mills run cold because the ELVES threw the loggers
+        out: the link is a derived state, and the card reads it like any
+        other."""
+        world = _world()
+        _all_quiet(world)
+        spec = worldsim.CARDS_BY_KEY["gibili/timber-short"]["admits"]
+        self.assertFalse(worldsim.admits(world, "gibili", spec))
+        _fire(world, "ensimaa", "ensimaa/rented-land", 3)
+        self.assertIn("concession-lost", worldsim.state_ids(world, "gibili"))
+        self.assertTrue(worldsim.admits(world, "gibili", spec))
+
+
+class TheEconomyFloorContent(unittest.TestCase):
+    """What the session was asked to author, asserted as data."""
+
+    def test_the_floor_is_five_crisis_cards_a_land(self) -> None:
+        for polity in places.LAND_SPECS:
+            own = [c for c in worldsim.CARDS
+                   if c["track"] == "crisis" and worldsim.in_land(c, polity)]
+            self.assertGreaterEqual(len(own), 5, polity)
+
+    def test_every_land_has_one_card_that_is_not_trouble(self) -> None:
+        """The flavor anchor: a world where the only thing that ever
+        happens is a disaster reads as a disaster, not as a world. The
+        test for 'not trouble' is mechanical -- a card that admits in the
+        GOOD bands and leaves the land better off in at least one outlet:
+        something cheaper (on the card or through the state it sets), more
+        work posted, or better pay for it."""
+        for polity in places.LAND_SPECS:
+            good = []
+            for spec in worldsim.CARDS:
+                if spec["track"] != "crisis" or not worldsim.in_land(spec,
+                                                                     polity):
+                    continue
+                if "crisis" in spec["admits"]["wealth"]:
+                    continue
+                state = spec["outlets"].get("state") or {}
+                priced = dict(spec["outlets"].get("menu") or {})
+                for state_id in (tuple(state.get("while", ()))
+                                 + tuple(state.get("set", ()))
+                                 + tuple((state.get("slot") or {}).values())):
+                    priced.update(worldsim.STATE_MENU.get(state_id, {}))
+                quest = spec["outlets"].get("quest") or {}
+                if (any(m < 1 for m in priced.values())
+                        or quest.get("slots", 0) > 0
+                        or quest.get("reprice", 1.0) > 1.0
+                        or quest.get("pay", 1.0) > 1.0
+                        or state.get("wealth_while") == "prosperous"):
+                    good.append(spec["key"])
+            self.assertTrue(good, polity)
+
+    def test_the_relations_table_grew_past_the_frame(self) -> None:
+        self.assertGreater(len(worldsim.RELATIONS), 9)
+        # ...and the drought stands beside the failed harvest at the head
+        # of the grain edges (plan.md's own instruction to this session).
+        grain = [e for e in worldsim.RELATIONS
+                 if e["from"] == "firascir" and e["then"] == "grain-scarce"]
+        self.assertTrue(grain)
+        for edge in grain:
+            self.assertIn("drought", edge["when"])
+            self.assertIn("harvest-failed", edge["when"])
+
+    def test_every_posted_job_is_a_legal_quest_template(self) -> None:
+        for spec in worldsim.CARDS:
+            posted = (spec["outlets"].get("quest") or {}).get("post")
+            if not posted:
+                continue
+            lo, hi = quests.template_band(posted)
+            self.assertLessEqual(lo, hi, spec["key"])
+            self.assertTrue(quests.quest_place_requirement(posted),
+                            spec["key"])
+            for text in (posted["title"], posted["desc"],
+                         posted["epilogue"], posted["failure_epilogue"]):
+                self.assertTrue(text.isascii(), spec["key"])
+            self.assertLessEqual(len(posted["title"]), WIDTH, spec["key"])
+
+    def test_the_posted_jobs_honor_the_cultural_arms_rule(self) -> None:
+        """Elves shoot bows, goblins sling, dwarves shoot powder
+        (rules.md's Ranged Combat). The rule is about WHOSE the roster is,
+        not whose ground it stands on -- the goblin loggers holding a camp
+        in the elven forest still sling -- so the contract is that the
+        authored pools are culturally clean and every card draws from one
+        of them, never from an ad-hoc mix."""
+        pools = {"_TOUGHS": worldsim._TOUGHS,
+                 "_ELF_TOUGHS": worldsim._ELF_TOUGHS,
+                 "_GOBLIN_TOUGHS": worldsim._GOBLIN_TOUGHS,
+                 "_DWARF_TOUGHS": worldsim._DWARF_TOUGHS,
+                 "_BEASTS": worldsim._BEASTS}
+        for row in ("slinger", "gunner"):
+            self.assertNotIn(row, pools["_ELF_TOUGHS"])
+        for row in ("archer", "hunter", "gunner"):
+            self.assertNotIn(row, pools["_GOBLIN_TOUGHS"])
+        for row in ("archer", "hunter", "slinger"):
+            self.assertNotIn(row, pools["_DWARF_TOUGHS"])
+        known = {tuple(p) for p in pools.values()}
+        for spec in worldsim.CARDS:
+            posted = (spec["outlets"].get("quest") or {}).get("post")
+            if posted:
+                self.assertIn(tuple(posted["pool"]), known, spec["key"])
+
+    def test_the_menu_tables_never_double_charge(self) -> None:
+        worldsim._validate_menu_tables()     # raises on a clash
+
+    def test_every_authored_string_fits_and_stays_ascii(self) -> None:
+        for spec in worldsim.CARDS:
+            entry = spec["outlets"].get("encounter")
+            if entry:
+                self.assertTrue(entry["as"].isascii(), spec["key"])
+                for skin in (entry.get("skins") or {}).values():
+                    self.assertTrue(skin.isascii(), spec["key"])
+                    self.assertLessEqual(len(skin), 20, skin)
+        for label in worldsim.MENU_LABEL.values():
+            self.assertLessEqual(len(label) + 12, WIDTH, label)
+
+
+class TheEconomyFloorWiring(unittest.TestCase):
+    """THE SECOND INVARIANT: something moves without the player taking a
+    job -- and the board, the prices and the road have all moved by the
+    time the party walks back in."""
+
+    @staticmethod
+    def _state(world: dict, day: int, polity: str = "firascir") -> dict:
+        return {"world": world, "clock": rpg.Clock(day=day),
+                "rng": random.Random(3), "party": _party(),
+                "accepted": [], "active_quest": None,
+                "purse": rpg.Purse(gold=200), "foe_count": 0,
+                "position": {"land": polity,
+                             "area": quests.settlements_by_land(
+                                 world)[polity][0]["key"]}}
+
+    def test_the_shop_asks_the_land_what_it_charges(self) -> None:
+        import session
+        world = _world()
+        _all_quiet(world)
+        state = self._state(world, 3)
+        self.assertEqual(session.local_term(state, "goods"), 1.0)
+        _fire(world, "firascir", "firascir/monopoly", 3)
+        self.assertGreater(session.local_term(state, "goods"), 1.0)
+
+    def test_the_price_sheet_reads_the_world(self) -> None:
+        import session
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        state = self._state(world, 3)
+        self.assertIn("toll", session.local_prices(state))
+        self.assertEqual(session.local_prices(None), {})
+
+    def test_the_arrival_says_what_the_prices_did(self) -> None:
+        import session
+        world = _world()
+        _all_quiet(world)
+        state = self._state(world, 3)
+        quiet = io.StringIO()
+        with redirect_stdout(quiet):
+            session.price_note(state)
+        self.assertEqual(quiet.getvalue(), "")
+        _fire(world, "firascir", "firascir/monopoly", 3)
+        loud = io.StringIO()
+        with redirect_stdout(loud):
+            session.price_note(state)
+        self.assertIn("the shop shelf", loud.getvalue())
+
+    def test_the_road_meets_the_card_s_people(self) -> None:
+        import session
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        state = self._state(world, 3)
+        state["rng"] = random.Random(2)
+        out = io.StringIO()
+        for _ in range(40):
+            with redirect_stdout(out):
+                session.wild_event(state, 1.0, "On the road", where="road")
+            if "Toll-" in out.getvalue():
+                break
+        self.assertIn("Toll-", out.getvalue())
+
+    def test_the_dm_inventory_carries_the_three_outlets(self) -> None:
+        world = _world()
+        _all_quiet(world)
+        # One card a track, as the loop itself would stand them up: two
+        # crisis cards on one land would only overwrite each other.
+        _fire(world, "firascir", "firascir/tolls", 3)
+        _fire(world, "tergal", "tergal/tribute", 3)
+        text = "\n".join(worldsim.world_lines(world))
+        self.assertIn("board:", text)
+        self.assertIn("menu:", text)
+        self.assertIn("road:", text)
+        self.assertIn("The Chief's New Men", text)
+        for line in worldsim.world_lines(world):
+            self.assertTrue(line.isascii(), line)
+
+    def test_the_world_moves_the_board_while_nobody_is_looking(self) -> None:
+        """The session's headline, measured: leave a world alone for two
+        months and its boards are not the boards it was left with. Every
+        world does it, and the test walks the days rather than sampling
+        the last one -- a card that came and went still moved the board
+        while it stood, which is the whole claim."""
+        def snapshot(world: dict) -> tuple:
+            return (tuple(sorted((s["key"], quests.board_slots(world, s))
+                                 for s in quests.settlements(world))),
+                    tuple(sorted((p, round(worldsim.board_pay(world, p), 3))
+                                 for p in world["lands"])))
+
+        for seed in range(6):
+            world = _world(seed)
+            start = snapshot(world)
+            seen = set()
+            for day in range(1, 71):
+                worldsim.roll_world(world, day)
+                seen.add(snapshot(world))
+            self.assertTrue(seen - {start}, seed)
 
 
 if __name__ == "__main__":

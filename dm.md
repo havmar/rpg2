@@ -297,13 +297,45 @@ explain it.
   grain)`. That is another land's trouble arriving here. Good rumor
   material, and the honest answer when a player asks why prices bite.
 - **`world`** is YOUR readout (like `board all`): every land's band,
-  states, the card standing over it, deck depth. Use it for pacing --
-  never read it out.
-- The band is not a price list yet. Until the economy floor session
-  wires the board and the priced menu, a state changes what the scene
-  SAYS, not what it costs; don't invent mechanical effects for it.
-  `place-state` remains your override for a state you want to set by
-  hand.
+  states, the card standing over it, deck depth -- and, since the economy
+  floor, what all three outlets are doing here (the board's slot shift and
+  pay, what each card is posting, the priced terms, who is on the roads).
+  Use it for pacing -- never read it out. `place-state` remains your
+  override for a state you want to set by hand.
+
+### What the land costs (2026-08-09, the economy floor)
+
+The band IS a price list now, and a shorter or longer board. Everything
+below is already in the script output -- your job is to say it in the
+world's mouth, once, and move on.
+
+- **The board is the land's mood.** A crisis land posts less ordinary work
+  and pays worse; a prosperous one posts more and pays better. Don't
+  explain the multiplier -- let the giver say it. "Times being what they
+  are, it's forty" is the whole scene.
+- **A card posts its OWN job**, and that job is the card's news made
+  takeable: *The Grain Road* under a failed harvest, *The Warehouse Door*
+  under a bread riot, *Both Sides Are Hiring* under a strike. When one of
+  these is on the board, funnel to its giver like any other job -- it just
+  happens to be the thing the whole town is talking about.
+- **`prices` is the priced menu.** It prints what this land charges TODAY
+  over the catalog sheet, and every `buy`, bed, healer's day and
+  commission pays it. When a player asks why a potion is fourteen gold,
+  the answer is in the state line above the sheet: say the reason, not the
+  number ("the lord took the mills; everything with flour in it is up").
+- **A derived state is somebody else's trouble arriving as a price.**
+  `grain is scarce (the Firascir grain)` is the honest answer to "why are
+  the beds so dear here", and it is a rumor hook pointing at another land.
+- **The road charges before it is walked** -- a doubled toll at the
+  bridge, a ferryman where the fords are gone. The script prints the line
+  and takes the gold. Play the toll-man; don't apologise for him. A purse
+  that cannot pay crosses anyway.
+- **The world puts its own people on the road.** When a travel or wilds
+  encounter names them -- the baron's toll-men, loggers holding their
+  camp, claim-jumpers, riders off the border -- that is the standing card
+  in the flesh, and the names in the roster are its livery. Fight it as
+  the scene it is: these people have a reason to be there and it is on
+  `map`.
 
 ### The sky (2026-08-08, the weather)
 
@@ -1544,6 +1576,17 @@ bigger than the fights WITHOUT pages of narration:
   fight costs -2 on every shot and a 2d6+DEX save on every step. Over a
   120-day campaign a land sees about one storm a fortnight, a drought
   once in a few campaigns, and the fog's bones once in three.
+- **The economy floor in numbers:** the band moves a settlement's board by
+  -1/0/+1 posting and its pay by x0.85/x1.00/x1.15, and a card can move
+  both again (the cold Gibili mills take two more postings off; a province
+  paying in paper notes quotes half again as much). A card's own job pays
+  a 10-35% premium over the going rate and never pays in steel. On the
+  shelf, six terms multiply -- goods, steel, lodging, healer, toll, ferry
+  -- clamped to x0.5-x4.0; across a 60-day sweep some price is moved on
+  about two land-days in three, a card is posting work on about one in
+  five, and somebody the world put there is on the roads on about one in
+  ten. The road's own charges are small (a toll is ~12g doubled, a ferry
+  ~12g): the fords cost a DAY, and days are the expensive currency.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content**, not part of a
   played campaign: the board's generated quests are the game. Their
