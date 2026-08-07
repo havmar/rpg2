@@ -3105,9 +3105,12 @@ old-save fallback — was tightened in the same pass.
 
 **`AGENTS.md` folded into `CLAUDE.md`.** Designer direction: one
 instruction file, not a file plus a shim. `CLAUDE.md` now holds the
-dispatcher text verbatim (a tracked rename, so `git log --follow` still
-reaches it) and its body was scrubbed of every agent's proper name, so
-restoring the two-file arrangement is a `git mv` plus a six-line shim and
-no rewriting. develop.md's Files entry carries the recipe. The cost is
-stated plainly: AGENTS.md-aware agents no longer auto-load anything from
-this repo until the file is restored.
+dispatcher text, and its body was scrubbed of every agent's proper name,
+so restoring the two-file arrangement is a copy plus a six-line shim and
+no rewriting. develop.md's Files entry carries the recipe — including the
+correction that `git log --follow CLAUDE.md` does NOT cross the fold
+(`CLAUDE.md` already existed, so git recorded a delete plus a modify, not
+a rename); `git log -- AGENTS.md` plus `git show <parent>:AGENTS.md` is
+what actually recovers the old file. The cost is stated plainly:
+AGENTS.md-aware agents no longer auto-load anything from this repo until
+the file is restored.

@@ -452,12 +452,17 @@ a pointer: what the file is, how it's run, where its docs are.
   dm.md. **It carries no agent's name in its body on purpose**, so it can
   be copied to another agent's instruction filename verbatim.
   *(2026-08-09: `AGENTS.md` was folded into this file at the designer's
-  direction — it used to hold the text while `CLAUDE.md` was a one-line
-  `@AGENTS.md` shim. Restoring the two-file arrangement is three steps and
-  no rewriting: `git mv CLAUDE.md AGENTS.md`, write a new `CLAUDE.md`
-  containing a pointer paragraph and the line `@AGENTS.md`, and change this
-  entry's key back. `git log --follow CLAUDE.md` reaches the AGENTS.md
-  history; the fold is a tracked rename, so nothing is lost.)*
+  direction — it used to hold the text while `CLAUDE.md` was a six-line
+  `@AGENTS.md` shim. The cost is that AGENTS.md-aware agents no longer
+  auto-load anything from this repo. **To restore the two-file
+  arrangement**, no rewriting is needed: `cp CLAUDE.md AGENTS.md`, replace
+  `CLAUDE.md` with a pointer paragraph plus the single line `@AGENTS.md`,
+  and change this entry's key back to `AGENTS.md` with a `CLAUDE.md` shim
+  entry under it. The old text is also recoverable directly —
+  `git log --oneline -- AGENTS.md` finds the fold commit and
+  `git show <its parent>:AGENTS.md` prints the file. Note `git log
+  --follow CLAUDE.md` does NOT cross the fold: `CLAUDE.md` already existed,
+  so git recorded a delete plus a modify rather than a rename.)*
 - `rpg.py` — **the engine.** Combat (`group_combat` + the pause/retreat
   layer), weapons and breakage, the survival tracks and the NIGHT (the short
   rest is gone since 2026-07-26), progression,
