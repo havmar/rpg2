@@ -1699,3 +1699,85 @@ layer's first impression is thin. If it reads dead at the table the dial
 is **`CARD_CHANCE['normal']`** (0.02 -> 0.04 roughly doubles a quiet
 land's activity); the die itself is a designer ruling and should not be
 touched first. Nothing was retuned here.
+
+---
+
+## 2026-08-08 — The weather: the ladder's first content rung
+
+**Nothing in the career moved, and the proof is byte-level this time.**
+The weather is bench-invisible by the same construction as the frame,
+one step further: no bench passes a `sky` to `long_rest` or a `weather`
+to `group_combat`, so both default to `""` and every branch the rung
+added is dead code inside a sim. `shake_disease` returns before touching
+the rng when nobody is ill, so the night's stream does not move either.
+
+The check: a fixed-seed harness of **120 trials** — a two-hero party of
+rolled level 1-12 against two foes cycled through the whole `sites.FOES`
+ladder at `WILD_FIELD`, run through `sim_fight` and then a `long_rest`,
+hashing the outcome, every hero's HP / STA / HP-ceiling, every foe's HP,
+the clock and the rng's next draw. Run on the working tree and then on
+the stashed pre-change tree: **`3eaf0fd7effbc5238776de0a58b6964c` both
+times**. `bench_bestiary` re-run at 2000 trials a column reads in family
+(dragon 92.5% win at level, 2x warlord 69.8%, 2x blademaster 71.2%,
+drake 97.0% — the standing calibration).
+
+### The layer's own pacing
+
+60 worlds x 6 lands, rolled **120 days** (a long campaign), at the
+shipped knobs.
+
+| land | exposure sky | storm | fords out | fog/bones | drought | land-specific |
+|---|---:|---:|---:|---:|---:|---|
+| Dvarvengrond | 41% | 1.22 | -- | 0.30 | 0.12 | -- |
+| Firascir | 34% | 1.27 | 1.23 | 0.40 | 0.23 | -- |
+| Mortellaria | 19% | 1.00 | 0.58 | 0.30 | 0.12 | -- |
+| Ensimaa | 37% | 1.05 | -- | 0.72 | 0.23 | wildfire 0.27, green-again 0.05 |
+| Gibili | 20% | 1.10 | -- | 0.25 | 0.07 | smog 1.12 |
+| Tergal | 27% | 1.00 | -- | 0.17 | 0.22 | dust-storm 0.23 |
+
+(Cards fired per land per 120 days. "Exposure sky" is the share of days
+that would cost a hero a check if the night were spent in the open —
+rain, frost, snow or storm.)
+
+Share of land-days spent holding each weather state: **drought 5.7%,
+bones walk 3.4%, fords out 2.3%, storm-bound 1.8%, burned-over 1.0%,
+smog 0.6%, wildfire 0.2%, dust storm 0.1%.** News is **2.69 lines a
+land over 120 days** (max 11) with the weather deck included — still a
+beat, not a feed. **Save cost** at day 120: 5.5 KB of layer plus 2.1 KB
+of land states across six lands, up from the frame's 2.0/0.5 at day 60.
+
+**The drought needed a per-ground threshold.** At a single fixed spell
+length the card was simultaneously dead and constant: Ensimaa's forest
+(31% wet days) could not reach a 10-day dry run in any campaign — which
+also made WILDFIRE and its regrowth card unreachable, since both admit
+on drought — while Mortellaria (17% wet) would have been in one most of
+the time. `places.ENVIRONMENT_PROFILES` now carries `drought_days`
+(alpine 15 / temperate 15 / forest 12 / mediterranean 25 / prairie 20),
+each set so a drought is about a one-in-a-hundred day on THAT ground.
+After the change every authored card fires somewhere in 60 worlds, and
+drought fell from 16.9% of land-days to 5.7%.
+
+### The disease family, measured
+
+3000 trials a cell, heroes rolled across all twenty levels.
+
+| illness | nights to clear, wilds | nights to clear, in a bed |
+|---|---:|---:|
+| cold | 3.19 | 1.61 |
+| pneumonia | 13.84 | 4.68 |
+
+Catch rate per hero per night in the open, by sky: **rain 5.6%, frost
+12.6%, snow 21.0%, storm 32.9%** (2d6 + STR vs 8/9/10/11; STR is 3-6 and
+FLAT across all twenty levels, which is why the family reads STR and not
+the STA pool — STA runs 6.8 at L1 to 15.9 at L20 and would have made the
+illness melt as the party levelled). Against a temperate land's sky that
+is ~3.2% a hero a night, so a three-hero party roughing it catches
+something about one night in eleven. A pneumonia at 13.8 nights in the
+wilds is deliberately the signal to go to a town: a bed cuts it to 4.7
+and the healer breaks it outright for 15g, which is the treatment
+ladder's geography gate doing exactly what it does for wounds.
+
+**Nothing was retuned.** Every knob above is hand-set and
+sim-unverified; the dial if the road reads punishing is `EXPOSURE_DC`
+(each value is one 2d6 step), and the dial if the sky reads absent is
+the weather cards' own `chance`.

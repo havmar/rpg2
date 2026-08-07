@@ -21,31 +21,60 @@ with CATALOG_PATH.open(encoding="utf-8") as _catalog_file:
     _CATALOG = json.load(_catalog_file)
 
 
+# The `weather` table is the climate SENTENCE made mechanical (2026-08-08,
+# the worldsim ladder's weather session): the day-roll's weights over
+# worldsim.WEATHER_WORDS, per hundred days, YEAR-ROUND -- the game has no
+# season track, so a profile's winters and summers are averaged into one
+# distribution rather than modelled. worldsim.py owns the roll, the states
+# and the cards; the profile only says what this ground's sky does.
+#
+# `drought_days` is how many rainless days THIS ground calls a drought, and
+# it is per-profile because a drought is a RELATIVE thing: a fortnight
+# without rain is a disaster in the shaded forest and an ordinary Tuesday in
+# the dry south. Each is set so a land's drought is about a one-in-a-hundred
+# day (worldsim's own card chance thins it further from there) -- without
+# that, the wet lands could never have one at all and the dry ones would
+# never be out of it.
 ENVIRONMENT_PROFILES = {
     "alpine_tundra": {
         "climate": "Cold, windy highlands with long winters and short summers.",
         "vegetation": ("dwarf pine", "juniper", "lichen", "moss",
                        "alpine grass", "mountain flowers"),
+        "weather": {"clear": 18, "cloud": 18, "wind": 18, "rain": 6,
+                    "storm": 6, "fog": 6, "frost": 14, "snow": 14, "heat": 0},
+        "drought_days": 15,
     },
     "temperate": {
         "climate": "Mild country with rain, cloud, wind, fog, and winter frost.",
         "vegetation": ("oak", "beech", "ash", "elm", "hedges",
                        "meadow grass", "reeds"),
+        "weather": {"clear": 22, "cloud": 25, "wind": 10, "rain": 21,
+                    "storm": 5, "fog": 8, "frost": 9, "snow": 0, "heat": 0},
+        "drought_days": 15,
     },
     "temperate_forest": {
         "climate": "A damp, shaded forest with rain, mist, and winter frost.",
         "vegetation": ("oak", "beech", "birch", "fern", "bramble",
                        "moss", "mushrooms"),
+        "weather": {"clear": 16, "cloud": 24, "wind": 5, "rain": 26,
+                    "storm": 5, "fog": 16, "frost": 8, "snow": 0, "heat": 0},
+        "drought_days": 12,
     },
     "mediterranean": {
         "climate": "Hot dry summers, mild wet winters, and sea wind.",
         "vegetation": ("olive", "cypress", "pine", "scrub oak",
                        "grapevine", "rosemary", "dry grass"),
+        "weather": {"clear": 38, "cloud": 14, "wind": 15, "rain": 13,
+                    "storm": 4, "fog": 4, "frost": 2, "snow": 0, "heat": 10},
+        "drought_days": 25,
     },
     "prairie": {
         "climate": "Windy grassland with hot summers and cold winters.",
         "vegetation": ("tall grass", "short grass", "sage", "wildflowers",
                        "reeds", "willow"),
+        "weather": {"clear": 26, "cloud": 15, "wind": 23, "rain": 12,
+                    "storm": 6, "fog": 3, "frost": 7, "snow": 3, "heat": 5},
+        "drought_days": 20,
     },
 }
 

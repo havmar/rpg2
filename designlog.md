@@ -2789,3 +2789,156 @@ something only a quarter of the time, so an early playthrough may see
 dial (0.02 -> 0.04 roughly doubles a quiet land's activity), but it is a
 PLAY question and the die is the designer's own ruling — watch it before
 turning it. The played band (levels 1-4) is where it will show first.
+
+## 2026-08-08 — The weather: the world layer gets a sky
+
+**The task.** plan.md's worldsim ladder, the weather rung — the first
+CONTENT session on top of the frame, and the one worldsim.md named as
+the strongest first slice: land-agnostic, self-contained, touching every
+outlet, and the smallest curation bill on the board. Everything
+settleable was settled in plan.md's rulings block (the [PROPOSED] trio
+adopted wholesale among them), so there was no designer input
+outstanding.
+
+**Where it started.** `places.ENVIRONMENT_PROFILES` had carried a
+`climate` SENTENCE for every environment since the place-generation MVP
+— "Mild country with rain, cloud, wind, fog, and winter frost" — and
+nothing had ever read it. The frame had left a `weather` axis on
+`card()` admitting conditions with a comment saying the weather session
+owned the day roll, and no day roll existed. The conditions framework
+had had a third family parked since the attrition rework with a note
+that the weather would cash it.
+
+**What shipped.**
+
+- **The day roll.** Nine weather words shared by every land; the WEIGHTS
+  are per-environment and live in `ENVIRONMENT_PROFILES` — the climate
+  sentence finally said in numbers. Two spell counters run behind it,
+  and they measure two different things on purpose: DRY is days since
+  the last rain (an overcast day extends it — a grey sky is not a
+  drought ending), WET is a run of wet days that a dry day breaks and an
+  overcast one does not (three days of rain with a grey one in the
+  middle still puts the fords out). A held drought bends the roll that
+  made it.
+- **Three tracks.** The frame's one-card-at-a-time rule could not hold
+  across the weather's timescales, so a land now carries three decks and
+  three live slots — crisis (the wealth band's), weather (the day's
+  sky's), season (a long spell's). `DECK_KEY` / `LIVE_KEY` keep the
+  frame's existing save keys intact.
+- **Eight cards.** THE STORM SETS IN (any land, holds its own sky 1-3
+  days), THE FORD IS OUT (the human lands, after three wet days — the
+  road costs a day), THE FOG RAISES BONES (rare, and it NAMES a
+  necromancer), THE FOREST BURNS + THE BURN GOES GREEN (Ensimaa, under
+  drought, the scar outliving the fire), THE DUST STORM (Tergal, under
+  drought), THE SMOG SETTLES (Gibili), and the season card THE RAINS DO
+  NOT COME.
+- **The DISEASE family** in `rpg.py`: cold and pneumonia as
+  `CONDITION_KINDS`, `catch_chill` (bounded deepening),
+  `shake_disease` (the night's roll, easing one rung), `treat_disease`
+  (the healer's tier gate), `exposure_check` (2d6 + STR vs the sky),
+  `Entity.disease_load` docking `hp_ceiling`, and `long_rest` growing
+  `sky=` / `sheltered=`.
+- **The storm in a fight**: `group_combat(weather=)` puts
+  `STORM_SHOT_PENALTY` on both sides' shots and a `STORM_SLIP_DC` save
+  on every step of the movement phase; it rides `pending` to the resume.
+- **The cabin table**, five rows and ten hosts, printed as a sight plus
+  a `(DM eyes only:)` line.
+- **The play wiring** in `session.py`: `sky_here` / `exposure_sky` /
+  `fight_sky` / `weather_note` / `shelter_here`, the sky threaded into
+  every night path, `travel_delay` in `cmd_travel`, `heal_the_sick` in
+  `cmd_healer`.
+- **`test_worldsim.py`** grew the rung's contracts (118 tests total).
+
+**The calls the spec left open, and how the build settled them.**
+
+1. *Weather needed its own track, and then a third one.* The spec says
+   "one card stands over a land at a time" and also asks for a
+   season-scale DROUGHT and a day-scale BIG RAIN. Those cannot share a
+   slot: a 45-80 day drought would have blocked every storm under it,
+   and it would have blocked the WILDFIRE that admits ON it. Three
+   tracks, three decks, three live slots, three draw rules — and the
+   crisis track is untouched, so the frame's contracts all still hold.
+2. *The climate distribution belongs to the PROFILE, not the layer.*
+   plan.md said placegen's environment profiles author it, and that is
+   where it went. `worldsim.py` owns the roll; `places.py` owns what
+   this ground's sky does. The alternative — a weather table inside
+   worldsim keyed by environment — would have put half of a place's
+   description in the world layer.
+3. *A weather card can BE the weather.* A storm declared to stand 1-3
+   days was, on the second day, a state saying "the storm has the roads"
+   under clear skies — visible immediately in `world` and on `map`. So a
+   weather card may declare a `sky`, and while it stands the day roll is
+   skipped. Only cards that ARE weather carry it: the ford stays out
+   after the rain stops, which is the whole point of the ford.
+4. *A drought is RELATIVE, so its trigger is per-ground.* At a single
+   fixed dry-spell length the card was dead in the wet lands and
+   permanent in the dry ones, and it took WILDFIRE and its regrowth card
+   down with it — an authored card that can never fire is worse than no
+   card. `drought_days` per environment (12-25), each set so a drought
+   is about a one-in-a-hundred day on that ground. This is the one
+   number in the rung that is doing real work rather than flavor.
+5. *An illness is not a poison, so its CLOCK is the night.* The obvious
+   implementation — a `cold` condition with a power that ticks — makes a
+   cold worth 6 HP in a six-round fight, which is a venom, not a cold.
+   The disease family is therefore power 0 and skipped by
+   `_tick_conditions` entirely; what it costs is the HP CEILING, like a
+   wound. "Small, slow, treatable: an illness-shaped wound" is
+   worldsim.md's own phrase, and the ceiling is what makes it literal.
+6. *The shake rolls STR, not STA.* STA reads as the constitution stat
+   and was the first choice. It is a POOL: 6.8 at level 1, 15.9 at level
+   20. An illness that got easier to shake as you levelled would inflate
+   exactly the way this game's costs never do (the wound rework's whole
+   argument). STR is 3-6 and flat across all twenty levels. Both the
+   catching and the shaking read it.
+7. *CAUGHT COLD is not a card.* worldsim.md lists it as one, but it is a
+   per-hero effect of a night, not a pulse over a land: it has no state,
+   no news line, no clock, and it happens to some heroes and not others.
+   It ships as the exposure check inside `long_rest`. The rest of what
+   the spec calls "card BIG RAIN" — the satisfaction dip, the shelter
+   roll, the cabin table — hangs off the storm card's sky the same way.
+8. *The three unwired outlets stayed unwired.* The ladder gives quest,
+   priced menu and encounter-table wiring to the economy floor, and this
+   session did not take them: the fog's skeletons, the wildfire's
+   evacuation posting and the ferrymen's rates are authored on the cards
+   and carried. What DID ship is weather's own mechanics, which are not
+   those outlets — the travel day, the exposure check, the field
+   penalties, the shelter scene.
+9. *The DM-eyes half of the cabin.* The sinister row is no scene at all
+   if the display announces it, and there is no `--dm` command a camp
+   could hang one on. It follows the quest twist's existing idiom: a
+   `(DM eyes only: ...)` line in the same display, and a dm.md rule that
+   it is never read aloud.
+10. *The necromancer is a name and a level.* plan.md's ruling said keep
+    the rumor address cheap. He goes on the land's world layer, the news
+    line says his name, `world` shows him, and the next fog raises the
+    SAME man's dead — which is the recurrence property the six outlets
+    say is what makes an NPC exist. No landmark record, no site, no
+    questline. His level is rolled 3-14 and is not scaled to the party.
+
+**What it costs, measured** (full numbers in benchlog.md). Nothing in
+the career moved, and this time the proof is byte-level: a fixed-seed
+120-trial fight-and-rest harness hashes identically on the working tree
+and the stashed pre-change tree. The layer's own pacing over 120 days: a
+land sees about one storm a fortnight, Firascir's fords go out 1.2 times
+a campaign, Gibili sits under smog 1.1 times, the fog raises bones
+somewhere in most worlds, and a drought is a once-in-a-few-campaigns
+event per land. A cold is ~3 nights in the wilds and ~1.6 in a bed;
+pneumonia is a fortnight out there and under a week in a town.
+
+**What it buys at the table.** The first thing every scene now has is
+weather, and it is not decoration: the party sets out in the rain, the
+ford is out and the road costs a day, the night in the open puts a cough
+on the wizard that no camp will shift, and the fight at the end of it is
+fought with the wind in everyone's shots. It is also the first world
+content that reaches a QUIET land — no weather card carries a wealth
+condition, so a prosperous, cardless, uninteresting land still has a sky
+and still has a storm that drives the party to a stranger's door.
+
+**Recorded.** rules.md's new *Weather* add-on; dm.md's "The sky" play
+protocol under "The land itself" and its quick-reference numbers;
+develop.md's Files (`worldsim.py`, `places.py`, `test_worldsim.py`), dev
+map and Balance section; worldsim.md's WEATHER section CUT and its
+shipped-frame header rewritten to cover the weather API; plan.md's
+weather rung DELETED, the ladder renumbered to three, and the parked
+DISEASE item replaced by the now-unblocked infection one; benchlog's
+2026-08-08 entry.

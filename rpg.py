@@ -1555,7 +1555,7 @@ TIER_HP = {"deflected": 0, "graze": 1, "wound": 2, "grievous": 4, "crippling blo
 CONDITION_STACK_RULE = "refresh"    # refresh the duration, take max(power),
                                     # never add. The one rule; an "add" mode
                                     # would need its own bench round.
-CONDITION_KINDS = ("bleed", "poison", "burn")
+CONDITION_KINDS = ("bleed", "poison", "burn", "cold", "pneumonia")
 
 BLEED_POWER = 1         # HP per round from an open wound. UNTIMED (rounds
                         # None): blood does not clot on a schedule -- the free
@@ -1577,9 +1577,11 @@ BURN_POWER = 1          # HP per round while the fire is on you...
 BURN_ROUNDS = 2         # ...and it burns out on its own, so _clear_fight_states
                         # drops it with the rest of the fight state.
 CONDITION_POWER = {"bleed": BLEED_POWER, "poison": POISON_POWER,
-                   "burn": BURN_POWER}
+                   "burn": BURN_POWER, "cold": 0, "pneumonia": 0}
 CONDITION_ROUNDS = {"bleed": None, "poison": POISON_ROUNDS,
-                    "burn": BURN_ROUNDS}
+                    "burn": BURN_ROUNDS, "cold": None, "pneumonia": None}
+                    # power 0 and untimed: the DISEASE family (below) does
+                    # not tick in rounds at all -- its clock is the night's
 # First aid's reach: what the free stabilize at fight end clears off anyone
 # still standing. Bleeding stops under a bandage; venom and fire do not care.
 # (Slice 3b's wound-driven bleed is re-derived from the Wound record each
@@ -1598,11 +1600,89 @@ STABILIZE_CLEARS = ("bleed",)
 # Log/display vocabulary. The collapsed tick line heads with the tags; the
 # roster's enemy introduction uses the on-hit line so a venomous row announces
 # itself before it bites.
-CONDITION_TAG = {"bleed": "bleeding", "poison": "poisoned", "burn": "burning"}
+CONDITION_TAG = {"bleed": "bleeding", "poison": "poisoned", "burn": "burning",
+                 "cold": "a cold", "pneumonia": "pneumonia"}
 CONDITION_NOUN = {"bleed": "the bleeding", "poison": "the poison",
-                  "burn": "the burns"}
+                  "burn": "the burns", "cold": "the cold",
+                  "pneumonia": "the pneumonia"}
 CONDITION_ON_HIT_TAG = {"bleed": "leaves wounds bleeding",
                         "poison": "venomous", "burn": "its fire clings"}
+
+# --- the DISEASE family (2026-08-08, the worldsim ladder's weather session) - #
+# The conditions framework's THIRD family, parked since slice 3a and cashed by
+# the weather: a wet night in the open is a STR check, and a failed one is a
+# COLD. What makes disease a family rather than a fourth kind of poison is its
+# CLOCK: rounds are the wrong unit for an illness, so the tick skips it
+# entirely and the NIGHT is where it is paid instead.
+#
+#   in the fight  -- nothing ticks. What a disease costs is the HP CEILING,
+#                    like a wound: sick, you cannot get back to full, and you
+#                    walk into every fight carrying it. (rules.md: "small,
+#                    slow, treatable -- an illness-shaped wound".)
+#   in the night   -- one shake roll (2d6 + STA vs DISEASE_SHAKE_DC, easier
+#                    under a roof). A cold shaken is gone; pneumonia shaken
+#                    steps DOWN to a cold. Nothing else clears on a schedule.
+#   catching one  -- BOUNDED DEEPENING (the stacking rule's shape, one rung
+#                    up): a chill caught while a cold is running deepens it
+#                    to pneumonia, and a chill caught on pneumonia does
+#                    nothing. There is no third rung, and disease never kills
+#                    -- a tick that can never kill would be a lie if the
+#                    night could.
+DISEASE_KINDS = ("cold", "pneumonia")
+DISEASE_LOAD = {"cold": 2, "pneumonia": 5}      # HP off the ceiling, like a
+                                                # wound's severity (and under
+                                                # the same WOUND_HP_FLOOR_DIV
+                                                # floor -- never a spiral)
+DISEASE_DEEPENS = {"cold": "pneumonia"}         # ...and nothing deepens past
+DISEASE_EASES = {"pneumonia": "cold"}           # pneumonia. The way back down
+EXPOSURE_DC = {"rain": 8, "frost": 9, "snow": 10, "storm": 11, "smog": 10}
+                        # 2d6 + STR vs the sky, once a night out of doors,
+                        # per hero. A roof (a settlement, or the storm
+                        # night's cabin) skips it entirely: shelter is the
+                        # answer to weather, and always was. At the played
+                        # STR spread (3-6, FLAT across all twenty levels)
+                        # that is ~3% of rainy nights and ~28% of stormy
+                        # ones for a weak body -- the road's hazard, not its
+                        # nightly tax.
+DISEASE_SHAKE_DC = 13   # 2d6 + STR at the night's end to throw it off...
+DISEASE_SHAKE_STEP = 2  # ...+ this for pneumonia (the deeper rung is the
+                        # slower one)
+DISEASE_BED_BONUS = 2   # ...- this under a roof. A cold is ~2-3 nights in
+                        # the wilds and ~1-2 in a bed; pneumonia is over a
+                        # week out here and about half of that in a town.
+                        # STR, not STA, and deliberately: STA is a POOL that
+                        # doubles over twenty levels, and an illness that
+                        # got easier to shake as you levelled would inflate
+                        # exactly the way this game's costs never do.
+DISEASE_FEE = 15        # what a healer's day charges to break one outright
+DISEASE_REACH = {"cold": ("village", "town", "capital"),
+                 "pneumonia": ("town", "capital")}
+                        # the treatment ladder's tier gate, applied to the
+                        # illness half: a village herb-wife can break a cold
+                        # and cannot touch a pneumonia. The cap is the gate.
+
+# --- the storm's field penalties (same session) ---------------------------- #
+# worldsim.md asks for "one field knob and one save", and that is exactly
+# what this is. Both ride an outdoor fight under STORM weather; indoors --
+# a site, a room, a cellar -- the sky is not in the fight.
+STORM_SHOT_PENALTY = 2  # off a SHOT's attack pressure: rain and wind on the
+                        # arrow. Casts and steel are untouched (a bolt does
+                        # not care about the wind, and neither does an axe).
+STORM_SLIP_DC = 10      # 2d6 + DEX to keep your feet closing the distance in
+                        # it; a miss costs the step, never the round's
+                        # attack -- weather slows a fight, it does not
+                        # decide one.
+STORM_WEATHER_KINDS = ("storm",)    # which of the world layer's weather words
+                                    # count as a storm HERE. The engine never
+                                    # imports worldsim (the karma doctrine);
+                                    # this is the same list from this side.
+INDOOR_SKY = ("smog",)      # the one sky a roof does not keep out: the mill
+                            # towns' smoke sits in the streets and in the
+                            # houses alike, which is the whole complaint
+SAT_FOUL_WEATHER = -1       # per companion, for a night spent out in a STORM
+                            # with no roof found. Storms only (~5% of days):
+                            # a grumble the cabin roll can answer, not a tax
+                            # on every wet night
 
 # --- Wounds & recovery (2026-07-26, the attrition rework's slice 3b) -------- #
 # ONE injury system, TWO time constants. HP is the FAST channel (blood and
@@ -2386,6 +2466,12 @@ class Entity:
     dex_debuff: int = field(default=0)  # DEX lost to landed ice bolts; lasts
                                          # the fight (cleared when the melee
                                          # ends or the party breaks away)
+    storm_pen: int = field(default=0)   # the sky in this fight (2026-08-08):
+                                         # STORM_SHOT_PENALTY off a shot while
+                                         # it blows. Set on both sides at the
+                                         # top of group_combat off the fight's
+                                         # `weather`, cleared with the rest of
+                                         # the field state
     lunge_spent: bool = field(default=False)    # the lunge quirk's once-per-
                                          # fight marker (per-fight state)
     quirk_kills: int = field(default=0) # kills paid by an on-kill quirk THIS
@@ -2579,15 +2665,27 @@ class Entity:
         return sum(w.severity for w in self.wounds)
 
     @property
+    def disease_load(self) -> int:
+        """What an illness costs, in the same currency a wound does (the
+        weather session): a cold is a light wound that a bandage is no use
+        against. Kept SEPARATE from wound_load so the healer's severity cap
+        and the wound displays go on meaning exactly what they meant."""
+        return sum(DISEASE_LOAD.get(c.kind, 0) for c in self.conditions)
+
+    @property
+    def sick(self) -> bool:
+        return any(c.kind in DISEASE_KINDS for c in self.conditions)
+
+    @property
     def hp_ceiling(self) -> int:
-        """The highest HP rest can reach: max_hp docked by the wound load, and
-        NEVER below half the pool. That floor is the anti-death-spiral
-        guarantee (WOUND_HP_FLOOR_DIV) -- it is what makes a wound track a
-        cost instead of a countdown."""
-        if not self.wounds:
+        """The highest HP rest can reach: max_hp docked by the wound load and
+        whatever illness is on you, and NEVER below half the pool. That floor
+        is the anti-death-spiral guarantee (WOUND_HP_FLOOR_DIV) -- it is what
+        makes a wound track a cost instead of a countdown."""
+        load = self.wound_load + self.disease_load
+        if not load:
             return self.max_hp
-        return max(self.max_hp // WOUND_HP_FLOOR_DIV,
-                   self.max_hp - self.wound_load)
+        return max(self.max_hp // WOUND_HP_FLOOR_DIV, self.max_hp - load)
 
     @property
     def maimed(self) -> bool:
@@ -2914,6 +3012,14 @@ class Entity:
             stat, stat_label = self.shot_aim, "AIM"
             chill = (0 if self.weapon.aim == "flat"
                      else min(stat, self.dex_debuff))
+            # The storm's one field knob: rain and wind on the arrow. It is
+            # the SHOT that suffers -- a cast does not care about the wind
+            # and neither does an axe -- and only while the weather is in
+            # the fight (outdoors: group_combat sets storm_pen).
+            if attacking and self.storm_pen:
+                misc -= self.storm_pen
+                misc_label = (f"{misc_label}+storm" if misc_label
+                              else "storm")
         else:
             stat, stat_label = self.dex, "DEX"
             chill = min(self.dex, self.dex_debuff)
@@ -2962,6 +3068,12 @@ def condition_tags(e: Entity) -> list[str]:
     the party sheet) read this; the fight log has its own collapsed line."""
     tags = []
     for c in sorted(e.conditions, key=lambda c: -c.power):
+        if c.kind in DISEASE_KINDS:
+            # An illness has no per-round arithmetic to show: what it costs
+            # is the ceiling, so that is what the tag says.
+            tags.append(f"{CONDITION_TAG.get(c.kind, c.kind)} "
+                        f"-{DISEASE_LOAD.get(c.kind, 0)} HP ceiling")
+            continue
         tag = f"{CONDITION_TAG.get(c.kind, c.kind)} -{c.power} HP/round"
         if c.rounds is not None:
             tag += f", {c.rounds} rd"
@@ -3004,13 +3116,113 @@ def apply_condition(e: Entity, kind: str, source: str = "",
 
 
 def clear_conditions(e: Entity, kinds=None) -> list[str]:
-    """Strip conditions off a body. `kinds` = None clears everything (the
-    night); otherwise only those kinds (first aid clears STABILIZE_CLEARS).
+    """Strip conditions off a body. `kinds` = None clears everything;
+    otherwise only those kinds (first aid clears STABILIZE_CLEARS).
     Returns the kinds actually removed, for the caller's log line."""
     gone = [c.kind for c in e.conditions
             if kinds is None or c.kind in kinds]
     e.conditions = [c for c in e.conditions if c.kind not in gone]
     return gone
+
+
+# --- the disease family's own two moves (2026-08-08) ----------------------- #
+
+def catch_chill(e: Entity, source: str = "the weather") -> str | None:
+    """A night's exposure gets through: a cold, or -- on somebody already
+    carrying one -- BOUNDED DEEPENING to pneumonia. Returns the kind now
+    running, or None when there is nothing worse to be had (a body with
+    pneumonia cannot catch a third rung; the ladder stops there on purpose,
+    exactly as the stacking rule stops at refresh).
+
+    A disease is untimed and power 0: it never ticks, so this can never be
+    the blow that kills anybody. What it costs is the HP ceiling."""
+    worst = next((c for c in e.conditions if c.kind in DISEASE_KINDS), None)
+    if worst is None:
+        apply_condition(e, "cold", source=source)
+        return "cold"
+    deeper = DISEASE_DEEPENS.get(worst.kind)
+    if deeper is None:
+        return None
+    e.conditions.remove(worst)
+    apply_condition(e, deeper, source=source)
+    return deeper
+
+
+def shake_disease(e: Entity, rng: random.Random, log: list[str],
+                  bed: bool = False) -> str | None:
+    """The night's one roll against whatever illness is on you: 2d6 + STR vs
+    DISEASE_SHAKE_DC, harder by a rung for pneumonia and easier under a roof.
+    A made roll EASES it one rung -- pneumonia to a cold, a cold to nothing --
+    so the way down is the way up walked backwards. Returns the kind that was
+    eased, or None.
+
+    This is the between-fights half of the family, and the reason a bed and a
+    healer are worth their price: out in the wilds an illness is slow."""
+    worst = next((c for c in e.conditions if c.kind in DISEASE_KINDS), None)
+    if worst is None:
+        return None
+    dc = DISEASE_SHAKE_DC - (DISEASE_BED_BONUS if bed else 0)
+    if worst.kind in DISEASE_DEEPENS.values():
+        dc += DISEASE_SHAKE_STEP
+    dice = rng.randint(1, 6) + rng.randint(1, 6)
+    total = dice + e.str_
+    _debug(log, f"        disease: {e.name} shakes {worst.kind} -- {total} "
+                f"(2d6={dice}, +{e.str_} STR) vs DC {dc}")
+    if total < dc:
+        return None
+    e.conditions.remove(worst)
+    eased = DISEASE_EASES.get(worst.kind)
+    if eased is not None:
+        apply_condition(e, eased, source=worst.source)
+    return worst.kind
+
+
+def treat_disease(e: Entity, subtype: str) -> str | None:
+    """The healer's rung, applied to the illness half: the visit breaks one
+    illness OUTRIGHT if the settlement's tier reaches it. A village herb-wife
+    can break a cold and can do nothing for a pneumonia -- the same cap that
+    gates wounds, for the same reason. Returns what was broken, or None."""
+    worst = next((c for c in e.conditions if c.kind in DISEASE_KINDS), None)
+    if worst is None or subtype not in DISEASE_REACH.get(worst.kind, ()):
+        return None
+    e.conditions.remove(worst)
+    return worst.kind
+
+
+def exposure_check(party: list[Entity], sky: str, rng: random.Random,
+                   log: list[str]) -> list[Entity]:
+    """A night in the open under a sky that costs something: 2d6 + STR vs
+    EXPOSURE_DC[sky], once per living hero. A miss is a chill. The strong
+    shrug the rain off and the frail do not, which is the right character
+    for it -- and a ROOF skips the check entirely, which is why the storm
+    night's cabin is worth walking to.
+
+    Returns whoever caught something (for the caller's own bookkeeping)."""
+    dc = EXPOSURE_DC.get(sky)
+    if dc is None:
+        return []
+    caught: list[tuple[Entity, str]] = []
+    for h in party:
+        if h.dead:
+            continue
+        dice = rng.randint(1, 6) + rng.randint(1, 6)
+        total = dice + h.str_
+        _debug(log, f"        exposure ({sky}): {h.name} {total} "
+                    f"(2d6={dice}, +{h.str_} STR) vs DC {dc}")
+        if total >= dc:
+            continue
+        got = catch_chill(h, source=sky)
+        if got is not None:
+            caught.append((h, got))
+    for h, kind in caught:
+        what = ("comes down with pneumonia" if kind == "pneumonia"
+                else "takes a chill")
+        _play(log,
+              f"    {h.name} {what} in the night "
+              f"(HP ceiling {h.hp_ceiling}/{h.max_hp}).",
+              fit_lines([f"{h.name.split()[0]} {what}.",
+                         f"HP ceiling {h.hp_ceiling}/{h.max_hp}."]))
+    return [h for h, _ in caught]
 
 
 def _tick_conditions(actors: list[Entity], party_set: set,
@@ -3036,22 +3248,26 @@ def _tick_conditions(actors: list[Entity], party_set: set,
     kinds: list[str] = []
     felled: list[Entity] = []
     for e in actors:
-        if not e.conditions:
+        # The DISEASE family sits this out entirely (2026-08-08): its clock
+        # is the night, not the round. A cold costs the HP ceiling you walked
+        # in with, and nothing per-round on top of it.
+        ticking = [c for c in e.conditions if c.kind not in DISEASE_KINDS]
+        if not ticking:
             continue
         if not e.alive:
             e.conditions = [c for c in e.conditions if c.rounds is None]
             continue
-        total = sum(c.power for c in e.conditions)
+        total = sum(c.power for c in ticking)
         bits = ", ".join(
             f"{c.kind} {c.power}"
             + ("" if c.rounds is None else f" ({c.rounds} rd left)")
-            for c in e.conditions)
+            for c in ticking)
         e.hp = max(0, e.hp - total)
         _debug(log, f"        conditions: {e.name} -{total} HP [{bits}] "
                     f"-> {e.hp}/{e.max_hp}, "
                     f"-{e.wound_penalty} to rolls")
         parts.append(f"{e.name} -{total},")
-        for c in e.conditions:
+        for c in ticking:
             if c.kind not in kinds:
                 kinds.append(c.kind)
         if e.hp <= 0:
@@ -4683,8 +4899,16 @@ def group_combat(party: list[Entity], foes: list[Entity],
                  first_round: int = 1,
                  actions: dict[Entity, str] | None = None,
                  standing_orders=None,
-                 field: int = 0) -> Pause | None:
+                 field: int = 0,
+                 weather: str = "") -> Pause | None:
     """Resolve a melee in place. Survivors keep their HP/STA/Power as-is.
+
+    THE SKY (2026-08-08, the weather session): `weather` is the world layer's
+    word for the day, passed by the OUTDOOR callers only -- a fight in a room
+    has no weather in it. A storm costs both sides STORM_SHOT_PENALTY off
+    every shot and puts a DEX save (STORM_SLIP_DC) on every step of the
+    movement phase. One field knob and one save, as worldsim.md asks: the
+    weather slows a fight down, it never decides one.
 
     THE FIELD (ranged combat, 2026-07-16): `field` is the opening gap
     between the two lines (0 = today's fight at the door -- every legacy
@@ -4823,6 +5047,16 @@ def group_combat(party: list[Entity], foes: list[Entity],
     # narrating.
     ranged_fight = field > 0 and any(
         e.threat_reach > 0 for e in party + foes if e.alive)
+    # The sky, put on both sides for the length of the fight (2026-08-08).
+    # Symmetric by contract, like the ground itself: the storm is not a
+    # party debuff, it is what the fight is being fought in.
+    storming = weather in STORM_WEATHER_KINDS
+    for e in party + foes:
+        e.storm_pen = STORM_SHOT_PENALTY if storming else 0
+    if storming and first_round == 1:
+        _play(log, "    The storm is in everyone's face -- shots drag and "
+                   "the ground will not hold a foot.",
+              fit_lines(["The storm is in everyone's face."]))
     rnd = first_round - 1
     while any(e.alive for e in party) and any(e.alive for e in foes):
         rnd += 1
@@ -4884,15 +5118,41 @@ def group_combat(party: list[Entity], foes: list[Entity],
                 return bool(live) and all(_gap(e, t) > e.threat_reach
                                           for t in live)
 
+            slipped: list[Entity] = []
             for skirmish_phase in (False, True):
                 deciders = [e for e in actors if _may_move(e)
                             and (e.threat_reach > 0) == skirmish_phase
                             and e not in moved]
                 step = [e for e in deciders if _wants_move(e)]
+                if storming:
+                    # The storm's one save: mud, sleet, a wind that shoves.
+                    # A miss costs the STEP and nothing else -- the fighter
+                    # still swings this round, they just did not get there.
+                    kept = []
+                    for e in step:
+                        dice = rng.randint(1, 6) + rng.randint(1, 6)
+                        total = dice + max(0, e.dex - e.dex_debuff)
+                        _debug(log, f"        storm slip: {e.name} {total} "
+                                    f"(2d6={dice}) vs DC {STORM_SLIP_DC}")
+                        if total >= STORM_SLIP_DC:
+                            kept.append(e)
+                        else:
+                            slipped.append(e)
+                    step = kept
                 for e in step:      # decided together, applied together
                     e.adv = min(field, e.adv + 1)
                     moved.add(e)
                 advancing.extend(step)
+            if slipped:
+                names = ", ".join(e.name for e in slipped)
+                one = len(slipped) == 1
+                _play(log,
+                      f"    {names} {'loses' if one else 'lose'} their "
+                      f"footing in the storm and "
+                      f"{'gains' if one else 'gain'} no ground.",
+                      fit_lines(_name_parts([e.name for e in slipped], "")
+                                + [f"{'slips' if one else 'slip'} in the "
+                                   f"storm."]), quiet=True)
             for e in moved:
                 enemies = foes if e in party_set else party
                 if any(_gap(e, t) == 0 for t in enemies if t.alive):
@@ -5688,6 +5948,7 @@ def _clear_fight_states(entities: list[Entity]) -> None:
     for e in entities:
         e.conditions = [c for c in e.conditions if c.rounds is None]
         e.dex_debuff = 0
+        e.storm_pen = 0         # the sky belongs to the fight, not the body
         e.unseen = False
         e.aloft = 0
         e.stunned = 0
@@ -7917,12 +8178,21 @@ def open_fight(party: list[Entity], log: list[str]) -> None:
 def long_rest(party: list[Entity], clock: Clock, log: list[str],
               banner: str = "The party makes camp.",
               rng: random.Random | None = None,
-              bed: bool = False) -> None:
+              bed: bool = False,
+              sky: str = "", sheltered: bool = False) -> None:
     """Make camp for the night. A deliberate, agent-invoked step -- never
     automatic. STA and Power recharge fully overnight; HP knits back at each
     character's weekly rate; Down heroes get back on their feet; the day
     advances. Only the truly Dead stay down.
     `banner` reflavors the night line (the tavern sleeps under a roof).
+
+    THE WEATHER'S NIGHT (2026-08-08). `sky` is the world layer's word for the
+    day; `sheltered` says a roof was found that is not a bed (the storm
+    night's cabin). Two things ride on them, both needing `rng`: the EXPOSURE
+    check that gives colds -- skipped entirely under any roof, which is what
+    makes shelter the answer to weather -- and the nightly SHAKE roll against
+    whatever illness is already running, easier in a bed. Callers that pass
+    no sky (every sim and bench) get exactly the night they always got.
     `rng`, when given, rolls the stamina forage (KIT_FORAGE_CHANCE for one
     extra draught) -- the deterministic callers (session, the sims) pass it;
     a bare call skips the bonus.
@@ -7940,6 +8210,38 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
           f"  --- {banner} Night passes; day {clock.day} dawns. ---",
           fit_lines([f"--- {banner}",
                      f"Night passes; day {clock.day} dawns. ---"]))
+    # The illness half of the night (2026-08-08), run BEFORE the recovery so
+    # the ceiling tonight's HP knit stops at is tonight's: first the SHAKE
+    # against whatever the party woke up carrying, then the EXPOSURE check on
+    # a night spent in the open. A roof of any kind -- walls or the storm
+    # night's cabin -- skips the second and helps the first.
+    if rng is not None:
+        roofed = bed or sheltered
+        for h in party:
+            if h.dead:
+                continue
+            eased = shake_disease(h, rng, log, bed=roofed)
+            if eased is None:
+                continue
+            left = next((c.kind for c in h.conditions
+                         if c.kind in DISEASE_KINDS), None)
+            note = (f"down to {CONDITION_TAG[left]}" if left
+                    else "over it in the morning")
+            _play(log,
+                  f"    {h.name} sweats out the worst of "
+                  f"{CONDITION_TAG[eased]} -- {note} "
+                  f"(HP ceiling {h.hp_ceiling}/{h.max_hp}).",
+                  fit_lines([f"{h.name.split()[0]} sweats out",
+                             f"{CONDITION_TAG[eased]}:", f"{note}."]))
+        if sky and (not roofed or sky in INDOOR_SKY):
+            exposure_check(party, sky, rng, log)
+        if sky in STORM_WEATHER_KINDS and not roofed:
+            # BIG RAIN's other half: a night out in it costs morale as well
+            # as health, and the cabin roll is what buys it back.
+            for h in party:
+                if not h.dead and satisfaction_tracked(h):
+                    adjust_satisfaction(h, SAT_FOUL_WEATHER, log,
+                                        "a night out in the storm")
     for h in party:
         if h.dead:
             continue
@@ -7965,7 +8267,10 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
         # to the next room poisoned is a real decision and sleeping it off is
         # a real cost. (Slice 3b's treatment ladder -- healer, salve, the
         # potion tiers -- is what will buy a faster answer than a night.)
-        slept_off = clear_conditions(h)
+        # ...but NOT the disease family (2026-08-08): an illness is not
+        # sweated out in a night, it is what the night rolls against below.
+        slept_off = clear_conditions(
+            h, kinds=[k for k in CONDITION_KINDS if k not in DISEASE_KINDS])
         if slept_off:
             cost = POISON_NIGHT_HP * len(slept_off)
             h.hp = max(1, max(h.hp, 0) - cost)
@@ -8053,7 +8358,8 @@ def long_rest(party: list[Entity], clock: Clock, log: list[str],
 
 
 def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
-                log: list[str], rng: random.Random | None = None) -> bool:
+                log: list[str], rng: random.Random | None = None,
+                sky: str = "") -> bool:
     """A night at the inn (session play gates it to settlements): a long rest
     plus a hot meal and a real bed, TAVERN_COST_PER_HERO gold per living
     member from the purse. The party wakes OVERCHARGED: current HP and STA
@@ -8078,7 +8384,7 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                      f"({cost}g -- purse {purse.gold}g)."]))
     long_rest(party, clock, log,
               banner="The party sleeps warm under a roof.", rng=rng,
-              bed=True)
+              bed=True, sky=sky)
     for h in boarders:
         hp_bonus = max(1, round(h.max_hp * TAVERN_OVERCHARGE))
         sta_bonus = max(1, round(h.sta * TAVERN_OVERCHARGE))

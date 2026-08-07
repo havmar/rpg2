@@ -164,10 +164,11 @@ a pointer: what the file is, how it's run, where its docs are.
 - `plan.md` — **the roadmap: planned features, parked ideas and open
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
-  is a four-session ladder implementing what is left of worldsim.md —
-  weather → economy floor → politics & the ruler roll →
-  religion & magic; the settlement trim and the world frame both
-  shipped 2026-08-07 — every settleable call settled up front in its
+  is a ladder implementing what is left of worldsim.md —
+  the economy floor → politics & the ruler roll →
+  religion & magic; the settlement trim and the world frame shipped
+  2026-08-07 and the weather 2026-08-08 — every settleable call settled
+  up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
   technology postponed past the build). The ladder RENUMBERS itself as
   rungs ship: name a session, never its number. **Nothing implemented lives
@@ -261,7 +262,11 @@ a pointer: what the file is, how it's run, where its docs are.
   resolves Room contents, tracks knowledge, and applies place-state mutation
   — whose state records carry a `since` day stamp and an optional `slot`
   since the world frame (same day), so a land's world states and a place's
-  states are one record shape and one readout.
+  states are one record shape and one readout. Its `ENVIRONMENT_PROFILES`
+  also AUTHOR THE WEATHER (2026-08-08): per-environment day-roll weights
+  over `worldsim.WEATHER_WORDS` (the climate sentence in numbers,
+  year-round — there is no season track) plus `drought_days`, how many
+  rainless days that ground calls a drought.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: all six Land/Area
   records, required settlement Site/Room skeletons, natural three-Site
@@ -272,8 +277,10 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
-- `worldsim.py` — **the world layer: the worldsim build's FRAME**
-  (2026-08-07, rules.md's The World Layer add-on): the `card` and
+- `worldsim.py` — **the world layer: the worldsim build's FRAME and its
+  WEATHER**
+  (2026-08-07 / 2026-08-08, rules.md's The World Layer and Weather
+  add-ons): the `card` and
   `relation` record constructors and their import-time validation, the
   state vocabulary (`STATE_WORDS`) with its exclusive slots
   (`STATE_SLOTS`), the 2d6 wealth roll (`roll_wealth` / `WEALTH_BANDS`)
@@ -288,7 +295,20 @@ a pointer: what the file is, how it's run, where its docs are.
   (`land_lines` — the state diff on the map page — and `world_lines` —
   the DM inventory behind `world`). Seed content: two to four economy
   cards a land and nine trade relations, lifted from worldsim.md's
-  packets. The sims and benches never import it; every knob is hand-set.
+  packets. **The weather rung** (2026-08-08) added THREE TRACKS over one
+  land — `TRACKS` / `DECK_KEY` / `LIVE_KEY`, so a storm never blocks a
+  harvest failing nor a season of drought a storm — and with them the
+  sky: `WEATHER_WORDS` / `WEATHER_LOCAL` (the dwarves' storm reads as a
+  snowstorm), `weather_weights` / `roll_weather` / `_roll_sky` (the day
+  roll, the wet and dry spells, a card that IS the weather holding it),
+  `weather_of` / `weather_line` / `exposed` / `storming`, the eight
+  authored weather and season cards, `named_necromancer` (THE FOG RAISES
+  BONES' one face, kept on the land record), `travel_delay` (the road
+  costing a day to a ford or a dust storm), and `cabin` /
+  `shelter_roll` (the storm night's table, a sight plus a DM-eyes note).
+  `card()` grew `track` / `chance` / `wet` / `dry` / `sky` / `hook`, and
+  `land` now takes a tuple or `ANY_LAND`. The sims and benches never
+  import it; every knob is hand-set.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -307,6 +327,20 @@ a pointer: what the file is, how it's run, where its docs are.
   lifting with its cause), the lazy roll's identity and idempotence, the
   news told once, the state diff, and the session wiring (the board's
   clock rolls the world, the news reaches the party, `world` exists).
+  *The weather* (2026-08-08): the day roll against the environment
+  profile's own weights, the two spell counters and what breaks which,
+  the drought bending the roll that made it, the three tracks and their
+  separate live slots, the deck's `chance` (rare, not never, and it stays
+  in the deck when it misses), the authored cards (the ford's spell, the
+  fire wanting the drought and the scar outliving it, the fog's one kept
+  necromancer), the DISEASE family end to end (deepening bounded at
+  pneumonia, the ceiling instead of a tick, the night's shake on a
+  non-inflating stat, the roof, the smog that gets under it, the
+  healer's tier gate), the storm's shot penalty and slip save (and that
+  a cast and steel are untouched), and the surfaces — the sky on the
+  state diff, the cabin table whose sinister row never announces itself,
+  the road that costs a day, and the storm riding a paused fight to its
+  resume.
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -1270,6 +1304,27 @@ mechanic *does* and *why* is rules.md's job.
   four points news lands (travel arrivals, tavern, downtime, board), the
   land state line in `map_sheet_lines`, and `cmd_world` (the DM
   inventory). `test_worldsim.py` is the contract.
+- **The weather** (2026-08-08, the worldsim ladder's first content rung —
+  rules.md's Weather add-on) — `worldsim.py`: the three tracks and the
+  sky (see Files); the knobs are the two spell tables,
+  `DROUGHT_WET_MULT` / `DROUGHT_DRY_BONUS`, `SHELTER_CHANCE` and each
+  card's own `chance`. `places.py`: `ENVIRONMENT_PROFILES` gained
+  `weather` and `drought_days` — the profiles author the climate, the
+  world layer rolls it. `rpg.py`: the DISEASE family (`DISEASE_KINDS` in
+  `CONDITION_KINDS`, `catch_chill` / `shake_disease` / `treat_disease` /
+  `exposure_check`, `Entity.disease_load` / `.sick`, `hp_ceiling` docking
+  it, `_tick_conditions` skipping it, `long_rest`'s `sky=` / `sheltered=`
+  running the shake and the exposure and no longer sweating an illness
+  out, `tavern_rest`'s `sky=`), and the storm (`Entity.storm_pen`,
+  `group_combat(weather=)` setting it on both sides, the shot term in
+  `Entity.pressure`, the slip save in the movement phase,
+  `_clear_fight_states` taking it off). `session.py`: `sky_here` /
+  `exposure_sky` / `fight_sky` / `weather_note` / `shelter_here`, the
+  sky and shelter threaded into travel / explore / camp / tavern /
+  downtime / healer nights, `worldsim.travel_delay` in `cmd_travel`,
+  `heal_the_sick` in `cmd_healer`, and `weather` carried through
+  `resolve_encounter` and the `pending` save so a paused storm fight
+  resumes in the same storm. `test_worldsim.py` is the contract.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -1795,6 +1850,30 @@ above.**
   worlds open with at least one land in crisis. **The dial if the world
   reads dead at the table is `CARD_CHANCE['normal']`** — a starting land
   is normal or prosperous five times in six, and that is by design.
+- **The weather is bench-invisible too (2026-08-08, the ladder's first
+  content rung).** Same construction, one step further: no bench passes a
+  `sky` to `long_rest` or a `weather` to `group_combat`, so both default
+  to "" and every branch the rung added is dead code in a sim. Verified
+  against the pre-change tree by a fixed-seed 120-trial fight+rest
+  harness — byte-identical (benchlog 2026-08-08), and `bench_bestiary`
+  re-run in family. Its knobs are hand-set and SIM-UNVERIFIED. In
+  `places.ENVIRONMENT_PROFILES`: the per-environment `weather` weights
+  (the climate sentence in numbers, year-round — the game has no season
+  track) and `drought_days` (15/15/12/25/20, each set so a drought is
+  about a one-in-a-hundred day on THAT ground — a fixed threshold cannot
+  serve a rainforest and a dry south at once). In `worldsim.py`:
+  `WET_WEATHER` / `DRY_WEATHER` and the two spell counters,
+  `DROUGHT_WET_MULT` 0.15 / `DROUGHT_DRY_BONUS` 1.35 (the state bending
+  the roll that made it), `SHELTER_CHANCE` 0.45, and each weather card's
+  own `chance` (the fog's bones 0.05 is what keeps the supernatural
+  rare). In `rpg.py`: `EXPOSURE_DC` (rain 8 / frost 9 / snow 10 / storm
+  11 / smog 10 vs 2d6 + STR), `DISEASE_LOAD` (cold 2, pneumonia 5, off
+  the HP ceiling), `DISEASE_SHAKE_DC` 13 / `_STEP` 2 / `_BED_BONUS` 2,
+  `DISEASE_FEE` 15 and `DISEASE_REACH`, `STORM_SHOT_PENALTY` 2 /
+  `STORM_SLIP_DC` 10, `SAT_FOUL_WEATHER` −1. **The dial if the road
+  reads too punishing is `EXPOSURE_DC`** — every value there is one
+  2d6 step, and STR is flat 3–6 across all twenty levels, which is why
+  the family reads STR and not the STA pool.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

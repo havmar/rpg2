@@ -90,6 +90,7 @@ from rpg import (
     Clock, CombatLog, Purse, Entity, Weapon, POTION_KINDS, WEAPONS,
     Condition, condition_tags,
     Wound, wound_tags, wound_morale, healer_service as _healer_service,
+    DISEASE_KINDS, DISEASE_FEE, DISEASE_REACH, CONDITION_TAG, treat_disease,
     HEALER_FEE, HEALER_TIER_CAP, HEALER_DAYS, SALVE_PRICE,
     SHOP_POTION_KINDS, BED_SEVERITY_PER_NIGHT,
     POTION_PRICE,
@@ -389,6 +390,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "crime": pending.get("crime"),
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
+        "weather": pending.get("weather", ""),
         "align": pending.get("align", "neutral"),
         "mercy": pending.get("mercy"),
         "pause_kind": pending.get("pause_kind", "normal"),
@@ -417,6 +419,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "crime": d.get("crime"),
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
+        "weather": d.get("weather", ""),
         "align": d.get("align", "neutral"),
         "mercy": d.get("mercy"),
         "pause_kind": pause_kind,
@@ -2098,7 +2101,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       quest: str | None = None,
                       crime_take: dict | None = None,
                       field: int = 0, align: str = "neutral",
-                      mercy: str | None = None) -> None:
+                      mercy: str | None = None,
+                      weather: str = "") -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE once, at the fight's first wounds crossing or at Fate's bargain
     (see play_orders) -- then award and
@@ -2107,7 +2111,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     encounter to a board quest: clearing the room advances its cursor.
     `field` is the fight's opening gap (ranged combat: ROOM_FIELD indoors,
     the engagement's outcome in the wilds) -- persisted with a paused
-    fight so the resume stands on the same ground. `mercy` ("law"/"hell")
+    fight so the resume stands on the same ground, and `weather` rides
+    beside it for the same reason (a storm the fight opened in is still
+    blowing when the player resumes it). `mercy` ("law"/"hell")
     marks a POSSE fight: an eligible loss uses its authored mercy."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
@@ -2117,7 +2123,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     fired: set[tuple[str, Entity]] = set()
     pause = group_combat(living, foes, rng, log, pause_triggers=True,
                          fired=fired, standing_orders=play_orders(False),
-                         field=field)
+                         field=field, weather=weather)
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
@@ -2126,6 +2132,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             "crossings": [(k, h.name) for k, h in pause.crossings],
             "dead_before": dead_before,
             "field": field,
+            "weather": weather,
             "align": align,
             "mercy": mercy,
             "pause_kind": pause.kind,
@@ -2611,6 +2618,71 @@ def conquest_news(state: dict) -> None:
 # The world layer (2026-08-07 -- worldsim.py, the worldsim build's frame)
 # --------------------------------------------------------------------------- #
 
+def sky_here(state: dict) -> str:
+    """Today's weather word over the land the party stands in, with the world
+    brought up to today first so it is TODAY's sky and not the one it had
+    when the party last looked. "" when there is no world yet."""
+    world = state.get("world")
+    if not world or not state.get("position"):
+        return ""
+    worldsim.roll_world(world, state["clock"].day)
+    return worldsim.weather_of(world, state["position"]["land"])
+
+
+def exposure_sky(state: dict) -> str:
+    """The sky a night is PAID for, which is not always the sky overhead: a
+    mill town under SMOG charges the same lungs a rainy hillside does, and a
+    roof is no answer to it (rpg.INDOOR_SKY)."""
+    world = state.get("world")
+    if not world or not state.get("position"):
+        return ""
+    polity = state["position"]["land"]
+    if "smog" in worldsim.state_ids(world, polity):
+        return "smog"
+    return worldsim.weather_of(world, polity)
+
+
+def fight_sky(state: dict) -> str:
+    """The weather THIS fight is fought in -- the storm's field penalties
+    (rpg.group_combat's `weather`). Outdoors only: a room, a cellar or a
+    barrow has no sky in it, and the party is under one exactly when it is
+    not standing inside a site."""
+    if (state.get("position") or {}).get("site"):
+        return ""
+    return sky_here(state)
+
+
+def weather_note(state: dict) -> None:
+    """The one line the party reads about the sky, where the sky matters --
+    setting out, a day afield, a night in the open. `map` and `world` carry
+    it as state; this is the SIGHT."""
+    world = state.get("world")
+    if not world or not state.get("position"):
+        return
+    worldsim.roll_world(world, state["clock"].day)
+    line = worldsim.weather_line(world, state["position"]["land"])
+    if line:
+        print(f"  {line}")
+
+
+def shelter_here(state: dict, log) -> dict | None:
+    """A storm night in the wilds rolls for a roof, and what the roof HOLDS
+    is worldsim's cabin table -- the storm's real content, since the penalty
+    is only ever the thing that drives you to the door.
+
+    Logs what the party SEES plus the DM's own line: the sinister row would
+    be no scene at all if the display gave it away, so the player-facing
+    half never does (the quest twist's rule, applied to a camp)."""
+    found = worldsim.shelter_roll(state["rng"])
+    if found is None:
+        return None
+    log_banner(log, f"  SHELTER: {found['sight']}",
+               ["SHELTER:"] + found["sight"].split())
+    log_banner(log, f"  (DM eyes only: {found['dm']})",
+               f"(DM eyes only: {found['dm']})".split())
+    return found
+
+
 def world_news(state: dict) -> None:
     """What the land the party stands in has heard since it last listened.
     Runs where news lands -- arrivals, settlement nights, the board, beside
@@ -2699,7 +2771,8 @@ def maybe_punish(state: dict) -> bool:
         log.append("  " + line)
     field = 0 if here is not None else WILD_FIELD
     resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
-                      field=field, align="dark", mercy="law")
+                      field=field, align="dark", mercy="law",
+                      weather=fight_sky(state))
     return True
 
 
@@ -2969,7 +3042,8 @@ def maybe_enforce(state: dict) -> bool:
         log.append("  " + line)
     field = 0 if here is not None else WILD_FIELD
     resolve_encounter(state, log, foes, wild_encounter_xp(posse_level),
-                      field=field, align="neutral", mercy="hell")
+                      field=field, align="neutral", mercy="hell",
+                      weather=fight_sky(state))
     return True
 
 
@@ -3478,7 +3552,8 @@ def crime_fight(state: dict, cat: dict, mark: dict, rec: dict,
         log.append("  " + line)
     field = 0 if local_settlement(state) is not None else WILD_FIELD
     resolve_encounter(state, log, foes, wild_encounter_xp(mark["level"]),
-                      field=field, align="dark", crime_take=rec)
+                      field=field, align="dark", crime_take=rec,
+                      weather=fight_sky(state))
 
 
 def cmd_crime(args: argparse.Namespace) -> None:
@@ -4295,7 +4370,9 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
                          banner: str, field: int = WILD_FIELD) -> None:
     """Run a wilderness encounter through the same machinery as any other
     (it can pause; retreat scatters it -- the road is not a room). `field`
-    is the engagement's opening gap (who noticed whom decides it)."""
+    is the engagement's opening gap (who noticed whom decides it), and the
+    SKY comes with it: a road fight is fought in whatever the world layer
+    rolled for the day (2026-08-08), which a fight inside a site is not."""
     party = state["party"]
     log = new_combat_log()
     open_fight(party, log)
@@ -4305,7 +4382,7 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
     for line in roster_lines(foes):
         log.append("  " + line)
     resolve_encounter(state, log, foes, wild_encounter_xp(level),
-                      field=field)
+                      field=field, weather=fight_sky(state))
 
 
 def wild_event(state: dict, chance: float, banner: str) -> bool:
@@ -4384,11 +4461,27 @@ def cmd_travel(args: argparse.Namespace) -> None:
             if target["land"] == state["position"]["land"]
             else TRAVEL_DAYS_CROSS)
     clear_sighting(state)
+    # What the weather costs the road (2026-08-08): a washed-out ford or a
+    # dust storm on either end of the leg is a day going round.
+    slow, why = worldsim.travel_delay(
+        world, [state["position"]["land"], target["land"]])
+    days += slow
     print(f"The party sets out for {target['name']} -- {days} day(s) on "
           f"the road, camping as they go.")
+    for line in why:
+        print(line)
+    weather_note(state)
     log = CombatLog()
     for _ in range(days):
-        _long_rest(state["party"], state["clock"], log, rng=state["rng"])
+        # Each night on the road is a night in the open: the sky it is spent
+        # under decides whether anyone catches a chill, and a storm night
+        # rolls the cabin table for a roof first.
+        sky = exposure_sky(state)
+        roof = (shelter_here(state, log)
+                if worldsim.storming(world, state["position"]["land"])
+                else None)
+        _long_rest(state["party"], state["clock"], log, rng=state["rng"],
+                   sky=sky, sheltered=roof is not None)
         storyteller_tale(state["party"], state["rng"], log)
         companions_brew(state, log)
         night_upkeep(state, log)
@@ -4452,6 +4545,7 @@ def cmd_travel(args: argparse.Namespace) -> None:
     conquest_news(state)        # word from the holdings travels with it
     world_news(state)           # and the land tells the party what moved
                                 # while it was on the road (the state diff)
+    weather_note(state)         # ...under whatever sky it is standing under
     crime_news(state)           # hell suggests work on arrival too
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
@@ -4479,8 +4573,13 @@ def cmd_explore(args: argparse.Namespace) -> None:
     here = current_area(state)
     print(f"The party explores {here['name']} and the roads beyond -- "
           f"a day afield, camping rough.")
+    weather_note(state)
     log = CombatLog()
-    _long_rest(party, clock, log, rng=rng)
+    sky = exposure_sky(state)
+    roof = (shelter_here(state, log)
+            if worldsim.storming(world, polity) else None)
+    _long_rest(party, clock, log, rng=rng, sky=sky,
+               sheltered=roof is not None)
     storyteller_tale(party, rng, log)
     companions_brew(state, log)
     night_upkeep(state, log)
@@ -4868,7 +4967,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
                          actions=actions or None,
                          standing_orders=play_orders(
                              pending.get("normal_pause_used", True)),
-                         field=pending.get("field", 0))
+                         field=pending.get("field", 0),
+                         weather=pending.get("weather", ""))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -4984,7 +5084,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                          first_round=pending["round"] + 1,
                          standing_orders=play_orders(
                              pending.get("normal_pause_used", True)),
-                         field=pending.get("field", 0))
+                         field=pending.get("field", 0),
+                         weather=pending.get("weather", ""))
     if pause is not None:
         pending["round"] = pause.round
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
@@ -5040,6 +5141,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
             # halves the visitor chance -- and, if the night holds, sleeps
             # the party as warm as a tavern.
             scout = survivalist_ground(party, state["rng"], log)
+            weather_note(state)
         print_play(log)
         if in_wilds:
             # A night in the wilds is not a night behind walls (2026-07-10):
@@ -5056,7 +5158,12 @@ def cmd_camp(args: argparse.Namespace) -> None:
         # A night behind walls is a BED on the treatment ladder (slice 3b) --
         # it knits a severity. A night in the wilds knits none, which is why
         # `camp --heal` can no longer make anyone whole out there.
-        _long_rest(party, clock, log, rng=state["rng"], bed=not in_wilds)
+        sky = exposure_sky(state)
+        roof = (shelter_here(state, log)
+                if in_wilds and worldsim.storming(
+                    state["world"], state["position"]["land"]) else None)
+        _long_rest(party, clock, log, rng=state["rng"], bed=not in_wilds,
+                   sky=sky, sheltered=roof is not None)
         if scout is not None:
             survivalist_comfort(party, scout, log)
         storyteller_tale(party, state["rng"], log)
@@ -5106,7 +5213,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
         return
     log = CombatLog()
     if not _tavern_rest(state["party"], state["clock"], state["purse"], log,
-                        rng=state["rng"]):
+                        rng=state["rng"], sky=exposure_sky(state)):
         print_play(log)
         return
     storyteller_tale(state["party"], state["rng"], log)
@@ -5162,7 +5269,8 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     # treatment ladder (slice 3b): the free settlement rung, one severity a
     # night, and the reason convalescence is a place you stay rather than a
     # number that ticks down anywhere.
-    _long_rest(party, clock, log, rng=state["rng"], bed=True)
+    _long_rest(party, clock, log, rng=state["rng"], bed=True,
+               sky=exposure_sky(state))
     storyteller_tale(party, state["rng"], log)
     companions_brew(state, log)
     night_upkeep(state, log)
@@ -5182,6 +5290,34 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     save(state)
 
 
+def heal_the_sick(party, purse, subtype: str, log) -> int:
+    """The healer's day, applied to the ILLNESS half (2026-08-08): the visit
+    breaks one disease outright per hero at DISEASE_FEE, and the same tier
+    cap that gates wounds gates it -- a village herb-wife can break a cold
+    and cannot touch a pneumonia (rpg.DISEASE_REACH). Returns how many
+    illnesses were broken."""
+    broken = 0
+    for h in party:
+        if h.dead or not h.sick:
+            continue
+        if purse.gold < DISEASE_FEE:
+            break
+        carrying = next(c.kind for c in h.conditions
+                        if c.kind in DISEASE_KINDS)
+        got = treat_disease(h, subtype)
+        if got is None:
+            log.append(f"    The healer can do nothing for {h.name}'s "
+                       f"{CONDITION_TAG[carrying]} -- that wants a bigger "
+                       f"town.")
+            continue
+        purse.gold -= DISEASE_FEE
+        broken += 1
+        log.append(f"    {h.name} is treated for {CONDITION_TAG[got]} "
+                   f"({DISEASE_FEE}g -- HP ceiling {h.hp_ceiling}/"
+                   f"{h.max_hp}).")
+    return broken
+
+
 def cmd_healer(args: argparse.Namespace) -> None:
     """A day with the settlement's healer (slice 3b, the treatment ladder's
     ACCESS rung). Costs the day and HEALER_FEE per severity closed, and the
@@ -5199,22 +5335,24 @@ def cmd_healer(args: argparse.Namespace) -> None:
     if occupied_here(state) is not None:
         print(occupation_line(state, here))
         return
-    if not any(h.wounds for h in state["party"] if not h.dead):
-        print("Nobody is carrying a wound. Save the fee.")
+    if not any(h.wounds or h.sick for h in state["party"] if not h.dead):
+        print("Nobody is carrying a wound or an illness. Save the fee.")
         return
     party, clock, purse = state["party"], state["clock"], state["purse"]
     subtype = here.get("subtype", "village")
     log = CombatLog()
     log.append(f"  The party spends the day with {here['name']}'s healer.")
     closed, spent = _healer_service(party, purse, subtype, log)
-    if not closed:
+    broken = heal_the_sick(party, purse, subtype, log)
+    if not closed and not broken:
         print("\n".join(log))
         return
     # The visit is a DAY, and a day is what a quest clock spends: it runs
     # the whole night path so the calendar, the board and the morale
     # bookkeeping all see it (a bed under a roof, on top of the treatment).
     _long_rest(party, clock, log, banner="The party sleeps in the healer's "
-                                         "care.", rng=state["rng"], bed=True)
+                                         "care.", rng=state["rng"], bed=True,
+               sky=exposure_sky(state))
     storyteller_tale(party, state["rng"], log)
     companions_brew(state, log)
     night_upkeep(state, log)

@@ -84,13 +84,14 @@ are quest furniture the board abstracts into level numbers, givers are
 faces attached after the roll, and the land notables do nothing. Combat,
 levelling and the quest system are judged good; this thread is where the
 world catches up. Its content companion is **`worldsim.md`** — what is
-still unbuilt of it: the weather system sketch and the designer's curated
+still unbuilt of it: the designer's curated
 land packets (economy, politics with the ruler character, religion,
 magic). The record kinds it opened with are `worldsim.py` and rules.md's
-The World Layer now. The remaining order below is the ladder that
+The World Layer now, and the weather it sketched is rules.md's Weather.
+The remaining order below is the ladder that
 implements the rest. (designlog carries the trail: the 2026-08-05 framing, the
-2026-08-06..07 content dumps, and the 2026-08-07 sessions C and D that
-turned the thread into this build.)
+2026-08-06..07 content dumps, the 2026-08-07 sessions C and D that
+turned the thread into this build, and the rungs shipped since.)
 
 ### The framing (settled 2026-08-05)
 
@@ -184,8 +185,8 @@ the PC's blank sheet stays open, parked below.
 
 ### The ladder
 
-Four sessions, in order — together they implement worldsim.md whole,
-minus the waits above. Each leaves the game playable and lands its
+Three sessions, in order — together they implement what is left of
+worldsim.md, minus the waits above. Each leaves the game playable and lands its
 contracts in `test_worldsim.py`, the build's own suite, which no sim or
 bench imports (the karma doctrine). Per-session lifecycle: played rules
 to rules.md, the shipped entries CUT from worldsim.md, new files
@@ -197,29 +198,21 @@ What the shipped rungs left the rest to build on (rules.md owns the
 rules, `worldsim.py` and `places.py` the code): the reserve pool and the
 need-to-exist draw — `places.materialize_settlement` /
 `quests.found_settlement` — for when a relation or a card names a place
-the world does not hold yet (the settlement trim, 2026-08-07); and the
+the world does not hold yet (the settlement trim, 2026-08-07); the
 world frame itself (same day) — `worldsim.card` / `worldsim.relation`,
 the per-land wealth band, day-stamped states with their exclusive slots,
 the crisis deck's draw on need, the relations table, the roll points
 inside `board_clock`, and the two shipped surfaces (the `WORD FROM
-<LAND>` news line, the state diff on `map` and `world`). The sessions
-below AUTHOR CARDS AND EDGES against that frame; the three outlets the
-frame carries but does not apply — quest, priced menu, encounter table —
-are the economy floor's to wire.
+<LAND>` news line, the state diff on `map` and `world`); and the WEATHER
+(2026-08-08) — the day roll off the environment profiles, the three
+card TRACKS (a weather and a season deck beside the crisis one, so a
+storm never blocks a harvest failing), the `wet`/`dry` spell admits, the
+DISEASE family in `rpg.py`, and the DROUGHT state the relations below are
+to read. The sessions below AUTHOR CARDS AND EDGES against that frame;
+the three outlets the frame carries but does not apply — quest, priced
+menu, encounter table — are the economy floor's to wire.
 
-1. **Weather.** worldsim.md's named first-slice candidate — land-
-   agnostic, self-contained, touches every outlet, and the smallest
-   curation bill on the board. The day roll against the current land's
-   climate distribution (placegen's environment profiles author it;
-   unread until now); BIG RAIN and the cabin table; CAUGHT COLD cashing
-   the attrition rework's parked DISEASE family (the conditions
-   framework's third; bounded deepening to PNEUMONIA); STORM PENALTIES
-   (one field knob, one save); THE FORD IS OUT; DROUGHT as the season-
-   scale state the economy floor's relations read; the adopted trio (WILDFIRE,
-   DUST STORM, SMOG SETTLES); and THE FOG RAISES BONES with its rumor
-   address kept cheap — a named necromancer in the land record, no
-   landmark machinery.
-2. **The economy floor.** The thread's two invariants land here: the
+1. **The economy floor.** The thread's two invariants land here: the
    BOARD reacts to world state, and something moves WITHOUT the player
    taking a job — visibly on return. Per-land floor content from the
    econ packets, up from the frame's seed of two to four a land, to the
@@ -233,7 +226,7 @@ are the economy floor's to wire.
    the states the next card admits on, which the frame's admitting
    conditions already read. The two waiting cards (the robot servants,
    sulfur-to-Hell) stay in worldsim.md under their rulings.
-3. **Politics & the ruler roll.** The constitution slot and the land
+2. **Politics & the ruler roll.** The constitution slot and the land
    tension roll at worldgen (the gate admitting politics cards to the
    deck — nothing before this session needs either, which is what kept
    the frame lean), the faction edges as authored data, THE RULER CHARACTER rolled
@@ -246,7 +239,7 @@ are the economy floor's to wire.
    text, and the war feed: casus belli lines beside story.py's rolled
    aggressor, the diplomatic instruments as relation edges, the
    succession cluster on the adopted succession-state circumstance.
-4. **Religion & magic.** The Sun communion frame and the per-land
+3. **Religion & magic.** The Sun communion frame and the per-land
    worship facts and options — temple services as plain priced-menu
    entries (healing, burial, blessing; no sin/penance wiring) — and the
    religion cards that need no new creature rows. The magic packets: the
@@ -433,11 +426,11 @@ was parked out of it is additive to the shipped schemas:
   already a seed field, so the schema cost is paid: what remains is the
   item content and the above-cap rule. Note the synergy with non-weapon
   magic items (the After-that list) — a magic item with a scar attached.
-- **Disease** as a third condition family beside poison and bleed —
-  QUEUED: the worldsim ladder's weather session cashes it as CAUGHT COLD
-  deepening to PNEUMONIA.
 - **Infection / wound complications over time** — an untreated wound
-  worsening rather than merely persisting; natural once disease exists.
+  worsening rather than merely persisting. Disease now exists (the
+  weather rung's cold and pneumonia — rules.md's Weather), so this is
+  unblocked: the shape to reuse is the nightly shake roll, run the
+  other way.
 - **Removing HP from the MODEL.** The played surfaces already band it
   into a state word; the model keeps the scalar, and the settled
   decision above says why.
