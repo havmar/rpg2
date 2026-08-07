@@ -1,9 +1,11 @@
 # World Simulation — content resource & framework
 
 The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
-build order and the design-session agenda; designlog's 2026-08-05
-entries own the reasoning; THIS file holds the pre-implementation
-material — the record framework the design session will formalize, the
+build order — since 2026-08-07 the implementation ladder, the
+monolithic design session dissolved into per-session rulings;
+designlog's 2026-08-05..07 entries own the reasoning; THIS file holds
+the pre-implementation material — the record framework the ladder's
+frame session will formalize, the
 weather system sketch, the curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
@@ -58,7 +60,8 @@ draw never contradicts a held slot.
 
 - **Land wealth** — rolled per land at worldgen on a weighted middle
   (e.g. 2d6: 2-4 CRISIS ~17%, 5-9 NORMAL ~67%, 10-12 PROSPEROUS ~17%;
-  the exact die is the design session's call). Wealth is a STATE, not
+  the exact die is a head call of the ladder's frame session,
+  plan.md). Wealth is a STATE, not
   a constant — cards and seasons can move it.
 - **Crisis content** — a land in CRISIS (rolled or pushed there)
   draws from its own deck. NORMAL and PROSPEROUS stay mostly
@@ -355,7 +358,8 @@ Sillon industriel analogue: crowded, industrial, chaotic.
 The politics layer's first half: WHO holds power, as a rollable
 character schema. The other half — authority KIND, standing tension,
 and the wiring of a person's traits into cards — stays with the
-design session's identity-schema agenda. Provenance: the designer's
+identity-schema agenda, now the ladder's authority session (plan.md).
+Provenance: the designer's
 historical-monarch trait catalog (~130 raw entries across ten
 headings), merged and classified 2026-08-06; the probability column
 landed the same day from the parallel dataset session — 734 European
@@ -747,7 +751,8 @@ captivity or exile. Two additions:
 - The wiring — which cards admit on which words, the authority
   kind/tension schema, and whether the land RULER notable (the
   first intended consumer, doing nothing since 2026-07-12) rolls
-  this at worldgen: the design session's business.
+  this at worldgen: the authority session's business (plan.md's
+  ladder).
 - Ordinary dict NPCs stay BLANK — givers and service faces carry no
   traits (spec B's rollback stands; the characteristic criterion:
   rulers are card-backed, givers are not). The schema serves the
@@ -780,7 +785,8 @@ humans, herding orcs, mining dwarves — and worldgen ROLLS the
 color, so no single land carries all its weirdness in one
 playthrough, and the same land comes up a different flavor of
 itself across playthroughs. Three pieces make that concrete, all
-idea-level until the design session formalizes or overrules them:
+idea-level until the ladder's authority session formalizes or
+overrules them:
 
 - **The constitution slot** — one per land, exclusive (the
   wealth-band pattern), rolled at worldgen on a default-heavy die.
@@ -2119,13 +2125,13 @@ law (the dedupe doctrine). This packet adds two facts and an edge:
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
-technology.** Politics first: the design session's authority /
-disposition / tension schema (jerkify, bullies) already needs it, and
-half the economy cards above lean on a political actor. (2026-08-06:
-BOTH halves are dumped — THE RULER CHARACTER and THE LAND PACKETS —
-POLITICS above; what remains is the design session's formalization —
-the constitution/tension/faction records, the trait-to-card wiring —
-and the per-land ruler modifier columns.) Religion is dumped too
+technology.** Politics first: the authority / disposition / tension
+schema (jerkify, bullies) already needs it, and half the economy
+cards above lean on a political actor. (2026-08-06: BOTH halves are
+dumped — THE RULER CHARACTER and THE LAND PACKETS — POLITICS above;
+what remains is the formalization — the constitution/tension/faction
+records and the trait-to-card wiring sit in the ladder's authority
+session, plan.md — and the per-land ruler modifier columns.) Religion is dumped too
 (2026-08-06, THE LAND PACKETS — RELIGION above): worship and rite
 only, the political overlap having gone to politics; the
 temple-service/penance wiring and anything hell-shaped are

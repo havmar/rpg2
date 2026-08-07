@@ -102,9 +102,9 @@ Concretely:
    item 1): the probe now tests the retro style AND the dark content at
    once — the first ten messages, the first three levels.
 4. **The macro-game design session.** *(2026-08-05: this item became
-   its own thread — THE WORLD & NPC SIMULATION below. The framing is
-   settled there; what remains of this entry is holding the session
-   that section's agenda describes.)*
+   its own thread — THE WORLD & NPC SIMULATION below. 2026-08-07: the
+   held-back session dissolved into that thread's implementation
+   ladder; nothing remains of this entry.)*
 
 ---
 
@@ -120,8 +120,11 @@ three-trait sketch on NPCs is unbacked flavor the DM has to perform.
 Combat, levelling and the quest system are judged good; this thread is
 where the world catches up. The thread's content companion is
 **`worldsim.md`** (2026-08-05): the record-kind framework, the weather
-system sketch, and the designer's curated land economy packets,
-awaiting the design session.
+system sketch, and the designer's curated land packets — economy,
+politics (the ruler character and the power half), religion, and magic
+(2026-08-05..07). Since 2026-08-07 the thread is in implementation
+prep: the remaining order below is the SESSION LADDER, and the
+once-planned monolithic design session is dissolved into it.
 
 ### The framing (settled 2026-08-05)
 
@@ -187,83 +190,143 @@ gift) for the played rules, **develop.md**'s dev map for the code index,
 **designlog.md**'s 2026-08-05 build entry for the reasoning trail
 (including the two implementer's calls — the caster's focus-staff reward
 and the career spellbooks — each behind one constant), and
-**`test_start.py`** for the contracts. The only thing this thread still
-owes the specs is the design session's question below: what dict NPCs
-carry INSTEAD of the sketch — and now the PC's blank sheet asks it a
-second time.
+**`test_start.py`** for the contracts. The question the specs left open
+— what dict NPCs carry INSTEAD of the sketch — is ANSWERED as of
+2026-08-07 (the ladder note below): the authority tier rolls THE RULER
+CHARACTER, ordinary givers stay blank, and only the PC's blank sheet
+(a player-chosen background?) stays open, parked with the thread.
 
-### The remaining order
+### The remaining order — the implementation ladder (2026-08-07)
 
-1. **The settlement trim — settled 2026-08-05 as NEED-TO-EXIST
-   creation.** The designer's shape supersedes count-picking: a land
-   BEGINS with three settlements — one capital, one town, one village
-   — and further settlements materialize only when something needs
-   them to exist (a relation names a rival center of power, a card
-   needs a counterparty port), created generic with few unique
-   features. The authored catalog stops being the world's initial
-   census and becomes the RESERVE POOL those materializations draw
-   names and skeletons from — the same lazy-materialization pattern
-   places.py already runs for Sites and houses, lifted one tier.
-   Sized costs: `place_catalog.json` handling, placegen.md's counts,
-   `test_places`' count/ID contracts; worldgen posts one job per
-   settlement, so the opening board shrinks (the refill covers it);
-   conquest just has fewer holdings (garrisons are per-settlement
-   stable-seeded); the posting bands do not move (the parked
-   posting-band trim stays a separate item). No save survives anyway
-   (the standing rule).
-2. **The design session.** What it must settle, in order:
-   - **The identity schema** — now THREE-LEVELED (2026-08-05,
-     `worldsim.md`): LAND character is AUTHORED (the packets — a
-     problem axis, standing facts, relations), land WEALTH is a
-     rolled state (weighted middle: crisis / normal / prosperous),
-     and a land in trouble draws from its authored CRISIS DECK (the
-     pact-deck pattern). Settlement identity derives from the land
-     packet plus local tags and the settlement-level rolls: ONE
-     authority (kind, disposition, standing tension) and the visible
-     mutable states events flip. The authority's PERSON now has a
-     drafted schema — worldsim.md's THE RULER CHARACTER (2026-08-06),
-     one trait vocabulary serving crown, lord, and sheriff alike —
-     and kind/tension now have their raw material too: worldsim.md's
-     politics packets (2026-08-06 — the constitution slot, the
-     standing-tension roll, the faction-edge sketch); the session's
-     job is formalizing them into records. Normal and prosperous stay mostly
-     invisible — crisis is where content lives.
-   - **The event vocabulary** — the template shape (admitting
-     tags/states, a clock, the five-outlet effect list, a news line)
-     and the first ~20 templates. `worldsim.md` holds the raw
-     material: the weather sketch and the six land economy, politics,
-     religion, and magic packets; the session turns the designer's
-     cut of them into records.
-   - **Jerkify / the disposition axis** — NPC and authority
-     disposition with mechanical teeth: sin/heat modifiers by desert
-     (robbing the extortionist books less; the beloved healer more,
-     plus news), surfaced by `case`. A DISTRIBUTION, not uniform
-     rudeness — choosing targets by casing IS the vigilante game. The
-     lore hook already stands (dm.md: Order is often not Good).
-   - **Bullies** — a named high-level jerk defeats the party and is
-     remembered; revenge comes later. Mechanically nearly free: the
-     ferocity-0 mercy IS the encounter (purse taken, party left at
-     1 HP); what's needed is the spawn hook, the face persisting (the
-     record page), and an address for revenge (the priced menu).
-     Inverts the shelved nemesis — the grudge is the PLAYER's, which
-     fixes its motivation problem.
-   - **What dict NPCs carry** in place of the trait sketch (spec B shipped
-     the removal 2026-08-05; the replacement is still open, and now the
-     PC's own blank sheet asks the same question a second time). For the
-     AUTHORITY tier the answer is drafted: worldsim.md's THE RULER
-     CHARACTER (2026-08-06) — the rollable trait sheet, now carrying
-     the human-crown / Firascir baseline weights measured from the
-     designer's 443-ruler dataset and the shrinking-pool draw;
-     per-land modifier columns pending. Ordinary givers and service faces
-     stay blank (the characteristic criterion: rulers are card-backed,
-     givers are not).
-   - **The landmark-problems tie-in** (the queued section below): a
-     standing authored problem is the strongest identity a natural
-     Area can carry; decide whether it rides this thread.
-3. **Sim slice 1** (after the session): the identity roll, the event
-   roll at arrivals and news points, the first template set, the
-   news/board/price hookups, the state readouts. Contracts in a new
-   suite; the sims and benches never import it (the karma doctrine).
+*(Rewritten 2026-08-07, the implementation-prep session — designlog's
+session C entry has the reasoning. The old order here was trim → THE
+DESIGN SESSION → sim slice 1; the monolithic design session is
+DISSOLVED, because the 2026-08-05..07 dumps answered most of its
+agenda out from under it. What it still owed splits three ways:
+formalization that is the frame session's natural first job (the
+record schemas as data); a short list of genuine designer rulings,
+each listed at the head of the session that needs it; and the
+curation picks, which are per-slice by nature — the designer cuts the
+handful of records a session implements at that session's head, never
+the whole ~2,100 idea-level lines in one pass (fewer hand-picked
+elements beat coverage, applied to scheduling). Where the old agenda
+went: the identity schema's LAND level is drafted whole in worldsim.md
+and the SETTLEMENT level's missing half is session 5's authoring work;
+the event vocabulary is sessions 2–4; jerkify and bullies are session
+5; what-dict-NPCs-carry is ANSWERED — the authority tier rolls THE
+RULER CHARACTER, ordinary givers and service faces stay blank (the
+characteristic criterion: rulers are card-backed, givers are not) —
+with the PC-background question parked below; the landmark-problems
+tie-in is decided at the politics content pass, not before.)*
+
+Five sessions, in order. Each leaves the game playable and lands its
+contracts in a new test suite that no sim or bench imports (the karma
+doctrine). Per-session lifecycle: played rules to rules.md, the
+shipped entries CUT from worldsim.md, new files registered in
+develop.md's Files, a designlog entry.
+
+1. **The settlement trim** (spec settled 2026-08-05 as NEED-TO-EXIST
+   creation; no designer input left). A land BEGINS with three
+   settlements — one capital, one town, one village — and further
+   settlements materialize only when something needs them to exist (a
+   relation names a rival center of power, a card needs a counterparty
+   port), created generic with few unique features. The authored
+   catalog stops being the world's initial census and becomes the
+   RESERVE POOL those materializations draw names and skeletons from —
+   the same lazy-materialization pattern places.py already runs for
+   Sites and houses, lifted one tier. Sized costs:
+   `place_catalog.json` handling, placegen.md's counts, `test_places`'
+   count/ID contracts; worldgen posts one job per settlement, so the
+   opening board shrinks (the refill covers it); conquest just has
+   fewer holdings (garrisons are per-settlement stable-seeded); the
+   posting bands do not move (the parked posting-band trim stays a
+   separate item). No save survives anyway (the standing rule).
+2. **The world frame.** The record schemas become data and the save
+   grows its world layer; minimal content, because the frame is the
+   product. A new module (name the build's call) owning: the card /
+   state / relation record shapes (admitting conditions over land,
+   wealth, states, weather; up to five outlet effects; the optional
+   day-stamp clock — facts and options ride the authored packet data);
+   per-land save state (`wealth`, day-stamped `states`, the shuffled
+   crisis `deck`, the drawn-card record); the wealth roll at worldgen;
+   the relations table with derived states computed at read time; the
+   deck draw on need under CRISIS (the pact-deck pattern; exclusive
+   slots never contradicted); and the roll points — settlement
+   arrivals, nights, travel legs, where raids, the refill and
+   `conquest_news` already fire. Surfaces: the news line and the
+   STATE DIFF readout on the existing pages. Seed content: two or
+   three econ cards per land, lifted from the packets, proving the
+   loop end to end.
+   *Head calls:* the wealth die (2d6 — 2-4 CRISIS / 5-9 NORMAL /
+   10-12 PROSPEROUS — proposed as the default; a knob thereafter) and
+   the seed-card picks.
+3. **Weather.** worldsim.md's named first-slice candidate —
+   land-agnostic, self-contained, touches every outlet, and the
+   smallest curation bill on the board. The day roll against the
+   current land's climate distribution (placegen's environment
+   profiles author it; unread until now); BIG RAIN and the cabin
+   table; CAUGHT COLD cashing the attrition rework's parked DISEASE
+   family (the conditions framework's third; bounded deepening to
+   PNEUMONIA); STORM PENALTIES (one field knob, one save); THE FORD
+   IS OUT; DROUGHT as the season-scale state session 4's relations
+   read. THE FOG RAISES BONES can ride (skeletons are already in the
+   catalog) if its rumor address stays cheap — a named necromancer in
+   the land record, no landmark machinery.
+   *Head calls:* the [PROPOSED] trio (wildfire, dust storm, smog),
+   the fog card in or out, the cold's condition numbers.
+4. **The economy floor.** The thread's two invariants land here: the
+   BOARD reacts to world state, and something moves WITHOUT the
+   player taking a job — visibly on return. Per-land floor content
+   from the econ packets (the asymmetry doctrine's floor: three-plus
+   crisis cards, one or two relations, one flavor anchor per land —
+   the ~20-template first pass), the full five-outlet hookups (post /
+   cancel / reprice on the board, priced-menu terms reading states,
+   local encounter-table entries, news lines, state flips), relations
+   live (a Firascir drought sets grain-scarce down its grain edges),
+   and card CHAINS (the plague and famine chains — a card setting the
+   states the next card admits on).
+   *Head calls:* the per-land card picks (the curation, scoped to
+   econ) and the flagged econ calls (orc horses, the robot servants'
+   tone, sulfur sold to Hell).
+5. **Authority & jerkify.** The person and the power. The RULER ROLL
+   as specced (the 357 pool, the shrinking-pool draw — three for a
+   crown, two for lesser authorities — derived `heart`, the
+   affliction cap, the origin stamps; the Firascir baseline serves
+   every land until the modifier columns are authored). The
+   SETTLEMENT AUTHORITY roll — kind, disposition (the trait draw),
+   standing tension — whose kind/tension VOCABULARY is the one
+   genuinely unauthored piece the thread has left: this session's
+   authoring half. The land politics frame: the constitution slot and
+   the land tension roll (the gate admitting politics cards to the
+   deck — sessions 2–4 need neither, which is what keeps the frame
+   lean). JERKIFY's teeth: sin/heat modifiers by desert off `heart`,
+   surfaced by `case` — a DISTRIBUTION, not uniform rudeness;
+   choosing targets by casing IS the vigilante game (the lore hook
+   stands, dm.md: Order is often not Good). The BULLY if it fits (the
+   ferocity-0 mercy IS the encounter — purse taken, party left at
+   1 HP; what's needed is the spawn hook, the face persisting on the
+   record page, and a revenge address on the priced menu — the grudge
+   is the PLAYER's, which fixes the shelved nemesis's motivation
+   problem); otherwise it is the first follow-on.
+   *Head calls:* the authority-kind vocabulary cut, the jerkify
+   numbers, bully in or out.
+
+**After the ladder — content passes on the standing machinery,** each
+opening with its own pick list: politics cards and the war feed (they
+admit on session 5's tensions), religion (facts and options are
+mostly free color and priced-menu entries; its cards wait where they
+name creatures), magic (the recruiters, the wild talent, the hunt,
+the reagent trade wired into crime). The MONSTERS & FAUNA dump slots
+in before whichever pass needs it (the draugr, the knockers, Tergal's
+grave-made ghosts are pre-ordered); SCIENCE & TECHNOLOGY stays
+deferred with the boundary it owes the magic packets; further dumps
+ride alongside the ladder on the designer's initiative. The
+LANDMARK-PROBLEMS tie-in is decided at the politics pass.
+
+**Still open, parked with the thread:** the PC's blank sheet (a
+player-chosen background?); the per-land ruler modifier columns and
+the tribal rewording; temple services and the penance wiring; hell's
+own treatment.
 
 ---
 
@@ -1067,7 +1130,7 @@ Foundations all shipped (magic, ranged, levelling); what stands:
   world — feeds the macro-game design session, retro roadmap 4.)*
   *(2026-08-05: CASHED as the event-pulse shape in THE WORLD & NPC
   SIMULATION section — the active thread now owns it; delete this
-  entry when sim slice 1 ships.)*
+  entry when the ladder's economy-floor session ships.)*
 - **Faction reputation** — designer has more to spec; nothing until
   then. *(Note: karma IS a first faction axis — law vs the party;
   spec the rest against it.)*
