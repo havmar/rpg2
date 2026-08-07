@@ -178,9 +178,10 @@ a pointer: what the file is, how it's run, where its docs are.
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
   is a ladder implementing what is left of worldsim.md —
-  politics & the ruler roll → religion & magic; the settlement trim and
-  the world frame shipped 2026-08-07, the weather 2026-08-08 and the
-  economy floor 2026-08-09 — every settleable call settled
+  religion & magic is the one rung left; the settlement trim and
+  the world frame shipped 2026-08-07, the weather 2026-08-08, the
+  economy floor 2026-08-09 and politics & the ruler roll 2026-08-10 —
+  every settleable call settled
   up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
   technology postponed past the build). The ladder RENUMBERS itself as
@@ -218,28 +219,10 @@ a pointer: what the file is, how it's run, where its docs are.
   wealth roll, the crisis decks, the relations table, the lazy rolls —
   all `worldsim.py` and rules.md's The World Layer now) and the two
   constructor signatures the packets are written against; what follows
-  is what is still unbuilt — the weather system sketch, the
+  is what is still unbuilt — the leftovers of the
   six curated land economy packets (designer-authored,
   assistant-classified; additions marked [PROPOSED] for the designer
-  to cut), and — since 2026-08-06 — THE RULER CHARACTER, the politics
-  dump's person half: the rollable trait sheet (axes with unnamed
-  neutral middles, flags, scope marks, `heart` derived from demoted
-  moral tags), the shrinking-pool draw (three traits per ruler, two
-  per lesser authority; opposites and never-withs leave the die
-  between draws), the range doctrine (vivid over generic; rarity
-  priced by cells, never cut — the afflictions stay uncollapsed),
-  its annotated merge ledger over the designer's historical-monarch
-  catalog, and the human-crown / Firascir baseline weights measured
-  2026-08-06 from the designer's 443-ruler dataset (pool 357;
-  per-land modifier columns pending) — and, same day, THE LAND
-  PACKETS — POLITICS, the dump's power half: the selection doctrine
-  (packets are pools; worldgen rolls the color), the constitution
-  slot with per-land defaults and variants, the standing-tension
-  roll gating each land's one crisis deck, the faction-edge sketch
-  (the designer's worked model), the land-agnostic war feed (casus
-  belli, diplomatic instruments, succession crises), and six curated
-  political packets cross-wired into the econ packets, the ruler
-  sheet, and the crime/mercy/war layers — and, same day, THE LAND
+  to cut) — and, since 2026-08-06, THE LAND
   PACKETS — RELIGION: six worship/rite packets on the real-world
   mapping method (the Sun communion's two contesting rites, orcish
   shamanic practice, the dwarven ancestor church, the goblin
@@ -265,9 +248,11 @@ a pointer: what the file is, how it's run, where its docs are.
   consumes it session by session, every settleable call settled up
   front in plan.md's rulings block and the [PROPOSED] set adopted
   wholesale; shipped behavior belongs to `rules.md` and its section is
-  CUT from this file (the cuts so far, both 2026-08-07: the
-  need-to-exist settlement trim, and the record framework the world
-  frame formalized).
+  CUT from this file (the cuts so far: the need-to-exist settlement
+  trim and the record framework the world frame formalized, both
+  2026-08-07; the weather sketch 2026-08-08; the six econ packets'
+  cards and edges 2026-08-09; and THE RULER CHARACTER with THE LAND
+  PACKETS — POLITICS, 2026-08-10).
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes the opening settlements (three a land since the 2026-08-07
@@ -290,8 +275,26 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
-- `worldsim.py` — **the world layer: the worldsim build's FRAME and its
-  WEATHER**
+- `rulers.py` — **the ruler character: the politics rung's person half**
+  (2026-08-10, rules.md's Politics & the Ruler add-on): one weighted pool of
+  357 words (`AXES` / `EXTREMES` / `FLAGS`, flattened into `VOCABULARY` with
+  its `AXIS_WORDS` index and the `POOL_TOTAL` / `CROWNLESS_TOTAL` totals the
+  design is stated in and `validate_content` asserts), the shrinking-pool
+  draw (`pool` / `_pick` / `_strike` / `roll_ruler` — the drawn word, its
+  axis and its never-with partners leave, and the die shrinks by their
+  weights), the derived `heart` (`heart_of`, hidden in play — the crime
+  layer's desert anchor), the `AFFLICTIONS` family with its cap and the
+  `ORIGIN_STAMPS` a rolled affliction may carry, the `PUPPETEERS` colour
+  beside `puppet`, the two rolled circumstances (`ACCESSIONS` /
+  `roll_accession`, `SUCCESSIONS` / `roll_succession`, which reads the
+  traits and the accession through `SUCCESSION_READS` / `ACCESSION_READS`),
+  and the readouts (`trait_phrase` / `accession_line` / `ruler_lines`).
+  It imports NOTHING from the rest of the game — `worldsim.py` keeps the
+  rolled sheet on the land layer and `quests.py` casts the face that wears
+  it. `python rulers.py --seed 1 --count 8` (add `--lesser` for the two-draw
+  authority) is the eyeball check.
+- `worldsim.py` — **the world layer: the worldsim build's FRAME, its
+  WEATHER, its ECONOMY FLOOR and its POLITICS**
   (2026-08-07 / 2026-08-08, rules.md's The World Layer and Weather
   add-ons): the `card` and
   `relation` record constructors and their import-time validation, the
@@ -339,7 +342,32 @@ a pointer: what the file is, how it's run, where its docs are.
   authored edges. `_validate_quest` / `_validate_menu` /
   `_validate_encounter` / `_validate_menu_tables` police the new payload
   shapes at import (including the no-double-charging rule between a card's
-  own `menu` and `STATE_MENU`). The sims and benches never
+  own `menu` and `STATE_MENU`). **The politics rung** (2026-08-10, rules.md's
+  Politics & the Ruler add-on) made the land a POLITY: the frame is
+  `CONSTITUTIONS` (an exclusive slot per land, `roll_constitution` on a
+  default-heavy die, `constitution_of` / `constitution_spec` /
+  `set_constitution`), `TENSIONS` + `STANDING_TENSIONS` (`roll_tensions` —
+  one at worldgen, `CRISIS_TENSION_ROLLS` in crisis — and `_tension_gate`,
+  which is what decides whether a political card enters the land's deck at
+  all), `FACTIONS` / `FACTION_EDGES` (`factions_of` / `live_edges` — an edge
+  needs both ends in the rolled cast), and the RULER sheet on the land layer
+  (`ruler_sheet` / `ruler_traits` / `succession_of` / `set_succession`, off
+  `rulers.py`; `quests._cast_the_land` writes the notable's id onto it, so
+  the words and the face are joined without being stored twice). `card()`
+  grew five ANY-OF admits — `tension` / `constitution` / `traits` /
+  `succession` / `faction_edge` — and the state payload grew
+  `constitution` / `succession`. `_authority_hook` generalizes the fog
+  necromancer's naming trick to any card that has to name a lesser
+  authority (`named_authority` keeps him). The war feed is `CASUS_BELLI` /
+  `STANDING_CASUS_BELLI` / `roll_casus_belli` / `casus_belli_line` and
+  `post_news` (the one door into a land's news from outside the deck).
+  Readouts: `politics_lines` (the whole polity, on `world`) and
+  `notable_lines` (the ruler's PUBLIC half, under his face on the board).
+  `_validate_politics` / `_validate_politics_tables` police it at import.
+  The content bill went to 76 politics cards (31 of them Firascir's own, by
+  the asymmetry doctrine, and 5 crown-wide succession cards every crowned
+  land shares), 7 more relation edges including the four DIPLOMATIC
+  INSTRUMENTS, and 34 faction edges. The sims and benches never
   import it; every knob is hand-set.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
@@ -389,6 +417,32 @@ a pointer: what the file is, how it's run, where its docs are.
   and the wiring — the shop asking the land, the price sheet, the arrival
   note, the road meeting the card's people, and the board moving while
   nobody is looking.
+  *Politics* (2026-08-10): the ruler sheet (the pool's two totals, three
+  distinct compatible draws, one pole per axis with the extreme taking the
+  whole one, the never-with pair, the crown-scope entry off a lesser sheet,
+  the affliction cap, heart's three readings, the companion fields existing
+  only beside their trait, the circumstances reading the sheet, the measured
+  marginal the three-draw design rests on, and a JSON-clean seeded sheet);
+  the frame (a constitution off each land's own default-heavy slot, one
+  tension rolled and two in crisis with the standing one never rolled twice,
+  the faction cast, an edge needing both ends, the sheet living on the layer
+  and wearing the notable's face, the politics rolls moving no wealth band,
+  the save round-trip); the gate (a shut-out card in neither the deck nor
+  the admits, an ungated card always passing, a reshuffle still gated, and
+  one test per politics admit plus the any-of contract); the effects (a card
+  moving the succession, the constitution slot moving only where a card says
+  so and never re-asserting itself, a named authority kept, and the board
+  moving on politics too); the authored content (nothing ungated, three
+  cards a land, Firascir deepest, one land per card outside the crown-wide
+  cluster, the cluster skipping the crownless land, every instrument an edge
+  with a card in it, the exile edge firing abroad, no card in the rung being
+  dead data -- every one of the five gates forced, and it admits -- and the
+  widths); the war
+  feed (the derived-seed casus belli, the race that needs no roll, the line
+  naming both realms, the herald saying it once and leaving it on the news,
+  and a pre-politics save saying nothing); and the surfaces (the map page's
+  constitution, the DM inventory's whole polity, the town saying the
+  reputation and never the heart, and the board printing it under the face).
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -552,9 +606,15 @@ a pointer: what the file is, how it's run, where its docs are.
   (previous wave done + party at level + party at a settlement since
   2026-07-13; the aggressor roll excludes the PC's race), the
   wave-3 scripted fall with
-  occupation, and the war readouts. State lives in the session save
-  (`story` key); the sims never import it. `python story.py [--seed N]
-  [--aggressor R]` dumps one rolled conquest, all waves force-posted.
+  occupation, and the war readouts. Since the politics rung (2026-08-10)
+  the war also has a WHY: `init_story` rolls `casus_belli` off a derived
+  rng (`worldsim.roll_casus_belli`, so no existing world's aggressor,
+  faces or targets move), `casus_belli_line` reads it back with both
+  realms named, and `post_wave` says it at the FIRST herald and leaves it
+  on the target land's news for whoever arrives later. State lives in the
+  session save (`story` key); the sims never import it. `python story.py
+  [--seed N] [--aggressor R]` dumps one rolled conquest, all waves
+  force-posted.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
   Heat add-on; the direction it serves is plan.md's VILLAIN PIVOT):
   the karma state dict + heat math (`new_karma` / `heat` /
@@ -953,6 +1013,8 @@ python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python weapons.py --seed 1            # one world's armory + smiths (eyeball)
 python worldsim.py --seed 1 --days 60 # the world layer after 60 days (eyeball)
+python rulers.py --seed 1 --count 8   # eight rolled crowns (eyeball)
+python rulers.py --lesser             # ...and the two-draw lesser authority
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -1426,6 +1488,27 @@ mechanic *does* and *why* is rules.md's job.
   `cmd_travel`, and `wild_event(where=)` + the `skins` thread through
   `fight_wild_encounter` / `_spawn_wild_foes` / the sighting / `engage`.
   `test_worldsim.py` is the contract.
+- **Politics & the ruler** (2026-08-10, the worldsim ladder's third content
+  rung — rules.md's Politics & the Ruler add-on) — `rulers.py`: the whole
+  ruler sheet (see Files); the knobs are `CROWN_DRAWS` / `LESSER_DRAWS`
+  (a fourth draw scales every marginal by 4/3 — the one knob if rulers read
+  thin at the table), `AFFLICTION_CAP`, `ORIGIN_CHANCE`, and the weight
+  column itself, which is measured and should move only with a reason.
+  `worldsim.py`: the constitution slot, the tension roll and its DECK GATE,
+  the faction edges, the ruler on the layer, the five new admits, the two
+  new state effects, `_authority_hook`, the casus belli pool, `post_news`,
+  and `politics_lines` / `notable_lines` (see Files); the knobs are
+  `TENSION_ROLLS` / `CRISIS_TENSION_ROLLS`, each constitution entry's own
+  weight, and each card's own `chance`. `quests.py`: `_cast_the_land` writes
+  the ruler notable's id onto the rolled sheet (`worldsim.ruler_sheet(...)
+  ["npc"]`) — one copy of the words, one face wearing them. `story.py`:
+  `init_story` rolls `casus_belli` on a DERIVED rng (`casus:<seed>:<land>`,
+  so no existing world's aggressor, faces or targets move), `casus_belli_line`
+  reads it back with both realms named (STRICT -- every rolled war carries
+  one), and `post_wave` says it at the first herald and posts it to the
+  land's news. `session.py`: the notables block
+  prints `worldsim.notable_lines` under the ruler's face. `test_worldsim.py`
+  is the contract.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -1998,6 +2081,26 @@ above.**
   `pay` (1.10–1.35), `slots` and `reprice`. **The dial if the world's
   hand on the wallet reads too heavy is `BAND_MENU`** — it is on every
   land every day, where a card's terms are on one land for a fortnight.
+- **Politics rides the economy floor's one visible field and adds no
+  second one (2026-08-10).** The rung's cards are ordinary cards, so the
+  only bench-visible thing they can do is what an econ card already did:
+  move `board_slots` and `gold_total` through `slots` / `reprice` while
+  one stands. Nothing else in the sim's path changed — `rulers.py` is
+  imported by `worldsim.py` and by nothing else, and no bench imports
+  either. What DID move is the deck a land holds: the tension gate cuts
+  each land's political pool to the one or two quarrels it rolled, so a
+  crisis land now draws from a deeper deck of shorter-lived cards. That
+  is a content change, not a balance one, and it was not re-measured —
+  the whole layer's knobs remain hand-set and SIM-UNVERIFIED:
+  `TENSION_ROLLS` 1 / `CRISIS_TENSION_ROLLS` 2, the default-heavy
+  constitution weights (6 against 1–2, so the stereotype holds about
+  three worlds in five), `rulers.CROWN_DRAWS` 3 / `LESSER_DRAWS` 2,
+  `AFFLICTION_CAP` 3, `ORIGIN_CHANCE` 0.5, and the 357-word weight column
+  itself. **The dial if rulers read thin at the table is
+  `rulers.CROWN_DRAWS`** — a fourth draw scales every marginal by 4/3 and
+  is the only knob the sheet's design admits. **The dial if politics
+  crowds the economy off a land's board is `TENSION_ROLLS`**, which is
+  the size of the gate rather than a chance anywhere.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

@@ -48,6 +48,9 @@ from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, ROOM_SHARES,
                     settlements, settlements_by_land,
                     quest_line, quest_detail_lines)
 from places import land_race, slug
+import worldsim                  # the war's WHY line (2026-08-10, the
+                                 # politics rung): the casus belli pool and
+                                 # the land news the herald posts it on
 
 # --------------------------------------------------------------------------- #
 # The shape (shared by every variant)
@@ -331,8 +334,17 @@ def init_story(world: dict, rng: random.Random,
     faces = [make_npc(rng, aggressor, title, used_names=used)
              for title in (spec["conqueror_title"],)
              + spec["lieutenant_titles"]]
+    # THE WHY (2026-08-10, the politics rung). Rolled on a DERIVED rng --
+    # the armory's pattern -- so the aggressor, the faces and the targets
+    # every existing world rolled are byte-identical to what they were
+    # before the war had a reason. One race needs no roll: the Sky's
+    # mandate says the neighbours are rebels who have not yet submitted.
+    why = worldsim.roll_casus_belli(
+        random.Random(f"casus:{world.get('seed')}:{aggressor_land}"),
+        aggressor)
     return {"aggressor": aggressor,
             "aggressor_land": aggressor_land,
+            "casus_belli": why,
             "conqueror": faces[0],
             "lieutenants": faces[1:],
             "targets": [land_a, land_b],
@@ -342,6 +354,15 @@ def init_story(world: dict, rng: random.Random,
             "fallen": None,         # the occupied land, after wave 3
             "over": False,
             "events": []}           # day-stamped story beats
+
+
+def casus_belli_line(world: dict, story: dict) -> str:
+    """The war's stated reason, with both realms named. Strict: every war
+    `init_story` rolls carries one, so a story without it is a bug and not
+    a save to be humoured (develop.md, "No backwards compatibility")."""
+    return worldsim.casus_belli_line(
+        story["casus_belli"], world["lands"][story["aggressor_land"]]["name"],
+        world["lands"][story["targets"][0]]["name"])
 
 
 def wave_target_land(story: dict, i: int) -> str | None:
@@ -447,6 +468,13 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     lines = [f"*** WORD OF THE WAR (day {day}) ***"]
     if i == 0:
         lines.append(f"War is coming: {spec['banner']} -- {spec['creed']}")
+        # The reason, said ONCE at the first herald and left on the land's
+        # news for anyone who arrives later (2026-08-10).
+        why = casus_belli_line(world, story)
+        lines.append(f"The reason given: {why}.")
+        worldsim.post_news(world, settlement["land"], day,
+                           f"The heralds have given the war its reason: "
+                           f"{why}.")
     lines.append("Herald: " + wv["herald"].format(**fmt))
     g = quest["giver"]
     lines.append(f"{g['name']}, {g['role']}, calls for blades at "

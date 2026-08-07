@@ -299,9 +299,12 @@ explain it.
 - **`world`** is YOUR readout (like `board all`): every land's band,
   states, the card standing over it, deck depth -- and, since the economy
   floor, what all three outlets are doing here (the board's slot shift and
-  pay, what each card is posting, the priced terms, who is on the roads).
-  Use it for pacing -- never read it out. `place-state` remains your
-  override for a state you want to set by hand.
+  pay, what each card is posting, the priced terms, who is on the roads),
+  and since the politics rung, the whole polity (the constitution, the
+  tensions, the live faction edges, the ruler's sheet with his hidden
+  heart, and any face a card has named). Use it for pacing -- never read
+  it out. `place-state` remains your override for a state you want to set
+  by hand.
 
 ### What the land costs (2026-08-09, the economy floor)
 
@@ -336,6 +339,41 @@ world's mouth, once, and move on.
   in the flesh, and the names in the roster are its livery. Fight it as
   the scene it is: these people have a reason to be there and it is on
   `map`.
+
+### Who holds the land (2026-08-10, politics)
+
+The land is a polity now: it has a constitution, a quarrel, and a king
+with a reputation. All three are already on the script pages -- your job
+is to let them decide who the party talks to and what people complain
+about.
+
+- **`map` names the constitution** under each seen land: DECENTRALIZED
+  FEUDALISM, THE PAPER STATE, THE SEALED REALM. That is the answer to
+  "who do we ask", said in two words. A land under THE REGENCY has no
+  king to petition; a land under ARISTOCRATIC ANARCHY has forty. Read it
+  before you decide who a scene's authority IS.
+- **The board's notables block says what is SAID of the ruler** --
+  "said of Perrin: tireless, devout, cruel", plus the succession when it
+  is not settled and the hand behind the throne when there is one. Those
+  words are public reputation, not a secret: villagers repeat them,
+  courtiers hedge around them, and a player who hears "cruel" twice has
+  learned something real about the audience he is asking for. Say them in
+  somebody's mouth; never list them.
+- **His HEART is on `world` and stays there.** `heart dark` is your read
+  on the man, not a fact anyone in the fiction states.
+- **The tension is what people argue about here.** One or two per land
+  ("the crown against the great lords", "the bailiff against the old
+  custom"), and every political card the land can draw hangs off it. It
+  is the free background chatter of every tavern in that land, and the
+  reason its trouble is THIS trouble and not the neighbour's.
+- **A card that names somebody keeps him.** The banned lord, the
+  witch-finder, the bandit king, the pretender -- when a news line says a
+  name, that man exists, `world` carries his two words, and he is the
+  same man the next time his card comes round. Use the name again.
+- **The war has a reason now.** The first herald says it once ("the
+  reason given: a pretender the Mortellaria court is sheltering") and it
+  stays on the land's news. Let people disagree about whether it is the
+  real one.
 
 ### The sky (2026-08-08, the weather)
 
@@ -1587,6 +1625,18 @@ bigger than the fights WITHOUT pages of narration:
   five, and somebody the world put there is on the roads on about one in
   ten. The road's own charges are small (a toll is ~12g doubled, a ferry
   ~12g): the fords cost a DAY, and days are the expensive currency.
+- **Politics in numbers:** every land rolls one constitution off a
+  default-heavy die (the stereotype holds about three worlds in five) and
+  ONE standing tension, two if it opened in CRISIS -- and only cards whose
+  tension holds are in its deck at all, which is why two playthroughs of
+  the same land are not the same land. A crown draws THREE trait words off
+  a pool of 357 (a lesser named authority two off 355), so a rolled king
+  is three vivid facts and silence everywhere else; the words are measured
+  off 443 historical rulers, and rare ones are rare rather than absent.
+  At most three afflictions on one person. The succession is secure,
+  disputed or heirless, and it reads the crown's own words -- a chaste or
+  sickly king trends heirless. Most political cards move the board the
+  same way an economic one does.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content**, not part of a
   played campaign: the board's generated quests are the game. Their

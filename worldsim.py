@@ -1,5 +1,5 @@
-"""The world layer -- the WORLD & NPC SIMULATION build's frame, weather and
-economy floor.
+"""The world layer -- the WORLD & NPC SIMULATION build's frame, weather,
+economy floor and politics.
 
 plan.md's ladder. The FRAME session (2026-08-07): `worldsim.md`'s five record
 kinds stop being prose and become data, and the save grows a world layer under
@@ -9,7 +9,39 @@ cards now run over one land instead of one. The ECONOMY FLOOR (2026-08-09):
 the three outlets the frame carried but did not apply -- the BOARD, the
 PRICED MENU and the ENCOUNTER TABLE -- are wired, the per-land card bill goes
 up to the asymmetry doctrine's floor with chains running through it, and the
-relations table grows past the frame's nine edges.
+relations table grows past the frame's nine edges. POLITICS (2026-08-10):
+the land stops being an economy with a sky over it and becomes a POLITY --
+who holds it, what it is fighting about, and who is pulling at whom.
+
+THE POLITICS FRAME, in the order worldgen rolls it. A land's politics is
+three rolls and one authored table, and every one of them is a GATE on
+content rather than a system of its own:
+
+  the CONSTITUTION -- one exclusive slot per land, rolled on a default-heavy
+                      die (the wealth-band pattern). Cards never flip it;
+                      the two that do (the junta, the commune) say so.
+  the TENSIONS     -- each land's packet lists two named blocs and what they
+                      fight over. A land rolls ONE, and a second if it opens
+                      in CRISIS. Only cards whose tension holds enter the
+                      land's crisis deck -- the SAME deck as the econ cards,
+                      no second pile -- which is what keeps the pool wide
+                      and each rolled world specific.
+  the FACTIONS     -- the rolled tensions imply a small faction cast, and
+                      the authored directed verb EDGES between them (crown
+                      FUNDS secret police; anarchists SABOTAGE steel barons)
+                      are the in-land counterpart of a relation. An edge is
+                      live when both its ends are in the cast, and cards
+                      admit on it.
+  the RULER        -- `rulers.py`'s sheet, rolled onto the land's RULER
+                      notable: three weighted draws off 357 words, derived
+                      `heart`, the succession and accession circumstances.
+                      Cards admit on the bare trait word.
+
+The WAR FEED rides the same tables: a CASUS BELLI pool story.py rolls beside
+its aggressor, four DIPLOMATIC INSTRUMENTS authored as relation edges (the
+courtly hostage, the yearly tribute, the marriage pact, the personal union),
+and the SUCCESSION cluster -- cards that admit on the crown's succession
+state and can move it.
 
 THE TWO INVARIANTS (the thread's own, landed by the economy floor):
 
@@ -106,6 +138,8 @@ from __future__ import annotations
 import argparse
 import random
 
+import rulers                    # the politics rung's person half: the
+                                 # weighted trait pool a crown is rolled off
 from places import (ENVIRONMENT_PROFILES, LAND_SPECS, add_state, clear_state,
                     land_id, stable_seed)
 from sites import FOES           # the encounter outlet's vocabulary: a card
@@ -219,6 +253,15 @@ ROAD_FERRY_GOLD = 4             # ...and what the ferry costs, times `ferry`.
 ENCOUNTER_CHANCE = 0.5          # per rolled encounter, when an entry stands
 ENCOUNTER_WHERE = ("road", "wilds", "any")
 
+# --- the politics knobs (2026-08-10) --------------------------------------- #
+TENSION_ROLLS = 1               # what a land is fighting about. ONE, so the
+                                # packet stays a POOL and the same land comes
+                                # up a different flavor of itself next
+                                # playthrough...
+CRISIS_TENSION_ROLLS = 2        # ...and two when it opens in CRISIS, because
+                                # a land in trouble is in trouble about more
+                                # than one thing at once
+
 # --------------------------------------------------------------------------- #
 # The record kinds (worldsim.md, formalized)
 # --------------------------------------------------------------------------- #
@@ -279,6 +322,76 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "burned-over": "the burn is still black",
     "dust-storm": "the dust has the plain",
     "smog": "the smoke will not lift",
+    # Politics (2026-08-10) -- right, office and allegiance. Firascir
+    # carries the most of them: the baseline land takes the deepest packet.
+    "interdict": "the temple has closed the land",
+    "order-trial": "the order hanged a local man",
+    "royal-progress": "the king's court is here",
+    "lord-banned": "a lord is dead in law",
+    "warband-settled": "an orc warband holds the border grant",
+    "badge-men": "a lord's badge-men are the law here",
+    "wardship-sold": "a child heir's wardship is up for sale",
+    "custom-strike": "the village works to the letter",
+    "rolls-burned": "the manor's court rolls are ash",
+    "town-air": "a runaway smith is behind the town gate",
+    "bailiff-loose": "the bailiff runs the court as his purse",
+    "rent-strike": "the village will not pay",
+    "widow-holding": "a widow holds the valley's best land",
+    "strips-merged": "two families hold the best soil",
+    "jury-lies": "the jury swore it in the law's teeth",
+    "cry-ignored": "nobody answers the hue and cry",
+    "forest-law": "the royal woods are closed",
+    "silver-strike": "there is silver on the lord's land",
+    "champions-hired": "lawsuits are settled at swordpoint",
+    "charter-run": "the town is buying its charter",
+    "mayor-in-velvet": "a wool merchant sits as mayor",
+    "tithe-war": "the tithe barn is being counted twice",
+    "priest-scandal": "the rectory is a scandal",
+    "witch-finder": "a witch-finder is working the villages",
+    "dancing-plague": "a street cannot stop dancing",
+    "free-company": "an unpaid company holds the roads",
+    "midnight-court": "masked men are hanging by night",
+    "faith-banned": "the old faith is outlawed",
+    "duel-fugitive": "a duelist is on the road, and hunted",
+    "warrants-sold": "arrest warrants are for sale blank",
+    "tontine-deaths": "the tontine's survivors are dying",
+    "shares-mad": "the colony shares have gone mad",
+    "quarter-ruined": "half the merchant quarter is ruined",
+    "alchemists-funded": "the crown's alchemists are at work",
+    "salt-revolt": "the salt country is in revolt",
+    "auto-da-fe": "the tribunal is staging its penance",
+    "bandit-king": "a bandit king holds the tax roads",
+    "writ-revoked": "a great name has been struck off",
+    "search-on": "the search for the newborn crown is on",
+    "record-scandal": "the founders' record is in question",
+    "feral-band": "a band has gone feral in the reserve",
+    "hunters-out": "hunters have been sent after the exiles",
+    "staff-hunt": "the mortal staff are being counted",
+    "hostage-guard": "the chiefs' sons ride in the guard",
+    "sworn-brothers": "two chiefs are brothers by oath",
+    "mourning-war": "the clans are raiding for people",
+    "shaming-pole": "a pole is up with a name on it",
+    "ghost-dance": "the ghost dance is in the camps",
+    "veins-married": "two clans are marrying their claims",
+    "claim-frozen": "a dead founder has refused",
+    "arbitration": "the king must rule on the seam",
+    "general-strike": "the whole country has stopped",
+    "plot-seeded": "the police have a man in every cell",
+    "war-fever": "the papers are shouting for war",
+    "barricades-up": "a district is behind barricades",
+    "machine-breakers": "the engines are being smashed",
+    "story-unprinted": "a story is worth killing to stop",
+    # The succession cluster (the war layer's feed)
+    "regency-on": "an infant wears the crown",
+    "claim-pressed": "three branches claim the inheritance",
+    "pretender": "a dead king has come back",
+    "recognition-bought": "the neighbours accept the heir",
+    "conclave-locked": "the electors have not agreed in a year",
+    "tanist-scramble": "every able kinsman is counting spears",
+    # The diplomatic instruments (held on the source land)
+    "marriage-pact": "a marriage pact binds two crowns",
+    "betrothal-broken": "the betrothal is broken",
+    "personal-union": "a foreign king wears this crown too",
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
     "timber-dear": "timber is dear",
@@ -290,6 +403,12 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "concession-lost": "the concession is lost",
     "arms-scarce": "arms are scarce",
     "raiders-out": "raiders are on the border",
+    # ...and the politics rung's own edges (2026-08-10)
+    "elf-hunters": "elven hunters are working this side",
+    "hostage-given": "an heir of this land is a hostage abroad",
+    "danegeld-paid": "the danegeld is being raised here",
+    "pact-kin": "the pact makes the two crowns kin",
+    "union-crown": "the two crowns are one head now",
 }
 
 STATE_SLOTS = {                 # slot -> its exclusive members, in order
@@ -345,6 +464,22 @@ STATE_MENU = {
     "paper-worthless": {"goods": 1.30, "steel": 1.25},
     "children-taken": {"lodging": 0.85},
     "herd-loss": {"goods": 1.20},
+    # politics (2026-08-10) -- the states that outlive their card, and the
+    # ones an edge derives, are the ones that have to reach a price here
+    "danegeld-paid": {"goods": 1.20},
+    "union-crown": {"toll": 0.80},
+    "faith-banned": {"goods": 1.20, "steel": 1.15},
+    "silver-strike": {"lodging": 1.30, "steel": 0.90},
+    "warband-settled": {"lodging": 1.15},
+    "royal-progress": {"lodging": 1.60, "goods": 1.25},
+    "general-strike": {"goods": 1.35, "steel": 1.30},
+    "interdict": {"healer": 1.30},
+    "free-company": {"toll": 1.80},
+    "forest-law": {"goods": 1.15},
+    "barricades-up": {"goods": 1.25, "lodging": 0.80},
+    "quarter-ruined": {"goods": 1.25, "lodging": 0.80},
+    "salt-revolt": {"goods": 1.25},
+    "bandit-king": {"goods": 1.15},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -361,6 +496,38 @@ STATE_ENCOUNTERS = {
                     "skins": {"cutthroat": "Rider", "bruiser": "Horse-Chief",
                               "soldier": "Lance"},
                     "chance": 0.45},
+    # politics (2026-08-10)
+    "elf-hunters": {"kinds": ("cutthroat", "archer", "hunter"),
+                    "where": "road", "as": "quiet elves asking after a name",
+                    "skins": {"cutthroat": "Erasure",
+                              "archer": "Quiet Archer",
+                              "hunter": "Name-Taker"},
+                    "chance": 0.35},
+    "free-company": {"kinds": ("cutthroat", "archer", "soldier", "veteran"),
+                     "where": "road", "as": "the unpaid company's toll post",
+                     "skins": {"cutthroat": "Free Lance",
+                               "archer": "Company Bow",
+                               "soldier": "Company Man",
+                               "veteran": "Old Hand"},
+                     "chance": 0.50},
+    "badge-men": {"kinds": ("cutthroat", "bruiser", "soldier"),
+                  "where": "road", "as": "men in the lord's livery",
+                  "skins": {"cutthroat": "Badge-Man",
+                            "bruiser": "Badge-Bruiser",
+                            "soldier": "Livery Sergeant"},
+                  "chance": 0.40},
+    "warband-settled": {"kinds": ("cutthroat", "bruiser", "soldier"),
+                        "where": "road",
+                        "as": "the border grant's own riders",
+                        "skins": {"cutthroat": "Grant-Rider",
+                                  "bruiser": "Oath-Breaker",
+                                  "soldier": "Border Lance"},
+                        "chance": 0.30},
+    "bandit-king": {"kinds": ("cutthroat", "archer", "bruiser"),
+                    "where": "road", "as": "the bandit king's road watch",
+                    "skins": {"cutthroat": "Road Watch",
+                              "archer": "Hedge Bow", "bruiser": "Toll-Taker"},
+                    "chance": 0.40},
 }
 
 OUTLETS = ("quest", "menu", "encounter", "news", "state")
@@ -384,6 +551,11 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
          weather: tuple[str, ...] = (),
          wet: int = 0,
          dry: int = 0,
+         tension: tuple[str, ...] = (),
+         constitution: tuple[str, ...] = (),
+         traits: tuple[str, ...] = (),
+         succession: tuple[str, ...] = (),
+         faction_edge: tuple[str, ...] = (),
          chance: float = 1.0,
          days: tuple[int, int] | int | None = CARD_DAYS,
          sky: str = "",
@@ -397,7 +569,13 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
     `wealth` / `states` / `without` / `weather` / `wet` / `dry` are the
     ADMITTING conditions (all must hold): the band, states held or derived,
     states forbidden, today's sky, and the length of the wet or dry SPELL
-    behind it. `chance` is the card's own die once it is admitted -- 1.0 for
+    behind it. The politics rung adds four more, each ANY-OF because each
+    reads a slot that holds one or two values: `tension` (which is also the
+    gate that decides whether the card enters this land's deck at all),
+    `constitution`, `traits` (the land ruler's rolled words -- a card that
+    wants a whole family names all of it), `succession` (the crown's
+    circumstance) and `faction_edge` (a live edge key). `chance` is the
+    card's own die once it is admitted -- 1.0 for
     an ordinary card, low for the rare and the supernatural. `days` is the
     optional day-stamp clock -- None for a pulse that stands until something
     else moves it. `sky` is for a card that IS the weather rather than a
@@ -411,7 +589,8 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
 
       news=      "the line the land hears"
       state=     {"set": (), "while": (), "clear": (), "slot": {},
-                  "wealth": "band", "wealth_while": "band"}
+                  "wealth": "band", "wealth_while": "band",
+                  "constitution": "key", "succession": "state"}
       quest=     {"post": job(...), "pay": 1.25,     # what it PUTS UP
                   "slots": -1, "reprice": 0.9}       # ...and cancels/reprices
       menu=      {"goods": 1.2, ...}   MENU_TERMS -> multiplier
@@ -433,7 +612,12 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
             "chance": chance, "hook": hook, "sky": sky,
             "admits": {"wealth": tuple(wealth), "states": tuple(states),
                        "without": tuple(without), "weather": tuple(weather),
-                       "wet": wet, "dry": dry},
+                       "wet": wet, "dry": dry,
+                       "tension": tuple(tension),
+                       "constitution": tuple(constitution),
+                       "traits": tuple(traits),
+                       "succession": tuple(succession),
+                       "edge": tuple(faction_edge)},
             "days": days,
             "outlets": {k: v for k, v in outlets.items() if v}}
 
@@ -470,6 +654,355 @@ def relation(source: str, target: str, kind: str, *,
     Static data read at roll time -- never a traded quantity."""
     return {"from": source, "to": target, "kind": kind,
             "when": tuple(when), "then": then, "because": because}
+
+
+# --------------------------------------------------------------------------- #
+# The politics frame (2026-08-10): what a land IS, before anything happens
+# --------------------------------------------------------------------------- #
+# Three rolls and one authored table. None of them is a system: the
+# constitution is a word on the readout, the tensions are the deck's gate,
+# and the factions are names an edge joins. What they buy is that a land's
+# trouble comes from its own axis and that two playthroughs of the same land
+# are not the same land (worldsim.md's selection doctrine: a packet is a
+# POOL, not a description).
+
+
+def constitution(key: str, name: str, weight: int, line: str) -> dict:
+    """One entry in a land's exclusive constitution slot. `weight` is its
+    share of a DEFAULT-HEAVY die: the stereotype is the constant, and the
+    variants are the colour worldgen rolls on top of it."""
+    return {"key": key, "name": name, "weight": weight, "line": line}
+
+
+def tension(key: str, line: str, *, factions: tuple[str, ...]) -> dict:
+    """One standing tension: two named blocs and what they fight over. It
+    is the gate a political card admits on, and the cast its faction edges
+    are drawn from."""
+    return {"key": key, "line": line, "factions": tuple(factions)}
+
+
+def faction(key: str, name: str, face: str = "") -> dict:
+    """One bloc. `face` names the notable post that fronts it where the
+    cast already has one (quests.py's RULER / SAGE / WILDCARD), so a
+    faction gets a face for free instead of asking for a new NPC."""
+    return {"key": key, "name": name, "face": face}
+
+
+def edge(land: str, source: str, verb: str, target: str, line: str) -> dict:
+    """One authored directed verb edge inside a land -- the in-land
+    counterpart of `relation`. It is LIVE when both its ends are in the
+    land's rolled faction cast, and a card admits on its key."""
+    return {"key": f"{land}/{source}-{verb}-{target}", "land": land,
+            "from": source, "verb": verb, "to": target, "line": line}
+
+
+CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
+    "firascir": (
+        constitution("feudal", "DECENTRALIZED FEUDALISM", 6,
+                     "a crown among great lords, strong on its own manors "
+                     "and weak past them"),
+        constitution("centralizing", "THE CENTRALIZING CROWN", 2,
+                     "royal judges ride the circuit, private castles need "
+                     "a licence, and lords pay coin instead of service"),
+        constitution("magnate-anarchy", "ARISTOCRATIC ANARCHY", 1,
+                     "an elective crown, a veto in every great lord's "
+                     "hand, and barons who rule their own ground"),
+        constitution("regency", "THE REGENCY", 1,
+                     "an infant king, and a council governing in his name"),
+    ),
+    "mortellaria": (
+        constitution("absolutism", "ABSOLUTISM", 6,
+                     "one king, one law, one faith: the king's "
+                     "commissioners sit over the old courts"),
+        constitution("ministerial", "MINISTERIAL RULE", 2,
+                     "the king reigns and the cardinal governs"),
+        constitution("princes-in-arms", "THE PRINCES IN ARMS", 1,
+                     "the great princes are under arms to control the "
+                     "crown, never to depose it"),
+        constitution("bankrupt-summons", "THE BANKRUPT SUMMONS", 1,
+                     "the treasury is empty and the old estates are "
+                     "called for the first time in living memory"),
+    ),
+    "ensimaa": (
+        constitution("constitutional", "CONSTITUTIONAL MONARCHY", 6,
+                     "an ancient crown that reigns and rules nothing, over "
+                     "a parliament where every faction holds a veto"),
+        constitution("elders", "THE COUNCIL OF ELDERS", 2,
+                     "the crown set aside; the oldest rule because they "
+                     "are the oldest"),
+        constitution("sealed", "THE SEALED REALM", 1,
+                     "isolation is law: entry is a capital crime and "
+                     "leaving is permanent exile"),
+    ),
+    "tergal": (
+        constitution("confederacy", "THE CLAN CONFEDERACY", 6,
+                     "sovereign clans under a great council that elects "
+                     "the high chief, settles the feuds and votes the wars"),
+        constitution("great-chief", "THE GREAT CHIEF", 2,
+                     "one chief holds the whole plain under the Sky's "
+                     "mandate, and the warbands no longer ride by clan"),
+        constitution("two-chiefs", "TWO CHIEFS", 1,
+                     "a peace chief for law and the seasons, a war chief "
+                     "who commands only while the banner is up"),
+        constitution("fractured", "THE FRACTURED CLANS", 1,
+                     "no high chief, and the feuds run with nobody to "
+                     "settle them"),
+    ),
+    "dvarvengrond": (
+        constitution("arbiter", "THE ARBITER CROWN", 6,
+                     "the king under the mountain keeps the great ledger "
+                     "of every claim and water right, and his real work is "
+                     "keeping the clans out of civil war"),
+        constitution("war-king", "THE WAR KING", 2,
+                     "an outside threat has handed the arbiter real "
+                     "command, and the clans fear what he will keep"),
+        constitution("empty-throne", "THE EMPTY THRONE", 1,
+                     "the electors have deadlocked for years and the "
+                     "ledger's clerks quietly run everything"),
+    ),
+    "gibili": (
+        constitution("paper-state", "THE PAPER STATE", 6,
+                     "a flag, a parliament, an army, and no writ that runs "
+                     "past the mill gates"),
+        constitution("junta", "THE JUNTA", 1,
+                     "the generals have lost patience"),
+        constitution("commune", "THE COMMUNE", 1,
+                     "a syndicate city has won and kept itself: schools, "
+                     "courts, rations, firing squads"),
+        constitution("occupation", "THE OCCUPATION", 1,
+                     "foreign soldiers hold the capital and the mills pay "
+                     "their taxes to a foreign clerk"),
+    ),
+}
+
+# The blocs. Most are named by exactly one land's tensions; the shared ones
+# (crown, clans) are named the same way in each so an edge reads the same
+# everywhere.
+FACTIONS: dict[str, dict] = {f["key"]: f for f in (
+    # Firascir
+    faction("crown", "the crown", face="ruler"),
+    faction("great-lords", "the great lords"),
+    faction("guilds", "the merchant guilds", face="wildcard"),
+    faction("temple", "the temple", face="wildcard"),
+    faction("militant-order", "the militant order"),
+    faction("new-men", "the new men"),
+    faction("manor-lord", "the lord of the manor"),
+    faction("village", "the village"),
+    # Ensimaa
+    faction("elders", "the ageless elders", face="sage"),
+    faction("young", "the young"),
+    faction("purity-board", "the purity board"),
+    faction("fringe", "the authenticity fringe"),
+    faction("machine-keepers", "the machine-keepers"),
+    faction("primitivists", "the primitivists"),
+    # Tergal
+    faction("clans", "the clans"),
+    faction("rival-clans", "the rival clans"),
+    faction("clan-mothers", "the clan mothers"),
+    faction("outlaws", "the outlaw bands"),
+    # Dvarvengrond
+    faction("deep-clans", "the deep clans"),
+    faction("envoys", "the surface envoys", face="wildcard"),
+    faction("unclanned", "the unclanned"),
+    # Mortellaria
+    faction("sword", "the sword nobility"),
+    faction("robe", "the robe nobility", face="wildcard"),
+    faction("tribunal", "the faith's tribunal", face="wildcard"),
+    faction("hidden-faith", "the hidden faith"),
+    faction("commissioners", "the king's commissioners"),
+    faction("provinces", "the provinces"),
+    # Gibili
+    faction("parliament", "the parliament"),
+    faction("mill-barons", "the mill barons", face="wildcard"),
+    faction("syndicates", "the syndicates"),
+    faction("generals", "the generals", face="wildcard"),
+    faction("ranks", "the ranks"),
+    faction("secret-police", "the secret police", face="wildcard"),
+    faction("anarchists", "the anarchist cells"),
+    faction("companies", "the hired companies"),
+)}
+
+# What each land is fighting about. A land rolls one (two in crisis); the
+# STANDING entries are held on top of the roll, because some tensions are
+# not colour -- Firascir's manor is the econ packet's oppression axis and
+# is always there.
+TENSIONS: dict[str, tuple[dict, ...]] = {
+    "firascir": (
+        tension("crown-vs-lords", "the crown against the great lords",
+                factions=("crown", "great-lords")),
+        tension("crown-vs-guilds", "the crown against the guilds' money",
+                factions=("crown", "guilds")),
+        tension("temple-vs-crown",
+                "the bishops: temple against crown",
+                factions=("crown", "temple", "militant-order")),
+        tension("old-vs-new", "old blood against the new men",
+                factions=("great-lords", "new-men")),
+        tension("manor-vs-village", "the bailiff against the old custom",
+                factions=("manor-lord", "village")),
+    ),
+    "mortellaria": (
+        tension("sword-vs-robe", "old swords against bought offices",
+                factions=("sword", "robe")),
+        tension("crown-vs-faith", "the crown against the old faith",
+                factions=("crown", "tribunal", "hidden-faith")),
+        tension("court-vs-provinces",
+                "the court against the provinces",
+                factions=("commissioners", "provinces")),
+    ),
+    "ensimaa": (
+        tension("elders-vs-young",
+                "the ageless elders against the young",
+                factions=("elders", "young")),
+        tension("purity-vs-fringe",
+                "the purity board against the fringe",
+                factions=("purity-board", "fringe")),
+        tension("machines-vs-wild",
+                "the machines against the primitivists",
+                factions=("machine-keepers", "primitivists")),
+    ),
+    "tergal": (
+        tension("clan-vs-clan", "clan against clan over the pasture",
+                factions=("clans", "rival-clans")),
+        tension("chiefs-vs-mothers",
+                "the chiefs against the clan mothers",
+                factions=("clans", "clan-mothers")),
+        tension("council-vs-outlaws",
+                "the council against the outlaws",
+                factions=("clans", "outlaws")),
+    ),
+    "dvarvengrond": (
+        tension("clan-vs-clan-wall",
+                "clan against clan along the walls",
+                factions=("deep-clans", "clans")),
+        tension("deep-vs-surface",
+                "the deep clans against the envoys",
+                factions=("deep-clans", "envoys")),
+        tension("clans-vs-unclanned",
+                "the clans against the unclanned",
+                factions=("clans", "unclanned")),
+    ),
+    "gibili": (
+        tension("parliament-deadlock",
+                "the parliament's three-way deadlock",
+                factions=("parliament", "mill-barons", "syndicates")),
+        tension("army-vs-ranks",
+                "the generals against their own ranks",
+                factions=("generals", "ranks", "syndicates")),
+        tension("syndicate-vs-syndicate",
+                "the syndicates against each other",
+                factions=("syndicates", "mill-barons", "secret-police",
+                          "anarchists", "companies")),
+    ),
+}
+# The tensions that are NOT colour: held on top of the roll and never in the
+# rollable pool. Firascir's manor is the econ packet's oppression axis and
+# is simply what the land is.
+STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
+    "firascir": ("manor-vs-village",),
+}
+
+# The wiring: directed verb edges between blocs. The designer's worked model
+# (a crowned frame over Gibili's cast) is the shape -- the formalism has to
+# serve a parliament and a manor alike, so the verb is a word and nothing
+# reads it but a card.
+FACTION_EDGES: tuple[dict, ...] = (
+    # Firascir
+    edge("firascir", "crown", "leans-on", "great-lords",
+         "the crown leans on the great lords"),
+    edge("firascir", "great-lords", "defy", "crown",
+         "the great lords defy the crown"),
+    edge("firascir", "guilds", "buy", "crown",
+         "the guilds buy their charters from the crown"),
+    edge("firascir", "temple", "excommunicates", "crown",
+         "the temple threatens the crown with the interdict"),
+    edge("firascir", "militant-order", "answers", "temple",
+         "the militant order answers only to the temple"),
+    edge("firascir", "new-men", "outbid", "great-lords",
+         "the new men outbid the great lords for everything"),
+    edge("firascir", "manor-lord", "squeezes", "village",
+         "the bailiff squeezes the village"),
+    edge("firascir", "village", "slows", "manor-lord",
+         "the village works to the letter of the old custom"),
+    # Mortellaria
+    edge("mortellaria", "robe", "buy", "sword",
+         "the robe nobility buys the sword's land out from under it"),
+    edge("mortellaria", "sword", "snub", "robe",
+         "the sword nobility will not be seated beside the robe"),
+    edge("mortellaria", "tribunal", "hunts", "hidden-faith",
+         "the tribunal hunts the hidden faith"),
+    edge("mortellaria", "commissioners", "overrule", "provinces",
+         "the king's commissioners overrule the provincial courts"),
+    edge("mortellaria", "provinces", "resist", "commissioners",
+         "the provinces answer the commissioners with closed gates"),
+    # Ensimaa
+    edge("ensimaa", "elders", "block", "young",
+         "the elders hold every seat the young would take"),
+    edge("ensimaa", "purity-board", "certifies", "elders",
+         "the purity board certifies the elders and nobody else"),
+    edge("ensimaa", "fringe", "mocks", "purity-board",
+         "the fringe mocks the purity board in public"),
+    edge("ensimaa", "machine-keepers", "feed", "young",
+         "the machines feed the young, who do nothing for them"),
+    edge("ensimaa", "primitivists", "break", "machine-keepers",
+         "the primitivists break the machines when they can reach them"),
+    # Tergal
+    edge("tergal", "clans", "feud", "rival-clans",
+         "the clans are in feud with each other"),
+    edge("tergal", "clan-mothers", "seat", "clans",
+         "the clan mothers seat the chiefs, and unseat them"),
+    edge("tergal", "clans", "outlaw", "outlaws",
+         "the council declares its outlaws killable"),
+    edge("tergal", "outlaws", "raid", "clans",
+         "the outlaw bands raid the clans that cast them out"),
+    # Dvarvengrond
+    edge("dvarvengrond", "deep-clans", "despise", "envoys",
+         "the deep clans call the surface envoys sun-addled"),
+    edge("dvarvengrond", "envoys", "fund", "deep-clans",
+         "the envoys pay for everything the deep clans eat"),
+    edge("dvarvengrond", "clans", "hire", "unclanned",
+         "the clans hire the unclanned for the work nobody counts"),
+    edge("dvarvengrond", "unclanned", "undercut", "clans",
+         "the unclanned work the condemned galleries for themselves"),
+    # Gibili -- the designer's worked model, in its own cast
+    edge("gibili", "mill-barons", "lobby", "parliament",
+         "the mill barons own the parliament outright"),
+    edge("gibili", "mill-barons", "fund", "secret-police",
+         "the mill barons pay for the secret police"),
+    edge("gibili", "secret-police", "infiltrate", "anarchists",
+         "the secret police have a man in every cell"),
+    edge("gibili", "anarchists", "sabotage", "mill-barons",
+         "the anarchist cells go after the mills"),
+    edge("gibili", "mill-barons", "hire", "companies",
+         "the mill barons hire their own companies"),
+    edge("gibili", "companies", "guard", "mill-barons",
+         "the hired companies guard the mill gates"),
+    edge("gibili", "generals", "despise", "mill-barons",
+         "the generals despise the men they are ordered to protect"),
+    edge("gibili", "syndicates", "shield", "ranks",
+         "the syndicates shelter the soldiers who will not fire"),
+)
+
+# The war layer's WHY line: rolled beside story.py's aggressor, said once at
+# the first herald and carried on the land's news. Cheap, and the highest
+# rumor value in the war (worldsim.md: the war has waves and no reason).
+CASUS_BELLI: tuple[tuple[str, str], ...] = (
+    ("border", "a stretch of border nobody has agreed on in eighty years"),
+    ("betrothal", "a marriage pact broken at the church door"),
+    ("succession", "a claim on the {victim} throne, pressed from abroad"),
+    ("faith", "a faith the {victim} lands will not stop persecuting"),
+    ("embargo", "an embargo on {aggressor} goods, answered in kind"),
+    ("seizure", "{aggressor} merchants' goods seized in a {victim} port"),
+    ("pretender", "a pretender the {victim} court is sheltering"),
+    ("wardship", "a bought wardship the {victim} lords will not honour"),
+    ("prospectors", "prospectors cutting shafts on the wrong side of the "
+                    "border"),
+)
+# One land's casus belli is standing and needs no roll: the Sky says the
+# neighbours are rebels who have not yet submitted (Tergal's packet).
+STANDING_CASUS_BELLI = {
+    "orc": ("mandate", "the Sky's mandate: the {victim} lands have "
+                       "not yet submitted"),
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -619,6 +1152,35 @@ def _name_the_necromancer(world: dict, polity: str, day: int,
                "since": day}
         layer["necromancer"] = who
     return {"necromancer": who["name"]}
+
+
+# --- the lesser named authorities a politics card creates ------------------ #
+# The same trick, generalized (2026-08-10): a card that has to name somebody
+# names him ONCE and the land keeps him, so the banned lord is still the same
+# banned lord the next time the ban comes round. He draws TWO words off the
+# crown-less pool (`rulers.py`), so the sheriff and the king come off one
+# vocabulary and the DM has something to play the moment the news says his
+# name.
+
+def named_authority(world: dict, polity: str, key: str) -> dict | None:
+    """A lesser named authority a card put on this land, if it has one."""
+    return land_layer(world, polity).get("authorities", {}).get(key)
+
+
+def _authority_hook(key: str, role: str, field: str = "who"):
+    def hook(world: dict, polity: str, day: int,
+             rng: random.Random) -> dict:
+        from people import pick_name         # lazy: quests imports worldsim
+        layer = land_layer(world, polity)
+        who = layer.setdefault("authorities", {}).get(key)
+        if who is None:
+            race = LAND_SPECS[polity]["race"]
+            sheet = rulers.roll_ruler(rng, crown=False)
+            sheet.update(name=pick_name(rng, race, rng.choice(("m", "f"))),
+                         role=role, since=day)
+            layer["authorities"][key] = who = sheet
+        return {field: who["name"]}
+    return hook
 
 
 # --------------------------------------------------------------------------- #
@@ -1261,6 +1823,1635 @@ CARDS = (
          state={"clear": ("burned-over",)}),
 )
 
+# --------------------------------------------------------------------------- #
+# The politics content (2026-08-10): worldsim.md's politics packets
+# --------------------------------------------------------------------------- #
+# What politics owns that econ does not: right, office and allegiance. Where a
+# packet entry was an econ card wearing a crown -- the lord's mill, the company
+# scrip, the guild monopolies -- it stayed in the econ deck and is referenced
+# here, never duplicated.
+#
+# Every card names the TENSION that admits it, and that is also the gate on
+# the deck: a Firascir where the crown is fighting its lords never draws the
+# temple's cards at all. Firascir carries the deepest packet by the asymmetry
+# doctrine (it is the baseline land, and the ruler sheet's weights are already
+# its), and its manor tension is STANDING -- the econ packet's oppression axis
+# is not colour, it is what the land is.
+#
+# The lesser named authorities these cards create -- the banned lord, the
+# witch-finder, the bandit king -- draw TWO words off the crown-less pool
+# through `_authority_hook`, and the land keeps them: the same man is still
+# there the next time the card comes round, which is what makes him a face
+# instead of a pulse.
+
+_CROWNED = ("firascir", "mortellaria", "ensimaa", "dvarvengrond", "tergal")
+
+_BAN_HOOK = _authority_hook("banned-lord", "the banned lord", "lord")
+_FINDER_HOOK = _authority_hook("witch-finder", "the witch-finder", "finder")
+_BANDIT_HOOK = _authority_hook("bandit-king", "the bandit king", "bandit")
+_PRETENDER_HOOK = _authority_hook("pretender", "the pretender", "claimant")
+
+POLITICS_CARDS = (
+    # == Firascir: CUSTOM AGAINST PREROGATIVE ============================== #
+    # -- realm & crown ---------------------------------------------------- #
+    card("firascir/interdict", "The temple closes the land", "firascir",
+         tension=("temple-vs-crown",), days=(20, 35),
+         news="The temple has closed the land. No weddings, no rites and "
+              "no burials until the king gives way. The dead are waiting "
+              "in the church porch.",
+         state={"while": ("interdict",)},
+         quest={"post": job(
+             "The Dead Are Waiting",
+             "A village wants its dead in the ground and the priest will "
+             "not come out. There is a hedge-priest two valleys off who "
+             "says he will, and the bishop's men are looking for him.",
+             pool=_TOUGHS, sites=("the church porch", "the hedge road"),
+             giver="the village headman",
+             epilogue="The hedge-priest came and the dead are buried. The "
+                      "bishop's men arrived a day late and wrote down "
+                      "every name they could get.",
+             failure_epilogue="The hedge-priest was taken on the road. The "
+                              "village still buries its dead in the woods "
+                              "at night."),
+             "pay": 1.15, "slots": -1}),
+    card("firascir/orders-law", "The order hangs a local man", "firascir",
+         tension=("temple-vs-crown",),
+         faction_edge=("firascir/militant-order-answers-temple",),
+         days=(12, 20),
+         news="The militant order tried a local man in its own court and "
+              "hanged him on its own gallows. The county wants the body "
+              "back, and wants the precedent more.",
+         state={"while": ("order-trial",)},
+         quest={"post": job(
+             "The Body And The Precedent",
+             "The sheriff means to take the hanged man down off the "
+             "order's gallows and carry him to the county court. The "
+             "order's knights are standing over him.",
+             pool=_TOUGHS, sites=("the order's gallows",),
+             giver="the county sheriff",
+             epilogue="The body is in the county's ground and the county "
+                      "clerk has written down how it got there.",
+             failure_epilogue="The order kept its gallows and its dead. "
+                              "The county has stopped asking."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/royal-progress", "The royal progress arrives", "firascir",
+         traits=("itinerant",), days=(8, 14),
+         news="The king's court has arrived: a hundred mouths with "
+              "precedence, quartered on whichever lord it is testing this "
+              "month. He will be poorer when it moves on.",
+         state={"while": ("royal-progress",)},
+         quest={"post": job(
+             "A Hundred Mouths",
+             "The lord's steward has four days to feed a court and no "
+             "hope of doing it honestly. He wants the deer road watched, "
+             "and he wants nobody counting what comes down it.",
+             pool=_BEASTS, sites=("the deer road",),
+             giver="the lord's steward",
+             epilogue="The court ate and the lord kept his name. The "
+                      "steward pays out of a box he will not open twice.",
+             failure_epilogue="The court ate poorly and said so out loud. "
+                              "The lord's name is a joke as far as the "
+                              "capital."),
+             "slots": 1}),
+    card("firascir/the-ban", "The crown declares a lord dead in law",
+         "firascir", tension=("crown-vs-lords",),
+         faction_edge=("firascir/great-lords-defy-crown",),
+         days=(20, 35), hook=_BAN_HOOK,
+         news="The crown has declared {lord} legally dead. His lands are "
+              "forfeit, anyone may kill him without answering for it, and "
+              "he is hiring.",
+         state={"while": ("lord-banned",)},
+         encounter={"kinds": ("cutthroat", "archer", "soldier"),
+                    "where": "road", "as": "the banned lord's last men",
+                    "skins": {"cutthroat": "Forfeit Man",
+                              "archer": "Outlaw Bow",
+                              "soldier": "Dead-In-Law"},
+                    "chance": 0.45},
+         quest={"post": job(
+             "Nobody Answers For It",
+             "The banned lord holds one tower and pays better than the "
+             "crown does. The crown pays by the head and does not ask who "
+             "the head belonged to. Both sides are hiring at the same "
+             "inn.",
+             pool=_TOUGHS, sites=("the forfeit tower",),
+             giver="the crown's bailiff",
+             epilogue="The tower is taken. The crown pays by the head and "
+                      "the county is very quiet about it.",
+             failure_epilogue="The tower held. The banned lord is still "
+                              "in it, and the men he hired are on the "
+                              "roads."),
+             "pay": 1.30, "slots": 1}),
+    card("firascir/settled-warband", "The border grant", "firascir",
+         tension=("crown-vs-lords",), days=None,
+         news="A march lord has granted border land to an orc warband in "
+              "exchange for service. The neighbours are terrified. The "
+              "warband keeps its own law, and both sides are right about "
+              "each other.",
+         state={"set": ("warband-settled",)},
+         quest={"post": job(
+             "Both Sides Are Right",
+             "A village on the grant's edge wants the riders off its "
+             "fields. The warband's chief says the fields were in the "
+             "grant. Somebody is going to have to be wrong in front of "
+             "witnesses.",
+             pool=_TOUGHS, sites=("the granted fields",),
+             giver="the march lord's herald",
+             epilogue="The line is where the herald says it is, and both "
+                      "sides walked away from it alive.",
+             failure_epilogue="The village is off its fields and the "
+                              "grant runs to the river now."),
+             "pay": 1.15, "reprice": 1.1}),
+    card("firascir/the-badge", "The badge-men take the courts", "firascir",
+         tension=("crown-vs-lords", "old-vs-new"), days=(15, 25),
+         news="A lord is paying armed men to wear his badge and lean on "
+              "the courts. By the time the crown's inspectors come to "
+              "break the private army up, the badge-men are the law here.",
+         state={"while": ("badge-men",)},
+         quest={"post": job(
+             "The Inspector's Escort",
+             "A crown inspector has come to count a lord's liveries and "
+             "wants blades walking beside him. The last man who counted "
+             "them was found in the mill race.",
+             pool=_TOUGHS, sites=("the lord's hall", "the mill race"),
+             giver="the crown's inspector",
+             epilogue="The count is written and the inspector is alive to "
+                      "carry it. The badges came off, for this month.",
+             failure_epilogue="The inspector never finished his count. The "
+                              "badge-men hold the courthouse door now."),
+             "pay": 1.20, "slots": -1}),
+    card("firascir/the-ward", "The wardship is auctioned", "firascir",
+         tension=("crown-vs-lords", "old-vs-new"), days=(15, 25),
+         news="A lord is dead and his heir is nine years old. The crown is "
+              "auctioning the wardship: raise the child, drain the estate, "
+              "marry it to your own son at majority. Everyone bidding "
+              "knows what they are bidding on.",
+         state={"while": ("wardship-sold",)},
+         quest={"post": job(
+             "The Ward",
+             "The child's aunt wants the boy out of the winning bidder's "
+             "house before the ink dries. The house has hired men who "
+             "expect exactly this.",
+             pool=_TOUGHS, sites=("the bidder's manor", "the north road"),
+             giver="the child's aunt",
+             epilogue="The boy is with his aunt and the wardship is a "
+                      "lawsuit now instead of a life.",
+             failure_epilogue="The boy stayed. The estate will be timber "
+                              "and debt by the time he is grown."),
+             "pay": 1.25, "reprice": 1.15}),
+
+    # -- manor & village (the standing tension) --------------------------- #
+    card("firascir/custom-strike", "The village works to the letter",
+         "firascir", tension=("manor-vs-village",),
+         faction_edge=("firascir/village-slows-manor-lord",),
+         days=(12, 20),
+         news="The bailiff demanded extra harvest days. The village cites "
+              "the manor's ancient custom, arrives on time, and works at "
+              "a crawl the lord cannot quite punish.",
+         state={"while": ("custom-strike",)},
+         quest={"reprice": 0.90}),
+    card("firascir/burning-rolls", "The court rolls burn", "firascir",
+         tension=("manor-vs-village",), days=None,
+         news="The mob did not go for the lord. It went for the manor's "
+              "court rolls -- who owes what, and who was born unfree. "
+              "Every debt and every servile birth is ash, unless the "
+              "clerk kept a second copy.",
+         state={"set": ("rolls-burned",)},
+         quest={"post": job(
+             "The Second Copy",
+             "The clerk kept a second copy and three parties know it. The "
+             "lord wants it, the village wants it burned, and the clerk "
+             "wants to be somewhere else by Friday.",
+             pool=_TOUGHS, sites=("the clerk's house", "the burnt hall"),
+             giver="the manor clerk",
+             epilogue="The second copy is where the party left it, and "
+                      "the whole valley now knows which.",
+             failure_epilogue="The copy went into somebody's fire in the "
+                              "confusion. Nobody in the valley can prove "
+                              "anything about anybody."),
+             "pay": 1.25, "slots": 1}),
+    card("firascir/year-and-a-day", "A year and a day", "firascir",
+         tension=("manor-vs-village", "crown-vs-guilds"), days=(10, 18),
+         news="A skilled smith has run from the manor to the chartered "
+              "town. Town air makes a man free after a year and a day, "
+              "the guild will not give him up, and the lord's men are at "
+              "the gate counting.",
+         state={"while": ("town-air",)},
+         quest={"post": job(
+             "The Gate Count",
+             "The guild wants the smith kept inside the walls until the "
+             "day runs out. The lord's men want him outside them for one "
+             "hour. The clock is public knowledge.",
+             pool=_TOUGHS, sites=("the town gate", "the guild yard"),
+             giver="the guild warden",
+             epilogue="The day ran out with the smith inside the walls. "
+                      "He is a free man and the guild says so in writing.",
+             failure_epilogue="The smith was taken off the street two "
+                              "days short. He is back at the manor forge "
+                              "with an iron collar on."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/lord-away", "While the lord is away", "firascir",
+         tension=("manor-vs-village",),
+         faction_edge=("firascir/manor-lord-squeezes-village",),
+         days=(15, 25),
+         news="The bailiff has invented fines -- bad ale, gathered "
+              "deadwood -- and runs the manor court as his own purse. The "
+              "village reeve sells the lord's grain and books the "
+              "shortfall to blight. Neither has told the lord.",
+         state={"while": ("bailiff-loose",)},
+         quest={"post": job(
+             "Two Jerks, One Address",
+             "Somebody has to ride to the lord with the truth, and both "
+             "men in the valley with something to hide would rather that "
+             "rider did not arrive.",
+             pool=_TOUGHS, sites=("the manor court", "the lord's road"),
+             giver="the village priest",
+             epilogue="The lord has the whole account. The bailiff is in "
+                      "his own stocks and the reeve has left the county.",
+             failure_epilogue="The rider never reached the lord. The "
+                              "fines have gone up again."),
+             "pay": 1.15, "slots": -1}),
+    card("firascir/rent-strike", "The rent strike", "firascir",
+         tension=("manor-vs-village",), days=(12, 20),
+         news="The village has hidden its coin and pleads a blight. The "
+              "bailiff cannot evict everyone at once and knows it. Some "
+              "years the plea is honest.",
+         state={"while": ("rent-strike",)},
+         quest={"post": job(
+             "Is The Plea Honest",
+             "The lord wants somebody who is not from here to walk the "
+             "strips, look in the barns, and say whether the village is "
+             "poor or lying. The village would rather the walk did not "
+             "happen.",
+             pool=_TOUGHS, sites=("the barn row", "the far strips"),
+             giver="the lord's steward",
+             epilogue="The walk is done and the answer is written. What "
+                      "the lord does with it is his own business.",
+             failure_epilogue="Nobody walked the strips. The lord has "
+                              "sent men who will not ask first."),
+             "pay": 1.10, "reprice": 0.9}),
+    card("firascir/widows-holding", "The widow's holding", "firascir",
+         tension=("manor-vs-village",), days=(15, 25),
+         news="A rich widow pays the yearly fine to stay unmarried and "
+              "keeps the best land in the valley out of every scheming "
+              "hand. Suitors, heirs and the lord's own plans are circling "
+              "her.",
+         state={"while": ("widow-holding",)},
+         quest={"post": job(
+             "The Suitors",
+             "The widow wants her gate watched for a season and her fine "
+             "carried to the manor court in one piece. Two of the suitors "
+             "have stopped writing letters.",
+             pool=_TOUGHS, sites=("the widow's holding",),
+             giver="the widow",
+             epilogue="The fine is paid, the gate held, and the widow is "
+                      "unmarried for another year.",
+             failure_epilogue="The fine never reached the court. The land "
+                              "is being surveyed for somebody's son."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/peasant-merger", "The strips are merged", "firascir",
+         tension=("manor-vs-village",), days=None,
+         news="Two big village families have betrothed their strips "
+              "together and now hold the best soil in the parish between "
+              "them. The balance of the village has moved from below, and "
+              "the lord will notice late.",
+         state={"set": ("strips-merged",)},
+         quest={"reprice": 1.10}),
+    card("firascir/jury-lies", "The jury swears it true", "firascir",
+         tension=("manor-vs-village",), days=(8, 14),
+         news="The manor court's jury -- the accused's own neighbours -- "
+              "has sworn a starving thief innocent in the law's teeth, "
+              "and every one of them is liable for the fine.",
+         state={"while": ("jury-lies",)},
+         quest={"post": job(
+             "One More Witness",
+             "The lord's court will sit again on Thursday and one more "
+             "witness either way settles it. Both sides have worked out "
+             "who that could be and where he drinks.",
+             pool=_TOUGHS, sites=("the manor court", "the ale house"),
+             giver="the accused thief's sister",
+             epilogue="The verdict held. The village paid its fine "
+                      "together and nobody named anybody.",
+             failure_epilogue="The verdict was overturned and the thief "
+                              "hanged. Half the jury is paying the fine "
+                              "and the other half has left."),
+             "pay": 1.10, "reprice": 0.95}),
+    card("firascir/cry-ignored", "The hue and cry goes unanswered",
+         "firascir", tension=("manor-vs-village",), days=(10, 16),
+         news="The forester raised the hue and cry on a poacher the "
+              "village likes, and the village went conveniently deaf. "
+              "Failing the cry is a collective fine, and everyone is "
+              "counting on nobody testifying.",
+         state={"while": ("cry-ignored",)},
+         quest={"post": job(
+             "The Forester's Own Cry",
+             "The forester wants outsiders to walk the wood with him, "
+             "since nobody local will. The poacher knows the wood and has "
+             "friends in it.",
+             pool=_BEASTS, sites=("the closed wood",),
+             giver="the royal forester",
+             epilogue="The wood is walked and the forester has his man. "
+                      "The village has not spoken to him since.",
+             failure_epilogue="The poacher is still in the wood and the "
+                              "village fine has been levied on everybody "
+                              "but him."),
+             "pay": 1.10, "reprice": 0.95}),
+    card("firascir/forest-law", "The royal woods are closed", "firascir",
+         tension=("manor-vs-village", "crown-vs-lords"), days=(25, 40),
+         news="The royal woods stand outside the common law again. The "
+              "forage, the deadwood and the gleaning are fenced off year "
+              "by year, the penalty for a deer is savage, and two lords' "
+              "retinues are already skirmishing over a boundary oak.",
+         state={"while": ("forest-law",)},
+         quest={"post": job(
+             "The Boundary Oak",
+             "Two lords' men are fighting over which side of an oak the "
+             "wood begins. One of them is paying for the argument to be "
+             "settled before the crown's justice rides through.",
+             pool=_TOUGHS, sites=("the boundary oak",),
+             giver="the lord's forester",
+             epilogue="The oak is where the party left it and the "
+                      "boundary is what the surviving side says it is.",
+             failure_epilogue="The skirmish ran on into the villages. "
+                              "Both woods are closed now and the gleaning "
+                              "with them."),
+             "pay": 1.15, "slots": 1}),
+    card("firascir/silver-vein", "Silver on the lord's land", "firascir",
+         tension=("manor-vs-village", "old-vs-new"), days=None,
+         news="A strike on the local lord's land has made him suddenly, "
+              "dangerously rich. Armed men, bought judges, new walls, new "
+              "appetites. The dwarven prospectors who found it say that "
+              "finding is keeping, and their law agrees with them.",
+         state={"set": ("silver-strike",)},
+         quest={"post": job(
+             "Finding Is Keeping",
+             "The prospectors have a claim under dwarven law and the lord "
+             "has a title under this one. Both are hiring, both are "
+             "right, and the hole in the ground does not care.",
+             pool=_DWARF_TOUGHS, sites=("the silver adit",),
+             giver="the dwarven claim-holder",
+             epilogue="The adit is held and the claim is written down "
+                      "twice, in two laws that still disagree.",
+             failure_epilogue="The prospectors are off the hill. Their "
+                              "claim is filed under the mountain, and the "
+                              "mountain remembers."),
+             "pay": 1.25, "slots": 1}),
+    card("firascir/trial-by-combat", "The loophole stands open", "firascir",
+         tension=("old-vs-new", "manor-vs-village"), days=(12, 20),
+         news="Two wealthy houses are answering a lawsuit at swordpoint "
+              "through hired champions. The court has agreed to it, which "
+              "means every case in the county can go the same way now.",
+         state={"while": ("champions-hired",)},
+         quest={"post": job(
+             "Champion For Hire",
+             "A house that will lose its case on the evidence wants a "
+             "champion who will not lose it on the field. The other side "
+             "has been hiring for a week.",
+             pool=_TOUGHS, sites=("the court field",),
+             giver="the house's advocate",
+             epilogue="The field is settled and so is the case. The "
+                      "county's lawyers are all quietly hiring.",
+             failure_epilogue="The champion went down and the case went "
+                              "with him. The house is paying costs it "
+                              "cannot pay."),
+             "pay": 1.30, "slots": 1}),
+
+    # -- town ------------------------------------------------------------- #
+    card("firascir/charter-run", "The charter run", "firascir",
+         tension=("crown-vs-guilds",),
+         faction_edge=("firascir/guilds-buy-crown",), days=(10, 16),
+         news="The market town has pooled its silver in secret to buy a "
+              "royal charter out from under its lord. The lord has "
+              "blockaded the roads to stop the purse reaching the king.",
+         state={"while": ("charter-run",)},
+         quest={"post": job(
+             "The Purse And The Blockade",
+             "The town's purse has to reach the king's clerk and every "
+             "road out is watched. The lord's men have orders to find "
+             "silver and no orders about who is carrying it.",
+             pool=_TOUGHS, sites=("the blockaded road", "the king's court"),
+             giver="the town's guild warden", places=2,
+             epilogue="The purse reached the clerk. The town has its "
+                      "charter and the lord has a grievance in writing.",
+             failure_epilogue="The purse was taken on the road. The town "
+                              "is the lord's for another generation and "
+                              "knows who lost it."),
+             "pay": 1.30, "reprice": 1.2}),
+    card("firascir/mayor-in-velvet", "The mayor in velvet", "firascir",
+         tension=("old-vs-new",),
+         faction_edge=("firascir/new-men-outbid-great-lords",),
+         days=(15, 25),
+         news="A wool merchant has been elected mayor, dresses past his "
+              "blood, rides a warhorse and demands to be addressed as an "
+              "equal. The insulted barons are choking the town's grain to "
+              "starve him down.",
+         state={"while": ("mayor-in-velvet",)},
+         menu={"goods": 1.25},
+         quest={"post": job(
+             "The Grain Road, Again",
+             "The mayor wants one grain train through the barons' roads "
+             "and does not much care what it costs. The barons want it "
+             "stopped where the town can see it stop.",
+             pool=_TOUGHS, sites=("the barons' road",),
+             giver="the mayor",
+             epilogue="The grain is in the town and the mayor rode out to "
+                      "meet it in velvet. The barons are writing letters.",
+             failure_epilogue="The train was turned back. The town is "
+                              "hungry and has started to blame the "
+                              "velvet."),
+             "pay": 1.20, "slots": -1}),
+
+    # -- temple & parish --------------------------------------------------- #
+    card("firascir/tithe-war", "The tithe war", "firascir",
+         tension=("manor-vs-village", "temple-vs-crown"), days=(15, 25),
+         news="The village tithes its sickliest lambs and its lightest "
+              "sheaves, and has done for years. The priest's barn keeps "
+              "the evidence, and he has started writing it down.",
+         state={"while": ("tithe-war",)},
+         quest={"post": job(
+             "The Barn Count",
+             "The priest wants his barn counted by somebody the village "
+             "cannot lean on. The village would prefer the count to be "
+             "interrupted.",
+             pool=_TOUGHS, sites=("the tithe barn",),
+             giver="the parish priest",
+             epilogue="The count is done and the tally is in the bishop's "
+                      "hand. Next year's lambs will be better.",
+             failure_epilogue="The barn burned in the night with the "
+                              "tally in it. The priest is not asking "
+                              "again."),
+             "pay": 1.10, "reprice": 0.95}),
+    card("firascir/scandalous-priest", "The rectory scandal", "firascir",
+         tension=("manor-vs-village",), days=(15, 25),
+         news="The priest keeps a woman at the rectory and buys land for "
+              "his children out of the church box. The pious of the "
+              "parish are petitioning the bishop, who has a price for "
+              "acting. He is also the best friend this village has.",
+         state={"while": ("priest-scandal",)},
+         quest={"post": job(
+             "The Bishop's Price",
+             "Somebody has to carry the petition, or lose it. Both halves "
+             "of the parish have found the party and both are paying.",
+             pool=_TOUGHS, sites=("the rectory", "the bishop's road"),
+             giver="the parish's pious widow",
+             epilogue="The petition arrived, or it did not. The parish "
+                      "knows which and has divided accordingly.",
+             failure_epilogue="The petition was taken off the road by "
+                              "people who wanted it read. The bishop is "
+                              "coming himself."),
+             "pay": 1.15, "reprice": 1.05}),
+    card("firascir/witch-finder", "The witch-finder arrives", "firascir",
+         traits=("spell-fearing",), days=(10, 18), hook=_FINDER_HOOK,
+         news="A man calling himself {finder} has arrived offering to "
+              "root out the village's witch, for a fee. He has never yet "
+              "failed to find one.",
+         state={"while": ("witch-finder",)},
+         quest={"post": job(
+             "He Always Finds One",
+             "The finder has named the herb-woman and the village has "
+             "started agreeing with him. Her son is paying anyone who "
+             "will stand in the square and say what the trick is.",
+             pool=_TOUGHS, sites=("the village square",),
+             giver="the herb-woman's son",
+             epilogue="The trick is out in front of the whole village and "
+                      "the finder left before dark, still owed his fee.",
+             failure_epilogue="The herb-woman is dead and the finder has "
+                              "moved on to the next village with a "
+                              "reference."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/dancing-plague", "A street cannot stop dancing",
+         "firascir", tension=("manor-vs-village",), chance=0.35,
+         days=(10, 18),
+         news="A street of villagers has been dancing for three days and "
+              "cannot stop. Flagellant columns are arriving behind the "
+              "news. The temple calls it penance and the wise woman calls "
+              "it poison.",
+         state={"while": ("dancing-plague",)},
+         quest={"post": job(
+             "The Wise Woman's Answer",
+             "The wise woman says the cause has an address: the mill, the "
+             "grain, and whoever sold it. She wants the mill looked at "
+             "before the flagellants get here and make it a miracle.",
+             pool=_TOUGHS, sites=("the mill loft", "the dancing street"),
+             giver="the wise woman",
+             epilogue="The bad grain is out of the mill and the dancing "
+                      "stopped inside a week. The temple has claimed the "
+                      "credit.",
+             failure_epilogue="The flagellants have the street and the "
+                              "mill is still grinding. Two more houses "
+                              "started this morning."),
+             "pay": 1.20, "slots": -1}),
+    card("firascir/free-company", "The free company", "firascir",
+         tension=("crown-vs-lords",), days=(20, 35),
+         news="The war wound down and the unpaid company did not. It is a "
+              "small state on the roads now: it tolls the bridges, it "
+              "rents itself to whichever side pays, and it is recruiting.",
+         state={"while": ("free-company",)},
+         quest={"post": job(
+             "Buy Them Or Break Them",
+             "The county has raised money to pay the company off and "
+             "would rather spend it on somebody who will break the "
+             "company instead. The company has heard both offers.",
+             pool=_TOUGHS, sites=("the company's bridge",),
+             giver="the county's clerk",
+             epilogue="The bridge is open and the company has moved on to "
+                      "somebody else's roads.",
+             failure_epilogue="The company holds the bridge and has "
+                              "raised the toll to cover the trouble."),
+             "pay": 1.30, "slots": -1}),
+    card("firascir/midnight-court", "The midnight court", "firascir",
+         tension=("old-vs-new", "crown-vs-guilds"), days=(15, 25),
+         news="The lawful courts are bought, so a tribunal of masked "
+              "freemen has started trying men by night and hanging them "
+              "by morning. It has a membership list, and half the county "
+              "would like to see it.",
+         state={"while": ("midnight-court",)},
+         quest={"post": job(
+             "The Membership List",
+             "The sheriff wants the list. The court wants the sheriff "
+             "tried. Somebody in the party is going to be offered a seat "
+             "before this is over.",
+             pool=_TOUGHS, sites=("the night wood", "the sheriff's house"),
+             giver="the county sheriff",
+             epilogue="The list is in the sheriff's hand and four names "
+                      "on it have already left the county.",
+             failure_epilogue="The sheriff was tried and hanged by his "
+                              "own neighbours. Nobody will say where."),
+             "pay": 1.25, "reprice": 1.15}),
+
+    # == Mortellaria: ONE KING, ONE LAW, ONE FAITH ========================= #
+    card("mortellaria/revocation", "The old faith is outlawed",
+         "mortellaria", tension=("crown-vs-faith",),
+         faction_edge=("mortellaria/tribunal-hunts-hidden-faith",),
+         days=None,
+         news="The tolerated faith was made illegal overnight. Dragoons "
+              "are quartered in the houses of anyone who will not "
+              "convert, and the skilled trades are leaving for the border "
+              "with their capital.",
+         state={"set": ("faith-banned",), "wealth_while": "crisis"},
+         quest={"post": job(
+             "The Border, Before Dawn",
+             "Three families of dyers want to be over the border with "
+             "their tools before the dragoons finish the street. "
+             "Informers are paid by the head.",
+             pool=_TOUGHS, sites=("the night quarter", "the border road"),
+             giver="the dyers' master", places=2,
+             epilogue="The families are over the border with their tools. "
+                      "The street they left is quartered and quiet.",
+             failure_epilogue="The families were taken at the last gate. "
+                              "The tools were sold and the informer was "
+                              "paid by the head."),
+             "pay": 1.30, "slots": -1}),
+    card("mortellaria/dueling-edict", "The dueling edict", "mortellaria",
+         tension=("sword-vs-robe",),
+         faction_edge=("mortellaria/sword-snub-robe",), days=(15, 25),
+         news="Duelling is a capital crime now. Two grandees fought "
+              "anyway. One is dead and the other is on the road with his "
+              "estate in limbo, the dead man's family behind him, and "
+              "nothing to sell but his sword.",
+         state={"while": ("duel-fugitive",)},
+         quest={"post": job(
+             "The Survivor",
+             "The dead man's family wants the survivor brought back to "
+             "the capital. The survivor wants an escort to anywhere else "
+             "and can pay for exactly one.",
+             pool=_TOUGHS, sites=("the coast road",),
+             giver="the dead grandee's brother",
+             epilogue="The survivor is where the party took him, and the "
+                      "family has stopped paying either way.",
+             failure_epilogue="The survivor went over the border with the "
+                              "family two days behind. It will be settled "
+                              "in somebody else's country."),
+             "pay": 1.25, "reprice": 1.1}),
+    card("mortellaria/sealed-warrant", "The warrants go on sale",
+         "mortellaria", tension=("sword-vs-robe", "court-vs-provinces"),
+         days=(20, 30),
+         news="Blank royal arrest orders exist and can be bought. A name "
+              "written in, a fortress door, and no charge and no trial "
+              "after it. Half the court is buying and the other half is "
+              "sleeping badly.",
+         state={"while": ("warrants-sold",)},
+         menu={"goods": 1.10},
+         quest={"post": job(
+             "The Name Left Blank",
+             "A merchant's daughter has vanished into a fortress on "
+             "somebody's paper. Her father has bought a warrant of his "
+             "own and wants it delivered to the right door.",
+             pool=_TOUGHS, sites=("the fortress gate",),
+             giver="the merchant",
+             epilogue="The daughter is out and the warrant that took her "
+                      "is ash. Somebody at court has noticed.",
+             failure_epilogue="The fortress kept her and the second "
+                              "warrant was read by the wrong clerk. The "
+                              "merchant's own name is on a list now."),
+             "pay": 1.30, "reprice": 1.15}),
+    card("mortellaria/tontine", "The tontine", "mortellaria",
+         tension=("sword-vs-robe",), days=(15, 25),
+         news="An elite investment pool pays out to the last survivor, "
+              "and the survivors have begun dying in interesting ways. "
+              "The pool names its own motive and everyone in it knows the "
+              "arithmetic.",
+         state={"while": ("tontine-deaths",)},
+         quest={"post": job(
+             "The Last Survivor",
+             "One of the remaining eight wants to live to collect and "
+             "will pay for a house watched, a road walked, and a cook "
+             "questioned.",
+             pool=_TOUGHS, sites=("the town house", "the physician's "
+                                  "rooms"),
+             giver="the seventh subscriber",
+             epilogue="The subscriber is alive and two of the others are "
+                      "not. The pool's clerk has stopped answering his "
+                      "door.",
+             failure_epilogue="The subscriber died at his own table. The "
+                              "pool is down to five and the payout is "
+                              "getting close."),
+             "pay": 1.30, "reprice": 1.2}),
+    # The bubble CHAIN: the crown grants the monopoly, the shares go mad,
+    # and the crash is the next card in the deck.
+    card("mortellaria/monopoly-bubble", "The monopoly is granted",
+         "mortellaria", tension=("court-vs-provinces", "sword-vs-robe"),
+         without=("shares-mad", "quarter-ruined"), days=(12, 20),
+         news="The crown has granted one company the whole colony trade. "
+              "The shares have gone mad. Servants are buying, and so is "
+              "everyone who lends to servants.",
+         state={"set": ("shares-mad",)},
+         quest={"post": job(
+             "The Subscription Book",
+             "The company's subscription book has to reach the exchange "
+             "before the doors open, and three houses would rather it did "
+             "not arrive at all.",
+             pool=_TOUGHS, sites=("the exchange steps",),
+             giver="the company's factor",
+             epilogue="The book opened on time. The price doubled before "
+                      "noon and the factor has not stopped smiling.",
+             failure_epilogue="The book never opened. The price doubled "
+                              "anyway, on nothing at all."),
+             "pay": 1.20, "slots": 1}),
+    card("mortellaria/the-crash", "The shares collapse", "mortellaria",
+         states=("shares-mad",), days=(15, 25),
+         news="The colony shares are worth what the paper weighs. Half "
+              "the merchant quarter is ruined by breakfast and the other "
+              "half is being blamed for it in the street.",
+         state={"clear": ("shares-mad",), "while": ("quarter-ruined",)},
+         encounter={"kinds": ("cutthroat", "bruiser"), "where": "road",
+                    "as": "men who were rich on Tuesday",
+                    "skins": {"cutthroat": "Ruined Clerk",
+                              "bruiser": "Ruined Broker"},
+                    "chance": 0.40},
+         quest={"post": job(
+             "The Broker's Door",
+             "A broker who sold at the top wants his house held until the "
+             "crowd outside it gets bored. It has not got bored in two "
+             "days.",
+             pool=_TOUGHS, sites=("the broker's house",),
+             giver="the broker's clerk",
+             epilogue="The house held. The broker left by the garden with "
+                      "everything he still had.",
+             failure_epilogue="The house went in. There is nothing left "
+                              "of it worth the name and the broker is "
+                              "somewhere in the crowd."),
+             "pay": 1.25, "slots": -1}),
+    card("mortellaria/alchemists-wing", "The crown funds the alchemists",
+         "mortellaria", tension=("court-vs-provinces",), days=(25, 40),
+         news="The crown has put a wing of the palace and a great deal of "
+              "money behind a stable of alchemists, on the understanding "
+              "that they will transmute the war debt away. Nobody has "
+              "asked what gold is worth the day after they succeed.",
+         state={"while": ("alchemists-funded",)},
+         menu={"goods": 1.15},
+         quest={"post": job(
+             "The Wing's Shopping List",
+             "The alchemists want quicksilver, a lodestone the size of a "
+             "fist, and something out of a barrow that they will only "
+             "describe once. The crown is paying and not asking.",
+             pool=_TOUGHS, sites=("the old barrow", "the palace wing"),
+             giver="the crown's alchemist", places=2,
+             epilogue="The list is filled and the wing is working day and "
+                      "night. The treasury has stopped asking for "
+                      "results.",
+             failure_epilogue="The list is not filled and the wing has "
+                              "gone quiet. The treasury is asking what "
+                              "the money bought."),
+             "pay": 1.20, "slots": 1}),
+    card("mortellaria/flour-war", "The bread price is let go",
+         "mortellaria", tension=("court-vs-provinces",),
+         wealth=("crisis", "normal"), without=("bread-riots",),
+         days=(10, 18),
+         news="The crown lifted the bread price controls in a lean year. "
+              "Bread has quintupled, the bakeries have been sacked, and "
+              "two merchants were lynched as hoarders. The decree was "
+              "read to the crowd and then the musketeers fired.",
+         state={"while": ("bread-riots",)},
+         quest={"post": job(
+             "The Bakers' Street",
+             "Three bakers who still have flour want their street held "
+             "until the grain convoy arrives. The crowd knows the convoy "
+             "is coming too.",
+             pool=_TOUGHS, sites=("the bakers' street",),
+             giver="the bakers' guild master",
+             epilogue="The street held and the convoy got in. Bread is "
+                      "only twice what it was.",
+             failure_epilogue="The street went. There is no flour left in "
+                              "it and no bakers either."),
+             "pay": 1.25, "slots": -1}),
+    card("mortellaria/salt-revolt", "The salt country rises",
+         "mortellaria", tension=("court-vs-provinces",),
+         states=("tax-farmed",), days=(15, 25),
+         news="The salt tax went up once too often. A province has "
+              "butchered its tax collectors, and the army has answered "
+              "with burned villages and hanged ringleaders.",
+         state={"while": ("salt-revolt",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "soldier"),
+                    "where": "road", "as": "the salt country's own men",
+                    "skins": {"cutthroat": "Salt Man",
+                              "bruiser": "Salt-Breaker",
+                              "soldier": "Punitive Lance"},
+                    "chance": 0.45},
+         quest={"post": job(
+             "The Column And The Village",
+             "A punitive column is a day from a village that has already "
+             "given up its ringleaders. Somebody has to reach the column "
+             "first, and somebody else has been paid to make sure nobody "
+             "does.",
+             pool=_TOUGHS, sites=("the salt road",),
+             giver="the village's own priest",
+             epilogue="The column stopped short of the village. The "
+                      "ringleaders hanged and the roofs stayed on.",
+             failure_epilogue="The column did not stop. The village is "
+                              "black and the province is worse than it "
+                              "was."),
+             "pay": 1.25, "slots": -1}),
+    card("mortellaria/auto-da-fe", "The tribunal stages its penance",
+         "mortellaria", tension=("crown-vs-faith",), days=(12, 20),
+         news="The tribunal has arrested a mountain village wholesale -- "
+              "heresy, the old religion, harm by hidden means -- and "
+              "means to stage the penance in the capital square as "
+              "theatre. Casting is still legal; the academy is proof of "
+              "that. This is about who the crown is willing to burn.",
+         state={"while": ("auto-da-fe",)},
+         quest={"post": job(
+             "The Mountain Village",
+             "A village elder's daughter got out and wants what the "
+             "tribunal actually took: the parish book, which says who "
+             "denounced whom and for how much.",
+             pool=_TOUGHS, sites=("the tribunal's yard", "the mountain "
+                                  "village"),
+             giver="the elder's daughter", places=2,
+             epilogue="The book is out and being read aloud in three "
+                      "taverns. Two of the denouncers have left the "
+                      "capital.",
+             failure_epilogue="The book stayed in the tribunal's yard and "
+                              "the square is being built for the "
+                              "penance."),
+             "pay": 1.30, "reprice": 1.15}),
+    card("mortellaria/bandit-king", "The bandit king", "mortellaria",
+         tension=("court-vs-provinces",), days=(25, 40),
+         hook=_BANDIT_HOOK,
+         news="Enclosure and debt made {bandit}, and charisma armed him. "
+              "He robs tax shipments and rich men and nothing else, so "
+              "the peasants hide him and the magistrates hang whoever "
+              "they catch instead.",
+         state={"set": ("bandit-king",)},
+         quest={"post": job(
+             "Both Sides Pay For Road Work",
+             "The magistrate wants the tax road walked. The bandit wants "
+             "to know when the shipment moves. The party can be paid for "
+             "the same week's work twice, once.",
+             pool=_TOUGHS, sites=("the tax road", "the hedge camp"),
+             giver="the provincial magistrate",
+             epilogue="The road is walked and the shipment is where "
+                      "somebody wanted it. Both employers paid.",
+             failure_epilogue="The shipment is gone and the magistrate "
+                              "has hanged three men out of the nearest "
+                              "village for it."),
+             "pay": 1.25, "slots": 1}),
+
+    # == Ensimaa: FACE, PURITY & THE FROZEN LADDER ========================= #
+    card("ensimaa/writ-revoked", "The writ is revoked", "ensimaa",
+         tension=("purity-vs-fringe",),
+         faction_edge=("ensimaa/purity-board-certifies-elders",),
+         days=None,
+         news="A great name's purity certificate has been denied over an "
+              "old association. Offices, tenants and name are cascading "
+              "away inside the season, and nobody will say the name out "
+              "loud. Somebody arranged this.",
+         state={"set": ("writ-revoked",)},
+         quest={"post": job(
+             "Prove The Sin Or The Frame",
+             "There is work on both sides of the interview room: the "
+             "association was real, or the letter that reported it was "
+             "written to order. Both parties are paying, quietly.",
+             pool=_ELF_TOUGHS, sites=("the purity board's rooms",
+                                      "the struck house"),
+             giver="the struck grandee's steward", places=2,
+             epilogue="The letter's author is named and the board has "
+                      "reopened the file. The grandee's name is back, "
+                      "with a mark on it.",
+             failure_epilogue="The file is closed. The grandee is looked "
+                              "through in the street and his tenants have "
+                              "new landlords."),
+             "pay": 1.25, "reprice": 1.15}),
+    card("ensimaa/the-search", "The crown dies", "ensimaa",
+         tension=("elders-vs-young",),
+         constitution=("constitutional", "elders"),
+         chance=0.05, days=None,
+         news="The crown has actually died -- the first succession in an "
+              "age. Doctrine says the sovereign returns in a newborn. "
+              "Every faction has produced its own infant, and a regency "
+              "of decades has begun.",
+         state={"set": ("search-on",), "succession": "disputed"},
+         quest={"post": job(
+             "Four Infants",
+             "One faction's candidate has to be carried from a river "
+             "village to the capital before the others' are presented. "
+             "Three other parties are being paid for exactly the same "
+             "week.",
+             pool=_ELF_TOUGHS, sites=("the river village", "the capital "
+                                      "road"),
+             giver="the faction's elder", places=2,
+             epilogue="The child was presented first. Whether that is the "
+                      "sovereign returned is now a matter of record.",
+             failure_epilogue="Another faction's child was presented "
+                              "first. The regency has a name and it is "
+                              "not the one that hired you."),
+             "pay": 1.35, "reprice": 1.2}),
+    card("ensimaa/one-heir", "One heir, four brothers", "ensimaa",
+         tension=("elders-vs-young",), days=(15, 25),
+         news="A great house has concentrated four brothers on a single "
+              "heir to keep the estate whole. The scandal is manageable. "
+              "The inheritance knives are not, and one child belongs to "
+              "everybody.",
+         quest={"post": job(
+             "The Child Belongs To Everybody",
+             "The youngest brother wants the child out of the house for a "
+             "season and will not say which of the others he is afraid "
+             "of. He is right to be.",
+             pool=_ELF_TOUGHS, sites=("the great house", "the far "
+                                      "orchard"),
+             giver="the youngest brother", places=2,
+             epilogue="The child is out of the house and the estate is "
+                      "still whole. Two brothers are not speaking.",
+             failure_epilogue="The child never left the house. The estate "
+                              "is being divided, which is the one thing "
+                              "the arrangement existed to prevent."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("ensimaa/unearthed-record", "The unearthed record", "ensimaa",
+         tension=("elders-vs-young",),
+         faction_edge=("ensimaa/elders-block-young",), days=(15, 25),
+         news="A document has surfaced that contradicts the elders' "
+              "account of the founding, and the elders were there. The "
+              "scandal is not the discovery. It is the proof that living "
+              "memory has been edited.",
+         state={"while": ("record-scandal",)},
+         quest={"post": job(
+             "The Rest Of The Archive",
+             "Whoever found the first sheet knows where the rest is and "
+             "will not last the week alone. The elders' clerks are "
+             "already on the road to the same cellar.",
+             pool=_ELF_TOUGHS, sites=("the sealed cellar",),
+             giver="the young archivist",
+             epilogue="The archive is out and copied. The elders have "
+                      "stopped explaining and started ignoring.",
+             failure_epilogue="The cellar was cleared before you reached "
+                              "it. The first sheet is now agreed to be a "
+                              "forgery."),
+             "pay": 1.25, "reprice": 1.1}),
+    card("ensimaa/mortality-club", "The mortality club", "ensimaa",
+         tension=("elders-vs-young", "machines-vs-wild"), days=(12, 20),
+         news="Young elves who idolise the short-lived are fighting "
+              "un-warded, keeping their scars and buying grime by the "
+              "jar. Their patrons pay to watch real work being done.",
+         quest={"post": job(
+             "Take One Along",
+             "A patron will pay well for the party to work a job with one "
+             "of his club along, and better if it comes back alive. The "
+             "club member has never been hit before.",
+             pool=_ELF_TOUGHS, sites=("the un-warded ground",),
+             giver="the club's patron",
+             epilogue="The club member came home with a real scar and a "
+                      "story he will tell wrong. The patron paid on the "
+                      "spot.",
+             failure_epilogue="The club member did not come home. The "
+                              "patron has paid nothing and said nothing, "
+                              "which is worse."),
+             "pay": 1.30, "slots": 1}),
+    card("ensimaa/primitivists", "A band goes feral", "ensimaa",
+         tension=("machines-vs-wild",),
+         faction_edge=("ensimaa/primitivists-break-machine-keepers",),
+         days=(15, 25),
+         news="The woodland-ways purists forage on a manicured reserve "
+              "with healing wards on standby, which is comedy until one "
+              "band stops coming back. That band is on the reserve now "
+              "and the wards have been turned off.",
+         state={"while": ("feral-band",)},
+         encounter={"kinds": ("cutthroat", "hunter", "bruiser"),
+                    "where": "wilds", "as": "the band that did not come "
+                                            "back",
+                    "skins": {"cutthroat": "Feral Elf",
+                              "hunter": "Reserve Hunter",
+                              "bruiser": "Wild One"},
+                    "chance": 0.45},
+         quest={"post": job(
+             "The Wards Are Off",
+             "The reserve's owner wants his band brought in quietly "
+             "before the real hermits further up the valley are blamed "
+             "for it. The hermits would also like that.",
+             pool=_ELF_TOUGHS, sites=("the private reserve",),
+             giver="the reserve's owner",
+             epilogue="The band is in and the wards are back on. The "
+                      "hermits were never mentioned in the report.",
+             failure_epilogue="The band is deeper in the valley and the "
+                              "owner has told the city it was the "
+                              "hermits."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("ensimaa/hunters-sent", "The hunters are sent after", "ensimaa",
+         constitution=("sealed",), days=(25, 40),
+         news="Under the sealed realm, leaving is exile and a prominent "
+              "exile is followed. Quiet fanatics have gone abroad with "
+              "instructions to erase names, and they are patient.",
+         state={"set": ("hunters-out",)},
+         quest={"post": job(
+             "The Name On The List",
+             "An exile's family here wants word carried out of the realm "
+             "before the hunters get where they are going. Carrying it is "
+             "itself the crime.",
+             pool=_ELF_TOUGHS, sites=("the sealed border",),
+             giver="the exile's sister",
+             epilogue="The word is out of the realm and ahead of the "
+                      "hunters. Somebody abroad has time to move.",
+             failure_epilogue="The word never left. The hunters are "
+                              "already in the right city."),
+             "pay": 1.30, "reprice": 1.15}),
+    card("ensimaa/invisible-staff", "The invisible staff", "ensimaa",
+         tension=("purity-vs-fringe", "machines-vs-wild"), days=(15, 25),
+         news="Somebody has started counting the mortal labourers who do "
+              "the maintenance elves will not. They are unseen by custom "
+              "and therefore the best-informed network in the land, and "
+              "they know exactly what the count is for.",
+         state={"while": ("staff-hunt",)},
+         menu={"lodging": 1.20},
+         quest={"post": job(
+             "Nobody Guards Their Tongue",
+             "The staff want their register out of the board's rooms "
+             "before the count is finished. In exchange they will tell "
+             "you everything they have heard in forty years of being "
+             "furniture.",
+             pool=_ELF_TOUGHS, sites=("the board's rooms",),
+             giver="the staff's own foreman",
+             epilogue="The register is ash and the count has restarted "
+                      "from nothing. The foreman talks for two hours and "
+                      "names four houses.",
+             failure_epilogue="The count is finished. Two hundred people "
+                              "who were furniture yesterday are being put "
+                              "on carts."),
+             "pay": 1.25, "slots": -1}),
+
+    # == Tergal: AUTHORITY IS PERSONAL ===================================== #
+    card("tergal/hostage-guard", "The hostage guard", "tergal",
+         tension=("clan-vs-clan",),
+         faction_edge=("tergal/clans-feud-rival-clans",), days=None,
+         news="The high chief's bodyguard is drawn from the rival chiefs' "
+              "sons: an elite corps and a hostage crop in one. One of the "
+              "sons has run, and his father has stopped answering the "
+              "council's messengers.",
+         state={"set": ("hostage-guard",)},
+         quest={"post": job(
+             "The Son Who Ran",
+             "The high chief wants the boy back in the guard tent before "
+             "the council meets. His father wants him further away than "
+             "that. The boy has opinions of his own.",
+             pool=_TOUGHS, sites=("the guard tents", "the long grass"),
+             giver="the high chief's herald", places=2,
+             epilogue="The boy is back among the guard and his father "
+                      "came to the council after all.",
+             failure_epilogue="The boy is gone and his father's saddle "
+                              "was empty at the council. That is the "
+                              "declaration."),
+             "pay": 1.25, "reprice": 1.15}),
+    card("tergal/sworn-brothers", "Sworn brothers", "tergal",
+         tension=("clan-vs-clan", "chiefs-vs-mothers"), days=(20, 30),
+         news="Two chiefs cut their palms and became brothers by oath "
+              "across clan lines. That is a super-faction overnight. The "
+              "council has tilted and both clans' mothers have "
+              "objected in public.",
+         state={"while": ("sworn-brothers",)},
+         quest={"post": job(
+             "The Mothers Object",
+             "The clan mothers want the oath witnessed as invalid and "
+             "have named the witnesses they will accept. Two of those "
+             "witnesses have been moved somewhere quiet.",
+             pool=_TOUGHS, sites=("the mothers' tent", "the quiet camp"),
+             giver="the eldest clan mother", places=2,
+             epilogue="The witnesses spoke and the oath is a private "
+                      "matter now, not a faction. Both chiefs are "
+                      "furious and neither can say so.",
+             failure_epilogue="The witnesses never came. The oath stands "
+                              "and the two clans vote as one from here "
+                              "on."),
+             "pay": 1.20, "slots": 1}),
+    card("tergal/counting-coup", "Counting coup", "tergal",
+         tension=("clan-vs-clan",), days=(10, 18),
+         news="A young chief has claimed coup on a rival: touched him in "
+              "a fight and left him alive, which outranks killing him. "
+              "The rival says it did not happen and wants it done again "
+              "in front of witnesses.",
+         quest={"post": job(
+             "Judged By Orcish Rules",
+             "The party is invited into the second attempt as the "
+             "neutral hands. Here, mercy scores and slaughter loses face, "
+             "and everybody is watching to see whether foreigners can "
+             "count.",
+             pool=_TOUGHS, sites=("the challenge ground",),
+             giver="the young chief",
+             epilogue="Coup was counted in front of the whole camp and "
+                      "nobody died. The party's name is worth something "
+                      "on this grass now.",
+             failure_epilogue="Somebody was killed on the challenge "
+                              "ground. The coup is void, the party is "
+                              "the reason, and the camps have noticed."),
+             "pay": 1.20, "slots": 1}),
+    card("tergal/mourning-war", "The mourning war", "tergal",
+         tension=("clan-vs-clan",), states=("herd-loss", "grass-gone"),
+         days=(15, 25),
+         news="The raid is not for plunder. It is for people: captives to "
+              "fill the tents the sickness emptied. The clans that lost "
+              "most are riding first.",
+         state={"while": ("mourning-war",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "soldier"),
+                    "where": "road", "as": "riders taking people, not "
+                                           "goods",
+                    "skins": {"cutthroat": "Taker",
+                              "bruiser": "Tent-Filler",
+                              "soldier": "Mourning Lance"},
+                    "chance": 0.50},
+         quest={"post": job(
+             "The Tents They Emptied",
+             "A border village has lost eleven people to a night raid and "
+             "can name the clan. Buying them back is possible. Taking "
+             "them back is faster.",
+             pool=_TOUGHS, sites=("the raiders' camp",),
+             giver="the village headman",
+             epilogue="The eleven are home. The clan that took them has "
+                      "been paid in something and considers it settled.",
+             failure_epilogue="The eleven are in another clan's tents "
+                              "with new names. In a year they will be "
+                              "that clan."),
+             "pay": 1.30, "slots": -1}),
+    card("tergal/shaming-pole", "The shaming pole", "tergal",
+         tension=("council-vs-outlaws",),
+         faction_edge=("tergal/clans-outlaw-outlaws",), days=(12, 20),
+         news="A carved pole is up outside a camp with a formal curse and "
+              "a name on it. The named man is a pariah until it comes "
+              "down. Shame is a siege weapon here and it can be aimed at "
+              "anybody, including strangers.",
+         state={"while": ("shaming-pole",)},
+         quest={"post": job(
+             "Take The Pole Down",
+             "The named man wants the pole down and the singer who carved "
+             "it made to say so out loud. The camp that raised it is "
+             "sitting around it in shifts.",
+             pool=_TOUGHS, sites=("the pole ground",),
+             giver="the named man",
+             epilogue="The pole is down and the singer unsaid it in front "
+                      "of the camp. Slowly, and badly, but out loud.",
+             failure_epilogue="The pole is still up and a second name has "
+                              "been carved under the first."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("tergal/ghost-dance", "The ghost dance", "tergal",
+         tension=("council-vs-outlaws",), states=("herd-loss", "grass-gone"),
+         days=(20, 35),
+         news="The herds have failed and the tribute chiefs have got fat. "
+              "A new faith is sweeping the camps -- dance and the dead "
+              "come back, the grass comes back, and the settled lands go "
+              "under. It is against the old chiefs as much as anyone.",
+         state={"while": ("ghost-dance",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "veteran"),
+                    "where": "wilds", "as": "dancers who have stopped "
+                                            "eating",
+                    "skins": {"cutthroat": "Dancer",
+                              "bruiser": "Drum-Keeper",
+                              "veteran": "Dance-Chief"},
+                    "chance": 0.40},
+         quest={"post": job(
+             "The Drum Camp",
+             "A tribute chief wants the drum camp broken before the "
+             "council hears about it. The camp has three hundred people "
+             "in it and no weapons worth the name.",
+             pool=_TOUGHS, sites=("the drum camp",),
+             giver="the tribute chief",
+             epilogue="The drums have stopped. What the chief paid for "
+                      "and what happened are both known in the camps now.",
+             failure_epilogue="The drums did not stop. Two more camps "
+                              "have taken it up and the chief has moved "
+                              "his tents south."),
+             "pay": 1.25, "slots": -1}),
+
+    # == Dvarvengrond: THE LEDGER IS THE STATE ============================= #
+    card("dvarvengrond/marriage-of-veins", "The marriage of veins",
+         "dvarvengrond", tension=("clan-vs-clan-wall",), days=(20, 30),
+         news="Two clans are betrothing a couple to consolidate the two "
+              "halves of one iron seam. The couple are the smallest thing "
+              "in the room, and one of them is looking for somebody to "
+              "hire.",
+         state={"while": ("veins-married",)},
+         quest={"post": job(
+             "The Smallest Thing In The Room",
+             "One of the betrothed wants a week's escort to an aunt three "
+             "galleries down, and both clans want the wedding on "
+             "schedule. Nobody has asked either of them anything.",
+             pool=_DWARF_TOUGHS, sites=("the deep gallery",),
+             giver="the betrothed's cousin",
+             epilogue="The runaway is at the aunt's and both clans are "
+                      "renegotiating with lawyers instead of a wedding.",
+             failure_epilogue="The wedding went ahead on schedule. The "
+                              "seam is one claim now and the couple have "
+                              "separate rooms."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("dvarvengrond/founder-says-no", "The founder says no",
+         "dvarvengrond", tension=("clan-vs-clan-wall", "deep-vs-surface"),
+         chance=0.30, days=None,
+         news="The rites to release a dead founder's tunnel were "
+              "performed properly and the dead one refused. The claim is "
+              "frozen, the clan is arguing about what he meant, and "
+              "somebody wants a second opinion.",
+         state={"set": ("claim-frozen",)},
+         quest={"post": job(
+             "A Second Opinion",
+             "The priestly way takes a year. The other way takes a night "
+             "and a specialist, and the clan head has already sent for "
+             "one. Somebody has to walk him in past the family.",
+             pool=_DWARF_TOUGHS, sites=("the founder's tunnel",),
+             giver="the clan head's second",
+             epilogue="The specialist got his night. What the founder "
+                      "said the second time is being kept very quiet.",
+             failure_epilogue="The specialist never reached the tunnel. "
+                              "The claim is frozen for a generation and "
+                              "the family is satisfied."),
+             "pay": 1.30, "slots": -1}),
+    card("dvarvengrond/arbitration", "The arbitration", "dvarvengrond",
+         tension=("clan-vs-clan-wall",), states=("claims-collide",),
+         days=(15, 25),
+         news="Two great clans are at the brink over one silver vein. The "
+              "king has to rule, both sides have sworn to defy him, and "
+              "the crown survives only if the ruling is too clever to "
+              "defy.",
+         state={"clear": ("claims-collide",), "while": ("arbitration",)},
+         quest={"post": job(
+             "Too Clever To Defy",
+             "The king's clerk needs the seam surveyed by somebody with "
+             "no clan, before the hearing. Both clans have men in the "
+             "gallery making sure the survey says the right thing.",
+             pool=_DWARF_TOUGHS, sites=("the disputed seam",),
+             giver="the king's ledger-clerk",
+             epilogue="The survey is honest and the ruling held. The "
+                      "crown is stronger this month than it was last.",
+             failure_epilogue="The survey never happened. The king ruled "
+                              "blind, both clans defied him, and the "
+                              "galleries are being walled off."),
+             "pay": 1.30, "reprice": 1.15}),
+
+    # == Gibili: THE STATE THAT ISN'T ====================================== #
+    card("gibili/general-strike", "The general strike", "gibili",
+         tension=("army-vs-ranks", "parliament-deadlock"),
+         states=("mills-stopped",), days=(12, 20),
+         news="Every industry at once. The nation has simply stopped. It "
+              "began, as it always does, with the match-workers the "
+              "phosphorus is eating, and it ends however the army "
+              "decides.",
+         state={"while": ("general-strike",)},
+         quest={"post": job(
+             "The Match Works",
+             "The match-workers' committee wants its own building held "
+             "for three days: the ledgers in it name every child on the "
+             "benches and the company wants them burned.",
+             pool=_GOBLIN_TOUGHS, sites=("the match works",),
+             giver="the match-workers' committee",
+             epilogue="The ledgers are out and printed. Two directors "
+                      "have left the country and the strike has a "
+                      "martyr's list.",
+             failure_epilogue="The building burned with the ledgers in "
+                              "it. Nobody can prove a single child ever "
+                              "worked there."),
+             "pay": 1.30, "slots": -2}),
+    card("gibili/provocateur", "The provocateur", "gibili",
+         tension=("parliament-deadlock", "syndicate-vs-syndicate"),
+         faction_edge=("gibili/secret-police-infiltrate-anarchists",),
+         days=(15, 25),
+         news="The secret police keep a card catalogue and a man in every "
+              "cell. The bomb plot the papers are shouting about was his "
+              "idea, and the archive is the one organ of this state that "
+              "works.",
+         state={"while": ("plot-seeded",)},
+         quest={"post": job(
+             "Expose Him, Protect Him, Be Him",
+             "Three people want the same man: the cell wants him named, "
+             "his handler wants him extracted, and a rival bureau wants "
+             "him kept exactly where he is. All three are paying.",
+             pool=_GOBLIN_TOUGHS, sites=("the cellar meeting", "the "
+                                         "archive stair"),
+             giver="the cell's printer", places=2,
+             epilogue="The man is where one of the three wanted him, and "
+                      "the other two are asking who arranged it.",
+             failure_epilogue="The plot went off. Eleven dead in a "
+                              "tram-yard, and the archive has a fresh "
+                              "reason for everything it does next."),
+             "pay": 1.30, "reprice": 1.15}),
+    card("gibili/manufactured-atrocity", "The manufactured atrocity",
+         "gibili", tension=("parliament-deadlock",), days=(12, 20),
+         news="A press baron has invented an outrage to sell papers and "
+              "force the war party's hand. Under the buffer doctrine, a "
+              "manufactured border incident can bring a real empire in.",
+         state={"while": ("war-fever",)},
+         menu={"steel": 1.20},
+         quest={"post": job(
+             "The Border Incident",
+             "Somebody has to reach the border post the papers are "
+             "describing and come back with what is actually there. Two "
+             "other parties have been hired to make sure the story holds "
+             "up.",
+             pool=_GOBLIN_TOUGHS, sites=("the border post",),
+             giver="the rival paper's editor",
+             epilogue="The truth is printed with names attached. The war "
+                      "party has gone quiet and the baron is suing.",
+             failure_epilogue="The story stands. The parliament has voted "
+                              "the credits and the empire is watching "
+                              "with interest."),
+             "pay": 1.25, "slots": 1}),
+    card("gibili/barricade-days", "The barricade days", "gibili",
+         tension=("army-vs-ranks",), states=("general-strike",),
+         days=(10, 18),
+         news="A district has overturned its trams, pried up its cobbles "
+              "and declared itself autonomous. Inside it, three flags are "
+              "arguing and shooting at each other nearly as readily as at "
+              "the police.",
+         state={"clear": ("general-strike",), "while": ("barricades-up",)},
+         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
+                    "where": "road", "as": "a barricade under three flags",
+                    "skins": {"cutthroat": "Barricade Boy",
+                              "slinger": "Cobble-Slinger",
+                              "bruiser": "Flag-Bearer"},
+                    "chance": 0.50},
+         quest={"post": job(
+             "Three Flags, One Street",
+             "The district's own clinic is behind the barricade and out "
+             "of everything. Getting a cart in means getting past the "
+             "police line and then past two of the three flags.",
+             pool=_GOBLIN_TOUGHS, sites=("the police line", "the "
+                                         "barricade street"),
+             giver="the district's doctor", places=2,
+             epilogue="The cart is at the clinic. Whatever happens to the "
+                      "district next, it happens with bandages.",
+             failure_epilogue="The cart never got in. The clinic has "
+                              "closed and the district is running out of "
+                              "reasons to hold."),
+             "pay": 1.25, "slots": -1}),
+    card("gibili/junta", "The generals lose patience", "gibili",
+         tension=("army-vs-ranks",), states=("barricades-up",),
+         chance=0.25, days=None,
+         news="The generals have lost patience. The parliament was "
+              "dissolved by a colonel with a written list, and the mill "
+              "barons are discovering what they bought.",
+         state={"clear": ("barricades-up",), "constitution": "junta"},
+         quest={"post": job(
+             "The Written List",
+             "A name on the colonel's list has twelve hours and a "
+             "printing press he will not leave behind. The press weighs "
+             "as much as he does.",
+             pool=_GOBLIN_TOUGHS, sites=("the press cellar", "the harbour "
+                                         "steps"),
+             giver="the listed man's daughter", places=2,
+             epilogue="The man and the press are on a boat. The colonel's "
+                      "list is one name shorter and everybody knows which.",
+             failure_epilogue="The press was taken with him beside it. "
+                              "The list is being worked through in "
+                              "order."),
+             "pay": 1.35, "slots": -1}),
+    card("gibili/machine-breakers", "The machine-breakers", "gibili",
+         tension=("syndicate-vs-syndicate",), days=(12, 20),
+         news="A fringe has appeared that wants no wage rise at all. It "
+              "wants the engines dead. The unions fear them more than the "
+              "barons do: every broken loom is the strike blamed.",
+         state={"while": ("machine-breakers",)},
+         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
+                    "where": "wilds", "as": "men with hammers and no "
+                                            "demands",
+                    "skins": {"cutthroat": "Breaker",
+                              "slinger": "Sabot", "bruiser": "Hammer-Man"},
+                    "chance": 0.40},
+         quest={"post": job(
+             "Every Broken Loom",
+             "The syndicate wants the breakers stopped before the papers "
+             "hang the next mill fire on the strike. It will not say so "
+             "in writing and will not be seen paying.",
+             pool=_GOBLIN_TOUGHS, sites=("the weaving floor",),
+             giver="the syndicate's steward",
+             epilogue="The breakers are stopped and the syndicate was "
+                      "never there. The looms are running and the strike "
+                      "still has a name.",
+             failure_epilogue="Another mill is ash. The papers have the "
+                              "strike's name on the front page and the "
+                              "syndicate has lost the town."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("gibili/muckraker", "The muckraker", "gibili",
+         tension=("parliament-deadlock", "syndicate-vs-syndicate"),
+         days=(12, 20),
+         news="A journalist went undercover into a mill and came out with "
+              "a story somebody will kill to keep unprinted. Three "
+              "parties have already offered to buy it.",
+         state={"while": ("story-unprinted",)},
+         quest={"post": job(
+             "Escort It, Bury It, Finish It",
+             "The story needs a press, or a fire, or a second half. One "
+             "quest shape and three employers, and the journalist has "
+             "opinions about which.",
+             pool=_GOBLIN_TOUGHS, sites=("the news office", "the mill "
+                                         "yard"),
+             giver="the journalist", places=2,
+             epilogue="The story is where the party's employer wanted it. "
+                      "The journalist is alive and knows exactly who "
+                      "arranged that.",
+             failure_epilogue="The journalist is in the river and the "
+                              "notes went with her. The mill is hiring "
+                              "again next week."),
+             "pay": 1.30, "reprice": 1.1}),
+
+    # == THE WAR LAYER'S FEED ============================================== #
+    # The succession cluster: the cards that admit on the crown's
+    # circumstance, and move it. They are land-wide over the CROWNED lands
+    # -- Gibili has no crown to pass, and its version is the junta above.
+    card("crown/infant-heir", "The infant heir", _CROWNED,
+         succession=("disputed",), without=("regency-on",), days=(25, 40),
+         news="The crown has passed to a child and a regency council is "
+              "governing in his name. Three of the five councillors have "
+              "already stopped attending together.",
+         state={"set": ("regency-on",)},
+         quest={"post": job(
+             "The Council's Fourth Chair",
+             "One councillor wants a rival's correspondence out of a "
+             "locked room before the next sitting. The rival has hired "
+             "for the same room from the other side.",
+             pool=_TOUGHS, sites=("the council chamber",),
+             giver="the regent's secretary",
+             epilogue="The letters are in the right hand and the council "
+                      "sat five to nothing on Thursday.",
+             failure_epilogue="The letters were burned in the grate and "
+                              "the council has not sat at all this "
+                              "month."),
+             "pay": 1.25, "slots": -1}),
+    card("crown/three-branches", "Three branches, three readings",
+         _CROWNED, succession=("disputed",), without=("claim-pressed",),
+         days=(20, 35),
+         news="Three branches of the family claim the inheritance and "
+              "each has a reading of the law that gives it to them. Two "
+              "of the three have started hiring instead of arguing.",
+         state={"set": ("claim-pressed",)},
+         quest={"post": job(
+             "The Reading Of The Law",
+             "The oldest copy of the inheritance law is in a monastery "
+             "two days out, and all three branches worked that out on the "
+             "same morning.",
+             pool=_TOUGHS, sites=("the monastery library",),
+             giver="the second branch's advocate",
+             epilogue="The copy is in the capital and being read aloud. "
+                      "One branch has stopped claiming and started "
+                      "negotiating.",
+             failure_epilogue="The copy is ash and all three branches now "
+                              "say it agreed with them."),
+             "pay": 1.25, "reprice": 1.15}),
+    card("crown/dead-king-returns", "The dead king comes back", _CROWNED,
+         succession=("heirless", "disputed"), chance=0.35, days=(20, 35),
+         hook=_PRETENDER_HOOK,
+         news="A man calling himself {claimant} has come back from a war "
+              "everyone watched him die in. He has the face, the scar and "
+              "four old soldiers who swear to him.",
+         state={"while": ("pretender",)},
+         encounter={"kinds": ("cutthroat", "soldier", "veteran"),
+                    "where": "road", "as": "men who swear to the returned "
+                                           "king",
+                    "skins": {"cutthroat": "Sworn Man",
+                              "soldier": "Old Campaigner",
+                              "veteran": "The Scar-Witness"},
+                    "chance": 0.35},
+         quest={"post": job(
+             "The Face And The Scar",
+             "Somebody at court wants the four old soldiers found and "
+             "asked what they were paid. Somebody else wants them "
+             "escorted to the capital to say it out loud.",
+             pool=_TOUGHS, sites=("the veterans' inn",),
+             giver="the court chamberlain",
+             epilogue="The four have said their piece in front of "
+                      "witnesses, and the capital has made up its mind "
+                      "about the face.",
+             failure_epilogue="Two of the four are dead and the other two "
+                              "have gone over the border. The claim is "
+                              "stronger for it."),
+             "pay": 1.30, "slots": 1}),
+    # The recognition CHAIN: a lifetime of bribes buys the neighbours'
+    # acceptance, and the day the king dies it is all void.
+    card("crown/bought-recognition", "The bought recognition", _CROWNED,
+         succession=("heirless",), without=("recognition-bought",),
+         days=None,
+         news="A lifetime of gifts has bought the neighbours' agreement "
+              "that a daughter may inherit. It is written, sealed, and "
+              "worth exactly what the neighbours think of it on the day.",
+         state={"set": ("recognition-bought",), "succession": "secure"},
+         quest={"post": job(
+             "The Last Signature",
+             "One neighbour has not signed and wants the sealed copy "
+             "brought to him rather than travelling to it. The road runs "
+             "past three parties who would rather it never arrived.",
+             pool=_TOUGHS, sites=("the sealed road",),
+             giver="the crown's envoy",
+             epilogue="The last seal is on the document. The succession "
+                      "is agreed by everyone who matters, in writing.",
+             failure_epilogue="The document was taken on the road. The "
+                              "neighbour has heard about it and drawn his "
+                              "own conclusions."),
+             "pay": 1.25, "reprice": 1.1}),
+    card("crown/void-the-day-he-dies", "The paper is void", _CROWNED,
+         states=("recognition-bought",), succession=("secure",),
+         chance=0.30, days=(20, 35),
+         news="The old king is dead and the sealed agreement went with "
+              "him. Every neighbour that took the gifts has found a "
+              "lawyer, and two of them have found a general.",
+         state={"clear": ("recognition-bought",), "set": ("claim-pressed",),
+                "succession": "disputed"},
+         quest={"reprice": 1.20,
+                "slots": -1}),
+    card("tergal/tanist-scramble", "Every succession is a scramble",
+         "tergal", tension=("clan-vs-clan", "chiefs-vs-mothers"),
+         days=(15, 25),
+         news="The ablest kinsman inherits here, never merely the eldest "
+              "son. That makes strong chiefs and it makes this: every "
+              "able cousin on the grass counting spears and calling in "
+              "favours at once.",
+         state={"while": ("tanist-scramble",), "succession": "disputed"},
+         quest={"post": job(
+             "Counting Spears",
+             "A cousin with a real claim and no herd wants the far camps "
+             "visited before the council sits. Two other cousins are "
+             "riding the same circuit a day ahead.",
+             pool=_TOUGHS, sites=("the far camps",),
+             giver="the landless cousin",
+             epilogue="The far camps have committed and the council will "
+                      "hear it. The cousin owes the party in horses and "
+                      "says so in front of witnesses.",
+             failure_epilogue="The circuit was ridden by somebody else. "
+                              "The cousin has taken his people east and "
+                              "is not coming to the council."),
+             "pay": 1.25, "slots": 1}),
+    card("dvarvengrond/conclave", "The electors do not agree",
+         "dvarvengrond", constitution=("arbiter", "empty-throne"),
+         succession=("disputed", "heirless"), days=(30, 50),
+         news="The electors' conclave has sat for a year without "
+              "agreeing. The ledger's clerks are running the mountain in "
+              "the meantime, and are getting rather good at it.",
+         state={"while": ("conclave-locked",)},
+         quest={"post": job(
+             "The Ledger's Clerks",
+             "A clerk who has been quietly governing for a year wants a "
+             "sealed box carried out of the conclave hall. He will not "
+             "say what is in it and pays as if he knows.",
+             pool=_DWARF_TOUGHS, sites=("the conclave hall",),
+             giver="the ledger's chief clerk",
+             epilogue="The box is out and the conclave voted three days "
+                      "later. Nobody has explained the connection.",
+             failure_epilogue="The box was opened by the wrong clan. The "
+                              "conclave has adjourned for another year."),
+             "pay": 1.25, "slots": -1}),
+
+    # -- the diplomatic instruments: how wars end, and stay ended ---------- #
+    # Each is a state one land HOLDS and an authored relation edge the other
+    # derives off it -- and each has a card in it, which is the whole point
+    # of writing an instrument down instead of narrating a peace.
+    card("firascir/marriage-pact", "The marriage pact", "firascir",
+         tension=("crown-vs-lords", "old-vs-new"),
+         without=("marriage-pact", "betrothal-broken"), days=None,
+         news="A marriage pact has been sealed with the southern crown. "
+              "It ends one war and, if it is ever broken at the church "
+              "door, it starts the next one.",
+         state={"set": ("marriage-pact",)},
+         quest={"post": job(
+             "The Bride's Road",
+             "The betrothed and half a household have to cross two "
+             "provinces to a wedding that several people would like "
+             "cancelled.",
+             pool=_TOUGHS, sites=("the southern road", "the border "
+                                  "chapel"),
+             giver="the crown's herald", places=2,
+             epilogue="The party reached the chapel and the pact is "
+                      "signed. Two crowns are kin this morning.",
+             failure_epilogue="The road went badly and the wedding is "
+                              "postponed. Both courts are blaming each "
+                              "other in writing."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/broken-betrothal", "The betrothal is broken",
+         "firascir", states=("marriage-pact",), chance=0.30, days=(15, 25),
+         news="The betrothal has been broken at the church door. The "
+              "insult is public, the dowry is not coming back, and there "
+              "is now a reason for a war that only wanted one.",
+         state={"clear": ("marriage-pact",), "while": ("betrothal-broken",)},
+         quest={"post": job(
+             "The Dowry Back",
+             "The southern envoy wants the dowry recovered before it is "
+             "spent, and would rather it did not travel by the main road "
+             "with a herald in front of it.",
+             pool=_TOUGHS, sites=("the treasury road",),
+             giver="the southern envoy",
+             epilogue="The dowry went south. The insult stands and the "
+                      "accounting does not.",
+             failure_epilogue="The dowry is spent and the envoy has gone "
+                              "home. The heralds are already talking "
+                              "about borders."),
+             "pay": 1.25, "reprice": 1.2}),
+    card("firascir/personal-union", "Two crowns, one head", "firascir",
+         succession=("heirless",), without=("personal-union",),
+         chance=0.20, days=None,
+         news="The crown here has no heir, and the nearest claim belongs "
+              "to a king who already wears another one. Separate laws, "
+              "separate courts, one man -- and both realms' quarrels now "
+              "arrive at the same table.",
+         state={"set": ("personal-union",)},
+         quest={"reprice": 1.10}),
+    card("mortellaria/kin-claim", "Kin have claims", "mortellaria",
+         states=("pact-kin",), days=(15, 25),
+         news="The marriage pact made the two crowns kin, and kin have "
+              "claims. A northern cousin has arrived at court with a "
+              "genealogy, a lawyer, and no intention of going home.",
+         quest={"post": job(
+             "The Genealogy",
+             "The cousin's genealogy has to be checked against the parish "
+             "registers of two provinces, and somebody has already been "
+             "to one of those churches with a knife and a candle.",
+             pool=_TOUGHS, sites=("the parish church", "the second "
+                                  "register"),
+             giver="the court's own genealogist", places=2,
+             epilogue="The registers are copied and the claim is exactly "
+                      "as good as it looked. The court has stopped "
+                      "laughing.",
+             failure_epilogue="Both registers are gone. The claim is now "
+                              "whatever the cousin says it is."),
+             "pay": 1.20, "reprice": 1.10}),
+    card("mortellaria/union-inherits", "The union inherits both",
+         "mortellaria", states=("union-crown",), days=(20, 30),
+         news="The two crowns are one head now, and the northern realm's "
+              "quarrels have followed the king south. His own lords are "
+              "being asked to pay for them.",
+         state={"while": ("warrants-sold",)},
+         quest={"post": job(
+             "Somebody Else's Quarrel",
+             "A northern faction has followed the king to the southern "
+             "court and wants a hearing. The southern lords want them off "
+             "the road before they get one.",
+             pool=_TOUGHS, sites=("the court road",),
+             giver="the northern faction's agent",
+             epilogue="The northerners got their hearing. Nobody in the "
+                      "southern court is pleased and the king heard both "
+                      "sides.",
+             failure_epilogue="The northerners never reached the court. "
+                              "The king has heard one side and made a "
+                              "ruling on it."),
+             "pay": 1.20, "reprice": 1.1}),
+    card("firascir/hostage-in-the-camp", "The heir in the orc camp",
+         "firascir", states=("hostage-given",), days=(20, 35),
+         news="The truce with the steppe was sealed with a child. He is "
+              "growing up in the high chief's guard tent, he is safe "
+              "while the truce holds, and half this court would break the "
+              "truce tomorrow.",
+         quest={"post": job(
+             "Guard, Meet, Or Steal Back",
+             "One faction wants the boy visited and reassured. Another "
+             "wants him out of the camp entirely, which ends the truce "
+             "the same afternoon.",
+             pool=_TOUGHS, sites=("the guard tents",),
+             giver="the boy's uncle",
+             epilogue="The boy was reached and the truce is intact. Both "
+                      "factions think they were served.",
+             failure_epilogue="The camp caught the attempt. The truce is "
+                              "a dead letter and the boy is under "
+                              "guard."),
+             "pay": 1.30, "reprice": 1.15}),
+    card("mortellaria/danegeld", "The danegeld is raised", "mortellaria",
+         states=("danegeld-paid",), days=(15, 25),
+         news="The chiefs are being paid not to ride, and the province is "
+              "paying. The collectors say it is cheaper than a war. The "
+              "province has done the arithmetic and disagrees.",
+         quest={"post": job(
+             "Cheaper Than A War",
+             "The tribute chest goes north on Thursday with a small "
+             "escort, because a large one looks like an army. Three "
+             "villages on the route have decided it is not going.",
+             pool=_TOUGHS, sites=("the northern road",),
+             giver="the province's collector",
+             epilogue="The chest went north and the chiefs did not ride "
+                      "this season. The province paid twice: once in "
+                      "silver and once in temper.",
+             failure_epilogue="The chest never reached the border. The "
+                              "chiefs have taken that as an answer."),
+             "pay": 1.25, "slots": -1}),
+)
+
+CARDS = CARDS + POLITICS_CARDS
 CARDS_BY_KEY = {c["key"]: c for c in CARDS}
 
 GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
@@ -1324,6 +3515,31 @@ RELATIONS = (
              then="raiders-out", because="the dying Tergal herds"),
     relation("tergal", "ensimaa", "raid", when=("raiding",),
              then="raiders-out", because="the riding Tergal clans"),
+    # -- politics (2026-08-10) ------------------------------------------- #
+    # The exile edge: what the sealed realm sends after the people who
+    # left. It fires in OTHER lands, which is the only way a card about
+    # leaving a country can reach the party at all.
+    relation("ensimaa", "gibili", "exiles", when=("hunters-out",),
+             then="elf-hunters", because="the Ensimaa exile hunters"),
+    relation("ensimaa", "mortellaria", "exiles", when=("hunters-out",),
+             then="elf-hunters", because="the Ensimaa exile hunters"),
+    relation("ensimaa", "firascir", "exiles", when=("hunters-out",),
+             then="elf-hunters", because="the Ensimaa exile hunters"),
+    # THE DIPLOMATIC INSTRUMENTS -- how wars end and stay ended. Each is a
+    # state one land holds and a state the other derives off it, and each
+    # has a card standing in it: the courtly hostage, the yearly tribute,
+    # the marriage pact, the personal union.
+    relation("tergal", "firascir", "hostage", when=("hostage-guard",),
+             then="hostage-given",
+             because="the hostage in the high chief's guard"),
+    relation("tergal", "mortellaria", "tribute", when=("tribute-taken",),
+             then="danegeld-paid",
+             because="the danegeld the chiefs are paid"),
+    relation("firascir", "mortellaria", "marriage",
+             when=("marriage-pact",), then="pact-kin",
+             because="the marriage pact between the crowns"),
+    relation("firascir", "mortellaria", "union", when=("personal-union",),
+             then="union-crown", because="the union of the two crowns"),
 )
 
 
@@ -1350,35 +3566,82 @@ def roll_wealth(rng: random.Random) -> str:
     raise ValueError(f"no band holds {total}")
 
 
-def _deck(world: dict, polity: str, track: str = "crisis") -> list[str]:
+def roll_constitution(rng: random.Random, polity: str) -> str:
+    """The land's exclusive constitution slot, on a DEFAULT-HEAVY die: the
+    stereotype is the constant and the variants are the colour. One roll,
+    at worldgen -- cards never flip it, and the two that do say so."""
+    entries = CONSTITUTIONS[polity]
+    roll = rng.randint(1, sum(c["weight"] for c in entries))
+    for spec in entries:
+        roll -= spec["weight"]
+        if roll <= 0:
+            return spec["key"]
+    return entries[0]["key"]                        # unreachable
+
+
+def roll_tensions(rng: random.Random, polity: str, band: str) -> list[str]:
+    """What this land is fighting about: its standing tensions, plus ONE
+    rolled from the packet -- two if it opened in CRISIS. This is the gate
+    that decides which political cards its deck holds at all, which is what
+    keeps the packet a pool and the rolled world specific."""
+    standing = list(STANDING_TENSIONS.get(polity, ()))
+    pool = [t["key"] for t in TENSIONS[polity] if t["key"] not in standing]
+    draws = (CRISIS_TENSION_ROLLS if band == "crisis" else TENSION_ROLLS)
+    rolled = rng.sample(pool, min(draws, len(pool))) if pool else []
+    return standing + rolled
+
+
+def _tension_gate(spec: dict, tensions) -> bool:
+    """Does this card's tension hold here? A card that names none is
+    land-wide and always passes -- every econ and weather card does."""
+    wanted = spec["admits"].get("tension") or ()
+    return not wanted or any(t in tensions for t in wanted)
+
+
+def _deck(world: dict, polity: str, track: str = "crisis",
+          tensions=()) -> list[str]:
     """One of the land's three decks, shuffled once (the pact deck's
     pattern). A weather or season card marked ANY_LAND sits in every land's
-    deck; a land-named one sits in its own."""
+    deck; a land-named one sits in its own; and a POLITICAL card only enters
+    the deck of a land whose rolled tension it names."""
     keys = [c["key"] for c in CARDS
-            if c["track"] == track and in_land(c, polity)]
+            if c["track"] == track and in_land(c, polity)
+            and _tension_gate(c, tensions)]
     random.Random(_land_seed(world, polity, f"worldsim-deck-{track}",
                              0)).shuffle(keys)
     return keys
 
 
 def open_world(world: dict) -> dict:
-    """Roll the world layer onto a fresh world: every land's wealth band, its
-    three shuffled decks, its opening sky, its state and news lists. A land
-    that opens in CRISIS draws its first crisis card straight away -- a land
-    in trouble is in trouble from scene one, not from the first lucky roll.
-    The weather and season tracks open EMPTY: a sky is a thing that happens
-    on a day, and day 0 is worldgen's bookkeeping.
+    """Roll the world layer onto a fresh world: every land's wealth band,
+    its politics (the constitution slot, the tensions, the ruler's sheet),
+    its three shuffled decks, its opening sky, its state and news lists. A
+    land that opens in CRISIS draws its first crisis card straight away -- a
+    land in trouble is in trouble from scene one, not from the first lucky
+    roll. The weather and season tracks open EMPTY: a sky is a thing that
+    happens on a day, and day 0 is worldgen's bookkeeping.
+
+    The politics rolls come AFTER the wealth roll on the same stream, so
+    every world's bands are exactly what they were before politics existed
+    -- and the tensions come before the decks, because they are the decks'
+    gate.
 
     Called by `quests.generate_world` on a DERIVED rng, so the worldgen
     stream every career bench rides is untouched."""
     for polity in world["lands"]:
         rng = random.Random(_land_seed(world, polity, "worldsim-open", 0))
+        band = roll_wealth(rng)
+        tensions = roll_tensions(rng, polity, band)
         world["lands"][polity]["world"] = {
-            "wealth": roll_wealth(rng),
+            "wealth": band,
             "wealth_day": 0,
-            "deck": _deck(world, polity),
-            "weather_deck": _deck(world, polity, "weather"),
-            "season_deck": _deck(world, polity, "season"),
+            "constitution": roll_constitution(rng, polity),
+            "tensions": tensions,
+            "ruler": rulers.roll_ruler(rng),
+            "authorities": {},      # the lesser named faces cards create
+            "deck": _deck(world, polity, "crisis", tensions),
+            "weather_deck": _deck(world, polity, "weather", tensions),
+            "season_deck": _deck(world, polity, "season", tensions),
             "drawn": [],            # every card this land has fired
             "live": None,           # the card standing now, with its clock
             "weather_live": None,   # ...and the same for the other two
@@ -1465,6 +3728,82 @@ def wealth_of(world: dict, polity: str) -> str:
     return land_layer(world, polity)["wealth"]
 
 
+# --- what a land IS: the politics slots, read at admit time ---------------- #
+
+def constitution_of(world: dict, polity: str) -> str:
+    return land_layer(world, polity)["constitution"]
+
+
+def constitution_spec(world: dict, polity: str) -> dict:
+    key = constitution_of(world, polity)
+    return next(c for c in CONSTITUTIONS[polity] if c["key"] == key)
+
+
+def set_constitution(world: dict, polity: str, key: str, day: int) -> None:
+    """Move the exclusive constitution slot. Only a card that says so does
+    this -- the junta and the commune are the two in the whole deck."""
+    if key not in {c["key"] for c in CONSTITUTIONS[polity]}:
+        raise ValueError(f"{polity} has no such constitution: {key}")
+    layer = land_layer(world, polity)
+    if layer["constitution"] == key:
+        return
+    layer["constitution"] = key
+    layer["constitution_day"] = day
+
+
+def tensions_of(world: dict, polity: str) -> list[str]:
+    return list(land_layer(world, polity).get("tensions", ()))
+
+
+def tension_spec(polity: str, key: str) -> dict:
+    return next(t for t in TENSIONS[polity] if t["key"] == key)
+
+
+def factions_of(world: dict, polity: str) -> list[str]:
+    """The land's live faction cast: every bloc its rolled tensions name."""
+    cast: list[str] = []
+    for key in tensions_of(world, polity):
+        for name in tension_spec(polity, key)["factions"]:
+            if name not in cast:
+                cast.append(name)
+    return cast
+
+
+def live_edges(world: dict, polity: str) -> list[dict]:
+    """The faction edges standing in this land -- the authored ones whose
+    BOTH ends are in the rolled cast. An edge with one end missing is not a
+    half-edge; it simply is not there this playthrough."""
+    cast = set(factions_of(world, polity))
+    return [e for e in FACTION_EDGES
+            if e["land"] == polity and e["from"] in cast and e["to"] in cast]
+
+
+def ruler_sheet(world: dict, polity: str) -> dict:
+    """The land ruler's rolled character (`rulers.py`). One copy, on the
+    land layer -- `quests._cast_the_land` records the notable's id on it, so
+    the sheet and the face it wears are joined without being stored twice."""
+    return land_layer(world, polity)["ruler"]
+
+
+def ruler_traits(world: dict, polity: str) -> list[str]:
+    return list(ruler_sheet(world, polity)["traits"])
+
+
+def succession_of(world: dict, polity: str) -> str:
+    return ruler_sheet(world, polity)["succession"]
+
+
+def set_succession(world: dict, polity: str, state: str, day: int) -> None:
+    """Move the crown's succession circumstance -- what the succession
+    cluster's cards do to each other (an heir found settles what a disputed
+    claim opened)."""
+    if state not in rulers.SUCCESSIONS:
+        raise ValueError(f"no such succession state: {state}")
+    sheet = ruler_sheet(world, polity)
+    sheet["succession"] = state
+    sheet["succession_day"] = day
+
+
 def set_wealth(world: dict, polity: str, band: str, day: int) -> None:
     """Move the land's wealth band -- the one slot every land holds."""
     if band not in BANDS:
@@ -1506,6 +3845,21 @@ def admits(world: dict, polity: str, spec: dict,
             world["lands"][polity]["environment"]]["drought_days"]
     if need and layer.get("dry", 0) < need:
         return False
+    # The politics slots. Each is ANY-OF: the land holds one constitution
+    # and one succession state, one or two tensions, and a handful of live
+    # edges, so a card names every value it will take. The `held` side is a
+    # THUNK because this runs once per card per draw and the edge lookup is
+    # the only expensive one -- almost no card asks for it.
+    crown = layer.get("ruler") or {}
+    for wanted, held in (
+            (spec.get("tension"), lambda: layer.get("tensions", ())),
+            (spec.get("constitution"), lambda: (layer.get("constitution"),)),
+            (spec.get("traits"), lambda: crown.get("traits", ())),
+            (spec.get("succession"), lambda: (crown.get("succession"),)),
+            (spec.get("edge"),
+             lambda: [e["key"] for e in live_edges(world, polity)])):
+        if wanted and not any(w in held() for w in wanted):
+            return False
     return True
 
 
@@ -1514,6 +3868,9 @@ def _says_nothing_new(world: dict, polity: str, drawn: dict) -> bool:
     nothing to say -- it stays in the deck rather than firing an empty
     pulse (the exclusive-slot discipline, from the other side)."""
     state = drawn["outlets"].get("state") or {}
+    if (state.get("constitution")
+            and state["constitution"] == constitution_of(world, polity)):
+        return True         # the generals cannot take a palace they hold
     slots = state.get("slot") or {}
     if not slots or state.get("set") or state.get("while"):
         return False
@@ -1537,7 +3894,7 @@ def _draw(world: dict, polity: str, rng: random.Random,
     layer = land_layer(world, polity)
     deck = layer[DECK_KEY[track]]
     if not deck:
-        deck.extend(_deck(world, polity, track))
+        deck.extend(_deck(world, polity, track, layer.get("tensions", ())))
         rng.shuffle(deck)
     for i, key in enumerate(deck):
         drawn = CARDS_BY_KEY[key]
@@ -1587,6 +3944,10 @@ def _fire(world: dict, polity: str, drawn: dict, day: int,
         drop_state(world, polity, state_id, day)
     for value in (state.get("slot") or {}).values():
         set_state(world, polity, value, day)
+    if state.get("constitution"):
+        set_constitution(world, polity, state["constitution"], day)
+    if state.get("succession"):
+        set_succession(world, polity, state["succession"], day)
     for state_id in (tuple(state.get("set", ()))
                      + tuple(state.get("while", ()))):
         set_state(world, polity, state_id, day)
@@ -1705,6 +4066,29 @@ def roll_world(world: dict, day: int) -> None:
     together so a relation never reads a land that is behind the calendar."""
     for polity in world["lands"]:
         roll_land(world, polity, day)
+
+
+def post_news(world: dict, polity: str, day: int, line: str) -> None:
+    """Put a line on a land's news from OUTSIDE the deck. The war layer is
+    the one customer: story.py's waves are authored content that happens to
+    the world without a card behind them, and the herald's reason belongs
+    on the same feed as everything else the land hears."""
+    _news(world, polity, day, line)
+
+
+def roll_casus_belli(rng: random.Random, race: str) -> dict:
+    """The war's WHY line, rolled beside story.py's aggressor. One race has
+    a STANDING one and needs no roll: the Sky says the neighbours are rebels
+    who have not yet submitted, which is the orcs' whole foreign policy."""
+    key, line = STANDING_CASUS_BELLI.get(race) or rng.choice(CASUS_BELLI)
+    return {"key": key, "line": line}
+
+
+def casus_belli_line(entry: dict, aggressor: str, victim: str) -> str:
+    """The line with the two realms' names in it, for the herald and the
+    news. Both names are always supplied -- a template that wants neither
+    simply ignores them."""
+    return entry["line"].format(aggressor=aggressor, victim=victim)
 
 
 def take_news(world: dict, polity: str, day: int) -> list[str]:
@@ -1930,17 +4314,61 @@ def state_line(entry: dict) -> str:
 
 
 def land_lines(world: dict, polity: str) -> list[str]:
-    """The land's world state for the map page: the band, then whatever it
-    is living through, then the sky over it. Two lines at most -- this is a
-    phone page."""
+    """The land's world state for the map page: the band, whatever it is
+    living through, WHAT KIND OF PLACE IT IS, and the sky over it. Three
+    short lines at most -- this is a phone page, so the constitution shows
+    its name and keeps its sentence for `world`."""
     layer = land_layer(world, polity)
     lines = [f"  [{layer['wealth'].upper()}]"]
     shown = held_states(world, polity) + derived_states(world, polity)
     if shown:
         lines[0] += " " + "; ".join(state_line(s) for s in shown)
+    lines.append(f"  {constitution_spec(world, polity)['name']}")
     sky = weather_line(world, polity)
     if sky:
         lines.append(f"  {sky}")
+    return lines
+
+
+def notable_lines(world: dict, npc: dict) -> list[str]:
+    """What a town says about one of its notables, where the world layer
+    has something to say. Only the land RULER has a sheet, and only its
+    PUBLIC half is printed: the words themselves are exactly the reputation
+    everyone in the land already has of him, and the succession is the fact
+    every court in the world is counting on. `heart` is never here -- it is
+    the DM's, on `world`."""
+    if npc.get("post") != "ruler":
+        return []
+    polity = npc.get("land")
+    if polity not in world.get("lands", {}):
+        return []
+    sheet = ruler_sheet(world, polity)
+    lines = [f"    said of {npc['name']}: {rulers.trait_phrase(sheet)}"]
+    if sheet["succession"] != "secure":
+        lines.append(f"    {rulers.SUCCESSION_WORDS[sheet['succession']]}")
+    if sheet.get("puppeteer"):
+        lines.append(f"    ...and that {sheet['puppeteer']} decides")
+    return lines
+
+
+def politics_lines(world: dict, polity: str) -> list[str]:
+    """What the land IS, for the DM inventory: the constitution and its
+    sentence, what it is fighting about, which authored faction edges are
+    live in it, and the ruler's rolled sheet with the faces the cards have
+    named beside it."""
+    spec = constitution_spec(world, polity)
+    lines = [f"  {spec['name']}: {spec['line']}"]
+    for key in tensions_of(world, polity):
+        standing = (" [standing]"
+                    if key in STANDING_TENSIONS.get(polity, ()) else "")
+        lines.append(f"  tension: {tension_spec(polity, key)['line']}"
+                     f"{standing}")
+    for live in live_edges(world, polity):
+        lines.append(f"    edge: {live['line']}")
+    lines.extend(rulers.ruler_lines(ruler_sheet(world, polity)))
+    for who in land_layer(world, polity).get("authorities", {}).values():
+        lines.append(f"  {who['role']}: {who['name']} -- "
+                     f"{rulers.trait_phrase(who)} (named day {who['since']})")
     return lines
 
 
@@ -1955,6 +4383,7 @@ def world_lines(world: dict) -> list[str]:
         lines.append("")
         lines.append(f"{land['name']} -- {layer['wealth'].upper()} "
                      f"(rolled to day {layer['rolled_day']})")
+        lines.extend(politics_lines(world, polity))
         sky = layer.get("weather")
         if sky:
             spell = (f"wet {layer.get('wet', 0)}"
@@ -2182,6 +4611,111 @@ def _validate_menu_tables() -> None:
                     f"itself -- take it out of STATE_MENU or off the card")
 
 
+def _validate_politics(drawn: dict) -> None:
+    """The politics rung's admits and effects, checked against the authored
+    tables. Every one of them names a slot value, so a typo is a card that
+    silently never fires -- which is exactly the bug import-time validation
+    exists to stop."""
+    key, admits_ = drawn["key"], drawn["admits"]
+    lands = ([p for p in LAND_SPECS] if ANY_LAND in drawn["land"]
+             else list(drawn["land"]))
+    for word in admits_.get("tension", ()):
+        if not any(word in {t["key"] for t in TENSIONS[p]} for p in lands):
+            raise ValueError(f"{key}: no land of its own has tension {word}")
+    for word in admits_.get("constitution", ()):
+        if not any(word in {c["key"] for c in CONSTITUTIONS[p]}
+                   for p in lands):
+            raise ValueError(f"{key}: no land of its own has constitution "
+                             f"{word}")
+    for word in admits_.get("traits", ()):
+        if word not in rulers.VOCABULARY:
+            raise ValueError(f"{key}: no such ruler trait: {word}")
+    for word in admits_.get("succession", ()):
+        if word not in rulers.SUCCESSIONS:
+            raise ValueError(f"{key}: no such succession state: {word}")
+    live = {e["key"] for e in FACTION_EDGES}
+    for word in admits_.get("edge", ()):
+        if word not in live:
+            raise ValueError(f"{key}: no such faction edge: {word}")
+        if word.split("/")[0] not in lands:
+            raise ValueError(f"{key}: faction edge {word} is another "
+                             f"land's")
+    state = drawn["outlets"].get("state") or {}
+    if state.get("constitution"):
+        if len(lands) != 1:
+            raise ValueError(f"{key}: a constitution flip belongs to ONE "
+                             f"land's own slot")
+        if state["constitution"] not in {c["key"]
+                                         for c in CONSTITUTIONS[lands[0]]}:
+            raise ValueError(f"{key}: {lands[0]} has no constitution "
+                             f"{state['constitution']}")
+    if (state.get("succession")
+            and state["succession"] not in rulers.SUCCESSIONS):
+        raise ValueError(f"{key}: no such succession state: "
+                         f"{state['succession']}")
+
+
+def _validate_politics_tables() -> None:
+    """The authored politics tables themselves: every land has a
+    constitution and a tension list, every tension names blocs that exist,
+    every standing tension is in its land's list, and every faction edge
+    joins two blocs of its own land."""
+    for polity in LAND_SPECS:
+        if not CONSTITUTIONS.get(polity):
+            raise ValueError(f"{polity}: no constitution slot")
+        if not TENSIONS.get(polity):
+            raise ValueError(f"{polity}: no standing tensions")
+        seen: set[str] = set()
+        for spec in CONSTITUTIONS[polity]:
+            if spec["key"] in seen:
+                raise ValueError(f"{polity}: duplicate constitution "
+                                 f"{spec['key']}")
+            seen.add(spec["key"])
+            if spec["weight"] < 1:
+                raise ValueError(f"{polity}/{spec['key']}: a slot entry "
+                                 f"that never rolls")
+            if not spec["name"].isupper() or not spec["name"].isascii():
+                raise ValueError(f"{polity}/{spec['key']}: the slot's name "
+                                 f"is an ASCII display header")
+        keys = {t["key"] for t in TENSIONS[polity]}
+        if len(keys) != len(TENSIONS[polity]):
+            raise ValueError(f"{polity}: duplicate tension key")
+        for word in STANDING_TENSIONS.get(polity, ()):
+            if word not in keys:
+                raise ValueError(f"{polity}: standing tension {word} is "
+                                 f"not in its own list")
+        rollable = keys - set(STANDING_TENSIONS.get(polity, ()))
+        if len(rollable) < CRISIS_TENSION_ROLLS:
+            raise ValueError(f"{polity}: fewer rollable tensions than a "
+                             f"crisis land draws")
+        for spec in TENSIONS[polity]:
+            for name in spec["factions"]:
+                if name not in FACTIONS:
+                    raise ValueError(f"{polity}/{spec['key']}: no such "
+                                     f"faction: {name}")
+    cast_of: dict[str, set[str]] = {
+        polity: {name for spec in TENSIONS[polity]
+                 for name in spec["factions"]} for polity in TENSIONS}
+    seen_edges: set[str] = set()
+    for live in FACTION_EDGES:
+        if live["key"] in seen_edges:
+            raise ValueError(f"duplicate faction edge: {live['key']}")
+        seen_edges.add(live["key"])
+        if live["land"] not in LAND_SPECS:
+            raise ValueError(f"{live['key']}: no such land")
+        for side in ("from", "to"):
+            if live[side] not in cast_of[live["land"]]:
+                raise ValueError(f"{live['key']}: {live[side]} is not a "
+                                 f"bloc any {live['land']} tension names")
+    for face in FACTIONS.values():
+        if face["face"] and face["face"] not in ("ruler", "sage",
+                                                 "wildcard"):
+            raise ValueError(f"{face['key']}: no such notable post: "
+                             f"{face['face']}")
+    for _key, line in CASUS_BELLI + tuple(STANDING_CASUS_BELLI.values()):
+        line.format(aggressor="X", victim="Y")      # raises on a bad field
+
+
 def validate_content() -> None:
     keys = set()
     for drawn in CARDS:
@@ -2233,6 +4767,7 @@ def validate_content() -> None:
             if state.get(band_key) and state[band_key] not in BANDS:
                 raise ValueError(f"{key}: no such wealth band: "
                                  f"{state[band_key]}")
+        _validate_politics(drawn)
         _validate_quest(key, drawn["outlets"].get("quest") or {})
         _validate_menu(key, drawn["outlets"].get("menu") or {})
         if drawn["outlets"].get("encounter"):
@@ -2242,6 +4777,7 @@ def validate_content() -> None:
         if len(drawn["outlets"]) > len(OUTLETS):
             raise ValueError(f"{key}: more than {len(OUTLETS)} outlets")
     _validate_menu_tables()
+    _validate_politics_tables()
     for state_id, entry in STATE_ENCOUNTERS.items():
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")

@@ -3114,3 +3114,149 @@ a rename); `git log -- AGENTS.md` plus `git show <parent>:AGENTS.md` is
 what actually recovers the old file. The cost is stated plainly:
 AGENTS.md-aware agents no longer auto-load anything from this repo until
 the file is restored.
+
+## 2026-08-10 — Politics & the ruler: the land becomes a polity
+
+**The rung.** plan.md's worldsim ladder, third content session and the
+last but one. The frame (2026-08-07) gave every land a wealth band, a
+crisis deck and trade edges; the weather (2026-08-08) put a sky over it;
+the economy floor (2026-08-09) made the board, the shelves and the road
+read all of it. What none of them touched is what a land IS: who holds
+it, what it is fighting about, and who is pulling at whom. This session
+implemented `worldsim.md`'s **THE RULER CHARACTER** (the politics dump's
+person half, 2026-08-06) and **THE LAND PACKETS — POLITICS** (its power
+half, same day), plus the war layer's feed.
+
+The framing that governed every choice: **politics is a GATE on content,
+not a system.** Nothing here ticks, nothing accumulates, and no
+political value is ever a quantity. Every piece exists to decide which
+cards a land can draw and what its news says.
+
+### What was built
+
+**`rulers.py`** — a new file, and the only one in the repo that imports
+nothing from the rest of the game. One weighted pool of 357 words
+(twenty axes, one extreme step, twenty flags) with the designer's
+measured column as its weights: 734 European rulers coded, 443 traited
+at the kept resolution, average 3 traits each — which is the identity
+that makes THREE weighted draws reproduce the per-trait marginals. The
+pool SHRINKS between draws (the drawn word, its axis opposite, its
+never-with partners), so three draws always land three distinct
+compatible words; a lesser named authority draws two off the crown-less
+355. Derived `heart` (hidden — the crime layer's desert anchor), the
+affliction cap of three, the dated origin stamps, the `puppeteer` colour
+beside `puppet`, and the two rolled circumstances the cluster needed:
+the mode of accession (kin-blood included) and the succession state,
+which reads the traits and the accession for free.
+
+**The politics frame in `worldsim.py`.** The CONSTITUTION slot (one per
+land, default-heavy die, the wealth-band pattern), the TENSION roll (one
+at worldgen, two in crisis, standing ones held on top), the FACTION cast
+the tensions imply and the 34 authored directed verb EDGES between them,
+and the RULER sheet on the land layer. `card()` grew five ANY-OF admits
+— `tension`, `constitution`, `traits`, `succession`, `faction_edge` —
+and the state payload grew `constitution` and `succession`.
+
+**The content.** 76 politics cards (31 of them Firascir's own, by the
+asymmetry doctrine: it is the baseline land and the sheet's weights are
+already its), 7 more relation edges, and the war feed — a casus belli
+pool rolled beside story.py's aggressor, the four diplomatic instruments
+as authored edges with cards standing in them, and the five-card
+succession cluster.
+
+### The calls the spec left open that the build had to settle
+
+- **The tension is the DECK GATE, not just an admit.** worldsim.md said
+  "only cards whose tension holds enter the land's crisis deck"; the
+  cheap reading would have been an ordinary admitting condition. It is
+  both, and the deck filter is the load-bearing half: without it
+  Firascir's deck is 42 cards deep and its econ content drowns. With it,
+  a land holds the six econ cards plus the one or two quarrels it
+  rolled. That is what lets a packet be a wide POOL — the designer's
+  selection doctrine — instead of a content budget.
+- **The ruler sheet lives on the LAND LAYER, in one copy.** The obvious
+  reading of "rolled onto the land RULER notable" is fields on the NPC
+  dict. But `worldsim.open_world` runs before `quests._cast_the_land`
+  (the board has read the layer since the economy floor), so the sheet
+  has to exist before the face does. It is rolled with the constitution
+  and the tensions, and `_cast_the_land` writes the notable's id ONTO
+  the sheet. One copy in the save, and either half finds the other.
+- **The politics rolls come AFTER the wealth roll on the same stream.**
+  Every world's bands are therefore exactly what they were before
+  politics existed — pinned by a test that re-rolls the band off the
+  same derived seed and compares.
+- **Trait admits are ANY-OF, states are ALL-OF.** The two read different
+  shapes: a land holds every state in its list, but its crown holds
+  three words out of 357. worldsim.md asked for any-of explicitly for
+  the mad family; it is the only sane reading for all five politics
+  slots, each of which reads a slot holding one or two values.
+- **`heart` never reaches the player.** It is printed on `world` and
+  nowhere else. What the town says of its king is the trait words
+  themselves — which is not a leak but the point: those words ARE the
+  reputation everyone in the land already has of him, and rumor fuel was
+  one of the three things the sheet was merged for.
+- **Most politics cards move the board.** They did not, in the first
+  pass, and a fixed-seed check caught it: a world where all six lands
+  roll NORMAL drew three politics cards in seventy days and its boards
+  never moved, which fails the thread's first invariant. Sixty-odd cards
+  gained a `slots` or a `reprice`. A regency posts less ordinary work; a
+  disputed succession pays over the odds for blades; a general strike
+  takes two rows off the board.
+- **The casus belli rolls off a DERIVED rng** (`casus:<seed>:<land>`),
+  so no existing world's aggressor, faces or targets move. It is said
+  once, at the first herald, and left on the land's news — which needed
+  `worldsim.post_news`, the one door into a land's news from outside the
+  deck. The war layer is authored content that happens to the world
+  without a card behind it, and that is the only legitimate customer.
+- **The diplomatic instruments are edges with cards in them, and
+  nothing more.** The tempting extra — rolling an instrument at wave 4
+  to seal the peace — was left out: the ladder asked for "the diplomatic
+  instruments as relation edges", and a generic seal would have needed
+  edges for arbitrary land pairs. The four authored pairs each have a
+  state one land holds, a state the other derives, and a card standing
+  in it.
+- **A card that names somebody keeps him.** `_authority_hook`
+  generalizes the fog necromancer's trick: the banned lord, the
+  witch-finder, the bandit king and the pretender each roll a two-word
+  crown-less sheet, and the same man is still there the next time the
+  card comes round. Recurrence is the property that makes an NPC exist
+  at all (the 2026-08-05 framing), and no single outlet produces it.
+- **One existing test was pinning a narrower claim than the code makes.**
+  `test_the_quoted_gold_is_the_one_thing_the_layer_moves` asserted a
+  posting's quote is the band's multiplier; the economy floor's actual
+  contract is `board_pay` — the band TIMES whatever card stands over the
+  land. It happened to hold because no opening card in that seed carried
+  a `reprice`. It now asserts `board_pay`, and separately asserts the
+  band alone where nothing stands.
+
+### What did NOT ship, and why
+
+The packets' **facts** and **options** stayed in worldsim.md beside the
+econ leftovers — the same treatment the economy floor gave them. A fact
+costs nothing at runtime and the engine never sees it; an option wants a
+priced-menu entry or a crime-layer category of its own, which is a
+different session's work. The ruler sheet's **per-land and per-race
+modifier columns** are also still to author: the Firascir baseline
+serves every land, which is exactly what worldsim.md said it would until
+someone measures the others. The **PC's own blank sheet** remains the
+open question it was.
+
+### Where it landed
+
+`rules.md` gained *Politics & the Ruler*; `rulers.py` is registered in
+develop.md's Files with `worldsim.py`, `test_worldsim.py` and `story.py`
+updated; worldsim.md's RULER CHARACTER and POLITICS sections are CUT and
+replaced by a leftovers section; plan.md's ladder is down to one rung.
+`test_worldsim.py` grew 51 tests across six classes. Nothing was
+re-measured: the rung adds no bench-visible field the economy floor did
+not already add, and every knob it introduces is hand-set and
+sim-unverified by the standing convention.
+
+**One softening caught in review and removed.** `story.casus_belli_line`
+first returned `""` for a story dict with no `casus_belli` key, with a
+comment about wars from before the reason existed. `init_story` always
+rolls one, so that is precisely the species the 2026-08-09 rule names: a
+reader softened for a state the code cannot produce, whose only caller
+for the missing case was the test written beside it. The reader now
+indexes, and the test asserts every rolled war carries a reason and that
+an empty story raises.

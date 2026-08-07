@@ -4475,3 +4475,150 @@ like any other.
 - **`world`** carries all three outlets per land for the DM: the board's
   shift and pay, what each live card is posting, the priced terms, and who
   is out there.
+
+---
+
+# Politics & the Ruler — Add-on (2026-08-10, the worldsim build's third content rung)
+
+The land stopped being an economy with a sky over it and became a **polity**:
+who holds it, what it is fighting about, who is pulling at whom, and what
+kind of person sits at the top of it. `worldsim.py` owns the frame and the
+cards; `rulers.py` owns the person; `story.py` gained the war's reason.
+
+Everything here is a **gate on content**, not a system of its own. Nothing
+ticks, nothing accumulates, and no political value is ever a quantity.
+
+## The constitution (one exclusive slot per land)
+
+- **Rolled once at worldgen on a default-heavy die** — the wealth-band
+  pattern. The stereotype is the constant (feudal humans, herding orcs,
+  mining dwarves) and the variants are the colour, so the same land comes up
+  a different flavour of itself across playthroughs.
+- Firascir opens DECENTRALIZED FEUDALISM, Mortellaria ABSOLUTISM, Ensimaa
+  CONSTITUTIONAL MONARCHY, Tergal THE CLAN CONFEDERACY, Dvarvengrond THE
+  ARBITER CROWN, Gibili THE PAPER STATE. Each carries two or three variants
+  — the centralizing crown, the princes in arms, the sealed realm, the great
+  chief, the empty throne, the junta, the commune.
+- **Cards never flip it.** The two that do say so on their face (the junta
+  takes the parliament; the commune keeps the barricade), and a card that
+  would only re-assert the constitution a land already holds never fires.
+- It shows on `map` under the land, by name; `world` carries its sentence.
+
+## The tensions (the deck's gate)
+
+- Each land's packet lists **standing tensions — two named blocs and what
+  they fight over**. A land **rolls ONE at worldgen, and TWO if it opened in
+  CRISIS**; a tension marked STANDING is held on top of the roll and never
+  rolled (Firascir's manor against its village is the econ packet's
+  oppression axis, so it is simply what the land is).
+- **Only cards whose tension holds enter the land's crisis deck** — the same
+  deck as the econ cards, no second pile. This is the whole economy of the
+  rung: a Firascir where the crown is fighting its lords never draws the
+  temple's cards at all, so the packet stays a wide pool and each rolled
+  world stays specific.
+- A card that names no tension is land-wide and always passes: every economy
+  and weather card does.
+
+## Factions and edges (the in-land relation)
+
+- The rolled tensions imply a small **faction cast**, and **authored
+  directed verb edges** carry the wiring: the crown leans on the great
+  lords, the mill barons fund the secret police, the secret police
+  infiltrate the anarchist cells, the clan mothers seat the chiefs.
+- **An edge is live when both its ends are in the cast** — an edge with one
+  end missing is not a half-edge, it simply is not there this playthrough —
+  and cards admit on it.
+- A faction gets its face for free from the notables cast (`ruler` / `sage`
+  / `wildcard`) where its packet names one; nothing here asks for a new NPC.
+
+## The ruler character
+
+Rolled at worldgen onto the land's RULER notable, in **one copy on the land
+layer**; the notable carries the name and the sheet carries the words.
+
+- **One weighted pool of 357 words** — twenty axes (two named poles around
+  an unnamed neutral), one extreme step, twenty flags. A crown **draws
+  THREE**; a lesser named authority a card creates draws **TWO** off the
+  crown-less 355.
+- **The pool shrinks between draws.** The drawn word, its axis opposite (an
+  extreme takes the whole axis: a zealot *is* devout) and its never-with
+  partners leave the pool, and the die shrinks by their weights — so three
+  draws always land three distinct compatible words. It is exactly
+  equivalent to rerolling invalid draws, and it keeps every remaining weight
+  in its measured proportion.
+- **The weights are measured.** 443 traited rulers out of 734 coded, average
+  3 traits each — which is why three draws reproduce the per-trait marginals
+  (ambitious lands on about a quarter of rolled crowns). Vivid entries the
+  data zeroed sit at the **floor of 1**: rarity is priced by the weight
+  column, never by deletion.
+- **Neutral is silence** — an unrolled axis is never mentioned in play.
+- **At most three afflictions** on one character (a combo is a story; a
+  fourth is noise), and any affliction may carry a **dated origin** — "since
+  the fever", "since the siege year".
+- **`heart` is derived and hidden**: dark-tagged traits and no good ones →
+  `dark`; good and no dark → `good`; both or neither → `mixed`. It is the
+  crime layer's desert anchor and it never appears where the player can see
+  it. What the town says of its king is the trait words themselves, which is
+  exactly the reputation everyone in the land already has of him.
+- **Two circumstances are rolled beside the words**: the mode of accession
+  (inherited, elected, minority, usurped, **kin-blood** — took the throne
+  over a brother's body — conquest, restored) and the **succession state**
+  (secure / disputed / heirless), which reads the traits and the accession
+  for free: a chaste or sickly crown trends heirless, a lecherous one
+  disputed. The rest of the non-trait record (age at accession, legitimacy,
+  quality of ministers, captivity) stays the DM's.
+- **Ordinary NPCs stay blank.** Givers and service faces carry no sheet — the
+  characteristic criterion: rulers are card-backed, givers are not.
+
+## What a political card can do that an economic one cannot
+
+The five outlets are unchanged. What the rung adds is four more **admitting
+conditions**, each ANY-OF because each reads a slot holding one or two
+values — `tension`, `constitution`, `traits` (the land ruler's rolled words),
+`succession`, `edge` — and two more **state effects**: moving the
+constitution slot, and moving the succession state.
+
+A card that has to **name somebody** names him once and the land keeps him
+(the fog necromancer's pattern, generalized): the banned lord, the
+witch-finder, the bandit king, the pretender each roll a two-word crown-less
+sheet, and the same man is still there the next time the card comes round.
+
+## The war layer's feed
+
+- **The casus belli.** The war had waves and no reason; now it has one,
+  rolled beside story.py's aggressor off a **derived seed** (so every
+  existing world's aggressor, faces and targets are untouched). It is said
+  ONCE, at the first herald, and left on the land's news for whoever arrives
+  later. One race needs no roll: the Sky's mandate says the neighbours are
+  rebels who have not yet submitted.
+- **The diplomatic instruments** — how wars end and stay ended — are
+  **authored relation edges with cards standing in them**: the courtly
+  hostage (a child of one hall grows up in the other), the yearly tribute,
+  the marriage pact whose breaking is its own casus belli, and the personal
+  union that puts two crowns on one head and both realms' quarrels at one
+  table.
+- **The succession cluster** admits on the crown's circumstance and moves
+  it: the infant heir and its regency council, three branches and three
+  readings of the law, the dead king who comes back (or the man wearing his
+  face), and the bought recognition that is void the day the king dies.
+  Per-land shapes ride the packets — Tergal's tanistry makes every
+  succession a scramble, Dvarvengrond's electors deadlock, Ensimaa's search
+  happens once an age, and Gibili has no crown to pass, so its version is
+  the junta.
+
+## Where the player meets it
+
+- **On the map** — the land's constitution by name, under its band and its
+  states.
+- **In town** — what is said of the ruler, printed under his face in the
+  notables block: the trait words, the succession when it is not settled,
+  and the hand behind the throne when there is one.
+- **On the board** — most political cards move slots or pay, because a land's
+  politics is not a readout: a regency posts less ordinary work, a disputed
+  succession pays over the odds for blades, a general strike takes two rows
+  off the board.
+- **On the news, the shelf and the road** — the same five outlets as
+  everything else.
+- **`world`** carries the whole polity for the DM: the constitution and its
+  sentence, the tensions (standing ones marked), the live faction edges, the
+  ruler's sheet including `heart`, and the faces the cards have named.

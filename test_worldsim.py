@@ -39,6 +39,31 @@ under it, the healer's tier gate); the storm's one field knob and one save;
 and the surfaces -- the sky on the state diff, the cabin table whose
 sinister row never announces itself, and the road that costs a day.
 
+THE ECONOMY FLOOR (2026-08-09, the second content rung). The rules this
+pins: the wealth band moving how much work a settlement posts and what it
+quotes; the three quest verbs (post, cancel, reprice); the priced menu's
+three multiplying sources and its clamps, including the only road a DERIVED
+state has to a price; the local encounter table changing WHO and never how
+hard; the five chains and the one that crosses a relation; and the second
+invariant measured -- the board, the prices and the road have all moved by
+the time the party walks back in.
+
+POLITICS (2026-08-10, the third content rung). The rules this pins: the
+ruler sheet -- one weighted pool of 357, three draws for a crown and two
+off the crown-less 355 for anyone else, the shrinking pool that makes three
+draws land three compatible words, the affliction cap, the derived heart,
+and the two circumstances that read the sheet they were rolled beside; the
+constitution slot off each land's own default-heavy die; the tension roll
+(one, two in crisis, standing ones held on top) and its DECK GATE, which is
+what keeps a packet a wide pool instead of a content budget; the faction
+edges that need both ends in the rolled cast; the five ANY-OF admits and
+the two new state effects; the lesser authority a card names and the land
+keeps; the war layer's feed (the derived-seed casus belli said once at the
+first herald, the four instruments as edges with cards in them, the
+succession cluster); and the surfaces -- the constitution on the map page,
+the whole polity on `world`, and the ruler's PUBLIC reputation under his
+face on the board, with his heart never leaving the DM's readout.
+
 Run:  python -m unittest -v test_worldsim.py
 """
 
@@ -49,10 +74,14 @@ import unittest
 import unittest.mock
 from contextlib import redirect_stdout
 
+import argparse
+
 import conquest
 import places
 import quests
 import rpg
+import rulers
+import story
 import worldsim
 
 
@@ -374,7 +403,8 @@ class TheRecordShapes(unittest.TestCase):
         for card in worldsim.CARDS:
             self.assertEqual(set(card["admits"]),
                              {"wealth", "states", "without", "weather",
-                              "wet", "dry"},
+                              "wet", "dry", "tension", "constitution",
+                              "traits", "succession", "edge"},
                              card["key"])
 
     def test_the_floor_is_two_cards_a_land(self) -> None:
@@ -481,22 +511,34 @@ class TheWealthRoll(unittest.TestCase):
                          stripped(_world(2026)))
 
     def test_the_quoted_gold_is_the_one_thing_the_layer_moves(self) -> None:
-        """...and it moves it by exactly the band's own multiplier."""
+        """...and it moves it by exactly `board_pay` -- the band's own
+        multiplier times whatever card was standing over the land when the
+        posting went up. A land that opened in crisis is already living
+        through its first card at worldgen, so the band alone is the right
+        answer only where nothing stands (asserted separately below)."""
         quiet = {q["id"]: q["gold_total"]
                  for q in _flat_world(2026)["quests"].values()
                  if q.get("kind") != "delivery"}
         world = _world(2026)
+        seen_bare = False
         for quest in world["quests"].values():
             if quest.get("kind") == "delivery":
                 continue        # the road pays by the day, not by the land
             if quest.get("reward_weapon"):
                 continue        # ...and a job paying in steel quotes no gold
-            band = worldsim.BAND_PAY[
-                worldsim.wealth_of(world, world["areas"][
-                    quest["origin"]]["land"])]
+            polity = world["areas"][quest["origin"]]["land"]
             self.assertEqual(quest["gold_total"],
-                             max(1, round(quiet[quest["id"]] * band)),
+                             max(1, round(quiet[quest["id"]]
+                                          * worldsim.board_pay(world,
+                                                               polity))),
                              quest["id"])
+            if not worldsim.live_cards(world, polity):
+                seen_bare = True
+                self.assertEqual(
+                    quest["gold_total"],
+                    max(1, round(quiet[quest["id"]] * worldsim.BAND_PAY[
+                        worldsim.wealth_of(world, polity)])), quest["id"])
+        self.assertTrue(seen_bare, "no quiet land in this world")
 
     def test_a_band_a_card_moved_for_its_clock_comes_back(self) -> None:
         world = _world(3)
@@ -547,7 +589,10 @@ class ThePerLandSaveState(unittest.TestCase):
                               "live", "news", "told_day", "rolled_day",
                               "weather_deck", "season_deck", "weather_live",
                               "season_live", "weather", "weather_day",
-                              "wet", "dry"})
+                              "wet", "dry",
+                              # the politics rung (2026-08-10)
+                              "constitution", "tensions", "ruler",
+                              "authorities"})
 
     def test_the_layer_rides_the_save(self) -> None:
         world = _world()
@@ -560,15 +605,24 @@ class ThePerLandSaveState(unittest.TestCase):
                              world["lands"][polity]["states"])
 
     def test_the_deck_is_the_land_s_own_cards_shuffled(self) -> None:
+        """...its own cards, minus the ones its rolled tensions shut out.
+        The tension gate is the politics rung's whole economy: a Firascir
+        where the crown is fighting its lords never holds the temple's
+        cards at all (2026-08-10)."""
         world = _world()
         for polity in world["lands"]:
+            held_tensions = worldsim.tensions_of(world, polity)
             own = {c["key"] for c in worldsim.CARDS
-                   if worldsim.in_land(c, polity)}
+                   if worldsim.in_land(c, polity)
+                   and worldsim._tension_gate(c, held_tensions)}
+            shut = {c["key"] for c in worldsim.CARDS
+                    if worldsim.in_land(c, polity)} - own
             layer = _layer(world, polity)
             held = {d["key"] for d in layer["drawn"]}
             for track in worldsim.TRACKS:
                 held |= set(layer[worldsim.DECK_KEY[track]])
             self.assertEqual(held, own, polity)
+            self.assertFalse(held & shut, polity)
 
     def test_the_deck_order_is_seeded_and_stable(self) -> None:
         self.assertEqual(_layer(_world(881), "firascir")["deck"],
@@ -2062,6 +2116,640 @@ class TheEconomyFloorWiring(unittest.TestCase):
                 worldsim.roll_world(world, day)
                 seen.add(snapshot(world))
             self.assertTrue(seen - {start}, seed)
+
+
+# =========================================================================== #
+# POLITICS (2026-08-10, the ladder's third content rung)
+# =========================================================================== #
+
+
+def _politics(spec: dict) -> dict:
+    """The politics half of a card's admitting conditions."""
+    return {k: spec["admits"].get(k) or ()
+            for k in ("tension", "constitution", "traits", "succession",
+                      "edge")}
+
+
+POLITICS_KEYS = ("tension", "constitution", "traits", "succession", "edge")
+
+
+class TheRulerSheet(unittest.TestCase):
+    """`rulers.py`: three weighted draws off 357 words, and the removals
+    that make three draws land three compatible ones."""
+
+    def test_the_pool_is_the_documented_size(self) -> None:
+        self.assertEqual(rulers.POOL_TOTAL, 357)
+        self.assertEqual(rulers.CROWNLESS_TOTAL, 355)
+        self.assertEqual(sum(rulers.pool(True).values()), 357)
+        self.assertEqual(sum(rulers.pool(False).values()), 355)
+
+    def test_a_crown_draws_three_distinct_words(self) -> None:
+        for seed in range(200):
+            sheet = rulers.roll_ruler(random.Random(seed))
+            self.assertEqual(len(sheet["traits"]), rulers.CROWN_DRAWS, seed)
+            self.assertEqual(len(set(sheet["traits"])),
+                             len(sheet["traits"]), seed)
+            for word in sheet["traits"]:
+                self.assertIn(word, rulers.VOCABULARY, word)
+
+    def test_one_pole_per_axis_and_the_extreme_takes_the_whole_axis(self
+                                                                   ) -> None:
+        for seed in range(400):
+            traits = rulers.roll_ruler(random.Random(seed))["traits"]
+            axes = [rulers.VOCABULARY[w]["axis"] for w in traits
+                    if rulers.VOCABULARY[w]["axis"]]
+            self.assertEqual(len(axes), len(set(axes)), traits)
+            # ...and the demonstration case: a zealot IS devout, so the
+            # faith axis cannot also produce devout or godless.
+            if "zealot" in traits:
+                self.assertNotIn("devout", traits)
+                self.assertNotIn("godless", traits)
+
+    def test_a_never_with_pair_never_rolls_together(self) -> None:
+        for seed in range(600):
+            traits = set(rulers.roll_ruler(random.Random(seed))["traits"])
+            self.assertFalse({"gifted", "spell-fearing"} <= traits, seed)
+
+    def test_the_crown_scope_entry_stays_off_a_lesser_sheet(self) -> None:
+        self.assertIn("itinerant", rulers.pool(True))
+        self.assertNotIn("itinerant", rulers.pool(False))
+        for seed in range(400):
+            sheet = rulers.roll_ruler(random.Random(seed), crown=False)
+            self.assertEqual(len(sheet["traits"]), rulers.LESSER_DRAWS)
+            self.assertNotIn("itinerant", sheet["traits"])
+
+    def test_the_affliction_cap_holds(self) -> None:
+        for seed in range(400):
+            traits = rulers.roll_ruler(random.Random(seed),
+                                       draws=6)["traits"]
+            afflicted = [w for w in traits if w in rulers.AFFLICTIONS]
+            self.assertLessEqual(len(afflicted), rulers.AFFLICTION_CAP,
+                                 traits)
+
+    def test_heart_reads_the_moral_tags_and_nothing_else(self) -> None:
+        self.assertEqual(rulers.heart_of(["cruel", "arbitrary"]), "dark")
+        self.assertEqual(rulers.heart_of(["merciful", "lawful"]), "good")
+        self.assertEqual(rulers.heart_of(["cruel", "lawful"]), "mixed")
+        self.assertEqual(rulers.heart_of(["brilliant", "sickly"]), "mixed")
+        for seed in range(200):
+            sheet = rulers.roll_ruler(random.Random(seed))
+            self.assertIn(sheet["heart"], ("good", "dark", "mixed"))
+
+    def test_the_companion_fields_exist_only_beside_their_trait(self
+                                                               ) -> None:
+        seen_puppet = seen_origin = False
+        for seed in range(400):
+            sheet = rulers.roll_ruler(random.Random(seed))
+            if "puppet" in sheet["traits"]:
+                seen_puppet = True
+                self.assertIn(sheet["puppeteer"], rulers.PUPPETEERS)
+            else:
+                self.assertNotIn("puppeteer", sheet)
+            for word in sheet.get("origins", {}):
+                seen_origin = True
+                self.assertIn(word, rulers.AFFLICTIONS)
+                self.assertIn(word, sheet["traits"])
+        self.assertTrue(seen_puppet)
+        self.assertTrue(seen_origin)
+
+    def test_the_circumstances_are_rolled_and_read_the_sheet(self) -> None:
+        for seed in range(200):
+            sheet = rulers.roll_ruler(random.Random(seed))
+            self.assertIn(sheet["succession"], rulers.SUCCESSIONS)
+            self.assertIn(sheet["accession"],
+                          {m for m, _w, _l in rulers.ACCESSIONS})
+        # A chaste crown has no heir coming: the succession table reads the
+        # traits rather than rolling blind.
+        chaste = [rulers.roll_succession(random.Random(s), ["chaste"],
+                                         "inherited") for s in range(300)]
+        plain = [rulers.roll_succession(random.Random(s), [], "inherited")
+                 for s in range(300)]
+        self.assertGreater(chaste.count("heirless"), plain.count("heirless"))
+
+    def test_the_weights_reproduce_the_measured_marginals(self) -> None:
+        """The identity the three-draw design rests on: three weighted
+        draws off 357 put the dataset's per-trait shares back on roughly
+        the measured proportion. Ambitious was 32/443 in the data and lands
+        on about a quarter of rolled crowns."""
+        rng = random.Random(11)
+        rolls = [rulers.roll_ruler(rng)["traits"] for _ in range(4000)]
+        share = sum("ambitious" in t for t in rolls) / len(rolls)
+        self.assertAlmostEqual(share, 0.27, delta=0.05)
+
+    def test_a_sheet_is_json_clean_and_seeded(self) -> None:
+        sheet = rulers.roll_ruler(random.Random(4))
+        self.assertEqual(json.loads(json.dumps(sheet)), sheet)
+        self.assertEqual(rulers.roll_ruler(random.Random(4)), sheet)
+
+
+class ThePoliticsFrame(unittest.TestCase):
+    """Three rolls and one authored table: what a land IS before anything
+    happens to it."""
+
+    def test_every_land_rolls_a_constitution_from_its_own_slot(self
+                                                              ) -> None:
+        for seed in range(12):
+            world = _world(seed)
+            for polity in world["lands"]:
+                key = worldsim.constitution_of(world, polity)
+                self.assertIn(key, {c["key"]
+                                    for c in worldsim.CONSTITUTIONS[polity]})
+
+    def test_the_constitution_die_is_default_heavy(self) -> None:
+        """The stereotype is the constant and the variants are the colour:
+        the default carries most of the die in every land."""
+        for polity, entries in worldsim.CONSTITUTIONS.items():
+            total = sum(c["weight"] for c in entries)
+            self.assertGreater(entries[0]["weight"] / total, 0.5, polity)
+        rolled = [worldsim.roll_constitution(random.Random(s), "firascir")
+                  for s in range(600)]
+        self.assertGreater(rolled.count("feudal") / len(rolled), 0.5)
+        self.assertTrue(set(rolled) - {"feudal"})       # ...and not only it
+
+    def test_a_land_rolls_one_tension_and_a_crisis_land_two(self) -> None:
+        standing = worldsim.STANDING_TENSIONS
+        for band, want in (("normal", worldsim.TENSION_ROLLS),
+                           ("crisis", worldsim.CRISIS_TENSION_ROLLS)):
+            for polity in places.LAND_SPECS:
+                held = worldsim.roll_tensions(random.Random(5), polity, band)
+                own = standing.get(polity, ())
+                self.assertEqual(len(held), want + len(own), (polity, band))
+                self.assertEqual(len(set(held)), len(held))
+                for key in own:
+                    self.assertIn(key, held)
+
+    def test_a_standing_tension_is_never_rolled_twice(self) -> None:
+        for seed in range(40):
+            held = worldsim.roll_tensions(random.Random(seed), "firascir",
+                                          "crisis")
+            self.assertEqual(held.count("manor-vs-village"), 1)
+
+    def test_the_faction_cast_is_what_the_tensions_name(self) -> None:
+        world = _world(7)
+        for polity in world["lands"]:
+            want = {name for key in worldsim.tensions_of(world, polity)
+                    for name in worldsim.tension_spec(polity,
+                                                      key)["factions"]}
+            self.assertEqual(set(worldsim.factions_of(world, polity)), want)
+
+    def test_an_edge_needs_both_its_ends_in_the_cast(self) -> None:
+        world = _world(7)
+        for polity in world["lands"]:
+            cast = set(worldsim.factions_of(world, polity))
+            live = worldsim.live_edges(world, polity)
+            for entry in live:
+                self.assertEqual(entry["land"], polity)
+                self.assertIn(entry["from"], cast)
+                self.assertIn(entry["to"], cast)
+            dark = [e for e in worldsim.FACTION_EDGES
+                    if e["land"] == polity and e not in live]
+            for entry in dark:
+                self.assertFalse({entry["from"], entry["to"]} <= cast)
+
+    def test_the_ruler_sheet_lives_on_the_layer_and_wears_a_face(self
+                                                                ) -> None:
+        world = _world(21)
+        for polity in world["lands"]:
+            sheet = worldsim.ruler_sheet(world, polity)
+            self.assertEqual(len(sheet["traits"]), rulers.CROWN_DRAWS)
+            npc = next(n for n in world["npcs"]
+                       if n.get("post") == "ruler" and n["land"] == polity)
+            self.assertEqual(sheet["npc"], npc["id"])
+            # ONE copy: the face carries no traits of its own.
+            self.assertNotIn("traits", npc)
+            self.assertNotIn("heart", npc)
+
+    def test_the_politics_rolls_move_no_wealth_band(self) -> None:
+        """They come after the wealth roll on the same stream, so every
+        world's bands are what they were before politics existed."""
+        for seed in range(30):
+            world = _world(seed)
+            for polity in world["lands"]:
+                rng = random.Random(
+                    worldsim._land_seed(world, polity, "worldsim-open", 0))
+                self.assertEqual(worldsim.roll_wealth(rng),
+                                 worldsim.wealth_of(world, polity))
+
+    def test_the_politics_layer_rides_the_save(self) -> None:
+        world = _world(13)
+        worldsim.roll_world(world, 90)
+        clone = json.loads(json.dumps(world))
+        for polity in world["lands"]:
+            self.assertEqual(clone["lands"][polity]["world"],
+                             _layer(world, polity))
+
+
+class ThePoliticsGate(unittest.TestCase):
+    """The tension is the deck's gate; the other four slots are admits."""
+
+    def test_a_card_whose_tension_is_not_held_never_enters_the_deck(self
+                                                                   ) -> None:
+        world = _world(4471)
+        held = worldsim.tensions_of(world, "firascir")
+        shut = [c for c in worldsim.CARDS
+                if worldsim.in_land(c, "firascir")
+                and c["admits"]["tension"]
+                and not any(t in held for t in c["admits"]["tension"])]
+        self.assertTrue(shut, "no politics card is shut out in this world")
+        deck = set(_layer(world, "firascir")["deck"])
+        for spec in shut:
+            self.assertNotIn(spec["key"], deck)
+            self.assertFalse(worldsim.admits(world, "firascir",
+                                             spec["admits"]), spec["key"])
+
+    def test_a_card_naming_no_tension_always_passes_the_gate(self) -> None:
+        for spec in worldsim.CARDS:
+            if spec["admits"]["tension"]:
+                continue
+            self.assertTrue(worldsim._tension_gate(spec, ()), spec["key"])
+
+    def test_a_reshuffled_deck_is_still_gated(self) -> None:
+        world = _world(4471)
+        layer = _layer(world, "firascir")
+        layer["deck"] = []
+        worldsim._draw(world, "firascir", random.Random(2))
+        held = worldsim.tensions_of(world, "firascir")
+        for key in layer["deck"]:
+            self.assertTrue(
+                worldsim._tension_gate(worldsim.CARDS_BY_KEY[key], held), key)
+
+    def test_a_card_admits_on_the_constitution(self) -> None:
+        world = _world()
+        spec = worldsim.CARDS_BY_KEY["ensimaa/hunters-sent"]["admits"]
+        _layer(world, "ensimaa")["constitution"] = "constitutional"
+        self.assertFalse(worldsim.admits(world, "ensimaa", spec))
+        _layer(world, "ensimaa")["constitution"] = "sealed"
+        self.assertTrue(worldsim.admits(world, "ensimaa", spec))
+
+    def test_a_card_admits_on_the_ruler_s_own_words(self) -> None:
+        world = _world()
+        spec = worldsim.CARDS_BY_KEY["firascir/royal-progress"]["admits"]
+        sheet = worldsim.ruler_sheet(world, "firascir")
+        sheet["traits"] = ["cruel", "brilliant", "devout"]
+        self.assertFalse(worldsim.admits(world, "firascir", spec))
+        sheet["traits"] = ["cruel", "itinerant", "devout"]
+        self.assertTrue(worldsim.admits(world, "firascir", spec))
+
+    def test_a_card_admits_on_the_succession(self) -> None:
+        world = _world()
+        spec = worldsim.CARDS_BY_KEY["crown/infant-heir"]["admits"]
+        worldsim.set_succession(world, "firascir", "secure", 0)
+        self.assertFalse(worldsim.admits(world, "firascir", spec))
+        worldsim.set_succession(world, "firascir", "disputed", 0)
+        self.assertTrue(worldsim.admits(world, "firascir", spec))
+
+    def test_a_card_admits_on_a_live_faction_edge(self) -> None:
+        world = _world()
+        spec = worldsim.CARDS_BY_KEY["gibili/provocateur"]["admits"]
+        layer = _layer(world, "gibili")
+        layer["tensions"] = ["parliament-deadlock"]
+        self.assertFalse(worldsim.admits(world, "gibili", spec))
+        layer["tensions"] = ["parliament-deadlock", "syndicate-vs-syndicate"]
+        self.assertTrue(worldsim.admits(world, "gibili", spec))
+
+    def test_the_politics_admits_are_any_of(self) -> None:
+        """Each reads a slot that holds one or two values, so a card names
+        every value it will take and one of them is enough."""
+        world = _world()
+        spec = worldsim.CARDS_BY_KEY["crown/dead-king-returns"]["admits"]
+        self.assertEqual(set(spec["succession"]), {"heirless", "disputed"})
+        for state in ("heirless", "disputed"):
+            worldsim.set_succession(world, "tergal", state, 0)
+            self.assertTrue(worldsim.admits(world, "tergal", spec), state)
+        worldsim.set_succession(world, "tergal", "secure", 0)
+        self.assertFalse(worldsim.admits(world, "tergal", spec))
+
+
+class ThePoliticsEffects(unittest.TestCase):
+    """What a political card does that an economic one cannot."""
+
+    def test_a_card_can_move_the_succession(self) -> None:
+        world = _world()
+        worldsim.set_succession(world, "tergal", "secure", 0)
+        _layer(world, "tergal")["tensions"] = ["clan-vs-clan"]
+        _fire(world, "tergal", "tergal/tanist-scramble", 12)
+        self.assertEqual(worldsim.succession_of(world, "tergal"), "disputed")
+
+    def test_the_constitution_slot_moves_only_where_a_card_says_so(self
+                                                                  ) -> None:
+        flips = {c["key"]: (c["outlets"]["state"]["constitution"],
+                            c["land"])
+                 for c in worldsim.CARDS
+                 if (c["outlets"].get("state") or {}).get("constitution")}
+        self.assertTrue(flips)
+        for key, (value, lands) in flips.items():
+            self.assertEqual(len(lands), 1, key)
+            self.assertIn(value, {c["key"]
+                                  for c in worldsim.CONSTITUTIONS[lands[0]]})
+        world = _world()
+        _layer(world, "gibili")["tensions"] = ["army-vs-ranks"]
+        _layer(world, "gibili")["constitution"] = "paper-state"
+        _fire(world, "gibili", "gibili/junta", 20)
+        self.assertEqual(worldsim.constitution_of(world, "gibili"), "junta")
+        self.assertEqual(_layer(world, "gibili")["constitution_day"], 20)
+
+    def test_a_constitution_a_land_already_holds_says_nothing_new(self
+                                                                 ) -> None:
+        world = _world()
+        _layer(world, "gibili")["constitution"] = "junta"
+        self.assertTrue(worldsim._says_nothing_new(
+            world, "gibili", worldsim.CARDS_BY_KEY["gibili/junta"]))
+
+    def test_a_card_that_names_somebody_keeps_him(self) -> None:
+        world = _world()
+        _layer(world, "firascir")["tensions"] = ["crown-vs-lords"]
+        _fire(world, "firascir", "firascir/the-ban", 10)
+        who = worldsim.named_authority(world, "firascir", "banned-lord")
+        self.assertIsNotNone(who)
+        self.assertEqual(len(who["traits"]), rulers.LESSER_DRAWS)
+        self.assertNotIn("itinerant", who["traits"])
+        self.assertIn(who["name"],
+                      _layer(world, "firascir")["news"][-1]["line"])
+        # ...and the same man is still there the next time it comes round.
+        _fire(world, "firascir", "firascir/the-ban", 60)
+        self.assertEqual(
+            worldsim.named_authority(world, "firascir", "banned-lord"), who)
+
+    def test_the_politics_cards_move_the_board_too(self) -> None:
+        """The first invariant, applied to the new rung: a land's politics
+        is not a readout -- it is how much work is posted and what it
+        pays."""
+        moved = [c for c in _politics_cards()
+                 if (c["outlets"].get("quest") or {}).get("slots")
+                 or (c["outlets"].get("quest") or {}).get("reprice")]
+        self.assertGreater(len(moved), len(_politics_cards()) // 2)
+
+
+def _politics_cards() -> list[dict]:
+    return list(worldsim.POLITICS_CARDS)
+
+
+class ThePoliticsContent(unittest.TestCase):
+    """What the session was asked to author, asserted as data."""
+
+    def test_every_politics_card_is_gated_on_something_political(self
+                                                                ) -> None:
+        """Nothing in this rung is ungated noise: each card either names a
+        politics slot -- a tension, a constitution, a ruler trait, a
+        succession state, a faction edge -- or admits on a STATE some other
+        card left behind or some relation derives, which is the chain
+        pattern the economy floor shipped."""
+        settable = {s for c in worldsim.CARDS
+                    for group in ("set", "while")
+                    for s in (c["outlets"].get("state") or {}).get(group, ())}
+        settable |= {e["then"] for e in worldsim.RELATIONS}
+        for spec in _politics_cards():
+            gated = any(spec["admits"].get(k) for k in POLITICS_KEYS)
+            chained = set(spec["admits"]["states"])
+            self.assertTrue(gated or chained, spec["key"])
+            self.assertFalse(chained - settable, spec["key"])
+
+    def test_every_land_has_politics_of_its_own(self) -> None:
+        for polity in places.LAND_SPECS:
+            own = [c for c in _politics_cards()
+                   if worldsim.in_land(c, polity)]
+            self.assertGreaterEqual(len(own), 3, polity)
+
+    def test_the_baseline_land_takes_the_deepest_packet(self) -> None:
+        """The asymmetry doctrine, as a number: Firascir carries more
+        politics than any other land, because the ruler sheet's weights are
+        already its."""
+        depth = {p: len([c for c in _politics_cards()
+                         if worldsim.in_land(c, p)])
+                 for p in places.LAND_SPECS}
+        self.assertEqual(max(depth, key=depth.get), "firascir")
+
+    def test_each_land_s_troubles_come_from_its_own_axis(self) -> None:
+        """The overlap guard: a card belongs to at most one land unless it
+        is a crown-wide succession card, which every crowned land shares by
+        construction."""
+        for spec in _politics_cards():
+            if spec["admits"]["succession"]:
+                continue
+            self.assertEqual(len(spec["land"]), 1, spec["key"])
+
+    def test_the_succession_cluster_skips_the_land_with_no_crown(self
+                                                                ) -> None:
+        cluster = [c for c in _politics_cards() if c["admits"]["succession"]]
+        self.assertGreaterEqual(len(cluster), 4)
+        for spec in cluster:
+            self.assertNotIn("gibili", spec["land"], spec["key"])
+
+    def test_every_instrument_is_an_edge_with_a_card_in_it(self) -> None:
+        """The four diplomatic instruments: each is a state one land holds,
+        an authored relation edge the other derives off it, and a card
+        standing in that edge (worldsim.md's war feed)."""
+        instruments = {"hostage", "tribute", "marriage", "union"}
+        edges = {e["kind"]: e for e in worldsim.RELATIONS
+                 if e["kind"] in instruments}
+        self.assertEqual(set(edges), instruments)
+        settable = {s for c in worldsim.CARDS
+                    for group in ("set", "while")
+                    for s in (c["outlets"].get("state") or {}).get(group, ())}
+        for kind, entry in edges.items():
+            self.assertTrue(set(entry["when"]) & settable, kind)
+            readers = [c for c in worldsim.CARDS
+                       if entry["then"] in c["admits"]["states"]]
+            self.assertTrue(readers, kind)
+            for spec in readers:
+                self.assertIn(entry["to"], spec["land"], spec["key"])
+
+    def test_the_exile_edge_fires_in_other_lands(self) -> None:
+        """A card about LEAVING a country can only reach the party
+        somewhere else, which is what the edge is for."""
+        world = _world()
+        worldsim.set_state(world, "ensimaa", "hunters-out", 4)
+        reached = [p for p in world["lands"]
+                   if "elf-hunters" in worldsim.state_ids(world, p)]
+        self.assertGreaterEqual(len(reached), 3)
+        self.assertNotIn("ensimaa", reached)
+        self.assertIn("elf-hunters", worldsim.STATE_ENCOUNTERS)
+
+    def test_no_politics_card_is_dead_data(self) -> None:
+        """Every card in the rung is REACHABLE: force each gate it names
+        and it admits. A card whose conditions can never all hold at once
+        is the failure mode a five-slot admit invites, and it is silent --
+        the deck simply skips it forever."""
+        world = _world(4471)
+        for spec in _politics_cards():
+            polity = spec["land"][0]
+            layer = _layer(world, polity)
+            admits_ = spec["admits"]
+            if admits_["edge"]:
+                entry = next(e for e in worldsim.FACTION_EDGES
+                             if e["key"] == admits_["edge"][0])
+                layer["tensions"] = [
+                    t["key"] for t in worldsim.TENSIONS[polity]
+                    if {entry["from"], entry["to"]} <= set(t["factions"])
+                    or entry["from"] in t["factions"]
+                    or entry["to"] in t["factions"]]
+            elif admits_["tension"]:
+                layer["tensions"] = list(admits_["tension"][:1])
+            if admits_["constitution"]:
+                layer["constitution"] = admits_["constitution"][0]
+            if admits_["traits"]:
+                layer["ruler"]["traits"] = list(admits_["traits"])
+            if admits_["succession"]:
+                layer["ruler"]["succession"] = admits_["succession"][0]
+            for state_id in admits_["states"]:
+                # a DERIVED state is set on its source land, not this one
+                edge = next((e for e in worldsim.RELATIONS
+                             if e["to"] == polity
+                             and e["then"] == state_id), None)
+                if edge is None:
+                    worldsim.set_state(world, polity, state_id, 1)
+                else:
+                    worldsim.set_state(world, edge["from"],
+                                       edge["when"][0], 1)
+            if worldsim.wealth_of(world, polity) not in admits_["wealth"]:
+                worldsim.set_wealth(world, polity, admits_["wealth"][0], 1)
+            self.assertTrue(worldsim.admits(world, polity, admits_),
+                            spec["key"])
+            for state_id in admits_["states"]:
+                worldsim.drop_state(world, polity, state_id, 2)
+
+    def test_the_authored_politics_fits_and_stays_ascii(self) -> None:
+        labels = ([c["name"] for c in worldsim.CONSTITUTIONS["firascir"]]
+                  + [t["line"] for ts in worldsim.TENSIONS.values()
+                     for t in ts]
+                  + [f["name"] for f in worldsim.FACTIONS.values()])
+        for label in labels:
+            self.assertLessEqual(len(label), WIDTH, label)
+            self.assertTrue(label.isascii(), label)
+        for polity, entries in worldsim.CONSTITUTIONS.items():
+            for spec in entries:
+                self.assertLessEqual(len(spec["name"]), WIDTH,
+                                     (polity, spec["key"]))
+                self.assertTrue(spec["line"].isascii(), spec["key"])
+        for entry in worldsim.FACTION_EDGES:
+            self.assertTrue(entry["line"].isascii(), entry["key"])
+
+
+class TheWarFeed(unittest.TestCase):
+    """The war had waves and no reason. Now it has one."""
+
+    def test_the_casus_belli_is_rolled_off_a_derived_seed(self) -> None:
+        world = _world(90)
+        tale = story.init_story(world, random.Random(3))
+        want = worldsim.roll_casus_belli(
+            random.Random(f"casus:{world['seed']}:{tale['aggressor_land']}"),
+            tale["aggressor"])
+        self.assertEqual(tale["casus_belli"], want)
+
+    def test_one_race_needs_no_roll(self) -> None:
+        for seed in range(40):
+            entry = worldsim.roll_casus_belli(random.Random(seed), "orc")
+            self.assertEqual(entry["key"], "mandate")
+        rolled = {worldsim.roll_casus_belli(random.Random(s), "human")["key"]
+                  for s in range(60)}
+        self.assertGreater(len(rolled), 3)
+        self.assertNotIn("mandate", rolled)
+
+    def test_the_line_names_both_realms(self) -> None:
+        longest = max((land["name"] for land in places.LAND_SPECS.values()),
+                      key=len)
+        for _key, line in (worldsim.CASUS_BELLI
+                           + tuple(worldsim.STANDING_CASUS_BELLI.values())):
+            text = worldsim.casus_belli_line({"line": line}, longest, longest)
+            self.assertNotIn("{", text)
+            self.assertTrue(text.isascii(), text)
+            self.assertLessEqual(len(text), 72, text)
+
+    def test_the_herald_says_it_once_and_leaves_it_on_the_news(self
+                                                              ) -> None:
+        world = _world(90)
+        tale = story.init_story(world, random.Random(3))
+        _, lines = story.post_wave(world, tale, random.Random(1), day=6)
+        why = story.casus_belli_line(world, tale)
+        self.assertTrue(why)
+        self.assertTrue(any(why in line for line in lines))
+        heard = "\n".join(worldsim.take_news(
+            world, world["areas"][world["quests"]["w1"]["origin"]]["land"],
+            6))
+        self.assertIn(why, heard)
+        # ...once: wave 2's herald does not repeat it.
+        world["quests"]["w1"]["status"] = "done"
+        tale["wave_done"] = 1
+        _, again = story.post_wave(world, tale, random.Random(1), day=20)
+        self.assertFalse(any(why in line for line in again))
+
+    def test_every_rolled_war_carries_a_reason(self) -> None:
+        """...and the reader is STRICT about it: a story without one is a
+        bug, not a save to be humoured (develop.md's no-compat rule)."""
+        for seed in range(12):
+            world = _world(seed)
+            tale = story.init_story(world, random.Random(seed))
+            self.assertIn(tale["casus_belli"]["key"],
+                          {k for k, _line in worldsim.CASUS_BELLI}
+                          | {k for k, _line
+                             in worldsim.STANDING_CASUS_BELLI.values()})
+            self.assertTrue(story.casus_belli_line(world, tale))
+        with self.assertRaises(KeyError):
+            story.casus_belli_line(_world(1), {})
+
+
+class ThePoliticsSurfaces(unittest.TestCase):
+    """Where the player and the DM meet the polity."""
+
+    def test_the_map_page_says_what_kind_of_place_it_is(self) -> None:
+        world = _world(31)
+        lines = worldsim.land_lines(world, "firascir")
+        name = worldsim.constitution_spec(world, "firascir")["name"]
+        self.assertIn(f"  {name}", lines)
+        self.assertLessEqual(len(lines), 3)
+        for line in lines:
+            self.assertLessEqual(len(line), WIDTH, line)
+
+    def test_the_dm_inventory_carries_the_whole_polity(self) -> None:
+        world = _world(31)
+        text = "\n".join(worldsim.world_lines(world))
+        for polity in world["lands"]:
+            self.assertIn(worldsim.constitution_spec(world,
+                                                     polity)["name"], text)
+            for key in worldsim.tensions_of(world, polity):
+                self.assertIn(worldsim.tension_spec(polity, key)["line"],
+                              text)
+        self.assertIn("heart ", text)
+        for line in worldsim.world_lines(world):
+            self.assertTrue(line.isascii(), line)
+
+    def test_the_town_says_the_ruler_s_reputation_and_not_his_heart(self
+                                                                   ) -> None:
+        world = _world(31)
+        npc = next(n for n in world["npcs"]
+                   if n.get("post") == "ruler" and n["land"] == "firascir")
+        sheet = worldsim.ruler_sheet(world, "firascir")
+        sheet["traits"] = ["cruel", "brilliant", "sickly"]
+        sheet["heart"] = "dark"
+        sheet["succession"] = "heirless"
+        lines = worldsim.notable_lines(world, npc)
+        text = "\n".join(lines)
+        self.assertIn("cruel", text)
+        self.assertNotIn("heart", text)
+        self.assertNotIn("dark", text)
+        self.assertIn("no heir", text)
+        # Nobody else in the cast carries a sheet.
+        sage = next(n for n in world["npcs"] if n.get("post") == "sage")
+        self.assertEqual(worldsim.notable_lines(world, sage), [])
+
+    def test_the_board_prints_the_reputation_under_the_face(self) -> None:
+        import session
+        world = _world(31)
+        npc = next(n for n in world["npcs"]
+                   if n.get("post") == "ruler" and n["land"] == "firascir")
+        worldsim.ruler_sheet(world, "firascir")["traits"] = ["lecherous"]
+        state = {"world": world, "clock": rpg.Clock(day=2),
+                 "rng": random.Random(1), "party": _party(),
+                 "position": {"land": "firascir",
+                              "area": npc["seat"], "site": None},
+                 "visited": [], "purse": 10}
+        args = argparse.Namespace(settlement=None, dm=False)
+        out = io.StringIO()
+        with unittest.mock.patch.object(session, "load", lambda: state), \
+                unittest.mock.patch.object(session, "save", lambda s: None), \
+                redirect_stdout(out):
+            session.cmd_board(args)
+        self.assertIn("lecherous", out.getvalue())
 
 
 if __name__ == "__main__":
