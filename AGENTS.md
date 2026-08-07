@@ -53,13 +53,20 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the roadmap: planned features only, plus parked ideas.
+- `plan.md` — the roadmap: planned features, parked ideas and open
+  questions only. Nothing implemented lives there.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every
   re-measurement; develop.md keeps only the current summary).
 - `designlog.md` — the dated design-session history (the reasoning trail
   behind plan.md's decisions; append after every major design session).
+
+> **When a feature ships, DELETE its entry from plan.md and write the
+> session up in designlog.md** — played rules to rules.md, code pointers
+> to develop.md, measured numbers to benchlog.md. Never leave an item in
+> plan.md marked SHIPPED or COMPLETE. develop.md's "Where a finished
+> feature is written up" has the full rule.
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
 `karma.py`, `conquest.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's

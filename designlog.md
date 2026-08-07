@@ -6,6 +6,12 @@ plan.md (roadmap), rules.md (mechanics), and dm.md (play) — this file
 keeps the reasoning trail so a settled question stays settled. Newest
 last. (The benchlog is this file's sibling for measured tuning.)
 
+This is also where a FINISHED feature is written up: when something
+ships, its plan.md entry is deleted and lands here as a dated entry —
+what shipped, and the calls the spec left open that the build had to
+settle. plan.md holds only what is still ahead (develop.md, "Where a
+finished feature is written up").
+
 ---
 
 ## 2026-07-19 — The villain pivot (brainstorm → karma & heat v1)
@@ -2350,3 +2356,143 @@ the plan.md and worldsim.md Files entries.
 
 **Open.** Nothing blocks the build. The postponed list above is the
 thread's future work.
+
+## 2026-08-07 (session E) — The roadmap holds only what is ahead
+
+**The designer's instruction.** plan.md had become half archive: whole
+sections marked SHIPPED or COMPLETE, built specs kept as trophies, and
+shipped detail interleaved with the work still to do, so a reader had to
+sort the roadmap from the museum. The rule, stated and now standing:
+**plan.md is planned features and parked ideas only** — when an item is
+processed and implemented, it comes OUT of plan.md and is written up in
+the designlog instead. And the rule itself gets written down where dev
+sessions actually read it, rather than being re-derived each cleanup.
+
+**The doctrine, recorded** (develop.md's "Where a finished feature is
+written up", one clause each in AGENTS.md's document list, and plan.md's
+own header):
+
+- `designlog.md` — the dated session write-up: what was discussed, the
+  road it took, what was decided, what shipped, and the calls the spec
+  left open that the build had to settle. This is the archive.
+- `rules.md` — the played rules and the design spine.
+- `develop.md` — the code index (Files), the dev map, the tuning levers.
+- `benchlog.md` — measured numbers.
+- Spec companions (`worldsim.md`, `placegen.md`) — their shipped
+  sections get cut as their sessions land, same as plan.md's.
+- `plan.md` — loses the entry entirely. Not struck through, not marked
+  SHIPPED, not kept "as the built spec": deleted, leaving at most a
+  one-line pointer where a planned or parked item still leans on
+  something built.
+
+**What came out** (each already recorded where it belongs): THE DARK
+REWORK's three-session spec (2026-08-04, the three entries above); the
+retro pivot's shipped combat-log half (2026-07-21, plus rules.md
+"Reading the combat log" and the `ui/fight-short.txt` /
+`ui/fight-detailed.txt` pages in dm.md and develop.md); the worldsim
+thread's two short specs (2026-08-05 build session); the attrition
+rework's why-and-spine and its settled decisions (2026-07-26, plus
+rules.md's Wounds & Recovery and Conditions add-ons); conquest ticking
+(2026-07-27); named and masterwork weapons (2026-07-28); the levelling
+framework's completion header (its record is rules.md and develop.md —
+it predates this log); the 2026-07-19 villain pivot's vision and settled
+decisions (2026-07-19). The rework's parked lists, its open questions,
+and every unscheduled idea stayed in plan.md, which is what that file is
+for. The 2026-07-26 travel-encounter measurement table — the one piece
+of shipped record with no other home — moved to benchlog, where measured
+numbers live.
+
+**Build detail preserved here.** THE DARK REWORK's plan.md section
+carried three things no other doc held: the template sort, the calls
+each build session had to settle beyond its spec, and the death list.
+They are recorded now so the 2026-08-04 entries above are complete on
+their own. (Pointers in those entries to "plan.md's THE DARK REWORK
+section" resolve here.)
+
+*The template sort.* **Occult ten** (kept as assignments, and all
+`roll_dark_quest` draws from): Blood on the Altar, Sacrifice the Puppy,
+Steal the Temple Relic, Kill the Priest, Corrupt the Holy Sword, Find
+the Evil Sword, Guard the Cultists, Open the Hellgate, Capture the
+Beast (hell is the customer — occult by giver), plus the newly authored
+**Desecrate the Shrine**, which filled the desecration slot the list
+lacked. **Crime fifteen** (retired from the quest system, their skins,
+rosters, situations and epilogues kept in `karma.CRIME_FODDER` as scene
+fodder — session B dresses each crime category's protection in one of
+them): Kick the Puppy, Collect Protection Money, Burn the Granary,
+Steal the Jewel, Collect the Debt, Rob the Tomb, Take Over the Road,
+Dine and Dash, Loot the Village, Rob the Vault, Poison the Feast, Take
+the Mansion, Betray an Old Friend, Sell the Powder, Take the Neighbor's
+Land. Crime's own copy draws from neither list.
+
+*Session A (the assignment ladder) settled two calls the spec left
+open.* `deal_card` falls back to the NEAREST-band card when no card in
+the deck admits the pin level — the high pins, where only the widest
+bands reach — and the assignment levels into that band. And the
+account's closure is SHARED by the write-off and hell's mercy
+(`withdraw_assignment`), so a LOST visit also releases the job's sites
+back to the land; the old mercy deleted the quest without releasing
+them.
+
+*Session B (crime as free actions) settled six.* (1) **Gold carries the
+category multiplier too** — the spec quoted the coin formula without it,
+which made a level-1 petty pickpocket pay the same 20g as a mugging;
+petty stays FLAT on its own `PETTY_GOLD` range and everything else
+carries the same multiplier as the lump, while gold never carries
+monotony or the first-time bonus. (2) **The wilds are a crime market** —
+gating availability by settlement kind alone would have put highway
+robbery and the tax cart inside the walls, so mark bands declare which
+place kinds hold them (the travelling bands reach the road; nobles and
+magnates do not) and each CATEGORY declares where it happens, road work
+being wilds-only against a settlements default. (3) **A botched deed
+still pays if the fight is won** — the crime happened, the hard way; a
+LOST fight and a retreat both pay nothing. (4) **Casing stores nothing**
+— the mark is seeded off (world seed, place, day, category), so `crime`
+re-rolls exactly what `case` showed and sleeping on it rolls a new mark
+by construction. (5) **The commission is stamped when the crime is
+COMMITTED**, not when it pays: a force job the party is driven off, or a
+botched deed whose fight is lost, still ticks its category's monotony
+window — hell was watching the attempt — which costs little (the second
+stamp in a window is still x1.0) and keeps the ledger an honest record
+of what the party has done. (6) **The ledger separates GRANTS from
+by-deed unlocks** (`{"ledger": {...}, "grants": N}`), so committing a
+locked category — which unlocks it by deed — never eats a suggestion the
+ladder still owes.
+
+*Session C (the surface) settled five*, three of them already in its
+entry above (the tally's own `last` field, maimings scanned rather than
+hooked, named kills detected by shape). The other two: **`history`
+records carry a KIND** — the spec said "day-stamped lines", but the page
+has two narrative sections, so each record is `{day, kind, line}` plus
+an optional `note` for the epilogue, and the cap of 60 is applied PER
+KIND, so a career of jobs can never push the write-offs and maimings off
+the page. And **a hand-entered sin lands in the record only when it is
+NAMED**: `sin dark 40 burned the tax rolls` writes a line, a bare `sin
+dark 40` is bookkeeping, not history. Folded in during the same build:
+the `crimes` sheet reads the BAND rather than a rolled mark (`case`
+stays the exact read) and quotes each category's authored
+what-stands-in-the-way line instead of dumping its guard pool;
+`suggestions` takes an optional rng so the feed can be shuffled
+(catalogue order would advertise the same two petty crimes forever); and
+`main` was split into `build_parser` + `main` so the command surface is
+testable.
+
+*What died with the rework.* Session A: `TASK_INTERVAL_DAYS`,
+`FIRST_TASK_LEVEL`, `last_task_day`, `DARK_JOBS_PER_DAY`,
+`roll_dark_board` with the `dark_board` save key and `board --dark`, the
+fifteen crime templates as QUESTS, and the collections ladder
+(`beatings`, `ENFORCE_CAP_OVER`, the +1-per-visit escalation and its
+relentless top rung — replaced by the one-visit write-off with
+`ENFORCE_SPREAD`). Session C: the `karma` command name, the karma save
+keys `bad` / `bad_total` / `good_total`, and — the
+no-backwards-compatibility rule applied to a file the rename touched —
+`session.ensure_weapon_layer`, the last named lazy-upgrade branch.
+
+**Recorded.** plan.md rewritten to planned work, parked ideas and open
+questions only (about a third of its former length), with the doctrine
+at its head; develop.md's new doc-lifecycle section and its plan.md /
+designlog.md Files entries; AGENTS.md's document list; benchlog's
+re-homed travel-encounter table.
+
+**Open.** Nothing. The next dev session's first duty under the new rule:
+when the worldsim ladder's settlement trim lands, delete its rung from
+plan.md rather than marking it shipped.
