@@ -305,6 +305,43 @@ explain it.
   `place-state` remains your override for a state you want to set by
   hand.
 
+### The sky (2026-08-08, the weather)
+
+Every land rolls a sky every day. Unlike the band, this one has teeth.
+
+- **The `WEATHER:` line prints where the sky matters** -- setting out, a
+  day afield, a night in the open, on arrival. Work it into the FIRST
+  sentence of the scene and then drop it: weather is the light a scene is
+  lit by, not a topic. "Rain since Tuesday and the ford is a brown mess"
+  beats a paragraph about the weather.
+- **When it says a spell, that IS the story** -- "the 4th wet day
+  running", "12 days without rain". A land in DROUGHT, under SMOG, with
+  its FORDS OUT or its forest BURNING is holding a state, and `map`
+  shows it: read it before framing a scene.
+- **The road can cost a day** to a washed-out ford or a dust storm; the
+  script prints why. Don't apologise for it -- it is what the state
+  means.
+- **A night in the open under rain, frost, snow or a storm is a check
+  per hero.** A miss is a COLD -- and a second chill on a body already
+  carrying one is PNEUMONIA. Both cost the HP CEILING, not a per-round
+  tick, so the tell is a party that stops getting back to full. The
+  answers are a roof, a bed, and the `healer` (who breaks a cold in a
+  village and a pneumonia only in a town or better). Narrate it as
+  fatigue and a cough, never as a status effect.
+- **A storm night in the wilds rolls the CABIN TABLE.** When the script
+  prints `SHELTER:`, that is a scene -- play the host. The
+  `(DM eyes only: ...)` line under it is YOURS: **never read it aloud**,
+  and never let the narration telegraph it. The sinister host is
+  friendly right up until they are not.
+- **A fight in a storm** drags every shot and trips steps in the mud;
+  the log says so. Outdoors only -- there is no sky in a barrow.
+- **THE FOG RAISES BONES names a necromancer** and keeps him on the land
+  record (`world` shows him, with his level). He is a landmark-lite
+  problem with an address: seed him into rumor, let the party go looking
+  or not, and remember that the next fog is the same man's work. His
+  level is rolled 3-14 and is NOT scaled to the party -- if he is far
+  above them, that is the honest answer.
+
 ## The wilds (travel encounters, explore, hunt)
 
 - **The road's table ignores the party** (the OSR stance): any level can
@@ -1496,6 +1533,17 @@ bigger than the fights WITHOUT pages of narration:
   it lasts. Nothing ticks in the background: the world's day is rolled
   where the calendar advances, so a land is always where its own dice
   put it, visited or not.
+- **The weather in numbers:** one sky a land a day off its climate --
+  roughly a third of days are wet or freezing in the north and forest,
+  a fifth in the south. A storm holds 1-3 days; a wilds night under one
+  finds a cabin a bit under half the time. The exposure check is 2d6 +
+  STR vs the sky (a rainy night gets through ~6% of the time, a stormy
+  one ~33%); a cold costs 2 HP off the ceiling and pneumonia 5, and the
+  nightly shake is 2d6 + STR vs 13 (+2 for pneumonia, -2 under a roof)
+  -- about 3 nights for a cold in the wilds, 2 in a bed. A storm in a
+  fight costs -2 on every shot and a 2d6+DEX save on every step. Over a
+  120-day campaign a land sees about one storm a fortnight, a drought
+  once in a few campaigns, and the fog's bones once in three.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content**, not part of a
   played campaign: the board's generated quests are the game. Their

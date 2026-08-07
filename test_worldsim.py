@@ -23,6 +23,22 @@ read time and never stored; the lazy roll's identity (catching thirty days
 up at an arrival IS rolling them live); and the two surfaces the frame
 ships -- the news line, told once, and the state diff.
 
+THE WEATHER (2026-08-08, the ladder's first content rung). The rules this
+pins: the day roll against the environment profile's own climate weights
+(and the spells running behind it, which cloud and frost break neither of);
+the drought bending the roll that made it; the THREE TRACKS, so a storm
+never blocks a harvest failing and a season of drought never blocks a
+storm; the weather deck's admits (the sky, the spell, the card's own
+`chance` keeping the supernatural rare and leaving it in the deck when it
+misses); the authored cards -- the ford's spell, the fire wanting the
+drought and the burn scar outliving it, the fog naming ONE necromancer and
+keeping him; the DISEASE family (a cold, bounded deepening to pneumonia and
+no rung past it, the HP ceiling instead of a per-round tick, the night's
+shake on a stat that does not inflate, the roof, the smog that gets in
+under it, the healer's tier gate); the storm's one field knob and one save;
+and the surfaces -- the sky on the state diff, the cabin table whose
+sinister row never announces itself, and the road that costs a day.
+
 Run:  python -m unittest -v test_worldsim.py
 """
 
@@ -30,6 +46,7 @@ import io
 import json
 import random
 import unittest
+import unittest.mock
 from contextlib import redirect_stdout
 
 import conquest
@@ -321,15 +338,21 @@ class TheRecordShapes(unittest.TestCase):
     def test_every_card_admits_over_the_documented_axes(self) -> None:
         for card in worldsim.CARDS:
             self.assertEqual(set(card["admits"]),
-                             {"wealth", "states", "without", "weather"},
+                             {"wealth", "states", "without", "weather",
+                              "wet", "dry"},
                              card["key"])
 
     def test_the_floor_is_two_cards_a_land(self) -> None:
-        # The asymmetry doctrine's floor, as far as the frame's seed
-        # content goes: every land has something its deck can draw.
+        # The asymmetry doctrine's floor, as far as the shipped content
+        # goes: every land has something each of its three decks can draw.
         for polity in places.LAND_SPECS:
-            own = [c for c in worldsim.CARDS if c["land"] == polity]
+            own = [c for c in worldsim.CARDS
+                   if c["track"] == "crisis" and worldsim.in_land(c, polity)]
             self.assertGreaterEqual(len(own), 2, polity)
+            for track in ("weather", "season"):
+                deck = [c for c in worldsim.CARDS if c["track"] == track
+                        and worldsim.in_land(c, polity)]
+                self.assertTrue(deck, (polity, track))
 
     def test_a_slot_member_is_never_set_as_a_free_state(self) -> None:
         for card in worldsim.CARDS:
@@ -459,7 +482,10 @@ class ThePerLandSaveState(unittest.TestCase):
             layer = _layer(world, polity)
             self.assertEqual(set(layer),
                              {"wealth", "wealth_day", "deck", "drawn",
-                              "live", "news", "told_day", "rolled_day"})
+                              "live", "news", "told_day", "rolled_day",
+                              "weather_deck", "season_deck", "weather_live",
+                              "season_live", "weather", "weather_day",
+                              "wet", "dry"})
 
     def test_the_layer_rides_the_save(self) -> None:
         world = _world()
@@ -474,9 +500,12 @@ class ThePerLandSaveState(unittest.TestCase):
     def test_the_deck_is_the_land_s_own_cards_shuffled(self) -> None:
         world = _world()
         for polity in world["lands"]:
-            own = {c["key"] for c in worldsim.CARDS if c["land"] == polity}
+            own = {c["key"] for c in worldsim.CARDS
+                   if worldsim.in_land(c, polity)}
             layer = _layer(world, polity)
-            held = set(layer["deck"]) | {d["key"] for d in layer["drawn"]}
+            held = {d["key"] for d in layer["drawn"]}
+            for track in worldsim.TRACKS:
+                held |= set(layer[worldsim.DECK_KEY[track]])
             self.assertEqual(held, own, polity)
 
     def test_the_deck_order_is_seeded_and_stable(self) -> None:
@@ -573,7 +602,7 @@ class TheDeckDraw(unittest.TestCase):
         _layer(world, polity)["deck"] = []
         drawn = worldsim._draw(world, polity, random.Random(5))
         self.assertIsNotNone(drawn)
-        self.assertEqual(drawn["land"], polity)
+        self.assertEqual(drawn["land"], (polity,))
 
 
 class TheCardsClock(unittest.TestCase):
@@ -807,6 +836,587 @@ class TheSessionWiring(unittest.TestCase):
         import session
         args = session.build_parser().parse_args(["world"])
         self.assertIs(args.func, session.cmd_world)
+
+
+# =========================================================================== #
+# THE WEATHER (2026-08-08) -- the ladder's first content rung
+# =========================================================================== #
+
+def _sky(world: dict, polity: str, word: str) -> None:
+    """Put a sky over a land by hand. The tests drive the weather directly
+    so they never have to wait on a 5%-a-day storm to turn up."""
+    _layer(world, polity)["weather"] = word
+
+
+def _party(n: int = 2, level: int = 3) -> list:
+    import people
+    party = []
+    for i in range(n):
+        h = people.make_character(random.Random(400 + i), level=level)
+        h.name = f"Hero{i}"
+        h.conditions = []
+        party.append(h)
+    return party
+
+
+class TheDayRoll(unittest.TestCase):
+    """The sky: one word a land a day, off the environment's own climate."""
+
+    def test_every_land_holds_a_legal_sky_once_it_has_been_rolled(self
+                                                                  ) -> None:
+        world = _world()
+        worldsim.roll_world(world, 20)
+        for polity in world["lands"]:
+            self.assertIn(_layer(world, polity)["weather"],
+                          worldsim.WEATHER_WORDS, polity)
+            self.assertEqual(_layer(world, polity)["weather_day"], 20)
+
+    def test_a_fresh_world_has_no_sky_yet(self) -> None:
+        # Day 0 is worldgen's bookkeeping: a sky is a thing that happens on
+        # a day somebody played.
+        world = _world()
+        for polity in world["lands"]:
+            self.assertEqual(_layer(world, polity)["weather"], "")
+
+    def test_the_profile_is_the_distribution(self) -> None:
+        """Every environment authors its own climate, and the roll obeys it:
+        the damp forest rains more than the dry south, and only the cold
+        highlands ever see snow."""
+        seen = {polity: [] for polity in _world()["lands"]}
+        for seed in range(6):
+            world = _world(seed)
+            for day in range(1, 121):
+                worldsim.roll_world(world, day)
+                for polity in world["lands"]:
+                    seen[polity].append(_layer(world, polity)["weather"])
+        wet = {p: sum(w in ("rain", "storm") for w in words) / len(words)
+               for p, words in seen.items()}
+        self.assertGreater(wet["ensimaa"], wet["mortellaria"])
+        self.assertGreater(wet["firascir"], wet["mortellaria"])
+        self.assertNotIn("snow", seen["ensimaa"])
+        self.assertIn("snow", seen["dvarvengrond"])
+        self.assertNotIn("heat", seen["dvarvengrond"])
+
+    def test_the_same_word_reads_differently_on_different_ground(self
+                                                                 ) -> None:
+        # The dwarves' storm IS the snowstorm -- one card underneath, one
+        # phrase on top (worldsim.md's own note).
+        self.assertEqual(worldsim.weather_phrase("alpine_tundra", "storm"),
+                         "a snowstorm")
+        self.assertEqual(worldsim.weather_phrase("temperate", "storm"),
+                         "a storm")
+
+    def test_the_spells_count_and_break(self) -> None:
+        world = _world()
+        polity, layer = "firascir", _layer(world, "firascir")
+        rng = random.Random(0)
+        # DRY is days since the last rain, so an overcast day extends it;
+        # WET is a run of wet days that a DRY day breaks and an overcast
+        # one does not. Two counters, two meanings, on purpose.
+        for word, wet, dry in (("rain", 1, 0), ("rain", 2, 0),
+                               ("cloud", 2, 1),      # no rain, but no break
+                               ("fog", 2, 2),
+                               ("clear", 0, 3),      # a dry day breaks it
+                               ("heat", 0, 4),
+                               ("frost", 0, 5),
+                               ("storm", 1, 0)):
+            layer["weather_live"] = None
+            with unittest.mock.patch.object(worldsim, "roll_weather",
+                                            return_value=word):
+                worldsim._roll_sky(world, polity, 1, rng)
+            self.assertEqual((layer["wet"], layer["dry"]), (wet, dry), word)
+
+    def test_a_drought_makes_its_own_weather(self) -> None:
+        """The season state bending the roll that produced it -- which is
+        why a drought lasts past the day that started it."""
+        world = _world()
+        base = worldsim.weather_weights(world, "firascir")
+        worldsim.set_state(world, "firascir", "drought", day=1)
+        dry = worldsim.weather_weights(world, "firascir")
+        self.assertLess(dry["rain"], base["rain"])
+        self.assertGreater(dry["clear"], base["clear"])
+
+    def test_a_card_that_is_the_weather_holds_the_sky(self) -> None:
+        """A storm declared to last three days is a storm on all three: the
+        alternative is a state readout saying "the storm has the roads"
+        under clear skies, which the player would see immediately."""
+        world = _world()
+        worldsim.roll_world(world, 3)
+        _sky(world, "firascir", "storm")
+        worldsim._fire(world, "firascir", worldsim.CARDS_BY_KEY["weather/storm"],
+                       4, random.Random(1))
+        layer = _layer(world, "firascir")
+        self.assertGreater(layer["weather_live"]["until"], 4)
+        layer["rolled_day"] = 4
+        worldsim.roll_land(world, "firascir", layer["weather_live"]["until"] - 1)
+        self.assertEqual(layer["weather"], "storm")
+
+    def test_the_sky_rides_the_lazy_roll_like_everything_else(self) -> None:
+        watched, ignored = _world(77), _world(77)
+        for day in range(1, 41):
+            worldsim.roll_world(watched, day)
+        worldsim.roll_world(ignored, 40)
+        for polity in watched["lands"]:
+            self.assertEqual(_layer(ignored, polity)["weather"],
+                             _layer(watched, polity)["weather"], polity)
+
+
+class TheThreeTracks(unittest.TestCase):
+    """One live card per track, because one slot could not hold them: a
+    season of drought would have blocked every storm under it."""
+
+    def test_each_track_has_its_own_deck_and_its_own_live_slot(self) -> None:
+        world = _world()
+        layer = _layer(world, "firascir")
+        for track in worldsim.TRACKS:
+            self.assertIn(worldsim.DECK_KEY[track], layer)
+            self.assertIn(worldsim.LIVE_KEY[track], layer)
+        self.assertEqual(len(set(worldsim.LIVE_KEY.values())), 3)
+
+    def test_a_storm_does_not_block_the_harvest_failing(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 2)
+        _sky(world, "firascir", "storm")
+        worldsim._fire(world, "firascir",
+                       worldsim.CARDS_BY_KEY["weather/storm"], 3,
+                       random.Random(1))
+        worldsim._fire(world, "firascir",
+                       worldsim.CARDS_BY_KEY["firascir/bad-harvest"], 3,
+                       random.Random(1))
+        layer = _layer(world, "firascir")
+        self.assertIsNotNone(layer["weather_live"])
+        self.assertIsNotNone(layer["live"])
+        held = set(worldsim.state_ids(world, "firascir"))
+        self.assertIn("storm-bound", held)
+        self.assertIn("harvest-failed", held)
+
+    def test_a_weather_card_carries_no_wealth_condition(self) -> None:
+        # A prosperous land gets the same storms as a starving one: that is
+        # what makes weather the outlet that reaches a quiet world.
+        for card in worldsim.CARDS:
+            if card["track"] == "crisis":
+                continue
+            self.assertEqual(card["admits"]["wealth"], worldsim.BANDS,
+                             card["key"])
+
+    def test_a_land_agnostic_card_sits_in_every_land_s_deck(self) -> None:
+        world = _world()
+        for polity in world["lands"]:
+            self.assertIn("weather/storm",
+                          _layer(world, polity)["weather_deck"], polity)
+
+    def test_the_rare_card_stays_in_the_deck_when_it_loses_its_roll(self
+                                                                   ) -> None:
+        world = _world()
+        worldsim.roll_world(world, 1)
+        _sky(world, "ensimaa", "fog")
+        _layer(world, "ensimaa")["weather_deck"] = ["weather/fog-bones"]
+        misses = 0
+        for seed in range(40):
+            drawn = worldsim._draw(world, "ensimaa", random.Random(seed),
+                                   "fog", "weather")
+            if drawn is None:
+                misses += 1
+            else:                       # put it back for the next try
+                _layer(world, "ensimaa")["weather_deck"] = \
+                    ["weather/fog-bones"]
+        self.assertGreater(misses, 25)      # chance 0.05: rare, not never
+        self.assertIn("weather/fog-bones",
+                      _layer(world, "ensimaa")["weather_deck"])
+
+
+class TheWeatherCards(unittest.TestCase):
+    """What the authored deck does when it fires."""
+
+    def test_the_ford_needs_a_spell_not_a_shower(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 1)
+        spec = worldsim.CARDS_BY_KEY["weather/fords-out"]["admits"]
+        layer = _layer(world, "firascir")
+        layer["wet"] = 1
+        self.assertFalse(worldsim.admits(world, "firascir", spec))
+        layer["wet"] = 3
+        self.assertTrue(worldsim.admits(world, "firascir", spec))
+
+    def test_the_ford_is_a_human_lands_card(self) -> None:
+        card = worldsim.CARDS_BY_KEY["weather/fords-out"]
+        self.assertEqual(set(card["land"]), {"firascir", "mortellaria"})
+        self.assertFalse(worldsim.in_land(card, "tergal"))
+
+    def test_the_drought_is_season_scale_and_wants_a_dry_spell(self) -> None:
+        card = worldsim.CARDS_BY_KEY["weather/drought"]
+        self.assertEqual(card["track"], "season")
+        self.assertGreaterEqual(card["days"][0], 45)
+        # ...and the spell is the LAND's own: a drought is relative, so the
+        # threshold comes off the environment profile rather than a single
+        # number that the wet lands could never reach.
+        self.assertEqual(card["admits"]["dry"], worldsim.PROFILE_SPELL)
+        world = _world()
+        worldsim.roll_world(world, 1)
+        for polity, need in (("mortellaria", 25), ("ensimaa", 12)):
+            layer = _layer(world, polity)
+            layer["dry"] = need - 1
+            self.assertFalse(worldsim.admits(world, polity, card["admits"]),
+                             polity)
+            layer["dry"] = need
+            self.assertTrue(worldsim.admits(world, polity, card["admits"]),
+                            polity)
+        self.assertLess(
+            places.ENVIRONMENT_PROFILES["temperate_forest"]["drought_days"],
+            places.ENVIRONMENT_PROFILES["mediterranean"]["drought_days"])
+
+    def test_the_fire_wants_the_drought_and_the_green_wants_the_burn(self
+                                                                    ) -> None:
+        world = _world()
+        worldsim.roll_world(world, 1)
+        _sky(world, "ensimaa", "heat")
+        fire = worldsim.CARDS_BY_KEY["weather/wildfire"]
+        self.assertFalse(worldsim.admits(world, "ensimaa", fire["admits"],
+                                         "heat"))
+        worldsim.set_state(world, "ensimaa", "drought", day=1)
+        self.assertTrue(worldsim.admits(world, "ensimaa", fire["admits"],
+                                        "heat"))
+        _fire(world, "ensimaa", "weather/wildfire", 2)
+        held = set(worldsim.state_ids(world, "ensimaa"))
+        self.assertIn("wildfire", held)
+        self.assertIn("burned-over", held)
+        # The scar OUTLIVES the fire, and one card is the way back
+        worldsim._end(world, "ensimaa", 12, "weather")
+        held = set(worldsim.state_ids(world, "ensimaa"))
+        self.assertNotIn("wildfire", held)
+        self.assertIn("burned-over", held)
+        worldsim.drop_state(world, "ensimaa", "drought", 12)
+        _fire(world, "ensimaa", "weather/green-again", 90)
+        self.assertNotIn("burned-over",
+                         set(worldsim.state_ids(world, "ensimaa")))
+
+    def test_the_fog_names_its_cause_and_keeps_him(self) -> None:
+        """The rumor address, kept cheap: a name and a level on the land
+        record and nothing else -- and the SAME man next fog, which is what
+        makes him a face instead of a pulse."""
+        world = _world()
+        worldsim.roll_world(world, 1)
+        _fire(world, "tergal", "weather/fog-bones", 5)
+        who = worldsim.named_necromancer(world, "tergal")
+        self.assertIsNotNone(who)
+        self.assertTrue(who["name"])
+        self.assertTrue(3 <= who["level"] <= 14)
+        self.assertEqual(who["since"], 5)
+        news = _layer(world, "tergal")["news"][-1]["line"]
+        self.assertIn(who["name"], news)
+        self.assertNotIn("{", news)
+        worldsim._end(world, "tergal", 25, "weather")
+        _fire(world, "tergal", "weather/fog-bones", 40)
+        self.assertEqual(worldsim.named_necromancer(world, "tergal")["name"],
+                         who["name"])
+
+    def test_the_smog_is_gibili_s_and_the_owners_blame_the_weather(self
+                                                                   ) -> None:
+        card = worldsim.CARDS_BY_KEY["weather/smog"]
+        self.assertEqual(card["land"], ("gibili",))
+        self.assertIn("weather", card["outlets"]["news"])
+
+
+class TheDiseaseFamily(unittest.TestCase):
+    """The conditions framework's third family, cashed by the weather:
+    small, slow, treatable -- an illness-shaped wound."""
+
+    def test_a_chill_is_a_cold_and_a_second_deepens_it(self) -> None:
+        import rpg
+        h = _party(1)[0]
+        self.assertEqual(rpg.catch_chill(h), "cold")
+        self.assertEqual(rpg.catch_chill(h), "pneumonia")
+        self.assertIsNone(rpg.catch_chill(h))       # bounded: no third rung
+        self.assertEqual([c.kind for c in h.conditions], ["pneumonia"])
+
+    def test_an_illness_costs_the_ceiling_and_never_ticks(self) -> None:
+        import rpg
+        h = _party(1)[0]
+        whole = h.hp_ceiling
+        rpg.catch_chill(h)
+        self.assertEqual(h.hp_ceiling, whole - rpg.DISEASE_LOAD["cold"])
+        self.assertTrue(h.sick)
+        before, log = h.hp, []
+        rpg._tick_conditions([h], {h}, log)
+        self.assertEqual(h.hp, before)              # no per-round arithmetic
+        self.assertEqual(log, [])
+
+    def test_the_ceiling_never_falls_past_the_floor(self) -> None:
+        import rpg
+        h = _party(1)[0]
+        rpg.catch_chill(h)
+        rpg.catch_chill(h)
+        self.assertGreaterEqual(h.hp_ceiling,
+                                h.max_hp // rpg.WOUND_HP_FLOOR_DIV)
+
+    def test_the_night_does_not_sweat_it_out_but_rolls_against_it(self
+                                                                  ) -> None:
+        import rpg
+        h = _party(1)[0]
+        rpg.catch_chill(h)
+        # A night whose roll misses leaves it exactly where it was.
+        with unittest.mock.patch.object(random.Random, "randint",
+                                        return_value=1):
+            rpg.long_rest([h], rpg.Clock(), [], rng=random.Random(1))
+        self.assertTrue(h.sick)
+
+    def test_a_made_shake_eases_one_rung(self) -> None:
+        import rpg
+        h = _party(1)[0]
+        rpg.catch_chill(h)
+        rpg.catch_chill(h)
+        with unittest.mock.patch.object(random.Random, "randint",
+                                        return_value=6):
+            rpg.shake_disease(h, random.Random(1), [], bed=True)
+        self.assertEqual([c.kind for c in h.conditions], ["cold"])
+        with unittest.mock.patch.object(random.Random, "randint",
+                                        return_value=6):
+            rpg.shake_disease(h, random.Random(1), [], bed=True)
+        self.assertFalse(h.sick)
+
+    def test_a_roof_is_the_answer_to_the_weather(self) -> None:
+        import rpg
+        for sheltered in (False, True):
+            party = _party(3)
+            with unittest.mock.patch.object(random.Random, "randint",
+                                            return_value=1):
+                rpg.long_rest(party, rpg.Clock(), [], rng=random.Random(1),
+                              sky="storm", sheltered=sheltered)
+            caught = sum(h.sick for h in party)
+            self.assertEqual(caught, 0 if sheltered else 3)
+
+    def test_the_smog_gets_in_under_the_roof(self) -> None:
+        import rpg
+        self.assertIn("smog", rpg.INDOOR_SKY)
+        party = _party(2)
+        with unittest.mock.patch.object(random.Random, "randint",
+                                        return_value=1):
+            rpg.long_rest(party, rpg.Clock(), [], rng=random.Random(1),
+                          sky="smog", bed=True)
+        self.assertTrue(all(h.sick for h in party))
+
+    def test_the_healer_s_cap_gates_the_illness_too(self) -> None:
+        import rpg
+        h = _party(1)[0]
+        rpg.catch_chill(h)
+        rpg.catch_chill(h)                          # pneumonia
+        self.assertIsNone(rpg.treat_disease(h, "village"))
+        self.assertEqual(rpg.treat_disease(h, "town"), "pneumonia")
+        rpg.catch_chill(h)
+        self.assertEqual(rpg.treat_disease(h, "village"), "cold")
+
+    def test_the_shake_rides_a_stat_that_does_not_inflate(self) -> None:
+        """STR, not STA: STA is a POOL that doubles over twenty levels, and
+        an illness that got easier to shake as you levelled would inflate
+        exactly the way this game's costs never do."""
+        import rpg
+        rolls = []
+        for level in (1, 20):
+            h = _party(1, level=level)[0]
+            rpg.catch_chill(h)
+            log = []
+            rpg.shake_disease(h, random.Random(4), log, bed=False)
+            rolls.append(next(l for l in log if "disease:" in l))
+        self.assertTrue(all("STR" in line for line in rolls))
+        self.assertNotIn("STA", " ".join(rolls))
+
+
+class TheStormInTheFight(unittest.TestCase):
+    """One field knob and one save, as worldsim.md asks for."""
+
+    def _fight(self, weather: str):
+        import rpg, sites
+        rng = random.Random(11)
+        party = _party(2, level=5)
+        rpg.equip_weapon(party[0], rpg.WEAPONS["shortbow"], [])
+        party[0].items["arrows"] = 40
+        foes = [sites.make_foe("cutthroat", i, rng) for i in range(3)]
+        log = rpg.CombatLog()
+        rpg.group_combat(party, foes, rng, log, field=rpg.WILD_FIELD,
+                         weather=weather)
+        return log
+
+    def test_the_storm_drags_a_shot_and_nothing_else(self) -> None:
+        import rpg
+        log = self._fight("storm")
+        shots = [l for l in log if "pressure" in l and "arrows:" in l]
+        self.assertTrue(shots)
+        self.assertTrue(all("-2 storm" in l for l in shots), shots[:2])
+        # ...and nothing else: a bolt does not care about the wind, and
+        # neither does an axe.
+        others = [l for l in log if "pressure" in l and "arrows:" not in l]
+        self.assertTrue(others)
+        self.assertTrue(all("storm" not in l for l in others), others[:2])
+
+    def test_a_clear_day_costs_nobody_anything(self) -> None:
+        log = self._fight("clear")
+        self.assertFalse([l for l in log if "storm" in l])
+
+    def test_the_slip_costs_the_step_not_the_round(self) -> None:
+        import rpg
+        log = self._fight("storm")
+        slips = [l for l in log if "storm slip" in l]
+        self.assertTrue(slips)
+        # A body that slipped still acted: the fight resolved either way.
+        self.assertTrue([l for l in log if "pressure" in l])
+
+    def test_the_sky_is_put_on_both_sides_and_comes_off_after(self) -> None:
+        import rpg, sites
+        rng = random.Random(2)
+        party = _party(2, level=4)
+        foes = [sites.make_foe("cutthroat", i, rng) for i in range(2)]
+        rpg.group_combat(party, foes, rng, rpg.CombatLog(),
+                         field=rpg.WILD_FIELD, weather="storm")
+        rpg._clear_fight_states(party + foes)
+        self.assertTrue(all(e.storm_pen == 0 for e in party + foes))
+
+    def test_a_room_has_no_sky_in_it(self) -> None:
+        import session
+        state = {"world": None, "position": {"land": "firascir",
+                                             "site": "site/x"},
+                 "clock": None}
+        self.assertEqual(session.fight_sky(state), "")
+
+
+class TheWeatherSurfaces(unittest.TestCase):
+    """What the player and the DM actually see."""
+
+    def test_the_state_diff_carries_the_sky(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 9)
+        lines = worldsim.land_lines(world, "firascir")
+        self.assertTrue(any("WEATHER:" in line for line in lines))
+        for line in lines:
+            self.assertTrue(line.isascii(), line)
+
+    def test_a_long_spell_says_so(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 5)
+        layer = _layer(world, "firascir")
+        layer["weather"], layer["wet"], layer["dry"] = "rain", 4, 0
+        self.assertIn("4th wet day", worldsim.weather_line(world, "firascir"))
+        layer["weather"], layer["wet"], layer["dry"] = "clear", 0, 12
+        self.assertIn("12 days without rain",
+                      worldsim.weather_line(world, "firascir"))
+
+    def test_the_dm_inventory_shows_the_sky_and_all_three_decks(self
+                                                                ) -> None:
+        world = _world()
+        worldsim.roll_world(world, 30)
+        text = "\n".join(worldsim.world_lines(world))
+        self.assertIn("sky:", text)
+        for track in worldsim.TRACKS:
+            self.assertIn(f"{track} ", text)
+
+    def test_the_cabin_table_is_a_sight_and_a_dm_note(self) -> None:
+        kinds = set()
+        for seed in range(200):
+            found = worldsim.cabin(random.Random(seed))
+            kinds.add(found["kind"])
+            self.assertIn(found["host"], found["sight"])
+            self.assertNotIn(found["dm"], found["sight"])
+            self.assertTrue(found["sight"].isascii())
+            self.assertTrue(found["dm"].isascii())
+        self.assertEqual(kinds, {"helpful", "job", "valuable", "sinister",
+                                 "priced"})
+
+    def test_the_sinister_row_never_announces_itself(self) -> None:
+        """The quest twist's rule, applied to a camp: a display that gave
+        the host away would be no scene at all."""
+        for seed in range(200):
+            found = worldsim.cabin(random.Random(seed))
+            if found["kind"] != "sinister":
+                continue
+            for tell in ("sinister", "harm", "axe", "under the floor"):
+                self.assertNotIn(tell, found["sight"].lower())
+            self.assertIn("DM EYES ONLY", found["dm"])
+
+    def test_the_weather_costs_the_road_a_day(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 4)
+        self.assertEqual(worldsim.travel_delay(world,
+                                               ["firascir", "tergal"])[0], 0)
+        worldsim.set_state(world, "firascir", "fords-out", day=4)
+        days, why = worldsim.travel_delay(world, ["firascir", "tergal"])
+        self.assertEqual(days, 1)
+        self.assertIn("fords", why[0])
+
+    def test_the_weather_labels_fit_the_phone_and_stay_ascii(self) -> None:
+        labels = (list(worldsim.WEATHER_WORDS.values())
+                  + [w for local in worldsim.WEATHER_LOCAL.values()
+                     for w in local.values()])
+        for label in labels:
+            self.assertLessEqual(len(label), WIDTH, label)
+            self.assertTrue(label.isascii(), label)
+        for line in worldsim.TRAVEL_SLOW.values():      # prose, not a label
+            self.assertTrue(line.isascii(), line)
+
+
+class TheWeatherSessionWiring(unittest.TestCase):
+    """The rung is only real if play reads it."""
+
+    @staticmethod
+    def _state(world: dict, day: int) -> dict:
+        import rpg
+        return {"world": world, "clock": rpg.Clock(day=day),
+                "rng": random.Random(3), "party": [], "accepted": [],
+                "active_quest": None, "purse": rpg.Purse(gold=0),
+                "position": {"land": "firascir",
+                             "area": quests.settlements_by_land(
+                                 world)["firascir"][0]["key"]}}
+
+    def test_the_road_tells_the_party_the_sky(self) -> None:
+        import session
+        world = _world(4471)
+        state = self._state(world, 12)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            session.weather_note(state)
+        self.assertIn("WEATHER:", out.getvalue())
+
+    def test_the_smog_is_what_a_town_night_is_paid_for(self) -> None:
+        import session
+        world = _world(4471)
+        state = self._state(world, 6)
+        session.sky_here(state)
+        worldsim.set_state(world, "firascir", "smog", day=6)
+        self.assertEqual(session.exposure_sky(state), "smog")
+
+    def test_a_storm_night_rolls_the_cabin_table(self) -> None:
+        import rpg, session
+        world = _world(4471)
+        state = self._state(world, 6)
+        state["rng"] = random.Random(2)
+        log = rpg.CombatLog()
+        found = None
+        for _ in range(20):             # SHELTER_CHANCE is not 1.0
+            found = session.shelter_here(state, log)
+            if found is not None:
+                break
+        self.assertIsNotNone(found)
+        text = "\n".join(log.player)
+        self.assertIn("SHELTER:", text)
+        self.assertIn("DM eyes only", text)
+        for line in log.player:
+            self.assertLessEqual(len(line), WIDTH, line)
+
+    def test_a_road_fight_is_fought_in_the_weather(self) -> None:
+        import session
+        world = _world(4471)
+        state = self._state(world, 15)
+        session.sky_here(state)         # roll first, then put a sky on it
+        _sky(world, "firascir", "storm")
+        self.assertEqual(session.fight_sky(state), "storm")
+
+    def test_the_storm_rides_a_paused_fight_to_its_resume(self) -> None:
+        import session
+        pending = {"foes": [], "fired": set(), "round": 2, "crossings": [],
+                   "xp": 10, "site": None, "room": None, "field": 2,
+                   "weather": "storm"}
+        wire = session._pending_to_dict(pending, [])
+        self.assertEqual(wire["weather"], "storm")
+        self.assertEqual(session._pending_from_dict(
+            json.loads(json.dumps(wire)), [])["weather"], "storm")
 
 
 if __name__ == "__main__":

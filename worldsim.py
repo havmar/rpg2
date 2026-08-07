@@ -1,9 +1,24 @@
-"""The world layer -- the WORLD & NPC SIMULATION build's FRAME (2026-08-07).
+"""The world layer -- the WORLD & NPC SIMULATION build's frame and weather.
 
-plan.md's ladder, the frame session: `worldsim.md`'s five record kinds stop
-being prose and become data, and the save grows a world layer under every
-land. The frame is the product -- the content here is the seed that proves
-the loop, two or three economy cards a land lifted from the packets.
+plan.md's ladder. The FRAME session (2026-08-07): `worldsim.md`'s five record
+kinds stop being prose and become data, and the save grows a world layer under
+every land. The WEATHER session (2026-08-08): the first content rung on top of
+it -- every land rolls a sky every day off its climate, and three tracks of
+cards now run over one land instead of one.
+
+THE THREE TRACKS (2026-08-08). A land carries one live card per track, each
+with its own deck, its own draw rule and its own timescale, because one slot
+could not hold them: a season of drought would have blocked every storm under
+it, and a storm would have blocked the harvest failing.
+
+  crisis  -- the frame's. Drawn on need off the wealth band (CARD_CHANCE),
+             the content of a land in trouble. Days-to-weeks.
+  weather -- the DAY-scale pulse. Drawn when today's sky admits one, gated by
+             the card's own `chance`: the climate distribution IS the deck's
+             die. Hours-to-days.
+  season  -- the SLOW state (drought). Drawn off a long dry or wet SPELL,
+             stands for a season, and is what the day roll and the other two
+             tracks then read.
 
 The shape, in the order the loop runs it:
 
@@ -29,13 +44,20 @@ The shape, in the order the loop runs it:
   whose admitting conditions the land does not meet and leaves it in the
   deck for a later day; a card that would only re-assert a slot the land
   already holds never fires (exclusive slots are never contradicted).
-- **The card.** Admitting conditions over land, wealth, states and weather;
-  up to FIVE outlet effects (quest / priced menu / encounter / news /
-  state flip); an optional day-stamp clock. THIS SESSION APPLIES TWO of the
-  five -- the news line and the state flip, which are the surfaces the
-  frame ships (the news at the roll points, the state diff on `map` and
-  `world`). The quest, menu and encounter payloads are carried, validated
-  and left for the economy floor session, which owns the full hookups.
+- **The card.** Admitting conditions over land, wealth, states, weather and
+  the wet/dry spell; up to FIVE outlet effects (quest / priced menu /
+  encounter / news / state flip); an optional day-stamp clock. THE FRAME
+  APPLIES TWO of the five -- the news line and the state flip, which are the
+  surfaces it ships (the news at the roll points, the state diff on `map`
+  and `world`). The quest, menu and encounter payloads are carried,
+  validated and left for the economy floor session, which owns the hookups.
+- **The sky.** Every land rolls one weather word a day against its
+  environment profile's distribution (`places.ENVIRONMENT_PROFILES`, whose
+  climate sentence is what those weights say in numbers), tracking the WET
+  and DRY spells running behind it. A held DROUGHT bends the roll that
+  produced it. The sky is what the weather track's cards admit on, what the
+  exposure check and the storm penalties read, and what the party sees on
+  the road.
 
 Everything is LAZY, SEEDED and DAY-STAMPED: nothing ticks in the
 background. A land's day is rolled off `stable_seed(world, land, day)`, so
@@ -59,8 +81,8 @@ from __future__ import annotations
 import argparse
 import random
 
-from places import (LAND_SPECS, add_state, clear_state, land_id,
-                    stable_seed)
+from places import (ENVIRONMENT_PROFILES, LAND_SPECS, add_state, clear_state,
+                    land_id, stable_seed)
 
 # --------------------------------------------------------------------------- #
 # The knobs (all hand-set, sim-unverified -- the karma layer's doctrine)
@@ -93,6 +115,31 @@ CARD_DAYS = (12, 25)            # the default clock a card stands for when it
 NEWS_KEPT = 24                  # day-stamped news lines kept per land
 NEWS_TOLD = 6                   # ...and the most told at once on return: a
                                 # long absence is a summary, not a scroll
+
+# --- the weather knobs (2026-08-08) ---------------------------------------- #
+# The DAY ROLL needs no chance of its own: the climate distribution is the
+# die, and a weather card fires when the sky it wants comes up (times its own
+# `chance`, which is what keeps the supernatural rare). What needs knobs is
+# the SPELL -- how long a run of wet or dry days has to be before the slow
+# cards notice it.
+WET_WEATHER = ("rain", "storm", "snow")     # a day that breaks a dry spell
+DRY_WEATHER = ("clear", "heat", "wind")     # ...and one that breaks a wet one
+# The two counters measure two different things, deliberately. DRY is DAYS
+# SINCE THE LAST RAIN, so an overcast day extends it -- a grey sky is not a
+# drought ending. WET is a run of wet days that a dry day breaks and an
+# overcast day does not -- three days of rain with a grey one in the middle
+# is still what puts the fords out.
+PROFILE_SPELL = "profile"       # a card's `dry` may name this instead of a
+                                # number: the threshold is then the LAND's
+                                # own (places.ENVIRONMENT_PROFILES'
+                                # drought_days), because a drought is a
+                                # relative thing -- a fortnight without rain
+                                # is a disaster in the forest and a Tuesday
+                                # in the dry south
+DROUGHT_WET_MULT = 0.15         # what a held drought does to the rain and
+                                # storm weights -- the state bending the roll
+                                # that made it, which is why a drought lasts
+DROUGHT_DRY_BONUS = 1.35        # ...and what it does to clear and heat
 
 # --------------------------------------------------------------------------- #
 # The record kinds (worldsim.md, formalized)
@@ -128,6 +175,15 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "herd-loss": "the herds are dying",
     "herd-drive": "the great drive is on",
     "mercenary-home": "a war-rich mercenary is home",
+    # Weather (2026-08-08, land-agnostic -- the sky's own states)
+    "storm-bound": "the storm has the roads",
+    "fords-out": "the fords are out",
+    "drought": "the rains have not come",
+    "bones-walk": "bones walk in the fog",
+    "wildfire": "the forest is burning",
+    "burned-over": "the burn is still black",
+    "dust-storm": "the dust has the plain",
+    "smog": "the smoke will not lift",
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
     "timber-dear": "timber is dear",
@@ -158,18 +214,48 @@ STATE_WORDS.update(SLOT_WORDS)
 
 OUTLETS = ("quest", "menu", "encounter", "news", "state")
 
+# The three card tracks, each with its own deck, live slot and draw rule
+# (2026-08-08, the weather session). ANY_LAND is the land-agnostic marker:
+# a weather card belongs to every land's deck, a crisis card to one.
+TRACKS = ("crisis", "weather", "season")
+ANY_LAND = "*"
+DECK_KEY = {"crisis": "deck", "weather": "weather_deck",
+            "season": "season_deck"}
+LIVE_KEY = {"crisis": "live", "weather": "weather_live",
+            "season": "season_live"}
 
-def card(key: str, name: str, land: str, *,
+
+def card(key: str, name: str, land: str | tuple[str, ...], *,
+         track: str = "crisis",
          wealth: tuple[str, ...] = BANDS,
          states: tuple[str, ...] = (),
          without: tuple[str, ...] = (),
          weather: tuple[str, ...] = (),
+         wet: int = 0,
+         dry: int = 0,
+         chance: float = 1.0,
          days: tuple[int, int] | int | None = CARD_DAYS,
+         sky: str = "",
+         hook=None,
          **outlets) -> dict:
-    """One event pulse. `wealth` / `states` / `without` / `weather` are the
-    ADMITTING conditions (all must hold; `weather` is read by the weather
-    session, which owns the day roll). `days` is the optional day-stamp
-    clock -- None for a pulse that stands until something else moves it.
+    """One event pulse. `land` is one land, a tuple of them, or ANY_LAND for
+    a card every land's deck carries. `track` picks which of the land's three
+    decks it sits in ("crisis" / "weather" / "season") -- and so which draw
+    rule and which live slot it answers to.
+
+    `wealth` / `states` / `without` / `weather` / `wet` / `dry` are the
+    ADMITTING conditions (all must hold): the band, states held or derived,
+    states forbidden, today's sky, and the length of the wet or dry SPELL
+    behind it. `chance` is the card's own die once it is admitted -- 1.0 for
+    an ordinary card, low for the rare and the supernatural. `days` is the
+    optional day-stamp clock -- None for a pulse that stands until something
+    else moves it. `sky` is for a card that IS the weather rather than a
+    consequence of it: while such a card stands, the land's day roll is
+    skipped and its sky is this word, so a storm that "sets in for two
+    days" is a storm on both of them. `hook(world, land, day, rng)` runs at
+    the firing and returns format fields for the news line (the fog's
+    necromancer is the one customer: a card that has to NAME somebody).
+
     The keyword arguments are the OUTLET effects, at most one per outlet:
 
       news=      "the line the land hears"           (applied here)
@@ -186,11 +272,19 @@ def card(key: str, name: str, land: str, *,
     unknown = set(outlets) - set(OUTLETS)
     if unknown:
         raise ValueError(f"{key}: not an outlet: {sorted(unknown)}")
-    return {"key": key, "name": name, "land": land,
+    lands = (land,) if isinstance(land, str) else tuple(land)
+    return {"key": key, "name": name, "land": lands, "track": track,
+            "chance": chance, "hook": hook, "sky": sky,
             "admits": {"wealth": tuple(wealth), "states": tuple(states),
-                       "without": tuple(without), "weather": tuple(weather)},
+                       "without": tuple(without), "weather": tuple(weather),
+                       "wet": wet, "dry": dry},
             "days": days,
             "outlets": {k: v for k, v in outlets.items() if v}}
+
+
+def in_land(spec: dict, polity: str) -> bool:
+    """Does this card belong to that land's deck? (ANY_LAND belongs to all.)"""
+    return ANY_LAND in spec["land"] or polity in spec["land"]
 
 
 def relation(source: str, target: str, kind: str, *,
@@ -201,6 +295,155 @@ def relation(source: str, target: str, kind: str, *,
     Static data read at roll time -- never a traded quantity."""
     return {"from": source, "to": target, "kind": kind,
             "when": tuple(when), "then": then, "because": because}
+
+
+# --------------------------------------------------------------------------- #
+# The sky: the day roll (2026-08-08, the weather session)
+# --------------------------------------------------------------------------- #
+# Weather is a day-scale state with outlet effects: the cheapest world content
+# there is, land-agnostic, and the only one that touches the party every day
+# it is out of doors. The vocabulary is nine words shared by every land; what
+# differs is the WEIGHTS, which each environment profile authors as the
+# numbers behind its climate sentence (places.ENVIRONMENT_PROFILES).
+
+WEATHER_WORDS = {               # word -> what the party sees
+    "clear": "clear skies",
+    "cloud": "grey and close",
+    "wind": "a hard wind",
+    "rain": "steady rain",
+    "storm": "a storm",
+    "fog": "fog on the ground",
+    "frost": "hard frost",
+    "snow": "snow",
+    "heat": "hard heat",
+}
+# The same word reads differently on different ground: a storm in the
+# dwarves' highlands is a SNOWSTORM, and it is the same card underneath
+# (worldsim.md's own note). Display only -- never a second vocabulary.
+WEATHER_LOCAL = {
+    "alpine_tundra": {"storm": "a snowstorm", "rain": "sleet",
+                      "cloud": "low cloud"},
+    "mediterranean": {"cloud": "haze", "wind": "the sea wind"},
+    "prairie": {"wind": "a wind with no cover from it"},
+}
+# What the sky COSTS a party out in it: exposure (the STR check that gives
+# colds -- rpg.py's disease family) and the storm's field penalties.
+EXPOSURE_WEATHER = ("rain", "storm", "frost", "snow")
+STORM_WEATHER = ("storm",)      # ...and the sky that drags a shot and trips
+                                # a step (rpg.STORM_SHOT_PENALTY / _SLIP_DC)
+
+
+def weather_phrase(environment: str, word: str) -> str:
+    """What this ground calls that sky."""
+    return WEATHER_LOCAL.get(environment, {}).get(
+        word, WEATHER_WORDS.get(word, word))
+
+
+def weather_weights(world: dict, polity: str) -> dict[str, float]:
+    """The land's climate distribution, bent by whatever season-scale state
+    it is holding. A drought is the state that made itself: it cuts the rain
+    and storm weights to DROUGHT_WET_MULT and lifts the dry ones, which is
+    why droughts last past the day that started them."""
+    environment = world["lands"][polity]["environment"]
+    base = ENVIRONMENT_PROFILES[environment]["weather"]
+    weights = {word: float(w) for word, w in base.items() if w}
+    if "drought" in state_ids(world, polity):
+        for word in weights:
+            if word in ("rain", "storm", "snow"):
+                weights[word] *= DROUGHT_WET_MULT
+            elif word in ("clear", "heat"):
+                weights[word] *= DROUGHT_DRY_BONUS
+    return weights
+
+
+def roll_weather(world: dict, polity: str, rng: random.Random) -> str:
+    """One day's sky for one land. The weights are the die -- there is no
+    separate chance anywhere in the weather track."""
+    weights = weather_weights(world, polity)
+    words = sorted(weights)
+    return rng.choices(words, weights=[weights[w] for w in words])[0]
+
+
+def weather_of(world: dict, polity: str) -> str:
+    """Today's sky over that land -- "" before the land has been rolled."""
+    return land_layer(world, polity).get("weather", "")
+
+
+def weather_line(world: dict, polity: str) -> str:
+    """The one line the party reads on the road: the sky, and the spell
+    behind it when the spell has become the story."""
+    layer = land_layer(world, polity)
+    word = layer.get("weather")
+    if not word:
+        return ""
+    environment = world["lands"][polity]["environment"]
+    line = f"WEATHER: {weather_phrase(environment, word)}"
+    wet, dry = layer.get("wet", 0), layer.get("dry", 0)
+    if word in WET_WEATHER and wet >= 3:
+        line += f" -- the {_ordinal(wet)} wet day running"
+    elif word in DRY_WEATHER and dry >= 7:
+        line += f" -- {dry} days without rain"
+    return line + "."
+
+
+_ORDINAL_TAIL = {1: "st", 2: "nd", 3: "rd"}
+
+
+def _ordinal(n: int) -> str:
+    if 10 <= n % 100 <= 20:
+        return f"{n}th"
+    return f"{n}{_ORDINAL_TAIL.get(n % 10, 'th')}"
+
+
+def exposed(world: dict, polity: str) -> bool:
+    """Is the sky over that land one a night out of doors is paid for?"""
+    return weather_of(world, polity) in EXPOSURE_WEATHER
+
+
+def storming(world: dict, polity: str) -> bool:
+    """Is it blowing hard enough to drag a shot and trip a step?"""
+    return weather_of(world, polity) in STORM_WEATHER
+
+
+# --- the fog's cause: one named face, and no machinery under it ------------ #
+# THE FOG RAISES BONES is the weather deck's supernatural card, and the only
+# one that needs somebody to BE somewhere. The rumor address is deliberately
+# cheap (plan.md's ruling): a name and a level on the land record, which the
+# news line says out loud and the DM runs from. No landmark record, no site,
+# no questline -- the party goes looking or it does not, and the same man is
+# still there next fog, which is what makes him a face instead of a pulse.
+
+NECROMANCER_LEVELS = (3, 14)    # rolled once and kept: he is as far above or
+                                # below the party as he happens to be, which
+                                # is the landmark-problem stance in miniature
+NECROMANCER_EPITHETS = (
+    "the Pale", "the Grave-Warden", "the Unburied", "Bone-Wright",
+    "the Sexton", "the Quiet", "Ash-Hand", "the Second Grave",
+    "Corpse-Candle", "the Long Vigil",
+)
+
+
+def named_necromancer(world: dict, polity: str) -> dict | None:
+    """The face behind the land's walking dead, if it has one yet."""
+    return land_layer(world, polity).get("necromancer")
+
+
+def _name_the_necromancer(world: dict, polity: str, day: int,
+                          rng: random.Random) -> dict:
+    """THE FOG RAISES BONES firing: name the cause, once, and keep him. A
+    second fog raises the SAME man's dead -- recurrence is the whole point
+    of naming him (worldsim.md's six outlets: no single one produces it)."""
+    from people import pick_name          # lazy: quests imports worldsim
+    layer = land_layer(world, polity)
+    who = layer.get("necromancer")
+    if who is None:
+        race = LAND_SPECS[polity]["race"]
+        first = pick_name(rng, race, rng.choice(("m", "f")))
+        who = {"name": f"{first} {rng.choice(NECROMANCER_EPITHETS)}",
+               "level": rng.randint(*NECROMANCER_LEVELS),
+               "since": day}
+        layer["necromancer"] = who
+    return {"necromancer": who["name"]}
 
 
 # --------------------------------------------------------------------------- #
@@ -331,6 +574,67 @@ CARDS = (
               "is moving north, and the fords are the dangerous part.",
          state={"while": ("herd-drive",)},
          quest={"post": "drive escort", "level": "band"}),
+
+    # -- THE WEATHER TRACK: the day-scale sky (2026-08-08) ------------------- #
+    # Land-agnostic first, then the three that belong to one land's ground.
+    # No wealth condition anywhere on this track: a prosperous land gets the
+    # same storms as a starving one -- that is what makes weather the outlet
+    # that reaches a quiet world.
+    card("weather/storm", "The storm sets in", ANY_LAND, track="weather",
+         weather=("storm",), days=(1, 3), sky="storm",
+         state={"while": ("storm-bound",)}),
+    card("weather/fords-out", "The ford is out",
+         ("firascir", "mortellaria"), track="weather",
+         wet=3, days=(6, 12),
+         news="Three days of rain and the fords are gone. The bridges and "
+              "the ferries are the only way over now, and the men who hold "
+              "them know it.",
+         state={"while": ("fords-out",)},
+         menu={"ferry": 3.0}),
+    card("weather/fog-bones", "The fog raises bones", ANY_LAND,
+         track="weather", weather=("fog",), chance=0.05, days=(8, 16),
+         hook=_name_the_necromancer,
+         news="Bones walk in the fog. The village dogs will not go out, and "
+              "the country people have a name for the man who calls them "
+              "up: {necromancer}.",
+         state={"while": ("bones-walk",)},
+         encounter={"kinds": ("skeleton",), "where": "wilds",
+                    "as": "the fog's dead"}),
+    card("weather/wildfire", "The forest burns", "ensimaa", track="weather",
+         states=("drought",), weather=("clear", "heat", "wind"),
+         chance=0.30, days=(4, 8),
+         news="The forest is burning above the river villages. They are "
+              "carrying out what they can, and already arguing about whose "
+              "carelessness it was.",
+         state={"while": ("wildfire",), "set": ("burned-over",)},
+         quest={"post": "evacuation", "level": "band", "pay": 1.2}),
+    card("weather/dust-storm", "The dust storm", "tergal", track="weather",
+         states=("drought",), weather=("wind", "heat", "clear"),
+         chance=0.35, days=(1, 3), sky="wind",
+         news="The dust has the plain. Nothing moves on the roads, and when "
+              "it lifts there will be herds scattered from here to the "
+              "river.",
+         state={"while": ("dust-storm",)},
+         quest={"post": "herd recovery", "level": "band"}),
+    card("weather/smog", "The smog settles", "gibili", track="weather",
+         weather=("cloud", "fog"), chance=0.20, days=(2, 5),
+         news="The mill smoke has nowhere to go and has settled over the "
+              "town. Everyone is coughing. The owners say it is the "
+              "weather.",
+         state={"while": ("smog",)}),
+
+    # -- THE SEASON TRACK: the slow states the day roll reads ---------------- #
+    card("weather/drought", "The rains do not come", ANY_LAND,
+         track="season", dry=PROFILE_SPELL, chance=0.25, days=(45, 80),
+         news="The rains have not come. The rivers are low, the grass is "
+              "going brown, and the wells are being counted.",
+         state={"while": ("drought",)}),
+    card("weather/green-again", "The burn goes green", "ensimaa",
+         track="season", states=("burned-over",),
+         without=("drought", "wildfire"), chance=0.03, days=None,
+         news="Green is coming up through the black. The elves will not "
+              "call it healed for a century, but the deer are back.",
+         state={"clear": ("burned-over",)}),
 )
 
 CARDS_BY_KEY = {c["key"]: c for c in CARDS}
@@ -387,18 +691,24 @@ def roll_wealth(rng: random.Random) -> str:
     raise ValueError(f"no band holds {total}")
 
 
-def _deck(world: dict, polity: str) -> list[str]:
-    """The land's cards, shuffled once (the pact deck's pattern)."""
-    keys = [c["key"] for c in CARDS if c["land"] == polity]
-    random.Random(_land_seed(world, polity, "worldsim-deck", 0)).shuffle(keys)
+def _deck(world: dict, polity: str, track: str = "crisis") -> list[str]:
+    """One of the land's three decks, shuffled once (the pact deck's
+    pattern). A weather or season card marked ANY_LAND sits in every land's
+    deck; a land-named one sits in its own."""
+    keys = [c["key"] for c in CARDS
+            if c["track"] == track and in_land(c, polity)]
+    random.Random(_land_seed(world, polity, f"worldsim-deck-{track}",
+                             0)).shuffle(keys)
     return keys
 
 
 def open_world(world: dict) -> dict:
-    """Roll the world layer onto a fresh world: every land's wealth band,
-    its shuffled deck, its state and news lists. A land that opens in CRISIS
-    draws its first card straight away -- a land in trouble is in trouble
-    from scene one, not from the first lucky roll.
+    """Roll the world layer onto a fresh world: every land's wealth band, its
+    three shuffled decks, its opening sky, its state and news lists. A land
+    that opens in CRISIS draws its first crisis card straight away -- a land
+    in trouble is in trouble from scene one, not from the first lucky roll.
+    The weather and season tracks open EMPTY: a sky is a thing that happens
+    on a day, and day 0 is worldgen's bookkeeping.
 
     Called by `quests.generate_world` on a DERIVED rng, so the worldgen
     stream every career bench rides is untouched."""
@@ -408,8 +718,17 @@ def open_world(world: dict) -> dict:
             "wealth": roll_wealth(rng),
             "wealth_day": 0,
             "deck": _deck(world, polity),
+            "weather_deck": _deck(world, polity, "weather"),
+            "season_deck": _deck(world, polity, "season"),
             "drawn": [],            # every card this land has fired
             "live": None,           # the card standing now, with its clock
+            "weather_live": None,   # ...and the same for the other two
+            "season_live": None,    # tracks (a storm must not block a
+                                    # harvest failing, nor a drought a storm)
+            "weather": "",          # today's sky, once a day has been rolled
+            "weather_day": 0,
+            "wet": 0,               # the wet and dry SPELLS running behind
+            "dry": 0,               # it -- what the slow cards read
             "news": [],             # day-stamped lines, oldest first
             "told_day": -1,         # the last day whose news was told
             "rolled_day": 0,        # the last day this land was rolled
@@ -504,7 +823,9 @@ def set_wealth(world: dict, polity: str, band: str, day: int) -> None:
 
 def admits(world: dict, polity: str, spec: dict,
            weather: str | None = None) -> bool:
-    """Does the land meet this card's admitting conditions today?"""
+    """Does the land meet this card's admitting conditions today? `weather`
+    defaults to whatever sky the land's layer is currently holding, so a
+    caller that has not rolled a day still reads the right one."""
     band = wealth_of(world, polity)
     if spec["wealth"] and band not in spec["wealth"]:
         return False
@@ -513,7 +834,18 @@ def admits(world: dict, polity: str, spec: dict,
         return False
     if any(s in held for s in spec["without"]):
         return False
-    if spec["weather"] and weather not in spec["weather"]:
+    if spec["weather"]:
+        sky = weather_of(world, polity) if weather is None else weather
+        if sky not in spec["weather"]:
+            return False
+    layer = land_layer(world, polity)
+    if spec.get("wet") and layer.get("wet", 0) < spec["wet"]:
+        return False
+    need = spec.get("dry")
+    if need == PROFILE_SPELL:
+        need = ENVIRONMENT_PROFILES[
+            world["lands"][polity]["environment"]]["drought_days"]
+    if need and layer.get("dry", 0) < need:
         return False
     return True
 
@@ -533,21 +865,28 @@ def _says_nothing_new(world: dict, polity: str, drawn: dict) -> bool:
 
 
 def _draw(world: dict, polity: str, rng: random.Random,
-          weather: str | None = None) -> dict | None:
-    """Deal the land's next card off its deck: the first one it admits,
-    skipped cards staying in the deck for a later day (the pact deck's
-    pattern). An exhausted deck reshuffles. None when the deck holds
-    nothing this land admits today."""
+          weather: str | None = None, track: str = "crisis") -> dict | None:
+    """Deal the land's next card off one of its decks: the first one it
+    admits, skipped cards staying in the deck for a later day (the pact
+    deck's pattern). An exhausted deck reshuffles. None when the deck holds
+    nothing this land admits today.
+
+    A card's own `chance` is rolled AFTER it is admitted and BEFORE it is
+    taken: a rare card that loses its roll stays where it is and gets
+    another fog to try on. That is what keeps the supernatural rare without
+    a second knob anywhere else in the loop."""
     layer = land_layer(world, polity)
-    deck = layer["deck"]
+    deck = layer[DECK_KEY[track]]
     if not deck:
-        deck.extend(_deck(world, polity))
+        deck.extend(_deck(world, polity, track))
         rng.shuffle(deck)
     for i, key in enumerate(deck):
         drawn = CARDS_BY_KEY[key]
         if not admits(world, polity, drawn["admits"], weather):
             continue
         if _says_nothing_new(world, polity, drawn):
+            continue
+        if drawn["chance"] < 1.0 and rng.random() >= drawn["chance"]:
             continue
         return CARDS_BY_KEY[deck.pop(i)]
     return None
@@ -575,10 +914,15 @@ def _clock(drawn: dict, day: int, rng: random.Random) -> int | None:
 def _fire(world: dict, polity: str, drawn: dict, day: int,
           rng: random.Random) -> None:
     """Apply one card: its state flips and its news line (the two outlets
-    the frame ships), and stamp its clock. `while` states are the card's
-    own and come off when it ends; `set` states and slot assignments
-    outlive it. A card with NO clock leaves its mark and stands over
-    nothing -- the vein has run out, and the land goes on having days."""
+    the frame ships), and stamp its clock in its own track's live slot.
+    `while` states are the card's own and come off when it ends; `set`
+    states and slot assignments outlive it. A card with NO clock leaves its
+    mark and stands over nothing -- the vein has run out, and the land goes
+    on having days.
+
+    A card carrying a `hook` runs it first and formats its news line with
+    what came back: the fog's necromancer is the one card that has to name
+    somebody, and naming him is a world change like any other."""
     state = drawn["outlets"].get("state") or {}
     for state_id in state.get("clear", ()):
         drop_state(world, polity, state_id, day)
@@ -589,6 +933,8 @@ def _fire(world: dict, polity: str, drawn: dict, day: int,
         set_state(world, polity, state_id, day)
     line = drawn["outlets"].get("news")
     if line:
+        if drawn["hook"] is not None:
+            line = line.format(**drawn["hook"](world, polity, day, rng))
         _news(world, polity, day, line)
     until = _clock(drawn, day, rng)
     layer = land_layer(world, polity)
@@ -597,19 +943,19 @@ def _fire(world: dict, polity: str, drawn: dict, day: int,
         set_wealth(world, polity, state["wealth"], day)
     if state.get("wealth_while"):
         set_wealth(world, polity, state["wealth_while"], day)
-    layer["live"] = (None if until is None
-                     else {"key": drawn["key"], "day": day, "until": until,
-                           "wealth_was": (was if state.get("wealth_while")
-                                          else None)})
+    layer[LIVE_KEY[drawn["track"]]] = (
+        None if until is None
+        else {"key": drawn["key"], "day": day, "until": until,
+              "wealth_was": (was if state.get("wealth_while") else None)})
     layer["drawn"].append({"key": drawn["key"], "day": day})
 
 
-def _end(world: dict, polity: str, day: int) -> None:
-    """The live card's clock has run out: its own states come off and a band
-    it moved for its duration comes back. Its slot assignments and `set`
-    flips stand -- something else has to move those."""
+def _end(world: dict, polity: str, day: int, track: str = "crisis") -> None:
+    """The track's live card has run out its clock: its own states come off
+    and a band it moved for its duration comes back. Its slot assignments and
+    `set` flips stand -- something else has to move those."""
     layer = land_layer(world, polity)
-    live = layer["live"]
+    live = layer[LIVE_KEY[track]]
     if live is None:
         return
     drawn = CARDS_BY_KEY[live["key"]]
@@ -619,7 +965,7 @@ def _end(world: dict, polity: str, day: int) -> None:
     was, moved = live.get("wealth_was"), state.get("wealth_while")
     if was is not None and layer["wealth"] == moved:
         set_wealth(world, polity, was, day)      # ...unless something else
-    layer["live"] = None                         # moved the band since
+    layer[LIVE_KEY[track]] = None                # moved the band since
 
 
 def _band_step(world: dict, polity: str, state: dict) -> bool:
@@ -633,24 +979,63 @@ def _band_step(world: dict, polity: str, state: dict) -> bool:
 # The roll points
 # --------------------------------------------------------------------------- #
 
-def roll_land(world: dict, polity: str, day: int,
-              weather: str | None = None) -> None:
+def _roll_sky(world: dict, polity: str, day: int,
+              rng: random.Random) -> str:
+    """Today's weather for one land, and the wet/dry spell it continues or
+    breaks. Cloud, fog and frost break NEITHER spell: an overcast day does
+    not end a drought and does not save a washed-out ford.
+
+    A weather card that IS the weather (its `sky`) holds the day instead of
+    rolling it, for as long as its clock has left -- otherwise a storm
+    declared to last three days would be standing over clear skies by the
+    second one, which is the kind of incoherence a state readout shows the
+    player immediately."""
+    layer = land_layer(world, polity)
+    live = layer.get("weather_live")
+    forced = (CARDS_BY_KEY[live["key"]]["sky"]
+              if live is not None and day < live["until"] else "")
+    word = forced or roll_weather(world, polity, rng)
+    if word in WET_WEATHER:
+        layer["wet"], layer["dry"] = layer.get("wet", 0) + 1, 0
+    else:
+        layer["dry"] = layer.get("dry", 0) + 1   # any day without rain is
+        if word in DRY_WEATHER:                  # a day without rain...
+            layer["wet"] = 0                     # ...but only real dry
+    layer["weather"], layer["weather_day"] = word, day   # weather breaks a
+    return word                                          # wet spell
+
+
+def roll_land(world: dict, polity: str, day: int) -> None:
     """Bring one land up to `day`, one day at a time. Each day's roll runs
     off its own stable seed, so catching up thirty days at an arrival gives
     exactly the history that rolling them live would have -- which is what
-    makes the world move while nobody is watching."""
+    makes the world move while nobody is watching.
+
+    The day, in order: the SKY is rolled first (the season track's states
+    bend it, so a drought makes its own weather), then each of the three
+    tracks expires its live card and draws a new one under its own rule --
+    weather and season off the sky and the spell, crisis off the wealth
+    band. Weather before crisis, because a crisis card may admit on the sky
+    and a sky never admits on a crisis."""
     layer = land_layer(world, polity)
     while layer["rolled_day"] < day:
         today = layer["rolled_day"] + 1
         rng = random.Random(_land_seed(world, polity, "worldsim-day", today))
-        live = layer["live"]
-        if live is not None and today >= live["until"]:
-            _end(world, polity, today)
-        if layer["live"] is None:
-            if rng.random() < CARD_CHANCE.get(layer["wealth"], 0.0):
-                drawn = _draw(world, polity, rng, weather)
-                if drawn is not None:
-                    _fire(world, polity, drawn, today, rng)
+        sky = _roll_sky(world, polity, today, rng)
+        for track in ("season", "weather", "crisis"):
+            live = layer[LIVE_KEY[track]]
+            if live is not None and today >= live["until"]:
+                _end(world, polity, today, track)
+            if layer[LIVE_KEY[track]] is not None:
+                continue
+            if track == "crisis" and (rng.random()
+                                      >= CARD_CHANCE.get(layer["wealth"],
+                                                         0.0)):
+                continue        # the crisis track's die is the wealth band;
+                                # the other two are the sky's own
+            drawn = _draw(world, polity, rng, sky, track)
+            if drawn is not None:
+                _fire(world, polity, drawn, today, rng)
         layer["rolled_day"] = today
 
 
@@ -689,39 +1074,150 @@ def state_line(entry: dict) -> str:
 
 def land_lines(world: dict, polity: str) -> list[str]:
     """The land's world state for the map page: the band, then whatever it
-    is living through. One line -- this is a phone page."""
+    is living through, then the sky over it. Two lines at most -- this is a
+    phone page."""
     layer = land_layer(world, polity)
     lines = [f"  [{layer['wealth'].upper()}]"]
     shown = held_states(world, polity) + derived_states(world, polity)
     if shown:
         lines[0] += " " + "; ".join(state_line(s) for s in shown)
+    sky = weather_line(world, polity)
+    if sky:
+        lines.append(f"  {sky}")
     return lines
 
 
 def world_lines(world: dict) -> list[str]:
     """The DM's inventory of the world layer (`world`): every land's band,
-    what it holds, what it derives, the card standing over it and how deep
-    its deck still is."""
+    what it holds, what it derives, the sky and the spell behind it, the
+    cards standing over it on all three tracks, and how deep its decks
+    still are."""
     lines = ["-- the world --"]
     for polity, land in world["lands"].items():
         layer = land["world"]
         lines.append("")
         lines.append(f"{land['name']} -- {layer['wealth'].upper()} "
                      f"(rolled to day {layer['rolled_day']})")
+        sky = layer.get("weather")
+        if sky:
+            spell = (f"wet {layer.get('wet', 0)}"
+                     if layer.get("wet") else f"dry {layer.get('dry', 0)}")
+            lines.append(f"  sky: {weather_phrase(land['environment'], sky)} "
+                         f"[{sky}, {spell}]")
         for entry in held_states(world, polity):
             lines.append(f"  state: {state_line(entry)}")
         for entry in derived_states(world, polity):
             lines.append(f"  derived: {state_line(entry)}")
-        live = layer["live"]
-        if live is not None:
+        for track in TRACKS:
+            live = layer.get(LIVE_KEY[track])
+            if live is None:
+                continue
             drawn = CARDS_BY_KEY[live["key"]]
             until = (f", stands to day {live['until']}"
                      if live["until"] else ", no clock")
-            lines.append(f"  card: {drawn['name']} "
+            lines.append(f"  {track} card: {drawn['name']} "
                          f"(day {live['day']}{until})")
-        lines.append(f"  deck: {len(layer['deck'])} left, "
-                     f"{len(layer['drawn'])} drawn")
+        who = layer.get("necromancer")
+        if who is not None:
+            lines.append(f"  the fog's cause: {who['name']}, L{who['level']} "
+                         f"(named day {who['since']})")
+        lines.append("  deck: "
+                     + ", ".join(f"{track} {len(layer[DECK_KEY[track]])}"
+                                 for track in TRACKS)
+                     + f" left, {len(layer['drawn'])} drawn")
     return lines
+
+
+# --------------------------------------------------------------------------- #
+# What the weather does to the road, and what the storm drives you into
+# --------------------------------------------------------------------------- #
+
+TRAVEL_SLOW = {                 # a state that makes a leg take a day longer
+    "fords-out": "the fords are out -- the road goes round by the bridges",
+    "dust-storm": "the dust has the plain -- nothing moves while it blows",
+}
+
+
+def travel_delay(world: dict, lands) -> tuple[int, list[str]]:
+    """What the weather costs a trip: one extra day per LAND the leg touches
+    that is holding a road-closing state, and the line that says why. This is
+    THE FORD IS OUT's travel half -- the priced menu half (the ferrymen's
+    rates) is authored on the card and waits for the economy floor."""
+    days, lines, seen = 0, [], set()
+    for polity in dict.fromkeys(lands):
+        if polity is None or polity not in world["lands"]:
+            continue
+        held = set(state_ids(world, polity))
+        hit = next((s for s in TRAVEL_SLOW if s in held), None)
+        if hit is None:
+            continue
+        days += 1
+        if hit not in seen:
+            seen.add(hit)
+            lines.append(f"  {world['lands'][polity]['name']}: "
+                         f"{TRAVEL_SLOW[hit]} (+1 day).")
+    return days, lines
+
+
+# --- the cabin table (BIG RAIN's other half) -------------------------------- #
+# The storm's real content is not the penalty, it is where the penalty drives
+# you. A wilds night under a storm rolls for SHELTER, and what the shelter
+# HOLDS is the table -- five owners, one of whom means it and one of whom
+# very much does not. The replayability is the table; the mechanics are two
+# lines (a dry night skips the exposure check and the foul-weather grumble).
+#
+# Each row is what the party SEES plus a DM-eyes note: the sinister row would
+# be no scene at all if the display announced it, so the display does not.
+
+SHELTER_CHANCE = 0.45           # of wilds nights spent under a storm
+CABIN_HOSTS = ("a charcoal-burner", "an old shepherd", "a soldier's widow",
+               "a hermit", "a forester", "a trapper", "a bee-keeper",
+               "a herb-woman", "a retired sergeant", "a miller's brother")
+CABIN_TABLE = (
+    (25, "helpful",
+     "The door opens before anyone knocks: {host}, alone out here and glad "
+     "of the faces. The fire is built up and the pot is filled out, and "
+     "nothing is asked for.",
+     "Exactly what they look like. A free dry night -- and they know this "
+     "ground better than any map does."),
+    (20, "job",
+     "{host} takes the party in and keeps looking at the door. Something "
+     "out here has been going wrong for a while, and they have been waiting "
+     "for somebody to tell about it.",
+     "A job offered over the fire: local, small and real. Post it or run it "
+     "on the spot."),
+    (20, "valuable",
+     "{host} takes the party in. One thing in this cabin does not belong in "
+     "it, and the way they keep themselves between it and the room says "
+     "they know what it is worth.",
+     "Wealth in a house with no lock. Either it is still theirs -- or "
+     "robbers had it last week and they want it back."),
+    (15, "sinister",
+     "{host} is very glad to see the party. The stew has been on a long "
+     "time, and they keep filling bowls nobody asked for.",
+     "DM EYES ONLY: the host means them harm -- the pot, then the axe, and "
+     "the last guests are under the floor."),
+    (20, "priced",
+     "{host} holds the door half-open and names a price for the night. It "
+     "is a serious price. The rain says it is worth it.",
+     "A dry night for coin -- the priced menu, out here. Haggling is fair; "
+     "so is the door shutting again."),
+)
+
+
+def cabin(rng: random.Random) -> dict:
+    """One roll on the cabin table: who is inside, and what they are."""
+    row = rng.choices(CABIN_TABLE, weights=[r[0] for r in CABIN_TABLE])[0]
+    host = rng.choice(CABIN_HOSTS)
+    return {"kind": row[1], "sight": row[2].format(host=host),
+            "dm": row[3], "host": host}
+
+
+def shelter_roll(rng: random.Random) -> dict | None:
+    """A storm-night roll for a roof: the cabin, or another night in it."""
+    if rng.random() >= SHELTER_CHANCE:
+        return None
+    return cabin(rng)
 
 
 # --------------------------------------------------------------------------- #
@@ -735,8 +1231,26 @@ def validate_content() -> None:
         if key in keys:
             raise ValueError(f"duplicate card key: {key}")
         keys.add(key)
-        if drawn["land"] not in LAND_SPECS:
-            raise ValueError(f"{key}: no such land: {drawn['land']}")
+        if drawn["track"] not in TRACKS:
+            raise ValueError(f"{key}: no such track: {drawn['track']}")
+        for polity in drawn["land"]:
+            if polity != ANY_LAND and polity not in LAND_SPECS:
+                raise ValueError(f"{key}: no such land: {polity}")
+        if ANY_LAND in drawn["land"] and len(drawn["land"]) > 1:
+            raise ValueError(f"{key}: {ANY_LAND} names every land already")
+        if not 0 < drawn["chance"] <= 1:
+            raise ValueError(f"{key}: chance out of range: {drawn['chance']}")
+        for word in drawn["admits"]["weather"] + (drawn["sky"],):
+            if word and word not in WEATHER_WORDS:
+                raise ValueError(f"{key}: no such weather: {word}")
+        if drawn["sky"] and drawn["track"] != "weather":
+            raise ValueError(f"{key}: only the weather track holds the sky")
+        if drawn["admits"]["wet"] and drawn["admits"]["dry"]:
+            raise ValueError(f"{key}: a spell is wet or dry, never both")
+        need = drawn["admits"]["dry"]
+        if not (need == PROFILE_SPELL or isinstance(need, int)):
+            raise ValueError(f"{key}: a dry spell is a count or "
+                             f"{PROFILE_SPELL!r}: {need!r}")
         for band in drawn["admits"]["wealth"]:
             if band not in BANDS:
                 raise ValueError(f"{key}: no such wealth band: {band}")
@@ -776,6 +1290,23 @@ def validate_content() -> None:
             if state_id not in STATE_WORDS:
                 raise ValueError(f"relation {edge}: no such state: "
                                  f"{state_id}")
+    for environment, profile in ENVIRONMENT_PROFILES.items():
+        weights = profile.get("weather")
+        if not weights:
+            raise ValueError(f"{environment}: no weather distribution")
+        if not profile.get("drought_days"):
+            raise ValueError(f"{environment}: no drought threshold")
+        for word in weights:
+            if word not in WEATHER_WORDS:
+                raise ValueError(f"{environment}: no such weather: {word}")
+        if not sum(weights.values()):
+            raise ValueError(f"{environment}: a sky that never rolls")
+    for environment, local in WEATHER_LOCAL.items():
+        if environment not in ENVIRONMENT_PROFILES:
+            raise ValueError(f"no such environment: {environment}")
+        for word in local:
+            if word not in WEATHER_WORDS:
+                raise ValueError(f"{environment}: no such weather: {word}")
 
 
 validate_content()
@@ -801,6 +1332,11 @@ def main() -> None:
     for polity in world["lands"]:
         for line in take_news(world, polity, args.days):
             print(line)
+    print("")
+    print("-- a night under the storm --")
+    found = cabin(random.Random(args.seed))
+    print(f"  SHELTER ({found['kind']}): {found['sight']}")
+    print(f"  ({found['dm']})")
 
 
 if __name__ == "__main__":

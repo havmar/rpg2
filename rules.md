@@ -4210,3 +4210,151 @@ gone the day it lifts. Cards admit on derived states like any other.
 - **`world`** is the DM's inventory of the whole layer: every land's band,
   states, derived states, the card standing over it, and how deep its deck
   still is. `place-state` remains the override.
+
+---
+
+# Weather — Add-on (2026-08-08, the worldsim build's first content rung)
+
+Every land rolls a **sky** every day, off its own climate. It is the
+cheapest world content there is — land-agnostic, and the only layer that
+touches the party on every day it is out of doors. `worldsim.py` owns the
+roll, the states and the cards; `places.py`'s environment profiles author
+the distribution; `rpg.py` owns the two things the sky does to a body (the
+DISEASE family, the storm's field penalties).
+
+## The day roll
+
+- **Nine words**, shared by every land: clear, cloud, wind, rain, storm,
+  fog, frost, snow, heat. What differs is the **weights**, which each
+  environment profile authors as the numbers behind its climate sentence.
+  The game has no season track, so a profile's winters and summers are
+  averaged into one year-round distribution rather than modelled.
+- The same word **reads differently on different ground**: a storm in the
+  dwarves' highlands is a *snowstorm*, and it is the same card underneath.
+- Two counters run behind the roll. **DRY is days since the last rain**, so
+  an overcast day extends it — a grey sky is not a drought ending. **WET is
+  a run of wet days** that a dry day breaks and an overcast one does not:
+  three days of rain with a grey one in the middle still puts the fords
+  out.
+- A held **drought bends the roll that made it** — rain and storm weights
+  cut hard, clear and heat lifted — which is why droughts last past the day
+  that started them.
+
+## The three tracks
+
+A land carries **one live card per track**, each with its own deck, draw
+rule and timescale, because one slot could not hold them: a season of
+drought would have blocked every storm under it, and a storm would have
+blocked the harvest failing.
+
+| track | drawn by | timescale |
+|-------|----------|-----------|
+| **crisis** | the wealth band (the frame's own rule) | days to weeks |
+| **weather** | today's sky, times the card's own `chance` | hours to days |
+| **season** | a long wet or dry spell | a season |
+
+No weather card carries a wealth condition: **a prosperous land gets the
+same storms as a starving one**, which is what makes weather the outlet
+that reaches a quiet world. A card that *is* the weather (the storm, the
+dust storm) **holds the sky while it stands**, so a storm that sets in for
+two days is a storm on both of them.
+
+## What the deck holds
+
+- **THE STORM SETS IN** — any land, on a storm day, 1–3 days. Its state is
+  `the storm has the roads`, and it is what the field penalties and the
+  cabin table hang on.
+- **THE FORD IS OUT** — the two human lands, after three wet days. Fords
+  uncrossable, bridges and ferries tolled by men who know it: the road
+  costs **a day** while it stands, and the toll racket is the vigilante
+  invitation. (The ferrymen's own rates are authored on the card and wait
+  for the economy floor with the rest of the priced menu.)
+- **THE FOG RAISES BONES** — any land, on a fog day, rare. Skeletons walk,
+  and the country people **have a name for the man who calls them up**: a
+  necromancer of rolled level 3–14, named once and kept on the land record.
+  A second fog raises the *same* man's dead. The rumor address is
+  deliberately cheap — a name and a level, no landmark machinery — and the
+  party goes looking or it does not.
+- **THE FOREST BURNS** — Ensimaa, only under drought. An evacuation, a
+  blame question, and a `burn is still black` scar that **outlives the
+  fire**; one card (the burn going green, a season later) is the way back.
+- **THE DUST STORM** — Tergal, under drought. The roads stop and the herds
+  scatter: **a day** on the road, and recovery work after.
+- **THE SMOG SETTLES** — Gibili. The mill smoke has nowhere to go; it is
+  the one sky **a roof does not keep out**, and the owners say it is the
+  weather.
+- **THE RAINS DO NOT COME** — the season card, any land. A drought is a
+  **relative** thing, so the spell that triggers it is the land's own (a
+  fortnight without rain is a disaster in the shaded forest and an ordinary
+  Tuesday in the dry south). It is the state the wildfire and the dust
+  storm admit on, and the one the economy floor's relations will read.
+
+## The night in the open — the DISEASE family
+
+The conditions framework's **third family**, parked since the attrition
+rework and cashed here. What makes it a family rather than a fourth kind of
+poison is its **clock**: rounds are the wrong unit for an illness.
+
+- **Catching one.** A night in the open under rain, frost, snow or storm is
+  **2d6 + STR** against the sky (rain is easy, a storm is not), once per
+  hero. A miss is a **COLD**. A roof of any kind — walls, or the storm
+  night's cabin — skips the check entirely: *shelter is the answer to
+  weather, and always was.*
+- **Bounded deepening.** A chill caught while a cold is running deepens it
+  to **PNEUMONIA**; a chill caught on pneumonia does nothing. There is no
+  third rung, and disease never kills.
+- **What it costs.** Not a per-round tick — the **HP ceiling**, like a
+  wound: sick, you cannot get back to full, and you walk into every fight
+  carrying it. (Under the same floor as a wound, so it is never a spiral.)
+- **Shaking it.** One roll a night, **2d6 + STR**, harder by a rung for
+  pneumonia and easier under a roof. A made roll eases it **one rung** —
+  pneumonia to a cold, a cold to nothing — so the way down is the way up
+  walked backwards. STR and not STA deliberately: STA is a pool that
+  doubles over twenty levels, and an illness that got easier to shake as
+  you levelled would inflate exactly the way this game's costs never do.
+  A cold is ~3 nights in the wilds and ~2 in a bed; pneumonia is a
+  fortnight out there and under a week in a town.
+- **The healer's rung.** A visit **breaks one illness outright** for a
+  flat fee, gated by the same tier cap that gates wounds: a village
+  herb-wife can break a cold and can do nothing for a pneumonia.
+
+## The storm in a fight
+
+One field knob and one save, and both ride an **outdoor** fight only — a
+room, a cellar or a barrow has no sky in it.
+
+- **A shot drags** (−2 to its attack pressure). A cast does not care about
+  the wind and neither does an axe.
+- **Every step is a save** (2d6 + DEX): a miss costs the **step**, never
+  the round's attack. Weather slows a fight down; it never decides one.
+- Both sides carry it, symmetric by contract like the ground itself — the
+  storm is not a party debuff, it is what the fight is being fought in. It
+  rides a paused fight to its resume: a storm the fight opened in is still
+  blowing when the player comes back to it.
+
+## The cabin table (what the storm drives you into)
+
+The storm's real content is not the penalty, it is **where the penalty
+drives you**. A wilds night under a storm rolls for shelter, and what the
+shelter holds is a five-row table: a host who is **helpful** and glad of
+faces / one with a **job** they have been waiting to tell somebody / one
+who owns something **valuable** (or has just lost it to robbers) / one with
+**sinister** designs (the pot, then the axe) / one who wants **serious
+coin** for a dry night. A dry night skips the exposure check and the
+storm's morale grumble.
+
+The display prints what the party **sees** plus a `(DM eyes only: ...)`
+line — the sinister row would be no scene at all if the display gave it
+away. That line is never read aloud (dm.md).
+
+## Where the player meets it
+
+- **Seen** on the road: one `WEATHER:` line where the sky matters — setting
+  out, a day afield, a night in the open, and on arrival. It says the spell
+  when the spell has become the story ("the 4th wet day running", "12 days
+  without rain").
+- **Seen** on `map` / `ui/map.txt`, under the land's band and states.
+- **Felt** as a day added to a leg, a chill in the night, a dragged shot, a
+  companion's grumble after a night out in a storm.
+- **`world`** carries the sky, the spell, all three tracks' live cards, and
+  the fog's named necromancer if the land has one.

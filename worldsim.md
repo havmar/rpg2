@@ -3,9 +3,9 @@
 The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
 build order — since 2026-08-07 the worldsim-build ladder, the
 monolithic design session dissolved and everything settleable settled
-in plan.md's rulings block; designlog's 2026-08-05..07 entries own
-the reasoning; THIS file holds what is still UNBUILT — the weather
-system sketch, the curated land economy packets, the ruler
+in plan.md's rulings block; designlog's 2026-08-05..08 entries own
+the reasoning; THIS file holds what is still UNBUILT — the
+curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
 (the dump's power half, same day), and the religion land packets (the
@@ -26,31 +26,38 @@ on 2026-08-07 the designer adopted the [PROPOSED] set WHOLESALE —
 implement it like everything else — so the marks (here and in every
 later section) are provenance only now, not a cut list.
 
-## The frame SHIPPED (2026-08-07) — what the packets are written against
+## The frame and the weather SHIPPED — what the packets are written against
 
 The five record kinds, the wealth roll, the crisis deck, the relations
-table and the lazy day-stamped rolls are BUILT: `worldsim.py`, with the
-played rules in rules.md's *The World Layer* and the code index in
-develop.md. What was cut from here is there; what remains below is the
-content still to author against it.
+table and the lazy day-stamped rolls are BUILT (2026-08-07), and so is
+the whole WEATHER system this file used to sketch (2026-08-08):
+`worldsim.py`, with the played rules in rules.md's *The World Layer* and
+*Weather* and the code index in develop.md. What was cut from here is
+there; what remains below is the content still to author against it.
 
-The two API facts an entry in this file needs to know:
+The API facts an entry in this file needs to know:
 
 - **A card is `worldsim.card(key, name, land, ...)`** — admitting
-  conditions (`wealth`, `states`, `without`, `weather`), up to five
-  outlet effects (`quest` / `menu` / `encounter` / `news` / `state`),
-  and an optional day-stamp clock (`days`). The frame applies `news`
-  and `state`; the other three are carried and validated until the
+  conditions (`wealth`, `states`, `without`, `weather`, `wet`/`dry`), up
+  to five outlet effects (`quest` / `menu` / `encounter` / `news` /
+  `state`), and an optional day-stamp clock (`days`). The frame applies
+  `news` and `state`; the other three are carried and validated until the
   economy floor session wires them. A state effect is
   `{"set", "while", "clear", "slot", "wealth", "wealth_while"}` — what
   a card SETS outlives it, what it sets WHILE it stands comes off with
   it, and slot members are exclusive.
+- **`land` takes one land, several, or `worldsim.ANY_LAND`**, and
+  `track=` picks which of a land's three decks the card sits in:
+  `crisis` (drawn off the wealth band), `weather` (drawn off the day's
+  sky, gated by the card's own `chance`), `season` (drawn off a long wet
+  or dry spell). One live card per track, so a storm never blocks a
+  harvest failing.
 - **A relation is `worldsim.relation(from, to, kind, when=, then=,
   because=)`** — a directed edge whose `then` state the target land
   DERIVES at read time for as long as the source holds one of `when`.
 
-The need-to-exist settlement trim shipped the same day: the census, the
-reserve pool and the draw are rules.md's *The map*;
+The need-to-exist settlement trim shipped the same day as the frame: the
+census, the reserve pool and the draw are rules.md's *The map*;
 `places.materialize_settlement` / `quests.found_settlement` are what a
 card or relation calls when it needs a place to exist.
 
@@ -66,53 +73,6 @@ detailed one is contrast, not neglect. The overlap guard for the four
 modern-flavored societies (Ensimaa, Dvarvengrond, Gibili,
 Mortellaria) is the PROBLEM AXIS named at the head of each packet:
 a land's troubles must come from its own axis.
-
----
-
-## WEATHER (land-agnostic system; a strong first-slice candidate)
-
-Weather is a day-scale state with outlet effects — self-contained,
-cheap, and it touches every outlet at least once. Season-scale
-weather (drought) is an economy state, not a day roll; it bridges
-into the land packets.
-
-- **card BIG RAIN** (temperate lands, travel/wilds days): party
-  satisfaction dips (a `SAT_*` delta); a shelter roll — the party
-  finds a small cabin, and the CABIN TABLE decides its owner: very
-  good and helpful / offers a quest / owns something obviously
-  valuable (or has just lost it to robbers) / has sinister designs
-  (poison, the pot) / wants serious coin for a dry night. The table
-  is the replayability; encounter + sight outlets.
-- **card CAUGHT COLD** (rides BIG RAIN): a failed STR check gives a
-  COLD, run as a condition — this cashes the attrition rework's
-  parked DISEASE family (the conditions framework's third family). A
-  second cold caught while one runs deepens to PNEUMONIA (the
-  bounded-deepening rule). Small, slow, treatable: an illness-shaped
-  wound.
-- **fact STORM PENALTIES**: in a big storm, ranged attacks take a
-  penalty and moving risks a DEX slip — one field knob and one save.
-  The SNOWSTORM is the same card in Dvarvengrond's climate, outdoors.
-- **card THE FOG RAISES BONES** (supernatural, rare): skeletons walk
-  in fog weather. The cause is a NECROMANCER of random level
-  somewhere in the land; rumor lines lead to him. Weather as a quest
-  hook — encounter + news + recurrence, a landmark-lite problem with
-  an address.
-- **card THE FORD IS OUT** (human lands, after sustained rain): fords
-  uncrossable, bridges and ferries heavily tolled — travel routing
-  plus the priced menu, and the toll racket invites the vigilante
-  option.
-- **state DROUGHT** (season-scale): hits Firascir's and Mortellaria's
-  agriculture hard, and the relations table carries it into every
-  land that imports their food. Tergal's version threatens PASTURE —
-  see its packet's herd spiral.
-- **[PROPOSED] card WILDFIRE** (Ensimaa, only under drought): the
-  forest burns — an evacuation scene, a blame question, and scarred
-  Areas that show on return.
-- **[PROPOSED] card DUST STORM** (Tergal, under drought): travel
-  halts, herds scatter — escort and recovery work.
-- **[PROPOSED] card SMOG SETTLES** (Gibili): the mills' smoke pins
-  under the sky for days — satisfaction drain in town, sickness
-  checks, and the mill owners' line is that the weather is at fault.
 
 ---
 
