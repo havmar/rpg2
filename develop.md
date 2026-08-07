@@ -121,11 +121,12 @@ a pointer: what the file is, how it's run, where its docs are.
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the roadmap: planned features only**, in build order (next
   up: the world & NPC simulation thread — the 2026-08-05 framing lives
-  there; since 2026-08-07 its remaining order is a five-session
-  implementation ladder — trim → world frame → weather → economy floor →
-  authority & jerkify, then content passes — the once-planned monolithic
-  design session dissolved into per-session head calls), plus parked ideas
-  and open questions.
+  there; since 2026-08-07 its remaining order is THE WORLDSIM BUILD, a
+  six-session ladder implementing worldsim.md whole — trim → world frame
+  → weather → economy floor → politics & the ruler roll → religion &
+  magic — every settleable call settled up front in its rulings block;
+  jerkify, bullies, monsters & fauna, and science & technology postponed
+  past the build), plus parked ideas and open questions.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the
@@ -194,9 +195,10 @@ a pointer: what the file is, how it's run, where its docs are.
   opens (gameplay openness outranks the 2026-08-05 never-acquire
   asymmetry — rules.md softened, plan.md carries the item), and
   conduct-not-creed OUTRANKS the inquisition-adjacent cards.
-  Pre-implementation — plan.md's implementation ladder (2026-08-07)
-  consumes it session by session, the designer's curation picks made
-  at each session's head; shipped behavior will belong to `rules.md`.
+  Pre-implementation — plan.md's worldsim-build ladder (2026-08-07)
+  consumes it session by session, every settleable call settled up
+  front in plan.md's rulings block and the [PROPOSED] set adopted
+  wholesale; shipped behavior will belong to `rules.md`.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes required settlements/lazy natural Sites/ordinary houses,

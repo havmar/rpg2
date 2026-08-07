@@ -196,34 +196,69 @@ and the career spellbooks — each behind one constant), and
 CHARACTER, ordinary givers stay blank, and only the PC's blank sheet
 (a player-chosen background?) stays open, parked with the thread.
 
-### The remaining order — the implementation ladder (2026-08-07)
+### The remaining order — the worldsim build (2026-08-07)
 
-*(Rewritten 2026-08-07, the implementation-prep session — designlog's
-session C entry has the reasoning. The old order here was trim → THE
-DESIGN SESSION → sim slice 1; the monolithic design session is
-DISSOLVED, because the 2026-08-05..07 dumps answered most of its
-agenda out from under it. What it still owed splits three ways:
-formalization that is the frame session's natural first job (the
-record schemas as data); a short list of genuine designer rulings,
-each listed at the head of the session that needs it; and the
-curation picks, which are per-slice by nature — the designer cuts the
-handful of records a session implements at that session's head, never
-the whole ~2,100 idea-level lines in one pass (fewer hand-picked
-elements beat coverage, applied to scheduling). Where the old agenda
-went: the identity schema's LAND level is drafted whole in worldsim.md
-and the SETTLEMENT level's missing half is session 5's authoring work;
-the event vocabulary is sessions 2–4; jerkify and bullies are session
-5; what-dict-NPCs-carry is ANSWERED — the authority tier rolls THE
-RULER CHARACTER, ordinary givers and service faces stay blank (the
-characteristic criterion: rulers are card-backed, givers are not) —
-with the PC-background question parked below; the landmark-problems
-tie-in is decided at the politics content pass, not before.)*
+*(Rewritten 2026-08-07 across two sittings — designlog's session C
+and D entries have the reasoning. The first sitting dissolved the
+monolithic design session (the old item 2 here — the 2026-08-05..07
+dumps had answered most of its agenda out from under it); the second
+corrected the first's output on the designer's rulings. The build's
+SCOPE is IMPLEMENTING WORLDSIM.MD — not the whole thread agenda:
+what worldsim.md does not design does not get built. The
+settlement-authority identity roll — the kind/tension vocabulary and
+the desert mechanics — IS JERKIFY under the designer's framing, is
+not yet designed, and is postponed past the build (below).
+Everything settleable is settled NOW, in the rulings block, not at
+per-session pick lists. Of the old agenda: what-dict-NPCs-carry is
+ANSWERED — the authority tier rolls THE RULER CHARACTER, ordinary
+givers and service faces stay blank (the characteristic criterion:
+rulers are card-backed, givers are not) — with the PC-background
+question parked below.)*
 
-Five sessions, in order. Each leaves the game playable and lands its
-contracts in a new test suite that no sim or bench imports (the karma
-doctrine). Per-session lifecycle: played rules to rules.md, the
-shipped entries CUT from worldsim.md, new files registered in
-develop.md's Files, a designlog entry.
+**The settled rulings (2026-08-07, second sitting — reopen only with
+the designer):**
+
+- **The [PROPOSED] set is adopted wholesale** — implement it like
+  everything else; the marks stay in worldsim.md as provenance only.
+- **The wealth die is 2d6** (2-4 CRISIS / 5-9 NORMAL / 10-12
+  PROSPEROUS); a knob thereafter.
+- **Orc horses stay as written** (the aesthetic flag resolves to the
+  text; re-judge at the table).
+- **The robot-servants card waits for SCIENCE & TECHNOLOGY** — its
+  tone/tech question is that layer's magical-vs-mundane boundary
+  call.
+- **Sulfur-to-Hell waits with hell's own treatment.**
+- **The Day of the Dead stays deliberately unruled** — the rite is
+  written to work either way; the ambiguity is content.
+- **THE FOG RAISES BONES ships** (skeletons are in the catalog);
+  **THE DRAUGR waits** for the postponed monsters & fauna dump (it
+  names a new creature row).
+- **The carnival amnesty ships as color**; its mechanical reading
+  stays deferred with the temple/penance wiring (below).
+- **The land RULER notable rolls THE RULER CHARACTER at worldgen**;
+  lesser named authorities that cards create draw two from the
+  crown-less pool. Trait-to-card admits are written per card at
+  implementation, where the packet text names them.
+- **The land politics frame ships as drafted** — the constitution
+  slot, the land tension roll (the second tension under CRISIS
+  included, adopted with the [PROPOSED] set), and the faction edges
+  are land-level worldsim material the politics cards admit on. The
+  SETTLEMENT tier is jerkify's, out of the build.
+- **The elven coherence-and-subtlety flag rides the writing pass** —
+  final player-facing strings are written at implementation under
+  writing.md anyway, so the Ensimaa cards get the designer's
+  more-coherent-more-normal pass there (religion is already
+  regrounded).
+- **Numbers no ruling covers** (the cold's condition values, clocks,
+  prices) are the build's call, hand-set and tuned at the table (the
+  standing convention).
+
+**The ladder.** Six sessions, in order — together they implement
+worldsim.md whole, minus the waits above. Each leaves the game
+playable and lands its contracts in a new test suite that no sim or
+bench imports (the karma doctrine). Per-session lifecycle: played
+rules to rules.md, the shipped entries CUT from worldsim.md, new
+files registered in develop.md's Files, a designlog entry.
 
 1. **The settlement trim** (spec settled 2026-08-05 as NEED-TO-EXIST
    creation; no designer input left). A land BEGINS with three
@@ -257,9 +292,6 @@ develop.md's Files, a designlog entry.
    STATE DIFF readout on the existing pages. Seed content: two or
    three econ cards per land, lifted from the packets, proving the
    loop end to end.
-   *Head calls:* the wealth die (2d6 — 2-4 CRISIS / 5-9 NORMAL /
-   10-12 PROSPEROUS — proposed as the default; a knob thereafter) and
-   the seed-card picks.
 3. **Weather.** worldsim.md's named first-slice candidate —
    land-agnostic, self-contained, touches every outlet, and the
    smallest curation bill on the board. The day roll against the
@@ -269,11 +301,9 @@ develop.md's Files, a designlog entry.
    family (the conditions framework's third; bounded deepening to
    PNEUMONIA); STORM PENALTIES (one field knob, one save); THE FORD
    IS OUT; DROUGHT as the season-scale state session 4's relations
-   read. THE FOG RAISES BONES can ride (skeletons are already in the
-   catalog) if its rumor address stays cheap — a named necromancer in
-   the land record, no landmark machinery.
-   *Head calls:* the [PROPOSED] trio (wildfire, dust storm, smog),
-   the fog card in or out, the cold's condition numbers.
+   read; the adopted trio (WILDFIRE, DUST STORM, SMOG SETTLES); and
+   THE FOG RAISES BONES with its rumor address kept cheap — a named
+   necromancer in the land record, no landmark machinery.
 4. **The economy floor.** The thread's two invariants land here: the
    BOARD reacts to world state, and something moves WITHOUT the
    player taking a job — visibly on return. Per-land floor content
@@ -284,49 +314,64 @@ develop.md's Files, a designlog entry.
    local encounter-table entries, news lines, state flips), relations
    live (a Firascir drought sets grain-scarce down its grain edges),
    and card CHAINS (the plague and famine chains — a card setting the
-   states the next card admits on).
-   *Head calls:* the per-land card picks (the curation, scoped to
-   econ) and the flagged econ calls (orc horses, the robot servants'
-   tone, sulfur sold to Hell).
-5. **Authority & jerkify.** The person and the power. The RULER ROLL
-   as specced (the 357 pool, the shrinking-pool draw — three for a
-   crown, two for lesser authorities — derived `heart`, the
-   affliction cap, the origin stamps; the Firascir baseline serves
-   every land until the modifier columns are authored). The
-   SETTLEMENT AUTHORITY roll — kind, disposition (the trait draw),
-   standing tension — whose kind/tension VOCABULARY is the one
-   genuinely unauthored piece the thread has left: this session's
-   authoring half. The land politics frame: the constitution slot and
-   the land tension roll (the gate admitting politics cards to the
+   states the next card admits on). The two waiting cards (the robot
+   servants, sulfur-to-Hell) stay in worldsim.md under their rulings.
+5. **Politics & the ruler roll.** The constitution slot and the land
+   tension roll at worldgen (the gate admitting politics cards to the
    deck — sessions 2–4 need neither, which is what keeps the frame
-   lean). JERKIFY's teeth: sin/heat modifiers by desert off `heart`,
-   surfaced by `case` — a DISTRIBUTION, not uniform rudeness;
-   choosing targets by casing IS the vigilante game (the lore hook
-   stands, dm.md: Order is often not Good). The BULLY if it fits (the
-   ferocity-0 mercy IS the encounter — purse taken, party left at
-   1 HP; what's needed is the spawn hook, the face persisting on the
-   record page, and a revenge address on the priced menu — the grudge
-   is the PLAYER's, which fixes the shelved nemesis's motivation
-   problem); otherwise it is the first follow-on.
-   *Head calls:* the authority-kind vocabulary cut, the jerkify
-   numbers, bully in or out.
+   lean), the faction edges as authored data, THE RULER CHARACTER
+   rolled onto the land RULER notable (the first intended consumer,
+   idle since 2026-07-12) — the 357 pool, the shrinking-pool draw,
+   three for a crown, two for the lesser named authorities cards
+   create, derived `heart`, the affliction cap, the origin stamps;
+   the Firascir baseline serves every land until the modifier columns
+   are authored. Then the politics cards, admitting on
+   tensions/states/traits per their packet text, and the war feed:
+   casus belli lines beside story.py's rolled aggressor, the
+   diplomatic instruments as relation edges, the succession cluster
+   on the adopted succession-state circumstance.
+6. **Religion & magic.** The Sun communion frame and the per-land
+   worship facts and options — temple services as plain priced-menu
+   entries (healing, burial, blessing; no sin/penance wiring) — and
+   the religion cards that need no new creature rows. The magic
+   packets: the recruiters, the wild talent, the hunt, the reagent
+   trade wired into the crime layer's smuggling/heist categories, the
+   per-land organization facts and options (THE BASEMENT CHILDREN
+   included). CURSED WORK stays with the parked non-weapon magic
+   items row (the After-that list).
 
-**After the ladder — content passes on the standing machinery,** each
-opening with its own pick list: politics cards and the war feed (they
-admit on session 5's tensions), religion (facts and options are
-mostly free color and priced-menu entries; its cards wait where they
-name creatures), magic (the recruiters, the wild talent, the hunt,
-the reagent trade wired into crime). The MONSTERS & FAUNA dump slots
-in before whichever pass needs it (the draugr, the knockers, Tergal's
-grave-made ghosts are pre-ordered); SCIENCE & TECHNOLOGY stays
-deferred with the boundary it owes the magic packets; further dumps
-ride alongside the ladder on the designer's initiative. The
-LANDMARK-PROBLEMS tie-in is decided at the politics pass.
+**Postponed past the build** — each needs its own design work or dump
+before it can be scheduled; none of it blocks the ladder:
 
-**Still open, parked with the thread:** the PC's blank sheet (a
-player-chosen background?); the per-land ruler modifier columns and
-the tribal rewording; temple services and the penance wiring; hell's
-own treatment.
+- **Jerkify** — the designer's framing: the settlement-authority
+  identity roll (kind, disposition, standing tension — the
+  kind/tension vocabulary is unauthored) and the desert mechanics
+  (sin/heat modifiers by desert off `heart`, surfaced by `case` — a
+  DISTRIBUTION, not uniform rudeness; choosing targets by casing IS
+  the vigilante game; the lore hook stands, dm.md: Order is often
+  not Good). Not yet designed — no implementation; its own design
+  session after the build.
+- **Bullies** — rides the jerkify design. The ferocity-0 mercy IS
+  the encounter (purse taken, party left at 1 HP); what's needed is
+  the spawn hook, the face persisting on the record page, and a
+  revenge address on the priced menu — the grudge is the PLAYER's,
+  which fixes the shelved nemesis's motivation problem.
+- **Monsters & fauna** — postponed, like science & technology. The
+  religion packets pre-order three creatures (the draugr, the
+  knockers, Tergal's grave-made ghosts); their cards wait with the
+  dump.
+- **Science & technology** — postponed; owes the magic packets the
+  magical-vs-mundane boundary when it lands (the robot question, the
+  guns).
+- **The temple/penance wiring** — whether and how temples interact
+  with the shipped sin/penance economy (priced absolution,
+  confession, per-rite flavor on penance). Deliberately undesigned
+  at the designer's 2026-08-06 direction; temples stay plain priced
+  services until it gets its own design round.
+- **Hell's own treatment**; **the per-land ruler modifier columns
+  and the tribal rewording**; **the landmark-problems tie-in**
+  (re-raise once the build is played); **the PC's blank sheet** (a
+  player-chosen background?).
 
 ---
 

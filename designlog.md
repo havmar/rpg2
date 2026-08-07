@@ -2275,3 +2275,78 @@ develop.md — the plan.md and worldsim.md Files entries.
 
 **Open.** The head calls at each ladder session (listed in plan.md
 per session); everything on the parked list above.
+
+## 2026-08-07 (session D) — The worldsim build: scope corrected, everything settled up front
+
+**Where it started.** The designer reviewed session C's ladder and
+corrected it on five points, plus one question. The corrections: the
+build's scope is IMPLEMENTING WORLDSIM.MD, not the whole thread
+agenda; the [PROPOSED] set should simply be implemented; everything
+settleable should be settled NOW, not at per-session pick lists; the
+settlement authority's kind/tension vocabulary IS JERKIFY in the
+designer's framing — not actually designed, so no implementation;
+and monsters & fauna is postponed, like science & technology. The
+question: what is the temple/penance wiring?
+
+**The question answered.** The game already ships sin and penance as
+numbers — the karma layer (`sin` / `sin_total` / `penance_total`;
+honest work burns sin 1:1). The religion outline (2026-08-06)
+proposed a per-land PENANCE INTERFACE — temples where sin is worked
+off: confession, priced absolution, penance quests, each land's rite
+flavoring it — and the designer's own feedback cut it: worldbuilding
+must not lean on undesigned mechanics. "The temple/penance wiring"
+is the recorded name for that deferred question — whether and how
+temples interact with the sin/penance economy. It stays parked;
+temples remain plain priced services (healing, burial, blessing),
+and the carnival amnesty's mechanical reading waits with it.
+
+**The calls** (the corrections applied, the remaining flags settled
+by delegated judgment):
+
+1. *Scope: the worldsim build.* The ladder implements worldsim.md
+   whole; what the file does not design does not get built.
+   Postponed past the build, each behind its own design work or
+   dump: jerkify (the settlement-authority identity roll plus the
+   desert mechanics) with bullies riding it; monsters & fauna;
+   science & technology; the temple/penance wiring; hell; the ruler
+   modifier columns and tribal rewording; the landmark tie-in; the
+   PC background question.
+2. *The [PROPOSED] set adopted wholesale* — implemented like
+   everything else; the marks stay as provenance only. The
+   cut-on-sight framing is struck everywhere it appeared.
+3. *Everything settled up front* — plan.md's rulings block replaces
+   the per-session head calls. The delegated judgment calls: the
+   wealth die is 2d6 as quoted; orc horses stay as written (re-judge
+   at the table); the robot-servants card waits for science &
+   technology (its tone question is that layer's boundary call);
+   sulfur-to-Hell waits with hell's treatment; the Day of the Dead
+   stays deliberately unruled (the ambiguity is content); THE FOG
+   RAISES BONES ships on the existing skeletons while THE DRAUGR
+   waits for its creature row; the carnival amnesty ships as color;
+   numbers no ruling covers are the build's call, table-tuned.
+4. *The ruler roll stays in the build* — it is worldsim material,
+   fully designed: the land RULER notable rolls it at worldgen,
+   lesser named authorities that cards create draw two, and
+   trait-to-card admits are written per card at implementation. The
+   land politics frame (constitution slot, tension roll, faction
+   edges) likewise ships as drafted — land-level worldsim material
+   the politics cards admit on; only the SETTLEMENT tier is
+   jerkify's.
+5. *The ladder reshaped to six sessions:* trim → world frame →
+   weather → economy floor → politics & the ruler roll → religion &
+   magic — together consuming worldsim.md whole, minus the waits.
+   The elven coherence-and-subtlety flag rides the writing pass at
+   implementation of the Ensimaa cards (player-facing strings are
+   written there anyway).
+
+**Recorded.** plan.md — the remaining order rewritten as THE
+WORLDSIM BUILD (the rulings block, the six-session ladder, the
+postponed list carrying jerkify's and bullies' full descriptions);
+worldsim.md — the [PROPOSED] adoption in the intro and the three
+section notes, the settled flags in place (wealth die, orc horses,
+robots, sulfur, Day of the Dead, the draugr), the ruler and politics
+pointers retargeted, monsters & fauna marked postponed; develop.md —
+the plan.md and worldsim.md Files entries.
+
+**Open.** Nothing blocks the build. The postponed list above is the
+thread's future work.
