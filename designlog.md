@@ -2496,3 +2496,138 @@ re-homed travel-encounter table.
 **Open.** Nothing. The next dev session's first duty under the new rule:
 when the worldsim ladder's settlement trim lands, delete its rung from
 plan.md rather than marking it shipped.
+
+## 2026-08-07 (session F) — The settlement trim: the catalog becomes a reserve
+
+**The task.** plan.md's worldsim ladder, rung 1 — the settlement trim,
+whose spec had been settled since 2026-08-05 with no designer input
+left. A land BEGINS with three settlements (one capital, one town, one
+village); further settlements materialize only when something needs
+them to exist; the authored catalog stops being the world's initial
+census and becomes the RESERVE POOL those materializations draw names
+and skeletons from. This is places.py's own lazy Site/house
+materialization lifted one tier.
+
+**Where it started.** `create_geography` built the whole catalog at
+worldgen: 39 settlements across six lands (Firascir alone opened eight),
+each with its authored Site/Room skeleton, its guaranteed services and,
+in `quests.generate_world`, a face behind every service and one job on
+every board. Nothing anywhere could ADD a settlement — the world's
+census was a table, decided before the first scene.
+
+**What shipped.**
+
+- **The opening draw** (`places.create_geography`). Naturals first, as
+  before; then the authored capital, then a town and a village drawn off
+  the land's reserve. `SETTLEMENTS_AT_WORLDGEN` = 3 and `OPENING_TIERS` =
+  (town, village) are the two constants; the world opens at 28 natural
+  Areas + 18 settlements (was 67 Areas).
+- **The reserve** (`_land_reserve`, stored per land in the save as
+  `reserve`). The catalog's remaining towns, shuffled on the world seed;
+  then its authored villages, likewise; then the generated-village
+  pairing — the land's whole village-name pool, shuffled, paired with its
+  village roles in rotation. Entries are plain JSON (`name`, `tier`,
+  `role`, `tags`, `source`), so the reserve rides the save without a
+  serializer.
+- **The need-to-exist draw** (`places.materialize_settlement`), with a
+  MANDATORY `need` string and optional `tier` / `tags` / `day`. It pops
+  the first fitting entry — a tag intersection wins over reserve order,
+  so "a counterparty port" gets the harbor town rather than the next
+  hill town — builds the Area, its required Sites and Rooms and its
+  services exactly as worldgen does, stamps `founded_day` /
+  `founded_for` on the record and emits a `materialize` event.
+  `reserve_settlements(world, land, tier=None)` is the read-before-you-
+  commit companion.
+- **The whole-stack entry point** (`quests.found_settlement`), because
+  places.py cannot import quests: the draw plus the service faces.
+  `_cast_service_providers`, a worldgen-wide loop, became
+  `cast_service_providers(world, settlement, rng)` per settlement, and
+  worldgen now calls it in a loop of its own.
+- **`test_worldsim.py`** — the build's own contract suite (21 tests, no
+  sim or bench imports it, per the karma doctrine). Session 1 pins the
+  opening census and its tiers, the capital staying its land's FIRST
+  settlement (story.py raises waves off `settlements_by_land[land][0]`),
+  the reserve's completeness (nothing authored lost, nothing built
+  twice, the save round-trip), the draw (a whole usable place — Sites,
+  services, faces, a board that fills, a garrison in band), tier and tag
+  steering, a dry land saying no, and the seeded stability of all of it.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. *Dvarvengrond authors no village at all.* "One capital, one town, one
+   village" is unbuildable there. The build made the COUNT the invariant
+   and the tiers the ideal: a land takes one of each tier it has, then
+   tops up to three from the head of what is left. The dwarves therefore
+   keep all three of their authored settlements (capital + two towns) and
+   hold NOTHING in reserve — which is also the honest reading of their
+   catalog, and it forces every consumer to handle a land that cannot
+   grow.
+2. *What "generic, with few unique features" means.* The same spec
+   sentence says materializations draw "names and skeletons" from the
+   catalog, so a drawn settlement gets its authored skeleton — the
+   genericness is that nothing bespoke is AUTHORED for it (no identity
+   roll, no unique features; that is jerkify's business, postponed), not
+   that its content is degraded. A drawn settlement is an ordinary
+   settlement: the party cannot tell from the inside which three a land
+   opened with.
+3. *A dry reserve returns None* rather than inventing a name and a
+   skeleton. placegen's rule stands ("finite Land slots with stable
+   seeds, not unlimited `explore` results"), and it gives the card layer
+   the discipline it already uses for exclusive slots: a card whose
+   counterparty cannot be built simply does not fire. `reserve_settle-
+   ments` exists so a card can check before it commits.
+4. *Which town and village a land opens with is a seeded roll*, not the
+   catalog's first row. The opening draw became a source of playthrough
+   variety — a new Firascir game opens on a different town — which is
+   what the trim buys back for the choice the smaller board costs.
+5. *The generated-village pairing changed shape.* It was three roles ->
+   three names, one village each. It is now the whole name pool paired
+   with the roles in rotation, which makes the village reserve fifteen
+   deep in the four lands that have one and lets a land grow villages
+   with role variety instead of running out after three.
+6. *Nothing is posted on a drawn settlement's board at founding.* An
+   unread board fills to its band the first time the party looks at it
+   (`refresh_settlement_board`), which is exactly when a new town's work
+   should appear — so the draw stays cheap and the refill stays the one
+   place postings are made.
+7. *No live consumer yet.* Sessions 2 and 4 (the relations table and the
+   econ cards) are the first callers by design; until then the contract
+   lives in `test_worldsim.py`. The API was written for those two
+   callers: `need` is required so a place always records WHY it exists,
+   and `tags` exists because "a counterparty port" is the spec's own
+   worked example.
+
+**What it costs, measured** (full numbers in benchlog.md). The world
+halves: 39 settlements -> 18, board slots 132 -> 68, the seeded opening
+board 41 postings / ~19k XP -> 20 / ~8.7k. Per LAND — which is what the
+player actually sees, since word travels within a land — open slots go
+22 -> 11.3 and jobs within +/-1 of the party's level go ~4.6 -> ~2.1,
+with the "nothing at your level in this land today" rate rising from
+1-4% to 7-18% (at +/-2 it is 0-7%, and the world still holds 9-13 in-band
+jobs). The career sim is unmoved on reach and death level; its turn-in
+bands shift consistently (quick 41% -> ~32%, late 8% -> 13%), i.e. the
+clock bites a little harder on a thinner board. **No dial was pulled** —
+the trim's ruling says the posting bands do not move, and the parked
+posting-band trim stays a separate item. If it bites at the table, the
+dials in order are `QUEST_REFILL_PER_DAY`, the posting bands, and only
+then the census.
+
+**What it buys at the table.** The `map` page is now six lands of three
+places instead of a 39-row directory: a world a player can hold in his
+head, where each settlement is worth remembering. And the world can
+GROW, which is the thing the ladder actually needed — the next four
+sessions can name a place that does not exist yet and have it exist.
+
+**Recorded.** rules.md's *The map* (the census and the reserve rule);
+worldsim.md's need-to-exist paragraph CUT to a shipped-pointer;
+placegen.md's counts table, MVP boundary, settlement model, per-land
+village-pool lines and verification list re-captioned as the reserve
+they now are; develop.md's Files (places.py, place_catalog.json,
+test_worldsim.py), dev map and Running block; plan.md's ladder down to
+five sessions with its rung deleted; benchlog's measurement entry.
+
+**Open.** Whether three settlements a land is enough at the table is a
+PLAY question, and the played band (levels 1-4) is where it will show
+first: the low band's ±1 board is the thinnest of all (mean 1.5 jobs a
+land at L1, nothing at all 18% of days). Worth watching in the next
+playthrough before session 2 adds anything to the boards.

@@ -86,14 +86,10 @@ relations table. The one rule that keeps lazy viable: NO quantity
 that needs per-day updating — states are words, clocks are day
 stamps compared against the calendar (the quest-clock pattern).
 
-**Need-to-exist settlements (the trim, settled 2026-08-05).** A land
-begins with THREE settlements — one capital, one town, one village.
-Further settlements exist only when something needs them to (a
-relation names a rival center of power; a card needs a counterparty
-port), and arrive generic, with few unique features. The authored
-catalog stops being the world's initial census and becomes the
-RESERVE POOL such materializations draw names and skeletons from —
-places.py's lazy Site/house materialization lifted one tier.
+> The need-to-exist settlement trim SHIPPED 2026-08-07 (ladder session
+> 1) — the census, the reserve pool and the draw are rules.md's *The
+> map* now; `places.materialize_settlement` / `quests.found_settlement`
+> are what a card or relation calls when it needs a place to exist.
 
 ## Asymmetry doctrine
 

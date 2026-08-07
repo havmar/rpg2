@@ -164,9 +164,10 @@ a pointer: what the file is, how it's run, where its docs are.
 - `plan.md` — **the roadmap: planned features, parked ideas and open
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
-  is a six-session ladder implementing worldsim.md whole — trim → world
-  frame → weather → economy floor → politics & the ruler roll →
-  religion & magic — every settleable call settled up front in its
+  is a five-session ladder implementing worldsim.md whole — world frame
+  → weather → economy floor → politics & the ruler roll →
+  religion & magic, the settlement trim having shipped 2026-08-07 —
+  every settleable call settled up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
   technology postponed past the build). **Nothing implemented lives
   there**: when a feature ships, delete its entry and write the session
@@ -243,23 +244,35 @@ a pointer: what the file is, how it's run, where its docs are.
   opens (gameplay openness outranks the 2026-08-05 never-acquire
   asymmetry — rules.md softened, plan.md carries the item), and
   conduct-not-creed OUTRANKS the inquisition-adjacent cards.
-  Pre-implementation — plan.md's worldsim-build ladder (2026-08-07)
+  plan.md's worldsim-build ladder (2026-08-07)
   consumes it session by session, every settleable call settled up
   front in plan.md's rulings block and the [PROPOSED] set adopted
-  wholesale; shipped behavior will belong to `rules.md`.
+  wholesale; shipped behavior belongs to `rules.md` and its section is
+  CUT from this file (the first cut: the need-to-exist settlement trim,
+  shipped 2026-08-07).
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
-  materializes required settlements/lazy natural Sites/ordinary houses,
+  materializes the opening settlements (three a land since the 2026-08-07
+  trim) and the reserve draws / lazy natural Sites / ordinary houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: all six Land/Area
   records, required settlement Site/Room skeletons, natural three-Site
   inventories, generated-village roles/names, adjacency, and river/routes.
+  Since the settlement trim it is the world's RESERVE, not its census.
 - `test_places.py` — **the place-generation MVP contract suite**: counts,
   IDs/names, deterministic seeds, finite discovery, lazy persistence,
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
+- `test_worldsim.py` — **the world & NPC simulation build's contract suite**
+  (2026-08-07), the ladder's own, imported by no sim and no bench. Session 1
+  (the settlement trim): the opening census and its tiers, the capital
+  staying its land's first settlement, the reserve pool (nothing authored
+  lost, nothing built twice, the save round-trip), the need-to-exist draw
+  (a whole usable place, the founding stamp, tier and tag steering, a dry
+  land saying no), and the seeded stability of both.
+  `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
   recovering the fallen's kit, the opening-only drink fence (`drink=`,
@@ -792,6 +805,7 @@ python bench_quests.py   # generated rooms/sites honesty + the career sim
 python weapons.py --seed 1            # one world's armory + smiths (eyeball)
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
+python -m unittest -v test_worldsim.py # the world-sim build's contracts
 python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_conditions.py  # the conditions framework contract
 python -m unittest -v test_wounds.py  # the wound system contract
@@ -1177,12 +1191,23 @@ mechanic *does* and *why* is rules.md's job.
   `cmd_travel`, and the delivery guards in take/room/status/sheet/
   opening-hook/board-rumors.
 - **The world, places & navigation** (2026-07-09; hierarchy 2026-07-22;
-  procedural-place MVP 2026-07-25) — `places.py` +
+  procedural-place MVP 2026-07-25; the settlement trim 2026-08-07) —
+  `places.py` +
   `place_catalog.json`: independent Land/culture/owner/environment records,
-  the finite 67-Area six-Land inventory, stable BLAKE2 child seeds, required
+  the 28 natural Areas plus three settlements a land (46 at worldgen), stable
+  BLAKE2 child seeds, required
   settlement skeletons/services/providers, three-entry natural Site
   inventories, Room contents, ordinary houses, knowledge, links, and the
-  explicit state mutation/event API. `quests.py`: the world-owned
+  explicit state mutation/event API. **The settlement trim** (worldsim ladder
+  session 1): `SETTLEMENTS_AT_WORLDGEN` / `OPENING_TIERS` and the opening
+  draw in `create_geography`, the per-land `reserve` in the save,
+  `_land_reserve` (towns shuffled, then authored villages, then the
+  generated role/name pairing), `reserve_settlements` (read before
+  committing to a card that names a place), and `materialize_settlement`
+  (the need-to-exist draw: `need` / `tier` / `tags` / `day`, None when the
+  reserve is dry). `quests.py`: `found_settlement` — the whole-stack draw
+  (the place plus `cast_service_providers`, refactored per settlement), and
+  the world-owned
   `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
   Sites as persistent world IDs, `QUEST_PLACE_REQUIREMENTS` routing;
   `wild_pool`
@@ -1550,12 +1575,17 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
 - **The board never runs dry:** 0/500 careers exhausted it, ~660 postings
   expire unfinished per career, ~129 live jobs standing at the end. The
   up-front XP-coverage assert is deleted and nothing replaced it but the
-  measurement.
+  measurement. *(Halved by the 2026-08-07 settlement trim — 18 settlements,
+  68 slots: ~452 expiring and ~68 live at the end, still 0 exhausted. The
+  before/after table is benchlog's trim entry.)*
 - **Turn-in bands in the sim: quick 51% / on time 43% / late 4% / expired
   1%.** That quick share is a sim artifact, not a play prediction — the
   career sim has no travel layer, so its jobs land 2-3 days faster than a
   played one ever will. Do not read it as "the premium is too easy to get";
-  re-read it after the road is priced in.
+  re-read it after the road is priced in. *(The trim moved these too, and
+  reproducibly: quick ~32% / on time ~51% / late ~13% / expired ~4% — a
+  thinner board means older postings. Reach and median death level did not
+  move.)*
 - **The open dial** if the clock ever needs to bite harder or softer, in
   order: `QUEST_WINDOW_DAYS`, then `QUEST_PAY_BANDS["late"]`, then
   `QUEST_GRACE_DAYS`. Never the refill rate — an empty board is not

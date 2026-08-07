@@ -403,7 +403,7 @@ def generic_room_contents(room_id: str, room_name: str, site_name: str,
 
 
 def _new_area_record(spec: dict, polity: str, world_seed: int | None,
-                     index: int) -> dict:
+                     index: int, source: str = "authored") -> dict:
     aid = spec["id"]
     is_settlement = spec["kind"] == "settlement"
     tags = list(spec["tags"])
@@ -417,7 +417,7 @@ def _new_area_record(spec: dict, polity: str, world_seed: int | None,
         "culture": LAND_SPECS[polity]["culture"],
         "race": LAND_SPECS[polity]["race"],
         "role": spec["role"], "description": spec["description"],
-        "source": "authored", "template": aid,
+        "source": source, "template": aid,
         "seed": stable_seed(world_seed, f"land/{polity}", "area", index),
         "known": is_settlement, "visited": False,
         "sites": [], "quests": [], "tags": list(dict.fromkeys(tags)),
@@ -438,7 +438,7 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
         "seed": stable_seed(world_seed, "world", "land", index),
         "areas": [], "neighbors": list(_CATALOG["adjacency"][polity]),
         "features": [], "states": [], "links": [], "sequences": {},
-        "discovery_order": [],
+        "discovery_order": [], "reserve": [],
     }
 
 
@@ -595,8 +595,129 @@ def _generated_village_spec(polity: str, role_id: str, name: str,
     }
 
 
+# --------------------------------------------------------------------------- #
+# THE SETTLEMENT TRIM (2026-08-07 -- the worldsim ladder's first rung)
+# --------------------------------------------------------------------------- #
+# A land BEGINS with three settlements: one capital, one town, one village.
+# Everything else the catalog holds is the RESERVE POOL -- unbuilt names and
+# skeletons that materialize only when something needs them to EXIST (a
+# relation names a rival center of power, a card needs a counterparty port).
+# This is places.py's own lazy Site/house pattern lifted one tier: the
+# catalog stopped being the world's census and became its reserve, so places
+# arrive because the world asked for them, not because a table was filled in
+# advance. A land whose reserve runs dry simply says no (see
+# `materialize_settlement`) -- the world stays finite.
+SETTLEMENTS_AT_WORLDGEN = 3
+OPENING_TIERS = ("town", "village")     # beside the capital, in draw order
+
+
+def _reserve_entry(name: str, tier: str, role: str, tags: Iterable[str],
+                   source: str) -> dict:
+    """One unbuilt settlement: the name, the skeleton it will be built from,
+    and the tags a need is matched against. Plain JSON -- it rides the save."""
+    return {"name": name, "tier": tier, "role": role,
+            "tags": list(tags), "source": source}
+
+
+def _land_reserve(polity: str, spec: dict,
+                  world_seed: int | None) -> list[dict]:
+    """The land's unbuilt settlements in the stable order they are drawn in:
+    the catalog's remaining towns first (hand-written skeletons), then its
+    villages -- authored ones before the generated roles, which pair the
+    land's name pool with its village roles in rotation."""
+    towns, authored_villages, generated = [], [], []
+    for name, tier, role, tags in spec["settlements"]:
+        if tier == "capital":
+            continue
+        entry = _reserve_entry(name, tier, role, tags, "authored")
+        (authored_villages if tier == "village" else towns).append(entry)
+    roles = [(role_id, tags) for role_id, _heading, tags in spec["villages"]]
+    if roles:
+        names = list(spec["village_names"])
+        random.Random(stable_seed(world_seed, f"land/{polity}",
+                                  "generated-villages", 0)).shuffle(names)
+        for index, name in enumerate(names):
+            role_id, tags = roles[index % len(roles)]
+            generated.append(_reserve_entry(name, "village", role_id, tags,
+                                            "worldgen"))
+    rng = random.Random(stable_seed(world_seed, f"land/{polity}",
+                                    "settlement-reserve", 0))
+    rng.shuffle(towns)
+    rng.shuffle(authored_villages)
+    return towns + authored_villages + generated
+
+
+def _reserve_build(polity: str, entry: dict) -> tuple[dict, list[dict]]:
+    """The Area spec and required-Site skeleton behind one reserve entry."""
+    land = LAND_SPECS[polity]
+    if entry["source"] == "authored":
+        aid = area_id(polity, entry["name"])
+        return dict(AREA_SPECS[aid]), SETTLEMENT_SITE_SPECS[aid]
+    spec = _generated_village_spec(polity, entry["role"], entry["name"],
+                                   entry["tags"])
+    return spec, land["village_sites"][entry["role"]]
+
+
+def _add_settlement(world: dict, polity: str, entry: dict, *,
+                    day: int | None = None,
+                    need: str | None = None) -> dict:
+    """Build one settlement Area out of a reserve entry: the Area record, its
+    required Sites and Rooms, and its guaranteed services. `need` marks the
+    ones the world asked for after worldgen (the opening three pass None)."""
+    land = world["lands"][polity]
+    spec, site_specs = _reserve_build(polity, entry)
+    area = _new_area_record(spec, polity, world["seed"],
+                            len(land["areas"]) + 1, entry["source"])
+    world["areas"][area["id"]] = area
+    land["areas"].append(area["id"])
+    sites = [materialize_site(world, area, site_spec, source="authored",
+                              domain="built", known=True,
+                              purpose="required-site")
+             for site_spec in site_specs]
+    _attach_services(area, sites)
+    if need is not None:
+        area["founded_day"] = day
+        area["founded_for"] = need
+        _event(world, day, area["id"], "materialize")
+    return area
+
+
+def reserve_settlements(world: dict, polity: str,
+                        tier: str | None = None) -> list[dict]:
+    """What the land can still be asked to grow -- read before committing to
+    a card or a relation that names a place the world may not hold."""
+    return [entry for entry in world["lands"][polity]["reserve"]
+            if tier is None or entry["tier"] == tier]
+
+
+def materialize_settlement(world: dict, polity: str, *,
+                           need: str, tier: str | None = None,
+                           tags: Iterable[str] = (),
+                           day: int | None = None) -> dict | None:
+    """Draw the next settlement out of a land's reserve because something
+    needs it to exist. `tier` narrows the draw, `tags` prefer a fitting
+    skeleton (a port for a counterparty port), and `need` is recorded on the
+    Area as the reason it was founded.
+
+    Returns None when the reserve holds nothing that fits: the world is
+    finite, and a card whose counterparty cannot be built simply does not
+    fire (the exclusive-slot discipline, applied to geography)."""
+    reserve = world["lands"][polity]["reserve"]
+    pool = [entry for entry in reserve
+            if tier is None or entry["tier"] == tier]
+    wanted = set(tags)
+    entry = next((e for e in pool if wanted.intersection(e["tags"])),
+                 pool[0] if pool else None)
+    if entry is None:
+        return None
+    reserve.remove(entry)
+    return _add_settlement(world, polity, entry, day=day, need=need)
+
+
 def create_geography(seed: int | None) -> dict:
-    """Create all finite Lands/Areas and required settlement skeletons."""
+    """Create the finite Lands and natural Areas, and open every land with
+    its three settlements (the trim) -- the rest of the catalog becomes the
+    land's reserve, drawn on need by `materialize_settlement`."""
     world = {
         "seed": seed, "lands": {}, "areas": {}, "sites": {}, "rooms": {},
         "quests": {}, "npcs": [], "events": [],
@@ -615,26 +736,28 @@ def create_geography(seed: int | None) -> dict:
             world["areas"][aid] = area
             land["areas"].append(aid)
             natural_ids.append(aid)
-        next_index = len(spec["natural"])
-        for name, _tier, _role, _tags in spec["settlements"]:
-            next_index += 1
-            aid = area_id(polity, name)
-            area = _new_area_record(AREA_SPECS[aid], polity, seed, next_index)
-            world["areas"][aid] = area
-            land["areas"].append(aid)
-        village_rng = random.Random(
-            stable_seed(seed, land["id"], "generated-villages", 0))
-        names = list(spec["village_names"])
-        village_rng.shuffle(names)
-        for role_id, _heading, tags in spec["villages"]:
-            next_index += 1
-            name = names.pop()
-            generated = _generated_village_spec(polity, role_id, name, tags)
-            aid = generated["id"]
-            area = _new_area_record(generated, polity, seed, next_index)
-            area["source"] = "worldgen"
-            world["areas"][aid] = area
-            land["areas"].append(aid)
+        # The opening three (the trim): the authored capital, then a town and
+        # a village drawn off the reserve. A land whose catalog is short of a
+        # tier -- Dvarvengrond has no village -- tops up from the head of what
+        # is left, so every land still opens with three.
+        capital = next(entry for entry in spec["settlements"]
+                       if entry[1] == "capital")
+        _add_settlement(world, polity,
+                        _reserve_entry(capital[0], "capital", capital[2],
+                                       capital[3], "authored"))
+        land["reserve"] = _land_reserve(polity, spec, seed)
+        opening = []
+        for tier in OPENING_TIERS:
+            opening.extend([entry for entry in land["reserve"]
+                            if entry["tier"] == tier][:1])
+        for entry in land["reserve"]:
+            if len(opening) >= SETTLEMENTS_AT_WORLDGEN - 1:
+                break
+            if entry not in opening:
+                opening.append(entry)
+        for entry in opening:
+            land["reserve"].remove(entry)
+            _add_settlement(world, polity, entry)
         order_rng = random.Random(
             stable_seed(seed, land["id"], "area-discovery", 0))
         order_rng.shuffle(natural_ids)
@@ -647,18 +770,6 @@ def create_geography(seed: int | None) -> dict:
             site_rng.shuffle(ids)
             world["areas"][aid]["natural_site_order"] = ids
 
-    for area in list(world["areas"].values()):
-        if area["kind"] != "settlement":
-            continue
-        if area["source"] == "worldgen":
-            specs = LAND_SPECS[area["land"]]["village_sites"][area["role"]]
-        else:
-            specs = SETTLEMENT_SITE_SPECS[area["id"]]
-        sites = [materialize_site(world, area, spec, source="authored",
-                                  domain="built", known=True,
-                                  purpose="required-site")
-                 for spec in specs]
-        _attach_services(area, sites)
     for polity, land in world["lands"].items():
         routed_pairs = {
             frozenset((link["a"], link["b"])) for link in world["links"]
@@ -1080,7 +1191,7 @@ def place_debug_lines(world: dict, place: dict) -> list[str]:
     ]
     for key in ("owner", "culture", "race", "environment", "kind",
                 "subtype", "role", "domain", "level", "description",
-                "discovered_day"):
+                "discovered_day", "founded_day", "founded_for"):
         if key in place and place[key] not in (None, ""):
             lines.append(f"{key}: {place[key]}")
     for key in ("tags", "features", "states", "services", "occupants",

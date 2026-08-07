@@ -185,31 +185,19 @@ the PC's blank sheet stays open, parked below.
 
 ### The ladder
 
-Six sessions, in order — together they implement worldsim.md whole,
+Five sessions, in order — together they implement worldsim.md whole,
 minus the waits above. Each leaves the game playable and lands its
-contracts in a new test suite that no sim or bench imports (the karma
-doctrine). Per-session lifecycle: played rules to rules.md, the shipped
-entries CUT from worldsim.md, new files registered in develop.md's
-Files, a designlog entry — and the session's entry deleted from this
-ladder.
+contracts in `test_worldsim.py`, the build's own suite, which no sim or
+bench imports (the karma doctrine). Per-session lifecycle: played rules
+to rules.md, the shipped entries CUT from worldsim.md, new files
+registered in develop.md's Files, a designlog entry — and the session's
+entry deleted from this ladder. (The settlement trim shipped
+2026-08-07: the reserve pool and the need-to-exist draw
+— `places.materialize_settlement` / `quests.found_settlement` — are
+what the sessions below call when a relation or a card names a place
+the world does not hold yet.)
 
-1. **The settlement trim** (spec settled 2026-08-05 as NEED-TO-EXIST
-   creation; no designer input left). A land BEGINS with three
-   settlements — one capital, one town, one village — and further
-   settlements materialize only when something needs them to exist (a
-   relation names a rival center of power, a card needs a counterparty
-   port), created generic with few unique features. The authored catalog
-   stops being the world's initial census and becomes the RESERVE POOL
-   those materializations draw names and skeletons from — the same lazy-
-   materialization pattern places.py already runs for Sites and houses,
-   lifted one tier. Sized costs: `place_catalog.json` handling,
-   placegen.md's counts, `test_places`' count/ID contracts; worldgen
-   posts one job per settlement, so the opening board shrinks (the
-   refill covers it); conquest just has fewer holdings (garrisons are
-   per-settlement stable-seeded); the posting bands do not move (the
-   parked posting-band trim stays a separate item). No save survives
-   anyway (the standing rule).
-2. **The world frame.** The record schemas become data and the save
+1. **The world frame.** The record schemas become data and the save
    grows its world layer; minimal content, because the frame is the
    product. A new module (name the build's call) owning: the card /
    state / relation record shapes (admitting conditions over land,
@@ -224,7 +212,7 @@ ladder.
    already fire. Surfaces: the news line and the STATE DIFF readout on
    the existing pages. Seed content: two or three econ cards per land,
    lifted from the packets, proving the loop end to end.
-3. **Weather.** worldsim.md's named first-slice candidate — land-
+2. **Weather.** worldsim.md's named first-slice candidate — land-
    agnostic, self-contained, touches every outlet, and the smallest
    curation bill on the board. The day roll against the current land's
    climate distribution (placegen's environment profiles author it;
@@ -232,11 +220,11 @@ ladder.
    the attrition rework's parked DISEASE family (the conditions
    framework's third; bounded deepening to PNEUMONIA); STORM PENALTIES
    (one field knob, one save); THE FORD IS OUT; DROUGHT as the season-
-   scale state session 4's relations read; the adopted trio (WILDFIRE,
+   scale state session 3's relations read; the adopted trio (WILDFIRE,
    DUST STORM, SMOG SETTLES); and THE FOG RAISES BONES with its rumor
    address kept cheap — a named necromancer in the land record, no
    landmark machinery.
-4. **The economy floor.** The thread's two invariants land here: the
+3. **The economy floor.** The thread's two invariants land here: the
    BOARD reacts to world state, and something moves WITHOUT the player
    taking a job — visibly on return. Per-land floor content from the
    econ packets (the asymmetry doctrine's floor: three-plus crisis
@@ -248,9 +236,9 @@ ladder.
    CHAINS (the plague and famine chains — a card setting the states the
    next card admits on). The two waiting cards (the robot servants,
    sulfur-to-Hell) stay in worldsim.md under their rulings.
-5. **Politics & the ruler roll.** The constitution slot and the land
+4. **Politics & the ruler roll.** The constitution slot and the land
    tension roll at worldgen (the gate admitting politics cards to the
-   deck — sessions 2–4 need neither, which is what keeps the frame
+   deck — sessions 1–3 need neither, which is what keeps the frame
    lean), the faction edges as authored data, THE RULER CHARACTER rolled
    onto the land RULER notable (the first intended consumer, idle since
    2026-07-12) — the 357 pool, the shrinking-pool draw, three for a
@@ -261,7 +249,7 @@ ladder.
    text, and the war feed: casus belli lines beside story.py's rolled
    aggressor, the diplomatic instruments as relation edges, the
    succession cluster on the adopted succession-state circumstance.
-6. **Religion & magic.** The Sun communion frame and the per-land
+5. **Religion & magic.** The Sun communion frame and the per-land
    worship facts and options — temple services as plain priced-menu
    entries (healing, burial, blessing; no sin/penance wiring) — and the
    religion cards that need no new creature rows. The magic packets: the

@@ -49,13 +49,14 @@ import argparse
 import dataclasses
 import random
 import re
+from typing import Iterable
 
 from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
                  quest_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
-    stable_seed, land_race, add_state, replace_state,
+    materialize_settlement, stable_seed, land_race, add_state, replace_state,
 )
 
 # --------------------------------------------------------------------------- #
@@ -1376,34 +1377,58 @@ def _cast_the_land(world: dict, polity: str, seat: dict, rng: random.Random,
         world["npcs"].append(npc)
 
 
-def _cast_service_providers(world: dict, rng: random.Random,
-                            used_people: set[str]) -> None:
-    """Give every required settlement service a persistent local face."""
-    from people import make_npc
-    roles = {
-        "lodging": "innkeeper", "smith": "smith",
-        "general_goods": "shopkeeper", "alchemist": "alchemist",
-        "market": "market keeper", "government": "clerk",
-        "healer": "healer",     # slice 3b: every settlement has one, and its
+SERVICE_ROLES = {
+    "lodging": "innkeeper", "smith": "smith",
+    "general_goods": "shopkeeper", "alchemist": "alchemist",
+    "market": "market keeper", "government": "clerk",
+    "healer": "healer",         # slice 3b: every settlement has one, and its
                                 # SUBTYPE sets how far the art reaches
                                 # (rpg.HEALER_TIER_CAP)
-    }
-    for settlement in settlements(world):
-        race = land_race(world, settlement["land"])
-        for service in settlement.get("services", ()):
-            # Service faces are local to their settlement; their names do
-            # not consume the campaign-wide giver/notable namespace.
-            npc = make_npc(rng, race, roles[service["kind"]])
-            npc_id = (f"npc/{settlement['land']}/{slug_name(npc['name'])}/"
-                      f"{slug_name(settlement['name'])}/"
-                      f"{slug_name(service['kind'])}")
-            npc.update(id=npc_id, land=settlement["land"],
-                       seat=settlement["id"], post="service")
-            service["provider"] = npc_id
-            site = world["sites"].get(service.get("site"))
-            if site is not None and npc_id not in site["occupants"]:
-                site["occupants"].append(npc_id)
-            world["npcs"].append(npc)
+}
+
+
+def cast_service_providers(world: dict, settlement: dict,
+                           rng: random.Random) -> None:
+    """Give one settlement's required services their persistent local faces.
+    Called for every settlement at worldgen and again for any the world
+    materializes later (the trim's `found_settlement`)."""
+    from people import make_npc
+    race = land_race(world, settlement["land"])
+    for service in settlement.get("services", ()):
+        # Service faces are local to their settlement; their names do
+        # not consume the campaign-wide giver/notable namespace.
+        npc = make_npc(rng, race, SERVICE_ROLES[service["kind"]])
+        npc_id = (f"npc/{settlement['land']}/{slug_name(npc['name'])}/"
+                  f"{slug_name(settlement['name'])}/"
+                  f"{slug_name(service['kind'])}")
+        npc.update(id=npc_id, land=settlement["land"],
+                   seat=settlement["id"], post="service")
+        service["provider"] = npc_id
+        site = world["sites"].get(service.get("site"))
+        if site is not None and npc_id not in site["occupants"]:
+            site["occupants"].append(npc_id)
+        world["npcs"].append(npc)
+
+
+def found_settlement(world: dict, polity: str, rng: random.Random, *,
+                     need: str, tier: str | None = None,
+                     tags: Iterable[str] = (), day: int | None = None
+                     ) -> dict | None:
+    """THE NEED-TO-EXIST DRAW (2026-08-07, the settlement trim). Grow a land
+    by one settlement because the world needs it to exist -- the reserve
+    entry, its Sites and services (places.py) plus the service faces that
+    make it a place the party can actually use. Returns None when the land's
+    reserve holds nothing that fits.
+
+    Nothing is posted on its board here: an unread board fills to its band
+    the first time the party looks at it (`refresh_settlement_board`), which
+    is exactly when a new town's work should appear."""
+    area = materialize_settlement(world, polity, need=need, tier=tier,
+                                  tags=tags, day=day)
+    if area is None:
+        return None
+    cast_service_providers(world, area, rng)
+    return area
 
 
 def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
@@ -1613,7 +1638,8 @@ def generate_world(seed: int | None = None) -> dict:
                                     # two Ruriks in one town read as a bug
     world = create_geography(seed)
     world["quest_seq"] = 0
-    _cast_service_providers(world, rng, used_people)
+    for settlement in settlements(world):
+        cast_service_providers(world, settlement, rng)
     for polity, setts in settlements_by_land(world).items():
         _cast_the_land(world, polity, setts[0], rng, used_people)
 
