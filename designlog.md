@@ -2193,3 +2193,160 @@ OR COSTS DOUBLE, doctrine-outranks-cards, both card wirings, the
 sorcery axis), rules.md (the dated softening), plan.md (the
 mid-game caster item; the cursed-ring pointer on the non-weapon
 magic items note), develop.md (the Files entry tracks the rulings).
+
+## 2026-08-07 (session C) — Implementation prep: the design session dissolved into the ladder
+
+**Where it started.** The designer called the dumps sufficient for
+now — technology and the remaining layers wait — and moved the
+thread to implementation prep with three questions: is anything huge
+still unsettled before building; can the build go in one session or
+should several be planned; and make plan.md implementation-ready
+with the session plan if needed.
+
+**The reading of the material** (worldsim.md in full against
+plan.md's agenda and the designlog trail):
+
+1. *No single huge blocker stands.* The old design session (plan.md's
+   item 2) had been mostly answered out from under itself by the
+   2026-08-05..07 dumps: the identity schema's LAND level is drafted
+   whole (packets, wealth roll, crisis deck), the ruler character
+   carries measured weights and a settled draw, the politics frame
+   (constitution slot, tension roll, faction edges) is drafted to
+   adopt, and what-dict-NPCs-carry is answered. The one genuinely
+   unauthored piece: the SETTLEMENT authority's kind/tension
+   vocabulary — real authoring work, but a session's worth, not a
+   gate in front of everything else.
+2. *The curation debt is real but distributable.* Nothing in the
+   ~2,100 idea-level lines has been designer-cut yet ([PROPOSED]
+   entries, the flagged calls — orc horses, robot tone, sulfur to
+   Hell, the Day of the Dead, the wealth die). A full-file pass
+   would be a blocking session that buys nothing the per-slice picks
+   don't: each build session implements a handful of records, so the
+   designer's cut happens at that session's head, scoped to exactly
+   what ships.
+3. *One go is not viable.* By this project's own session sizing (the
+   dark rework took three sessions, the attrition rework four
+   slices), the frame alone — schemas, save layer, worldgen rolls,
+   roll points, readouts, a new contract suite — is a full session
+   before any real content lands. The material now spans five
+   layers; the honest answer is a ladder.
+
+**The calls.**
+
+1. *The design session dissolved* — its remaining obligations split
+   into (a) formalization assigned to the frame session, (b) named
+   per-session head calls, (c) per-slice curation. Recorded in
+   plan.md's rewritten remaining order so the dissolution stays a
+   decision, not a drift.
+2. *The ladder adopted, five sessions:* the settlement trim (spec
+   already settled, no designer input left) → the world frame (the
+   record schemas as data, per-land save state, the wealth roll,
+   relations and derived states, the deck draw, the roll points at
+   arrivals/nights/travel, the news + STATE DIFF surfaces, two-three
+   seed cards per land) → weather (the named first-slice candidate:
+   smallest curation bill, touches every outlet, cashes the parked
+   DISEASE family, seeds DROUGHT) → the economy floor (the thread's
+   two invariants; the asymmetry floor's ~20 cards; the five-outlet
+   hookups; relations live; card chains) → authority & jerkify (the
+   ruler roll, the settlement authority roll with its vocabulary
+   authoring, the constitution/tension frame, jerkify's numbers, the
+   bully if it fits). Each session leaves the game playable; each
+   lands contracts in a suite no sim or bench imports.
+3. *Weather ahead of the economy floor* — econ is the thread's
+   heart, but weather is self-contained, land-agnostic, and proves
+   the whole card machinery with almost no curation needed, while
+   its drought state is input the econ relations want anyway.
+4. *The constitution slot and tension roll deferred to session 5* —
+   econ cards admit on states, never tensions, so sessions 2-4 need
+   neither; keeping them out of the frame session keeps it lean.
+5. *Deferred confirmed:* science & technology (the designer's
+   directive), the monsters & fauna dump (slots in before whichever
+   content pass names its creatures; the fog card can ride earlier
+   because skeletons already exist in the catalog), temple services
+   and penance wiring, hell's treatment, the per-land ruler modifier
+   columns and tribal rewording, the PC-background question.
+
+**Recorded.** plan.md — the thread intro, the remaining order
+rewritten as the ladder, retro roadmap item 4 closed out, the parked
+off-screen-simulation pointer retargeted; worldsim.md — every
+design-session pointer retargeted at the ladder (intro, the wealth
+die, the ruler and politics sections, the layers-to-dump tail);
+develop.md — the plan.md and worldsim.md Files entries.
+
+**Open.** The head calls at each ladder session (listed in plan.md
+per session); everything on the parked list above.
+
+## 2026-08-07 (session D) — The worldsim build: scope corrected, everything settled up front
+
+**Where it started.** The designer reviewed session C's ladder and
+corrected it on five points, plus one question. The corrections: the
+build's scope is IMPLEMENTING WORLDSIM.MD, not the whole thread
+agenda; the [PROPOSED] set should simply be implemented; everything
+settleable should be settled NOW, not at per-session pick lists; the
+settlement authority's kind/tension vocabulary IS JERKIFY in the
+designer's framing — not actually designed, so no implementation;
+and monsters & fauna is postponed, like science & technology. The
+question: what is the temple/penance wiring?
+
+**The question answered.** The game already ships sin and penance as
+numbers — the karma layer (`sin` / `sin_total` / `penance_total`;
+honest work burns sin 1:1). The religion outline (2026-08-06)
+proposed a per-land PENANCE INTERFACE — temples where sin is worked
+off: confession, priced absolution, penance quests, each land's rite
+flavoring it — and the designer's own feedback cut it: worldbuilding
+must not lean on undesigned mechanics. "The temple/penance wiring"
+is the recorded name for that deferred question — whether and how
+temples interact with the sin/penance economy. It stays parked;
+temples remain plain priced services (healing, burial, blessing),
+and the carnival amnesty's mechanical reading waits with it.
+
+**The calls** (the corrections applied, the remaining flags settled
+by delegated judgment):
+
+1. *Scope: the worldsim build.* The ladder implements worldsim.md
+   whole; what the file does not design does not get built.
+   Postponed past the build, each behind its own design work or
+   dump: jerkify (the settlement-authority identity roll plus the
+   desert mechanics) with bullies riding it; monsters & fauna;
+   science & technology; the temple/penance wiring; hell; the ruler
+   modifier columns and tribal rewording; the landmark tie-in; the
+   PC background question.
+2. *The [PROPOSED] set adopted wholesale* — implemented like
+   everything else; the marks stay as provenance only. The
+   cut-on-sight framing is struck everywhere it appeared.
+3. *Everything settled up front* — plan.md's rulings block replaces
+   the per-session head calls. The delegated judgment calls: the
+   wealth die is 2d6 as quoted; orc horses stay as written (re-judge
+   at the table); the robot-servants card waits for science &
+   technology (its tone question is that layer's boundary call);
+   sulfur-to-Hell waits with hell's treatment; the Day of the Dead
+   stays deliberately unruled (the ambiguity is content); THE FOG
+   RAISES BONES ships on the existing skeletons while THE DRAUGR
+   waits for its creature row; the carnival amnesty ships as color;
+   numbers no ruling covers are the build's call, table-tuned.
+4. *The ruler roll stays in the build* — it is worldsim material,
+   fully designed: the land RULER notable rolls it at worldgen,
+   lesser named authorities that cards create draw two, and
+   trait-to-card admits are written per card at implementation. The
+   land politics frame (constitution slot, tension roll, faction
+   edges) likewise ships as drafted — land-level worldsim material
+   the politics cards admit on; only the SETTLEMENT tier is
+   jerkify's.
+5. *The ladder reshaped to six sessions:* trim → world frame →
+   weather → economy floor → politics & the ruler roll → religion &
+   magic — together consuming worldsim.md whole, minus the waits.
+   The elven coherence-and-subtlety flag rides the writing pass at
+   implementation of the Ensimaa cards (player-facing strings are
+   written there anyway).
+
+**Recorded.** plan.md — the remaining order rewritten as THE
+WORLDSIM BUILD (the rulings block, the six-session ladder, the
+postponed list carrying jerkify's and bullies' full descriptions);
+worldsim.md — the [PROPOSED] adoption in the intro and the three
+section notes, the settled flags in place (wealth die, orc horses,
+robots, sulfur, Day of the Dead, the draugr), the ruler and politics
+pointers retargeted, monsters & fauna marked postponed; develop.md —
+the plan.md and worldsim.md Files entries.
+
+**Open.** Nothing blocks the build. The postponed list above is the
+thread's future work.

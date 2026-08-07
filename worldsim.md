@@ -1,9 +1,11 @@
 # World Simulation — content resource & framework
 
 The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
-build order and the design-session agenda; designlog's 2026-08-05
-entries own the reasoning; THIS file holds the pre-implementation
-material — the record framework the design session will formalize, the
+build order — since 2026-08-07 the worldsim-build ladder, the
+monolithic design session dissolved and everything settleable settled
+in plan.md's rulings block; designlog's 2026-08-05..07 entries own
+the reasoning; THIS file holds the pre-implementation material — the
+record framework the ladder's frame session will formalize, the
 weather system sketch, the curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
@@ -18,9 +20,10 @@ writing.md, and reviewed on the `placegen_review.txt` worksheet
 pattern where wording matters.
 
 Provenance: the packets are the designer's 2026-08-05 brainstorm,
-rewritten and classified. Assistant additions are marked **[PROPOSED]**
-and are cut-on-sight material — the designer curates, and fewer
-hand-picked elements beat coverage.
+rewritten and classified. Assistant additions are marked **[PROPOSED]**;
+on 2026-08-07 the designer adopted the [PROPOSED] set WHOLESALE —
+implement it like everything else — so the marks (here and in every
+later section) are provenance only now, not a cut list.
 
 ## The record kinds
 
@@ -57,9 +60,9 @@ draw never contradicts a held slot.
 ## The rolls
 
 - **Land wealth** — rolled per land at worldgen on a weighted middle
-  (e.g. 2d6: 2-4 CRISIS ~17%, 5-9 NORMAL ~67%, 10-12 PROSPEROUS ~17%;
-  the exact die is the design session's call). Wealth is a STATE, not
-  a constant — cards and seasons can move it.
+  (2d6: 2-4 CRISIS ~17%, 5-9 NORMAL ~67%, 10-12 PROSPEROUS ~17% —
+  the die settled 2026-08-07; a knob thereafter). Wealth is a STATE,
+  not a constant — cards and seasons can move it.
 - **Crisis content** — a land in CRISIS (rolled or pushed there)
   draws from its own deck. NORMAL and PROSPEROUS stay mostly
   invisible — the designer's call, and the right one: prosperity
@@ -186,7 +189,9 @@ into the land packets.
   answer; a standing dark problem with an address.
 - **card** Robot servants, built by elves or with goblin science —
   the manpower fix that walks; construct encounters and who-answers-
-  for-it questions. *(Flagged: designer's call on tone/tech level.)*
+  for-it questions. *(2026-08-07: WAITS for the science & technology
+  layer — its tone/tech question is that layer's magical-vs-mundane
+  boundary call.)*
 - **relation** Food imports from Firascir and Mortellaria (drought
   there = crisis here). Land rented to Gibili (logging) and
   Dvarvengrond (crystals). Human trader enclaves. Powder inflow.
@@ -199,8 +204,8 @@ Germanic, the D&D barbarian.
 - **fact** Herding economy — horses, buffalo, goats; wealth moves on
   the hoof and cannot be accumulated, so gifts and obligations do the
   work of savings. Demands of favors and accusations of ingratitude
-  are standing hooks. *(Flagged: designer unsure whether orcs on
-  horses clash aesthetically.)*
+  are standing hooks. *(Flag resolved 2026-08-07: horses stay as
+  written; re-judge at the table if the aesthetic clashes.)*
 - **fact** Law is thin: less organized action against crime — lower
   protection and heat, rougher self-help.
 - **fact** Imports metal, textiles, grain; exports animals, herd
@@ -269,7 +274,8 @@ Everything follows from mining.
   or the underground lake is about to cave in on them.
 - **card** Sulfur mined and sold to Hell. *(Flagged: designer marked
   it "controversial?" — note the pact frame already makes Hell an
-  economic actor, so it is coherent; his call.)*
+  economic actor, so it is coherent. 2026-08-07: WAITS with hell's
+  own parked treatment.)*
 - **relation** Food from Firascir; timber from Firascir and Ensimaa;
   the crystal claim in Ensimaa; sulfur to Hell.
 
@@ -353,9 +359,11 @@ Sillon industriel analogue: crowded, industrial, chaotic.
 ## THE RULER CHARACTER — the politics dump, part 1: the person (2026-08-06)
 
 The politics layer's first half: WHO holds power, as a rollable
-character schema. The other half — authority KIND, standing tension,
-and the wiring of a person's traits into cards — stays with the
-design session's identity-schema agenda. Provenance: the designer's
+character schema. The other half splits (2026-08-07): authority KIND
+and standing tension at the settlement tier are JERKIFY — postponed
+past the worldsim build for their own design session (plan.md) — and
+a person's traits wire into cards at implementation, card by card,
+where the packet text names them. Provenance: the designer's
 historical-monarch trait catalog (~130 raw entries across ten
 headings), merged and classified 2026-08-06; the probability column
 landed the same day from the parallel dataset session — 734 European
@@ -744,10 +752,12 @@ captivity or exile. Two additions:
 - Per-land and per-race probabilities — the sheet carries the
   human-crown / Firascir baseline only; the other lands' modifier
   columns and the tribal rewording are still to author.
-- The wiring — which cards admit on which words, the authority
-  kind/tension schema, and whether the land RULER notable (the
-  first intended consumer, doing nothing since 2026-07-12) rolls
-  this at worldgen: the design session's business.
+- ~~The wiring~~ — settled 2026-08-07 (plan.md's rulings): the land
+  RULER notable (the first intended consumer, doing nothing since
+  2026-07-12) DOES roll this at worldgen, at the ladder's politics
+  session; card admits are written per card at implementation; the
+  settlement authority kind/tension schema is jerkify's, postponed
+  past the build.
 - Ordinary dict NPCs stay BLANK — givers and service faces carry no
   traits (spec B's rollback stands; the characteristic criterion:
   rulers are card-backed, givers are not). The schema serves the
@@ -771,8 +781,8 @@ candidates are in the session report, designlog 2026-08-06 D). The
 historical anchor rides each entry in parentheses as design
 shorthand; player-facing words get the writing.md pass at
 implementation (sheriff, not reeve — the CRPG-vocabulary rule).
-Assistant additions are marked **[PROPOSED]**, cut-on-sight as
-ever.
+Assistant additions are marked **[PROPOSED]** (adopted wholesale
+2026-08-07 — the intro's ruling).
 
 **The selection doctrine (the designer's framing).** A packet is a
 POOL, not a description. The stereotype is the constant — feudal
@@ -780,7 +790,9 @@ humans, herding orcs, mining dwarves — and worldgen ROLLS the
 color, so no single land carries all its weirdness in one
 playthrough, and the same land comes up a different flavor of
 itself across playthroughs. Three pieces make that concrete, all
-idea-level until the design session formalizes or overrules them:
+adopted as drafted 2026-08-07 (plan.md's rulings) — they ship at the
+ladder's politics session; the settlement authority tier stays out
+(jerkify, postponed):
 
 - **The constitution slot** — one per land, exclusive (the
   wealth-band pattern), rolled at worldgen on a default-heavy die.
@@ -1508,8 +1520,9 @@ assistant on the approved mapping method: find the real-world
 version and carry its realistic or quirky detail, never the
 generic-fantasy filler. Written in two rounds (outline, feedback,
 writeup — all 2026-08-06); the feedback is folded in below. Entries
-beyond the approved outline are marked **[PROPOSED]**, cut-on-sight
-as ever. All of it is a first version, to be playtested before it
+beyond the approved outline are marked **[PROPOSED]** (adopted
+wholesale 2026-08-07 — the intro's ruling). All of it is a first
+version, to be playtested before it
 hardens.
 
 Three directives from the feedback round govern the whole section:
@@ -1681,8 +1694,9 @@ from the real superstition catalog.
 - **card** THE DRAUGR: a dead founder who will not stay down — in
   his own gallery, on his own hoard, and by claim-law still its
   HOLDER. The priestly answer, the practical answer, and the legal
-  question of whose vein it is now: all three for hire (monsters &
-  fauna will assign the creature row — the card names it).
+  question of whose vein it is now: all three for hire (WAITS for
+  the postponed monsters & fauna dump to assign its creature row —
+  the card names it).
 - **fact** GRAVE GOODS: wealth is buried with the dead — hoarding
   as statesmanship continued past death (the politics fact's
   liturgical face). The mountain's richest rooms are its tombs,
@@ -1748,9 +1762,10 @@ penitent wing vs the carnival wing.
   art style, and the crime layer's strangest marks.
 - **card** THE DAY OF THE DEAD: one night a year the dead are
   GUESTS — tombs picnicked in, plates set at family tables, the
-  graveyard lit like a fair. (Flagged: designer's call whether the
-  dead ever actually attend — the rite works either way, and the
-  family that swears grandmother came is content in both.)
+  graveyard lit like a fair. (2026-08-07: deliberately UNRULED
+  whether the dead ever actually attend — the rite works either way,
+  the family that swears grandmother came is content in both, and
+  the ambiguity is itself content.)
 - **card** THE CARNIVAL AMNESTY: sins confessed masked, during
   carnival, are absolved wholesale — the custom old, the theology
   contested, and the season's last night the year's best time to
@@ -1822,8 +1837,8 @@ organization sketches per land, and the discipline analogy —
 rewritten and classified. Dumped ahead of monsters & fauna (the
 recommended order) on the designer's initiative; the layer's other
 half — science & technology — is NOT here and keeps its slot in the
-order. Assistant additions are marked **[PROPOSED]**, cut-on-sight
-as ever.
+order. Assistant additions are marked **[PROPOSED]** (adopted
+wholesale 2026-08-07 — the intro's ruling).
 
 **Two development demotions** (recorded so nothing downstream
 mistakes them for lore):
@@ -2119,22 +2134,25 @@ law (the dedupe doctrine). This packet adds two facts and an edge:
 ## The layers still to dump (designer's list, recommended order)
 
 **politics → religion → monsters & fauna → magic, science &
-technology.** Politics first: the design session's authority /
-disposition / tension schema (jerkify, bullies) already needs it, and
-half the economy cards above lean on a political actor. (2026-08-06:
-BOTH halves are dumped — THE RULER CHARACTER and THE LAND PACKETS —
-POLITICS above; what remains is the design session's formalization —
-the constitution/tension/faction records, the trait-to-card wiring —
-and the per-land ruler modifier columns.) Religion is dumped too
+technology.** Politics first: the authority / disposition / tension
+schema (jerkify, bullies) already needs it, and half the economy
+cards above lean on a political actor. (2026-08-06: BOTH halves are
+dumped — THE RULER CHARACTER and THE LAND PACKETS — POLITICS above;
+2026-08-07: the constitution/tension/faction records ship as drafted
+at the ladder's politics session, the trait-to-card wiring is
+written per card at implementation, and the per-land ruler modifier
+columns stay to author.) Religion is dumped too
 (2026-08-06, THE LAND PACKETS — RELIGION above): worship and rite
 only, the political overlap having gone to politics; the
 temple-service/penance wiring and anything hell-shaped are
 deliberately deferred, per the session's directives. Monsters &
-fauna is next, and
-mostly ASSIGNMENT — the per-land encounter pools already exist; the
-dump picks distinctive regional creatures and ties cards to them
-(the fog necromancer pattern) — and the religion packets pre-order
-three (the draugr, the knockers, Tergal's grave-made ghosts).
+fauna is POSTPONED (2026-08-07, with science & technology — the
+build implements what is dumped); when it comes it is mostly
+ASSIGNMENT — the per-land encounter pools already exist; the dump
+picks distinctive regional creatures and ties cards to them (the fog
+necromancer pattern) — and the religion packets pre-order three (the
+draugr, the knockers, Tergal's grave-made ghosts), whose cards wait
+with it.
 Magic is dumped too (2026-08-07, THE LAND PACKETS — MAGIC above,
 taken ahead of monsters & fauna on the designer's initiative: the
 scarcity limits, the stance doctrines — the supernatural-affliction
