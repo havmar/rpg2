@@ -1103,9 +1103,19 @@ def reveal(target: dict) -> None:
     target["known"] = True
 
 
-def _fact(state_id: str, reveal_rule: str = "public") -> dict:
-    return {"id": state_id, "reveal": reveal_rule,
+def _fact(state_id: str, reveal_rule: str = "public",
+          day: int | None = None, slot: str | None = None) -> dict:
+    """One state on a place. `day` is the DAY STAMP the world layer reads
+    (worldsim.py, 2026-08-07: states are visible, dated and changeable);
+    `slot` names the exclusive slot it belongs to, if any -- the slot
+    discipline itself is the caller's, the record only carries the tag."""
+    fact = {"id": state_id, "reveal": reveal_rule,
             "known": reveal_rule == "public", "active": True}
+    if day is not None:
+        fact["since"] = day
+    if slot is not None:
+        fact["slot"] = slot
+    return fact
 
 
 def _event(world: dict, day: int | None, target_id: str, action: str,
@@ -1120,12 +1130,13 @@ def _event(world: dict, day: int | None, target_id: str, action: str,
 
 
 def add_state(world: dict, place: dict, state_id: str, *,
-              day: int | None = None, reveal_rule: str = "public") -> dict:
+              day: int | None = None, reveal_rule: str = "public",
+              slot: str | None = None) -> dict:
     existing = next((s for s in place["states"]
                      if s["id"] == state_id and s.get("active")), None)
     if existing:
         return existing
-    state = _fact(state_id, reveal_rule)
+    state = _fact(state_id, reveal_rule, day, slot)
     place["states"].append(state)
     _event(world, day, place["id"], "add_state", new_state=state_id)
     return state
@@ -1137,10 +1148,13 @@ def replace_state(world: dict, place: dict, old_state_id: str,
     state = next((s for s in place["states"]
                   if s["id"] == new_state_id), None)
     if state is None:
-        state = _fact(new_state_id)
+        state = _fact(new_state_id, day=day)
         place["states"].append(state)
     else:
         state["active"] = state["known"] = True
+        if day is not None:
+            state["since"] = day    # a state that comes back is dated by
+                                    # its return, not by its first turn
     _event(world, day, place["id"], "replace_state",
            old_state=old_state_id, new_state=new_state_id)
     return state

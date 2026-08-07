@@ -83,11 +83,12 @@ cares about quests and levelling; the world fades to background. Places
 are quest furniture the board abstracts into level numbers, givers are
 faces attached after the roll, and the land notables do nothing. Combat,
 levelling and the quest system are judged good; this thread is where the
-world catches up. Its content companion is **`worldsim.md`** — the
-record-kind framework, the weather system sketch, and the designer's
-curated land packets (economy, politics with the ruler character,
-religion, magic). The remaining order below is the ladder that
-implements it. (designlog carries the trail: the 2026-08-05 framing, the
+world catches up. Its content companion is **`worldsim.md`** — what is
+still unbuilt of it: the weather system sketch and the designer's curated
+land packets (economy, politics with the ruler character, religion,
+magic). The record kinds it opened with are `worldsim.py` and rules.md's
+The World Layer now. The remaining order below is the ladder that
+implements the rest. (designlog carries the trail: the 2026-08-05 framing, the
 2026-08-06..07 content dumps, and the 2026-08-07 sessions C and D that
 turned the thread into this build.)
 
@@ -153,8 +154,6 @@ the PC's blank sheet stays open, parked below.
 
 - **The [PROPOSED] set is adopted wholesale** — implement it like
   everything else; the marks stay in worldsim.md as provenance only.
-- **The wealth die is 2d6** (2-4 CRISIS / 5-9 NORMAL / 10-12
-  PROSPEROUS); a knob thereafter.
 - **Orc horses stay as written** (the aesthetic flag resolves to the
   text; re-judge at the table).
 - **The robot-servants card waits for SCIENCE & TECHNOLOGY** — its
@@ -185,34 +184,30 @@ the PC's blank sheet stays open, parked below.
 
 ### The ladder
 
-Five sessions, in order — together they implement worldsim.md whole,
+Four sessions, in order — together they implement worldsim.md whole,
 minus the waits above. Each leaves the game playable and lands its
 contracts in `test_worldsim.py`, the build's own suite, which no sim or
 bench imports (the karma doctrine). Per-session lifecycle: played rules
 to rules.md, the shipped entries CUT from worldsim.md, new files
 registered in develop.md's Files, a designlog entry — and the session's
-entry deleted from this ladder. (The settlement trim shipped
-2026-08-07: the reserve pool and the need-to-exist draw
-— `places.materialize_settlement` / `quests.found_settlement` — are
-what the sessions below call when a relation or a card names a place
-the world does not hold yet.)
+entry deleted from this ladder. The numbers below therefore move every
+time a rung ships; name the session, not its number.
 
-1. **The world frame.** The record schemas become data and the save
-   grows its world layer; minimal content, because the frame is the
-   product. A new module (name the build's call) owning: the card /
-   state / relation record shapes (admitting conditions over land,
-   wealth, states, weather; up to five outlet effects; the optional
-   day-stamp clock — facts and options ride the authored packet data);
-   per-land save state (`wealth`, day-stamped `states`, the shuffled
-   crisis `deck`, the drawn-card record); the wealth roll at worldgen;
-   the relations table with derived states computed at read time; the
-   deck draw on need under CRISIS (the pact-deck pattern; exclusive
-   slots never contradicted); and the roll points — settlement arrivals,
-   nights, travel legs, where raids, the refill and `conquest_news`
-   already fire. Surfaces: the news line and the STATE DIFF readout on
-   the existing pages. Seed content: two or three econ cards per land,
-   lifted from the packets, proving the loop end to end.
-2. **Weather.** worldsim.md's named first-slice candidate — land-
+What the shipped rungs left the rest to build on (rules.md owns the
+rules, `worldsim.py` and `places.py` the code): the reserve pool and the
+need-to-exist draw — `places.materialize_settlement` /
+`quests.found_settlement` — for when a relation or a card names a place
+the world does not hold yet (the settlement trim, 2026-08-07); and the
+world frame itself (same day) — `worldsim.card` / `worldsim.relation`,
+the per-land wealth band, day-stamped states with their exclusive slots,
+the crisis deck's draw on need, the relations table, the roll points
+inside `board_clock`, and the two shipped surfaces (the `WORD FROM
+<LAND>` news line, the state diff on `map` and `world`). The sessions
+below AUTHOR CARDS AND EDGES against that frame; the three outlets the
+frame carries but does not apply — quest, priced menu, encounter table —
+are the economy floor's to wire.
+
+1. **Weather.** worldsim.md's named first-slice candidate — land-
    agnostic, self-contained, touches every outlet, and the smallest
    curation bill on the board. The day roll against the current land's
    climate distribution (placegen's environment profiles author it;
@@ -220,26 +215,28 @@ the world does not hold yet.)
    the attrition rework's parked DISEASE family (the conditions
    framework's third; bounded deepening to PNEUMONIA); STORM PENALTIES
    (one field knob, one save); THE FORD IS OUT; DROUGHT as the season-
-   scale state session 3's relations read; the adopted trio (WILDFIRE,
+   scale state the economy floor's relations read; the adopted trio (WILDFIRE,
    DUST STORM, SMOG SETTLES); and THE FOG RAISES BONES with its rumor
    address kept cheap — a named necromancer in the land record, no
    landmark machinery.
-3. **The economy floor.** The thread's two invariants land here: the
+2. **The economy floor.** The thread's two invariants land here: the
    BOARD reacts to world state, and something moves WITHOUT the player
    taking a job — visibly on return. Per-land floor content from the
-   econ packets (the asymmetry doctrine's floor: three-plus crisis
-   cards, one or two relations, one flavor anchor per land — the
-   ~20-template first pass), the full five-outlet hookups (post / cancel
-   / reprice on the board, priced-menu terms reading states, local
-   encounter-table entries, news lines, state flips), relations live (a
-   Firascir drought sets grain-scarce down its grain edges), and card
-   CHAINS (the plague and famine chains — a card setting the states the
-   next card admits on). The two waiting cards (the robot servants,
+   econ packets, up from the frame's seed of two to four a land, to the
+   asymmetry doctrine's floor and the ~20-template first pass (one
+   flavor anchor per land included), and the THREE OUTLETS THE FRAME
+   CARRIES BUT DOES NOT APPLY: post / cancel / reprice on the board,
+   priced-menu terms reading states, local encounter-table entries. The
+   news line and the state flip already work. Relations grow past the
+   frame's nine edges (a Firascir drought joining the failed harvest at
+   the head of the grain edges), and card CHAINS arrive — a card setting
+   the states the next card admits on, which the frame's admitting
+   conditions already read. The two waiting cards (the robot servants,
    sulfur-to-Hell) stay in worldsim.md under their rulings.
-4. **Politics & the ruler roll.** The constitution slot and the land
+3. **Politics & the ruler roll.** The constitution slot and the land
    tension roll at worldgen (the gate admitting politics cards to the
-   deck — sessions 1–3 need neither, which is what keeps the frame
-   lean), the faction edges as authored data, THE RULER CHARACTER rolled
+   deck — nothing before this session needs either, which is what kept
+   the frame lean), the faction edges as authored data, THE RULER CHARACTER rolled
    onto the land RULER notable (the first intended consumer, idle since
    2026-07-12) — the 357 pool, the shrinking-pool draw, three for a
    crown, two for the lesser named authorities cards create, derived
@@ -249,7 +246,7 @@ the world does not hold yet.)
    text, and the war feed: casus belli lines beside story.py's rolled
    aggressor, the diplomatic instruments as relation edges, the
    succession cluster on the adopted succession-state circumstance.
-5. **Religion & magic.** The Sun communion frame and the per-land
+4. **Religion & magic.** The Sun communion frame and the per-land
    worship facts and options — temple services as plain priced-menu
    entries (healing, burial, blessing; no sin/penance wiring) — and the
    religion cards that need no new creature rows. The magic packets: the

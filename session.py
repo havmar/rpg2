@@ -146,6 +146,7 @@ import story
 import karma
 import crime
 import conquest
+import worldsim                 # the world layer (2026-08-07, the frame)
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
@@ -648,6 +649,16 @@ def map_sheet_lines(state: dict) -> list[str]:
             mark += "  [UNDER THE YOKE]"
         lines.append("")
         lines.append(f"== {land_rec['name']} =={mark}")
+        # The STATE DIFF (2026-08-07, the world layer): the land's wealth
+        # band and whatever it is living through -- its own states and the
+        # ones its trade edges derive. Only for a land the party has SEEN:
+        # word travels within a land, and a place nobody has visited has no
+        # news to give. This is what shows the world moved while the party
+        # was away.
+        if polity == pos["land"] or any(
+                world["areas"][key].get("visited")
+                for key in land_rec["areas"]):
+            lines.extend(worldsim.land_lines(world, polity))
         for key in land_rec["areas"]:
             area = world["areas"][key]
             if not area.get("known"):
@@ -2211,6 +2222,13 @@ def board_clock(state: dict) -> list[str]:
     if not world:
         return []
     day, rng = state["clock"].day, state["rng"]
+    # The world's own day, rolled here because this is where the calendar
+    # advances (2026-08-07, the world layer): every land's clock catches up
+    # to today -- cards expire, decks are drawn on need, states flip. Silent
+    # by design; what the party HEARS is `world_news`, at the points news
+    # lands. The whole world moves together so a relation never reads a
+    # land that is behind the calendar.
+    worldsim.roll_world(world, day)
     notices: list[str] = []
     accepted = state.setdefault("accepted", [])
     taken = set(accepted)
@@ -2585,6 +2603,28 @@ def conquest_news(state: dict) -> None:
             state["purse"].gold += gold
             lines.append(f"TRIBUTE: {gold}g collected -- the stewards "
                          f"bring every holding's chest to the flag.")
+    if lines:
+        print("\n".join(lines))
+
+
+# --------------------------------------------------------------------------- #
+# The world layer (2026-08-07 -- worldsim.py, the worldsim build's frame)
+# --------------------------------------------------------------------------- #
+
+def world_news(state: dict) -> None:
+    """What the land the party stands in has heard since it last listened.
+    Runs where news lands -- arrivals, settlement nights, the board, beside
+    conquest's own word from the holdings -- and tells each line ONCE.
+
+    Word travels within a land (the board's rumor rule): another land's
+    cards are heard by going there, or through the states its edges derive
+    here (`map`, `world`). A long absence is summarized, not scrolled."""
+    world = state.get("world")
+    if not world or not state.get("position"):
+        return
+    worldsim.roll_world(world, state["clock"].day)
+    lines = worldsim.take_news(world, state["position"]["land"],
+                               state["clock"].day)
     if lines:
         print("\n".join(lines))
 
@@ -3847,6 +3887,7 @@ def cmd_board(args: argparse.Namespace) -> None:
     if state["party"] and maybe_assign_task(state):
         save(state)     # hell's mail lands where the party asks around
     conquest_news(state)    # and so does word from the holdings
+    world_news(state)       # ...and what the land itself is living through
     crime_news(state)       # ...and hell's crime suggestions
     clock_notices = board_clock(state)   # asking around IS reading the board:
     save(state)                          # closed windows, fresh postings
@@ -4409,6 +4450,8 @@ def cmd_travel(args: argparse.Namespace) -> None:
                                 # arrival (a board's first look fills it)
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     conquest_news(state)        # word from the holdings travels with it
+    world_news(state)           # and the land tells the party what moved
+                                # while it was on the road (the state diff)
     crime_news(state)           # hell suggests work on arrival too
     if maybe_punish(state):     # the law meets the party at the walls
         return                  # (karma & heat; the machinery saved)
@@ -4686,6 +4729,24 @@ def cmd_map(args: argparse.Namespace) -> None:
         return
     for line in map_sheet_lines(state):
         print(line)
+
+
+def cmd_world(args: argparse.Namespace) -> None:
+    """The DM's inventory of the world layer (2026-08-07): what every land
+    is living through, and what its deck still holds. Rolls the world up to
+    today first -- reading it is a roll point like any other."""
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    worldsim.roll_world(world, state["clock"].day)
+    save(state)
+    for line in worldsim.world_lines(world):
+        print(line)
+    print("")
+    print("(the player's half: the state line on `map`, and the news at "
+          "arrivals and settlement nights. `place-state` is the override.)")
 
 
 def cmd_place_state(args: argparse.Namespace) -> None:
@@ -5059,6 +5120,7 @@ def cmd_tavern(args: argparse.Namespace) -> None:
     print_play(log)
     print_board_clock(state)    # a bed costs a day like any other
     conquest_news(state)        # tavern talk carries holding news too
+    world_news(state)           # and the land's own news with it
     crime_news(state)           # and what hell would like tried
     if maybe_punish(state):     # the Watch knows where the party sleeps
         return
@@ -5110,6 +5172,7 @@ def cmd_downtime(args: argparse.Namespace) -> None:
     print_play(log)
     print_board_clock(state)    # so does an idle one
     conquest_news(state)        # an idle day hears from the holdings
+    world_news(state)           # and from the land around them
     crime_news(state)           # and hell fills the idle hands
     if maybe_punish(state):     # an idle day is easy to find the party on
         return
@@ -6161,6 +6224,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="the known world: lands and known areas, with settlement job "
              "counts and the party's position")
     p.set_defaults(func=cmd_map)
+
+    p = sub.add_parser(
+        "world",
+        help="the DM inventory of the world layer (worldsim.py): every "
+             "land's wealth band, the states it holds, the states its "
+             "trade edges derive, the card standing over it and how deep "
+             "its crisis deck still is. The player's half of this is the "
+             "state line on `map` and the news at arrivals.")
+    p.set_defaults(func=cmd_world)
 
     p = sub.add_parser(
         "look",

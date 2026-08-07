@@ -4119,3 +4119,94 @@ generated weapon re-prices to exactly its tier's sp.
 Catalog weapons serialize by name, generated instances whole. There is no
 old-save path and no lazy backfill: worldgen rolls the armory and the
 smiths for every world (develop.md, "No backwards compatibility").
+
+---
+
+# The World Layer — Add-on (2026-08-07, the worldsim build's frame)
+
+The world stopped being scenery. Every land now carries a **wealth band**,
+a set of day-stamped **states**, and a shuffled **crisis deck** it draws
+from when it needs something to be happening; **relations** between lands
+carry one land's trouble into the ones it feeds. Nothing ticks in the
+background — the world's day is rolled where the game's day already
+advances, off a stable seed, so a land the party has not visited in a
+month is exactly where its own dice put it.
+
+`worldsim.py` owns it; the design spine and the content it is drawn from
+are `worldsim.md`'s.
+
+## The wealth band (the roll every land opens with)
+
+- **2d6 at worldgen, per land**: 2–4 **CRISIS** (~17%), 5–9 **NORMAL**
+  (~67%), 10–12 **PROSPEROUS** (~17%). It is a **state in an exclusive
+  slot**, not a constant — cards move it.
+- **Crisis is where content lives.** A land in crisis draws a card on
+  need and is living through one most days; normal and prosperous lands
+  stay mostly invisible and turn up about one card in a fifty-day
+  stretch. Prosperity shows as full boards, prices, and the absence of
+  trouble.
+- **A land in crisis is in crisis from scene one**: it draws its first
+  card at worldgen, dated day 1.
+- The roll is on a **derived seed**: the world layer moves no worldgen
+  stream, so every career bench measures the same board it always did.
+
+## States, and the exclusive slots
+
+- A state is a **word the land holds**, day-stamped, visible, and
+  changeable — `harvest-failed`, `strike`, `toll-squeeze`. They ride the
+  same machinery as a place's states, so the world and the map speak one
+  vocabulary.
+- Some belong to an **exclusive slot** (the land's `deposit` stage, the
+  standing of its `foreigners`): setting one clears whatever the slot
+  held, and a card that would only re-assert a slot the land already
+  holds does not fire at all.
+- **What a card sets outlives it; what it sets *while* it stands comes
+  off with it.** That holds for the wealth band too: a failed harvest is
+  a season of crisis and then it is over, while a vein running out is
+  simply what the mountain is now — and only another card (a dwarf who
+  can work a written-off seam) puts it back.
+
+## The card (the event pulse)
+
+- **Admitting conditions** over land, wealth band, states held (its own
+  or derived), states forbidden, and weather — the weather axis is the
+  hook the weather session fills.
+- **Up to five outlet effects**: post/cancel/reprice a quest, adjust the
+  priced menu, add a local encounter-table entry, emit a **news line**,
+  flip a **state**. The frame applies the last two; the first three are
+  authored, carried and validated, and the economy floor session wires
+  them.
+- **An optional day-stamp clock.** One card stands over a land at a time,
+  so the news stays legible and the states stay coherent; a card with no
+  clock leaves its mark and stands over nothing.
+- The deck is **drawn on need, not shuffled through**: the first card the
+  land admits, with skipped cards left in the deck for a later day (the
+  hell pact's deck pattern). An exhausted deck reshuffles.
+
+## Relations (what one land's trouble does to another)
+
+Authored **directed edges** — who eats whose grain, who logs whose
+forest, whose mercenaries come when called. They are lookups, never
+traded quantities, and the states they cause are **derived at read time
+and never stored**: a failed harvest in Firascir is `grain scarce` in
+Ensimaa, Dvarvengrond and Gibili for exactly as long as it lasts, and
+gone the day it lifts. Cards admit on derived states like any other.
+
+## Where the world is rolled, and where the player meets it
+
+- **Rolled** wherever the calendar advances (travel, explore, camp,
+  tavern, downtime, the board) — the same points the quest board's refill
+  and the crown's raids already fire. Every land is brought up to today
+  together, so no relation ever reads a land that is behind the calendar.
+- **Heard** where news lands — arrivals, settlement nights, the board:
+  `WORD FROM <LAND>`, day-stamped, told once. Word travels **within a
+  land** (the board's own rumor rule); another land's cards are heard by
+  going there, or through the states its edges derive here. A long
+  absence is summarized, not scrolled.
+- **Seen** on `map` / `ui/map.txt`: under each land the party has visited,
+  its band and what it is living through, the derived states naming their
+  cause. This is the STATE DIFF — the readout that shows the world moved
+  while the party was elsewhere.
+- **`world`** is the DM's inventory of the whole layer: every land's band,
+  states, derived states, the card standing over it, and how deep its deck
+  still is. `place-state` remains the override.
