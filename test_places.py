@@ -13,13 +13,17 @@ import quests
 import session
 
 
+# Natural Areas, then the OPENING settlement census per land: capital plus
+# towns, and villages (2026-08-07, the settlement trim -- a land begins with
+# three settlements and grows on need; everything else is the reserve pool,
+# see test_worldsim.py).
 EXPECTED = {
-    "dvarvengrond": (3, 3, 0),
-    "firascir": (4, 5, 3),
-    "mortellaria": (5, 4, 3),
-    "ensimaa": (5, 4, 3),
-    "gibili": (5, 4, 3),
-    "tergal": (6, 4, 3),
+    "dvarvengrond": (3, 3, 0),      # the dwarves author no village at all
+    "firascir": (4, 2, 1),
+    "mortellaria": (5, 2, 1),
+    "ensimaa": (5, 2, 1),
+    "gibili": (5, 2, 1),
+    "tergal": (6, 2, 1),
 }
 
 
@@ -30,17 +34,19 @@ class PlaceGenerationTests(unittest.TestCase):
 
     def test_required_land_and_area_counts(self) -> None:
         self.assertEqual(list(self.world["lands"]), list(EXPECTED))
-        for polity, (natural, authored, generated) in EXPECTED.items():
+        for polity, (natural, standing, villages) in EXPECTED.items():
             areas = [self.world["areas"][aid]
                      for aid in self.world["lands"][polity]["areas"]]
             self.assertEqual(sum(a["kind"] == "natural" for a in areas),
                              natural)
             settlements = [a for a in areas
                            if a["kind"] == "settlement"]
+            self.assertEqual(len(settlements),
+                             places.SETTLEMENTS_AT_WORLDGEN, polity)
             self.assertEqual(sum(a["subtype"] != "village"
-                                 for a in settlements), authored)
+                                 for a in settlements), standing)
             self.assertEqual(sum(a["subtype"] == "village"
-                                 for a in settlements), generated)
+                                 for a in settlements), villages)
 
     def test_ids_and_generated_village_names_are_unique(self) -> None:
         ids = []

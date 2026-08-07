@@ -2804,20 +2804,34 @@ instance rather than calling the generator again.
 Room contents are persistent facts, not automatic loot. Fixtures, furniture,
 tools, food, containers, and personal objects make ordinary interiors
 concrete; only a record with a mechanical item reference enters the existing
-inventory systems. Required settlement Sites and Room skeletons exist at
-world creation. Natural Sites and ordinary houses materialize lazily.
+inventory systems. Required settlement Sites and Room skeletons exist with
+their settlement — at world creation for the opening three, at the draw for
+every settlement the world grows later. Natural Sites and ordinary houses
+materialize lazily.
 
 ## The map
 
 - **The finite world.** The MVP has Dvarvengrond, Firascir, Mortellaria,
-  Ensimaa, Gibili, and Tergal: 28 natural Areas and 39 settlements. The
-  settlement split is Dvarvengrond 3; Firascir 5 authored + 3 fixed villages;
-  and Mortellaria, Ensimaa, Gibili, and Tergal 4 authored + 3 generated
-  villages each. Generated village names are drawn without replacement from
-  culture pools and assigned to authored livelihood roles.
+  Ensimaa, Gibili, and Tergal: 28 natural Areas, and **three settlements a
+  land** at world creation — one capital, one town, one village, drawn on
+  the world seed (Dvarvengrond authors no village and opens with its capital
+  and both towns). Eighteen settlements stand on day one.
+- **The catalog is the reserve, not the census** (2026-08-07, the settlement
+  trim). Every other authored settlement, and every generated village name
+  paired with its livelihood role, waits UNBUILT in its land's reserve pool.
+  One is materialized only when something in the world needs it to exist — a
+  relation naming a rival center of power, a card needing a counterparty
+  port. It arrives whole: required Sites, the guaranteed services and their
+  faces, a board that fills to its band the first time the party looks at
+  it, a garrison in its tier's band — and it records the day it was founded
+  and the need that founded it. A land whose reserve has run dry says no:
+  the world stays finite, and what cannot be built does not happen. This is
+  the lazy materialization of Sites and houses, lifted one tier: places
+  exist because the world asked for them.
 - **Lands and Areas.** Each Land owns IDs in stable authored order.
-  Settlement Areas are known from day one; all natural Areas already exist
-  but join the player map only when revealed. Discovery changes knowledge,
+  Settlement Areas are known as soon as they exist — the opening three from
+  day one, a drawn one from the day it is founded; all natural Areas already
+  exist but join the player map only when revealed. Discovery changes knowledge,
   never creates or rerolls the Area. `map` and `ui/map.txt` show the known
   macro Land/Area view as a 40-column list.
 - **Links.** Land adjacency is explicit. Mortellaria–Gibili is a sea route;

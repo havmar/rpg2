@@ -1568,3 +1568,87 @@ the road a much larger share of all combat.
 **19,000** quoted (`sum(100 * L)`, L = 1..19), against a mean quest pay
 of about `85 * L + 42` — which is where the career sim's ~38 quests to
 the cap come from.
+
+## 2026-08-07 — The settlement trim: what halving the world costs (no retune)
+
+The worldsim ladder's first rung (designlog, session F) cut the world
+from 39 settlements to 18 — three a land, the rest waiting in the
+reserve until something needs them. No combat, pay, clock or posting
+constant was touched, so `tune.py`, `bench_training`, `bench_party`,
+`bench_weapons`, `bench_ranged` and `bench_quests`' encounter/site rows
+are unaffected by construction and were not re-run. What CAN move is the
+board and the career that plays it, and both were measured before and
+after against the same code.
+
+**The world, at worldgen** (`quests.py --seed S --day D`, seeds 11 /
+73025 / 4471):
+
+| | before | after |
+|---|---:|---:|
+| settlements | 39 | 18 |
+| board slots (world) | 132 | 68 |
+| postings seeded at worldgen | 41 | 20 |
+| XP standing at day 0 | 16.8-20.9k | 8.5-8.9k |
+| postings live at day 7 | 120-127 | 57-62 |
+| XP standing at day 7 | 60.6-65.9k | 33.1-38.0k |
+
+Per land — the number that matters, since word travels within a land and
+travel out costs two days — slots go **22.0 -> 11.3** (capital 5 + town 4
++ village 2).
+
+**Level-appropriate LOCAL choice** (40 worlds, day 7, open non-delivery
+postings in ONE land, mean per land and the share of lands holding
+nothing):
+
+| party level | +/-1 before | +/-1 after | none before | none after |
+|---|---:|---:|---:|---:|
+| 1 | 3.15 | 1.49 | 2% | 18% |
+| 2 | 4.58 | 2.30 | 1% | 7% |
+| 3 | 4.66 | 2.15 | 1% | 7% |
+| 4 | 4.59 | 2.09 | 1% | 10% |
+| 5 | 4.89 | 1.92 | 2% | 11% |
+| 8 | 4.08 | 1.88 | 2% | 13% |
+| 12 | 3.05 | 1.67 | 4% | 18% |
+
+Widened to +/-2 the picture is much softer — L1 2.30 (none 7%), L3 3.58
+(none 1%), L5 3.42 (none 0%), L12 2.67 (none 6%) — and the WORLD still
+holds 9-13 in-band jobs at any level (was 18-29). Read it as: the land
+you stand in now offers about two jobs at your level instead of about
+five, and on a bad day at level 1 or in the top band, none — the road or
+a day's wait is the answer, both of which the clock already prices.
+
+**Careers** (`bench_quests`, 200 careers, run at TWO seed bases to
+separate signal from noise — the standing acceptance block is 500
+careers at 86/70/35/10/3/1, death L9, bands 42/49/7/2):
+
+| | before 31337 | after 31337 | before 91337 | after 91337 |
+|---|---|---|---|---|
+| reach L5/L8/L11/L14/L17/L20 | 84/64/32/9/4/1 | 82/70/34/14/8/4 | 84/72/36/10/3/2 | 88/71/40/13/5/2 |
+| median death level | 9 | 9 | 9 | 9 |
+| capped median days | 120 | 95 | 124 | 99 |
+| turn-in bands (q/o/l/e) | 41/49/8/3 | 32/51/13/4 | 42/49/8/2 | 31/52/13/4 |
+| live board at the end | 133 | 68 | 133 | 68 |
+| postings expired per career | 851 | 452 | - | - |
+| forced-up picks per career | 0.00 | 0.00 | 0.00 | 0.00 |
+
+Reach and median death level are unmoved (every cell inside the noise a
+200-career sample carries). Two effects ARE reproducible across both
+seed bases:
+
+- **The clock bites harder: quick 41-42% -> 31-32%, late 8% -> 13%.** A
+  thinner board means the job the policy picks has more often been
+  standing a while, so more turn-ins land late. Expired stays ~4%.
+- **Careers that cap do it ~20% faster: 120-124 -> 95-99 days.** The
+  likely mechanism (untested): with fewer postings the closest-to-level
+  job is more often ABOVE the party's level, which pays more XP per
+  fight — the sim never runs out (`forced_up` stays 0.00 and 0/200
+  careers exhausted the board), it just reaches higher more often. If
+  that reading is right the effect is a sim-policy artifact, not a
+  difficulty change; the death numbers agree, since nothing about it
+  made careers deadlier.
+
+**No dial moved.** The trim's ruling is that the posting bands stay put,
+and the standing balance summary in develop.md is unchanged. If the
+thinner low-band board bites in play, the dials in order are
+`QUEST_REFILL_PER_DAY` (1/settlement/day), then the posting bands
+(plan.md's parked posting-band trim), and only then the census.

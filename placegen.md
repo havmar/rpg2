@@ -56,7 +56,9 @@ For those Lands the MVP includes:
 - independent Land, culture, owner, and environment records;
 - the finite natural and settlement Area inventories specified below;
 - every authored settlement's required Site and Room skeleton;
-- three generated village Areas per non-dwarf Land where its catalog says so;
+- the generated village roles and name pools per non-dwarf Land (one village
+  a land is built at world creation since the 2026-08-07 trim; the rest are
+  the land's reserve);
 - lazy ordinary natural Sites, ordinary houses, and their persistent Rooms and
   visible contents;
 - coarse environment and purpose tags for quest placement;
@@ -78,6 +80,14 @@ special pools do not block the first release. Ordinary identity, structure,
 contents, persistence, and quest reuse are the acceptance path.
 
 ### Required world-generation counts
+
+> **Superseded for settlements by the settlement trim (2026-08-07).** The
+> settlement columns below are the CATALOG, not the world's census: a land
+> now BEGINS with three settlements — one capital, one town, one village —
+> and everything else here waits in the land's reserve pool until something
+> needs it to exist. rules.md's *The map* owns the shipped rule. The natural
+> Area counts are unchanged, and every authored settlement listed in this
+> document is still authored: what moved is WHEN it is built.
 
 | Land | Natural Areas | Authored settlements | Generated villages |
 |---|---:|---:|---:|
@@ -104,10 +114,11 @@ a separate field so conquest can change it without changing geography.
 `People race` is the adapter into the current NPC, quest, and encounter
 tables; culture selects place names and material content.
 
-All of these finite Area records are created at world generation. Settlement
-Areas begin known. Natural Areas begin unknown unless the opening position,
-a public route, or a quest reveals them. Discovery changes `known`; it does
-not create the Area or reroll any of its facts.
+All finite NATURAL Area records are created at world generation; settlements
+are created three to a land and drawn from the reserve thereafter (the trim).
+Settlement Areas begin known. Natural Areas begin unknown unless the opening
+position, a public route, or a quest reveals them. Discovery changes `known`;
+it does not create the Area or reroll any of its facts.
 
 Required settlement Sites and their Room skeletons materialize with the
 settlement. Ordinary optional Sites and Room contents materialize on first
@@ -117,10 +128,11 @@ order before any template repeats. Quest-specific Sites may be added at any
 time when their tags fit the Area.
 
 Mortellaria, Ensimaa, Gibili, and Tergal draw generated village names without
-replacement from their fixed pools, then assign them without replacement to
-the three roles defined in their Land catalog. Firascir instead begins with
-the fixed Sturford, Ackham, and Flurham records. Its five additional reviewed
-names remain post-MVP growth capacity. Names do not decide geography; the role
+replacement from their fixed pools and pair each with one of the three roles
+defined in their Land catalog, in rotation; Firascir's villages are the fixed
+Sturford, Ackham, and Flurham records. Since the trim (2026-08-07) that
+pairing produces the land's village RESERVE — one is built at world creation
+and the rest wait to be needed. Names do not decide geography; the role
 supplies the description, Sites, and livelihood overlay.
 
 ## The central division: authored silhouette, generated local detail
@@ -704,21 +716,25 @@ all be equal macro destinations. Capitals, cities, towns, and independent
 villages are Areas. Minor hamlets which do not need their own travel hub,
 shops, and board are Sites in rural Areas.
 
-MVP settlement inventory for an ordinary culturally settled Land:
+MVP settlement inventory for an ordinary culturally settled Land — the
+CATALOG, which the 2026-08-07 trim turned from a census into a reserve:
 
 - one authored capital Area;
 - two or three authored town Areas;
-- three procedurally generated village Areas at world creation.
+- procedurally generated village Areas (the role/name pairing).
 
-The initial dwarf Land is deliberately smaller: one capital and two towns,
-with no additional generated villages. Wilderness Lands and unique Caelum do
-not inherit this count automatically.
+A land is BUILT three settlements deep at world creation — the capital, one
+town, one village — and grows by one whenever something needs a place to
+exist. The dwarf Land is deliberately smaller: one capital and two towns,
+with no village in the catalog at all, so it opens with all three of them and
+holds nothing in reserve. Wilderness Lands and unique Caelum do not inherit
+this count automatically.
 
-Firascir is deliberately denser than the ordinary range. It begins with one
-capital, two harbor cities, two inland towns, and three generated village
-Areas. Five further village names are reserved for post-MVP expansion, for an
-eventual maximum of eight villages and thirteen settlements. If added, these
-are finite Land slots with stable seeds, not unlimited `explore` results.
+Firascir's catalog is deliberately denser than the ordinary range: one
+capital, two harbor towns, two inland towns, and three fixed villages. Five
+further village names are reserved for post-MVP expansion. These are all
+finite Land slots with stable seeds, not unlimited `explore` results — the
+reserve is exhaustible on purpose.
 
 Ordinary houses materialize lazily as Sites when explored or requested. The
 generator does not instantiate a realistic census, but any settlement can
@@ -1094,7 +1110,8 @@ This is the non-wording structure behind the completed dwarf string pass.
 - Natural Areas: Drunurnar Mountains, Krokskogur Forest, and Lake Hornindal.
 - Settlement Areas: Bjorgheim, the central capital; Roros, the remote northern
   town; and Svalaver, the southern fishing and trade town.
-- No additional generated villages at world creation.
+- No village in the catalog at all: the dwarf Land opens with all three of
+  its settlements and holds nothing in reserve.
 - The southern town connects directly to Firascir and is the
   dwarf-human trading hub.
 
@@ -1376,11 +1393,12 @@ worksheet.
 - Default environment: temperate.
 - Natural Areas: Whitweld Forest, Grendon Fields, Stura River, and Flumenpur
   River.
-- Settlement Areas at world creation: Tomburgh, the capital; Leehaven and
-  Walhaven, the two western harbor cities; Bradwhitchip and Redflurton, the
+- Settlement Areas in the catalog: Tomburgh, the capital; Leehaven and
+  Walhaven, the two western harbor towns; Bradwhitchip and Redflurton, the
   two inland towns; and the villages of Sturford, Ackham, and Flurham.
-- Five further village names remain reserved for post-MVP expansion. The first
-  implementation creates only Sturford, Ackham, and Flurham.
+  Tomburgh plus one town and one village are built at world creation; the
+  other five wait in the land's reserve (the 2026-08-07 trim).
+- Five further village names remain reserved for post-MVP expansion.
 - Stura River rises in the northern mountains, runs south through
   Mortellaria, and reaches the sea.
 - Flumenpur River rises in the northern mountains, crosses Tomburgh, runs
@@ -6163,7 +6181,8 @@ Human mediterranean:
   - **Portomera** — harbor city;
   - **Belafonte** — inland town;
   - **Montaro** — hill town;
-- generated village name pool; three are drawn at world creation:
+- generated village name pool (one is built at world creation; the rest are
+  the land's reserve):
   - Alavera;
   - Beloro;
   - Calavento;
@@ -6201,7 +6220,8 @@ Elf:
   - **Dunmaelle** — western town;
   - **Kervaine** — river town;
   - **Ruunamont** — hill town;
-- generated village name pool; three are drawn at world creation:
+- generated village name pool (one is built at world creation; the rest are
+  the land's reserve):
   - Ailava;
   - Aurenne;
   - Briomaa;
@@ -6250,7 +6270,8 @@ Goblin:
   - **Potalu** — harbor town;
   - **Birikava** — inland town;
   - **Boilaki** — hill town;
-- generated village name pool; three are drawn at world creation:
+- generated village name pool (one is built at world creation; the rest are
+  the land's reserve):
   - Barasalo;
   - Bokapali;
   - Brikiki;
@@ -6289,7 +6310,8 @@ Orc:
   - **Kharuk** — western town;
   - **Temenur** — northern town;
   - **Ordubal** — southern town;
-- generated village name pool; three are drawn at world creation:
+- generated village name pool (one is built at world creation; the rest are
+  the land's reserve):
   - Aradun;
   - Balurun;
   - Borkal;
@@ -6845,10 +6867,12 @@ the display layer.
 
 Automated or reproducible checks must cover:
 
-- exact Land/Area/settlement counts in the table above;
+- exact natural-Area counts, and the opening settlement census (three a
+  land) with the remainder waiting in the land's reserve;
 - unique stable IDs and unique generated village names;
 - same seed produces structurally identical world data;
-- a different seed changes village assignment and lazy Site order;
+- a different seed changes the opening draw, village assignment, and lazy
+  Site order;
 - save/load/re-entry does not change Sites, Rooms, contents, or fact reveal;
 - discovering an Area reveals an existing record rather than adding one;
 - each natural Area yields its three ordinary Sites without repetition;
