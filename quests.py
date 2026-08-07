@@ -1658,6 +1658,13 @@ def generate_world(seed: int | None = None) -> dict:
     wrng = random.Random(f"armory:{seed}")
     world["armory"] = roll_armory(world, wrng)
     world["smiths"] = roll_smiths(world, wrng)
+
+    # The world layer (2026-08-07, the worldsim build's frame): every land's
+    # wealth band, its shuffled crisis deck, and the opening card a land in
+    # crisis is already living through. Seeded off the world seed inside
+    # worldsim.py -- it draws nothing from this stream either.
+    import worldsim                                 # runtime import
+    worldsim.open_world(world)
     return world
 
 

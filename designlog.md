@@ -2631,3 +2631,161 @@ PLAY question, and the played band (levels 1-4) is where it will show
 first: the low band's ±1 board is the thinnest of all (mean 1.5 jobs a
 land at L1, nothing at all 18% of days). Worth watching in the next
 playthrough before session 2 adds anything to the boards.
+
+## 2026-08-07 (session G) — The world frame: the record kinds become code
+
+**The task.** plan.md's worldsim ladder, the frame rung — the session
+whose product is the frame itself. worldsim.md's five record kinds
+(fact / option / state / card / relation) become data; the save grows a
+world layer under every land; the wealth roll, the crisis deck, the
+relations table and the roll points all land; and the seed content is
+two or three economy cards a land, enough to prove the loop end to end.
+Everything settleable had been settled in plan.md's rulings block, so
+there was no designer input outstanding.
+
+**Where it started.** Nothing in the codebase knew a land was anything
+but a name, a race, a climate string and a list of areas. `places.py`
+had a state API (`add_state` / `replace_state` / `clear_state` with an
+event log) that only quest place-mutation ever used, and the land
+records carried an empty `states` list nobody wrote to. The world could
+not be in a mood, and nothing could happen in it that the party had not
+gone and done.
+
+**What shipped.**
+
+- **`worldsim.py`** — the layer. `card(...)` and `relation(...)` are the
+  two record constructors, validated at import (`validate_content`
+  raises on an unknown outlet, an unknown state, a slot member set as a
+  free state, a card with no effect, an edge between lands that do not
+  exist). `STATE_WORDS` is the state vocabulary with its readout
+  phrases; `STATE_SLOTS` the exclusive ones.
+- **The wealth roll** — 2d6 per land at worldgen (the settled die),
+  `open_world` writing the per-land layer: `wealth`, `wealth_day`,
+  `deck` (the land's cards, shuffled on a stable seed), `drawn` (the
+  record of everything it has fired), `live` (the card standing now),
+  `news`, `told_day`, `rolled_day`. A land in CRISIS draws its first
+  card at worldgen, dated day 1.
+- **The states** ride places.py's own machinery, which gained a `since`
+  day stamp and an optional `slot` tag on the state record — so a land's
+  world states and a place's quest states are one shape, one event log
+  and one readout. `worldsim.set_state` owns the slot discipline.
+- **The deck draw on need** — the pact deck's pattern: the first card the
+  land admits, skipped cards left for a later day, an exhausted deck
+  reshuffling. A card whose only effect is a slot value the land already
+  holds does not fire (the exclusive-slot rule from the other side).
+- **The pulse** — `_fire` applies the two outlets the frame ships (news
+  line, state flip) and stamps the clock; `_end` takes back what the
+  card set WHILE it stood and leaves what it SET. The quest, menu and
+  encounter payloads are authored on the seed cards, carried and
+  validated, and left for the economy floor session.
+- **The relations table** — nine authored directed edges (the grain out
+  of Firascir and Mortellaria, timber down the tolled road, the elves'
+  rented ground, Gibili's guns, Tergal's raiding when the herds die).
+  Derived states are computed at read time and never stored, and cards
+  admit on them like any other state.
+- **The roll points** — `roll_world` inside `board_clock`, which is
+  already the day-advance spine (travel, explore, camp, tavern,
+  downtime, board). Every land is brought up to today together, so no
+  relation reads a land behind the calendar. `world_news` prints beside
+  `conquest_news` at the four points news lands.
+- **The surfaces** — `WORD FROM <LAND>`, day-stamped and told once; the
+  band-and-states line under each visited land on `map` / `ui/map.txt`
+  (the STATE DIFF); and `world`, the DM inventory.
+- **`test_worldsim.py`** grew the frame's contracts (73 tests total).
+
+**The calls the spec left open, and how the build settled them.**
+
+1. *The module's name.* `worldsim.py`, not `world.py` — `world` is the
+   name of the world DICT in nearly every function of `session.py` and
+   `quests.py`, and a module by that name would shadow it at every
+   import site. It also matches `worldsim.md`, which is the file it
+   implements.
+2. *Where a land's states live.* In places.py's existing `states` list
+   on the land record, not a new store — extended with a `since` day
+   stamp and a `slot` tag. One vocabulary, one event log, one
+   `active_known_facts`; the alternative was two state systems that
+   would have had to be reconciled the first time a card wanted to
+   flip a state on an AREA.
+3. *How determinism survives laziness.* Each land-day rolls off
+   `stable_seed(world, land, "worldsim-day", day)`, so day 40's roll is
+   the same whether it is computed on day 40 or caught up on day 300.
+   `roll_land` walks the days one at a time. This is pinned as a
+   contract (`test_catching_up_is_the_same_as_living_through_it`) —
+   without it, "the world moved while you were away" would depend on
+   when you looked.
+4. *One card at a time per land.* The spec does not say how many pulses
+   a land may carry. One, with a clock: the news stays legible, the
+   states stay coherent, and a card is a thing the land is LIVING
+   THROUGH rather than an entry in a queue. A clockless card is a
+   different animal — it leaves its mark and stands over nothing (the
+   vein has run out; the land goes on having days).
+5. *What a clock takes back.* Two flavors, all the way through:
+   `set` outlives the card, `while` comes off with it — and the same
+   split for the wealth band (`wealth` / `wealth_while`), which is what
+   makes a failed harvest a season of crisis and a dead vein a
+   permanent demotion.
+6. *The band needed a way in and out.* The spec says wealth is a state
+   that cards can move but seeds no card that moves it. A frame where
+   the opening roll is destiny is not a simulation, so three seed cards
+   move the band: the failed harvest pushes Firascir into crisis for a
+   season and lets it back out; the vein running out demotes
+   Dvarvengrond for good; and a fourth Dvarvengrond card — the dwarf who
+   can work a written-off seam, straight out of the packet — is the way
+   back up, and doubles as the frame's proof that a card can admit on a
+   state another card set.
+7. *Who hears what.* Only the land the party stands in tells its news
+   (the board's own word-travels-within-a-land rule). Another land's
+   trouble reaches the party either by going there or as a derived state
+   naming its cause. A long absence is summarized at `NEWS_TOLD` 6
+   lines, not scrolled.
+8. *Which lands show on the map.* Only lands the party has visited (plus
+   the one it stands in). Showing all six would have made the map a
+   world dashboard and quietly repealed the knowledge model.
+9. *The layer must not move a bench.* `open_world` is called last in
+   `generate_world` and takes no rng from it (the armory's rule). The
+   contract test regenerates a world with the layer stubbed out and
+   asserts the whole thing is identical.
+10. *The three unwired outlets.* Carried, validated, and NOT applied —
+    posting a card's quest, repricing the menu and adding an encounter
+    row are the economy floor session's, and faking them here would have
+    produced content the next session had to unpick. The seed cards
+    author the payloads so the shapes are exercised.
+11. *Sessions are named, not numbered.* The ladder renumbers itself
+    every time a rung ships, and this session started with the
+    settlement trim calling itself "session 1" in one file and "the
+    first rung" in another while plan.md's list had renumbered under
+    both. `test_worldsim.py`, develop.md and plan.md now name sessions;
+    only the date is a stable key.
+
+**What it costs, measured** (full numbers in benchlog.md). Nothing in
+the career moved — the layer is bench-invisible by construction and a
+120-career run reads the post-trim baseline within noise. The layer's own
+pacing at the shipped knobs: a crisis land fires 1.88 cards in sixty days
+and is living through one on 67% of them; a normal land 0.88 and 24%; a
+prosperous one 0.66 and 13%. 63% of worlds open with a land in crisis,
+22% of lands carry a derived state at day 60, and the whole layer costs
+about 2 KB of save.
+
+**What it buys at the table.** A land is now a thing with a mood and a
+memory: the party comes back from a week in the hills and Firascir's
+harvest has failed, bread is short, and the dwarves it feeds are already
+saying grain is scarce — none of which anybody went and did. That is the
+thread's second invariant, at the frame's scale.
+
+**Recorded.** rules.md's new *The World Layer* add-on; dm.md's "The land
+itself" (play protocol) and its quick-reference numbers; develop.md's
+Files (`worldsim.py`, the rewritten `test_worldsim.py` entry, places.py's
+state-record note), dev map, Running block and Balance section;
+worldsim.md's record-kind sections CUT and replaced with a shipped-frame
+summary plus the two constructor signatures the remaining packets are
+written against; plan.md's ladder down to four sessions with its rung
+deleted, the shipped wealth-die ruling removed, and the economy floor's
+entry re-scoped to what the frame did not do; benchlog's measurement.
+
+**Open.** The layer's first impression is thin: a starting land is normal
+or prosperous five times in six, and a normal land is living through
+something only a quarter of the time, so an early playthrough may see
+`[NORMAL]` and nothing else for a week. `CARD_CHANCE['normal']` is the
+dial (0.02 -> 0.04 roughly doubles a quiet land's activity), but it is a
+PLAY question and the die is the designer's own ruling — watch it before
+turning it. The played band (levels 1-4) is where it will show first.

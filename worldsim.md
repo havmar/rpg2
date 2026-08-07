@@ -4,15 +4,16 @@ The working doc of THE WORLD & NPC SIMULATION thread. plan.md owns the
 build order — since 2026-08-07 the worldsim-build ladder, the
 monolithic design session dissolved and everything settleable settled
 in plan.md's rulings block; designlog's 2026-08-05..07 entries own
-the reasoning; THIS file holds the pre-implementation material — the
-record framework the ladder's frame session will formalize, the
-weather system sketch, the curated land economy packets, the ruler
+the reasoning; THIS file holds what is still UNBUILT — the weather
+system sketch, the curated land economy packets, the ruler
 character schema (the politics dump's person half, 2026-08-06), and
 the politics land packets with the constitution/tension/faction frame
 (the dump's power half, same day), and the religion land packets (the
 worship dump, same day), and the magic land packets (the arcane dump,
-2026-08-07). Nothing here is shipped. When a piece ships, its rules move to rules.md and
-its entry here is cut (the plan.md convention).
+2026-08-07). When a piece ships, its rules move to rules.md and
+its entry here is cut (the plan.md convention) — the record framework
+went that way on 2026-08-07, and the summary of what it became now
+heads this file so the packets below can be read against it.
 
 Register note: entries are IDEA-LEVEL, in the dev register. Final
 player-facing strings are written at implementation time under
@@ -25,77 +26,41 @@ on 2026-08-07 the designer adopted the [PROPOSED] set WHOLESALE —
 implement it like everything else — so the marks (here and in every
 later section) are provenance only now, not a cut list.
 
-## The record kinds
+## The frame SHIPPED (2026-08-07) — what the packets are written against
 
-Every entry in a packet is one of five kinds — the designer's own
-classification (some things always true, some always options, some
-wealth-dependent, some mutually exclusive, some relations between
-lands), formalized:
+The five record kinds, the wealth roll, the crisis deck, the relations
+table and the lazy day-stamped rolls are BUILT: `worldsim.py`, with the
+played rules in rules.md's *The World Layer* and the code index in
+develop.md. What was cut from here is there; what remains below is the
+content still to author against it.
 
-- **fact** — always true of the land; costs nothing at runtime. Feeds
-  writing.md/dm.md color and the occasional standing modifier (elven
-  murder weighs heavier; orc law is thin).
-- **option** — always available: a priced-menu entry or standing scene
-  material (the drug market, mercenary hiring). Its terms may read
-  states.
-- **state** — visible, day-stamped, changeable: the land wealth band,
-  a drought, grain-scarce, strike-on, a settlement's deposit stage.
-  States are what the STATE DIFF outlet shows, and what cards read
-  and flip.
-- **card** — the event pulse: admitting conditions (land, wealth,
-  states, weather), up to five outlet effects (quest / priced menu /
-  encounter / news / state flip), an optional clock. Cards live in a
-  land's shuffled CRISIS DECK (drawn on need — the pact-deck pattern)
-  or fire off a trigger (a state crossing, a weather roll).
-- **relation** — an authored directed edge between lands (or
-  settlements): who imports grain, who rents land, who pays tribute.
-  Static data read at roll time; derived states fall out of it (a
-  drought in Firascir sets grain-scarce in the lands its edge feeds).
-  Never a traded quantity — lookups, not flows.
+The two API facts an entry in this file needs to know:
 
-Mutual exclusion is handled the placegen way: exclusive slots (a land
-holds ONE wealth band; a settlement ONE deposit stage), and a deck
-draw never contradicts a held slot.
+- **A card is `worldsim.card(key, name, land, ...)`** — admitting
+  conditions (`wealth`, `states`, `without`, `weather`), up to five
+  outlet effects (`quest` / `menu` / `encounter` / `news` / `state`),
+  and an optional day-stamp clock (`days`). The frame applies `news`
+  and `state`; the other three are carried and validated until the
+  economy floor session wires them. A state effect is
+  `{"set", "while", "clear", "slot", "wealth", "wealth_while"}` — what
+  a card SETS outlives it, what it sets WHILE it stands comes off with
+  it, and slot members are exclusive.
+- **A relation is `worldsim.relation(from, to, kind, when=, then=,
+  because=)`** — a directed edge whose `then` state the target land
+  DERIVES at read time for as long as the source holds one of `when`.
 
-## The rolls
-
-- **Land wealth** — rolled per land at worldgen on a weighted middle
-  (2d6: 2-4 CRISIS ~17%, 5-9 NORMAL ~67%, 10-12 PROSPEROUS ~17% —
-  the die settled 2026-08-07; a knob thereafter). Wealth is a STATE,
-  not a constant — cards and seasons can move it.
-- **Crisis content** — a land in CRISIS (rolled or pushed there)
-  draws from its own deck. NORMAL and PROSPEROUS stay mostly
-  invisible — the designer's call, and the right one: prosperity
-  shows through prices, full boards, and the absence of trouble, plus
-  the rare positive card (the fair, the herd drive). Crisis is where
-  content lives.
-- **Weather** — a day-scale roll against the current land's climate
-  distribution. placegen's environment profiles already author
-  climate AS a distribution ("climate is a distribution, not current
-  weather") — the hook exists and has been unread until now.
-
-## Lazy generation — what the save needs
-
-Everything materializes on first read and persists; nothing ticks in
-the background. The save grows, per land: `wealth`, `states`
-(day-stamped), the shuffled crisis `deck`, and a drawn-cards record.
-Rolls happen at the existing news points — settlement arrivals,
-nights, travel legs — where raids, the refill, and `conquest_news`
-already fire. Derived states are computed at read time off the
-relations table. The one rule that keeps lazy viable: NO quantity
-that needs per-day updating — states are words, clocks are day
-stamps compared against the calendar (the quest-clock pattern).
-
-> The need-to-exist settlement trim SHIPPED 2026-08-07 (ladder session
-> 1) — the census, the reserve pool and the draw are rules.md's *The
-> map* now; `places.materialize_settlement` / `quests.found_settlement`
-> are what a card or relation calls when it needs a place to exist.
+The need-to-exist settlement trim shipped the same day: the census, the
+reserve pool and the draw are rules.md's *The map*;
+`places.materialize_settlement` / `quests.found_settlement` are what a
+card or relation calls when it needs a place to exist.
 
 ## Asymmetry doctrine
 
 Lands do NOT need similar amounts of material. The floor every land
 needs: the wealth roll, three-plus crisis cards, one or two
-relations, one flavor anchor. Above the floor, depth follows the
+relations, one flavor anchor. (The frame seeded two to four cards a
+land and nine edges against it; the economy floor session takes them
+the rest of the way.) Above the floor, depth follows the
 designer's interest — a plainer generic-fantasy land beside a
 detailed one is contrast, not neglect. The overlap guard for the four
 modern-flavored societies (Ensimaa, Dvarvengrond, Gibili,

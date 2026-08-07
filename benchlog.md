@@ -1652,3 +1652,50 @@ and the standing balance summary in develop.md is unchanged. If the
 thinner low-band board bites in play, the dials in order are
 `QUEST_REFILL_PER_DAY` (1/settlement/day), then the posting bands
 (plan.md's parked posting-band trim), and only then the census.
+
+---
+
+## 2026-08-07 (B) — The world frame: pacing measured, nothing retuned
+
+The worldsim ladder's frame rung (designlog, session G) added
+`worldsim.py` — the wealth roll, the per-land crisis deck, the relations
+table and the lazy day rolls. It is **bench-invisible by construction**:
+no sim or bench imports it, and `quests.generate_world` calls it LAST on
+its own derived seeds. The structural proof is a contract test rather
+than a bench — `test_worldsim.TheWealthRoll.test_the_world_layer_moves_
+no_worldgen_stream` regenerates a world with `open_world` stubbed out and
+asserts the WHOLE world (geography, board, cast, armory, smiths, event
+log) is identical. A 120-career `bench_quests` sanity run confirms it at
+the career scale: reach **L5 84% / L8 72% / L11 38% / L14 17% / L17 10% /
+L20 3.3%**, median death **L9**, turn-in bands **quick 34 / on time 50 /
+late 13 / expired 4**, 452.8 expired postings, 68 live at the end,
+0 boards exhausted — the post-trim baseline, within noise.
+
+What IS new is the layer's own pacing. 120 worlds (720 lands), rolled 60
+days, at `CARD_CHANCE` crisis 0.30 / quiet 0.02 and `CARD_DAYS` (12, 25):
+
+| opening band | share | cards fired /land /60d | days with a card standing |
+|---|---:|---:|---:|
+| CRISIS | 16.9% | 1.88 | 67.1% |
+| NORMAL | 67.2% | 0.88 | 23.8% |
+| PROSPEROUS | 15.8% | 0.66 | 12.9% |
+
+The 2d6 die lands where the designer set it (16.9 / 67.2 / 15.8 against
+16.7 / 66.7 / 16.7). **63% of worlds open with at least one land in
+crisis** (1 - (5/6)^6 = 66.5%, so within noise). Lands carrying a
+DERIVED state at day 60: 157/720 (22%) — one land's trouble is visible
+in another about a fifth of the time. News is 1.02 lines a land over 60
+days (max 4), so `WORD FROM <LAND>` is a rare beat, not a feed.
+
+**Save cost** at day 60: the whole layer is 1975 bytes across six lands
+plus 488 bytes of land states. Negligible, and it is plain JSON.
+
+**What to watch at the table, and the dial.** A starting land is normal
+or prosperous five times in six, and a normal land is living through
+something only a quarter of the time — so the first week of a
+playthrough will often show `[NORMAL]` and nothing else. That is the
+design's own call (crisis is where content lives), but it means the
+layer's first impression is thin. If it reads dead at the table the dial
+is **`CARD_CHANCE['normal']`** (0.02 -> 0.04 roughly doubles a quiet
+land's activity); the die itself is a designer ruling and should not be
+touched first. Nothing was retuned here.

@@ -164,12 +164,13 @@ a pointer: what the file is, how it's run, where its docs are.
 - `plan.md` — **the roadmap: planned features, parked ideas and open
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
-  is a five-session ladder implementing worldsim.md whole — world frame
-  → weather → economy floor → politics & the ruler roll →
-  religion & magic, the settlement trim having shipped 2026-08-07 —
-  every settleable call settled up front in its
+  is a four-session ladder implementing what is left of worldsim.md —
+  weather → economy floor → politics & the ruler roll →
+  religion & magic; the settlement trim and the world frame both
+  shipped 2026-08-07 — every settleable call settled up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
-  technology postponed past the build). **Nothing implemented lives
+  technology postponed past the build). The ladder RENUMBERS itself as
+  rungs ship: name a session, never its number. **Nothing implemented lives
   there**: when a feature ships, delete its entry and write the session
   up in designlog.md — see "Where a finished feature is written up"
   above.
@@ -198,10 +199,12 @@ a pointer: what the file is, how it's run, where its docs are.
   Pirate, wilderness, Caelum, and special-feature content remain post-MVP;
   shipped behavior belongs in `rules.md`.
 - `worldsim.md` — **the world-simulation content resource & framework**
-  (2026-08-05, THE WORLD & NPC SIMULATION thread): the record kinds
-  (fact / option / state / card / relation), the wealth roll and the
-  per-land crisis decks, the lazy-generation requirements, the
-  need-to-exist settlement model, the weather system sketch, the
+  (2026-08-05, THE WORLD & NPC SIMULATION thread): since 2026-08-07 it
+  opens with a summary of the SHIPPED frame (the record kinds, the
+  wealth roll, the crisis decks, the relations table, the lazy rolls —
+  all `worldsim.py` and rules.md's The World Layer now) and the two
+  constructor signatures the packets are written against; what follows
+  is what is still unbuilt — the weather system sketch, the
   six curated land economy packets (designer-authored,
   assistant-classified; additions marked [PROPOSED] for the designer
   to cut), and — since 2026-08-06 — THE RULER CHARACTER, the politics
@@ -248,13 +251,17 @@ a pointer: what the file is, how it's run, where its docs are.
   consumes it session by session, every settleable call settled up
   front in plan.md's rulings block and the [PROPOSED] set adopted
   wholesale; shipped behavior belongs to `rules.md` and its section is
-  CUT from this file (the first cut: the need-to-exist settlement trim,
-  shipped 2026-08-07).
+  CUT from this file (the cuts so far, both 2026-08-07: the
+  need-to-exist settlement trim, and the record framework the world
+  frame formalized).
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes the opening settlements (three a land since the 2026-08-07
   trim) and the reserve draws / lazy natural Sites / ordinary houses,
-  resolves Room contents, tracks knowledge, and applies place-state mutation.
+  resolves Room contents, tracks knowledge, and applies place-state mutation
+  — whose state records carry a `since` day stamp and an optional `slot`
+  since the world frame (same day), so a land's world states and a place's
+  states are one record shape and one readout.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: all six Land/Area
   records, required settlement Site/Room skeletons, natural three-Site
@@ -265,13 +272,41 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
+- `worldsim.py` — **the world layer: the worldsim build's FRAME**
+  (2026-08-07, rules.md's The World Layer add-on): the `card` and
+  `relation` record constructors and their import-time validation, the
+  state vocabulary (`STATE_WORDS`) with its exclusive slots
+  (`STATE_SLOTS`), the 2d6 wealth roll (`roll_wealth` / `WEALTH_BANDS`)
+  and `open_world` (the per-land save layer: wealth, deck, drawn record,
+  news, the day stamps), the state API over places.py's own
+  (`set_state` / `drop_state` / `held_states` / `derived_states` /
+  `state_ids`), the deck draw on need (`admits` / `_draw` — skipped cards
+  stay, exclusive slots are never contradicted), the pulse (`_fire` /
+  `_end` — what a clock takes back and what it leaves), the roll points
+  (`roll_land` / `roll_world`, lazy and day-seeded, so catching up is
+  living through it), the news (`take_news`, told once) and the readouts
+  (`land_lines` — the state diff on the map page — and `world_lines` —
+  the DM inventory behind `world`). Seed content: two to four economy
+  cards a land and nine trade relations, lifted from worldsim.md's
+  packets. The sims and benches never import it; every knob is hand-set.
+  `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
+  eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
-  (2026-08-07), the ladder's own, imported by no sim and no bench. Session 1
-  (the settlement trim): the opening census and its tiers, the capital
+  (2026-08-07), the ladder's own, imported by no sim and no bench. Sessions
+  are NAMED here, not numbered — the ladder renumbers itself whenever a rung
+  ships. *The settlement trim*: the opening census and its tiers, the capital
   staying its land's first settlement, the reserve pool (nothing authored
   lost, nothing built twice, the save round-trip), the need-to-exist draw
   (a whole usable place, the founding stamp, tier and tag steering, a dry
-  land saying no), and the seeded stability of both.
+  land saying no), and the seeded stability of both. *The world frame*: the
+  record shapes and their validation, the wealth roll's distribution and
+  its derived seed (the whole world is identical with the layer taken
+  away), the per-land save layer and its JSON round-trip, the draw on need
+  (skipping, slot discipline, reshuffle, admitting on a derived state),
+  the clock's two flavors, the relations table (derived, never stored,
+  lifting with its cause), the lazy roll's identity and idempotence, the
+  news told once, the state diff, and the session wiring (the board's
+  clock rolls the world, the news reaches the party, `world` exists).
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -803,6 +838,7 @@ python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python weapons.py --seed 1            # one world's armory + smiths (eyeball)
+python worldsim.py --seed 1 --days 60 # the world layer after 60 days (eyeball)
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -1221,6 +1257,19 @@ mechanic *does* and *why* is rules.md's job.
   `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` /
   finite `cmd_explore`, `cmd_house`, `cmd_place_state`, `cmd_hunt` /
   `cmd_engage`; `look --dm` is the complete place-fact readout.
+- **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
+  The World Layer add-on) — `worldsim.py`: everything (see Files); the
+  knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
+  `CARD_DAYS`, `NEWS_KEPT` / `NEWS_TOLD`. `places.py`: `_fact` gained
+  `since` (the day stamp) and `slot`, and `add_state` / `replace_state`
+  pass them — one state record shape for places and lands alike.
+  `quests.py`: `generate_world` calls `worldsim.open_world` last, on the
+  layer's own derived seeds (the armory's rule — no worldgen stream
+  moves). `session.py`: `worldsim.roll_world` inside `board_clock` (the
+  day-advance spine, silent), `world_news` beside `conquest_news` at the
+  four points news lands (travel arrivals, tavern, downtime, board), the
+  land state line in `map_sheet_lines`, and `cmd_world` (the DM
+  inventory). `test_worldsim.py` is the contract.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -1419,7 +1468,9 @@ mechanic *does* and *why* is rules.md's job.
   quest ids, since 2026-07-22 — `cmd_take` appends, `ui/map.txt` reads),
   `pending` paused-fight record, `rooms` fled-encounter records, breadcrumb
   `position`, persistent geography under `world` (`lands` / `areas` / `sites`
-  / `rooms`),
+  / `rooms`, each land carrying its `reserve` since the settlement trim and
+  its `world` layer since the frame — wealth, deck, drawn record, news, day
+  stamps),
   `sighting`, `site_clears` set-site pay
   tracking, `holdings` (the conquest ledger, 2026-07-27 — plain dict,
   garrison heads + tribute/raid day stamps per held settlement), and
@@ -1728,6 +1779,22 @@ above.**
   and career shapes remain plausible after quests began selecting tagged
   persistent geography. Encounter budgets, foe pools, XP, and gold formulas
   are unchanged; this was not a rebaseline. See the 2026-07-25 benchlog entry.
+- **The world layer is bench-invisible (2026-08-07, the worldsim build's
+  frame).** Same construction as karma and conquest: play-surface only,
+  no sim or bench imports `worldsim.py`, and worldgen calls it LAST on
+  its own derived seeds — the whole generated world is identical with the
+  layer taken away (pinned in `test_worldsim.py`, and a short
+  `bench_quests` sanity run after the frame landed read in family).
+  Its knobs are hand-set and SIM-UNVERIFIED: `WEALTH_BANDS` (2d6 —
+  17/67/17, the designer's die; a knob thereafter), `CARD_CHANCE`
+  (crisis 0.30 a day, quiet lands 0.02), `CARD_DAYS` (12-25 default,
+  cards may author their own), `OPENING_DRAW` / `OPENING_DAY`,
+  `NEWS_KEPT` 24 / `NEWS_TOLD` 6. Measured pacing at those values
+  (benchlog 2026-08-07): a crisis land is living through a card ~63% of
+  days and fires ~1.8 in sixty; a normal one ~24% and ~0.9; ~58% of
+  worlds open with at least one land in crisis. **The dial if the world
+  reads dead at the table is `CARD_CHANCE['normal']`** — a starting land
+  is normal or prosperous five times in six, and that is by design.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of

@@ -278,6 +278,33 @@ the player's core decision:
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
 
+### The land itself (2026-08-07, the world layer)
+
+Every land carries a wealth band and states that change on their own.
+The scripts surface it; your job is to let it colour the scene, not to
+explain it.
+
+- **`WORD FROM <LAND>` prints at arrivals, settlement nights and the
+  board** -- day-stamped lines, told once. Relay them the way you relay a
+  failure rumor: in somebody's mouth, at the first natural moment. They
+  are the world moving without the party, which is the point.
+- **`map` carries the state line** under each land the party has seen:
+  the band in caps and what the land is living through. `[CRISIS] the
+  harvest has failed (day 12)` is the fiction's licence to make bread
+  dear and faces thin -- read it before framing a scene in a land the
+  party has been away from.
+- **A derived state names its cause**: `grain is scarce (the Firascir
+  grain)`. That is another land's trouble arriving here. Good rumor
+  material, and the honest answer when a player asks why prices bite.
+- **`world`** is YOUR readout (like `board all`): every land's band,
+  states, the card standing over it, deck depth. Use it for pacing --
+  never read it out.
+- The band is not a price list yet. Until the economy floor session
+  wires the board and the priced menu, a state changes what the scene
+  SAYS, not what it costs; don't invent mechanical effects for it.
+  `place-state` remains your override for a state you want to set by
+  hand.
+
 ## The wilds (travel encounters, explore, hunt)
 
 - **The road's table ignores the party** (the OSR stance): any level can
@@ -1458,6 +1485,17 @@ bigger than the fights WITHOUT pages of narration:
   Hell suggests one category on the first completed assignment and one
   more per 200 lifetime sin -- suggestions only; nothing is ever
   locked.
+- **The world layer in numbers:** every land rolls 2d6 at worldgen --
+  2-4 CRISIS (~17%), 5-9 NORMAL (~67%), 10-12 PROSPEROUS (~17%). A land
+  in crisis is living through a card most days and fires roughly two a
+  season; a quiet land turns up about one in fifty days. One card stands
+  over a land at a time, usually 12-25 days. States are words with day
+  stamps, exclusive where the fiction demands it (a land holds ONE
+  deposit stage, one standing of its foreigners), and a land's trouble
+  reaches the lands it feeds as a derived state for exactly as long as
+  it lasts. Nothing ticks in the background: the world's day is rolled
+  where the calendar advances, so a land is always where its own dice
+  put it, visited or not.
 - The set sites (bandit hideout, skeleton barrow -- outside the capital)
   are **DEV/TEST calibration content**, not part of a
   played campaign: the board's generated quests are the game. Their
