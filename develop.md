@@ -215,50 +215,25 @@ a pointer: what the file is, how it's run, where its docs are.
   Pirate, wilderness, Caelum, and special-feature content remain post-MVP;
   shipped behavior belongs in `rules.md`.
 - `worldsim.md` — **the world-simulation content resource & framework**
-  (2026-08-05, THE WORLD & NPC SIMULATION thread): since 2026-08-07 it
-  opens with a summary of the SHIPPED frame (the record kinds, the
-  wealth roll, the crisis decks, the relations table, the lazy rolls —
-  all `worldsim.py` and rules.md's The World Layer now) and the two
-  constructor signatures the packets are written against; what follows
-  is what is still unbuilt — the leftovers of the
-  six curated land economy packets (designer-authored,
-  assistant-classified; additions marked [PROPOSED] for the designer
-  to cut) — and, since 2026-08-06, THE LAND
-  PACKETS — RELIGION: six worship/rite packets on the real-world
-  mapping method (the Sun communion's two contesting rites, orcish
-  shamanic practice, the dwarven ancestor church, the goblin
-  religion market, elven reverence-without-worship), under three
-  feedback-round directives — the player pact stays out of the
-  lore, temple-service/penance wiring deferred, no theology ruling
-  — and, since 2026-08-07, THE LAND PACKETS — MAGIC (the arcane
-  dump): the five scarcity limits (inborn gift, theory, costs, the
-  danger, the dark shortcut), the stance doctrines (the margin;
-  conduct-not-creed — no inquisition against casting as such; the
-  personal/embedded split; the discipline analogy; the price rule —
-  magic can't, or costs double the mundane fix; the
-  supernatural-affliction answer to the ruler sheet's healing
-  question, with the residue rule), the land-agnostic
-  recruiter/wild-talent/reagent/hunt material, and six organization
-  packets deduped against religion — under two development
-  demotions (conquest questlines are not lore; the magic-user start
-  is a dev matter) and the same-day rulings: mid-game casterhood
-  opens (gameplay openness outranks the 2026-08-05 never-acquire
-  asymmetry — rules.md softened, plan.md carries the item), and
-  conduct-not-creed OUTRANKS the inquisition-adjacent cards.
-  plan.md's worldsim-build ladder (2026-08-07)
-  consumes it session by session, every settleable call settled up
-  front in plan.md's rulings block and the [PROPOSED] set adopted
-  wholesale; shipped behavior belongs to `rules.md` and its section is
-  CUT from this file (the cuts so far: the need-to-exist settlement
-  trim and the record framework the world frame formalized, both
-  2026-08-07; the weather sketch 2026-08-08; the six econ packets'
-  cards and edges 2026-08-09; THE RULER CHARACTER with THE LAND
-  PACKETS — POLITICS, 2026-08-10; and THE LAND PACKETS — RELIGION and
-  — MAGIC entire, 2026-08-11). What is left in it after the last rung
-  is only what NO session was asked to build: the four econ options
-  wanting a counter that does not exist (paid mercenaries, banking, the
-  two drug markets, smuggling), the per-land and per-race RULER MODIFIER
-  COLUMNS with the tribal rewording, and the PC's own blank sheet.
+  (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
+  last rung (2026-08-11) the thread's RESIDUE file. It opens with a
+  summary of everything SHIPPED — the five record kinds, the wealth
+  roll, the decks, the relations, the weather, and all four packet
+  families, now `worldsim.py` / `rulers.py` and rules.md's five
+  world-layer add-ons — and the constructor signatures a future entry
+  would be written against; what remains below that is what no session
+  was asked to build plus what the 2026-08-12 review found cut without
+  shipping: the econ and politics packets' standing FACTS, the standing
+  OPTIONS wanting a counter or crime category that does not exist yet
+  (paid mercenaries, banking, the drug markets, smuggling — plan.md's
+  postponed list carries them), the two ruled WAITS (the robot
+  servants, sulfur-to-Hell), the three pre-ordered creatures, the
+  PLAGUE CHAIN and the econ-packet cards the floor session left on the
+  floor, the two magic-doctrine residues (the residue rule's magical
+  origin stamps, NOBODY COMES BACK), the per-land and per-race RULER
+  MODIFIER COLUMNS with the tribal rewording, and the PC's own blank
+  sheet. The spec-cut convention (a section is CUT when its session
+  lands) and the cut dates live at the head of the file itself.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes the opening settlements (three a land since the 2026-08-07
@@ -270,7 +245,11 @@ a pointer: what the file is, how it's run, where its docs are.
   also AUTHOR THE WEATHER (2026-08-08): per-environment day-roll weights
   over `worldsim.WEATHER_WORDS` (the climate sentence in numbers,
   year-round — there is no season track) plus `drought_days`, how many
-  rainless days that ground calls a drought.
+  rainless days that ground calls a drought. Its need-to-exist draw
+  (`materialize_settlement`, wrapped whole by `quests.found_settlement`)
+  has no authored caller yet — plan.md parks the content half — but is a
+  documented DM TOOL since 2026-08-12: dm.md's "The map can grow at your
+  call" is the play-facing recipe.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: all six Land/Area
   records, required settlement Site/Room skeletons, natural three-Site
@@ -343,7 +322,7 @@ a pointer: what the file is, how it's run, where its docs are.
   cards and `STATE_ENCOUNTERS`). Every reader is STRICT — a land with no
   layer under it is a state worldgen cannot produce, so asking about one
   raises rather than answering neutrally. The content bill
-  went with it: 30 crisis cards (five or six a land, one flavor anchor
+  went with it: 32 crisis cards (five or six a land, one flavor anchor
   each), five card CHAINS plus one that crosses a relation, and 17
   authored edges. `_validate_quest` / `_validate_menu` /
   `_validate_encounter` / `_validate_menu_tables` police the new payload
@@ -370,10 +349,11 @@ a pointer: what the file is, how it's run, where its docs are.
   Readouts: `politics_lines` (the whole polity, on `world`) and
   `notable_lines` (the ruler's PUBLIC half, under his face on the board).
   `_validate_politics` / `_validate_politics_tables` police it at import.
-  The content bill went to 76 politics cards (31 of them Firascir's own, by
-  the asymmetry doctrine, and 5 crown-wide succession cards every crowned
-  land shares), 7 more relation edges including the four DIPLOMATIC
-  INSTRUMENTS, and 34 faction edges. The sims and benches never
+  The content bill went to 77 politics cards (31 of them Firascir's own, by
+  the asymmetry doctrine, 5 crown-wide succession cards every crowned
+  land shares, and `gibili/commune` added by the 2026-08-12 chain repair
+  as the junta's other ending), 7 more relation edges including the four
+  DIPLOMATIC INSTRUMENTS, and 34 faction edges. The sims and benches never
   import it; every knob is hand-set.
   **The religion & magic rung** (2026-08-11, rules.md's Religion & Magic
   add-on — the build's LAST) finally built worldsim.md's other two record
@@ -397,6 +377,22 @@ a pointer: what the file is, how it's run, where its docs are.
   FACTS, 12 OPTIONS, 8 new religion and magic TENSIONS with 13 factions and
   16 faction edges under them, and 6 new relation edges (the two-way schism
   clock among them). The sims and benches never import it; every knob is hand-set.
+  **The 2026-08-12 review repair** (designlog; benchlog has the fire
+  counts): the CHAIN RULE is law — a link is a `set` state the successor
+  admits on and clears, never a `while`, because a track's draw runs
+  with its own live slot free (`_validate_reachability` polices it at
+  import, and `card()` now also rejects a clockless card with a `while`
+  / `wealth_while` payload — `mortellaria/revocation` had held its land
+  in CRISIS forever). Seven dead cards were rewired onto it,
+  `gibili/commune` was written (the junta's other ending — the
+  constitution can actually move now), the news watermark became a
+  count (`news_seq` / `told_seq`, so a line posted late on a told day
+  survives), `road_charges` gates on the toll TERM rather than one
+  state (the tax farmer's toll reaches the road), `hire_weather` buys
+  `holds` full days (was `holds`-1), `deposit-dead` was cut as
+  unproducible (`_validate_state_tables` now polices the keyed
+  tables), and `EXTERNAL_STATES` names the states a verb sets that no
+  card does.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -494,6 +490,14 @@ a pointer: what the file is, how it's run, where its docs are.
   running both ways, the four religion edges with their reader cards, the
   temple selling burial and blessing and no penance, the pact staying out of
   the lore entirely, and no card in the rung being dead data).
+  *The review repair* (2026-08-12): the chain rule as a contract (a
+  clockless `while` and a same-track `while` admit both rejected at
+  import, a link outliving its setter, the politics chains each reaching
+  their successor, and the whole Gibili arc run to both of its
+  constitutions), the repost rules (a finished card job does not block
+  the repost; a taken one still holds the card's place), any raised toll
+  term reaching the road, the rain stone delivering every paid day, and
+  a news line posted late on a told day surviving to the next telling.
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -2097,8 +2101,8 @@ above.**
   (crisis 0.30 a day, quiet lands 0.02), `CARD_DAYS` (12-25 default,
   cards may author their own), `OPENING_DRAW` / `OPENING_DAY`,
   `NEWS_KEPT` 24 / `NEWS_TOLD` 6. Measured pacing at those values
-  (benchlog 2026-08-07): a crisis land is living through a card ~63% of
-  days and fires ~1.8 in sixty; a normal one ~24% and ~0.9; ~58% of
+  (benchlog 2026-08-07): a crisis land is living through a card ~67% of
+  days and fires ~1.8 in sixty; a normal one ~24% and ~0.9; ~63% of
   worlds open with at least one land in crisis. **The dial if the world
   reads dead at the table is `CARD_CHANCE['normal']`** — a starting land
   is normal or prosperous five times in six, and that is by design.

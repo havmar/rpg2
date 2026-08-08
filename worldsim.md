@@ -6,14 +6,17 @@ monolithic design session dissolved and everything settleable settled
 in plan.md's rulings block; designlog's 2026-08-05..11 entries own
 the reasoning; THIS file holds what is still UNBUILT.
 
-Since 2026-08-11 that is a SHORT list. Every land packet this file ever
-carried has shipped — economy, politics, religion and magic — and what is
-left here is only the residue no session was asked to build: the standing
-FACTS of the economy and politics packets (religion's and magic's became
-`worldsim.FACTS` and are cut), the OPTIONS that want a counter the game does
-not have yet or a crime-layer category that is not written, the ruler
-sheet's per-land and per-race MODIFIER COLUMNS, and the PC's own blank
-sheet. None of it blocks anything; all of it is a design round away.
+Since 2026-08-11 that is a SHORT list. The four packet families this file
+carried have shipped — economy, politics, religion and magic — and what
+is left here is the residue no session was asked to build, plus what the
+2026-08-12 review found the section cuts had dropped UNSHIPPED and
+restored: the standing FACTS of the economy and politics packets
+(religion's and magic's became `worldsim.FACTS` and are cut), the OPTIONS
+that want a counter the game does not have yet or a crime-layer category
+that is not written, the plague chain and the econ-packet cards the floor
+session left unbuilt, two magic-doctrine lines, the ruler sheet's
+per-land and per-race MODIFIER COLUMNS, and the PC's own blank sheet.
+None of it blocks anything; all of it is a design round away.
 
 When a piece ships, its rules move to rules.md and its entry here is cut
 (the plan.md convention) — the record framework went that way on
@@ -125,13 +128,44 @@ a land's troubles must come from its own axis.
 ## THE LAND PACKETS — ECONOMY: what did NOT ship (2026-08-05, trimmed 2026-08-09)
 
 The economy floor session (designlog, 2026-08-09) built the six econ
-packets' CARDS, their relation edges and the chains between them; those
-entries are cut, and the played rules are rules.md's *The Economy Floor*.
-What is left here is the part of the packets no session has consumed
-yet — the standing FACTS a DM reads (they cost nothing at runtime and the
-engine never sees them), the OPTIONS that want a priced-menu entry of
-their own rather than a multiplier on an existing one, and the two cards
-plan.md's rulings park.
+packets' floor — 32 cards, their relation edges and the chains between
+them; those entries are cut, and the played rules are rules.md's *The
+Economy Floor*. What is left here is the part of the packets no session
+has consumed — the standing FACTS a DM reads (they cost nothing at
+runtime and the engine never sees them), the OPTIONS that want a
+priced-menu entry of their own rather than a multiplier on an existing
+one, the two cards plan.md's rulings park, and the packet cards the
+floor session cut without building (restored below by the 2026-08-12
+review).
+
+**Cards cut without shipping.** The floor session implemented the
+asymmetry doctrine's FLOOR — five or six cards a land — and then cut the
+packet sections whole, which quietly dropped the entries below. None is
+ruled out; each is ordinary card work on the shipped frame whenever a
+land wants more depth:
+
+- **The PLAGUE CHAIN** (Firascir — the one entry plan.md's ladder named
+  and the build owed): plague → labor shortage → wage demands → wage
+  freeze → peasant revolt. The famine chain shipped; this, the longer
+  one, did not. Note the repaired chain rule when building it: every
+  link is a `set` state the next card admits on and clears, never a
+  `while` (`worldsim._validate_reachability` now enforces it).
+- **Dvarvengrond:** toxic runoff crossing the border (environmental
+  damage as an international incident); the fuel crisis (is there coal
+  under the mountain? are the forests above already stripped? —
+  incursions into elven woods, timber deals with the humans); digging
+  too deep (the lucrative vein next to the thing best left sleeping —
+  the land's landmark problem, so it may belong with plan.md's
+  landmark-problems tie-in); the half-feral goblin tribe in the deep
+  tunnels (coexistence, incidents, go-betweens); air and water
+  (ventilation shafts controlled by one powerful clan — plots and
+  blackmail over who breathes); evacuation (a community in the way of
+  new deposits, or the underground lake about to cave in on them).
+- **Firascir:** small frauds in hard times — counterfeit coin, watered
+  ale, sawdust bread; petty-crime color and market events.
+- **Tergal:** trading-outpost tensions — another land's post grows
+  significant: protection, resentment, seizure. (Its relation edge, the
+  border market towns, was dropped with it.)
 
 **Facts — the standing colour of each land's economy.** Ensimaa: the
 economy is rare artisanal and artistic output, small and irreplaceable;
@@ -288,7 +322,9 @@ the two record kinds they needed. The sections are cut; the played rules
 are rules.md's *Religion & Magic*, the facts are `worldsim.FACTS` (read at
 the table with `lore`), and the options are `worldsim.OPTIONS`.
 
-Four things in them were parked by name and are parked still:
+Four things in them were parked by name and are parked still — and the
+section cut dropped two doctrine pieces unshipped (restored at the end
+of the list by the 2026-08-12 review):
 
 - **THE DRAUGR, THE KNOCKERS as a creature, and Tergal's GRAVE-MADE
   GHOSTS** wait for the monsters & fauna dump — each names a creature row
@@ -306,6 +342,23 @@ Four things in them were parked by name and are parked still:
   Gibili friendly, Firascir indifferent, Mortellaria patron-and-leash,
   Tergal reads it as armament, Dvarvengrond as a trade — but the columns
   themselves are deferred with the rest of the modifier work above.
+- **THE RESIDUE RULE** [PROPOSED, adopted with the set] — wealth cures
+  the curable, so among the great the afflictions that PERSIST are
+  precisely the supernatural, the bargained and the divine. The sheet's
+  affliction family keeps its measured weights; what the rule adds is
+  MAGICAL ORIGIN STAMPS beside `rulers.ORIGIN_STAMPS`' mundane ones
+  ("since the working", "cursed by the hermit he evicted") and the
+  standing rumor every afflicted ruler upgrades to: why can the king
+  not be healed? Among the poor the read stays mundane. Unshipped —
+  the stamps are one tuple away when a design round wants them.
+- **NOBODY COMES BACK** [PROPOSED, adopted with the set] — the price
+  rule's companion line: necromancy animates bodies and interrogates
+  echoes; it never returns the person (the draugr is the founder's
+  corpse and the founder's temper, not the founder). Death keeps its
+  full weight — the succession cluster and murder's gravity stand on
+  it. Unshipped as a written doctrine line (rules.md's Religion & Magic
+  says the seance parlors are theatre, which leans on it without
+  stating it); belongs beside the price rule when next touched.
 
 The **temple/penance wiring** is NOT on this list because it was never
 this rung's: whether and how temples interact with the shipped sin/penance

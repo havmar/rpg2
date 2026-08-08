@@ -305,8 +305,37 @@ explain it.
   heart, and any face a card has named). Use it for pacing -- never read
   it out. `place-state` remains your override for a state you want to set
   by hand.
+- **The map can grow at your call.** A land opens with three settlements
+  and keeps the rest of its authored catalog as a RESERVE (rules.md, "The
+  map"). When play wants a place that is not on the map -- the player
+  strikes out to just travel and see the country, a scene needs the
+  fishing village that ought to be on this coast, a rumor needs a real
+  town behind it -- FOUND one from the reserve instead of narrating a
+  loose one. It is a between-commands override in the save-editing
+  family, run as a snippet:
 
-### What the land costs (2026-08-09, the economy floor)
+  ```
+  python3 - <<'EOF'
+  import session, quests
+  state = session.load()
+  area = quests.found_settlement(
+      state["world"], "firascir", state["rng"],
+      need="the party followed the coast road",
+      tier="village",              # or "town" / None for the next fit
+      day=state["clock"].day)
+  print(area["name"] if area else "the reserve is empty")
+  session.save(state)
+  EOF
+  ```
+
+  The place arrives whole -- named off the authored reserve, its Sites,
+  its services and their faces, known and travelable at once, stamped
+  with the day and the reason (`founded_for`) so the record shows why it
+  exists. Its board fills the first time the party reads it, like any
+  board. `None` back means the land's reserve is empty: the world is
+  finite, so say the road runs out instead. Use it for story, not
+  bookkeeping -- three settlements a land is the design, and a founding
+  should be an event the player caused.
 
 The band IS a price list now, and a shorter or longer board. Everything
 below is already in the script output -- your job is to say it in the
@@ -390,7 +419,7 @@ counter is the player's.
   else does: a burial or a blessing at the temple and a pilgrim badge in
   Firascir, a hooded burial brotherhood in Mortellaria, a hall blessing in
   Dvarvengrond, a charm with a printed policy and a burial club in Gibili,
-  the rain stone in Tergal, and a wizard's teaching in the three lands that
+  the rain stone in Tergal, and a wizard's teaching in the four lands that
   will sell one. Prices move with the land like everything else. Don't
   advertise the list; let a priest or a hawker offer the one that fits the
   scene, and point at `service` when the player bites.

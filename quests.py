@@ -1689,9 +1689,13 @@ def refresh_settlement_board(world: dict, settlement: dict, day: int,
     other posting, and the card puts it back up for as long as it stands."""
     slots = board_slots(world, settlement)
     posted = []
+    # Only OPEN postings hold a card's place: a job the party finished (or
+    # one that lapsed) is off the board, and the card puts its work back up
+    # for as long as it stands -- the docstring's contract.
     have = {world["quests"][qid].get("world_card")
             for qid in settlement.get("quests", ())
-            if qid in world["quests"]}
+            if qid in world["quests"]
+            and world["quests"][qid]["status"] == "open"}
     for posting in worldsim.board_postings(world, settlement["land"]):
         if posting["key"] in have:
             continue
@@ -2101,12 +2105,13 @@ def main() -> None:
     world = generate_world(args.seed)
     rng = random.Random(args.seed)
     for day in range(1, args.day + 1):
-        for s in settlements(world):
-            expire_settlement_board(world, s, day)
+        worldsim.roll_world(world, day)     # the board reads the world
+        for s in settlements(world):        # (2026-08-09), so the demo
+            expire_settlement_board(world, s, day)      # rolls it too
             refresh_settlement_board(world, s, day, rng)
         refresh_deliveries(world, day, rng)
     total = sum(quest_xp_posted(q) for q in world["quests"].values())
-    slots = sum(board_slots(s) for s in settlements(world))
+    slots = sum(board_slots(world, s) for s in settlements(world))
     print(f"World (seed={args.seed}), day {args.day}: "
           f"{len(settlements(world))} settlements, "
           f"{len(world['quests'])} quests posted, {total} XP standing "

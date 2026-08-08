@@ -3417,3 +3417,153 @@ deep packet from drowning a deck. (2) Whether worldgen should force at
 least one land out of NORMAL — about one seed in eleven rolls all six
 lands quiet ((24/36)^6 ≈ 9%) — was raised and analyzed; no decision
 taken, the band roll is unchanged.
+
+## 2026-08-12 — The build reviewed whole, and the review's findings fixed
+
+The designer asked for the six-session worldsim build (plus the funeral
+cut) to be reviewed against its pre-implementation plan — completeness,
+cohesion, bug-freeness — and then for the findings to be fixed on the
+reviewer's own judgement. One designer ruling arrived with the fix
+order: `found_settlement` / `materialize_settlement` are KEPT as DM
+tools and documented for the DM, for the player who wants to just
+travel and explore around.
+
+**What the review found.** Completeness ~95% and the paperwork lifecycle
+tight (15 of 16 doc-claimed content counts verified exactly; every
+settled ruling honored; the postponed list intact). The gaps clustered
+where spec sections were cut as "consumed" without fully shipping: the
+PLAGUE CHAIN (the one entry the ladder itself named), eight econ packet
+cards, two magic-doctrine lines. The code half found real bugs the
+247-test suite could not see, all verified by execution before fixing:
+
+1. **Seven chain cards could never fire** — each admitted on a state its
+   own track held as `while`. A track draws only while its live slot is
+   free, and `roll_land` expires the live card (dropping its `while`
+   states) BEFORE drawing on the same track — so the state and the free
+   slot never coexist. Dead: the whole Gibili revolution arc past its
+   first link (general strike → barricades → junta), the salt revolt,
+   both Tergal escalations, the dwarven arbitration. Since the junta was
+   the deck's only constitution flipper, no constitution could ever
+   change in play. Verified dead over 180 worlds × 600+ days: zero fires
+   against prerequisites firing 10-97 times (benchlog has the after
+   table).
+2. **The commune card did not exist** — rules.md, the module header and
+   `set_constitution`'s own docstring all promise "the junta and the
+   commune" as the two flippers; only the junta was written.
+3. **`mortellaria/revocation` locked its land in CRISIS forever** —
+   `wealth_while` on a clockless card stores no live entry, so `_end`
+   never runs and the band never comes back.
+4. **The rain stone sold two days and delivered one** (`until = day +
+   holds` against a purchase day whose sky is already rolled; `holds=1`
+   was a paid no-op the validator explicitly blessed).
+5. **A completed card job blocked that card's job on that board
+   forever** (the dedupe set read `world_card` off done postings too).
+6. **Toll terms the road never charged** — `road_charges` gated on
+   `toll-squeeze` alone, so the tax farmer's 1.50 and the free company's
+   1.80 printed on the price sheet and took nothing at the bridge.
+7. Smaller: `python quests.py --demo` crashed on the old `board_slots`
+   signature (and its `--day` loop never rolled the world); an
+   interrupted trip re-charged tolls and re-walked the weather detour on
+   the retry; a news line posted late on an already-told day died
+   between two same-day stamps (`post_news`'s herald was the customer);
+   teleport arrivals heard no news/sky/prices; `ensimaa/writ-revoked`
+   admitted on an edge its own gate could not cast; `deposit-dead` was
+   authored menu data nothing could produce; the "goes through owing"
+   travel line asserted a debt rules.md denies; a soft `CARD_CHANCE`
+   reader; a stale STA-for-STR comment; and doc drift (the "30 crisis
+   cards" miscount — 32; the frame pacing percentages shifted a slot;
+   "three lands sell a teaching" — four; develop.md's worldsim.md entry
+   contradicting itself; the overdue "off-screen event simulation"
+   parked-entry deletion the economy floor owed).
+
+**The chain repair, and the calls it took.** The working chains all use
+one pattern — the setter `set`s a link state that OUTLIVES it, the
+successor admits on it and `clear`s it — and the seven dead cards
+deviated by holding their links as `while`. (The tell that this was a
+typo, not a design: two successors already carried `clear` for states
+that would have died with their setters anyway.) The links moved to
+`set` on the six setters, `without=` guards went on each setter so it
+does not stack its own link (the shipped chains' convention), and two
+judgement calls went beyond the mechanical swap: **the salt revolt now
+clears `tax-farmed`** (the revolt ends the farming-out; also keeps the
+state from standing forever in worlds whose tension never rolled the
+revolt in) and **the Tergal escalations admit `grass-gone` alone**
+rather than herd-loss + grass-gone — the season scar is the thing that
+drives a mourning war, it is the state built to outlive the card, and
+the raid card already competes for it (the deck deciding which answer a
+starving steppe gives is the junta/commune coin in miniature). The
+general strike also clears `mills-stopped` (the whole nation stopping
+subsumes the one mill town).
+
+**The commune.** Written as the junta's mirror off the same
+`barricades-up` admit at the same `chance` 0.25 — whichever the deck
+draws first is how the split army lands, which is the packet's own
+"which way do the soldiers point" coin. Its quest is the ration barge
+(the commune governing with bread), its constitution flip is the record
+`roll_constitution` already carried. Politics goes to 77 cards.
+
+**The two new validators, because content will be authored again.**
+`card()` itself now rejects a clockless card with a `while` /
+`wealth_while` payload (bug 3's whole class), and import-time
+`_validate_reachability` rejects a card admitting on a state only its
+own track holds as `while` (bug 1's whole class) — plus
+`_validate_state_tables`, which polices STATE_MENU / STATE_ENCOUNTERS /
+STATE_MARKS keys against what the game can actually produce
+(`deposit-dead`'s class; the member and its menu row are cut rather
+than authored a producer, since the vein cards' drying/reopened cycle
+is the story the slot actually tells). `EXTERNAL_STATES` names the one
+state a verb sets that no card does (`rain-bought`).
+
+**Revocation got a clock** (25-40 days, season-scale like the herd
+failure) rather than a permanent `wealth:` drop — the frame's own
+contract ("a failed harvest is a season of crisis and then it is over")
+and the fact that the deck holds no Mortellarian recovery card decided
+it. The ban itself (`faith-banned`, a `set`) still stands forever;
+it is the ECONOMIC shock that passes.
+
+**The toll gate widened to the term itself**: the road charges wherever
+the effective toll term is over 1.0, whatever raised it — one state was
+never going to stay the only toll story once politics started authoring
+toll movers. A discount term with no toll under it charges nothing.
+rules.md's line updated. With it, travel grew a paid-crossing marker
+(`road_paid`): an interrupted trip's retry no longer pays the toll or
+walks the detour again (the repeated base days stay, the standing
+re-issue design), and the empty-purse line now says what rules.md says
+— the party walks, owing nothing.
+
+**The news watermark became a count** (`news_seq` / `told_seq` on the
+layer) instead of a told-day: append-only sequence numbers survive the
+NEWS_KEPT trim and a line posted late on a told day survives to the
+next telling. Teleport arrivals now hear the same news/sky/prices a
+road arrival does (an arrival is an arrival).
+
+**The DM settlement tool** (the designer's ruling): dm.md's world-layer
+section grew "The map can grow at your call" — a save-editing-family
+snippet around `quests.found_settlement`, verified end-to-end (the
+founded place arrives named off the reserve, serviced, known,
+travelable, stamped with day and reason). plan.md's postponed list
+records the other half honestly: no authored card or relation calls the
+draw yet, and that content should come out of play.
+
+**Restored, not ruled out.** The plague chain, the eight econ cards and
+the two magic-doctrine lines went BACK into worldsim.md as residue with
+their original packet text recovered from the pre-cut file — the
+review's rule being that a cut section must equal shipped code plus
+explicit waits, and these were neither. Nothing was ruled out; nothing
+new was scheduled (the thread still wants play first).
+
+**Left alone on purpose**: the succession slot's re-assertion (a second
+tanist scramble re-stamping `disputed` is a new scramble, not a bug);
+settlement `camp`/healer nights carrying no news line (mirrors
+`conquest_news`; dm.md's "settlement nights" reads as tavern and
+downtime); and the one-shot guards were added only where a re-fire
+would be absurd (`burning-rolls`, `the-search`), not to every permanent
+card — a reshuffle re-firing "the fair is on" is the deck breathing.
+
+Fire counts, the revocation recovery distribution and the career-sim
+sanity run (in family throughout) are benchlog's 2026-08-12 entry. The
+suite grew 642 → 651: the two validator contracts, the chain-link
+clock test, the politics chains each reaching their successor, the
+Gibili arc run to BOTH constitutions, the two board repost rules, the
+raised-toll road charge, the rain stone's full paid window, and the
+late-posted news line.

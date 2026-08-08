@@ -4533,10 +4533,17 @@ def cmd_travel(args: argparse.Namespace) -> None:
             if target["land"] == state["position"]["land"]
             else TRAVEL_DAYS_CROSS)
     clear_sighting(state)
+    worldsim.roll_world(world, state["clock"].day)   # quote TODAY's fords
+    # An interrupted trip leaves the party at the origin and the player
+    # re-issues `travel` -- but the tolls were paid and the detour walked
+    # on the first attempt. One crossing, one charge.
+    crossing = {"from": state["position"]["area"], "to": target["key"]}
+    charged = state.get("road_paid") == crossing
     # What the weather costs the road (2026-08-08): a washed-out ford or a
     # dust storm on either end of the leg is a day going round.
     legs = [state["position"]["land"], target["land"]]
-    slow, why = worldsim.travel_delay(world, legs)
+    slow, why = ((0, []) if charged
+                 else worldsim.travel_delay(world, legs))
     days += slow
     print(f"The party sets out for {target['name']} -- {days} day(s) on "
           f"the road, camping as they go.")
@@ -4546,9 +4553,11 @@ def cmd_travel(args: argparse.Namespace) -> None:
     # a doubled toll on a bridge the baron's men hold, a ferryman's price
     # where the fords are gone. Charged before the trip, because that is
     # where the hand comes out. A purse that cannot cover it crosses anyway
-    # -- the bridge is not a wall, and what the toll-men do about the debt
-    # is the DM's scene, not the engine's.
-    take, tolls = worldsim.road_charges(world, legs)
+    # -- the bridge is not a wall.
+    take, tolls = ((0, []) if charged
+                   else worldsim.road_charges(world, legs))
+    if take or slow:
+        state["road_paid"] = crossing   # honored if the trip breaks off
     if take:
         paid = min(take, state["purse"].gold)
         state["purse"].gold -= paid
@@ -4561,8 +4570,9 @@ def cmd_travel(args: argparse.Namespace) -> None:
             print(f"  The road takes what the purse has -- {paid}g of "
                   f"{take}g, and the rest is argued down.")
         else:
-            print(f"  The purse is empty and the road knows it. The party "
-                  f"goes through owing {take}g.")
+            print(f"  The purse is empty and the toll-men can see it. "
+                  f"The party is waved through, owing nothing but the "
+                  f"look of it.")
     weather_note(state)
     log = CombatLog()
     for _ in range(days):
@@ -4617,7 +4627,8 @@ def cmd_travel(args: argparse.Namespace) -> None:
     if state.get("sighting"):
         clear_sighting(state, quiet=True)
         print("  The party gives them a wide berth and keeps moving.")
-    state["position"] = _area_position(target)
+    state.pop("road_paid", None)    # the crossing is made; the next one
+    state["position"] = _area_position(target)      # is a fresh charge
     target["visited"] = True
     if target.get("kind") == "settlement":
         visited = state.setdefault("visited", [])
@@ -6389,7 +6400,11 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
     here = occupied_here(state)
     if here is not None:
         print(occupation_line(state, here))
-    maybe_post_wave(state)
+    maybe_post_wave(state)      # an arrival is an arrival, however made:
+    conquest_news(state)        # the door opens on the same news, sky and
+    world_news(state)           # prices a road arrival hears (2026-08-12
+    weather_note(state)         # -- the spell used to land in silence)
+    price_note(state)
     log3: list[str] = []
     if deliver_if_arrived(state, log3):
         print("\n".join(log3))

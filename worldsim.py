@@ -462,8 +462,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
 STATE_SLOTS = {                 # slot -> its exclusive members, in order
     "foreigners": ("foreigners-welcome", "foreigners-tolerated",
                    "foreigners-unwelcome"),
-    "deposit": ("deposit-normal", "deposit-found", "deposit-drying",
-                "deposit-dead"),
+    "deposit": ("deposit-normal", "deposit-found", "deposit-drying"),
 }
 SLOT_WORDS = {
     "foreigners-welcome": "foreigners are welcome",
@@ -472,7 +471,6 @@ SLOT_WORDS = {
     "deposit-normal": "the seams run as they always have",
     "deposit-found": "a new seam has been found",
     "deposit-drying": "the seams are drying up",
-    "deposit-dead": "the seams are dead",
 }
 SLOT_OF = {member: slot for slot, members in STATE_SLOTS.items()
            for member in members}
@@ -503,7 +501,6 @@ STATE_MENU = {
     "storm-bound": {"lodging": 1.30},
     "wildfire": {"goods": 1.20},
     "strike": {"steel": 1.35},
-    "deposit-dead": {"steel": 1.40},
     "deposit-drying": {"steel": 1.20},
     "deposit-found": {"steel": 0.85},
     "coin-flush": {"goods": 1.25, "lodging": 1.40, "steel": 1.15},
@@ -734,6 +731,12 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
     unknown = set(outlets) - set(OUTLETS)
     if unknown:
         raise ValueError(f"{key}: not an outlet: {sorted(unknown)}")
+    state_effect = outlets.get("state") or {}
+    if days is None and (state_effect.get("while")
+                         or state_effect.get("wealth_while")):
+        raise ValueError(f"{key}: a card with no clock never ends, so a "
+                         f"'while' payload would never come off -- give it "
+                         f"days or make the effect 'set'")
     lands = (land,) if isinstance(land, str) else tuple(land)
     return {"key": key, "name": name, "land": lands, "track": track,
             "chance": chance, "hook": hook, "sky": sky,
@@ -1572,10 +1575,11 @@ CARDS = (
 
     # -- Mortellaria: FINANCE & THE ABSOLUTIST STATE ------------------------ #
     card("mortellaria/tax-farmer", "The tax farmer buys the province",
-         "mortellaria", wealth=("crisis",), days=(20, 35),
+         "mortellaria", wealth=("crisis",), without=("tax-farmed",),
+         days=(20, 35),
          news="The state has sold the right to squeeze this province. The "
               "tax farmer means to make his money back.",
-         state={"while": ("tax-farmed",)},
+         state={"set": ("tax-farmed",)},
          menu={"toll": 1.50},
          quest={"post": job(
              "The Tax Farmer's Column",
@@ -1745,11 +1749,12 @@ CARDS = (
     # The rush CHAIN: the seam is found (a slot, so it outlives the card),
     # and the bust that follows admits on it and puts the slot back.
     card("dvarvengrond/new-seam", "A new seam is found", "dvarvengrond",
-         wealth=("normal", "prosperous"), days=(15, 25),
+         wealth=("normal", "prosperous"), without=("claims-collide",),
+         days=(15, 25),
          news="A new seam has been found under the mountain. Two clans "
               "claim it and a third is strong enough to work it.",
          state={"slot": {"deposit": "deposit-found"},
-                "while": ("claims-collide",), "wealth_while": "prosperous"},
+                "set": ("claims-collide",), "wealth_while": "prosperous"},
          quest={"post": job(
              "Two Clans, One Seam",
              "The clan that found the seam wants the shaft head held while "
@@ -1844,10 +1849,10 @@ CARDS = (
 
     # -- Gibili: LABOR vs CAPITAL, NO STATE --------------------------------- #
     card("gibili/uprising", "The mills stop", "gibili",
-         wealth=("crisis",), days=(12, 20),
+         wealth=("crisis",), without=("mills-stopped",), days=(12, 20),
          news="The mills have stopped. The workers hold the gates and the "
               "company police are hiring anyone who can hold a stick.",
-         state={"while": ("mills-stopped",)},
+         state={"set": ("mills-stopped",)},
          quest={"post": job(
              "Both Sides Are Hiring",
              "The company wants the mill gate opened. The union wants it "
@@ -2269,7 +2274,8 @@ POLITICS_CARDS = (
          state={"while": ("custom-strike",)},
          quest={"reprice": 0.90}),
     card("firascir/burning-rolls", "The court rolls burn", "firascir",
-         tension=("manor-vs-village",), days=None,
+         tension=("manor-vs-village",), without=("rolls-burned",),
+         days=None,
          news="The mob did not go for the lord. It went for the manor's "
               "court rolls -- who owes what, and who was born unfree. "
               "Every debt and every servile birth is ash, unless the "
@@ -2641,7 +2647,7 @@ POLITICS_CARDS = (
     card("mortellaria/revocation", "The old faith is outlawed",
          "mortellaria", tension=("crown-vs-faith",),
          faction_edge=("mortellaria/tribunal-hunts-hidden-faith",),
-         days=None,
+         days=(25, 40),
          news="The tolerated faith was made illegal overnight. Dragoons "
               "are quartered in the houses of anyone who will not "
               "convert, and the skilled trades are leaving for the border "
@@ -2819,7 +2825,7 @@ POLITICS_CARDS = (
          news="The salt tax went up once too often. A province has "
               "butchered its tax collectors, and the army has answered "
               "with burned villages and hanged ringleaders.",
-         state={"while": ("salt-revolt",)},
+         state={"while": ("salt-revolt",), "clear": ("tax-farmed",)},
          encounter={"kinds": ("cutthroat", "bruiser", "soldier"),
                     "where": "road", "as": "the salt country's own men",
                     "skins": {"cutthroat": "Salt Man",
@@ -2888,7 +2894,6 @@ POLITICS_CARDS = (
     # == Ensimaa: FACE, PURITY & THE FROZEN LADDER ========================= #
     card("ensimaa/writ-revoked", "The writ is revoked", "ensimaa",
          tension=("purity-vs-fringe",),
-         faction_edge=("ensimaa/purity-board-certifies-elders",),
          days=None,
          news="A great name's purity certificate has been denied over an "
               "old association. Offices, tenants and name are cascading "
@@ -2913,6 +2918,7 @@ POLITICS_CARDS = (
     card("ensimaa/the-search", "The crown dies", "ensimaa",
          tension=("elders-vs-young",),
          constitution=("constitutional", "elders"),
+         without=("search-on",),
          chance=0.05, days=None,
          news="The crown has actually died -- the first succession in an "
               "age. Doctrine says the sovereign returns in a newborn. "
@@ -3130,7 +3136,7 @@ POLITICS_CARDS = (
                               "the reason, and the camps have noticed."),
              "pay": 1.20, "slots": 1}),
     card("tergal/mourning-war", "The mourning war", "tergal",
-         tension=("clan-vs-clan",), states=("herd-loss", "grass-gone"),
+         tension=("clan-vs-clan",), states=("grass-gone",),
          days=(15, 25),
          news="The raid is not for plunder. It is for people: captives to "
               "fill the tents the sickness emptied. The clans that lost "
@@ -3177,7 +3183,7 @@ POLITICS_CARDS = (
                               "been carved under the first."),
              "pay": 1.20, "reprice": 1.1}),
     card("tergal/ghost-dance", "The ghost dance", "tergal",
-         tension=("council-vs-outlaws",), states=("herd-loss", "grass-gone"),
+         tension=("council-vs-outlaws",), states=("grass-gone",),
          days=(20, 35),
          news="The herds have failed and the tribute chiefs have got fat. "
               "A new faith is sweeping the camps -- dance and the dead "
@@ -3272,12 +3278,13 @@ POLITICS_CARDS = (
     # == Gibili: THE STATE THAT ISN'T ====================================== #
     card("gibili/general-strike", "The general strike", "gibili",
          tension=("army-vs-ranks", "parliament-deadlock"),
-         states=("mills-stopped",), days=(12, 20),
+         states=("mills-stopped",), without=("general-strike",),
+         days=(12, 20),
          news="Every industry at once. The nation has simply stopped. It "
               "began, as it always does, with the match-workers the "
               "phosphorus is eating, and it ends however the army "
               "decides.",
-         state={"while": ("general-strike",)},
+         state={"set": ("general-strike",), "clear": ("mills-stopped",)},
          quest={"post": job(
              "The Match Works",
              "The match-workers' committee wants its own building held "
@@ -3338,12 +3345,12 @@ POLITICS_CARDS = (
              "pay": 1.25, "slots": 1}),
     card("gibili/barricade-days", "The barricade days", "gibili",
          tension=("army-vs-ranks",), states=("general-strike",),
-         days=(10, 18),
+         without=("barricades-up",), days=(10, 18),
          news="A district has overturned its trams, pried up its cobbles "
               "and declared itself autonomous. Inside it, three flags are "
               "arguing and shooting at each other nearly as readily as at "
               "the police.",
-         state={"clear": ("general-strike",), "while": ("barricades-up",)},
+         state={"clear": ("general-strike",), "set": ("barricades-up",)},
          encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
                     "where": "road", "as": "a barricade under three flags",
                     "skins": {"cutthroat": "Barricade Boy",
@@ -3384,6 +3391,29 @@ POLITICS_CARDS = (
              failure_epilogue="The press was taken with him beside it. "
                               "The list is being worked through in "
                               "order."),
+             "pay": 1.35, "slots": -1}),
+    card("gibili/commune", "The soldiers stand with the street", "gibili",
+         tension=("army-vs-ranks",), states=("barricades-up",),
+         chance=0.25, days=None,
+         news="The soldiers were sent in and stood with the district "
+              "instead. The syndicates hold the city now -- schools, "
+              "courts, rations, firing squads -- and are calling it "
+              "settled.",
+         state={"clear": ("barricades-up",), "constitution": "commune"},
+         quest={"post": job(
+             "The Grain Barge",
+             "The commune eats off one grain barge a week and the mill "
+             "barons' money is paying the boom-keeper to turn it back. "
+             "The ration committee pays in silver it printed nothing on.",
+             pool=_GOBLIN_TOUGHS, sites=("the river boom", "the ration "
+                                         "hall"),
+             giver="the ration committee", places=2,
+             epilogue="The barge came through the boom and unloaded under "
+                      "guard. The queue moved all day and the commune has "
+                      "bread to govern with.",
+             failure_epilogue="The barge turned back at the boom. The "
+                              "queue stood until dark, and the firing "
+                              "squads have a new word for hoarder."),
              "pay": 1.35, "slots": -1}),
     card("gibili/machine-breakers", "The machine-breakers", "gibili",
          tension=("syndicate-vs-syndicate",), days=(12, 20),
@@ -5417,7 +5447,8 @@ def open_world(world: dict) -> dict:
             "wet": 0,               # the wet and dry SPELLS running behind
             "dry": 0,               # it -- what the slow cards read
             "news": [],             # day-stamped lines, oldest first
-            "told_day": -1,         # the last day whose news was told
+            "news_seq": 0,          # lines ever posted (survives the trim)
+            "told_seq": 0,          # ...and how many of them were told
             "rolled_day": 0,        # the last day this land was rolled
         }
     for polity in world["lands"]:
@@ -5679,7 +5710,9 @@ def _draw(world: dict, polity: str, rng: random.Random,
 
 def _news(world: dict, polity: str, day: int, line: str) -> None:
     layer = land_layer(world, polity)
-    layer["news"].append({"day": day, "line": line})
+    layer["news_seq"] += 1
+    layer["news"].append({"day": day, "line": line,
+                          "seq": layer["news_seq"]})
     del layer["news"][:-NEWS_KEPT]
 
 
@@ -5824,8 +5857,7 @@ def roll_land(world: dict, polity: str, day: int) -> None:
             if layer[LIVE_KEY[track]] is not None:
                 continue
             if track == "crisis" and (rng.random()
-                                      >= CARD_CHANCE.get(layer["wealth"],
-                                                         0.0)):
+                                      >= CARD_CHANCE[layer["wealth"]]):
                 continue        # the crisis track's die is the wealth band;
                                 # the other two are the sky's own
             drawn = _draw(world, polity, rng, sky, track)
@@ -5868,10 +5900,13 @@ def casus_belli_line(entry: dict, aggressor: str, victim: str) -> str:
 
 def take_news(world: dict, polity: str, day: int) -> list[str]:
     """What this land has heard since the party last listened -- the state
-    diff's spoken half. Told once: the day stamp moves with the telling."""
+    diff's spoken half. Told once: the count moves with the telling. The
+    watermark is a running COUNT rather than a day, so a line posted later
+    on an already-told day (the war herald's, through `post_news`) still
+    reaches the next listener instead of dying between two tellings."""
     layer = land_layer(world, polity)
-    fresh = [n for n in layer["news"] if n["day"] > layer["told_day"]]
-    layer["told_day"] = day
+    fresh = [n for n in layer["news"] if n["seq"] > layer["told_seq"]]
+    layer["told_seq"] = layer["news_seq"]
     if not fresh:
         return []
     lines = [f"  (day {n['day']}) {n['line']}" for n in fresh[-NEWS_TOLD:]]
@@ -6027,7 +6062,7 @@ def road_charges(world: dict, lands) -> tuple[int, list[str]]:
         held = set(state_ids(world, polity))
         name = world["lands"][polity]["name"]
         toll = term(world, polity, "toll")
-        if toll > 1.0 and "toll-squeeze" in held:
+        if toll > 1.0:
             take = max(1, round(ROAD_TOLL_GOLD * toll))
             gold += take
             lines.append(f"  {name}: the toll-men take {take}g at the "
@@ -6103,7 +6138,10 @@ def hire_weather(world: dict, polity: str, day: int, word: str,
     a bought sky runs the wet/dry spells exactly as a rolled one does (the
     price rule: healing is retail, and so is weather)."""
     layer = land_layer(world, polity)
-    layer["bought_sky"] = {"word": word, "until": day + holds}
+    # The purchase day's own sky is already rolled by the time anything is
+    # sold (the session rolls the world before every command), so the paid
+    # window is the NEXT `holds` days -- hence the +1.
+    layer["bought_sky"] = {"word": word, "until": day + holds + 1}
     set_state(world, polity, "rain-bought", day)
 
 
@@ -6205,10 +6243,9 @@ def world_lines(world: dict) -> list[str]:
             if live is None:
                 continue
             drawn = CARDS_BY_KEY[live["key"]]
-            until = (f", stands to day {live['until']}"
-                     if live["until"] else ", no clock")
             lines.append(f"  {track} card: {drawn['name']} "
-                         f"(day {live['day']}{until})")
+                         f"(day {live['day']}, stands to day "
+                         f"{live['until']})")
         who = layer.get("necromancer")
         if who is not None:
             lines.append(f"  the fog's cause: {who['name']}, L{who['level']} "
@@ -6612,6 +6649,59 @@ def _validate_lore_tables() -> None:
                     raise ValueError(f"STATE_MARKS/{state_id}: not ASCII")
 
 
+EXTERNAL_STATES = ("rain-bought",)   # set by a verb, not by any card
+
+
+def _validate_reachability(cards) -> None:
+    """No card may wait on a state nothing can put in front of it.
+
+    The trap this exists for (found 2026-08-12, seven cards deep): a track
+    draws only while its live slot is FREE, and `roll_land` expires the
+    live card -- dropping its `while` states -- before it draws on the same
+    track. So a state held only as a same-track card's `while` is never
+    visible to that track's own draw: while it is held the slot is full,
+    and the day the slot frees it is gone. A chain link must ride a state
+    that OUTLIVES its setter (`set`, a slot value, a relation's derived
+    state) or one another track holds up."""
+    outlives: set[str] = set(EXTERNAL_STATES)
+    outlives.update(r["then"] for r in RELATIONS)
+    held_while: dict[str, set[str]] = {}
+    for drawn in cards:
+        state = drawn["outlets"].get("state") or {}
+        outlives.update(state.get("set", ()))
+        outlives.update((state.get("slot") or {}).values())
+        for state_id in state.get("while", ()):
+            held_while.setdefault(state_id, set()).add(drawn["track"])
+    for drawn in cards:
+        for state_id in drawn["admits"]["states"]:
+            tracks = held_while.get(state_id, set())
+            if (state_id not in outlives
+                    and not (tracks - {drawn["track"]})):
+                raise ValueError(
+                    f"{drawn['key']}: admits on {state_id}, which "
+                    f"{'only its own track holds while live' if tracks else 'nothing produces'}"
+                    f" -- the card can never fire")
+
+
+def _validate_state_tables() -> None:
+    """A STATE_MENU / STATE_ENCOUNTERS / STATE_MARKS row keyed on a state
+    nothing produces is dead data (deposit-dead was the shipped example)."""
+    producible: set[str] = set(EXTERNAL_STATES)
+    producible.update(r["then"] for r in RELATIONS)
+    for drawn in CARDS:
+        state = drawn["outlets"].get("state") or {}
+        producible.update(state.get("set", ()))
+        producible.update(state.get("while", ()))
+        producible.update((state.get("slot") or {}).values())
+    for table_name, table in (("STATE_MENU", STATE_MENU),
+                              ("STATE_ENCOUNTERS", STATE_ENCOUNTERS),
+                              ("STATE_MARKS", STATE_MARKS)):
+        for state_id in table:
+            if state_id not in producible:
+                raise ValueError(f"{table_name}: {state_id} -- nothing in "
+                                 f"the game produces that state")
+
+
 def validate_content() -> None:
     keys = set()
     for drawn in CARDS:
@@ -6672,6 +6762,8 @@ def validate_content() -> None:
             raise ValueError(f"{key}: a card with no outlet effect")
         if len(drawn["outlets"]) > len(OUTLETS):
             raise ValueError(f"{key}: more than {len(OUTLETS)} outlets")
+    _validate_reachability(CARDS)
+    _validate_state_tables()
     _validate_menu_tables()
     _validate_politics_tables()
     _validate_lore_tables()
