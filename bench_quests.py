@@ -425,19 +425,28 @@ def run_career(seed: int) -> dict:
                 break
             _shop_and_rest(party, clock, purse, rng, log)
         if cleared_all and quest["sites"]:
-            # The turn-in: the whole job's lump, paid once (2026-07-26), and
-            # banded by the day it lands (slice 2). A job carried past the
-            # grace pays NOTHING at the turn-in -- the fights it already paid
-            # for are kept.
+            # Work-done and turn-in in one breath: the career teleports, so
+            # the FIELD tranche (unbanded) and the TURN-IN tranche + gold
+            # (banded by the day, slice 2) land together -- the same total
+            # session play splits across the return leg (2026-08-08). A job
+            # carried past the grace keeps its field tranche: only the
+            # turn-in tranche and the gold ever expire.
             band = quest_band(quest, clock.day)
             mult = QUEST_PAY_BANDS[band]
             bands[band] += 1
             if mult:
                 rpg.award_quest(party, purse,
                                 round(rpg.quest_gold(level, enc) * mult),
-                                round(rpg.quest_clear_xp(level, enc) * mult),
+                                rpg.quest_clear_xp(level, enc)
+                                + round(rpg.quest_turnin_xp(level, enc)
+                                        * mult),
                                 log, quest["name"])
-            quest["status"] = "done" if mult else "failed"
+            else:
+                # Done, never paid: the field tranche stays banked -- only
+                # the turn-in tranche and the gold expire with the window.
+                rpg.award_xp(party, rpg.quest_clear_xp(level, enc), log,
+                             "the work done")
+            quest["status"] = "done" if mult else "lost"
             quests_cleared += bool(mult)
         done.add(quest["id"])
 

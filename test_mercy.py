@@ -511,6 +511,11 @@ class FateBargain(unittest.TestCase):
 
 
 class FoeBreak(unittest.TestCase):
+    """The ROUT. Its trigger band and chase math were rebalanced on
+    2026-08-08 and are pinned in test_turnin.py (RoutTrigger,
+    RoutChaseMath); what stays here is what the break itself does to the
+    encounter -- the withdrew marker, the ferocity gate, the one attempt."""
+
     def test_a_badly_beaten_beast_can_escape_in_reverse(self):
         h = hero("Hunter")
         foe = sites.make_foe("wolf", 1, random.Random(1))
@@ -535,6 +540,38 @@ class FoeBreak(unittest.TestCase):
                              max_rounds=1)
         self.assertFalse(foe.withdrew)
         self.assertTrue(foe.alive)
+
+    def test_a_run_down_line_never_gets_a_second_try(self):
+        # break_tried is stamped on the whole standing line at the attempt,
+        # so a caught roster fights it out (one attempt per fight).
+        h = hero("Hunter")
+        foe = sites.make_foe("bear", 1, random.Random(1))
+        foe.hp = 1
+        with (
+            mock.patch("rpg._attack", return_value=False),
+            mock.patch("rpg._chase_contest", return_value=False) as chase,
+        ):
+            rpg.group_combat([h], [foe], random.Random(2), [],
+                             max_rounds=4)
+        self.assertEqual(chase.call_count, 1)
+        self.assertFalse(foe.withdrew)
+        # ...and the marker is per-fight: it clears with the rest of the
+        # fight states, so the next encounter starts with its own attempt.
+        self.assertFalse(foe.break_tried)
+
+    def test_a_rout_is_rolled_without_the_runners_head_start(self):
+        # The party's deliberate retreat keeps FLEE_BONUS; a collapse under
+        # pursuit picks nothing (2026-08-08). Full math: test_turnin.py.
+        h = hero("Hunter")
+        foe = sites.make_foe("bear", 1, random.Random(1))
+        foe.hp = 1
+        with (
+            mock.patch("rpg._attack", return_value=False),
+            mock.patch("rpg._chase_contest", return_value=True) as chase,
+        ):
+            rpg.group_combat([h], [foe], random.Random(2), [],
+                             max_rounds=1)
+        self.assertTrue(chase.call_args.kwargs.get("routed"))
 
 
 class SaveRoundTrip(unittest.TestCase):

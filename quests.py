@@ -320,8 +320,8 @@ TEMPLATES: dict[str, list[dict]] = {
                               "are dead and the toll bridge is theirs now."),
         dict(title="Wolves Attack",
              desc="Wolves have killed sheep and a shepherd. Hunt the pack in "
-                  "the hills and kill it.",
-             pool=WOLF_POOL, skins={}, places=2,
+                  "the hills and kill it. Bring back the pelts.",
+             pool=WOLF_POOL, skins={}, places=2, proof="the pelts",
              sites=("the high pasture", "the den in the hills"),
              giver="the head shepherd",
              epilogue="The wolves are dead. No sheep are lost for the rest of "
@@ -352,8 +352,9 @@ TEMPLATES: dict[str, list[dict]] = {
                               "east. The army hunts its own men now."),
         dict(title="Renegade Wizards",
              desc="Renegade wizards have taken the tollhouse. They attack "
-                  "travelers with fire and ice. Kill them and clear the road.",
-             pool=CASTER_POOL, skins={},
+                  "travelers with fire and ice. Kill them and clear the "
+                  "road. The mage hunter pays on their rings.",
+             pool=CASTER_POOL, skins={}, proof="the wizards' rings",
              sites=("the tollhouse road", "the ruined guildhall"),
              giver="the bishop's mage hunter",
              epilogue="The wizards are dead. Travelers use the road again.",
@@ -386,9 +387,11 @@ TEMPLATES: dict[str, list[dict]] = {
                               "missing wardens are not coming back."),
         dict(title="Blighted Beasts",
              desc="The blight has driven the boars and bears mad. They are "
-                  "attacking the outer groves. Kill them.",
+                  "attacking the outer groves. Kill them and bring back "
+                  "their heads.",
              pool=BEAST_POOL, skins={"boar": "Blighted Boar",
                                      "bear": "Blighted Bear"},
+             proof="the beasts' heads",
              sites=("the torn grove", "the beast den"),
              giver="the grove keeper",
              epilogue="The beasts are dead. The groves are safe again.",
@@ -425,6 +428,7 @@ TEMPLATES: dict[str, list[dict]] = {
              desc="The clan has chosen a dangerous beast for the hunt. Kill "
                   "it and bring back its hide.",
              pool=BEAST_POOL + ("dire wolf",), skins={}, places=2,
+             proof="the beast's hide",
              sites=("the hunting grounds", "the beast den"),
              giver="the clan's lead hunter",
              epilogue="The hide hangs in the clan hall. The clan honors the "
@@ -456,8 +460,8 @@ TEMPLATES: dict[str, list[dict]] = {
                               "back and the goods rot at the road head."),
         dict(title="Dragon on the Mountain",
              desc="A dragon hunts the clan's herds from the high peaks. Climb "
-                  "to its nest and kill it.",
-             pool=DRAKE_POOL, skins={},
+                  "to its nest and kill it. Bring back its head.",
+             pool=DRAKE_POOL, skins={}, proof="the dragon's head",
              sites=("the mountain slopes", "the dragon's nest"),
              giver="the clan elder",
              epilogue="The dragon is dead. The herds return to the mountain.",
@@ -503,9 +507,10 @@ TEMPLATES: dict[str, list[dict]] = {
                               "the claim and sold the deed."),
         dict(title="Monster in the Mine",
              desc="A giant has taken over part of the mine. Kill it and clear "
-                  "the tunnels.",
+                  "the tunnels. The foreman pays on its head.",
              pool=GIANTKIN_POOL, skins={"ogre": "Deep Ogre",
                                         "troll": "Stone Troll"},
+             proof="the monster's head",
              sites=("the mine tunnel", "the broken chamber"),
              giver="the mine foreman",
              epilogue="The monster is dead. The miners return to work.",
@@ -539,9 +544,11 @@ TEMPLATES: dict[str, list[dict]] = {
     "goblin": [
         dict(title="Hounds in the Factory",
              desc="The boss's guard dogs escaped into the factory. They are "
-                  "killing workers. Hunt them down.",
+                  "killing workers. Hunt them down and bring back their "
+                  "collars.",
              pool=WOLF_POOL, skins={"wolf": "Factory Hound",
                                     "dire wolf": "Boiler Hound"},
+             proof="the hounds' collars",
              sites=("the scrapyard", "the factory floor"),
              giver="the shift boss",
              epilogue="The hounds are dead. The factory workers return to "
@@ -603,8 +610,8 @@ TEMPLATES: dict[str, list[dict]] = {
 EPIC_TEMPLATES: list[dict] = [
     dict(title="The Dragon's Tribute",
          desc="A dragon takes food and gold from an entire valley. Kill it "
-              "and end the tribute.",
-         pool=DRAKE_POOL, skins={},
+              "and end the tribute. The general pays on its head.",
+         pool=DRAKE_POOL, skins={}, proof="the dragon's head",
          sites=("the burned storehouses", "the mountain path",
                 "the dragon's cave"),
          giver="the king's general",
@@ -613,8 +620,8 @@ EPIC_TEMPLATES: list[dict] = [
                           "out to the mountain every month."),
     dict(title="The Giant at the Border",
          desc="A giant has destroyed several border forts. Track it to its "
-              "stronghold and kill it.",
-         pool=GIANTKIN_POOL, skins={}, places=2,
+              "stronghold and kill it. Bring back its head.",
+         pool=GIANTKIN_POOL, skins={}, places=2, proof="the giant's head",
          sites=("the ruined fort", "the giant's hall"),
          giver="the border commander",
          epilogue="The giant is dead. Soldiers return to the border forts.",
@@ -878,6 +885,25 @@ def stamp_quest_clock(quest: dict, day: int, rng: random.Random,
     return quest
 
 
+def return_leg_days(world: dict, quest: dict) -> int:
+    """The road home: travel days from the quest's LAST site's area back to
+    the giver's settlement (the delivery kind's round-trip precedent). Added
+    to the window at posting since the turn-in stage (2026-08-08) put the
+    return leg inside the clock -- the windows were tuned for instant
+    completion, and this keeps the bands roughly neutral."""
+    sites = quest.get("sites")
+    if not sites:
+        return 0
+    last = world["sites"][sites[-1]]
+    origin = world["areas"][quest["origin"]]
+    dest = world["areas"][last["area"]]
+    if dest["key"] == origin["key"]:
+        return 0
+    if dest["land"] == origin["land"]:
+        return TRAVEL_DAYS_IN_LAND
+    return TRAVEL_DAYS_CROSS
+
+
 def quest_days_left(quest: dict, day: int) -> int | None:
     """Days to the deadline (0 = due today, negative = into the grace).
     None when the job has no clock."""
@@ -1110,7 +1136,7 @@ def _reusable_site(world: dict, area: dict, requirement: dict,
             qid for qid in site.get("quest_ids", ())
             if qid not in world["quests"]
             or world["quests"][qid].get("status") not in ("done", "complete",
-                                                          "failed")
+                                                          "failed", "lost")
         ]
         if (site.get("template") in compatible
                 and not active_quests
@@ -1226,6 +1252,12 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                                             # karma, dark accrues it
         "epilogue": tpl.get("epilogue", ""),
     }
+    if tpl.get("proof"):
+        # Proof of the kill (2026-08-08): the giver pays on the token named
+        # here, so the FINAL site's roster must be DEAD before the job is
+        # done -- driven off is not done. Printed on the board row and
+        # relayed in the giver's words: the terms are taken knowingly.
+        quest["proof"] = tpl["proof"]
     if requirement.get("state_on_post"):
         add_state(world, target_area, requirement["state_on_post"])
     return quest
@@ -1295,11 +1327,13 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
 def forge_quest(world: dict, qid: str, level: int, places: int,
                 encounters: int, pool: tuple[str, ...], name: str,
                 rng: random.Random, area_key: str = "",
-                align: str = "good") -> dict:
+                align: str = "good", proof: str = "") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
     forges a shadow job (karma & heat: bad-karma XP, the gold premium).
+    `proof` forges a bounty: the token the giver pays on -- the final
+    site's roster must be dead before the job is done (2026-08-08).
 
     The shape is (places, encounters) since 2026-07-26 -- the same two
     numbers a generated quest carries."""
@@ -1328,14 +1362,17 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
             new_room(world, site_id, f"{site_id}/{slug_name(rn)}", rn,
                      kinds, quest=qid)
         site_ids.append(site_id)
-    return {"id": qid, "name": name, "desc": "(DM-forged)",
-            "origin": area_key, "level": level,
-            "skins": {}, "sites": site_ids, "site_count": places,
-            "encounters": encounters,
-            "xp_total": quest_xp_total(level, encounters),
-            "gold_total": quest_gold(level, encounters),
-            "next": {"site": 0, "room": 0},
-            "status": "open", "align": align, "epilogue": ""}
+    quest = {"id": qid, "name": name, "desc": "(DM-forged)",
+             "origin": area_key, "level": level,
+             "skins": {}, "sites": site_ids, "site_count": places,
+             "encounters": encounters,
+             "xp_total": quest_xp_total(level, encounters),
+             "gold_total": quest_gold(level, encounters),
+             "next": {"site": 0, "room": 0},
+             "status": "open", "align": align, "epilogue": ""}
+    if proof:
+        quest["proof"] = proof
+    return quest
 
 
 # --------------------------------------------------------------------------- #
@@ -1529,7 +1566,8 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     # in paper notes quotes 1.5. Stamped in, not read out, so the job keeps
     # the terms it was taken at.
     quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"])
-    stamp_quest_clock(quest, day, rng)
+    stamp_quest_clock(quest, day, rng,
+                      extra_days=return_leg_days(world, quest))
     _maybe_attach_weapon_reward(quest, qid)
     attach_giver(quest, race, rng, role=tpl.get("giver"),
                  used_names=used_people)
@@ -1654,7 +1692,8 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
     quest["world_card"] = posting["key"]
     quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"],
                                      posting["pay"])
-    stamp_quest_clock(quest, day, rng)
+    stamp_quest_clock(quest, day, rng,
+                      extra_days=return_leg_days(world, quest))
     attach_giver(quest, land_race(world, settlement["land"]), rng,
                  role=tpl.get("giver"), used_names=used_people)
     world["quests"][qid] = quest
@@ -1979,8 +2018,12 @@ def quest_line(quest: dict, day: int | None = None) -> str:
     no site level: DELIVERY stands where the level would (the road's danger
     is the road's own table)."""
     mark = {"open": "", "done": "  [DONE]",
+            "work_done": "  [WORK DONE -- turn in]",
+            "lost": "  [DONE, NEVER PAID]",
             "failed": "  [FAILED]", "expired": "  [GONE]"}.get(
                 quest["status"], "")
+    if quest["status"] == "open" and quest.get("proof_pending"):
+        mark = "  [the target escaped -- proof wanted]"
     if not mark and day is not None:
         note = deadline_note(quest, day)
         mark = f"  ({note})" if note else ""
@@ -1994,10 +2037,11 @@ def quest_line(quest: dict, day: int | None = None) -> str:
     rw = quest.get("reward_weapon")
     pay = (f"pays a {rw['name']}" if rw
            else f"pays {quest_gold_posted(quest)}g")
+    proof = (f"; proof: {quest['proof']}" if quest.get("proof") else "")
     return (f"[{quest['id']}] {level_grade(quest)}{dark} "
             f"{quest['name']} -- "
             f"{quest_shape(quest)}; {pay}, "
-            f"{quest_xp_posted(quest)} XP{xp_note}{mark}")
+            f"{quest_xp_posted(quest)} XP{xp_note}{proof}{mark}")
 
 
 def board_lines(world: dict,
@@ -2041,6 +2085,9 @@ def quest_detail_lines(world: dict, quest: dict,
     if rw:
         lines.append(f"    the reward: a {rw['name']} in place of the "
                      f"gold lump -- {rw['description']}")
+    if quest.get("proof"):
+        lines.append(f"    proof wanted: {quest['proof']} -- the giver "
+                     f"pays on the target dead; driven off is not done")
     if day is not None and quest.get("deadline_day") is not None:
         band = quest_band(quest, day)
         lines.append(f"    due day {quest['deadline_day']} "
