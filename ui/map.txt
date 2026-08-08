@@ -1,6 +1,5 @@
-RPG2 MAP -- day 3
-the party is at Mortellaria > Portomera
-  > the roadside camp
+RPG2 MAP -- day 4
+the party is at Mortellaria > Oliveta
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -17,12 +16,13 @@ the party is at Mortellaria > Portomera
 == Mortellaria ==  <- here
   [NORMAL]
   ABSOLUTISM
-  WEATHER: the sea wind.
+  WEATHER: steady rain.
   Castavera (capital) -- 5 job(s)
     (visited)
-  Portomera (town) -- 4 job(s)  <- the
+  Portomera (town) -- 4 job(s)
+    (visited)
+  Oliveta (village) -- 2 job(s)  <- the
     party
-  Oliveta (village) -- 2 job(s)
 
 == Ensimaa ==
   Taivelle (capital) -- 4 job(s)

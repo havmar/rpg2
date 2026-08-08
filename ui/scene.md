@@ -1,75 +1,47 @@
-## turn 2 (day 3)
+## turn 3 (day 4)
 
-> take the bandit job, but hire them as a private army
+> I'll pay, but they have to help take over Oliveta
 
-Sabine shakes on it, tells you the milestone where her men were found, and goes back to her fountain. The east road runs two days to the coast. You do not tell her what you mean to do when you get there.
+You count out five hundred in Renaud's hand and tell him where it is going. Not a road. A village -- vineyards, a press house, a keep with a garrison in it, one day south along the coast. After that they have a wall to stand on and a lord to be paid by, and the sheriff of Castavera can put her warrant where she likes.
 
-The first night out, something comes through the haze at the camp.
+He looks at the coin, then at Myev, then at the pines his men have been sleeping under since spring.
 
-```
-=== On the road to Portomera ===
-(a level-2 encounter)
-Wolf 1 -- fangs
-DEX 4  STR 2  STA 8  HP 4/4
-breaks when beaten
-Hexer 2 -- dagger
-DEX 4  STR 2  STA 6  HP 10/10
-takes spoils, leaves the fallen,
-caster: ice 2; 8 Power
-```
+"A wall," he says. "Yes. We are done with trees."
 
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-lsznpg/ui/fight-short.txt)
+Thirty-odd blades break camp inside the hour. The bandit job dies where it stands; Sabine will hear about it from somebody else.
 
-You are not there when they arrive, and the wolf dies without ever seeing you. The hexer gets two bolts off, and the haze takes both. Myev never has to swing.
+Steady rain on the ride south, and Oliveta comes up out of it in the afternoon: terraced vines, olive trees in rows, wine carts standing full at the press house with nobody working them. The keep is old and small and holds the high ground over the square.
+
+You walk into the square with Renaud's crew filling the road behind you and say what you have come for. The village understands it fast. Shutters go over first, then the press house doors.
+
+Walt the castellan comes out onto the wall with a soldier and two veterans and looks a long time at the road. Eleven years on that wall, and he counts everything on it before he speaks.
+
+"You are not a lord," he says. "You are a goblin with a stick and a purse."
+
+Then, because nobody moves: "The gate stays shut. Come and open it."
 
 ```
-Pox +39 XP (encounter) [39/1800]
-Myev +39 XP (encounter) [39/1800]
-Left among the dead:
-a dagger (+0 atk/-1 sev, 2g).
-The bright staff pays out its kills:
- +4g (purse 1767g).
-```
-
-Day three, sea wind off the cove and Portomera below. The camp is where Sabine said it was: pines above the road bend, a picket line of horses, cook smoke that nobody bothers to hide.
-
-You walk up with your hands open. Two sentries come out of the trees -- army swords, army boots, the badges cut off the coats. Myev keeps the zweihander on her shoulder and whispers something over her thumb. You ask for the man in charge.
-
-He is called Renaud, and he was a captain until the pay stopped coming. Thirty-odd blades sit around behind him and none of them get up. He hears the offer out twice, looks a long time at the staff, and does not laugh.
-
-```
-  Renaud's terms
-  500g down, a share of what comes
-    after
-  they hold ground -- a road, a
-    wall, a gate. they do not go
-    into holes behind two people
-  the sheriff stops, or the crew
-    leaves Mortellaria entirely
-```
-
-"She has buried two and she will send four," he says. "You cannot have us and her both. Say which."
-
-The camp is still the job, and it is still standing where you are standing.
-
-```
-Pox: Unhurt STA 13/13 Power 15/15
-  (stamina x2)
-Myev: Unhurt STA 15/15 Power 14/14
-  (healing x1, stamina x1)
-Purse 1767g; day 3.
-Ahead: 3 fight(s) at the roadside
-  camp; the turn-in pays 774g,
-  1203 XP. (due day 6 -- 3 days
-  left; quick pay, x1.15)
+[q29] L5 DARK Take Oliveta
+1 site, 1 encounter
+pays 45g, 264 XP (sin)
+room 1: the keep -- Soldier,
+  2x Veteran, led by Walt,
+  the castellan
 ```
 
 ```
-  options: pay the 500g, haggle,
-    take the camp instead (room),
-    ride back to Sabine
+  the crown will not forgive it.
+  a holding keeps the heat floor
+  up. the strongbox pays on the
+  day it falls.
 ```
 
-What do you do?
+```
+  options: take q29 and open the
+    gate, hold and talk to Walt,
+    call it off
+```
+
+The rain is not letting up. What do you do?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-lsznpg/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-lsznpg/ui/map.txt)
