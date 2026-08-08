@@ -33,7 +33,10 @@ Three consequences still govern the roadmap:
 
 - **Displays over prose.** Script-generated logs and menus are the
   primary thing the player reads; the chat should usually display them
-  directly, at 40 columns.
+  directly, at 40 columns. *(Softened 2026-08-12: logs, menus and
+  numbers stay displays, but quests and their resolutions are narrated
+  in the text-adventure voice, and the DM checks that quests and
+  events make sense -- dm.md's Narration style owns the rule.)*
 - **Dark quests stay the most important pre-authored content**, and
   their wording gets a simple-and-straightforward rewrite.
 - **The villain/karma layer is one layer among several**, not the
@@ -44,15 +47,17 @@ Three consequences still govern the roadmap:
 The style itself is `writing.md`'s; the simulated-world half is the
 active thread below. What is left of the pivot's own build order:
 
-1. **The log/menu rework — the non-combat half.** Still open:
+1. **The log/menu rework — the non-combat half.** The 2026-07-28
+   display pass took the hero readouts (`hero_block_lines`, shared by
+   `status` and `ui/party.txt`) and the levelup menu with its ability
+   briefs (develop.md's Files section carries the record). Still open:
    - a player **STATUS DISPLAY** — a fitted, pasteable `status` in the
-     same register (`status` / `board` / `map` still print DM-shaped,
+     same register (the hero blocks are fitted; the quest/world/karma
+     lines around them, and `board` / `map`, still print DM-shaped,
      wrap-reliant output);
-   - the **levelup menu** refit WITH ability descriptions (it still
-     prints the old wide two-column-ish lines, which wrap raggedly at
-     40);
    - a **fitting pass over the remaining non-combat surfaces** — rests,
-     travel, recruit sheets — where lines still hang a word past the
+     travel, recruit sheets (`people.person_line` still runs one long
+     semicolon-joined line) — where lines still hang a word past the
      width. `fit_lines` and the tally/pause penalty display are the
      pattern to reuse;
    - **`ui/minimap.txt`**, a local map page beside `ui/map.txt` and
@@ -64,13 +69,7 @@ active thread below. What is left of the pivot's own build order:
      **E1/P1 shorthand** for enemy and party names in fight lines —
      saves width on long names but reads cryptic; try only if long-name
      fights prove noisy in play.
-2. **The quest wording rework — the `quests.py` half.** The good-side
-   templates get the simple-and-straightforward pass under `writing.md`,
-   where the clash with the dark copy is felt. (The `karma.py` half is
-   done: the occult ten were reworded with the assignment ladder, and
-   the crime layer's copy was written fresh in `crime.py` rather than
-   rewording the retired templates.)
-3. **Play the dark path in the new register.** The probe tests the retro
+2. **Play the dark path in the new register.** The probe tests the retro
    style AND the dark content at once — the first ten messages, the
    first three levels.
 
@@ -322,9 +321,9 @@ already a template-declared place count.)*
   quest) an authored property of the template, so the board's mix of
   short and long work is designed rather than sampled.
 - Wants the same pass over the good templates in `quests.py`, the epics,
-  and the occult templates in `karma.py`, and it pairs naturally with
-  the quest-wording rework (retro item 2) — same files, same content
-  register (`writing.md`).
+  and the occult templates in `karma.py` — the same files the wording
+  rework already took to the plain style (2026-07-22 and the dark
+  rework; designlog), same content register (`writing.md`).
 - Schedule after the quest-clock and wound slices have been played: what
   a job's *right* length feels like is a play finding, not a desk one.
 

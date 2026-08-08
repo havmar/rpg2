@@ -188,7 +188,14 @@ the player's core decision:
   full slate; relay levels and pay straight, answer questions about them
   straight, then let them pick. A job's mechanics (level, pay, foe kind
   where the board names one) ride in a short display block beside the
-  scene -- the board's own rows are the format; the giver's mouth
+  scene -- the board's own rows are the format for the NUMBERS, and only
+  the numbers: **what the job actually IS is narrated** (2026-08-12),
+  told in the giver's mouth in the plain text-adventure voice, never
+  left to a pasted row or the template's desc line. The desc is a
+  one-line prompt and what it asks for is not always obvious -- say the
+  job so the player can picture it (who wants it, what needs doing,
+  where), and make it square with the place and the day's news before
+  you say it. The giver's mouth
   carries the fiction, never the stat sheet or a tactics preview. The board also lists **word from around the land** (other
   settlements' open jobs -- PLAYER-KNOWN, relay it) and **notables in
   town** -- the land's recurring cast (ruler, sage, wildcard): use them
@@ -221,12 +228,16 @@ the player's core decision:
   - The war waves carry NO clock (an authored questline does not lapse).
     Hell's assignments carry their own pair instead -- the grace to take
     one, then the completion window -- and never lapse off the board.
-- **Turn-ins pay an EPILOGUE**: the QUEST COMPLETE banner prints a
-  day-stamped aftermath line and a turn-in prompt naming the giver.
-  Narrate the turn-in scene over both -- the epilogue is what the world
-  now looks like because the party worked; don't skip it, don't pad it.
-  A LATE turn-in prints its own band line; play the giver accordingly --
-  paid, but not pleased.
+- **Turn-ins pay an EPILOGUE -- and the resolution is NARRATED
+  (2026-08-12)**: the QUEST COMPLETE banner prints a day-stamped
+  aftermath line and a turn-in prompt naming the giver. The banner and
+  its numbers stay in the display block; the epilogue line and the
+  prompt are MATERIAL, not display -- tell the job's ending as a short
+  scene in the text-adventure voice, the giver paying and the
+  aftermath fact folded into the fiction. The epilogue is what the
+  world now looks like because the party worked; don't skip it, don't
+  pad it, and don't paste it and move on. A LATE turn-in prints its
+  own band line; play the giver accordingly -- paid, but not pleased.
 - `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
@@ -984,12 +995,17 @@ bigger than the fights WITHOUT pages of narration:
   holds it exactly. On the page, copy the fight's OPENING block (the
   `===` banner, the site/room line, the foe roster with its tags) into
   a code fence, then a markdown link to the fight page, then -- fenced
-  again -- everything AFTER the
-  last round: the catch-of-breath, XP lines, banners, epilogue and
-  turn-in prompt, a level-up menu if one printed, and the closing party
+  again -- the MECHANICS after the
+  last round: the catch-of-breath, XP lines, the banners with their
+  pay, satisfaction lines, a level-up menu if one printed, and the
+  closing party
   TALLY (tracks, standing roll penalties, kit, purse, fights left on
   the job and what the turn-in pays -- the between-fights numbers,
-  already in display form). The round-by-round middle lives behind the
+  already in display form). The quest-resolution WORDS -- the epilogue
+  line, the turn-in prompt, a giver's failure line -- come OUT of the
+  fence (2026-08-12): their facts are narrated in the prose around the
+  block, in the text-adventure voice, as the job's ending told rather
+  than printed. The round-by-round middle lives behind the
   link only. YOU still read the whole log: narrate from its shape (the
   turning points, the falls, the crossings) in the 2-4 sentences around
   the blocks; the prose never restates what the tally shows. A PAUSED
@@ -1214,6 +1230,23 @@ bigger than the fights WITHOUT pages of narration:
   them ("three good swings left in each of you") -- and never re-tells
   what a display already said ("the third straight without a camp, so
   it pays x5" is the tally's line, worn as prose).
+- **Quests and their resolutions are NARRATED (2026-08-12).** The
+  engine's quest copy -- a board row, a template's desc, an epilogue,
+  a failure rumor -- is a prompt, not a display: what a job is, what
+  doing it means, and how it ended are told in the plain
+  text-adventure voice, with the display blocks carrying only the
+  numbers (level, pay, the clock, XP). This is the deliberate soft
+  spot in displays-over-prose: script output and numbers pass on as
+  info; the quest's telling is yours.
+- **Make the quest make sense.** Generated pieces can sit oddly
+  together -- a desc that doesn't say what the work is, a giver whose
+  role fits the job strangely, a site that squares badly with the
+  land's news. Read the pieces (the desc, the giver line, `show QID`,
+  the map's state) BEFORE narrating an offer, a twist, or an ending,
+  and settle the coherent reading; where they clash, the fiction bends
+  and the numbers stay the engine's. The same duty covers events: a
+  war wave, a news line, a WORD FROM BELOW should land as something
+  that makes sense here, today, to these people.
 - **Compose your own display blocks for ad-hoc mechanics.** Mechanical
   content the scripts didn't print -- a job's numbers, a decision's
   options, a mid-scene readout -- goes in the same terse label-and-value
