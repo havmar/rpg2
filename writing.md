@@ -30,6 +30,11 @@ voice supplies most of the prose. Event and command voice are accents for
 displays and real interaction points; do not turn every sentence into a
 catchphrase.
 
+One ranking governs everything below: **plain comes before terse.** "Terse"
+and "dry" are instructions about length and restraint, not an invitation to
+compress sentences into stylish turns. A longer plain sentence beats a
+shorter clever one, every time.
+
 ## The load-bearing rules
 
 - **Scenes address the player as "you," in present tense.** The PC is never a
@@ -79,6 +84,77 @@ catchphrase.
   in the DM's prose is structure only -- turn headings, the input quote,
   fences, links -- never bold or italics for emphasis; the voice does the
   emphasis.
+
+## Plain English first (2026-08-08)
+
+The narrator's persistent failure mode is not purple prose. It is literary
+compression: the crafted opener, the figure of speech standing in for a
+fact, the place or abstraction doing a person's action. Each sentence looks
+short and confident, but the player has to translate it to learn what
+happened, and a page of them reads as a voice performing. These pairs were
+collected from real play; the left column is the failure:
+
+    Avoid: Two days on the road and
+      nothing on it.
+    Use:   Two days on the road;
+      nothing out of the ordinary
+      happens.
+
+    Avoid: Ensimaa arrives as trees
+      before it arrives as a city.
+    Use:   You reach the forests of
+      Ensimaa, and then the city.
+
+    Avoid: You come in with the rain
+      going sideways.
+    Use:   You come in through the
+      gate in heavy rain.
+
+    Avoid: Erevan has the worse
+      problem and says so straight.
+    Use:   Erevan, the council's
+      wizard, also has a problem:
+
+    Avoid: ...one of them paying in
+      steel.
+    Use:   ...one of them offers a
+      zweihander as the reward.
+
+    Avoid: The rest of the porch is
+      out of your weight entirely.
+    Use:   The rest of the posted
+      jobs are far above your level.
+
+    Avoid: Word on the porch also
+      runs to work elsewhere in the
+      land.
+    Use:   Some jobs mean travel to
+      other settlements.
+
+**The translation test.** Read the sentence word by word. If what it
+literally says is not what happened, write what happened instead. "The job
+pays in steel" literally describes coins; the fact is a weapon offered as a
+reward, so the sentence says that. The test does not forbid strong verbs or
+short sentences -- it forbids sentences the reader must decode.
+
+The forms to catch:
+
+- **A non-actor as the subject.** Cities do not arrive, word does not run,
+  purses do not open, a porch does not offer work. A person does something,
+  or a thing is somewhere; write it that way.
+- **Metonymy.** "Steel" for a weapon, "the porch" for the people on it,
+  "blades" for fighters: name the thing itself.
+- **The crafted opener.** A first line built as a turn of phrase instead of
+  a statement of fact.
+- **Idiom as intensity.** "Rain going sideways" is an idiom doing the work
+  of "heavy rain"; use the plain words.
+- **The narrator describing delivery.** "Says so straight", "does not mince
+  words": performance notes about a speech the reader can read themselves.
+  Give the speech or the fact.
+
+When a line trips the test, do not polish it -- replace it with the plain
+statement, even if the result is longer and less striking. The target
+register is a walkthrough, not a novel: plain first, short second.
 
 ## The three writing layers
 
@@ -259,6 +335,8 @@ it.
 Before shipping a line of fiction, ask:
 
 - Can the reader picture the concrete game state on the first read?
+- Does every sentence pass the translation test (Plain English first): a
+  literal subject, a literal verb, nothing the reader must decode?
 - Is every subject named outright rather than withheld, and can the reader
   picture each invented detail without being told what it means?
 - Does the line tell them something present, changed, or actionable?

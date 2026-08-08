@@ -1200,6 +1200,12 @@ bigger than the fights WITHOUT pages of narration:
   delivered deadpan. `writing.md` also governs any quest, place, NPC,
   item, or epilogue invented during play; `scene-example.md` shows
   the voice at full page length -- imitate it when a line feels off.
+- **Plain English first.** writing.md's translation test (2026-08-08)
+  governs every line of prose: a person or thing as the literal subject, a
+  literal verb, no figure of speech standing in for a fact, no crafted
+  opener. The scene-page reread's first job is finding the sentences a
+  reader would have to translate -- and replacing them with the plain
+  statement, not polishing them.
 - **Second person, always.** The PC is "you" -- every scene is told to
   the player directly ("you crest the ridge; the barrow mouth gapes
   below"). Companions and NPCs are third person by name. Never narrate

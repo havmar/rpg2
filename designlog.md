@@ -3633,3 +3633,65 @@ already implemented, and were):
   fitting, the non-combat fitting pass, `ui/minimap.txt` (session.py
   still calls it planned), the parked E1/P1 shorthand, and playing the
   dark path in the new register (no probe playthrough on record).
+
+## 2026-08-08 (in play) — Plain English first: the claudese problem named
+
+A style session raised from the table, two turns into a fresh playthrough
+(the branch's game continues around it). The designer stopped play to name
+a narration failure that survives every existing rule in writing.md, and
+that he could not prompt Claude Opus out of: "claudese" — literary
+compression that reads as style but has to be translated back into plain
+English to find out what happened. His examples from the two live turns,
+with his own translations, became the spec:
+
+- "Two days on the road and nothing on it" -> "nothing out of the
+  ordinary has happened."
+- "Ensimaa arrives as trees before it arrives as a city" -> "you reach
+  the forests of Ensimaa, and then a city."
+- "with the rain going sideways" -> "in heavy rain."
+- "has the worse problem and says so straight" -> "also has a problem:"
+- "one of them paying in steel" -> "offering a zweihander as a reward."
+- "The rest of the porch is out of your weight entirely" -> "the rest of
+  the jobs are probably too difficult for you." (Metonymy called out as
+  painful by name.)
+- "Word on the porch also runs to work elsewhere in the land" -> "some
+  jobs mean travel to other parts of the land."
+
+**Why the existing guide missed it.** writing.md's Avoid examples all
+show purple prose and mystery-teasing; steering away from those lands on
+clever-laconic, which the guide never exemplified as wrong. Worse, the
+register words themselves ("terse", "dry", "deadpan") read as a style to
+perform, and the model's idea of good compressed prose IS the crafted
+turn. A third suspected cause: the instruction docs are themselves
+written in the compressed register, and the narrator mirrors what it
+reads.
+
+**What shipped:**
+
+- **writing.md, "Plain English first"** — the new section: the failure
+  mode named, the designer's seven pairs kept verbatim as Avoid/Use, the
+  TRANSLATION TEST (read the sentence word by word; if what it literally
+  says is not what happened, write what happened), and the five forms to
+  catch (non-actor subjects, metonymy, the crafted opener, idiom as
+  intensity, the narrator describing delivery). Plus one ranking line in
+  the target-voice section: plain comes before terse. Final check gains
+  the translation-test bullet, so the scene-page reread applies it every
+  message.
+- **dm.md, Narration style** — a pointer bullet: the translation test
+  governs every line; the reread's first job is finding sentences a
+  reader would have to translate, and replacing rather than polishing
+  them.
+- **scene-example.md** — its own claudese purged ("fire in your hands
+  that nobody taught you", "cracks it dead", "Short and ugly, the way
+  well work is", "Ventoro draws water again").
+- **The live turn 2** (ui/scene.md, transcript) rewritten to the plain
+  register as the worked before/after.
+
+**Open, deliberately:** a full register rewrite of dm.md itself (the
+mirror-what-you-read theory says the play protocol's own prose teaches
+the narrator its habits — ~1750 lines, a dedicated session if wanted),
+and whether the model switch made this session (Opus -> Fable) moves the
+needle on its own. The cheap standing lever: every line that bugs the
+designer in play gets pasted into the chat and added to the Avoid/Use
+list — real pairs from real turns are the strongest instruction this
+file has.
