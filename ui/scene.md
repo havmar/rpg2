@@ -2,7 +2,7 @@
 
 > i travel to ensimaa and check quests there
 
-Two days on the road; nothing out of the ordinary happens. You reach the forests of Ensimaa, and then the city: Taivelle, the elven capital, timber halls and stone walks among great living trees beside the Avelune River. You come in through the western gate in heavy rain. A storm has held the land since yesterday. Half the market is packed away and the river is loud under the bridge.
+Two days on the road; nothing out of the ordinary happens. You reach the forests of Ensimaa, and then the city: Taivelle, the elven capital, timber halls and stone walks among great living trees beside the Avelune River. You come in through the western gate in heavy rain. There has been a storm since yesterday. Half the market is packed away and the river is loud under the bridge.
 
 "Observe the drainage," Meriele says, water running off her scalp. "My people think in centuries and still have not roofed the market."
 
