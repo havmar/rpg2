@@ -1619,7 +1619,7 @@ CONDITION_ON_HIT_TAG = {"bleed": "leaves wounds bleeding",
 #                    like a wound: sick, you cannot get back to full, and you
 #                    walk into every fight carrying it. (rules.md: "small,
 #                    slow, treatable -- an illness-shaped wound".)
-#   in the night   -- one shake roll (2d6 + STA vs DISEASE_SHAKE_DC, easier
+#   in the night   -- one shake roll (2d6 + STR vs DISEASE_SHAKE_DC, easier
 #                    under a roof). A cold shaken is gone; pneumonia shaken
 #                    steps DOWN to a cold. Nothing else clears on a schedule.
 #   catching one  -- BOUNDED DEEPENING (the stacking rule's shape, one rung

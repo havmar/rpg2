@@ -4422,10 +4422,12 @@ expensive, never absurd, and a price never goes to nothing:
 3. **the live cards' own terms** — the doubled toll, the ferryman's price,
    the fair's cheap week.
 
-**The road takes its own.** A leg through a land holding a toll squeeze or
-a washed-out ford is charged in gold before it is walked (small on purpose
-— the fords cost a *day*, and days are the expensive currency). A purse
-that cannot pay walks anyway and owes nothing: the bridge is not a wall.
+**The road takes its own.** A leg through a land whose terms put the toll
+UP — whatever raised it: the toll squeeze, the tax farmer, a free company
+on the bridges — or through a washed-out ford is charged in gold before it
+is walked (small on purpose — the fords cost a *day*, and days are the
+expensive currency). A purse that cannot pay walks anyway and owes
+nothing: the bridge is not a wall.
 
 ## The local encounter table (the encounter outlet)
 
@@ -4719,7 +4721,7 @@ services and no images.
   in every land: the wild talent goes off and runs (`talent-loose`), and the
   hunt that answers is the next card. The talent is **named once and kept**,
   like the fog's necromancer — recurrence is what makes an NPC exist.
-- **The theory is hoarded**, and the three organizations are three prices on
+- **The theory is hoarded**, and the four organizations are four prices on
   one action: the goblin master undercuts the academy, the Firascir tower
   wants a volunteer, and the elven school is the dearest teaching in the
   world and charges in standing as well as gold.

@@ -393,6 +393,42 @@ class TheRecordShapes(unittest.TestCase):
         with self.assertRaises(ValueError):
             worldsim.card("x/y", "X", "firascir", rumor="not an outlet")
 
+    def test_a_clockless_card_cannot_carry_a_while_payload(self) -> None:
+        # A card with no clock never ends, so nothing would ever take its
+        # `while` states or its `wealth_while` band back off (the shipped
+        # example was mortellaria/revocation, which held a land in CRISIS
+        # forever).
+        with self.assertRaises(ValueError):
+            worldsim.card("x/y", "X", "firascir", days=None,
+                          state={"while": ("harvest-failed",)})
+        with self.assertRaises(ValueError):
+            worldsim.card("x/y", "X", "firascir", days=None,
+                          state={"set": ("harvest-failed",),
+                                 "wealth_while": "crisis"})
+
+    def test_a_same_track_while_admit_is_rejected(self) -> None:
+        # The chain trap (the 2026-08-12 repair's cause): a track's draw
+        # only runs while its live slot is free, and expiry drops the live
+        # card's `while` states first -- so a card admitting on a state
+        # only its OWN track holds as `while` can never fire. Cross-track
+        # `while` admits (a crisis card riding a season card's drought)
+        # stay legal.
+        setter = worldsim.card("x/setter", "X", "firascir", days=(5, 10),
+                               news="x",
+                               state={"while": ("harvest-failed",)})
+        waiter = worldsim.card("x/waiter", "X", "firascir",
+                               states=("harvest-failed",), news="x")
+        with self.assertRaises(ValueError):
+            worldsim._validate_reachability((setter, waiter))
+        season = worldsim.card("x/season", "X", "firascir", days=(5, 10),
+                               track="season", news="x",
+                               state={"while": ("harvest-failed",)})
+        worldsim._validate_reachability((season, waiter))   # cross-track
+        keeper = worldsim.card("x/keeper", "X", "firascir", days=(5, 10),
+                               news="x",
+                               state={"set": ("harvest-failed",)})
+        worldsim._validate_reachability((keeper, waiter))   # outlives it
+
     def test_no_card_exceeds_the_five_outlets_or_declares_none(self) -> None:
         for card in worldsim.CARDS:
             self.assertTrue(card["outlets"], card["key"])
@@ -587,7 +623,8 @@ class ThePerLandSaveState(unittest.TestCase):
             layer = _layer(world, polity)
             self.assertEqual(set(layer),
                              {"wealth", "wealth_day", "deck", "drawn",
-                              "live", "news", "told_day", "rolled_day",
+                              "live", "news", "news_seq", "told_seq",
+                              "rolled_day",
                               "weather_deck", "season_deck", "weather_live",
                               "season_live", "weather", "weather_day",
                               "wet", "dry",
@@ -736,15 +773,34 @@ class TheCardsClock(unittest.TestCase):
 
     def test_a_while_state_comes_off_and_a_slot_stands(self) -> None:
         world = _world()
+        layer = _fire(world, "tergal", "tergal/herd-fails", 10)
+        held = lambda: [s["id"] for s in worldsim.held_states(world,
+                                                             "tergal")]
+        self.assertIn("herd-loss", held())
+        self.assertIn("grass-gone", held())
+        layer["rolled_day"] = layer["live"]["until"] - 1
+        worldsim.roll_land(world, "tergal", layer["live"]["until"])
+        self.assertNotIn("herd-loss", held())           # the card's own
+        self.assertIn("grass-gone", held())             # the mark it left
+
+    def test_a_chain_link_outlives_its_setter(self) -> None:
+        # The 2026-08-12 repair: a same-track successor can only admit on
+        # a state that is still there after its setter's clock runs out --
+        # `set`, a slot value, or a derived state, never the setter's own
+        # `while` (the slot is full while that holds and the state is gone
+        # the day it frees).
+        world = _world()
         layer = _fire(world, "dvarvengrond", "dvarvengrond/new-seam", 10)
         held = lambda: [s["id"] for s in worldsim.held_states(world,
                                                              "dvarvengrond")]
-        self.assertIn("claims-collide", held())
-        self.assertIn("deposit-found", held())
         layer["rolled_day"] = layer["live"]["until"] - 1
         worldsim.roll_land(world, "dvarvengrond", layer["live"]["until"])
-        self.assertNotIn("claims-collide", held())      # the card's own
-        self.assertIn("deposit-found", held())          # the mark it left
+        self.assertIn("deposit-found", held())          # the slot stands
+        self.assertIn("claims-collide", held())         # ...and the link
+        spec = worldsim.CARDS_BY_KEY["dvarvengrond/arbitration"]["admits"]
+        layer["tensions"] = ["clan-vs-clan-wall"]
+        layer["live"] = None
+        self.assertTrue(worldsim.admits(world, "dvarvengrond", spec))
 
     def test_the_clock_is_a_day_stamp_not_a_countdown(self) -> None:
         world = _world()
@@ -878,6 +934,19 @@ class TheSurfaces(unittest.TestCase):
         _fire(world, "gibili", "gibili/uprising", 12)
         first = worldsim.take_news(world, "gibili", 12)
         self.assertTrue(any("(day 12)" in line for line in first))
+        self.assertEqual(worldsim.take_news(world, "gibili", 12), [])
+
+    def test_a_line_posted_later_on_a_told_day_is_still_told(self) -> None:
+        # The watermark is a COUNT, not a day (the 2026-08-12 repair): the
+        # war herald posts through `post_news` after the party has already
+        # heard the day's news, and the line must survive to the next
+        # telling instead of dying between two same-day stamps.
+        world = _world()
+        _fire(world, "gibili", "gibili/uprising", 12)
+        worldsim.take_news(world, "gibili", 12)
+        worldsim.post_news(world, "gibili", 12, "The heralds came late.")
+        told = worldsim.take_news(world, "gibili", 12)
+        self.assertTrue(any("came late" in line for line in told))
         self.assertEqual(worldsim.take_news(world, "gibili", 12), [])
 
     def test_a_long_absence_is_a_summary_not_a_scroll(self) -> None:
@@ -1670,6 +1739,39 @@ class TheBoardOutlet(unittest.TestCase):
                  for qid in town["quests"] if qid in world["quests"]]
         self.assertIn("tergal/tribute", again)
 
+    def test_a_finished_card_job_does_not_block_the_repost(self) -> None:
+        # The 2026-08-12 repair: a completed posting stays in the
+        # settlement's quest list, but only OPEN postings hold the card's
+        # place -- the card stands, so its work goes back up. (Before this,
+        # finishing a card's job once shut that card off that board for
+        # the rest of the campaign.)
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "tergal", "tergal/tribute", 1)
+        town = quests.settlements_by_land(world)["tergal"][0]
+        quests.refresh_settlement_board(world, town, 1, random.Random(5))
+        first = next(qid for qid in town["quests"]
+                     if world["quests"][qid].get("world_card"))
+        world["quests"][first]["status"] = "done"
+        quests.refresh_settlement_board(world, town, 3, random.Random(7))
+        open_again = [world["quests"][qid].get("world_card")
+                      for qid in town["quests"] if qid in world["quests"]
+                      and world["quests"][qid]["status"] == "open"]
+        self.assertIn("tergal/tribute", open_again)
+
+    def test_a_taken_card_job_still_holds_the_card_s_place(self) -> None:
+        # ...but a job the party is RUNNING is still open, so the card
+        # does not double-post under them.
+        world = _world()
+        _all_quiet(world)
+        _fire(world, "tergal", "tergal/tribute", 1)
+        town = quests.settlements_by_land(world)["tergal"][0]
+        quests.refresh_settlement_board(world, town, 1, random.Random(5))
+        quests.refresh_settlement_board(world, town, 3, random.Random(7))
+        keys = [world["quests"][qid].get("world_card")
+                for qid in town["quests"] if qid in world["quests"]]
+        self.assertEqual(keys.count("tergal/tribute"), 1)
+
     def test_a_card_job_never_pays_in_steel_instead(self) -> None:
         # The weapon-reward mode is a flat share of the ORDINARY board; a
         # card that pays a gold premium must not silently pay it in a blade.
@@ -1772,6 +1874,24 @@ class TheMenuOutlet(unittest.TestCase):
         # ...and a land is charged once however often the leg names it.
         twice = worldsim.road_charges(world, ["firascir", "firascir"])[0]
         self.assertEqual(twice, gold)
+
+    def test_any_raised_toll_term_reaches_the_road(self) -> None:
+        # The 2026-08-12 repair: the road used to charge only under the
+        # toll squeeze, so every OTHER card and state that put the toll
+        # term up (the tax farmer, the free company) printed a raised
+        # price the road never took. The term itself is the gate now.
+        world = _world()
+        _all_quiet(world)
+        self.assertEqual(worldsim.road_charges(world, ["mortellaria"])[0],
+                         0)
+        _fire(world, "mortellaria", "mortellaria/tax-farmer", 3)
+        self.assertGreater(worldsim.term(world, "mortellaria", "toll"), 1.0)
+        gold, lines = worldsim.road_charges(world, ["mortellaria"])
+        self.assertGreater(gold, 0)
+        self.assertTrue(any("toll" in line for line in lines))
+        # A toll DISCOUNT with no toll under it is no charge at all.
+        worldsim.set_state(world, "ensimaa", "union-crown", 3)
+        self.assertEqual(worldsim.road_charges(world, ["ensimaa"])[0], 0)
 
     def test_the_price_sheet_says_what_the_world_did(self) -> None:
         world = _world()
@@ -1923,6 +2043,61 @@ class TheChains(unittest.TestCase):
         _fire(world, "ensimaa", "ensimaa/rented-land", 3)
         self.assertIn("concession-lost", worldsim.state_ids(world, "gibili"))
         self.assertTrue(worldsim.admits(world, "gibili", spec))
+
+
+class ThePoliticsChains(unittest.TestCase):
+    """The politics rung's own chains, repaired 2026-08-12: they used to
+    wait on a same-track `while` state, which a track's own draw can never
+    see (`_validate_reachability` now polices the whole class). Every link
+    is a `set` state now, alive after its setter's clock runs out."""
+
+    LINKS = (
+        ("mortellaria", "mortellaria/tax-farmer", "tax-farmed",
+         "mortellaria/salt-revolt", ("court-vs-provinces",)),
+        ("dvarvengrond", "dvarvengrond/new-seam", "claims-collide",
+         "dvarvengrond/arbitration", ("clan-vs-clan-wall",)),
+        ("tergal", "tergal/herd-fails", "grass-gone",
+         "tergal/mourning-war", ("clan-vs-clan",)),
+        ("tergal", "tergal/herd-fails", "grass-gone",
+         "tergal/ghost-dance", ("council-vs-outlaws",)),
+    )
+
+    def test_each_link_reaches_its_successor(self) -> None:
+        for polity, first, link, second, tensions in self.LINKS:
+            world = _world()
+            _all_quiet(world)
+            _layer(world, polity)["tensions"] = list(tensions)
+            spec = worldsim.CARDS_BY_KEY[second]["admits"]
+            self.assertFalse(worldsim.admits(world, polity, spec), second)
+            _fire(world, polity, first, 3)
+            worldsim._end(world, polity, 60,
+                          worldsim.CARDS_BY_KEY[first]["track"])
+            self.assertIn(link, worldsim.state_ids(world, polity), first)
+            self.assertTrue(worldsim.admits(world, polity, spec), second)
+
+    def test_the_gibili_arc_runs_to_either_constitution(self) -> None:
+        """The whole revolution, both endings: the mills stop, the strike
+        goes general, the barricades go up, and the coin lands junta or
+        commune -- each step admitted the ordinary way off what the last
+        one left standing."""
+        for finale in ("gibili/junta", "gibili/commune"):
+            world = _world()
+            _all_quiet(world)
+            _layer(world, "gibili")["tensions"] = ["army-vs-ranks"]
+            worldsim.set_wealth(world, "gibili", "crisis", 0)
+            day = 3
+            for key in ("gibili/uprising", "gibili/general-strike",
+                        "gibili/barricade-days", finale):
+                spec = worldsim.CARDS_BY_KEY[key]
+                self.assertTrue(
+                    worldsim.admits(world, "gibili", spec["admits"]), key)
+                _fire(world, "gibili", key, day)
+                worldsim._end(world, "gibili", day + 30, spec["track"])
+                day += 31
+            self.assertEqual(worldsim.constitution_of(world, "gibili"),
+                             finale.split("/")[1])
+            self.assertNotIn("barricades-up",
+                             worldsim.state_ids(world, "gibili"))
 
 
 class TheEconomyFloorContent(unittest.TestCase):
@@ -2920,7 +3095,7 @@ class TheServicesCounter(unittest.TestCase):
 
     def test_a_teaching_is_the_spellbook_gate_at_the_land_s_price(self
                                                                  ) -> None:
-        """The three organizations are three prices on one action: the
+        """The four organizations are four prices on one action: the
         goblin master undercuts the academy, and the elven school is the
         dearest teaching in the world."""
         world = _world()
@@ -2952,11 +3127,16 @@ class TheServicesCounter(unittest.TestCase):
         world = _world()
         state = self._state(world, "tergal", day=5)
         self._run(state, "rain-stone")
-        worldsim.roll_world(world, 6)
-        self.assertEqual(worldsim.weather_of(world, "tergal"), "rain")
-        self.assertIn("rain-bought", worldsim.state_ids(world, "tergal"))
         spec = worldsim.OPTIONS_BY_KEY["tergal/rain-stone"]
-        worldsim.roll_world(world, 5 + spec["holds"] + 2)
+        # The purchase day's sky is already rolled, so the paid window is
+        # the NEXT `holds` days -- every one of them, or the player paid
+        # for a day the stone never delivered (the 2026-08-12 repair).
+        for day in range(6, 6 + spec["holds"]):
+            worldsim.roll_world(world, day)
+            self.assertEqual(worldsim.weather_of(world, "tergal"), "rain",
+                             f"day {day} was paid for")
+        self.assertIn("rain-bought", worldsim.state_ids(world, "tergal"))
+        worldsim.roll_world(world, 6 + spec["holds"])
         self.assertNotIn("rain-bought", worldsim.state_ids(world, "tergal"))
         self.assertIsNone(_layer(world, "tergal")["bought_sky"])
 

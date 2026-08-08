@@ -240,6 +240,13 @@ above: play the build first.
   `service` counter (2026-08-11), so three of the four now want only
   authoring plus one new verb apiece; the smuggling pair still wants the
   crime category written.
+- **Cards and relations founding settlements** — the trim's
+  need-to-exist draw is built, tested and DM-documented
+  (`quests.found_settlement`; dm.md, "The map can grow at your call"),
+  but no authored card or relation calls it yet: nothing in the shipped
+  content names a rival center of power or a counterparty port. The
+  engine half is done; what remains is content that WANTS a place to
+  exist, which should come out of play (2026-08-12 review finding).
 - **Hell's own treatment**; **the per-land ruler modifier columns and
   the tribal rewording**; **the landmark-problems tie-in** (re-raise
   once the build is played); **the PC's blank sheet** (a player-chosen
@@ -531,9 +538,6 @@ was parked out of it is additive to the shipped schemas:
   not engine smarts.
 - **Opt-out tutorial register** (2026-07-14) — relevant only if the game
   gets a second player.
-- **Off-screen event simulation** (2026-07-12) — absorbed into THE WORLD
-  & NPC SIMULATION as the event-pulse shape; delete this entry when the
-  ladder's economy-floor session lands.
 - **Faction reputation** — designer has more to spec; nothing until
   then. *(Note: karma IS a first faction axis — law vs the party; spec
   the rest against it.)*

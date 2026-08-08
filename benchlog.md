@@ -1866,3 +1866,54 @@ is `BAND_MENU`** — it applies to every land every day, where a card's
 terms apply to one land for a fortnight. The road's own charges are
 deliberately tiny (a doubled toll is 12g, a ferry 12g): the fords cost a
 DAY, and days are the expensive currency in this game.
+
+## 2026-08-12 — The review repair: the dead chains measured alive (no retune)
+
+The six-session worldsim build was reviewed whole against its
+pre-implementation plan (designlog, 2026-08-12). The review's code half
+found seven cards that could never fire — every one a chain link
+admitting on a state its OWN track held as `while`, which the draw can
+never see: while the state is held the slot is full, and `roll_land`
+expires the live card (dropping its `while` states) before it draws on
+the same track. Verified before the fix over 180 worlds rolled 600-700
+days: the prerequisites fired 10-97 times each, the seven fired ZERO.
+
+After rewiring the links onto the working chains' set-and-clear pattern
+(and writing `gibili/commune`, the junta's missing sibling), the same
+probe — 180 worlds × 650 days:
+
+| card (fired 0x before) | fires |
+|---|---:|
+| gibili/general-strike | 19 |
+| gibili/barricade-days | 11 |
+| gibili/junta | 4 |
+| gibili/commune (new) | 7 |
+| mortellaria/salt-revolt | 14 |
+| tergal/mourning-war | 12 |
+| tergal/ghost-dance | 12 |
+| dvarvengrond/arbitration | 33 |
+
+The junta and the commune are the deck's only constitution movers, so
+before this **no constitution could ever change in play**; now the coin
+lands one way or the other in ~6% of worlds over a long campaign — rare
+on purpose (both cards keep `chance` 0.25 behind a three-card chain).
+
+**The permanent crisis.** `mortellaria/revocation` carried
+`wealth_while: "crisis"` with no clock, so `_end` never ran and the band
+never came back: every world that fired it held Mortellaria in CRISIS
+forever (drawing crisis cards at 0.30/day for the rest of the campaign).
+With its clock (25-40 days, season-scale like the herd failure): fired
+in 40 of 180 worlds; at day 650 those lands read 13 crisis / 20 normal /
+7 prosperous — the band moves on, as the frame's contract says.
+
+**Nothing was retuned** — every change is a card payload, a validator or
+a wiring fix; no knob moved. The full suite is 651 tests (642 before the
+repair). Four of the rewired setters are ECON cards (the uprising, the
+tax farmer, the new seam, the herd failure), whose states now outlive
+their clocks — in principle career-sim-visible through prices and the
+deck's skip guards — so `bench_quests --part career` was re-run at 120
+careers: reached L20 4.2% (economy-floor column: 3.3%), L5/L8/L11
+80/68/38 (81/71/38), median death level 9 (9), turn-ins 34/50/12/3
+(34/51/11/4), expired postings 417.9 (428.3). In family throughout; the
+capped-days median (104 vs 94) is a five-career sample and reads as
+noise.
