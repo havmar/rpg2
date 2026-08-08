@@ -192,15 +192,19 @@ the player's core decision:
   scene -- the board's own rows are the format for the NUMBERS, and only
   the numbers: **what the job actually IS is narrated** (2026-08-12),
   told in the giver's mouth in the plain text-adventure voice, never
-  left to a pasted row or the template's desc line. The desc is a
-  one-line prompt and what it asks for is not always obvious -- say the
-  job so the player can picture it (who wants it, what needs doing,
-  where), and make it square with the place and the day's news before
-  you say it. **Name the thing outright** -- the machine, the gang, the
-  wolves -- never "something in the factory": the job's own title is
-  usually already the plain word, and teasing it is the one register
-  mistake this section keeps producing (writing.md, "Name the subject
-  the first time it appears"). The giver's mouth
+  left to a pasted row or the template's desc line. **The desc is
+  usually already the whole job** -- one plain sentence naming a thing
+  and what to do about it -- so say THAT, in the giver's mouth, and
+  spend the rest of the pitch on SPECIFICITY, NOT COMPLICATION: who is
+  asking and why it fell to them, where the place is, what the job looks
+  like from outside the door. Expand the desc itself only where it
+  genuinely fails to say what the work IS, and then settle the plainest
+  reading rather than adding a layer. **Name the thing outright** -- the
+  machine, the gang, the wolves -- never "something in the factory": the
+  desc's own words are usually the plain word already, and teasing them
+  is the register mistake this section keeps producing (writing.md,
+  "Name the subject the first time it appears"). Make it square with the
+  place and the day's news before you say it. The giver's mouth
   carries the fiction, never the stat sheet or a tactics preview. The board also lists **word from around the land** (other
   settlements' open jobs -- PLAYER-KNOWN, relay it) and **notables in
   town** -- the land's recurring cast (ruler, sage, wildcard): use them
