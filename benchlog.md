@@ -1917,3 +1917,105 @@ careers: reached L20 4.2% (economy-floor column: 3.3%), L5/L8/L11
 (34/51/11/4), expired postings 417.9 (428.3). In family throughout; the
 capped-days median (104 vs 94) is a five-career sample and reads as
 noise.
+
+## 2026-08-08 — The rout rebalance, measured; the turn-in split, band-neutral
+
+Two measurements for the TURN-IN, THE ROUT & THE HUNT cluster (designlog,
+2026-08-08): the rout's acceptance test, and what the widened quest
+windows did to the career band split. `bench_rout.py` is new and is the
+first of the two; it carries a `--legacy` switch that restores the
+pre-rebalance rules off the same seeds, so both columns below come from
+one harness rather than two arguing.
+
+### The rout: escape by row, before and after
+
+300 fights per row, level-matched reference duos, fresh at the door.
+"escape" is the share of WON fights the survivors got away from;
+"run-down" is the share of break ATTEMPTS the party caught.
+
+| row | L | escape before | escape after | run-down before | run-down after |
+|---|---:|---:|---:|---:|---:|
+| pack (3 cutthroats) | 1 | 67.7% | **44.1%** | 25.0% | 51.5% |
+| pack (3 wolves) | 1 | 2.6% | **2.6%** | 56.2% | 56.2% |
+| ogre | 5 | 53.6% | **18.4%** | 44.5% | 76.1% |
+| bear | 4 | 37.2% | **9.6%** | 60.4% | 85.9% |
+| troll | 8 | 45.1% | **17.6%** | 48.9% | 69.7% |
+
+The three solo rows fall by a factor of 2.5-4 and run-downs rise to
+70-86% of attempts: a beaten thing tries to leave and usually fails,
+which is the intended reading. The wolf pack is unchanged at 2.6% and
+tried to break only 16 times in 300 fights — wolves die from ABOVE the
+band in one blow, exactly the asymmetry the spec described, and the
+stricter trigger cannot bite on a row that never reaches it.
+
+### The condition correlation — the real acceptance test
+
+The same won fights, split by how the PARTY ended them (every living
+body above half HP = "fresh"). Pre-hurting the party at the door was
+tried first and measures nothing: a duo started at a third of HP simply
+loses (0-0.7% wins across every row), and a fight never won has no
+escape to count. The split has to be read off the fight's own ending.
+
+| row | fresh before | fresh after | spent before | spent after |
+|---|---:|---:|---:|---:|
+| pack (3 cutthroats) | 66.5% | **43.1%** | 80.0% | 52.0% |
+| pack (3 wolves) | 2.7% | 2.7% | 0.0% | 0.0% |
+| ogre | 50.4% | **16.9%** | 77.4% | 30.0% |
+| bear | 34.8% | **8.2%** | 100.0% | 38.5% |
+| troll | 42.4% | **14.3%** | 92.9% | 66.7% |
+
+The troll's fresh/spent ratio goes from 2.2x to 4.7x, the bear's from
+2.9x to 4.7x. The complaint that started this — "the solo troll escapes
+even when the party ends fresh" — measured 42.4% before and 14.3% now.
+
+**Where the spec's prediction missed.** plan.md expected "hurt-party
+escape rates staying 90%+"; they did not — the spent column fell too
+(troll 92.9% -> 66.7%, bear 100% -> 38.5%). The HP weighting handicaps
+the RUNNERS whatever state the party is in, so it cannot help but pull
+both columns down. The 90%+ figure describes the narrower case the
+machinery still guarantees outright: a party with NO fit pursuers (every
+hero Winded or Spent) auto-escapes without rolling at all. What the
+rebalance was actually for is the separation, and the separation
+strengthened on every row that fires. Reported rather than fixed: the
+designer's call whether the spent column wants floor support.
+
+**The one row still high** is the level-1 cutthroat pack at 43% fresh —
+three bodies whose DEX sits close to a level-1 duo's, and 194 break
+attempts in 300 fights. Left alone deliberately (low-band bandit work is
+where a loose end is cheap fiction), and flagged in develop.md as the
+first dial if escapes read as too common in play.
+
+**The troll's residue is regeneration**, as the spec predicted: it heals
+back into the trigger band round after round, so it gets its attempt in
+fights where nothing else would. That is honest troll fiction, and the
+loose-ends record turns it into a hook.
+
+### The careers: the widened windows are band-neutral
+
+`bench_quests --part career`, 300 careers, against the 2026-08-12 review
+column (120 careers) in parentheses. Both the return-leg widening and
+the three-way XP split are in this run.
+
+| | now (300) | before (120) |
+|---|---:|---:|
+| reached L20 | 4.0% | 4.2% |
+| L5 / L8 / L11 | 85 / 69 / 38 | 80 / 68 / 38 |
+| median death level | 9 | 9 |
+| capped median days / quests | 97 / 34 | 104 / 34 |
+| turn-ins quick/on time/late/expired | **33 / 53 / 10 / 4** | 34 / 50 / 12 / 3 |
+| expired postings per career | 389.1 | 417.9 |
+| board exhausted | 0.0% | 0.0% |
+
+The band split is the number this run existed for, and it moved by 2-3
+points — neutral, which is what widening the window by the return leg
+was supposed to buy. A first 120-career run read L20 2.5%; at 300 it is
+4.0%, so that cell was a three-career sample and the drop was noise.
+
+**Read the sim's bands with the standing caveat**: `bench_quests`'
+careers teleport, so they never walk the leg the widening pays for.
+The widening is therefore pure slack in the sim and a wash in play —
+which is why the sim's bands barely move, and why these numbers cannot
+confirm the played clock is right. Only play can.
+
+Nothing was retuned. The suite is 733 tests (651 before the cluster;
+`test_turnin.py` adds 80 and `test_mercy.py` two).
