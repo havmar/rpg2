@@ -1,8 +1,11 @@
-RPG2 HISTORY -- day 1
+RPG2 HISTORY -- day 2
 (what this campaign has done)
 
 -- QUESTS DONE --
-  (no job finished yet)
+day 2: [q16] Giants in the Pass (L13) --
+  done.
+  The giants are dead. Carts use the
+    mountain pass again.
 
 -- REMARKABLE --
   (nothing yet)
@@ -10,7 +13,7 @@ RPG2 HISTORY -- day 1
 -- THE TALLY OF SIN --
   (no crime committed yet)
   clean; heat 0
-  lifetime sin 0 / penance 0
+  lifetime sin 0 / penance 616
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

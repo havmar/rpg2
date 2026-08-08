@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Tergal > Ulus-Gal
+RPG2 MAP -- day 2
+the party is at Tergal > Borugal Hills >
+  the boulder field > mine entrance
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -32,9 +33,11 @@ the party is at Tergal > Ulus-Gal
   [NORMAL] grain is scarce (the Firascir
     grain)
   THE GREAT CHIEF
-  WEATHER: clear skies.
-  Ulus-Gal (capital) -- 5 job(s)  <- the
-    party
+  WEATHER: grey and close.
+  Borugal Hills (hills, found day 1)  <-
+    the party
+  Ulus-Gal (capital) -- 4 job(s)
+    (visited)
   Kharuk (town) -- 4 job(s)
   Tumengal (village) -- 2 job(s)
 
