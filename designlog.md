@@ -3633,3 +3633,136 @@ already implemented, and were):
   fitting, the non-combat fitting pass, `ui/minimap.txt` (session.py
   still calls it planned), the parked E1/P1 shorthand, and playing the
   dark path in the new register (no probe playthrough on record).
+
+## 2026-08-08 (in play) — Plain English first: the claudese problem named
+
+A style session raised from the table, two turns into a fresh playthrough
+(the branch's game continues around it). The designer stopped play to name
+a narration failure that survives every existing rule in writing.md, and
+that he could not prompt Claude Opus out of: "claudese" — literary
+compression that reads as style but has to be translated back into plain
+English to find out what happened. His examples from the two live turns,
+with his own translations, became the spec:
+
+- "Two days on the road and nothing on it" -> "nothing out of the
+  ordinary has happened."
+- "Ensimaa arrives as trees before it arrives as a city" -> "you reach
+  the forests of Ensimaa, and then a city."
+- "with the rain going sideways" -> "in heavy rain."
+- "has the worse problem and says so straight" -> "also has a problem:"
+- "one of them paying in steel" -> "offering a zweihander as a reward."
+- "The rest of the porch is out of your weight entirely" -> "the rest of
+  the jobs are probably too difficult for you." (Metonymy called out as
+  painful by name.)
+- "Word on the porch also runs to work elsewhere in the land" -> "some
+  jobs mean travel to other parts of the land."
+
+**Why the existing guide missed it.** writing.md's Avoid examples all
+show purple prose and mystery-teasing; steering away from those lands on
+clever-laconic, which the guide never exemplified as wrong. Worse, the
+register words themselves ("terse", "dry", "deadpan") read as a style to
+perform, and the model's idea of good compressed prose IS the crafted
+turn. A third suspected cause: the instruction docs are themselves
+written in the compressed register, and the narrator mirrors what it
+reads.
+
+**What shipped:**
+
+- **writing.md, "Plain English first"** — the new section: the failure
+  mode named, the designer's seven pairs kept verbatim as Avoid/Use, the
+  TRANSLATION TEST (read the sentence word by word; if what it literally
+  says is not what happened, write what happened), and the five forms to
+  catch (non-actor subjects, metonymy, the crafted opener, idiom as
+  intensity, the narrator describing delivery). Plus one ranking line in
+  the target-voice section: plain comes before terse. Final check gains
+  the translation-test bullet, so the scene-page reread applies it every
+  message.
+- **dm.md, Narration style** — a pointer bullet: the translation test
+  governs every line; the reread's first job is finding sentences a
+  reader would have to translate, and replacing rather than polishing
+  them.
+- **scene-example.md** — its own claudese purged ("fire in your hands
+  that nobody taught you", "cracks it dead", "Short and ugly, the way
+  well work is", "Ventoro draws water again").
+- **The live turn 2** (ui/scene.md, transcript) rewritten to the plain
+  register as the worked before/after.
+
+**Open, deliberately:** a full register rewrite of dm.md itself (the
+mirror-what-you-read theory says the play protocol's own prose teaches
+the narrator its habits — ~1750 lines, a dedicated session if wanted),
+and whether the model switch made this session (Opus -> Fable) moves the
+needle on its own. The cheap standing lever: every line that bugs the
+designer in play gets pasted into the chat and added to the Avoid/Use
+list — real pairs from real turns are the strongest instruction this
+file has.
+
+## 2026-08-08 (later) — dm.md rewritten in the plain register; the naive directive
+
+Follow-up to the morning's Plain English First session, on the
+designer's direct instruction: rewrite dm.md itself in the plain style,
+because the instruction docs teach the narrator its register by example
+(the mirror theory from the morning entry). Two additions to the spec
+first, both from a fresh flagged line:
+
+- "A storm has held the land since yesterday" joined the Avoid/Use
+  pairs ("There has been a storm since yesterday") — the non-actor
+  possession shape ("X has held the Y") is the same failure as "the
+  porch" and "word runs".
+- **The naive directive**: err on the side of TOO naive. A flat,
+  simple, almost childlike sentence is closer to the target than one
+  that reads as good writing. Written into writing.md's Plain English
+  First section as a standing rule; the designer's own word for the
+  target register is stronger than "plain", and the direction of error
+  is now explicit — when unsure, choose the more naive sentence.
+
+**The dm.md rewrite.** Full register pass, every section, ~1760 lines:
+rules, numbers, commands, dates, headings and section order all
+preserved (verified mechanically: headings identical, every backtick
+command token survives, all date markers survive, the number census
+matches except the deliberate "half again" -> "1.5x"). What changed is
+sentence-level register: aphorisms unpacked ("a doorstep, not a
+railroad" -> "an offer, not a forced path"; "The world proposes; the
+player disposes" -> "The world offers the options; the player
+chooses"), metonymy and non-actor subjects replaced ("say it in the
+world's mouth" -> "have somebody in the world say it"; "the fiction's
+licence to make bread dear and faces thin" -> "make bread expensive and
+people hungry"), instruction-register cleverness cut (the "qi, not iq"
+pun; "narrate heat as weather" -> background pressure; "the spiral is
+the player's own bed" -> plain consequence language), and the two
+stylish example quotes flattened ("every exchange leans wrong now" ->
+"Sela is at -3 now"; the moves narration example). Doctrine shorthand
+with an established meaning was KEPT on purpose: "narrate the skin,
+trust the row", "the numbers are the game", the ferocity tags.
+
+**Worldsim copy audited** (the designer's third ask) — findings
+reported in chat, not yet fixed: the card news lines and job descs are
+MOSTLY compliant (concrete, present tense, named actors, deadpan), but
+~15 of 164 news lines and a handful of STATE_WORDS phrases fail the new
+rules, in five repeating shapes: the "X has the Y" possession line
+("the storm has the roads", "the dust has the plain", "carnival has the
+streets"), period vocabulary ("bread is dear", "timber is dear", "steel
+is dear" — writing.md's CRPG-vocabulary rule), abstract subjects doing
+person actions ("Enclosure and debt made {bandit}, and charisma armed
+him"), narrator winks ("which is comedy until...", "Buyer beware,
+constitutionally", "a level of badass richer"), and two register breaks
+proper: an unnamed subject ("The death-face rite makes it locally
+thinkable" — the "it" (necromancy) is never named) and design
+vocabulary leaking into player-facing copy ("The card is the day
+after..."). Fixing them is a small follow-up pass once the designer
+signs off on the list.
+
+## 2026-08-08 (still later) — The kept shorthand purged; the worldsim copy fixed
+
+Two short follow-ups on the designer's sign-off of the audit list:
+
+- **dm.md's kept doctrine shorthand is gone.** "Narrate the skin, trust
+  the row" (both instances), "the numbers are the game", "the loot is
+  the loot", and "STA is STA" are all unpacked into plain statements;
+  the ferocity tags and other literal rule names stay.
+- **The flagged worldsim copy is fixed** — six STATE_WORDS values (the
+  three "X has the Y" possession lines and the three "dear" prices) and
+  ten news lines (bank run, colony fleet, mercenary-home, dust storm,
+  bandit king, one-heir, the purist reserve, the flagellants, the dated
+  End, the death-face chair, the master's lessons). The two spots in
+  rules.md that quote a changed state string, and one test docstring,
+  were synced; test_worldsim (256), test_places and test_history pass.

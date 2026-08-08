@@ -22,9 +22,9 @@ so the one link it gets is to the board it does not hold.
 
 > new game
 
-You are Delg: a dwarf, 35, a long way from the mountain, with fire in your hands that nobody taught you. Your coat is out at the elbows and your purse is light. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
+You are Delg: a dwarf, 35, a long way from the mountain. You can throw fire; nobody taught you how. Your coat is worn through at the elbows and your purse is nearly empty. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
 
-Isolde walks beside you: human, a scholar thrown out of somewhere, ice at her fingertips when she is angry. She has watched your back for years.
+Isolde walks beside you: human, once a scholar. She throws ice when she is angry. She has watched your back for years.
 
 You are in Ventoro, a village of Mortellaria. Mud streets, vine country, one well. The morning market is setting up around a dry fountain.
 
@@ -72,7 +72,7 @@ breaks when beaten
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/<branch>/ui/fight-short.txt)
 
-Delg's fire takes the lead rat off the cistern rim. The second gets its teeth into Isolde's forearm before her rime bolt cracks it dead. Short and ugly, the way well work is.
+Delg's fire kills the first rat on the cistern rim. The second bites Isolde's forearm before her rime bolt kills it.
 
 ```
 The party catches its breath (+1 STA)
@@ -99,7 +99,7 @@ Isolde: Scratched STA 4/6 Power 5/5
 Purse 20g; day 1.
 ```
 
-Rosa counts the coin out at the well head. "Cheap at twice that," she says, and looks down the shaft once before she pays. By evening the winch has a new rope and Ventoro draws water again.
+Rosa counts the coin out at the well head. "Cheap at twice that," she says, and looks down the shaft once before she pays. By evening the winch has a new rope and the well is back in use.
 
 Isolde binds her arm herself. "An ordinary rat," she says. "Disappointing."
 

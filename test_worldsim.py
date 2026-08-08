@@ -1134,7 +1134,7 @@ class TheDayRoll(unittest.TestCase):
 
     def test_a_card_that_is_the_weather_holds_the_sky(self) -> None:
         """A storm declared to last three days is a storm on all three: the
-        alternative is a state readout saying "the storm has the roads"
+        alternative is a state readout saying "the storm has closed the roads"
         under clear skies, which the player would see immediately."""
         world = _world()
         worldsim.roll_world(world, 3)

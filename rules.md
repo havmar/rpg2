@@ -4261,7 +4261,7 @@ two days is a storm on both of them.
 ## What the deck holds
 
 - **THE STORM SETS IN** — any land, on a storm day, 1–3 days. Its state is
-  `the storm has the roads`, and it is what the field penalties and the
+  `the storm has closed the roads`, and it is what the field penalties and the
   cabin table hang on.
 - **THE FORD IS OUT** — the two human lands, after three wet days. Fords
   uncrossable, bridges and ferries tolled by men who know it: the road
@@ -4453,7 +4453,7 @@ conditions already read what the last card left behind. Five ship:
 
 | land | first card | the link it leaves | second card |
 |---|---|---|---|
-| Firascir | the harvest fails | bread is dear | the bread riot |
+| Firascir | the harvest fails | bread is expensive | the bread riot |
 | Mortellaria | the bank fails | forged notes are about | the note-hunters |
 | Ensimaa | the rented land turns | foreigners unwelcome | the evictions |
 | Dvarvengrond | a new seam is found | the seam (a slot) | the rush and the bust |

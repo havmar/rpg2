@@ -277,7 +277,7 @@ CRISIS_TENSION_ROLLS = 2        # ...and two when it opens in CRISIS, because
 STATE_WORDS = {                 # state id -> the readout's short phrase
     # Firascir
     "harvest-failed": "the harvest has failed",
-    "bread-dear": "bread is dear",
+    "bread-dear": "bread is expensive",
     "bread-riots": "there is rioting over the bread",
     "toll-squeeze": "the tolls are doubled",
     "overtaxed": "the war tax is on",
@@ -314,13 +314,13 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "herd-drive": "the great drive is on",
     "mercenary-home": "a war-rich mercenary is home",
     # Weather (2026-08-08, land-agnostic -- the sky's own states)
-    "storm-bound": "the storm has the roads",
+    "storm-bound": "the storm has closed the roads",
     "fords-out": "the fords are out",
     "drought": "the rains have not come",
     "bones-walk": "bones walk in the fog",
     "wildfire": "the forest is burning",
     "burned-over": "the burn is still black",
-    "dust-storm": "the dust has the plain",
+    "dust-storm": "a dust storm covers the plain",
     "smog": "the smoke will not lift",
     # Politics (2026-08-10) -- right, office and allegiance. Firascir
     # carries the most of them: the baseline land takes the deepest packet.
@@ -397,7 +397,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "hermit-window": "the hermit at the wall sees all",
     "abbey-suit": "the abbey holds a boy against his kin",
     "penance-season": "the hooded columns are out",
-    "carnival-on": "carnival has the streets",
+    "carnival-on": "carnival fills the streets",
     "dead-abroad": "the dead are guests tonight",
     "two-hoods": "two burial clubs want one corpse",
     "debate-riot": "the theology debate has gone to clubs",
@@ -436,9 +436,9 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "personal-union": "a foreign king wears this crown too",
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
-    "timber-dear": "timber is dear",
+    "timber-dear": "timber is expensive",
     "metal-scarce": "metal is hard to come by",
-    "steel-dear": "steel is dear",
+    "steel-dear": "steel is expensive",
     "luxury-dear": "the fine work has stopped coming",
     "mills-busy": "the mills have all the work they want",
     "claims-revoked": "the claims are revoked",
@@ -1597,8 +1597,8 @@ CARDS = (
     # while nobody could tell one note from another are the next card.
     card("mortellaria/bank-run", "The bank fails", "mortellaria",
          wealth=("crisis",), without=("bad-paper",), days=(15, 25),
-         news="The bank has shut its doors. Paper money is worth its weight "
-              "and no more, and every strongbox in the city is watched.",
+         news="The bank has shut its doors. Paper money buys nothing now, and "
+              "every strongbox in the city is watched.",
          state={"while": ("paper-worthless",), "set": ("bad-paper",)},
          menu={"lodging": 1.20},
          quest={"post": job(
@@ -1642,8 +1642,8 @@ CARDS = (
          quest={"reprice": 1.50}),
     card("mortellaria/colony-fleet", "The colony fleet comes in",
          "mortellaria", wealth=("normal", "prosperous"), days=(10, 18),
-         news="The colony fleet is in. The wharves are gold, the taverns "
-              "are full, and every purse in the city is fat.",
+         news="The colony fleet is in. There is gold on the wharves, the "
+              "taverns are full, and every purse in the city is fat.",
          state={"while": ("coin-flush",)},
          quest={"slots": 1, "reprice": 1.20}),
 
@@ -1951,9 +1951,9 @@ CARDS = (
              "pay": 1.25}),
     card("tergal/returned-mercenary", "The mercenary comes home", "tergal",
          days=(15, 25),
-         news="A mercenary is back from the southern wars a level of "
-              "badass richer, with dwarven steel and a following. The old "
-              "order does not suit him.",
+         news="A mercenary is back from the southern wars rich and hardened, "
+              "with dwarven steel and a following. The old order does not "
+              "suit him.",
          state={"while": ("mercenary-home",)},
          menu={"steel": 0.85}),
     card("tergal/tribute", "The tribute", "tergal",
@@ -2049,7 +2049,7 @@ CARDS = (
     card("weather/dust-storm", "The dust storm", "tergal", track="weather",
          states=("drought",), weather=("wind", "heat", "clear"),
          chance=0.35, days=(1, 3), sky="wind",
-         news="The dust has the plain. Nothing moves on the roads, and when "
+         news="A dust storm covers the plain. Nothing moves on the roads, and when "
               "it lifts there will be herds scattered from here to the "
               "river.",
          state={"while": ("dust-storm",)},
@@ -2872,8 +2872,8 @@ POLITICS_CARDS = (
     card("mortellaria/bandit-king", "The bandit king", "mortellaria",
          tension=("court-vs-provinces",), days=(25, 40),
          hook=_BANDIT_HOOK,
-         news="Enclosure and debt made {bandit}, and charisma armed him. "
-              "He robs tax shipments and rich men and nothing else, so "
+         news="{bandit} lost his land to enclosure and debt, and men follow "
+              "him. He robs tax shipments and rich men and nothing else, so "
               "the peasants hide him and the magistrates hang whoever "
               "they catch instead.",
          state={"set": ("bandit-king",)},
@@ -2943,8 +2943,8 @@ POLITICS_CARDS = (
     card("ensimaa/one-heir", "One heir, four brothers", "ensimaa",
          tension=("elders-vs-young",), days=(15, 25),
          news="A great house has concentrated four brothers on a single "
-              "heir to keep the estate whole. The scandal is manageable. "
-              "The inheritance knives are not, and one child belongs to "
+              "heir to keep the estate whole. The scandal can be managed. "
+              "The fight over the inheritance cannot, and one child belongs to "
               "everybody.",
          quest={"post": job(
              "The Child Belongs To Everybody",
@@ -3005,9 +3005,9 @@ POLITICS_CARDS = (
          faction_edge=("ensimaa/primitivists-break-machine-keepers",),
          days=(15, 25),
          news="The woodland-ways purists forage on a manicured reserve "
-              "with healing wards on standby, which is comedy until one "
-              "band stops coming back. That band is on the reserve now "
-              "and the wards have been turned off.",
+              "with healing wards on standby. One band has stopped coming "
+              "back. That band is on the reserve now and the wards have "
+              "been turned off.",
          state={"while": ("feral-band",)},
          encounter={"kinds": ("cutthroat", "hunter", "bruiser"),
                     "where": "wilds", "as": "the band that did not come "
@@ -3956,7 +3956,7 @@ RELIGION_CARDS = (
          faction_edge=("mortellaria/penitents-denounce-carnival",),
          without=("carnival-on",), days=(15, 25),
          news="The hooded columns are out, the statues are veiled and the "
-              "flagellants have the main street at dusk. Attendance is "
+              "flagellants march the main street at dusk. Attendance is "
               "close to universal and so is the muttering about it.",
          state={"while": ("penance-season",)},
          quest={"post": job(
@@ -4411,11 +4411,10 @@ RELIGION_CARDS = (
              "pay": 1.20}),
     card("gibili/great-disappointment", "The end is dated", "gibili",
          tension=("chapel-vs-ladder",), days=(12, 20), hook=_PROPHET_HOOK,
-         news="{prophet} has dated the End. Believers have quit the mills, "
-              "sold everything and gone up the slag hill in white robes. "
-              "The card is the day after: the debts, the emptied houses, "
-              "the recalculation, and the fringe insisting it worked, "
-              "invisibly.",
+         news="{prophet} dated the End and the date has passed. Believers had "
+              "quit the mills, sold everything and gone up the slag hill "
+              "in white robes. Now come the debts, the emptied houses, "
+              "and the fringe insisting it worked, invisibly.",
          state={"while": ("end-dated",)},
          quest={"post": job(
              "The Day After",
@@ -4642,9 +4641,9 @@ MAGIC_CARDS = (
     card("mortellaria/necromancy-open", "Necromancy is tolerated again",
          "mortellaria", tension=("academy-vs-tribunal",),
          without=("necromancy-open", "necromancy-purged"), days=None,
-         news="The death-face rite makes it locally thinkable, and the "
+         news="The death-face rite makes necromancy thinkable here, and the "
               "academy has a chair in it again this decade. The northern "
-              "rite is already citing the appointment as proof of the "
+              "rite is already calling the appointment proof of the "
               "creeping heresy.",
          state={"set": ("necromancy-open",)},
          quest={"post": job(
@@ -4691,7 +4690,7 @@ MAGIC_CARDS = (
          hook=_MASTER_HOOK,
          news="Any master here teaches, for a price or for quests run on "
               "the master's errands. {master} is buying errands this month "
-              "and paying in lessons. Buyer beware, constitutionally.",
+              "and paying in lessons. No law here protects the buyer.",
          state={"while": ("masters-hiring",)},
          quest={"post": job(
              "Paid In Lessons",
@@ -6291,7 +6290,7 @@ def world_lines(world: dict) -> list[str]:
 
 TRAVEL_SLOW = {                 # a state that makes a leg take a day longer
     "fords-out": "the fords are out -- the road goes round by the bridges",
-    "dust-storm": "the dust has the plain -- nothing moves while it blows",
+    "dust-storm": "a dust storm covers the plain -- nothing moves while it blows",
 }
 
 
