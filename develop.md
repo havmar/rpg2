@@ -898,9 +898,11 @@ a pointer: what the file is, how it's run, where its docs are.
   txt — the app character-wraps raw text blobs — with every display in
   a code fence. The page is the DRAFTING surface, not a substitute for
   the chat: the reviewed turn is copied back into the chat message
-  verbatim, with the page link under it, and the page keeps that one
-  turn only — the chat scrollback is the lookback, the transcript is
-  the record. All seven
+  verbatim, and the page keeps that one turn only — the chat scrollback
+  is the lookback, the transcript is the record. Since 2026-08-08 the
+  link under the chat message is **`ui/party.txt`**, not the scene page:
+  the chat already carries the turn's text, so the one link it gets goes
+  to the between-fights board it does NOT carry (dm.md, The scene page). All seven
   are **committed to the branch, not gitignored: they are the GitHub UI**
   (blob links, dm.md); only `save.json` stays untracked.
   Encounter commands print ONE log since 2026-07-21 (the log rework):
