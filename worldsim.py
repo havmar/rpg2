@@ -401,7 +401,6 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "dead-abroad": "the dead are guests tonight",
     "two-hoods": "two burial clubs want one corpse",
     "debate-riot": "the theology debate has gone to clubs",
-    "land-mourning": "an elf has died; the land has stopped",
     "mission-open": "the sun-church mission is open",
     "seeress-here": "the seeress holds the high seat",
     "tombs-open": "a tomb gallery has been opened",
@@ -534,7 +533,6 @@ STATE_MENU = {
     "feast-lock": {"goods": 1.20, "steel": 1.15},
     "carnival-on": {"lodging": 1.50, "goods": 1.15},
     "penance-season": {"goods": 0.90, "lodging": 0.85},
-    "land-mourning": {"goods": 1.20, "steel": 1.20},
     "holy-well": {"healer": 0.75},
     "knockers-quiet": {"steel": 1.25},
     "blot-due": {"goods": 1.15},
@@ -4031,32 +4029,8 @@ RELIGION_CARDS = (
              "slots": -1, "pay": 1.20}),
 
     # == Ensimaa: REVERENCE WITHOUT WORSHIP ================================ #
-    # The land's one ungated card, kept rare by its own die: an elf dies
-    # about once a century, and the whole culture's composure fails in
-    # public when one does.
-    card("ensimaa/the-funeral", "The funeral", "ensimaa",
-         chance=0.12, days=(12, 20),
-         news="An elf has actually died. The land has stopped. The rite is "
-              "long and closed, and an ageless people has no practice at "
-              "endings -- the composure the whole culture stands on is "
-              "failing in public.",
-         state={"while": ("land-mourning",)},
-         quest={"post": job(
-             "No Practice At Endings",
-             "The death was not natural, and among elves that is a graver "
-             "crime than it is anywhere else. The house wants the question "
-             "answered before the rite ends, by someone who is not "
-             "expected at it.",
-             pool=_ELF_TOUGHS, sites=("the white court", "the river house"),
-             giver="the dead elf's sister",
-             epilogue="The house has its answer, and the rite finished on "
-                      "time. Nobody outside the family will ever be told "
-                      "which of those mattered.",
-             failure_epilogue="The rite ended with the question open. The "
-                              "house has begun remembering the dead elf's "
-                              "name in a way that names somebody else "
-                              "too."),
-             "slots": -2, "pay": 1.30}),
+    # The one land packet that runs four worship cards, not five: the
+    # funeral card was cut 2026-08-11 (designer call; designlog).
     card("ensimaa/the-mission", "The mission that converted no one",
          "ensimaa", tension=("purity-vs-fringe",),
          wealth=("normal", "prosperous"), days=(15, 25),

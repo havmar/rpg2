@@ -390,8 +390,9 @@ a pointer: what the file is, how it's run, where its docs are.
   table: `STATE_MARKS` / `mark_roles` — what a state makes ROBBABLE, the
   reagent trade's crime-layer wiring, read through `crime.roll_mark`'s new
   `roles=` argument. Two named foe pools and no new creature row (`_UNDEAD`,
-  `_CASTERS`). The content bill: 34 `RELIGION_CARDS` and 14 `MAGIC_CARDS`
-  (five-plus worship cards a land, the Sun communion's synod sitting in TWO
+  `_CASTERS`). The content bill: 33 `RELIGION_CARDS` and 14 `MAGIC_CARDS`
+  (five-plus worship cards a land — four in Ensimaa since the funeral
+  card's cut, 2026-08-11 — the Sun communion's synod sitting in TWO
   lands' decks, and the talent/hunt chain that runs in every land), 32
   FACTS, 12 OPTIONS, 8 new religion and magic TENSIONS with 13 factions and
   16 faction edges under them, and 6 new relation edges (the two-way schism
@@ -485,7 +486,8 @@ a pointer: what the file is, how it's run, where its docs are.
   road reaching the heist and the smuggler and not the mugging, the extra
   faces competing with the band's own rather than replacing them, and a
   state mark reaching a real casing report); and the authored content (five
-  worship cards a land, magic reaching every land, almost nothing ungated
+  worship cards a land — four in Ensimaa since the funeral card's cut —
+  magic reaching every land, almost nothing ungated
   and what is left paying for it in `chance`, the MARGIN doctrine as data —
   no magic card moves a band — CONDUCT-NOT-CREED as data, the talent chain
   running in every land, the talent and the seeress kept, the schism clock
@@ -2180,7 +2182,7 @@ above.**
   width, and nothing was retuned). Its knobs are hand-set and
   SIM-UNVERIFIED: each option's `gold` (8–220) / `term` / `days` cooldown /
   `gives`, the rain stone's `holds` 2, the new cards' own `chance` (the
-  elven funeral 0.12 and the wild talent 0.10 are the rare end), and the
+  wild talent 0.10 is the rare end), and the
   STATE_MENU rows the rung added. **The dial if the counter reads like a
   satisfaction faucet is the blessing `days` cooldowns** — 3 to 8 days, and
   the whole effect is one point (two for a religious companion), which is a
