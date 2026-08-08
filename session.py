@@ -571,6 +571,11 @@ def party_sheet_lines(state: dict) -> list[str]:
             lines.append(f"active quest: [{qid}] DELIVERY {q['name']} -- "
                          f"carry {q['cargo']} to {q['dest_name']} "
                          f"(travel {q['dest']})")
+        elif q.get("proof_pending"):
+            lines.append(f"active quest [{qid}] {q['name']}: the field is "
+                         f"cleared but THE TARGET ESCAPED -- the job still "
+                         f"wants {q['proof']}. `pursue` while the trail is "
+                         f"warm")
         else:
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
@@ -1179,7 +1184,12 @@ def tally_lines(state: dict) -> list[str]:
         # the gold band -- the field lump at work-done is quoted straight.
         band = quest_band(q, clock.day) if q else "on time"
         mult = QUEST_PAY_BANDS[band]
-        if q and q["status"] == "open" and q.get("kind") != "delivery":
+        if q and q.get("proof_pending"):
+            lines.append(f"The field is cleared, but the target got away. "
+                         f"The job still wants {q['proof']}: `pursue` while "
+                         f"the trail is warm -- nothing is paid until the "
+                         f"target is dead.")
+        elif q and q["status"] == "open" and q.get("kind") != "delivery":
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
             left = len(site_rooms(world, s)) - cur["room"]
@@ -1864,6 +1874,12 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"  Active quest: [{qid}] DELIVERY {q['name']} -- carry "
                   f"{q['cargo']} to {q['dest_name']} "
                   f"(`travel {q['dest']}`; arriving is the turn-in).")
+        elif q.get("proof_pending"):
+            print(f"  Active quest [{qid}] {q['name']}: the field is "
+                  f"cleared, but THE TARGET ESCAPED and the job still "
+                  f"wants {q['proof']}. No rooms are left to fight -- "
+                  f"`pursue` while the trail is warm, or find them again "
+                  f"later.")
         else:
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
@@ -3947,7 +3963,13 @@ def record_loose_end(state: dict, escaped: list, log: list[str],
     reads, what a proof quest checks, and the honest substrate for "the
     same troll, healed, back in the pass". No expiry: entries persist until
     the DM prunes them by save edit -- they are story, not bookkeeping."""
-    n = state["loose_end_count"] = state.get("loose_end_count", 0) + 1
+    # The id is DERIVED from the list, never counted alongside it: every
+    # command is its own process, so a counter would have to ride the save
+    # to mean anything, and one the DM's pruning could desynchronize. The
+    # highest suffix in hand plus one is correct after any edit.
+    used = [int(m.group(1)) for r in state.get("loose_ends") or []
+            if (m := re.fullmatch(r"le(\d+)", r.get("id", "")))]
+    n = max(used, default=0) + 1
     area = current_area(state)
     world = state.get("world") or {}
     if quest_id:
@@ -4670,6 +4692,16 @@ def cmd_room(args: argparse.Namespace) -> None:
     if quest["status"] == "lost":
         print(f"[{qid}] {quest['name']} is over -- done, never paid. "
               f"Take a new quest.")
+        return
+    if quest.get("proof_pending"):
+        # Every room is fought; the cursor stands past the last one and
+        # there is nothing here to index. What the job still wants is a
+        # corpse, and that is `pursue`'s business, not this command's.
+        print(f"[{qid}] {quest['name']}: every room is cleared, but the "
+              f"target got away. The job still wants {quest['proof']} "
+              f"(proof of the kill). `pursue` while the trail is warm "
+              f"(same day, same area); after that, finding them again is "
+              f"the DM's scene.")
         return
     if quest.get("kind") == "delivery":
         print(f"[{qid}] {quest['name']} is a road job -- no rooms to fight. "

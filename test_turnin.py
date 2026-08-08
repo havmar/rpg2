@@ -296,6 +296,26 @@ class LooseEnds(unittest.TestCase):
         self.assertEqual([r["id"] for r in self.state["loose_ends"]],
                          [second["id"], first["id"]])
 
+    def test_ids_are_unique_across_separate_processes(self):
+        # Every command is its own process reading the save back, so the id
+        # can only come from the LIST -- a counter in state would reset to
+        # zero on the next command and stamp every rout `le1`.
+        session.record_loose_end(self.state, [foe("wolf", 1)], [])
+        reloaded = _state(self.world, day=self.state["clock"].day)
+        reloaded["loose_ends"] = list(self.state["loose_ends"])
+        session.record_loose_end(reloaded, [foe("wolf", 2)], [])
+        ids = [r["id"] for r in reloaded["loose_ends"]]
+        self.assertEqual(len(set(ids)), 2, ids)
+
+    def test_pruning_the_list_never_reissues_a_live_id(self):
+        # The record has no expiry: the DM prunes it by save edit, and the
+        # next rout must not collide with what is left.
+        session.record_loose_end(self.state, [foe("wolf", 1)], [])
+        second = session.record_loose_end(self.state, [foe("wolf", 2)], [])
+        self.state["loose_ends"] = [second]      # the DM drops the older
+        third = session.record_loose_end(self.state, [foe("wolf", 3)], [])
+        self.assertNotEqual(third["id"], second["id"])
+
     def test_a_quest_rout_names_the_job_and_the_place(self):
         quest = _quest_in(self.world, self.state)
         rec = session.record_loose_end(
@@ -573,6 +593,29 @@ class TheProofGate(unittest.TestCase):
         runner.hp, runner.withdrew = 6, True
         self._clear_the_last_room([runner])
         self.assertEqual(self.quest["next"]["room"], 1)   # the room is done
+
+    def test_room_says_so_instead_of_indexing_past_the_last_room(self):
+        # The cursor stands past the final room (they are all fought), so
+        # every reader has to know the state -- `room` used to crash here.
+        runner = foe("troll")
+        runner.hp, runner.withdrew = 6, True
+        self._clear_the_last_room([runner])
+        out = _run(session.cmd_room, self.state, **{})
+        self.assertIn(self.quest["proof"], out)
+        self.assertIn("pursue", out)
+
+    def test_the_readouts_never_print_a_room_past_the_last(self):
+        runner = foe("troll")
+        runner.hp, runner.withdrew = 6, True
+        self._clear_the_last_room([runner])
+        status = _run(session.cmd_status, self.state, **{})
+        sheet = "\n".join(session.party_sheet_lines(self.state))
+        tally = "\n".join(session.tally_lines(self.state))
+        for text in (status, sheet, tally):
+            self.assertNotIn("room 2/1", text)
+        self.assertIn("ESCAPED", status)
+        self.assertIn("ESCAPED", sheet)
+        self.assertIn("got away", tally)
 
     def test_killing_the_target_later_lifts_the_gate(self):
         runner = foe("troll")
