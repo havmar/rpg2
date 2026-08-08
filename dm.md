@@ -53,16 +53,16 @@ play.
   no-op; run it anyway. (The full end-of-message order is in The scene
   page below.)
 - **GitHub IS the player's UI.** The pages are committed to the branch,
-  so the player and DM can read them as blob pages. The one the player
-  lives on is **`ui/scene.md`** -- kept open on a phone and refreshed
-  after every turn; the scene link posted under every chat message (see
-  The scene page below) is the clickable way back in, and the page's own
-  footer links reach the rest: `ui/party.txt` (the between-fights
-  board), `ui/map.txt` (where they are and where their taken jobs
-  lead), and `ui/history.txt` once the campaign has a record worth
-  reading (after the first job, a conquest, a run of crime) -- that
-  last one is also YOUR continuity crib across sessions: what the
-  party did, who they killed, and what they are known for.
+  so the player and DM can read them as blob pages. The player reads the
+  TURN in the chat, so the link posted under every chat message is
+  **`ui/party.txt`** (the between-fights board) -- the one page the chat
+  does not already contain (see The scene page below). `ui/scene.md`
+  holds the same turn rendered, for a wide screen or a reread, and its
+  own footer links reach the rest: `ui/map.txt` (where they are and
+  where their taken jobs lead), and `ui/history.txt` once the campaign
+  has a record worth reading (after the first job, a conquest, a run of
+  crime) -- that last one is also YOUR continuity crib across sessions:
+  what the party did, who they killed, and what they are known for.
   `ui/fight-short.txt` is linked FROM the scene page at every fight
   (see the turn protocol); `ui/fight-detailed.txt` is shared on
   request, when the full mechanics record matters.
@@ -80,11 +80,12 @@ only the FINISHED text is spoken in chat. The point of the detour is
 REVISION: a page can be reread and edited before the player sees it, a
 chat message cannot -- and the style drift of a long session is caught
 in that reread. The page is written, reviewed, committed, and THEN the
-turn is copied back into chat verbatim, with the page's link under it.
-So the player reads the scene where they are -- in the chat, with no
-tab to open -- and the page holds THAT ONE TURN, rendered, for the
-phone, the wide screen, and the footer links. The chat scrollback is
-the lookback; the page has no reason to repeat it.
+turn is copied back into chat verbatim, with the PARTY page's link
+under it. So the player reads the scene where they are -- in the chat,
+with no tab to open -- and the one link they get is to the board the
+chat does NOT hold. The scene page still holds THAT ONE TURN,
+rendered, for the wide screen and the footer links. The chat
+scrollback is the lookback; the page has no reason to repeat it.
 
 - **Draft, review, commit, then copy back.** Write the full message
   into `ui/scene.md`, reread the draft against `writing.md` (its Final
@@ -103,8 +104,8 @@ the lookback; the page has no reason to repeat it.
   fences, the inline fight-log link -- exactly as committed. Leave OUT
   the `## turn` heading, the `>` quote of the player's own words, and
   the standing footer: the chat has all of that already or gets it
-  from the link. Then the link on its own final line. The two texts
-  are identical by construction; never reword one for the other.
+  from the link. Then the party link on its own final line. The two
+  texts are identical by construction; never reword one for the other.
 - **Format: rendered Markdown, structure only.** Raw text has no good
   reading surface (the phone app breaks words at the margin; 40-column
   text is a ribbon on a PC), so the page is `.md` and is read RENDERED,
@@ -143,8 +144,8 @@ the lookback; the page has no reason to repeat it.
   `ui/scene.md`, append the new turn to `ui/transcript.md`, run
   `python session.py sheet` (it commits both with the other pages),
   then post in chat: the new turn's text as committed, and under it
-  the link (swap in the branch):
-  `https://github.com/havmar/rpg2/blob/<branch>/ui/scene.md`
+  the PARTY link (swap in the branch):
+  `https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt`
   Nothing else goes in the chat message -- no preamble, no note on
   what you edited, no design talk. Out-of-game talk -- errors, design
   questions when the player raises them -- stays in chat and never on

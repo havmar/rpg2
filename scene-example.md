@@ -12,8 +12,9 @@ markdown beyond structure. Swap `<branch>` for the current branch in the
 links.
 
 Each turn's chat message is that turn's own text copied back verbatim --
-everything between the `>` line and the footer -- with the scene page's link
-on a final line under it.
+everything between the `>` line and the footer -- with the party page's link
+(`ui/party.txt`) on a final line under it: the chat already holds the turn,
+so the one link it gets is to the board it does not hold.
 
 ---
 
