@@ -71,7 +71,8 @@ and is not needed for play.
   a potion, resurrect a companion the fiction says survived -- edit the
   file between commands; every command reloads it fresh. Weapons are stored
   by catalog name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use
-  it for story reasons, not for convenience: the numbers are the game.
+  it for story reasons, not for convenience: the game is played on the
+  engine's numbers, so do not edit away an outcome you merely dislike.
 
 ## The scene page -- the DM message is a file
 
@@ -698,7 +699,8 @@ rolled; dwarves never aggress) and four wave quests pinned at levels **2 /
   named villains (two lieutenants, then the conqueror) cap waves 2/3/4 --
   the log carries their names; give them a line of dialogue and a death
   worth the title. Their stats are an honest room of the wave's level:
-  narrate the name, trust the row.
+  narrate the name over the printed row, and use the row's numbers as
+  they are.
 - **Wave 3 is a scripted fall -- play it straight.** The land falls even if
   the quest is cleared: success gets the evacuation, the pay, and the
   lieutenant's head; it never saves the city. Say so in the fiction (the
@@ -879,9 +881,9 @@ rules.md's Crime add-on has the numbers.
 - **Repetition is hell being bored, not the world reacting.** When the
   multiplier note prints ("hell is bored: x0.5"), say it in hell's voice --
   a memo, a sigh from below, a note in the file -- never as the town
-  learning to defend itself. The coin is unchanged on purpose: the loot is
-  the loot. Alternating two crimes does not help; a wider mix of crimes or
-  a few honest days does, and it is fair to say so once.
+  learning to defend itself. The gold is unchanged on purpose: only the
+  sin and the XP shrink. Alternating two crimes does not help; a wider
+  mix of crimes or a few honest days does, and it is fair to say so once.
 - **A big score is NEWS.** When the news line prints, the town talks for
   six days: guards double at the gate, the innkeeper repeats the story
   wrong, prices go up. Heat holds at 1 or more through it no matter how
@@ -1064,7 +1066,7 @@ than the fights WITHOUT pages of narration:
   player; your part, when a displayed number is about to decide the next
   fight, is that number shown once -- a one-line display ("Torbera: HP
   2/10") or a clause quoting it -- with no recommendation attached. Quote
-  the readout, don't convert it -- STA is STA, not "good swings left" --
+  the readout, don't convert it -- say STA, never "good swings left" --
   and never turn the check into roster talk about what waits inside. The
   choice stays theirs.
 - **Player decisions -- present, don't push:** drinking a potion between
@@ -1463,7 +1465,8 @@ than the fights WITHOUT pages of narration:
   lootable steel. **Board quests reskin rows for local fiction** -- a
   goblin "Scrap-Hound" is the wolf row, an orc "Deathblade" the
   blademaster; the display name is flavor, the stats never change with the
-  costume. Narrate the skin, trust the row.
+  costume. Narrate the display name as the fiction and use the row's
+  numbers as printed.
 - 0 HP = Down (out of the fight, back up at 1 HP next fight); death only on
   an unsaved crippling blow. On a total party knockout, apply the roster's
   ferocity and the PC's once-per-level mercy allowance before the Down are

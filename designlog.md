@@ -3750,3 +3750,19 @@ thinkable" — the "it" (necromancy) is never named) and design
 vocabulary leaking into player-facing copy ("The card is the day
 after..."). Fixing them is a small follow-up pass once the designer
 signs off on the list.
+
+## 2026-08-08 (still later) — The kept shorthand purged; the worldsim copy fixed
+
+Two short follow-ups on the designer's sign-off of the audit list:
+
+- **dm.md's kept doctrine shorthand is gone.** "Narrate the skin, trust
+  the row" (both instances), "the numbers are the game", "the loot is
+  the loot", and "STA is STA" are all unpacked into plain statements;
+  the ferocity tags and other literal rule names stay.
+- **The flagged worldsim copy is fixed** — six STATE_WORDS values (the
+  three "X has the Y" possession lines and the three "dear" prices) and
+  ten news lines (bank run, colony fleet, mercenary-home, dust storm,
+  bandit king, one-heir, the purist reserve, the flagellants, the dated
+  End, the death-face chair, the master's lessons). The two spots in
+  rules.md that quote a changed state string, and one test docstring,
+  were synced; test_worldsim (256), test_places and test_history pass.
