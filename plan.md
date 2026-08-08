@@ -75,6 +75,217 @@ active thread below. What is left of the pivot's own build order:
 
 ---
 
+## THE TURN-IN, THE ROUT & THE HUNT (2026-08-08) — designed, ready to build
+
+One feature cluster out of the first played session on the current build
+(designlog 2026-08-08 has the discussion trail). Three findings drive it:
+**foe escape is too common and lands in the wrong fights** (measured: the
+solo troll escapes 54% of won fights, 50% even when the party ends fresh —
+big pools hover below half HP, DEX 6-7 plus the +2 flee bonus beats the
+party average; ordinary at-level packs almost never escape because they
+die from above half in one blow); **the escaped-foe state is mechanically
+inert** (an escape pays exactly like a kill — field, XP, gold, room
+cleared — so its whole cost is narrative, and the narrative it forces
+routinely contradicts the job: "kill the giants" completed by a troll
+jogging off); and **there is no turn-in** — the QUEST COMPLETE banner
+pays the lump and ALL the gold the instant the last field clears,
+wherever the party stands, and the giver scene the DM narrates over it is
+fiction with no mechanics under it.
+
+The cluster fixes all three with one spine: the escape becomes rare and
+condition-correlated, the escaped foe becomes a STATE the game remembers,
+and the quest gains a real turn-in stage that the state can gate. Each
+part is useful without the ones after it; build in this order.
+
+### A. The rout rebalance (the chase fix)
+
+Keep the trigger (`fight_winding_down`, all living foes below half HP or
+Spent; ferocity 0/1 only) and the one-attempt rule. Fix the chase so the
+outcome correlates with the party's condition — the machinery is already
+half there (STA-weighted pursuit DEX, unfit heroes don't pursue, no fit
+pursuers = automatic escape):
+
+- **The rout loses `FLEE_BONUS`.** The party's deliberate retreat keeps
+  its +2 (it picks the moment); a rout is a collapse under pursuit and
+  picks nothing. The shared `_chase_contest` grows a flag or the foe path
+  passes 0.
+- **Runners' chase DEX is HP-weighted as well as STA-weighted** (they are
+  below half by construction — broken bodies run slowly). Floor the
+  weight (~0.3) so a graze-rich pack is not automatically caught.
+  Pursuers unchanged.
+- **The rout gets its own trigger threshold, stricter than the standing
+  orders'**: a separate predicate at below 1/3 HP or Spent.
+  `fight_winding_down` stays at half — it also gates potion thrift and
+  must not move.
+
+Measured estimates (300-fight probes, level-matched duos; the session's
+chat has the harness): packs 10%->8%, ogre/bear 23%->~0-6%, troll
+54%->~33%, with run-downs (the fight resumes and finishes with a kill)
+roughly tripling, and hurt-party escape rates staying 90%+ — the
+relief-escape survives untouched. The troll's residue is its regeneration
+holding it in the trigger band; accept it — a regenerating monster
+slinking off to heal is honest troll fiction and the loose-ends record
+below makes it a hook. Re-probe after the build; benchlog gets the entry.
+
+**Plus the banner tag:** a field cleared by rout says so —
+`(driven off, not slain)` on the site/job banner — so the display never
+prints "the giants are dead" against a log that says otherwise.
+
+### B. The loose-ends record
+
+A rout writes a record the save keeps, exactly as fled party rooms keep
+their survivors: who got away (kind, display name, level), at what HP and
+wounds, from which fight (quest id / room, or hunt/road), in which area,
+on what day. One list on the save (`loose_ends`), newest first, readable
+by the DM (`status` names the latest; `look --dm` lists local ones). It
+is what `pursue` reads, what a proof quest checks, the honest substrate
+for "the same troll, healed, back in the pass" — and later, for the
+parked nemesis record (the villain layer's first entry), which currently
+has nothing to stand on. No expiry mechanic: entries persist until the
+DM prunes them by save edit; they are story, not bookkeeping.
+
+### C. `pursue` — the warm trail
+
+One command, one roll, no tracking subsystem. Available only while the
+trail is WARM: same day as the rout, party still in the area, no night
+slept. The player says "I want them dead"; the DM runs it.
+
+- **The contest:** 2d6 + party best MIND vs 2d6 + the runners' chase DEX
+  (HP- and STA-weighted, as in A), trackers +2 if any runner carries
+  wounds (blood on the ground). One attempt per rout, mirroring
+  `break_tried`.
+- **Success:** the fight re-opens against the survivors at their fled
+  state — their end-of-fight HP, wounds and STA (they have been running;
+  no refresh), the party likewise at its current tracks, met at the
+  party's preferred range (they are the hunters). Standard encounter
+  machinery from there: pause, retreat, another rout all possible.
+- **Failure:** the trail is lost, no day spent, the loose end stays. Say
+  it plainly and move on — the record is the story hook.
+- **Pay:** the room already banked its encounter share when the field
+  cleared, so the mop-up pays WILD rates for what it kills —
+  `wild_encounter_xp(level)` once for a won pursuit fight (the hunt's
+  own formula; hand-set, tune at the table). Loot rolls as any fight.
+- **Cold trails are not a mechanic.** After a night the wounds have
+  healed (living foes heal after a day; the troll fully) and pursuit
+  becomes finding — rumor, `travel`, `forge`, the DM's territory, fed by
+  the loose-ends record.
+
+### D. Proof-of-kill quests
+
+An authored `proof` flag on the bounty-flavored subset of kill templates
+("bring the troll's ears"), printed on the board row and relayed in the
+giver's words — the terms are taken knowingly, same doctrine as levels
+and deadlines. Modest fraction of kill-shaped templates (about a third),
+plus a `forge --proof` switch; a natural fit for dark work too (hell
+demanding stapled-ear paperwork is its exact register).
+
+- **The flag gates the work-done stage (below) on the FINAL site's
+  roster being dead** — mook sites exempt. A rout-escape there still
+  clears the field and pays the encounter share, but the quest sits
+  UNFINISHED ("the target escaped — proof wanted"; `status` and the
+  board say so) until the target is killed — warm `pursue`, or a later
+  re-encounter the DM stages off the loose end.
+- **Ordinary quests stay driven-off-completable.** This matters: after
+  A, escapes correlate with a battered party, and the relief-escape is
+  only a relief if it still pays. Flagging everything would punish
+  exactly the party already hurting. "Clear the pass" is done when the
+  road is open; the bounty is done when the ears are on the table.
+- **The deadline prices the chase for free**: the bounty due day 9, the
+  troll ran on day 6, it heals whole overnight — pursue tonight
+  bloodied, or eat the late band. No new clock machinery.
+
+### E. The turn-in stage and the three-way XP split
+
+The core loop change: **a quest is paid where the giver stands, not
+where the last body falls.** The lifecycle grows one stage:
+`taken -> work_done -> turned_in | lost`.
+
+**At work-done** (last site closed, proof satisfied where flagged), in
+the field: the banner says the JOB IS DONE and names the giver and area
+("return to Neega at Ulus-Gal -- due day 9"); the world changes now
+(`complete_quest_place_state` — the pass reopens when the deed is done,
+not when it is paid); and the FIELD tranche of the XP lands, unbanded.
+
+**At turn-in** — a new `turnin QID`, gated on the party standing in the
+giver's settlement area, run by the DM as part of the return scene, and
+narrated as that scene (dm.md gets the protocol; the epilogue line and
+the QUEST COMPLETE banner move here): ALL the gold, the TURN-IN tranche
+of the XP, both banded by the TURN-IN day (`quest_band` — the road home
+is finally inside the clock); the CHA negotiation; the reward weapon
+(`claim` already waits at the giver — it finally stands where the giver
+does); companion satisfaction +1 "a job paid out" (which now lands in
+town by construction, exactly where a quitting companion can be saved);
+the history record with the epilogue. A `--here` override is the DM's
+valve for edge fiction (a dead giver, an occupied town): pay where the
+story says.
+
+**The split:** `QUEST_ENCOUNTER_SHARE` stays 0.40, paid per fight as
+today (a rout-cleared field pays it in full — forcing the escape IS
+winning the fight). New `QUEST_TURNIN_SHARE` = 0.20; the field tranche
+at work-done is the remainder (0.40). Reporting back diligently is real
+XP but smallish — the gold is the turn-in's real weight. Totals and the
+board's posted quotes are unchanged; only WHEN moves. Only the turn-in
+tranche and the gold are ever banded or lost — the doctrine ("only the
+turn-in is banded") extends to the new tranche untouched.
+
+**The clock widens by the return leg.** `stamp_quest_clock` already
+takes `extra_days`; at posting, add the road days from the LAST site's
+area back to the origin (0 same area, 1 same land, 2 cross-land — the
+delivery kind's round-trip precedent). The windows were tuned for
+instant completion; this keeps the bands roughly neutral. Re-bench.
+
+**Lost after work-done** (deadline + grace passes before the party
+returns): the turn-in tranche and the gold are gone, the banked 80%
+stays, NO failure rumor fires (the monsters are dead — the world
+changed), place states stay completed, and the record reads "done,
+never paid". The giver's grievance is story material, not a penalty.
+
+**Exemptions (settled):** DELIVERIES are unchanged — the hand-off at
+the destination already IS their turn-in. WAR WAVES pay at work-done as
+today: no clock, the giver is a ruler mid-war, and wave 3's scripted
+fall makes the return scene impossible by design — the war outranks the
+mechanic. CONQUEST garrison jobs have no giver; the town is the pay.
+HELL assignments and dark quests (`hell_task`, `align == "dark"`) pay
+at work-done: hell verifies its own work and the purse arrives by
+infernal delivery (narrate the receipt); a settled twist is a hand-off
+on the spot by definition. The turn-in stage is for HONEST work with a
+giver — board quests and forged good quests.
+
+**Sims and benches:** `bench_quests`' careers turn in instantly at the
+origin (they already teleport); career numbers stay comparable, and the
+parked travel-layer item keeps owning the honesty gap. The pacing
+totals do not move — only timing does.
+
+### The bill
+
+- **Code:** `rpg.py` (rout trigger + chase weights, A), a `loose_ends`
+  save key + writers (B), `session.py` (`pursue`, `turnin`, the
+  work_done status, the lost-after-done path, banners/status/board
+  lines), `quests.py` (`QUEST_TURNIN_SHARE`, the split in
+  `quest_clear_xp`/a new `quest_turnin_xp`, `stamp_quest_clock` return
+  legs, the `proof` template flag + `forge --proof`).
+- **Tests:** a `test_turnin.py` contract suite — the lifecycle and its
+  gates, banding at turn-in day, lost-after-done keeping the 80% and
+  firing no rumor, the exemption set, the rout chase weights, the
+  loose-ends record shape, `pursue`'s warm-trail gate and both
+  outcomes, the proof gate end to end. Extend `test_mercy.py` where the
+  reverse-retreat contracts move.
+- **Bench:** re-probe the escape rates (A's harness), and a career
+  re-run for the band distribution under widened windows; benchlog
+  entries for both.
+- **Docs at ship:** rules.md (the quest lifecycle, the split, the rout
+  chase, `pursue`, proof), dm.md (the return scene protocol, the
+  turn-in as the giver scene, pursue at the table, proof relaying),
+  develop.md (files/map/knobs), and this entry DELETED into designlog.
+
+**Open calls left to the build:** the exact pursue contest numbers (DC
+band wants a quick probe like A's), the mop-up pay formula if
+`wild_encounter_xp` reads wrong at the table, the 0.20 turn-in share
+(tune against played pacing), and which templates carry `proof`
+(authoring pass under writing.md).
+
+---
+
 ## THE WORLD & NPC SIMULATION (2026-08-05) — the active thread
 
 The problem it serves: **places and NPCs don't matter.** The player
