@@ -88,9 +88,6 @@ Delg +53 XP (quest) [88/100]
 Isolde +53 XP (quest) [88/100]
 Isolde: satisfaction 7 -> 8/10
 (a job paid out)
-EPILOGUE (day 1): The well is
- cleared. Ventoro draws water again
- by evening.
 
 -- the party --
 Delg: Unhurt STA 4/6 Power 5/5
@@ -101,7 +98,7 @@ Isolde: Scratched STA 4/6 Power 5/5
 Purse 20g; day 1.
 ```
 
-Rosa counts the coin out at the well head. "Cheap at twice that," she says, and looks down the shaft once before she pays.
+Rosa counts the coin out at the well head. "Cheap at twice that," she says, and looks down the shaft once before she pays. By evening the winch has a new rope and Ventoro draws water again.
 
 Isolde binds her arm herself. "An ordinary rat," she says. "Disappointing."
 

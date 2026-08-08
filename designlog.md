@@ -3567,3 +3567,69 @@ clock test, the politics chains each reaching their successor, the
 Gibili arc run to BOTH constitutions, the two board repost rules, the
 raised-toll road charge, the rain stone's full paid window, and the
 late-posted news line.
+
+## 2026-08-12 (later) — Quests are narrated: the display rule softened, and the retro list audited
+
+**The prompt** (the designer): the standing instruction had quests
+passing to the player as verbatim script output in a code block, and in
+play that reads jarring — the template desc is a one-line prompt, and
+what the quest actually IS is often not obvious from the row. The
+ruling: script outputs and numbers stay good info to pass on, but
+quests and quest resolutions are NARRATED, in the simple text-adventure
+style, and the DM pays attention that the quests and events make sense.
+
+**The rule, written in** (dm.md):
+
+- The board/funnel bullet: the display block is the format for the
+  NUMBERS only; what the job is gets told in the giver's mouth in the
+  plain voice, never left to a pasted row or the desc line — say it so
+  the player can picture it, and square it with the place and the
+  day's news first.
+- The turn-in bullet: the QUEST COMPLETE banner and its numbers stay
+  display; the epilogue line and the turn-in prompt are MATERIAL — the
+  job's ending is told as a short scene, the aftermath fact folded into
+  the fiction.
+- The turn protocol's fight-end fence: keeps the mechanics (XP, pay,
+  satisfaction, tally, levelup menu); the resolution words (epilogue,
+  turn-in prompt, a giver's failure line) come out of the fence and
+  into the prose.
+- Narration style grew the two governing bullets: "Quests and their
+  resolutions are NARRATED" (the deliberate soft spot in
+  displays-over-prose) and "Make the quest make sense" (read the
+  pieces — desc, giver, sites, the land's state — before narrating;
+  where they clash, the fiction bends and the numbers stay the
+  engine's; the same duty covers waves, news lines, and hell's
+  letters).
+- scene-example.md's fight turn refit to model it: the EPILOGUE lines
+  left the end fence, and the well's reopening is now told in the
+  turn-in scene. plan.md's pivot consequence ("Displays over prose")
+  softened in place with a pointer to dm.md.
+
+**The retro list audited** (the designer's ask — several points looked
+already implemented, and were):
+
+- **The quest wording rework (retro item 2) had ALREADY SHIPPED and
+  was never crossed off.** Commit ef9e7d9 ("Rewrite quest content in
+  plain CRPG style", 2026-07-22) took the good templates in
+  `quests.py`, the epics in `story.py`, and the then-current
+  `karma.py` to the plain register the same day writing.md landed —
+  the current desc lines ("Bandits are attacking travelers on the
+  king's road. Find their camp and kill them.") are that pass. The
+  karma half was later redone wholesale with the assignment ladder,
+  and the crime layer's copy was written fresh in `crime.py`. The item
+  is deleted from plan.md; the queued quest-shape pass's
+  cross-reference now points at the shipped rework instead.
+- **The levelup-menu sub-item of retro item 1 shipped 2026-07-28**
+  (the display pass: fixed command-headed sections, the right-hand
+  cost column, `Ability.brief` / `Move.brief` one-liners under every
+  buy) together with the fitted hero readouts (`hero_block_lines`,
+  shared by `status` and `ui/party.txt`) — develop.md's Files section
+  already documents both. The sub-item is deleted; the STATUS DISPLAY
+  sub-item is trimmed to what remains true (the quest/world/karma
+  lines around the hero blocks, and `board` / `map`, still print
+  DM-shaped output), and the fitting-pass sub-item now names
+  `people.person_line` as a concrete straggler.
+- **Still genuinely open, left standing**: the status/board/map
+  fitting, the non-combat fitting pass, `ui/minimap.txt` (session.py
+  still calls it planned), the parked E1/P1 shorthand, and playing the
+  dark path in the new register (no probe playthrough on record).
