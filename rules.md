@@ -4441,6 +4441,11 @@ poison is its **clock**: rounds are the wrong unit for an illness.
   hero. A miss is a **COLD**. A roof of any kind — walls, or the storm
   night's cabin — skips the check entirely: *shelter is the answer to
   weather, and always was.*
+- **Each night under its own sky.** A leg of several days is checked night
+  by night against the weather of the day it is spent, not the weather the
+  party set out in — the storm at the gate is one night's problem unless it
+  is still blowing on the third. The same day's sky decides that night's
+  shelter roll and the storm's morale grumble.
 - **Bounded deepening.** A chill caught while a cold is running deepens it
   to **PNEUMONIA**; a chill caught on pneumonia does nothing. There is no
   third rung, and disease never kills.
@@ -4570,6 +4575,13 @@ on the bridges — or through a washed-out ford is charged in gold before it
 is walked (small on purpose — the fords cost a *day*, and days are the
 expensive currency). A purse that cannot pay walks anyway and owes
 nothing: the bridge is not a wall.
+
+**One crossing, one charge.** A leg broken off by a road fight leaves the
+party where it started and the player re-issues `travel` — and the toll is
+not asked twice, nor the washed-out ford walked round twice. The base days
+ARE walked again (the road is still the road), and the crossing is paid for
+until it is either made or given up on: any other move the party makes
+spends the marker, and the next attempt is a fresh charge.
 
 ## The local encounter table (the encounter outlet)
 

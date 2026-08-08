@@ -70,9 +70,11 @@ Run:  python -m unittest -v test_worldsim.py
 import io
 import json
 import random
+import tempfile
 import unittest
 import unittest.mock
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
+from pathlib import Path
 
 import argparse
 
@@ -1604,6 +1606,28 @@ class TheWeatherSessionWiring(unittest.TestCase):
         _sky(world, "firascir", "storm")
         self.assertEqual(session.fight_sky(state), "storm")
 
+    def test_every_night_of_a_leg_is_paid_at_its_own_sky(self) -> None:
+        """`travel`'s night loop asks for the sky once a night and
+        `long_rest` advances the day between asks -- so `exposure_sky`
+        rolls the world up to TODAY like every other reader. Without it a
+        four-day leg charged the departure day's weather four times: four
+        exposure checks in one storm, four cabin rolls, four morale hits."""
+        import session
+        world = _world(4471)
+        state = self._state(world, 1)
+        twin = _world(4471)             # the same world, rolled by hand
+        seen = []
+        for day in range(1, 13):
+            state["clock"].day = day    # what a night on the road does
+            got = session.exposure_sky(state)
+            worldsim.roll_world(twin, day)
+            want = ("smog" if "smog" in worldsim.state_ids(twin, "firascir")
+                    else worldsim.weather_of(twin, "firascir"))
+            self.assertEqual(got, want, day)
+            self.assertEqual(_layer(world, "firascir")["rolled_day"], day)
+            seen.append(got)
+        self.assertGreater(len(set(seen)), 1)   # and it is not one frozen sky
+
     def test_the_storm_rides_a_paused_fight_to_its_resume(self) -> None:
         import session
         pending = {"foes": [], "fired": set(), "round": 2, "crossings": [],
@@ -2307,6 +2331,115 @@ class TheEconomyFloorWiring(unittest.TestCase):
                 worldsim.roll_world(world, day)
                 seen.add(snapshot(world))
             self.assertTrue(seen - {start}, seed)
+
+
+@contextmanager
+def _save_sandbox():
+    """Point session's save and its three written pages at a throwaway
+    directory -- a suite must never overwrite the playthrough."""
+    import session
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "ui").mkdir()
+        saved = (session.STATE_PATH, session.PARTY_SHEET_PATH,
+                 session.MAP_SHEET_PATH, session.HISTORY_SHEET_PATH)
+        session.STATE_PATH = root / "save.json"
+        session.PARTY_SHEET_PATH = root / "ui" / "party.txt"
+        session.MAP_SHEET_PATH = root / "ui" / "map.txt"
+        session.HISTORY_SHEET_PATH = root / "ui" / "history.txt"
+        try:
+            yield root
+        finally:
+            (session.STATE_PATH, session.PARTY_SHEET_PATH,
+             session.MAP_SHEET_PATH, session.HISTORY_SHEET_PATH) = saved
+
+
+class ThePaidCrossing(unittest.TestCase):
+    """One crossing, one charge (`road_paid`). An interrupted leg leaves the
+    party at the origin and the player re-issues `travel` -- but the toll is
+    paid and the washed-out ford is walked round already.
+
+    The marker is only ever READ BACK OFF THE SAVE: the fight that broke the
+    trip off saves, and the re-issue is a fresh process. That is why the
+    round trip is the test and not an afterthought."""
+
+    @staticmethod
+    def _priced_road() -> tuple[dict, dict, dict]:
+        """A world whose Firascir charges for its roads both ways -- a
+        doubled toll (gold) and fords that are out (gold AND a day)."""
+        world = _world(27)
+        _fire(world, "firascir", "firascir/tolls", 3)
+        worldsim.set_state(world, "firascir", "fords-out", day=3)
+        here, there = _settlements(world, "firascir")[:2]
+        return world, here, there
+
+    @staticmethod
+    def _state(world: dict, here: dict, day: int = 3) -> dict:
+        import karma
+        import session
+        return {"world": world, "party": _party(), "clock": rpg.Clock(day=day),
+                "purse": rpg.Purse(gold=500), "rng": random.Random(4),
+                "karma": karma.new_karma(), "crimes": crime.new_crimes(),
+                "history": [], "position": session._area_position(here),
+                "accepted": [], "active_quest": None, "loose_ends": [],
+                "foe_count": 0, "pending": None, "rooms": {},
+                "site_clears": {}, "holdings": {}, "story": None,
+                "pact": None, "services": {}, "visited": [here["key"]]}
+
+    @staticmethod
+    def _travel(state: dict, target: dict, interrupted: bool) -> str:
+        """One `travel` leg. `interrupted` is the road fight the party ran
+        into, stubbed at the one valve the command reads it through."""
+        import session
+        out = io.StringIO()
+        with unittest.mock.patch("session.load", return_value=state), \
+                unittest.mock.patch("session.wild_event",
+                                    return_value=interrupted), \
+                redirect_stdout(out):
+            session.cmd_travel(argparse.Namespace(dest=[target["key"]]))
+        return out.getvalue()
+
+    def test_a_broken_off_leg_pays_its_toll_once(self) -> None:
+        import session
+        world, here, there = self._priced_road()
+        state = self._state(world, here)
+        with _save_sandbox():
+            self._travel(state, there, interrupted=True)
+            paid = 500 - state["purse"].gold
+            self.assertGreater(paid, 0)             # the road took something
+            self.assertEqual(state["clock"].day,
+                             3 + session.TRAVEL_DAYS_IN_LAND + 1)  # + detour
+            session.save(state)                     # what the fight does
+            again = session.load()                  # ...and the re-issue
+            self.assertEqual(again["road_paid"],
+                             {"from": here["key"], "to": there["key"]})
+            was = again["purse"].gold
+            day = again["clock"].day
+            self._travel(again, there, interrupted=False)
+        self.assertEqual(again["purse"].gold, was)  # no second toll
+        self.assertEqual(again["clock"].day,        # no second detour
+                         day + session.TRAVEL_DAYS_IN_LAND)
+        self.assertEqual(again["position"]["area"], there["key"])
+
+    def test_the_crossing_made_is_a_marker_spent(self) -> None:
+        import session
+        world, here, there = self._priced_road()
+        state = self._state(world, here)
+        with _save_sandbox():
+            self._travel(state, there, interrupted=False)
+        self.assertIsNone(state.get("road_paid"))
+
+    def test_any_other_move_drops_the_marker(self) -> None:
+        """A marker that outlived the standing still would hand a free
+        crossing to the same leg weeks later -- so every way the party's
+        position moves goes through `move_party`, which spends it."""
+        import session
+        world, here, there = self._priced_road()
+        state = self._state(world, here)
+        state["road_paid"] = {"from": here["key"], "to": there["key"]}
+        session.move_party(state, there)
+        self.assertIsNone(state.get("road_paid"))
+        self.assertEqual(state["position"]["area"], there["key"])
 
 
 # =========================================================================== #
