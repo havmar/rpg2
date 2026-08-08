@@ -1,96 +1,115 @@
 ## turn 1 (day 1)
 
-> new game
+> new game please
 
-You are Garrick: human, thirty-one, a magic user. You throw fire, and you can steal one moment out of a fight when you need it. The katana on your hip is masterwork and paid for. The purse holds a hundred and seventy-three gold. Years ago you signed with Hell -- wealth and power promised, obedience owed. Nothing has been asked of you in a while.
+You are Orsik: a dwarf, forty-three, a magic user. You throw fire, and you have been throwing it long enough to be very good at it. You can also tear a weapon out of a man's hand without touching it, and see one room ahead. A grim katana hangs at your hip. The purse holds seven hundred and sixty gold. You have taken paid work like this for years. Years ago you signed a contract with Hell. It has asked for things since, and you did them. Nothing is asked of you today.
 
-Meriele walks beside you: elf, thirty-two, bald, a zweihander across her back. She speaks carefully and she fights carefully, and she has watched your back for years.
+Ovak walks beside you: an orc, forty-six, with a zweihander across her back that she has drilled with for years. She mumbles when she talks. Her clothes are bright and much decorated. She has watched your back since long before either of you was any good at this. A goblin duelist named Klanker is somewhere out there and still wants to fight her.
 
-You are in Castavera, capital of Mortellaria. White stone above the Stura River road, tiled roofs, the sea wind coming up the valley since dawn. There is a watch posted on the graveyard gate that was not there last season. The necromancers work openly in this country now and nobody on the market street wants to talk about it.
+You are in Ulus-Gal, the walled capital of Tergal, on a low rise above the prairie. Clear skies. The horse market is loud below the great hall. Bread costs too much this year, because the Firascir grain never came.
 
-Maud the sheriff catches you at the foot of the palace steps. Bandits have taken three parties of travelers on the king's road inside a week. She knows roughly where the camp sits. She wants them killed and she wants it done inside two days.
+You ask at the hall for work. They send you to Neega, the pass keeper, an orc woman of thirty-two, who is standing at the east gate arguing with a carter who will not go up the road.
 
-```
-  job: Bandits on the Road -- L6
-  giver: Maud, the sheriff
-  1 site, 1 fight. pays 92g, 308 XP
-  due day 3 -- turned in now, x1.15
-```
-
-A bell starts at the river gate while she is still talking. A guard has come in off the northern border: orc raiders burning guard posts and mapping the roads. An orc warlord has united the clans and calls it the Sky's mandate. King Walt will be calling for blades before the day is out.
+Giants have taken the mountain pass, she says. They stop the carts, they kill the drivers, and they have a cave up past the boulder field. Three carters are dead. She wants the giants dead and the road open, and she wants it inside two days, because after that the season's last wool trains go around by the south and Ulus-Gal loses the toll.
 
 ```
-  *** WORD OF THE WAR ***
-  [w1] L2 Orc Scouts -- 2 sites
-  giver: Walt, king
-  pays 79g, 290 XP
+  job: Giants in the Pass -- L13
+  giver: Neega, the pass keeper
+  1 site, 1 fight
+  pay: 234g, 616 XP
+  due day 3 -- turned in now it
+    pays quick, x1.15
+```
+
+A rider from the Dvarvengrond border came through the gate this morning and is still telling it in the yard: the elves have crossed.
+
+```
+*** WORD OF THE WAR (day 1) ***
+the Golden Empire: the elf empire
+holds other peoples weak and fit to
+be ruled. Its magic machines are
+over the Dvarvengrond border. The
+reason given: a claim on the
+Dvarvengrond throne.
+Bardryn, high thane, calls for
+blades at Bjorgheim:
+  [w1] L2 Machines at the Border
 ```
 
 ```
-  options: take the bandit job, take
-    the war call [w1], the board (2
-    more jobs), spend Garrick's banked
-    skill point, the smith, travel
+  options: take the pass job, the
+    board (4 more jobs here), the
+    war call at Bjorgheim, hunt,
+    travel
+  Orsik: 1 skill point unspent
 ```
 
 What do you do?
 
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/map.txt)
+[party](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/map.txt)
 
 ---
 
-## turn 2 (day 3)
+## turn 2 (day 2)
 
-> i travel to ensimaa and check quests there
+> take the pass job
 
-Two days on the road; nothing out of the ordinary happens. You reach the forests of Ensimaa, and then the city: Taivelle, the elven capital, timber halls and stone walks among great living trees beside the Avelune River. You come in through the western gate in heavy rain. There has been a storm since yesterday. Half the market is packed away and the river is loud under the bridge.
+Neega spits on her hand and shakes on it, then loads a strongbox onto a cart and comes with you. The day on the road passes without trouble. You camp at the foot of the hills and go up in the morning.
 
-"Observe the drainage," Meriele says, water running off her scalp. "My people think in centuries and still have not roofed the market."
-
-Ensimaa has no king. The high council takes petitions at the Crown Hall, and its porch is where work is handed out.
-
-Uthemar, the circle elder, wants his problem settled quietly. A group of mages stole forbidden songs from the circle, and their ritual keeps the western valley under mist. He wants the ritual stopped and the mages dealt with.
-
-Erevan, the council's wizard, also has a problem: a royal wizard has rebelled, taken a tower on the burned road, and is setting fires from it. He wants the man killed. The pay is high because nobody in Taivelle will take the job.
-
-The rest of the posted jobs are far above your level: a tribute owed to a dragon, and two jobs against rogue wardens, one of them offering a zweihander as the reward.
+Day 2 is grey and close. The Borugal Hills are bare grass over rock, and the pass road climbs through a boulder field to an old mine entrance, propped with timber and black inside. There is a cairn at the bottom of the field. Neega adds a stone to it and stays there with the cart. Further up the road there is a dead cart horse and no cart.
 
 ```
-  [q10] The Mist Coven -- L3
-  Uthemar, circle elder
-  1 fight. 54g, 176 XP. due day 6
-
-  [q25] The Renegade Wizard -- L12
-  Erevan, council wizard
-  2 fights. 346g, 915 XP. due day 8
-
-  [q26] L16 Dragon's Tribute -- 288g
-  [q27] L18 Rogue Wardens -- 324g
-  [q28] L20 Rogue Wardens -- pays a
-    heavy zweihander
+=== Giants in the Pass ===
+the boulder field (L13),
+room 1/1: mine entrance
+Troll 1 -- heavy claws
+DEX 6  STR 7  STA 10  HP 22/22
+breaks when beaten, wounds knit +3/round
 ```
 
-Some jobs mean travel to other settlements in the land.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/fight-short.txt)
+
+There is one of them, and it is a troll, and it is in the mine mouth when your first bolt hits it. It comes down the slope at Ovak. She parries the claws and opens its chest with the zweihander, and after that it is a race between your fire and how fast the thing knits itself back together. You win the race. It breaks at seven hit points and goes over the ridge on all fours with its back burning.
 
 ```
-  Dunmaelle (1 day):
-    [q30] L6 Blighted Beasts -- 238g,
-      3 fights, due day 8
-    [q29] L4 Spiders in the Trees
-    [q19] DELIVERY Return the Ashes
-    [q11] L14 Rogue Wardens
-  Rosmaine (1 day):
-    [q12] L2 The Mist Coven
-    [q31] L3 Blighted Beasts
+The party catches its breath (+1 STA)
+Orsik +246 XP (encounter) [246/1200]
+Ovak +246 XP (encounter) [246/1200]
+Loot: a stamina potion --
+Ovak pockets it (x2).
+
+*** QUEST COMPLETE:
+Giants in the Pass -- the boulder field.
+Reward: 234 gold. ***
+Orsik talks the pay up:
++70g (304g in all).
+The party purse holds 1064 gold.
+Orsik +370 XP (quest) [616/1200]
+Ovak +370 XP (quest) [616/1200]
+Ovak: satisfaction 7 -> 8/10
+(a job paid out)
+
+-- the party --
+Orsik: Unhurt STA 9/10 Power 5/8
+  (stamina x2)
+Ovak: Unhurt STA 13/13 Power 8/8
+  (healing x1, stamina x2)
+Purse 1064g; day 2.
 ```
 
+Neega counts out two hundred and thirty-four gold on the cairn stones. You point out that the thing walked away and can come back, and that she will want the two of you nearby when it does. She pays three hundred and four and says nothing about it. By afternoon the first carts are through the pass.
+
+Ovak cleans her blade on the grass. "That will be whole in a week," she mumbles. "Somebody else's problem."
+
 ```
-  options: take the mist coven [q10],
-    take the renegade wizard [q25],
-    travel to Dunmaelle, the inn
-    (beds up x1.30 tonight), hunt
+  options: back to Ulus-Gal (the
+    board, 4 jobs), Kharuk or
+    Tumengal, the war call at
+    Bjorgheim (2 days), hunt,
+    explore the hills, camp
+  Orsik: 1 skill point unspent
 ```
 
 Where to?
 
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/map.txt)
+[party](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/history.txt)

@@ -3766,3 +3766,88 @@ Two short follow-ups on the designer's sign-off of the audit list:
   End, the death-face chair, the master's lessons). The two spots in
   rules.md that quote a changed state string, and one test docstring,
   were synced; test_worldsim (256), test_places and test_history pass.
+
+## 2026-08-08 (play findings) — The rout, the loose end, and the turn-in
+
+The first played session on the current build (a rolled L12 duo, the
+Tergal troll bounty) surfaced one dissatisfaction that unwound, over
+three chat rounds, into a designed feature cluster: **THE TURN-IN, THE
+ROUT & THE HUNT**, now in plan.md ready for implementation. Nothing was
+built this session; the road the discussion took, and the calls settled
+on the way, are the record here.
+
+**The complaint.** A won troll fight ended with the troll breaking and
+escaping — the QUEST COMPLETE banner then paid in full and printed "the
+giants are dead" over a log that said otherwise. The designer's framing:
+enemy escape is only satisfying as a RELIEF (the party was in danger)
+or as an EVENT (interesting for better or worse); as a common outcome
+of comfortable wins it is neither, and handling all its narrative
+outcomes by hand is not worth it. Remove it, make it rarer, or —
+counterintuitively — make it more likely when the party is in bad
+shape.
+
+**The measurements** (300-fight probes, level-matched duos). Escape
+concentrates in exactly the wrong fights: solo big monsters (troll 54%
+of won fights, 50% with the party ending fresh; ogre/bear 23%) because
+deep HP pools hover below the half-HP trigger while high DEX plus the
++2 FLEE_BONUS beats the party's average in the chase; ordinary at-level
+packs almost never escape (L6 packs 0% — they die from above half in
+one blow). The condition-correlation the designer wanted turned out to
+be HALF BUILT already: pursuit DEX is STA-weighted and unfit heroes
+never pursue, so the troll escapes 96% against a battered party. Only
+the fresh-party base rate was broken.
+
+**The decisions**, in the order they fell:
+
+- **Keep the mechanic, fix the chase** (not removal, not new pursue
+  micromanagement): the rout loses FLEE_BONUS (a collapse picks
+  nothing; the party's deliberate retreat keeps its +2), runners'
+  chase DEX gets HP-weighted, and the rout gets its own stricter
+  trigger (~1/3) so `fight_winding_down` stays untouched at half for
+  the standing orders. Estimated: ogre/bear ~0-6%, troll ~33% (its
+  regeneration holds it in the band — accepted as honest troll
+  fiction), run-downs roughly triple, hurt-party escapes stay 90%+.
+  Plus a `(driven off, not slain)` banner tag for display honesty.
+- **The escaped foe becomes a STATE** — the designer's second-round
+  point that escaped/killed "would be useful to model the narrative"
+  became the cluster's spine: a `loose_ends` save record (who, at what
+  HP/wounds, where, when, from which fight), the substrate for
+  pursuit, proof, DM continuity, and eventually the parked nemesis
+  record.
+- **Pursuit: yes, one roll, warm-trail only.** Same day, same area, no
+  night slept: 2d6 + best MIND vs the runners' weighted DEX, then the
+  fight re-opens at both sides' current tracks — or the trail is lost
+  and that is the story. Cold trails are DM territory by design; a
+  multi-day tracking subsystem was explicitly rejected as the
+  micromanagement the game avoids.
+- **Proof-of-kill: an authored flag on the bounty subset only.** After
+  the chase fix, escapes correlate with a battered party — flagging
+  every kill quest would turn the relief-escape into a pay denial, so
+  ordinary quests stay driven-off-completable and the bounty says its
+  terms on the board. The existing deadline prices the chase decision
+  for free.
+- **The turn-in became real** — the designer's third-round finding:
+  the reward is instantaneous and the giver scene has no mechanics
+  under it. Settled: lifecycle grows `work_done -> turned_in | lost`;
+  the gold and a NEW smallish turn-in XP tranche (QUEST_TURNIN_SHARE
+  0.20) move to a `turnin` command gated at the giver's settlement and
+  banded by the TURN-IN day; the field tranche (0.40) and the world's
+  place-state change stay at work-done; the encounter share (0.40,
+  unchanged) keeps paying per fight, a routed field paying in full.
+  The clock widens by the return leg via `stamp_quest_clock`'s
+  existing `extra_days` (the delivery precedent). Lost-after-done
+  keeps the banked 80%, fires no failure rumor, and reads "done,
+  never paid".
+- **The exemption set:** deliveries unchanged (arrival IS their
+  turn-in); war waves, conquest jobs, hell assignments and dark work
+  all pay at work-done (no honest giver to report to; wave 3's
+  scripted fall makes a return scene impossible by design). The
+  turn-in stage is for honest work with a giver.
+- **Mop-up pay:** the pursuit fight pays wild rates
+  (`wild_encounter_xp`) — the room's share was banked when the field
+  cleared; zero would make the second fight pointless, double-pay
+  wrong.
+
+**Left open for the build** (listed in the plan entry): the pursue
+contest's exact numbers, the mop-up formula if wild rates read wrong at
+the table, the 0.20 share's tuning, and which templates carry `proof`.

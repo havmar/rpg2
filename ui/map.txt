@@ -1,49 +1,46 @@
-RPG2 MAP -- day 3
-the party is at Ensimaa > Taivelle
+RPG2 MAP -- day 2
+the party is at Tergal > Borugal Hills >
+  the boulder field > mine entrance
 (travel: 1 day within a land, 2 days to
   another)
 
 == Dvarvengrond ==
-  Bjorgheim (capital) -- 6 job(s)
-  Roros (town) -- 5 job(s)
-  Svalaver (town) -- 5 job(s)
+  Bjorgheim (capital) -- 5 job(s)
+  Svalaver (town) -- 4 job(s)
+  Roros (town) -- 4 job(s)
 
 == Firascir ==
-  Tomburgh (capital) -- 5 job(s)
-  Walhaven (town) -- 4 job(s)
-  Flurham (village) -- 2 job(s)
+  Tomburgh (capital) -- 4 job(s)
+  Bradwhitchip (town) -- 3 job(s)
+  Sturford (village) -- 1 job(s)
 
 == Mortellaria ==
-  [CRISIS] the necromancers are working
-    openly (day 1); the old faith is
-    outlawed (day 2)
-  ABSOLUTISM
-  WEATHER: hard heat.
-  Castavera (capital) -- 3 job(s)
-    (visited)
-  Belafonte (town) -- 2 job(s)
-  Calavento (village) -- 1 job(s)
+  Castavera (capital) -- 6 job(s)
+  Montaro (town) -- 5 job(s)
+  Sanoro (village) -- 3 job(s)
 
-== Ensimaa ==  <- here
-  [NORMAL] the storm has the roads (day
-    2)
-  THE COUNCIL OF ELDERS
-  WEATHER: a storm.
-  Taivelle (capital) -- 5 job(s)  <- the
-    party
-  Dunmaelle (town) -- 4 job(s)
-  Rosmaine (village) -- 2 job(s)
+== Ensimaa ==
+  Taivelle (capital) -- 5 job(s)
+  Ruunamont (town) -- 4 job(s)
+  Vaelora (village) -- 2 job(s)
 
 == Gibili ==
   Maketawa (capital) -- 6 job(s)
-  Birikava (town) -- 5 job(s)
-  Tinkalo (village) -- 3 job(s)
+  Boilaki (town) -- 5 job(s)
+  Makelu (village) -- 3 job(s)
 
-== Tergal ==
+== Tergal ==  <- here
+  [NORMAL] grain is scarce (the Firascir
+    grain)
+  THE GREAT CHIEF
+  WEATHER: grey and close.
+  Borugal Hills (hills, found day 1)  <-
+    the party
   Ulus-Gal (capital) -- 4 job(s)
-  Ordubal (town) -- 3 job(s)
-  Zamutar (village) -- 1 job(s)
+    (visited)
+  Kharuk (town) -- 4 job(s)
+  Tumengal (village) -- 2 job(s)
 
 -- the war --
-THE WAR: [w1] L2 Orc Scouts -- raised at
-  Castavera.
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Bjorgheim.

@@ -1,31 +1,35 @@
-RPG2 PARTY SHEET -- day 3, at Ensimaa >
-  Taivelle
-purse: 173g
+RPG2 PARTY SHEET -- day 2, at Tergal >
+  Borugal Hills > the boulder field >
+  mine entrance
+purse: 1064g
 party: 1/3 companion slot(s) filled (CHA
   6)
 
-(YOU) Garrick -- human m, age 31
-  L6  training 2  XP 0/600  points 1
-  DEX 3  STR 3  MIND 5  CHA 6
-  HP 13/13  STA 8/8  Power 7/7
-  masterwork katana | healingx2,
-    staminax1
-  spells: fire 2, stop time 1
-  pools bought: hp +2, power +2, sta +2
+(YOU) Orsik -- dwarf m, age 43
+  L12  training 3  XP 616/1200  points 1
+  DEX 5  STR 4  MIND 6  CHA 6
+  HP 16/16  STA 9/10  Power 5/8
+  grim katana | staminax2
+  spells: fire 3, scry 1, telekinesis 1
+  pools bought: hp +5, power +5, sta +5
 
-(companion) Meriele -- elf f, age 32
-  L6  training 2  XP 0/600  points 0
-  DEX 3  STR 5  MIND 5  CHA 4
-  HP 11/11  STA 10/10  Power 8/8
-  zweihander, prof 2 | healingx2,
-    staminax1
-  abilities: first_blood
-  pools bought: hp +2, power +2, sta +2
-  satisfaction 7/10
-  temperament: cowardly; speech: formal;
-    looks: bald
+(companion) Ovak -- orc f, age 46
+  L12  training 3  XP 616/1200  points 0
+  DEX 4  STR 6  MIND 4  CHA 6
+  HP 14/14  STA 13/13  Power 8/8
+  zweihander, prof 3 | healingx1,
+    staminax2
+  spells: healing 1
+  pools bought: hp +5, power +5, sta +5
+  satisfaction 8/10
+  quirk: has an enemy (Klanker, a goblin
+    duelist, level 14, out there
+    somewhere); voice: mumbling; dress:
+    flamboyant
 
+active quest [q16] Giants in the Pass is
+  COMPLETE
 THE PACT: no current assignment (the
-  next is pinned to PC level 7).
-THE WAR: [w1] L2 Orc Scouts -- raised at
-  Castavera.
+  next is pinned to PC level 13).
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Bjorgheim.
