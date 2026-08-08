@@ -3695,3 +3695,58 @@ needle on its own. The cheap standing lever: every line that bugs the
 designer in play gets pasted into the chat and added to the Avoid/Use
 list — real pairs from real turns are the strongest instruction this
 file has.
+
+## 2026-08-08 (later) — dm.md rewritten in the plain register; the naive directive
+
+Follow-up to the morning's Plain English First session, on the
+designer's direct instruction: rewrite dm.md itself in the plain style,
+because the instruction docs teach the narrator its register by example
+(the mirror theory from the morning entry). Two additions to the spec
+first, both from a fresh flagged line:
+
+- "A storm has held the land since yesterday" joined the Avoid/Use
+  pairs ("There has been a storm since yesterday") — the non-actor
+  possession shape ("X has held the Y") is the same failure as "the
+  porch" and "word runs".
+- **The naive directive**: err on the side of TOO naive. A flat,
+  simple, almost childlike sentence is closer to the target than one
+  that reads as good writing. Written into writing.md's Plain English
+  First section as a standing rule; the designer's own word for the
+  target register is stronger than "plain", and the direction of error
+  is now explicit — when unsure, choose the more naive sentence.
+
+**The dm.md rewrite.** Full register pass, every section, ~1760 lines:
+rules, numbers, commands, dates, headings and section order all
+preserved (verified mechanically: headings identical, every backtick
+command token survives, all date markers survive, the number census
+matches except the deliberate "half again" -> "1.5x"). What changed is
+sentence-level register: aphorisms unpacked ("a doorstep, not a
+railroad" -> "an offer, not a forced path"; "The world proposes; the
+player disposes" -> "The world offers the options; the player
+chooses"), metonymy and non-actor subjects replaced ("say it in the
+world's mouth" -> "have somebody in the world say it"; "the fiction's
+licence to make bread dear and faces thin" -> "make bread expensive and
+people hungry"), instruction-register cleverness cut (the "qi, not iq"
+pun; "narrate heat as weather" -> background pressure; "the spiral is
+the player's own bed" -> plain consequence language), and the two
+stylish example quotes flattened ("every exchange leans wrong now" ->
+"Sela is at -3 now"; the moves narration example). Doctrine shorthand
+with an established meaning was KEPT on purpose: "narrate the skin,
+trust the row", "the numbers are the game", the ferocity tags.
+
+**Worldsim copy audited** (the designer's third ask) — findings
+reported in chat, not yet fixed: the card news lines and job descs are
+MOSTLY compliant (concrete, present tense, named actors, deadpan), but
+~15 of 164 news lines and a handful of STATE_WORDS phrases fail the new
+rules, in five repeating shapes: the "X has the Y" possession line
+("the storm has the roads", "the dust has the plain", "carnival has the
+streets"), period vocabulary ("bread is dear", "timber is dear", "steel
+is dear" — writing.md's CRPG-vocabulary rule), abstract subjects doing
+person actions ("Enclosure and debt made {bandit}, and charisma armed
+him"), narrator winks ("which is comedy until...", "Buyer beware,
+constitutionally", "a level of badass richer"), and two register breaks
+proper: an unnamed subject ("The death-face rite makes it locally
+thinkable" — the "it" (necromancy) is never named) and design
+vocabulary leaking into player-facing copy ("The card is the day
+after..."). Fixing them is a small follow-up pass once the designer
+signs off on the list.

@@ -131,6 +131,11 @@ collected from real play; the left column is the failure:
     Use:   Some jobs mean travel to
       other settlements.
 
+    Avoid: A storm has held the land
+      since yesterday.
+    Use:   There has been a storm
+      since yesterday.
+
 **The translation test.** Read the sentence word by word. If what it
 literally says is not what happened, write what happened instead. "The job
 pays in steel" literally describes coins; the fact is a weapon offered as a
@@ -155,6 +160,11 @@ The forms to catch:
 When a line trips the test, do not polish it -- replace it with the plain
 statement, even if the result is longer and less striking. The target
 register is a walkthrough, not a novel: plain first, short second.
+
+**When in doubt, err toward too naive** (2026-08-08, designer directive).
+A flat, simple, almost childlike sentence is closer to the target than one
+that reads as good writing. The style can afford to be boring; it cannot
+afford to need translating.
 
 ## The three writing layers
 
