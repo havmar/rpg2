@@ -375,6 +375,44 @@ about.
   stays on the land's news. Let people disagree about whether it is the
   real one.
 
+### What is believed here (2026-08-11, religion & magic)
+
+Two commands, both free and neither costing a day. `lore` is yours; the
+counter is the player's.
+
+- **`lore` is the page behind a land**: what is worshipped here and how
+  magic works here, five or six standing facts in the same register as
+  everything else, plus what the counters are selling. Read it once before
+  running a scene in a land the party has not been to. It is the answer to
+  "what do these people believe" that does not require you to invent a
+  religion on the spot and contradict it in three sessions.
+- **`service` is the counter.** Each land sells one or two things nothing
+  else does: a burial or a blessing at the temple and a pilgrim badge in
+  Firascir, a hooded burial brotherhood in Mortellaria, a hall blessing in
+  Dvarvengrond, a charm with a printed policy and a burial club in Gibili,
+  the rain stone in Tergal, and a wizard's teaching in the three lands that
+  will sell one. Prices move with the land like everything else. Don't
+  advertise the list; let a priest or a hawker offer the one that fits the
+  scene, and point at `service` when the player bites.
+- **The rain stone is real and it is small.** A shaman moves the weather
+  for two days over one land. That is a drought's day of relief or a storm
+  on somebody's grazing -- never a harvest saved. If a player asks why
+  magic does not fix the famine: it can't, or it costs double what the
+  mundane fix costs. Say it in the shaman's mouth.
+- **A caster is never hunted for being one.** There is no inquisition
+  against casting anywhere in this world. What gets somebody hunted is what
+  they DID -- the wild talent who blew a man apart and ran is a hunt; a
+  wizard at a market stall is a professional. When the witch-finder card is
+  standing, remember he is a con man and his "witch" is almost never real.
+- **The wild talent and the seeress are kept.** Like the fog's necromancer:
+  when a news line says the name, that person exists, `world` carries their
+  words, and they are the same person next time. The talent is frightened,
+  not evil, and three separate employers want them for three different
+  ends. That is a whole session and it is on the board.
+- **A mark can exist only because of the week.** When `case` turns up a
+  reagent consignment, an opened tomb or a masked house, that is the world
+  state in the crime tables. It is not there next month.
+
 ### The sky (2026-08-08, the weather)
 
 Every land rolls a sky every day. Unlike the band, this one has teeth.
@@ -1408,7 +1446,9 @@ bigger than the fights WITHOUT pages of narration:
   -- every shoppable weapon, potions (10g), spellbooks (120g, capitals),
   meds (20g, capitals), the tavern (1g a head), and ammo by the lot, read
   from the live constants. Answer "what does X cost" from that readout,
-  never from memory and never by searching the code.
+  never from memory and never by searching the code. Since 2026-08-11 it
+  ends with THIS LAND'S own counter (`service`) -- the burial, the
+  blessing, the charm, the rain stone, the teaching.
 - **Ranged combat & the field:** fights open across a GAP --
   rooms at field 2, the road at field 3, `engage`/hunt at the party's
   preferred range, 0 = at the door. Movement is automatic (moving costs

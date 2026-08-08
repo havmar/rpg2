@@ -4622,3 +4622,130 @@ sheet, and the same man is still there the next time the card comes round.
 - **`world`** carries the whole polity for the DM: the constitution and its
   sentence, the tensions (standing ones marked), the live faction edges, the
   ruler's sheet including `heart`, and the faces the cards have named.
+
+---
+
+# Religion & Magic — Add-on (2026-08-11, the worldsim build's fourth content rung)
+
+The last rung of the WORLD & NPC SIMULATION build. Everything here is
+content over the frame the three rungs before it left: cards, relation
+edges, tensions and two record kinds that had not been built yet. No new
+outlet, no new tick, and no political or economic value anywhere.
+
+`worldsim.py` owns all of it. `crime.py` gained one optional argument;
+`session.py` gained two commands.
+
+## The two record kinds that were still prose
+
+worldsim.md opened with five. The frame and the two content rungs built the
+card, the relation and the state; these are the other two, and they are the
+cheap ones on purpose.
+
+- **A FACT is the standing colour of a land**, for the DM and nobody else.
+  The engine never reads one, it rides no save, and its whole surface is the
+  `lore` page. The characteristic criterion applies to it exactly as it does
+  to a card: every fact shipped stands behind a card, prices an option, or
+  names something the player can already do.
+- **An OPTION is a standing priced service** — the sixth outlet's other
+  half: *player-initiated actions whose terms local state sets*. It never
+  fires; it sits at a counter waiting to be bought. It carries a catalog
+  price, the priced-menu **term** that moves it, and the same gates a card
+  admits on (states held or derived, a rolled tension, a settlement tier).
+
+An option does one of **three** things and there is no fourth: a
+**blessing** (a paid rite: one point of satisfaction to every companion —
+two for a religious one — on its own cooldown), a **book** (a wizard
+teaches: the spellbook gate, opened by a land's own organization at that
+land's price), or a **sky** (Tergal's rain stone). An option that needed new
+machinery would be a feature request wearing a content hat.
+
+## Temple services
+
+Priced, not penitential — the deliberate limit of this rung:
+
+- **Healing is the `healer` term itself.** In the two human lands the temple
+  *is* the healer, so no new counter exists: the interdict already puts the
+  fee up 30%, the unlicensed holy well already undercuts it by a quarter.
+- **Burial and blessing are options**, sold in both Sun-communion lands off
+  the same term. Beside them: Firascir's pilgrim badge, Mortellaria's
+  hooded burial brotherhood, Gibili's burial club and charm trade,
+  Dvarvengrond's hall blessing.
+- **The sin/penance wiring is not designed and is not here.** No option
+  touches sin, heat or the karma layer at all.
+
+Ensimaa sells nothing of the kind, and that is the content: its only
+religious architecture is an open-roofed marble court with no clergy, no
+services and no images.
+
+## What the packets became
+
+- **The Sun communion is one church and two rites.** Firascir and
+  Mortellaria worship the same god; each land **derives `schism-near` off
+  the other's rites** through a relation edge that runs both ways, and the
+  joint synod is one card sitting in *both* their decks. Every synod ends
+  one insult short of the split.
+- **Each land got a religion axis and a tension to hang it on**: two shrines
+  and one saint, and the abbey against the families (Firascir); which face
+  of the god rules the year (Mortellaria); one word in one old text
+  (Ensimaa); the tomb priests against the quota (Dvarvengrond); the white
+  shamans against the dark one (Tergal); the chapels against the ladder
+  faiths (Gibili). The tension is the deck gate, exactly as in politics — a
+  land whose shrines are at war never draws the abbey's cards at all.
+- **Four more relation edges cross the border**: the southern death feast
+  pulling the young elves out of Ensimaa, Gibili franchising a ladder faith
+  into a Firascir market town, the old spirit-practice recognized across the
+  Tergal border, and the academy's purged necromancers arriving as goblin
+  street mediums.
+- **Two named pools were added and no creature row**: the undead
+  (skeleton/ghoul/wight) and the casters (hexer/pyromancer/magus), both off
+  the catalog the game already had. The draugr and Tergal's grave-made
+  ghosts still wait for the monsters & fauna dump.
+
+## Magic: the doctrines, as data
+
+- **THE MARGIN.** Magic is real, known and small — a gamble, not a pillar.
+  Mechanically: **not one magic card moves a wealth band or a constitution**,
+  and every one of them is rare or hard-gated. No throne, market or war is
+  decided by it.
+- **CONDUCT, NOT CREED.** There is no inquisition against casting as such
+  and a caster playthrough is never dominated by automatic hostility from
+  civilization. **The hunt admits only on `talent-loose`** — on what
+  somebody *did* — never on a land, a ruler or a faith.
+- **THE PRICE RULE.** It can't, or it costs double the mundane fix. Healing
+  is retail and so is weather: the rain stone buys **two days** of rain over
+  one land, never a harvest. Every epidemic, famine and drought card is safe
+  from the question.
+- **The gift is BORN**, and the world's answer to that is a chain that runs
+  in every land: the wild talent goes off and runs (`talent-loose`), and the
+  hunt that answers is the next card. The talent is **named once and kept**,
+  like the fog's necromancer — recurrence is what makes an NPC exist.
+- **The theory is hoarded**, and the three organizations are three prices on
+  one action: the goblin master undercuts the academy, the Firascir tower
+  wants a volunteer, and the elven school is the dearest teaching in the
+  world and charges in standing as well as gold.
+
+## The mark table (the reagent trade's wiring)
+
+A third table in the shape of the priced menu and the encounter table: **a
+state can put its own marks in a crime category's roll.** The reagent
+consignment reaches the vault heist, the burglary, the caravan and the
+smuggling deed; the opened tomb reaches grave-robbing; the stolen relic
+reaches burglary and the con; carnival's masks reach the pickpocket, the
+burglary and the con.
+
+The extra faces are **dealt in beside the band's own** — a state that makes a
+new kind of mark exist here does not replace the ordinary ones, it competes
+with them — and the casing prints whichever came up like any other face.
+
+## Where the player meets it
+
+- **`service`** — the counter: what this land sells that no other does, at
+  today's prices. `prices` prints the same block under the catalog sheet.
+- **`lore`** — the DM's page behind a land: what is worshipped here, how
+  magic works here, and what the counters are selling. Free, costs no day,
+  and the engine never reads a word of it.
+- **On the board, the news, the shelf and the road** — the same five outlets
+  as everything else.
+- **On a casing report** — a mark that is only there because of what the
+  world is doing this week.
+- **`world`** carries the counter and the live mark categories for the DM.

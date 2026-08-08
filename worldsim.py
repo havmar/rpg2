@@ -388,6 +388,49 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "recognition-bought": "the neighbours accept the heir",
     "conclave-locked": "the electors have not agreed in a year",
     "tanist-scramble": "every able kinsman is counting spears",
+    # Religion (2026-08-11) -- worship, rite and the week's own calendar.
+    # Politics kept church POWER; these are what a parish actually does.
+    "relic-hunt": "a shrine's relic has been stolen",
+    "bones-tested": "a saint's bones are being tested",
+    "holy-well": "a well is healing people",
+    "feast-lock": "the feast days have stopped the work",
+    "hermit-window": "the hermit at the wall sees all",
+    "abbey-suit": "the abbey holds a boy against his kin",
+    "penance-season": "the hooded columns are out",
+    "carnival-on": "carnival has the streets",
+    "dead-abroad": "the dead are guests tonight",
+    "two-hoods": "two burial clubs want one corpse",
+    "debate-riot": "the theology debate has gone to clubs",
+    "land-mourning": "an elf has died; the land has stopped",
+    "mission-open": "the sun-church mission is open",
+    "seeress-here": "the seeress holds the high seat",
+    "tombs-open": "a tomb gallery has been opened",
+    "knockers-quiet": "the knockers have stopped knocking",
+    "oath-broken": "an oath was broken on the ring",
+    "blot-due": "the great sacrifice is due",
+    "called-child": "a child has the shaman sickness",
+    "river-fouled": "the river was fouled; a fine is due",
+    "black-tent": "the black shaman's tent is busy",
+    "foreign-graves": "a foreign graveyard makes ghosts",
+    "cairn-angry": "the pass-spirit has been offended",
+    "pyramid-on": "the tithe pyramid is still paying out",
+    "pyramid-burst": "the tithe pyramid has collapsed",
+    "end-dated": "a street prophet has dated the end",
+    "parlor-boom": "every parlor is talking to the dead",
+    "club-run": "a burial club's fund is gone",
+    "revival-war": "rival revivals fight for the street",
+    # Magic (2026-08-11) -- the gift, the theory, the reagents and the hunt
+    "talent-loose": "an untrained talent is loose",
+    "hunt-up": "there is a witch-hunt posted",
+    "recruiters-out": "the wizards' scouts are out",
+    "reagents-moving": "a reagent shipment is on the road",
+    "basement-open": "the academy basement is counted",
+    "necromancy-open": "the necromancers are working openly",
+    "necromancy-purged": "the academy burned its necromancy",
+    "masters-hiring": "a master is buying errands",
+    "tower-open": "a tower wizard is taking volunteers",
+    "teaching-open": "a school is weighing an outsider",
+    "rain-bought": "a shaman has been paid for rain",
     # The diplomatic instruments (held on the source land)
     "marriage-pact": "a marriage pact binds two crowns",
     "betrothal-broken": "the betrothal is broken",
@@ -403,6 +446,12 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "concession-lost": "the concession is lost",
     "arms-scarce": "arms are scarce",
     "raiders-out": "raiders are on the border",
+    # ...the religion and magic rung's own edges (2026-08-11)
+    "schism-near": "the two rites are one insult apart",
+    "young-abroad": "the young have gone to the death feast",
+    "franchise-here": "a ladder faith has opened a branch",
+    "old-practice": "the old spirit-practice is stirring",
+    "academy-exiles": "the academy's cast-out men are here",
     # ...and the politics rung's own edges (2026-08-10)
     "elf-hunters": "elven hunters are working this side",
     "hostage-given": "an heir of this land is a hostage abroad",
@@ -480,6 +529,23 @@ STATE_MENU = {
     "quarter-ruined": {"goods": 1.25, "lodging": 0.80},
     "salt-revolt": {"goods": 1.25},
     "bandit-king": {"goods": 1.15},
+    # religion and magic (2026-08-11) -- a rite is a WEEK, and a week the
+    # whole land keeps is felt at every counter in it
+    "feast-lock": {"goods": 1.20, "steel": 1.15},
+    "carnival-on": {"lodging": 1.50, "goods": 1.15},
+    "penance-season": {"goods": 0.90, "lodging": 0.85},
+    "land-mourning": {"goods": 1.20, "steel": 1.20},
+    "holy-well": {"healer": 0.75},
+    "knockers-quiet": {"steel": 1.25},
+    "blot-due": {"goods": 1.15},
+    "end-dated": {"goods": 0.80},
+    "parlor-boom": {"goods": 1.15},
+    "pyramid-burst": {"goods": 1.20, "lodging": 0.85},
+    "reagents-moving": {"goods": 1.15},
+    "hunt-up": {"lodging": 1.15},
+    "franchise-here": {"goods": 1.10},
+    "academy-exiles": {"healer": 1.20},
+    "young-abroad": {"goods": 1.15},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -528,6 +594,69 @@ STATE_ENCOUNTERS = {
                     "skins": {"cutthroat": "Road Watch",
                               "archer": "Hedge Bow", "bruiser": "Toll-Taker"},
                     "chance": 0.40},
+    # religion and magic (2026-08-11)
+    "hunt-up": {"kinds": ("cutthroat", "archer", "hunter"),
+                "where": "road", "as": "witchhunters working the road",
+                "skins": {"cutthroat": "Witchhunter",
+                          "archer": "Hunt Bow", "hunter": "Finder"},
+                "chance": 0.35},
+    "foreign-graves": {"kinds": ("skeleton", "ghoul"), "where": "wilds",
+                       "as": "what the buried dead sent up",
+                       "skins": {"skeleton": "Grave-Made",
+                                 "ghoul": "Earth-Eater"},
+                       "chance": 0.45},
+    "revival-war": {"kinds": ("cutthroat", "slinger", "bruiser"),
+                    "where": "road",
+                    "as": "two processions meeting at one corner",
+                    "skins": {"cutthroat": "Tract-Seller",
+                              "slinger": "Choir Sling",
+                              "bruiser": "Brass Band"},
+                    "chance": 0.35},
+    "old-practice": {"kinds": ("hexer", "cutthroat", "ghoul"),
+                     "where": "wilds",
+                     "as": "somebody paying a spirit by name",
+                     "skins": {"hexer": "Name-Caller",
+                               "cutthroat": "Debt-Payer",
+                               "ghoul": "The Answer"},
+                     "chance": 0.30},
+    "academy-exiles": {"kinds": ("hexer", "skeleton", "magus"),
+                       "where": "wilds",
+                       "as": "an examined man practising in a field",
+                       "skins": {"hexer": "Expelled Scholar",
+                                 "skeleton": "Coursework",
+                                 "magus": "Doctor Of Nothing"},
+                       "chance": 0.30},
+}
+
+# WHAT A STATE PUTS IN THE CRIME LAYER'S MARK TABLE (2026-08-11, the
+# religion & magic rung). The third of the same shape: a state that makes a
+# NEW kind of mark exist here adds its faces to a category's roll, and the
+# casing prints them like any other. This is the reagent trade's crime-layer
+# wiring (worldsim.md: compact, high-value, provenance-sensitive -- natural
+# heist marks and the smuggling category's luxury end), plus the two the
+# religion packets pre-ordered: the tomb that is the mountain's richest room
+# and the mask that is perfect cover.
+STATE_MARKS = {
+    "reagents-moving": {
+        "heist": ("the reagent vault under the academy",),
+        "burglary": ("a wizard's reagent case, locked twice",),
+        "caravan": ("the reagent train: four wagons and one wizard",),
+        "powder": ("a crate of golden fleece, and worse",),
+    },
+    "tombs-open": {
+        "graverob": ("a founder still holding his hoard",
+                     "the deep tomb the rites just released"),
+        "heist": ("the tomb gallery's grave goods",),
+    },
+    "relic-hunt": {
+        "burglary": ("the rival shrine's reliquary",),
+        "con": ("a pilgrim town that wants a saint badly",),
+    },
+    "carnival-on": {
+        "pickpocket": ("a masked reveller with a full purse",),
+        "burglary": ("a great house whose servants are all out",),
+        "con": ("a masked table that cannot see your face either",),
+    },
 }
 
 OUTLETS = ("quest", "menu", "encounter", "news", "state")
@@ -654,6 +783,61 @@ def relation(source: str, target: str, kind: str, *,
     Static data read at roll time -- never a traded quantity."""
     return {"from": source, "to": target, "kind": kind,
             "when": tuple(when), "then": then, "because": because}
+
+
+# --- the last two record kinds (2026-08-11, the religion & magic rung) ----- #
+# worldsim.md opened with five. Three of them became code in the frame and
+# the two content rungs after it; these are the other two, and they are the
+# cheap ones on purpose.
+#
+# A FACT costs nothing at runtime: the engine never reads one. It is the
+# standing colour of a land -- what its people believe, how magic works here
+# -- and its whole surface is the DM's `lore` page. It earns its place by the
+# characteristic criterion the same way a card does: every fact below either
+# stands behind a card in this file or names a thing the player can pay for.
+#
+# An OPTION is the sixth outlet's own record: a STANDING player-initiated
+# action whose terms local state sets. It is not a card and never fires --
+# it sits at a counter waiting to be bought, and what it costs is the land's
+# own priced menu.
+
+SERVICES = ("bless", "book", "sky")     # the closed verb set an option buys
+
+
+def fact(land: str, key: str, title: str, line: str) -> dict:
+    """One standing fact about a land, for the DM. `title` is the SHOUTED
+    handle the table refers to it by; `line` is what it means in play."""
+    return {"land": land, "key": key, "title": title, "line": line}
+
+
+def option(key: str, name: str, land: str | tuple[str, ...], *,
+           does: str, gold: int, term: str, line: str,
+           states: tuple[str, ...] = (), without: tuple[str, ...] = (),
+           tension: tuple[str, ...] = (), kinds: tuple[str, ...] = (),
+           days: int = 0, gives: int = 0, word: str = "",
+           holds: int = 0) -> dict:
+    """One standing priced service a land sells. `does` is one of SERVICES
+    -- the closed set of things the engine already knows how to do, because
+    an option that needs new machinery is a feature request, not content.
+
+    `gold` is the catalog price and `term` the priced-menu term that moves
+    it, so a service is charged exactly the way a bed or a healer's day is:
+    the world layer never owns a price, it moves one. `states` / `without` /
+    `tension` gate it the way a card's admits do (an option nobody can reach
+    is dead data, so every one of them is reachable in a rolled world), and
+    `kinds` narrows it to settlement tiers where the packet says so.
+
+    `days` is the per-party cooldown, `gives` what a blessing is worth,
+    `word` the sky a weather-worker sells and `holds` how many days he
+    holds it."""
+    if does not in SERVICES:
+        raise ValueError(f"{key}: no such service: {does}")
+    lands = (land,) if isinstance(land, str) else tuple(land)
+    return {"key": key, "name": name, "land": lands, "does": does,
+            "gold": gold, "term": term, "line": line,
+            "states": tuple(states), "without": tuple(without),
+            "tension": tuple(tension), "kinds": tuple(kinds),
+            "days": days, "gives": gives, "word": word, "holds": holds}
 
 
 # --------------------------------------------------------------------------- #
@@ -820,6 +1004,21 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("secret-police", "the secret police", face="wildcard"),
     faction("anarchists", "the anarchist cells"),
     faction("companies", "the hired companies"),
+    # -- religion and magic (2026-08-11). Politics kept church POWER; these
+    # are the blocs that fight over worship, rite and the art itself.
+    faction("shrines", "the shrine towns"),
+    faction("rival-shrines", "the rival shrines"),
+    faction("abbey", "the abbey", face="sage"),
+    faction("penitents", "the penitent wing"),
+    faction("carnival", "the carnival wing"),
+    faction("academy", "the wizards' academy", face="sage"),
+    faction("schools", "the contemplative schools", face="sage"),
+    faction("rival-schools", "the rival schools"),
+    faction("tomb-priests", "the tomb priests", face="sage"),
+    faction("white-shamans", "the white shamans", face="sage"),
+    faction("black-shaman", "the black shaman"),
+    faction("chapels", "the storefront chapels"),
+    faction("ladder-faiths", "the ladder faiths"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
@@ -839,6 +1038,10 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
                 factions=("great-lords", "new-men")),
         tension("manor-vs-village", "the bailiff against the old custom",
                 factions=("manor-lord", "village")),
+        tension("shrine-vs-shrine", "two shrines, one saint, one road",
+                factions=("shrines", "rival-shrines")),
+        tension("abbey-vs-village", "the abbey against the families",
+                factions=("abbey", "village")),
     ),
     "mortellaria": (
         tension("sword-vs-robe", "old swords against bought offices",
@@ -848,6 +1051,12 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("court-vs-provinces",
                 "the court against the provinces",
                 factions=("commissioners", "provinces")),
+        tension("penitents-vs-carnival",
+                "which face of the god rules the year",
+                factions=("penitents", "carnival")),
+        tension("academy-vs-tribunal",
+                "the academy against the tribunal",
+                factions=("academy", "tribunal")),
     ),
     "ensimaa": (
         tension("elders-vs-young",
@@ -859,6 +1068,9 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("machines-vs-wild",
                 "the machines against the primitivists",
                 factions=("machine-keepers", "primitivists")),
+        tension("school-vs-school",
+                "one word in one old text, two schools",
+                factions=("schools", "rival-schools")),
     ),
     "tergal": (
         tension("clan-vs-clan", "clan against clan over the pasture",
@@ -869,6 +1081,9 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("council-vs-outlaws",
                 "the council against the outlaws",
                 factions=("clans", "outlaws")),
+        tension("white-vs-black",
+                "the white shamans against the dark one",
+                factions=("white-shamans", "black-shaman")),
     ),
     "dvarvengrond": (
         tension("clan-vs-clan-wall",
@@ -880,6 +1095,9 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("clans-vs-unclanned",
                 "the clans against the unclanned",
                 factions=("clans", "unclanned")),
+        tension("tombs-vs-tonnage",
+                "the tomb priests against the quota",
+                factions=("tomb-priests", "deep-clans")),
     ),
     "gibili": (
         tension("parliament-deadlock",
@@ -892,6 +1110,9 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
                 "the syndicates against each other",
                 factions=("syndicates", "mill-barons", "secret-police",
                           "anarchists", "companies")),
+        tension("chapel-vs-ladder",
+                "the chapels against the ladder faiths",
+                factions=("chapels", "ladder-faiths")),
     ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
@@ -980,6 +1201,39 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the generals despise the men they are ordered to protect"),
     edge("gibili", "syndicates", "shield", "ranks",
          "the syndicates shelter the soldiers who will not fire"),
+    # -- religion and magic (2026-08-11) ---------------------------------- #
+    edge("firascir", "shrines", "steal-from", "rival-shrines",
+         "the shrine towns steal each other's relics outright"),
+    edge("firascir", "rival-shrines", "undercut", "shrines",
+         "the rival shrines undercut each other for the pilgrim trade"),
+    edge("firascir", "abbey", "holds", "village",
+         "the abbey holds the village's children, land and law"),
+    edge("firascir", "village", "petitions", "abbey",
+         "the village petitions the abbey and is answered in writing"),
+    edge("mortellaria", "penitents", "denounce", "carnival",
+         "the penitent wing preaches against the carnival wing"),
+    edge("mortellaria", "carnival", "outnumber", "penitents",
+         "the carnival wing simply outnumbers the penitents"),
+    edge("mortellaria", "tribunal", "watches", "academy",
+         "the tribunal keeps a list of what the academy teaches"),
+    edge("mortellaria", "academy", "shelters", "tribunal",
+         "the academy hands the tribunal a scapegoat every few years"),
+    edge("ensimaa", "schools", "dispute", "rival-schools",
+         "the schools have disputed one word for nine centuries"),
+    edge("ensimaa", "rival-schools", "outlast", "schools",
+         "the rival schools intend to outlast the argument"),
+    edge("dvarvengrond", "tomb-priests", "veto", "deep-clans",
+         "the tomb priests can stop a gallery with a word"),
+    edge("dvarvengrond", "deep-clans", "buy", "tomb-priests",
+         "the deep clans buy the rites that release a founder"),
+    edge("tergal", "white-shamans", "shun", "black-shaman",
+         "the white shamans camp the dark one outside the ring"),
+    edge("tergal", "black-shaman", "serves", "white-shamans",
+         "the dark one does the work the white shamans will not"),
+    edge("gibili", "chapels", "split", "ladder-faiths",
+         "the storefront chapels split off the ladder faiths weekly"),
+    edge("gibili", "ladder-faiths", "buy-out", "chapels",
+         "the ladder faiths buy failing chapels for their congregations"),
 )
 
 # The war layer's WHY line: rolled beside story.py's aggressor, said once at
@@ -1210,6 +1464,13 @@ _GOBLIN_TOUGHS = ("cutthroat", "slinger", "bruiser", "soldier", "veteran",
 _DWARF_TOUGHS = ("cutthroat", "gunner", "bruiser", "soldier", "veteran",
                  "champion")
 _BEASTS = ("wolf", "dire wolf", "bear")                     # band 1-6
+# The religion & magic rung's two additions (2026-08-11). Neither is a new
+# creature ROW -- the monsters & fauna dump still owns that -- they are two
+# named pools over the catalog the game already has, and the cultural arms
+# rule has nothing to say about either: the dead and the gifted are not
+# anybody's soldiery.
+_UNDEAD = ("skeleton", "ghoul", "wight")                    # band 1-10
+_CASTERS = ("hexer", "pyromancer", "magus")                 # band 2-12
 
 CARDS = (
     # -- Firascir: MANORIAL OPPRESSION & THE CROWN'S DEBTS ------------------ #
@@ -3451,7 +3712,1144 @@ POLITICS_CARDS = (
              "pay": 1.25, "slots": -1}),
 )
 
-CARDS = CARDS + POLITICS_CARDS
+# --------------------------------------------------------------------------- #
+# The religion content (2026-08-11): worldsim.md's religion packets
+# --------------------------------------------------------------------------- #
+# What religion owns that politics does not: WORSHIP, RITE, and the parish's
+# daily texture. Politics kept church POWER, and where a packet entry was a
+# political card wearing a stole -- the interdict, the militant order, the
+# witch-finder, the tribunal's penance -- it stayed in the politics deck and
+# is referenced here, never duplicated (the dedupe doctrine).
+#
+# Three directives from the design round govern every line below. THE PACT
+# STAYS OUT: nobody in the world knows of it and no card reacts to it. NO
+# THEOLOGY RULING: the game never decides which land's religion is true, so
+# each card is written from inside its own land and the contradictions
+# between them are content. And TEMPLE SERVICES ARE PRICED, NOT PENITENTIAL:
+# healing, burial and blessing are OPTIONS at the bottom of this file, and
+# the sin/penance wiring is deliberately not designed.
+#
+# The gate is the same one politics uses: most cards name a TENSION, so a
+# Firascir whose shrines are at war never draws the abbey's cards at all,
+# and the packet stays a wide pool instead of a content budget. What is left
+# ungated is one card a land at most, kept rare by its own `chance`.
+
+_SEERESS_HOOK = _authority_hook("seeress", "the seeress", "seeress")
+_HERMIT_HOOK = _authority_hook("hermit", "the walled-in hermit", "hermit")
+_PROPHET_HOOK = _authority_hook("prophet", "the street prophet", "prophet")
+_TALENT_HOOK = _authority_hook("wild-talent", "the wild talent", "talent")
+_MASTER_HOOK = _authority_hook("master", "the master for hire", "master")
+
+RELIGION_CARDS = (
+    # == Firascir: THE PARISH IS THE SECOND STATE ========================== #
+    # The relic CHAIN: a town steals a saint, and the synod that has to rule
+    # on which of three skulls is his is the card a season later.
+    card("firascir/relic-theft", "The relic is stolen", "firascir",
+         tension=("shrine-vs-shrine",),
+         faction_edge=("firascir/shrines-steal-from-rival-shrines",),
+         without=("relic-hunt",), days=(15, 25),
+         news="A shrine town has stolen its rival's relic in the night, and "
+              "the doctrine is that the saint consented -- the theft could "
+              "not have worked otherwise. The pilgrim road has already "
+              "moved.",
+         state={"set": ("relic-hunt",)},
+         quest={"post": job(
+             "The Saint Goes Home",
+             "The robbed shrine wants its saint back before the pilgrim "
+             "season. The thieves are a whole town, and the town says the "
+             "saint chose them.",
+             pool=_TOUGHS, sites=("the rival shrine", "the pilgrim road"),
+             giver="the robbed shrine's abbot",
+             epilogue="The relic is back in its own case, and both towns "
+                      "now have a written account of what the saint "
+                      "wanted.",
+             failure_epilogue="The saint stayed where he was taken. The "
+                              "pilgrim road runs through the other town "
+                              "now, and the old one is emptying."),
+             "pay": 1.20}),
+    card("firascir/third-skull", "The third skull", "firascir",
+         states=("relic-hunt",), days=(12, 20),
+         news="Three shrines own the same saint's skull. A synod has "
+              "ordered authentication by miracle, and two of the three "
+              "abbots already know what the test will find.",
+         state={"clear": ("relic-hunt",), "while": ("bones-tested",)},
+         menu={"lodging": 1.25},
+         quest={"post": job(
+             "Authentication By Miracle",
+             "The synod's examiner is walking to all three shrines with a "
+             "box and a clerk. Two of the shrines would rather he did not "
+             "arrive at the third.",
+             pool=_TOUGHS, sites=("the shrine road", "the synod hall"),
+             giver="the synod's examiner",
+             epilogue="The examiner reached all three shrines and wrote "
+                      "down what he found. One abbot has left for the "
+                      "capital.",
+             failure_epilogue="The examiner never finished his round. All "
+                              "three shrines are selling badges as the "
+                              "true one."),
+             "pay": 1.15}),
+    card("firascir/holy-well", "The well starts healing", "firascir",
+         tension=("shrine-vs-shrine",), wealth=("normal", "prosperous"),
+         days=(15, 25),
+         news="A well outside the village has started healing people, and "
+              "the church has not ruled on it yet. The innkeepers have an "
+              "opinion. So does the priest whose font sits empty.",
+         state={"while": ("holy-well",)},
+         quest={"post": job(
+             "The Unlicensed Miracle",
+             "The bishop's man is coming to license the well, suppress it, "
+             "or quietly improve it. The village means to be sure he "
+             "arrives in the right frame of mind, and so does the parish "
+             "priest, differently.",
+             pool=_TOUGHS, sites=("the well road", "the empty church"),
+             giver="the bishop's man",
+             epilogue="The well is licensed, and the takings are split in "
+                      "writing. Everyone is equally unhappy, which the "
+                      "clerk calls a settlement.",
+             failure_epilogue="The well was filled in on a Tuesday night. "
+                              "It started again on Thursday."),
+             "slots": 1}),
+    card("firascir/feast-week", "The feast days stop the work", "firascir",
+         tension=("abbey-vs-village",), days=(8, 14),
+         news="Feast days claim a third of the year here, and working them "
+              "is an offence. The harvest is standing ripe under a week of "
+              "them, and the abbey will not move a single one.",
+         state={"while": ("feast-lock",)},
+         quest={"post": job(
+             "Ripe Under The Feast",
+             "A village with no lord over it means to bring its harvest "
+             "in during the feast anyway, and wants men between the "
+             "carts and whoever the abbey sends to count them.",
+             pool=_TOUGHS, sites=("the standing field",),
+             giver="the village headman",
+             epilogue="The harvest is in and the abbey has a list of "
+                      "names. The village says the list can be read at "
+                      "the next feast.",
+             failure_epilogue="The carts were turned back and the grain "
+                              "stood another week. Half of it is on the "
+                              "ground now."),
+             "slots": -1, "pay": 1.15}),
+    card("firascir/the-oblate", "The abbey's boy wants out", "firascir",
+         tension=("abbey-vs-village",),
+         faction_edge=("firascir/abbey-holds-village",), days=(15, 25),
+         news="A boy given to the abbey at seven wants out at fifteen. The "
+              "abbey holds his labour, his inheritance and the law, and "
+              "his mother has started asking who in the county does not.",
+         state={"while": ("abbey-suit",)},
+         quest={"post": job(
+             "A Year And A Day",
+             "The boy is going over the abbey wall on Friday whatever "
+             "anyone hires. His mother is paying for an escort to the town "
+             "gate; the abbey is paying to have him back before it. Both "
+             "sides are at the same inn.",
+             pool=_TOUGHS, sites=("the abbey wall", "the town gate"),
+             giver="the boy's mother",
+             epilogue="The boy is behind the town gate and the year has "
+                      "started running. The abbey is writing to the "
+                      "bishop about it.",
+             failure_epilogue="The boy is back inside the abbey, and the "
+                              "next one who tries this will get the same "
+                              "answer faster."),
+             "pay": 1.20}),
+    card("firascir/the-hermit", "The hermit at the wall", "firascir",
+         tension=("abbey-vs-village",),
+         faction_edge=("firascir/village-petitions-abbey",),
+         days=(20, 30), hook=_HERMIT_HOOK,
+         news="{hermit} has been walled into the church with one window on "
+              "the street for thirty years. The village brings her its "
+              "quarrels, and she has watched every single thing that has "
+              "happened out there.",
+         state={"while": ("hermit-window",)},
+         quest={"post": job(
+             "The One Witness",
+             "The walled-in hermit saw who did it and will say so to the "
+             "court. Two families would rather she did not, and there is "
+             "exactly one window between her and the street.",
+             pool=_TOUGHS, sites=("the church wall", "the county court"),
+             giver="the walled-in hermit",
+             epilogue="The hermit's account is read into the county roll. "
+                      "She is still at her window and the street is very "
+                      "polite this week.",
+             failure_epilogue="The window is bricked up and the hermit is "
+                              "gone. Nobody in the village saw who did "
+                              "that either."),
+             "slots": 1, "pay": 1.10}),
+    card("firascir/franchise", "The ladder faith opens a branch", "firascir",
+         states=("franchise-here",), days=(12, 20),
+         news="A goblin ladder faith has opened a branch in the market "
+              "town. It has handbills, a brass band and a tiered price "
+              "list, and the parish priest has stopped sleeping.",
+         menu={"goods": 1.10},
+         quest={"post": job(
+             "The Handbill War",
+             "The parish priest wants the branch shut and will not say how. "
+             "The branch's recruiter wants his handbill men walked to the "
+             "next four villages. Neither of them asked first who else was "
+             "hiring.",
+             pool=_TOUGHS, sites=("the market square", "the village road"),
+             giver="the parish priest",
+             epilogue="The branch is shut and its recruiter has gone south "
+                      "with the takings. The parish is counting its "
+                      "collection again, hopefully.",
+             failure_epilogue="The branch has three hundred subscribers "
+                              "and a second storefront. The priest has "
+                              "written to the bishop twice."),
+             "pay": 1.10}),
+
+    # == The Sun communion: ONE CHURCH, TWO RITES ========================== #
+    # The one card that belongs to both human lands, because the argument
+    # does: every joint synod ends one insult short of the split.
+    card("communion/the-synod", "The joint synod",
+         ("firascir", "mortellaria"), states=("schism-near",), days=(10, 18),
+         news="The two rites have called a joint synod. The north says the "
+              "southern death-face is creeping heresy; the south says a "
+              "faith that refuses death its face is what makes death "
+              "monstrous. Both are right and neither will yield.",
+         quest={"post": job(
+             "One Insult Short",
+             "The synod's delegates have to reach the hall and get home "
+             "again, through a town that has already picked a side. The "
+             "bishop is paying for the whole journey and does not want a "
+             "single delegate hurt on either side.",
+             pool=_TOUGHS, sites=("the synod hall", "the cathedral road"),
+             giver="the visiting bishop",
+             epilogue="The synod broke up without a split, which is what "
+                      "everybody calls a success. Both rites went home "
+                      "saying they had won.",
+             failure_epilogue="A delegate was beaten in the street and the "
+                              "synod broke up over it. Both rites are "
+                              "writing the account that will be read in "
+                              "fifty years."),
+             "pay": 1.25, "slots": -1}),
+
+    # == Mortellaria: WHICH FACE RULES ===================================== #
+    card("mortellaria/penance-season", "The penitential season",
+         "mortellaria", tension=("penitents-vs-carnival",),
+         faction_edge=("mortellaria/penitents-denounce-carnival",),
+         without=("carnival-on",), days=(15, 25),
+         news="The hooded columns are out, the statues are veiled and the "
+              "flagellants have the main street at dusk. Attendance is "
+              "close to universal and so is the muttering about it.",
+         state={"while": ("penance-season",)},
+         quest={"post": job(
+             "The Column's Road",
+             "A flagellant column is walking to the shrine through three "
+             "districts that would rather it did not. The brotherhood "
+             "wants it to arrive with the same number of men it left "
+             "with.",
+             pool=_TOUGHS, sites=("the procession road",),
+             giver="the brotherhood's warden",
+             epilogue="The column reached the shrine intact. The warden "
+                      "pays without looking up.",
+             failure_epilogue="The column was broken up in the third "
+                              "district. The season's sermons are about "
+                              "nothing else now."),
+             "reprice": 0.90}),
+    card("mortellaria/carnival", "Carnival", "mortellaria",
+         tension=("penitents-vs-carnival",),
+         faction_edge=("mortellaria/carnival-outnumber-penitents",),
+         without=("penance-season",), days=(8, 14),
+         news="Carnival is on: masks, licence and the world upside down. "
+              "Sins confessed masked are absolved wholesale, the theology "
+              "of that is contested, and the last night is the best time "
+              "of the year to be forgiven or to disappear.",
+         state={"while": ("carnival-on",)},
+         quest={"post": job(
+             "Under The Mask",
+             "The city watch cannot tell one masked man from another and "
+             "has given up trying. A merchant house wants its own people "
+             "walked home every night of the season, and does not want "
+             "them counted on the way.",
+             pool=_TOUGHS, sites=("the masked street", "the water stairs"),
+             giver="the merchant house's steward",
+             epilogue="Everyone got home every night. The steward pays in "
+                      "a mask and does not give a name.",
+             failure_epilogue="Two of the household did not come back, and "
+                              "under carnival law nobody was anybody that "
+                              "night."),
+             "slots": 1, "pay": 1.15}),
+    card("mortellaria/day-of-the-dead", "The day of the dead", "mortellaria",
+         chance=0.30, days=(2, 3),
+         news="Tonight the dead are guests. The tombs are picnicked in, "
+              "plates are set at the family tables, and the graveyard is "
+              "lit like a fair. Whether anyone actually comes is not a "
+              "question the city asks out loud.",
+         state={"while": ("dead-abroad",)},
+         quest={"post": job(
+             "A Plate At The Table",
+             "A house wants its family tomb sat with all night, and will "
+             "not say whether the worry is robbers or guests. The rate is "
+             "the same either way.",
+             pool=_UNDEAD, sites=("the family tomb",),
+             giver="the house's eldest daughter",
+             epilogue="The night passed. The plates were emptied, which "
+                      "the family takes as an answer and does not "
+                      "explain.",
+             failure_epilogue="The tomb was open in the morning and the "
+                              "plates were on the floor. The family has "
+                              "stopped setting them."),
+             "pay": 1.20}),
+    card("mortellaria/two-hoods", "Two brotherhoods, one corpse",
+         "mortellaria", tension=("penitents-vs-carnival",), days=(8, 14),
+         news="A notable died in the street and two hooded burial "
+              "brotherhoods reached him at once. Both are anonymous by "
+              "rule, both have the paperwork, and the standoff is being "
+              "conducted in full regalia.",
+         state={"while": ("two-hoods",)},
+         quest={"post": job(
+             "In Full Regalia",
+             "One brotherhood means to carry the body off tonight. The "
+             "other means to be standing over it. The dead man's widow is "
+             "paying whoever gets him into the ground she chose.",
+             pool=_TOUGHS, sites=("the chapel steps",),
+             giver="the dead man's widow",
+             epilogue="The body is in the widow's ground. Both "
+                      "brotherhoods have written to the archbishop about "
+                      "the other one.",
+             failure_epilogue="The body went to whichever brotherhood was "
+                              "faster. The widow is not told which."),
+             "pay": 1.15}),
+    card("mortellaria/debate-riot", "The disputation riot", "mortellaria",
+         tension=("penitents-vs-carnival",), days=(8, 14),
+         news="The public theology debate on the two faces was staged as "
+              "entertainment and wagered on like a duel. It ended in "
+              "faction fighting in the square, with clubs.",
+         state={"while": ("debate-riot",)},
+         quest={"post": job(
+             "The Second Session",
+             "The debate is scheduled to continue tomorrow and both "
+             "wings have brought friends. The magistrate wants the square "
+             "held and the debate finished, in that order.",
+             pool=_TOUGHS, sites=("the debate square",),
+             giver="the city magistrate",
+             epilogue="The second session finished and was written down. "
+                      "Nobody was killed, which the magistrate calls a "
+                      "verdict.",
+             failure_epilogue="The square went over again and the "
+                              "magistrate has banned public theology for "
+                              "a year. Everyone is doing it in cellars."),
+             "slots": -1, "pay": 1.20}),
+
+    # == Ensimaa: REVERENCE WITHOUT WORSHIP ================================ #
+    # The land's one ungated card, kept rare by its own die: an elf dies
+    # about once a century, and the whole culture's composure fails in
+    # public when one does.
+    card("ensimaa/the-funeral", "The funeral", "ensimaa",
+         chance=0.12, days=(12, 20),
+         news="An elf has actually died. The land has stopped. The rite is "
+              "long and closed, and an ageless people has no practice at "
+              "endings -- the composure the whole culture stands on is "
+              "failing in public.",
+         state={"while": ("land-mourning",)},
+         quest={"post": job(
+             "No Practice At Endings",
+             "The death was not natural, and among elves that is a graver "
+             "crime than it is anywhere else. The house wants the question "
+             "answered before the rite ends, by someone who is not "
+             "expected at it.",
+             pool=_ELF_TOUGHS, sites=("the white court", "the river house"),
+             giver="the dead elf's sister",
+             epilogue="The house has its answer, and the rite finished on "
+                      "time. Nobody outside the family will ever be told "
+                      "which of those mattered.",
+             failure_epilogue="The rite ended with the question open. The "
+                              "house has begun remembering the dead elf's "
+                              "name in a way that names somebody else "
+                              "too."),
+             "slots": -2, "pay": 1.30}),
+    card("ensimaa/the-mission", "The mission that converted no one",
+         "ensimaa", tension=("purity-vs-fringe",),
+         wealth=("normal", "prosperous"), days=(15, 25),
+         news="The Sun-church mission has stood in the capital for four "
+              "hundred years and converted no one. The elves send polite "
+              "questions the missionaries cannot answer, and fix the "
+              "mission's roof when it leaks. Both sides call it a "
+              "success.",
+         state={"while": ("mission-open",)},
+         menu={"lodging": 0.90},
+         quest={"post": job(
+             "The Mission's Roof",
+             "The mission's roof is going again and the purity board has "
+             "found a reason the repair cannot be certified. The mission "
+             "wants the timber brought up the river road anyway.",
+             pool=_ELF_TOUGHS, sites=("the river road", "the mission house"),
+             giver="the mission's dean",
+             epilogue="The roof is on. The purity board has entered the "
+                      "repair as an unlicensed structure and taken no "
+                      "further action for four hundred years.",
+             failure_epilogue="The timber never arrived. The mission has "
+                              "moved its books into the one dry room."),
+             "slots": 1}),
+    card("ensimaa/one-word", "One word in one old text", "ensimaa",
+         tension=("school-vs-school",),
+         faction_edge=("ensimaa/schools-dispute-rival-schools",),
+         days=(15, 25),
+         news="Two contemplative schools have disputed one word in one old "
+              "text for nine hundred years. An essay answering the other "
+              "side has just been finished. From outside, nothing has "
+              "happened at all.",
+         quest={"post": job(
+             "The Answering Essay",
+             "The essay has to reach the other school's teacher, who lives "
+             "nine days up the valley and does not admit visitors. The "
+             "writer will not send it by any hand that has read it.",
+             pool=_ELF_TOUGHS, sites=("the upper valley", "the still court"),
+             giver="the school's copyist",
+             epilogue="The essay was delivered unread. The answer is "
+                      "expected within the decade.",
+             failure_epilogue="The essay was read on the road and the "
+                              "wording is now public. Both schools have "
+                              "stopped writing to each other."),
+             "pay": 1.15, "reprice": 1.10}),
+    card("ensimaa/the-remembrance", "The remembrance is challenged",
+         "ensimaa", tension=("elders-vs-young",),
+         faction_edge=("ensimaa/elders-block-young",), days=(12, 20),
+         news="The dead are not prayed to here but remembered exactly -- "
+              "recited, name by name, deed by deed, for millennia. Somebody "
+              "has stood up in the star-court and said that one of the "
+              "deeds is not what happened.",
+         quest={"post": job(
+             "Name By Name, Deed By Deed",
+             "The challenge stands or falls on what four witnesses said "
+             "eight hundred years ago, and two of the four wrote it down "
+             "somewhere the house would rather nobody went. Curating the "
+             "record is sacrilege in the one place elves keep something "
+             "sacred, which is what makes this worth paying for.",
+             pool=_ELF_TOUGHS, sites=("the star-court", "the sealed room"),
+             giver="the challenger's second",
+             epilogue="The recitation was corrected in public and the "
+                      "house that kept the sealed room said nothing at "
+                      "all. It will be reciting the new version by "
+                      "spring.",
+             failure_epilogue="The challenge was withdrawn and the "
+                              "challenger is not recited with anybody now. "
+                              "The sealed room is sealed again."),
+             "pay": 1.20, "reprice": 1.10}),
+    card("ensimaa/the-young-south", "The ones who go to learn endings",
+         "ensimaa", states=("young-abroad",), days=(12, 20),
+         news="The young have gone south again to stand where death has a "
+              "face. The elders call it a sickness. A few of them are old "
+              "enough to remember going.",
+         quest={"post": job(
+             "Fetch Them Back",
+             "A house wants its young brought home from the southern death "
+             "feast before the season ends. They are not lost, they are "
+             "not held, and they do not want to come.",
+             pool=_TOUGHS, sites=("the southern road", "the lit graveyard"),
+             giver="the young elf's grandmother",
+             epilogue="They came home. One of them has started keeping a "
+                      "list of names and dates, which the family does not "
+                      "discuss.",
+             failure_epilogue="They stayed south. The grandmother has "
+                              "begun the remembrance early, which is not "
+                              "done."),
+             "pay": 1.20}),
+
+    # == Dvarvengrond: THE DEAD ARE THE CHURCH ============================= #
+    card("dvarvengrond/the-seeress", "The seeress takes the high seat",
+         "dvarvengrond", tension=("tombs-vs-tonnage",), days=(10, 18),
+         hook=_SEERESS_HOOK,
+         news="{seeress} has come. The high seat is built, the questions "
+              "are submitted in order, and there are no second answers. "
+              "Her word on a vein or a succession moves markets, and "
+              "somebody always wants the question asked again.",
+         state={"while": ("seeress-here",)},
+         quest={"post": job(
+             "The Question In Order",
+             "A thane's rival has bought the place in the queue ahead of "
+             "him and means to ask the same question first. The thane "
+             "wants his own man at the front of the hall, and does not "
+             "care how.",
+             pool=_DWARF_TOUGHS, sites=("the high seat hall",),
+             giver="the thane's steward",
+             epilogue="The question was asked in the right order and "
+                      "answered once. What she said is already in the "
+                      "price of the seam.",
+             failure_epilogue="The rival asked first. The answer is his "
+                              "now, and there are no second answers."),
+             "slots": 1, "pay": 1.20}),
+    card("dvarvengrond/grave-goods", "The tomb gallery is opened",
+         "dvarvengrond", tension=("tombs-vs-tonnage",),
+         faction_edge=("dvarvengrond/deep-clans-buy-tomb-priests",),
+         without=("tombs-open",), days=(15, 25),
+         news="The rites have released a founder and his gallery is open. "
+              "Wealth goes into the ground here, so the mountain's richest "
+              "rooms are its tombs -- and tomb-robbing is the deepest "
+              "sacrilege on the books.",
+         state={"set": ("tombs-open",)},
+         quest={"post": job(
+             "Count What Is In There",
+             "The tomb priests want the gallery inventoried before the "
+             "clan works it, and want the counting party to be outsiders "
+             "with no claim in the mountain. Something has been down "
+             "there with the founder.",
+             pool=_UNDEAD, sites=("the opened gallery",),
+             giver="the tomb priest",
+             epilogue="The gallery is counted and the list is sealed. The "
+                      "clan is already arguing with the list.",
+             failure_epilogue="The counting party came back short and the "
+                              "gallery was sealed again the same day. The "
+                              "list was never written."),
+             "pay": 1.25}),
+    card("dvarvengrond/knockers-quiet", "The knockers stop knocking",
+         "dvarvengrond", tension=("tombs-vs-tonnage",),
+         faction_edge=("dvarvengrond/tomb-priests-veto-deep-clans",),
+         days=(12, 20),
+         news="The mine-spirits knock before a collapse and are paid for it "
+              "with the last bite of every meal. They have stopped "
+              "knocking. Nobody will go down, and whistling underground is "
+              "still forbidden.",
+         state={"while": ("knockers-quiet",)},
+         quest={"post": job(
+             "Somebody Has To Go Down",
+             "The gallery has to be walked to the face and back before the "
+             "quota is missed, and no dwarf in the mountain will do it "
+             "this week. The wildcatters in the condemned levels are "
+             "already down there.",
+             pool=_DWARF_TOUGHS, sites=("the silent gallery",),
+             giver="the clan's shift captain",
+             epilogue="The gallery was walked and the face is sound. The "
+                      "last bite is being left again, twice.",
+             failure_epilogue="Nobody reached the face. The quota is "
+                              "missed, which before the ancestors is a "
+                              "spiritual failing and not merely a debt."),
+             "slots": -1, "pay": 1.25}),
+    card("dvarvengrond/oath-ring", "The oath ring is broken",
+         "dvarvengrond", tension=("tombs-vs-tonnage", "clans-vs-unclanned"),
+         days=(15, 25),
+         news="An oath sworn on the shrine's iron ring binds in law. One "
+              "has been broken in front of witnesses, and oath-breaking is "
+              "the one crime the priests own outright.",
+         state={"while": ("oath-broken",)},
+         quest={"post": job(
+             "Sworn On The Ring",
+             "The priests mean to bring the oath-breaker to the shrine and "
+             "read the oath back to him in public. His clan means to have "
+             "him over the wall by then.",
+             pool=_DWARF_TOUGHS, sites=("the ring shrine", "the wall road"),
+             giver="the shrine's oath-keeper",
+             epilogue="The oath was read back to him at the ring. What "
+                      "happens to him now is the law's, and the law here "
+                      "is the priests'.",
+             failure_epilogue="He is over the wall and unclanned. The ring "
+                              "has been taken off the shrine until the "
+                              "matter is settled."),
+             "pay": 1.15}),
+    card("dvarvengrond/the-blot", "The great sacrifice", "dvarvengrond",
+         wealth=("normal", "prosperous"), chance=0.30, days=(8, 14),
+         news="The seasonal sacrifice is due. Formal worship is thin here "
+              "-- a hall blessing, a beast, and a long night -- because the "
+              "gods are far away and the ancestors are right here.",
+         state={"while": ("blot-due",)},
+         quest={"post": job(
+             "The Beasts For The Hall",
+             "The beasts for the sacrifice have to come up the mountain "
+             "road in one drive, and the road above the treeline is not "
+             "empty this season.",
+             pool=_BEASTS, sites=("the mountain road",),
+             giver="the hall's steward",
+             epilogue="The beasts are in the hall and the night went as it "
+                      "should. The steward pays out of the feast money.",
+             failure_epilogue="The drive was scattered on the road. The "
+                              "hall was blessed with what could be found, "
+                              "which everyone noticed."),
+             "slots": 1}),
+
+    # == Tergal: THE PRACTICE, NOT THE CREED =============================== #
+    card("tergal/called-child", "The called child", "tergal",
+         tension=("white-vs-black",), days=(15, 25),
+         news="A chief's child has the call: the sickness that takes the "
+              "marked one, whose only cure is initiation under a living "
+              "shaman. Refusing it ends in death or a broken mind, and the "
+              "family is asking whether it can be refused anyway.",
+         state={"while": ("called-child",)},
+         quest={"post": job(
+             "The Long Ride To The Teacher",
+             "The family will pay to have the child taken nine days across "
+             "the grass to a teacher who can finish it -- or, for the same "
+             "money, to have the child hidden from the spirits, which "
+             "every shaman says cannot be done.",
+             pool=_TOUGHS, sites=("the open grass", "the teacher's camp"),
+             giver="the chief's wife",
+             epilogue="The child reached the teacher and the sickness has "
+                      "a shape now. The camp is easier about it than the "
+                      "family is.",
+             failure_epilogue="The child never reached the teacher. The "
+                              "family has stopped saying what happened, "
+                              "which the camp reads as an answer."),
+             "pay": 1.25}),
+    card("tergal/river-fouled", "The river was fouled", "tergal",
+         chance=0.30, days=(8, 14),
+         news="Somebody washed in the river. Running water is never fouled "
+              "here, a tent's threshold is never stepped on, and the dead's "
+              "names go unspoken -- and the fine for the first is paid in "
+              "livestock like everything else.",
+         state={"while": ("river-fouled",)},
+         quest={"post": job(
+             "Paid In Livestock",
+             "The fine is set at eleven head and the man who owes it has "
+             "none. The camp will accept the herd of whoever brings it, "
+             "and there is a herd four days out with a thin guard on it.",
+             pool=_TOUGHS, sites=("the river camp", "the far pasture"),
+             giver="the camp's law-speaker",
+             epilogue="The fine is paid, the river is clean in law, and "
+                      "the herd it came off is somebody else's problem "
+                      "now.",
+             failure_epilogue="The fine is unpaid and the camp has begun "
+                              "reading it as a feud instead of a debt."),
+             "pay": 1.10}),
+    card("tergal/black-tent", "The black shaman is wanted", "tergal",
+         tension=("white-vs-black",),
+         faction_edge=("tergal/black-shaman-serves-white-shamans",),
+         days=(12, 20),
+         news="The herds are sickening and the white shamans cannot stop "
+              "it. Everyone knows whose tent to visit after dark: the one "
+              "camped outside the ring, paid double, and needed.",
+         state={"while": ("black-tent",)},
+         quest={"post": job(
+             "Outside The Ring Of Tents",
+             "The dark one will come, for a price and an escort, and will "
+             "not walk the last stretch alone. What is following the herds "
+             "is following him too.",
+             pool=_UNDEAD, sites=("the outside tent", "the sick pasture"),
+             giver="the camp's herd-master",
+             epilogue="The herds have stopped dying and the dark one is "
+                      "back outside the ring. Nobody thanks him where "
+                      "anyone can hear it.",
+             failure_epilogue="He never reached the pasture. The camp is "
+                              "moving, and it is not saying where."),
+             "pay": 1.30}),
+    card("tergal/foreign-graves", "The foreign graveyard", "tergal",
+         tension=("white-vs-black",), days=(15, 25),
+         news="The dead go to the birds on the platforms here; burying a "
+              "body in earth MAKES a ghost. Somebody has put a foreign "
+              "graveyard on the plain, and the camps have started "
+              "detouring around it.",
+         state={"while": ("foreign-graves",)},
+         quest={"post": job(
+             "Put Them On The Platforms",
+             "The camps want the foreign graveyard emptied and its dead "
+             "laid out properly. Whoever buried them has views about that, "
+             "and so, by now, do the dead.",
+             pool=_UNDEAD, sites=("the foreign graveyard",),
+             giver="the white shaman",
+             epilogue="The graves are open, the dead are on the platforms, "
+                      "and the birds have come. The detour is off.",
+             failure_epilogue="The graveyard is still there and larger. "
+                              "Two camps have moved their whole season "
+                              "around it."),
+             "pay": 1.25}),
+    card("tergal/cairn", "The pass-spirit is offended", "tergal",
+         tension=("white-vs-black",), days=(10, 18),
+         news="Every spring, pass and mountain has an owner. A traveller "
+              "went over the pass without adding a stone to the cairn, and "
+              "the misfortune chain has started at the near end of it.",
+         state={"while": ("cairn-angry",)},
+         quest={"post": job(
+             "A Stone At The Pass",
+             "The shaman will carry the apology to the pass himself and "
+             "wants company to the top. What has been taking the horses "
+             "up there does not stop at the treeline.",
+             pool=_BEASTS, sites=("the high pass",),
+             giver="the white shaman",
+             epilogue="The stone is on the cairn and the apology was "
+                      "spoken out loud. The pass is quiet.",
+             failure_epilogue="The apology was not delivered. The camps "
+                              "are going the long way round and losing "
+                              "four days a crossing."),
+             "pay": 1.15}),
+
+    # == Gibili: SALVATION AS BUSINESS ===================================== #
+    # The tithe CHAIN: early tithers are paid out of late tithers' money,
+    # and the card after it is the morning the money runs out.
+    card("gibili/prosperity-pyramid", "The prosperity pyramid", "gibili",
+         tension=("chapel-vs-ladder",),
+         faction_edge=("gibili/ladder-faiths-buy-out-chapels",),
+         without=("pyramid-on", "pyramid-burst"), days=(15, 25),
+         news="THE ONE GOD WANTS YOU RICH. Tithes are promised back "
+              "tenfold, the early tithers are being paid out of the late "
+              "tithers' offerings, and three streets have handed over "
+              "their savings this week.",
+         state={"set": ("pyramid-on",)},
+         quest={"post": job(
+             "The Collection Walk",
+             "The takings go across the district twice a week in a locked "
+             "box with two deacons and no guard. Half the district has "
+             "worked out what is in it.",
+             pool=_GOBLIN_TOUGHS, sites=("the tithe road",),
+             giver="the temple's deacon",
+             epilogue="The box got through. The deacon pays out of it, "
+                      "which is either the tenfold return or the last of "
+                      "the float.",
+             failure_epilogue="The box went in the street and the "
+                              "congregation watched it go. The tenfold "
+                              "return is being recalculated."),
+             "pay": 1.15}),
+    card("gibili/pyramid-burst", "The pyramid collapses", "gibili",
+         states=("pyramid-on",), days=(15, 25),
+         news="The tithe pyramid has stopped paying. The preacher is gone, "
+              "three streets have nothing, and the ones who recruited "
+              "their own families are the ones being looked for.",
+         state={"clear": ("pyramid-on",), "while": ("pyramid-burst",)},
+         quest={"post": job(
+             "The Preacher's Coach",
+             "The preacher went south in a hired coach with the float. "
+             "Four separate congregations are paying to have him brought "
+             "back, and they have not been told about each other.",
+             pool=_GOBLIN_TOUGHS, sites=("the south road", "the empty hall"),
+             giver="the ruined congregation's elder",
+             epilogue="The preacher is back, and so is rather less of the "
+                      "float than left. The four congregations are now "
+                      "suing each other.",
+             failure_epilogue="The preacher is somewhere south with the "
+                              "money, opening. The district is being "
+                              "recruited by a different ladder already."),
+             "pay": 1.20}),
+    card("gibili/great-disappointment", "The end is dated", "gibili",
+         tension=("chapel-vs-ladder",), days=(12, 20), hook=_PROPHET_HOOK,
+         news="{prophet} has dated the End. Believers have quit the mills, "
+              "sold everything and gone up the slag hill in white robes. "
+              "The card is the day after: the debts, the emptied houses, "
+              "the recalculation, and the fringe insisting it worked, "
+              "invisibly.",
+         state={"while": ("end-dated",)},
+         quest={"post": job(
+             "The Day After",
+             "Whole streets sold up at any price and want their houses "
+             "back off the men who bought them. The men who bought them "
+             "have hired the company police. The prophet has a new date.",
+             pool=_GOBLIN_TOUGHS, sites=("the sold street", "the slag hill"),
+             giver="the ruined householder",
+             epilogue="Nine families are back in their houses and the "
+                      "paperwork is a disgrace. The prophet's new date is "
+                      "in eleven months.",
+             failure_epilogue="The houses stayed sold. The slag hill has "
+                              "a permanent camp on it now, waiting for "
+                              "the new date."),
+             "pay": 1.15}),
+    card("gibili/seance-parlors", "The parlors are full", "gibili",
+         tension=("chapel-vs-ladder",), days=(12, 20),
+         news="Mediumship is a parlor business here and every parlor is "
+              "full. Most are knee-under-the-table frauds. A few are real "
+              "necromancers moonlighting, and telling which is which is "
+              "the job.",
+         state={"while": ("parlor-boom",)},
+         quest={"post": job(
+             "Which One Is Real",
+             "A widow has paid the same parlor eleven times and something "
+             "has started answering. She wants to know which of the four "
+             "parlors on her street is doing it, and she wants it stopped "
+             "at whichever one it is.",
+             pool=_CASTERS, sites=("the parlor row", "the back room"),
+             giver="the paying widow",
+             epilogue="It was the fourth parlor and it is shut. The medium "
+                      "has gone to the coast and left the furniture.",
+             failure_epilogue="All four parlors are still open and the "
+                              "widow has stopped going out. Something is "
+                              "still answering."),
+             "pay": 1.25}),
+    card("gibili/burial-club", "The burial club's fund is gone", "gibili",
+         tension=("chapel-vs-ladder",),
+         faction_edge=("gibili/chapels-split-ladder-faiths",),
+         days=(12, 20),
+         news="Weekly dues, a grand funeral guaranteed: plumes, band, the "
+              "good hearse. A goblin funeral is the one show everyone "
+              "gets, and this club's secretary has spent forty years of "
+              "dues.",
+         state={"while": ("club-run",)},
+         quest={"post": job(
+             "Plumes And The Good Hearse",
+             "Two thousand members want the secretary and the money, in "
+             "that order of preference, and a rival club has offered to "
+             "take the whole membership on if somebody brings the ledger "
+             "out of the office first.",
+             pool=_GOBLIN_TOUGHS, sites=("the club office",),
+             giver="the club's committee",
+             epilogue="The ledger is out and the secretary is in the "
+                      "cells. The funerals are running again, plainer.",
+             failure_epilogue="The ledger burned with the office. Two "
+                              "thousand members have forty years of dues "
+                              "and no proof of any of it."),
+             "pay": 1.20}),
+    card("gibili/revival-war", "The revival war", "gibili",
+         tension=("chapel-vs-ladder",), days=(10, 18),
+         news="Storefront temples, revival tents, rival processions with "
+              "brass bands, jingles and handbills. Two of them have "
+              "started booking the same corner on the same evening, and "
+              "the basement presses are printing tract against tract.",
+         state={"while": ("revival-war",)},
+         quest={"post": job(
+             "The Same Corner",
+             "Both congregations have paid for the corner on Friday and "
+             "both intend to be on it. The magistrate has hired whoever "
+             "will stand between two brass bands.",
+             pool=_GOBLIN_TOUGHS, sites=("the disputed corner",),
+             giver="the district magistrate",
+             epilogue="Friday passed with one band on the corner and one "
+                      "in the next street. The magistrate calls that "
+                      "policing.",
+             failure_epilogue="Friday went to the clubs and the corner is "
+                              "closed to both. Three storefronts have "
+                              "merged out of sheer solidarity."),
+             "slots": 1, "pay": 1.10}),
+)
+
+# --------------------------------------------------------------------------- #
+# The magic content (2026-08-11): worldsim.md's magic packets
+# --------------------------------------------------------------------------- #
+# THE MARGIN is the doctrine every card below is written against: magic is
+# real, known and SMALL. Everyone is secondhand familiar with its minor forms
+# and almost nobody has seen a great working; no throne, market or war is
+# decided by it. That is why these cards are gated hard and rolled rarely,
+# and why not one of them changes a wealth band.
+#
+# CONDUCT, NOT CREED is the other: there is no inquisition against casting as
+# such, and a caster playthrough is never dominated by automatic hostility.
+# What gets a caster hunted is what they DID -- THE HUNT below is a paid
+# trade, not a holy office, and its target is named by conduct.
+#
+# The five limits ride the content rather than the code: the gift is BORN
+# (the wild talent, the recruiters, the called child in the religion packet),
+# the THEORY is hoarded (the three teaching options), the COSTS are real (the
+# reagent road), the DANGER is the untrained talent, and the DARK SHORTCUT is
+# what the hunt is hired about.
+
+MAGIC_CARDS = (
+    # -- land-agnostic: the gift, and what the world does about it --------- #
+    # The talent CHAIN, and the one that runs in every land: a gift with no
+    # theory behind it goes off, and the trade that answers is the next card.
+    card("magic/wild-talent", "The wild talent", ANY_LAND,
+         chance=0.10, without=("talent-loose", "hunt-up"), days=None,
+         hook=_TALENT_HOOK,
+         news="A peasant called {talent} blew a man apart in a market "
+              "quarrel and ran. Great gift, no training, no control: posse, "
+              "recruiters, witchhunters and pity are all converging, and "
+              "the target is one frightened person.",
+         state={"set": ("talent-loose",)},
+         quest={"post": job(
+             "Three Employers, One Target",
+             "The dead man's family wants the talent dead. A wizard's "
+             "recruiter wants it delivered alive to a teacher. The village "
+             "that raised it wants it gone quietly. All three are paying, "
+             "and the talent is asleep in a barn nine miles out.",
+             pool=_CASTERS, sites=("the burnt barn", "the hedge road"),
+             giver="the wizard's recruiter",
+             epilogue="The talent is out of the county alive and under "
+                      "somebody's roof. Which of the three employers is "
+                      "satisfied depends on who is asked.",
+             failure_epilogue="The talent got away again, further out and "
+                              "worse frightened. The next market it walks "
+                              "into will hear about it."),
+             "pay": 1.30}),
+    card("magic/the-hunt", "The hunt is posted", ANY_LAND,
+         states=("talent-loose",), days=(12, 20),
+         news="Witchhunting is a trade, not a holy office, and one is "
+              "posted: a named target, a price by the head, and specialists "
+              "on the road for it. Nobody here objects to casting. They "
+              "object to what this one did.",
+         state={"clear": ("talent-loose",), "while": ("hunt-up",)},
+         quest={"post": job(
+             "Paid By The Head",
+             "The posted price is real and so are the men already out "
+             "collecting it. The contract does not say alive, and the "
+             "specialists who took it first are not the sort to share a "
+             "bounty.",
+             pool=_CASTERS, sites=("the hunt's ground", "the hunters' inn"),
+             giver="the hunt's paymaster",
+             epilogue="The hunt is closed and paid. The paymaster writes "
+                      "the name off a list he does not show anybody.",
+             failure_epilogue="The hunt is still open and the price has "
+                              "gone up. So has the number of people on "
+                              "the road collecting it."),
+             "pay": 1.25}),
+    card("magic/recruiters", "The scouts are out",
+         ("firascir", "mortellaria", "ensimaa", "dvarvengrond", "gibili"),
+         chance=0.25, days=(12, 20),
+         news="Talent born poor stays untrained, so the wizard "
+              "organizations look for it: the scout at the fair, the "
+              "family paid off, the tested orphan. Two of the scouts are "
+              "working the villages this month and one of them is not "
+              "asking first.",
+         state={"while": ("recruiters-out",)},
+         quest={"post": job(
+             "The Tested Orphan",
+             "A scout wants an escort round nine villages and a testing "
+             "table carried. A family four villages back wants the child "
+             "the last round took brought home. The scout's paperwork is "
+             "in order, which is not the same thing.",
+             pool=_TOUGHS, sites=("the village round", "the scout's wagon"),
+             giver="the wizards' scout",
+             epilogue="The round is finished and two children are signed "
+                      "for. The families were paid, and one of them "
+                      "spent it the same day.",
+             failure_epilogue="The round broke up in the fourth village. "
+                              "The scout is writing a report, and the "
+                              "villages are hiding their bright ones."),
+             "pay": 1.15}),
+    card("magic/reagent-road", "The reagent road",
+         ("ensimaa", "dvarvengrond", "mortellaria", "gibili"),
+         chance=0.30, days=(12, 20),
+         news="Great workings want rare and expensive reagents: crystal, "
+              "specific animal parts, the wool of golden sheep. A "
+              "consignment is moving, and compact high-value goods with "
+              "nervous provenance move the same way everywhere.",
+         state={"while": ("reagents-moving",)},
+         quest={"post": job(
+             "Four Wagons And One Wizard",
+             "The consignment goes through in four wagons with one wizard "
+             "riding it, and he will not say what is in the third one. "
+             "Everybody on the road already knows the route.",
+             pool=_TOUGHS, sites=("the reagent road", "the bonded yard"),
+             giver="the consignment's factor",
+             epilogue="Four wagons in, four wagons out, and the factor "
+                      "pays without opening the third one.",
+             failure_epilogue="The third wagon is gone. The factor has "
+                              "posted its contents as a description "
+                              "rather than a list, which tells the "
+                              "fences enough."),
+             "pay": 1.25}),
+
+    # -- Mortellaria: THE ACADEMY ----------------------------------------- #
+    card("mortellaria/basement-children", "The basement children",
+         "mortellaria", tension=("academy-vs-tribunal",),
+         faction_edge=("mortellaria/tribunal-watches-academy",),
+         days=(15, 25),
+         news="The academy's scouts run the recruiting at scale, and the "
+              "children taken young for the gift are raised in the "
+              "basement by an institution that wanted the talent, not the "
+              "child. Somebody has finally asked for a count of them.",
+         state={"while": ("basement-open",)},
+         quest={"post": job(
+             "A Count Of The Basement",
+             "The tribunal's inspector wants every child in the basement "
+             "listed by name. The faculty wants the list to come out even. "
+             "Three of the children have worked out what a list is for.",
+             pool=_CASTERS, sites=("the academy basement",),
+             giver="the tribunal's inspector",
+             epilogue="The list is written and two names on it did not "
+                      "match anything the faculty had. Both children are "
+                      "in the inspector's keeping.",
+             failure_epilogue="The count came out even, which everybody "
+                              "involved knows is the wrong answer. The "
+                              "basement door has a new lock."),
+             "pay": 1.20, "slots": -1}),
+    # The necromancy CHAIN: the affinity keeps surfacing here, wins some
+    # acceptance, and the next scandal buries it again.
+    card("mortellaria/necromancy-open", "Necromancy is tolerated again",
+         "mortellaria", tension=("academy-vs-tribunal",),
+         without=("necromancy-open", "necromancy-purged"), days=None,
+         news="The death-face rite makes it locally thinkable, and the "
+              "academy has a chair in it again this decade. The northern "
+              "rite is already citing the appointment as proof of the "
+              "creeping heresy.",
+         state={"set": ("necromancy-open",)},
+         quest={"post": job(
+             "The New Chair",
+             "The new professor's demonstration is public, ticketed and "
+             "in three days. The tribunal has bought forty of the "
+             "tickets. The faculty wants the hall held and the "
+             "demonstration finished.",
+             pool=_UNDEAD, sites=("the demonstration hall",),
+             giver="the academy's warden",
+             epilogue="The demonstration finished and was written up. The "
+                      "tribunal's forty took notes and left early.",
+             failure_epilogue="The hall went over in the second hour and "
+                              "the demonstration is what everyone in the "
+                              "city saw. The chair will not last the "
+                              "year."),
+             "pay": 1.20}),
+    card("mortellaria/necromancy-purge", "The academy burns its chair",
+         "mortellaria", states=("necromancy-open",), days=(40, 60),
+         news="The scandal came, as it always does. The chair is abolished, "
+              "the notes are burning in the quadrangle, and everyone who "
+              "held a place under it has been examined and sent away.",
+         state={"clear": ("necromancy-open",),
+                "while": ("necromancy-purged",)},
+         quest={"post": job(
+             "What The Fire Missed",
+             "Three of the examined men left with their working notes and "
+             "one of them left with something else. The warden wants all "
+             "of it back inside the walls before the tribunal finds it "
+             "outside them.",
+             pool=_CASTERS, sites=("the burnt quadrangle", "the coast road"),
+             giver="the academy's warden",
+             epilogue="The notes are back in the academy and the tribunal "
+                      "was told nothing. Two of the three men are abroad "
+                      "and one is not accounted for.",
+             failure_epilogue="The notes went south with the men who wrote "
+                              "them, and there is a market for them "
+                              "there."),
+             "pay": 1.25}),
+
+    # -- Gibili: THE MASTERS FOR HIRE ------------------------------------- #
+    card("gibili/masters-hiring", "A master is buying errands", "gibili",
+         traits=("spell-friendly", "gifted", "trade-minded"), days=(12, 20),
+         hook=_MASTER_HOOK,
+         news="Any master here teaches, for a price or for quests run on "
+              "the master's errands. {master} is buying errands this month "
+              "and paying in lessons. Buyer beware, constitutionally.",
+         state={"while": ("masters-hiring",)},
+         quest={"post": job(
+             "Paid In Lessons",
+             "The master's errand is four days out and he has been "
+             "unusually exact about the route and unusually vague about "
+             "what is at the end of it. The last two men he sent have not "
+             "come back to complain.",
+             pool=_CASTERS, sites=("the master's errand",),
+             giver="the master for hire",
+             epilogue="The errand is done and the lessons are being given, "
+                      "which is more than the last two got.",
+             failure_epilogue="The errand failed and the master has "
+                              "stopped answering his door. The fee was "
+                              "paid in advance."),
+             "pay": 1.20}),
+    card("gibili/old-practice", "The old practice, recognized", "gibili",
+         states=("old-practice",), days=(12, 20),
+         news="The preindustrial past's spirit-practice -- spirits, minor "
+              "gods and demons dealt with by name -- survives at the "
+              "margins here, and somebody who runs it at full strength has "
+              "come over the border. The people who kept the residue "
+              "recognized him at once.",
+         quest={"post": job(
+             "Dealt With By Name",
+             "A district has been paying something by name for two "
+             "generations without knowing what the payments were for, and "
+             "the visitor from over the border has told them. They would "
+             "now like to stop paying.",
+             pool=_CASTERS, sites=("the margin district", "the old shrine"),
+             giver="the district's oldest tenant",
+             epilogue="The payments have stopped and nothing has come to "
+                      "collect yet. The visitor left the same night and "
+                      "would not say why.",
+             failure_epilogue="The district is paying double now, and "
+                              "three streets have started paying who "
+                              "never used to."),
+             "pay": 1.25}),
+    card("gibili/the-exiles", "The academy's exiles", "gibili",
+         states=("academy-exiles",), days=(12, 20),
+         news="The seance parlors' moonlighting necromancers trained "
+              "somewhere, and it is usually the southern academy. This "
+              "year's examined men have arrived, and they are practising "
+              "in fields outside town because the rent is cheaper.",
+         quest={"post": job(
+             "Practising In A Field",
+             "A farmer wants the men out of his back field and the field "
+             "put back the way it was. He is very clear that he does not "
+             "care in which order.",
+             pool=_UNDEAD, sites=("the back field",),
+             giver="the farmer",
+             epilogue="The field is empty and mostly level. The men have "
+                      "moved to a district where nobody owns anything.",
+             failure_epilogue="The men are still in the field and the "
+                              "farmer has stopped going out past the "
+                              "gate."),
+             "pay": 1.20}),
+
+    # -- Tergal: THE PRACTICE (religion owns the rest) --------------------- #
+    # The dedupe doctrine: the call, the white and black shamans, the
+    # weather-worker and taboo law are all in the religion packet. What
+    # magic adds here is that a shaman is ARMAMENT, and that display magic
+    # is prestige -- and prestige is power on this grass.
+    card("tergal/flicker-dance", "The flicker dance", "tergal",
+         tension=("clan-vs-clan", "chiefs-vs-mothers"),
+         wealth=("normal", "prosperous"), days=(8, 14),
+         news="Where there is a ritual there is an art: the fire dance, and "
+              "the flicker dance where a dancer blinks out of sight and "
+              "back across the circle. Two camps have brought their best "
+              "to the same fire, and a warband counts its shaman in its "
+              "strength.",
+         quest={"post": job(
+             "Best At The Fire",
+             "The rival camp's dancer is being paid to fail, and the man "
+             "paying has hired the road between here and the fire. The "
+             "chief wants his own dancer at the circle on time and "
+             "unbroken.",
+             pool=_TOUGHS, sites=("the long road", "the fire circle"),
+             giver="the chief's herald",
+             epilogue="The dancer was at the fire and the camp has the "
+                      "prestige, which here is the same word as power.",
+             failure_epilogue="The dancer never reached the circle. The "
+                              "other camp danced alone, and its chief has "
+                              "been given three horses he did not ask "
+                              "for."),
+             "slots": 1, "pay": 1.15}),
+
+    # -- Firascir: THE TOWERS --------------------------------------------- #
+    card("firascir/tower-door", "The tower door opens", "firascir",
+         traits=("spell-friendly", "gifted", "brilliant"), days=(15, 25),
+         news="Barely an organization: grumpy old wizards in scattered "
+              "towers, hoarding books and meeting mostly to feud. One of "
+              "them has let it be known that gold might open his door, and "
+              "that volunteering as the subject of an experiment opens it "
+              "faster.",
+         state={"while": ("tower-open",)},
+         quest={"post": job(
+             "The Subject Of The Experiment",
+             "The tower wizard needs three things fetched and one thing "
+             "held still, and is prepared to teach whoever survives the "
+             "fourth part. He has been asked what happened to the last "
+             "apprentice and has not answered.",
+             pool=_CASTERS, sites=("the tower stair", "the wizard's cellar"),
+             giver="the tower wizard",
+             epilogue="The experiment finished and the wizard is teaching. "
+                      "The apprenticeship ends at his whim, which he "
+                      "mentions daily.",
+             failure_epilogue="The experiment did not finish. The tower "
+                              "door is shut again and the wizard is "
+                              "advertising for a new subject."),
+             "pay": 1.30}),
+
+    # -- Ensimaa: THE INTEGRATED ART -------------------------------------- #
+    card("ensimaa/teaching-outsider", "The schools weigh an outsider",
+         "ensimaa", tension=("school-vs-school",),
+         wealth=("normal", "prosperous"), days=(15, 25),
+         news="A visitor sees more working magic in a market morning here "
+              "than in a Firascir year, and the best of it sits where "
+              "every other advantage sits: at the top, with the ageless. "
+              "A school is weighing an outsider's application anyway.",
+         state={"while": ("teaching-open",)},
+         quest={"post": job(
+             "The Ladder Of Sponsors",
+             "Teaching an outsider is priced twice: in fees, and in "
+             "standing. The applicant's sponsor needs three errands run "
+             "before the interview, and one of them is an apology to "
+             "somebody who has been owed it for two centuries.",
+             pool=_ELF_TOUGHS, sites=("the white court", "the old grievance"),
+             giver="the applicant's sponsor",
+             epilogue="The interview happened and the answer was yes, on "
+                      "terms. What is taught is real; how long the ladder "
+                      "runs still depends on who is asking.",
+             failure_epilogue="The interview was postponed indefinitely, "
+                              "which here means exactly what it says."),
+             "pay": 1.20}),
+
+    # -- Dvarvengrond: THE PRACTICAL ARTS --------------------------------- #
+    card("dvarvengrond/bad-runework", "The runework fails inspection",
+         "dvarvengrond", tension=("deep-vs-surface",), days=(12, 20),
+         news="Magic is a trade skill here -- artificing, alchemy, healing, "
+              "worked in workshops and inspected like smithing. A whole "
+              "season's runework has failed inspection, and it was sold "
+              "abroad six months ago.",
+         menu={"steel": 1.20},
+         quest={"post": job(
+             "Six Months Of It, Abroad",
+             "The guild wants the bad work bought back before anybody "
+             "above ground works out whose mark is on it. The envoys have "
+             "the list of buyers and no authority anywhere.",
+             pool=_DWARF_TOUGHS, sites=("the surface road", "the buyer's "
+                                        "yard"),
+             giver="the guild's inspector",
+             epilogue="Most of the season is back in the mountain and "
+                      "quietly melted. The guild's mark is intact and the "
+                      "inspector has aged.",
+             failure_epilogue="The work stayed sold. Two of it have "
+                              "already failed in use, and the mark on "
+                              "them is being read out in a foreign "
+                              "court."),
+             "pay": 1.20}),
+)
+
+CARDS = CARDS + POLITICS_CARDS + RELIGION_CARDS + MAGIC_CARDS
 CARDS_BY_KEY = {c["key"]: c for c in CARDS}
 
 GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
@@ -3540,7 +4938,398 @@ RELATIONS = (
              because="the marriage pact between the crowns"),
     relation("firascir", "mortellaria", "union", when=("personal-union",),
              then="union-crown", because="the union of the two crowns"),
+    # -- religion and magic (2026-08-11) ---------------------------------- #
+    # THE SCHISM CLOCK: one church, two rites, and an argument that runs in
+    # BOTH directions. Each land derives the same word off the other, and
+    # the synod card sits in both decks reading it -- which is what makes a
+    # quarrel between two lands a thing the party can be hired into.
+    relation("mortellaria", "firascir", "rite",
+             when=("necromancy-open", "dead-abroad", "carnival-on"),
+             then="schism-near", because="the southern rite's death-face"),
+    relation("firascir", "mortellaria", "rite",
+             when=("interdict", "relic-hunt", "bones-tested"),
+             then="schism-near",
+             because="the northern rite's accusations"),
+    # THE ONES WHO GO TO LEARN ENDINGS: the young elves travel to the one
+    # place where death has a face, and the edge fires at HOME, where the
+    # elders are.
+    relation("mortellaria", "ensimaa", "pilgrims",
+             when=("dead-abroad", "carnival-on"), then="young-abroad",
+             because="the southern death feast"),
+    # THE FRANCHISE MISSION: Gibili exports religion the way it exports
+    # guns, and the parish priest's reaction writes itself.
+    relation("gibili", "firascir", "mission",
+             when=("revival-war", "pyramid-on"), then="franchise-here",
+             because="the Gibili ladder faiths"),
+    # THE OLD PRACTICE: spirits, minor gods and demons dealt with by name --
+    # shared inheritance run at full strength in Tergal and surviving at the
+    # margins in Gibili, where practitioners recognize each other.
+    relation("tergal", "gibili", "practice", when=("black-tent",),
+             then="old-practice", because="the old practice across the "
+                                          "border"),
+    # ...and where the parlors' real necromancers were trained: the purge
+    # in the southern academy is an arrival in the goblin districts.
+    relation("mortellaria", "gibili", "exiles", when=("necromancy-purged",),
+             then="academy-exiles", because="the academy's purge"),
 )
+
+
+# --------------------------------------------------------------------------- #
+# The FACTS (2026-08-11): the standing colour, for the DM and nobody else
+# --------------------------------------------------------------------------- #
+# The engine never reads one of these. They cost nothing at runtime, they ride
+# no save, and their whole surface is the `lore` page. What they buy is that
+# the DM can answer a question about a land's worship or its magic in one
+# look, in the same register as everything else, instead of improvising a
+# religion at the table and contradicting it three sessions later.
+#
+# The characteristic criterion applies here exactly as it does to a card:
+# every fact below stands behind a card in this file, prices an option at the
+# bottom of it, or names something the player can already do. The unbacked
+# three-trait sketch is what the criterion cut, and nothing here is one.
+
+FACTS = (
+    # -- Firascir: THE PARISH IS THE SECOND STATE ------------------------- #
+    fact("firascir", "parish-grid", "THE PARISH GRID",
+         "Every village its priest, every life its rites, baptism to "
+         "burial. The manor reaches the body; the church reaches "
+         "everything else, and it is the one institution that touches "
+         "every hearth in the land."),
+    fact("firascir", "calendar", "THE CALENDAR RULES WORK",
+         "Feast days claim a third of the year and working them is an "
+         "offence -- which is the real medieval count, and why a ripe "
+         "harvest under a week of them is a card and not a joke."),
+    fact("firascir", "pilgrim-roads", "THE PILGRIM ROADS",
+         "Shrine circuits, badges and the inns that live off them: "
+         "standing escort work, a coin inflow nobody counted, and the "
+         "reason two towns will steal a saint off each other."),
+    fact("firascir", "towers", "THE TOWERS",
+         "Firascir's magic is grumpy old wizards in scattered towers, "
+         "hoarding books and meeting mostly to feud. No formal teaching "
+         "track exists, which makes this the wild talent's home ground "
+         "and the fraud witch-finder's best market."),
+    fact("firascir", "no-inquisition", "CONDUCT, NOT CREED",
+         "There is no holy office against casting as such, here or "
+         "anywhere. What gets a caster hunted is what they DID: a "
+         "murderer's treatment with a specialist's surcharge."),
+
+    # -- Mortellaria: WHICH FACE RULES ------------------------------------ #
+    fact("mortellaria", "two-faces", "THE PENDULUM CALENDAR",
+         "The sun dies every evening and is born every dawn: Death and the "
+         "Feast are the god's two faces. The year swings between the "
+         "penitential season and carnival, both extremes are arguably "
+         "orthodox, and attendance at both is near universal."),
+    fact("mortellaria", "bone-architecture", "BONE ARCHITECTURE",
+         "Ossuary chapels walled in skulls, catacomb saints dressed in "
+         "jewels and gold wire. Memento mori is the national art style -- "
+         "and the crime layer's strangest marks."),
+    fact("mortellaria", "brotherhoods", "THE BURIAL BROTHERHOODS",
+         "Hooded lay confraternities bury the poor and the plague dead on "
+         "dues and donations. Anonymous by rule, ubiquitous by custom, and "
+         "the hood is perfect cover."),
+    fact("mortellaria", "academy", "THE ACADEMY",
+         "The archetypical wizarding university -- faculties, examinations, "
+         "robes -- with the bureaucracy and class discrimination of the "
+         "land it serves. The gifted commoner is admitted and made to feel "
+         "the admission daily. The crown is patron and leash at once."),
+    fact("mortellaria", "necromantic-affinity", "THE NECROMANTIC AFFINITY",
+         "Necromancy keeps surfacing here: controversial, periodically "
+         "half-accepted, and buried again by the next scandal. The "
+         "death-face rite makes it thinkable; the northern rite cites it "
+         "as proof of the creeping heresy."),
+
+    # -- Ensimaa: REVERENCE WITHOUT WORSHIP ------------------------------- #
+    fact("ensimaa", "unpetitioned-heaven", "THE UNPETITIONED HEAVEN",
+         "Elves acknowledge the powers humans call gods -- they are old "
+         "enough to have met a few -- and do not worship them. Reverence "
+         "goes to the whole of things, never to a person in it. Asking a "
+         "power for favours strikes them as a category error."),
+    fact("ensimaa", "star-courts", "THE STAR-COURTS",
+         "The land's only religious architecture: open-roofed white marble "
+         "courts, silent by custom. No clergy, no services, no images. An "
+         "elf sits with the night sky; that is the whole liturgy. "
+         "Visitors are admitted and the silence is kept without one "
+         "posted rule."),
+    fact("ensimaa", "the-schools", "THE SCHOOLS",
+         "A handful of contemplative disciplines older than human "
+         "civilization: teacher lineages, essays exchanged a decade apart. "
+         "From outside they are indistinguishable; inside, one word in one "
+         "old text is a gulf. It is also why the sealed realm never seized "
+         "a church -- there has never been one to seize."),
+    fact("ensimaa", "memory-afterlife", "MEMORY IS THE AFTERLIFE",
+         "The dead are not prayed to but remembered exactly: recited, name "
+         "by name, deed by deed, for millennia. Curating that record is "
+         "sacrilege in the one place elves keep something sacred."),
+    fact("ensimaa", "integrated-art", "THE INTEGRATED ART",
+         "Much more magic here, and no profession fencing it in: the "
+         "automation, the wards and the life-extending work are one "
+         "continuous fabric with everyday life. The frozen ladder applies "
+         "to the art too -- the best of it sits with the ageless."),
+
+    # -- Dvarvengrond: THE DEAD ARE THE CHURCH ---------------------------- #
+    fact("dvarvengrond", "ancestors", "THE DEAD ARE RIGHT HERE",
+         "The gods are far away. Formal worship is thin -- a hall "
+         "blessing, a seasonal sacrifice -- and the working faith is the "
+         "dead in the stone: consulted, fed, and still holding claims. The "
+         "deepest galleries are tombs and the tombs are the holiest ground "
+         "in the mountain."),
+    fact("dvarvengrond", "knockers", "THE KNOCKERS",
+         "The mine-spirits knock before a collapse and are paid for it: "
+         "the last bite of every meal, left at the working face. "
+         "Whistling underground is forbidden. Skeptics exist; they are "
+         "assigned the unluckiest shifts."),
+    fact("dvarvengrond", "oath-ring", "THE OATH RING",
+         "An oath sworn on the shrine's iron ring binds in LAW -- the "
+         "Grand Ledger's sacred sibling. Oath-breaking is the one crime "
+         "the priests own outright."),
+    fact("dvarvengrond", "grave-goods", "GRAVE GOODS",
+         "Wealth is buried with the dead: hoarding as statesmanship, "
+         "continued past death. The mountain's richest rooms are its "
+         "tombs, tomb-robbing is the deepest sacrilege on the books, and "
+         "the crime layer's most lucrative marks are its worst ideas."),
+    fact("dvarvengrond", "practical-arts", "THE PRACTICAL ARTS",
+         "Dwarven magic is artificing, alchemy and healing: a trade skill "
+         "inside the clan and guild structures, worked in workshops rather "
+         "than towers, priced like smithing and inspected like it too. "
+         "Runes in the work, not fire from the hand."),
+
+    # -- Tergal: THE PRACTICE, NOT THE CREED ------------------------------ #
+    fact("tergal", "the-call", "THE CALL",
+         "Shamans do not choose. A sickness or madness takes the marked "
+         "one and initiation under a living shaman is the only cure; "
+         "refusal ends in death or a broken mind. It is the wild talent, "
+         "in a culture that has a working answer to it."),
+    fact("tergal", "taboo-law", "TABOO LAW",
+         "Running water is never fouled, a tent's threshold is never "
+         "stepped on, the dead's names go unspoken. The party WILL trip "
+         "one, and the fine is paid in livestock like everything else."),
+    fact("tergal", "sky-burial", "THE SKY BURIAL",
+         "The dead go to the birds on exposure platforms. Burying a body "
+         "in earth MAKES a ghost, so a foreign graveyard is an "
+         "abomination the camps detour around -- and a native haunting "
+         "means somebody skipped the rites."),
+    fact("tergal", "white-and-black", "WHITE AND BLACK",
+         "The healer-shaman everyone loves, and the one who deals with "
+         "the dark spirits: needed, paid double, and made to camp outside "
+         "the ring of tents. When the herds sicken, everyone knows whose "
+         "tent to visit, after dark."),
+    fact("tergal", "owner-spirits", "OWNER-SPIRITS",
+         "Every spring, pass and mountain has one. Travellers add a stone "
+         "to the cairn at every pass, and an offended owner starts the "
+         "misfortune chain the shaman is then paid to end."),
+    fact("tergal", "magic-is-a-weapon", "MAGIC IS A WEAPON, AND A SHOW",
+         "A warband counts its shaman in its strength and chiefs court "
+         "spirit-workers the way settled lands court engineers. Where "
+         "there is a ritual there is an art: the fire dance, and the "
+         "flicker dance where a dancer blinks in and out of sight."),
+
+    # -- Gibili: SALVATION AS BUSINESS ------------------------------------ #
+    fact("gibili", "religion-market", "THE RELIGION MARKET",
+         "No church -- a market. Storefront temples, revival tents, rival "
+         "processions with brass bands, jingles and handbills. "
+         "Congregations are founded, merged, split and failed like firms, "
+         "weekly."),
+    fact("gibili", "ladder-faiths", "THE LADDER FAITHS",
+         "Enlightenment sold in ranked tiers, each rank's secrets priced "
+         "above the last and the top tiers' price never printed. "
+         "Recruiting five converts is itself a sacrament, and the "
+         "downline IS the congregation."),
+    fact("gibili", "burial-clubs", "THE BURIAL CLUBS",
+         "Weekly dues, a grand funeral guaranteed: plumes, band, the good "
+         "hearse. A goblin funeral is the one show everyone gets, which "
+         "is why an embezzled club fund is a street riot."),
+    fact("gibili", "charm-trade", "THE CHARM TRADE",
+         "Amulets, blessed machine-oil, curse insurance with printed "
+         "policies. Folk superstition as light industry, sold door to "
+         "door."),
+    fact("gibili", "masters-for-hire", "THE MASTERS FOR HIRE",
+         "Goblin magic is open and transactional: any master teaches, for "
+         "a price or for errands. Buyer beware, constitutionally -- the "
+         "useless book sold dear, the master who vanishes with the fee, "
+         "the master who now prefers his errand-runner disappeared."),
+    fact("gibili", "old-practice-residue", "THE OLD PRACTICE'S RESIDUE",
+         "The preindustrial goblin past's spirit-practice -- spirits, "
+         "minor gods and demons dealt with by name -- survives at the "
+         "margins. Tergal runs it at full strength; practitioners "
+         "recognize each other across the border."),
+)
+
+FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
+    polity: tuple(f for f in FACTS if f["land"] == polity)
+    for polity in LAND_SPECS
+}
+
+
+# --------------------------------------------------------------------------- #
+# The OPTIONS (2026-08-11): the sixth outlet's standing half
+# --------------------------------------------------------------------------- #
+# The priced menu is "standing player-initiated actions whose terms local
+# state sets" -- shops, services, the crime catalogue. The economy floor wired
+# the terms that move prices the game ALREADY charges; these are the things a
+# land sells that nothing else does, and the religion and magic packets are
+# where they finally arrive: the temple counter, the weather-worker's rain
+# stone, the charm trade, and the three lands where a wizard will teach.
+#
+# Every one of them does something the engine already knows how to do
+# (SERVICES: a blessing, a book, a day of weather). An option that needed new
+# machinery would be a feature request wearing a content hat, and the doctrine
+# is the same one the cards run under: what the packets did not design does
+# not get built.
+#
+# TEMPLE SERVICES, precisely (plan.md's ruling): healing, burial and blessing,
+# as plain priced entries and nothing else. HEALING is not an option at all --
+# the temple IS the healer in the Sun lands, so it is the `healer` term, which
+# the interdict already puts up 30% and the holy well already undercuts. The
+# sin/penance wiring stays deliberately undesigned.
+
+OPTIONS = (
+    # -- the Sun communion: one church, two rites, one counter ------------- #
+    option("sun/burial", "a burial by the rite", ("firascir", "mortellaria"),
+           does="bless", gold=25, term="healer", days=6, gives=1,
+           line="the ground, the rite and the name written in the book"),
+    option("sun/blessing", "a blessing at the dawn service",
+           ("firascir", "mortellaria"), does="bless", gold=18, term="healer",
+           days=4, gives=1,
+           line="the dawn service, a hand on the head, a good week asked "
+                "for out loud"),
+    option("firascir/pilgrim-badge", "a pilgrim badge", "firascir",
+           does="bless", gold=12, term="goods", days=8, gives=1,
+           line="the shrine circuit's badge -- every inn on the road knows "
+                "it and half of them charge less for it"),
+    option("mortellaria/brotherhood", "dues to a burial brotherhood",
+           "mortellaria", does="bless", gold=20, term="lodging", days=7,
+           gives=1,
+           line="a hooded burial brotherhood buries you whoever you turn "
+                "out to have been, and the hood is nobody's business"),
+    # -- Gibili: salvation as business, capability as commerce ------------- #
+    option("gibili/charm", "a charm and a printed policy", "gibili",
+           does="bless", gold=10, term="goods", days=3, gives=1,
+           line="amulet, blessed machine-oil, curse insurance -- the policy "
+                "is printed and the small print is enormous"),
+    option("gibili/burial-club", "a week's burial club dues", "gibili",
+           does="bless", gold=8, term="lodging", days=5, gives=1,
+           line="plumes, band, the good hearse, guaranteed; the fund is "
+                "held by a secretary nobody has met"),
+    option("gibili/masters-fee", "a master's teaching", "gibili",
+           does="book", gold=90, term="goods", states=("masters-hiring",),
+           line="any master teaches, for a price. Buyer beware, "
+                "constitutionally"),
+    # -- Dvarvengrond: the hall, and the dead in it ------------------------ #
+    option("dvarvengrond/hall-blessing", "a hall blessing", "dvarvengrond",
+           does="bless", gold=30, term="steel", days=6, gives=1,
+           line="the ancestors are consulted and fed, and the hall answers "
+                "for you while you are under its roof"),
+    # -- Tergal: the priced thumb on the weather's scale ------------------- #
+    option("tergal/rain-stone", "the rain stone", "tergal", does="sky",
+           gold=60, term="goods", word="rain", holds=2,
+           without=("rain-bought",),
+           line="a shaman who moves weather can be hired: two days of rain "
+                "over this land, dropped where you ask for it"),
+    # -- Mortellaria: the formal version of the whole business ------------- #
+    option("mortellaria/academy-fee", "a term at the academy", "mortellaria",
+           does="book", gold=130, term="goods", kinds=("capital",),
+           line="faculties, examinations, robes, and a commoner's fee "
+                "quoted twice as loudly as a noble's"),
+    # -- Firascir: no ladder, one door ------------------------------------- #
+    option("firascir/tower-fee", "the tower wizard's price", "firascir",
+           does="book", gold=150, term="goods", states=("tower-open",),
+           line="gold might open the door; volunteering as the subject of "
+                "the experiment opens it faster and costs less"),
+    # -- Ensimaa: priced twice, and the second price is not gold ----------- #
+    option("ensimaa/teaching", "a school's teaching", "ensimaa",
+           does="book", gold=220, term="goods", states=("teaching-open",),
+           line="high fees AND standing: the ladder of sponsors has already "
+                "been climbed by the time this price is quoted"),
+)
+
+OPTIONS_BY_KEY = {o["key"]: o for o in OPTIONS}
+
+
+def option_word(spec: dict) -> str:
+    """The word the player types: an option's key without its land prefix.
+    Unique across the whole catalogue (validated at import), so `service
+    burial` means one thing wherever the party is standing."""
+    return spec["key"].split("/", 1)[1]
+
+
+def option_named(word: str) -> dict | None:
+    """One option by the word the player typed, or by a unique prefix of
+    it -- the `case` command's courtesy, applied to the counter."""
+    word = word.lower().strip()
+    exact = [o for o in OPTIONS if option_word(o) == word]
+    if exact:
+        return exact[0]
+    hits = [o for o in OPTIONS if option_word(o).startswith(word)]
+    return hits[0] if len(hits) == 1 else None
+
+
+def facts_of(polity: str) -> tuple[dict, ...]:
+    """The standing colour of one land, for the DM. Static -- no world."""
+    return FACTS_BY_LAND[polity]
+
+
+def options_of(polity: str) -> list[dict]:
+    """Every option this land could ever sell, gates ignored."""
+    return [o for o in OPTIONS if polity in o["land"]]
+
+
+def option_open(world: dict, polity: str, spec: dict,
+                kind: str = "") -> bool:
+    """Is this option on sale here today? The gates are the card's own,
+    minus the ones a standing service has no use for: states held or
+    derived, states that shut it, the land's rolled tension, and the
+    settlement tier where the packet named one."""
+    held = set(state_ids(world, polity))
+    if any(s not in held for s in spec["states"]):
+        return False
+    if any(s in held for s in spec["without"]):
+        return False
+    if spec["tension"] and not any(t in tensions_of(world, polity)
+                                   for t in spec["tension"]):
+        return False
+    if spec["kinds"] and kind and kind not in spec["kinds"]:
+        return False
+    return True
+
+
+def options_here(world: dict, polity: str, kind: str = "") -> list[dict]:
+    """What this land is selling at this tier of settlement right now."""
+    return [o for o in options_of(polity)
+            if option_open(world, polity, o, kind)]
+
+
+def option_price(world: dict, polity: str, spec: dict) -> int:
+    """What the option costs here today: its catalog price, moved by the
+    land's own priced term. A service is charged exactly the way a bed or a
+    healer's day is -- the world state is on this counter too."""
+    return priced(world, polity, spec["term"], spec["gold"])
+
+
+def service_lines(world: dict, polity: str, kind: str = "") -> list[str]:
+    """The services counter, for the player: what is on sale, what it costs
+    here today, and the key to buy it with."""
+    open_now = options_here(world, polity, kind)
+    if not open_now:
+        return []
+    lines = [f"-- what {world['lands'][polity]['name']} sells --"]
+    for spec in open_now:
+        lines.append(f"  {spec['name']}: "
+                     f"{option_price(world, polity, spec)}g "
+                     f"(`service {option_word(spec)}`)")
+        lines.append(f"    {spec['line']}")
+    return lines
+
+
+def lore_lines(world: dict, polity: str) -> list[str]:
+    """The DM's page for one land: the standing facts behind its worship and
+    its magic, then whatever its counters are selling today. Free, and never
+    seen by the engine -- this is the one surface a FACT has."""
+    lines = [f"-- {world['lands'][polity]['name']}: what is believed here --"]
+    for entry in facts_of(polity):
+        lines.append(f"  {entry['title']}")
+        lines.append(f"    {entry['line']}")
+    lines.extend(service_lines(world, polity))
+    return lines
 
 
 # --------------------------------------------------------------------------- #
@@ -3649,6 +5438,8 @@ def open_world(world: dict) -> dict:
                                     # harvest failing, nor a drought a storm)
             "weather": "",          # today's sky, once a day has been rolled
             "weather_day": 0,
+            "bought_sky": None,     # ...unless a weather-worker was paid
+                                    # (the rain stone, an OPTION)
             "wet": 0,               # the wet and dry SPELLS running behind
             "dry": 0,               # it -- what the slow cards read
             "news": [],             # day-stamped lines, oldest first
@@ -4014,6 +5805,16 @@ def _roll_sky(world: dict, polity: str, day: int,
     live = layer.get("weather_live")
     forced = (CARDS_BY_KEY[live["key"]]["sky"]
               if live is not None and day < live["until"] else "")
+    # ...and the same trick, bought (2026-08-11): a hired weather-worker
+    # holds the sky the way a card that IS the weather does, and the day it
+    # runs out the land goes back to its own climate.
+    bought = layer.get("bought_sky")
+    if bought is not None:
+        if day < bought["until"]:
+            forced = forced or bought["word"]
+        else:
+            layer["bought_sky"] = None
+            drop_state(world, polity, "rain-bought", day)
     word = forced or roll_weather(world, polity, rng)
     if word in WET_WEATHER:
         layer["wet"], layer["dry"] = layer.get("wet", 0) + 1, 0
@@ -4301,6 +6102,37 @@ def local_encounter(world: dict, polity: str, where: str,
     return entry
 
 
+# --- the MARK outlet's corner: what the world puts in the crime tables ------ #
+# (2026-08-11, the religion & magic rung.) The priced menu covers what a state
+# does to a price and the encounter table covers who it puts on a road; this
+# covers what it makes ROBBABLE. It is the reagent trade's crime-layer wiring
+# and the two marks the religion packets pre-ordered, and it is the same
+# read-only shape: `crime.roll_mark` takes the extra faces and rolls them in
+# beside the band's own.
+
+def mark_roles(world: dict, polity: str, category: str) -> tuple[str, ...]:
+    """The extra marks this land's world state puts in a crime category's
+    table. Empty in a quiet land, which is the ordinary case."""
+    out: list[str] = []
+    for state_id in state_ids(world, polity):
+        out.extend(STATE_MARKS.get(state_id, {}).get(category, ()))
+    return tuple(out)
+
+
+# --- the OPTION outlet's one world-changing verb ---------------------------- #
+
+def hire_weather(world: dict, polity: str, day: int, word: str,
+                 holds: int) -> None:
+    """The rain stone, paid for: the land's day roll is held at `word` for
+    `holds` days. The weather system gains a priced thumb on the scale and
+    nothing else -- the sky is bought for a day or two, never a season, and
+    a bought sky runs the wet/dry spells exactly as a rolled one does (the
+    price rule: healing is retail, and so is weather)."""
+    layer = land_layer(world, polity)
+    layer["bought_sky"] = {"word": word, "until": day + holds}
+    set_state(world, polity, "rain-bought", day)
+
+
 # --------------------------------------------------------------------------- #
 # Readouts (the state diff)
 # --------------------------------------------------------------------------- #
@@ -4423,6 +6255,18 @@ def world_lines(world: dict) -> list[str]:
             lines.append(f"  road: {entry['as']} "
                          f"({entry.get('where', 'any')}, "
                          f"{int(entry.get('chance', ENCOUNTER_CHANCE) * 100)}%)")
+        # ...and the sixth outlet's standing half (2026-08-11): what this
+        # land's counters are selling, and what the world state has made
+        # robbable while nobody was looking.
+        selling = options_here(world, polity)
+        if selling:
+            lines.append("  sells: " + ", ".join(
+                f"{o['name']} {option_price(world, polity, o)}g"
+                for o in selling))
+        marks = sorted({cat for state_id in state_ids(world, polity)
+                        for cat in STATE_MARKS.get(state_id, {})})
+        if marks:
+            lines.append("  marks: " + ", ".join(marks))
         lines.append("  deck: "
                      + ", ".join(f"{track} {len(layer[DECK_KEY[track]])}"
                                  for track in TRACKS)
@@ -4716,6 +6560,84 @@ def _validate_politics_tables() -> None:
         line.format(aggressor="X", victim="Y")      # raises on a bad field
 
 
+def _validate_lore_tables() -> None:
+    """The religion & magic rung's two record kinds (2026-08-11): every fact
+    belongs to a land and says something, every option names a real term, a
+    real tier and real states, and no option is dead data -- an option whose
+    gate no card in the game can open would never appear at a counter."""
+    seen: set[str] = set()
+    for entry in FACTS:
+        if entry["land"] not in LAND_SPECS:
+            raise ValueError(f"fact {entry['key']}: no such land")
+        if entry["key"] in seen:
+            raise ValueError(f"duplicate fact: {entry['key']}")
+        seen.add(entry["key"])
+        if not entry["title"].isupper() or not entry["title"].isascii():
+            raise ValueError(f"fact {entry['key']}: the title is an ASCII "
+                             f"display header")
+        if not entry["line"].isascii():
+            raise ValueError(f"fact {entry['key']}: not ASCII")
+    for polity in LAND_SPECS:
+        if not FACTS_BY_LAND[polity]:
+            raise ValueError(f"{polity}: no standing facts")
+    settable = {s for c in CARDS for group in ("set", "while")
+                for s in (c["outlets"].get("state") or {}).get(group, ())}
+    seen, words = set(), set()
+    for spec in OPTIONS:
+        key = spec["key"]
+        if key in seen:
+            raise ValueError(f"duplicate option: {key}")
+        seen.add(key)
+        word = option_word(spec)
+        if word in words:      # the player types the bare word, so it has
+            raise ValueError(  # to be unique across the whole catalogue
+                f"{key}: two options answer to `service {word}`")
+        words.add(word)
+        for polity in spec["land"]:
+            if polity not in LAND_SPECS:
+                raise ValueError(f"{key}: no such land: {polity}")
+        if spec["term"] not in MENU_TERMS:
+            raise ValueError(f"{key}: not a priced term: {spec['term']}")
+        if spec["gold"] < 1:
+            raise ValueError(f"{key}: a service nobody charges for")
+        for state_id in spec["states"] + spec["without"]:
+            if state_id not in STATE_WORDS:
+                raise ValueError(f"{key}: no such state: {state_id}")
+        for state_id in spec["states"]:
+            if state_id not in settable:
+                raise ValueError(f"{key}: nothing in the game ever sets "
+                                 f"{state_id} -- the option is dead data")
+        for word in spec["tension"]:
+            if not any(word in {t["key"] for t in TENSIONS[p]}
+                       for p in spec["land"]):
+                raise ValueError(f"{key}: no land of its own has tension "
+                                 f"{word}")
+        for kind in spec["kinds"]:
+            if kind not in ("village", "town", "capital"):
+                raise ValueError(f"{key}: no such settlement tier: {kind}")
+        if spec["does"] == "bless" and not (spec["gives"] and spec["days"]):
+            raise ValueError(f"{key}: a blessing wants a value and a "
+                             f"cooldown")
+        if spec["does"] == "sky":
+            if spec["word"] not in WEATHER_WORDS:
+                raise ValueError(f"{key}: no such weather: {spec['word']}")
+            if spec["holds"] < 1:
+                raise ValueError(f"{key}: a bought sky holds for a day at "
+                                 f"least")
+        if not spec["line"].isascii() or not spec["name"].isascii():
+            raise ValueError(f"{key}: not ASCII")
+    for state_id, table in STATE_MARKS.items():
+        if state_id not in STATE_WORDS:
+            raise ValueError(f"STATE_MARKS: no such state: {state_id}")
+        for category, roles in table.items():
+            if not roles:
+                raise ValueError(f"STATE_MARKS/{state_id}: {category} adds "
+                                 f"no marks")
+            for role in roles:
+                if not role.isascii():
+                    raise ValueError(f"STATE_MARKS/{state_id}: not ASCII")
+
+
 def validate_content() -> None:
     keys = set()
     for drawn in CARDS:
@@ -4778,6 +6700,7 @@ def validate_content() -> None:
             raise ValueError(f"{key}: more than {len(OUTLETS)} outlets")
     _validate_menu_tables()
     _validate_politics_tables()
+    _validate_lore_tables()
     for state_id, entry in STATE_ENCOUNTERS.items():
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")
@@ -4835,6 +6758,10 @@ def main() -> None:
     for polity in world["lands"]:
         for line in take_news(world, polity, args.days):
             print(line)
+    print("")
+    print("-- what the DM reads behind one land --")
+    for line in lore_lines(world, next(iter(world["lands"]))):
+        print(line)
     print("")
     print("-- a night under the storm --")
     found = cabin(random.Random(args.seed))

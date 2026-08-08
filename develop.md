@@ -177,14 +177,15 @@ a pointer: what the file is, how it's run, where its docs are.
 - `plan.md` — **the roadmap: planned features, parked ideas and open
   questions ONLY**, in build order (next up: the world & NPC simulation
   thread — the 2026-08-05 framing lives there, and its remaining order
-  is a ladder implementing what is left of worldsim.md —
-  religion & magic is the one rung left; the settlement trim and
-  the world frame shipped 2026-08-07, the weather 2026-08-08, the
-  economy floor 2026-08-09 and politics & the ruler roll 2026-08-10 —
+  is a ladder implementing what is left of worldsim.md — the ladder is
+  EMPTY since 2026-08-11: the settlement trim and the world frame shipped
+  2026-08-07, the weather 2026-08-08, the economy floor 2026-08-09,
+  politics & the ruler 2026-08-10 and religion & magic 2026-08-11 —
   every settleable call settled
   up front in its
   rulings block; jerkify, bullies, monsters & fauna, and science &
-  technology postponed past the build). The ladder RENUMBERS itself as
+  technology postponed past the build, and the build now WANTS PLAYING
+  before anything else is added to it). The ladder RENUMBERS itself as
   rungs ship: name a session, never its number. **Nothing implemented lives
   there**: when a feature ships, delete its entry and write the session
   up in designlog.md — see "Where a finished feature is written up"
@@ -251,8 +252,13 @@ a pointer: what the file is, how it's run, where its docs are.
   CUT from this file (the cuts so far: the need-to-exist settlement
   trim and the record framework the world frame formalized, both
   2026-08-07; the weather sketch 2026-08-08; the six econ packets'
-  cards and edges 2026-08-09; and THE RULER CHARACTER with THE LAND
-  PACKETS — POLITICS, 2026-08-10).
+  cards and edges 2026-08-09; THE RULER CHARACTER with THE LAND
+  PACKETS — POLITICS, 2026-08-10; and THE LAND PACKETS — RELIGION and
+  — MAGIC entire, 2026-08-11). What is left in it after the last rung
+  is only what NO session was asked to build: the four econ options
+  wanting a counter that does not exist (paid mercenaries, banking, the
+  two drug markets, smuggling), the per-land and per-race RULER MODIFIER
+  COLUMNS with the tribal rewording, and the PC's own blank sheet.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
   derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
   materializes the opening settlements (three a land since the 2026-08-07
@@ -369,6 +375,27 @@ a pointer: what the file is, how it's run, where its docs are.
   land shares), 7 more relation edges including the four DIPLOMATIC
   INSTRUMENTS, and 34 faction edges. The sims and benches never
   import it; every knob is hand-set.
+  **The religion & magic rung** (2026-08-11, rules.md's Religion & Magic
+  add-on — the build's LAST) finally built worldsim.md's other two record
+  kinds and authored the two remaining packets against them. The kinds:
+  `fact()` / `FACTS` / `FACTS_BY_LAND` / `facts_of` (DM-only standing
+  colour — the engine never reads one, and `lore_lines` is its whole
+  surface) and `option()` / `OPTIONS` / `OPTIONS_BY_KEY` (a STANDING priced
+  service: a catalog price times a `MENU_TERMS` term, gated like a card, and
+  doing exactly one of `SERVICES` — `bless` / `book` / `sky`), with
+  `option_word` / `option_named` / `option_open` / `options_here` /
+  `option_price` / `service_lines` as the readers and `hire_weather` as the
+  one verb that writes (the rain stone, which parks a `bought_sky` on the
+  layer that `_roll_sky` honors exactly like a card's own `sky`). Third new
+  table: `STATE_MARKS` / `mark_roles` — what a state makes ROBBABLE, the
+  reagent trade's crime-layer wiring, read through `crime.roll_mark`'s new
+  `roles=` argument. Two named foe pools and no new creature row (`_UNDEAD`,
+  `_CASTERS`). The content bill: 34 `RELIGION_CARDS` and 14 `MAGIC_CARDS`
+  (five-plus worship cards a land, the Sun communion's synod sitting in TWO
+  lands' decks, and the talent/hunt chain that runs in every land), 32
+  FACTS, 12 OPTIONS, 8 new religion and magic TENSIONS with 13 factions and
+  16 faction edges under them, and 6 new relation edges (the two-way schism
+  clock among them). The sims and benches never import it; every knob is hand-set.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -443,6 +470,28 @@ a pointer: what the file is, how it's run, where its docs are.
   and a pre-politics save saying nothing); and the surfaces (the map page's
   constitution, the DM inventory's whole polity, the town saying the
   reputation and never the heart, and the board printing it under the face).
+  *Religion & magic* (2026-08-11, the last rung): the two record kinds (a
+  fact that nothing in the machinery can look up, a land's facts existing at
+  all, the closed verb set, a service priced by the land's own term rather
+  than by itself, the unique word the player types, and no option being dead
+  data); the counter (the list being THIS land's, a blessing paid for and
+  landing on the party, its cooldown refusing without charging, a shut
+  option refused and then opened by the state it wants, another land's
+  service declined, a teaching that IS the spellbook gate at the land's own
+  price with the three organizations in the right order, the rain stone
+  buying the sky and giving it back, a bought sky still running the wet
+  spell, and the counter reaching `prices` and `lore`); the crime wiring (a
+  quiet land adding nothing, every mark naming a real category, the reagent
+  road reaching the heist and the smuggler and not the mugging, the extra
+  faces competing with the band's own rather than replacing them, and a
+  state mark reaching a real casing report); and the authored content (five
+  worship cards a land, magic reaching every land, almost nothing ungated
+  and what is left paying for it in `chance`, the MARGIN doctrine as data —
+  no magic card moves a band — CONDUCT-NOT-CREED as data, the talent chain
+  running in every land, the talent and the seeress kept, the schism clock
+  running both ways, the four religion edges with their reader cards, the
+  temple selling burial and blessing and no penance, the pact staying out of
+  the lore entirely, and no card in the rung being dead data).
   `python -m unittest -v test_worldsim.py`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
@@ -1025,6 +1074,8 @@ python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 python -m unittest -v test_conquest.py # the conquest domain layer contract
 python -m unittest -v test_pact.py    # hell's assignment ladder contract
+python session.py lore [LAND]         # the DM's facts page behind a land
+python session.py service [WORD ...]  # the land's own priced counter
 python crime.py --seed 1              # the crime catalogue + local marks
 python -m unittest -v test_crime.py   # the crime layer contract
 python -m unittest -v test_history.py # the campaign record + the sin rename
@@ -1509,6 +1560,21 @@ mechanic *does* and *why* is rules.md's job.
   land's news. `session.py`: the notables block
   prints `worldsim.notable_lines` under the ruler's face. `test_worldsim.py`
   is the contract.
+- **Religion & magic** (2026-08-11, the worldsim ladder's LAST content rung
+  — rules.md's Religion & Magic add-on) — `worldsim.py`: the two remaining
+  record kinds (`fact` / `option`), their tables and readers, `STATE_MARKS`
+  / `mark_roles`, `hire_weather` + the `bought_sky` branch in `_roll_sky`,
+  the two new foe pools, and the whole authored bill (see Files); the knobs
+  are each option's `gold` / `term` / `days` / `gives` / `holds`, each new
+  card's own `chance`, and the STATE_MENU / STATE_ENCOUNTERS rows the rung
+  added. `crime.py`: `roll_mark(..., roles=())` — the ONLY change, and it is
+  a default-empty argument, so a call that does not pass it rolls exactly
+  what it rolled before. `session.py`: `cmd_service` + `_pay_service` (the
+  counter and the three verbs), `cmd_lore` (the DM's facts page),
+  `local_mark` passing `worldsim.mark_roles` into the crime roll, the
+  services block at the foot of `cmd_prices`, and a `services` cooldown dict
+  on the save (`{option key: the day it was last bought}`).
+  `test_worldsim.py` is the contract.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
@@ -2101,6 +2167,26 @@ above.**
   is the only knob the sheet's design admits. **The dial if politics
   crowds the economy off a land's board is `TENSION_ROLLS`**, which is
   the size of the gate rather than a chance anywhere.
+- **Religion & magic rides the same one field, and adds one PLAYER-side
+  gold sink (2026-08-11).** Its cards are ordinary cards, so bench-visibly
+  they do what an econ card does and nothing more: `slots` / `reprice` on a
+  board while one stands. Two things are genuinely new and neither is in a
+  sim's path. The OPTIONS are a **player-initiated** purchase, so no bench
+  ever buys one — the career sim does not shop, and `crime.roll_mark`'s
+  `roles=` argument defaults to empty, so a call that does not pass it rolls
+  byte-identically. A 12-career `bench_quests --part career` spot check
+  after the rung read in family with the same run before it (L5 75 vs 83,
+  L8 58 vs 58, L11 25 vs 33, median death 8 vs 10 — n=12 is noise at that
+  width, and nothing was retuned). Its knobs are hand-set and
+  SIM-UNVERIFIED: each option's `gold` (8–220) / `term` / `days` cooldown /
+  `gives`, the rain stone's `holds` 2, the new cards' own `chance` (the
+  elven funeral 0.12 and the wild talent 0.10 are the rare end), and the
+  STATE_MENU rows the rung added. **The dial if the counter reads like a
+  satisfaction faucet is the blessing `days` cooldowns** — 3 to 8 days, and
+  the whole effect is one point (two for a religious companion), which is a
+  tavern night's worth for a tavern night's price. **The dial if a land's
+  worship never comes up at the table is its religion TENSION**, which
+  competes with the land's other three or four for one roll.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
   xp gold and similar should be abandoned for now — a good variety of
