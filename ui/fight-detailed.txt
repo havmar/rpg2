@@ -1,46 +1,57 @@
-=== Wolves Attack -- the high pasture (L1), room 1/1: tracks ===
-  2x Wolf -- fangs
+=== On the road to Portomera (a level-2 encounter) ===
+  Wolf 1 -- fangs
   DEX 4  STR 2  STA 8  HP 4/4
+  breaks when beaten
+  Hexer 2 -- dagger
+  DEX 4  STR 2  STA 6  HP 10/10
+  takes spoils, leaves the fallen,
+  caster: ice 2; 8 Power
   Round 1:
-    Urzag strikes before the lines meet -- First Blood! Wolf 1 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Urzag, Maud, Wolf 1, Wolf 2 close the distance -- the lines meet!
-    stamina: Urzag 8/8, Maud 8/8 | Wolf 1 8/8, Wolf 2 8/8
-  Round 2:
-    Urzag outmaneuvers Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
-        pressure: Urzag: 10 (2d6=5, +5 DEX) vs Wolf 1: 6 (2d6=3, +4 DEX, -1 wounds)
-        severity: 7 = margin 4 +6 STR -1 dagger -2 soak -> crippling blow (-6 HP)
+        casting: 14 (2d6=7, +6 MIND, +1 rank) vs DC 9 (7 +2x rank 1) -> success
+    *** Pox is simply NOT THERE -- unseen until their strike lands. ***
+    Myev, Wolf 1 close the distance (the gap narrows to 1).
+    Pox strikes out of nowhere -- Wolf 1 never sees it coming!
+    Pox's fire bolt overwhelms Wolf 1 -- a crippling blow! [Wolf 1: 0/4 HP, -4 to rolls]
+        pressure: ambush -- no defense, margin 6
+        severity: 12 = margin 6 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    (the bright staff pays the kill: +2g owed)
     *** Wolf 1 is SLAIN. ***
-    (Wolf 1 strikes even as they fall)
-    Wolf 1 attacks Urzag -- parried.
-        pressure: Wolf 1: 12 (2d6=9, +4 DEX, -1 wounds) vs Urzag: 13 (2d6=8, +5 DEX)
-    Maud attacks Wolf 2 -- parried.
-        pressure: Maud: 9 (2d6=5, +4 DEX) vs Wolf 2: 13 (2d6=9, +4 DEX)
-    Wolf 2 edges past Urzag, but the blow glances off -- deflected.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Urzag: 9 (2d6=4, +5 DEX)
-        severity: -3 = margin 1 +2 STR -6 soak -> deflected
-    stamina: Urzag 7/8, Maud 7/8 | Wolf 2 7/8
+    Hexer 2's ice bolt edges past Myev, but the ice bolt glances off -- deflected.
+        pressure: Hexer 2: 19 (2d6=9, +8 AIM, +2 proficiency) vs Myev: 17 (2d6=9, +5 DEX, +4 training, -1 zweihander) [ice bolt: -1 Power, 7 left]
+        severity: 0 = margin 2 +2 ice bolt +2 spell rank -6 soak -> deflected
+    stamina: Pox 12/13, Myev 15/15 | Hexer 2 5/6
+  Round 2:
+    Myev, Pox close the distance (the gap narrows to 1).
+    Hexer 2 sends ice bolt at Pox -- warded off.
+        pressure: Hexer 2: 19 (2d6=9, +8 AIM, +2 proficiency) vs Pox: 20 (2d6=10, +5 DEX, +4 training, +1 bright staff) [ice bolt: -1 Power, 6 left]
+    stamina: Pox 12/13, Myev 15/15 | Hexer 2 4/6
   Round 3:
-    Urzag attacks Wolf 2 -- parried.
-        pressure: Urzag: 7 (2d6=2, +5 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-    Maud outmaneuvers Wolf 2 -- a grievous injury! [Wolf 2: 0/4 HP, -4 to rolls]
-        pressure: Maud: 14 (2d6=10, +4 DEX) vs Wolf 2: 11 (2d6=7, +4 DEX)
-        severity: 5 = margin 3 +5 STR -1 club -2 soak -> grievous (-4 HP)
-    *** Wolf 2 falls. ***
-    (Wolf 2 strikes even as they fall)
-    Wolf 2 attacks Maud -- parried.
-        pressure: Wolf 2: 10 (2d6=6, +4 DEX) vs Maud: 11 (2d6=7, +4 DEX)
-    stamina: Urzag 6/8, Maud 6/8
+    Myev close the distance -- the lines meet!
+    Pox's fire bolt overwhelms Hexer 2 -- a crippling blow! [Hexer 2: 4/10 HP, -3 to rolls]
+        pressure: Pox: 25 (2d6=12, +6 AIM, +4 training, +3 proficiency) vs Hexer 2: 11 (2d6=7, +4 DEX) [fire bolt: -1 Power, 10 left]
+        severity: 20 = margin 14 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    !! Hexer 2 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Hexer 2 sends ice bolt at Pox -- warded off.
+        pressure: Hexer 2: 13 (2d6=8, +8 AIM, +2 proficiency, -3 wounds, -2 winded) vs Pox: 16 (2d6=6, +5 DEX, +4 training, +1 bright staff) [ice bolt: -1 Power, 5 left]
+    stamina: Pox 11/13, Myev 15/15 | Hexer 2 3/6*   (* = Winded)
+    The beaten foe line breaks and runs!
+    Pox's fire bolt overwhelms Hexer 2 -- a grievous injury! [Hexer 2: 0/10 HP, -5 to rolls]
+        pressure: Pox: 20 (2d6=7, +6 AIM, +4 training, +3 proficiency) vs Hexer 2: 4 (2d6=7, +4 DEX, -3 wounds, -2 winded, -2 fleeing) [fire bolt: -1 Power, 9 left]
+        severity: 22 = margin 16 +5 fire bolt +3 spell rank -2 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    (the bright staff pays the kill: +2g owed)
+    *** Hexer 2 falls. ***
     The party catches its breath (+1 STA)
-    Urzag gains 26 XP (encounter) [26/100]
-    Maud gains 26 XP (encounter) [26/100]
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L1, 2 encounter(s))
+    Pox gains 39 XP (encounter) [39/1800]
+    Myev gains 39 XP (encounter) [39/1800]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+    The bright staff pays out its kills: +4g (purse 1767g).
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Pox: Unhurt STA 12/13 Power 9/15
+  (stamina x2)
+Myev: Unhurt STA 15/15 Power 14/14
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 1767g; day 2.
+Ahead: 3 fight(s) at the roadside camp; the turn-in pays 774g, 1203 XP.
+  (due day 6 -- 4 days left; quick pay, x1.15)

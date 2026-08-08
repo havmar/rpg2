@@ -1,36 +1,46 @@
-=== Wolves Attack ===
-the high pasture (L1), room 1/1: tracks
-2x Wolf -- fangs
+=== On the road to Portomera ===
+(a level-2 encounter)
+Wolf 1 -- fangs
 DEX 4  STR 2  STA 8  HP 4/4
+breaks when beaten
+Hexer 2 -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
 Round 1:
-Urzag uses First Blood!
-Wolf 1 takes 1 dmg.
-Round 2:
-Urzag outmaneuvers Wolf 1,
-deals 6 dmg!!! SLAIN.
-Wolf 1 strikes as they fall:
-Urzag parries.
-Maud attacks Wolf 2, parried.
-Wolf 2 attacks Urzag, deflected.
+*** Pox is simply NOT
+THERE -- unseen until they strike. ***
+[12 Power left]
+The lines close.
+Pox strikes from nowhere --
+Wolf 1 never sees it coming!
+Pox's fire bolt overwhelms Wolf 1,
+deals 6 dmg!!! [11 Power left]
+Wolf 1 is SLAIN.
+Hexer 2's ice bolt is deflected.
+Round 2: nothing lands.
 Round 3:
-Urzag attacks Wolf 2, parried.
-Maud outmaneuvers Wolf 2, deals 4 dmg!!
-Wolf 2 falls.
-Wolf 2 strikes as they fall:
-Maud parries.
+The lines meet -- steel range.
+Pox's fire bolt overwhelms Hexer 2,
+deals 6 dmg!!! [10 Power left]
+!! Hexer 2 is Winded.
+Hexer 2's ice bolt is warded off.
+The beaten foes break and run!
+Pox's fire bolt overwhelms Hexer 2,
+deals 4 dmg!! [9 Power left]
+Hexer 2 falls.
 The party catches its breath (+1 STA)
-Urzag +26 XP (encounter) [26/100]
-Maud +26 XP (encounter) [26/100]
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L1, 2 encounter(s))
+Pox +39 XP (encounter) [39/1800]
+Myev +39 XP (encounter) [39/1800]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+The bright staff pays out its kills: +4g (purse 1767g).
 
 -- the party --
-Urzag: Unhurt STA 7/8 Power 1/3
+Pox: Unhurt STA 12/13 Power 9/15
+  (stamina x2)
+Myev: Unhurt STA 15/15 Power 14/14
   (healing x1, stamina x1)
-Maud: Unhurt STA 7/8 Power 6/6
-  (healing x1, stamina x2)
-Purse 10g; day 2.
-Ahead: 2 fight(s) at the den in the hills; the turn-in pays 46g, 133 XP.
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 1767g; day 2.
+Ahead: 3 fight(s) at the roadside camp; the turn-in pays 774g, 1203 XP.
+  (due day 6 -- 4 days left; quick pay, x1.15)
