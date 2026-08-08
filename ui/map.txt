@@ -1,5 +1,5 @@
-RPG2 MAP -- day 1
-the party is at Mortellaria > Castavera
+RPG2 MAP -- day 3
+the party is at Ensimaa > Taivelle
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -13,18 +13,24 @@ the party is at Mortellaria > Castavera
   Walhaven (town) -- 4 job(s)
   Flurham (village) -- 2 job(s)
 
-== Mortellaria ==  <- here
+== Mortellaria ==
   [CRISIS] the necromancers are working
-    openly (day 1)
+    openly (day 1); the old faith is
+    outlawed (day 2)
   ABSOLUTISM
-  WEATHER: the sea wind.
-  Castavera (capital) -- 4 job(s)  <-
-    the party
-  Belafonte (town) -- 3 job(s)
+  WEATHER: hard heat.
+  Castavera (capital) -- 3 job(s)
+    (visited)
+  Belafonte (town) -- 2 job(s)
   Calavento (village) -- 1 job(s)
 
-== Ensimaa ==
-  Taivelle (capital) -- 5 job(s)
+== Ensimaa ==  <- here
+  [NORMAL] the storm has the roads (day
+    2)
+  THE COUNCIL OF ELDERS
+  WEATHER: a storm.
+  Taivelle (capital) -- 5 job(s)  <- the
+    party
   Dunmaelle (town) -- 4 job(s)
   Rosmaine (village) -- 2 job(s)
 

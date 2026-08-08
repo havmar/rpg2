@@ -1,5 +1,5 @@
-RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > Castavera
+RPG2 PARTY SHEET -- day 3, at Ensimaa >
+  Taivelle
 purse: 173g
 party: 1/3 companion slot(s) filled (CHA
   6)
@@ -8,7 +8,8 @@ party: 1/3 companion slot(s) filled (CHA
   L6  training 2  XP 0/600  points 1
   DEX 3  STR 3  MIND 5  CHA 6
   HP 13/13  STA 8/8  Power 7/7
-  masterwork katana | healingx2
+  masterwork katana | healingx2,
+    staminax1
   spells: fire 2, stop time 1
   pools bought: hp +2, power +2, sta +2
 
@@ -16,7 +17,8 @@ party: 1/3 companion slot(s) filled (CHA
   L6  training 2  XP 0/600  points 0
   DEX 3  STR 5  MIND 5  CHA 4
   HP 11/11  STA 10/10  Power 8/8
-  zweihander, prof 2 | healingx2
+  zweihander, prof 2 | healingx2,
+    staminax1
   abilities: first_blood
   pools bought: hp +2, power +2, sta +2
   satisfaction 7/10
