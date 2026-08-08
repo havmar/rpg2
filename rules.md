@@ -1010,6 +1010,70 @@ Deliberately **one roll** — no multi-message chase sequences.
    **Failure** = rare and catastrophic: the fight resumes on the spot, the
    parting-blow damage already taken.
 
+The **+2 and the plain STA weighting belong to the party's deliberate
+retreat**, which picks its moment. The reverse case — a beaten foe line
+collapsing — is a ROUT and is rolled differently; see below.
+
+### The rout — when the foes break (2026-08-08 rebalance)
+
+The same machinery reflected across the field, with three deliberate
+differences. A rout is a **collapse under pursuit**, not a plan:
+
+- **No flee bonus.** The runners picked nothing: no +2.
+- **The runners' DEX is weighted by HP as well as STA** — they are below a
+  third by construction, and broken bodies run slowly. The weight floors at
+  0.3 of the body's DEX, so a graze-rich pack is not automatically caught.
+- **Its own trigger, stricter than the standing orders':** every living foe
+  **below a third of HP, or Spent** (`rout_ready`). The half-HP
+  `fight_winding_down` band stays where it is — it also gates potion thrift
+  and must not move.
+
+*Why:* measured before the change, the solo troll escaped **54%** of won
+fights and 50% even when the party ended fresh — a big HP pool sits in the
+trigger band for rounds while DEX 6-7 plus the bonus beats the party
+average. The mechanic fired hardest in the fights the party was flatly
+winning, and forced fiction that contradicted the job. After: the troll is
+at 18% overall and **14% when the party ends fresh**, against 67% when it
+ends spent. That separation *is* the design — the escape is a relief when
+the party has nothing left to chase with, not a tax when it is fresh.
+`bench_rout.py` measures it, `--legacy` prints the before column.
+
+A field cleared by a rout says so: the site banner reads **(driven off,
+not slain)**, so no display ever claims the giants are dead against a log
+that says otherwise.
+
+### Loose ends — the escapees the game remembers
+
+A rout writes a record the save keeps (`loose_ends`, newest first): who got
+away, at what HP and wounds, from which fight, in which area, on what day.
+It persists with no expiry — entries are story, not bookkeeping, and the DM
+prunes them by save edit. `status` names the latest; `look --dm` lists the
+local ones.
+
+**`pursue` — the warm trail.** One command, one roll, no tracking
+subsystem, available only while the trail is **WARM**: same day as the
+rout, party still in the area, no night slept. One attempt per rout.
+
+- **The contest:** `2d6 + the party's best MIND` vs `2d6 + the runners'
+  chase DEX` (HP- and STA-weighted, as in the rout they escaped by),
+  trackers **+2** if any runner carries a wound — blood on the ground.
+- **Success:** the fight re-opens against the survivors **at their fled
+  state** — their end-of-fight HP, wounds and STA; they have been running,
+  and nothing refreshes — met at the party's preferred range, because the
+  party are the hunters now. Standard encounter machinery from there:
+  pause, retreat, and another rout are all possible (a second rout re-arms
+  the record on fresh ground).
+- **Failure:** the trail is lost. No day is spent, and the loose end stays
+  on the books — the record is the story hook.
+- **Pay:** the room already banked its encounter share when the field
+  cleared, so the mop-up pays **wild rates** for what it kills. Loot rolls
+  as in any fight.
+- **Cold trails are not a mechanic.** After a night the wounds have healed
+  (living foes heal over a day; the troll fully) and pursuit becomes
+  *finding* — rumor, `travel`, `forge`, the DM's territory, fed by the
+  record. `pursue --stage` is the DM's valve for the scene that finding
+  produces: no gate, no roll, survivors healed by the days passed.
+
 ### Encounter persistence
 
 A fled room is not a reset room. Its survivors are recorded (per room, with a
@@ -1140,11 +1204,14 @@ Law and hell posses are the authored exception to the roster consequence —
 LAW also clears sin; HELL withdraws the refused task — but they spend
 this same once-per-level allowance. Their former unlimited mercy is gone.
 
-Ferocity also speaks before defeat. Once every living foe is below half HP or
-Spent, a ferocity-0/1 roster may make **one break attempt**: the party gets
-softened parting blows, then the same one-roll STA-weighted DEX chase used by
-retreat runs in reverse. Escape means the foes yield the field alive;
-ferocity 2 never tries.
+Ferocity also speaks before defeat. Once every living foe is **below a third
+of HP or Spent** (2026-08-08: its own band, stricter than the standing
+orders' half), a ferocity-0/1 roster may make **one break attempt**: the
+party gets softened parting blows, then the retreat's chase runs in reverse
+— as a ROUT, with no flee bonus and the runners' DEX weighted by HP as well
+as STA (see "The rout" under Retreat & chase). Escape means the foes yield
+the field alive and leave a **loose end** the save remembers; ferocity 2
+never tries.
 
 Fate and mercy do not stack into two reprieves. A lost Fate-bargain fight is
 a genuine defeat and can spend mercy. A **paid** Fate victory stands the PC
@@ -1345,10 +1412,13 @@ permanent ability, gold buys staying power** — never the reverse.
     **sub-linearly** on purpose: the fixed overhead of a job — the trip out,
     the giver, the turn-in — is paid once whether you fight once or three
     times, so three fights are worth more than one but nothing like three
-    times more. **40%** of the XP falls as the encounters do (flat: every
-    fight on the job pays the same, wherever it stands); the remaining
-    **60%** plus **all** of the gold is the turn-in lump. An intermediate
-    place of a two-place job clears with a banner and no purse.
+    times more. The XP splits **three ways** (2026-08-08, the turn-in
+    stage): **40%** falls as the encounters do (flat: every fight on the job
+    pays the same, wherever it stands), **40%** is the FIELD tranche paid
+    unbanded when the last place closes, and **20%** plus **all** of the
+    gold is the TURN-IN, paid where the giver stands and banded by the day
+    it lands. An intermediate place of a two-place job clears with a banner
+    and no purse.
   - **The site ladder — the fixtures.** `site_xp_total(L) = 50 × (L + 1)`,
     45% split flat across the rooms, the rest as the clear lump, plus
     `15 × L` gold. This ladder now serves ONLY the two hand-built sites in
@@ -2585,9 +2655,10 @@ anchors the formulas were fitted to.
   - Encounters spread **front-light** across places, so a three-fight
     two-place job is 1 then 2.
   - **Pay is per QUEST**, not per site (see *XP and levels*): the encounter
-    shares fall as the fights do, and the whole turn-in lump plus all of the
-    gold is handed over when the LAST place closes. An intermediate place
-    clears with a banner and no purse.
+    shares fall as the fights do, the FIELD tranche lands when the LAST
+    place closes, and the gold plus the turn-in tranche are handed over at
+    the giver (2026-08-08). An intermediate place clears with a banner and
+    no purse.
   - A **caper** (the dark templates' authored shapes — see the Karma & Heat
     add-on) still pins its place count to every stem it lists, and its
     encounter count follows.
@@ -2619,10 +2690,15 @@ price, because time and geography do not inflate. A window is worth exactly
 as much at level 20 as at level 1; a bed is not.
 
 **Every posting carries a window.** A quest is stamped with `posted_day`, a
-`window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days, and the `deadline_day`
-that follows. The clock starts at **posting**, not at taking: a job already
-five days old is five days into its window, so reading the board's clock is
-part of reading the board.
+`window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days **plus the return leg**
+(2026-08-08: 0 days if the work is in the giver's own area, 1 elsewhere in
+the land, 2 across a border — the delivery kind's round-trip precedent),
+and the `deadline_day` that follows. The clock starts at **posting**, not at
+taking: a job already five days old is five days into its window, so reading
+the board's clock is part of reading the board. The windows were tuned when
+a job completed instantly in the field; the return leg is now inside the
+clock, and the widening keeps the bands where they were (measured: 33/53/10/4
+against 34/50/12/3 — benchlog 2026-08-08).
 
 **The turn-in is paid in bands**, by the day it is handed over:
 
@@ -2633,10 +2709,76 @@ part of reading the board.
 | late | within `QUEST_GRACE_DAYS` = 3 days past it | ×0.60 |
 | expired | past the grace | nothing — the job is lost |
 
-Only the **turn-in lump and the gold** are banded. The per-encounter XP
-shares were paid as they were earned and are never clawed back: a failed job
-still leaves the party with what the fighting paid. The premium is small on
+Only the **turn-in tranche and the gold** are banded. The per-encounter
+shares and the field tranche were paid as they were earned and are never
+clawed back: a failed job still leaves the party with what the fighting
+paid — **80% of the XP**, since the split (above). The premium is small on
 purpose — the clock is a pressure, not a second economy.
+
+### The lifecycle: taken → work done → turned in (2026-08-08)
+
+**A quest is paid where the giver stands, not where the last body falls.**
+The old banner paid the lump and all the gold the instant the last field
+cleared, wherever the party happened to be, and the giver scene the DM
+narrated over it was fiction with nothing under it. Now the job has a stage
+for it.
+
+**At work-done** — the last place closed, and proof satisfied where the job
+wants it:
+
+- the banner says **THE JOB IS DONE**, and names the giver and the area to
+  return to, with the deadline;
+- **the world changes now** (the quest's place-state transition fires): the
+  pass reopens when the deed is done, not when it is paid;
+- the **field tranche** of the XP lands, **unbanded**.
+
+**At turn-in** — `turnin QID`, gated on standing in the giver's settlement
+area, run by the DM as part of the return scene and narrated as that scene:
+**all** the gold and the **turn-in tranche**, both banded by the TURN-IN
+day; the CHA negotiation; the reward weapon (`claim` finally waits where the
+giver does); **+1 companion satisfaction** — which now lands in town by
+construction, exactly where a quitting companion can be talked round; and
+the epilogue with the history record. `--here` is the DM's valve for edge
+fiction: a dead giver, an occupied town — pay where the story says.
+
+**Lost after work-done** — the deadline and its grace pass before the party
+returns: the turn-in tranche and the gold are gone, the banked 80% **stays**,
+**no failure rumour fires** (the monsters are dead — the world changed), the
+place states stay completed, and the record reads *done, never paid*. The
+giver's grievance is story material, not a penalty.
+
+**Exempt, and paid at work-done as before** — the stage is for HONEST work
+with a giver to return to:
+
+| kind | why |
+|---|---|
+| **deliveries** | the hand-off at the destination already IS the turn-in |
+| **war waves** | no clock, the giver is a ruler mid-war, and wave 3's scripted fall makes the return scene impossible by design |
+| **conquest garrisons** | no giver — the town is the pay |
+| **hell assignments, dark work** | hell verifies its own work and the purse arrives by infernal delivery (narrate the receipt); a settled twist is a hand-off on the spot by definition |
+
+### Proof of the kill
+
+About a third of the kill-shaped templates are **bounties**, and say so on
+the board row and in the giver's words: *bring back the pelts / the rings /
+the head*. The terms are taken knowingly, the same doctrine as levels and
+deadlines. `forge --proof TOKEN` makes one by hand.
+
+A `proof` flag gates work-done on the **FINAL site's roster being dead** —
+mook sites are exempt; only the target counts. A rout there still clears
+the field and pays its encounter share (forcing the escape IS winning the
+fight), but the quest sits **UNFINISHED** — *the target escaped, proof
+wanted* on `status` and the board row — until the runner is killed: a warm
+`pursue`, or a later re-encounter the DM stages off the loose end. The
+moment it dies, the gate lifts and work-done fires.
+
+**Ordinary quests stay driven-off-completable**, and that matters: after the
+rout rebalance escapes correlate with a battered party, so flagging every
+job would punish exactly the party already hurting. *Clear the pass* is done
+when the road is open; the bounty is done when the ears are on the table.
+The deadline prices the chase for free — the bounty is due day 9, the troll
+ran on day 6 and heals whole overnight, so pursue tonight bloodied or eat
+the late band.
 
 **Untaken work expires off the board** the day after its deadline, and the
 settlement that posted it keeps a day-stamped **failure rumour** — the

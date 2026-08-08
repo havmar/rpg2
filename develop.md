@@ -533,8 +533,21 @@ a pointer: what the file is, how it's run, where its docs are.
   beast maiming, relentless wipes and the non-cumulative one-mercy-per-level
   allowance; LAW using that same allowance; Fate-paid duo and depleted-party
   victories; the special Fate interrupt consuming the ordinary pause in both
-  orderings; reverse foe retreat; and old/new save compatibility.
+  orderings; reverse foe retreat (what the BREAK does to the encounter — its
+  band and chase math moved to `test_turnin.py` on 2026-08-08); and old/new
+  save compatibility.
   `python -m unittest -v test_mercy.py`.
+- `test_turnin.py` — the TURN-IN / ROUT / HUNT contract suite (2026-08-08),
+  one class group per part of the cluster: the rout's own trigger band and
+  its three chase differences; the loose-ends record's shape, ordering and
+  save round-trip, plus the driven-off banner tag; `pursue`'s warm gate,
+  one-attempt rule, both outcomes, wild pay, and the staged cold-trail
+  valve; the proof flag from template through the work-done gate to the
+  gate lifting on the kill; and the turn-in lifecycle — the three-way
+  split summing exactly, work-done vs turn-in payment, the origin gate and
+  `--here`, banding by the TURN-IN day, the return leg in the window,
+  lost-after-done keeping the 80% and firing no rumor, and the four
+  exemptions. `python -m unittest -v test_turnin.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
   `sheet` path registration) and exact quest-level readouts.
@@ -1034,6 +1047,15 @@ a pointer: what the file is, how it's run, where its docs are.
   **Re-run after touching quests.py's threat math, the bestiary, or the
   reward formulas.** `python bench_quests.py [--trials N] [--careers N]
   [--part enc|site|career]`.
+- `bench_rout.py` — the ROUT acceptance bench (2026-08-08): per foe row,
+  the share of WON fights the survivors escaped from and the share of
+  break attempts the party ran down, then the same won fights split by how
+  the PARTY ended them (above half HP vs not) — the condition correlation
+  that is the rebalance's real target. `--legacy` re-measures the
+  pre-2026-08-08 rules off the same seeds, so before/after come from one
+  harness. **Re-run after touching the chase math, the rout band, or any
+  DEX/STA/HP weighting in `_chase_dex`.**
+  `python bench_rout.py [--trials N] [--legacy] [--part rows|state]`.
 - `.notes.txt` — raw brainstorming notes (unstructured, historical).
 
 > **Registering files:** whenever you add a new file to this project (a new
@@ -1107,8 +1129,10 @@ mechanic *does* and *why* is rules.md's job.
   `FLEE_BONUS`, `BERSERK_*`, `WAR_BREATH_*`; since 2026-07-11 the
   standing-orders hook — `group_combat(standing_orders=...)`,
   `rpg.standing_order` the default ladder, `fight_winding_down` the
-  don't-waste-a-potion check, "heal" the fourth pause action), the graze
-  floor
+  don't-waste-a-potion check, "heal" the fourth pause action; since
+  2026-08-08 the rout's own pair, `CHASE_HP_WEIGHT_FLOOR` and
+  `TRACK_WOUND_BONUS`, beside `FLEE_BONUS` — note `FLEE_BONUS` is now the
+  PARTY's retreat only), the graze floor
   (`GRAZE_FLOOR_MARGIN`), wound tiers (`TIER_HP`), progression
   (`XP_LEVEL_STEP`, `LEVEL_CAP`, `SKILL_POINTS_PER_LEVEL` — 3 since
   2026-07-17, `TRAINING_MAX`, `TRAINING_COST_MULT` — rank n costs 2n,
@@ -1127,9 +1151,13 @@ mechanic *does* and *why* is rules.md's job.
   `MOVE_LAND_MARGIN`), economy (`POTION_PRICE`, drop chances, and the
   TWO level-pay ladders, deliberately separate since 2026-07-26 and
   commented so nobody unifies them: the QUEST ladder `quest_xp_total` /
-  `quest_encounter_xp` / `quest_clear_xp` / `quest_gold` with
+  `quest_encounter_xp` / `quest_clear_xp` / `quest_turnin_xp` /
+  `quest_gold` with
   `QUEST_XP_PER_LEVEL` / `QUEST_GOLD_PER_LEVEL` / `ENCOUNTER_MULT` /
-  `QUEST_ENCOUNTER_SHARE` — this is the GAME's pay — and the site-FIXTURE
+  `QUEST_ENCOUNTER_SHARE` / `QUEST_TURNIN_SHARE` — this is the GAME's pay,
+  split three ways since 2026-08-08 (encounters / field / turn-in), and
+  `quest_clear_xp` is the REMAINDER so the three always sum to
+  `quest_xp_total` exactly — and the site-FIXTURE
   ladder `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs, which now serves only
@@ -1212,6 +1240,20 @@ mechanic *does* and *why* is rules.md's job.
   contest reflected across the field for ferocity-0/1 rosters; survivors are
   `withdrew`, not dead), and `refresh_foes_after_retreat` (fled-room
   persistence).
+- **The rout** (2026-08-08 — rules.md, "The rout") — the reverse case is
+  no longer the retreat's mirror. `rpg.py`: `rout_ready` (the trigger, a
+  THIRD — `fight_winding_down` keeps its half band and its potion-thrift
+  job, and `group_combat`'s break branch calls the new one),
+  `_chase_contest(routed=True)` (no `FLEE_BONUS`), `_chase_dex(hp_weighted=
+  True)` with `CHASE_HP_WEIGHT_FLOOR`, and `track_contest` +
+  `TRACK_WOUND_BONUS` (`pursue`'s roll — MIND against the same weighted
+  legs). `session.py`: `record_loose_end` / `loose_end_by_id` /
+  `loose_end_survivors` / `loose_end_line` / `trail_warm`, the write in
+  `finish_encounter`'s win branch (which also sets the site's `routed`
+  flag), `cmd_pursue`, `_resolve_pursuit` (a won chase settles the record;
+  a second rout re-arms it), the `pursuit` key threaded through
+  `resolve_encounter` / `finish_encounter` / the `pending` serializers, and
+  the `loose_ends` save key. `bench_rout.py` is the acceptance bench.
 - **The quartermaster pass** (2026-07-26 — rules.md's Gold and the potion
   economy, "The quartermaster pass") — `rpg.py`: `AUTO_POTION_KINDS` (in
   the potion-economy constants block), `wants_potion` (the badly-hurt /
@@ -1793,6 +1835,22 @@ mechanic *does* and *why* is rules.md's job.
   A paused fight blocks every between-fights command until settled. Quest
   progress lives on each quest (`next` cursor, `status`); `advance_quest`
   pays site lumps and closes quests.
+- **The quest lifecycle** (2026-08-08 — rules.md, "The lifecycle") —
+  `status` runs `open -> work_done -> done | lost`, and every reader has to
+  know all four. `session.py`: `advance_quest` (the proof gate),
+  `_close_site` (the work-done branch, the `pays_here` exemption set, the
+  driven-off tag), `cmd_turnin` (the giver's scene, the origin gate,
+  `--here`), `_lose_paid_window` + `board_clock`'s `work_done` arm
+  (done-never-paid: no rumor, place states kept), `_final_site_loose_ends`
+  / `_maybe_finish_proof` (the proof gate and its lifting), and the
+  status arms in `cmd_status` / `party_sheet_lines` / `tally_lines` /
+  `cmd_take` / `cmd_room` / `cmd_settle` / `accepted_quests`. `quests.py`:
+  `return_leg_days` (added to every posting's window at `_post_quest` /
+  `_post_card_quest`), the `proof` template field + `forge_quest(proof=)`,
+  the `work_done` / `lost` / `proof_pending` marks in `quest_line`, the
+  proof line in `quest_detail_lines`, and `lost` in `_reusable_site`'s
+  dead-status set. **When adding a quest-status reader, check all four
+  values** — the two new ones are the easy miss.
 
 ## Balance / tuning
 
@@ -1954,6 +2012,28 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   order: `QUEST_WINDOW_DAYS`, then `QUEST_PAY_BANDS["late"]`, then
   `QUEST_GRACE_DAYS`. Never the refill rate — an empty board is not
   difficulty, it is a dead world.
+- **The return leg is inside the window since 2026-08-08** (the turn-in
+  stage): every posting's window is `QUEST_WINDOW_DAYS` **plus**
+  `quests.return_leg_days` (0 same area / 1 same land / 2 cross-land). The
+  widening is meant to be band-neutral and measures so — 33/53/10/4 against
+  the trim's 34/50/12/3, 300 careers (benchlog 2026-08-08). If the clock
+  needs retuning, remember the sim still teleports: its bands under-report
+  the road, and the widening is the correction for a leg the sim never
+  walks.
+
+**The rout knobs (2026-08-08).** `CHASE_HP_WEIGHT_FLOOR` = 0.3 (how much a
+nearly-dead runner's DEX still counts), `TRACK_WOUND_BONUS` = 2 (`pursue`'s
+blood-on-the-ground edge), and the `rout_ready` band itself (a third). The
+acceptance target is not an escape RATE but the SEPARATION between a fresh
+party's and a spent party's — `bench_rout.py --part state` is the readout,
+and both columns matter: driving escape toward zero across the board would
+delete the relief-escape, which is the mechanic's actual purpose. Measured
+after the rebalance (300 fights/row): troll 14% fresh vs 67% spent, bear 8%
+vs 39%, ogre 17% vs 30%. **The one row still high is the level-1 cutthroat
+pack** (43% fresh) — three bodies whose DEX is close to a level-1 duo's;
+left alone deliberately, since low-band bandit work is exactly where a
+loose end is cheap fiction, but it is the first place to look if escapes
+read as too common in play.
 
 **The slice-1 rebaseline (2026-07-26).** Every fixture number below moved
 because `run_site` lost a whole recovery step (the short rest is deleted), and

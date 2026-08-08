@@ -234,16 +234,45 @@ to another area -- is the player's core decision:
   - The war waves carry NO clock (an authored questline does not lapse).
     Hell's assignments carry their own pair instead -- the grace to take
     one, then the completion window -- and never lapse off the board.
-- **Turn-ins pay an EPILOGUE -- and the resolution is NARRATED
-  (2026-08-12)**: the QUEST COMPLETE banner prints a day-stamped aftermath
-  line and a turn-in prompt naming the giver. The banner and its numbers
-  stay in the display block; the epilogue line and the prompt are MATERIAL,
-  not display -- tell the job's ending as a short scene in the
+- **The job ends in TWO beats now (2026-08-08): the field, then the
+  giver.** Clearing the last place prints **THE JOB IS DONE** and names the
+  giver, the area and the deadline; the field XP lands there and then, and
+  the gold does not. Play that beat as the fight's aftermath, standing over
+  the bodies -- the deed is done, the road home is not walked yet. Then the
+  party travels back and `turnin QID` is run AT the giver's settlement,
+  where the pay, the epilogue and the QUEST COMPLETE banner all land. Two
+  practical consequences at the table:
+  - **The return leg is a real leg.** Say what it costs when the party is
+    deciding ("Kristryd is two days back, and the job is wanted by day 9").
+    The windows were widened to cover it, so a straight walk home is
+    affordable -- dawdling is not.
+  - **The world already changed at work-done.** The pass is open, the
+    crypt is quiet: narrate that in the field, not at the turn-in. What
+    waits at the giver is the money and the ending, not the effect.
+- **The turn-in is the GIVER'S SCENE, and the resolution is NARRATED
+  (2026-08-12)**: `turnin` prints the day-stamped epilogue and the pay.
+  The banner and its numbers stay in the display block; the epilogue line
+  is MATERIAL, not display -- tell the job's ending as a short scene in the
   text-adventure voice, the giver paying and the aftermath fact folded into
   the fiction. The epilogue is what the world now looks like because the
   party worked; don't skip it, don't pad it, and don't paste it and move
   on. A LATE turn-in prints its own band line; play the giver accordingly
-  -- paid, but not pleased.
+  -- paid, but not pleased. If the fiction has made the ordinary turn-in
+  impossible -- the giver is dead, the town is occupied -- `turnin QID
+  --here` pays it wherever the story says; use the valve rather than
+  bending the scene around the gate.
+- **A job whose window closes on the road home is DONE, NEVER PAID.** The
+  script says so, keeps the 80% already banked, and fires no failure rumor
+  -- the monsters really are dead. Play the giver's grievance as story, not
+  as punishment: the work was done and nobody paid for it, which is its own
+  kind of scene.
+- **BOUNTIES want proof.** About a third of kill jobs ask for the pelts,
+  the rings, the head -- the board row says so and the giver's words must
+  too, plainly, when the job is offered. On a bounty the target has to be
+  DEAD: if it routs off the last site, the script prints THE TARGET
+  ESCAPED and the job sits unfinished until the runner is killed. That is
+  the moment to offer `pursue` (below) -- and if the trail goes cold, the
+  loose end is a hook you can bring back rather than a dead job.
 - `travel AREA` moves them: 1 day inside a land, 2 days to another land.
   Travel days are camp nights (full overnight recovery -- travel heals) and
   each trip risks ONE road encounter (~15%/day compounded; see the wilds
@@ -280,17 +309,21 @@ to another area -- is the player's core decision:
   (the `At:` field) or the active-quest line first; if the job's target
   area is elsewhere, the road IS the next scene: narrate setting out, run
   `travel`, then frame the arrival.
-- **Pay is per QUEST, not per site.** Each fight pays its flat encounter
-  share as it is won; everything else -- the turn-in lump and ALL of the
-  gold -- lands once, when the last place falls, banded by the day it
-  lands. An intermediate place clears with a SITE CLEARED banner and no
-  purse. The persistent geographical site itself does not intrinsically
-  pay. `award GOLD XP NAME` remains for off-script scenes only.
+- **Pay is per QUEST, not per site, and it lands in three places.** Each
+  fight pays its flat encounter share as it is won (40%); the FIELD tranche
+  (40%) lands when the last place falls, unbanded; the gold and the last
+  20% land at the giver, banded by the turn-in day. An intermediate place
+  clears with a SITE CLEARED banner and no purse. The persistent
+  geographical site itself does not intrinsically pay. `award GOLD XP NAME`
+  remains for off-script scenes only. (Deliveries, war waves, conquest
+  garrisons and hell/dark work skip the turn-in stage and pay whole in the
+  field -- the script knows which; you never have to decide.)
 - `forge --level L --places N --encounters N --kinds a,b,c --name "..."
-  [--area AREA] [--days N]` builds a quest by the generator's rules and
-  places its persistent sites in the named area (the current area by
-  default). Prefer it over improvising rosters by hand. `--days` gives
-  the forged job a window; without it the job is timeless.
+  [--area AREA] [--days N] [--proof TOKEN]` builds a quest by the
+  generator's rules and places its persistent sites in the named area (the
+  current area by default). Prefer it over improvising rosters by hand.
+  `--days` gives the forged job a window; without it the job is timeless.
+  `--proof` makes it a bounty (the target must die).
 - The quest descriptions are one-line prompts, not stories -- **the fiction
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
@@ -1054,11 +1087,36 @@ than the fights WITHOUT pages of narration:
   with their STA refreshed -- living foes heal their wounds after a day,
   skeletons stay hacked. "Come back tomorrow" is a legitimate plan; it
   costs the day.
-- **Beaten foes may run too.** TAKE SPOILS and BREAKS WHEN BEATEN rosters
-  make one reverse-retreat attempt when every survivor is badly wounded or
-  Spent. The party gets the parting blows and chase contest. RELENTLESS
-  foes never break. Use the roster's printed ferocity tag; it is rules
-  information, not hidden temperament.
+- **Beaten foes may run too -- and the game remembers who did.** TAKE
+  SPOILS and BREAKS WHEN BEATEN rosters make one reverse-retreat attempt
+  when every survivor is down to a THIRD of HP or Spent. The party gets
+  the parting blows and chase contest, and usually catches them: since
+  2026-08-08 a rout is a collapse, not a plan -- no head start, and broken
+  legs run slowly. RELENTLESS foes never break. Use the roster's printed
+  ferocity tag; it is rules information, not hidden temperament.
+- **What a ROUT leaves behind.** An escape clears the field and pays in
+  full -- forcing it IS winning the fight -- and the banner says
+  **(driven off, not slain)**, so never narrate the thing as dead. The
+  script writes a LOOSE END: who got away, how hurt, from where, on what
+  day (`status` names the latest, `look --dm` lists the local ones). Two
+  jobs at the table:
+  - **Say what got away, in one line, as the fight's last fact** -- the
+    troll goes over the rocks with the arrow still in it. Do not editorial-
+    ize about hunting it; state it and hand the turn back.
+  - **`pursue` is the player's move, not a prompt to push.** While the
+    trail is WARM -- same day, same area, before the night -- one attempt
+    is available: 2d6 + best MIND against the runners' legs, +2 if they are
+    bleeding. Won, the fight re-opens at the runners' fled state (hurt,
+    winded, no refresh) with the party as the hunters; lost, the trail is
+    gone and no day is spent. If the player says "I want them dead", run
+    it. If they move on, let the record hold it.
+  - **A cold trail is YOURS, not a mechanic.** After a night the wounds
+    have healed and pursuit becomes finding -- rumor, travel, a job that
+    turns out to be the same troll. When the story stages that reunion,
+    `pursue ID --stage` re-opens the fight with no gate and no roll, the
+    survivors healed by the days that passed. The loose-ends list is a
+    standing supply of hooks with real stat rows behind them; use it
+    rather than inventing a new monster.
 - **Check the party's STA before every door -- silently.** Going Spent (0
   STA mid-fight) is the main way characters die, and entering low no longer
   trips a round-1 pause: the door is where that decision happens. The tally
@@ -1335,6 +1393,21 @@ than the fights WITHOUT pages of narration:
   Failed break = the fight resumes at once. **Standing orders handle every
   other crossing** -- heroes drink/convert on their own (same price,
   logged), skipped when the enemy is already losing badly.
+- **The rout (the same roll in reverse):** a ferocity-0/1 line below a
+  THIRD of HP or Spent makes one break attempt -- and gets NO +2 and has
+  its DEX cut by its wounds, so the party usually runs it down. An escape
+  still clears and pays the field, banners **(driven off, not slain)**, and
+  writes a LOOSE END. `pursue` runs it down while the trail is warm (same
+  day, same area, one attempt: 2d6 + best MIND vs their legs, +2 if they
+  bleed); a won pursuit pays wild rates. `pursue ID --stage` is the cold
+  trail's staged reunion, on your call.
+- **A job pays in three places:** each fight's share as it is won, the
+  FIELD tranche when the last place falls (**THE JOB IS DONE** -- unbanded,
+  and the world changes here), and ALL the gold plus the last 20% at the
+  giver via `turnin QID`, banded by the day it lands. `--here` pays it
+  anywhere when the fiction demands. Miss the window on the road home and
+  the job is DONE, NEVER PAID: the 80% stays, no rumor fires. BOUNTIES
+  (`proof` on the row) need the target dead, not driven off.
 - **The dying swing:** everyone alive at round start gets their one attack,
   even if slain before their turn -- the blows cross in the air. Killing a
   foe doesn't cancel the blow it was already delivering; expect chip damage

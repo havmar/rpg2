@@ -110,7 +110,9 @@ from rpg import (
     adjust_satisfaction, satisfaction_after_fight,
     stat_line, fallen_weapons_line, weapon_tag, prof_name,
     random_trash_weapon, MASTERWORK_PRICE_MULT,
-    xp_to_next, quest_encounter_xp, quest_clear_xp, quest_gold,
+    xp_to_next, quest_encounter_xp, quest_clear_xp, quest_turnin_xp,
+    quest_gold,
+    track_contest,
     open_fight, group_combat, party_wiped, party_defeated,
     apply_defeat_mercy, mercy_available, FEROCITY_RELENTLESS,
     FEROCITY_BREAKS,
@@ -389,6 +391,7 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
         "room": pending["room"],
         "quest": pending.get("quest"),
         "crime": pending.get("crime"),
+        "pursuit": pending.get("pursuit"),
         "dead_before": pending.get("dead_before", []),
         "field": pending.get("field", 0),
         "weather": pending.get("weather", ""),
@@ -418,6 +421,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
         "room": d["room"],
         "quest": d.get("quest"),
         "crime": d.get("crime"),
+        "pursuit": d.get("pursuit"),
         "dead_before": d.get("dead_before", []),
         "field": d.get("field", 0),
         "weather": d.get("weather", ""),
@@ -550,12 +554,28 @@ def party_sheet_lines(state: dict) -> list[str]:
         if q["status"] in ("failed", "expired"):
             lines.append(f"active quest [{qid}] {q['name']} is LOST "
                          f"(the window closed)")
+        elif q["status"] == "lost":
+            lines.append(f"active quest [{qid}] {q['name']} is DONE, "
+                         f"NEVER PAID (the window closed on the road home)")
         elif q["status"] == "done":
             lines.append(f"active quest [{qid}] {q['name']} is COMPLETE")
+        elif q["status"] == "work_done":
+            g = q.get("giver")
+            origin = world["areas"].get(q.get("origin"), {})
+            lines.append(f"active quest [{qid}] {q['name']}: THE WORK IS "
+                         f"DONE -- return to "
+                         f"{g['name'] if g else 'the giver'} at "
+                         f"{origin.get('name', q.get('origin'))} "
+                         f"(`turnin {qid}`)")
         elif q.get("kind") == "delivery":
             lines.append(f"active quest: [{qid}] DELIVERY {q['name']} -- "
                          f"carry {q['cargo']} to {q['dest_name']} "
                          f"(travel {q['dest']})")
+        elif q.get("proof_pending"):
+            lines.append(f"active quest [{qid}] {q['name']}: the field is "
+                         f"cleared but THE TARGET ESCAPED -- the job still "
+                         f"wants {q['proof']}. `pursue` while the trail is "
+                         f"warm")
         else:
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
@@ -563,7 +583,8 @@ def party_sheet_lines(state: dict) -> list[str]:
             lines.append(f"active quest: [{qid}] L{q['level']} {q['name']} "
                          f"-- next: {s['name']} (L{s['level']}), room "
                          f"{cur['room'] + 1}/{len(rooms)}")
-        note = deadline_note(q, clock.day) if q["status"] == "open" else ""
+        note = (deadline_note(q, clock.day)
+                if q["status"] in ("open", "work_done") else "")
         if note:
             lines.append(f"  due day {q['deadline_day']} -- {note}")
     k = state.get("karma")
@@ -600,7 +621,7 @@ def accepted_quests(state: dict) -> list[dict]:
         taken.add(state["active_quest"])
     out = []
     for qid, q in world["quests"].items():
-        if q.get("status") in ("done", "failed", "expired"):
+        if q.get("status") in ("done", "failed", "expired", "lost"):
             continue
         progressed = q.get("next", {"site": 0, "room": 0}) != {"site": 0,
                                                                 "room": 0}
@@ -952,6 +973,13 @@ def save(state: dict) -> None:
         "services": state.get("services", {}),
         "history": state.get("history", []),
         "holdings": state.get("holdings", {}),
+        # The loose ends (2026-08-08): who got away from a rout, newest
+        # first -- what `pursue` reads and a proof quest checks. The fled
+        # foes ride each record as entity dicts, so a won trail re-opens
+        # the fight at their exact fled state. No expiry: entries persist
+        # until the DM prunes them by save edit -- they are story, not
+        # bookkeeping.
+        "loose_ends": state.get("loose_ends", []),
         "pending_reward": state.get("pending_reward"),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
@@ -1017,6 +1045,8 @@ def load() -> dict:
         # "quest" and "remarkable" lines behind ui/history.txt.
         "history": doc.get("history") or [],
         "holdings": doc.get("holdings", {}),
+        # The loose-ends record (2026-08-08): rout escapees, newest first.
+        "loose_ends": doc.get("loose_ends") or [],
         "pending_reward": doc.get("pending_reward"),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
@@ -1147,7 +1177,19 @@ def tally_lines(state: dict) -> list[str]:
     world = state.get("world")
     if qid and world:
         q = world["quests"].get(qid)
-        if q and q["status"] == "open" and q.get("kind") != "delivery":
+        # The pay ahead is quoted AT TODAY'S BAND (2026-07-26): the number
+        # the player budgets against is what the job pays if it is handed
+        # over now, not what the board advertised on the day it posted.
+        # Since the turn-in stage (2026-08-08) only the TURN-IN tranche and
+        # the gold band -- the field lump at work-done is quoted straight.
+        band = quest_band(q, clock.day) if q else "on time"
+        mult = QUEST_PAY_BANDS[band]
+        if q and q.get("proof_pending"):
+            lines.append(f"The field is cleared, but the target got away. "
+                         f"The job still wants {q['proof']}: `pursue` while "
+                         f"the trail is warm -- nothing is paid until the "
+                         f"target is dead.")
+        elif q and q["status"] == "open" and q.get("kind") != "delivery":
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
             left = len(site_rooms(world, s)) - cur["room"]
@@ -1155,15 +1197,28 @@ def tally_lines(state: dict) -> list[str]:
             ahead = f"Ahead: {left} fight(s) at {s['name']}"
             if sites_after:
                 ahead += f", then {sites_after} more place(s)"
-            # The turn-in is quoted AT TODAY'S BAND (2026-07-26): the number
-            # the player budgets against is what the job pays if it is handed
-            # over now, not what the board advertised on the day it posted.
-            band = quest_band(q, clock.day)
-            mult = QUEST_PAY_BANDS[band]
-            lump = round(quest_clear_xp(q["level"],
-                                        q.get("encounters", 1)) * mult)
+            enc = q.get("encounters", 1)
+            field_xp = quest_clear_xp(q["level"], enc)
+            lump = round(quest_turnin_xp(q["level"], enc) * mult)
             gold = round(quest_gold_posted(q) * mult)
-            lines.append(f"{ahead}; the turn-in pays {gold}g, {lump} XP.")
+            lines.append(f"{ahead}; the work done pays {field_xp} XP in "
+                         f"the field, and the turn-in pays {gold}g, "
+                         f"{lump} XP at the giver.")
+            note = deadline_note(q, clock.day)
+            if note:
+                lines.append(f"  (due day {q['deadline_day']} -- {note}; "
+                             f"{band} pay, x{mult:g})")
+        elif q and q["status"] == "work_done":
+            g = q.get("giver")
+            origin = world["areas"].get(q.get("origin"), {})
+            enc = q.get("encounters", 1)
+            lump = round(quest_turnin_xp(q["level"], enc) * mult)
+            gold = round(quest_gold_posted(q) * mult)
+            lines.append(f"The work is done: return to "
+                         f"{g['name'] if g else 'the giver'} at "
+                         f"{origin.get('name', q.get('origin'))} -- the "
+                         f"turn-in pays {gold}g, {lump} XP "
+                         f"(`turnin {qid}`).")
             note = deadline_note(q, clock.day)
             if note:
                 lines.append(f"  (due day {q['deadline_day']} -- {note}; "
@@ -1801,13 +1856,30 @@ def cmd_status(args: argparse.Namespace) -> None:
         if q["status"] in ("failed", "expired"):
             print(f"  Active quest [{qid}] {q['name']} is LOST -- its "
                   f"window closed. Take a new one.")
+        elif q["status"] == "lost":
+            print(f"  Active quest [{qid}] {q['name']} is DONE, NEVER "
+                  f"PAID -- the window closed on the road home. The "
+                  f"banked pay stands; take a new one.")
         elif q["status"] == "done":
             print(f"  Active quest [{qid}] {q['name']} is COMPLETE -- "
                   f"take a new one.")
+        elif q["status"] == "work_done":
+            g = q.get("giver")
+            origin = world["areas"].get(q.get("origin"), {})
+            print(f"  Active quest [{qid}] {q['name']}: THE WORK IS DONE "
+                  f"-- return to {g['name'] if g else 'the giver'} at "
+                  f"{origin.get('name', q.get('origin'))} and "
+                  f"`turnin {qid}` for the gold and the lump.")
         elif q.get("kind") == "delivery":
             print(f"  Active quest: [{qid}] DELIVERY {q['name']} -- carry "
                   f"{q['cargo']} to {q['dest_name']} "
                   f"(`travel {q['dest']}`; arriving is the turn-in).")
+        elif q.get("proof_pending"):
+            print(f"  Active quest [{qid}] {q['name']}: the field is "
+                  f"cleared, but THE TARGET ESCAPED and the job still "
+                  f"wants {q['proof']}. No rooms are left to fight -- "
+                  f"`pursue` while the trail is warm, or find them again "
+                  f"later.")
         else:
             cur = q["next"]
             s = quest_sites(world, q)[cur["site"]]
@@ -1816,7 +1888,7 @@ def cmd_status(args: argparse.Namespace) -> None:
                   f"next: {s['name']} (L{s['level']}), room "
                   f"{cur['room'] + 1}/{len(rooms)}. Fight it with `room`.")
         note = deadline_note(q, state["clock"].day)
-        if note and q["status"] == "open":
+        if note and q["status"] in ("open", "work_done"):
             print(f"    (due day {q['deadline_day']} -- {note}; "
                   f"{quest_band(q, state['clock'].day)} pay)")
     k = state.get("karma")
@@ -1842,6 +1914,12 @@ def cmd_status(args: argparse.Namespace) -> None:
         standing = sum(1 for f in rec["foes"] if not f.dead)
         print(f"  Unfinished: {site} room {room} -- {standing} foe(s) still "
               f"hold it (fled day {rec['day']})")
+    ends = [r for r in state.get("loose_ends") or []
+            if r.get("resolved_day") is None and loose_end_survivors(r)]
+    if ends:
+        more = (f" (+{len(ends) - 1} more on the books)"
+                if len(ends) > 1 else "")
+        print(f"  Loose end {loose_end_line(ends[0], clock.day)}{more}")
     if state.get("pending"):
         print()
         print_pause_menu(state)
@@ -2110,7 +2188,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
                       crime_take: dict | None = None,
                       field: int = 0, align: str = "neutral",
                       mercy: str | None = None,
-                      weather: str = "") -> None:
+                      weather: str = "",
+                      pursuit: str | None = None) -> None:
     """Shared tail of every encounter command: run the melee -- which may
     PAUSE once, at the fight's first wounds crossing or at Fate's bargain
     (see play_orders) -- then award and
@@ -2122,7 +2201,9 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     fight so the resume stands on the same ground, and `weather` rides
     beside it for the same reason (a storm the fight opened in is still
     blowing when the player resumes it). `mercy` ("law"/"hell")
-    marks a POSSE fight: an eligible loss uses its authored mercy."""
+    marks a POSSE fight: an eligible loss uses its authored mercy.
+    `pursuit` names the loose-end record this fight re-opened (`pursue`,
+    2026-08-08): the fight's end settles the record either way."""
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
     dead_before = [h.name for h in party if h.dead]    # so the post-fight
@@ -2135,7 +2216,7 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
     if pause is not None:
         state["pending"] = {
             "foes": foes, "xp": encounter_xp, "site": site, "room": room,
-            "quest": quest, "crime": crime_take,
+            "quest": quest, "crime": crime_take, "pursuit": pursuit,
             "fired": fired, "round": pause.round,
             "crossings": [(k, h.name) for k, h in pause.crossings],
             "dead_before": dead_before,
@@ -2154,7 +2235,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
         return
     finish_encounter(state, log, foes, encounter_xp, site=site, room=room,
                      quest=quest, crime_take=crime_take,
-                     dead_before=dead_before, align=align, mercy=mercy)
+                     dead_before=dead_before, align=align, mercy=mercy,
+                     pursuit=pursuit)
 
 
 def party_level(state: dict) -> int:
@@ -2216,6 +2298,38 @@ def take_failure_rumors(settlement: dict) -> list[dict]:
     return rumors
 
 
+def _lose_paid_window(state: dict, quest: dict) -> list[str]:
+    """The lost-after-work-done path (2026-08-08, the turn-in stage): the
+    window closed before the party returned. The turn-in tranche and the
+    gold are gone, the banked 80% stays, NO failure rumor fires (the
+    monsters are dead -- the world changed), place states stay completed,
+    and the record reads done, never paid. The giver's grievance is story
+    material, not a penalty."""
+    day = state["clock"].day
+    qid = quest["id"]
+    quest["status"] = "lost"
+    quest["lost_day"] = day
+    accepted = state.get("accepted") or []
+    if qid in accepted:
+        accepted.remove(qid)
+    if state.get("active_quest") == qid:
+        state["active_quest"] = None
+    origin = state["world"]["areas"].get(quest.get("origin"))
+    if origin is not None and qid in origin.get("quests", ()):
+        origin["quests"].remove(qid)
+    remember(state,
+             f"[{qid}] {quest['name']} (L{quest['level']}) -- done, "
+             f"never paid: the window closed before the party returned.",
+             kind="quest", note=quest.get("epilogue", ""))
+    return [
+        f"  *** JOB DONE, NEVER PAID: {quest['name']} ***",
+        f"  The window closed on day "
+        f"{quest['deadline_day'] + QUEST_GRACE_DAYS} with the work done "
+        f"and the pay uncollected. What the fighting and the field "
+        f"already paid is kept; the gold and the turn-in lump are gone.",
+    ]
+
+
 def board_clock(state: dict) -> list[str]:
     """Run the quest board's clock (2026-07-26, the attrition rework's slice
     2). Two jobs, in order:
@@ -2225,6 +2339,8 @@ def board_clock(state: dict) -> list[str]:
        pay already banked stands, the turn-in lump does not, and the giver's
        failure line lands as the epilogue. This is what makes a day cost
        something -- a week of camping is a week the job did not wait through.
+       A job whose WORK is done but whose pay was never collected goes to
+       LOST instead (2026-08-08, `_lose_paid_window`): done, never paid.
     2. **The local land's boards expire and refill.** Untaken work comes off
        at its deadline (leaving a failure rumor at the settlement that posted
        it), and each settlement posts back toward its slot count. Only the
@@ -2252,7 +2368,7 @@ def board_clock(state: dict) -> list[str]:
         taken.add(active)
     for qid in sorted(taken):
         quest = world["quests"].get(qid)
-        if quest is None or quest["status"] != "open":
+        if quest is None or quest["status"] not in ("open", "work_done"):
             continue
         if quest.get("hell_task"):
             # Hell work is never LOST off the clock: a blown window
@@ -2261,6 +2377,9 @@ def board_clock(state: dict) -> list[str]:
             # just pays the expired band (2026-08-03).
             continue
         if not quest_expired(quest, day, taken=True):
+            continue
+        if quest["status"] == "work_done":
+            notices.extend(_lose_paid_window(state, quest))
             continue
         quest["status"] = "failed"
         quest["failed_day"] = day
@@ -2314,14 +2433,28 @@ def print_board_clock(state: dict) -> None:
 def advance_quest(state: dict, log: list[str], qid: str) -> None:
     """The active quest's cleared room: move the cursor. Finishing the last
     room of a place moves on to the next place; finishing the LAST place
-    closes the quest, pays the turn-in lump, day-stamps it, and delivers the
-    EPILOGUE (2026-07-12: the authored aftermath line the giver's turn-in
-    scene is narrated over -- dm.md)."""
+    fires the work-done stage (_close_site) -- unless the job wants PROOF
+    and somebody from the final site is still breathing (2026-08-08): the
+    field is cleared and paid, but the quest sits UNFINISHED until the
+    target is killed -- a warm `pursue`, or a re-encounter the DM stages
+    off the loose end (_maybe_finish_proof lifts the gate)."""
     quest = state["world"]["quests"][qid]
     cur = quest["next"]
     site = quest_sites(state["world"], quest)[cur["site"]]
     cur["room"] += 1
     if cur["room"] < len(site_rooms(state["world"], site)):
+        return
+    if (quest.get("proof") and cur["site"] == len(quest["sites"]) - 1
+            and _final_site_loose_ends(state, qid)):
+        quest["proof_pending"] = True
+        log_banner(log,
+                   f"  *** THE TARGET ESCAPED -- proof wanted: "
+                   f"{quest['proof']}. The job is not done until they "
+                   f"are dead. ***",
+                   ["*** THE TARGET ESCAPED --",
+                    f"proof wanted: {quest['proof']}.",
+                    "The job is not done until",
+                    "they are dead. ***"])
         return
     _close_site(state, log, qid)
 
@@ -2329,17 +2462,30 @@ def advance_quest(state: dict, log: list[str], qid: str) -> None:
 def _close_site(state: dict, log: list[str], qid: str,
                 pay_mult: float = 1.0, note: str = "") -> None:
     """Close the active quest's CURRENT place: move the cursor on, and if it
-    was the LAST place, complete the quest -- the turn-in lump + the whole
-    job's gold (scaled by `pay_mult`, the caper paths' fraction: a settled
-    twist), the day stamp, the giver prompt, the EPILOGUE, the war hook, and
-    the hell-pact ledger. advance_quest's tail, split out (2026-07-19) so a
-    deed done clean and a settled twist can close a place without walking
-    its rooms.
+    was the LAST place, fire the WORK-DONE stage (2026-08-08, the turn-in
+    rework): the banner says the job is done and names the giver, the world
+    changes now (complete_quest_place_state -- the pass reopens when the
+    deed is done, not when it is paid), and the FIELD tranche of the XP
+    lands, unbanded. The gold, the turn-in tranche, the CHA negotiation,
+    the reward weapon and the epilogue wait where the giver stands
+    (`turnin QID`). advance_quest's tail, split out (2026-07-19) so a deed
+    done clean and a settled twist can close a place without walking its
+    rooms.
 
-    Since 2026-07-26 pay lives on the QUEST, not the site: an intermediate
-    place clears with a banner and no purse (rpg.py, the two pay ladders).
-    Everything a job is worth beyond the per-fight shares is handed over at
-    the turn-in, once."""
+    The EXEMPT kinds still pay whole here -- the turn-in stage is for
+    HONEST work with a giver (board quests and forged good quests): WAR
+    WAVES have no clock, the giver is a ruler mid-war, and wave 3's
+    scripted fall makes the return scene impossible by design; CONQUEST
+    garrison jobs have no giver -- the town is the pay; HELL assignments
+    and dark quests pay at work-done (hell verifies its own work and the
+    purse arrives by infernal delivery -- narrate the receipt; a settled
+    twist is a hand-off on the spot by definition). DELIVERIES never come
+    this way at all: the hand-off at the destination is their turn-in
+    (deliver_if_arrived).
+
+    `pay_mult` is the caper paths' fraction (a settled twist), and rides
+    under the band as before. A place cleared by rout carries its tag on
+    the banner: driven off, not slain."""
     quest = state["world"]["quests"][qid]
     party, purse = state["party"], state["purse"]
     cur = quest["next"]
@@ -2347,22 +2493,32 @@ def _close_site(state: dict, log: list[str], qid: str,
     site = sites[cur["site"]]
     n_sites = len(quest["sites"])
     last_site = cur["site"] == n_sites - 1
-    banner = "QUEST COMPLETE" if last_site else "SITE CLEARED"
-    if note:
-        banner += f" ({note})"
+    pays_here = (quest.get("story_wave") is not None
+                 or quest.get("conquest")
+                 or quest.get("hell_task")
+                 or quest.get("align") == "dark")
+    if site.get("routed"):
+        # The display never prints "the giants are dead" against a log
+        # that says otherwise.
+        note = f"{note}; driven off, not slain" if note \
+            else "driven off, not slain"
+    day = state["clock"].day
+    enc = quest.get("encounters", 1)
     # A multi-site quest names its position (site 1/2) in the banner so a
     # SITE CLEARED never reads as the whole job done (2026-07-19).
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
-    if last_site:
-        enc = quest.get("encounters", 1)
+    tag = f" ({note})" if note else ""
+    if last_site and pays_here:
+        banner = "QUEST COMPLETE" + tag
         # The clock's band rides ON TOP of the caper fraction (2026-07-26):
         # what the job is worth is what it is worth ON THE DAY it is handed
-        # over. Only the TURN-IN is banded -- the per-encounter shares were
-        # paid as they were earned and are never clawed back.
-        day = state["clock"].day
+        # over. The per-encounter shares were paid as they were earned and
+        # are never clawed back.
         band = quest_band(quest, day)
         pay_mult *= QUEST_PAY_BANDS[band]
-        clear_xp = round(quest_clear_xp(quest["level"], enc) * pay_mult)
+        clear_xp = round((quest_clear_xp(quest["level"], enc)
+                          + quest_turnin_xp(quest["level"], enc))
+                         * pay_mult)
         gold = round(quest_gold_posted(quest) * pay_mult)
         award_quest(party, purse, gold, clear_xp, log,
                     f"{quest['name']} -- {site['name']}{pos}", banner=banner)
@@ -2386,7 +2542,32 @@ def _close_site(state: dict, log: list[str], qid: str,
                        [f"({band.upper()} turn-in: day {day},",
                         f"due day {quest['deadline_day']} --",
                         f"x{QUEST_PAY_BANDS[band]:g} on the lump)"])
+    elif last_site:
+        # The work-done stage: the deed is done in the field; the pay
+        # waits with the giver. The FIELD tranche lands now, unbanded --
+        # only the turn-in tranche and the gold are ever banded or lost.
+        banner = "THE JOB IS DONE" + tag
+        origin = state["world"]["areas"].get(quest["origin"])
+        g = quest.get("giver")
+        who = f"{g['name']}" if g else "the giver"
+        where = origin["name"] if origin else quest["origin"]
+        due = (f" -- due day {quest['deadline_day']}"
+               if quest.get("deadline_day") is not None else "")
+        log.append("")
+        log_banner(log,
+                   f"  *** {banner}: {quest['name']} -- "
+                   f"{site['name']}{pos}. Return to {who} at "
+                   f"{where}{due}: `turnin {qid}`. ***",
+                   [f"*** {banner}:", f"{quest['name']} --",
+                    f"{site['name']}{pos}.",
+                    f"Return to {who}",
+                    f"at {where}{due}:",
+                    f"`turnin {qid}`. ***"])
+        field_xp = round(quest_clear_xp(quest["level"], enc) * pay_mult)
+        award_xp(party, field_xp, log, "the work done")
+        record_karma(state, field_xp, quest.get("align", "good"), log)
     else:
+        banner = "SITE CLEARED" + tag
         log_banner(log,
                    f"  *** {banner}: {site['name']}{pos} -- "
                    f"the job goes on. ***",
@@ -2394,6 +2575,14 @@ def _close_site(state: dict, log: list[str], qid: str,
                     "the job goes on."])
     cur["site"] += 1
     cur["room"] = 0
+    if last_site and not pays_here:
+        # The world changes NOW -- the pass reopens when the deed is done,
+        # not when it is paid. The epilogue and the history record wait
+        # for the giver's scene (cmd_turnin).
+        quest["status"] = "work_done"
+        quest["work_done_day"] = day
+        complete_quest_place_state(state["world"], quest, day=day)
+        return
     if last_site:
         quest["status"] = "done"
         quest["done_day"] = state["clock"].day
@@ -3707,7 +3896,7 @@ def cmd_settle(args: argparse.Namespace) -> None:
         print("No active quest -- nothing on the table to settle.")
         return
     quest = state["world"]["quests"][qid]
-    if quest["status"] == "done" or quest.get("kind") == "delivery":
+    if quest["status"] != "open" or quest.get("kind") == "delivery":
         print(f"[{qid}] {quest['name']} has no terms on the table.")
         return
     if not at_quest_site(state, quest):
@@ -3760,6 +3949,157 @@ def pay_set_site_clear(state: dict, log: list[str], site_key: str,
                 site.quest_xp, log, site.quest_line, banner="SITE CLEARED")
 
 
+# --------------------------------------------------------------------------- #
+# Loose ends (2026-08-08): a rout writes a record the save keeps
+# --------------------------------------------------------------------------- #
+
+def record_loose_end(state: dict, escaped: list, log: list[str],
+                     quest_id: str | None = None,
+                     site_key: str | None = None,
+                     room: int | None = None) -> dict:
+    """Who got away, at what HP and wounds, from which fight, in which
+    area, on what day -- exactly as fled party rooms keep their survivors.
+    One list on the save (`loose_ends`), newest first. It is what `pursue`
+    reads, what a proof quest checks, and the honest substrate for "the
+    same troll, healed, back in the pass". No expiry: entries persist until
+    the DM prunes them by save edit -- they are story, not bookkeeping."""
+    # The id is DERIVED from the list, never counted alongside it: every
+    # command is its own process, so a counter would have to ride the save
+    # to mean anything, and one the DM's pruning could desynchronize. The
+    # highest suffix in hand plus one is correct after any edit.
+    used = [int(m.group(1)) for r in state.get("loose_ends") or []
+            if (m := re.fullmatch(r"le(\d+)", r.get("id", "")))]
+    n = max(used, default=0) + 1
+    area = current_area(state)
+    world = state.get("world") or {}
+    if quest_id:
+        q = world.get("quests", {}).get(quest_id)
+        s = world.get("sites", {}).get(site_key)
+        where = (f"{q['name']} -- {s['name']}" if q and s
+                 else quest_id)
+    elif site_key:
+        where = site_key
+    else:
+        where = f"the open ground of {area['name']}"
+    rec = {
+        "id": f"le{n}",
+        "day": state["clock"].day,
+        "area": area["key"],
+        "area_name": area["name"],
+        "where": where,
+        "quest": quest_id,
+        "site": site_key,
+        "room": room,
+        "foes": [_entity_to_dict(f) for f in escaped],
+        "pursue_tried": False,
+        "resolved_day": None,
+    }
+    state.setdefault("loose_ends", []).insert(0, rec)
+    names = ", ".join(f.name for f in escaped)
+    log.append(f"  (LOOSE END {rec['id']}: {names} got away -- "
+               f"`pursue` while the trail is warm: today, here, "
+               f"before a night's sleep)")
+    return rec
+
+
+def loose_end_by_id(state: dict, rec_id: str) -> dict | None:
+    for rec in state.get("loose_ends") or []:
+        if rec["id"] == rec_id:
+            return rec
+    return None
+
+
+def loose_end_survivors(rec: dict) -> list[dict]:
+    return [f for f in rec["foes"] if not f.get("dead")]
+
+
+def loose_end_line(rec: dict, day: int) -> str:
+    """One 40-column-wrappable readout row for a loose end."""
+    names = ", ".join(f"{f['name']} (L{f['level']}, "
+                      f"{f['hp']}/{f['max_hp']} HP"
+                      + (", wounded" if f.get("wounds") else "") + ")"
+                      for f in loose_end_survivors(rec))
+    if rec.get("resolved_day") is not None:
+        tail = f"settled day {rec['resolved_day']}"
+    elif rec.get("pursue_tried"):
+        tail = "the trail is walked out"
+    elif rec["day"] == day:
+        tail = "the trail is WARM"
+    else:
+        tail = "the trail is cold"
+    return (f"{rec['id']}: {names or 'nobody left'} -- fled {rec['where']} "
+            f"(day {rec['day']}, {rec['area_name']}); {tail}")
+
+
+def trail_warm(state: dict, rec: dict) -> bool:
+    """The warm-trail gate (2026-08-08): same day as the rout, party still
+    in the area. A slept night advances the day, so 'no night slept' rides
+    in the same check."""
+    return (rec["day"] == state["clock"].day
+            and rec["area"] == (state.get("position") or {}).get("area"))
+
+
+def _final_site_loose_ends(state: dict, qid: str) -> list[dict]:
+    """The unresolved loose ends holding a proof quest open: escapes from
+    its FINAL site with somebody still breathing. Mook sites -- every site
+    before the last -- are exempt by construction."""
+    quest = state["world"]["quests"][qid]
+    if not quest.get("sites"):
+        return []
+    final = quest["sites"][-1]
+    return [rec for rec in state.get("loose_ends") or []
+            if rec.get("quest") == qid and rec.get("site") == final
+            and rec.get("resolved_day") is None
+            and loose_end_survivors(rec)]
+
+
+def _maybe_finish_proof(state: dict, log: list[str], qid: str) -> None:
+    """A proof quest held open by an escape completes the moment its final
+    site's roster is finally dead: the gate lifts and the work-done stage
+    fires (the cursor never moved past the final site)."""
+    quest = state["world"]["quests"].get(qid)
+    if (quest is None or not quest.get("proof_pending")
+            or quest["status"] != "open"
+            or _final_site_loose_ends(state, qid)):
+        return
+    quest.pop("proof_pending", None)
+    log_banner(log,
+               f"  *** PROOF TAKEN: {quest['proof']} -- the target is "
+               f"dead. ***",
+               ["*** PROOF TAKEN:", f"{quest['proof']} --",
+                "the target is dead. ***"])
+    _close_site(state, log, qid)
+
+
+def _resolve_pursuit(state: dict, log: list[str], rec_id: str,
+                     foes: list) -> None:
+    """A won pursuit fight settles its loose end. Everyone dead: the record
+    resolves, and a proof quest it was holding open completes. A SECOND
+    rout: the record re-arms in place -- fresh day, fresh ground, a fresh
+    warm trail (a new rout is a new attempt)."""
+    rec = loose_end_by_id(state, rec_id)
+    if rec is None:
+        return
+    day = state["clock"].day
+    escaped = [f for f in foes if f.withdrew]
+    if escaped:
+        area = current_area(state)
+        rec["day"] = day
+        rec["area"] = area["key"]
+        rec["area_name"] = area["name"]
+        rec["foes"] = [_entity_to_dict(f) for f in escaped]
+        rec["pursue_tried"] = False
+        names = ", ".join(f.name for f in escaped)
+        log.append(f"  (LOOSE END {rec['id']}: {names} got away AGAIN -- "
+                   f"the trail is warm while the day holds)")
+        return
+    rec["resolved_day"] = day
+    log.append(f"  (loose end {rec['id']} is settled -- nobody got away "
+               f"this time)")
+    if rec.get("quest"):
+        _maybe_finish_proof(state, log, rec["quest"])
+
+
 def finish_encounter(state: dict, log: list[str], foes: list,
                      encounter_xp: int, site: str | None = None,
                      room: int | None = None,
@@ -3767,7 +4107,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                      crime_take: dict | None = None,
                      dead_before: list[str] | None = None,
                      align: str = "neutral",
-                     mercy: str | None = None) -> None:
+                     mercy: str | None = None,
+                     pursuit: str | None = None) -> None:
     """The melee actually ended: defeat mercy/wipe check, awards,
     companion autolevel,
     loot, the companion morale pass, persist -- and the PC's level-up
@@ -3821,6 +4162,21 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
             log.append(weapons_left)
+        # A field cleared by rout leaves its record (2026-08-08): the loose
+        # end, and a `routed` mark on the site so its banner says driven
+        # off, not slain. A won PURSUIT settles its record instead --
+        # `pursue`'s own catch never writes a second entry.
+        escaped = [f for f in foes if f.withdrew]
+        if pursuit is not None:
+            _resolve_pursuit(state, log, pursuit, foes)
+        elif escaped:
+            world = state.get("world")
+            wsite = (world["sites"].get(site)
+                     if world and site is not None else None)
+            if wsite is not None:
+                wsite["routed"] = True
+            record_loose_end(state, escaped, log, quest_id=quest,
+                             site_key=site, room=room)
         if quest is not None:
             advance_quest(state, log, quest)
         elif site is not None:
@@ -4114,6 +4470,14 @@ def cmd_take(args: argparse.Namespace) -> None:
     if quest["status"] == "done":
         print(f"[{quest['id']}] {quest['name']} is already complete.")
         return
+    if quest["status"] == "work_done":
+        print(f"[{quest['id']}] {quest['name']}: the work is done -- "
+              f"`turnin {quest['id']}` at the giver pays it.")
+        return
+    if quest["status"] == "lost":
+        print(f"[{quest['id']}] {quest['name']} is over -- done, never "
+              f"paid: the window closed before the party returned.")
+        return
     if quest["status"] in ("failed", "expired"):
         print(f"[{quest['id']}] {quest['name']} is over -- the window "
               f"closed on day {quest.get('deadline_day')}. "
@@ -4205,6 +4569,106 @@ def cmd_take(args: argparse.Namespace) -> None:
     save(state)
 
 
+def cmd_turnin(args: argparse.Namespace) -> None:
+    """Hand the finished job back to its giver (2026-08-08, the turn-in
+    stage): gated on the party standing in the giver's settlement area, run
+    by the DM as part of the return scene and narrated as that scene
+    (dm.md). ALL the gold and the TURN-IN tranche of the XP land here,
+    banded by the turn-in day -- the road home is finally inside the
+    clock -- plus the CHA negotiation, the reward weapon, the companion
+    morale bump, and the epilogue. `--here` is the DM's valve for edge
+    fiction (a dead giver, an occupied town): pay where the story says."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state["world"]
+    quest = _get_quest(world, args.quest)
+    if quest is None:
+        return
+    qid = quest["id"]
+    if quest.get("kind") == "delivery":
+        print(f"[{qid}] {quest['name']} is a delivery -- arriving at "
+              f"{quest['dest_name']} is the turn-in.")
+        return
+    if quest["status"] == "open":
+        if quest.get("proof_pending"):
+            print(f"[{qid}] {quest['name']}: the target escaped -- proof "
+                  f"wanted ({quest.get('proof')}). The job is not done "
+                  f"until they are dead.")
+        else:
+            print(f"[{qid}] {quest['name']}: the work is not done yet.")
+        return
+    if quest["status"] == "done":
+        print(f"[{qid}] {quest['name']} is already paid.")
+        return
+    if quest["status"] in ("failed", "expired", "lost"):
+        print(f"[{qid}] {quest['name']} is over -- the window closed on "
+              f"day {quest.get('deadline_day')}.")
+        return
+    day = state["clock"].day
+    if quest_expired(quest, day, taken=True):
+        # The window closed on the road home; the next day tick would say
+        # the same (board_clock). Say it now instead of paying.
+        for line in _lose_paid_window(state, quest):
+            print(line)
+        save(state)
+        return
+    if not args.here and not at_quest_origin(state, quest):
+        return
+    party, purse = state["party"], state["purse"]
+    pc = party[0]
+    pc_level_before = pc.level
+    band = quest_band(quest, day)
+    mult = QUEST_PAY_BANDS[band]
+    enc = quest.get("encounters", 1)
+    xp = round(quest_turnin_xp(quest["level"], enc) * mult)
+    gold = round(quest_gold_posted(quest) * mult)
+    g = quest.get("giver")
+    log: list[str] = []
+    if g:
+        log.append(f"The job is handed back to its giver -- narrate the "
+                   f"scene (dm.md): {npc_line(g)}")
+    award_quest(party, purse, gold, xp, log,
+                f"{quest['name']} -- paid in full",
+                banner="QUEST COMPLETE")
+    record_karma(state, xp, quest.get("align", "good"), log)
+    rw = quest.get("reward_weapon")
+    if rw:
+        # The reward weapon finally stands where the giver does: `claim`
+        # already waits at the turn-in.
+        state["pending_reward"] = dict(rw)
+        log_banner(log,
+                   f"  The pay is the {rw['name']} itself -- "
+                   f"`claim HERO` takes it up.",
+                   [f"The pay is the {rw['name']} --",
+                    "`claim HERO` takes it up."])
+    if quest.get("deadline_day") is not None and band != "on time":
+        log_banner(log,
+                   f"  (turned in {band.upper()} -- day {day} against a "
+                   f"deadline of day {quest['deadline_day']}: "
+                   f"x{mult:g} on the turn-in)",
+                   [f"({band.upper()} turn-in: day {day},",
+                    f"due day {quest['deadline_day']} --",
+                    f"x{mult:g} on the lump)"])
+    quest["status"] = "done"
+    quest["turned_in_day"] = day
+    if quest.get("epilogue"):
+        log.append(f"  EPILOGUE (day {day}): {quest['epilogue']}")
+    remember(state,
+             f"[{qid}] {quest['name']} (L{quest['level']}) -- done.",
+             kind="quest", note=quest.get("epilogue", ""))
+    for h in party[1:]:
+        if not h.dead:
+            autospend_points(h, log)
+    print("\n".join(log))
+    save(state)
+    if not pc.dead and pc.level > pc_level_before:
+        print()
+        print(f"*** {pc.name} reached level {pc.level} -- the spending "
+              f"menu (show it to the player, dm.md): ***")
+        print_levelup_menu([pc])
+
+
 def cmd_room(args: argparse.Namespace) -> None:
     """Resolve the active quest's next encounter (the board-quest sibling of
     `hideout ROOM` / `barrow ROOM`). Rooms come in order -- the cursor is the
@@ -4220,6 +4684,24 @@ def cmd_room(args: argparse.Namespace) -> None:
     quest = state["world"]["quests"][qid]
     if quest["status"] == "done":
         print(f"[{qid}] {quest['name']} is complete -- take a new quest.")
+        return
+    if quest["status"] == "work_done":
+        print(f"[{qid}] {quest['name']}: the work is done -- no rooms "
+              f"left. Return to the giver and `turnin {qid}`.")
+        return
+    if quest["status"] == "lost":
+        print(f"[{qid}] {quest['name']} is over -- done, never paid. "
+              f"Take a new quest.")
+        return
+    if quest.get("proof_pending"):
+        # Every room is fought; the cursor stands past the last one and
+        # there is nothing here to index. What the job still wants is a
+        # corpse, and that is `pursue`'s business, not this command's.
+        print(f"[{qid}] {quest['name']}: every room is cleared, but the "
+              f"target got away. The job still wants {quest['proof']} "
+              f"(proof of the kill). `pursue` while the trail is warm "
+              f"(same day, same area); after that, finding them again is "
+              f"the DM's scene.")
         return
     if quest.get("kind") == "delivery":
         print(f"[{qid}] {quest['name']} is a road job -- no rooms to fight. "
@@ -4378,7 +4860,8 @@ def cmd_forge(args: argparse.Namespace) -> None:
     quest = forge_quest(world, qid, args.level, args.places, args.encounters,
                         kinds, args.name, state["rng"],
                         area_key=area["key"],
-                        align="dark" if args.dark else "good")
+                        align="dark" if args.dark else "good",
+                        proof=args.proof or "")
     if args.days:
         # A forged job carries a window only when the DM gives it one
         # (`forge --days N`); without one it is timeless, like a war wave.
@@ -4801,6 +5284,98 @@ def cmd_engage(args: argparse.Namespace) -> None:
                          skins=sighting["skins"])
 
 
+def cmd_pursue(args: argparse.Namespace) -> None:
+    """Run down a rout's survivors (2026-08-08): one command, one roll, no
+    tracking subsystem. Available only while the trail is WARM -- same day
+    as the rout, party still in the area, no night slept. The player says
+    "I want them dead"; the DM runs it. One attempt per rout. Success
+    re-opens the fight at the runners' fled state -- their end-of-fight HP,
+    wounds and STA (they have been running; no refresh) -- met at the
+    party's preferred range: they are the hunters. Failure loses the
+    trail, no day spent; the loose end stays. The mop-up pays WILD rates
+    (the room already banked its encounter share when the field cleared).
+
+    `--stage` is the DM's valve for the cold trail's END: a re-encounter
+    staged off the loose end (rumor, travel, the story's territory) -- no
+    gate, no roll, and the survivors healed by the days passed (living
+    foes heal after a day; the troll fully)."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    ends = [r for r in state.get("loose_ends") or []
+            if r.get("resolved_day") is None and loose_end_survivors(r)]
+    if args.id:
+        rec = loose_end_by_id(state, args.id)
+        if rec is None:
+            print(f"No loose end {args.id!r}. On the books: "
+                  + (", ".join(r["id"] for r in state.get("loose_ends")
+                               or []) or "none") + ".")
+            return
+    else:
+        rec = next((r for r in ends
+                    if trail_warm(state, r) and not r["pursue_tried"]),
+                   None) or (ends[0] if ends else None)
+        if rec is None:
+            print("No loose end to pursue -- nobody has gotten away.")
+            return
+    day = state["clock"].day
+    survivors = loose_end_survivors(rec)
+    if rec.get("resolved_day") is not None or not survivors:
+        print(f"Loose end {rec['id']} is settled -- nobody left to chase.")
+        return
+    if not args.stage:
+        if rec.get("pursue_tried"):
+            print(f"Loose end {rec['id']}: the trail was walked out "
+                  f"already -- one attempt per rout. Finding them again "
+                  f"is rumor, travel, and the DM's territory (`pursue "
+                  f"{rec['id']} --stage` when the story stages it).")
+            return
+        if not trail_warm(state, rec):
+            print(f"Loose end {rec['id']}: the trail is cold -- it was "
+                  f"day {rec['day']} at {rec['area_name']}, and a night "
+                  f"heals a runner's wounds. Pursuit is finding now: "
+                  f"rumor, travel, forge -- the record keeps the story "
+                  f"(`pursue {rec['id']} --stage` when it lands).")
+            return
+    party, rng = state["party"], state["rng"]
+    runners = [_entity_from_dict(d) for d in rec["foes"]
+               if not d.get("dead")]
+    for f in runners:
+        f.withdrew = False      # they are back in a fight
+    if args.stage:
+        days = day - rec["day"]
+        runners = refresh_foes_after_retreat(runners, days)
+        banner = f"THE RE-ENCOUNTER: {rec['where']} -- day {rec['day']}"
+    else:
+        rec["pursue_tried"] = True
+        contest_log: list[str] = []
+        caught = track_contest(party, runners, rng, contest_log)
+        for line in contest_log:
+            print(line)
+        if not caught:
+            print(f"The trail is lost. No day is spent; the loose end "
+                  f"stays on the books ({rec['id']} -- the record is "
+                  f"the story hook).")
+            save(state)
+            return
+        banner = f"RUN DOWN: {rec['where']}"
+    log = new_combat_log()
+    open_fight(party, log)
+    level = max(f.level for f in runners)
+    log_banner(log, f"=== {banner} (a level-{level} fight) ===",
+               [f"=== {banner} ===", f"(a level-{level} fight)"])
+    for line in roster_lines(runners):
+        log.append("  " + line)
+    quest = state["world"]["quests"].get(rec["quest"]) \
+        if rec.get("quest") and state.get("world") else None
+    resolve_encounter(state, log, runners, wild_encounter_xp(level),
+                      field=party_preferred_field(party),
+                      align=(quest or {}).get("align", "neutral"),
+                      weather=fight_sky(state) if not rec.get("site")
+                      else "",
+                      pursuit=rec["id"])
+
+
 def cmd_look(args: argparse.Namespace) -> None:
     """Show the stored local place and only player-known facts/children."""
     state = load()
@@ -4812,6 +5387,12 @@ def cmd_look(args: argparse.Namespace) -> None:
         print("DM PLACE FACTS")
         for line in place_debug_lines(world, place):
             print(line)
+        local_ends = [r for r in state.get("loose_ends") or []
+                      if r.get("area") == area["key"]]
+        if local_ends:
+            print("LOOSE ENDS HERE (newest first):")
+            for rec in local_ends:
+                print(f"  {loose_end_line(rec, state['clock'].day)}")
         return
     print(f"WHERE: {location_line(state)}")
     if pos.get("room"):
@@ -5093,7 +5674,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
                      crime_take=pending.get("crime"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
-                     mercy=pending.get("mercy"))
+                     mercy=pending.get("mercy"),
+                     pursuit=pending.get("pursuit"))
 
 
 def cmd_retreat(args: argparse.Namespace) -> None:
@@ -5152,7 +5734,17 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         state["pending"] = None
         if escaped and not wiped and not mercy_fired:
             site, room = pending["site"], pending["room"]
-            if site is not None:
+            if pending.get("pursuit"):
+                # The party broke off its own pursuit: the loose end stays
+                # on the books at the runners' current tracks -- the one
+                # warm attempt is spent, and the rest is the DM's story.
+                rec = loose_end_by_id(state, pending["pursuit"])
+                if rec is not None:
+                    rec["foes"] = [_entity_to_dict(f)
+                                   for f in pending["foes"] if not f.dead]
+                    log.append(f"  (loose end {rec['id']} stays on the "
+                               f"books -- the party broke off the chase)")
+            elif site is not None:
                 state.setdefault("rooms", {})[(site, room)] = {
                     "foes": pending["foes"], "day": clock.day}
                 standing = sum(1 for f in pending["foes"] if f.alive)
@@ -5210,7 +5802,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
                      crime_take=pending.get("crime"),
                      dead_before=pending.get("dead_before"),
                      align=pending.get("align", "neutral"),
-                     mercy=pending.get("mercy"))
+                     mercy=pending.get("mercy"),
+                     pursuit=pending.get("pursuit"))
 
 
 MAX_HEAL_CAMP_NIGHTS = 14   # `camp --heal` safety valve: HP knits at
@@ -6773,6 +7366,27 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_engage)
 
     p = sub.add_parser(
+        "pursue",
+        help="run down a rout's survivors (the loose-ends record, "
+             "2026-08-08) while the trail is WARM: same day, same area, "
+             "no night slept; ONE attempt per rout. 2d6 + best MIND vs "
+             "the runners' chase DEX (+2 trackers if any runner is "
+             "wounded). Success re-opens the fight at their fled state, "
+             "at the party's preferred range; failure loses the trail "
+             "(no day spent -- the record stays). Pays WILD rates: the "
+             "field already banked its share. `--stage` is the DM's "
+             "cold-trail valve: re-open a fight off any loose end, no "
+             "gate, no roll, the survivors healed by the days passed.")
+    p.add_argument("id", nargs="?", default=None,
+                   help="loose-end id (default: the newest warm one here; "
+                        "`status` names the latest, `look --dm` lists "
+                        "local ones)")
+    p.add_argument("--stage", action="store_true",
+                   help="DM: stage the re-encounter the story found -- "
+                        "skips the warm gate and the tracking roll")
+    p.set_defaults(func=cmd_pursue)
+
+    p = sub.add_parser(
         "show",
         help="one quest in full: description, sites, rooms, and what holds "
              "each room (by skinned display name). Levels are exact; --dm "
@@ -6791,10 +7405,28 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_take)
 
     p = sub.add_parser(
+        "turnin",
+        help="hand a WORK-DONE job back to its giver (2026-08-08: a quest "
+             "is paid where the giver stands, not where the last body "
+             "falls). Gated on standing in the giver's settlement area; "
+             "run it as the return scene (dm.md). Pays ALL the gold and "
+             "the turn-in XP tranche, banded by TODAY -- the road home is "
+             "inside the clock -- plus the CHA talk-up, the reward "
+             "weapon, +1 companion satisfaction, and the epilogue. "
+             "(Deliveries pay at the destination; war waves, conquest, "
+             "hell and dark work pay at work-done.)")
+    p.add_argument("quest", help="quest id (q07, or just 7)")
+    p.add_argument("--here", action="store_true",
+                   help="DM valve for edge fiction (a dead giver, an "
+                        "occupied town): pay where the story says")
+    p.set_defaults(func=cmd_turnin)
+
+    p = sub.add_parser(
         "room",
         help="resolve the ACTIVE quest's next encounter at its current site "
-             "(enter it with `go SITE` first). Clearing a site pays its lump; "
-             "clearing the last site completes the quest. A fled room is "
+             "(enter it with `go SITE` first). Clearing the last site is "
+             "WORK DONE: the field XP lands and the gold waits at the "
+             "giver (`turnin`). A fled room is "
              "re-fought against its recorded survivors. CAPER quests "
              "(dark work, 2026-07-19): a DEED site first rolls the PC's "
              "2d6+stat vs its DC -- a make does the site clean (full "
@@ -6860,6 +7492,12 @@ def build_parser() -> argparse.ArgumentParser:
                         "board's clock, quests.py). Omit for a timeless "
                         "job -- the DM's improvised work has no deadline "
                         "unless the fiction gives it one.")
+    p.add_argument("--proof", nargs="?", const="proof of the kill",
+                   default=None, metavar="TOKEN",
+                   help="forge a BOUNTY: the giver pays on this token "
+                        "(default 'proof of the kill') -- the final "
+                        "site's roster must be DEAD before the job is "
+                        "done; driven off is not done")
     p.set_defaults(func=cmd_forge)
 
     p = sub.add_parser(

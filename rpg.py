@@ -578,8 +578,10 @@ QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
 # but nothing like three times more -- the trip, the giver, and the turn-in
 # cost the same either way. QUEST_ENCOUNTER_SHARE of the XP falls as the
 # fights do (flat per encounter -- no streak, no push-on carrot: attrition is
-# the wound track's job now, not the ledger's); the rest, plus ALL of the
-# gold, is the turn-in lump.
+# the wound track's job now, not the ledger's). The rest splits three ways
+# since 2026-08-08 (the turn-in stage): the FIELD tranche lands at work-done
+# where the last body falls, and QUEST_TURNIN_SHARE plus ALL of the gold
+# lands where the giver stands, banded by the turn-in day.
 QUEST_XP_PER_LEVEL   = 44   # fitted by bench_quests --part career (2026-07-26):
                             # 38 quests to the cap, the pre-rework pace. The
                             # spec's starting estimate of 60 ran the career in
@@ -592,8 +594,14 @@ QUEST_GOLD_PER_LEVEL = 18   # the other career-pace knob. At the measured
                             # and the rework's whole spine is not to price
                             # recovery in it.
 ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
-QUEST_ENCOUNTER_SHARE = 0.40    # paid as the encounters fall; the rest on
-                                # turn-in
+QUEST_ENCOUNTER_SHARE = 0.40    # paid as the encounters fall
+QUEST_TURNIN_SHARE = 0.20       # paid where the GIVER stands (2026-08-08,
+                                # the turn-in stage), banded by the turn-in
+                                # day; the remainder (0.40) is the FIELD
+                                # tranche, paid unbanded at work-done.
+                                # Reporting back diligently is real XP but
+                                # smallish -- the gold is the turn-in's
+                                # real weight.
 
 
 def site_xp_total(level: int) -> int:
@@ -636,11 +644,21 @@ def quest_encounter_xp(level: int, encounters: int) -> int:
                         * QUEST_ENCOUNTER_SHARE / enc))
 
 
+def quest_turnin_xp(level: int, encounters: int) -> int:
+    """The TURN-IN tranche (2026-08-08): what reporting back to the giver
+    pays, banded by the day it lands. The only XP the clock ever touches."""
+    enc = max(1, min(3, encounters))
+    return max(1, round(quest_xp_total(level, enc) * QUEST_TURNIN_SHARE))
+
+
 def quest_clear_xp(level: int, encounters: int) -> int:
-    """The turn-in lump: whatever the encounter shares leave of the total."""
+    """The FIELD tranche, paid unbanded at work-done (the last site closed):
+    whatever the encounter shares and the turn-in tranche leave of the
+    total. Before the turn-in stage (2026-08-08) this was the whole lump."""
     enc = max(1, min(3, encounters))
     return (quest_xp_total(level, enc)
-            - enc * quest_encounter_xp(level, enc))
+            - enc * quest_encounter_xp(level, enc)
+            - quest_turnin_xp(level, enc))
 
 
 def quest_gold(level: int, encounters: int) -> int:
@@ -1493,7 +1511,24 @@ FATE_RESTORE_HP = 1         # a paid bargain stands the protagonist at 1 HP
 # Entities with pursues=False (the barrow's undead -- bound to the grave)
 # still swing at the door but never give chase: retreat from the barrow
 # always succeeds once past it.
+#
+# THE ROUT (2026-08-08 rebalance): a breaking FOE line is not a deliberate
+# retreat, it is a collapse under pursuit, and the chase math says so.
+# The runners get NO FLEE_BONUS (they picked nothing), their chase DEX is
+# HP-weighted as well as STA-weighted (below a third by construction --
+# broken bodies run slowly; the weight floors at CHASE_HP_WEIGHT_FLOOR so a
+# graze-rich pack is not automatically caught), and the trigger is its own
+# stricter predicate (rout_ready, below a THIRD -- fight_winding_down stays
+# at half: it also gates potion thrift and must not move). Measured before
+# the rebalance: the solo troll escaped 54% of won fights; the fix makes
+# escape rare and condition-correlated while the relief-escape (a hurt
+# party has no fit pursuers) survives untouched.
 FLEE_BONUS = 2
+CHASE_HP_WEIGHT_FLOOR = 0.3     # a routed runner's DEX never weighs below
+                                # this fraction of itself in the chase
+TRACK_WOUND_BONUS = 2           # `pursue` (the warm trail): trackers' bonus
+                                # when any runner carries a named wound --
+                                # blood on the ground
 
 # Defeat-without-death (2026-07-26, the attrition rework's slice 4).
 # Ferocity is CONTENT, not a pressure stat: it says what a roster does with a
@@ -4720,6 +4755,16 @@ def fight_winding_down(foes: list[Entity]) -> bool:
     return all(f.hp * 2 < f.max_hp or f.spent for f in foes if f.alive)
 
 
+def rout_ready(foes: list[Entity]) -> bool:
+    """Is a beaten ferocity-0/1 roster ready to break and run? Below a THIRD
+    of HP or Spent, every living body -- deliberately stricter than
+    fight_winding_down's half (2026-08-08, the rout rebalance): the half
+    band caught big pools (the troll hovered under it for rounds) and made
+    escapes routine in fights the party was flatly winning. winding-down
+    stays where it is -- it also gates potion thrift and must not move."""
+    return all(f.hp * 3 < f.max_hp or f.spent for f in foes if f.alive)
+
+
 def standing_order(kind: str, hero: Entity, foes: list[Entity]) -> str | None:
     """The default mid-fight standing order for a hero whose crossing does
     NOT interrupt (see the pause comment block): what they do on their own,
@@ -5814,12 +5859,13 @@ def group_combat(party: list[Entity], foes: list[Entity],
         # A beaten ferocity-0/1 roster gets one chance to leave. This runs
         # after Fate's special interrupt but before the ordinary crossing:
         # if the enemy is already quitting, there is no wounds decision left
-        # for the player to make.
+        # for the player to make. The trigger is rout_ready -- a THIRD, not
+        # winding-down's half (the 2026-08-08 rout rebalance).
         standing_foes = [f for f in foes if f.alive]
         if (standing_foes
                 and max(f.ferocity for f in standing_foes)
                 < FEROCITY_RELENTLESS
-                and fight_winding_down(foes)
+                and rout_ready(foes)
                 and not any(f.break_tried for f in standing_foes)):
             for f in standing_foes:
                 f.break_tried = True
@@ -6053,13 +6099,21 @@ def _settle_fate_debt(party: list[Entity], foes: list[Entity],
 # Retreat & chase (the other exit from a paused fight)
 # --------------------------------------------------------------------------- #
 
-def _chase_dex(group: list[Entity]) -> float:
+def _chase_dex(group: list[Entity], hp_weighted: bool = False) -> float:
     """A side's speed in the break contest: average DEX weighted by current
     STA -- fresher legs count for more (tireless entities always weigh in at
     full). A side entirely out of breath falls back to a plain average.
-    Frost-rimed legs (the ice school's debuff) run slower here too."""
-    def dex(e: Entity) -> int:
-        return max(0, e.dex - e.dex_debuff)
+    Frost-rimed legs (the ice school's debuff) run slower here too.
+
+    `hp_weighted` is the ROUTED side's handicap (2026-08-08): each runner's
+    DEX is scaled by their HP fraction, floored at CHASE_HP_WEIGHT_FLOOR --
+    they are below a third by construction, and broken bodies run slowly.
+    The party's deliberate retreat never passes it; pursuers never do."""
+    def dex(e: Entity) -> float:
+        d = max(0, e.dex - e.dex_debuff)
+        if hp_weighted:
+            d *= max(CHASE_HP_WEIGHT_FLOOR, e.hp / e.max_hp)
+        return d
     total_weight = sum(max(0, e.cur_sta) for e in group)
     if total_weight == 0:
         return sum(dex(e) for e in group) / len(group)
@@ -6067,18 +6121,24 @@ def _chase_dex(group: list[Entity]) -> float:
 
 
 def _chase_contest(runners: list[Entity], pursuers: list[Entity],
-                   rng: random.Random, log: list[str]) -> bool:
+                   rng: random.Random, log: list[str],
+                   routed: bool = False) -> bool:
     """The one shared chase roll, used in both directions. True means the
-    runners get away. The escaping side always owns FLEE_BONUS: it picked the
-    instant and the ground, whether it is the party or a breaking foe line."""
-    flee_dex = _chase_dex(runners)
+    runners get away. A DELIBERATE retreat owns FLEE_BONUS -- it picked the
+    instant and the ground. A ROUT (`routed`, the breaking foe line) owns
+    nothing: no head start, and its chase DEX is HP-weighted on top of the
+    STA weighting (2026-08-08 -- a collapse under pursuit, not a plan)."""
+    bonus = 0 if routed else FLEE_BONUS
+    flee_dex = _chase_dex(runners, hp_weighted=routed)
     hunt_dex = _chase_dex(pursuers)
     flee_dice = rng.randint(1, 6) + rng.randint(1, 6)
     hunt_dice = rng.randint(1, 6) + rng.randint(1, 6)
-    flee_total = flee_dice + flee_dex + FLEE_BONUS
+    flee_total = flee_dice + flee_dex + bonus
     hunt_total = hunt_dice + hunt_dex
+    weighting = "DEX HP+STA-weighted, no head start" if routed \
+        else f"DEX STA-weighted, +{bonus} head start"
     _debug(log, f"    the chase: flight {flee_total:.1f} (2d6={flee_dice}, "
-                f"+{flee_dex:.1f} DEX STA-weighted, +{FLEE_BONUS} head start) "
+                f"+{flee_dex:.1f} {weighting}) "
                 f"vs pursuit {hunt_total:.1f} (2d6={hunt_dice}, "
                 f"+{hunt_dex:.1f} DEX STA-weighted)")
     return flee_total >= hunt_total
@@ -6202,17 +6262,41 @@ def attempt_retreat(party: list[Entity], foes: list[Entity],
     return False
 
 
+def track_contest(party: list[Entity], runners: list[Entity],
+                  rng: random.Random, log: list[str]) -> bool:
+    """`pursue`, the warm trail (2026-08-08): one roll, no tracking
+    subsystem. 2d6 + the party's best living MIND vs 2d6 + the runners'
+    chase DEX (HP- and STA-weighted, exactly as in the rout they escaped
+    by), trackers +TRACK_WOUND_BONUS if any runner carries a named wound --
+    blood on the ground. True means the trail holds and the fight re-opens;
+    False means it is lost."""
+    mind = max((h.mind for h in party if h.alive), default=0)
+    bonus = TRACK_WOUND_BONUS if any(f.wounds for f in runners) else 0
+    run_dex = _chase_dex(runners, hp_weighted=True)
+    track_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    run_dice = rng.randint(1, 6) + rng.randint(1, 6)
+    track_total = track_dice + mind + bonus
+    run_total = run_dice + run_dex
+    blood = f", +{bonus} blood on the ground" if bonus else ""
+    _debug(log, f"    the trail: trackers {track_total:.1f} "
+                f"(2d6={track_dice}, +{mind} best MIND{blood}) vs "
+                f"runners {run_total:.1f} (2d6={run_dice}, "
+                f"+{run_dex:.1f} DEX HP+STA-weighted)")
+    return track_total >= run_total
+
+
 def attempt_foe_retreat(foes: list[Entity], party: list[Entity],
                         rng: random.Random, log: list[str],
                         field: int = 0) -> bool:
     """A badly-beaten ferocity-0/1 roster breaks in the reverse direction.
 
     This is the party retreat's machinery reflected across the field: every
-    hero still fit to swing gets one softened parting blow, then one
-    STA-weighted DEX chase contest decides whether the remaining foes escape.
-    A successful break marks them `withdrew` rather than Dead, so the
-    encounter can clear without manufacturing corpses or weapon drops.
-    Returns True when at least one foe gets away."""
+    hero still fit to swing gets one softened parting blow, then one chase
+    contest decides whether the remaining foes escape -- rolled as a ROUT
+    (2026-08-08): no FLEE_BONUS, and the runners' DEX HP-weighted as well
+    as STA-weighted. A successful break marks them `withdrew` rather than
+    Dead, so the encounter can clear without manufacturing corpses or
+    weapon drops. Returns True when at least one foe gets away."""
     runners = [f for f in foes if f.alive]
     if not runners:
         return False
@@ -6249,7 +6333,8 @@ def attempt_foe_retreat(foes: list[Entity], party: list[Entity],
     if not runners:
         return False
     pursuers = [h for h in fit if h.alive and h.pursues]
-    if pursuers and not _chase_contest(runners, pursuers, rng, log):
+    if pursuers and not _chase_contest(runners, pursuers, rng, log,
+                                       routed=True):
         _play(log,
               "    *** RUN DOWN -- the party catches the fleeing foes; "
               "the fight resumes. ***",

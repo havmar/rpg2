@@ -3851,3 +3851,126 @@ the fresh-party base rate was broken.
 **Left open for the build** (listed in the plan entry): the pursue
 contest's exact numbers, the mop-up formula if wild rates read wrong at
 the table, the 0.20 share's tuning, and which templates carry `proof`.
+
+---
+
+## 2026-08-08 (B) — THE TURN-IN, THE ROUT & THE HUNT: the build
+
+The cluster designed in the session above, built in one pass in its
+designed order (A rout -> B loose ends -> C pursue -> D proof -> E
+turn-in). Every part landed as specified; what follows is what the spec
+left to the build, plus the three places where reality argued with the
+plan. Shipped rules are in rules.md (the rout, loose ends, the
+lifecycle, proof), the play protocol in dm.md, code pointers in
+develop.md, numbers in benchlog.
+
+### The open calls, settled
+
+- **The pursue contest's numbers.** `2d6 + the party's best living MIND`
+  vs `2d6 + the runners' HP-and-STA-weighted chase DEX`, trackers +2
+  (`TRACK_WOUND_BONUS`) if any runner carries a named wound. No DC band
+  was invented: making it an OPPOSED roll against the same weighted legs
+  the rout was decided by means the fiction is already consistent — the
+  thing that outran you is the thing you now have to out-track, and a
+  runner too broken to escape is too broken to hide. Best MIND rather
+  than a party average because tracking is one person's skill and the
+  party has no reason to send its worst tracker.
+- **The mop-up formula** stays `wild_encounter_xp(level)` as specced; no
+  play evidence yet to argue with it. The level used is the highest
+  among the survivors, not the original room's.
+- **The 0.20 turn-in share** is unchanged, and the split is implemented
+  as encounters (0.40 each) + turn-in (0.20) with the FIELD tranche as
+  the arithmetic REMAINDER. That last choice matters: it makes the three
+  tranches sum to `quest_xp_total` exactly at every level and encounter
+  count, so tuning either share can never silently leak or mint XP
+  (pinned by a test over the whole 1-20 x 1-3 grid).
+- **Which templates carry `proof`:** nine, about a third of the
+  kill-shaped ones, chosen where a bounty token is the natural fiction
+  and written into the desc line so the giver says it — Wolves Attack
+  (the pelts), Renegade Wizards (the rings), Blighted Beasts, Monster in
+  the Mine, Dragon on the Mountain, The Dragon's Tribute, The Giant at
+  the Border (heads), The Great Hunt (the hide, which the desc already
+  demanded), Hounds in the Factory (the collars). Deliberately NOT
+  flagged: every "clear the road / open the pass / destroy the dead"
+  job, whose completion condition is the place being usable, not a
+  corpse.
+
+### What the build had to decide that the spec did not raise
+
+- **A second rout during a pursuit.** The spec's pursuit fight can end
+  in another rout, but not what that does to the record. Settled: the
+  loose end RE-ARMS in place — same id, new day, new area, new fled
+  state, and `pursue_tried` cleared. A new rout is a new collapse and
+  earns its own warm trail; the alternative (one attempt ever) would
+  have made the record a dead letter after one failure.
+- **Breaking off a pursuit.** `retreat` out of a pursuit fight cannot
+  write a fresh loose end (that would breed duplicates of the same
+  monster). It updates the existing record to the runners' current state
+  and says the chase was broken off.
+- **`pursue --stage`.** The spec says cold trails are "the DM's
+  territory, fed by the record" and stops there, which leaves the DM
+  with a record and no way to spend it. Added: a switch that re-opens a
+  fight against any loose end with no warm gate and no tracking roll,
+  survivors healed by the days passed (`refresh_foes_after_retreat`, the
+  same function the fled-room return trip uses). It is the cold trail's
+  ENDING, not a second pursuit mechanic — the finding is still fiction.
+- **The proof gate's release.** The spec gates work-done on the final
+  roster being dead but does not say what fires the quest when it later
+  is. Added `_maybe_finish_proof`: settling the last loose end of a
+  proof quest lifts the flag and calls the work-done stage directly (the
+  cursor never advanced past the final site). So the bounty completes
+  from wherever the kill happens.
+- **`_close_site` grew an exemption predicate** rather than four
+  branches: `pays_here` is true for war waves, conquest jobs, hell tasks
+  and dark work, and those keep the old whole-lump path with BOTH lump
+  tranches paid at once. The turn-in path is the new branch, not the
+  default — which is why no exempt kind changed behavior by a single XP.
+
+### Where the plan's predictions missed
+
+- **"Hurt-party escape rates staying 90%+" did not hold** (measured
+  92.9% -> 66.7% for the troll, 100% -> 38.5% for the bear). The HP
+  weighting handicaps the runners regardless of the party's state, so it
+  pulls both columns down; the 90%+ case the machinery still guarantees
+  is the narrower "no fit pursuers at all" auto-escape. The design goal
+  — SEPARATION between a fresh party's escape rate and a spent one's —
+  strengthened everywhere (troll 2.2x -> 4.7x), so this was reported
+  rather than patched: whether the spent column wants floor support is
+  the designer's call, and inventing one now would be tuning against a
+  number nobody has felt at the table.
+- **The predicted rates were pessimistic for solos and optimistic for
+  packs.** Spec: packs 10%->8%, ogre/bear 23%->~0-6%, troll 54%->~33%.
+  Measured on `bench_rout.py`'s harness: ogre 54%->18%, bear 37%->10%,
+  troll 45%->18% — the solos fell FURTHER than hoped. The level-1
+  cutthroat pack, however, measures 68%->44%, nowhere near the "packs
+  barely escape" picture; the spec's pack figure came from generated
+  at-level rooms (mixed rosters that die from above the band), and three
+  same-row humanoids at level 1 are a different animal. Left alone and
+  flagged in develop.md as the first dial.
+- **The career sim's band split barely moved** (33/53/10/4 against
+  34/50/12/3), which is the desired answer to "did widening the windows
+  break the clock" and simultaneously a reminder that the sim cannot
+  answer it: its careers teleport, so the return leg the widening pays
+  for is a leg they never walk. plan.md's travel-layer item now carries
+  that note explicitly.
+
+### A note on the harness
+
+The first version of `bench_rout.py` measured the relief-escape by
+crippling the party AT THE DOOR (a third of HP, no breath). That reads
+sensible and measures nothing: such a duo loses 99%+ of the time, and a
+fight the party never won cannot contain an escape from the party. The
+readout was rebuilt to split WON fights by how the party ENDED them,
+which is the honest form of "does the outcome correlate with the party's
+condition". Written down because the broken version looked more like the
+spec's wording than the working one does.
+
+### Also in this pass
+
+The `ui/*.txt` pages of a live playthrough had been merged into master
+by PRs #79 and #80 — per-game runtime state sitting in the repo as
+source. They are untracked again. The pages are still deliberately
+committable ON a playthrough's own branch (that is what `sheet` is for,
+and .gitignore says so); what must not happen is a game branch carrying
+them into master. Nothing was gitignored, since that would break the
+documented UI workflow.
