@@ -3057,10 +3057,13 @@ class TheReligionAndMagicContent(unittest.TestCase):
     """What the session was asked to author, asserted as data."""
 
     def test_every_land_has_worship_of_its_own(self) -> None:
+        # Ensimaa runs one card short of the pack since the funeral card
+        # was cut (2026-08-11, designer call; designlog).
         for polity in places.LAND_SPECS:
             own = [c for c in worldsim.RELIGION_CARDS
                    if worldsim.in_land(c, polity)]
-            self.assertGreaterEqual(len(own), 5, polity)
+            floor = 4 if polity == "ensimaa" else 5
+            self.assertGreaterEqual(len(own), floor, polity)
 
     def test_the_magic_packets_reach_every_land_too(self) -> None:
         for polity in places.LAND_SPECS:

@@ -3389,3 +3389,31 @@ would still be in a seed's deck after worldgen. Adding cards reshuffles it,
 and the card was drawn at the opening. The contract is the SKIP, not the
 order, so the test now puts the card in the deck itself and asserts what it
 always meant to.
+
+## 2026-08-11 (follow-up) — The funeral card is cut
+
+**Where it started.** Three questions on the shipped politics and
+religion rungs. One was a directive: `ensimaa/the-funeral` — the
+worship card remembered as "the elves have forgotten their death
+rites" — is out.
+
+**The cut.** The card, its `land-mourning` state word and its
+STATE_MENU row are gone (nothing else set or read the state). The
+elven packet was the flaw-worn-liturgically pass's centerpiece (the
+2026-08-06 regrounding), so the record: Ensimaa now runs FOUR worship
+cards where every other land runs five, and is the one land with no
+ungated religion card. The worship-floor test carries the exception by
+name; develop.md's content bill and chance-knob note updated. The
+2026-08-06 regrounding directive itself (recognizable high-fantasy
+elves, subtle weirdness) still stands over the rest of the elven
+material.
+
+**Discussed, not changed.** (1) The politics distribution is as built
+and intended: 31 of 76 cards are Firascir's own (asymmetry doctrine —
+the baseline land whose weights the ruler sheet already carries),
+Mortellaria 14, Ensimaa 8, Tergal 7, Gibili 7, Dvarvengrond 4, plus
+the 5 crown-wide succession cards; the tension gate is what keeps the
+deep packet from drowning a deck. (2) Whether worldgen should force at
+least one land out of NORMAL — about one seed in eleven rolls all six
+lands quiet ((24/36)^6 ≈ 9%) — was raised and analyzed; no decision
+taken, the band roll is unchanged.
