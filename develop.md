@@ -1534,6 +1534,10 @@ mechanic *does* and *why* is rules.md's job.
   `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` /
   finite `cmd_explore`, `cmd_house`, `cmd_place_state`, `cmd_hunt` /
   `cmd_engage`; `look --dm` is the complete place-fact readout.
+  **`move_party` is the one way position moves** once a game is running
+  (travel arrival, explore's discovery, teleport): it stands the party in
+  the area and spends the paid-crossing marker. Never assign
+  `state["position"]` at a new call site.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -1568,7 +1572,11 @@ mechanic *does* and *why* is rules.md's job.
   downtime / healer nights, `worldsim.travel_delay` in `cmd_travel`,
   `heal_the_sick` in `cmd_healer`, and `weather` carried through
   `resolve_encounter` and the `pending` save so a paused storm fight
-  resumes in the same storm. `test_worldsim.py` is the contract.
+  resumes in the same storm. **Every sky reader rolls the world up to the
+  clock's day first** (`sky_here`, `exposure_sky`) — that is what makes
+  each night of a multi-day leg pay for its OWN weather instead of the
+  departure day's, since `long_rest` advances the day inside travel's
+  night loop. `test_worldsim.py` is the contract.
 - **The economy floor** (2026-08-09, the worldsim ladder's second content
   rung — rules.md's The Economy Floor add-on) — `worldsim.py`: the three
   outlet readers and the content bill (see Files); the knobs are
@@ -1586,7 +1594,9 @@ mechanic *does* and *why* is rules.md's job.
   learns where it came from, which is how the sims stay out of the world
   layer. `session.py`: `local_term` / `local_prices` / `price_note`, the
   markups threaded into every shop path, `worldsim.road_charges` in
-  `cmd_travel`, and `wild_event(where=)` + the `skins` thread through
+  `cmd_travel` (behind the `road_paid` marker — one crossing, one charge,
+  and the marker RIDES THE SAVE because the re-issue is a fresh process),
+  and `wild_event(where=)` + the `skins` thread through
   `fight_wild_encounter` / `_spawn_wild_foes` / the sighting / `engage`.
   `test_worldsim.py` is the contract.
 - **Politics & the ruler** (2026-08-10, the worldsim ladder's third content
@@ -1826,7 +1836,10 @@ mechanic *does* and *why* is rules.md's job.
   / `rooms`, each land carrying its `reserve` since the settlement trim and
   its `world` layer since the frame — wealth, deck, drawn record, news, day
   stamps),
-  `sighting`, `site_clears` set-site pay
+  `sighting`, `road_paid` (the from/to leg whose toll and weather detour
+  are already bought — an interrupted trip's re-issue is a fresh process,
+  so a marker that does not ride the save is no marker at all),
+  `site_clears` set-site pay
   tracking, `holdings` (the conquest ledger, 2026-07-27 — plain dict,
   garrison heads + tribute/raid day stamps per held settlement), and
   `recruits` (the on-request candidate pool, keyed to its

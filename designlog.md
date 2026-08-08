@@ -3974,3 +3974,72 @@ committable ON a playthrough's own branch (that is what `sheet` is for,
 and .gitignore says so); what must not happen is a game branch carrying
 them into master. Nothing was gitignored, since that would break the
 documented UI workflow.
+
+## 2026-08-08 (C) — Two travel guards that were never armed
+
+Two bugs in the world layer's travel wiring, both of the same shape: a
+rule that reads as shipped in the docs and does nothing at the table.
+Neither is a design change — the designs were right, they simply were
+not connected. Fixed together because both live in `cmd_travel`'s night
+loop and its opening ledger.
+
+### The paid crossing that never survived the fight
+
+`road_paid` (the 2026-08-12 review's fix for the doubled toll) was set on
+the state dict and read back off the state dict — and never written to
+`save.json`. Its whole reason to exist is the case where the state dict
+does not survive: a road fight breaks the leg off, the fight machinery
+SAVES, the player re-issues `travel` in a fresh process, and the marker
+is gone. So the guard held for exactly the code path that could not
+happen and failed for the only one that could. An interrupted trip paid
+its toll and walked its washed-out-ford detour again on every re-issue —
+the exact bug the marker was added to kill, and no amount of re-reading
+`cmd_travel` shows it, because the bug is a key missing from a function
+two thousand lines away.
+
+**Shipped:** `road_paid` on the save doc and the load dict, and
+`move_party(state, area)` — now the ONE way position moves once a game is
+running (the travel arrival, explore's discovery, the teleport). It
+stands the party in the area and spends the marker.
+
+**The call the fix had to settle:** whether a marker should expire.
+Making it persist made staleness real for the first time — a marker for
+A→B that outlives the standing still would hand a free crossing to that
+same leg weeks later (teleport away, wander back, cross for free). A day
+stamp with a window was considered and rejected as an invented number:
+what the marker is actually bound to is the party STANDING at the origin
+of a leg it has already paid for, so any move at all is what spends it.
+That is a property of the move, not of the calendar, and it belongs in
+`move_party` where no future call site can forget it. rules.md says so
+in the played register ("one crossing, one charge").
+
+### The four-night leg that was all one night's weather
+
+`exposure_sky` — the sky a night is PAID for — did not roll the world up
+to today, alone among the sky readers (`sky_here`, `weather_note`,
+`local_term` and `world_news` all do). Travel's night loop asks it once a
+night, and `long_rest` advances the day INSIDE that loop, so every night
+of a multi-day leg was charged the departure day's weather: one storm at
+the gate meant four exposure checks in it, four cabin rolls and four
+nights of storm morale, days after the storm had blown out. The cabin
+roll came along for free, since `worldsim.storming` is read straight
+after and off the same unrolled layer.
+
+**Shipped:** the one `roll_world` call, plus the docstring saying WHY it
+is there — the reader's day-scale is the loop's, not the command's.
+
+**Not changed:** the departure-day quote for `travel_delay` and
+`road_charges`. Those are a price asked at the gate before the party
+walks, and a price is a thing you are quoted now; the nights are a thing
+you live through one at a time. Different clocks on purpose.
+
+### The contract
+
+`test_worldsim.py` grows `ThePaidCrossing` (three tests) and one more in
+`TheWeatherSessionWiring`. The toll test drives `cmd_travel` twice with
+the road fight stubbed at `wild_event` and a REAL `save`/`load` through a
+sandboxed `STATE_PATH` in between — an in-memory round trip would have
+passed against the broken code, which is the whole lesson of the bug. The
+sky test rolls a twin world by hand day by day and demands the reader
+agree with it on every one of twelve days, and that the twelve are not
+one frozen sky.

@@ -238,6 +238,18 @@ def _area_position(area: dict) -> dict:
             "site": None, "room": None}
 
 
+def move_party(state: dict, area: dict) -> None:
+    """Stand the party in `area` -- the one way position moves once a game
+    is running (a travel arrival, explore's discovery, a teleport).
+
+    Every move drops the paid-crossing marker (`road_paid`, cmd_travel):
+    what it buys is the leg the party is standing at the START of, and a
+    marker that outlived the standing still would hand a free toll to the
+    same crossing weeks later."""
+    state["position"] = _area_position(area)
+    state.pop("road_paid", None)
+
+
 def location_line(state: dict) -> str:
     world, pos = state["world"], state["position"]
     area = world["areas"][pos["area"]]
@@ -962,6 +974,12 @@ def save(state: dict) -> None:
         "story": state.get("story"),
         "position": state.get("position"),
         "sighting": state.get("sighting"),
+        # The paid-crossing marker (2026-08-08): the from/to leg whose toll
+        # and weather detour are already bought. It only ever means anything
+        # ACROSS a save -- an interrupted trip's fight saves here and the
+        # player re-issues `travel` in a fresh process -- so leaving it out
+        # of the doc was leaving the guard out of the game.
+        "road_paid": state.get("road_paid"),
         "site_clears": state.get("site_clears", {}),
         "recruits": state.get("recruits"),
         "visited": state.get("visited", []),
@@ -1029,6 +1047,8 @@ def load() -> dict:
         "story": doc.get("story"),
         "position": position,
         "sighting": doc.get("sighting"),
+        # The paid crossing the party broke off from, if any (cmd_travel).
+        "road_paid": doc.get("road_paid"),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
         "visited": doc.get("visited", []),
@@ -2829,10 +2849,17 @@ def sky_here(state: dict) -> str:
 def exposure_sky(state: dict) -> str:
     """The sky a night is PAID for, which is not always the sky overhead: a
     mill town under SMOG charges the same lungs a rainy hillside does, and a
-    roof is no answer to it (rpg.INDOOR_SKY)."""
+    roof is no answer to it (rpg.INDOOR_SKY).
+
+    Rolled up to today first, like `sky_here` -- and it is `travel`'s night
+    loop that makes it matter, since `long_rest` advances the day inside the
+    loop. Without the roll every night of a four-day leg was charged the
+    DEPARTURE day's weather: one storm at the gate meant four exposure
+    checks in it, four cabin rolls and four nights of storm morale."""
     world = state.get("world")
     if not world or not state.get("position"):
         return ""
+    worldsim.roll_world(world, state["clock"].day)
     polity = state["position"]["land"]
     if "smog" in worldsim.state_ids(world, polity):
         return "smog"
@@ -5110,8 +5137,8 @@ def cmd_travel(args: argparse.Namespace) -> None:
     if state.get("sighting"):
         clear_sighting(state, quiet=True)
         print("  The party gives them a wide berth and keeps moving.")
-    state.pop("road_paid", None)    # the crossing is made; the next one
-    state["position"] = _area_position(target)      # is a fresh charge
+    move_party(state, target)   # the crossing is made; the next one is a
+                                # fresh charge (the marker goes with the move)
     target["visited"] = True
     if target.get("kind") == "settlement":
         visited = state.setdefault("visited", [])
@@ -5184,7 +5211,7 @@ def cmd_explore(args: argparse.Namespace) -> None:
     log = []
     if found_area is not None:
         found_area["visited"] = True
-        state["position"] = _area_position(found_area)
+        move_party(state, found_area)
         award_xp(party, EXPLORE_XP, log, "discovery")
         print(f"A known route opens onto {found_area['name']}.")
         print(found_area["description"])
@@ -6980,7 +7007,7 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
     if result == "crit":
         hero.cur_power += cost
     clear_sighting(state, quiet=True)
-    state["position"] = _area_position(target)
+    move_party(state, target)
     log.append(f"    *** {hero.name} folds the world -- one step, and the "
                f"party stands in {target['name']} "
                f"(-{0 if result == 'crit' else cost} Power -> "
