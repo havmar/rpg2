@@ -1381,6 +1381,13 @@ def _cast_the_land(world: dict, polity: str, seat: dict, rng: random.Random,
         npc_id = f"npc/{polity}/{slug_name(npc['name'])}/{post}"
         npc.update(id=npc_id, land=polity, seat=seat["key"], post=post)
         world["npcs"].append(npc)
+        if post == "ruler":
+            # THE RULER CHARACTER (2026-08-10, the politics rung): the sheet
+            # itself was rolled at `worldsim.open_world` and lives on the
+            # land layer -- ONE copy. What happens here is that it acquires
+            # the face that wears it, so the traits and the name are joined
+            # without the save carrying either of them twice.
+            worldsim.ruler_sheet(world, polity)["npc"] = npc_id
 
 
 SERVICE_ROLES = {

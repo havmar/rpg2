@@ -84,14 +84,16 @@ are quest furniture the board abstracts into level numbers, givers are
 faces attached after the roll, and the land notables do nothing. Combat,
 levelling and the quest system are judged good; this thread is where the
 world catches up. Its content companion is **`worldsim.md`** — what is
-still unbuilt of it: the designer's curated land packets for politics
-(with the ruler character), religion and magic, plus the economy
-packets' leftovers (the standing facts, and the options that want a
-priced-menu entry of their own rather than a multiplier on an existing
-one). The record kinds it opened with are `worldsim.py` and rules.md's
-The World Layer now, the weather it sketched is rules.md's Weather, and
-its economy packets are rules.md's The Economy Floor. The remaining
-order below is the ladder that
+still unbuilt of it: the designer's curated land packets for religion
+and magic, plus the economy and politics packets' leftovers (the
+standing facts, the options that want a priced-menu entry of their own
+rather than a multiplier on an existing one, and the ruler sheet's
+per-land modifier columns). The record kinds it opened with are
+`worldsim.py` and rules.md's The World Layer now, the weather it
+sketched is rules.md's Weather, its economy packets are rules.md's The
+Economy Floor, and its ruler sheet and politics packets are `rulers.py`
+and rules.md's Politics & the Ruler. The one rung
+below is the ladder that
 implements the rest. (designlog carries the trail: the 2026-08-05 framing, the
 2026-08-06..07 content dumps, the 2026-08-07 sessions C and D that
 turned the thread into this build, and the rungs shipped since.)
@@ -151,10 +153,11 @@ Everything settleable is settled here, not at per-session pick lists.
 The settlement-authority identity roll (the kind/tension vocabulary and
 the desert mechanics) IS JERKIFY under the designer's framing, is not
 yet designed, and is postponed past the build. What NPCs carry instead
-of the retired sketch is answered: the authority tier rolls THE RULER
-CHARACTER, ordinary givers and service faces stay blank (the
-characteristic criterion — rulers are card-backed, givers are not); only
-the PC's blank sheet stays open, parked below.
+of the retired sketch was answered and has since shipped: the authority
+tier rolls THE RULER CHARACTER (rules.md's Politics & the Ruler),
+ordinary givers and service faces stay blank (the characteristic
+criterion — rulers are card-backed, givers are not); only the PC's blank
+sheet stays open, parked below.
 
 - **The [PROPOSED] set is adopted wholesale** — implement it like
   everything else; the marks stay in worldsim.md as provenance only.
@@ -170,14 +173,6 @@ the PC's blank sheet stays open, parked below.
   creature row).
 - **The carnival amnesty ships as color**; its mechanical reading stays
   deferred with the temple/penance wiring (below).
-- **The land RULER notable rolls THE RULER CHARACTER at worldgen**;
-  lesser named authorities that cards create draw two from the
-  crown-less pool. Trait-to-card admits are written per card at
-  implementation, where the packet text names them.
-- **The land politics frame ships as drafted** — the constitution slot,
-  the land tension roll (the second tension under CRISIS included), and
-  the faction edges are land-level worldsim material the politics cards
-  admit on. The SETTLEMENT tier is jerkify's, out of the build.
 - **The elven coherence-and-subtlety flag rides the writing pass** —
   final player-facing strings are written at implementation under
   writing.md anyway, so the Ensimaa cards get the designer's
@@ -188,14 +183,13 @@ the PC's blank sheet stays open, parked below.
 
 ### The ladder
 
-Two sessions, in order — together they implement what is left of
-worldsim.md, minus the waits above. Each leaves the game playable and lands its
+One session left — it implements what is left of
+worldsim.md, minus the waits above. It leaves the game playable and lands its
 contracts in `test_worldsim.py`, the build's own suite, which no sim or
 bench imports (the karma doctrine). Per-session lifecycle: played rules
 to rules.md, the shipped entries CUT from worldsim.md, new files
 registered in develop.md's Files, a designlog entry — and the session's
-entry deleted from this ladder. The numbers below therefore move every
-time a rung ships; name the session, not its number.
+entry deleted from this ladder.
 
 What the shipped rungs left the rest to build on (rules.md owns the
 rules, `worldsim.py` and `places.py` the code): the reserve pool and the
@@ -217,23 +211,17 @@ move any of six priced terms, and put its own people on a road, and a
 STATE can carry the last two by itself (`STATE_MENU` /
 `STATE_ENCOUNTERS`, which is how a derived state reaches a price). Card
 CHAINS are a shipped pattern with five worked examples, one of them
-across a relation. The sessions below AUTHOR CARDS AND EDGES against all
-of that; nothing in the frame is theirs to build.
+across a relation; and POLITICS (2026-08-10) — the land is a POLITY now,
+so a card can be gated on the constitution slot, on a rolled TENSION
+(which is also the gate deciding whether it enters the land's deck at
+all), on a live faction EDGE, on the crown's SUCCESSION state, or on a
+bare word off the RULER's rolled sheet (`rulers.py`), and it can move the
+last two; `worldsim._authority_hook` is how a card NAMES a lesser
+authority and keeps him, and `worldsim.post_news` is the one door into a
+land's news from outside the deck. The session below AUTHORS CARDS AND
+EDGES against all of that; nothing in the frame is its to build.
 
-1. **Politics & the ruler roll.** The constitution slot and the land
-   tension roll at worldgen (the gate admitting politics cards to the
-   deck — nothing before this session needs either, which is what kept
-   the frame lean), the faction edges as authored data, THE RULER CHARACTER rolled
-   onto the land RULER notable (the first intended consumer, idle since
-   2026-07-12) — the 357 pool, the shrinking-pool draw, three for a
-   crown, two for the lesser named authorities cards create, derived
-   `heart`, the affliction cap, the origin stamps; the Firascir baseline
-   serves every land until the modifier columns are authored. Then the
-   politics cards, admitting on tensions/states/traits per their packet
-   text, and the war feed: casus belli lines beside story.py's rolled
-   aggressor, the diplomatic instruments as relation edges, the
-   succession cluster on the adopted succession-state circumstance.
-2. **Religion & magic.** The Sun communion frame and the per-land
+1. **Religion & magic.** The Sun communion frame and the per-land
    worship facts and options — temple services as plain priced-menu
    entries (healing, burial, blessing; no sin/penance wiring) — and the
    religion cards that need no new creature rows. The magic packets: the

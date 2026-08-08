@@ -4046,6 +4046,11 @@ def cmd_board(args: argparse.Namespace) -> None:
             print("Notables in town (the recurring cast -- see dm.md):")
             for n in cast:
                 print("  " + npc_line(n))
+                # The land RULER carries a rolled character since the
+                # politics rung (2026-08-10): what is said of him here is
+                # public reputation, which is what makes him rumor fuel.
+                for extra in worldsim.notable_lines(world, n):
+                    print(extra)
     if not args.settlement:
         # Word travels within a land (2026-07-11, designer call): the
         # player KNOWS every open quest in the current land -- name, exact
