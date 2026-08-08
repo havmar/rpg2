@@ -196,7 +196,11 @@ the player's core decision:
   one-line prompt and what it asks for is not always obvious -- say the
   job so the player can picture it (who wants it, what needs doing,
   where), and make it square with the place and the day's news before
-  you say it. The giver's mouth
+  you say it. **Name the thing outright** -- the machine, the gang, the
+  wolves -- never "something in the factory": the job's own title is
+  usually already the plain word, and teasing it is the one register
+  mistake this section keeps producing (writing.md, "Name the subject
+  the first time it appears"). The giver's mouth
   carries the fiction, never the stat sheet or a tactics preview. The board also lists **word from around the land** (other
   settlements' open jobs -- PLAYER-KNOWN, relay it) and **notables in
   town** -- the land's recurring cast (ruler, sage, wildcard): use them

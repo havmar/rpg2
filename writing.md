@@ -42,6 +42,19 @@ catchphrase.
 - **Put the useful fact first.** Name the place, obstacle, creature, object, or
   result before adding color. One strong detail is better than a paragraph of
   atmosphere.
+- **Name the subject the first time it appears.** "Something in the factory came
+  loose" withholds the one fact the sentence exists to carry. Say what it is: a
+  cutting machine tore loose, killed two men, and is still running. The game does
+  not do mystery for atmosphere -- when the job is called The Killer Machine, the
+  prose says machine. "Something", "a shape", "a presence" are only honest when
+  the characters genuinely cannot see the thing yet AND finding out is the scene
+  the player is about to play.
+- **Every invented detail must be readable on sight.** Concrete is not the same
+  as technical. "It came off its bed-plates" gives the reader a term they cannot
+  picture, cannot act on, and did not ask for -- noise wearing the costume of
+  specificity. Use the plain verb (broke loose, tore free, went through the
+  wall), and spend the one detail you get on something that changes the scene:
+  what it did, what it is doing now, what stands between it and the player.
 - **State; do not perform.** The narrator does not joke, wink, editorialize,
   foreshadow, sell the drama, or show off a voice. Dryness comes from restraint,
   not from clever asides.
@@ -199,6 +212,18 @@ Use:
 > You are at the old mill. The wheel turns, but the stream is dry. Someone is
 > inside.
 
+**Naming the thing**
+
+Avoid:
+
+> Something in the lower factory came off its bed-plates two nights ago and
+> started walking.
+
+Use:
+
+> A cutting machine tore loose in the lower factory two nights ago. It has
+> killed two men. It is still running.
+
 **Quest**
 
 Avoid:
@@ -234,6 +259,8 @@ it.
 Before shipping a line of fiction, ask:
 
 - Can the reader picture the concrete game state on the first read?
+- Is every subject named outright rather than withheld, and can the reader
+  picture each invented detail without being told what it means?
 - Does the line tell them something present, changed, or actionable?
 - Is the player still free to decide what "you" think and feel?
 - Is the humor or drama in the event rather than the narrator's performance?
