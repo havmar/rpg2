@@ -1,55 +1,49 @@
-## turn 2 (day 3)
+## turn 1 (day 1)
 
-> i travel to ensimaa and check quests there
+> new game please
 
-Two days on the road; nothing out of the ordinary happens. You reach the forests of Ensimaa, and then the city: Taivelle, the elven capital, timber halls and stone walks among great living trees beside the Avelune River. You come in through the western gate in heavy rain. There has been a storm since yesterday. Half the market is packed away and the river is loud under the bridge.
+You are Orsik: a dwarf, forty-three, a magic user. You throw fire, and you have been throwing it long enough to be very good at it. You can also tear a weapon out of a man's hand without touching it, and see one room ahead. A grim katana hangs at your hip. The purse holds seven hundred and sixty gold. You have taken paid work like this for years. Years ago you signed a contract with Hell. It has asked for things since, and you did them. Nothing is asked of you today.
 
-"Observe the drainage," Meriele says, water running off her scalp. "My people think in centuries and still have not roofed the market."
+Ovak walks beside you: an orc, forty-six, with a zweihander across her back that she has drilled with for years. She mumbles when she talks. Her clothes are bright and much decorated. She has watched your back since long before either of you was any good at this. A goblin duelist named Klanker is somewhere out there and still wants to fight her.
 
-Ensimaa has no king. The high council takes petitions at the Crown Hall, and its porch is where work is handed out.
+You are in Ulus-Gal, the walled capital of Tergal, on a low rise above the prairie. Clear skies. The horse market is loud below the great hall. Bread costs too much this year, because the Firascir grain never came.
 
-Uthemar, the circle elder, wants his problem settled quietly. A group of mages stole forbidden songs from the circle, and their ritual keeps the western valley under mist. He wants the ritual stopped and the mages dealt with.
+You ask at the hall for work. They send you to Neega, the pass keeper, an orc woman of thirty-two, who is standing at the east gate arguing with a carter who will not go up the road.
 
-Erevan, the council's wizard, also has a problem: a royal wizard has rebelled, taken a tower on the burned road, and is setting fires from it. He wants the man killed. The pay is high because nobody in Taivelle will take the job.
-
-The rest of the posted jobs are far above your level: a tribute owed to a dragon, and two jobs against rogue wardens, one of them offering a zweihander as the reward.
+Giants have taken the mountain pass, she says. They stop the carts, they kill the drivers, and they have a cave up past the boulder field. Three carters are dead. She wants the giants dead and the road open, and she wants it inside two days, because after that the season's last wool trains go around by the south and Ulus-Gal loses the toll.
 
 ```
-  [q10] The Mist Coven -- L3
-  Uthemar, circle elder
-  1 fight. 54g, 176 XP. due day 6
-
-  [q25] The Renegade Wizard -- L12
-  Erevan, council wizard
-  2 fights. 346g, 915 XP. due day 8
-
-  [q26] L16 Dragon's Tribute -- 288g
-  [q27] L18 Rogue Wardens -- 324g
-  [q28] L20 Rogue Wardens -- pays a
-    heavy zweihander
+  job: Giants in the Pass -- L13
+  giver: Neega, the pass keeper
+  1 site, 1 fight
+  pay: 234g, 616 XP
+  due day 3 -- turned in now it
+    pays quick, x1.15
 ```
 
-Some jobs mean travel to other settlements in the land.
+A rider from the Dvarvengrond border came through the gate this morning and is still telling it in the yard: the elves have crossed.
 
 ```
-  Dunmaelle (1 day):
-    [q30] L6 Blighted Beasts -- 238g,
-      3 fights, due day 8
-    [q29] L4 Spiders in the Trees
-    [q19] DELIVERY Return the Ashes
-    [q11] L14 Rogue Wardens
-  Rosmaine (1 day):
-    [q12] L2 The Mist Coven
-    [q31] L3 Blighted Beasts
+*** WORD OF THE WAR (day 1) ***
+the Golden Empire: the elf empire
+holds other peoples weak and fit to
+be ruled. Its magic machines are
+over the Dvarvengrond border. The
+reason given: a claim on the
+Dvarvengrond throne.
+Bardryn, high thane, calls for
+blades at Bjorgheim:
+  [w1] L2 Machines at the Border
 ```
 
 ```
-  options: take the mist coven [q10],
-    take the renegade wizard [q25],
-    travel to Dunmaelle, the inn
-    (beds up x1.30 tonight), hunt
+  options: take the pass job, the
+    board (4 more jobs here), the
+    war call at Bjorgheim, hunt,
+    travel
+  Orsik: 1 skill point unspent
 ```
 
-Where to?
+What do you do?
 
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-snl147/ui/map.txt)
+[party](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-cef4fh/ui/map.txt)
