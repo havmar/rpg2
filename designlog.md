@@ -3260,3 +3260,132 @@ reader softened for a state the code cannot produce, whose only caller
 for the missing case was the test written beside it. The reader now
 indexes, and the test asserts every rolled war carries a reason and that
 an empty story raises.
+
+---
+
+## 2026-08-11 — Religion & magic: the last rung, and the two record kinds nobody had built
+
+plan.md's worldsim-build ladder had one entry left, and it asked for two
+packets at once: the Sun communion frame with the per-land worship facts
+and options, and the whole magic dump — the recruiters, the wild talent,
+the hunt, the reagent trade wired into the crime layer, and the per-land
+organizations. Both shipped. **The ladder is now empty**, and the thread's
+next move is a playthrough, not another rung.
+
+### The thing the rung had to build before it could author
+
+The ladder's own instruction was blunt — "the session below AUTHORS CARDS
+AND EDGES; nothing in the frame is its to build" — but the rung's text asks
+for **facts** and **options** by name, and worldsim.md's five record kinds
+were still three. The two shipped rungs before this one had punted them
+both to a leftovers section. There was nowhere to put a fact and no such
+thing as an option, so the rung built them, and kept them as cheap as the
+doctrine allows:
+
+- **A FACT is DM-only and the engine cannot see it.** No fact key is a
+  state, a card key, an option key or a tension — pinned as a test, because
+  the only thing that keeps a fact free is that nothing can look one up.
+  Its whole surface is a new `lore` command. Thirty-two of them, five or six
+  a land, and every one stands behind a card, prices an option, or names
+  something the player can already do (the characteristic criterion, applied
+  to the record kind that most invites decoration).
+- **An OPTION does exactly three things and there is no fourth.** `bless`
+  (satisfaction, on a cooldown), `book` (the spellbook gate at this land's
+  price), `sky` (Tergal's rain stone). The closed verb set is the whole
+  design: an option that needed new machinery would be a feature request
+  wearing a content hat, and the rung's standing rule is that what the
+  packets did not design does not get built. An option never owns a price
+  alone either — it carries a catalog number and the priced-menu **term**
+  that moves it, so the world state is on this counter like every other.
+
+### The calls the packets left open
+
+- **Temple healing is not an option.** plan.md said temple services are
+  "healing, burial, blessing" as priced-menu entries. Burial and blessing
+  are new things to buy; **healing already exists** — in the two human lands
+  the temple *is* the healer, so healing is the `healer` term, which the
+  interdict already puts up and the unlicensed holy well now undercuts. A
+  second healing counter would have been the same action at a second door.
+- **Ensimaa sells nothing.** The obvious symmetry — a temple counter a land
+  — is wrong here: the elven packet's whole axis is reverence without
+  worship, and its only religious architecture is a silent open-roofed court
+  with no clergy and no services. The asymmetry doctrine says a land does
+  not need what its neighbour has. The counter's absence is the content.
+- **The religion packets needed tensions of their own.** Politics kept
+  church POWER, so gating worship cards on the political tensions would have
+  put the parish's cards behind the bishops' quarrel. Eight new tensions
+  with thirteen factions and sixteen edges under them, one or two a land:
+  two shrines and one saint, the abbey against the families, which face of
+  the god rules the year, one word in one old text, the tomb priests against
+  the quota, the white shamans against the dark one, the chapels against the
+  ladder faiths. The cost is dilution — a land now rolls one tension out of
+  four or five instead of three or four — and that is the gate working as
+  designed: the packet is a POOL, and each rolled world stays specific.
+- **The schism clock runs BOTH ways.** worldsim.md said cards on the edge
+  fire in both lands. That is two relation edges deriving the same word onto
+  each other and ONE card whose `land` names both — the first card in the
+  game that sits in two lands' decks. It needed no new machinery, which is
+  the test that the frame was built right.
+- **The reagent trade's crime wiring is a third state table**, in the shape
+  of the two the economy floor shipped: `STATE_MARKS` says what a state
+  makes ROBBABLE, and `crime.roll_mark` takes the faces as a default-empty
+  argument. The extra marks are dealt in BESIDE the band's own rather than
+  replacing them — a consignment in the bonded yard competes with the
+  ordinary vault, it does not evict it. Two more rode along because the
+  religion packets pre-ordered them: the opened tomb (the mountain's richest
+  rooms are its tombs) and carnival's masks.
+- **Two named pools, no new creature row.** `_UNDEAD` and `_CASTERS` over
+  the catalog the game already has. The draugr, the knockers-as-creature and
+  Tergal's grave-made ghosts still wait for the monsters & fauna dump, as
+  ruled; the foreign-graveyard card ships over skeletons and ghouls instead.
+
+### The doctrines, made mechanical
+
+The magic packets are mostly stance, and stance is easy to write and easy to
+contradict later. Three of them are pinned as tests instead:
+
+- **THE MARGIN** — magic is real, known and SMALL. Not one magic card moves
+  a wealth band or a constitution. No throne, market or war is decided by it,
+  as a property of the data rather than a promise in a doc.
+- **CONDUCT, NOT CREED** — the design requirement that a caster playthrough
+  is never dominated by automatic hostility. The hunt admits on
+  `talent-loose` and on nothing else: on what somebody DID, never on a land,
+  a ruler or a faith.
+- **THE PACT STAYS OUT** — no fact, option or news line in either packet
+  contains the word.
+
+The price rule got its own shape too: the rain stone buys **two days** of
+rain over one land, never a season. Healing is retail and so is weather,
+which is what keeps every famine and drought card safe from "why not just
+cast something".
+
+### What did NOT ship, and why
+
+The **econ and politics packets' standing facts** stay in worldsim.md: they
+belong to sessions that already ran, and hauling them into `FACTS` now would
+be this rung rewriting someone else's leftovers. (They would fit the record
+kind unchanged, which is the point — the door is open when someone wants it.)
+**CURSED WORK** stays with the parked non-weapon magic items row, as ruled.
+The **ruler sheet's magic cells** are still hand-set; the packets now say
+which direction each land should move them, and the modifier columns are
+still deferred. The **temple/penance wiring** was never this rung's.
+
+### Where it landed
+
+`rules.md` gained *Religion & Magic*; `worldsim.py`, `crime.py`,
+`session.py` and `test_worldsim.py` are updated in develop.md's Files and
+dev map, with a balance note recording that the rung's one bench-touching
+surface is player-initiated and therefore invisible to a sim. worldsim.md's
+RELIGION and MAGIC sections are CUT and replaced by a short residue section;
+plan.md's ladder is **empty** and carries the call to play the build before
+scheduling anything else. `test_worldsim.py` grew 35 tests across four
+classes. Nothing was re-measured beyond a 12-career spot check that read in
+family: the options are a purchase no bench makes, and `roll_mark`'s new
+argument defaults to empty.
+
+**One test was pinning the shuffle instead of the rule.**
+`test_a_card_with_nothing_new_to_say_stays_in_the_deck` assumed a named card
+would still be in a seed's deck after worldgen. Adding cards reshuffles it,
+and the card was drawn at the opening. The contract is the SKIP, not the
+order, so the test now puts the card in the deck itself and asserts what it
+always meant to.

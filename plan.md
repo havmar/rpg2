@@ -83,20 +83,19 @@ cares about quests and levelling; the world fades to background. Places
 are quest furniture the board abstracts into level numbers, givers are
 faces attached after the roll, and the land notables do nothing. Combat,
 levelling and the quest system are judged good; this thread is where the
-world catches up. Its content companion is **`worldsim.md`** — what is
-still unbuilt of it: the designer's curated land packets for religion
-and magic, plus the economy and politics packets' leftovers (the
-standing facts, the options that want a priced-menu entry of their own
-rather than a multiplier on an existing one, and the ruler sheet's
-per-land modifier columns). The record kinds it opened with are
-`worldsim.py` and rules.md's The World Layer now, the weather it
-sketched is rules.md's Weather, its economy packets are rules.md's The
-Economy Floor, and its ruler sheet and politics packets are `rulers.py`
-and rules.md's Politics & the Ruler. The one rung
-below is the ladder that
-implements the rest. (designlog carries the trail: the 2026-08-05 framing, the
-2026-08-06..07 content dumps, the 2026-08-07 sessions C and D that
-turned the thread into this build, and the rungs shipped since.)
+world catches up. **Its build is DONE as of 2026-08-11** and it is kept
+here as the framing behind five shipped rules.md add-ons and the postponed
+list below. Its content companion is **`worldsim.md`**, now down to the
+residue no session was asked to build (the economy and politics packets'
+standing facts, the options that want a counter the game does not have, and
+the ruler sheet's per-land modifier columns). The record kinds it opened
+with are `worldsim.py` and rules.md's The World Layer, the weather it
+sketched is rules.md's Weather, its economy packets are The Economy Floor,
+its ruler sheet and politics packets are `rulers.py` and Politics & the
+Ruler, and its worship and arcane packets are Religion & Magic. (designlog
+carries the trail: the 2026-08-05 framing, the 2026-08-06..07 content
+dumps, the 2026-08-07 sessions C and D that turned the thread into this
+build, and the five rungs shipped since.)
 
 ### The framing (settled 2026-08-05)
 
@@ -181,60 +180,29 @@ sheet stays open, parked below.
   prices) are the build's call, hand-set and tuned at the table (the
   standing convention).
 
-### The ladder
+### The ladder is EMPTY (2026-08-11)
 
-One session left — it implements what is left of
-worldsim.md, minus the waits above. It leaves the game playable and lands its
-contracts in `test_worldsim.py`, the build's own suite, which no sim or
-bench imports (the karma doctrine). Per-session lifecycle: played rules
-to rules.md, the shipped entries CUT from worldsim.md, new files
-registered in develop.md's Files, a designlog entry — and the session's
-entry deleted from this ladder.
+Every rung has shipped: the settlement trim and the world frame
+(2026-08-07), the weather (2026-08-08), the economy floor (2026-08-09),
+politics & the ruler (2026-08-10), and religion & magic (2026-08-11).
+worldsim.md is down to residue nobody was asked to build, its packets are
+cut, and the played rules are rules.md's five world-layer add-ons.
 
-What the shipped rungs left the rest to build on (rules.md owns the
-rules, `worldsim.py` and `places.py` the code): the reserve pool and the
-need-to-exist draw — `places.materialize_settlement` /
-`quests.found_settlement` — for when a relation or a card names a place
-the world does not hold yet (the settlement trim, 2026-08-07); the
-world frame itself (same day) — `worldsim.card` / `worldsim.relation`,
-the per-land wealth band, day-stamped states with their exclusive slots,
-the crisis deck's draw on need, the relations table, the roll points
-inside `board_clock`, and the two surfaces it shipped (the `WORD FROM
-<LAND>` news line, the state diff on `map` and `world`); the WEATHER
-(2026-08-08) — the day roll off the environment profiles, the three
-card TRACKS (a weather and a season deck beside the crisis one, so a
-storm never blocks a harvest failing), the `wet`/`dry` spell admits, the
-DISEASE family in `rpg.py`, and the DROUGHT state the relations read;
-and the ECONOMY FLOOR (2026-08-09) — ALL FIVE OUTLETS now apply, so a
-card below can post, cancel or reprice board work (`worldsim.job`),
-move any of six priced terms, and put its own people on a road, and a
-STATE can carry the last two by itself (`STATE_MENU` /
-`STATE_ENCOUNTERS`, which is how a derived state reaches a price). Card
-CHAINS are a shipped pattern with five worked examples, one of them
-across a relation; and POLITICS (2026-08-10) — the land is a POLITY now,
-so a card can be gated on the constitution slot, on a rolled TENSION
-(which is also the gate deciding whether it enters the land's deck at
-all), on a live faction EDGE, on the crown's SUCCESSION state, or on a
-bare word off the RULER's rolled sheet (`rulers.py`), and it can move the
-last two; `worldsim._authority_hook` is how a card NAMES a lesser
-authority and keeps him, and `worldsim.post_news` is the one door into a
-land's news from outside the deck. The session below AUTHORS CARDS AND
-EDGES against all of that; nothing in the frame is its to build.
-
-1. **Religion & magic.** The Sun communion frame and the per-land
-   worship facts and options — temple services as plain priced-menu
-   entries (healing, burial, blessing; no sin/penance wiring) — and the
-   religion cards that need no new creature rows. The magic packets: the
-   recruiters, the wild talent, the hunt, the reagent trade wired into
-   the crime layer's smuggling/heist categories, the per-land
-   organization facts and options (THE BASEMENT CHILDREN included).
-   CURSED WORK stays with the parked non-weapon magic items row (the
-   After-that list).
+**What the thread now wants is PLAY, not another rung.** The two invariants
+it was built to land are in the code and pinned in `test_worldsim.py` — the
+board reacts to world state, and something moves without the player taking
+a job and is visible on return — and not one of them has been seen at a
+table yet. Nothing below should be scheduled before a playthrough has
+walked into a land that moved while it was away. (The played-reality note
+at the head of CLAUDE.md is the reason: no playthrough has ever gone past
+level 4, and everything this thread built is meant to be felt in the first
+four or five.)
 
 ### Postponed past the build
 
-Each needs its own design work or dump before it can be scheduled; none
-of it blocks the ladder.
+Each needs its own design work or dump before it can be scheduled. The
+ladder is empty, so nothing here is blocked by anything except the call
+above: play the build first.
 
 - **Jerkify** — the designer's framing: the settlement-authority
   identity roll (kind, disposition, standing tension — the kind/tension
@@ -249,8 +217,10 @@ of it blocks the ladder.
   address on the priced menu — the grudge is the PLAYER's, which fixes
   the shelved nemesis's motivation problem.
 - **Monsters & fauna** — postponed, like science & technology. The
-  religion packets pre-order three creatures (the draugr, the knockers,
-  Tergal's grave-made ghosts); their cards wait with the dump.
+  religion packets pre-order three creatures (the draugr, the knockers as
+  a creature rather than the shipped fact, Tergal's grave-made ghosts);
+  their cards wait with the dump. Everything ELSE in those packets shipped
+  2026-08-11 over the catalog's existing rows.
 - **Science & technology** — postponed; owes the magic packets the
   magical-vs-mundane boundary when it lands (the robot question, the
   guns).
@@ -266,7 +236,10 @@ of it blocks the ladder.
   credit), the two drug markets, and smuggling / the gadget-and-arms
   trade. The last two belong with the crime layer's smuggling category
   rather than a shop counter; the first two want a counter that does not
-  exist yet. None of them blocks the ladder.
+  exist yet. The religion & magic rung built the OPTION record and its
+  `service` counter (2026-08-11), so three of the four now want only
+  authoring plus one new verb apiece; the smuggling pair still wants the
+  crime category written.
 - **Hell's own treatment**; **the per-land ruler modifier columns and
   the tribal rewording**; **the landmark-problems tie-in** (re-raise
   once the build is played); **the PC's blank sheet** (a player-chosen
@@ -459,11 +432,15 @@ was parked out of it is additive to the shipped schemas:
    unintentional — the game should stay open and fun, so the 2026-08-05
    never-acquire asymmetry is softened to a temporary fact of the build.
    Open casterhood after creation; mechanism the implementer's call — a
-   latent-gift awakening event is the cheapest fiction; worldsim.md's
-   magic packets carry the ruling). **Non-weapon magic items** — rings,
-   amulets — would reuse the weapon generator's sp table if ever wanted,
-   and worldsim's CURSED WORK note names their first flavor: the cursed
-   ring, power with a receipt.
+   latent-gift awakening event is the cheapest fiction, and the shipped
+   magic layer now supplies the in-world reading for free: the WILD TALENT
+   card, the recruiters and the three teaching counters are all about a
+   gift waking in somebody who had no theory). **Non-weapon magic items**
+   — rings, amulets — would reuse the weapon generator's sp table if ever
+   wanted, and CURSED WORK is their first flavor: the cursed ring that
+   grants +3 DEX and takes 1 point of natural DEX, power with a receipt.
+   It is the affliction doctrine (rules.md's Religion & Magic) sized to
+   an item, and worldsim.md's residue section keeps the note.
 2. **Armor** — provisional design: shifts the incoming wound tier down
    at the cost of a DEX penalty and higher STA drain. *Status: adopt,
    simplify, or defer.* (Designer lean: probably never important. The

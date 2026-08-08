@@ -947,6 +947,9 @@ def save(state: dict) -> None:
         "karma": state.get("karma") or karma.new_karma(),
         "pact": state.get("pact"),
         "crimes": state.get("crimes") or crime.new_crimes(),
+        # The services counter's cooldowns (2026-08-11): option key -> the
+        # day it was last bought. A blessing is not buyable twice a week.
+        "services": state.get("services", {}),
         "history": state.get("history", []),
         "holdings": state.get("holdings", {}),
         "pending_reward": state.get("pending_reward"),
@@ -1008,6 +1011,8 @@ def load() -> dict:
         # The crime ledger (2026-08-04): counts, day stamps and the
         # suggestion feed's unlocked flags. crime.py owns its shape.
         "crimes": doc.get("crimes") or crime.new_crimes(),
+        # The services counter's cooldowns (2026-08-11, religion & magic).
+        "services": doc.get("services") or {},
         # The campaign record (2026-08-04, session C): day-stamped
         # "quest" and "remarkable" lines behind ui/history.txt.
         "history": doc.get("history") or [],
@@ -1431,6 +1436,8 @@ def cmd_new(args: argparse.Namespace) -> None:
              # suggestion feed. Empty is a clean record, not an inert
              # layer -- every category is committable from scene one.
              "crimes": crime.new_crimes(),
+             # Nothing bought at a counter yet (2026-08-11).
+             "services": {},
              # Settlements the party has stood in -- teleport (rank 3)
              # reaches only KNOWN ground (Magic & Mind).
              "visited": [start["key"]]}
@@ -3356,8 +3363,16 @@ def local_mark(state: dict, cat: dict, npc: str | None,
     if npc:
         return crime.npc_mark(cat, world_seed(state), npc,
                               level or party_level(state), day)
+    # The world layer's own corner of the mark table (2026-08-11): a state
+    # that makes a NEW kind of mark exist here deals its faces in beside the
+    # band's -- the reagent consignment, the opened tomb, the masked house.
+    world, roles = state.get("world"), ()
+    if world and state.get("position"):
+        worldsim.roll_world(world, day)
+        roles = worldsim.mark_roles(world, state["position"]["land"],
+                                    cat["key"])
     return crime.roll_mark(cat, world_seed(state), place_id(state),
-                           place_kind(state), day)
+                           place_kind(state), day, roles)
 
 
 def no_mark_line(state: dict, cat: dict) -> str:
@@ -6000,6 +6015,163 @@ def cmd_prices(args: argparse.Namespace) -> None:
           "never on a shelf -- quested, robbed, or COMMISSIONED from a "
           "legendary smith (`armory` lists them; the famous named blades "
           "are never for sale at any price); brewed potions can't be sold)")
+    # The sixth outlet's standing half (2026-08-11): the things ONE land
+    # sells that nothing else does -- the temple counter, the rain stone, the
+    # charm trade, the three lands where a wizard teaches.
+    if state and state.get("world") and state.get("position"):
+        lines = worldsim.service_lines(state["world"],
+                                       state["position"]["land"],
+                                       place_kind(state))
+        if lines:
+            print("")
+            print("\n".join(lines))
+            print("  (`service` on its own lists these; `lore` is the DM's "
+                  "page behind them)")
+
+
+# --------------------------------------------------------------------------- #
+# The services counter and the lore page (2026-08-11, religion & magic)
+# --------------------------------------------------------------------------- #
+
+def cmd_service(args: argparse.Namespace) -> None:
+    """The priced menu's STANDING half: what this land sells that no other
+    does (worldsim.OPTIONS). Bare `service` lists what is on sale here and
+    what it costs today; `service WORD` buys it.
+
+    Three things an option can do, and no fourth: a BLESSING (a paid rite,
+    worth a point of satisfaction to every companion, on its own cooldown),
+    a BOOK (a wizard teaches -- the spellbook gate, opened by a land's own
+    organization at that land's price), and a SKY (Tergal's rain stone: the
+    weather-worker's priced thumb on the day roll)."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    here = local_settlement(state)
+    if not world or here is None:
+        print(f"Nobody keeps a counter out here -- the party is at "
+              f"{location_line(state)}.")
+        return
+    polity, day = state["position"]["land"], state["clock"].day
+    worldsim.roll_world(world, day)
+    kind = place_kind(state)
+    if not args.what:
+        lines = worldsim.service_lines(world, polity, kind)
+        print("\n".join(lines) if lines
+              else f"{world['lands'][polity]['name']} is selling nothing "
+                   f"out of the ordinary this week.")
+        return
+    spec = worldsim.option_named(args.what[0])
+    if spec is None:
+        print(f"No such service: {args.what[0]!r}. `service` lists what is "
+              f"on sale here.")
+        return
+    if polity not in spec["land"]:
+        print(f"{spec['name'].capitalize()} is not sold in "
+              f"{world['lands'][polity]['name']}.")
+        return
+    if not worldsim.option_open(world, polity, spec, kind):
+        print(f"{spec['name'].capitalize()} is not on offer here today.")
+        return
+    price = worldsim.option_price(world, polity, spec)
+    purse = state["purse"]
+    if purse.gold < price:
+        print(f"That costs {price}g and the purse holds {purse.gold}g.")
+        return
+    log: list[str] = []
+    if not _pay_service(state, spec, price, args.what[1:], log):
+        if log:
+            print("\n".join(log))
+        return
+    print("\n".join(log))
+    save(state)
+
+
+def _pay_service(state: dict, spec: dict, price: int, rest: list,
+                 log: list[str]) -> bool:
+    """Run one bought option. Returns False (having said why) when the
+    transaction cannot happen -- the purse is charged only on the way
+    through, so a refused service is never a paid one."""
+    world, day = state["world"], state["clock"].day
+    polity, purse = state["position"]["land"], state["purse"]
+    if spec["does"] == "bless":
+        seen = state.setdefault("services", {})
+        last = seen.get(spec["key"], -999)
+        if day - last < spec["days"]:
+            log.append(f"{spec['name'].capitalize()} was bought on day "
+                       f"{last} -- it is good for {spec['days']} days, and "
+                       f"buying it twice is not how it works.")
+            return False
+        purse.gold -= price
+        seen[spec["key"]] = day
+        log.append(f"    The party pays {price}g: {spec['line']}.")
+        blessed = 0
+        for h in state["party"][1:]:
+            if h.dead or not satisfaction_tracked(h):
+                continue
+            # A religious companion gets what a capital's temples give them
+            # on a day off: the rite is the point, not the errand.
+            gain = spec["gives"] + (1 if has_trait(h, "religious") else 0)
+            adjust_satisfaction(h, gain, log, spec["name"])
+            blessed += 1
+        if not blessed:
+            log.append("    Nobody in the party is here to be comforted by "
+                       "it. The rite is performed anyway.")
+        log.append(f"    The purse holds {purse.gold}g.")
+        return True
+    if spec["does"] == "book":
+        if len(rest) < 2:
+            log.append(f"{spec['name'].capitalize()} teaches a named "
+                       f"spell to a named caster: `service "
+                       f"{worldsim.option_word(spec)} HERO SPELL` "
+                       f"({price}g). Spells: {', '.join(sorted(SPELLS))}.")
+            return False
+        hero = find_hero(state["party"], rest[0])
+        if hero is None:
+            return False
+        spell = " ".join(rest[1:]).lower()
+        if spell not in SPELLS:
+            log.append(f"Nobody here teaches {spell!r}. Spells: "
+                       f"{', '.join(sorted(SPELLS))}.")
+            return False
+        # The option owns the price, so the markup is already in it: the
+        # book gate is charged at the land's own rate rather than the
+        # capital's flat one, which is the whole point of the three
+        # organizations being different.
+        return _buy_spellbook(hero, purse, spell, log,
+                              markup=price / SPELLBOOK_PRICE)
+    # "sky": the weather-worker, paid.
+    purse.gold -= price
+    worldsim.hire_weather(world, polity, day, spec["word"], spec["holds"])
+    log.append(f"    The party pays {price}g: {spec['line']}.")
+    log.append(f"    The sky over {world['lands'][polity]['name']} is "
+               f"bought for {spec['holds']} day(s). The purse holds "
+               f"{purse.gold}g.")
+    return True
+
+
+def cmd_lore(args: argparse.Namespace) -> None:
+    """The DM's page behind a land (2026-08-11): the standing facts about
+    what is believed here and how magic works here, and whatever its
+    counters are selling today. Free, costs no day, and the engine never
+    reads a word of it -- this is the one surface a FACT has."""
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    wanted = " ".join(args.land).lower().strip()
+    polity = state["position"]["land"] if not wanted else None
+    if polity is None:
+        hits = [p for p, land in world["lands"].items()
+                if p.startswith(wanted) or land["name"].lower().startswith(
+                    wanted)]
+        if len(hits) != 1:
+            print(f"Which land? {', '.join(world['lands'])}")
+            return
+        polity = hits[0]
+    worldsim.roll_world(world, state["clock"].day)
+    print("\n".join(worldsim.lore_lines(world, polity)))
 
 
 def cmd_use(args: argparse.Namespace) -> None:
@@ -6824,6 +6996,31 @@ def build_parser() -> argparse.ArgumentParser:
              "weapon -- answer 'what does X cost' from this readout, never "
              "by searching the code")
     p.set_defaults(func=cmd_prices)
+
+    p = sub.add_parser(
+        "service",
+        help="the priced menu's STANDING half (2026-08-11): what THIS land "
+             "sells that no other does -- a burial or a blessing at the "
+             "temple, a pilgrim badge, a burial club's dues, a charm and "
+             "its printed policy, a hall blessing, Tergal's rain stone, "
+             "and the three lands where a wizard will teach. Bare "
+             "`service` lists what is on sale here at today's prices; "
+             "`service WORD` buys it (a teaching wants `service WORD HERO "
+             "SPELL`)")
+    p.add_argument("what", nargs="*",
+                   help="the service, and whatever it needs (a teaching "
+                        "takes a hero and a spell)")
+    p.set_defaults(func=cmd_service)
+
+    p = sub.add_parser(
+        "lore",
+        help="the DM's page behind a land (2026-08-11): the standing facts "
+             "about what is worshipped here and how magic works here, plus "
+             "whatever its counters are selling. Free, costs no day, and "
+             "the engine never reads a word of it. Defaults to the land "
+             "the party is standing in")
+    p.add_argument("land", nargs="*", help="a land, by name or key")
+    p.set_defaults(func=cmd_lore)
 
     p = sub.add_parser(
         "give",

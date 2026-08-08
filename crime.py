@@ -625,18 +625,25 @@ def mark_rng(world_seed: int | None, place_id: str, day: int,
 
 
 def roll_mark(cat: dict, world_seed: int | None, place_id: str,
-              place_kind: str, day: int) -> dict | None:
+              place_kind: str, day: int,
+              roles: tuple[str, ...] = ()) -> dict | None:
     """The local mark for one category, or None if this category has no
     mark here (a magnate in a village, highway work inside the walls).
     The roster is rolled from the same stream, so the protection hint the
-    casing prints IS the protection that fights."""
+    casing prints IS the protection that fights.
+
+    `roles` are the extra faces the WORLD LAYER has put in this table today
+    (`worldsim.mark_roles` -- the reagent consignment in the bonded yard,
+    the tomb the rites just opened, the masked house at carnival). They are
+    dealt in beside the band's own: a state that makes a new kind of mark
+    exist here does not replace the ordinary ones, it competes with them."""
     bands = bands_here(cat, place_kind)
     if not bands:
         return None
     rng = mark_rng(world_seed, place_id, day, cat["key"])
     band = rng.choice(bands)
     level = rng.randint(*band["levels"])
-    role = rng.choice(roles_of(cat, band["key"]))
+    role = rng.choice(roles_of(cat, band["key"]) + tuple(roles))
     return build_mark(cat, band["key"], role, level, rng)
 
 

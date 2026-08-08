@@ -77,6 +77,7 @@ from contextlib import redirect_stdout
 import argparse
 
 import conquest
+import crime
 import places
 import quests
 import rpg
@@ -592,7 +593,11 @@ class ThePerLandSaveState(unittest.TestCase):
                               "wet", "dry",
                               # the politics rung (2026-08-10)
                               "constitution", "tensions", "ruler",
-                              "authorities"})
+                              "authorities",
+                              # ...and the religion & magic rung (2026-08-11):
+                              # the one thing an OPTION can buy that outlives
+                              # the transaction
+                              "bought_sky"})
 
     def test_the_layer_rides_the_save(self) -> None:
         world = _world()
@@ -703,7 +708,12 @@ class TheDeckDraw(unittest.TestCase):
         world = _world()
         worldsim.set_wealth(world, "ensimaa", "crisis", 0)
         worldsim.set_state(world, "ensimaa", "foreigners-unwelcome", 1)
-        rng = random.Random(2)
+        deck = _layer(world, "ensimaa")["deck"]
+        if "ensimaa/rented-land" not in deck:
+            deck.insert(0, "ensimaa/rented-land")   # a shuffle or an opening
+        rng = random.Random(2)                      # draw may have taken it:
+                                                    # the contract is the SKIP,
+                                                    # never the deck's order
         for _ in range(4):
             drawn = worldsim._draw(world, "ensimaa", rng)
             if drawn is None:
@@ -1990,7 +2000,13 @@ class TheEconomyFloorContent(unittest.TestCase):
                  "_ELF_TOUGHS": worldsim._ELF_TOUGHS,
                  "_GOBLIN_TOUGHS": worldsim._GOBLIN_TOUGHS,
                  "_DWARF_TOUGHS": worldsim._DWARF_TOUGHS,
-                 "_BEASTS": worldsim._BEASTS}
+                 "_BEASTS": worldsim._BEASTS,
+                 # the religion & magic rung's two (2026-08-11): the dead
+                 # and the gifted are not anybody's soldiery, so the
+                 # cultural arms rule has nothing to say about either --
+                 # they are still NAMED pools, which is the actual contract
+                 "_UNDEAD": worldsim._UNDEAD,
+                 "_CASTERS": worldsim._CASTERS}
         for row in ("slinger", "gunner"):
             self.assertNotIn(row, pools["_ELF_TOUGHS"])
         for row in ("archer", "hunter", "gunner"):
@@ -2750,6 +2766,489 @@ class ThePoliticsSurfaces(unittest.TestCase):
                 redirect_stdout(out):
             session.cmd_board(args)
         self.assertIn("lecherous", out.getvalue())
+
+
+def _lore_cards() -> list[dict]:
+    return list(worldsim.RELIGION_CARDS) + list(worldsim.MAGIC_CARDS)
+
+
+class TheLastTwoRecordKinds(unittest.TestCase):
+    """FACT and OPTION: what the rung had to build before it could author."""
+
+    def test_a_fact_costs_nothing_at_runtime(self) -> None:
+        """The engine never reads one. The contract is mechanical: no fact
+        key is a state, a card key, an option key or a tension -- there is
+        nothing for anything but the DM's page to look it up by."""
+        machinery = (set(worldsim.STATE_WORDS) | set(worldsim.CARDS_BY_KEY)
+                     | set(worldsim.OPTIONS_BY_KEY)
+                     | {t["key"] for ts in worldsim.TENSIONS.values()
+                        for t in ts})
+        for entry in worldsim.FACTS:
+            self.assertNotIn(entry["key"], machinery, entry["key"])
+
+    def test_every_land_carries_facts_of_its_own(self) -> None:
+        for polity in places.LAND_SPECS:
+            self.assertGreaterEqual(len(worldsim.facts_of(polity)), 5,
+                                    polity)
+
+    def test_an_option_only_does_what_the_engine_already_does(self) -> None:
+        """The closed verb set. An option that needed new machinery would
+        be a feature request wearing a content hat."""
+        for spec in worldsim.OPTIONS:
+            self.assertIn(spec["does"], worldsim.SERVICES, spec["key"])
+
+    def test_an_option_never_owns_a_price_alone(self) -> None:
+        """A service is charged the way a bed is: a catalog number moved by
+        the land's own priced term, so the world state is on this counter
+        too."""
+        world = _world()
+        for spec in worldsim.OPTIONS:
+            polity = spec["land"][0]
+            self.assertIn(spec["term"], worldsim.MENU_TERMS, spec["key"])
+            flat = worldsim.option_price(world, polity, spec)
+            _fire(world, polity, "firascir/fair"
+                  if polity == "firascir" else "gibili/gadget-fair", 3)
+            self.assertEqual(
+                worldsim.option_price(world, polity, spec),
+                max(1, round(spec["gold"]
+                             * worldsim.term(world, polity, spec["term"]))),
+                spec["key"])
+            self.assertGreaterEqual(flat, 1)
+
+    def test_the_word_the_player_types_is_unique(self) -> None:
+        words = [worldsim.option_word(o) for o in worldsim.OPTIONS]
+        self.assertEqual(len(words), len(set(words)))
+        for word in words:
+            self.assertIs(worldsim.option_named(word),
+                          worldsim.OPTIONS_BY_KEY[
+                              next(o["key"] for o in worldsim.OPTIONS
+                                   if worldsim.option_word(o) == word)])
+
+    def test_an_option_is_gated_and_reachable(self) -> None:
+        """Every gated option's state is something a card in this game
+        actually sets -- an option nobody can ever reach is dead data, and
+        it is silent, which is exactly what import-time validation is
+        for."""
+        settable = {s for c in worldsim.CARDS for group in ("set", "while")
+                    for s in (c["outlets"].get("state") or {}).get(group, ())}
+        gated = 0
+        for spec in worldsim.OPTIONS:
+            for state_id in spec["states"]:
+                self.assertIn(state_id, settable, spec["key"])
+                gated += 1
+        self.assertGreaterEqual(gated, 3)
+
+    def test_the_authored_lore_fits_and_stays_ascii(self) -> None:
+        for entry in worldsim.FACTS:
+            self.assertLessEqual(len(entry["title"]), WIDTH, entry["key"])
+            self.assertTrue(entry["title"].isascii(), entry["key"])
+            self.assertTrue(entry["line"].isascii(), entry["key"])
+        for spec in worldsim.OPTIONS:
+            self.assertLessEqual(len(spec["name"]), WIDTH, spec["key"])
+            self.assertTrue(spec["line"].isascii(), spec["key"])
+
+
+class TheServicesCounter(unittest.TestCase):
+    """The sixth outlet's standing half, at the counter."""
+
+    @staticmethod
+    def _state(world: dict, polity: str, day: int = 5) -> dict:
+        here = quests.settlements_by_land(world)[polity][0]
+        return {"world": world, "clock": rpg.Clock(day=day),
+                "rng": random.Random(9), "party": _party(),
+                "purse": rpg.Purse(gold=900), "services": {},
+                "accepted": [], "active_quest": None, "visited": [],
+                "position": {"land": polity, "area": here["key"],
+                             "site": None}}
+
+    def _run(self, state: dict, *words: str) -> str:
+        import session
+        out = io.StringIO()
+        args = argparse.Namespace(what=list(words))
+        with unittest.mock.patch.object(session, "load", lambda: state), \
+                unittest.mock.patch.object(session, "save", lambda s: None), \
+                redirect_stdout(out):
+            session.cmd_service(args)
+        return out.getvalue()
+
+    def test_the_counter_lists_what_this_land_sells(self) -> None:
+        world = _world()
+        text = self._run(self._state(world, "firascir"))
+        self.assertIn("burial", text)
+        self.assertNotIn("rain stone", text)      # that is Tergal's counter
+
+    def test_a_blessing_is_paid_for_and_lands_on_the_party(self) -> None:
+        world = _world()
+        state = self._state(world, "firascir")
+        for h in state["party"][1:]:     # a recruited companion tracks
+            h.satisfaction = 5           # satisfaction; the fixture's do
+            h.protagonist = False        # not until they are told to
+        tracked = [h for h in state["party"][1:]
+                   if rpg.satisfaction_tracked(h)]
+        self.assertTrue(tracked, "the fixture party tracks satisfaction")
+        before = [h.satisfaction for h in tracked]
+        gold = state["purse"].gold
+        self._run(state, "blessing")
+        self.assertLess(state["purse"].gold, gold)
+        self.assertTrue(all(h.satisfaction > b
+                            for h, b in zip(tracked, before)))
+
+    def test_a_blessing_has_a_cooldown_and_the_purse_is_not_charged(self
+                                                                   ) -> None:
+        world = _world()
+        state = self._state(world, "firascir")
+        self._run(state, "blessing")
+        gold = state["purse"].gold
+        text = self._run(state, "blessing")
+        self.assertEqual(state["purse"].gold, gold)
+        self.assertIn("twice", text)
+
+    def test_a_shut_option_is_refused_and_never_charged(self) -> None:
+        world = _world()
+        state = self._state(world, "firascir")
+        gold = state["purse"].gold
+        text = self._run(state, "tower-fee")   # wants tower-open
+        self.assertEqual(state["purse"].gold, gold)
+        self.assertIn("not on offer", text)
+        worldsim.set_state(world, "firascir", "tower-open", 4)
+        self.assertIn("tower", self._run(state))
+
+    def test_another_land_s_counter_is_not_this_one(self) -> None:
+        world = _world()
+        state = self._state(world, "firascir")
+        self.assertIn("not sold", self._run(state, "rain-stone"))
+
+    def test_a_teaching_is_the_spellbook_gate_at_the_land_s_price(self
+                                                                 ) -> None:
+        """The three organizations are three prices on one action: the
+        goblin master undercuts the academy, and the elven school is the
+        dearest teaching in the world."""
+        world = _world()
+        state = self._state(world, "mortellaria")
+        wizard = next((h for h in state["party"] if h.is_wizard), None)
+        if wizard is None:                    # the roll did not make one
+            wizard = state["party"][0]        # ...so the refusal is the
+            wizard.is_wizard = True           # contract instead
+            wizard.spells = {}
+        spell = next(s for s in sorted(rpg.SPELLS) if s not in wizard.spells)
+        gold = state["purse"].gold
+        self._run(state, "academy-fee", wizard.name, spell)
+        self.assertIn(spell, wizard.spells)
+        paid = gold - state["purse"].gold
+        self.assertEqual(paid, worldsim.option_price(
+            world, "mortellaria",
+            worldsim.OPTIONS_BY_KEY["mortellaria/academy-fee"]))
+        prices = {o["key"]: o["gold"] for o in worldsim.OPTIONS
+                  if o["does"] == "book"}
+        self.assertLess(prices["gibili/masters-fee"],
+                        prices["mortellaria/academy-fee"])
+        self.assertGreater(prices["ensimaa/teaching"],
+                           prices["firascir/tower-fee"])
+
+    def test_the_rain_stone_buys_the_sky_and_gives_it_back(self) -> None:
+        """The weather-worker's priced thumb on the day roll: a day or two
+        of rain, never a season -- the price rule says healing is retail
+        and so is weather."""
+        world = _world()
+        state = self._state(world, "tergal", day=5)
+        self._run(state, "rain-stone")
+        worldsim.roll_world(world, 6)
+        self.assertEqual(worldsim.weather_of(world, "tergal"), "rain")
+        self.assertIn("rain-bought", worldsim.state_ids(world, "tergal"))
+        spec = worldsim.OPTIONS_BY_KEY["tergal/rain-stone"]
+        worldsim.roll_world(world, 5 + spec["holds"] + 2)
+        self.assertNotIn("rain-bought", worldsim.state_ids(world, "tergal"))
+        self.assertIsNone(_layer(world, "tergal")["bought_sky"])
+
+    def test_a_bought_sky_still_runs_the_spells(self) -> None:
+        world = _world()
+        worldsim.roll_world(world, 4)
+        worldsim.hire_weather(world, "tergal", 4, "rain", 3)
+        worldsim.roll_world(world, 6)
+        self.assertGreaterEqual(_layer(world, "tergal")["wet"], 2)
+        self.assertEqual(_layer(world, "tergal")["dry"], 0)
+
+    def test_the_price_sheet_carries_the_counter(self) -> None:
+        import session
+        world = _world()
+        state = self._state(world, "tergal")
+        out = io.StringIO()
+        with unittest.mock.patch.object(session, "load", lambda: state), \
+                redirect_stdout(out):
+            session.cmd_prices(argparse.Namespace())
+        self.assertIn("rain stone", out.getvalue())
+
+    def test_the_lore_page_is_the_facts_and_the_counter(self) -> None:
+        import session
+        world = _world()
+        state = self._state(world, "dvarvengrond")
+        out = io.StringIO()
+        with unittest.mock.patch.object(session, "load", lambda: state), \
+                redirect_stdout(out):
+            session.cmd_lore(argparse.Namespace(land=[]))
+        text = out.getvalue()
+        self.assertIn("THE KNOCKERS", text)
+        self.assertIn("hall blessing", text)
+
+
+class TheCrimeMarkWiring(unittest.TestCase):
+    """The reagent trade, wired where worldsim.md put it."""
+
+    def test_a_quiet_land_puts_nothing_in_the_mark_table(self) -> None:
+        world = _flat_world()
+        for polity in world["lands"]:
+            for cat in crime.CATEGORIES:
+                self.assertEqual(
+                    worldsim.mark_roles(world, polity, cat["key"]), (),
+                    (polity, cat["key"]))
+
+    def test_every_state_mark_names_a_real_category(self) -> None:
+        for state_id, table in worldsim.STATE_MARKS.items():
+            self.assertIn(state_id, worldsim.STATE_WORDS)
+            for key in table:
+                self.assertIn(key, crime.BY_KEY, (state_id, key))
+
+    def test_the_reagent_road_reaches_the_heist_and_the_smuggler(self
+                                                                 ) -> None:
+        world = _flat_world()
+        worldsim.set_state(world, "gibili", "reagents-moving", 3)
+        for key in ("heist", "caravan", "powder", "burglary"):
+            self.assertTrue(worldsim.mark_roles(world, "gibili", key), key)
+        self.assertEqual(worldsim.mark_roles(world, "gibili", "mugging"), ())
+
+    def test_the_extra_faces_are_dealt_in_beside_the_band_s_own(self
+                                                               ) -> None:
+        """A state that makes a new kind of mark exist does not replace the
+        ordinary ones -- it competes with them, and the casing prints
+        whichever came up like any other face."""
+        cat = crime.BY_KEY["heist"]
+        extra = ("the reagent vault under the academy",)
+        seen = set()
+        for day in range(1, 60):
+            mark = crime.roll_mark(cat, 11, "area/x/y", "capital", day,
+                                   extra)
+            seen.add(mark["role"])
+        self.assertIn(extra[0], seen)
+        self.assertTrue(seen - set(extra))
+
+    def test_a_state_mark_reaches_the_casing_report(self) -> None:
+        import session
+        world = _world()
+        polity = "dvarvengrond"
+        worldsim.set_state(world, polity, "tombs-open", 2)
+        here = quests.settlements_by_land(world)[polity][0]
+        state = {"world": world, "clock": rpg.Clock(day=4),
+                 "rng": random.Random(2), "party": _party(),
+                 "purse": rpg.Purse(gold=10), "crimes": crime.new_crimes(),
+                 "accepted": [], "active_quest": None, "visited": [],
+                 "position": {"land": polity, "area": here["key"],
+                              "site": None}}
+        cat = crime.BY_KEY["graverob"]
+        roles = set()
+        for day in range(1, 40):
+            state["clock"].day = day
+            mark = session.local_mark(state, cat, None, None)
+            roles.add(mark["role"])
+        self.assertTrue(roles & set(
+            worldsim.STATE_MARKS["tombs-open"]["graverob"]))
+
+
+class TheReligionAndMagicContent(unittest.TestCase):
+    """What the session was asked to author, asserted as data."""
+
+    def test_every_land_has_worship_of_its_own(self) -> None:
+        for polity in places.LAND_SPECS:
+            own = [c for c in worldsim.RELIGION_CARDS
+                   if worldsim.in_land(c, polity)]
+            self.assertGreaterEqual(len(own), 5, polity)
+
+    def test_the_magic_packets_reach_every_land_too(self) -> None:
+        for polity in places.LAND_SPECS:
+            own = [c for c in worldsim.MAGIC_CARDS
+                   if worldsim.in_land(c, polity)]
+            self.assertGreaterEqual(len(own), 3, polity)
+
+    def test_almost_nothing_in_the_rung_is_ungated(self) -> None:
+        """The gate is what keeps a packet a wide POOL instead of a content
+        budget. What is left ungated is one card a land at most, and it
+        pays for the privilege with its own low `chance`."""
+        loose = [c for c in _lore_cards()
+                 if not any(c["admits"].get(k) for k in POLITICS_KEYS)
+                 and not c["admits"]["states"]
+                 and not c["admits"]["weather"]]
+        for spec in loose:
+            self.assertLess(spec["chance"], 1.0, spec["key"])
+        by_land: dict[str, int] = {}
+        for spec in loose:
+            if len(spec["land"]) > 1:   # a land-agnostic card is the
+                continue                # packet's own, not this land's
+            by_land[spec["land"][0]] = by_land.get(spec["land"][0], 0) + 1
+        for polity, count in by_land.items():
+            self.assertLessEqual(count, 1, polity)
+
+    def test_the_margin_doctrine_holds_in_the_data(self) -> None:
+        """Magic is real, known and SMALL: no throne, market or war is
+        decided by it. Mechanically -- not one magic card moves a wealth
+        band, and every one of them is rare or hard-gated."""
+        for spec in worldsim.MAGIC_CARDS:
+            state = spec["outlets"].get("state") or {}
+            self.assertFalse(state.get("wealth"), spec["key"])
+            self.assertFalse(state.get("wealth_while"), spec["key"])
+            self.assertFalse(state.get("constitution"), spec["key"])
+
+    def test_conduct_not_creed(self) -> None:
+        """The design requirement: no inquisition against casting as such.
+        The hunt exists, and it admits only on what somebody DID -- the
+        talent that went off -- never on a land, a ruler or a faith."""
+        hunt = worldsim.CARDS_BY_KEY["magic/the-hunt"]
+        self.assertEqual(hunt["admits"]["states"], ("talent-loose",))
+        self.assertFalse(hunt["admits"]["constitution"])
+        self.assertFalse(hunt["admits"]["traits"])
+        self.assertEqual(hunt["land"], (worldsim.ANY_LAND,))
+
+    def test_the_talent_chain_runs_in_every_land(self) -> None:
+        world = _flat_world()
+        for polity in ("firascir", "tergal", "gibili"):
+            first = worldsim.CARDS_BY_KEY["magic/wild-talent"]
+            self.assertTrue(worldsim.admits(world, polity, first["admits"]))
+            hunt = worldsim.CARDS_BY_KEY["magic/the-hunt"]
+            self.assertFalse(worldsim.admits(world, polity, hunt["admits"]))
+            _fire(world, polity, "magic/wild-talent", 3)
+            self.assertIn("talent-loose", worldsim.state_ids(world, polity))
+            self.assertTrue(worldsim.admits(world, polity, hunt["admits"]))
+            _fire(world, polity, "magic/the-hunt", 5)
+            self.assertNotIn("talent-loose",
+                             worldsim.state_ids(world, polity))
+            self.assertIn("hunt-up", worldsim.state_ids(world, polity))
+
+    def test_the_wild_talent_and_the_seeress_are_kept(self) -> None:
+        """RECURRENCE is the property that makes an NPC exist at all: the
+        card names somebody once and the land keeps him."""
+        world = _flat_world()
+        _fire(world, "firascir", "magic/wild-talent", 3)
+        who = worldsim.named_authority(world, "firascir", "wild-talent")
+        self.assertIsNotNone(who)
+        _fire(world, "firascir", "magic/wild-talent", 40, seed=7)
+        self.assertEqual(
+            worldsim.named_authority(world, "firascir",
+                                     "wild-talent")["name"], who["name"])
+
+    def test_the_schism_clock_runs_both_ways(self) -> None:
+        """One church, two rites, and cards on the edge fire in BOTH
+        lands (worldsim.md's Sun communion)."""
+        world = _flat_world()
+        synod = worldsim.CARDS_BY_KEY["communion/the-synod"]
+        self.assertEqual(set(synod["land"]), {"firascir", "mortellaria"})
+        worldsim.set_state(world, "mortellaria", "dead-abroad", 3)
+        self.assertIn("schism-near", worldsim.state_ids(world, "firascir"))
+        self.assertTrue(worldsim.admits(world, "firascir", synod["admits"]))
+        worldsim.drop_state(world, "mortellaria", "dead-abroad", 4)
+        worldsim.set_state(world, "firascir", "interdict", 5)
+        self.assertIn("schism-near",
+                      worldsim.state_ids(world, "mortellaria"))
+        self.assertTrue(worldsim.admits(world, "mortellaria",
+                                        synod["admits"]))
+
+    def test_the_religion_edges_reach_across_the_border(self) -> None:
+        """Four authored edges the packets named: the death feast pulling
+        the young elves south, Gibili exporting a franchise into a Firascir
+        market town, the old practice recognized across the Tergal border,
+        and the academy's purge arriving as goblin street necromancers."""
+        world = _flat_world()
+        for source, state_id, target, derived in (
+                ("mortellaria", "dead-abroad", "ensimaa", "young-abroad"),
+                ("gibili", "revival-war", "firascir", "franchise-here"),
+                ("tergal", "black-tent", "gibili", "old-practice"),
+                ("mortellaria", "necromancy-purged", "gibili",
+                 "academy-exiles")):
+            worldsim.set_state(world, source, state_id, 3)
+            self.assertIn(derived, worldsim.state_ids(world, target),
+                          derived)
+            readers = [c for c in worldsim.CARDS
+                       if derived in c["admits"]["states"]]
+            self.assertTrue(readers, derived)
+            for spec in readers:
+                self.assertIn(target, spec["land"], spec["key"])
+            worldsim.drop_state(world, source, state_id, 4)
+
+    def test_the_temple_sells_a_burial_and_a_blessing_and_no_penance(self
+                                                                    ) -> None:
+        """plan.md's ruling, as data: healing, burial and blessing as plain
+        priced entries, and the sin/penance wiring deliberately absent.
+        HEALING is the `healer` term itself -- the temple IS the healer in
+        the Sun lands, which is why the interdict puts the fee up and the
+        unlicensed well puts it down."""
+        temple = [o for o in worldsim.OPTIONS
+                  if o["key"].startswith("sun/")]
+        self.assertEqual({worldsim.option_word(o) for o in temple},
+                         {"burial", "blessing"})
+        for spec in temple:
+            self.assertEqual(set(spec["land"]), {"firascir", "mortellaria"})
+            self.assertEqual(spec["term"], "healer")
+        self.assertGreater(worldsim.STATE_MENU["interdict"]["healer"], 1.0)
+        self.assertLess(worldsim.STATE_MENU["holy-well"]["healer"], 1.0)
+        for spec in worldsim.OPTIONS:
+            self.assertNotIn("sin", spec["line"].lower().split())
+            self.assertNotIn("penance", spec["line"].lower())
+
+    def test_the_pact_stays_out_of_the_lore(self) -> None:
+        """The design round's first directive: nobody in the world knows of
+        the player's hell pact, nothing senses it, and no entry in these
+        packets reacts to it."""
+        text = " ".join(
+            [e["line"] for e in worldsim.FACTS]
+            + [o["line"] for o in worldsim.OPTIONS]
+            + [c["outlets"].get("news", "") for c in _lore_cards()]).lower()
+        for word in ("the pact", "hell", "infernal", "damned"):
+            self.assertNotIn(word, text)
+
+    def test_no_card_in_the_rung_is_dead_data(self) -> None:
+        """Force each gate a card names and it admits. A card whose
+        conditions can never all hold at once is silent -- the deck simply
+        skips it forever."""
+        world = _world(4471)
+        for spec in _lore_cards():
+            polity = spec["land"][0]
+            if polity == worldsim.ANY_LAND:
+                polity = "firascir"
+            layer = _layer(world, polity)
+            admits_ = spec["admits"]
+            if admits_["edge"]:
+                entry = next(e for e in worldsim.FACTION_EDGES
+                             if e["key"] == admits_["edge"][0])
+                layer["tensions"] = [
+                    t["key"] for t in worldsim.TENSIONS[polity]
+                    if entry["from"] in t["factions"]
+                    or entry["to"] in t["factions"]]
+            elif admits_["tension"]:
+                layer["tensions"] = list(admits_["tension"][:1])
+            if admits_["traits"]:
+                layer["ruler"]["traits"] = list(admits_["traits"])
+            for state_id in admits_["states"]:
+                edge = next((e for e in worldsim.RELATIONS
+                             if e["to"] == polity
+                             and e["then"] == state_id), None)
+                if edge is None:
+                    worldsim.set_state(world, polity, state_id, 1)
+                else:
+                    worldsim.set_state(world, edge["from"],
+                                       edge["when"][0], 1)
+            for state_id in admits_["without"]:
+                worldsim.drop_state(world, polity, state_id, 1)
+            if worldsim.wealth_of(world, polity) not in admits_["wealth"]:
+                worldsim.set_wealth(world, polity, admits_["wealth"][0], 1)
+            self.assertTrue(worldsim.admits(world, polity, admits_),
+                            spec["key"])
+            for state_id in admits_["states"]:
+                worldsim.drop_state(world, polity, state_id, 2)
+
+    def test_the_authored_rung_fits_and_stays_ascii(self) -> None:
+        for spec in _lore_cards():
+            self.assertTrue(spec["name"].isascii(), spec["key"])
+            self.assertLessEqual(len(spec["name"]), WIDTH, spec["key"])
+            for line in spec["outlets"].values():
+                if isinstance(line, str):
+                    self.assertTrue(line.isascii(), spec["key"])
 
 
 if __name__ == "__main__":
