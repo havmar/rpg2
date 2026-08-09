@@ -1,4 +1,4 @@
-RPG2 HISTORY -- day 1
+RPG2 HISTORY -- day 2
 (what this campaign has done)
 
 -- QUESTS DONE --
@@ -10,7 +10,7 @@ RPG2 HISTORY -- day 1
 -- THE TALLY OF SIN --
   (no crime committed yet)
   clean; heat 0
-  lifetime sin 0 / penance 0
+  lifetime sin 0 / penance 394
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

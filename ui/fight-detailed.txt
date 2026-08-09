@@ -1,0 +1,81 @@
+=== The Giant at the Border -- the giant's hall (L6), room 1/1: ruined yard ===
+  Ogre 2 -- ogre club
+  DEX 6  STR 8  STA 8  HP 24/24
+  breaks when beaten
+  Round 1:
+        casting: 14 (2d6=7, +6 MIND, +1 rank) vs DC 9 (7 +2x rank 1) -> success
+    *** Theren BLINKS -- and is behind Ogre 2. ***
+    Theren strikes out of nowhere -- Ogre 2 never sees it coming!
+    Theren's fire bolt overwhelms Ogre 2 -- a grievous injury! [Ogre 2: 20/24 HP, -2 to rolls]
+        pressure: ambush -- no defense, margin 6
+        severity: 5 = margin 6 +5 fire bolt +2 spell rank -8 soak -> grievous (-4 HP)
+    Theren, Snizzle, Ogre 2 close the distance -- the lines meet!
+    stamina: Theren 8/9, Snizzle 10/10 | Ogre 2 8/8
+  Round 2:
+    Theren and Ogre 2 -- Clash! Steel rings; neither yields.
+        pressure: Theren: 15 (2d6=7, +3 DEX, +2 training, +3 masterwork rapier) vs Ogre 2: 15 (2d6=11, +6 DEX, -2 wounds)
+    Snizzle overwhelms Ogre 2 -- a graze! [Ogre 2: 19/24 HP, -2 to rolls]
+        pressure: Snizzle: 14 (2d6=6, +4 DEX, +2 training, +2 proficiency) vs Ogre 2: 9 (2d6=5, +6 DEX, -2 wounds)
+        severity: 1 = margin 5 +3 STR -1 wooden staff +2 proficiency -8 soak -> graze (-1 HP)
+    Ogre 2 attacks Snizzle -- parried.
+        pressure: Ogre 2: 11 (2d6=7, +6 DEX, -2 wounds) vs Snizzle: 14 (2d6=7, +4 DEX, +2 training, +1 wooden staff)
+    stamina: Theren 7/9, Snizzle 9/10 | Ogre 2 7/8
+  Round 3:
+    Theren edges past Ogre 2 -- a graze! [Ogre 2: 18/24 HP, -3 to rolls]
+        pressure: Theren: 14 (2d6=6, +3 DEX, +2 training, +3 masterwork rapier) vs Ogre 2: 13 (2d6=9, +6 DEX, -2 wounds)
+        severity: -3 = margin 1 +5 STR -1 masterwork rapier -8 soak -> deflected -> the masterwork rapier's point finds a seam: graze (-1 HP)
+    Snizzle overwhelms Ogre 2 -- a grievous injury! [Ogre 2: 14/24 HP, -5 to rolls]
+        pressure: Snizzle: 16 (2d6=8, +4 DEX, +2 training, +2 proficiency) vs Ogre 2: 6 (2d6=3, +6 DEX, -3 wounds)
+        severity: 6 = margin 10 +3 STR -1 wooden staff +2 proficiency -8 soak -> grievous (-4 HP)
+    Ogre 2 attacks Snizzle -- parried.
+        pressure: Ogre 2: 8 (2d6=7, +6 DEX, -5 wounds) vs Snizzle: 15 (2d6=8, +4 DEX, +2 training, +1 wooden staff)
+    stamina: Theren 6/9, Snizzle 8/10 | Ogre 2 6/8
+  Round 4:
+    Theren outmaneuvers Ogre 2 -- a graze! [Ogre 2: 13/24 HP, -5 to rolls]
+        pressure: Theren: 13 (2d6=5, +3 DEX, +2 training, +3 masterwork rapier) vs Ogre 2: 9 (2d6=8, +6 DEX, -5 wounds)
+        severity: 0 = margin 4 +5 STR -1 masterwork rapier -8 soak -> deflected -> the masterwork rapier's point finds a seam: graze (-1 HP)
+    Snizzle overwhelms Ogre 2 -- a graze! [Ogre 2: 12/24 HP, -6 to rolls]
+        pressure: Snizzle: 18 (2d6=10, +4 DEX, +2 training, +2 proficiency) vs Ogre 2: 12 (2d6=11, +6 DEX, -5 wounds)
+        severity: 2 = margin 6 +3 STR -1 wooden staff +2 proficiency -8 soak -> graze (-1 HP)
+    Ogre 2 attacks Theren -- parried.
+        pressure: Ogre 2: 6 (2d6=6, +6 DEX, -6 wounds) vs Theren: 8 (2d6=3, +3 DEX, +2 training)
+    stamina: Theren 5/9, Snizzle 7/10 | Ogre 2 5/8
+  Round 5:
+    Theren outmaneuvers Ogre 2 -- a graze! [Ogre 2: 11/24 HP, -6 to rolls]
+        pressure: Theren: 12 (2d6=4, +3 DEX, +2 training, +3 masterwork rapier) vs Ogre 2: 9 (2d6=9, +6 DEX, -6 wounds)
+        severity: -1 = margin 3 +5 STR -1 masterwork rapier -8 soak -> deflected -> the masterwork rapier's point finds a seam: graze (-1 HP)
+    Snizzle overwhelms Ogre 2 -- a solid wound! [Ogre 2: 9/24 HP, -7 to rolls]
+        pressure: Snizzle: 17 (2d6=9, +4 DEX, +2 training, +2 proficiency) vs Ogre 2: 9 (2d6=9, +6 DEX, -6 wounds)
+        severity: 4 = margin 8 +3 STR -1 wooden staff +2 proficiency -8 soak -> wound (-2 HP)
+    Ogre 2 attacks Theren -- parried.
+        pressure: Ogre 2: 4 (2d6=5, +6 DEX, -7 wounds) vs Theren: 12 (2d6=7, +3 DEX, +2 training)
+    stamina: Theren 4/9, Snizzle 6/10 | Ogre 2 4/8
+  Round 6:
+    !! Theren is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Theren overwhelms Ogre 2 -- a crippling blow! [Ogre 2: 3/24 HP, -10 to rolls]
+        pressure: Theren: 18 (2d6=12, +3 DEX, +2 training, +3 masterwork rapier, -2 winded) vs Ogre 2: 2 (2d6=3, +6 DEX, -7 wounds)
+        severity: 12 = margin 16 +5 STR -1 masterwork rapier -8 soak -> crippling blow (-6 HP)
+    Snizzle overwhelms Ogre 2 -- a crippling blow! [Ogre 2: 0/24 HP, -12 to rolls]
+        pressure: Snizzle: 12 (2d6=4, +4 DEX, +2 training, +2 proficiency) vs Ogre 2: -2 (2d6=2, +6 DEX, -10 wounds)
+        severity: 10 = margin 14 +3 STR -1 wooden staff +2 proficiency -8 soak -> crippling blow (-6 HP)
+    *** Ogre 2 is SLAIN. ***
+    (Ogre 2 strikes even as they fall)
+    Ogre 2 attacks Theren -- parried.
+        pressure: Ogre 2: 9 (2d6=10, +6 DEX, -7 wounds) vs Theren: 14 (2d6=11, +3 DEX, +2 training, -2 winded)
+    stamina: Theren 3/9*, Snizzle 5/10   (* = Winded)
+    The party catches its breath (+1 STA)
+    Theren gains 99 XP (encounter) [198/600]
+    Snizzle gains 99 XP (encounter) [198/600]
+
+  *** THE JOB IS DONE: The Giant at the Border -- the giant's hall (site 2/2). Return to Wozzek at Maketawa -- due day 5: `turnin q13`. ***
+    Theren gains 196 XP (the work done) [394/600]
+    Snizzle gains 196 XP (the work done) [394/600]
+
+-- the party --
+Theren: Unhurt STA 4/9 Power 0/8
+  (healing x1, stamina x2)
+Snizzle: Unhurt STA 6/10 Power 8/8
+  (stamina x1)
+Purse 173g; day 2.
+The work is done: return to Wozzek at Maketawa -- the turn-in pays 199g, 99 XP (`turnin q13`).
+  (due day 5 -- 3 days left; on time pay, x1)

@@ -1,0 +1,59 @@
+=== The Giant at the Border ===
+the giant's hall (L6),
+room 1/1: ruined yard
+Ogre 2 -- ogre club
+DEX 6  STR 8  STA 8  HP 24/24
+breaks when beaten
+Round 1:
+*** Theren BLINKS behind Ogre 2. ***
+[1 Power left]
+Theren strikes from nowhere --
+Ogre 2 never sees it coming!
+Theren's fire bolt overwhelms Ogre 2,
+deals 4 dmg!! [0 Power left]
+The lines meet -- steel range.
+Round 2:
+Theren and Ogre 2: Clash!
+Snizzle overwhelms Ogre 2, deals 1 dmg.
+Ogre 2 (19/24) attacks Snizzle, parried.
+Round 3:
+Theren edges past Ogre 2, deals 1 dmg.
+Snizzle overwhelms Ogre 2, deals 4 dmg!!
+Ogre 2 (14/24) attacks Snizzle, parried.
+Round 4:
+Theren outmaneuvers Ogre 2, deals 1 dmg.
+Snizzle overwhelms Ogre 2, deals 1 dmg.
+Ogre 2 (12/24) attacks Theren, parried.
+Round 5:
+Theren outmaneuvers Ogre 2, deals 1 dmg.
+Snizzle overwhelms Ogre 2, deals 2 dmg!
+Ogre 2 (9/24) attacks Theren, parried.
+Round 6:
+!! Theren is Winded.
+Theren overwhelms Ogre 2, deals 6 dmg!!!
+Snizzle overwhelms Ogre 2,
+deals 6 dmg!!! SLAIN.
+Ogre 2 strikes as they fall:
+Theren parries.
+The party catches its breath (+1 STA)
+Theren +99 XP (encounter) [198/600]
+Snizzle +99 XP (encounter) [198/600]
+
+*** THE JOB IS DONE:
+The Giant at the Border --
+the giant's hall (site 2/2).
+Return to Wozzek
+at Maketawa -- due day 5:
+`turnin q13`. ***
+Theren +196 XP (the work done) [394/600]
+Snizzle +196 XP (the work done)
+[394/600]
+
+-- the party --
+Theren: Unhurt STA 4/9 Power 0/8
+  (healing x1, stamina x2)
+Snizzle: Unhurt STA 6/10 Power 8/8
+  (stamina x1)
+Purse 173g; day 2.
+The work is done: return to Wozzek at Maketawa -- the turn-in pays 199g, 99 XP (`turnin q13`).
+  (due day 5 -- 3 days left; on time pay, x1)

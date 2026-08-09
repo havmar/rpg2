@@ -1,5 +1,6 @@
-RPG2 MAP -- day 1
-the party is at Gibili > Maketawa
+RPG2 MAP -- day 2
+the party is at Gibili > Boilaki > the
+  giant's hall > ruined yard
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -27,15 +28,23 @@ the party is at Gibili > Maketawa
   [PROSPEROUS]
   THE PAPER STATE
   WEATHER: clear skies.
-  Maketawa (capital) -- 6 job(s)  <- the
+  Maketawa (capital) -- 5 job(s)
+    (visited)
+  Boilaki (town) -- 5 job(s)  <- the
     party
-  Boilaki (town) -- 5 job(s)
   Pakapota (village) -- 3 job(s)
 
 == Tergal ==
   Ulus-Gal (capital) -- 5 job(s)
   Ordubal (town) -- 4 job(s)
   Teguren (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q13] The Giant at the Border (L6) @
+  Maketawa
+  - the ruined fort (L6): cleared
+  - the giant's hall (L6): cleared
 
 -- the war --
 THE WAR: [w1] L2 Orc Scouts -- raised at

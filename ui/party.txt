@@ -1,22 +1,23 @@
-RPG2 PARTY SHEET -- day 1, at Gibili >
-  Maketawa
+RPG2 PARTY SHEET -- day 2, at Gibili >
+  Boilaki > the giant's hall > ruined
+  yard
 purse: 173g
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Theren -- elf m, age 40
-  L6  training 2  XP 0/600  points 1
+  L6  training 2  XP 394/600  points 1
   DEX 3  STR 5  MIND 6  CHA 4
-  HP 11/11  STA 9/9  Power 8/8
+  HP 11/11  STA 4/9  Power 0/8
   masterwork rapier | healingx1,
     staminax2
   spells: fire 2, teleport 1
   pools bought: hp +2, power +2, sta +2
 
 (companion) Snizzle -- goblin m, age 32
-  L6  training 2  XP 0/600  points 0
+  L6  training 2  XP 394/600  points 0
   DEX 4  STR 3  MIND 4  CHA 6
-  HP 12/12  STA 10/10  Power 8/8
+  HP 12/12  STA 6/10  Power 8/8
   wooden staff, prof 2 | staminax1
   spells: healing 1
   pools bought: hp +2, power +2, sta +2
@@ -24,6 +25,10 @@ party: 1/1 companion slot(s) filled (CHA
   background: military; voice: loud;
     looks: sickly
 
+active quest [q13] The Giant at the
+  Border: THE WORK IS DONE -- return to
+  Wozzek at Maketawa (`turnin q13`)
+  due day 5 -- 3 days left
 THE PACT: no current assignment (the
   next is pinned to PC level 7).
 THE WAR: [w1] L2 Orc Scouts -- raised at
