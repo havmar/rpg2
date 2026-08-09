@@ -1,70 +1,37 @@
-## turn 2 (day 2)
+## turn 3 (day 3)
 
-> take the giant job
+> travel to Maketawa and turn in
 
-Wozzek writes your names on a slate and tells you where the forts stood. The giant is in the hills above Boilaki, a day's walk from the capital. You go, and camp once on the road. Boilaki is a brick town under an old quarry in the Barasa Hills, with lime kilns smoking outside the wall.
+You walk back the way you came and camp once. Snizzle talks for most of the second day. He was in somebody's army for four years, and he tells you again about the siege where the cooks ran out of salt before the defenders ran out of arrows. You have heard it. He tells it the same way every time.
 
-The first fort is a burnt shell with one wall still standing. There is an ogre in the yard.
+Maketawa is hot. The heat has come down hard on the river and the metal roofs are too bright to look at. The gadget fair is on inside the wall, and the tables are full of cheap clever things; a hawker sells you a lamp and says it is warranted for exactly as long as the fair lasts. The shops and the smith are cheap with it.
 
-```
-=== The Giant at the Border ===
-the ruined fort (L6),
-room 1/1: ruined yard
-Ogre 1 -- ogre club
-DEX 6  STR 8  STA 8  HP 24/24
-breaks when beaten
-```
-
-You blink in behind it and it is burning before it turns around. It gives up after two rounds and runs; Snizzle catches it at the gate. Wozzek described one giant. This is not the only one.
-
-The hall is further up the hills: a second fort with the roof gone and goat bones on the floor. The other ogre is inside.
+Wozzek is at the gatehouse. You put the head on the table. He looks at it a while, then counts out the money. You get another twenty out of him for the second ogre, on the grounds that he asked for one giant and you brought two.
 
 ```
-=== The Giant at the Border ===
-the giant's hall (L6),
-room 1/1: ruined yard
-Ogre 2 -- ogre club
-DEX 6  STR 8  STA 8  HP 24/24
-breaks when beaten
+*** QUEST COMPLETE: The Giant at the
+  Border -- paid in full.
+  Reward: 199 gold. ***
+Theren talks the pay up: +20g (CHA 4
+  -- 219g in all).
+The party purse holds 392 gold.
+Theren gains 99 XP (quest) [493/600]
+Snizzle gains 99 XP (quest) [493/600]
+Snizzle: satisfaction 7 -> 8/10
+  (a job paid out)
 ```
 
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/fight-short.txt)
-
-You blink behind this one as well and spend your last Power on the bolt. After that you fight it with the rapier and Snizzle fights it with the staff, for five rounds. The ogre swings six times and does not get through a parry once. You are Winded by the sixth round. Snizzle breaks its skull open in the same round you open its side.
+By evening the head is nailed up over the Rivet Gate and there is a squad forming in the yard to march back out to the border forts.
 
 ```
-The party catches its breath (+1 STA)
-Theren +99 XP (encounter) [198/600]
-Snizzle +99 XP (encounter) [198/600]
-
-*** THE JOB IS DONE:
-The Giant at the Border --
-the giant's hall (site 2/2). ***
-Theren +196 XP (the work done) [394/600]
-Snizzle +196 XP (the work done)
-[394/600]
-
--- the party --
-Theren: Unhurt STA 4/9 Power 0/8
-  (healing x1, stamina x2)
-Snizzle: Unhurt STA 6/10 Power 8/8
-  (stamina x1)
-Purse 173g; day 2.
-  (due day 5 -- 3 days left; on time
-    pay, x1)
-```
-
-You take the head off the second one and wrap it, since Wozzek wants to show it to people. Nothing is coming down out of these hills now. The forts are still ruins.
-
-Maketawa is a day back. The job is wanted by day 5 and it is day 2.
-
-```
-  options: travel to Maketawa and
-    turn in (199g, 99 XP), the
-    Boilaki board (5 jobs), a bed
-    at the inn here, camp, hunt
+  options: the Maketawa board (6
+    jobs), the fair and the smith
+    (shelf down x0.72), the war
+    call [w1] L2, spend Theren's
+    skill point, a bed (up x1.69),
+    camp, hunt, travel
 ```
 
 Where to?
 
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/map.txt)
+[party](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/history.txt)

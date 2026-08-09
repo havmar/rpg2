@@ -1,6 +1,5 @@
-RPG2 MAP -- day 2
-the party is at Gibili > Boilaki > the
-  giant's hall > ruined yard
+RPG2 MAP -- day 3
+the party is at Gibili > Maketawa
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -25,26 +24,19 @@ the party is at Gibili > Boilaki > the
   Yllenne (village) -- 3 job(s)
 
 == Gibili ==  <- here
-  [PROSPEROUS]
+  [PROSPEROUS] the gadget fair is on
+    (day 3)
   THE PAPER STATE
-  WEATHER: clear skies.
-  Maketawa (capital) -- 5 job(s)
-    (visited)
-  Boilaki (town) -- 5 job(s)  <- the
+  WEATHER: hard heat.
+  Maketawa (capital) -- 6 job(s)  <- the
     party
-  Pakapota (village) -- 3 job(s)
+  Boilaki (town) -- 6 job(s)  (visited)
+  Pakapota (village) -- 4 job(s)
 
 == Tergal ==
   Ulus-Gal (capital) -- 5 job(s)
   Ordubal (town) -- 4 job(s)
   Teguren (village) -- 2 job(s)
-
--- quests in hand (where they lead) --
-
-[q13] The Giant at the Border (L6) @
-  Maketawa
-  - the ruined fort (L6): cleared
-  - the giant's hall (L6): cleared
 
 -- the war --
 THE WAR: [w1] L2 Orc Scouts -- raised at
