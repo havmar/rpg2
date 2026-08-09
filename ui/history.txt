@@ -13,7 +13,7 @@ day 3: [q13] The Giant at the Border
 -- THE TALLY OF SIN --
   (no crime committed yet)
   clean; heat 0
-  lifetime sin 0 / penance 493
+  lifetime sin 0 / penance 592
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

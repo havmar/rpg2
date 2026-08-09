@@ -1,59 +1,64 @@
-=== The Giant at the Border ===
-the giant's hall (L6),
-room 1/1: ruined yard
-Ogre 2 -- ogre club
-DEX 6  STR 8  STA 8  HP 24/24
-breaks when beaten
+=== The Boiler Cult ===
+the boiler room (L6),
+room 1/2: work yard
+2x Ice Tinker -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
 Round 1:
-*** Theren BLINKS behind Ogre 2. ***
-[1 Power left]
+*** Theren BLINKS behind
+Ice Tinker 3. *** [5 Power left]
 Theren strikes from nowhere --
-Ogre 2 never sees it coming!
-Theren's fire bolt overwhelms Ogre 2,
-deals 4 dmg!! [0 Power left]
-The lines meet -- steel range.
+Ice Tinker 3 never sees it coming!
+Theren's fire bolt
+overwhelms Ice Tinker 3, deals 6 dmg!!!
+[4 Power left]
+The lines close.
+Theren's fire bolt
+outmaneuvers Ice Tinker 3,
+deals 6 dmg!!! [3 Power left]
+Ice Tinker 3 is SLAIN.
+Ice Tinker 3's ice bolt is warded off.
+Ice Tinker 4's ice bolt
+overwhelms Snizzle, deals 4 dmg!!
+[7 Power left]
+Snizzle is rimed with frost.
+Snizzle takes a wound:
+a cut through the palm.
 Round 2:
-Theren and Ogre 2: Clash!
-Snizzle overwhelms Ogre 2, deals 1 dmg.
-Ogre 2 (19/24) attacks Snizzle, parried.
+The lines meet -- steel range.
+Theren's fire bolt
+edges past Ice Tinker 4, deals 4 dmg!!
+[2 Power left]
+Ice Tinker 4's ice bolt
+outmaneuvers Theren, deals 1 dmg.
+[6 Power left]
+Theren is rimed with frost.
 Round 3:
-Theren edges past Ogre 2, deals 1 dmg.
-Snizzle overwhelms Ogre 2, deals 4 dmg!!
-Ogre 2 (14/24) attacks Snizzle, parried.
-Round 4:
-Theren outmaneuvers Ogre 2, deals 1 dmg.
-Snizzle overwhelms Ogre 2, deals 1 dmg.
-Ogre 2 (12/24) attacks Theren, parried.
-Round 5:
-Theren outmaneuvers Ogre 2, deals 1 dmg.
-Snizzle overwhelms Ogre 2, deals 2 dmg!
-Ogre 2 (9/24) attacks Theren, parried.
-Round 6:
-!! Theren is Winded.
-Theren overwhelms Ogre 2, deals 6 dmg!!!
-Snizzle overwhelms Ogre 2,
-deals 6 dmg!!! SLAIN.
-Ogre 2 strikes as they fall:
-Theren parries.
+Theren's fire bolt
+overwhelms Ice Tinker 4, deals 6 dmg!!!
+[1 Power left]
+Ice Tinker 4 is SLAIN.
+!! Ice Tinker 4's ice bolt MISFIRES
+(-1 HP to the caster)
+Ice Tinker 4 goes DOWN.
 The party catches its breath (+1 STA)
-Theren +99 XP (encounter) [198/600]
-Snizzle +99 XP (encounter) [198/600]
-
-*** THE JOB IS DONE:
-The Giant at the Border --
-the giant's hall (site 2/2).
-Return to Wozzek
-at Maketawa -- due day 5:
-`turnin q13`. ***
-Theren +196 XP (the work done) [394/600]
-Snizzle +196 XP (the work done)
-[394/600]
+Theren +99 XP (encounter) [592/600]
+Snizzle +99 XP (encounter) [592/600]
+Left among the dead:
+2x dagger (+0 atk/-1 sev, 2g).
+The party shares out its potions:
+Theren: 2 stamina;
+Snizzle: 1 healing, 1 stamina.
 
 -- the party --
-Theren: Unhurt STA 4/9 Power 0/8
-  (healing x1, stamina x2)
-Snizzle: Unhurt STA 6/10 Power 8/8
-  (stamina x1)
-Purse 173g; day 2.
-The work is done: return to Wozzek at Maketawa -- the turn-in pays 199g, 99 XP (`turnin q13`).
-  (due day 5 -- 3 days left; on time pay, x1)
+Theren: Scratched STA 7/9 Power 1/8
+  (stamina x2)
+Snizzle: Scratched STA 10/10 Power 8/8
+  (hurt -1 to rolls)
+  - a cut through the palm (sev 2)
+  (HP ceiling 10/12 until they mend)
+  (healing x1, stamina x1)
+Purse 392g; day 4.
+Ahead: 1 fight(s) at the boiler room; the work done pays 196 XP in the field, and the turn-in pays 0g, 99 XP at the giver.
+  (due day 7 -- 3 days left; on time pay, x1)

@@ -1,5 +1,6 @@
 RPG2 MAP -- day 4
-the party is at Gibili > Maketawa
+the party is at Gibili > Maketawa > the
+  boiler room > work yard
 (travel: 1 day within a land, 2 days to
   another)
 
@@ -37,6 +38,11 @@ the party is at Gibili > Maketawa
   Ulus-Gal (capital) -- 5 job(s)
   Ordubal (town) -- 4 job(s)
   Teguren (village) -- 2 job(s)
+
+-- quests in hand (where they lead) --
+
+[q22] The Boiler Cult (L6) @ Maketawa
+  - the boiler room (L6): here, room 2/2
 
 -- the war --
 THE WAR: [w1] L2 Orc Scouts -- raised at

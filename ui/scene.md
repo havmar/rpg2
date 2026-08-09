@@ -1,30 +1,73 @@
-## turn 4 (day 4)
+## turn 5 (day 4)
 
-> i spend the day in the city, walking around
+> take the boiler cult job
 
-You spend the day in Maketawa and do no work.
+Mizzle inspects factories for the city. She is twenty-seven and she has a folder nobody above her will stamp. There is a dead works down by the river with an old boiler still in it, and a cult has been using the boiler. They have been putting workers into it. She has the address, the shift lists, and the names of four men who did not come home, and what she does not have is anybody willing to go in.
 
-Everything here goes through an office. You cannot take a stall, sell a lamp or bury a relative without a stamped form, and the queue for the stamps runs down the steps of the High Office and into the street. Vrix, the keeper of records, is at the top of those steps and does not appear to be in a hurry.
-
-The road from the Rivet Gate to the market is storefront temples the whole way. Two processions with brass bands meet head on outside a congregation that failed last week, and neither of them will give way. Handbills blow around the fountain. A woman offers you enlightenment in nine ranks; the price of the first four is printed on her board and the rest are not. A boy tries to sell you curse insurance for seven gold, policy printed, small print enormous. Snizzle spends an hour at a burial club table asking about the plumes and the band. It is fourteen gold a week, and he looks unwell enough that the clerk is very encouraging.
-
-The fair is still on. Boilo, the war profiteer, has the biggest table at it. Behind the High Office they are taking names for the war, and Dizzy the chief overboss is there in person, telling the crowd that the Sky has no mandate over goblins. Half of them cheer. Two men in the queue argue about who the next overboss will be, which is apparently not a settled question.
+She cannot pay in coin. What she has is a master smith's rapier out of a shop that went under last winter, and she will hand that over for the job.
 
 ```
-The party takes a day off at Maketawa.
-Snizzle: satisfaction 8 -> 9/10
-  (a day off their feet)
-Night passes; day 4 dawns.
-Purse 392g.
+  job: The Boiler Cult -- L6
+  giver: Mizzle, factory inspector
+  pays: a masterwork rapier (+1
+    attack, does not break easily),
+    493 XP
+  1 site, 2 fights. due day 7.
 ```
 
+The works is three streets back from the water. The gate chain is cut and hanging. Inside, the yard is stacked with fire brick and the boiler stands at the far end of it, lit, with the pressure up. Two men in the yard are tending it. They are not stokers.
+
 ```
-  options: the Maketawa board (7
-    jobs), the war call [w1] L2,
-    the smith and the shelf (down
-    x0.72), a charm (7g), burial
-    club dues (14g), spend Theren's
-    skill point, hunt, travel
+=== The Boiler Cult ===
+the boiler room (L6),
+room 1/2: work yard
+2x Ice Tinker -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
+```
+
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-cmjwmn/ui/fight-short.txt)
+
+You blink in behind the first one and two fire bolts finish him before he has turned. The second gets his cast off: the ice takes Snizzle across the hand and opens the palm, and the frost is on both of you for a round. Your third bolt kills him. The bolt he was already casting goes off in his own hand as he falls.
+
+```
+The party catches its breath (+1 STA)
+Theren +99 XP (encounter) [592/600]
+Snizzle +99 XP (encounter) [592/600]
+Left among the dead:
+2x dagger (+0 atk/-1 sev, 2g).
+The party shares out its potions:
+Theren: 2 stamina;
+Snizzle: 1 healing, 1 stamina.
+
+-- the party --
+Theren: Scratched STA 7/9 Power 1/8
+  (stamina x2)
+Snizzle: Scratched STA 10/10 Power 8/8
+  (hurt -1 to rolls)
+  - a cut through the palm (sev 2)
+  (HP ceiling 10/12 until they mend)
+  (healing x1, stamina x1)
+Purse 392g; day 4.
+Ahead: 1 fight(s) at the boiler room;
+  the work done pays 196 XP in the
+  field, and the turn-in pays 0g, 99 XP
+  at the giver.
+  (due day 7 -- 3 days left; on time
+    pay, x1)
+```
+
+Two daggers on the ground, not worth carrying. Snizzle wraps his hand and swears at it steadily. The door at the end of the yard goes through to the machine floor, and there is somebody moving behind it.
+
+Theren: Power 1/8.
+
+```
+  options: press on to the machine
+    floor, camp in the city (free),
+    a bed at the inn (1g/head, up
+    x1.69), the healer, the shops,
+    spend Theren's skill point
 ```
 
 Where to?
