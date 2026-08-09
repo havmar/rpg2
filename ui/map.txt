@@ -1,4 +1,4 @@
-RPG2 MAP -- day 3
+RPG2 MAP -- day 4
 the party is at Gibili > Maketawa
 (travel: 1 day within a land, 2 days to
   another)
@@ -27,8 +27,8 @@ the party is at Gibili > Maketawa
   [PROSPEROUS] the gadget fair is on
     (day 3)
   THE PAPER STATE
-  WEATHER: hard heat.
-  Maketawa (capital) -- 6 job(s)  <- the
+  WEATHER: haze.
+  Maketawa (capital) -- 7 job(s)  <- the
     party
   Boilaki (town) -- 6 job(s)  (visited)
   Pakapota (village) -- 4 job(s)

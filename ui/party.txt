@@ -1,4 +1,4 @@
-RPG2 PARTY SHEET -- day 3, at Gibili >
+RPG2 PARTY SHEET -- day 4, at Gibili >
   Maketawa
 purse: 392g
 party: 1/1 companion slot(s) filled (CHA
@@ -20,7 +20,7 @@ party: 1/1 companion slot(s) filled (CHA
   wooden staff, prof 2 | staminax1
   spells: healing 1
   pools bought: hp +2, power +2, sta +2
-  satisfaction 8/10
+  satisfaction 9/10
   background: military; voice: loud;
     looks: sickly
 
