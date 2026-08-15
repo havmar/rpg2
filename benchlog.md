@@ -2019,3 +2019,30 @@ confirm the played clock is right. Only play can.
 
 Nothing was retuned. The suite is 733 tests (651 before the cluster;
 `test_turnin.py` adds 80 and `test_mercy.py` two).
+
+## 2026-08-15 — The world-map generator: calibration measured, nothing retuned
+
+The new `worldmap.py` (rules.md's The World Map add-on; the generator
+only, nothing wired) is calibrated against the designer's hand-drawn
+reference map, and the reference measured first (`--template-stats`):
+30x18, land 0.585 of all tiles, mountains 0.092 of land, rivers 0.066
+of land, ZERO diagonal-only ocean contacts (the drawing already obeys
+the rule the spec asks for), components 302 / 11 / 2 / 1 — one
+landmass and a Britain, which is the played-view shape the 40x20
+corner aims at, not the full world's.
+
+Rolled worlds against those marks (defaults, 80x40): land 0.59 (the
+percentile cut makes this exact by construction, minus fix-up
+drownings), mountains 0.090 of land, rivers 0.066-0.070 of land over
+11-12 rivers / ~125-130 tiles, continents 2-3 holding 0.97+ of land,
+0-3 specks, 0-3 inner seas. The 60x30 roll: 7 rivers / 73 tiles at the
+same ratios.
+
+Constraint sweeps (`--check`, every rule hard): 100 seeds from 1 — 56
+first-roll, mean 1.62 rolls, max 7, ZERO unresolved; 200 seeds from
+200 — 116 first-roll, mean 1.75, max 7, ZERO unresolved. During
+tuning the same sweep read mean 4.44 and max 21 with a third of rolls
+merging into one landmass; the cover/reach/anchor changes recorded in
+the designlog bought the rest. ~0.2s a roll, pure stdlib.
+
+`test_worldmap.py` adds 11 tests; no existing suite or knob moved.

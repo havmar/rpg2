@@ -253,6 +253,42 @@ above: play the build first.
 
 ---
 
+## The ASCII world map — the location system rework (2026-08-15)
+
+The generator SHIPPED 2026-08-15: `worldmap.py` rolls the world as a
+character map — 80x40, whose 40x20 northwest corner is the playable game
+world — with the geography rules in rules.md's The World Map add-on and
+the session in designlog. **Nothing in the game reads it yet.** What
+this item holds is the hook-up, and it is a big change to the present
+location system: the world stops being list-shaped (the World &
+Navigation add-on's explicit stance) and becomes coordinate-shaped.
+
+- **A tile becomes an Area.** The Land -> Area -> Site -> Room hierarchy
+  keeps its lower floors; the Area floor moves onto the grid. Open
+  calls: how the six authored Lands map onto rolled continents (regions
+  of tiles? re-authored lands per world?), what a `natural` Area's kind
+  reads off the tile (terrain is on the map now), and what happens to
+  the authored 28-Area inventory and `place_catalog.json` adjacency
+  when adjacency is the grid.
+- **Travel reads the map.** One tile east-west is a day, north-south
+  two; no diagonals. Rivers are the hard crossings (the paid-crossing
+  marker finally has a place to live), mountain tiles want a rule
+  (impassable? pass-hunting?), and sea travel — the west edge is kept
+  sailable on purpose — wants pricing. The road-encounter roll would
+  price per tile instead of per trip.
+- **The map is the display.** The playable corner replaces the
+  `ui/map.txt` Land/Area list as the macro view (40 wide — it already
+  fits the display rule); settlements, quest markers, and the party's
+  position want glyphs or an overlay legend that stays legible in
+  ASCII-plus-box-glyphs. Fog of war: discovery already exists
+  (`discover_area`), so the map likely reveals by tile.
+- **Worldgen order.** The map roll would join `generate_world` on its
+  own derived seed (the armory's rule — no worldgen stream moves), with
+  settlements placed ON the map (coasts, rivers, and mountain feet are
+  the natural sites) rather than beside it.
+
+---
+
 ## The villain layer — what remains (2026-07-19, demoted 2026-07-21)
 
 The layer's spine is built and played from `rules.md` (Karma & Heat, The

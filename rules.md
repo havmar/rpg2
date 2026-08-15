@@ -4905,3 +4905,108 @@ with them — and the casing prints whichever came up like any other face.
 - **On a casing report** — a mark that is only there because of what the
   world is doing this week.
 - **`world`** carries the counter and the live mark categories for the DM.
+
+---
+
+# The World Map — Add-on (2026-08-15, generation only — NOT at the table yet)
+
+The geography the location system will move onto: the world as a
+character map in the style of the old strategy screens, rolled by
+`worldmap.py`. **Nothing in play reads it yet.** The World & Navigation
+add-on above still governs the table — the world remains list-shaped in
+play — and plan.md's "The ASCII world map" item carries the hook-up.
+This section is the design spine the generator is built and validated
+against, written down so the rules outlive the code that first met them.
+
+## The frame
+
+- **The full world is 80x40 characters** (60x30 is supported as the small
+  roll). Only the **40x20 northwest corner is the playable game world**:
+  one civilisation's view of a larger world, the way a Europe map is
+  Europe's view of Eurasia plus an Atlantic. The rest of the map exists
+  so the edge of the known world is a real place, not a wall.
+- **Edges are not equal.** The WEST edge is open ocean down the whole
+  column — the map's Atlantic, visibly sailable — reached by a noisy
+  falloff, never a straight cut. The NORTH edge may carry land to the
+  frame. The EAST and SOUTH edges simply cut continents mid-body, the
+  way a Europe map cuts Asia.
+- **In play only the playable corner is shown.** At 40 characters wide it
+  is exactly the display width the game already fits. The full map is a
+  dev and testing view; its `--lift` option floats the playable corner
+  out of the frame with a border of spaces.
+
+## The scale
+
+- **One tile is 30 km east-west and 60 km north-south.** A terminal
+  character cell is about twice as tall as it is wide, so the map reads
+  near-isotropic — a tile is one character either way, but two days'
+  walk north-south against one day's east-west.
+- **A party walks about one tile east in a day, or half a tile south** —
+  30 km a day either way. **There is no diagonal movement.**
+- **A tile corresponds to an AREA** in the World & Navigation hierarchy:
+  a world-map destination at the same day-travel granularity the game
+  already prices. Which tile each existing Area becomes, and how travel
+  days read off the grid, is the hook-up work — plan.md owns it.
+
+## The terrain vocabulary
+
+- `.` — OCEAN. The tile is water and nothing else; the coast lives in
+  the neighboring land tiles. A one-tile strait is open sailing water.
+- `#` — LAND.
+- `^` — MOUNTAINS. A range crossing the tile, not a peak: at 30 km a
+  tile, a `^` is a massif.
+- `│ ─ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼` and the half-line stubs `╵ ╷ ╶ ╴` — a RIVER
+  in a land tile. A river tile is mostly land with a hard-to-cross river
+  through it, which is why rivers draw as land features and the ocean
+  rules below ignore them. The glyph is the river's actual connections:
+  a corner is a bend, a tee is a tributary joining, a stub is a source,
+  and an arm pointing into a `.` tile is the mouth meeting the sea.
+  *(Box-drawing rivers are the one deliberate exception to the
+  ASCII-output convention, by design: `~` cannot say which way a river
+  runs, bends, or joins — the glyph can.)*
+
+## The geography rules (what a legal map is)
+
+- **Two or three distinct continents hold most of the land** (the top
+  components hold at least ~80%, and the second is a real continent, not
+  a rock). Some islands are wanted; an archipelago is not — surplus
+  specks drown at generation. Coastlines are ragged the way Europe's
+  are: bays, peninsulas, inner seas, nothing traced round a compass.
+- **Water is about 40% of the world.** The reference map in
+  `worldmap.py` measures land 0.585, mountains 0.092 of land, rivers
+  0.066 of land; a rolled world must land near those marks.
+- **No two ocean tiles may touch only at a corner** (the forbidden
+  checkerboard). When generation produces one, the fix is always LAND
+  BECOMES OCEAN, on the lower shoulder: straits open and inner seas
+  grow; land never fills in. The same rule therefore guarantees no two
+  land masses touch corner-to-corner either — a strait is always
+  sailable and a continent is always walkable without diagonal steps.
+- **Rivers rise inland — at least 4 tiles from the sea, by preference at
+  a mountain's foot — and flow strictly seaward**, each step to a tile
+  closer to water, with bounded sideways meanders. A river that touches
+  another joins it as a tributary. Every river reaches water: the sea,
+  or an inner sea or lake.
+- **Mountains are watershed divides.** Rivers never enter a mountain
+  tile; a range splits drainages, and what rises on one side of it
+  cannot cross to the other. Mountains come as walked RANGES of about
+  3-9 tiles with momentum — chains and massifs, not speckle.
+- **Lakes and inner seas are welcome.** An ocean pocket with no path to
+  the border is an inner sea; rivers may end there. The diagonal-rule
+  fix is allowed to widen them — that is where half the interesting
+  inland water comes from.
+
+## Why this shape
+
+The old travel model prices distance in days; the map makes distance
+VISIBLE without changing the currency. The scale is chosen so that one
+tile east is one day — the map is a calendar as much as a chart. The
+diagonal rules exist because the map is read, not rendered: on a
+character grid a corner-contact is ambiguous to the eye and to the
+movement rules alike, so it is simply illegal. And the playable corner
+is a VIEW, not the world: sails east or south leave the page before they
+leave the world, which is exactly how a civilisation's map should feel.
+
+`worldmap.py`'s module docstring carries the algorithm (noise, masks,
+percentile sea level, the fix-up order, distance-field rivers) and
+develop.md its knobs; `python worldmap.py` is the eyeball check and
+`test_worldmap.py` the contract.
