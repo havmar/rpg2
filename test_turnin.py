@@ -719,32 +719,40 @@ class TheThreeWaySplit(unittest.TestCase):
                             rpg.quest_clear_xp(level, 2))
 
 
-class TheReturnLeg(unittest.TestCase):
-    def test_a_job_in_the_origin_area_buys_no_road_days(self):
+class TheRoadInsideTheWindow(unittest.TestCase):
+    """The clock buys the WHOLE road (2026-08-15, Local Quest Geography):
+    out through every Site in cursor order, then home. It used to buy the
+    homeward leg only, which posted a job three days out with the same
+    window as one in the settlement's own fields."""
+
+    def test_a_job_with_no_sites_buys_no_road_days(self):
         world = _world()
         settlement = quests.settlements(world)[0]
         quest = {"origin": settlement["key"], "sites": []}
-        self.assertEqual(quests.return_leg_days(world, quest), 0)
+        self.assertEqual(quests.route_days(world, quest), 0)
 
-    def test_the_window_widens_by_the_road_home(self):
+    def test_the_window_widens_by_the_whole_route(self):
         world = _world()
         for quest in world["quests"].values():
             if quest.get("kind") == "delivery" or not quest.get("sites"):
                 continue
-            legs = quests.return_leg_days(world, quest)
+            road = quests.route_days(world, quest)
             origin = world["areas"][quest["origin"]]
-            last = world["sites"][quest["sites"][-1]]
-            self.assertEqual(legs, places.path_days(
-                world["areas"][last["area"]]["tile"], origin["tile"]))
+            here, want = origin["tile"], 0
+            for site_id in quest["sites"]:
+                tile = world["areas"][world["sites"][site_id]["area"]]["tile"]
+                want += places.path_days(here, tile)
+                here = tile
+            want += places.path_days(here, origin["tile"])
+            self.assertEqual(road, want)
             lo, hi = quests.QUEST_WINDOW_DAYS
-            self.assertGreaterEqual(quest["window"], lo + legs)
-            self.assertLessEqual(quest["window"], hi + legs)
+            self.assertGreaterEqual(quest["window"], lo + road)
+            self.assertLessEqual(quest["window"], hi + road)
 
-    def test_the_road_home_is_the_real_distance_and_is_symmetric(self):
-        """The leg is priced off the grid since 2026-08-15, not off a flat
-        same-land/cross-land constant -- so a job across the map buys more
-        window than one next door, and the price does not depend on which
-        end you measure from."""
+    def test_one_site_costs_the_trip_out_and_the_trip_home(self):
+        """A single-Site job buys TWICE its distance -- the doctrine the
+        deliveries have carried since they shipped, now applied to ordinary
+        work: the party has to get there before it can get back."""
         world = _world()
         settlement = quests.settlements(world)[0]
         far = max((a for a in quests.all_areas(world)
@@ -756,14 +764,37 @@ class TheReturnLeg(unittest.TestCase):
         for area, site_id in ((far, "site/test/far"),
                               (near, "site/test/near")):
             quests.new_site(world, area["key"], site_id, "a place", 3)
-        far_legs = quests.return_leg_days(
+        far_road = quests.route_days(
             world, {"origin": settlement["key"], "sites": ["site/test/far"]})
-        near_legs = quests.return_leg_days(
+        near_road = quests.route_days(
             world, {"origin": settlement["key"], "sites": ["site/test/near"]})
-        self.assertEqual(near_legs, 0)          # same Tile: no road home
-        self.assertGreater(far_legs, near_legs)
-        self.assertEqual(far_legs, places.path_days(settlement["tile"],
-                                                    far["tile"]))
+        self.assertEqual(near_road, 0)          # same Tile: no road at all
+        self.assertGreater(far_road, near_road)
+        self.assertEqual(far_road, 2 * places.path_days(settlement["tile"],
+                                                        far["tile"]))
+
+    def test_a_two_site_job_pays_for_the_detour_between_them(self):
+        """Two Sites on OPPOSITE sides of the origin cost the walk between
+        them, not twice the distance to the last one: the cursor visits them
+        in order, and the road it actually walks is what the window buys."""
+        world = _world()
+        settlement = quests.settlements(world)[0]
+        here = settlement["tile"]
+        row, column = places.tile_row_column(here)
+        west = places.tile_id(row, max(1, column - 2))
+        east = places.tile_id(row, min(places.MAP_COLUMNS, column + 2))
+        for tile_id, site_id in ((west, "site/test/west"),
+                                 (east, "site/test/east")):
+            area = world["areas"][world["tiles"][tile_id]["natural_area"]]
+            quests.new_site(world, area["key"], site_id, "a place", 3)
+        road = quests.route_days(
+            world, {"origin": settlement["key"],
+                    "sites": ["site/test/west", "site/test/east"]})
+        self.assertEqual(road,
+                         places.path_days(here, west)
+                         + places.path_days(west, east)
+                         + places.path_days(east, here))
+        self.assertGreater(road, 2 * places.path_days(here, east))
 
 
 class TheWorkDoneStage(unittest.TestCase):

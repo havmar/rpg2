@@ -2,21 +2,19 @@
 
 This is the sole active roadmap. The 2026-08-15 design sessions replace the
 former world with a fixed 30x18 Europe-shaped grid inhabited only by humans.
-The Human World Contraction, the Fixed Europe Geography and Grid Navigation
-and Map UI are implemented and documented in `rules.md`, `dm.md`,
-`develop.md` and `designlog.md`; the former roadmap is preserved, explicitly
-inactive, in `archive/plan-pre-europe-2026-08-15.md`.
+The Human World Contraction, the Fixed Europe Geography, Grid Navigation
+and Map UI and Local Quest Geography are implemented and documented in
+`rules.md`, `dm.md`, `develop.md` and `designlog.md`; the former roadmap is
+preserved, explicitly inactive, in
+`archive/plan-pre-europe-2026-08-15.md`.
 
-Two implementation sessions remain. A future session may be
+One implementation session remains. It may be
 started simply by asking to implement its exact title:
 
-1. **Local Quest Geography**
-2. **Europe MVP Closure**
+1. **Europe MVP Closure**
 
-Implement them in order. Each session must leave its own slice coherent and
-tested; do not begin a later session as an incidental extension of an earlier
-one. No save compatibility is required. Fresh worlds are the only supported
-worlds after every slice.
+The session must leave its slice coherent and tested. No save compatibility
+is required. Fresh worlds are the only supported worlds.
 
 When a session ships, remove its implementation section from this file and
 write the result to the normal permanent homes: the played rule and design
@@ -472,84 +470,21 @@ route. Nothing asks "same land or another?" any more.
 Shipped 2026-08-15 with the above. `rules.md`'s World & Navigation add-on
 owns the rule ("The map" and "Local movement"), `develop.md` the code.
 
-## Local quest geography — approved quick patch
+## Local quest geography — BUILT
 
-The old rule that news exposes every open quest in the current Land is
-replaced by path-local knowledge. It is valid and expected for a settlement
-to have no ordinary quests.
+Shipped 2026-08-15 (Local Quest Geography). The played rules live in
+`rules.md`'s Quest System add-on ("Sparse boards", the target radius under
+quest placement, the three-day rumor radius under quest offers, and the
+whole road inside the window under "The clock"); the table manner is in
+`dm.md`; the code map is in `develop.md` under `places.py`, `quests.py`
+and `session.py`; the build record and the calls the spec left open are in
+`designlog.md`, the re-measured career column in `benchlog.md`.
 
-Constants:
-
-- `QUEST_RUMOR_DAYS = 3`
-- `ORDINARY_TARGET_DAYS = 3`
-
-### Sparse ordinary boards
-
-At materialization, a stable derived roll decides whether the settlement
-normally posts ordinary generated work:
-
-| Settlement | Ordinary board active |
-|---|---:|
-| Capital | 100% |
-| Other town | 60% |
-| Village | 25% |
-
-- The starting settlement is forced active.
-- An inactive board has ordinary capacity zero.
-- An active board retains the current tier capacity, refill-per-day rule,
-  economy/world-state modifiers and a minimum capacity of one.
-- Story, world-card, delivery, pact, punishment and explicit DM-forged quests
-  may post at an inactive settlement. They do not convert it permanently into
-  an ordinary board.
-- Historical fame does not itself guarantee ordinary work; only capitals and
-  the starting override do.
-- No quest is posted merely to satisfy a global world count.
-
-### Three-day rumor radius
-
-When the player reads a board:
-
-1. Find known, materialized settlements whose shortest path from the current
-   Tile costs at most three days, including the current settlement.
-2. Refresh only their active boards to the current day. Reading local rumors
-   is an intentional lazy roll point; it does not materialize unknown
-   settlements.
-3. Expire their stale postings normally.
-4. Show open quests grouped as `HERE`, `1 DAY AWAY`, `2 DAYS AWAY`, and
-   `3 DAYS AWAY`; omit empty groups.
-5. Include origin settlement, Tile name/coordinate and path days on each
-   remote listing.
-
-`board all` remains a DM/debug inventory and may show every materialized
-posting without changing which boards refresh.
-
-### Ordinary target radius
-
-- An ordinary generated quest selects compatible natural/settlement Areas
-  whose Tile is at most three one-way shortest-path days from its origin.
-- The origin Tile is legal and guarantees at least its natural Area as a
-  fallback candidate.
-- Tag compatibility still applies; do not route a coast quest to generic
-  inland ground merely to satisfy the radius.
-- Selection is deterministic from the quest's existing RNG stream after the
-  candidate set is assembled in stable Tile/Area order.
-- Story waves, deliveries, pact assignments, punishment, DM-forged quests
-  and specifically authored world events may override the radius.
-
-### Path-priced clocks and deliveries
-
-- Ordinary quest base windows keep the current 3-7 day roll.
-- Add twice the shortest path from origin to the quest's final target Tile:
-  one outward leg and one return leg.
-- If a multi-Site quest crosses Tiles, price the actual required route through
-  its ordered Sites plus the return to origin rather than multiplying only
-  the final distance.
-- Delivery destinations remain in another country and are not radius-limited.
-- Delivery gold and XP use actual one-way shortest-path days.
-- Delivery clock allowance adds twice that one-way cost, retaining the
-  present round-trip doctrine.
-- Teleport skips travel days but does not retroactively shorten a posted
-  quest's window or reward.
+What the closure session needs to know: `QUEST_RUMOR_DAYS` and
+`ORDINARY_TARGET_DAYS` are both 3 and both live in `quests.py`;
+`quests.is_ordinary_posting` is the single reader that separates ordinary
+work from the forced families; `places.board_active_roll` decides whether a
+settlement posts ordinary work at all.
 
 ---
 
@@ -615,61 +550,7 @@ compatibility helpers for the old save or old six-Land schema.
 
 # Implementation sessions
 
-## Session 4 — Local Quest Geography
-
-**Trigger:** `Implement Local Quest Geography from plan.md.`
-
-### Objective
-
-Make boards, rumors, targets, clocks and deliveries read actual path distance
-without requiring every settlement to contain work.
-
-### Required work
-
-1. Add the stable capital/town/village board-activity roll and starting
-   override.
-2. Separate ordinary board capacity from forced quest posting so an inactive
-   board can still receive story/world/delivery/pact work.
-3. Replace Land-wide rumor visibility with known materialized settlements in
-   the three-day shortest-path radius.
-4. Refresh only those nearby active boards at the board roll point and group
-   the readout by path days.
-5. Restrict ordinary generated targets to compatible Areas within three path
-   days, with stable ordering and local fallback.
-6. Price ordinary windows by the actual ordered route and return leg.
-7. Price delivery pay/window by unrestricted cross-country shortest path.
-8. Place story/world-card/forced quest content geographically through explicit
-   radius overrides.
-9. Update career/test helpers deliberately; do not preserve old benchmark
-   comparability through compatibility code.
-
-### Primary files
-
-`quests.py`, `session.py`, `story.py`, `worldsim.py`, `karma.py`,
-`test_places.py`, `test_start.py`, `test_turnin.py`, `test_worldsim.py`,
-`bench_quests.py`, `rules.md`, `dm.md`, `develop.md`, and `benchlog.md` if the
-career sim is remeasured.
-
-### Non-goals
-
-No global quest-density guarantee, background board tick, settlement creation
-for rumor purposes, roads, faction reputation or content expansion.
-
-### Verification
-
-- Board-active rates match 100/60/25 over a large deterministic sample.
-- Inactive settlements can be empty and can still hold each forced quest
-  family.
-- Remote board reads never show or refresh a settlement beyond three days.
-- `board all` observes without changing remote refresh scope.
-- Ordinary target paths never exceed three days across a seed sweep.
-- Deadline tests cover local, multi-Tile, mountain, sea and multi-Site routes.
-- Delivery tests cover different-country destinations and exact distance pay.
-- Opening quest is always present and geographically legal.
-- Re-run the career bench if its path/calendar model changes, record results,
-  and do not tune unrelated combat numbers in this session.
-
-## Session 5 — Europe MVP Closure
+## The remaining session — Europe MVP Closure
 
 **Trigger:** `Implement Europe MVP Closure from plan.md.`
 
@@ -698,8 +579,9 @@ new world in an end-to-end fresh playthrough.
 
 ### Primary files
 
-All files touched by Sessions 1-4, with special attention to active docs,
-validation and tests. Archived historical files are not rewritten.
+All files touched by the four shipped Europe sessions, with special
+attention to active docs, validation and tests. Archived historical files
+are not rewritten.
 
 ### Non-goals
 
@@ -719,7 +601,19 @@ biomes, dynamic borders or resurrection of items in the archived roadmap.
 
 ## Explicitly deferred until after the MVP is played
 
-- Detailed sub-biomes for `basic`.
+- Detailed sub-biomes for `basic`. **Local Quest Geography found the cost of
+  deferring this** (2026-08-15, designlog): the quest tables ask for
+  `forest` / `hills` / `prairie` / `pasture` / `farmland` / `road`
+  terrain, and a natural Area's tags are its Tile's — `basic`, `river`,
+  `mountain`, `sea` plus `coast` / `riverside` / `mountain-foot` / `border`
+  / `island`. Only `coast` and the settlement Areas' own template tags
+  intersect the tables, so most ordinary jobs land on the origin Tile's own
+  countryside through the declared fallback rather than being routed by
+  terrain. Nothing is broken — every job is legal, close and playable — but
+  the radius rule is doing less work than it could. Whoever gives `basic`
+  its sub-biomes should reconcile the two vocabularies in the same pass
+  (including the near-miss between the `mountain` biome tag and the tables'
+  `mountains`).
 - Roads and road quality.
 - Bridges, mandatory river tolls and ferry infrastructure.
 - Ports, owned ships, passage prices and naval encounters.

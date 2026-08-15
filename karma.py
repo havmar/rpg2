@@ -100,6 +100,7 @@ from rpg import LEVEL_CAP
 from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, CASTER_POOL,
                     BEAST_POOL, GIANTKIN_POOL,
                     build_quest, attach_giver, template_band, build_room,
+                    ORDINARY_TARGET_DAYS,
                     room_budget, next_quest_id)
 from places import land_homeland
 
@@ -705,7 +706,8 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
                     rng: random.Random,
                     used_names: set[str] | None = None,
                     spread: tuple[int, int] = (-1, 2),
-                    template: dict | None = None) -> dict:
+                    template: dict | None = None,
+                    radius: int | None = ORDINARY_TARGET_DAYS) -> dict:
     """One dark job: leveled AT the party (-1..+2 by default -- the DM's
     `forge --dark` stance), built by build_quest unchanged, flagged dark,
     given a shady face. Registered in world['quests'] (so show/take work)
@@ -713,7 +715,15 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     party: hell's ASSIGNMENTS pass TASK_SPREAD (0..+1) -- suited to the
     taker, the margin of error running upward. `template` pins the
     template (the pact's deck deals one, `deal_card`); left None, a
-    band-fitting occult template is rolled."""
+    band-fitting occult template is rolled.
+
+    `radius` is the target radius (2026-08-15, Local Quest Geography), and
+    a dark job keeps the ordinary one BY CHOICE even though hell is a
+    forced family and could reach anywhere: work whispered to you where you
+    stand is local work, and the pact's own clock (TASK_WINDOW_DAYS plus the
+    road days at `take`) assumes a target the party can actually walk to
+    inside a window. Pass `radius=None` to let hell send them across the
+    map."""
     level = max(1, min(LEVEL_CAP, pc_level + rng.randint(*spread)))
     tpl = template
     if tpl is None:
@@ -728,7 +738,8 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     # would collide with either a surviving quest or a historical Site
     # attachment.
     qid = next_quest_id(world)
-    quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    quest = build_quest(world, qid, tpl, settlement["key"], level, rng,
+                        radius=radius)
     attach_giver(quest, land_homeland(world, settlement["land"]), rng,
                  role=tpl.get("giver"),
                  used_names=used_names)

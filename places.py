@@ -132,6 +132,18 @@ SETTLEMENT_DENSITY = {
     "firascir": (0.06, 0.24),
     "tergal": (0.03, 0.17),
 }
+
+# SPARSE ORDINARY BOARDS (2026-08-15, Local Quest Geography). A settlement
+# is not a job dispenser: at materialization a stable derived roll decides
+# whether this one normally posts ORDINARY generated work at all. A capital
+# always does, a town usually does, a village usually does not -- and a
+# village with no work is a correct village, not a bug. What the flag gates
+# is `quests.board_slots` (ordinary capacity); the forced families -- story
+# waves, world-card jobs, deliveries, pact assignments, punishment and the
+# DM's own forged work -- post at an inactive board regardless and never
+# turn it into an active one. The starting settlement is forced active by
+# `create_geography`, because the opening quest has to have somewhere to be.
+BOARD_ACTIVE_CHANCE = {"capital": 1.00, "town": 0.60, "village": 0.25}
 SETTLEMENT_NAMES = {
     "firascir": {
         "town": ("Tomburgh", "Leehaven", "Walhaven", "Bradwhitchip",
@@ -891,6 +903,15 @@ def _settlement_template(country: str, tier: str, slot: dict
     return spec, land["village_sites"][role]
 
 
+def board_active_roll(seed: int | None, slot: dict) -> bool:
+    """Does this settlement normally post ordinary work? A stable derived
+    roll off the slot's own identity, so the answer is the same whenever the
+    slot is materialized and survives the save unchanged."""
+    band = "capital" if slot["capital"] else slot["tier"]
+    roll = random.Random(stable_seed(seed, slot["id"], "board-active", 0))
+    return roll.random() < BOARD_ACTIVE_CHANCE[band]
+
+
 def materialize_slot(world: dict, slot: dict | str, *,
                      need: str | None = None, day: int | None = None,
                      known: bool = True) -> dict:
@@ -912,6 +933,7 @@ def materialize_slot(world: dict, slot: dict | str, *,
     area["tags"] = list(dict.fromkeys(area["tags"] + tile["tags"]))
     area["known"] = known
     area["settlement_slot"] = slot["id"]
+    area["board_active"] = board_active_roll(world["seed"], slot)
     world["areas"][aid] = area
     tile["areas"].append(aid)
     world["lands"][country]["areas"].append(aid)
@@ -1057,6 +1079,9 @@ def create_geography(seed: int | None) -> dict:
     start_tile = world["settlement_slots"][start_slot]["tile"]
     reveal_tile(world, start_tile, day=0)
     world["start_area"] = world["settlement_slots"][start_slot]["area"]
+    # The opening settlement posts ordinary work whatever its own roll said:
+    # the game has to start somewhere, and it starts at a board.
+    world["areas"][world["start_area"]]["board_active"] = True
     return world
 
 

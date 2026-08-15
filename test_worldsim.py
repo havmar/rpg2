@@ -79,6 +79,7 @@ import places
 import quests
 import rpg
 import rulers
+import session
 import story
 import worldsim
 
@@ -772,9 +773,8 @@ class TheSessionWiring(unittest.TestCase):
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(3), "party": [], "accepted": [],
                 "active_quest": None, "purse": rpg.Purse(gold=0),
-                "position": {"land": "firascir",
-                             "area": quests.settlements_by_land(
-                                 world)["firascir"][0]["key"]}}
+                "position": session._area_position(
+                    quests.settlements_by_land(world)["firascir"][0])}
 
     def test_the_board_s_clock_rolls_the_world(self) -> None:
         import session
@@ -1227,9 +1227,8 @@ class TheWeatherSessionWiring(unittest.TestCase):
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(3), "party": [], "accepted": [],
                 "active_quest": None, "purse": rpg.Purse(gold=0),
-                "position": {"land": "firascir",
-                             "area": quests.settlements_by_land(
-                                 world)["firascir"][0]["key"]}}
+                "position": session._area_position(
+                    quests.settlements_by_land(world)["firascir"][0])}
 
     def test_the_road_tells_the_party_the_sky(self) -> None:
         import session
@@ -1336,6 +1335,10 @@ class TheBoardOutlet(unittest.TestCase):
         _all_quiet(world)
         town = next(s for s in quests.settlements_by_land(world)["firascir"]
                     if not s["capital"] and s["subtype"] == "town")
+        town["board_active"] = True     # this is the BAND's test; whether
+                                        # the town posts ordinary work at
+                                        # all is the sparse-board roll's
+                                        # (2026-08-15, test_quest_geography)
         base = quests.SETTLEMENT_KINDS[places.settlement_tier(town)][0]
         for band, want in worldsim.BAND_SLOTS.items():
             _quiet(world, "firascir", band)
@@ -1751,9 +1754,8 @@ class TheEconomyFloorWiring(unittest.TestCase):
                 "rng": random.Random(3), "party": _party(),
                 "accepted": [], "active_quest": None,
                 "purse": rpg.Purse(gold=200), "foe_count": 0,
-                "position": {"land": polity,
-                             "area": quests.settlements_by_land(
-                                 world)[polity][0]["key"]}}
+                "position": session._area_position(
+                    quests.settlements_by_land(world)[polity][0])}
 
     def test_the_shop_asks_the_land_what_it_charges(self) -> None:
         import session
@@ -2515,8 +2517,8 @@ class ThePoliticsSurfaces(unittest.TestCase):
         worldsim.ruler_sheet(world, "firascir")["traits"] = ["lecherous"]
         state = {"world": world, "clock": rpg.Clock(day=2),
                  "rng": random.Random(1), "party": _party(),
-                 "position": {"land": "firascir",
-                              "area": npc["seat"], "site": None},
+                 "position": session._area_position(
+                     world["areas"][npc["seat"]]),
                  "visited": [], "purse": 10}
         args = argparse.Namespace(settlement=None, dm=False)
         out = io.StringIO()
@@ -2601,8 +2603,7 @@ class TheServicesCounter(unittest.TestCase):
                 "rng": random.Random(9), "party": _party(),
                 "purse": rpg.Purse(gold=900), "services": {},
                 "accepted": [], "active_quest": None, "visited": [],
-                "position": {"land": polity, "area": here["key"],
-                             "site": None}}
+                "position": session._area_position(here)}
 
     def _run(self, state: dict, *words: str) -> str:
         import session

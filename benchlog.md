@@ -2046,3 +2046,54 @@ merging into one landmass; the cover/reach/anchor changes recorded in
 the designlog bought the rest. ~0.2s a roll, pure stdlib.
 
 `test_worldmap.py` adds 11 tests; no existing suite or knob moved.
+
+## 2026-08-15 — Local Quest Geography: the career re-measured, nothing tuned
+
+`bench_quests --part career`, 300 careers, against the 2026-08-08 column
+(also 300). Three things in this run change what the sim sees: **sparse
+boards** (a settlement's ordinary board is active 100/60/25% by tier, so
+worldgen opens ~11 of 18 materialized boards instead of all of them),
+**ordinary targets bounded to three path days**, and **the window buying
+the ordered route out and home** rather than only the leg home.
+
+| | now (300) | 2026-08-08 (300) |
+|---|---:|---:|
+| reached L20 | 1.7% | 4.0% |
+| L5 / L8 / L11 | 87 / 66 / 35 | 85 / 69 / 38 |
+| L14 / L17 | 9 / 4 | (not recorded) |
+| median death level | 9 | 9 |
+| capped median days / quests | 89 / 36 | 97 / 34 |
+| turn-ins quick/on time/late/expired | 30 / 52 / 13 / 4 | 33 / 53 / 10 / 4 |
+| expired postings per career | 303.9 | 389.1 |
+| board exhausted | 0.0% | 0.0% |
+| forced-up picks per career | 0.00 | 0.00 |
+| live board at the end (median) | 51 open | (not recorded) |
+
+**The supply fell and the game did not notice.** Expired postings per
+career dropped 22% — that is the sparse boards, arithmetic, not behaviour:
+a third of the world's settlements now post nothing, so a third fewer
+postings lapse unread. What matters is the two starvation guards, and both
+held: **zero careers exhausted the board**, **zero forced-up picks** (the
+sim never had to take work above party level + 1 because nothing else was
+posted), and the median career still ends with 51 open jobs standing. The
+board policy is choosing from a smaller but still ample slate.
+
+**The band split moved 2-3 points the wrong way** (quick 33->30, late
+10->13) even though the windows got *wider*. That is the sim's teleport
+caveat working in reverse: the careers do not walk, so the widened window
+is pure slack they cannot spend, while the smaller slate makes the freshest
+available job slightly staler on average. Nothing here says the played
+clock is looser or tighter; only play can.
+
+**The L20 cell is not a signal.** 1.7% is five careers against twelve —
+both are tail cells at n=300, and the 2026-08-08 entry already recorded the
+same cell swinging 2.5% -> 4.0% purely on sample size. L5/L8/L11 (87/66/35
+against 85/69/38) and the median death level (9, unchanged) are the cells
+with enough mass to read, and they are flat. Capped careers finishing in 89
+days against 97 is the only clearly favourable move, and it is the same
+smaller-slate effect: fewer, closer, better-priced jobs.
+
+**Nothing was tuned.** No combat, pay, threat or refill constant moved in
+this session. The full suite is 787 tests (730 after Grid Navigation and
+Map UI; `test_quest_geography.py` adds 56 and the rewritten road-inside-the-
+window class in `test_turnin.py` one).

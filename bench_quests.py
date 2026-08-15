@@ -249,7 +249,16 @@ def run_board_clock(world, day: int, rng: random.Random) -> int:
     windows off every settlement's board and let each settlement refill
     (2026-07-26, slice 2). The sim has no travel layer, so it reads the whole
     world as one board -- and therefore runs the clock on the whole world.
-    Returns how many postings expired unfinished."""
+    Returns how many postings expired unfinished.
+
+    IT DELIBERATELY IGNORES THE THREE-DAY RUMOR RADIUS (2026-08-15, Local
+    Quest Geography). A played party hears the work within three days' road
+    of where it stands; this sim hears all of it, because it does not walk
+    anywhere and a radius around a party with no position is meaningless.
+    What it DOES see is the sparse boards: a settlement whose activity roll
+    came up shut refills to nothing here exactly as it does in play, which
+    is why the supply this sim reports fell with that change. Read its
+    board numbers as an upper bound on the played supply, never as it."""
     gone = 0
     for s in settlements(world):
         gone += len(expire_settlement_board(world, s, day))

@@ -56,7 +56,7 @@ from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
     materialize_settlement, stable_seed, land_homeland, settlement_tier,
-    add_state, replace_state, path_days,
+    add_state, replace_state, path_days, tile_key,
 )
 import worldsim                  # the world layer (2026-08-09, the economy
                                  # floor): the board asks it how big it is,
@@ -155,6 +155,17 @@ QUEST_REFILL_PER_DAY = 1     # new jobs a settlement posts per day once its
                              # board has been seen; a board seen for the FIRST
                              # time fills to its slot count (the land always
                              # has work, plan.md)
+
+# LOCAL QUEST GEOGRAPHY (2026-08-15). Work is a LOCAL fact, priced off the
+# real grid. News travels three days and no further; ordinary generated work
+# happens within three days of the settlement that posted it. Both radii are
+# `places.path_days`, so a mountain range or a sea crossing genuinely puts a
+# settlement out of earshot -- and both are ORDINARY rules only: the forced
+# families (story waves, world-card jobs, deliveries, pact assignments,
+# punishment, the DM's forged work) pass `radius=None` and reach anywhere.
+QUEST_RUMOR_DAYS = 3         # how far word of open work travels
+ORDINARY_TARGET_DAYS = 3     # how far an ordinary job's target may sit from
+                             # the settlement that posted it
 
 
 def threat_value(kind: str) -> float:
@@ -643,23 +654,31 @@ def stamp_quest_clock(quest: dict, day: int, rng: random.Random,
     return quest
 
 
-def return_leg_days(world: dict, quest: dict) -> int:
-    """The road home: shortest-path days from the quest's LAST site's Tile
-    back to the giver's settlement (the delivery kind's round-trip
-    precedent). Added to the window at posting since the turn-in stage
-    (2026-08-08) put the return leg inside the clock -- the windows were
-    tuned for instant completion, and this keeps the bands roughly neutral.
-    Since the grid shipped (2026-08-15) the leg is priced off the real map
-    rather than off a flat same-land/cross-land constant."""
+def route_days(world: dict, quest: dict) -> int:
+    """THE WHOLE ROAD A JOB ASKS FOR: the ordered walk out through every one
+    of its Sites and back to the giver, in shortest-path days (2026-08-15,
+    Local Quest Geography). Added to the window at posting.
+
+    A one-Site job therefore buys twice its distance -- one leg out, one leg
+    home -- which is the doctrine deliveries have carried since they shipped.
+    A multi-Site job that crosses Tiles buys the route it actually has to
+    walk, in the order its cursor walks it, rather than twice the distance to
+    the last Site: a job whose two Sites sit on opposite sides of the origin
+    is a longer day's work than the final leg admits.
+
+    (Before this it was `return_leg_days` -- the homeward leg only, from the
+    last Site. The outward leg was never priced, so a job three days out was
+    posted with the same window as one in the settlement's own fields.)"""
     sites = quest.get("sites")
     if not sites:
         return 0
-    last = world["sites"][sites[-1]]
-    origin = world["areas"][quest["origin"]]
-    dest = world["areas"][last["area"]]
-    if dest["key"] == origin["key"]:
-        return 0
-    return path_days(dest["tile"], origin["tile"])
+    here = world["areas"][quest["origin"]]["tile"]
+    days = 0
+    for site_id in sites:
+        tile = world["areas"][world["sites"][site_id]["area"]]["tile"]
+        days += path_days(here, tile)
+        here = tile
+    return days + path_days(here, world["areas"][quest["origin"]]["tile"])
 
 
 def quest_days_left(quest: dict, day: int) -> int | None:
@@ -751,6 +770,11 @@ def new_area(world: dict, key: str, name: str, land: str, kind: str,
     }
     if discovered_day is not None:
         area["discovered_day"] = discovered_day
+    if kind == "settlement":
+        # A settlement the DM authored by hand exists because he wanted work
+        # to happen there: it opens with an active ordinary board (the roll
+        # is for the world's own villages, 2026-08-15).
+        area["board_active"] = True
     world["areas"][area_key] = area
     world["lands"][land]["areas"].append(area_key)
     tile_record["areas"].append(area_key)
@@ -860,15 +884,27 @@ def quest_place_requirement(tpl: dict) -> dict:
 
 
 def _select_quest_area(world: dict, origin_key: str, requirement: dict,
-                       rng: random.Random) -> dict:
+                       rng: random.Random,
+                       radius: int | None = ORDINARY_TARGET_DAYS) -> dict:
+    """Where an ordinary job's trouble actually IS: a compatible Area within
+    `radius` shortest-path days of the settlement that posted it (2026-08-15,
+    Local Quest Geography). `radius=None` lifts the restriction for the
+    forced families, which are placed by their own content.
+
+    TAG COMPATIBILITY IS NOT TRADED FOR THE RADIUS: when nothing compatible
+    stands within reach the job falls back to the ORIGIN Tile's own
+    countryside rather than to inland ground a coast job has no business in.
+    The origin Tile is always legal, so the fallback always exists.
+
+    The candidate set is assembled in stable Tile/Area order before the
+    quest's own rng picks from it, so placement is deterministic off the
+    seed and never off dict or hash order."""
     origin = world["areas"][origin_key]
     wanted = set(requirement.get("area_any", ()))
     candidates = [a for a in all_areas(world)
-                  if wanted.intersection(a.get("tags", ())) and
-                  a["land"] == origin["land"]]
-    if not candidates:
-        candidates = [a for a in all_areas(world)
-                      if wanted.intersection(a.get("tags", ()))]
+                  if wanted.intersection(a.get("tags", ()))
+                  and (radius is None
+                       or path_days(origin["tile"], a["tile"]) <= radius)]
     if not candidates:
         tile = world["tiles"][origin["tile"]]
         candidates = [world["areas"][tile["natural_area"]]]
@@ -881,6 +917,7 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
         built = [a for a in candidates if a["kind"] == "settlement"]
         if built:
             candidates = built
+    candidates.sort(key=lambda area: (area["tile"], area["id"]))
     return rng.choice(candidates)
 
 
@@ -935,7 +972,8 @@ def split_encounters(encounters: int, places: int) -> list[int]:
 
 
 def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
-                rng: random.Random) -> dict:
+                rng: random.Random,
+                radius: int | None = ORDINARY_TARGET_DAYS) -> dict:
     """Build calibrated encounters into compatible persistent geography.
 
     Since 2026-07-26 (the attrition rework's slice 1) a quest is 1-3
@@ -945,9 +983,14 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
     between two places, never as a difficulty dial. Every place of a quest
     stands at the quest's own level: one quest, one level (the rising
     ROOM_SHARES curve carries the escalation instead, and the board stops
-    showing a job whose sites disagree about their own grade)."""
+    showing a job whose sites disagree about their own grade).
+
+    `radius` is the ordinary target radius (2026-08-15): how many
+    shortest-path days from the posting settlement the trouble may sit.
+    `None` lifts it for the forced families, which place themselves."""
     requirement = quest_place_requirement(tpl)
-    target_area = _select_quest_area(world, area_key, requirement, rng)
+    target_area = _select_quest_area(world, area_key, requirement, rng,
+                                     radius)
     n_places = min(max(1, tpl.get("places", 1)), len(tpl["sites"]))
     if tpl.get("deed") or tpl.get("twist"):
         # The caper shapes (karma.py's dark templates, 2026-07-19) are
@@ -1326,7 +1369,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     # the terms it was taken at.
     quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"])
     stamp_quest_clock(quest, day, rng,
-                      extra_days=return_leg_days(world, quest))
+                      extra_days=route_days(world, quest))
     _maybe_attach_weapon_reward(quest, qid)
     attach_giver(quest, homeland, rng, role=tpl.get("giver"),
                  used_names=used_people)
@@ -1364,12 +1407,33 @@ def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
                                     # shares still pay as they are earned
 
 
+def is_ordinary_posting(quest: dict) -> bool:
+    """Is this posting the BOARD's own generated work? The forced families
+    -- a world card's job, a courier run, a story wave, hell's assignment,
+    anything the DM forged -- ride a settlement's board without being of it
+    (2026-08-15): they do not consume ordinary capacity, they are not
+    blocked when there is none, and they never convert a settlement with no
+    ordinary board into one that has one."""
+    return not (quest.get("kind") == "delivery"
+                or quest.get("world_card")
+                or quest.get("story_wave") is not None
+                or quest.get("hell_task")
+                or quest.get("forced"))
+
+
 def board_slots(world: dict, settlement: dict) -> int:
-    """How many live jobs this settlement keeps posted: its tier's own count
-    (SETTLEMENT_KINDS), moved by the world layer (2026-08-09, the economy
-    floor). A prosperous land posts more work and a land in crisis posts
-    less ORDINARY work -- its crises post their own on top. The floor keeps
-    every settlement a place with something in it."""
+    """How many ORDINARY jobs this settlement keeps posted: its tier's own
+    count (SETTLEMENT_KINDS), moved by the world layer (2026-08-09, the
+    economy floor). A prosperous land posts more work and a land in crisis
+    posts less ORDINARY work -- its crises post their own on top. The floor
+    keeps an ACTIVE board a place with something in it.
+
+    Since 2026-08-15 (Local Quest Geography) a settlement whose board-
+    activity roll came up inactive has ordinary capacity ZERO, floor and
+    all: most villages simply have no work to offer, and that is the point
+    of walking to the next place. Forced postings ignore this number."""
+    if not settlement["board_active"]:
+        return 0
     base = SETTLEMENT_KINDS[settlement_tier(settlement)][0]
     shift = worldsim.board_shift(world, settlement["land"])
     return max(worldsim.BOARD_SLOTS_FLOOR, base + shift)
@@ -1394,14 +1458,20 @@ def board_forecast(world: dict, settlement: dict, day: int) -> int:
     """How many live jobs the party would find if it walked in TODAY: what is
     posted now, minus what has lapsed, plus what the refill owes. Readouts
     (the map, `status`) use this rather than the raw count -- the clock only
-    runs where the party stands, so a land it left would otherwise decay to
-    "0 job(s)" on the map and read as a place with no work in it."""
-    live = len(open_quests(world, settlement, day))
+    runs where the party stands, so a place it left would otherwise decay to
+    "0 job(s)" on the map and read as somewhere with no work in it.
+
+    The refill only owes ORDINARY work, so the forecast counts the forced
+    postings straight and forecasts the rest (2026-08-15). A settlement with
+    no ordinary board and no forced work honestly forecasts nothing."""
+    live = open_quests(world, settlement, day)
+    ordinary = [q for q in live if is_ordinary_posting(q)]
     slots = board_slots(world, settlement)
     seen = settlement.get("board_day")
-    owed = (slots - live if seen is None
+    owed = (slots - len(ordinary) if seen is None
             else QUEST_REFILL_PER_DAY * max(0, day - seen))
-    return min(slots, live + max(0, owed))
+    return (len(live) - len(ordinary)
+            + min(slots, len(ordinary) + max(0, owed)))
 
 
 def expire_settlement_board(world: dict, settlement: dict, day: int,
@@ -1450,13 +1520,18 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
     t_lo, t_hi = template_band(tpl)
     level = max(t_lo, min(t_hi, rng.randint(lo, hi)))
     qid = next_quest_id(world)
-    quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
+    # The radius is passed EXPLICITLY (2026-08-15) rather than inherited: a
+    # card's job is a settlement's own crisis and belongs within walking
+    # distance of it, and a forced family that wants the whole map has to
+    # say so. Only the CAPACITY rule is lifted for a card, not the geography.
+    quest = build_quest(world, qid, tpl, settlement["key"], level, rng,
+                        radius=ORDINARY_TARGET_DAYS)
     quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
     quest["world_card"] = posting["key"]
     quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"],
                                      posting["pay"])
     stamp_quest_clock(quest, day, rng,
-                      extra_days=return_leg_days(world, quest))
+                      extra_days=route_days(world, quest))
     attach_giver(quest, land_homeland(world, settlement["land"]), rng,
                  role=tpl.get("giver"), used_names=used_people)
     world["quests"][qid] = quest
@@ -1488,7 +1563,14 @@ def refresh_settlement_board(world: dict, settlement: dict, day: int,
     up first and outside the refill rule: a world event is news, and news
     does not wait for a slot to open. A card's job carries its key, so one
     board never runs two copies of it; it lapses on its own window like any
-    other posting, and the card puts it back up for as long as it stands."""
+    other posting, and the card puts it back up for as long as it stands.
+
+    Since Local Quest Geography (2026-08-15) "outside the refill rule" also
+    means outside ORDINARY CAPACITY: a card's job goes up even where the
+    ordinary board is inactive and has no slots at all, and it does not eat
+    a slot from the ordinary work where there is one. An inactive board
+    therefore refills to nothing and stays a settlement with no work of its
+    own -- while still hearing everything the world forces on it."""
     slots = board_slots(world, settlement)
     posted = []
     # Only OPEN postings hold a card's place: a job the party finished (or
@@ -1501,11 +1583,10 @@ def refresh_settlement_board(world: dict, settlement: dict, day: int,
     for posting in worldsim.board_postings(world, settlement["land"]):
         if posting["key"] in have:
             continue
-        if len(open_quests(world, settlement)) >= slots:
-            break
         posted.append(_post_card_quest(world, settlement, posting, rng,
                                        used_people, day=day))
-    live = len(open_quests(world, settlement))
+    live = len([q for q in open_quests(world, settlement)
+                if is_ordinary_posting(q)])
     seen = settlement.get("board_day")
     room = slots - live
     if seen is not None:
@@ -1522,8 +1603,9 @@ def generate_world(seed: int | None = None, start_level: int = 1) -> dict:
     board is filled and kept filled by `refresh_settlement_board` as the
     party actually looks at it: with clocks on every posting the old up-front
     XP-coverage top-up asserted a total that expiry immediately made a lie.
-    A fresh world is therefore SMALL -- one job a settlement plus the
-    couriers -- and that is not the content budget, it is the seed."""
+    A fresh world is therefore SMALL -- one job per settlement that HAS an
+    ordinary board (2026-08-15) plus the couriers -- and that is not the
+    content budget, it is the seed."""
     rng = random.Random(seed)
     used_people: set[str] = set()   # one namespace for givers AND the cast:
                                     # two Ruriks in one town read as a bug
@@ -1546,8 +1628,12 @@ def generate_world(seed: int | None = None, start_level: int = 1) -> dict:
     opening = _post_quest(world, start, rng, used_people,
                           forced_level=start_level)
     world["opening_quest"] = opening["id"]
+    # Only ACTIVE boards open with work (2026-08-15): a settlement whose
+    # board-activity roll came up empty is a settlement with nothing to
+    # offer, and the start's own roll was forced active above so the
+    # opening quest always has a home.
     for settlement in settlements(world):
-        if settlement is not start:
+        if settlement is not start and settlement["board_active"]:
             _post_quest(world, settlement, rng, used_people)
 
     for _ in range(DELIVERIES_PER_WORLD):
@@ -1665,6 +1751,64 @@ def settlements_by_land(world: dict) -> dict[str, list[dict]]:
     for s in settlements(world):
         out.setdefault(s["land"], []).append(s)
     return out
+
+
+def nearby_settlements(world: dict, origin: dict | str,
+                       max_days: int = QUEST_RUMOR_DAYS
+                       ) -> list[tuple[dict, int]]:
+    """THE RUMOR RADIUS (2026-08-15, Local Quest Geography): every KNOWN,
+    MATERIALIZED settlement whose shortest path from `origin` (a Tile record
+    or Tile id) costs at most `max_days`, paired with that cost and ordered
+    nearest first, then by Tile, then by key.
+
+    This replaced the land-wide rumor rule. A land is a country now -- a
+    hundred-odd Tiles wide -- so "word travels within the land" would have
+    the party hearing about a job three weeks' walk away as though it were
+    down the road. Distance is the real grid distance, so a sea crossing or
+    a mountain wall genuinely puts a neighbour out of earshot.
+
+    Only settlements the world has already MATERIALIZED can appear here (an
+    unmaterialized slot is not in `settlements`), and only KNOWN ones:
+    reading local rumors is a lazy roll point, not a discovery verb."""
+    here = tile_key(origin)
+    out = [(s, path_days(here, s["tile"])) for s in settlements(world)
+           if s["known"]]
+    out = [(s, days) for s, days in out if days <= max_days]
+    out.sort(key=lambda pair: (pair[1], pair[0]["tile"], pair[0]["key"]))
+    return out
+
+
+def rumor_lines(world: dict, nearby: list[tuple[dict, int]],
+                day: int) -> list[str]:
+    """The three-day rumor readout, grouped by the road: `1 DAY AWAY`,
+    `2 DAYS AWAY`, `3 DAYS AWAY`, empty groups omitted. Every remote row
+    names the settlement that posted the job, its Tile (a coordinate, or a
+    city's own name) and the days between here and there, because that is
+    what the player is deciding on.
+
+    `nearby` is `nearby_settlements`'s list. The HERE group is the party's
+    own board and is printed by the caller, which has the givers."""
+    lines = []
+    for want in range(1, QUEST_RUMOR_DAYS + 1):
+        rows = []
+        for settlement, days in nearby:
+            if days != want:
+                continue
+            tile = world["tiles"][settlement["tile"]]
+            # A historical city IS its Tile's name; printing it twice reads
+            # as a bug ("at Amsterdam, Amsterdam").
+            where = (settlement["name"] if tile["name"] == settlement["name"]
+                     else f"{settlement['name']}, {tile['name']}")
+            for quest in open_quests(world, settlement, day):
+                note = deadline_note(quest, day)
+                rows.append(f"  [{quest['id']}] {level_grade(quest)} "
+                            f"{quest['name']} -- at {where}, "
+                            f"{days} day{'s' if days > 1 else ''} off"
+                            + (f" ({note})" if note else ""))
+        if rows:
+            lines.append(f"{want} DAY{'S' if want > 1 else ''} AWAY:")
+            lines.extend(rows)
+    return lines
 
 
 def wild_pool(homeland: str) -> tuple[str, ...]:
