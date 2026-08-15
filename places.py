@@ -188,14 +188,15 @@ def tile_coordinate(row: int, column: int) -> str:
 
 
 def area_id(parent: str, name: str) -> str:
-    """An Area ID scoped beneath its Tile.
+    """An Area ID scoped beneath its Tile."""
+    return f"{parent}/area/{slug(name)}"
 
-    The old country/name spelling is used only for catalog template indexes;
-    runtime Areas always pass a Tile ID as `parent`.
-    """
-    if parent.startswith("tile/"):
-        return f"{parent}/area/{slug(name)}"
-    return f"template/area/{parent.removeprefix('land/')}/{slug(name)}"
+
+def template_id(polity: str, role: str) -> str:
+    """The catalog key of one country's settlement role. Never a runtime ID:
+    a settlement Area is named by its SLOT and scoped under its Tile, so the
+    template it was cut from has to live in a namespace of its own."""
+    return f"template/settlement/{polity}/{role}"
 
 
 def stable_seed(world_seed: int | None, parent_id: str, purpose: str,
@@ -229,16 +230,18 @@ def _build_definition_indexes() -> None:
             {"id": "rocky-islet", "name": "ROCKY ISLET", "rooms": [],
              "anchors": ["black rocks", "tide pools", "bird nests"]},
         ]
-        for name, tier, role, tags in land["settlements"]:
-            aid = area_id(polity, name)
-            AREA_SPECS[aid] = {
-                "id": aid, "name": name, "kind": "settlement",
-                "subtype": "town" if tier == "capital" else tier,
-                "capital": tier == "capital", "role": role,
-                "tags": tuple(tags),
-                "description": land["descriptions"][name],
+        for role, spec in land["settlement_templates"].items():
+            key = template_id(polity, role)
+            AREA_SPECS[key] = {
+                "id": key, "name": role, "kind": "settlement",
+                "subtype": "town" if spec["tier"] == "capital"
+                           else spec["tier"],
+                "capital": spec["tier"] == "capital", "role": role,
+                "tags": tuple(spec["tags"]),
+                "fits": tuple(spec["fits"]),
+                "description": spec["description"],
             }
-            SETTLEMENT_SITE_SPECS[aid] = land["settlement_sites"][name]
+            SETTLEMENT_SITE_SPECS[key] = spec["sites"]
 
 
 _build_definition_indexes()
@@ -452,7 +455,7 @@ def _room_pool(name: str, site_name: str) -> str:
     if any(x in low for x in ("herb room", "healer's room", "herb shop")):
         return "herb"
     if any(x in low for x in ("cargo yard", "cargo walk", "loading yard",
-                              "human yard", "foreign yard")):
+                              "foreign yard")):
         return "cargo"
     if any(x in low for x in ("fish market", "fish stalls", "fish row",
                               "fish landing", "salt row", "fish house",
@@ -724,17 +727,6 @@ def _attach_services(area: dict, sites: list[dict]) -> None:
                          f"{sorted(missing)}")
 
 
-def _generated_village_spec(polity: str, role_id: str, name: str,
-                            tags: list[str]) -> dict:
-    land = LAND_SPECS[polity]
-    aid = area_id(polity, name)
-    return {
-        "id": aid, "name": name, "kind": "settlement",
-        "subtype": "village", "role": role_id, "tags": tuple(tags),
-        "description": land["village_descriptions"][role_id],
-    }
-
-
 # --------------------------------------------------------------------------- #
 # Fixed Europe geography
 # --------------------------------------------------------------------------- #
@@ -878,29 +870,37 @@ def _next_settlement_name(world: dict, country: str, tier: str) -> str:
             f"{world['name_counters'][country][tier]}")
 
 
-def _settlement_template(country: str, tier: str, slot: dict
+def _settlement_template(country: str, tier: str, slot: dict,
+                         tile_tags: Iterable[str] = ()
                          ) -> tuple[dict, list[dict]]:
+    """The country/tier role this slot is cut from, chosen deterministically
+    and by FIT (2026-08-15, Europe MVP Closure). A template declares the Tile
+    tags it wants -- `coast` for a harbour, `river` for a ford, `mountain-foot`
+    for a hill town -- and only templates the Tile can honor are in the draw.
+    A Tile that fits none of them draws from the templates that ask for
+    nothing, which is why every country keeps at least one of those per tier.
+    The pick is `slot["seed"] % len(...)`, so it is the same every time this
+    slot materializes and it survives the save."""
     land = LAND_SPECS[country]
+    templates = land["settlement_templates"]
     if slot.get("capital"):
-        entry = next(e for e in land["settlements"] if e[1] == "capital")
-        key = area_id(country, entry[0])
+        role = next(r for r, spec in templates.items()
+                    if spec["tier"] == "capital")
+        key = template_id(country, role)
         return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
-    entries = [e for e in land["settlements"]
-               if ("town" if e[1] == "capital" else e[1]) == tier
-               and e[1] != "capital"]
-    if entries:
-        entry = entries[slot["seed"] % len(entries)]
-        key = area_id(country, entry[0])
-        return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
-    roles = list(land.get("villages", ()))
+    have = set(tile_tags)
+    roles = [role for role, spec in templates.items()
+             if spec["tier"] == tier]
     if not roles:
-        entries = [e for e in land["settlements"] if e[1] == "village"]
-        entry = entries[slot["seed"] % len(entries)]
-        key = area_id(country, entry[0])
-        return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
-    role, _heading, tags = roles[slot["seed"] % len(roles)]
-    spec = _generated_village_spec(country, role, slot["name"], list(tags))
-    return spec, land["village_sites"][role]
+        raise ValueError(f"{country}: no {tier} settlement template")
+    fitting = [role for role in roles
+               if set(templates[role]["fits"]) <= have]
+    wanted = [role for role in fitting if templates[role]["fits"]] \
+        or [role for role in fitting] \
+        or roles
+    role = wanted[slot["seed"] % len(wanted)]
+    key = template_id(country, role)
+    return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
 
 
 def board_active_roll(seed: int | None, slot: dict) -> bool:
@@ -923,7 +923,8 @@ def materialize_slot(world: dict, slot: dict | str, *,
     country = tile["country"]
     if slot["name"] is None:
         slot["name"] = _next_settlement_name(world, country, slot["tier"])
-    template, site_specs = _settlement_template(country, slot["tier"], slot)
+    template, site_specs = _settlement_template(country, slot["tier"], slot,
+                                                tile["tags"])
     aid = f"{tile['id']}/area/settlement/{slot['index']:02d}"
     spec = {**template, "id": aid, "name": slot["name"],
             "subtype": slot["tier"], "capital": slot["capital"]}
@@ -1431,16 +1432,16 @@ def materialize_natural_site(world: dict, area: dict | str,
     if area["kind"] != "natural":
         raise ValueError("natural Sites require a natural Area")
     used = set(area["used_natural_sites"])
-    template_id = next((sid for sid in area["natural_site_order"]
-                        if sid not in used), None)
-    if template_id is None:
+    next_site = next((sid for sid in area["natural_site_order"]
+                      if sid not in used), None)
+    if next_site is None:
         return None
     spec = next(s for s in NATURAL_SITE_SPECS[area["template"]]
-                if s["id"] == template_id)
+                if s["id"] == next_site)
     site = materialize_site(world, area, spec, source="lazy",
                             domain="natural", known=True,
                             purpose="natural-site")
-    area["used_natural_sites"].append(template_id)
+    area["used_natural_sites"].append(next_site)
     if site["rooms"]:
         world["rooms"][site["rooms"][0]]["known"] = True
     _event(world, day, site["id"], "materialize")
@@ -1761,12 +1762,50 @@ def place_debug_lines(world: dict, place: dict) -> list[str]:
     return lines
 
 
+OBSOLETE_CATALOG_KEYS = ("land_order", "adjacency", "travel_links",
+                         "water_links")
+OBSOLETE_LAND_KEYS = ("settlements", "descriptions", "villages",
+                      "village_sites", "village_descriptions",
+                      "settlement_sites")
+TILE_FIT_TAGS = ("coast", "riverside", "mountain-foot", "border", "island",
+                 "basic", "mountain", "river", "sea")
+
+
 def validate_catalog() -> None:
     if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
         raise ValueError("place catalog must define the three Europe countries")
-    if any(key in _CATALOG for key in ("land_order", "adjacency",
-                                       "travel_links", "water_links")):
+    if any(key in _CATALOG for key in OBSOLETE_CATALOG_KEYS):
         raise ValueError("place catalog still contains obsolete geography")
+    for polity, land in LAND_SPECS.items():
+        stale = [key for key in OBSOLETE_LAND_KEYS if key in land]
+        if stale:
+            raise ValueError(f"{polity}: the fixed settlement census is "
+                             f"gone; drop {stale}")
+        templates = land["settlement_templates"]
+        tiers = {spec["tier"] for spec in templates.values()}
+        if tiers != {"capital", "town", "village"}:
+            raise ValueError(f"{polity}: settlement templates must cover "
+                             f"capital, town and village; got {sorted(tiers)}")
+        capitals = [r for r, s in templates.items()
+                    if s["tier"] == "capital"]
+        if len(capitals) != 1:
+            raise ValueError(f"{polity}: expected one capital template, "
+                             f"got {capitals}")
+        for tier in ("town", "village"):
+            free = [r for r, s in templates.items()
+                    if s["tier"] == tier and not s["fits"]]
+            if not free:
+                raise ValueError(
+                    f"{polity}: every tier needs a {tier} template that "
+                    f"asks for no Tile tag, or a plain inland Tile can "
+                    f"draw nothing")
+        for role, spec in templates.items():
+            bad = [tag for tag in spec["fits"] if tag not in TILE_FIT_TAGS]
+            if bad:
+                raise ValueError(f"{polity}/{role}: no such Tile tag: {bad}")
+            if "city" in (spec["tier"], *spec["tags"]):
+                raise ValueError(f"{polity}/{role}: there is no city "
+                                 f"subtype; a great town is a town")
     for aid, specs in {**NATURAL_SITE_SPECS,
                        **SETTLEMENT_SITE_SPECS}.items():
         for site in specs:

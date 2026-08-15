@@ -429,7 +429,7 @@ beat.
 
 `bulk` (carry weight — no encumbrance in the heroic tone; STR's future
 secondary role if that changes), `tags` (`cheap` / `military` / `ancient`,
-later `orcish`... — generation flavor), `value` (gold), and `description`
+later `steppe`... — generation flavor), `value` (gold), and `description`
 (the mechanical role in plain words, so nobody has to math out what a weapon
 is for).
 

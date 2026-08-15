@@ -5,9 +5,10 @@
       "name": "Firascir",
       "culture": "firascir",
       "environment": "temperate",
+      "description": "The northern and western kingdom: islands, a long Atlantic coast and the cool inland country behind it, temperate, wooded and heavily farmed.",
       "natural": [
         [
-          "Whitweld Forest",
+          "old_forest",
           "forest",
           "old_forest",
           [
@@ -18,7 +19,7 @@
           ]
         ],
         [
-          "Grendon Fields",
+          "fields",
           "farmland",
           "fields",
           [
@@ -29,7 +30,7 @@
           ]
         ],
         [
-          "Stura River",
+          "river_south",
           "river",
           "southbound_river",
           [
@@ -40,7 +41,7 @@
           ]
         ],
         [
-          "Flumenpur River",
+          "river_east",
           "river",
           "eastbound_river",
           [
@@ -51,121 +52,8 @@
           ]
         ]
       ],
-      "settlements": [
-        [
-          "Tomburgh",
-          "capital",
-          "capital",
-          [
-            "capital",
-            "market",
-            "river",
-            "crossing",
-            "road"
-          ]
-        ],
-        [
-          "Leehaven",
-          "town",
-          "northern_harbor_city",
-          [
-            "town",
-            "harbor",
-            "coast",
-            "fishing",
-            "market"
-          ]
-        ],
-        [
-          "Walhaven",
-          "town",
-          "southern_harbor_city",
-          [
-            "town",
-            "harbor",
-            "coast",
-            "trade",
-            "market"
-          ]
-        ],
-        [
-          "Bradwhitchip",
-          "town",
-          "inland_market_town",
-          [
-            "town",
-            "market",
-            "farmland",
-            "pasture",
-            "road"
-          ]
-        ],
-        [
-          "Redflurton",
-          "town",
-          "riverside_town",
-          [
-            "town",
-            "river",
-            "crossing",
-            "wetland",
-            "market"
-          ]
-        ],
-        [
-          "Sturford",
-          "village",
-          "river_crossing_village",
-          [
-            "village",
-            "river",
-            "crossing",
-            "farmland"
-          ]
-        ],
-        [
-          "Ackham",
-          "village",
-          "forest_edge_village",
-          [
-            "village",
-            "forest",
-            "farmland",
-            "timber"
-          ]
-        ],
-        [
-          "Flurham",
-          "village",
-          "pond_village",
-          [
-            "village",
-            "river",
-            "pond",
-            "fishing"
-          ]
-        ]
-      ],
-      "villages": [],
-      "village_names": [],
-      "description": "A broad human kingdom lies between the northern mountains and the western sea. Two great rivers cross its fields.",
-      "descriptions": {
-        "Firascir": "A broad human kingdom lies between the northern mountains and the western sea. Two great rivers cross its fields.",
-        "Whitweld Forest": "Pale beech trunks fill the old wood east of the fields.",
-        "Grendon Fields": "Farms, hedged roads, and sheep pastures cover the rising ground below the northern mountains.",
-        "Stura River": "A great river runs from the northern mountains through Grendon Fields. It continues south through Mortellaria and reaches the sea.",
-        "Flumenpur River": "A great river runs from the northern mountains through Tomburgh. It continues east-southeast through Caelum toward Tergal.",
-        "Tomburgh": "The walled capital stands on both banks of the Flumenpur River. The great east road crosses the river here.",
-        "Leehaven": "A harbor city stands around a sheltered bay on the northwestern coast. Fishing boats crowd its inner quay.",
-        "Walhaven": "A walled harbor city guards the southwestern coast road. Human and foreign merchants unload beside its stone docks.",
-        "Bradwhitchip": "A market town stands among the farms of Grendon Fields. Grain carts fill its square after harvest.",
-        "Redflurton": "A riverside town stands where the old road meets the lower Flumenpur River. Reed beds line the water below its bridge.",
-        "Sturford": "A farming village stands beside a shallow crossing of the Stura River.",
-        "Ackham": "A village of small farms stands at the western edge of Whitweld Forest.",
-        "Flurham": "A fishing village stands beside a broad pond fed by the Flumenpur River."
-      },
       "natural_sites": {
-        "Whitweld Forest": [
+        "old_forest": [
           {
             "id": "old-forest-road",
             "name": "OLD FOREST ROAD",
@@ -251,7 +139,7 @@
             "anchors": []
           }
         ],
-        "Grendon Fields": [
+        "fields": [
           {
             "id": "hedged-road",
             "name": "HEDGED ROAD",
@@ -337,7 +225,7 @@
             "anchors": []
           }
         ],
-        "Stura River": [
+        "river_south": [
           {
             "id": "south-road-bridge",
             "name": "SOUTH ROAD BRIDGE",
@@ -432,7 +320,7 @@
             "anchors": []
           }
         ],
-        "Flumenpur River": [
+        "river_east": [
           {
             "id": "west-bank-road",
             "name": "WEST BANK ROAD",
@@ -519,1080 +407,1181 @@
           }
         ]
       },
-      "settlement_sites": {
-        "Tomburgh": [
-          {
-            "id": "royal-hall",
-            "name": "ROYAL HALL",
-            "rooms": [
-              {
-                "id": "throne-hall",
-                "name": "THRONE HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "main-market",
-            "name": "MAIN MARKET",
-            "rooms": [
-              {
-                "id": "food-row",
-                "name": "FOOD ROW",
-                "anchors": []
-              },
-              {
-                "id": "cloth-row",
-                "name": "CLOTH ROW",
-                "anchors": []
-              },
-              {
-                "id": "foreign-yard",
-                "name": "FOREIGN YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "flumenpur-bridge",
-            "name": "FLUMENPUR BRIDGE",
-            "rooms": [
-              {
-                "id": "west-gatehouse",
-                "name": "WEST GATEHOUSE",
-                "anchors": []
-              },
-              {
-                "id": "bridge-deck",
-                "name": "BRIDGE DECK",
-                "anchors": []
-              },
-              {
-                "id": "east-gatehouse",
-                "name": "EAST GATEHOUSE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "crown-and-bell-inn",
-            "name": "CROWN AND BELL INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "tomburgh-smithy",
-            "name": "TOMBURGH SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "alchemists-shop",
-            "name": "ALCHEMIST'S SHOP",
-            "rooms": [
-              {
-                "id": "shop",
-                "name": "SHOP",
-                "anchors": []
-              },
-              {
-                "id": "work-room",
-                "name": "WORK ROOM",
-                "anchors": []
-              },
-              {
-                "id": "locked-store",
-                "name": "LOCKED STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "east-gate",
-            "name": "EAST GATE",
-            "rooms": [
-              {
-                "id": "gate-passage",
-                "name": "GATE PASSAGE",
-                "anchors": []
-              },
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "wall-walk",
-                "name": "WALL WALK",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Leehaven": [
-          {
-            "id": "harbor-hall",
-            "name": "HARBOR HALL",
-            "rooms": [
-              {
-                "id": "public-counter",
-                "name": "PUBLIC COUNTER",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "inner-quay",
-            "name": "INNER QUAY",
-            "rooms": [
-              {
-                "id": "fish-landing",
-                "name": "FISH LANDING",
-                "anchors": []
-              },
-              {
-                "id": "net-yard",
-                "name": "NET YARD",
-                "anchors": []
-              },
-              {
-                "id": "harbor-steps",
-                "name": "HARBOR STEPS",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-market",
-            "name": "FISH MARKET",
-            "rooms": [
-              {
-                "id": "fish-stalls",
-                "name": "FISH STALLS",
-                "anchors": []
-              },
-              {
-                "id": "salt-row",
-                "name": "SALT ROW",
-                "anchors": []
-              },
-              {
-                "id": "basket-yard",
-                "name": "BASKET YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "gull-and-net-inn",
-            "name": "GULL AND NET INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "leehaven-smithy",
-            "name": "LEEHAVEN SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "north-watch",
-            "name": "NORTH WATCH",
-            "rooms": [
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "signal-platform",
-                "name": "SIGNAL PLATFORM",
-                "anchors": []
-              },
-              {
-                "id": "harbor-wall",
-                "name": "HARBOR WALL",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Walhaven": [
-          {
-            "id": "city-hall",
-            "name": "CITY HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "stone-docks",
-            "name": "STONE DOCKS",
-            "rooms": [
-              {
-                "id": "main-quay",
-                "name": "MAIN QUAY",
-                "anchors": []
-              },
-              {
-                "id": "cargo-yard",
-                "name": "CARGO YARD",
-                "anchors": []
-              },
-              {
-                "id": "harbor-stairs",
-                "name": "HARBOR STAIRS",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "harbor-market",
-            "name": "HARBOR MARKET",
-            "rooms": [
-              {
-                "id": "food-row",
-                "name": "FOOD ROW",
-                "anchors": []
-              },
-              {
-                "id": "cloth-row",
-                "name": "CLOTH ROW",
-                "anchors": []
-              },
-              {
-                "id": "foreign-yard",
-                "name": "FOREIGN YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "anchor-inn",
-            "name": "ANCHOR INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "walhaven-smithy",
-            "name": "WALHAVEN SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "sea-gate",
-            "name": "SEA GATE",
-            "rooms": [
-              {
-                "id": "gate-passage",
-                "name": "GATE PASSAGE",
-                "anchors": []
-              },
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "wall-walk",
-                "name": "WALL WALK",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Bradwhitchip": [
-          {
-            "id": "town-hall",
-            "name": "TOWN HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "market-square",
-            "name": "MARKET SQUARE",
-            "rooms": [
-              {
-                "id": "grain-row",
-                "name": "GRAIN ROW",
-                "anchors": []
-              },
-              {
-                "id": "livestock-yard",
-                "name": "LIVESTOCK YARD",
-                "anchors": []
-              },
-              {
-                "id": "cart-stand",
-                "name": "CART STAND",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "harvest-inn",
-            "name": "HARVEST INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "bradwhitchip-smithy",
-            "name": "BRADWHITCHIP SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "grain-house",
-            "name": "GRAIN HOUSE",
-            "rooms": [
-              {
-                "id": "weighing-room",
-                "name": "WEIGHING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "grain-store",
-                "name": "GRAIN STORE",
-                "anchors": []
-              },
-              {
-                "id": "loading-yard",
-                "name": "LOADING YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Redflurton": [
-          {
-            "id": "town-hall",
-            "name": "TOWN HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "mere-bridge",
-            "name": "MERE BRIDGE",
-            "rooms": [
-              {
-                "id": "west-gate",
-                "name": "WEST GATE",
-                "anchors": []
-              },
-              {
-                "id": "bridge-deck",
-                "name": "BRIDGE DECK",
-                "anchors": []
-              },
-              {
-                "id": "east-gate",
-                "name": "EAST GATE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "reed-and-pike-inn",
-            "name": "REED AND PIKE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "redflurton-smithy",
-            "name": "REDFLURTON SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "riverside-market",
-            "name": "RIVERSIDE MARKET",
-            "rooms": [
-              {
-                "id": "fish-stalls",
-                "name": "FISH STALLS",
-                "anchors": []
-              },
-              {
-                "id": "reed-row",
-                "name": "REED ROW",
-                "anchors": []
-              },
-              {
-                "id": "boat-landing",
-                "name": "BOAT LANDING",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Sturford": [
-          {
-            "id": "ford-house",
-            "name": "FORD HOUSE",
-            "rooms": [
-              {
-                "id": "toll-room",
-                "name": "TOLL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "shallow-ford",
-            "name": "SHALLOW FORD",
-            "rooms": [
-              {
-                "id": "west-bank",
-                "name": "WEST BANK",
-                "anchors": []
-              },
-              {
-                "id": "river-crossing",
-                "name": "RIVER CROSSING",
-                "anchors": []
-              },
-              {
-                "id": "east-bank",
-                "name": "EAST BANK",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "plough-inn",
-            "name": "PLOUGH INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "village-smithy",
-            "name": "VILLAGE SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Ackham": [
-          {
-            "id": "village-green",
-            "name": "VILLAGE GREEN",
-            "rooms": [
-              {
-                "id": "old-oak",
-                "name": "OLD OAK",
-                "anchors": []
-              },
-              {
-                "id": "well",
-                "name": "WELL",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "oak-and-axe-inn",
-            "name": "OAK AND AXE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "village-smithy",
-            "name": "VILLAGE SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "wood-yard",
-            "name": "WOOD YARD",
-            "rooms": [
-              {
-                "id": "timber-yard",
-                "name": "TIMBER YARD",
-                "anchors": []
-              },
-              {
-                "id": "tool-shed",
-                "name": "TOOL SHED",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Flurham": [
-          {
-            "id": "mere-landing",
-            "name": "MERE LANDING",
-            "rooms": [
-              {
-                "id": "timber-jetty",
-                "name": "TIMBER JETTY",
-                "anchors": []
-              },
-              {
-                "id": "boat-yard",
-                "name": "BOAT YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "heron-inn",
-            "name": "HERON INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-shed",
-            "name": "FISH SHED",
-            "rooms": [
-              {
-                "id": "cutting-room",
-                "name": "CUTTING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "salt-store",
-                "name": "SALT STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ]
+      "settlement_templates": {
+        "capital": {
+          "tier": "capital",
+          "fits": [],
+          "tags": [
+            "capital",
+            "market",
+            "road"
+          ],
+          "description": "The walled seat of the crown stands behind ditch and rampart. Every road in the country ends at its market cross.",
+          "sites": [
+            {
+              "id": "royal-hall",
+              "name": "ROYAL HALL",
+              "rooms": [
+                {
+                  "id": "throne-hall",
+                  "name": "THRONE HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "main-market",
+              "name": "MAIN MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cloth-row",
+                  "name": "CLOTH ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "river-bridge",
+              "name": "RIVER BRIDGE",
+              "rooms": [
+                {
+                  "id": "west-gatehouse",
+                  "name": "WEST GATEHOUSE",
+                  "anchors": []
+                },
+                {
+                  "id": "bridge-deck",
+                  "name": "BRIDGE DECK",
+                  "anchors": []
+                },
+                {
+                  "id": "east-gatehouse",
+                  "name": "EAST GATEHOUSE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "crown-and-bell-inn",
+              "name": "CROWN AND BELL INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "locked-store",
+                  "name": "LOCKED STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "east-gate",
+              "name": "EAST GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "harbor_town": {
+          "tier": "town",
+          "fits": [
+            "coast"
+          ],
+          "tags": [
+            "town",
+            "harbor",
+            "coast",
+            "fishing",
+            "market"
+          ],
+          "description": "A harbour town stands around a sheltered bay. Fishing boats crowd its inner quay.",
+          "sites": [
+            {
+              "id": "harbor-hall",
+              "name": "HARBOR HALL",
+              "rooms": [
+                {
+                  "id": "public-counter",
+                  "name": "PUBLIC COUNTER",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "inner-quay",
+              "name": "INNER QUAY",
+              "rooms": [
+                {
+                  "id": "fish-landing",
+                  "name": "FISH LANDING",
+                  "anchors": []
+                },
+                {
+                  "id": "net-yard",
+                  "name": "NET YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "harbor-steps",
+                  "name": "HARBOR STEPS",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fish-market",
+              "name": "FISH MARKET",
+              "rooms": [
+                {
+                  "id": "fish-stalls",
+                  "name": "FISH STALLS",
+                  "anchors": []
+                },
+                {
+                  "id": "salt-row",
+                  "name": "SALT ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "basket-yard",
+                  "name": "BASKET YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "gull-and-net-inn",
+              "name": "GULL AND NET INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "harbor-watch",
+              "name": "HARBOR WATCH",
+              "rooms": [
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "signal-platform",
+                  "name": "SIGNAL PLATFORM",
+                  "anchors": []
+                },
+                {
+                  "id": "harbor-wall",
+                  "name": "HARBOR WALL",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "dock_town": {
+          "tier": "town",
+          "fits": [
+            "coast"
+          ],
+          "tags": [
+            "town",
+            "harbor",
+            "coast",
+            "trade",
+            "market"
+          ],
+          "description": "A walled harbour town guards the coast road. Merchants unload beside its stone docks.",
+          "sites": [
+            {
+              "id": "town-hall",
+              "name": "TOWN HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "stone-docks",
+              "name": "STONE DOCKS",
+              "rooms": [
+                {
+                  "id": "main-quay",
+                  "name": "MAIN QUAY",
+                  "anchors": []
+                },
+                {
+                  "id": "cargo-yard",
+                  "name": "CARGO YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "harbor-stairs",
+                  "name": "HARBOR STAIRS",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "harbor-market",
+              "name": "HARBOR MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cloth-row",
+                  "name": "CLOTH ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "anchor-inn",
+              "name": "ANCHOR INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "sea-gate",
+              "name": "SEA GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "market_town": {
+          "tier": "town",
+          "fits": [],
+          "tags": [
+            "town",
+            "market",
+            "farmland",
+            "pasture",
+            "road"
+          ],
+          "description": "A market town stands among hedged fields and sheep pasture. Grain carts fill its square after harvest.",
+          "sites": [
+            {
+              "id": "town-hall",
+              "name": "TOWN HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "market-square",
+              "name": "MARKET SQUARE",
+              "rooms": [
+                {
+                  "id": "grain-row",
+                  "name": "GRAIN ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "livestock-yard",
+                  "name": "LIVESTOCK YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "cart-stand",
+                  "name": "CART STAND",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "harvest-inn",
+              "name": "HARVEST INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "grain-house",
+              "name": "GRAIN HOUSE",
+              "rooms": [
+                {
+                  "id": "weighing-room",
+                  "name": "WEIGHING ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "grain-store",
+                  "name": "GRAIN STORE",
+                  "anchors": []
+                },
+                {
+                  "id": "loading-yard",
+                  "name": "LOADING YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "river_town": {
+          "tier": "town",
+          "fits": [
+            "river"
+          ],
+          "tags": [
+            "town",
+            "river",
+            "crossing",
+            "wetland",
+            "market"
+          ],
+          "description": "A river town stands where the old road meets the water. Reed beds line the bank below its bridge.",
+          "sites": [
+            {
+              "id": "town-hall",
+              "name": "TOWN HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "stone-bridge",
+              "name": "STONE BRIDGE",
+              "rooms": [
+                {
+                  "id": "west-gate",
+                  "name": "WEST GATE",
+                  "anchors": []
+                },
+                {
+                  "id": "bridge-deck",
+                  "name": "BRIDGE DECK",
+                  "anchors": []
+                },
+                {
+                  "id": "east-gate",
+                  "name": "EAST GATE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "reed-and-pike-inn",
+              "name": "REED AND PIKE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "riverside-market",
+              "name": "RIVERSIDE MARKET",
+              "rooms": [
+                {
+                  "id": "fish-stalls",
+                  "name": "FISH STALLS",
+                  "anchors": []
+                },
+                {
+                  "id": "reed-row",
+                  "name": "REED ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "boat-landing",
+                  "name": "BOAT LANDING",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "ford_village": {
+          "tier": "village",
+          "fits": [
+            "river"
+          ],
+          "tags": [
+            "village",
+            "river",
+            "crossing",
+            "farmland"
+          ],
+          "description": "A farming village stands beside a shallow crossing.",
+          "sites": [
+            {
+              "id": "ford-house",
+              "name": "FORD HOUSE",
+              "rooms": [
+                {
+                  "id": "toll-room",
+                  "name": "TOLL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "shallow-ford",
+              "name": "SHALLOW FORD",
+              "rooms": [
+                {
+                  "id": "west-bank",
+                  "name": "WEST BANK",
+                  "anchors": []
+                },
+                {
+                  "id": "river-crossing",
+                  "name": "RIVER CROSSING",
+                  "anchors": []
+                },
+                {
+                  "id": "east-bank",
+                  "name": "EAST BANK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "plough-inn",
+              "name": "PLOUGH INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "village-smithy",
+              "name": "VILLAGE SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "forest_village": {
+          "tier": "village",
+          "fits": [],
+          "tags": [
+            "village",
+            "forest",
+            "farmland",
+            "timber"
+          ],
+          "description": "A village of small farms stands where the ploughland gives out at the wood.",
+          "sites": [
+            {
+              "id": "village-green",
+              "name": "VILLAGE GREEN",
+              "rooms": [
+                {
+                  "id": "old-oak",
+                  "name": "OLD OAK",
+                  "anchors": []
+                },
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "oak-and-axe-inn",
+              "name": "OAK AND AXE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "village-smithy",
+              "name": "VILLAGE SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "wood-yard",
+              "name": "WOOD YARD",
+              "rooms": [
+                {
+                  "id": "timber-yard",
+                  "name": "TIMBER YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "tool-shed",
+                  "name": "TOOL SHED",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "shore_village": {
+          "tier": "village",
+          "fits": [
+            "coast"
+          ],
+          "tags": [
+            "village",
+            "coast",
+            "fishing"
+          ],
+          "description": "A fishing village stands above a shingle beach, its boats drawn up past the tide line.",
+          "sites": [
+            {
+              "id": "shore-landing",
+              "name": "SHORE LANDING",
+              "rooms": [
+                {
+                  "id": "timber-jetty",
+                  "name": "TIMBER JETTY",
+                  "anchors": []
+                },
+                {
+                  "id": "boat-yard",
+                  "name": "BOAT YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "heron-inn",
+              "name": "HERON INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-shed",
+              "name": "SMITH'S SHED",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fish-shed",
+              "name": "FISH SHED",
+              "rooms": [
+                {
+                  "id": "cutting-room",
+                  "name": "CUTTING ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "salt-store",
+                  "name": "SALT STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        }
       }
     },
     "mortellaria": {
       "name": "Mortellaria",
       "culture": "mortellaria",
       "environment": "mediterranean",
+      "description": "The southern kingdom around the middle sea: dry hills, olive terraces, old stone roads, and every coast it can reach by water.",
       "natural": [
         [
-          "Valdoro Hills",
+          "vineyard_hills",
           "hills",
           "vineyard_hills",
           [
@@ -1604,7 +1593,7 @@
           ]
         ],
         [
-          "Orivela Coast",
+          "rocky_coast",
           "coast",
           "rocky_coast",
           [
@@ -1615,7 +1604,7 @@
           ]
         ],
         [
-          "Pinavera Valley",
+          "pine_valley",
           "valley",
           "pine_valley",
           [
@@ -1626,7 +1615,7 @@
           ]
         ],
         [
-          "Riomara Plain",
+          "river_plain",
           "plain",
           "river_plain",
           [
@@ -1637,7 +1626,7 @@
           ]
         ],
         [
-          "Stura River",
+          "river_south",
           "river",
           "southbound_river",
           [
@@ -1648,120 +1637,8 @@
           ]
         ]
       ],
-      "settlements": [
-        [
-          "Castavera",
-          "capital",
-          "capital",
-          [
-            "capital",
-            "market",
-            "river",
-            "road"
-          ]
-        ],
-        [
-          "Portomera",
-          "town",
-          "harbor_city",
-          [
-            "town",
-            "harbor",
-            "coast",
-            "fishing",
-            "market"
-          ]
-        ],
-        [
-          "Belafonte",
-          "town",
-          "inland_market_town",
-          [
-            "town",
-            "market",
-            "hills",
-            "olive",
-            "vineyard"
-          ]
-        ],
-        [
-          "Montaro",
-          "town",
-          "hill_town",
-          [
-            "town",
-            "hills",
-            "vineyard",
-            "pasture",
-            "road"
-          ]
-        ]
-      ],
-      "villages": [
-        [
-          "vineyard_village",
-          "Vineyard village",
-          [
-            "village",
-            "vineyard",
-            "olive"
-          ]
-        ],
-        [
-          "river_plain_village",
-          "River-plain village",
-          [
-            "village",
-            "river",
-            "farmland"
-          ]
-        ],
-        [
-          "coast_road_village",
-          "Coast-road village",
-          [
-            "village",
-            "coast",
-            "road",
-            "fishing"
-          ]
-        ]
-      ],
-      "village_names": [
-        "Alavera",
-        "Beloro",
-        "Calavento",
-        "Doramonte",
-        "Fontela",
-        "Lunaro",
-        "Maravento",
-        "Oliveta",
-        "Rosavera",
-        "Sanoro",
-        "Solavela",
-        "Toralba",
-        "Valesero",
-        "Ventoro",
-        "Vilaro"
-      ],
-      "description": "A warm human kingdom lies between dry hills and the western sea. Vineyards, olive groves, and old stone roads cover the settled country.",
-      "descriptions": {
-        "Mortellaria": "A warm human kingdom lies between dry hills and the western sea. Vineyards, olive groves, and old stone roads cover the settled country.",
-        "Valdoro Hills": "Terraced vineyards and olive groves cover the hills south of Castavera. Stone walls divide the slopes.",
-        "Orivela Coast": "A rocky coast runs west of the capital. Pines grow above its coves and sea caves.",
-        "Pinavera Valley": "A dry pine valley cuts through the southern uplands. Goat tracks cross its stony slopes.",
-        "Riomara Plain": "Farms and irrigation channels cover the low plain east of the hills. The Stura River bends through its fields.",
-        "Stura River": "The great river continues south from Firascir. It crosses Riomara Plain and reaches the western sea.",
-        "Castavera": "The walled capital stands above the Stura River road. White stone halls and tiled roofs surround its market.",
-        "Portomera": "A harbor city fills a deep cove on the Orivela Coast. Stone quays shelter fishing boats and merchant ships.",
-        "Belafonte": "A market town stands among the lower Valdoro Hills. A public fountain fills the square below its olive presses.",
-        "Montaro": "A stone town climbs a steep vineyard hill. Its upper gate overlooks the road through Pinavera Valley.",
-        "Vineyard village": "A small village stands among vineyards and olive terraces. Wine carts wait beside its press house.",
-        "River-plain village": "A farming village stands beside an irrigation channel on Riomara Plain. Reeds grow along its low walls.",
-        "Coast-road village": "A fishing village stands where the coast road descends to a sheltered cove."
-      },
       "natural_sites": {
-        "Valdoro Hills": [
+        "vineyard_hills": [
           {
             "id": "terraced-road",
             "name": "TERRACED ROAD",
@@ -1838,7 +1715,7 @@
             "anchors": []
           }
         ],
-        "Orivela Coast": [
+        "rocky_coast": [
           {
             "id": "cliff-road",
             "name": "CLIFF ROAD",
@@ -1915,7 +1792,7 @@
             "anchors": []
           }
         ],
-        "Pinavera Valley": [
+        "pine_valley": [
           {
             "id": "pine-road",
             "name": "PINE ROAD",
@@ -1977,7 +1854,7 @@
             ]
           }
         ],
-        "Riomara Plain": [
+        "river_plain": [
           {
             "id": "irrigation-road",
             "name": "IRRIGATION ROAD",
@@ -2054,7 +1931,7 @@
             "anchors": []
           }
         ],
-        "Stura River": [
+        "river_south": [
           {
             "id": "stone-road-bridge",
             "name": "STONE ROAD BRIDGE",
@@ -2150,1200 +2027,987 @@
           }
         ]
       },
-      "settlement_sites": {
-        "Castavera": [
-          {
-            "id": "royal-palace",
-            "name": "ROYAL PALACE",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "main-market",
-            "name": "MAIN MARKET",
-            "rooms": [
-              {
-                "id": "food-row",
-                "name": "FOOD ROW",
-                "anchors": []
-              },
-              {
-                "id": "cloth-row",
-                "name": "CLOTH ROW",
-                "anchors": []
-              },
-              {
-                "id": "oil-and-wine-row",
-                "name": "OIL AND WINE ROW",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "three-fountains-inn",
-            "name": "THREE FOUNTAINS INN",
-            "rooms": [
-              {
-                "id": "courtyard",
-                "name": "COURTYARD",
-                "anchors": []
-              },
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "castavera-smithy",
-            "name": "CASTAVERA SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "courtyard",
-                "name": "COURTYARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "alchemists-shop",
-            "name": "ALCHEMIST'S SHOP",
-            "rooms": [
-              {
-                "id": "shop",
-                "name": "SHOP",
-                "anchors": []
-              },
-              {
-                "id": "work-room",
-                "name": "WORK ROOM",
-                "anchors": []
-              },
-              {
-                "id": "locked-store",
-                "name": "LOCKED STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "river-gate",
-            "name": "RIVER GATE",
-            "rooms": [
-              {
-                "id": "gate-passage",
-                "name": "GATE PASSAGE",
-                "anchors": []
-              },
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "wall-walk",
-                "name": "WALL WALK",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Portomera": [
-          {
-            "id": "harbor-hall",
-            "name": "HARBOR HALL",
-            "rooms": [
-              {
-                "id": "public-counter",
-                "name": "PUBLIC COUNTER",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "stone-quays",
-            "name": "STONE QUAYS",
-            "rooms": [
-              {
-                "id": "fish-landing",
-                "name": "FISH LANDING",
-                "anchors": []
-              },
-              {
-                "id": "cargo-yard",
-                "name": "CARGO YARD",
-                "anchors": []
-              },
-              {
-                "id": "harbor-steps",
-                "name": "HARBOR STEPS",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "harbor-market",
-            "name": "HARBOR MARKET",
-            "rooms": [
-              {
-                "id": "fish-stalls",
-                "name": "FISH STALLS",
-                "anchors": []
-              },
-              {
-                "id": "salt-row",
-                "name": "SALT ROW",
-                "anchors": []
-              },
-              {
-                "id": "foreign-yard",
-                "name": "FOREIGN YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "blue-sail-inn",
-            "name": "BLUE SAIL INN",
-            "rooms": [
-              {
-                "id": "courtyard",
-                "name": "COURTYARD",
-                "anchors": []
-              },
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "portomera-smithy",
-            "name": "PORTOMERA SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "sea-watch",
-            "name": "SEA WATCH",
-            "rooms": [
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "signal-platform",
-                "name": "SIGNAL PLATFORM",
-                "anchors": []
-              },
-              {
-                "id": "harbor-wall",
-                "name": "HARBOR WALL",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Belafonte": [
-          {
-            "id": "town-hall",
-            "name": "TOWN HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fountain-market",
-            "name": "FOUNTAIN MARKET",
-            "rooms": [
-              {
-                "id": "stone-fountain",
-                "name": "STONE FOUNTAIN",
-                "anchors": []
-              },
-              {
-                "id": "produce-row",
-                "name": "PRODUCE ROW",
-                "anchors": []
-              },
-              {
-                "id": "cart-stand",
-                "name": "CART STAND",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "olive-branch-inn",
-            "name": "OLIVE BRANCH INN",
-            "rooms": [
-              {
-                "id": "courtyard",
-                "name": "COURTYARD",
-                "anchors": []
-              },
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "belafonte-smithy",
-            "name": "BELAFONTE SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "press-house",
-            "name": "PRESS HOUSE",
-            "rooms": [
-              {
-                "id": "olive-press",
-                "name": "OLIVE PRESS",
-                "anchors": []
-              },
-              {
-                "id": "oil-store",
-                "name": "OIL STORE",
-                "anchors": []
-              },
-              {
-                "id": "loading-yard",
-                "name": "LOADING YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Montaro": [
-          {
-            "id": "hill-hall",
-            "name": "HILL HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "upper-gate",
-            "name": "UPPER GATE",
-            "rooms": [
-              {
-                "id": "gate-passage",
-                "name": "GATE PASSAGE",
-                "anchors": []
-              },
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "lookout",
-                "name": "LOOKOUT",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "goat-and-vine-inn",
-            "name": "GOAT AND VINE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "montaro-smithy",
-            "name": "MONTARO SMITHY",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "wine-house",
-            "name": "WINE HOUSE",
-            "rooms": [
-              {
-                "id": "press-room",
-                "name": "PRESS ROOM",
-                "anchors": []
-              },
-              {
-                "id": "barrel-store",
-                "name": "BARREL STORE",
-                "anchors": []
-              },
-              {
-                "id": "loading-yard",
-                "name": "LOADING YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated vineyard village": [
-          {
-            "id": "village-square",
-            "name": "VILLAGE SQUARE",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              },
-              {
-                "id": "cart-stand",
-                "name": "CART STAND",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "vine-inn",
-            "name": "VINE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "press-house",
-            "name": "PRESS HOUSE",
-            "rooms": [
-              {
-                "id": "wine-press",
-                "name": "WINE PRESS",
-                "anchors": []
-              },
-              {
-                "id": "jar-store",
-                "name": "JAR STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated river-plain village": [
-          {
-            "id": "channel-square",
-            "name": "CHANNEL SQUARE",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "sluice-post",
-                "name": "SLUICE POST",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "river-inn",
-            "name": "RIVER INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "grain-house",
-            "name": "GRAIN HOUSE",
-            "rooms": [
-              {
-                "id": "grain-store",
-                "name": "GRAIN STORE",
-                "anchors": []
-              },
-              {
-                "id": "loading-yard",
-                "name": "LOADING YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated coast-road village": [
-          {
-            "id": "cove-landing",
-            "name": "COVE LANDING",
-            "rooms": [
-              {
-                "id": "timber-jetty",
-                "name": "TIMBER JETTY",
-                "anchors": []
-              },
-              {
-                "id": "boat-yard",
-                "name": "BOAT YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "road-inn",
-            "name": "ROAD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-shed",
-            "name": "FISH SHED",
-            "rooms": [
-              {
-                "id": "cutting-room",
-                "name": "CUTTING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "salt-store",
-                "name": "SALT STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ]
-      },
-      "village_sites": {
-        "vineyard_village": [
-          {
-            "id": "village-square",
-            "name": "VILLAGE SQUARE",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              },
-              {
-                "id": "cart-stand",
-                "name": "CART STAND",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "vine-inn",
-            "name": "VINE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "cellar",
-                "name": "CELLAR",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "press-house",
-            "name": "PRESS HOUSE",
-            "rooms": [
-              {
-                "id": "wine-press",
-                "name": "WINE PRESS",
-                "anchors": []
-              },
-              {
-                "id": "jar-store",
-                "name": "JAR STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "river_plain_village": [
-          {
-            "id": "channel-square",
-            "name": "CHANNEL SQUARE",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "sluice-post",
-                "name": "SLUICE POST",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "river-inn",
-            "name": "RIVER INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "grain-house",
-            "name": "GRAIN HOUSE",
-            "rooms": [
-              {
-                "id": "grain-store",
-                "name": "GRAIN STORE",
-                "anchors": []
-              },
-              {
-                "id": "loading-yard",
-                "name": "LOADING YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "coast_road_village": [
-          {
-            "id": "cove-landing",
-            "name": "COVE LANDING",
-            "rooms": [
-              {
-                "id": "timber-jetty",
-                "name": "TIMBER JETTY",
-                "anchors": []
-              },
-              {
-                "id": "boat-yard",
-                "name": "BOAT YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "road-inn",
-            "name": "ROAD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-shed",
-            "name": "SMITH'S SHED",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-shed",
-            "name": "FISH SHED",
-            "rooms": [
-              {
-                "id": "cutting-room",
-                "name": "CUTTING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "salt-store",
-                "name": "SALT STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ]
-      },
-      "village_descriptions": {
-        "vineyard_village": "A small village stands among vineyards and olive terraces. Wine carts wait beside its press house.",
-        "river_plain_village": "A farming village stands beside an irrigation channel on Riomara Plain. Reeds grow along its low walls.",
-        "coast_road_village": "A fishing village stands where the coast road descends to a sheltered cove."
+      "settlement_templates": {
+        "capital": {
+          "tier": "capital",
+          "fits": [],
+          "tags": [
+            "capital",
+            "market",
+            "road"
+          ],
+          "description": "The walled seat of the crown stands above the road. White stone halls and tiled roofs surround its market.",
+          "sites": [
+            {
+              "id": "royal-palace",
+              "name": "ROYAL PALACE",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "main-market",
+              "name": "MAIN MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cloth-row",
+                  "name": "CLOTH ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "oil-and-wine-row",
+                  "name": "OIL AND WINE ROW",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "three-fountains-inn",
+              "name": "THREE FOUNTAINS INN",
+              "rooms": [
+                {
+                  "id": "courtyard",
+                  "name": "COURTYARD",
+                  "anchors": []
+                },
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "courtyard",
+                  "name": "COURTYARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "locked-store",
+                  "name": "LOCKED STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "river-gate",
+              "name": "RIVER GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "harbor_town": {
+          "tier": "town",
+          "fits": [
+            "coast"
+          ],
+          "tags": [
+            "town",
+            "harbor",
+            "coast",
+            "fishing",
+            "market"
+          ],
+          "description": "A harbour town fills a deep cove. Stone quays shelter fishing boats and merchant ships.",
+          "sites": [
+            {
+              "id": "harbor-hall",
+              "name": "HARBOR HALL",
+              "rooms": [
+                {
+                  "id": "public-counter",
+                  "name": "PUBLIC COUNTER",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "stone-quays",
+              "name": "STONE QUAYS",
+              "rooms": [
+                {
+                  "id": "fish-landing",
+                  "name": "FISH LANDING",
+                  "anchors": []
+                },
+                {
+                  "id": "cargo-yard",
+                  "name": "CARGO YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "harbor-steps",
+                  "name": "HARBOR STEPS",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "harbor-market",
+              "name": "HARBOR MARKET",
+              "rooms": [
+                {
+                  "id": "fish-stalls",
+                  "name": "FISH STALLS",
+                  "anchors": []
+                },
+                {
+                  "id": "salt-row",
+                  "name": "SALT ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "blue-sail-inn",
+              "name": "BLUE SAIL INN",
+              "rooms": [
+                {
+                  "id": "courtyard",
+                  "name": "COURTYARD",
+                  "anchors": []
+                },
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "sea-watch",
+              "name": "SEA WATCH",
+              "rooms": [
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "signal-platform",
+                  "name": "SIGNAL PLATFORM",
+                  "anchors": []
+                },
+                {
+                  "id": "harbor-wall",
+                  "name": "HARBOR WALL",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "market_town": {
+          "tier": "town",
+          "fits": [],
+          "tags": [
+            "town",
+            "market",
+            "olive",
+            "vineyard"
+          ],
+          "description": "A market town stands among olive terraces. A public fountain fills the square below its presses.",
+          "sites": [
+            {
+              "id": "town-hall",
+              "name": "TOWN HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fountain-market",
+              "name": "FOUNTAIN MARKET",
+              "rooms": [
+                {
+                  "id": "stone-fountain",
+                  "name": "STONE FOUNTAIN",
+                  "anchors": []
+                },
+                {
+                  "id": "produce-row",
+                  "name": "PRODUCE ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cart-stand",
+                  "name": "CART STAND",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "olive-branch-inn",
+              "name": "OLIVE BRANCH INN",
+              "rooms": [
+                {
+                  "id": "courtyard",
+                  "name": "COURTYARD",
+                  "anchors": []
+                },
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "press-house",
+              "name": "PRESS HOUSE",
+              "rooms": [
+                {
+                  "id": "olive-press",
+                  "name": "OLIVE PRESS",
+                  "anchors": []
+                },
+                {
+                  "id": "oil-store",
+                  "name": "OIL STORE",
+                  "anchors": []
+                },
+                {
+                  "id": "loading-yard",
+                  "name": "LOADING YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "hill_town": {
+          "tier": "town",
+          "fits": [
+            "mountain-foot"
+          ],
+          "tags": [
+            "town",
+            "hills",
+            "vineyard",
+            "pasture",
+            "road"
+          ],
+          "description": "A stone town climbs a steep hill. Its upper gate overlooks the road below.",
+          "sites": [
+            {
+              "id": "hill-hall",
+              "name": "HILL HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "upper-gate",
+              "name": "UPPER GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "lookout",
+                  "name": "LOOKOUT",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "goat-and-vine-inn",
+              "name": "GOAT AND VINE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-smithy",
+              "name": "TOWN SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "wine-house",
+              "name": "WINE HOUSE",
+              "rooms": [
+                {
+                  "id": "press-room",
+                  "name": "PRESS ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "barrel-store",
+                  "name": "BARREL STORE",
+                  "anchors": []
+                },
+                {
+                  "id": "loading-yard",
+                  "name": "LOADING YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "vineyard_village": {
+          "tier": "village",
+          "fits": [],
+          "tags": [
+            "village",
+            "vineyard",
+            "olive"
+          ],
+          "description": "A small village stands among vineyards and olive terraces. Wine carts wait beside its press house.",
+          "sites": [
+            {
+              "id": "village-square",
+              "name": "VILLAGE SQUARE",
+              "rooms": [
+                {
+                  "id": "stone-well",
+                  "name": "STONE WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                },
+                {
+                  "id": "cart-stand",
+                  "name": "CART STAND",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "vine-inn",
+              "name": "VINE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "cellar",
+                  "name": "CELLAR",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-shed",
+              "name": "SMITH'S SHED",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "press-house",
+              "name": "PRESS HOUSE",
+              "rooms": [
+                {
+                  "id": "wine-press",
+                  "name": "WINE PRESS",
+                  "anchors": []
+                },
+                {
+                  "id": "jar-store",
+                  "name": "JAR STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "river_village": {
+          "tier": "village",
+          "fits": [
+            "river"
+          ],
+          "tags": [
+            "village",
+            "river",
+            "farmland"
+          ],
+          "description": "A farming village stands beside an irrigation channel. Reeds grow along its low walls.",
+          "sites": [
+            {
+              "id": "channel-square",
+              "name": "CHANNEL SQUARE",
+              "rooms": [
+                {
+                  "id": "stone-well",
+                  "name": "STONE WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "sluice-post",
+                  "name": "SLUICE POST",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "river-inn",
+              "name": "RIVER INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-shed",
+              "name": "SMITH'S SHED",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "grain-house",
+              "name": "GRAIN HOUSE",
+              "rooms": [
+                {
+                  "id": "grain-store",
+                  "name": "GRAIN STORE",
+                  "anchors": []
+                },
+                {
+                  "id": "loading-yard",
+                  "name": "LOADING YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "coast_village": {
+          "tier": "village",
+          "fits": [
+            "coast"
+          ],
+          "tags": [
+            "village",
+            "coast",
+            "road",
+            "fishing"
+          ],
+          "description": "A fishing village stands where the coast road descends to a sheltered cove.",
+          "sites": [
+            {
+              "id": "cove-landing",
+              "name": "COVE LANDING",
+              "rooms": [
+                {
+                  "id": "timber-jetty",
+                  "name": "TIMBER JETTY",
+                  "anchors": []
+                },
+                {
+                  "id": "boat-yard",
+                  "name": "BOAT YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "road-inn",
+              "name": "ROAD INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-shed",
+              "name": "SMITH'S SHED",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fish-shed",
+              "name": "FISH SHED",
+              "rooms": [
+                {
+                  "id": "cutting-room",
+                  "name": "CUTTING ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "salt-store",
+                  "name": "SALT STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        }
       }
     },
     "tergal": {
       "name": "Tergal",
       "culture": "tergal",
       "environment": "prairie",
+      "description": "The eastern realm of the open grass: herd roads, river crossings and dry basins, held by clans under one high chief.",
       "natural": [
         [
-          "Khuratal Steppe",
+          "open_prairie",
           "prairie",
           "open_prairie",
           [
@@ -3354,7 +3018,7 @@
           ]
         ],
         [
-          "Borugal Hills",
+          "broken_hills",
           "hills",
           "broken_hills",
           [
@@ -3365,7 +3029,7 @@
           ]
         ],
         [
-          "Temur Ridge",
+          "grazing_range",
           "ridge",
           "grazing_range",
           [
@@ -3376,7 +3040,7 @@
           ]
         ],
         [
-          "Namak Basin",
+          "dry_basin",
           "basin",
           "dry_basin",
           [
@@ -3388,7 +3052,7 @@
           ]
         ],
         [
-          "Kharun River",
+          "river_east",
           "river",
           "eastern_river",
           [
@@ -3399,7 +3063,7 @@
           ]
         ],
         [
-          "Flumenpur River",
+          "river_west",
           "river",
           "western_river",
           [
@@ -3410,123 +3074,8 @@
           ]
         ]
       ],
-      "settlements": [
-        [
-          "Ulus-Gal",
-          "capital",
-          "capital",
-          [
-            "capital",
-            "market",
-            "prairie",
-            "pasture",
-            "livestock"
-          ]
-        ],
-        [
-          "Kharuk",
-          "town",
-          "western_town",
-          [
-            "town",
-            "river",
-            "crossing",
-            "trade",
-            "road"
-          ]
-        ],
-        [
-          "Temenur",
-          "town",
-          "northern_town",
-          [
-            "town",
-            "hills",
-            "pasture",
-            "livestock"
-          ]
-        ],
-        [
-          "Ordubal",
-          "town",
-          "southern_town",
-          [
-            "town",
-            "basin",
-            "salt",
-            "livestock",
-            "market"
-          ]
-        ]
-      ],
-      "villages": [
-        [
-          "herd_road_village",
-          "Herd-road village",
-          [
-            "village",
-            "prairie",
-            "pasture",
-            "livestock"
-          ]
-        ],
-        [
-          "tergal_river_village",
-          "River village",
-          [
-            "village",
-            "river",
-            "fishing",
-            "crossing"
-          ]
-        ],
-        [
-          "tergal_basin_village",
-          "Basin village",
-          [
-            "village",
-            "basin",
-            "salt",
-            "livestock"
-          ]
-        ]
-      ],
-      "village_names": [
-        "Aradun",
-        "Balurun",
-        "Borkal",
-        "Enkhar",
-        "Eshkar",
-        "Guratai",
-        "Kharnam",
-        "Kurugan",
-        "Namuruk",
-        "Ordaki",
-        "Sargul",
-        "Teguren",
-        "Tumengal",
-        "Urkhal",
-        "Zamutar"
-      ],
-      "description": "A human realm covers the eastern prairie. Herd roads cross its grasslands between rivers, dry basins, and broken hills.",
-      "descriptions": {
-        "Tergal": "A human realm covers the eastern prairie. Herd roads cross its grasslands between rivers, dry basins, and broken hills.",
-        "Khuratal Steppe": "Open grassland stretches east of Ulus-Gal. Herd trails and wagon roads run beneath the constant wind.",
-        "Borugal Hills": "Broken stone hills rise along the northern border. Narrow passes cut between their bare slopes.",
-        "Temur Ridge": "A long ridge overlooks the central prairie. Horses and sheep graze on its high slopes.",
-        "Namak Basin": "A dry basin lies south of the capital. Salt grass grows around its wells and seasonal pools.",
-        "Kharun River": "A broad river crosses the eastern prairie. Willow groves mark its bends.",
-        "Flumenpur River": "The great river enters Tergal from Caelum. The western road follows its north bank toward Kharuk.",
-        "Ulus-Gal": "The walled capital stands on a low rise above the prairie. Broad roads lead from its great hall to the horse market and eastern gate.",
-        "Kharuk": "A road town guards the Flumenpur crossing. Traders from Caelum camp outside its western wall.",
-        "Temenur": "A stone town stands below Temur Ridge. Herd pens and wool stores fill its lower quarter.",
-        "Ordubal": "A low-walled town stands beside the main well of Namak Basin. Salt and livestock caravans meet in its yard.",
-        "Herd-road village": "A herding village stands beside a well on Khuratal Steppe. Corrals surround its low houses.",
-        "River village": "A fishing and ferry village stands in a willow bend of the Kharun River.",
-        "Basin village": "A small village stands beside a deep well in Namak Basin. Salt grass and goat pens surround it."
-      },
       "natural_sites": {
-        "Khuratal Steppe": [
+        "open_prairie": [
           {
             "id": "herd-road",
             "name": "HERD ROAD",
@@ -3603,7 +3152,7 @@
             "anchors": []
           }
         ],
-        "Borugal Hills": [
+        "broken_hills": [
           {
             "id": "broken-pass",
             "name": "BROKEN PASS",
@@ -3680,7 +3229,7 @@
             "anchors": []
           }
         ],
-        "Temur Ridge": [
+        "grazing_range": [
           {
             "id": "ridge-road",
             "name": "RIDGE ROAD",
@@ -3757,7 +3306,7 @@
             "anchors": []
           }
         ],
-        "Namak Basin": [
+        "dry_basin": [
           {
             "id": "dry-track",
             "name": "DRY TRACK",
@@ -3834,7 +3383,7 @@
             "anchors": []
           }
         ],
-        "Kharun River": [
+        "river_east": [
           {
             "id": "river-ford",
             "name": "RIVER FORD",
@@ -3929,14 +3478,14 @@
             "anchors": []
           }
         ],
-        "Flumenpur River": [
+        "river_west": [
           {
             "id": "western-crossing",
             "name": "WESTERN CROSSING",
             "rooms": [
               {
-                "id": "caelum-road",
-                "name": "CAELUM ROAD",
+                "id": "west-road",
+                "name": "WEST ROAD",
                 "anchors": [
                   "packed earth",
                   "border marker",
@@ -4016,1184 +3565,966 @@
           }
         ]
       },
-      "settlement_sites": {
-        "Ulus-Gal": [
-          {
-            "id": "great-hall",
-            "name": "GREAT HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "horse-market",
-            "name": "HORSE MARKET",
-            "rooms": [
-              {
-                "id": "horse-yard",
-                "name": "HORSE YARD",
-                "anchors": []
-              },
-              {
-                "id": "tack-row",
-                "name": "TACK ROW",
-                "anchors": []
-              },
-              {
-                "id": "traders-camp",
-                "name": "TRADER'S CAMP",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "open-hearth-inn",
-            "name": "OPEN HEARTH INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "ulus-gal-forge",
-            "name": "ULUS-GAL FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "alchemists-shop",
-            "name": "ALCHEMIST'S SHOP",
-            "rooms": [
-              {
-                "id": "shop",
-                "name": "SHOP",
-                "anchors": []
-              },
-              {
-                "id": "work-room",
-                "name": "WORK ROOM",
-                "anchors": []
-              },
-              {
-                "id": "locked-store",
-                "name": "LOCKED STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "east-gate",
-            "name": "EAST GATE",
-            "rooms": [
-              {
-                "id": "gate-passage",
-                "name": "GATE PASSAGE",
-                "anchors": []
-              },
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "wall-walk",
-                "name": "WALL WALK",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Kharuk": [
-          {
-            "id": "road-hall",
-            "name": "ROAD HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "flumenpur-bridge",
-            "name": "FLUMENPUR BRIDGE",
-            "rooms": [
-              {
-                "id": "west-gate",
-                "name": "WEST GATE",
-                "anchors": []
-              },
-              {
-                "id": "bridge-deck",
-                "name": "BRIDGE DECK",
-                "anchors": []
-              },
-              {
-                "id": "east-gate",
-                "name": "EAST GATE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "west-road-inn",
-            "name": "WEST ROAD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "kharuk-forge",
-            "name": "KHARUK FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "caravan-yard",
-            "name": "CARAVAN YARD",
-            "rooms": [
-              {
-                "id": "wagon-yard",
-                "name": "WAGON YARD",
-                "anchors": []
-              },
-              {
-                "id": "cargo-store",
-                "name": "CARGO STORE",
-                "anchors": []
-              },
-              {
-                "id": "animal-pens",
-                "name": "ANIMAL PENS",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Temenur": [
-          {
-            "id": "ridge-hall",
-            "name": "RIDGE HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "herd-market",
-            "name": "HERD MARKET",
-            "rooms": [
-              {
-                "id": "sheep-pens",
-                "name": "SHEEP PENS",
-                "anchors": []
-              },
-              {
-                "id": "wool-row",
-                "name": "WOOL ROW",
-                "anchors": []
-              },
-              {
-                "id": "horse-yard",
-                "name": "HORSE YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "long-fire-inn",
-            "name": "LONG FIRE INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "temenur-forge",
-            "name": "TEMENUR FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "ridge-watch",
-            "name": "RIDGE WATCH",
-            "rooms": [
-              {
-                "id": "guard-room",
-                "name": "GUARD ROOM",
-                "anchors": []
-              },
-              {
-                "id": "signal-platform",
-                "name": "SIGNAL PLATFORM",
-                "anchors": []
-              },
-              {
-                "id": "upper-yard",
-                "name": "UPPER YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Ordubal": [
-          {
-            "id": "town-hall",
-            "name": "TOWN HALL",
-            "rooms": [
-              {
-                "id": "public-hall",
-                "name": "PUBLIC HALL",
-                "anchors": []
-              },
-              {
-                "id": "council-room",
-                "name": "COUNCIL ROOM",
-                "anchors": []
-              },
-              {
-                "id": "records-room",
-                "name": "RECORDS ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "great-cistern",
-            "name": "GREAT CISTERN",
-            "rooms": [
-              {
-                "id": "well-yard",
-                "name": "WELL YARD",
-                "anchors": []
-              },
-              {
-                "id": "pump-house",
-                "name": "PUMP HOUSE",
-                "anchors": []
-              },
-              {
-                "id": "water-store",
-                "name": "WATER STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "salt-road-inn",
-            "name": "SALT ROAD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              },
-              {
-                "id": "stable",
-                "name": "STABLE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "ordubal-forge",
-            "name": "ORDUBAL FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-shop",
-            "name": "GENERAL SHOP",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "salt-market",
-            "name": "SALT MARKET",
-            "rooms": [
-              {
-                "id": "salt-row",
-                "name": "SALT ROW",
-                "anchors": []
-              },
-              {
-                "id": "goat-yard",
-                "name": "GOAT YARD",
-                "anchors": []
-              },
-              {
-                "id": "cart-stand",
-                "name": "CART STAND",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated herd-road village": [
-          {
-            "id": "village-well",
-            "name": "VILLAGE WELL",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "water-troughs",
-                "name": "WATER TROUGHS",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "herd-inn",
-            "name": "HERD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "herd-yard",
-            "name": "HERD YARD",
-            "rooms": [
-              {
-                "id": "animal-pens",
-                "name": "ANIMAL PENS",
-                "anchors": []
-              },
-              {
-                "id": "tack-shed",
-                "name": "TACK SHED",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated river village": [
-          {
-            "id": "river-landing",
-            "name": "RIVER LANDING",
-            "rooms": [
-              {
-                "id": "timber-jetty",
-                "name": "TIMBER JETTY",
-                "anchors": []
-              },
-              {
-                "id": "ferry-yard",
-                "name": "FERRY YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "willow-inn",
-            "name": "WILLOW INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-house",
-            "name": "FISH HOUSE",
-            "rooms": [
-              {
-                "id": "cutting-room",
-                "name": "CUTTING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "net-store",
-                "name": "NET STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "Generated basin village": [
-          {
-            "id": "deep-well",
-            "name": "DEEP WELL",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "water-troughs",
-                "name": "WATER TROUGHS",
-                "anchors": []
-              },
-              {
-                "id": "shade-shelter",
-                "name": "SHADE SHELTER",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "basin-inn",
-            "name": "BASIN INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "goat-yard",
-            "name": "GOAT YARD",
-            "rooms": [
-              {
-                "id": "goat-pens",
-                "name": "GOAT PENS",
-                "anchors": []
-              },
-              {
-                "id": "feed-store",
-                "name": "FEED STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ]
-      },
-      "village_sites": {
-        "herd_road_village": [
-          {
-            "id": "village-well",
-            "name": "VILLAGE WELL",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "water-troughs",
-                "name": "WATER TROUGHS",
-                "anchors": []
-              },
-              {
-                "id": "notice-post",
-                "name": "NOTICE POST",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "herd-inn",
-            "name": "HERD INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "herd-yard",
-            "name": "HERD YARD",
-            "rooms": [
-              {
-                "id": "animal-pens",
-                "name": "ANIMAL PENS",
-                "anchors": []
-              },
-              {
-                "id": "tack-shed",
-                "name": "TACK SHED",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "tergal_river_village": [
-          {
-            "id": "river-landing",
-            "name": "RIVER LANDING",
-            "rooms": [
-              {
-                "id": "timber-jetty",
-                "name": "TIMBER JETTY",
-                "anchors": []
-              },
-              {
-                "id": "ferry-yard",
-                "name": "FERRY YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "willow-inn",
-            "name": "WILLOW INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "fish-house",
-            "name": "FISH HOUSE",
-            "rooms": [
-              {
-                "id": "cutting-room",
-                "name": "CUTTING ROOM",
-                "anchors": []
-              },
-              {
-                "id": "net-store",
-                "name": "NET STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ],
-        "tergal_basin_village": [
-          {
-            "id": "deep-well",
-            "name": "DEEP WELL",
-            "rooms": [
-              {
-                "id": "stone-well",
-                "name": "STONE WELL",
-                "anchors": []
-              },
-              {
-                "id": "water-troughs",
-                "name": "WATER TROUGHS",
-                "anchors": []
-              },
-              {
-                "id": "shade-shelter",
-                "name": "SHADE SHELTER",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "basin-inn",
-            "name": "BASIN INN",
-            "rooms": [
-              {
-                "id": "common-room",
-                "name": "COMMON ROOM",
-                "anchors": []
-              },
-              {
-                "id": "kitchen",
-                "name": "KITCHEN",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              },
-              {
-                "id": "guest-room",
-                "name": "GUEST ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "smiths-forge",
-            "name": "SMITH'S FORGE",
-            "rooms": [
-              {
-                "id": "forge",
-                "name": "FORGE",
-                "anchors": []
-              },
-              {
-                "id": "yard",
-                "name": "YARD",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "general-store",
-            "name": "GENERAL STORE",
-            "rooms": [
-              {
-                "id": "sales-room",
-                "name": "SALES ROOM",
-                "anchors": []
-              },
-              {
-                "id": "store-room",
-                "name": "STORE ROOM",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          },
-          {
-            "id": "goat-yard",
-            "name": "GOAT YARD",
-            "rooms": [
-              {
-                "id": "goat-pens",
-                "name": "GOAT PENS",
-                "anchors": []
-              },
-              {
-                "id": "feed-store",
-                "name": "FEED STORE",
-                "anchors": []
-              }
-            ],
-            "anchors": []
-          }
-        ]
-      },
-      "village_descriptions": {
-        "herd_road_village": "A herding village stands beside a well on Khuratal Steppe. Corrals surround its low houses.",
-        "tergal_river_village": "A fishing and ferry village stands in a willow bend of the Kharun River.",
-        "tergal_basin_village": "A small village stands beside a deep well in Namak Basin. Salt grass and goat pens surround it."
+      "settlement_templates": {
+        "capital": {
+          "tier": "capital",
+          "fits": [],
+          "tags": [
+            "capital",
+            "market",
+            "road",
+            "livestock"
+          ],
+          "description": "The walled seat of the high chief stands on a low rise above the grass. Broad roads run from its great hall to the horse market and the east gate.",
+          "sites": [
+            {
+              "id": "great-hall",
+              "name": "GREAT HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "horse-market",
+              "name": "HORSE MARKET",
+              "rooms": [
+                {
+                  "id": "horse-yard",
+                  "name": "HORSE YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "tack-row",
+                  "name": "TACK ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "traders-camp",
+                  "name": "TRADER'S CAMP",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "open-hearth-inn",
+              "name": "OPEN HEARTH INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-forge",
+              "name": "TOWN FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "locked-store",
+                  "name": "LOCKED STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "east-gate",
+              "name": "EAST GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "road_town": {
+          "tier": "town",
+          "fits": [
+            "river"
+          ],
+          "tags": [
+            "town",
+            "river",
+            "crossing",
+            "trade",
+            "road"
+          ],
+          "description": "A road town guards the river crossing. Traders camp outside its wall.",
+          "sites": [
+            {
+              "id": "road-hall",
+              "name": "ROAD HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "river-bridge",
+              "name": "RIVER BRIDGE",
+              "rooms": [
+                {
+                  "id": "west-gate",
+                  "name": "WEST GATE",
+                  "anchors": []
+                },
+                {
+                  "id": "bridge-deck",
+                  "name": "BRIDGE DECK",
+                  "anchors": []
+                },
+                {
+                  "id": "east-gate",
+                  "name": "EAST GATE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "road-inn",
+              "name": "ROAD INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-forge",
+              "name": "TOWN FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "caravan-yard",
+              "name": "CARAVAN YARD",
+              "rooms": [
+                {
+                  "id": "wagon-yard",
+                  "name": "WAGON YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "cargo-store",
+                  "name": "CARGO STORE",
+                  "anchors": []
+                },
+                {
+                  "id": "animal-pens",
+                  "name": "ANIMAL PENS",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "ridge_town": {
+          "tier": "town",
+          "fits": [
+            "mountain-foot"
+          ],
+          "tags": [
+            "town",
+            "hills",
+            "pasture",
+            "livestock"
+          ],
+          "description": "A stone town stands below the ridge. Herd pens and wool stores fill its lower quarter.",
+          "sites": [
+            {
+              "id": "ridge-hall",
+              "name": "RIDGE HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "herd-market",
+              "name": "HERD MARKET",
+              "rooms": [
+                {
+                  "id": "sheep-pens",
+                  "name": "SHEEP PENS",
+                  "anchors": []
+                },
+                {
+                  "id": "wool-row",
+                  "name": "WOOL ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "horse-yard",
+                  "name": "HORSE YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "long-fire-inn",
+              "name": "LONG FIRE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-forge",
+              "name": "TOWN FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "ridge-watch",
+              "name": "RIDGE WATCH",
+              "rooms": [
+                {
+                  "id": "guard-room",
+                  "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "signal-platform",
+                  "name": "SIGNAL PLATFORM",
+                  "anchors": []
+                },
+                {
+                  "id": "upper-yard",
+                  "name": "UPPER YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "well_town": {
+          "tier": "town",
+          "fits": [],
+          "tags": [
+            "town",
+            "basin",
+            "salt",
+            "livestock",
+            "market"
+          ],
+          "description": "A low-walled town stands beside a deep well on the open grass. Salt and livestock caravans meet in its yard.",
+          "sites": [
+            {
+              "id": "town-hall",
+              "name": "TOWN HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "great-cistern",
+              "name": "GREAT CISTERN",
+              "rooms": [
+                {
+                  "id": "well-yard",
+                  "name": "WELL YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "pump-house",
+                  "name": "PUMP HOUSE",
+                  "anchors": []
+                },
+                {
+                  "id": "water-store",
+                  "name": "WATER STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "salt-road-inn",
+              "name": "SALT ROAD INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "stable",
+                  "name": "STABLE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "town-forge",
+              "name": "TOWN FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "salt-market",
+              "name": "SALT MARKET",
+              "rooms": [
+                {
+                  "id": "salt-row",
+                  "name": "SALT ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "goat-yard",
+                  "name": "GOAT YARD",
+                  "anchors": []
+                },
+                {
+                  "id": "cart-stand",
+                  "name": "CART STAND",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "herd_village": {
+          "tier": "village",
+          "fits": [],
+          "tags": [
+            "village",
+            "prairie",
+            "pasture",
+            "livestock"
+          ],
+          "description": "A herding village stands beside a well on the open grass. Corrals surround its low houses.",
+          "sites": [
+            {
+              "id": "village-well",
+              "name": "VILLAGE WELL",
+              "rooms": [
+                {
+                  "id": "stone-well",
+                  "name": "STONE WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "water-troughs",
+                  "name": "WATER TROUGHS",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "herd-inn",
+              "name": "HERD INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-forge",
+              "name": "SMITH'S FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "herd-yard",
+              "name": "HERD YARD",
+              "rooms": [
+                {
+                  "id": "animal-pens",
+                  "name": "ANIMAL PENS",
+                  "anchors": []
+                },
+                {
+                  "id": "tack-shed",
+                  "name": "TACK SHED",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "river_village": {
+          "tier": "village",
+          "fits": [
+            "river"
+          ],
+          "tags": [
+            "village",
+            "river",
+            "fishing",
+            "crossing"
+          ],
+          "description": "A fishing and ferry village stands in a willow bend of the river.",
+          "sites": [
+            {
+              "id": "river-landing",
+              "name": "RIVER LANDING",
+              "rooms": [
+                {
+                  "id": "timber-jetty",
+                  "name": "TIMBER JETTY",
+                  "anchors": []
+                },
+                {
+                  "id": "ferry-yard",
+                  "name": "FERRY YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "willow-inn",
+              "name": "WILLOW INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-forge",
+              "name": "SMITH'S FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fish-house",
+              "name": "FISH HOUSE",
+              "rooms": [
+                {
+                  "id": "cutting-room",
+                  "name": "CUTTING ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "net-store",
+                  "name": "NET STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "basin_village": {
+          "tier": "village",
+          "fits": [],
+          "tags": [
+            "village",
+            "basin",
+            "salt",
+            "livestock"
+          ],
+          "description": "A small village stands beside a deep well in a dry hollow. Salt grass and goat pens surround it.",
+          "sites": [
+            {
+              "id": "deep-well",
+              "name": "DEEP WELL",
+              "rooms": [
+                {
+                  "id": "stone-well",
+                  "name": "STONE WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "water-troughs",
+                  "name": "WATER TROUGHS",
+                  "anchors": []
+                },
+                {
+                  "id": "shade-shelter",
+                  "name": "SHADE SHELTER",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "basin-inn",
+              "name": "BASIN INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-forge",
+              "name": "SMITH'S FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "goat-yard",
+              "name": "GOAT YARD",
+              "rooms": [
+                {
+                  "id": "goat-pens",
+                  "name": "GOAT PENS",
+                  "anchors": []
+                },
+                {
+                  "id": "feed-store",
+                  "name": "FEED STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        }
       }
     }
   }

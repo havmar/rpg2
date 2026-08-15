@@ -22,11 +22,11 @@ so the one link it gets is to the board it does not hold.
 
 > new game
 
-You are Delg: a dwarf, 35, a long way from the mountain. You can throw fire; nobody taught you how. Your coat is worn through at the elbows and your purse is nearly empty. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
+You are Corvin: a Mortellarian, 35, a long way from anywhere that knows the name. You can throw fire; nobody taught you how. Your coat is worn through at the elbows and your purse is nearly empty. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
 
-Isolde walks beside you: human, once a scholar. She throws ice when she is angry. She has watched your back for years.
+Isolde walks beside you: a woman out of Firascir, once a scholar. She throws ice when she is angry. She has watched your back for years.
 
-You are in Ventoro, a village of Mortellaria. Mud streets, vine country, one well. The morning market is setting up around a dry fountain.
+You are in Ventoro, a village of Mortellaria, on R12C11 -- vine country under the hills. Mud streets, one well. The morning market is setting up around a dry fountain.
 
 Rosa the well-keeper stops you there. The rope is cut, the bucket is gone, and something knocks in the shaft at night. The village wants its well back. She wants the thing dead.
 
@@ -72,26 +72,26 @@ breaks when beaten
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/<branch>/ui/fight-short.txt)
 
-Delg's fire kills the first rat on the cistern rim. The second bites Isolde's forearm before her rime bolt kills it.
+Corvin's fire kills the first rat on the cistern rim. The second bites Isolde's forearm before her rime bolt kills it.
 
 ```
 The party catches its breath (+1 STA)
-Delg +35 XP (encounter) [35/100]
+Corvin +35 XP (encounter) [35/100]
 Isolde +35 XP (encounter) [35/100]
 
 *** QUEST COMPLETE:
 The Thing in the Well.
 Reward: 18 gold. ***
-Delg talks the pay up:
+Corvin talks the pay up:
 +2g (20g in all).
 The party purse holds 20 gold.
-Delg +53 XP (quest) [88/100]
+Corvin +53 XP (quest) [88/100]
 Isolde +53 XP (quest) [88/100]
 Isolde: satisfaction 7 -> 8/10
 (a job paid out)
 
 -- the party --
-Delg: Unhurt STA 4/6 Power 5/5
+Corvin: Unhurt STA 4/6 Power 5/5
  (healing x1)
 Isolde: Scratched STA 4/6 Power 5/5
  - a bitten forearm, torn (sev 1)

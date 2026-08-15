@@ -584,16 +584,6 @@ DELIVERY_TEMPLATES: list[dict] = [
 
 HOMELANDS = tuple(LAND_SPECS)
 
-# Settlement name fragments per country (worldgen flavor; ASCII only).
-NAME_PARTS = {
-    "firascir": (("Alder", "King's", "Marsh", "Stone", "Fair", "Oak"),
-                 ("mere", "ford", "field", "bridge", "haven", "market")),
-    "mortellaria": (("Alta", "Castel", "Monte", "Porto", "San", "Vale"),
-                    ("vera", "mara", "doro", "vento", "lba", "sero")),
-    "tergal": (("Iron", "Red", "Ash", "Storm", "Black", "High"),
-               ("hold", "camp", "ridge", "crossing", "well", "market")),
-}
-
 SETTLEMENT_KINDS = {         # (quest slots, level band)
     "capital": (5, (1, LEVEL_CAP)),
     "town":    (4, (1, 14)),
@@ -1280,18 +1270,6 @@ def found_settlement(world: dict, polity: str, rng: random.Random, *,
         return None
     cast_service_providers(world, area, rng)
     return area
-
-
-def _settlement_name(homeland: str, rng: random.Random, used: set[str]) -> str:
-    pre, suf = NAME_PARTS[homeland]
-    for _ in range(50):
-        name = rng.choice(pre) + rng.choice(suf)
-        if name not in used:
-            used.add(name)
-            return name
-    name = rng.choice(pre) + rng.choice(suf) + " II"
-    used.add(name)
-    return name
 
 
 def next_quest_id(world: dict) -> str:
