@@ -4384,3 +4384,116 @@ The contract suite pins map structure, historical overlays, capital flags,
 settlement density, name exhaustion, uniform-start reachability, lazy
 persistence and derived homelands. The full 699-test suite passes. No combat,
 progression or economy constant moved, so no balance benchmark was rerun.
+
+## 2026-08-15 (F) — Grid Navigation and Map UI shipped
+
+The party now walks the map. Day-scale movement is a walk along cardinal
+Tile edges: east/west one day, north/south two, plus one day if either end
+is a mountain. River is ordinary inhabited land at this scale and carries no
+surcharge, sea carries the directional base and nothing more, and crossing a
+country border costs nothing. The mountain rule is deliberately "either
+end", which is what makes the whole cost model symmetric — descending a pass
+costs exactly what climbing it cost — and shortest-path distance is
+therefore symmetric by construction rather than by assertion.
+
+The pathfinder is a deterministic Dijkstra whose frontier is ordered by
+(cost, row, column) with strict relaxation, so equal-cost routes settle on
+the northernmost-then-westernmost one with no hash or dict order anywhere in
+the answer. It lives in `places.py` and takes **Tile IDs, never a world**:
+the map is authored and immutable, so distance is geography, not save state,
+and single-source results are memoized per origin across every campaign in
+the process. Sea is navigable, so the frame is fully connected and all three
+small landmasses — the eleven-Tile northern island, Dublin's two-Tile island
+and the lone islet — are reachable without ports, ships or passage prices.
+
+`travel north|south|east|west` is the primitive; `travel R09C18` and
+`travel NAME` (a known settlement, or a historical city, which is also its
+Tile's name) route by the cheapest road and walk it edge by edge. An edge is
+atomic: its days pass as camp nights, the world clock and boards run, the
+party is PLACED in the Tile it reached, and only then does the road roll.
+That order is the whole rework. A fight or a sighting stops a route where it
+stands, and the party keeps the ground it walked.
+
+### Calls the spec left open, and how they were settled
+
+- **What counts as a "sea edge".** The spec says sea edges roll no combat
+  but does not say whether that is decided by the destination or by either
+  endpoint. Settled as **either endpoint**: a passage is a passage in both
+  directions, and stepping ashore off a boat is not a road arrival. This
+  keeps the encounter rule as symmetric as the cost rule.
+- **Where tolls and weather detours are charged.** Per **edge**, not per
+  `travel` command. Charging per command would make ten single steps cost
+  ten tolls where one long route over the same ground cost one, which is
+  both gameable and untrue. The old per-day toll scale is roughly preserved
+  because an edge is one to three days.
+- **The paid-crossing marker is deleted, not migrated.** `road_paid` existed
+  only because an interrupted trip bounced the party back to its origin, so
+  the same crossing had to be walked twice and could not honestly be charged
+  twice. With mid-route position the premise is gone: no edge is ever walked
+  twice, so nothing is ever charged twice. Its save keys went with it, and
+  `test_worldsim.ThePaidCrossing` was replaced by `TheRoadCharges`, which
+  pins the new contract instead.
+- **Where the arrival ceremony runs.** Once, where the party STOPS — not at
+  every Tile a route passes through. News, prices, punishment, hell's
+  collections and the delivery hand-off at each of ten intermediate
+  countryside Tiles would be noise, and "arrival" plainly means the end of
+  the journey. Reveal, recovery and the road roll stay per edge.
+- **`explore` after `discover_area`.** The Session-2 country-wide "next
+  undiscovered Area" sweep is deleted. Exploring is now going afield in
+  THIS Tile's countryside; from a settlement the party first walks out into
+  the Tile's natural Area, which is free because it is the same map cell.
+  Three Sites to a Tile, then the answer is to travel for fresh ground.
+- **Sibling Areas.** `go NAME` gained the free step between known Areas of
+  one Tile, and `travel NAME` for a place on the current Tile does the same
+  and says so. A 30x60 km cell holding a town, its villages and the
+  countryside between them cannot charge a day to cross itself.
+- **Open water is not wilderness.** Hunting is refused there, a night camped
+  at sea draws no visitor, and `explore` rolls no wilds encounter — but the
+  weather, exposure and overnight recovery are entirely ordinary.
+
+### What the distance change moved
+
+Everything that used to ask "same land or another?" now asks the map:
+`quests.return_leg_days`, `build_delivery_quest`, `session._cast_teleport`
+and the hell-task road estimate in `cmd_take`. `TRAVEL_DAYS_IN_LAND` and
+`TRAVEL_DAYS_CROSS` are deleted.
+
+**This is a real balance movement in one place and it should be looked at.**
+Cross-country deliveries were priced at a flat two days: 40 g and 50 XP.
+Measured over eight fresh seeds they are now 15–39 one-way days, paying
+300–780 g and 375–975 XP with windows of 37–85 days. The per-day rates
+(`DELIVERY_GOLD_PER_DAY` 20, `DELIVERY_XP_PER_DAY` 25) were not touched —
+only the distance became honest, and a courier run is now a genuine career
+choice rather than a chore. Local Quest Geography owns re-pricing deliveries
+by unrestricted cross-country shortest path and is the place to confirm or
+adjust the scale. Teleport moved the same way: its Power cost is now real
+path days, which puts the far side of Europe out of reach of any pool, as
+the spec intended. The career bench has no travel layer, so nothing it
+measures moved and no benchmark was rerun.
+
+### The map page
+
+`map` and `ui/map.txt` draw the whole 30x18 grid under a two-line numeric
+column axis with two-digit row labels — 33 characters, inside the 40-column
+rule, so the map is never windowed. Overlay priority is strict: `@` party,
+`!` an active quest objective, `C` a known capital, `T` any other known
+town, `v` known village(s) with no known town, then the authored terrain.
+No border characters are drawn through the grid; the fixed partition rule
+and a by-country legend (historical cities first) carry political geography.
+Below the grid sits the current Tile in detail — coordinate, real name,
+country, biome, derived ground tags, every known Area with its job count —
+the country's state diff, and the taken-quest list with shortest-path days
+to each job's next mark. The old list-shaped Land/Area display is gone.
+`look` was rebuilt to match: it leads with the TILE, then the Area on it,
+then the sibling Areas and the four roads out with their day costs.
+
+`_cast_teleport` also had a latent bug from the previous session: it matched
+settlements by key substring, and tile-scoped Area keys (`tile/r09/c18/...`)
+no longer contain the settlement's name, so no destination could ever be
+found by name. It now matches name or key.
+
+The new `test_navigation.py` pins the edge cost in every case, reciprocity
+across all 540 Tiles, path symmetry, five representative distances, the
+interrupted route's position across a save, the silent sea, teleport's real
+price and the map page's overlay priority, ASCII and 40-column fit. The full
+suite is 730 tests and green.

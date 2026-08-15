@@ -39,8 +39,10 @@ and is not needed for play.
   purpose: it is committed, so the playthrough is stored in the repo with
   everything else. Every save also rewrites the standing **UI pages** in
   **`ui/`**: **`ui/party.txt`** (the full party info sheet),
-  **`ui/map.txt`** (the macro world map -- lands and known areas, with a
-  summary of taken-quest sites) and **`ui/history.txt`** (the campaign
+  **`ui/map.txt`** (the drawn 30x18 world grid with the party and its work
+  marked on it, the current Tile in detail, a by-country legend of every
+  known settlement, and a summary of taken-quest sites with the road days
+  to each) and **`ui/history.txt`** (the campaign
   record -- jobs done, the remarkable events, the tally of sin, hell's
   suggestions). Combat also rewrites **`ui/fight-short.txt`** (the
   displayed last fight) and **`ui/fight-detailed.txt`** (its full mechanics
@@ -48,8 +50,9 @@ and is not needed for play.
   **`ui/scene.md`** (the DM message itself, drafted and reviewed there
   before it is said in chat -- see The scene page below) and
   **`ui/transcript.md`** (the append-only play log behind it). A further
-  page, **`ui/minimap.txt`**, is planned for local Site/Room detail but is
-  not built yet; `look` is the local display meanwhile. **End EVERY DM
+  page, **`ui/minimap.txt`**, for local Site/Room detail stays out of the
+  Europe MVP: the drawn macro map plus `look`'s Tile-and-Area breadcrumb
+  is enough. **End EVERY DM
   message with `python session.py sheet`**, which commits every existing
   page -- one commit per message, so the player can follow the playthrough
   as message-sized diffs. Unchanged pages are a no-op; run it anyway. (The
@@ -168,9 +171,13 @@ to another area -- is the player's core decision:
   counts, the war's status, and the party's position. `look` shows the
   stored description, salient known state, sites/rooms, services, links,
   and visible Room contents; `go NAME` enters one and `back` moves one
-  local level outward. `look --dm` is the full fact record, including
-  seeds, hidden facts, occupants, and quest attachments. Local moves cost
-  no day. `travel AREA` is the day-scale move.
+  local level outward. `look` leads with the TILE (coordinate, country,
+  biome), then the Area on it, then the sibling Areas sharing that Tile and
+  the four roads out with their day costs. `look --dm` is the full fact
+  record, including seeds, hidden facts, occupants, and quest attachments.
+  Local moves cost no day -- and since the grid shipped that includes
+  crossing between Areas of the SAME Tile (`go NAME`). `travel` is the
+  day-scale move, and it is what leaves the Tile.
 - **There is NO quest board in the fiction: quests come from PEOPLE.**
   `board` is YOUR inventory readout -- each row shows the job, its level,
   pay, and WHOSE job it is (every quest has a generated giver: name, role,
@@ -276,14 +283,27 @@ to another area -- is the player's core decision:
   ESCAPED and the job sits unfinished until the runner is killed. That is
   the moment to offer `pursue` (below) -- and if the trail goes cold, the
   loose end is a hook you can bring back rather than a dead job.
-- `travel AREA` moves them: 1 day inside a land, 2 days to another land.
-  Travel days are camp nights (full overnight recovery -- travel heals) and
-  each trip risks ONE road encounter (~15%/day compounded; see the wilds
-  section below). The encounter is rolled ON THE ROAD, before the party
-  reaches the gates, off the land they set OUT from: a fight there
-  interrupts the trip -- the days are spent, the party is still at the
-  origin, and `travel` again once it is settled. Narrate it as an event on
-  the road, not at the destination.
+- `travel` walks the map GRID. `travel north|south|east|west` is one Tile
+  edge -- 1 day east/west, 2 north/south, +1 if either end is mountain;
+  river and sea cost the plain base. `travel R09C18` or `travel Prague`
+  routes there by the cheapest road and walks it edge by edge. Travel days
+  are camp nights (full overnight recovery -- travel heals) and each LAND
+  edge risks a road encounter (~15%/day compounded; see the wilds section
+  below), rolled at the Tile just REACHED, off THAT country's pool. A fight
+  or a sighting stops the route right there: the party keeps the ground it
+  walked, and `travel` again once it is settled. Narrate the fight where it
+  happened -- on that Tile's ground, not back at the origin and not at the
+  final destination.
+- **The sea is open road.** Any coast Tile steps onto water: no port, no
+  ship, no passage price. A sea edge costs its days and its weather and
+  rolls NO encounter -- narrate the crossing as a passage (the script gives
+  you a line), not as a sailing scene with mechanics behind it. Hunting and
+  camp visitors are off out there too.
+- **`map` is now the whole of Europe**, drawn 30x18 with numeric axes: `@`
+  the party, `!` a job's next mark, `C` a known capital, `T` a known town,
+  `v` known village(s), then terrain (`. # ^ ~`). Below it, the current
+  Tile in detail and a by-country legend of everything known. Show it when
+  the player asks where things are; don't read it aloud.
 - `show QID` details one quest: description, sites, and what holds each
   room -- a DM readout. What the player hears about the road ahead is a
   COUNT of rooms and sites, never the rosters (see Narration style).
@@ -560,12 +580,13 @@ direct mechanical effects.
   torch-bright party gets ambushed more; a high-MIND one sees trouble first
   -- worth one plain mention the first time it matters, not a recurring
   lecture.
-- `explore` spends a day on finite discovery. From a settlement it reveals
-  the next existing natural Area in that Land's stable order. Inside a
-  known natural Area it materializes the next one of its three ordinary
-  Sites, including permanent Rooms and contents. Each pays discovery XP
-  once; after all three Sites, it says nothing new was found. It camps
-  rough overnight and runs the usual higher encounter risk (~30%).
+- `explore` spends a day afield in THIS Tile's countryside -- from a
+  settlement the party walks out into it first (free; same map cell). It
+  materializes the next one of that natural Area's three ordinary Sites,
+  including permanent Rooms and contents. Each pays discovery XP once;
+  after all three, it says nothing new was found and the answer is to
+  `travel` for fresh ground. It camps rough overnight and runs the usual
+  higher encounter risk (~30%) -- none at sea.
 - `house` is the ordinary-interior materializer. Call it when play needs a
   resident's home in the current settlement: it creates and enters one
   persistent culture- and livelihood-appropriate house. Do not call it just
@@ -574,7 +595,8 @@ direct mechanical effects.
   fire, recovery, and similar changes rather than rewriting place identity.
 - `hunt` is the always-available way to grind: an immediate encounter
   at-or-below the party's level (their chosen prey), paying wild rates
-  (below board work on purpose) plus normal loot rolls. When the player
+  (below board work on purpose) plus normal loot rolls. It is refused on
+  open water. When the player
   wants gold or XP between quests, this is the sanctioned loop -- no day
   cost, but no free recovery either. NOTE: what roams a country comes from
   its country/culture template pools -- in some lands the cheapest prey

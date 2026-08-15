@@ -56,7 +56,7 @@ from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
     materialize_settlement, stable_seed, land_homeland, settlement_tier,
-    add_state, replace_state,
+    add_state, replace_state, path_days,
 )
 import worldsim                  # the world layer (2026-08-09, the economy
                                  # floor): the board asks it how big it is,
@@ -644,11 +644,13 @@ def stamp_quest_clock(quest: dict, day: int, rng: random.Random,
 
 
 def return_leg_days(world: dict, quest: dict) -> int:
-    """The road home: travel days from the quest's LAST site's area back to
-    the giver's settlement (the delivery kind's round-trip precedent). Added
-    to the window at posting since the turn-in stage (2026-08-08) put the
-    return leg inside the clock -- the windows were tuned for instant
-    completion, and this keeps the bands roughly neutral."""
+    """The road home: shortest-path days from the quest's LAST site's Tile
+    back to the giver's settlement (the delivery kind's round-trip
+    precedent). Added to the window at posting since the turn-in stage
+    (2026-08-08) put the return leg inside the clock -- the windows were
+    tuned for instant completion, and this keeps the bands roughly neutral.
+    Since the grid shipped (2026-08-15) the leg is priced off the real map
+    rather than off a flat same-land/cross-land constant."""
     sites = quest.get("sites")
     if not sites:
         return 0
@@ -657,9 +659,7 @@ def return_leg_days(world: dict, quest: dict) -> int:
     dest = world["areas"][last["area"]]
     if dest["key"] == origin["key"]:
         return 0
-    if dest["land"] == origin["land"]:
-        return TRAVEL_DAYS_IN_LAND
-    return TRAVEL_DAYS_CROSS
+    return path_days(dest["tile"], origin["tile"])
 
 
 def quest_days_left(quest: dict, day: int) -> int | None:
@@ -1062,8 +1062,7 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
     the road IS the pay grade here, not a site level (`level` stays 0: no
     rooms, no threat math; the guaranteed interception rolls off the road's
     own party-independent table like any travel event)."""
-    days = (TRAVEL_DAYS_IN_LAND if origin["land"] == dest["land"]
-            else TRAVEL_DAYS_CROSS)
+    days = path_days(origin["tile"], dest["tile"])
     return {
         "id": qid,
         "kind": "delivery",
@@ -1613,25 +1612,24 @@ def _post_delivery(world: dict, rng: random.Random,
 
 
 # --------------------------------------------------------------------------- #
-# The world map & navigation layer (2026-07-09)
+# The world map & navigation layer (2026-07-09; the grid 2026-08-15)
 # --------------------------------------------------------------------------- #
-# The map is a LIST, not a grid: each homeland's LAND holds its settlements and
-# its wilderness -- no coordinates. Travel inside a land takes
-# TRAVEL_DAYS_IN_LAND day(s), to another land TRAVEL_DAYS_CROSS; every travel
-# day is a camp night (the existing overnight recovery, so healing en route
-# falls out for free) with a chance of a road encounter. The road's threat
-# table is party-INDEPENDENT (the OSR stance: the world does not scale to
-# you): any level can appear, weighted hard toward the low end
-# (WILD_LEVEL_DECAY) -- the rare high tail is how the world above the
+# The map is a GRID: the fixed 30x18 Europe in resources/europe_map.txt, 540
+# Tiles wide. `places.py` owns the frame, the symmetric edge cost and the
+# deterministic shortest path (places.edge_days / path_days /
+# shortest_path); what lives HERE is what the road DOES to a party walking
+# it. Every travel day is a camp night (the existing overnight recovery, so
+# healing en route falls out for free) with a chance of a road encounter.
+# The road's threat table is party-INDEPENDENT (the OSR stance: the world
+# does not scale to you): any level can appear, weighted hard toward the low
+# end (WILD_LEVEL_DECAY) -- the rare high tail is how the world above the
 # party's level stays real. An encounter well above the party is usually
 # SPOTTED at range (avoid it or engage it: the player's call); an
 # AMBUSH_CHANCE of the time it finds them first, and what's left is the
 # pause-and-retreat machinery. Hunting is the exception to the OSR table:
 # the party CHOOSES its prey, so the hunt rolls relative to its level.
 
-TRAVEL_DAYS_IN_LAND = 1      # settlement to settlement inside one land
-TRAVEL_DAYS_CROSS = 2        # crossing into another homeland's land
-TRAVEL_ENCOUNTER_CHANCE = 0.15   # per travel day (compounded over a trip)
+TRAVEL_ENCOUNTER_CHANCE = 0.15   # per travel day (compounded over a leg)
 EXPLORE_ENCOUNTER_CHANCE = 0.30  # the explore move beats more bushes
 EXPLORE_XP = 15                  # discovering a new place pays this flat
 WILD_LEVEL_DECAY = 0.75      # P(road encounter is level L) ~ DECAY**L

@@ -166,14 +166,22 @@ class PlaceGenerationTests(unittest.TestCase):
         self.assertNotEqual((population(self.world), self.world["start_slot"]),
                             (population(other), other["start_slot"]))
 
-    def test_discovery_reveals_existing_area(self) -> None:
+    def test_discovery_reveals_the_tile_that_was_already_there(self) -> None:
+        """Entering a Tile reveals its natural Area and materializes its
+        settlement slots -- it never invents an Area (2026-08-15: this is
+        the whole of discovery now that `discover_area`'s country-wide
+        sweep is gone with the list-shaped world)."""
         world = places.create_geography(11)
-        before = set(world["areas"])
-        found = places.discover_area(world, "firascir", day=2)
-        self.assertIsNotNone(found)
-        self.assertEqual(before, set(world["areas"]))
-        self.assertTrue(found["known"])
-        self.assertEqual(found["discovered_day"], 2)
+        tile = next(t for t in world["tiles"].values()
+                    if not t["visited"] and t["settlement_slots"])
+        natural = world["areas"][tile["natural_area"]]
+        self.assertFalse(natural["known"])
+        before = len(world["areas"])
+        found = places.reveal_tile(world, tile, day=2)
+        self.assertTrue(natural["known"])
+        self.assertEqual(natural["discovered_day"], 2)
+        self.assertEqual(len(found), len(tile["settlement_slots"]))
+        self.assertEqual(len(world["areas"]), before + len(found))
 
     def test_natural_area_yields_three_distinct_persistent_sites(self) -> None:
         world = places.create_geography(12)
