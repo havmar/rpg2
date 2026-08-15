@@ -176,9 +176,9 @@ a pointer: what the file is, how it's run, where its docs are.
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap and build contract**. Since the
   2026-08-15 reset it contains only the unbuilt fixed Europe-map rework.
-  Human World Contraction, Fixed Europe Geography and Grid Navigation and
-  Map UI have shipped; the remaining sessions are Local Quest Geography
-  and Europe MVP Closure. Name the session when triggering
+  Human World Contraction, Fixed Europe Geography, Grid Navigation and
+  Map UI and Local Quest Geography have shipped; the one remaining session
+  is Europe MVP Closure. Name the session when triggering
   work; do not refer to a rung number. **Nothing implemented lives there**:
   when a session ships, delete its completed contract and write the result in
   the permanent docs and designlog as described above.
@@ -246,6 +246,14 @@ a pointer: what the file is, how it's run, where its docs are.
   consumes an existing fitting slot (wrapped whole by
   `quests.found_settlement`); `reveal_tile` reveals the natural Area and all
   settlement slots without changing the seeded census.
+  **Sparse ordinary boards** (2026-08-15, Local Quest Geography;
+  rules.md's Quest System, "Sparse boards"): `BOARD_ACTIVE_CHANCE`
+  (capital 1.0 / town 0.6 / village 0.25) and `board_active_roll` — a
+  stable derived roll off the SLOT's own identity, stamped onto the Area as
+  `board_active` at `materialize_slot`, so the answer is the same whenever
+  the slot materializes and survives the save. `create_geography` forces the
+  START settlement active after `reveal_tile`. The flag gates ordinary
+  capacity only (`quests.board_slots`); places.py itself never reads it.
   **Grid navigation and the map render** (2026-08-15, rules.md's World &
   Navigation add-on): the whole distance model lives here and takes TILE IDs,
   never a world — the map is authored and immutable, so an edge's cost is a
@@ -273,6 +281,33 @@ a pointer: what the file is, how it's run, where its docs are.
   country template records, required settlement Site/Room skeletons, natural
   three-Site inventories, and settlement livelihoods. Fixed Tile geography,
   historical settlements and country/tier name pools live in `places.py`.
+- `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
+  (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
+  activity roll's measured 100/60/25 over 9000 slot identities, its
+  stability per slot and across a late materialization and the save, every
+  capital active, the start forced active (and the assertion that the
+  override is doing real work), and what a shut board does — no ordinary
+  capacity, no floor reaching it, no refill, nothing at worldgen, a
+  forecast of nothing. *The forced families*: the flag reader, then a world
+  card's job, a courier run, hell's assignment, a forged job and a story
+  wave each reaching a shut settlement without opening it, plus the two
+  capacity contracts (forced work eats no ordinary slot; it still shows in
+  the forecast). *The rumor radius* (seed 19: Shepham, with Dublin two days
+  off carrying work and London three carrying none — the populated group
+  and the empty one in one world): who is in earshot, the unknown
+  settlement that is not, the stable order, the grouped readout and its
+  singular `1 DAY AWAY`, the omitted empty group, the HERE group never
+  repeated as a rumor, the refresh scope in both directions, and
+  `board all` observing without widening it. *The target radius*: a
+  twelve-seed sweep and a refilled board, compatibility never traded for
+  the radius, the origin-Tile fallback, the stable choice, `radius=None`
+  reaching past it, and a dark job keeping the ordinary radius by choice.
+  *The path-priced clock*: local, one-Tile, mountain, sea and multi-Site
+  routes, the posted window carrying the road, and the deliveries'
+  cross-country pay and round-trip window. *The opening*: always posted at
+  an active board, always inside the radius, always walkable inside its own
+  window.
+  `python -m unittest -v test_quest_geography.py`.
 - `test_places.py` — **the fixed-geography and place-generation contract suite**:
   map dimensions/glyph/country/component census, Tile/Area hierarchy,
   historical towns/capitals, slot density, IDs/names, deterministic seeds,
@@ -589,7 +624,10 @@ a pointer: what the file is, how it's run, where its docs are.
   save round-trip, plus the driven-off banner tag; `pursue`'s warm gate,
   one-attempt rule, both outcomes, wild pay, and the staged cold-trail
   valve; the proof flag from template through the work-done gate to the
-  gate lifting on the kill; and the turn-in lifecycle — the three-way
+  gate lifting on the kill; the road inside the window (2026-08-15: the
+  ordered route out through every Site and home, the one-Site job buying
+  twice its distance, and the two-Site detour a final-leg price would miss);
+  and the turn-in lifecycle — the three-way
   split summing exactly, work-done vs turn-in payment, the origin gate and
   `--here`, banding by the TURN-IN day, the return leg in the window,
   lost-after-done keeping the 80% and firing no rumor, and the four
@@ -711,11 +749,34 @@ a pointer: what the file is, how it's run, where its docs are.
   `worldsim.open_world` FIRST, before the opening postings, instead of
   last. Since 2026-08-15 (the grid) `TRAVEL_DAYS_IN_LAND` /
   `TRAVEL_DAYS_CROSS` are DELETED and both readers that used them —
-  `return_leg_days` and `build_delivery_quest` — take `places.path_days`
-  between the two Tiles instead. Deliveries therefore moved a long way:
+  `return_leg_days` (now `route_days`) and `build_delivery_quest` — take
+  `places.path_days` between the two Tiles instead. Deliveries therefore moved a long way:
   15–39 one-way days, 300–780 g and 375–975 XP against the old flat 2 days
   / 40 g / 50 XP. The per-day rates are untouched; only the distance became
-  honest. `python quests.py
+  honest.
+  **LOCAL QUEST GEOGRAPHY** (2026-08-15) then made work a local fact, and
+  this file owns all four halves of it. *The radii*: `QUEST_RUMOR_DAYS` /
+  `ORDINARY_TARGET_DAYS`, both 3, both priced in `places.path_days`.
+  *The rumor radius*: `nearby_settlements` (known, materialized, within the
+  radius of a Tile, ordered nearest-then-Tile-then-key — one Dijkstra per
+  origin, since `path_days` memoizes its source) and `rumor_lines` (the
+  readout grouped `1/2/3 DAY(S) AWAY`, empty groups omitted; the `HERE`
+  group is the caller's, because that is where the givers are).
+  *The sparse board*: `is_ordinary_posting` — the ONE reader of the forced-
+  family flags (`kind == delivery`, `world_card`, `story_wave`, `hell_task`,
+  plus a plain `forced`); `board_slots` returning 0 for an inactive board;
+  `board_forecast` counting forced work straight and forecasting only the
+  ordinary rest; `refresh_settlement_board` posting the cards OUTSIDE
+  ordinary capacity rather than out of it; and `generate_world` opening only
+  the active boards. *The geography*: `_select_quest_area(radius=)` —
+  candidates filtered by path days and assembled in stable Tile/Area order
+  BEFORE the rng picks, tag compatibility never traded for the radius (the
+  fallback is the ORIGIN Tile's natural Area, which is always legal), and
+  `radius=None` for the forced families, threaded through
+  `build_quest(radius=)`. *The clock*: `route_days` (was `return_leg_days`)
+  — the ordered walk out through every Site and home again, so a one-Site
+  job buys twice its distance instead of only the leg home.
+  `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Three country
@@ -917,7 +978,8 @@ a pointer: what the file is, how it's run, where its docs are.
   head-split) — plus the same day's play-feedback batch: `play_orders`
   (the one-pause-per-encounter dispatch over the engine's standing-orders
   hook), `camp N` / `camp --heal` (multi-night camping, cut short by a
-  wilds visitor), and the board's land-wide rumor section.
+  wilds visitor), and the board's rumor section (LAND-wide until
+  2026-08-15, three days' road since).
   Since 2026-07-12 also the story layer's play surface: `board` is
   the DM inventory (rows carry givers; in play quests come from their
   GIVERS via the one-message ask-around funnel, dm.md), quest turn-ins
@@ -1072,6 +1134,14 @@ a pointer: what the file is, how it's run, where its docs are.
   again — the tile-scoped Area keys had broken the old key-substring
   match), and the hell-task road estimate in `cmd_take` reads the same
   path.
+  **Local Quest Geography** (2026-08-15): `board_clock`'s refresh scope is
+  `quests.nearby_settlements` off the party's TILE rather than every
+  settlement in the current land, and `refresh_deliveries` takes the same
+  list as its origins; `cmd_board` prints the `HERE` group over every
+  settlement in the party's Tile (a free step apart, so their work is as
+  available as the local board's) and then `quests.rumor_lines` for the
+  1-3 day groups. `board all` still shows the whole world and still moves
+  only what the party could hear.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -1177,6 +1247,7 @@ python archive/mapgen.py 1           # archived second map experiment
 python archive/test_worldmap.py      # archived first experiment's contract
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
+python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
 python -m unittest -v test_potions.py # the quartermaster pass contract
 python -m unittest -v test_conditions.py  # the conditions framework contract
@@ -1289,8 +1360,10 @@ mechanic *does* and *why* is rules.md's job.
   (`EDGE_DAYS_EAST_WEST`, `EDGE_DAYS_NORTH_SOUTH`,
   `MOUNTAIN_EDGE_SURCHARGE`) sit in `places.py` beside the pathfinder that
   reads them. Everything that used to ask "same land or not?" —
-  `quests.return_leg_days`, `build_delivery_quest`, `session._cast_teleport`
+  `quests.route_days`, `build_delivery_quest`, `session._cast_teleport`
   and `cmd_take`'s hell-task road estimate — now calls `places.path_days`.
+  So do the two LOCAL QUEST GEOGRAPHY radii (2026-08-15): `QUEST_RUMOR_DAYS`
+  and `ORDINARY_TARGET_DAYS`, both 3, both in `quests.py`.
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -1952,7 +2025,7 @@ mechanic *does* and *why* is rules.md's job.
   / `_maybe_finish_proof` (the proof gate and its lifting), and the
   status arms in `cmd_status` / `party_sheet_lines` / `tally_lines` /
   `cmd_take` / `cmd_room` / `cmd_settle` / `accepted_quests`. `quests.py`:
-  `return_leg_days` (added to every posting's window at `_post_quest` /
+  `route_days` (added to every posting's window at `_post_quest` /
   `_post_card_quest`), the `proof` template field + `forge_quest(proof=)`,
   the `work_done` / `lost` / `proof_pending` marks in `quest_line`, the
   proof line in `quest_detail_lines`, and `lost` in `_reusable_site`'s
@@ -2120,14 +2193,15 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   order: `QUEST_WINDOW_DAYS`, then `QUEST_PAY_BANDS["late"]`, then
   `QUEST_GRACE_DAYS`. Never the refill rate — an empty board is not
   difficulty, it is a dead world.
-- **The return leg is inside the window since 2026-08-08** (the turn-in
-  stage): every posting's window is `QUEST_WINDOW_DAYS` **plus**
-  `quests.return_leg_days` (0 same area / 1 same land / 2 cross-land). The
-  widening is meant to be band-neutral and measures so — 33/53/10/4 against
-  the trim's 34/50/12/3, 300 careers (benchlog 2026-08-08). If the clock
+- **The whole road is inside the window** (2026-08-08 the return leg;
+  2026-08-15 the trip out too): every posting's window is
+  `QUEST_WINDOW_DAYS` **plus** `quests.route_days` — the ordered walk out
+  through the job's Sites and home, in `places.path_days`. The 2026-08-08
+  widening was meant to be band-neutral and measured so (33/53/10/4 against
+  the trim's 34/50/12/3, 300 careers, benchlog 2026-08-08); the 2026-08-15
+  doubling is a further widening the sim cannot see at all. If the clock
   needs retuning, remember the sim still teleports: its bands under-report
-  the road, and the widening is the correction for a leg the sim never
-  walks.
+  the road, and both widenings correct for legs the sim never walks.
 
 **The rout knobs (2026-08-08).** `CHASE_HP_WEIGHT_FLOOR` = 0.3 (how much a
 nearly-dead runner's DEX still counts), `TRACK_WOUND_BONUS` = 2 (`pursue`'s

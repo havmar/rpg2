@@ -276,6 +276,11 @@ class PlaceGenerationTests(unittest.TestCase):
             self.assertLessEqual(len(hidden), 1)
 
     def test_every_quest_family_routes_to_compatible_geography(self) -> None:
+        """The content contract, measured with the radius LIFTED: every
+        authored family finds ground in this world whose tags it fits.
+        What the ordinary three-day radius then does to that choice --
+        including the origin-Tile fallback when nothing compatible stands
+        within reach -- is `test_quest_geography.py`'s."""
         world = places.create_geography(15)
         n = 0
         for homeland, templates in quests.TEMPLATES.items():
@@ -286,7 +291,7 @@ class PlaceGenerationTests(unittest.TestCase):
                 level = quests.template_band(template)[0]
                 quest = quests.build_quest(
                     world, f"verify-{n}", template, origin["id"], level,
-                    random.Random(n))
+                    random.Random(n), radius=None)
                 target = world["areas"][quest["target_area"]]
                 self.assertTrue(
                     set(quest["place"]["area_any"]).intersection(
@@ -325,14 +330,15 @@ class PlaceGenerationTests(unittest.TestCase):
         """The occult ten are the ONLY templates a pact assignment draws
         from (2026-08-04), so each one has to find geography it fits at
         the bottom of its own band -- the honest tables' contract, applied
-        to hell's deck."""
+        to hell's deck. Measured with the radius lifted, like its sibling
+        above."""
         world = places.create_geography(19)
         origin = quests.settlements(world)[0]
         for n, template in enumerate(karma.OCCULT_TEMPLATES):
             level = quests.template_band(template)[0]
             quest = quests.build_quest(
                 world, f"occult-{n}", template, origin["id"], level,
-                random.Random(n))
+                random.Random(n), radius=None)
             target = world["areas"][quest["target_area"]]
             self.assertTrue(
                 set(quest["place"]["area_any"]).intersection(target["tags"]),

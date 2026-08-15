@@ -2658,19 +2658,31 @@ anchors the formulas were fitted to.
   - A **caper** (the dark templates' authored shapes — see the Karma & Heat
     add-on) still pins its place count to every stem it lists, and its
     encounter count follows.
-- **Quest placement follows place requirements.** Each family specifies
+- **Quest placement follows place requirements — inside three days' road.**
+  Each family specifies
   acceptable Area tags, a Site template/domain, and a reuse policy. A wolf
   hunt selects forest, hills, pasture, or prairie; a mine job selects
   mountains, mines, or quarries. Public roads, bridges, mines, markets, and
   towers may be reused when free; hidden camps, dens, and shrines are made
-  fresh. Two active quests never share one Site.
+  fresh. Two active quests never share one Site. Since 2026-08-15 an
+  **ordinary** job's target must also lie within `ORDINARY_TARGET_DAYS` = 3
+  shortest-path days of the settlement that posted it: work a settlement
+  knows about is work in its own reach. **Tag compatibility is never traded
+  for the radius** — when nothing compatible stands within three days the
+  job falls back to the origin Tile's own countryside, which is always
+  legal, rather than to close-by ground it has no business in. The candidate
+  set is assembled in Tile/Area order before the quest's rng picks from it,
+  so placement is deterministic off the seed. The forced families (story
+  waves, hell's assignments, deliveries, the DM's `forge`) are placed by
+  their own content and may lift the radius outright.
 - **Local content remains deliberately compact:** the system provides a
   direct premise, a persistent destination, concrete Room roles and contents,
   and the fights. Local quests are formulaic pieces (a culture × themed foe
   pool), not miniature stories.
 - **The world is generated once per playthrough, seeded** (`session.py new`),
   and lives in the save. It creates the three finite human countries and their
-  settlements, posts **one local job per settlement**, and stops. The board
+  settlements, posts **one local job per settlement that has an ordinary
+  board** (see *Sparse boards*, below), and stops. The board
   is not a census taken at worldgen — it is a **live inventory** that expires
   and refills (see *The clock*, below). Quest
   levels still roll uniformly in their settlement bands (village 1–8, town
@@ -2686,11 +2698,15 @@ price, because time and geography do not inflate. A window is worth exactly
 as much at level 20 as at level 1; a bed is not.
 
 **Every posting carries a window.** A quest is stamped with `posted_day`, a
-`window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days **plus the return leg**
-(2026-08-08, the delivery kind's round-trip precedent; since 2026-08-15 the
-leg is the real **shortest-path days** from the job's last Site's Tile back
-to the giver's — 0 when the work is on the giver's own Tile, and honestly
-long when it is across the map), and the `deadline_day` that follows. The clock starts at **posting**, not at
+`window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days **plus the whole road the
+job asks for**, and the `deadline_day` that follows. That road is the
+**ordered walk out through every one of the quest's Sites and home again**,
+in shortest-path days (2026-08-15; it was the homeward leg only, from
+2026-08-08, which priced the return and never the trip out). So a one-Site
+job buys **twice** its distance — the doctrine deliveries have carried since
+they shipped — a job on the giver's own Tile buys nothing, and a two-Site job
+whose Sites sit on opposite sides of the origin buys the detour between them
+rather than twice the distance to the last one. The clock starts at **posting**, not at
 taking: a job already five days old is five days into its window, so reading
 the board's clock is part of reading the board. The windows were tuned when
 a job completed instantly in the field; the return leg is now inside the
@@ -2786,14 +2802,44 @@ FAILED wherever the party is standing, with its failure line as the epilogue.
 This is what makes a day cost something: a week of camping is a week the job
 did not wait through.
 
-**The board refills instead of being pre-posted.** Each settlement keeps its
+**The board refills instead of being pre-posted.** Each settlement with an
+active ordinary board keeps its
 `SETTLEMENT_KINDS` slot count live — capital 5, town 4, village 2 —
 and posts back toward it as days pass: at most `QUEST_REFILL_PER_DAY` = 1 new
 job a day, except the first time a board is looked at, which fills it (the
-land has always had work; the party has just never asked). Only the current
-land's boards run their clock — a board nobody is looking at costs nothing to
-leave alone. `karma.roll_dark_quest` is the shape this copies: rolled lazily,
-never seen by worldgen.
+land has always had work; the party has just never asked). Only the boards
+**within earshot** run their clock — `QUEST_RUMOR_DAYS` = 3 shortest-path
+days of where the party stands (2026-08-15; it used to be the current land,
+a rule written when a land was six Areas wide rather than a hundred-odd
+Tiles). A board nobody can hear costs nothing to leave alone.
+`karma.roll_dark_quest` is the shape this copies: rolled lazily, never seen
+by worldgen.
+
+**Sparse boards: most places have no work (2026-08-15).** A settlement is not
+a job dispenser. When one materializes, a stable roll off its own slot
+identity decides whether it normally posts ordinary generated work at all:
+
+| Settlement | Ordinary board active |
+|---|---:|
+| Capital | 100% |
+| Other town | 60% |
+| Village | 25% |
+
+The **starting settlement is forced active** whatever its roll said — the
+game has to start at a board. An inactive board has ordinary capacity
+**zero**, floor and all (`BOARD_SLOTS_FLOOR` keeps an *active* board a place
+with work in it; it was never a promise that every settlement has any), so
+it refills to nothing and worldgen posts nothing there. **It is valid and
+expected for a settlement to have no ordinary quests** — that is what makes
+walking to the next place a decision. Historical fame buys nothing here:
+only capitals and the starting override are guaranteed.
+
+What an inactive board still receives is everything the world **forces** onto
+it — a world card's job, a courier run, a story wave, hell's assignment, the
+DM's forged work. Forced postings never consume ordinary capacity, are never
+blocked by the lack of it, and never convert a shut board into an open one.
+No quest is ever posted merely to satisfy a global count of work in the
+world.
 
 The old up-front XP-coverage top-up and its assert are **gone**. They
 asserted a total the board would carry forever, and expiry makes that total a
@@ -2892,6 +2938,10 @@ road is the content:
   refill tops them back up as they are run or lapse. On the board a
   delivery shows **DELIVERY** where a level would go: the road's danger
   is the road's table, not a site level.
+- **The destination is never radius-limited** (2026-08-15): the courier
+  kind is the deliberate exception to the three-day ordinary target rule —
+  going a long way IS the job. It is also a forced posting, so a settlement
+  with no ordinary board of its own can still be a courier's origin.
 - **A courier job's window buys its road** (2026-07-26): the standard
   3–7 day window plus twice the trip's shortest-path days, so a cross-map
   run is not late before it starts. Its hand-off is banded like any turn-in.
@@ -3011,13 +3061,21 @@ materialize lazily.
   requires travelling to that Site's Area and entering it with `go`; `room`
   faces the next encounter there. Completion never deletes the Site. A quest
   may replace an active place state; the vertical slice changes a blighted
-  forest to recovering. Word still travels (2026-07-11): the player also
-  KNOWS every other open quest **in the current land** — name, level,
-  where — as a "word from around the land" rumor list under the local
-  board. Same stance as straight-shown levels: travel should be an
-  informed routing decision, not a blind hop. Crossing into another land
-  still means going to look. (`board all` remains as the DM's overview —
-  not what the player reads.)
+  forest to recovering. **Word travels three days' road** (2026-08-15,
+  replacing the 2026-07-11 land-wide rule): reading the board also tells the
+  player every open job at every **known, materialized** settlement within
+  `QUEST_RUMOR_DAYS` = 3 shortest-path days — name, exact level, whose
+  board, which Tile, how far — grouped as `HERE`, `1 DAY AWAY`, `2 DAYS
+  AWAY`, `3 DAYS AWAY`, with empty groups omitted. `HERE` is the whole
+  **Tile**, not just the Area the party stands in: stepping between the
+  Areas of one Tile is free, so a sibling village's work is as available as
+  the local board's. Same stance as straight-shown levels: travel should be
+  an informed routing decision, not a blind hop. Reading rumors is a lazy
+  roll point, not a discovery verb — it refreshes those nearby active boards
+  to today and expires their stale postings, and it never materializes or
+  reveals a settlement the party has not found. Beyond three days you go and
+  look. (`board all` remains the DM's overview — it shows every materialized
+  posting in the world and moves no board the party could not hear.)
 
 ## Travel
 

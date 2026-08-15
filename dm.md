@@ -212,11 +212,22 @@ to another area -- is the player's core decision:
   the subject the first time it appears"). Make it square with the place
   and the day's news before you say it. The giver's dialogue carries the
   fiction; never deliver it as a stat sheet or a tactics preview. The board
-  also lists **word from around the land** (other settlements' open jobs --
-  PLAYER-KNOWN, relay it) and **notables in town** -- the land's recurring
+  also lists **word from up to three days' road away** (the open jobs at
+  every KNOWN settlement in that radius, grouped `HERE` / `1 DAY AWAY` /
+  `2 DAYS AWAY` / `3 DAYS AWAY` -- PLAYER-KNOWN, relay it) and **notables
+  in town** -- the land's recurring
   cast (ruler, sage, wildcard): use them for color, rumor, and war scenes;
   they persist all campaign. (`board all` / `board NAME` is your wider
   overview for pacing.)
+- **MOST PLACES HAVE NO WORK, and that is correct** (2026-08-15). Only
+  capitals always post ordinary jobs; about three towns in five do and about
+  one village in four. When the local board is empty, do NOT invent a job to
+  fill the scene and do NOT apologise for the world: play the place as a
+  place -- nobody here needs anything from armed strangers -- and let the
+  rumor groups do their work. "No work here; a carter mentions they are
+  short-handed at Ackham, a day west" is the scene, and the decision to walk
+  there is the player's. `HERE` covers the whole TILE, so a sibling village
+  in the same cell is a free step away, not a day's travel.
 - **Every job has a DEADLINE.** A posting is wanted within 3-7 days of the
   day it went up, and the board prints the clock on every row ("4 days
   left", "DUE TODAY", "LATE (2 day(s) of grace)"). Relay it like the level
@@ -234,7 +245,14 @@ to another area -- is the player's core decision:
     while the party did other things, and it is the whole point of the
     clock.
   - The board REFILLS: one new job a settlement a day, up to its size
-    (village 2, town 4, capital 5). Nobody has to hoard work.
+    (village 2, town 4, capital 5) -- at the settlements that post ordinary
+    work at all, and only within three days' road of the party. Nobody has
+    to hoard work.
+  - **A window now buys the whole road** (2026-08-15): 3-7 days plus the
+    walk out through the job's places and home again. A job two days off is
+    posted with four extra days in it, so relay the deadline straight and
+    let the player do the arithmetic -- the clock is honest about travel now
+    and does not need softening.
   - **This is why a long recovery costs something.** A long camp is never
     free: `camp 6` is six days off every live window -- and those nights
     cannot even mend a wound (only a settlement can), so a wounded party

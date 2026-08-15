@@ -175,7 +175,8 @@ from quests import (generate_world, forge_quest, board_lines,
                     quest_band, quest_expired, deadline_note, failure_line,
                     open_quests, board_forecast,
                     cast_service_providers,
-                    QUEST_GRACE_DAYS, QUEST_PAY_BANDS)
+                    nearby_settlements, rumor_lines,
+                    QUEST_GRACE_DAYS, QUEST_PAY_BANDS, QUEST_RUMOR_DAYS)
 from places import (
     materialize_natural_site, materialize_house,
     active_known_facts, place_debug_lines, find_place,
@@ -2390,11 +2391,15 @@ def board_clock(state: dict) -> list[str]:
        something -- a week of camping is a week the job did not wait through.
        A job whose WORK is done but whose pay was never collected goes to
        LOST instead (2026-08-08, `_lose_paid_window`): done, never paid.
-    2. **The local land's boards expire and refill.** Untaken work comes off
-       at its deadline (leaving a failure rumor at the settlement that posted
-       it), and each settlement posts back toward its slot count. Only the
-       CURRENT LAND is run: a board nobody is looking at costs nothing to
-       leave alone, and its first look fills it up (quests.py).
+    2. **The boards WITHIN EARSHOT expire and refill.** Untaken work comes
+       off at its deadline (leaving a failure rumor at the settlement that
+       posted it), and each settlement posts back toward its ordinary slot
+       count. Only the settlements inside `QUEST_RUMOR_DAYS` of where the
+       party stands are run (2026-08-15, Local Quest Geography -- it used to
+       be the whole current LAND, which is now a whole country): a board
+       nobody can hear costs nothing to leave alone, and its first look
+       fills it up (quests.py). An INACTIVE board refills to nothing and
+       still receives whatever the world forces onto it.
 
     Called at every day advance (travel, explore, camp, tavern, downtime) and
     on `board`. Returns the notices the caller prints."""
@@ -2451,8 +2456,11 @@ def board_clock(state: dict) -> list[str]:
         remember(state, f"[{qid}] {quest['name']} (L{quest['level']}) "
                         f"-- LOST, the window closed.",
                  kind="quest", note=failure_line(quest))
-    position = state.get("position") or {}
-    local = settlements_by_land(world).get(position.get("land"), [])
+    # The party is always SOMEWHERE once a world exists (`_area_position`
+    # is the only writer), so this reads the Tile straight rather than
+    # tolerating a position that worldgen cannot produce.
+    local = [s for s, _days
+             in nearby_settlements(world, state["position"]["tile"])]
     if not local:
         return notices
     # The name namespace is the names IN USE, recomputed -- not a ledger of
@@ -4454,8 +4462,21 @@ def cmd_board(args: argparse.Namespace) -> None:
         print(f"Day {state['clock'].day}. Asking around {here['name']} "
               f"(the DM's inventory -- in play, each job is its GIVER's; "
               f"funnel to them in one message, dm.md):")
-    for line in board_lines(world, key, day=state["clock"].day):
-        print(line)
+    day = state["clock"].day
+    if args.settlement:
+        for line in board_lines(world, key, day=day):
+            print(line)
+    else:
+        # HERE is the whole TILE, not just the Area the party stands in:
+        # stepping between the Areas of one Tile is free (2026-08-15), so a
+        # sibling village's work is as available as the local board's.
+        near = nearby_settlements(world, state["position"]["tile"])
+        print("HERE:")
+        for settlement, days in [(world["areas"][key], 0)] + [
+                pair for pair in near
+                if pair[1] == 0 and pair[0]["key"] != key]:
+            for line in board_lines(world, settlement["key"], day=day):
+                print(line)
     if not args.settlement:
         # What came of the jobs nobody took (2026-07-26): the settlement's
         # failure rumors, day-stamped, told once.
@@ -4480,26 +4501,21 @@ def cmd_board(args: argparse.Namespace) -> None:
                 for extra in worldsim.notable_lines(world, n):
                     print(extra)
     if not args.settlement:
-        # Word travels within a land (2026-07-11, designer call): the
-        # player KNOWS every open quest in the current land -- name, exact
-        # level, where -- so travel is an informed choice, not a blind hop.
-        # Details and `take` still want the party AT the posting settlement.
-        land = state["position"]["land"]
-        rumors = []
-        day = state["clock"].day
-        for s in settlements_by_land(world).get(land, []):
-            if s["key"] == key:
-                continue
-            for q in open_quests(world, s, day):
-                note = deadline_note(q, day)
-                rumors.append(f"  [{q['id']}] {level_grade(q)} "
-                              f"{q['name']} -- at {s['name']}"
-                              + (f" ({note})" if note else ""))
-        if rumors:
-            land_name = world["lands"][land]["name"]
-            print(f"Word from around {land_name} (travel there to "
-                  f"take one; `show QID` for what's known):")
-            for line in rumors:
+        # THE THREE-DAY RUMOR RADIUS (2026-08-15, Local Quest Geography;
+        # it used to be every open job in the current LAND, a rule written
+        # when a land was six Areas wide rather than a country). The player
+        # knows the open work at every KNOWN settlement within
+        # QUEST_RUMOR_DAYS of here -- name, exact level, whose board, which
+        # Tile, how far -- so travel is an informed choice and the choice is
+        # a real one. Details and `take` still want the party AT the posting
+        # settlement.
+        lines = rumor_lines(
+            world, nearby_settlements(world, state["position"]["tile"]), day)
+        if lines:
+            print(f"Word from up to {QUEST_RUMOR_DAYS} days' road away "
+                  f"(travel there to take one; `show QID` for what's "
+                  f"known):")
+            for line in lines:
                 print(line)
     for line in story.war_status_lines(world, state.get("story")):
         print(line)

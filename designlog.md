@@ -4497,3 +4497,133 @@ across all 540 Tiles, path symmetry, five representative distances, the
 interrupted route's position across a save, the silent sea, teleport's real
 price and the map page's overlay priority, ASCII and 40-column fit. The full
 suite is 730 tests and green.
+
+## 2026-08-15 (G) — Local Quest Geography shipped
+
+plan.md's fourth Europe session, built as specified. The one-sentence
+version: **work stopped being everywhere.** Before this, every settlement
+posted jobs, the player heard about every open job in the whole country,
+an ordinary job's target could be anywhere on the map, and its window
+priced only the walk home. All four are now local facts measured in
+`places.path_days`.
+
+### What shipped
+
+**Sparse ordinary boards.** `places.BOARD_ACTIVE_CHANCE` (capital 1.0 /
+town 0.6 / village 0.25) and `board_active_roll`, a stable derived roll off
+the SLOT's identity, stamped onto the Area as `board_active` when the slot
+materializes. The start settlement is forced active in `create_geography`.
+An inactive board has ordinary capacity zero — floor and all — refills to
+nothing, and gets nothing at worldgen. Measured over 9000 slot identities:
+100 / 56.5 / 23.8.
+
+**Ordinary capacity separated from forced posting.**
+`quests.is_ordinary_posting` is the one reader that tells the board's own
+generated work from the forced families (delivery, `world_card`,
+`story_wave`, `hell_task`, and a plain `forced` for anything later). Card
+jobs now post OUTSIDE ordinary capacity instead of consuming it, so an
+inactive board still hears everything the world forces onto it and never
+becomes an active board by receiving it. `board_forecast` counts the forced
+work straight and forecasts only the ordinary rest.
+
+**The three-day rumor radius.** `quests.nearby_settlements` (known,
+materialized, within `QUEST_RUMOR_DAYS` of a Tile, ordered
+nearest-then-Tile-then-key) replaced the land-wide rumor rule everywhere:
+`session.board_clock` refreshes and expires only those boards,
+`refresh_deliveries` takes the same list as its origins, and `cmd_board`
+prints `quests.rumor_lines` — the 1/2/3-day groups, empty ones omitted,
+each remote row naming the settlement, its Tile and the days.
+
+**The ordinary target radius.** `_select_quest_area(radius=)`, defaulting
+to `ORDINARY_TARGET_DAYS` = 3, threaded through `build_quest(radius=)`.
+Candidates are filtered by path days and sorted into stable Tile/Area order
+BEFORE the quest's rng picks, so placement is deterministic off the seed.
+
+**The whole road inside the window.** `return_leg_days` became
+`route_days`: the ordered walk out through every Site in cursor order and
+home again. A one-Site job therefore buys twice its distance — the doctrine
+deliveries have carried since they shipped — and a two-Site job whose Sites
+sit on opposite sides of the origin buys the detour between them.
+
+Deliveries needed nothing: they were already priced and clocked off
+`path_days` by the previous session. What they gained is the explicit
+statement, in rules.md and in the suite, that their destinations are the
+deliberate exception to the target radius.
+
+### The calls the spec left open
+
+- **Tag compatibility is never traded for the radius.** The spec said both
+  "compatible Areas within three days" and "do not route a coast quest to
+  generic inland ground merely to satisfy the radius", which conflict
+  whenever nothing compatible stands within reach. Settled the way the spec
+  named its own fallback: when the compatible set inside the radius is
+  empty, the target is the ORIGIN Tile's natural Area, full stop — never
+  incompatible ground that merely happens to be close, and never a
+  compatible Area outside the radius. The old same-land-then-anywhere
+  ladder is deleted.
+- **World-card jobs keep the ordinary radius.** The spec listed
+  "specifically authored world events" among the families that MAY override
+  it. A card's job is a settlement's own crisis and belongs within walking
+  distance of it, so `_post_card_quest` passes `radius=ORDINARY_TARGET_DAYS`
+  EXPLICITLY rather than inheriting it — a forced family that wants the map
+  has to say so. Only the capacity rule is lifted for a card, not the
+  geography.
+- **Hell's assignments keep the ordinary radius too, by choice.**
+  `karma.roll_dark_quest` takes `radius=ORDINARY_TARGET_DAYS` and callers
+  may lift it. Work whispered to you where you stand is local work, and the
+  pact's own clock (`TASK_WINDOW_DAYS` plus the road days measured at
+  `take`) assumes a target the party can walk to inside a window. An
+  unrestricted hell job would routinely sit twenty-five days out.
+- **`HERE` is the whole Tile, not the Area.** Switching between Areas of
+  one Tile is free, so a sibling village's board is as available as the one
+  the party stands in. `cmd_board` prints `board_lines` for every
+  0-day settlement, not just the local one — which matters more than it
+  sounds, because `reveal_tile` materializes all three slots of a Tile at
+  once, so same-Tile siblings are the common case at a dense Tile.
+- **A DM-authored settlement (`quests.new_area`) opens active.** The roll
+  is for the world's own villages; a settlement the DM created by hand
+  exists because he wanted work to happen there.
+- **The career sim deliberately ignores the rumor radius.** It has no
+  travel layer and no position, so a radius around it is meaningless. It
+  DOES see the sparse boards. Its docstring now says so, and benchlog reads
+  its board numbers as an upper bound on the played supply.
+
+### What this found and did not fix
+
+**The terrain vocabulary does not meet the map.** The quest tables ask for
+`forest` / `hills` / `prairie` / `pasture` / `farmland` / `road`; a natural
+Area's tags are its Tile's, which since the fixed map are `basic` /
+`river` / `mountain` / `sea` plus `coast` / `riverside` / `mountain-foot` /
+`border` / `island`. Only `coast` intersects, so outside the settlement
+Areas (which carry rich template tags of their own) the compatible set
+inside three days is usually empty and the origin-Tile fallback takes it.
+Every job is still legal, close and playable — the radius rule is simply
+doing less routing than it could.
+
+This was NOT fixed here, deliberately. plan.md defers `basic` sub-biomes
+until after the MVP is played, and inventing `forest`/`farmland` tags for
+`basic` Tiles now would pre-empt that design. Even the near-miss between
+the `mountain` biome tag and the tables' `mountains` was left alone rather
+than aliased, because the honest fix is one reconciliation of both
+vocabularies, not a patch. It is parked in plan.md's deferred list under
+the sub-biome entry.
+
+### Verification
+
+Full suite 787 tests, green. `test_quest_geography.py` is the new contract
+suite (56 tests, six parts — the activity roll and its rates, the shut
+board, the five forced families reaching one, the rumor radius on a seed
+chosen for having both a populated and an empty group, the target radius
+across a twelve-seed sweep, the path-priced clock over local / one-Tile /
+mountain / sea / multi-Site routes, and the opening quest). Three existing
+suites were updated deliberately rather than shimmed: `test_places.py`'s
+two routing contracts now measure the CONTENT claim with `radius=None`
+(the new-rule half moved to the new suite), `test_turnin.py`'s return-leg
+class became the road-inside-the-window class, and `test_worldsim.py`'s
+band/slot test forces its town's board active plus five hand-built
+positions became legal `session._area_position` records.
+
+`bench_quests --part career` re-measured at 300 careers (benchlog): the
+board supply fell 22% and both starvation guards held — zero exhausted
+boards, zero forced-up picks, 51 open jobs standing at the median career's
+end. Nothing was tuned.
