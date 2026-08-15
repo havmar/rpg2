@@ -1,0 +1,55 @@
+RPG2 MAP -- day 1
+the party is at Mortellaria > R16C30 >
+  Solavela
+
+            111111111122222222223
+   123456789012345678901234567890
+01 ..............................
+02 ...............#^^#######.....
+03 ...#.........#^^###.##T###.###
+04 ...##......^^####...##########
+05 .T.##.....^^####...###########
+06 .#..T#....##.###.....#########
+07 ...####...........#########T##
+08 ........###T####~####T#######^
+09 ...######C#~####~T#####~##~##^
+10 ....#######~#####^^^###~##C##^
+11 .....######^^^#~~~~~~~~~.#.^^#
+12 .....##^^####T.#^^####......##
+13 .~T#^#T#....##...###.........#
+14 .#####...#..^C...#T..###^^T###
+15 ..###......###........########
+16 ......###.................###@
+17 .##^^######T###...##......####
+18 ##############################
+
+. sea  # land  ^ mtns  ~ river
+@ party  ! job  C capital  T town  v
+  village
+
+HERE: R16C30 -- Mortellaria, basic
+  R16C30 Countryside (basic)
+  Solavela (village)  <- the party, 2
+    job(s)
+
+-- Mortellaria --
+  [NORMAL]
+  THE BANKRUPT SUMMONS
+  WEATHER: hard heat.
+
+-- known settlements --
+Firascir cities: Dublin R05C02, London
+    R06C05, Amsterdam R08C12, Paris
+    R09C10*, Prague R09C18
+Mortellaria cities: Venice R12C14,
+    Lisbon R13C03, Madrid R13C07, Rome
+    R14C14*, Athens R14C19,
+    Constantinople R14C27, Carthage
+    R17C12
+Mortellaria known: Solavela R16C30
+Tergal cities: Stockholm R03C23, Moscow
+    R07C28, Warsaw R08C22, Kyiv R10C27*
+
+-- the war --
+THE WAR: [w1] L2 Machines at the Border
+  -- raised at Kyiv.
