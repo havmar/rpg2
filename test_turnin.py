@@ -124,7 +124,7 @@ def _quest_in(world: dict, state: dict, **fields) -> dict:
         "status": "open", "align": "good",
         "epilogue": "The tunnel is clear.",
         "giver": {"name": "Kristryd", "role": "the guild agent",
-                  "race": "dwarf", "sex": "f", "age": 35},
+                  "homeland": "tergal", "sex": "f", "age": 35},
     }
     quest.update(fields)
     quests.stamp_quest_clock(quest, state["clock"].day - 1, state["rng"])

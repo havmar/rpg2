@@ -103,17 +103,15 @@ class TheConquestJob(unittest.TestCase):
         self.assertIn(boss["kind"], final_kinds)
         self.assertEqual(boss["kind"],
                          max(final_kinds, key=quests.threat_value))
-        race = quests.land_race(self.world, self.target["land"])
-        self.assertIn(conquest.DEFENDER_ROLES[race], boss["display"])
+        homeland = quests.land_homeland(self.world, self.target["land"])
+        self.assertIn(conquest.DEFENDER_ROLES[homeland], boss["display"])
 
-    def test_cultural_arms(self):
-        # A goblin garrison slings, never shoots bows; a dwarf one shoots
-        # powder (the warband rule, inherited).
-        self.assertNotIn("archer", conquest.garrison_pool("goblin"))
-        self.assertIn("slinger", conquest.garrison_pool("goblin"))
-        self.assertIn("gunner", conquest.garrison_pool("dwarf"))
-        self.assertEqual(conquest.garrison_pool("human"),
-                         quests.LADDER_POOL)
+    def test_every_homeland_uses_the_shared_ladder(self):
+        for homeland in quests.HOMELANDS:
+            self.assertEqual(conquest.garrison_pool(homeland),
+                             quests.LADDER_POOL)
+        with self.assertRaises(KeyError):
+            conquest.garrison_pool("nowhere")
 
     def test_strongbox_pays_in_days_of_tribute(self):
         self.assertEqual(self.quest["gold_total"],

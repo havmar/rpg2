@@ -328,7 +328,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "order-trial": "the order hanged a local man",
     "royal-progress": "the king's court is here",
     "lord-banned": "a lord is dead in law",
-    "warband-settled": "an orc warband holds the border grant",
+    "warband-settled": "a Tergal warband holds the border grant",
     "badge-men": "a lord's badge-men are the law here",
     "wardship-sold": "a child heir's wardship is up for sale",
     "custom-strike": "the village works to the letter",
@@ -1255,8 +1255,8 @@ CASUS_BELLI: tuple[tuple[str, str], ...] = (
 # One land's casus belli is standing and needs no roll: the Sky says the
 # neighbours are rebels who have not yet submitted (Tergal's packet).
 STANDING_CASUS_BELLI = {
-    "orc": ("mandate", "the Sky's mandate: the {victim} lands have "
-                       "not yet submitted"),
+    "tergal": ("mandate", "the Sky's mandate: the {victim} lands have "
+                          "not yet submitted"),
 }
 
 
@@ -1280,9 +1280,8 @@ WEATHER_WORDS = {               # word -> what the party sees
     "snow": "snow",
     "heat": "hard heat",
 }
-# The same word reads differently on different ground: a storm in the
-# dwarves' highlands is a SNOWSTORM, and it is the same card underneath
-# (worldsim.md's own note). Display only -- never a second vocabulary.
+# The same word reads differently on different ground. Display only -- never
+# a second vocabulary.
 WEATHER_LOCAL = {
     "alpine_tundra": {"storm": "a snowstorm", "rain": "sleet",
                       "cloud": "low cloud"},
@@ -1400,8 +1399,8 @@ def _name_the_necromancer(world: dict, polity: str, day: int,
     layer = land_layer(world, polity)
     who = layer.get("necromancer")
     if who is None:
-        race = LAND_SPECS[polity]["race"]
-        first = pick_name(rng, race, rng.choice(("m", "f")))
+        homeland = polity
+        first = pick_name(rng, homeland, rng.choice(("m", "f")))
         who = {"name": f"{first} {rng.choice(NECROMANCER_EPITHETS)}",
                "level": rng.randint(*NECROMANCER_LEVELS),
                "since": day}
@@ -1429,9 +1428,10 @@ def _authority_hook(key: str, role: str, field: str = "who"):
         layer = land_layer(world, polity)
         who = layer.setdefault("authorities", {}).get(key)
         if who is None:
-            race = LAND_SPECS[polity]["race"]
+            homeland = polity
             sheet = rulers.roll_ruler(rng, crown=False)
-            sheet.update(name=pick_name(rng, race, rng.choice(("m", "f"))),
+            sheet.update(name=pick_name(rng, homeland,
+                                        rng.choice(("m", "f"))),
                          role=role, since=day)
             layer["authorities"][key] = who = sheet
         return {field: who["name"]}
@@ -1952,7 +1952,7 @@ CARDS = (
     card("tergal/returned-mercenary", "The mercenary comes home", "tergal",
          days=(15, 25),
          news="A mercenary is back from the southern wars rich and hardened, "
-              "with dwarven steel and a following. The old order does not "
+              "with foreign steel and a following. The old order does not "
               "suit him.",
          state={"while": ("mercenary-home",)},
          menu={"steel": 0.85}),
@@ -2207,7 +2207,7 @@ POLITICS_CARDS = (
              "pay": 1.30, "slots": 1}),
     card("firascir/settled-warband", "The border grant", "firascir",
          tension=("crown-vs-lords",), days=None,
-         news="A march lord has granted border land to an orc warband in "
+         news="A march lord has granted border land to a Tergal warband in "
               "exchange for service. The neighbours are terrified. The "
               "warband keeps its own law, and both sides are right about "
               "each other.",
@@ -2444,16 +2444,16 @@ POLITICS_CARDS = (
          tension=("manor-vs-village", "old-vs-new"), days=None,
          news="A strike on the local lord's land has made him suddenly, "
               "dangerously rich. Armed men, bought judges, new walls, new "
-              "appetites. The dwarven prospectors who found it say that "
-              "finding is keeping, and their law agrees with them.",
+              "appetites. The mountain prospectors who found it say that "
+              "finding is keeping, and mining law agrees with them.",
          state={"set": ("silver-strike",)},
          quest={"post": job(
              "Finding Is Keeping",
-             "The prospectors have a claim under dwarven law and the lord "
+             "The prospectors have a claim under mining law and the lord "
              "has a title under this one. Both are hiring, both are "
              "right, and the hole in the ground does not care.",
              pool=_DWARF_TOUGHS, sites=("the silver adit",),
-             giver="the dwarven claim-holder",
+             giver="the prospectors' claim-holder",
              epilogue="The adit is held and the claim is written down "
                       "twice, in two laws that still disagree.",
              failure_epilogue="The prospectors are off the hill. Their "
@@ -3121,7 +3121,7 @@ POLITICS_CARDS = (
               "The rival says it did not happen and wants it done again "
               "in front of witnesses.",
          quest={"post": job(
-             "Judged By Orcish Rules",
+             "Judged By Tergal Law",
              "The party is invited into the second attempt as the "
              "neutral hands. Here, mercy scores and slaughter loses face, "
              "and everybody is watching to see whether foreigners can "
@@ -3701,7 +3701,7 @@ POLITICS_CARDS = (
                               "The king has heard one side and made a "
                               "ruling on it."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/hostage-in-the-camp", "The heir in the orc camp",
+    card("firascir/hostage-in-the-camp", "The heir in the Tergal camp",
          "firascir", states=("hostage-given",), days=(20, 35),
          news="The truce with the steppe was sealed with a child. He is "
               "growing up in the high chief's guard tent, he is safe "
@@ -4852,7 +4852,23 @@ MAGIC_CARDS = (
              "pay": 1.20}),
 )
 
-CARDS = CARDS + POLITICS_CARDS + RELIGION_CARDS + MAGIC_CARDS
+def _surviving_cards(cards: tuple[dict, ...]) -> tuple[dict, ...]:
+    """Keep the three country packets and narrow shared scopes to them."""
+    kept = []
+    for spec in cards:
+        scope = tuple(polity for polity in spec["land"]
+                      if polity == ANY_LAND or polity in LAND_SPECS)
+        if not scope:
+            continue
+        kept.append(spec if scope == spec["land"] else {**spec, "land": scope})
+    return tuple(kept)
+
+
+CONSTITUTIONS = {p: rows for p, rows in CONSTITUTIONS.items()
+                 if p in LAND_SPECS}
+TENSIONS = {p: rows for p, rows in TENSIONS.items() if p in LAND_SPECS}
+CARDS = _surviving_cards(
+    CARDS + POLITICS_CARDS + RELIGION_CARDS + MAGIC_CARDS)
 CARDS_BY_KEY = {c["key"]: c for c in CARDS}
 
 GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
@@ -4975,6 +4991,12 @@ RELATIONS = (
     relation("mortellaria", "gibili", "exiles", when=("necromancy-purged",),
              then="academy-exiles", because="the academy's purge"),
 )
+
+# Relations are only live when both countries survive the contraction. The
+# retained eight edges cover grain, raids, tribute, dynastic politics and the
+# north/south religious split without inventing replacement packets.
+RELATIONS = tuple(edge for edge in RELATIONS
+                  if edge["from"] in LAND_SPECS and edge["to"] in LAND_SPECS)
 
 
 # --------------------------------------------------------------------------- #
@@ -5157,6 +5179,8 @@ FACTS = (
          "recognize each other across the border."),
 )
 
+FACTS = tuple(entry for entry in FACTS if entry["land"] in LAND_SPECS)
+
 FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
     polity: tuple(f for f in FACTS if f["land"] == polity)
     for polity in LAND_SPECS
@@ -5244,6 +5268,9 @@ OPTIONS = (
            line="high fees AND standing: the ladder of sponsors has already "
                 "been climbed by the time this price is quoted"),
 )
+
+OPTIONS = tuple(spec for spec in OPTIONS
+                if any(polity in LAND_SPECS for polity in spec["land"]))
 
 OPTIONS_BY_KEY = {o["key"]: o for o in OPTIONS}
 
@@ -5882,11 +5909,12 @@ def post_news(world: dict, polity: str, day: int, line: str) -> None:
     _news(world, polity, day, line)
 
 
-def roll_casus_belli(rng: random.Random, race: str) -> dict:
-    """The war's WHY line, rolled beside story.py's aggressor. One race has
+def roll_casus_belli(rng: random.Random, homeland: str) -> dict:
+    """The war's WHY line, rolled beside story.py's aggressor. One country has
     a STANDING one and needs no roll: the Sky says the neighbours are rebels
-    who have not yet submitted, which is the orcs' whole foreign policy."""
-    key, line = STANDING_CASUS_BELLI.get(race) or rng.choice(CASUS_BELLI)
+    who have not yet submitted, which is Tergal's whole foreign policy."""
+    key, line = (STANDING_CASUS_BELLI.get(homeland)
+                 or rng.choice(CASUS_BELLI))
     return {"key": key, "line": line}
 
 
@@ -6699,6 +6727,55 @@ def _validate_state_tables() -> None:
             if state_id not in producible:
                 raise ValueError(f"{table_name}: {state_id} -- nothing in "
                                  f"the game produces that state")
+
+
+def _prune_unreachable_cards(cards: tuple[dict, ...]) -> tuple[dict, ...]:
+    """Remove chain links whose producer belonged to a deleted packet."""
+    cards = tuple(cards)
+    while True:
+        outlives = set(EXTERNAL_STATES)
+        outlives.update(edge["then"] for edge in RELATIONS)
+        held_while: dict[str, set[str]] = {}
+        for drawn in cards:
+            state = drawn["outlets"].get("state") or {}
+            outlives.update(state.get("set", ()))
+            outlives.update((state.get("slot") or {}).values())
+            for state_id in state.get("while", ()):
+                held_while.setdefault(state_id, set()).add(drawn["track"])
+        kept = tuple(
+            drawn for drawn in cards
+            if all(state_id in outlives
+                   or bool(held_while.get(state_id, set()) - {drawn["track"]})
+                   for state_id in drawn["admits"]["states"])
+        )
+        if len(kept) == len(cards):
+            return kept
+        cards = kept
+
+
+CARDS = _prune_unreachable_cards(CARDS)
+CARDS_BY_KEY = {c["key"]: c for c in CARDS}
+STANDING_TENSIONS = {p: rows for p, rows in STANDING_TENSIONS.items()
+                     if p in LAND_SPECS}
+FACTION_EDGES = tuple(edge for edge in FACTION_EDGES
+                      if edge["land"] in LAND_SPECS)
+
+# State outlet tables are player-facing only when a surviving card or relation
+# can produce their key. Dropping the dead rows completes the packet removal
+# and keeps the import-time validator strict.
+_ACTIVE_STATES = set(EXTERNAL_STATES)
+_ACTIVE_STATES.update(edge["then"] for edge in RELATIONS)
+for _drawn in CARDS:
+    _state = _drawn["outlets"].get("state") or {}
+    for _group in ("set", "while"):
+        _ACTIVE_STATES.update(_state.get(_group, ()))
+    _ACTIVE_STATES.update((_state.get("slot") or {}).values())
+STATE_MENU = {key: value for key, value in STATE_MENU.items()
+              if key in _ACTIVE_STATES}
+STATE_ENCOUNTERS = {key: value for key, value in STATE_ENCOUNTERS.items()
+                    if key in _ACTIVE_STATES}
+STATE_MARKS = {key: value for key, value in STATE_MARKS.items()
+               if key in _ACTIVE_STATES}
 
 
 def validate_content() -> None:

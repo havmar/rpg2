@@ -459,7 +459,7 @@ in rpg.py): **every line starts in column 1**, and every event is
 pre-fitted into lines that break only on semantic seams (`fit_lines` —
 fragments like `Gardain (10/12)` / `overwhelms Scrap-Hound 1,` /
 `deals 6 dmg!!!` are never split mid-thought). Combat lines use **short
-names** ("Inga", nothing appended — a character's race, age, and traits
+names** ("Inga", nothing appended — a character's homeland, age, and traits
 are sheet flavor, shown at creation and in `status`, never in the
 exchanges).
 
@@ -637,8 +637,8 @@ exactly **9 surplus points** dealt by a randomly-shuffled stat priority
 shapes). Plus a random ability (Heal, Bulwark, or First Blood) and two
 random potions.
 Racial modifiers and a couple of physical traits shift a range's **floor up
-or ceiling down, never the ceiling up** (an orc's STR spans 4–6), so the
-natural cap 6 below holds for every race.
+or ceiling down, never the ceiling up**, so the natural cap 6 below holds
+for every homeland.
 
 ### The ceilings, and what levels grow (the 1–20 doctrine)
 
@@ -2081,7 +2081,7 @@ is the ammo pool, so the family's shape is unchanged: dangerous at range
 until it runs dry, then a robed conscript with a knife. The magus adds
 `spell_ward` 2 (no assassinating the tower's master). They keep only
 bolts — enemy openers/techniques are a future pass. **Casters stay
-contained content** (one caster quest per race + the Renegade Magus
+contained content** (one caster quest per homeland + the Renegade Magus
 epic; the 2026-07-14 career-collapse lesson stands: reach-L11 47% → 18%
 when they rode the warband pool).
 
@@ -2209,14 +2209,13 @@ load.
 
 ## The cards
 
-Quality three (shoppable at plain tier like the melee four; the revolver
-only where dwarves sell):
+Quality three (shoppable at plain tier like the melee four):
 
 | Card | Range | Cadence | AIM | Atk | Sev flat | Melee grip | Ammo | Value |
 |------|-------|---------|-----|-----|----------|------------|------|-------|
 | **Longbow** | 3 | every 2nd | (DEX+STR)/2 | +1 | +5 | −2/−2 | arrows | 60g |
 | **Blunderbuss** | 1 | every 2nd | flat 4 | 0 | +7 | 0/0 | shells (5g a shot) | 90g |
-| **Revolver** | 2 | **every round** | DEX | −1 | +5 | −2/−2 | **1 Power/shot** | 250g, dwarven settlements only |
+| **Revolver** | 2 | **every round** | DEX | −1 | +5 | −2/−2 | **1 Power/shot** | 250g |
 
 Commons:
 
@@ -2228,7 +2227,7 @@ Commons:
 | **Sling** | 2 | every 2nd | DEX | −1 | +3 | −2/−2 | stones, free | 2g |
 
 *(The hand bombard — range 1, flat aim, +6, 15g — is the gunner row's
-common gun, so mid-band dwarf foes shoot powder without dropping 90g of
+common gun, so mid-band gunner foes shoot powder without dropping 90g of
 quality brass into every fight: the same economy rule that keeps quality
 blades off low mooks.)*
 
@@ -2278,16 +2277,13 @@ inputs (the notice contest):
   open at the party's preferred range — a shooter's whole reach, or a
   quiet close to contact for an all-steel party.
 
-## Cultural arms (NPC-side, by designer fiat)
+## Ranged arms in the human world (2026-08-15)
 
-**Elves always shoot bows** (the ladder's archer, plus their own hunter
-row); **goblins never do** (slings — the slinger row); **dwarves shoot
-powder** (the gunner's hand bombard; the blunderbuss and revolver are
-their craft). Enforced where rosters are drawn: each race's warband
-templates use its own ladder variant, and a land's wild pool inherits its
-templates, so the roads shoot culturally too. Humans and orcs field the
-plain ladder. (The war machine's reskins — aether-rifles, rivet-guns —
-stay display names over calibrated rows, doctrine unchanged.) Four
+All three countries use the same calibrated combat ladder. Bows, slings and
+powder weapons are equipment and role choices, not biological entitlements;
+guns and revolvers can be bought wherever the corresponding shop stock is
+available. Country-authored war-machine reskins remain display names over
+the same rows, doctrine unchanged. Four
 shooter rows joined the catalog: the **archer** (L1, rearmed with a real
 shortbow), the **slinger** (L1), the **hunter** (L3, drilled), the
 **gunner** (L4) — annotations bench-measured like every row.
@@ -2673,7 +2669,7 @@ anchors the formulas were fitted to.
   and the fights. Local quests are formulaic pieces (a culture × themed foe
   pool), not miniature stories.
 - **The world is generated once per playthrough, seeded** (`session.py new`),
-  and lives in the save. It creates the six finite MVP Lands and all their
+  and lives in the save. It creates the three finite human countries and their
   settlements, posts **one local job per settlement**, and stops. The board
   is not a census taken at worldgen — it is a **live inventory** that expires
   and refills (see *The clock*, below). Quest
@@ -2810,7 +2806,7 @@ instead — the grace to take one, then the completion window — and never laps
 off the board (the Karma & Heat add-on). The DM's `forge` is timeless unless
 given `--days N`.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
-  row is mechanics — a goblin "Scrap-Hound" is the wolf row, a dwarf
+  row is mechanics — a "Scrap-Hound" is the wolf row, a named gunner
   "Hold-Lord" the wight. Balance never forks on a skin.
 
 ## The threat math (dumb on purpose, sim-verified)
@@ -2914,10 +2910,10 @@ The canonical spatial vocabulary is **Land -> Area -> Site -> Room**:
 
 - **Land** is the macro territory: identity, owner, culture, default
   environment, war state, wilderness encounter profile, and cross-land
-  links. Land identity is not race: Firascir and Mortellaria are distinct
-  human realms with different cultures and environments, and conquest may
-  change `owner` without changing geography. `race` remains an adapter into
-  NPC, quest, and encounter content.
+  links. Firascir, Mortellaria and Tergal are distinct human realms with
+  different cultures and environments, and conquest may change `owner`
+  without changing geography. `homeland` routes names and culture; it never
+  modifies statistics.
 - **Area** is a world-map destination. Its broad `kind` is `settlement` or
   `natural`; its subtype says capital/town/village or forest, mountain, plain,
   swamp, and similar. Travel between areas costs days. This handles both kinds
@@ -2953,11 +2949,11 @@ materialize lazily.
 
 ## The map
 
-- **The finite world.** The MVP has Dvarvengrond, Firascir, Mortellaria,
-  Ensimaa, Gibili, and Tergal: 28 natural Areas, and **three settlements a
-  land** at world creation — one capital, one town, one village, drawn on
-  the world seed (Dvarvengrond authors no village and opens with its capital
-  and both towns). Eighteen settlements stand on day one.
+- **The finite world.** The transitional list-shaped world has Firascir,
+  Mortellaria and Tergal: 15 natural Areas and **three settlements a
+  country** at world creation — one capital, one town and one village.
+  Nine settlements stand on day one. The fixed Europe grid replaces this
+  temporary geography in the next roadmap session.
 - **The catalog is the reserve, not the census** (2026-08-07, the settlement
   trim). Every other authored settlement, and every generated village name
   paired with its livelihood role, waits UNBUILT in its land's reserve pool.
@@ -2976,13 +2972,12 @@ materialize lazily.
   exist but join the player map only when revealed. Discovery changes knowledge,
   never creates or rerolls the Area. `map` and `ui/map.txt` show the known
   macro Land/Area view as a 40-column list.
-- **Links.** Land adjacency is explicit. Mortellaria–Gibili is a sea route;
-  Firascir–Tergal uses the Flumenpur transit route until Caelum exists. Stura
-  River links its Firascir and Mortellaria Areas, and Flumenpur River links
-  Firascir and Tergal without creating a placeholder Caelum.
+- **Links.** Country adjacency is explicit. Firascir touches Mortellaria and
+  Tergal; the catalog retains the surviving river and transit links until the
+  fixed grid becomes authoritative.
 - **Position.** The save carries a breadcrumb with `land`, `area`, and
   optional `site` / `room` IDs. Status and `look` print it as, for example,
-  `Elven Lands > Far Forest > Wizard's Tower > Library`. A new game starts
+  `Firascir > Whitweld Forest > Wizard's Tower > Library`. A new game starts
   in the settlement area posting the open quest closest to the party's
   level (2026-07-13 — the opening hook must be takeable; generalized
   2026-08-05 when the start level became a roll, and identical to the old
@@ -3085,7 +3080,7 @@ materialize lazily.
   encounter's share of a three-fight quest, no turn-in lump), deliberately
   below board work: the
   wilds are the farm, the board is the game. What actually roams a land is
-  the union of its race's template pools — a land whose cheapest fauna is
+  the union of its country's template pools — a land whose cheapest fauna is
   a dire wolf has rough hunting, and that is flavor, not a bug.
   **The farm has a tax (2026-07-10): ~10% of hunts, the hunter is the
   hunted** — an AMBUSH off the road's party-independent table (any level,
@@ -3107,10 +3102,10 @@ the road table ignores the party entirely.
 
 # Party, Charisma & Satisfaction — Add-on (2026-07-11)
 
-The character layer: who the heroes *are* (race, sex, age, traits), what
+The character layer: who the heroes *are* (homeland, sex, age, traits), what
 holds a party together (the PC's CHA), and what pulls it apart (companion
 satisfaction). Engine constants and helpers live in `rpg.py`; the content
-(races, names, trait tables, the generator) in `people.py`; the play
+(homelands, names, trait tables, the generator) in `people.py`; the play
 surface (`new`/`pick`, `recruit`/`hire`, `downtime`, departures) in
 `session.py`. **None of it touches the melee or the sims**: `group_combat`
 never reads a trait or a satisfaction number, sim entities never set
@@ -3120,7 +3115,7 @@ construction (re-measured 2026-07-11 — see benchlog.md).
 ## CHA — the fourth stat
 
 Set at creation like DEX/STR (range 3–6, filled from the fixed stat
-budget since 2026-07-13; elves' floor is 4) and
+budget since 2026-07-13) and
 **fixed forever**, like the other frame stats. Its two jobs:
 
 - **Party capacity** (the PC's CHA only): `capacity = CHA − 3`, clamped
@@ -3184,7 +3179,8 @@ is testing one band. The reason is played reality: no campaign has ever
 gone past level 4, and hours of play stand between a fresh save and the
 bands the ladder is built for — a start that lands anywhere on it is how
 the rest of the game gets seen at all. The roll stops at 18 so there is
-always ladder left above the party. `--race R` fixes the PC's race.
+always ladder left above the party. `--homeland R` optionally fixes the PC's
+country of origin; the default rolls one.
 
 **The career a level-N start arrives with.** Everything above level 1 is
 autogenerated history, not a bonus:
@@ -3239,16 +3235,10 @@ settlement stop.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Race**: one of the world's five (`quests.RACES`). Racial stat modifiers
-  raise a roll's **floor** (orc STR 4–6, goblin DEX 4–6, elf CHA 4–6,
-  dwarf HP 9–13, human plain) — and under the fixed budget a floor raise
-  stays a genuine **net extra**: races remain unequal on purpose (goblin
-  is the combat pick, elf the economy pick). Goblins also carry the one
-  **ceiling drop**: STR 3–5 (wiry, not strong — a goblin frame lands on
-  the rapier, never naturally on the zweihander), and their trait rolls
-  substitute race flavor ("beautiful" → "sharp-toothed", "melodious" →
-  "high, cackling").
-- **Sex**: random m/f (names come from 25+25 per-race pools, `people.NAMES`
+- **Homeland**: Firascir, Mortellaria or Tergal. It selects a human name pool
+  and supplies cultural context only; every homeland uses the same fixed stat
+  floors, ceilings and trait tables.
+- **Sex**: random m/f (names come from homeland pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.
 - **Age**: 2d20+10 (the Cairn roll, 12–50). Twelve-year-old sellswords
@@ -3316,7 +3306,7 @@ still has to keep its people fed, warm, and paid.
 | Site/quest lump paid out (`award_quest`) | +1 |
 | Tavern night | +1, at most once every **3 days** per companion (`SAT_TAVERN_COOLDOWN_DAYS`, 2026-07-26) |
 | Downtime day (`downtime`, settlements only) | +1 |
-| Downtime day matching a trait (interest where it thrives — villages for plants/animals/hunting, capitals for art/history/fashion, towns+capitals for food/music; patriotic in their race's land; religious at a capital's temples) | +2 |
+| Downtime day matching a trait (interest where it thrives — villages for plants/animals/hunting, capitals for art/history/fashion, towns+capitals for food/music; patriotic in their homeland; religious at a capital's temples) | +2 |
 | Fled a fight * | −1 |
 | Ended a fight below half HP * | −1 |
 | Went Down * | −2 |
@@ -3373,7 +3363,7 @@ the sims never see any of it.
 
 ## Quest givers & the funnel (there is no board)
 
-Every quest carries a **giver**: a generated face (name, race, sex, age)
+Every quest carries a **giver**: a generated face (name, homeland, sex, age)
 whose ROLE the template authors (the reeve, the grudge-keeper, the
 vent-warden). The board survives only as the **DM's
 inventory readout** (`board` — each row shows whose job it is); in the
@@ -3399,10 +3389,10 @@ events in a world instead of pay lines.
 
 ## The targeted NPC generator (`people.make_npc`)
 
-Party members are rolled whole — race, background, everything — because
+Party members are rolled whole — homeland, background, everything — because
 the dice casting the person IS the recruiting game. NPCs are the
 opposite: the DM already knows the constable is a middle-aged local, so
-the caller **fixes race, role, and optionally sex/age** (and a level where
+the caller **fixes homeland, role, and optionally sex/age** (and a level where
 the fiction knows one — posse leaders, hell's collectors, the famous
 smiths), and the dice roll only the name. **No trait sketch since
 2026-08-05**: a giver's temperament, voice and dress were three lines of
@@ -3415,8 +3405,7 @@ the age roll for anyone with a job title.
 ## The central cast
 
 Each land gets three persistent figures at worldgen, in the save for the
-whole playthrough: a **ruler** (race-titled: king/queen, high thane,
-speaker of the high council, great chief, chief overboss — the war-wave
+whole playthrough: a **ruler** (country-titled — the war-wave
 questgiver), a **sage** (loremaster, court wizard... — the exposition and
 foreshadowing voice), and a **wildcard** from a small role table
 (spymaster, mercenary captain, master smith, high priest, war profiteer,
@@ -3436,25 +3425,20 @@ draws from a throwaway rng and saves nothing.
 
 ## The conquest — the first questline (levels 2-10)
 
-One aggressor race per playthrough rolls at worldgen and starts a war —
-**never the PC's own race** (2026-07-13: the player fighting his own
+One aggressor country per playthrough rolls at worldgen and starts a war —
+**never the PC's own homeland** (2026-07-13: the player fighting his own
 people's war of conquest read wrong; the roll excludes it). Four
 **waves**, each an ordinary multi-site quest pinned at levels
 **2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
 are always the easier ones). The variants:
 
-- **Elves — the Radiant Ascendancy.** Fascist perfection: so cultured
-  they should rule everyone. Magic-fuelled steampunk — everything they
-  field is beautiful, efficient, well designed (automata, aether-rifles,
-  colossus engines).
-- **Goblins — the Thousand Workshops.** Chaotic evil tech: robots,
-  bombs, bioweapons, vat-grown zany experiments.
-- **Humans — the Deathless Crown.** A king corrupted by a hungry god;
+- **Mortellaria — the Golden Empire.** Imperial magic-machines and a creed
+  that weak neighbors should be ruled.
+- **Firascir — the Undead Kingdom.** A king corrupted by a hungry god;
   necromancy as conscription that does not end at death (the undead pool
   plus living cultist soldiery).
-- **Orcs — the Iron Sky Horde.** A khagan unites the clans: might is
-  right, war is glorious, everything under the iron sky is theirs.
-- **Dwarves are never the aggressor** — the stalwart victim/ally land.
+- **Tergal — the Iron Horde.** A human warlord unites the clans: might is
+  right, war is glorious, and every neighboring country is a prize.
 
 The mechanics, all of them reuses:
 
@@ -3601,7 +3585,7 @@ stays flat and concrete.
 
 The frame, settled by the designer the same day the first slice shipped:
 **the PC is not a neutral adventurer but a low-ranking employee of
-Hell** — a mortal of an ordinary game race (not an imp; this settles
+Hell** — a mortal human (not an imp; this settles
 plan.md's open frame question) bound by a pact with an evil god. Wealth
 and power are promised in exchange for obedience in tasks that weaken
 the fabric of the orderly universe — hell's aim being exactly that
@@ -3748,7 +3732,7 @@ place (the gladiator pits, the castle bought in bones, bullying demons
 (searched-for in one settlement / a land / all lands — heat is the
 global version), the good-karma mirror (hell auditing a *virtuous*
 employee — the dual campaign), nemesis persistence beyond the
-remembered name, race-flavored dark templates, standing dark
+remembered name, homeland-flavored dark templates, standing dark
 enterprises (the powder network earns as a crime category, not as a
 holding), the rot-spell and other evil magic content, parley/bribery
 with the LAW's posses (hell takes bribes now; the Watch doesn't yet),
@@ -4069,7 +4053,7 @@ an ordinary dark quest underneath (same schema, threat math and pay
 ladder), one place — "the garrison keep" — at the settlement's garrison
 level, with the land's cultural ladder pool. Village 1 encounter, town 2,
 capital 3 (the war waves' maximum). The last room is capped by a **named
-defender** (a generated face, per-race role: castellan, warden of the
+defender** (a generated face, country role: castellan, warden of the
 walls, gate warden, wall-crew boss, war-chief of the garrison) worn as a
 display name over the budget-honest strongest slot. The job has **no
 clock** (a keep does not lapse), **no giver**, and is **not posted on the
@@ -4305,7 +4289,7 @@ are `worldsim.md`'s.
 - **What a card sets outlives it; what it sets *while* it stands comes
   off with it.** That holds for the wealth band too: a failed harvest is
   a season of crisis and then it is over, while a vein running out is
-  simply what the mountain is now — and only another card (a dwarf who
+  simply what the mountain is now — and only another card (a prospector who
   can work a written-off seam) puts it back.
 
 ## The card (the event pulse)
@@ -4326,12 +4310,11 @@ are `worldsim.md`'s.
 
 ## Relations (what one land's trouble does to another)
 
-Authored **directed edges** — who eats whose grain, who logs whose
-forest, whose mercenaries come when called. They are lookups, never
-traded quantities, and the states they cause are **derived at read time
-and never stored**: a failed harvest in Firascir is `grain scarce` in
-Ensimaa, Dvarvengrond and Gibili for exactly as long as it lasts, and
-gone the day it lifts. Cards admit on derived states like any other.
+Authored **directed edges** — who eats whose grain, who trades with whom,
+whose mercenaries come when called. They are lookups, never traded
+quantities, and the states they cause are **derived at read time and never
+stored**. Only edges whose two ends are Firascir, Mortellaria or Tergal are
+active; cards admit on their derived states like any other.
 
 ## Where the world is rolled, and where the player meets it
 
@@ -4370,8 +4353,8 @@ DISEASE family, the storm's field penalties).
   environment profile authors as the numbers behind its climate sentence.
   The game has no season track, so a profile's winters and summers are
   averaged into one year-round distribution rather than modelled.
-- The same word **reads differently on different ground**: a storm in the
-  dwarves' highlands is a *snowstorm*, and it is the same card underneath.
+- The same word **reads differently on different ground**: a storm in cold
+  highlands is a *snowstorm*, and it is the same card underneath.
 - Two counters run behind the roll. **DRY is days since the last rain**, so
   an overcast day extends it — a grey sky is not a drought ending. **WET is
   a run of wet days** that a dry day breaks and an overcast one does not:
@@ -4405,7 +4388,7 @@ two days is a storm on both of them.
 - **THE STORM SETS IN** — any land, on a storm day, 1–3 days. Its state is
   `the storm has closed the roads`, and it is what the field penalties and the
   cabin table hang on.
-- **THE FORD IS OUT** — the two human lands, after three wet days. Fords
+- **THE FORD IS OUT** — Firascir and Mortellaria, after three wet days. Fords
   uncrossable, bridges and ferries tolled by men who know it: the road
   costs **a day** while it stands, and the toll racket is the vigilante
   invitation. (The ferrymen's own rates are authored on the card and wait
@@ -4416,14 +4399,8 @@ two days is a storm on both of them.
   A second fog raises the *same* man's dead. The rumor address is
   deliberately cheap — a name and a level, no landmark machinery — and the
   party goes looking or it does not.
-- **THE FOREST BURNS** — Ensimaa, only under drought. An evacuation, a
-  blame question, and a `burn is still black` scar that **outlives the
-  fire**; one card (the burn going green, a season later) is the way back.
 - **THE DUST STORM** — Tergal, under drought. The roads stop and the herds
   scatter: **a day** on the road, and recovery work after.
-- **THE SMOG SETTLES** — Gibili. The mill smoke has nowhere to go; it is
-  the one sky **a roof does not keep out**, and the owners say it is the
-  weather.
 - **THE RAINS DO NOT COME** — the season card, any land. A drought is a
   **relative** thing, so the spell that triggers it is the land's own (a
   fortnight without rain is a disaster in the shaded forest and an ordinary
@@ -4524,7 +4501,7 @@ land with them:
 
 `worldsim.py` owns the readers; `quests.py` owns the board, `rpg.py` the
 prices, `session.py` the road. The content it is drawn from is
-`worldsim.md`'s six economy packets.
+the surviving country economy packets.
 
 ## The board (the quest outlet)
 
@@ -4564,8 +4541,8 @@ expensive, never absurd, and a price never goes to nothing:
 1. **the wealth band** — crisis puts the shelf up and the beds down,
    prosperity does the reverse;
 2. **the states the land holds or derives** — this is the only road a
-   RELATION has to a price, and it is the point: the elves throw the
-   loggers out, and a dwarven smith three lands away puts his prices up;
+   RELATION has to a price: a foreign shortage can put a local smith's
+   prices up;
 3. **the live cards' own terms** — the doubled toll, the ferryman's price,
    the fair's cheap week.
 
@@ -4603,19 +4580,14 @@ border, what the fog put on its feet.
 
 **A card sets a state that outlives it; the next card admits on that state
 and clears it as it fires.** No new machinery — the frame's admitting
-conditions already read what the last card left behind. Five ship:
+conditions already read what the last card left behind. Three surviving
+country chains ship:
 
 | land | first card | the link it leaves | second card |
 |---|---|---|---|
 | Firascir | the harvest fails | bread is expensive | the bread riot |
 | Mortellaria | the bank fails | forged notes are about | the note-hunters |
-| Ensimaa | the rented land turns | foreigners unwelcome | the evictions |
-| Dvarvengrond | a new seam is found | the seam (a slot) | the rush and the bust |
 | Tergal | the herds die | the grass has not come back | the clans ride |
-
-One more crosses a **relation**: the Gibili mills run cold because the
-*elves* threw the loggers out, and `concession lost` is a derived state
-like any other.
 
 ## Where the player meets it
 
@@ -4647,14 +4619,10 @@ ticks, nothing accumulates, and no political value is ever a quantity.
 ## The constitution (one exclusive slot per land)
 
 - **Rolled once at worldgen on a default-heavy die** — the wealth-band
-  pattern. The stereotype is the constant (feudal humans, herding orcs,
-  mining dwarves) and the variants are the colour, so the same land comes up
-  a different flavour of itself across playthroughs.
-- Firascir opens DECENTRALIZED FEUDALISM, Mortellaria ABSOLUTISM, Ensimaa
-  CONSTITUTIONAL MONARCHY, Tergal THE CLAN CONFEDERACY, Dvarvengrond THE
-  ARBITER CROWN, Gibili THE PAPER STATE. Each carries two or three variants
-  — the centralizing crown, the princes in arms, the sealed realm, the great
-  chief, the empty throne, the junta, the commune.
+  pattern. The country's political history is the constant and the variants
+  are the colour, so the same country comes up differently across runs.
+- Firascir opens DECENTRALIZED FEUDALISM, Mortellaria ABSOLUTISM and Tergal
+  THE CLAN CONFEDERACY. Each carries its surviving authored variants.
 - **Cards never flip it.** The two that do say so on their face (the junta
   takes the parliament; the commune keeps the barricade), and a card that
   would only re-assert the constitution a land already holds never fires.
@@ -4745,7 +4713,7 @@ sheet, and the same man is still there the next time the card comes round.
   rolled beside story.py's aggressor off a **derived seed** (so every
   existing world's aggressor, faces and targets are untouched). It is said
   ONCE, at the first herald, and left on the land's news for whoever arrives
-  later. One race needs no roll: the Sky's mandate says the neighbours are
+  later. Tergal needs no roll: the Sky's mandate says the neighbours are
   rebels who have not yet submitted.
 - **The diplomatic instruments** — how wars end and stay ended — are
   **authored relation edges with cards standing in them**: the courtly
@@ -4757,10 +4725,9 @@ sheet, and the same man is still there the next time the card comes round.
   it: the infant heir and its regency council, three branches and three
   readings of the law, the dead king who comes back (or the man wearing his
   face), and the bought recognition that is void the day the king dies.
-  Per-land shapes ride the packets — Tergal's tanistry makes every
-  succession a scramble, Dvarvengrond's electors deadlock, Ensimaa's search
-  happens once an age, and Gibili has no crown to pass, so its version is
-  the junta.
+  Per-country shapes ride the packets — Tergal's tanistry makes every
+  succession a scramble, while Firascir and Mortellaria keep their own
+  crown disputes.
 
 ## Where the player meets it
 
@@ -4819,19 +4786,14 @@ machinery would be a feature request wearing a content hat.
 
 Priced, not penitential — the deliberate limit of this rung:
 
-- **Healing is the `healer` term itself.** In the two human lands the temple
+- **Healing is the `healer` term itself.** In Firascir and Mortellaria the temple
   *is* the healer, so no new counter exists: the interdict already puts the
   fee up 30%, the unlicensed holy well already undercuts it by a quarter.
 - **Burial and blessing are options**, sold in both Sun-communion lands off
-  the same term. Beside them: Firascir's pilgrim badge, Mortellaria's
-  hooded burial brotherhood, Gibili's burial club and charm trade,
-  Dvarvengrond's hall blessing.
+  the same term. Beside them remain Firascir's pilgrim badge and
+  Mortellaria's hooded burial brotherhood.
 - **The sin/penance wiring is not designed and is not here.** No option
   touches sin, heat or the karma layer at all.
-
-Ensimaa sells nothing of the kind, and that is the content: its only
-religious architecture is an open-roofed marble court with no clergy, no
-services and no images.
 
 ## What the packets became
 
@@ -4840,18 +4802,13 @@ services and no images.
   the other's rites** through a relation edge that runs both ways, and the
   joint synod is one card sitting in *both* their decks. Every synod ends
   one insult short of the split.
-- **Each land got a religion axis and a tension to hang it on**: two shrines
-  and one saint, and the abbey against the families (Firascir); which face
-  of the god rules the year (Mortellaria); one word in one old text
-  (Ensimaa); the tomb priests against the quota (Dvarvengrond); the white
-  shamans against the dark one (Tergal); the chapels against the ladder
-  faiths (Gibili). The tension is the deck gate, exactly as in politics — a
+- **Each country keeps a religion axis and a tension to hang it on**: two
+  shrines and one saint, and the abbey against the families (Firascir);
+  which face of the god rules the year (Mortellaria); the white shamans
+  against the dark one (Tergal). The tension is the deck gate, exactly as in politics — a
   land whose shrines are at war never draws the abbey's cards at all.
-- **Four more relation edges cross the border**: the southern death feast
-  pulling the young elves out of Ensimaa, Gibili franchising a ladder faith
-  into a Firascir market town, the old spirit-practice recognized across the
-  Tergal border, and the academy's purged necromancers arriving as goblin
-  street mediums.
+- Surviving religion relations cross only the three-country border graph;
+  edges depending on deleted packets are absent.
 - **Two named pools were added and no creature row**: the undead
   (skeleton/ghoul/wight) and the casters (hexer/pyromancer/magus), both off
   the catalog the game already had. The draugr and Tergal's grave-made
@@ -4875,10 +4832,8 @@ services and no images.
   in every land: the wild talent goes off and runs (`talent-loose`), and the
   hunt that answers is the next card. The talent is **named once and kept**,
   like the fog's necromancer — recurrence is what makes an NPC exist.
-- **The theory is hoarded**, and the four organizations are four prices on
-  one action: the goblin master undercuts the academy, the Firascir tower
-  wants a volunteer, and the elven school is the dearest teaching in the
-  world and charges in standing as well as gold.
+- **The theory is hoarded**: surviving schools and towers put different
+  prices and obligations on the same teaching action.
 
 ## The mark table (the reagent trade's wiring)
 

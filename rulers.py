@@ -12,7 +12,7 @@ this vocabulary, 443 of them carried at least one trait at the kept
 resolution, and the average was 3 traits a ruler -- so three weighted draws
 reproduce the measured per-trait marginals almost exactly. The weights ARE
 those percentages, rounded up; the pool is the HUMAN-CROWN / FIRASCIR
-BASELINE, and it serves every land until per-land and per-race modifier
+BASELINE, and it serves every land until per-country modifier
 columns are authored (worldsim.md). If rulers ever feel thin at the table,
 `CROWN_DRAWS = 4` is the one knob -- it scales every marginal by 4/3.
 
@@ -102,7 +102,7 @@ AXES: tuple[tuple[str, tuple, tuple], ...] = (
     ("appetites", ("chaste", 2, ""),          ("lecherous", 3, "")),
     ("table",     ("glutton", 2, ""),         ("eats nothing", 1, "")),
     ("hearth",    ("doting", 3, "good"),      ("harsh at home", 1, "dark")),
-    ("strangers", ("welcoming", 4, ""),       ("race-proud", 3, "")),
+    ("strangers", ("welcoming", 4, ""),       ("homeland-proud", 3, "")),
     ("sorcery",   ("spell-friendly", 2, ""),  ("spell-fearing", 3, "")),
     ("war",       ("martial", 28, ""),        ("unblooded", 1, "")),
     ("wits",      ("brilliant", 18, ""),      ("dull", 1, "")),

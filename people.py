@@ -1,8 +1,8 @@
-"""The character layer -- races, names, traits, and the person generator.
+"""The character layer -- homelands, names, traits, and person generation.
 
 rpg.py owns the mechanics a character RUNS ON (stats, CHA/capacity, the
-satisfaction track and its constants); this file owns the person: which race
-they are, what they're called, how old they are, and -- for COMPANIONS --
+satisfaction track and its constants); this file owns the person: where they
+come from, what they are called, how old they are, and -- for COMPANIONS --
 the three-trait sketch that makes an archetype specific. session.py uses it
 for the PC at game start and the tavern recruits; the sims never import it
 (their throwaway duos come from rpg.make_party), so nothing here can move a
@@ -10,13 +10,9 @@ bench number.
 
 The design (2026-07-11, designer-vetted):
 
-- **Races are the world's five** (quests.py's RACES -- the lands ARE the
-  races). Racial stat modifiers raise the FLOOR of a roll range, never the
-  ceiling: an orc's STR rolls 4-6, so the natural cap 6 (the 1-20 doctrine)
-  holds, the worst rolls vanish, and the average moves ~+0.5. The mods are
-  deliberately unequal in combat terms (goblin DEX is the sharpest stat in
-  the game; elf CHA is an economy stat) -- races feel different along
-  different axes, on purpose.
+- **Everybody is human.** A person's `homeland` is Firascir, Mortellaria or
+  Tergal. It selects a name pool and cultural routing only; it never changes
+  stats, traits or combat capability.
 - **Traits are a sketch, not a census**: ONE behavioral category (of five)
   and TWO presentation categories (of four), one trait each. What isn't
   described is average for the archetype; the DM edits any generated
@@ -47,32 +43,11 @@ import random
 
 import rpg
 from rpg import Entity, MEDS_INTERVAL_DAYS, MEDS_PRICE
-from quests import RACES
+from quests import HOMELANDS
 
 # --------------------------------------------------------------------------- #
-# Races (the world's five; quests.RACES is the source of truth)
+# Homelands (the three countries; quests.HOMELANDS is the source of truth)
 # --------------------------------------------------------------------------- #
-# Floor-raise modifiers per race (see rpg._adjusted_range): key -> +1 floor.
-# human: nothing (the baseline). elf: CHA (an elf PC is never solo -- floor
-# 4 = capacity 1+). orc: STR. dwarf: HP. goblin: DEX (the combat pick).
-# Under the fixed stat budget (2026-07-13) a floor raise stays a genuine
-# net extra: races remain unequal on purpose.
-RACE_MODS: dict[str, dict[str, int]] = {
-    "human":  {},
-    "elf":    {"cha": 1},
-    "orc":    {"str": 1},
-    "dwarf":  {"hp": 1},
-    "goblin": {"dex": 1},
-}
-
-# Ceiling-drop modifiers per race: key -> -1 ceiling. Goblins are wiry, not
-# strong (2026-07-13, designer call): STR rolls 3-5, so a goblin frame lands
-# on the rapier, never naturally on the zweihander (rpg.develop_hero arms
-# STR>DEX frames with the girder).
-RACE_MODS_CEIL: dict[str, dict[str, int]] = {
-    "goblin": {"str": 1},
-}
-
 SEXES = ("m", "f")
 
 
@@ -82,11 +57,11 @@ def roll_age(rng: random.Random) -> int:
     return rng.randint(1, 20) + rng.randint(1, 20) + 10
 
 
-# 25 male + 25 female names per race. Flavor keyed to quests.py's settlement
-# name-parts (goblins are the gadget-works culture, orcs the iron camps...).
-# No epithets, anywhere -- "Inga", never "Inga the precise".
+# 25 male + 25 female names per pool. Firascir and Mortellaria share the
+# western human pool. Tergal keeps its established steppe names, now names
+# of humans from Tergal. No epithets: "Inga", never "Inga the precise".
 NAMES: dict[str, dict[str, tuple[str, ...]]] = {
-    "human": {
+    "firascir": {
         "m": ("Brand", "Corvin", "Doran", "Kael", "Tomas", "Veld", "Aldric",
               "Berrick", "Cole", "Dunstan", "Edwin", "Garrick", "Hale",
               "Jorik", "Lambert", "Martel", "Osric", "Perrin", "Quentin",
@@ -96,19 +71,7 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
               "Hilde", "Isolde", "Jenna", "Lysse", "Maud", "Nel", "Odile",
               "Petra", "Rosamund", "Sabine", "Tilda", "Wynne"),
     },
-    "elf": {
-        "m": ("Aelar", "Aramil", "Berrian", "Caladrel", "Carric", "Daethis",
-              "Erevan", "Faelar", "Galinndan", "Heian", "Ivellios",
-              "Laucian", "Mindartis", "Naal", "Orrian", "Paelias",
-              "Quarion", "Riardon", "Soveliss", "Thamior", "Theren",
-              "Uthemar", "Vanuath", "Varis", "Wren"),
-        "f": ("Adrie", "Althaea", "Anastrianna", "Andraste", "Antinua",
-              "Bethrynna", "Birel", "Caelynn", "Drusilia", "Enna",
-              "Felosial", "Ielenia", "Jelenneth", "Keyleth", "Leshanna",
-              "Lia", "Meriele", "Mialee", "Naivara", "Quelenna", "Sariel",
-              "Shanairra", "Silaqui", "Thia", "Vadania"),
-    },
-    "orc": {
+    "tergal": {
         "m": ("Gruk", "Marok", "Thokk", "Drog", "Urzag", "Karg", "Snagg",
               "Bolg", "Ruk", "Ghor", "Muzgash", "Ogrim", "Varg", "Zug",
               "Krusk", "Dench", "Feng", "Gell", "Henk", "Holg", "Imsh",
@@ -118,44 +81,28 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
               "Grushka", "Marga", "Urzoth", "Ketha", "Drena", "Ghorza",
               "Bura", "Sharn", "Togga", "Ulma", "Varga", "Zasha"),
     },
-    "dwarf": {
-        "m": ("Adrik", "Alberich", "Baern", "Barendd", "Borin", "Brottor",
-              "Dain", "Darrak", "Delg", "Eberk", "Einkil", "Fargrim",
-              "Flint", "Gardain", "Harbek", "Kildrak", "Morgran", "Orsik",
-              "Oskar", "Rangrim", "Rurik", "Taklinn", "Thoradin", "Tordek",
-              "Vondal"),
-        "f": ("Artin", "Audhild", "Bardryn", "Bruni", "Dagna", "Dagnal",
-              "Diesa", "Eldeth", "Falkrunn", "Finellen", "Gunnloda",
-              "Gurdis", "Helja", "Hlin", "Ilde", "Kathra", "Kristryd",
-              "Liftrasa", "Mardred", "Riswynn", "Sannl", "Thora", "Torbera",
-              "Torgga", "Vistra"),
-    },
-    "goblin": {
-        "m": ("Nizzet", "Fizzle", "Krix", "Zagnit", "Pox", "Snizzle",
-              "Wozzek", "Grix", "Tikkit", "Blatz", "Skiv", "Mox", "Ratchet",
-              "Cogg", "Widget", "Zizzer", "Klanker", "Nogg", "Spanner",
-              "Boilo", "Greeze", "Smolt", "Tinket", "Vrix", "Zonk"),
-        "f": ("Nix", "Tizzy", "Wexla", "Grizelle", "Pipka", "Zeena", "Klix",
-              "Motka", "Sizzle", "Brixa", "Cindra", "Dizzy", "Fizzet",
-              "Gadgeta", "Hexa", "Jinka", "Kettle", "Lugna", "Mizzle",
-              "Nutta", "Ozka", "Quirka", "Rivet", "Vexa", "Zippa"),
-    },
 }
 
+# Firascir and Mortellaria deliberately draw from the same pool. Copy the
+# mapping so callers cannot accidentally mutate one country's table through
+# the other name.
+NAMES["mortellaria"] = dict(NAMES["firascir"])
 
-def pick_name(rng: random.Random, race: str, sex: str,
+
+def pick_name(rng: random.Random, homeland: str, sex: str,
               used: set[str] | None = None) -> str:
-    """A fresh name from the race/sex pool, avoiding `used` (name collisions
+    """A fresh name from the homeland/sex pool, avoiding `used` (collisions
     would break the save's name-keyed lookups)."""
-    pool = [n for n in NAMES[race][sex] if used is None or n not in used]
+    pool = [n for n in NAMES[homeland][sex]
+            if used is None or n not in used]
     suffix = 1
     while not pool:
-        # The pool is finite (25 a race/sex) and the quest board CHURNS since
+        # The pool is finite (25 a homeland/sex) and the quest board CHURNS
         # 2026-07-26 -- a long campaign can genuinely ask for more faces than
         # there are names. Number them rather than crashing on an empty pool.
         suffix += 1
         tag = " II" if suffix == 2 else f" {suffix}"
-        pool = [n + tag for n in NAMES[race][sex]
+        pool = [n + tag for n in NAMES[homeland][sex]
                 if used is None or n + tag not in used]
     name = rng.choice(pool)
     if used is not None:
@@ -193,14 +140,6 @@ PRESENTATION_TRAITS: dict[str, tuple[str, ...]] = {
               "scarred", "weathered", "bald", "tattooed", "pockmarked"),
 }
 
-# Race-flavored substitutions: a rolled trait that doesn't fit a race is
-# swapped for its local equivalent (2026-07-13: goblins are never
-# "beautiful" and don't sing).
-RACE_TRAIT_SUBS: dict[str, dict[str, str]] = {
-    "goblin": {"beautiful": "sharp-toothed",
-               "melodious": "high, cackling"},
-}
-
 # The mechanical traits, and what they do (shown on the sheet so hiring is
 # an informed choice; everything not listed here is DM-performed fiction).
 ARMORED_DEF_BONUS = 1       # the "armored" dress trait: worn protection --
@@ -230,7 +169,7 @@ TRAIT_NOTES: dict[str, str] = {
     "short": "-1 STR ceiling at creation",
     "needs meds": f"a dose every {MEDS_INTERVAL_DAYS} days ({MEDS_PRICE}g, "
                   f"capitals only) or their spirits drain nightly",
-    "patriotic": "downtime in their own race's land suits them",
+    "patriotic": "downtime in their homeland suits them",
     "religious": "downtime in a capital (the temples) suits them",
 }
 
@@ -240,7 +179,7 @@ ENEMY_CALLINGS = ("duelist", "outlaw", "mercenary captain", "bounty hunter",
                   "disgraced soldier", "rival adventurer")
 
 
-def _detail_traits(traits: dict[str, str], rng: random.Random, race: str,
+def _detail_traits(traits: dict[str, str], rng: random.Random, homeland: str,
                    level: int, used: set[str] | None) -> None:
     """Fill in the generated side-people some quirks carry, inline in the
     trait string (no recursion: the child and the enemy are a name and a
@@ -248,19 +187,20 @@ def _detail_traits(traits: dict[str, str], rng: random.Random, race: str,
     quirk = traits.get("quirk")
     if quirk == "has a child":
         sex = rng.choice(SEXES)
-        name = pick_name(rng, race, sex, used)
+        name = pick_name(rng, homeland, sex, used)
         traits["quirk"] = (f"has a child (with them: {name}, age "
                            f"{rng.randint(8, 12)})")
     elif quirk == "has an enemy":
-        e_race = race if rng.random() < 0.5 else rng.choice(RACES)
+        enemy_home = (homeland if rng.random() < 0.5
+                      else rng.choice(HOMELANDS))
         sex = rng.choice(SEXES)
-        name = pick_name(rng, e_race, sex, used)
-        traits["quirk"] = (f"has an enemy ({name}, a {e_race} "
+        name = pick_name(rng, enemy_home, sex, used)
+        traits["quirk"] = (f"has an enemy ({name}, a {enemy_home} "
                            f"{rng.choice(ENEMY_CALLINGS)}, level "
                            f"{level + 2}, out there somewhere)")
 
 
-def roll_traits(rng: random.Random, race: str, level: int,
+def roll_traits(rng: random.Random, homeland: str, level: int,
                 used: set[str] | None = None) -> dict[str, str]:
     """The three-trait sketch: 1 behavior category + 2 distinct presentation
     categories, one trait each. COMPANIONS only since 2026-08-05 -- the PC
@@ -272,11 +212,7 @@ def roll_traits(rng: random.Random, race: str, level: int,
     traits[bcat] = rng.choice(BEHAVIOR_TRAITS[bcat])
     for pcat in rng.sample(sorted(PRESENTATION_TRAITS), 2):
         traits[pcat] = rng.choice(PRESENTATION_TRAITS[pcat])
-    subs = RACE_TRAIT_SUBS.get(race, {})
-    for cat, value in traits.items():
-        if value in subs:
-            traits[cat] = subs[value]
-    _detail_traits(traits, rng, race, level, used)
+    _detail_traits(traits, rng, homeland, level, used)
     return traits
 
 
@@ -293,20 +229,19 @@ def joining_gold(e: Entity) -> int:
 
 WIZARD_ROLL_TRIES = 200     # make_character(wizard=True) rerolls the stat
                             # budget until MIND comes out strictly highest
-                            # (rpg.make_human's gift test). A natural wizard
-                            # is a ~14-24% roll depending on the race's floor
-                            # mods, so this ceiling is never approached; it
+                            # (rpg.make_human's gift test). This ceiling is
+                            # never approached; it
                             # exists so a future stat change can't hang the
                             # generator in a loop.
 
 
 def make_character(rng: random.Random, level: int = 1,
-                   race: str | None = None, sex: str | None = None,
+                   homeland: str | None = None, sex: str | None = None,
                    used_names: set[str] | None = None,
                    with_traits: bool = True,
                    wizard: bool = False) -> Entity:
-    """One person, any level: race/sex/name/age, the three-trait sketch,
-    stats budgeted with the racial + trait floor/ceiling shifts, then grown
+    """One person, any level: homeland/sex/name/age, the three-trait sketch,
+    stats budgeted with trait floor/ceiling shifts, then grown
     to `level` by the reference progression doctrine (rpg.develop_hero --
     points mostly pre-spent, quality steel from L4). Works for recruits and,
     with DM edits, for non-adventurer NPCs. Satisfaction stays None until
@@ -323,13 +258,13 @@ def make_character(rng: random.Random, level: int = 1,
     how the PC is always a magic user. The reroll keeps the natural shape
     of a wizard's stats: nothing is nudged after the fact, an unlucky
     budget is simply thrown away."""
-    race = race or rng.choice(RACES)
+    homeland = homeland or rng.choice(HOMELANDS)
     sex = sex or rng.choice(SEXES)
-    name = pick_name(rng, race, sex, used_names)
-    traits = (roll_traits(rng, race, level, used_names)
+    name = pick_name(rng, homeland, sex, used_names)
+    traits = (roll_traits(rng, homeland, level, used_names)
               if with_traits else {})
-    floors = dict(RACE_MODS[race])
-    ceilings = dict(RACE_MODS_CEIL.get(race, {}))
+    floors: dict[str, int] = {}
+    ceilings: dict[str, int] = {}
     if "big" in traits.values():
         floors["str"] = floors.get("str", 0) + 1
     if "short" in traits.values():
@@ -339,7 +274,8 @@ def make_character(rng: random.Random, level: int = 1,
         if h.school:
             break
         h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
-    h.race, h.sex, h.age, h.traits = race, sex, roll_age(rng), traits
+    h.homeland, h.sex, h.age, h.traits = (
+        homeland, sex, roll_age(rng), traits)
     if "armored" in traits.values():
         h.def_bonus = ARMORED_DEF_BONUS
     rpg.develop_hero(h, level, rng)
@@ -357,13 +293,14 @@ def make_pair(rng: random.Random, level: int,
               used_names: set[str] | None = None
               ) -> tuple[str, list[Entity]]:
     """A bonded pair of recruits (one option slot, two heads, one fate):
-    both at the option's level; parent/child share a race; ages fixed up so
+    both at the option's level; parent/child share a homeland; ages fixed up
     the relationship reads (parent 16+ years older, mentor 10+)."""
     kind = rng.choice(PAIR_KINDS)
-    race = rng.choice(RACES)
-    a = make_character(rng, level, race=race, used_names=used_names)
+    homeland = rng.choice(HOMELANDS)
+    a = make_character(rng, level, homeland=homeland, used_names=used_names)
     b = make_character(rng, level,
-                       race=race if kind == "parent and child" else None,
+                       homeland=(homeland if kind == "parent and child"
+                                 else None),
                        used_names=used_names)
     if kind == "parent and child":
         a, b = (a, b) if a.age >= b.age else (b, a)     # a = the parent
@@ -385,10 +322,9 @@ def make_pair(rng: random.Random, level: int,
 # shopkeepers carry no stat block. If the story ever needs one to FIGHT,
 # forge the encounter (a reskinned catalog row) or make_character a leveled
 # body and borrow the face. The split from make_character is deliberate: for
-# PARTY members race and background are random (the dice cast the whole
-# person); for NPCs the DM already knows the race, the job, and roughly the
-# age -- the caller FIXES those and the dice roll only what is left, the
-# name.
+# PARTY members' homelands and backgrounds are random (the dice cast the
+# whole person); for NPCs the caller already knows the homeland, the job and
+# roughly the age, and the dice roll only what is left: the name.
 #
 # The sketch is GONE from this path (2026-08-05, designer directive): a
 # giver's temperament, voice and dress were three lines of flavor per face
@@ -401,18 +337,19 @@ NPC_MIN_AGE = 20    # roll_age (2d20+10) floored here for NPCs with a JOB;
                     # callers pass an exact age when the fiction knows better
 
 
-def make_npc(rng: random.Random, race: str, role: str,
+def make_npc(rng: random.Random, homeland: str, role: str,
              sex: str | None = None, age: int | None = None,
              level: int | None = None,
              used_names: set[str] | None = None) -> dict:
-    """One cast NPC: fixed race/role (and optionally sex/age) in, a rolled
+    """One cast NPC: fixed homeland/role (and optionally sex/age) in, a rolled
     name out. `level` is recorded when the caller knows one (posse and hell
     leaders, the famous smiths) and left off the dict otherwise."""
     sex = sex or rng.choice(SEXES)
-    name = pick_name(rng, race, sex, used_names)
+    name = pick_name(rng, homeland, sex, used_names)
     if age is None:
         age = max(NPC_MIN_AGE, roll_age(rng))
-    npc = {"name": name, "race": race, "sex": sex, "age": age, "role": role}
+    npc = {"name": name, "homeland": homeland, "sex": sex, "age": age,
+           "role": role}
     if level is not None:
         npc["level"] = level
     return npc
@@ -422,7 +359,7 @@ def npc_line(npc: dict) -> str:
     """One line of who this NPC is -- the person_line sibling for dict NPCs
     (quest givers, the central cast). The DM riffs the scene off it."""
     return (f"{npc['name']} ({npc['role']}) -- "
-            f"{npc['race']} {npc['sex']}, age {npc['age']}")
+            f"{npc['homeland']} {npc['sex']}, age {npc['age']}")
 
 
 # --------------------------------------------------------------------------- #
@@ -442,10 +379,10 @@ def trait_note(value: str) -> str:
 
 def person_line(e: Entity) -> str:
     """One line of who this is (the sheet/status companion to rpg.stat_line's
-    body readout): race, sex, age, and -- for a companion -- the trait
+    body readout): homeland, sex, age, and -- for a companion -- the trait
     sketch. The PC carries no sketch, so his line stops at the age."""
     nick = f' "{e.nickname}"' if e.nickname else ""
-    bits = [f"{e.race} {e.sex}, age {e.age}"] if e.race else []
+    bits = [f"{e.homeland} {e.sex}, age {e.age}"] if e.homeland else []
     for cat in ("temperament", "quirk", "interest", "weakness", "background",
                 "speech", "voice", "dress", "looks"):
         if cat in e.traits:
@@ -484,10 +421,10 @@ def character_sheet(e: Entity) -> list[str]:
 def downtime_match(e: Entity, settlement: dict) -> str | None:
     """Why a downtime day HERE suits this companion (the
     SAT_DOWNTIME_MATCH trigger), or None for the plain SAT_DOWNTIME day:
-    patriotic in their race's land, religious at a capital's temples, an
+    patriotic in their homeland, religious at a capital's temples, an
     interest where it thrives (INTEREST_PLACES)."""
     if rpg.has_trait(e, "patriotic") and settlement.get(
-            "race", settlement["land"]) == e.race:
+            "homeland", settlement["land"]) == e.homeland:
         return "walking their own land"
     subtype = settlement.get("subtype")
     if rpg.has_trait(e, "religious") and subtype == "capital":
@@ -530,9 +467,10 @@ def main() -> None:
                                                wizard=True)):
         print(line)
     print()
-    print("--- two cast NPCs (targeted: the DM fixes race/role) ---")
-    print(npc_line(make_npc(rng, "human", "chief constable", used_names=used)))
-    print(npc_line(make_npc(rng, "dwarf", "mine-masters' speaker",
+    print("--- two cast NPCs (targeted: the DM fixes homeland/role) ---")
+    print(npc_line(make_npc(rng, "firascir", "chief constable",
+                            used_names=used)))
+    print(npc_line(make_npc(rng, "tergal", "caravan-master",
                             used_names=used)))
 
 

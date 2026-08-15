@@ -1,18 +1,14 @@
 """The story layer -- the conquest questline (the game's L2-10 authored spine).
 
 The board's local quests are formulaic placeholders; this file is AUTHORED
-content: one aggressor race per playthrough starts a war of conquest, and
+content: one aggressor country per playthrough starts a war of conquest, and
 four waves of it -- pinned at levels 2 / 5 / 8 / 10 -- carry the campaign's
 first half. (The apocalypse questline, the L12-20 second spine, waits on
 the magic tier -- plan.md.) The design (2026-07-12, designer-vetted):
 
-- **Four aggressor variants**, one rolled per playthrough: ELVES (fascist
-  perfection -- beautiful, efficient, magic-fuelled steampunk industry),
-  GOBLINS (chaotic evil tech -- robots, bombs, bioweapons, zany
-  experiments), HUMANS (the deathless kingdom -- a crown corrupted by an
-  evil god; conscription that does not end at death), ORCS (a khagan
-  unites the clans -- might is right, war is glorious). Dwarves are never
-  the aggressor: the stalwart victim/ally land.
+- **Three country variants**, one rolled per playthrough: Mortellaria's
+  magic-fuelled Golden Empire, Firascir's deathless kingdom, and Tergal's
+  Iron Horde. The peoples are all human; the country supplies the culture.
 - **Waves are ordinary quests underneath**: same schema, same threat math
   (quests.build_site_rooms), same level-pay formulas. What is authored:
   titles, descriptions, site names, reskins, heralds, epilogues, and the
@@ -47,7 +43,7 @@ from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, ROOM_SHARES,
                     new_site, new_room, quest_sites, site_rooms,
                     settlements, settlements_by_land,
                     quest_line, quest_detail_lines)
-from places import land_race, slug
+from places import slug
 import worldsim                  # the war's WHY line (2026-08-10, the
                                  # politics rung): the casus belli pool and
                                  # the land news the herald posts it on
@@ -65,10 +61,10 @@ WAVE_ENCOUNTERS = 3     # a war wave is the BIGGEST job shape the game has
                         # exact quest length the rework exists to stop
                         # spending -- and a war wave is not exempt from a
                         # party's HP budget just because it is authored.
-AGGRESSORS = ("elf", "goblin", "human", "orc")
+AGGRESSORS = ("firascir", "mortellaria", "tergal")
 
 # --------------------------------------------------------------------------- #
-# The four conquests
+# The three conquests
 # --------------------------------------------------------------------------- #
 # Each variant: banner + creed (the ideology, said once, at wave 1's
 # herald), the named faces' titles, one foe pool + reskin table (existing
@@ -78,9 +74,9 @@ AGGRESSORS = ("elf", "goblin", "human", "orc")
 # named faces ("Karg, the Khagan").
 
 CONQUESTS: dict[str, dict] = {
-    "elf": dict(
+    "mortellaria": dict(
         banner="the Golden Empire",
-        creed="The elf empire believes other peoples are weak and must be "
+        creed="The Golden Empire believes its neighbors are weak and must be "
               "ruled. Its army of magic machines is crossing the border.",
         conqueror_title="High General",
         lieutenant_titles=("Chief Engineer", "Army Captain"),
@@ -92,14 +88,14 @@ CONQUESTS: dict[str, dict] = {
                "ogre": "Giant War Machine", "troll": "Siege Machine"},
         waves=(
             dict(title="Machines at the Border",
-                 desc="Elf scouts are marking farms along the {land} border. "
+                 desc="Imperial scouts are marking farms along the {land} border. "
                       "War machines follow them and drive the farmers out.",
-                 herald="a rider from the {land} border: elf scouts and war "
+                 herald="a rider from the {land} border: imperial scouts and war "
                         "machines have crossed the border.",
                  sites=("the scout camp", "the occupied farms"),
-                 epilogue="The scouts and machines are destroyed. The elves "
+                 epilogue="The scouts and machines are destroyed. The empire "
                           "pull back from the border."),
-            dict(title="The Elf Invasion",
+            dict(title="The Golden Invasion",
                  desc="The Golden Empire has invaded the {land} lands. {lt1} "
                       "is building a factory that makes new war machines. "
                       "Destroy it.",
@@ -112,7 +108,7 @@ CONQUESTS: dict[str, dict] = {
             dict(title="Evacuate the {land_cap} Lands",
                  desc="{lt2} leads the main army into the {land} lands. The "
                       "walls will fall. Keep the escape road open.",
-                 herald="the main elf army has reached the {land} lands. The "
+                 herald="the main imperial army has reached the {land} lands. The "
                         "city must be evacuated.",
                  sites=("the burning defenses", "the last gate",
                         "the evacuation road"),
@@ -129,60 +125,7 @@ CONQUESTS: dict[str, dict] = {
                           "and its armies leave the conquered lands."),
         ),
     ),
-    "goblin": dict(
-        banner="the Thousand Workshops",
-        creed="The goblin bosses have united. They plan to rebuild the world "
-              "with bombs, machines, and monsters.",
-        conqueror_title="Master Tinkerer",
-        lieutenant_titles=("Bomb General", "Beast Maker"),
-        pool=LADDER_POOL + WOLF_POOL + ("ogre", "troll"),
-        skins={"wolf": "Mutant Hound", "dire wolf": "Mutant Dire Hound",
-               "cutthroat": "Goblin Bomber", "archer": "Scrap Gunner",
-               "bruiser": "Scrap-Golem", "soldier": "Tin Soldier",
-               "veteran": "Tin Sergeant", "champion": "War Tinkerer",
-               "blademaster": "Sawblade Duelist", "warlord": "Master Tinkerer",
-               "ogre": "Walking Bomb", "troll": "Mutant Hulk"},
-        waves=(
-            dict(title="Stolen Parts",
-                 desc="Animals, tools, and people are disappearing along the "
-                      "{land} border. Goblins are using them to build new "
-                      "monsters.",
-                 herald="a guard from the {land} border: goblins are stealing "
-                        "animals, tools, and people.",
-                 sites=("the stripped farm", "the goblin workshop"),
-                 epilogue="The workshop is destroyed. The thefts stop."),
-            dict(title="Bombs and Tunnels",
-                 desc="The Thousand Workshops have invaded the {land} lands. "
-                      "{lt1} bombs the defenses while a machine digs under "
-                      "the walls. Destroy both.",
-                 herald="the {land} lands are under attack. Goblins bomb the "
-                        "walls while a machine digs below them.",
-                 sites=("the bombed camp", "the bomb line",
-                        "the digging machine"),
-                 epilogue="The digging machine and bomb line are destroyed. "
-                          "The {land} lands hold."),
-            dict(title="Evacuate the {land_cap} Lands",
-                 desc="{lt2} attacks the {land} lands with poison gas and "
-                      "mutant soldiers. The walls are lost. Keep the escape "
-                      "road open.",
-                 herald="the goblin army has broken the walls of the {land} "
-                        "lands. The city must be evacuated.",
-                 sites=("the poisoned walls", "the breach",
-                        "the evacuation road"),
-                 epilogue="The {land} lands fall to the Workshops. The party "
-                          "holds the road while the people escape."),
-            dict(title="Destroy the Main Workshop",
-                 desc="All goblin armies take orders from {conqueror}'s main "
-                      "workshop. Kill the Tinkerer and destroy it.",
-                 herald="deserters have found the Master Tinkerer's workshop. "
-                        "Destroy it to end the war.",
-                 sites=("the minefields", "the main workshop",
-                        "the Tinkerer's room"),
-                 epilogue="The Tinkerer is dead. The Workshops fight each "
-                          "other, and the war ends."),
-        ),
-    ),
-    "human": dict(
+    "firascir": dict(
         banner="the Undead Kingdom",
         creed="A human king serves a dark god. His army raises the dead and "
               "sends them to conquer nearby lands.",
@@ -238,9 +181,9 @@ CONQUESTS: dict[str, dict] = {
                           "conquered lands are free."),
         ),
     ),
-    "orc": dict(
+    "tergal": dict(
         banner="the Iron Horde",
-        creed="An orc warlord has united the clans. He plans to conquer every "
+        creed="A Tergal warlord has united the clans. He plans to conquer every "
               "land his army can reach.",
         conqueror_title="Warlord",
         lieutenant_titles=("War Chief", "Wolf Master"),
@@ -251,14 +194,14 @@ CONQUESTS: dict[str, dict] = {
                "veteran": "Horde Veteran",
                "champion": "Horde Champion",
                "blademaster": "Horde Swordmaster",
-               "warlord": "Orc Warlord"},
+               "warlord": "Horde Warlord"},
         waves=(
-            dict(title="Orc Scouts",
-                 desc="Orc raiders are burning guard posts along the {land} "
+            dict(title="Horde Scouts",
+                 desc="Horde raiders are burning guard posts along the {land} "
                       "border. They are mapping the roads for an invasion.",
-                 herald="a guard from the {land} border: orc raiders are "
+                 herald="a guard from the {land} border: horde raiders are "
                         "burning guard posts and mapping the roads.",
-                 sites=("the burned guard post", "the orc camp"),
+                 sites=("the burned guard post", "the raider camp"),
                  epilogue="The raiders are dead. The invasion is delayed."),
             dict(title="The Horde Invasion",
                  desc="The Iron Horde has invaded the {land} lands. {lt1} "
@@ -308,20 +251,21 @@ def _names(story: dict) -> dict:
 
 
 def init_story(world: dict, rng: random.Random,
-               pc_race: str | None = None) -> dict:
+               pc_homeland: str | None = None,
+               aggressor: str | None = None) -> dict:
     """Roll the playthrough's war at game start: the aggressor, the named
     faces, and the two victim lands. Nothing posts until the party earns
-    wave 1 (level 2). `pc_race` is excluded from the aggressor roll
+    wave 1 (level 2). `pc_homeland` is excluded from the aggressor roll
     (2026-07-13, designer call: the PC never fights his own people's war
     of conquest)."""
     from people import make_npc    # runtime import (people imports quests)
     present = list(world["lands"])
     capital_land = settlements(world)[0]["land"]
-    pool = [r for r in AGGRESSORS if r != pc_race] or list(AGGRESSORS)
-    aggressor = rng.choice(pool)
-    aggressor_lands = [land for land in present
-                       if land_race(world, land) == aggressor]
-    aggressor_land = rng.choice(aggressor_lands)
+    pool = [r for r in AGGRESSORS if r != pc_homeland] or list(AGGRESSORS)
+    if aggressor is not None and aggressor not in AGGRESSORS:
+        raise ValueError(f"unknown aggressor country: {aggressor}")
+    aggressor = aggressor or rng.choice(pool)
+    aggressor_land = aggressor
     victims = [land for land in present if land != aggressor_land]
     # The land that FALLS (wave 3) must not host the capital -- wave 4 is
     # raised from the capital, which occupation would gate shut.
@@ -331,14 +275,14 @@ def init_story(world: dict, rng: random.Random,
     land_a = rng.choice(a_pool)
     spec = CONQUESTS[aggressor]
     used: set[str] = set()
-    faces = [make_npc(rng, aggressor, title, used_names=used)
+    faces = [make_npc(rng, aggressor_land, title, used_names=used)
              for title in (spec["conqueror_title"],)
              + spec["lieutenant_titles"]]
     # THE WHY (2026-08-10, the politics rung). Rolled on a DERIVED rng --
     # the armory's pattern -- so the aggressor, the faces and the targets
     # every existing world rolled are byte-identical to what they were
-    # before the war had a reason. One race needs no roll: the Sky's
-    # mandate says the neighbours are rebels who have not yet submitted.
+    # before the war had a reason. Tergal's Sky mandate is the one fixed
+    # rationale; the other countries roll from the common pool.
     why = worldsim.roll_casus_belli(
         random.Random(f"casus:{world.get('seed')}:{aggressor_land}"),
         aggressor)
@@ -398,10 +342,10 @@ def post_wave(world: dict, story: dict, rng: random.Random,
         settlement = settlements_by_land(world)[land][0]
     else:
         # Wave 4 is raised from the capital -- unless the capital happens
-        # to be the aggressor's own race (its free kin disowning the war
+        # to be the aggressor's own country (its free kin disowning the war
         # reads confusing); then the wave-2 ally land raises it instead.
         settlement = settlements(world)[0]
-        if land_race(world, settlement["land"]) == story["aggressor"]:
+        if settlement["land"] == story["aggressor"]:
             settlement = settlements_by_land(world)[story["targets"][0]][0]
     shown_land = land or settlement["land"]
     shown_name = world["lands"][shown_land]["name"]
@@ -456,7 +400,7 @@ def post_wave(world: dict, story: dict, rng: random.Random,
     if ruler is not None:
         quest["giver"] = dict(ruler)
     else:
-        attach_giver(quest, land_race(world, settlement["land"]), rng,
+        attach_giver(quest, settlement["land"], rng,
                      role="the war-muster's captain")
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -554,16 +498,7 @@ def main() -> None:
     args = ap.parse_args()
     rng = random.Random(args.seed)
     world = generate_world(rng.randrange(1 << 30))
-    story = init_story(world, rng)
-    if args.aggressor:
-        story["aggressor"] = args.aggressor      # eyeball a chosen variant
-        from people import make_npc
-        spec = CONQUESTS[args.aggressor]
-        used: set[str] = set()
-        faces = [make_npc(rng, args.aggressor, t, used_names=used)
-                 for t in (spec["conqueror_title"],)
-                 + spec["lieutenant_titles"]]
-        story["conqueror"], story["lieutenants"] = faces[0], faces[1:]
+    story = init_story(world, rng, aggressor=args.aggressor)
     spec = CONQUESTS[story["aggressor"]]
     print(f"Aggressor: {story['aggressor']} -- {spec['banner']}")
     print(f"  {spec['creed']}")

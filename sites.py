@@ -154,8 +154,8 @@ BARROW_BLADE = Weapon("barrow blade", 0, 1, 1, durability=2, tags=("ancient",),
                       description="A chieftain's burial sword, still true. "
                                   "Heavy-arms steel with a dead man's name.")
 
-# The dwarf gunner's COMMON gun (ranged combat, 2026-07-16): the quality
-# blunderbuss's poor cousin, so a mid-band foe row can shoot dwarf thunder
+# The gunner's COMMON gun (ranged combat, 2026-07-16): the quality
+# blunderbuss's poor cousin, so a mid-band foe row can shoot powder
 # without dropping 90g of quality brass into every fight (the same economy
 # rule that keeps quality blades off low mooks). Crude iron, same doctrine:
 # flat aim, one bound of reach, a hard hit, a clubbing stock.
@@ -163,7 +163,7 @@ HAND_BOMBARD = Weapon("hand bombard", 0, 6, 1, durability=2, bulk=3,
                       tags=("ranged", "gun"), value=15, range=1, reload=1,
                       aim="flat", aim_flat=4, ammo="shells",
                       missile="thundering blast", melee_atk=0, melee_sev=0,
-                      description="A crude iron throat on a stock: dwarf "
+                      description="A crude iron throat on a stock: powder "
                                   "thunder for the rank and file. Flat aim, "
                                   "short reach, ruinous up close.")
 
@@ -198,18 +198,16 @@ FOES = {
     # purpose: kill the line, then walk down the bowman.
     "archer":    FoeSpec("Archer",    level=1, dex=5, str_=2, sta=5, hp=6,
                          ref_pack=3, pain=2, weapon=WEAPONS["shortbow"]),
-    # The slinger: the archer's poorer cousin -- goblin and mob ranged work
-    # (goblins never draw a bow; the cultural tables in quests.py say who
-    # fields what).
+    # The slinger: the archer's poorer cousin and a common mob ranged row.
     "slinger":   FoeSpec("Slinger",   level=1, dex=5, str_=2, sta=5, hp=5,
                          ref_pack=3, pain=2, weapon=WEAPONS["sling"]),
-    # The hunter: the drilled wood-runner -- the elf lands' ranged mid-band
+    # The hunter: the drilled wood-runner -- a ranged mid-band
     # (a real shot, a real knife-fight after; still shortbow steel, the
     # quality longbow stays a hero purchase and a story drop).
     "hunter":    FoeSpec("Hunter",    level=3, dex=6, str_=4, sta=7, hp=11,
                          ref_pack=2, training=1, pain=2,
                          weapon=WEAPONS["shortbow"]),
-    # The gunner: dwarf thunder in the mid-band -- one flat-aimed blast a
+    # The gunner: powder thunder in the mid-band -- one flat-aimed blast a
     # bound away, then an honest clubbing stock (the hand bombard, the
     # blunderbuss's common cousin -- see HAND_BOMBARD).
     "gunner":    FoeSpec("Gunner",    level=4, dex=4, str_=5, sta=7, hp=13,
@@ -221,7 +219,7 @@ FOES = {
     # pain like any drilled fighter (pain 2, the human-combatant norm). They exist so the level line has humanoids parallel to the
     # monster families (plan.md prescribed them to fill the catalog's level
     # gaps: 6-7, 15-17, 19-20), and so the encounter generator always has a
-    # reskinnable fallback for any race's fiction ("rival warband",
+    # reskinnable fallback for any culture's fiction ("rival warband",
     # "grave-robbers", "press-gang"...). Fixed military steel -- a soldier
     # does not roll on the mook table -- rising with rank; the top ranks
     # carry lootable quality blades (a story beat by then, not an economy
@@ -388,7 +386,7 @@ def make_foe(kind: str, n: int, rng: random.Random,
 
     `display` reskins the row for the log ("Scrap-Hound 2" over the wolf
     block): display name is FICTION, the stat row is MECHANICS -- the quest
-    generator's one trick for making 5 races out of one calibrated catalog
+    generator's one trick for making many cultures from one calibrated catalog
     (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
     weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)

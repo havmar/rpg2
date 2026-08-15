@@ -1,18 +1,18 @@
 # The Fixed Europe Map — implementation contract
 
-This is the sole active roadmap. The 2026-08-15 design sessions replaced the
-old six-Land, five-race, list-shaped world with a fixed 30x18 Europe-shaped
-grid inhabited only by humans. The former roadmap is preserved, explicitly
+This is the sole active roadmap. The 2026-08-15 design sessions replace the
+former world with a fixed 30x18 Europe-shaped grid inhabited only by humans.
+The Human World Contraction is implemented and documented in `rules.md` and
+`designlog.md`; the former roadmap is preserved, explicitly
 inactive, in `archive/plan-pre-europe-2026-08-15.md`.
 
-The work is split into five implementation sessions. A future session may be
+Four implementation sessions remain. A future session may be
 started simply by asking to implement its exact title:
 
-1. **Human World Contraction**
-2. **Fixed Europe Geography**
-3. **Grid Navigation and Map UI**
-4. **Local Quest Geography**
-5. **Europe MVP Closure**
+1. **Fixed Europe Geography**
+2. **Grid Navigation and Map UI**
+3. **Local Quest Geography**
+4. **Europe MVP Closure**
 
 Implement them in order. Each session must leave its own slice coherent and
 tested; do not begin a later session as an incidental extension of an earlier
@@ -26,6 +26,8 @@ measured results in `benchlog.md` where relevant, and the decisions and build
 record in `designlog.md`. Keep only the unbuilt contract here. Shared clauses
 which later sessions still need may remain until their final consumer ships;
 replace already-built detail with a short pointer to its permanent owner.
+After verification, always commit the completed session to git before
+reporting it done.
 
 ---
 
@@ -677,62 +679,6 @@ compatibility helpers for the old save or old six-Land schema.
 ---
 
 # Implementation sessions
-
-## Session 1 — Human World Contraction
-
-**Trigger:** `Implement Human World Contraction from plan.md.`
-
-### Objective
-
-Leave the existing list-shaped game functional with exactly three human
-countries and no fantasy-race routing. This isolates semantic/content removal
-from the later spatial rewrite.
-
-### Required work
-
-1. Reduce `place_catalog.json`/`places.LAND_SPECS` to Firascir,
-   Mortellaria and Tergal while keeping the current list geography temporarily
-   runnable.
-2. Replace character/NPC `race` with `homeland`; remove racial modifiers,
-   substitutions, CLI and display language in `rpg.py`, `people.py` and
-   `session.py`.
-3. Reclassify the present Tergal/orc personal names as Tergal human names;
-   use the human pool for Firascir and Mortellaria.
-4. Route quest givers, wild pools, generated quest tables, law/Hell posses,
-   conquest defenders, residents, smiths and recruits by country/culture.
-5. Delete elf/goblin/dwarf tables and adapt the Tergal table without changing
-   calibrated foe stats.
-6. Convert the story to the three country variants and country aggressor
-   selection.
-7. Remove the three deleted worldsim packets and humanize Tergal; install the
-   minimal surviving relations and satisfy every validator.
-8. Remove race-exclusive weapon/shop rules while keeping gun and smith
-   mechanics.
-9. Update active documentation for the all-human, three-country rule; record
-   exact content adaptations in `designlog.md`.
-
-### Primary files
-
-`place_catalog.json`, `places.py`, `people.py`, `rpg.py`, `quests.py`,
-`story.py`, `worldsim.py`, `rulers.py`, `conquest.py`, `karma.py`,
-`weapons.py`, `session.py`, their affected tests, `rules.md`, `dm.md`,
-`develop.md`, `writing.md` where its active guidance names removed peoples.
-
-### Non-goals
-
-No Tile schema, fixed-map loading, grid travel, city overlay, density roll or
-quest radius yet. Temporary list geography is allowed only until Session 2.
-
-### Verification
-
-- Full unit suite green after obsolete expectations are rewritten.
-- Fresh `new` succeeds repeatedly and every generated person is from one of
-  the three homelands.
-- All three story variants can be dumped/forced.
-- Worldsim import validation and representative day rolls cover all three
-  countries.
-- A runtime/catalog grep test finds no removed species/country identifiers in
-  active player-facing data, with explicit exclusions for historical docs.
 
 ## Session 2 — Fixed Europe Geography
 

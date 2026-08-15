@@ -1024,19 +1024,18 @@ WEAPONS = {w.name: w for w in [
            tags=("ranged", "gun"), value=90, range=1, reload=1,
            aim="flat", aim_flat=4, ammo="shells",
            missile="thundering blast", melee_atk=0, melee_sev=0,
-           description="Dwarven thunder in a brass throat: the spread does "
+           description="Thunder in a brass throat: the spread does "
                        "the aiming (a flat 4 -- no stats needed) and what "
                        "it hits it ruins, one bound away at most. The "
                        "shells cost real gold, and the stock clubs "
                        "honestly when they close."),
     Weapon("revolver", -1, 5, 1, durability=4, quality=True, bulk=1,
-           tags=("ranged", "gun", "dwarven"), value=250, range=2, reload=0,
+           tags=("ranged", "gun", "arcane"), value=250, range=2, reload=0,
            aim="dex", ammo="power", missile="shot",
-           description="A dwarven magic gun: no powder, no reloading -- "
+           description="An arcane gun: no powder, no reloading -- "
                        "every round, while the wielder's own Power lasts "
                        "(1 a shot). Hard to aim (-1) and unforgiving of "
-                       "clumsy hands; wants high DEX. Sold only where "
-                       "dwarves sell."),
+                       "clumsy hands; wants high DEX."),
 ]}
 
 # --- The warrior-moves weapon gate (session B) ------------------------------ #
@@ -1400,7 +1399,7 @@ TAVERN_OVERCHARGE = 0.10    # overcharge fraction of each maximum (min +1)
 # XP bonus would make CHA the best stat in the game, and levels already
 # dominate everything). Sims never roll heroes through the people layer and
 # never set `protagonist`, so neither knob moves a single bench number.
-HERO_CHA_RANGE = (3, 6)         # rolled like DEX/STR; racial mods raise the
+HERO_CHA_RANGE = (3, 6)         # rolled like DEX/STR; trait mods may raise the
                                 # FLOOR of this range, never the ceiling
                                 # (people.py -- the natural cap 6 holds)
 PARTY_CAPACITY_BASE_CHA = 3     # capacity = CHA - this, clamped to 0..3
@@ -2336,7 +2335,7 @@ class Wound:
 @dataclass(eq=False)
 class Entity:
     name: str               # short (combat-log) name -- "Inga", nothing
-                            # appended: sheet flavor (race, traits) stays out
+                            # appended: sheet flavor (homeland, traits) stays out
                             # of the per-exchange lines so both log levels
                             # stay terse
     dex: int
@@ -2621,7 +2620,7 @@ class Entity:
     def_bonus: int = 0                  # flat DEFENSE pressure (the "armored"
                                         # dress trait; armor-the-system is a
                                         # separate roadmap item)
-    race: str = ""                      # human / elf / orc / dwarf / goblin
+    homeland: str = ""                  # firascir / mortellaria / tergal
     sex: str = ""                       # "m" / "f" (flavor)
     age: int = 0                        # 2d20+10 at creation (flavor)
     nickname: str = ""                  # schema slot only -- no nickname
@@ -6469,15 +6468,14 @@ HERO_POWER_RANGE = (3, 6)
 # the same number of surplus points above the range floors, dealt out by a
 # randomly-ordered stat PRIORITY (weighted toward the front of the order), so
 # builds differ in SHAPE, never in total -- recruiting compares tradeoffs
-# instead of point sums. Racial floor mods (people.RACE_MODS) raise a stat's
-# floor UNDER the budget, so they stay a genuine net extra: races remain
-# unequal on purpose. 9 was the old independent rolls' mean surplus over six
+# instead of point sums. Trait floor modifiers apply under the same budget;
+# homeland never changes a stat. 9 was the old independent rolls' mean over six
 # stats; MIND (2026-07-15, the Magic & Mind add-on) is a seventh budget
 # line, so the budget rose to 11 to keep the per-stat surplus ~unchanged.
 HERO_STAT_BUDGET = 11
 
 # The sims' throwaway name pool (the played game draws from people.py's
-# per-race pools instead). The old stat epithet ("the precise") is GONE
+# per-homeland pools instead). The old stat epithet ("the precise") is GONE
 # (2026-07-11): it was a stat-tell in costume, and the trait system does its
 # one job -- flavor at introduction -- better.
 NAMES = ["Brand", "Sela", "Corvin", "Mira", "Doran", "Yssa", "Kael", "Rhea",
@@ -6495,7 +6493,7 @@ def random_kit(rng: random.Random) -> dict[str, int]:
 
 def _adjusted_range(base: tuple[int, int], floor_up: int = 0,
                     ceiling_down: int = 0) -> tuple[int, int]:
-    """Racial/trait stat modifiers move a roll's FLOOR up (never the ceiling
+    """Trait stat modifiers move a roll's FLOOR up (never the ceiling
     -- the natural cap 6 holds, see rules.md's 1-20 doctrine) or its CEILING
     down; stacked adjustments can never invert the range."""
     lo, hi = base[0] + floor_up, base[1] - ceiling_down
@@ -6528,9 +6526,8 @@ def make_human(rng: random.Random, name: str,
     roll (below), two random potions, and a starting weapon (the common
     table: 50% crude / 45% soldier's arms / 5% heavy; hedge-healers often
     carry the wooden staff). `floors`/`ceilings` shift the ranges per key
-    ("dex", "str", "cha", "hp") -- the racial/trait hook (people.py: an
-    orc's STR floor is 4 and the point is a NET extra under the budget;
-    the "short" trait caps STR at 5).
+    ("dex", "str", "cha", "hp") -- the trait hook (people.py: the "big"
+    trait raises STR's floor and "short" caps STR at 5).
 
     Magic & Mind (2026-07-15): MIND strictly above BOTH other combat stats
     makes a WIZARD -- a rolled school (fire/ice) known at rank 1 instead of

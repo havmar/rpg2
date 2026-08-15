@@ -4300,3 +4300,47 @@ splits the rework into five triggerable sessions: Human World Contraction;
 Fixed Europe Geography; Grid Navigation and Map UI; Local Quest Geography;
 Europe MVP Closure. Each must ship and be documented independently before the
 next begins.
+
+## 2026-08-15 (D) — Human World Contraction shipped
+
+The first Europe-map implementation slice leaves the old list navigation
+temporarily runnable but contracts its world to Firascir, Mortellaria and
+Tergal. Every person is human. Character, NPC and place records use `homeland`
+for cultural origin; the former identity field, its command-line switch, its
+stat floors and ceilings, and its trait substitutions were deleted rather
+than retained as compatibility data. Firascir and Mortellaria share the
+western human personal-name pool. Tergal's existing personal names were kept
+and reclassified as names of Tergal humans.
+
+Quest and encounter routing now follows country. Firascir keeps its existing
+human quest packet, Mortellaria takes that mechanically neutral human table,
+and Tergal keeps its steppe, clan, horse and warband material after removing
+species claims. All three use the same calibrated humanoid ladder, so no foe
+statistics moved. Service providers, rulers, residents, recruits, law and
+Hell posses, conquest defenders, smiths, wild encounters and delivery faces
+now receive the settlement's homeland. The gun rows and smith mechanics stay;
+the revolver is no longer restricted to one people or one country's shops.
+
+The conquest spine now has exactly three country variants. Firascir carries
+the Undead Kingdom, Mortellaria the magic-machine Golden Empire, and Tergal
+the human Iron Horde. The aggressor roll selects a country and excludes the
+PC's homeland. `story.init_story` gained an explicit aggressor override so all
+three complete four-wave variants can be forced by tests and by the story
+dump without recasting mismatched faces afterward.
+
+The active world simulation is projected onto the three surviving country
+packets. Shared cards have their scopes narrowed, relations require both ends
+to survive, unreachable chains are pruned, and keyed state/menu/encounter
+tables retain only states active cards can produce. Tergal-facing copy was
+humanized. This leaves 104 active cards, eight directed relations, 16 facts
+and seven services/options; import validation remains strict. Old packet
+literals may remain as source material until the final cleanup session, but
+they cannot enter `CARDS`, any keyed runtime catalog, a country deck, or a
+player-facing readout.
+
+The permanent regression contract now checks the three homeland sets,
+repeated fresh-world people, all twelve forced story waves, absence of the
+removed peoples/countries from active catalogs, and the contracted opening
+census of 15 natural Areas and nine settlements. The content-only contraction
+does not alter combat or progression knobs, so no balance benchmark was
+remeasured.

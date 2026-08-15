@@ -10,7 +10,7 @@ layer is inert until the player takes dark work.
 
 THE HELL PACT (2026-07-19, second slice -- the dark-quests session): the
 PC is not a neutral adventurer but a LOW-RANKING EMPLOYEE OF HELL, a
-mortal of an ordinary race bound by a pact with an evil god -- wealth
+mortal human bound by a pact with an evil god -- wealth
 and power promised in exchange for obedience in tasks that fray the
 orderly fabric of the universe (hell's long game: gates and summonings).
 Mechanically:
@@ -101,7 +101,7 @@ from quests import (LADDER_POOL, WOLF_POOL, UNDEAD_POOL, CASTER_POOL,
                     BEAST_POOL, GIANTKIN_POOL,
                     build_quest, attach_giver, template_band, build_room,
                     room_budget, next_quest_id)
-from places import land_race
+from places import land_homeland
 
 # --------------------------------------------------------------------------- #
 # Constants (the villain layer's knobs)
@@ -326,7 +326,7 @@ def karma_line(karma: dict, pc_level: int, day: int | None = None) -> str:
 # used to live here was CRIME, and crime is no longer a quest at all (see
 # CRIME_FODDER below).
 #
-# Race-agnostic on purpose (dark work is cosmopolitan; race-flavored dark
+# Country-agnostic on purpose (dark work is cosmopolitan; culturally flavored
 # tables are a later content pass -- plan.md). Same schema as
 # quests.TEMPLATES plus `align: "dark"`; the foes are always someone who
 # FIGHTS BACK -- guards, militia, the relic's keepers, the puppy's parent
@@ -729,7 +729,7 @@ def roll_dark_quest(world: dict, settlement: dict, pc_level: int,
     # attachment.
     qid = next_quest_id(world)
     quest = build_quest(world, qid, tpl, settlement["key"], level, rng)
-    attach_giver(quest, land_race(world, settlement["land"]), rng,
+    attach_giver(quest, land_homeland(world, settlement["land"]), rng,
                  role=tpl.get("giver"),
                  used_names=used_names)
     world["quests"][qid] = quest
@@ -776,7 +776,7 @@ def posse_band(level: int) -> tuple[str, str, dict]:
     return POSSE_BANDS[-1][1:]      # unreachable; keeps the checker honest
 
 
-def build_posse(level: int, race: str, rng: random.Random,
+def build_posse(level: int, homeland: str, rng: random.Random,
                 used_names: set[str] | None = None
                 ) -> tuple[list[str], dict, dict, str]:
     """One punishment encounter at `level`: (kinds, skins, leader npc,
@@ -788,7 +788,8 @@ def build_posse(level: int, race: str, rng: random.Random,
     label, role, skins = posse_band(level)
     kinds = build_room(room_budget(level, 1.0), LADDER_POOL, rng,
                        final=True)
-    leader = make_npc(rng, race, role, level=level, used_names=used_names)
+    leader = make_npc(rng, homeland, role, level=level,
+                      used_names=used_names)
     return kinds, skins, leader, label
 
 
@@ -813,7 +814,7 @@ HELL_SKINS = {
 HELL_LEADER_ROLE = "collections agent of Hell (in a borrowed body)"
 
 
-def build_hell_posse(level: int, race: str, rng: random.Random,
+def build_hell_posse(level: int, homeland: str, rng: random.Random,
                      used_names: set[str] | None = None
                      ) -> tuple[list[str], dict, dict, str]:
     """One Past Due collections encounter at `level`: (kinds, skins,
@@ -822,7 +823,7 @@ def build_hell_posse(level: int, race: str, rng: random.Random,
     from people import make_npc     # runtime import (people imports quests)
     kinds = build_room(room_budget(level, 1.0), LADDER_POOL, rng,
                        final=True)
-    leader = make_npc(rng, race, HELL_LEADER_ROLE, level=level,
+    leader = make_npc(rng, homeland, HELL_LEADER_ROLE, level=level,
                       used_names=used_names)
     return kinds, HELL_SKINS, leader, "hell's collections"
 
@@ -851,7 +852,7 @@ def main() -> None:
     print("Sample posses (one per heat band):")
     for lvl in (3, 6, 11, 16):
         kinds, skins, leader, label = build_posse(
-            lvl, land_race(world, s["land"]), rng)
+            lvl, land_homeland(world, s["land"]), rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")
@@ -859,7 +860,7 @@ def main() -> None:
     print("Sample hell collections posses (Past Due):")
     for lvl in (4, 9):
         kinds, skins, leader, label = build_hell_posse(
-            lvl, land_race(world, s["land"]), rng)
+            lvl, land_homeland(world, s["land"]), rng)
         shown = ", ".join(skins.get(k, k) for k in kinds)
         print(f"  L{lvl} ({label}): {shown}")
         print(f"    led by {leader['name']}, {leader['role']}")

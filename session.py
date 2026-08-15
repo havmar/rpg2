@@ -155,7 +155,7 @@ import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
-from quests import (generate_world, forge_quest, board_lines, RACES,
+from quests import (generate_world, forge_quest, board_lines, HOMELANDS,
                     quest_gold_posted,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade,
@@ -180,7 +180,7 @@ from places import (
     discover_area, materialize_natural_site, materialize_house,
     active_known_facts, place_debug_lines, find_place,
     add_state as add_place_state, replace_state as replace_place_state,
-    clear_state as clear_place_state, land_race,
+    clear_state as clear_place_state, land_homeland,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -484,8 +484,8 @@ def hero_block_lines(party: list, h) -> list[str]:
     head = f"{role_tag(party, h)} {h.name}"
     if h.nickname:
         head += f' "{h.nickname}"'
-    if h.race:
-        head += f" -- {h.race} {h.sex}, age {h.age}"
+    if h.homeland:
+        head += f" -- {h.homeland} {h.sex}, age {h.age}"
     lines = [head + tag]
     lines.append(f"  L{h.level}  training {h.training}  "
                  f"XP {h.xp}/{xp_to_next(h.level)}  points {h.skill_points}")
@@ -522,8 +522,8 @@ def hero_block_lines(party: list, h) -> list[str]:
         lines.append(f"  drilled, not in hand: {dormant}")
     if h.satisfaction is not None:
         lines.append(f"  satisfaction {h.satisfaction}/{SATISFACTION_MAX}")
-    if h.race:
-        # person_line's trait sketch, minus the name and race/age already
+    if h.homeland:
+        # person_line's trait sketch, minus the name and homeland/age already
         # in the header (one source for the category order: people.py).
         traits = person_line(h).split(" -- ", 1)[1].partition("; ")[2]
         if traits:
@@ -1441,8 +1441,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     if args.level is not None and not 1 <= args.level <= LEVEL_CAP:
         print(f"--level takes a level of 1-{LEVEL_CAP}.")
         return
-    if args.race is not None and args.race not in RACES:
-        print(f"--race takes one of: {', '.join(RACES)}.")
+    if args.homeland is not None and args.homeland not in HOMELANDS:
+        print(f"--homeland takes one of: {', '.join(HOMELANDS)}.")
         return
     rng = random.Random(args.seed)
     level = start_level(args, rng)
@@ -1461,7 +1461,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     # the move repertoire are all on his menu), so starting him with the
     # gift takes nothing away and opens everything.
     while True:
-        pc = make_character(rng, level=level, sex="m", race=args.race,
+        pc = make_character(rng, level=level, sex="m",
+                            homeland=args.homeland,
                             with_traits=False, wizard=True)
         if party_capacity(pc.cha) >= 1:
             break
@@ -1495,7 +1496,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     state = {"party": [pc, ally], "clock": Clock(), "purse": Purse(),
              "rng": rng, "foe_count": 0, "pending": None, "rooms": {},
              "world": world, "active_quest": None, "accepted": [],
-             "story": story.init_story(world, rng, pc_race=pc.race),
+             "story": story.init_story(world, rng,
+                                       pc_homeland=pc.homeland),
              "position": _area_position(start),
              "sighting": None,
              "site_clears": {},
@@ -2428,7 +2430,7 @@ def board_clock(state: dict) -> list[str]:
         return notices
     # The name namespace is the names IN USE, recomputed -- not a ledger of
     # every giver the world ever had. With the board churning (~660 postings
-    # a career) a persisted list would outgrow the race name pools inside a
+    # a career) a persisted list would outgrow the homeland name pools inside a
     # single playthrough; a giver whose job lapsed forty days ago is free to
     # be reused.
     used = {n["name"] for n in world.get("npcs", ())}
@@ -2987,7 +2989,7 @@ def maybe_punish(state: dict) -> bool:
     land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_posse(
-        posse_level, land_race(state["world"], land), rng,
+        posse_level, land_homeland(state["world"], land), rng,
                                                     used_names=used)
     k["last_leader"] = f"{leader['name']}, {leader['role']}"
     here = local_settlement(state)
@@ -3265,7 +3267,8 @@ def maybe_enforce(state: dict) -> bool:
     land = state["position"]["land"]
     used = {n["name"] for n in state["world"].get("npcs", [])}
     kinds, skins, leader, label = karma.build_hell_posse(
-        posse_level, land_race(state["world"], land), rng, used_names=used)
+        posse_level, land_homeland(state["world"], land), rng,
+        used_names=used)
     here = local_settlement(state)
     where = (f"at {here['name']}" if here is not None
              else "at the party's fire")
@@ -6143,7 +6146,7 @@ def cmd_chatter(args: argparse.Namespace) -> None:
                 mood = "; in high spirits"
         cat, val = rng.choice(sorted(h.traits.items()))
         prompt = CHATTER_PROMPTS[cat].format(v=val)
-        print(f"  {h.name} ({h.race} {h.sex}, {cat}: {val}{mood}) -- "
+        print(f"  {h.name} ({h.homeland} {h.sex}, {cat}: {val}{mood}) -- "
               f"{prompt}.")
 
 
@@ -6252,7 +6255,7 @@ def cmd_conquer(args: argparse.Namespace) -> None:
         return
     quest = conquest.build_conquest_quest(world, here, state["rng"])
     save(state)
-    role = conquest.DEFENDER_ROLES[land_race(world, here["land"])]
+    role = conquest.DEFENDER_ROLES[land_homeland(world, here["land"])]
     print(f"The party sizes up {here['name']}: the garrison holds the "
           f"keep at L{quest['level']} -- {quest['encounters']} fight(s), "
           f"and the last room is the {role}'s.")
@@ -6356,14 +6359,6 @@ def cmd_buy(args: argparse.Namespace) -> None:
         _buy_weapon(hero, purse, thing, log,
                     markup=local_term(state, "steel"))
     elif thing in WEAPONS:
-        if thing == "revolver":
-            # The magic gun is dwarf craft and dwarf commerce: sold only
-            # in dwarven settlements (the L10+ gold sink lives there).
-            here = local_settlement(state)
-            if here is None or here.get("race") != "dwarf":
-                print(f"Revolvers are sold only in dwarven settlements -- "
-                      f"the party is at {location_line(state)}.")
-                return
         _buy_weapon(hero, purse, thing, log,
                     markup=local_term(state, "steel"))
     elif thing.startswith("book"):
@@ -6642,8 +6637,8 @@ def cmd_prices(args: argparse.Namespace) -> None:
         if not w.range or name == "longbow":
             print(f"  masterwork {name}: "
                   f"{marked_up(w.value * MASTERWORK_PRICE_MULT, steel)}g")
-    print("(the revolver sells in DWARVEN settlements only; MAGIC steel is "
-          "never on a shelf -- quested, robbed, or COMMISSIONED from a "
+    print("(MAGIC steel is never on a shelf -- quested, robbed, or "
+          "COMMISSIONED from a "
           "legendary smith (`armory` lists them; the famous named blades "
           "are never for sale at any price); brewed potions can't be sold)")
     # The sixth outlet's standing half (2026-08-11): the things ONE land
@@ -7092,9 +7087,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help=f"start the party at this level (1-{LEVEL_CAP}); "
                         f"omitted, the level is ROLLED 1-"
                         f"{START_LEVEL_ROLL_MAX}")
-    p.add_argument("--race", default=None,
-                   help=f"fix the PC's race ({', '.join(RACES)}); omitted, "
-                        f"it is rolled")
+    p.add_argument("--homeland", default=None,
+                   help=f"fix the PC's homeland ({', '.join(HOMELANDS)}); "
+                        f"omitted, it is rolled")
     p.add_argument("--no-pact", action="store_true",
                    help="a neutral adventurer: no pact, no assignments "
                         "(the pre-2026-07-19 game)")

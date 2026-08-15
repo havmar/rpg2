@@ -21,7 +21,7 @@ The desired composite feels immediately familiar even when the reader cannot
 name its sources:
 
 - **World voice:** "You are at the old mill. The wheel has stopped. Two
-  goblins watch the bridge."
+  raiders watch the bridge."
 - **Event voice:** "A troll draws near!" / "The IRON KEY is yours."
 - **Command voice:** `> OPEN THE GATE`
 
@@ -100,10 +100,10 @@ collected from real play; the left column is the failure:
       nothing out of the ordinary
       happens.
 
-    Avoid: Ensimaa arrives as trees
+    Avoid: Mortellaria arrives as vineyards
       before it arrives as a city.
     Use:   You reach the forests of
-      Ensimaa, and then the city.
+      Mortellaria, and then the city.
 
     Avoid: You come in with the rain
       going sideways.
@@ -233,12 +233,12 @@ immediate obstacle or affordance. Never repeat the parent as filler (“forest
 site,” “forest room”). Build a place the player can navigate, not a vista the
 narrator can admire.
 
-When improvising place names, follow the active culture profile rather than
-the old race-to-Land fragments. Dwarf names use a loose invented
-Germanic/Norse-sounding creole drawn from Icelandic, Swedish, Norwegian, and
-related sounds. They are not claims of correct real-world language. Use ASCII
-only, and retain a plain English type noun when it makes the place immediately
-legible: `Drunurnar Mountains`, `Krokskogur Forest`, `Lake Hornindal`.
+When improvising place names, follow the active country profile. Firascir and
+Mortellaria use the shared western-human name pool; Mortellaria's place names
+may lean southern and imperial. Tergal uses its own human steppe names and
+clan vocabulary. These are invented sounds, not claims of correct real-world
+language. Use ASCII only, and retain a plain English type noun when it makes
+the place immediately legible.
 
 For a **person**, lead with role and immediate intent. Add one visible or
 behavioral marker that can recur. A COMPANION's generated traits are
@@ -272,7 +272,7 @@ that pays, debt, hunger, and a king who has not eaten in a week. Keep the
 range of material as wide as possible: vivid and specific beat safe and
 generic, and no tone rule in this guide is license to cut or soften a fact
 the game rolled (2026-08-06 directive; worldsim.md's range doctrine is the
-companion piece). The comedy lives in the **material**: goblins collecting a
+companion piece). The comedy lives in the **material**: raiders collecting a
 bridge toll, Hell sending a polite audit, a necromancer whose dead will not
 follow instructions. The sentence reports the fact straight. No punchline,
 wink, or knowing comparison is required.
@@ -319,9 +319,9 @@ Avoid:
 
 Use:
 
-> **Goblins at the Tollhouse**
+> **Raiders at the Tollhouse**
 >
-> The tollkeeper is missing. Goblins collect the road tax now. Bring back his
+> The tollkeeper is missing. Raiders collect the road tax now. Bring back his
 > brass key.
 
 **Comic material**

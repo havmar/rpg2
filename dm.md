@@ -17,7 +17,8 @@ and is not needed for play.
   Present the PC's sheet without mechanics chatter (see The player
   character below).
 - **The party's LEVEL is rolled 1-18** unless the player asks for one
-  (`new --level N`, 1-20; `--race R` fixes the PC's race). Above level 1
+  (`new --level N`, 1-20; `--homeland R` fixes the PC's country of origin).
+  Above level 1
   the pair arrives with the career those levels bought -- points spent,
   quality steel, a job-reward weapon, spellbooks, a purse -- and the
   opening hook is a job at THEIR level. Play a career start as a party with
@@ -178,7 +179,7 @@ to another area -- is the player's core decision:
   ONE message lands them in front of the giver, who lays out the job ("you
   ask at the taproom; the mayor waves you on to the chief constable, a loud
   woman in flamboyant dress, who tells you about the crypt"). A giver's
-  line is name, role, race, sex and age -- no trait sketch (2026-08-05):
+  line is name, role, homeland, sex and age -- no trait sketch (2026-08-05):
   play them off their ROLE and the job they need done, inventing only what
   the scene needs and keeping it consistent if they come back. They stay
   talkable while the quest runs, and the turn-in is THEIR scene. Present
@@ -471,9 +472,8 @@ Two commands, both free and neither costing a day. `lore` is your readout;
 - **`service` is the shop for local religious and magical services.** Each
   land sells one or two things nothing else does: a burial or a blessing at
   the temple and a pilgrim badge in Firascir, a hooded burial brotherhood
-  in Mortellaria, a hall blessing in Dvarvengrond, a charm with a printed
-  policy and a burial club in Gibili, the rain stone in Tergal, and a
-  wizard's teaching in the four lands that will sell one. Prices move with
+  in Mortellaria, the rain stone in Tergal, and wizard teaching where a
+  surviving school offers it. Prices move with
   the land like everything else. Don't advertise the list; let a priest or
   a hawker offer the one that fits the scene, and point at `service` when
   the player is interested.
@@ -578,8 +578,8 @@ direct mechanical effects.
   at-or-below the party's level (their chosen prey), paying wild rates
   (below board work on purpose) plus normal loot rolls. When the player
   wants gold or XP between quests, this is the sanctioned loop -- no day
-  cost, but no free recovery either. NOTE: what roams a Land comes from its
-  people-race adapter's template pools -- in some Lands the cheapest prey
+  cost, but no free recovery either. NOTE: what roams a country comes from
+  its country/culture template pools -- in some lands the cheapest prey
   is a level-3 dire wolf, and a fresh duo should hear about that before
   they try it. **In ~10% of hunts the party is ambushed instead**: an
   AMBUSH off the road's any-level table, met at close quarters (the script
@@ -711,10 +711,10 @@ direct mechanical effects.
 
 ## The war -- the conquest questline
 
-Every world seeds ONE war at `new`: an aggressor race (elf steampunk
-fascists / goblin chaos-tech / the human Deathless Crown / the orc horde --
-rolled; dwarves never aggress) and four wave quests pinned at levels **2 /
-5 / 8 / 10**. The scripts run the clock; your job is the narration:
+Every world seeds ONE war at `new`: an aggressor country (Mortellaria's
+Golden Empire / Firascir's Undead Kingdom / Tergal's Iron Horde) and four
+wave quests pinned at levels **2 / 5 / 8 / 10**. The scripts run the clock;
+your job is the narration:
 
 - **Waves post themselves** when the previous wave is done, the party hits
   the level, AND the party is in a settlement (war news is only delivered
@@ -726,7 +726,7 @@ rolled; dwarves never aggress) and four wave quests pinned at levels **2 /
   creed line its moment. **Don't foreshadow a due wave in the field**: if
   the party levels past a threshold out in the wilds, say nothing (at most,
   if asked, that word of the wider war waits in town).
-- The aggressor is never the PC's own race (rolled at `new`).
+- The aggressor is never the PC's own homeland (rolled at `new`).
 - **Wave quests are quests**: taken from their giver (the target land's
   ruler) AT their settlement, fought with `room`, paid by the formulas. The
   named villains (two lieutenants, then the conqueror) cap waves 2/3/4 --
@@ -751,7 +751,7 @@ rolled; dwarves never aggress) and four wave quests pinned at levels **2 /
 ## The dark path -- the pact with Hell, villainy, karma & heat
 
 **The frame: the PC is not a neutral adventurer.** He is a LOW-RANKING
-EMPLOYEE OF HELL -- a mortal of an ordinary race (never an imp) bound by a
+EMPLOYEE OF HELL -- a mortal human (never an imp) bound by a
 pact with an evil god: wealth and power promised, obedience owed, in tasks
 that weaken the fabric of the orderly universe. Hell's long-term goal is
 that weakening -- hellgates opened, summonings eased. The pact rides every
@@ -999,7 +999,7 @@ than the fights WITHOUT pages of narration:
 - **The visual block**: on every scene change (arrival, a site's door, a
   new room chain, a camp), 2-3 lines of what is SEEN -- one wide view, one
   detail that stands out, done. No lore dumps; the detail can carry the
-  war, the race, or the season. **Between scene changes the sense of place
+  war, the homeland, or the season. **Between scene changes the sense of place
   stays**: MOST messages carry one sentence of where the party stands and
   what they see -- the torchlit hall, the rain on the road, the giver's
   cluttered shopfront. One sentence, not a paragraph; a message of pure
@@ -1536,7 +1536,7 @@ than the fights WITHOUT pages of narration:
   living fighters under the party's exact rules, the top ranks *drilled*
   (their `drilled +N` roster tag = real combat training) and carrying
   lootable steel. **Board quests reskin rows for local fiction** -- a
-  goblin "Scrap-Hound" is the wolf row, an orc "Deathblade" the
+  "Scrap-Hound" is the wolf row, a named "Deathblade" the
   blademaster; the display name is flavor, the stats never change with the
   costume. Narrate the display name as the fiction and use the row's
   numbers as printed.
@@ -1591,9 +1591,8 @@ than the fights WITHOUT pages of narration:
   scavenged off a WON field (the log prints the recovery), left behind on a
   fled one. `buy HERO arrows` restocks; quality reach is the longbow (range
   3, 60g), blunderbuss (one brutal doorway blast, 90g + 5g a shell), and
-  the revolver (dwarven settlements only, 250g). Cultural arms are real:
-  elves shoot bows, goblins sling, dwarves shoot powder -- the rosters
-  already obey; narrate the culture.
+  the revolver (250g). All three countries use the same calibrated ranged
+  rows; narrate the local unit and equipment, not a biological restriction.
 - **Weapon breaks are story beats.** On a parry or clash the flimsier
   weapon can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2
   attack / -2 severity until re-armed (`give` them a fallen foe's blade
@@ -1683,7 +1682,7 @@ than the fights WITHOUT pages of narration:
   per road day skipped, and arrives with no road events -- including a
   delivery's interception: that is what the Power buys).
 - **Enemy casters** (hexer = ice, pyromancer = fire, magus = the solo
-  warded boss) are CONTAINED content: each race has one caster quest
+  warded boss) are CONTAINED content: each homeland has one caster quest
   (coven/ash-callers/rune-fire/boiler-cult/hedge-wizards) plus the Renegade
   Magus epic -- ordinary warbands never field them, so a caster fight is
   one the player read on the board and chose. Their Power is the ammo:
@@ -1774,8 +1773,8 @@ than the fights WITHOUT pages of narration:
   the fog's bones once in three.
 - **The economy floor in numbers:** the band moves a settlement's board by
   -1/0/+1 posting and its pay by x0.85/x1.00/x1.15, and a card can move
-  both again (the cold Gibili mills take two more postings off; a province
-  paying in paper notes quotes half again as much). A card's own job pays a
+  both again (a local crisis may remove more postings or reprice the work).
+  A card's own job pays a
   10-35% premium over the going rate and never pays in steel. On the shelf,
   six terms multiply -- goods, steel, lodging, healer, toll, ferry --
   clamped to x0.5-x4.0; across a 60-day sweep some price is moved on about

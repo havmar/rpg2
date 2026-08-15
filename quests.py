@@ -19,9 +19,8 @@ annotations. The design (2026-07):
   two hand-built sites turned out to already follow (hideout 5 bandits vs a
   budget of ~6; barrow 10 skeletons vs ~9). bench_quests.py measures what
   the rule actually produces; anything cleverer must earn its way in there.
-- **Reskinning: display name is fiction, the stat row is mechanics.** Five
-  races share one calibrated catalog; a goblin scrap-hound is the wolf row
-  (make_foe's `display`). Balance never forks on a skin.
+- **Reskinning: display name is fiction, the stat row is mechanics.** Three
+  human cultures share one calibrated catalog. Balance never forks on a skin.
 - **The world is generated ONCE, seeded, at game start** (session.py `new`)
   and lives in the save file: permanent and learnable for that playthrough,
   different every playthrough. Worldgen seeds ONE job per settlement and
@@ -33,7 +32,7 @@ annotations. The design (2026-07):
   assert are gone -- they asserted a total that expiry makes meaningless.
 
 Local quests are FORMULAIC ON PURPOSE (placeholders, not authored content):
-a stereotype of the settlement's race x a themed foe pool. The authored
+a country/culture table x a themed foe pool. The authored
 questline layer lives in story.py (the conquest, 2026-07-12); since the
 same date every quest also carries a GIVER (the face behind the job) and
 an EPILOGUE, and each land a small persistent cast -- see rules.md's
@@ -56,7 +55,7 @@ from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
 from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
-    materialize_settlement, stable_seed, land_race, add_state, replace_state,
+    materialize_settlement, stable_seed, land_homeland, add_state, replace_state,
 )
 import worldsim                  # the world layer (2026-08-09, the economy
                                  # floor): the board asks it how big it is,
@@ -256,7 +255,7 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 # --------------------------------------------------------------------------- #
 # Quest templates -- the formulaic local-quest tables
 # --------------------------------------------------------------------------- #
-# One entry = a race stereotype x a themed foe pool (+ optional reskins:
+# One entry = a country theme x a foe pool (+ optional reskins:
 # kind -> display name). A template's usable level range derives from its
 # pool (template_band), so the wolf quest never rolls at level 18 and the
 # drake never at level 2. `sites` are name stems for the quest's sites, and
@@ -275,21 +274,11 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
                              "blademaster", "warlord")
-# Cultural arms (ranged combat, 2026-07-16) -- NPC-side constraints, per
-# the designer: ELVES always shoot bows (the ladder's archer, plus their
-# own hunter row), GOBLINS never do (slings instead), DWARVES shoot powder
-# (the gunner's hand bombard). Enforced where rosters are drawn: each
-# race's warband templates use its own ladder variant; wild_pool inherits
-# them, so a land's roads shoot culturally too. Humans and orcs field the
-# plain ladder (bows are everyone else's normal).
-GOBLIN_LADDER_POOL = tuple(k for k in LADDER_POOL
-                           if k != "archer") + ("slinger",)
-DWARF_LADDER_POOL = tuple(k for k in LADDER_POOL
-                          if k != "archer") + ("gunner",)
-ELF_LADDER_POOL = LADDER_POOL + ("hunter",)
+# The three human countries currently share the calibrated ladder. Cultural
+# arms can still appear as quest skins, but no homeland changes the stat rows.
 # The casters get their OWN quests (2026-07-14; the Magic & Mind layer
 # kept the containment): one
-# caster template per race below plus the magus epic -- NOT the ladder
+# caster template per country below plus the magus epic -- NOT the ladder
 # pool. The first cut seeded hexer/pyromancer into LADDER_POOL and the
 # career sim collapsed (L11 47% -> 18%, capped 7.5% -> 3.5%): individually
 # band-fair rows, but at 50-77% of all warband rooms their ranged chip
@@ -307,7 +296,7 @@ SPIDER_POOL = ("great spider",)
 DRAKE_POOL = ("wyvern", "drake", "dragon")
 
 TEMPLATES: dict[str, list[dict]] = {
-    "human": [
+    "firascir": [
         dict(title="Bandits on the Road",
              desc="Bandits are attacking travelers on the king's road. Find "
                   "their camp and kill them. The sheriff will pay you.",
@@ -361,94 +350,32 @@ TEMPLATES: dict[str, list[dict]] = {
              failure_epilogue="The wizards hold the tollhouse. The road is "
                               "closed and traffic goes the long way round."),
     ],
-    "elf": [
-        dict(title="The Blighted Grove",
-             desc="A curse has poisoned the grove. Wolves and spiders attack "
-                  "anyone who enters. Kill them and burn the source of the "
-                  "blight.",
-             pool=SPIDER_POOL + WOLF_POOL,
-             skins={"great spider": "Blighted Spider",
-                    "wolf": "Blighted Wolf", "dire wolf": "Blighted Dire Wolf"},
-             sites=("the outer grove", "the heart of the grove"),
-             giver="the head warden",
-             epilogue="The blight is gone. New plants grow at the edge of the "
-                      "grove.",
-             failure_epilogue="The blight spread past the grove. The wardens "
-                              "have pulled back to the inner wood."),
-        dict(title="Spiders in the Trees",
-             desc="Giant spiders have covered the tree paths in webs. Several "
-                  "wardens are missing. Clear the paths and find them.",
-             pool=SPIDER_POOL, skins={"great spider": "Giant Tree Spider"},
-             sites=("the lower branches", "the upper walkways"),
-             giver="the walkway keeper",
-             epilogue="The spiders are dead and the webs are gone. The "
-                      "missing wardens are brought home.",
-             failure_epilogue="The webs reached the main walkways. The "
-                              "missing wardens are not coming back."),
-        dict(title="Blighted Beasts",
-             desc="The blight has driven the boars and bears mad. They are "
-                  "attacking the outer groves. Kill them and bring back "
-                  "their heads.",
-             pool=BEAST_POOL, skins={"boar": "Blighted Boar",
-                                     "bear": "Blighted Bear"},
-             proof="the beasts' heads",
-             sites=("the torn grove", "the beast den"),
-             giver="the grove keeper",
-             epilogue="The beasts are dead. The groves are safe again.",
-             failure_epilogue="The mad beasts came out of the groves and into "
-                              "the orchards. The outer paths are closed."),
-        dict(title="Rogue Wardens",
-             desc="A group of wardens has taken over the forest road. They "
-                  "demand money from travelers. Stop them.",
-             pool=ELF_LADDER_POOL,
-             skins={"archer": "Rogue Warden", "cutthroat": "Rogue Scout",
-                    "soldier": "Rogue Warden", "veteran": "Warden Captain",
-                    "champion": "Forest Champion",
-                    "hunter": "Rogue Hunter"},
-             sites=("the forest road", "the rogue lodge"),
-             giver="the council judge",
-             epilogue="The rogue wardens are defeated. The forest road is "
-                      "open again.",
-             failure_epilogue="The rogue wardens hold the forest road and set "
-                              "their own price. The council pays it."),
-        dict(title="The Mist Coven",
-             desc="A group of mages stole forbidden songs from the circle. "
-                  "Their magic covers the valley in mist. Find them and stop "
-                  "the ritual.",
-             pool=CASTER_POOL,
-             skins={"hexer": "Mist Mage", "pyromancer": "Fire Mage"},
-             sites=("the misty valley", "the stone circle"),
-             giver="the circle elder",
-             epilogue="The mages are dead. The mist fades from the valley.",
-             failure_epilogue="The ritual finished. The mist lies over the "
-                              "whole valley and nobody walks in it."),
-    ],
-    "orc": [
+    "tergal": [
         dict(title="The Great Hunt",
-             desc="The clan has chosen a dangerous beast for the hunt. Kill "
+             desc="The hunting lodge has chosen a dangerous beast. Kill "
                   "it and bring back its hide.",
              pool=BEAST_POOL + ("dire wolf",), skins={}, places=2,
              proof="the beast's hide",
              sites=("the hunting grounds", "the beast den"),
-             giver="the clan's lead hunter",
-             epilogue="The hide hangs in the clan hall. The clan honors the "
+             giver="the lodge's lead hunter",
+             epilogue="The hide hangs in the lodge hall. The hunters honor the "
                       "party.",
              failure_epilogue="The beast was not taken. The hunt is called "
-                              "off and the clan eats winter stores early."),
+                              "off and the herders use winter stores early."),
         dict(title="Rival Warband",
-             desc="A rival clan is raiding the herd trails. Find their camp "
+             desc="A rival warband is raiding the herd trails. Find its camp "
                   "and defeat them.",
              pool=LADDER_POOL,
-             skins={"cutthroat": "Orc Raider", "archer": "Orc Skirmisher",
-                    "bruiser": "Orc Breaker", "soldier": "Orc Raider",
-                    "veteran": "Orc Veteran", "champion": "Orc Warchief",
-                    "blademaster": "Orc Swordmaster", "warlord": "Orc Overlord"},
+             skins={"cutthroat": "Trail Raider", "archer": "Horse Archer",
+                    "bruiser": "Camp Breaker", "soldier": "Trail Raider",
+                    "veteran": "Warband Veteran", "champion": "War Chief",
+                    "blademaster": "Camp Swordmaster", "warlord": "War Leader"},
              sites=("the raided trail", "the rival camp", "the war camp"),
-             giver="the warchief",
+             giver="the border captain",
              epilogue="The rival warband is defeated. The herd trails are "
                       "safe again.",
              failure_epilogue="The rival warband took the herd trails. The "
-                              "clan drives its beasts the long way now."),
+                              "herders drive their beasts the long way now."),
         dict(title="Giants in the Pass",
              desc="Giants have blocked the mountain pass. They attack carts "
                   "and kill travelers. Find their cave and kill them.",
@@ -459,153 +386,33 @@ TEMPLATES: dict[str, list[dict]] = {
              failure_epilogue="The giants still hold the pass. The carts turn "
                               "back and the goods rot at the road head."),
         dict(title="Dragon on the Mountain",
-             desc="A dragon hunts the clan's herds from the high peaks. Climb "
+             desc="A dragon hunts Tergal's herds from the high peaks. Climb "
                   "to its nest and kill it. Bring back its head.",
              pool=DRAKE_POOL, skins={}, proof="the dragon's head",
              sites=("the mountain slopes", "the dragon's nest"),
-             giver="the clan elder",
+             giver="the herd-road elder",
              epilogue="The dragon is dead. The herds return to the mountain.",
-             failure_epilogue="The dragon took the rest of the herd. The clan "
-                              "moved its camp down off the mountain."),
+             failure_epilogue="The dragon took the rest of the herd. The "
+                              "herders moved down off the mountain."),
         dict(title="Rebel Shamans",
-             desc="A group of shamans has turned against the clan. They burn "
-                  "the plains and attack the old shaman's followers. Defeat "
+             desc="A group of shamans has turned against the high chief. They "
+                  "burn the plains and attack the old shaman's followers. Defeat "
                   "them.",
              pool=CASTER_POOL,
              skins={"hexer": "Ice Shaman", "pyromancer": "Fire Shaman"},
              sites=("the burned plains", "the rebel camp"),
-             giver="the clan shaman",
+             giver="the high chief's shaman",
              epilogue="The rebels are defeated. Their ritual fire is put out.",
              failure_epilogue="The rebel shamans burned the plains black. The "
                               "old shaman has lost half the followers."),
     ],
-    "dwarf": [
-        dict(title="Monsters in the Deep Road",
-             desc="Giant spiders and tunnel hounds have blocked the road to "
-                  "another dwarf city. Clear the tunnels.",
-             pool=SPIDER_POOL + WOLF_POOL,
-             skins={"great spider": "Tunnel Spider", "wolf": "Tunnel Hound",
-                    "dire wolf": "Tunnel Stalker"},
-             sites=("the checkpoint", "the deep road", "the crossroads"),
-             giver="the trade guild agent",
-             epilogue="The monsters are dead. The deep road is open again.",
-             failure_epilogue="The deep road stays shut. The trade guild "
-                              "sends its goods over the surface at four times "
-                              "the price."),
-        dict(title="The Lost Hold",
-             desc="An old dwarf hold has drained after years under water. "
-                  "Undead now walk its halls. Destroy them.",
-             pool=UNDEAD_POOL,
-             skins={"skeleton": "Drowned Miner", "ghoul": "Pale Miner",
-                    "wight": "Dead Lord"},
-             sites=("the cracked gate", "the flooded halls",
-                    "the central hall"),
-             giver="the last heir of the hold",
-             epilogue="The undead are destroyed. The entrance to the hold is "
-                      "sealed.",
-             failure_epilogue="The dead still walk the hold. The heir gave up "
-                              "the claim and sold the deed."),
-        dict(title="Monster in the Mine",
-             desc="A giant has taken over part of the mine. Kill it and clear "
-                  "the tunnels. The foreman pays on its head.",
-             pool=GIANTKIN_POOL, skins={"ogre": "Deep Ogre",
-                                        "troll": "Stone Troll"},
-             proof="the monster's head",
-             sites=("the mine tunnel", "the broken chamber"),
-             giver="the mine foreman",
-             epilogue="The monster is dead. The miners return to work.",
-             failure_epilogue="The mine stays half shut. The foreman moved "
-                              "the crews to a poorer seam."),
-        dict(title="The Clan War",
-             desc="A rival dwarf clan has attacked the gate and mine. Defeat "
-                  "them and end the attack.",
-             pool=DWARF_LADDER_POOL,
-             skins={"cutthroat": "Rival Scout", "gunner": "Rival Gunner",
-                    "bruiser": "Rival Brute", "soldier": "Rival Soldier",
-                    "veteran": "Rival Veteran", "champion": "Rival Captain",
-                    "blademaster": "Rival Swordmaster"},
-             places=2,
-             sites=("the main gate", "the mine entrance"),
-             giver="the clan elder",
-             epilogue="The rival clan is defeated. The fighting ends.",
-             failure_epilogue="The rival clan holds the gate and the mine "
-                              "mouth. The fighting goes on without you."),
-        dict(title="Mages in the Mine",
-             desc="A group of mages has opened a magic fire in a sealed mine. "
-                  "Kill them and put out the fire.",
-             pool=CASTER_POOL,
-             skins={"hexer": "Ice Mage", "pyromancer": "Fire Mage"},
-             sites=("the sealed mine", "the magic vault"),
-             giver="the head runesmith",
-             epilogue="The mages are dead. The vault is sealed again.",
-             failure_epilogue="The magic fire burned through the vault. The "
-                              "seal is broken and the mine is written off."),
-    ],
-    "goblin": [
-        dict(title="Hounds in the Factory",
-             desc="The boss's guard dogs escaped into the factory. They are "
-                  "killing workers. Hunt them down and bring back their "
-                  "collars.",
-             pool=WOLF_POOL, skins={"wolf": "Factory Hound",
-                                    "dire wolf": "Boiler Hound"},
-             proof="the hounds' collars",
-             sites=("the scrapyard", "the factory floor"),
-             giver="the shift boss",
-             epilogue="The hounds are dead. The factory workers return to "
-                      "work.",
-             failure_epilogue="The hounds still run the night floor. Two more "
-                              "workers are dead and the shift is cut."),
-        dict(title="Stolen Workers",
-             desc="A rival boss is kidnapping workers from the night shift. "
-                  "Find the gang and stop them.",
-             pool=GOBLIN_LADDER_POOL,
-             skins={"cutthroat": "Kidnapper", "slinger": "Gang Slinger",
-                    "bruiser": "Gang Boss", "soldier": "Gang Guard",
-                    "veteran": "Gang Veteran", "champion": "Gang Captain",
-                    "blademaster": "Gang Swordmaster", "warlord": "The Big Boss"},
-             sites=("the night market", "the gang hideout",
-                    "the boss's tower"),
-             giver="the night shift boss",
-             epilogue="The gang is defeated. The workers return home safely.",
-             failure_epilogue="The gang cleared out the night shift. The "
-                              "rival boss has the workers and the contract."),
-        dict(title="The Killer Machine",
-             desc="A large machine has broken loose in the lower factory. "
-                  "Destroy it.",
-             pool=GIANTKIN_POOL,
-             skins={"ogre": "Crusher Machine", "troll": "Furnace Machine",
-                    "giant": "Great Machine"},
-             sites=("the lower factory", "the furnace hall"),
-             giver="the factory boss",
-             epilogue="The machine is destroyed. The lower factory opens "
-                      "again.",
-             failure_epilogue="The machine wrecked the lower factory. The "
-                              "floor is walled off and written down as a "
-                              "loss."),
-        dict(title="Spiders Below",
-             desc="Giant spiders have blocked the air shafts. Clear their "
-                  "webs before the lower city runs out of air.",
-             pool=SPIDER_POOL, skins={"great spider": "Giant Cave Spider"},
-             sites=("the air shafts", "the old cistern"),
-             giver="the air keeper",
-             epilogue="The spiders are dead. Air flows into the lower city "
-                      "again.",
-             failure_epilogue="The air shafts stayed blocked. The lower city "
-                              "has been emptied and its doors are sealed."),
-        dict(title="The Boiler Cult",
-             desc="A cult feeds workers to an old boiler. Enter their shrine "
-                  "and kill them.",
-             pool=CASTER_POOL,
-             skins={"hexer": "Ice Tinker", "pyromancer": "Fire Tinker"},
-             sites=("the boiler room", "the boiler shrine"),
-             giver="the factory inspector",
-             epilogue="The cult is gone. The old boiler is shut down.",
-             failure_epilogue="The cult still feeds the boiler. The inspector "
-                              "has stopped filing reports."),
-    ],
 }
 
-# Race-agnostic top-band work -- only the capital posts these, and only when
+# Firascir and Mortellaria share the western table. The list itself is copied
+# so a future country-specific edit cannot mutate its neighbor by alias.
+TEMPLATES["mortellaria"] = [dict(template) for template in TEMPLATES["firascir"]]
+
+# Country-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
 EPIC_TEMPLATES: list[dict] = [
     dict(title="The Dragon's Tribute",
@@ -658,52 +465,6 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "Renegade Wizards": dict(
         area_any=("ruin", "road", "settlement"),
         site_template="ruin", domain="built", reuse="prefer"),
-    "The Blighted Grove": dict(
-        area_any=("forest", "hollow"),
-        site_template="grove", domain="natural", reuse="never",
-        state_on_post="blighted", state_on_complete="recovering"),
-    "Spiders in the Trees": dict(
-        area_any=("forest", "hollow", "hills"),
-        site_template="grove", domain="natural", reuse="never"),
-    "Blighted Beasts": dict(
-        area_any=("forest", "hollow", "hills"),
-        site_template="den", domain="natural", reuse="never"),
-    "Rogue Wardens": dict(
-        area_any=("forest", "road", "warden"),
-        site_template="road", domain="mixed", reuse="prefer"),
-    "The Mist Coven": dict(
-        area_any=("hollow", "river", "forest", "hills"),
-        site_template="shrine", domain="mixed", reuse="never"),
-    "Monsters in the Deep Road": dict(
-        area_any=("mountains", "mine"),
-        site_template="mine", domain="mixed", reuse="prefer"),
-    "The Lost Hold": dict(
-        area_any=("mountains", "mine"),
-        site_template="ruin", domain="built", reuse="never"),
-    "Monster in the Mine": dict(
-        area_any=("mountains", "mine"),
-        site_template="mine", domain="mixed", reuse="prefer"),
-    "The Clan War": dict(
-        area_any=("mountains", "mine", "settlement"),
-        site_template="camp", domain="mixed", reuse="never"),
-    "Mages in the Mine": dict(
-        area_any=("mountains", "mine"),
-        site_template="mine", domain="mixed", reuse="prefer"),
-    "Hounds in the Factory": dict(
-        area_any=("industry", "repair"),
-        site_template="industrial", domain="built", reuse="prefer"),
-    "Stolen Workers": dict(
-        area_any=("market", "industry", "settlement"),
-        site_template="camp", domain="built", reuse="never"),
-    "The Killer Machine": dict(
-        area_any=("industry", "clay", "quarry"),
-        site_template="industrial", domain="built", reuse="prefer"),
-    "Spiders Below": dict(
-        area_any=("industry", "quarry", "clay", "repair"),
-        site_template="mine", domain="built", reuse="prefer"),
-    "The Boiler Cult": dict(
-        area_any=("industry", "repair"),
-        site_template="industrial", domain="built", reuse="prefer"),
     "The Great Hunt": dict(
         area_any=("prairie", "pasture", "hills", "basin"),
         site_template="den", domain="natural", reuse="never"),
@@ -734,7 +495,7 @@ for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
     for _template in _templates:
         _template["place"] = dict(QUEST_PLACE_REQUIREMENTS[_template["title"]])
 
-# Villages post the same race tables, just fewer and lower-leveled: samey on
+# Villages post the same homeland tables, just fewer and lower-leveled: samey on
 # purpose -- placeholders for authored content, not competition for it.
 
 # --------------------------------------------------------------------------- #
@@ -747,7 +508,7 @@ for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
 # spotted/ambush valves apply as ever), and the pay scales with the trip's
 # travel days. The hand-off itself is the turn-in: arriving at the
 # destination with the quest active completes it (session.deliver_if_arrived).
-# A couple per world at worldgen, race-agnostic templates.
+# A couple per world at worldgen, homeland-agnostic templates.
 DELIVERIES_PER_WORLD = 2
 DELIVERY_GOLD_PER_DAY = 20  # the courier premium: gold-rich for the effort...
 DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
@@ -809,20 +570,16 @@ DELIVERY_TEMPLATES: list[dict] = [
                           "sent the town a finger."),
 ]
 
-RACES = tuple(TEMPLATES)
+HOMELANDS = tuple(LAND_SPECS)
 
-# Settlement name fragments per race (worldgen flavor; ASCII only).
+# Settlement name fragments per country (worldgen flavor; ASCII only).
 NAME_PARTS = {
-    "human":  (("Alder", "King's", "Marsh", "Stone", "Fair", "Oak"),
-               ("mere", "ford", "field", "bridge", "haven", "market")),
-    "elf":    (("Silver", "Moon", "Green", "Dawn", "Whisper", "Star"),
-               ("glade", "spire", "hollow", "reach", "song", "veil")),
-    "orc":    (("Iron", "Red", "Ash", "Bone", "Storm", "Black"),
-               ("hold", "camp", "maw", "ridge", "spear", "fang")),
-    "dwarf":  (("Deep", "Gold", "Grim", "Karak", "Under", "Hammer"),
-               ("delve", "forge", "gate", "vault", "helm", "hall")),
-    "goblin": (("Gear", "Sprocket", "Grease", "Boiler", "Scrap", "Smog"),
-               ("town", "works", "burrow", "pit", "sprawl", "market")),
+    "firascir": (("Alder", "King's", "Marsh", "Stone", "Fair", "Oak"),
+                 ("mere", "ford", "field", "bridge", "haven", "market")),
+    "mortellaria": (("Alta", "Castel", "Monte", "Porto", "San", "Vale"),
+                    ("vera", "mara", "doro", "vento", "lba", "sero")),
+    "tergal": (("Iron", "Red", "Ash", "Storm", "Black", "High"),
+               ("hold", "camp", "ridge", "crossing", "well", "market")),
 }
 
 SETTLEMENT_KINDS = {         # (quest slots, level band)
@@ -1274,19 +1031,19 @@ def complete_quest_place_state(world: dict, quest: dict,
         replace_state(world, target, old, new, day=day)
 
 
-def attach_giver(quest: dict, race: str, rng: random.Random,
+def attach_giver(quest: dict, homeland: str, rng: random.Random,
                  role: str | None = None,
                  used_names: set[str] | None = None) -> None:
     """Put a face on a quest (2026-07-12): the person behind the job. In
     play there is NO board -- asking around funnels to this person in one
     message (dm.md), taking the quest is talking to them, and they receive
     the turn-in. Role comes from the template; the face is a targeted NPC
-    (people.make_npc: race/role fixed, the name rolled -- a giver carries
+    (people.make_npc: homeland/role fixed, the name rolled -- a giver carries
     no trait sketch since 2026-08-05). Stored as a plain dict on the quest,
     so it rides the save like everything else."""
     from people import make_npc     # runtime import: people imports quests
-                                    # (RACES), so top-level would be a cycle
-    quest["giver"] = make_npc(rng, race, role or "the local patron",
+                                    # (HOMELANDS), so top-level would cycle
+    quest["giver"] = make_npc(rng, homeland, role or "the local patron",
                               level=quest["level"], used_names=used_names)
 
 
@@ -1388,13 +1145,9 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
 # no stat blocks; if one must fight, forge the encounter.
 
 RULER_TITLES = {
-    "human":  {"m": "king", "f": "queen"},
-    "elf":    {"m": "speaker of the high council",
-               "f": "speaker of the high council"},
-    "orc":    {"m": "great chief of the clans",
-               "f": "great chief of the clans"},
-    "dwarf":  {"m": "high thane", "f": "high thane"},
-    "goblin": {"m": "chief overboss", "f": "chief overboss"},
+    "firascir": {"m": "king", "f": "queen"},
+    "mortellaria": {"m": "prince", "f": "princess"},
+    "tergal": {"m": "high chief", "f": "high chief"},
 }
 SAGE_ROLES = ("loremaster", "court wizard", "keeper of records",
               "temple scholar", "star-reader")
@@ -1404,16 +1157,16 @@ WILDCARD_ROLES = ("spymaster", "mercenary captain", "master smith",
 
 def _cast_the_land(world: dict, polity: str, seat: dict, rng: random.Random,
                    used_people: set[str]) -> None:
-    from people import make_npc, SEXES     # runtime import (cycle: RACES)
-    race = land_race(world, polity)
+    from people import make_npc, SEXES     # runtime import (cycle: HOMELANDS)
+    homeland = land_homeland(world, polity)
     sex = rng.choice(SEXES)
-    for role, post in ((RULER_TITLES[race][sex], "ruler"),
+    for role, post in ((RULER_TITLES[homeland][sex], "ruler"),
                        (rng.choice(SAGE_ROLES), "sage"),
                        (rng.choice(WILDCARD_ROLES), "wildcard")):
         # Rulers and sages skew old (a 20-year-old king every world read
         # wrong); the wildcard keeps the working-age roll.
         age = rng.randint(35, 70) if post in ("ruler", "sage") else None
-        npc = make_npc(rng, race, role, sex=sex if post == "ruler" else None,
+        npc = make_npc(rng, homeland, role, sex=sex if post == "ruler" else None,
                        age=age, used_names=used_people)
         npc_id = f"npc/{polity}/{slug_name(npc['name'])}/{post}"
         npc.update(id=npc_id, land=polity, seat=seat["key"], post=post)
@@ -1443,11 +1196,11 @@ def cast_service_providers(world: dict, settlement: dict,
     Called for every settlement at worldgen and again for any the world
     materializes later (the trim's `found_settlement`)."""
     from people import make_npc
-    race = land_race(world, settlement["land"])
+    homeland = land_homeland(world, settlement["land"])
     for service in settlement.get("services", ()):
         # Service faces are local to their settlement; their names do
         # not consume the campaign-wide giver/notable namespace.
-        npc = make_npc(rng, race, SERVICE_ROLES[service["kind"]])
+        npc = make_npc(rng, homeland, SERVICE_ROLES[service["kind"]])
         npc_id = (f"npc/{settlement['land']}/{slug_name(npc['name'])}/"
                   f"{slug_name(settlement['name'])}/"
                   f"{slug_name(service['kind'])}")
@@ -1481,8 +1234,8 @@ def found_settlement(world: dict, polity: str, rng: random.Random, *,
     return area
 
 
-def _settlement_name(race: str, rng: random.Random, used: set[str]) -> str:
-    pre, suf = NAME_PARTS[race]
+def _settlement_name(homeland: str, rng: random.Random, used: set[str]) -> str:
+    pre, suf = NAME_PARTS[homeland]
     for _ in range(50):
         name = rng.choice(pre) + rng.choice(suf)
         if name not in used:
@@ -1537,13 +1290,13 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
                 day: int = 0) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
-    template drawn from the race's table (the capital also draws the epics)
+    template drawn from the homeland's table (the capital also draws the epics)
     among those whose band contains the roll. Since 2026-07-26 the posting is
     stamped with the day and a window (`stamp_quest_clock`)."""
     lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
     level = rng.randint(lo, hi)
-    race = land_race(world, settlement["land"])
-    tables = list(TEMPLATES[race])
+    homeland = land_homeland(world, settlement["land"])
+    tables = list(TEMPLATES[homeland])
     if settlement["subtype"] == "capital":
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
@@ -1569,7 +1322,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     stamp_quest_clock(quest, day, rng,
                       extra_days=return_leg_days(world, quest))
     _maybe_attach_weapon_reward(quest, qid)
-    attach_giver(quest, race, rng, role=tpl.get("giver"),
+    attach_giver(quest, homeland, rng, role=tpl.get("giver"),
                  used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -1592,7 +1345,11 @@ def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
     DERIVED from the quest id, so the shared posting stream (and every
     career bench riding it) is untouched by the extra draws."""
     import weapons                  # runtime import (weapons imports rpg)
-    wrng = random.Random(f"reward:{qid}")
+    # Include the origin: after the world contracted to nine opening boards,
+    # q1..q9 alone happened to contain no winning roll. The persistent place
+    # identity keeps this derived stream deterministic without consuming the
+    # posting RNG.
+    wrng = random.Random(f"reward:{qid}:{quest['origin']}")
     if wrng.random() >= WEAPON_REWARD_CHANCE:
         return
     w = weapons.reward_weapon_for_level(quest["level"], wrng)
@@ -1694,7 +1451,7 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
                                      posting["pay"])
     stamp_quest_clock(quest, day, rng,
                       extra_days=return_leg_days(world, quest))
-    attach_giver(quest, land_race(world, settlement["land"]), rng,
+    attach_giver(quest, land_homeland(world, settlement["land"]), rng,
                  role=tpl.get("giver"), used_names=used_people)
     world["quests"][qid] = quest
     settlement["quests"].append(qid)
@@ -1817,7 +1574,7 @@ def _post_delivery(world: dict, rng: random.Random,
     destination in another land, a fresh template if one is left, a giver
     face at the origin and a RECIPIENT face at the destination (the
     hand-off is the turn-in scene)."""
-    from people import make_npc     # runtime import (cycle: RACES)
+    from people import make_npc     # runtime import (cycle: HOMELANDS)
     origin = rng.choice(origins or settlements(world))
     dests = [s for s in settlements(world) if s["land"] != origin["land"]]
     dest = rng.choice(dests)
@@ -1831,10 +1588,10 @@ def _post_delivery(world: dict, rng: random.Random,
     # A courier job's window buys the road it has to walk (both legs), so a
     # cross-land run is not late before it starts.
     stamp_quest_clock(quest, day, rng, extra_days=2 * quest["days"])
-    attach_giver(quest, land_race(world, origin["land"]), rng,
+    attach_giver(quest, land_homeland(world, origin["land"]), rng,
                  role=tpl.get("giver"),
                  used_names=used_people)
-    quest["recipient"] = make_npc(rng, land_race(world, dest["land"]),
+    quest["recipient"] = make_npc(rng, land_homeland(world, dest["land"]),
                                   tpl["recipient"],
                                   used_names=used_people)
     world["quests"][qid] = quest
@@ -1845,7 +1602,7 @@ def _post_delivery(world: dict, rng: random.Random,
 # --------------------------------------------------------------------------- #
 # The world map & navigation layer (2026-07-09)
 # --------------------------------------------------------------------------- #
-# The map is a LIST, not a grid: each race's LAND holds its settlements and
+# The map is a LIST, not a grid: each homeland's LAND holds its settlements and
 # its wilderness -- no coordinates. Travel inside a land takes
 # TRAVEL_DAYS_IN_LAND day(s), to another land TRAVEL_DAYS_CROSS; every travel
 # day is a camp night (the existing overnight recovery, so healing en route
@@ -1860,7 +1617,7 @@ def _post_delivery(world: dict, rng: random.Random,
 # the party CHOOSES its prey, so the hunt rolls relative to its level.
 
 TRAVEL_DAYS_IN_LAND = 1      # settlement to settlement inside one land
-TRAVEL_DAYS_CROSS = 2        # crossing into another race's land
+TRAVEL_DAYS_CROSS = 2        # crossing into another homeland's land
 TRAVEL_ENCOUNTER_CHANCE = 0.15   # per travel day (compounded over a trip)
 EXPLORE_ENCOUNTER_CHANCE = 0.30  # the explore move beats more bushes
 EXPLORE_XP = 15                  # discovering a new place pays this flat
@@ -1899,13 +1656,13 @@ def settlements_by_land(world: dict) -> dict[str, list[dict]]:
     return out
 
 
-def wild_pool(race: str) -> tuple[str, ...]:
+def wild_pool(homeland: str) -> tuple[str, ...]:
     """What roams a land's wilderness: the union of every foe pool the
-    race's quest templates draw from, deduplicated, level-sorted."""
-    if race in LAND_SPECS:
-        race = LAND_SPECS[race]["race"]
+    homeland's quest templates draw from, deduplicated, level-sorted."""
+    if homeland not in HOMELANDS:
+        raise KeyError(f"unknown homeland: {homeland}")
     kinds: set[str] = set()
-    for tpl in TEMPLATES[race]:
+    for tpl in TEMPLATES[homeland]:
         kinds.update(tpl["pool"])
     return tuple(sorted(kinds, key=lambda k: FOES[k].level))
 
@@ -1948,7 +1705,7 @@ def foes_preferred_field(kinds: list[str]) -> int:
     return best
 
 
-def build_wild_encounter(level: int, race: str, rng: random.Random,
+def build_wild_encounter(level: int, homeland: str, rng: random.Random,
                          pool: tuple[str, ...] | None = None) -> list[str]:
     """One wilderness encounter at `level` from the land's pool: a full
     reference-encounter budget (share 1.0), boss allowance on -- the road
@@ -1959,7 +1716,7 @@ def build_wild_encounter(level: int, race: str, rng: random.Random,
     rows -- the baron's toll-men, the loggers holding their camp, riders off
     the border. It never overrides the LEVEL, which stays the road's own
     party-independent roll."""
-    return build_room(room_budget(level, 1.0), pool or wild_pool(race), rng,
+    return build_room(room_budget(level, 1.0), pool or wild_pool(homeland), rng,
                       final=True)
 
 
@@ -2095,7 +1852,7 @@ def quest_detail_lines(world: dict, quest: dict,
                      f"{band} -- x{QUEST_PAY_BANDS[band]:g}")
     g = quest.get("giver")
     if g:
-        lines.append(f"    giver: {g['name']}, {g['role']} ({g['race']} "
+        lines.append(f"    giver: {g['name']}, {g['role']} ({g['homeland']} "
                      f"{g['sex']}, age {g['age']})")
     if quest.get("kind") == "delivery":
         lines.append(f"    the job: carry {quest['cargo']} to "
@@ -2105,7 +1862,7 @@ def quest_detail_lines(world: dict, quest: dict,
         r = quest.get("recipient")
         if r:
             lines.append(f"    recipient: {r['name']}, {r['role']} "
-                         f"({r['race']} {r['sex']}, age {r['age']})")
+                         f"({r['homeland']} {r['sex']}, age {r['age']})")
         return lines
     for i, s in enumerate(quest_sites(world, quest)):
         cur = quest["next"]

@@ -38,7 +38,7 @@ with CATALOG_PATH.open(encoding="utf-8") as _catalog_file:
 ENVIRONMENT_PROFILES = {
     "alpine_tundra": {
         "climate": "Cold, windy highlands with long winters and short summers.",
-        "vegetation": ("dwarf pine", "juniper", "lichen", "moss",
+        "vegetation": ("mountain pine", "juniper", "lichen", "moss",
                        "alpine grass", "mountain flowers"),
         "weather": {"clear": 18, "cloud": 18, "wind": 18, "rain": 6,
                     "storm": 6, "fog": 6, "frost": 14, "snow": 14, "heat": 0},
@@ -80,8 +80,9 @@ ENVIRONMENT_PROFILES = {
 
 LAND_SPECS = _CATALOG["lands"]
 CULTURE_PROFILES = {
-    land["culture"]: {"race": land["race"], "environment": land["environment"]}
-    for land in LAND_SPECS.values()
+    land["culture"]: {"homeland": polity,
+                      "environment": land["environment"]}
+    for polity, land in LAND_SPECS.items()
 }
 AREA_SPECS: dict[str, dict] = {}
 SETTLEMENT_SITE_SPECS: dict[str, list[dict]] = {}
@@ -439,12 +440,11 @@ def _new_area_record(spec: dict, polity: str, world_seed: int | None,
     if is_settlement:
         land = LAND_SPECS[polity]
         tags.extend(("settlement", spec["subtype"], land["culture"],
-                     land["race"]))
+                     polity))
     return {
         "id": aid, "key": aid, "name": spec["name"],
         "land": polity, "kind": spec["kind"], "subtype": spec["subtype"],
-        "culture": LAND_SPECS[polity]["culture"],
-        "race": LAND_SPECS[polity]["race"],
+        "culture": LAND_SPECS[polity]["culture"], "homeland": polity,
         "role": spec["role"], "description": spec["description"],
         "source": source, "template": aid,
         "seed": stable_seed(world_seed, f"land/{polity}", "area", index),
@@ -461,7 +461,7 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
     lid = f"land/{polity}"
     return {
         "id": lid, "key": polity, "name": spec["name"], "owner": polity,
-        "culture": spec["culture"], "race": spec["race"],
+        "culture": spec["culture"], "homeland": polity,
         "environment": spec["environment"],
         "description": spec.get("description", ""),
         "seed": stable_seed(world_seed, "world", "land", index),
@@ -767,8 +767,8 @@ def create_geography(seed: int | None) -> dict:
             natural_ids.append(aid)
         # The opening three (the trim): the authored capital, then a town and
         # a village drawn off the reserve. A land whose catalog is short of a
-        # tier -- Dvarvengrond has no village -- tops up from the head of what
-        # is left, so every land still opens with three.
+        # tier tops up from the head of what is left, so every country still
+        # opens with three.
         capital = next(entry for entry in spec["settlements"]
                        if entry[1] == "capital")
         _add_settlement(world, polity,
@@ -826,8 +826,9 @@ def create_geography(seed: int | None) -> dict:
     return world
 
 
-def land_race(world: dict, polity: str) -> str:
-    return world["lands"][polity]["race"]
+def land_homeland(world: dict, polity: str) -> str:
+    """The country a local person calls home."""
+    return world["lands"][polity]["homeland"]
 
 
 def land_culture(world: dict, polity: str) -> str:
@@ -878,157 +879,91 @@ HOUSE_MAIN_ORDINARY = (
 HOUSE_PERSONAL = ("carved toy", "sewing basket", "smoking pipe", "whetstone",
                   "family token", "bundle of letters")
 HOUSE_FOOD = {
-    "dwarf": ("black bread", "onions", "hard cheese", "dried mushrooms",
-              "smoked fish", "pot of stew"),
-    "firascir_human": ("brown bread", "onions", "hard cheese",
-                       "dried apples", "smoked fish", "pot of stew"),
-    "mortellarian_human": ("flatbread", "onions", "hard cheese", "olives",
-                           "smoked fish", "pot of stew"),
-    "elf": ("oat bread", "hard cheese", "dried mushrooms",
-            "berry preserves", "smoked fish", "pot of stew"),
-    "goblin": ("flatbread", "onions", "hard cheese", "dried peppers",
+    "firascir": ("brown bread", "onions", "hard cheese", "dried apples",
+                 "smoked fish", "pot of stew"),
+    "mortellaria": ("flatbread", "onions", "hard cheese", "olives",
+                    "smoked fish", "pot of stew"),
+    "tergal": ("flatbread", "onions", "hard cheese", "dried curds",
                "smoked fish", "pot of stew"),
-    "orc": ("flatbread", "onions", "hard cheese", "dried curds",
-            "smoked fish", "pot of stew"),
 }
 HOUSE_HEAT = {
-    "dwarf": ("stone hearth", "iron stove"),
-    "firascir_human": ("stone hearth", "iron stove"),
-    "mortellarian_human": ("stone hearth", "iron stove", "tiled hearth"),
-    "elf": ("stone hearth", "iron stove", "tiled hearth"),
-    "goblin": ("stone hearth", "iron stove", "clay stove", "iron brazier"),
-    "orc": ("stone hearth", "iron stove", "clay stove"),
+    "firascir": ("stone hearth", "iron stove"),
+    "mortellaria": ("stone hearth", "iron stove", "tiled hearth"),
+    "tergal": ("stone hearth", "iron stove", "clay stove"),
 }
 HOUSE_LIVELIHOOD = {
-    "dwarf": ("hand tools", "leather apron", "rope", "ore basket",
-              "fishing net", "cargo tally"),
-    "firascir_human": ("account book", "fishing net", "grain sack",
-                       "reed knife", "hand saw", "boat hook"),
-    "mortellarian_human": ("account book", "fishing net", "pruning knife",
-                           "olive basket", "grape basket", "sickle"),
-    "elf": ("map case", "bow stave", "herb basket", "fishing line",
-            "wool bundle", "trail markers"),
-    "goblin": ("tally slate", "rivet box", "repair tools", "rope coil",
-               "brick mold", "reed knife"),
-    "orc": ("tack repair kit", "wool bundle", "cargo tally", "wool shears",
-            "salt scoop", "water skin"),
+    "firascir": ("account book", "fishing net", "grain sack", "reed knife",
+                 "hand saw", "boat hook"),
+    "mortellaria": ("account book", "fishing net", "pruning knife",
+                    "olive basket", "grape basket", "sickle"),
+    "tergal": ("tack repair kit", "wool bundle", "cargo tally",
+               "wool shears", "salt scoop", "water skin"),
 }
 HOUSE_LIVELIHOOD_BY_ROLE = {
-    ("dwarf", "central_capital"):
-        ("hand tools", "leather apron", "unfinished ironwork",
-         "account slate", "stone dust"),
-    ("dwarf", "northern_town"):
-        ("pickaxe", "rope", "hooded lamp", "ore basket", "fur boots",
-         "goat tack"),
-    ("dwarf", "southern_trade_town"):
-        ("fishing net", "iron hooks", "cork floats", "ice chisel",
-         "fish basket", "cargo tally"),
-    ("firascir_human", "capital"):
+    ("firascir", "capital"):
         ("account book", "sealing wax", "guard belt", "folded cloth",
          "writing case"),
-    ("firascir_human", "northern_harbor_city"):
+    ("firascir", "northern_harbor_city"):
         ("fishing net", "iron hooks", "cork floats", "sailcloth",
          "fish basket"),
-    ("firascir_human", "southern_harbor_city"):
+    ("firascir", "southern_harbor_city"):
         ("cargo tally", "rope coil", "tar pot", "crate bar",
          "merchant scales"),
-    ("firascir_human", "inland_market_town"):
+    ("firascir", "inland_market_town"):
         ("sickle", "grain sack", "seed basket", "harness",
          "wooden measure"),
-    ("firascir_human", "riverside_town"):
+    ("firascir", "riverside_town"):
         ("reed knife", "eel basket", "ferry rope", "waterproof boots",
          "fish trap"),
-    ("firascir_human", "river_crossing_village"):
+    ("firascir", "river_crossing_village"):
         ("plough blade", "grain sack", "ferry pole", "horse tack",
          "seed basket"),
-    ("firascir_human", "forest_edge_village"):
+    ("firascir", "forest_edge_village"):
         ("hand saw", "splitting axe", "timber wedges", "charcoal basket",
          "leather apron"),
-    ("firascir_human", "pond_village"):
+    ("firascir", "pond_village"):
         ("fishing line", "reed basket", "cork floats", "boat hook",
          "salt sack"),
-    ("mortellarian_human", "capital"):
+    ("mortellaria", "capital"):
         ("account book", "sealing wax", "folded cloth", "oil jar",
          "writing case"),
-    ("mortellarian_human", "harbor_city"):
+    ("mortellaria", "harbor_city"):
         ("fishing net", "sailcloth", "cargo tally", "tar pot",
          "fish basket"),
-    ("mortellarian_human", "inland_market_town"):
+    ("mortellaria", "inland_market_town"):
         ("pruning knife", "olive basket", "oil measure", "pottery tools",
          "market scales"),
-    ("mortellarian_human", "hill_town"):
+    ("mortellaria", "hill_town"):
         ("grape basket", "barrel hoops", "goat bell", "pruning hook",
          "wine tally"),
-    ("mortellarian_human", "vineyard_village"):
+    ("mortellaria", "vineyard_village"):
         ("pruning knife", "grape basket", "picking net", "clay wine jug",
          "olive rake"),
-    ("mortellarian_human", "river_plain_village"):
+    ("mortellaria", "river_plain_village"):
         ("sickle", "grain sack", "sluice key", "reed basket",
          "wooden measure"),
-    ("mortellarian_human", "coast_road_village"):
+    ("mortellaria", "coast_road_village"):
         ("fishing line", "cork floats", "salt sack", "boat hook",
          "net needle"),
-    ("elf", "capital"):
-        ("account book", "map case", "folded cloth", "carving knife",
-         "herb basket"),
-    ("elf", "western_town"):
-        ("hand saw", "timber wedges", "bow stave", "trail markers",
-         "leather apron"),
-    ("elf", "river_town"):
-        ("fishing line", "oar blade", "reed basket", "ferry rope",
-         "fish trap"),
-    ("elf", "hill_town"):
-        ("wool bundle", "shepherd's crook", "quarry hammer",
-         "signal cord", "horse tack"),
-    ("elf", "deep_forest_village"):
-        ("bow stave", "herb basket", "trail markers", "pruning knife",
-         "hide scraper"),
-    ("elf", "elf_river_village"):
-        ("fishing net", "cork floats", "boat hook", "reed basket",
-         "net needle"),
-    ("elf", "woodland_edge_village"):
-        ("hand saw", "splitting axe", "seed basket", "charcoal basket",
-         "leather apron"),
-    ("goblin", "capital"):
-        ("tally slate", "rivet box", "folded awning cloth", "repair tools",
-         "labeled parts tin"),
-    ("goblin", "harbor_town"):
-        ("fishing net", "rope coil", "scrap hook", "tar pot",
-         "cork floats"),
-    ("goblin", "inland_town"):
-        ("wheel pin", "tool roll", "cargo tally", "crate bar",
-         "spare harness"),
-    ("goblin", "hill_town"):
-        ("quarry hammer", "lime scoop", "brick mold", "dust mask",
-         "iron wedges"),
-    ("goblin", "goblin_coast_village"):
-        ("net needle", "fish basket", "rope coil", "hull scraper",
-         "salt sack"),
-    ("goblin", "goblin_river_village"):
-        ("reed knife", "ferry rope", "matting needle", "boat hook",
-         "cord bundle"),
-    ("goblin", "brick_country_village"):
-        ("brick mold", "clay spade", "firing tongs", "handcart pin",
-         "charcoal basket"),
-    ("orc", "capital"):
+    ("tergal", "capital"):
         ("tack repair kit", "market tally", "wool bundle", "bow case",
          "seal box"),
-    ("orc", "western_town"):
+    ("tergal", "western_town"):
         ("cargo tally", "harness", "ferry rope", "foreign coin weights",
          "crate bar"),
-    ("orc", "northern_town"):
+    ("tergal", "northern_town"):
         ("wool shears", "saddle blanket", "shepherd's crook", "bow stave",
          "salt blocks"),
-    ("orc", "southern_town"):
+    ("tergal", "southern_town"):
         ("salt scoop", "water tally", "goat bell", "clay jar",
          "caravan rope"),
-    ("orc", "herd_road_village"):
+    ("tergal", "herd_road_village"):
         ("horse brush", "rope halter", "feed basket", "leather needle",
          "wool shears"),
-    ("orc", "orc_river_village"):
+    ("tergal", "tergal_river_village"):
         ("fishing net", "ferry pole", "fish basket", "boat hook",
          "reed mat"),
-    ("orc", "orc_basin_village"):
+    ("tergal", "tergal_basin_village"):
         ("water skin", "salt scoop", "goat tack", "reed mat",
          "well rope"),
 }
@@ -1055,10 +990,10 @@ def materialize_house(world: dict, area: dict | str) -> tuple[dict, dict]:
     rng = random.Random(seed)
     from people import make_npc
 
-    race = land_race(world, area["land"])
+    homeland = land_homeland(world, area["land"])
     culture = land_culture(world, area["land"])
     used = {npc["name"] for npc in world["npcs"]}
-    resident = make_npc(rng, race, "resident", used_names=used)
+    resident = make_npc(rng, homeland, "resident", used_names=used)
     npc_id = f"npc/{area['land']}/{slug(resident['name'])}/{sequence}"
     resident.update(id=npc_id, land=area["land"], seat=area["id"],
                     post="resident")
@@ -1232,7 +1167,7 @@ def place_debug_lines(world: dict, place: dict) -> list[str]:
         f"known/visited: {place.get('known', True)} / "
         f"{place.get('visited', False)}",
     ]
-    for key in ("owner", "culture", "race", "environment", "kind",
+    for key in ("owner", "culture", "homeland", "environment", "kind",
                 "subtype", "role", "domain", "level", "description",
                 "discovered_day", "founded_day", "founded_for"):
         if key in place and place[key] not in (None, ""):

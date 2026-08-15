@@ -5,12 +5,17 @@ from __future__ import annotations
 import copy
 import json
 import random
+import re
 import unittest
 
 import karma
+import people
 import places
 import quests
+import rpg
 import session
+import story
+import worldsim
 
 
 # Natural Areas, then the OPENING settlement census per land: capital plus
@@ -18,11 +23,8 @@ import session
 # three settlements and grows on need; everything else is the reserve pool,
 # see test_worldsim.py).
 EXPECTED = {
-    "dvarvengrond": (3, 3, 0),      # the dwarves author no village at all
     "firascir": (4, 2, 1),
     "mortellaria": (5, 2, 1),
-    "ensimaa": (5, 2, 1),
-    "gibili": (5, 2, 1),
     "tergal": (6, 2, 1),
 }
 
@@ -108,7 +110,7 @@ class PlaceGenerationTests(unittest.TestCase):
         for room in world["rooms"].values():
             self.assertTrue(room["contents"], room["id"])
 
-    def test_transit_and_sea_routes_are_not_land_borders(self) -> None:
+    def test_transit_routes_are_not_land_borders(self) -> None:
         world = places.create_geography(130)
         firascir = world["lands"]["firascir"]["links"]
         mortellaria = world["lands"]["mortellaria"]["links"]
@@ -116,18 +118,15 @@ class PlaceGenerationTests(unittest.TestCase):
                       {(link["target"], link["kind"]) for link in firascir})
         self.assertNotIn(("tergal", "border"),
                          {(link["target"], link["kind"]) for link in firascir})
-        self.assertIn(("gibili", "sea_route"),
+        self.assertIn(("firascir", "border"),
                       {(link["target"], link["kind"])
                        for link in mortellaria})
-        self.assertNotIn(("gibili", "border"),
-                         {(link["target"], link["kind"])
-                          for link in mortellaria})
 
     def test_house_contents_and_culture_restrictions(self) -> None:
         world = quests.generate_world(14)
         for area in quests.settlements(world):
             site, resident = places.materialize_house(world, area)
-            self.assertEqual(resident["race"], area["race"])
+            self.assertEqual(resident["homeland"], area["homeland"])
             self.assertGreaterEqual(len(site["rooms"]), 1)
             self.assertLessEqual(len(site["rooms"]), 3)
             main = world["rooms"][site["rooms"][0]]
@@ -145,9 +144,9 @@ class PlaceGenerationTests(unittest.TestCase):
     def test_every_quest_family_routes_to_compatible_geography(self) -> None:
         world = places.create_geography(15)
         n = 0
-        for race, templates in quests.TEMPLATES.items():
+        for homeland, templates in quests.TEMPLATES.items():
             origin = next(s for s in quests.settlements(world)
-                          if s["race"] == race)
+                          if s["homeland"] == homeland)
             for template in templates:
                 n += 1
                 level = quests.template_band(template)[0]
@@ -161,32 +160,11 @@ class PlaceGenerationTests(unittest.TestCase):
                     template["title"])
                 self.assertTrue(quest["sites"])
 
-    def test_quest_state_transition_preserves_site(self) -> None:
-        world = places.create_geography(16)
-        origin = next(s for s in quests.settlements(world)
-                      if s["race"] == "elf")
-        template = next(t for t in quests.TEMPLATES["elf"]
-                        if t["title"] == "The Blighted Grove")
-        quest = quests.build_quest(
-            world, "vertical", template, origin["id"], 3, random.Random(2))
-        site_ids = list(quest["sites"])
-        target = world["areas"][quest["target_area"]]
-        self.assertEqual(
-            [s["id"] for s in places.active_known_facts(target)],
-            ["blighted"])
-        quests.complete_quest_place_state(world, quest, day=7)
-        self.assertEqual(
-            [s["id"] for s in places.active_known_facts(target)],
-            ["recovering"])
-        self.assertTrue(all(sid in world["sites"] for sid in site_ids))
-        places.clear_state(world, target, "recovering", day=8)
-        self.assertFalse(places.active_known_facts(target))
-
     def test_completed_public_site_can_be_reused(self) -> None:
         world = places.create_geography(17)
         origin = next(s for s in quests.settlements(world)
-                      if s["race"] == "human")
-        template = next(t for t in quests.TEMPLATES["human"]
+                      if s["homeland"] == "firascir")
+        template = next(t for t in quests.TEMPLATES["firascir"]
                         if t["title"] == "The Restless Crypt")
         first = quests.build_quest(
             world, "reuse-1", template, origin["id"], 3, random.Random(1))
@@ -251,6 +229,84 @@ class PlaceGenerationTests(unittest.TestCase):
             wrapped = session._wrap_block(value)
             self.assertTrue(all(len(line) <= session.WRAP_WIDTH
                                 for line in wrapped.splitlines()))
+
+
+class HumanWorldContractionTests(unittest.TestCase):
+    HOMELANDS = {"firascir", "mortellaria", "tergal"}
+    REMOVED = re.compile(
+        r"\b(?:elf|elves|elven|dwarf|dwarves|dwarven|goblin|goblins|"
+        r"orc|orcs|orcen|ensimaa|dvarvengrond|gibili|middenland)\b",
+        re.IGNORECASE)
+
+    @staticmethod
+    def _walk(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                yield key
+                yield from HumanWorldContractionTests._walk(item)
+        elif isinstance(value, (list, tuple, set)):
+            for item in value:
+                yield from HumanWorldContractionTests._walk(item)
+        elif isinstance(value, str):
+            yield value
+
+    def test_only_three_human_homelands_exist(self) -> None:
+        self.assertEqual(set(places.LAND_SPECS), self.HOMELANDS)
+        self.assertEqual(set(quests.HOMELANDS), self.HOMELANDS)
+        self.assertEqual(set(people.NAMES), self.HOMELANDS)
+        self.assertEqual(set(story.CONQUESTS), self.HOMELANDS)
+        self.assertEqual(set(story.AGGRESSORS), self.HOMELANDS)
+
+    def test_runtime_records_use_homeland_and_never_race(self) -> None:
+        for seed in range(8):
+            world = quests.generate_world(seed)
+            for value in self._walk(world):
+                self.assertNotEqual(value, "race")
+            for store in (world["lands"], world["areas"]):
+                for record in store.values():
+                    self.assertIn(record["homeland"], self.HOMELANDS)
+            for settlement in quests.settlements(world):
+                for service in settlement["services"]:
+                    provider = next(npc for npc in world["npcs"]
+                                    if npc["id"] == service["provider"])
+                    self.assertIn(provider["homeland"],
+                                  self.HOMELANDS)
+            for quest in world["quests"].values():
+                self.assertIn(quest["giver"]["homeland"], self.HOMELANDS)
+
+    def test_active_catalogs_name_no_removed_people_or_realms(self) -> None:
+        active = (
+            places._CATALOG,
+            quests.TEMPLATES,
+            story.CONQUESTS,
+            worldsim.CARDS,
+            worldsim.RELATIONS,
+            worldsim.FACTS,
+            worldsim.OPTIONS,
+            worldsim.CONSTITUTIONS,
+            worldsim.TENSIONS,
+            worldsim.STATE_MENU,
+            worldsim.STATE_ENCOUNTERS,
+            worldsim.STATE_MARKS,
+            [weapon.description for weapon in rpg.WEAPONS.values()],
+        )
+        offenders = sorted({text for text in self._walk(active)
+                            if self.REMOVED.search(text)})
+        self.assertEqual(offenders, [])
+
+    def test_every_story_variant_builds_all_four_waves(self) -> None:
+        for n, aggressor in enumerate(story.AGGRESSORS):
+            rng = random.Random(9000 + n)
+            world = quests.generate_world(9100 + n)
+            campaign = story.init_story(world, rng, aggressor=aggressor)
+            self.assertEqual(campaign["aggressor"], aggressor)
+            self.assertEqual(campaign["conqueror"]["homeland"], aggressor)
+            for _ in story.WAVE_LEVELS:
+                quest, lines = story.post_wave(world, campaign, rng, day=1)
+                self.assertTrue(lines)
+                self.assertFalse(self.REMOVED.search(" ".join(
+                    self._walk(quest))))
+            self.assertEqual(campaign["wave_posted"], 4)
 
 
 if __name__ == "__main__":

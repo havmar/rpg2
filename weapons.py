@@ -414,8 +414,8 @@ def roll_smiths(world: dict, rng: random.Random) -> list[dict]:
     rng.shuffle(styles)
     smiths = []
     for cap_sp, seat, (style, chassis) in zip(SMITH_CAPS, capitals, styles):
-        npc = make_npc(rng, seat["race"], "legendary smith", level=cap_sp)
-        smiths.append({"name": npc["name"], "race": npc["race"],
+        npc = make_npc(rng, seat["homeland"], "legendary smith", level=cap_sp)
+        smiths.append({"name": npc["name"], "homeland": npc["homeland"],
                        "sex": npc["sex"], "age": max(40, npc["age"]),
                        "seat": seat["key"], "seat_name": seat["name"],
                        "land": seat["land"], "cap": cap_sp,

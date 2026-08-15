@@ -44,11 +44,10 @@ import argparse
 import random
 
 from rpg import quest_xp_total
-from quests import (LADDER_POOL, GOBLIN_LADDER_POOL, DWARF_LADDER_POOL,
-                    ELF_LADDER_POOL, ROOM_SHARES, build_site_rooms,
+from quests import (LADDER_POOL, ROOM_SHARES, build_site_rooms,
                     split_encounters, threat_value, new_site, new_room,
                     next_quest_id, settlements)
-from places import land_race, stable_seed, slug
+from places import land_homeland, stable_seed, slug
 
 # --------------------------------------------------------------------------- #
 # The knobs (all hand-set, sim-unverified -- the karma layer's doctrine)
@@ -92,25 +91,16 @@ HOLDING_HEAT_STEP = 1       # each holding raises the heat floor this much
                             # (capped by karma.HEAT_CAP at the call site):
                             # holding land is standing wickedness
 
-# The named defender's role, by the land's race (writing.md: role first,
+# The named defender's role, by country (writing.md: role first,
 # CRPG vocabulary). A display name over the strongest final-room slot --
 # the story layer's boss doctrine, stats never fork.
 DEFENDER_ROLES = {
-    "human": "castellan",
-    "elf": "warden of the walls",
-    "dwarf": "gate warden",
-    "goblin": "wall-crew boss",
-    "orc": "war-chief of the garrison",
+    "firascir": "castellan",
+    "mortellaria": "captain of the walls",
+    "tergal": "war-chief of the garrison",
 }
 
 _ROOM_ROLES = ("the outer wall", "the gatehouse", "the keep")
-
-_LADDERS = {
-    "goblin": GOBLIN_LADDER_POOL,
-    "dwarf": DWARF_LADDER_POOL,
-    "elf": ELF_LADDER_POOL,
-}
-
 
 # --------------------------------------------------------------------------- #
 # The garrison (fixed terrain: rolled once, stable across the save)
@@ -125,10 +115,11 @@ def garrison_level(world: dict, settlement: dict) -> int:
     return rng.randint(lo, hi)
 
 
-def garrison_pool(race: str) -> tuple[str, ...]:
-    """A land's garrison fights with its cultural ladder (the same arms
-    rule every warband follows)."""
-    return _LADDERS.get(race, LADDER_POOL)
+def garrison_pool(homeland: str) -> tuple[str, ...]:
+    """The shared calibrated garrison ladder for a known homeland."""
+    if homeland not in DEFENDER_ROLES:
+        raise KeyError(f"unknown homeland: {homeland}")
+    return LADDER_POOL
 
 
 # --------------------------------------------------------------------------- #
@@ -142,9 +133,9 @@ def build_conquest_quest(world: dict, settlement: dict,
     lapse), one place at the settlement, capped by the named defender."""
     from people import make_npc     # runtime import (people imports quests)
     level = garrison_level(world, settlement)
-    race = land_race(world, settlement["land"])
+    homeland = land_homeland(world, settlement["land"])
     encounters = CONQUEST_ENCOUNTERS[settlement["subtype"]]
-    pool = garrison_pool(race)
+    pool = garrison_pool(homeland)
     qid = next_quest_id(world)
     name = settlement["name"]
     quest = {
@@ -185,7 +176,8 @@ def build_conquest_quest(world: dict, settlement: dict,
                  quest=qid)
     quest["sites"].append(site_id)
     used = {n["name"] for n in world.get("npcs", [])}
-    defender = make_npc(rng, race, DEFENDER_ROLES[race], used_names=used)
+    defender = make_npc(rng, homeland, DEFENDER_ROLES[homeland],
+                        used_names=used)
     strongest = max(rooms[-1][1], key=threat_value)
     world["sites"][site_id]["boss"] = {
         "kind": strongest,

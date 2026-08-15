@@ -175,10 +175,10 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap and build contract**. Since the
-  2026-08-15 reset it contains only the fixed Europe-map rework, split into
-  five named sessions which must be implemented in order: Human World
-  Contraction, Fixed Europe Geography, Grid Navigation and Map UI, Local
-  Quest Geography, and Europe MVP Closure. Name the session when triggering
+  2026-08-15 reset it contains only the unbuilt fixed Europe-map rework.
+  Human World Contraction has shipped; the remaining sessions are Fixed
+  Europe Geography, Grid Navigation and Map UI, Local Quest Geography, and
+  Europe MVP Closure. Name the session when triggering
   work; do not refer to a rung number. **Nothing implemented lives there**:
   when a session ships, delete its completed contract and write the result in
   the permanent docs and designlog as described above.
@@ -202,9 +202,9 @@ a pointer: what the file is, how it's run, where its docs are.
   2026-07-25): the
   authored-vs-generated boundary, persistent feature and lightweight
   Room-content schema, weighting/reveal/mutation/seed rules, implementation
-  order, and the canonical pre-implementation content catalog. All six
-  settled MVP Lands — Dvarvengrond, Firascir, Mortellaria, Ensimaa, Gibili,
-  and Tergal — have finite Area inventories, basic natural and settlement
+  order, and the canonical pre-implementation content catalog. The active
+  countries — Firascir, Mortellaria and Tergal — have finite Area inventories,
+  basic natural and settlement
   Site/Room layouts, generated-village roles, house overlays, and ordinary
   content pools. Its historical implementation contract fixes record fields,
   stable materialization, quest routing, readouts, and minimum verification.
@@ -226,12 +226,12 @@ a pointer: what the file is, how it's run, where its docs are.
   servants, sulfur-to-Hell), the three pre-ordered creatures, the
   PLAGUE CHAIN and the econ-packet cards the floor session left on the
   floor, the two magic-doctrine residues (the residue rule's magical
-  origin stamps, NOBODY COMES BACK), the per-land and per-race RULER
+  origin stamps, NOBODY COMES BACK), the country RULER
   MODIFIER COLUMNS with the tribal rewording, and the PC's own blank
   sheet. The spec-cut convention (a section is CUT when its session
   lands) and the cut dates live at the head of the file itself.
 - `places.py` — **the procedural-place runtime**: loads the immutable catalog,
-  derives stable BLAKE2 child seeds, creates the six Lands and finite Areas,
+  derives stable BLAKE2 child seeds, creates the three human countries and finite Areas,
   materializes the opening settlements (three a land since the 2026-08-07
   trim) and the reserve draws / lazy natural Sites / ordinary houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation
@@ -247,7 +247,8 @@ a pointer: what the file is, how it's run, where its docs are.
   documented DM TOOL since 2026-08-12: dm.md's "The map can grow at your
   call" is the play-facing recipe.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
-  from the accepted concrete content in `placegen.md`: all six Land/Area
+  from the accepted concrete content in `placegen.md`: the three active
+  country/Area
   records, required settlement Site/Room skeletons, natural three-Site
   inventories, generated-village roles/names, adjacency, and river/routes.
   Since the settlement trim it is the world's RESERVE, not its census.
@@ -290,12 +291,12 @@ a pointer: what the file is, how it's run, where its docs are.
   (`roll_land` / `roll_world`, lazy and day-seeded, so catching up is
   living through it), the news (`take_news`, told once) and the readouts
   (`land_lines` — the state diff on the map page — and `world_lines` —
-  the DM inventory behind `world`). Seed content: two to four economy
-  cards a land and nine trade relations, lifted from worldsim.md's
-  packets. **The weather rung** (2026-08-08) added THREE TRACKS over one
+  the DM inventory behind `world`). The contracted active catalog has 104
+  cards and eight relations across three countries. **The weather rung**
+  (2026-08-08) added THREE TRACKS over one
   land — `TRACKS` / `DECK_KEY` / `LIVE_KEY`, so a storm never blocks a
   harvest failing nor a season of drought a storm — and with them the
-  sky: `WEATHER_WORDS` / `WEATHER_LOCAL` (the dwarves' storm reads as a
+  sky: `WEATHER_WORDS` / `WEATHER_LOCAL` (a cold-highland storm reads as a
   snowstorm), `weather_weights` / `roll_weather` / `_roll_sky` (the day
   roll, the wet and dry spells, a card that IS the weather holding it),
   `weather_of` / `weather_line` / `exposed` / `storming`, the eight
@@ -317,10 +318,8 @@ a pointer: what the file is, how it's run, where its docs are.
   local encounter table (`encounter_entries` / `local_encounter` off the
   cards and `STATE_ENCOUNTERS`). Every reader is STRICT — a land with no
   layer under it is a state worldgen cannot produce, so asking about one
-  raises rather than answering neutrally. The content bill
-  went with it: 32 crisis cards (five or six a land, one flavor anchor
-  each), five card CHAINS plus one that crosses a relation, and 17
-  authored edges. `_validate_quest` / `_validate_menu` /
+  raises rather than answering neutrally. Surviving country cards retain
+  their authored chains and outlets. `_validate_quest` / `_validate_menu` /
   `_validate_encounter` / `_validate_menu_tables` police the new payload
   shapes at import (including the no-double-charging rule between a card's
   own `menu` and `STATE_MENU`). **The politics rung** (2026-08-10, rules.md's
@@ -345,11 +344,8 @@ a pointer: what the file is, how it's run, where its docs are.
   Readouts: `politics_lines` (the whole polity, on `world`) and
   `notable_lines` (the ruler's PUBLIC half, under his face on the board).
   `_validate_politics` / `_validate_politics_tables` police it at import.
-  The content bill went to 77 politics cards (31 of them Firascir's own, by
-  the asymmetry doctrine, 5 crown-wide succession cards every crowned
-  land shares, and `gibili/commune` added by the 2026-08-12 chain repair
-  as the junta's other ending), 7 more relation edges including the four
-  DIPLOMATIC INSTRUMENTS, and 34 faction edges. The sims and benches never
+  The contracted catalog retains 57 politics cards plus surviving relation
+  edges including the diplomatic instruments, and 27 faction edges. The sims and benches never
   import it; every knob is hand-set.
   **The religion & magic rung** (2026-08-11, rules.md's Religion & Magic
   add-on — the build's LAST) finally built worldsim.md's other two record
@@ -366,13 +362,9 @@ a pointer: what the file is, how it's run, where its docs are.
   table: `STATE_MARKS` / `mark_roles` — what a state makes ROBBABLE, the
   reagent trade's crime-layer wiring, read through `crime.roll_mark`'s new
   `roles=` argument. Two named foe pools and no new creature row (`_UNDEAD`,
-  `_CASTERS`). The content bill: 33 `RELIGION_CARDS` and 14 `MAGIC_CARDS`
-  (five-plus worship cards a land — four in Ensimaa since the funeral
-  card's cut, 2026-08-11 — the Sun communion's synod sitting in TWO
-  lands' decks, and the talent/hunt chain that runs in every land), 32
-  FACTS, 12 OPTIONS, 8 new religion and magic TENSIONS with 13 factions and
-  16 faction edges under them, and 6 new relation edges (the two-way schism
-  clock among them). The sims and benches never import it; every knob is hand-set.
+  `_CASTERS`). The contracted active catalog retains 17 religion cards,
+  nine magic cards, 16 facts and seven options. The sims and benches never
+  import it; every knob is hand-set.
   **The 2026-08-12 review repair** (designlog; benchlog has the fire
   counts): the CHAIN RULE is law — a link is a `set` state the successor
   admits on and clears, never a `while`, because a track's draw runs
@@ -380,8 +372,7 @@ a pointer: what the file is, how it's run, where its docs are.
   import, and `card()` now also rejects a clockless card with a `while`
   / `wealth_while` payload — `mortellaria/revocation` had held its land
   in CRISIS forever). Seven dead cards were rewired onto it,
-  `gibili/commune` was written (the junta's other ending — the
-  constitution can actually move now), the news watermark became a
+  the constitution-chain repair shipped, the news watermark became a
   count (`news_seq` / `told_seq`, so a line posted late on a told day
   survives), `road_charges` gates on the toll TERM rather than one
   state (the tax farmer's toll reaches the road), `hire_weather` buys
@@ -458,7 +449,7 @@ a pointer: what the file is, how it's run, where its docs are.
   with a card in it, the exile edge firing abroad, no card in the rung being
   dead data -- every one of the five gates forced, and it admits -- and the
   widths); the war
-  feed (the derived-seed casus belli, the race that needs no roll, the line
+  feed (the derived-seed casus belli, Tergal's fixed mandate, the line
   naming both realms, the herald saying it once and leaving it on the news,
   and a pre-politics save saying nothing); and the surfaces (the map page's
   constitution, the DM inventory's whole polity, the town saying the
@@ -478,7 +469,7 @@ a pointer: what the file is, how it's run, where its docs are.
   road reaching the heist and the smuggler and not the mugging, the extra
   faces competing with the band's own rather than replacing them, and a
   state mark reaching a real casing report); and the authored content (five
-  worship cards a land — four in Ensimaa since the funeral card's cut —
+  surviving worship cards per country —
   magic reaching every land, almost nothing ungated
   and what is left paying for it in `chance`, the MARGIN doctrine as data —
   no magic card moves a band — CONDUCT-NOT-CREED as data, the talent chain
@@ -489,7 +480,7 @@ a pointer: what the file is, how it's run, where its docs are.
   *The review repair* (2026-08-12): the chain rule as a contract (a
   clockless `while` and a same-track `while` admit both rejected at
   import, a link outliving its setter, the politics chains each reaching
-  their successor, and the whole Gibili arc run to both of its
+  their successor, and every surviving country arc run to both of its
   constitutions), the repost rules (a finished card job does not block
   the repost; a taken one still holds the card's place), any raised toll
   term reaching the road, the rain stone delivering every paid day, and
@@ -651,7 +642,7 @@ a pointer: what the file is, how it's run, where its docs are.
   accessors, the threat math (all constants at the top, calibrated by
   `bench_quests.py`), concrete quest Room builders, the
   `QUEST_PLACE_REQUIREMENTS` tag/template routing layer,
-  and per-race quest
+  and per-country quest
   templates with reskin tables (since 2026-07-12 each also authors a
   `giver` role and an `epilogue` line; since 2026-07-26 a
   `failure_epilogue` too), the QUEST CLOCK and the banded lazy refill
@@ -678,13 +669,13 @@ a pointer: what the file is, how it's run, where its docs are.
   last. `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
-  (2026-07-12, rules.md's Story Layer & Conquest add-on). Four aggressor
-  variants (elf/goblin/human/orc — content dicts at the top: creeds,
+  (2026-07-12, rules.md's Story Layer & Conquest add-on). Three country
+  variants (Firascir, Mortellaria and Tergal — content dicts at the top: creeds,
   reskins, waves, heralds, epilogues), the named faces (conqueror + two
   lieutenants as display names over budget-honest rosters), waves pinned
   at L2/5/8/10 built by quests.py's own threat math, wave gating
   (previous wave done + party at level + party at a settlement since
-  2026-07-13; the aggressor roll excludes the PC's race), the
+  2026-07-13; the aggressor roll excludes the PC's homeland), the
   wave-3 scripted fall with
   occupation, and the war readouts. Since the politics rung (2026-08-10)
   the war also has a WHY: `init_story` rolls `casus_belli` off a derived
@@ -800,7 +791,7 @@ a pointer: what the file is, how it's run, where its docs are.
   `python -m unittest -v test_history.py`.
 - `test_start.py` — the GAME START contract suite (2026-08-05, plan.md's
   specs A and B): the level roll (`1..START_LEVEL_ROLL_MAX`, seeded, and
-  `--level` / `--race` with their refusals), the PC's two guarantees (the
+  `--level` / `--homeland` with their refusals), the PC's two guarantees (the
   gift always, the sketch never — plus the asymmetry that motivates them:
   a wizard trains steel, a warrior can never learn a spell), the career a
   level-N start arrives with (doctrine points, the reward weapon and the
@@ -830,10 +821,8 @@ a pointer: what the file is, how it's run, where its docs are.
   fit, the smiths' pride floor, the reward ladder, the trash chargen
   pool. `python -m unittest -v test_weapon_gen.py`.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
-  Charisma & Satisfaction add-on): the five races' stat modifiers
-  (floor-raise `RACE_MODS`; since 2026-07-13 also the goblin STR ceiling
-  drop `RACE_MODS_CEIL` and the race trait substitutions
-  `RACE_TRAIT_SUBS`), the 25+25 per-race name pools, the trait
+  Charisma & Satisfaction add-on): three human homeland name pools with no
+  homeland stat or trait modifiers, plus the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
   2026-07-13) — **COMPANIONS only since 2026-08-05**: `with_traits=False`
@@ -845,7 +834,7 @@ a pointer: what the file is, how it's run, where its docs are.
   `make_pair` (bonded recruit pairs), the
   candidate sheets, and the downtime-matching rules; since 2026-07-12
   also `make_npc` / `npc_line` (the TARGETED generator: the caller fixes
-  race/role/sex/age and optionally a level, the dice roll the name —
+  homeland/role/sex/age and optionally a level, the dice roll the name —
   dict NPCs, no stat blocks, no sketch, `NPC_MIN_AGE` floors anyone with
   a job title). Content
   only — the satisfaction/CHA mechanics it hangs on live in rpg.py; the
@@ -889,7 +878,7 @@ a pointer: what the file is, how it's run, where its docs are.
   the save). Reworked 2026-07-13 (the streamlining batch): `new`
   GENERATES the PC (no `pick`; min capacity 1, the long-time companion,
   the OPENING HOOK at the closest-level-quest settlement, aggressor
-  excludes the PC race — and since 2026-08-05 a rolled start level, an
+  excludes the PC homeland — and since 2026-08-05 a rolled start level, an
   always-wizard PC and no trait sketch on him), `recruit` rolls candidates
   ON REQUEST (once per settlement/day; the tavern stopped popping them),
   companions AUTOLEVEL after fights/hire (`rpg.autospend_points`) while
@@ -1381,7 +1370,7 @@ mechanic *does* and *why* is rules.md's job.
   `satisfaction_after_fight`, `wants_to_leave` / `leave_threshold`,
   `has_trait`), `party_capacity`, `develop_hero` (the leveled-character
   factory, mirroring bench_bestiary's reference doctrine), `Entity`'s
-  person fields (`cha`, `race`, `sex`, `age`, `traits`, `satisfaction`,
+  person fields (`cha`, `homeland`, `sex`, `age`, `traits`, `satisfaction`,
   `bond`/`bond_kind`, `last_dose_day`, `def_bonus`, `nickname`; the
   `epithet` field is GONE). `people.py`: generation + sheets (see Files).
   `session.py`: `roll_recruits` / `cmd_hire` (per-head capacity check;
@@ -1425,7 +1414,7 @@ mechanic *does* and *why* is rules.md's job.
   `WEAPON_INDEX` (name -> Weapon, the save file's reference table).
 - **Generation** — `quests.py`: `threat_value` / `build_room` /
   `build_site_rooms` (the threat math), `TEMPLATES` / `EPIC_TEMPLATES`
-  (the per-race quest tables + reskins), `build_quest` / `forge_quest`,
+  (the per-country quest tables + reskins), `build_quest` / `forge_quest`,
   `generate_world` (the one-job-per-settlement SEED since 2026-07-26),
   `quest_to_sites` (generated
   quest -> `Site` instances for the sims), the board readout helpers.
@@ -1450,14 +1439,14 @@ mechanic *does* and *why* is rules.md's job.
   questline does not lapse). `bench_quests.py`: `run_board_clock` and the
   banded turn-in in `run_career`. `people.py`: `pick_name` numbers its
   overflow (`Brand II`, `Brand 3`) instead of choosing from an empty pool —
-  a churning board asks for far more faces than the 25-a-race/sex pools
+  a churning board asks for far more faces than a homeland/sex pool
   hold, and the giver namespace is now the names IN USE (recomputed in
   `board_clock`), never a persisted ledger.
 - **The story layer** (2026-07-12) — `quests.py`: template `giver`/
   `epilogue` fields, `attach_giver`, the central cast
   (`_cast_the_land` + the role tables, `world["npcs"]`). `people.py`:
   `make_npc` / `npc_line` / `NPC_MIN_AGE` (the targeted generator).
-  `story.py`: `CONQUESTS` (the four variants' content), `WAVE_LEVELS` /
+  `story.py`: `CONQUESTS` (the three country variants' content), `WAVE_LEVELS` /
   `WAVE_ROOMS`, `init_story` / `next_wave_due` / `post_wave` /
   `on_wave_done` / `occupied` / `war_status_lines`. `session.py`:
   `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
@@ -1481,7 +1470,7 @@ mechanic *does* and *why* is rules.md's job.
   `buy_spellbook`, and the spell branches in `develop_hero` /
   `autospend_points`. `sites.py`: `FoeSpec.mind` / `school_rank` /
   `spell_ward` + the hexer/pyromancer/magus rows and the roster tags.
-  `quests.py`: `CASTER_POOL` — one contained caster template per race
+  `quests.py`: `CASTER_POOL` — one contained caster template per homeland
   (NOT the warband ladder; see rules.md on the career collapse that
   decided it) plus the "Renegade Magus" epic. `session.py`:
   `train HERO SPELL`, `buy HERO book SPELL` (capitals),
@@ -1505,14 +1494,13 @@ mechanic *does* and *why* is rules.md's job.
   `refresh_foes_after_retreat`, `buy_ammo` / `grant_starter_ammo`.
   `sites.py`: `HAND_BOMBARD`, the archer rearm + the slinger/hunter/
   gunner rows, foe ammo in `make_foe`, the `shoots to range N` roster
-  tag, `run_site` at `ROOM_FIELD`. `quests.py`: the cultural ladder
-  pools (`GOBLIN_LADDER_POOL` / `DWARF_LADDER_POOL` /
-  `ELF_LADDER_POOL`), `notice_contest`, `foes_preferred_field`.
+  tag, `run_site` at `ROOM_FIELD`. `quests.py`: the shared calibrated
+  `LADDER_POOL`, `notice_contest`, `foes_preferred_field`.
   `session.py`: the engagement rework in `wild_event`,
   `party_preferred_field`, field plumbing through
   `resolve_encounter`/`pending`/resume/retreat, `fight --field`,
-  `buy HERO arrows|bolts|shells|knives`, the dwarf-settlement revolver
-  gate, starter ammo on `give`.
+  `buy HERO arrows|bolts|shells|knives`, open revolver stock, and starter
+  ammo on `give`.
 - **Cross-land deliveries** (2026-07-14) — `quests.py`:
   `DELIVERY_TEMPLATES` / `build_delivery_quest` / `_post_delivery` and
   the kind-aware readout helpers. `session.py`: `active_delivery` /
@@ -1523,8 +1511,8 @@ mechanic *does* and *why* is rules.md's job.
 - **The world, places & navigation** (2026-07-09; hierarchy 2026-07-22;
   procedural-place MVP 2026-07-25; the settlement trim 2026-08-07) —
   `places.py` +
-  `place_catalog.json`: independent Land/culture/owner/environment records,
-  the 28 natural Areas plus three settlements a land (46 at worldgen), stable
+  `place_catalog.json`: independent country/culture/owner/environment records,
+  15 natural Areas plus three settlements a country (24 Areas at worldgen), stable
   BLAKE2 child seeds, required
   settlement skeletons/services/providers, three-entry natural Site
   inventories, Room contents, ordinary houses, knowledge, links, and the
@@ -1541,7 +1529,7 @@ mechanic *does* and *why* is rules.md's job.
   `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
   Sites as persistent world IDs, `QUEST_PLACE_REQUIREMENTS` routing;
   `wild_pool`
-  (what roams a land = the union of its race's template pools),
+  (what roams a land = the union of its country's template pools),
   `roll_wild_level` (the road's party-independent geometric level table),
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
   `position` (`land`, `area`, optional `site`/`room`), `current_area` /
@@ -1747,7 +1735,7 @@ mechanic *does* and *why* is rules.md's job.
   (`START_LEVEL_ROLL_MAX` = 18, `START_QUESTS_PER_LEVEL`,
   `START_PURSE_SHARE`, `START_SPELL_LEVELS`, `start_level`,
   `career_purse`, `career_kit`, `_start_pact`, `career_line`),
-  `cmd_new` rebuilt around them (the `--level` / `--race` flags and
+  `cmd_new` rebuilt around them (the `--level` / `--homeland` flags and
   their refusals, the always-wizard trait-less PC, the trash arms now
   level-1 only, the war and pact lines that no longer promise level 2),
   `_starting_settlement(world, level)` and `opening_hook` picking the
@@ -2036,9 +2024,10 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
 - **The board never runs dry:** 0/500 careers exhausted it, ~660 postings
   expire unfinished per career, ~129 live jobs standing at the end. The
   up-front XP-coverage assert is deleted and nothing replaced it but the
-  measurement. *(Halved by the 2026-08-07 settlement trim — 18 settlements,
-  68 slots: ~452 expiring and ~68 live at the end, still 0 exhausted. The
-  before/after table is benchlog's trim entry.)*
+  measurement. The active contraction now opens nine settlements; no balance
+  remeasurement was taken because it changed content routing rather than
+  combat or progression knobs. The last measured before/after table remains
+  in benchlog's trim entry.
 - **Turn-in bands in the sim: quick 51% / on time 43% / late 4% / expired
   1%.** That quick share is a sim artifact, not a play prediction — the
   career sim has no travel layer, so its jobs land 2-3 days faster than a

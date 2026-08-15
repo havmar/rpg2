@@ -89,7 +89,7 @@ class TheStartLevel(unittest.TestCase):
     def test_the_flags_exist_and_default_to_a_roll(self):
         args = session.build_parser().parse_args(["new"])
         self.assertIsNone(args.level)
-        self.assertIsNone(args.race)
+        self.assertIsNone(args.homeland)
 
     def test_the_default_rolls_inside_the_band(self):
         for seed in range(40):
@@ -133,12 +133,13 @@ class TheStartLevel(unittest.TestCase):
             self.assertIsNone(state, bad)
             self.assertIn("--level", out)
 
-    def test_a_race_can_be_fixed_and_a_bad_one_refused(self):
-        state, _ = run_new("--seed", "2", "--level", "3", "--race", "goblin")
-        self.assertEqual(state["party"][0].race, "goblin")
-        state, out = run_new("--seed", "2", "--race", "halfling")
+    def test_a_homeland_can_be_fixed_and_a_bad_one_refused(self):
+        state, _ = run_new("--seed", "2", "--level", "3",
+                           "--homeland", "tergal")
+        self.assertEqual(state["party"][0].homeland, "tergal")
+        state, out = run_new("--seed", "2", "--homeland", "nowhere")
         self.assertIsNone(state)
-        self.assertIn("--race", out)
+        self.assertIn("--homeland", out)
 
     def test_the_level_is_printed_and_marked_when_rolled(self):
         _, out = run_new("--seed", "4")
@@ -162,12 +163,13 @@ class ThePlayerCharacter(unittest.TestCase):
             self.assertIn(pc.school, rpg.SCHOOLS)
             self.assertGreaterEqual(pc.spells.get(pc.school, 0), 1)
 
-    def test_the_gift_survives_every_race_the_flag_can_fix(self):
-        for race in quests.RACES:
-            e = people.make_character(random.Random(7), 4, race=race,
+    def test_the_gift_survives_every_homeland_the_flag_can_fix(self):
+        for homeland in quests.HOMELANDS:
+            e = people.make_character(random.Random(7), 4,
+                                      homeland=homeland,
                                       with_traits=False, wizard=True)
-            self.assertTrue(e.is_wizard, race)
-            self.assertEqual(e.race, race)
+            self.assertTrue(e.is_wizard, homeland)
+            self.assertEqual(e.homeland, homeland)
 
     def test_the_gift_is_the_natural_roll_not_a_nudge(self):
         """MIND strictly above both other combat stats -- rpg.make_human's
@@ -400,20 +402,22 @@ class TheOpeningGround(unittest.TestCase):
 class TheTraitRollback(unittest.TestCase):
     def test_a_cast_npc_carries_no_sketch(self):
         rng = random.Random(2)
-        npc = people.make_npc(rng, "dwarf", "chief constable")
+        npc = people.make_npc(rng, "firascir", "chief constable")
         self.assertNotIn("traits", npc)
-        self.assertEqual(set(npc), {"name", "race", "sex", "age", "role"})
+        self.assertEqual(set(npc),
+                         {"name", "homeland", "sex", "age", "role"})
 
     def test_a_cast_npc_records_a_level_when_the_caller_knows_one(self):
         rng = random.Random(2)
-        self.assertEqual(people.make_npc(rng, "orc", "boss", level=7)["level"],
+        self.assertEqual(people.make_npc(rng, "tergal", "boss", level=7)["level"],
                          7)
-        self.assertNotIn("level", people.make_npc(rng, "orc", "boss"))
+        self.assertNotIn("level", people.make_npc(rng, "tergal", "boss"))
 
-    def test_the_npc_line_is_name_role_race_sex_age(self):
-        npc = people.make_npc(random.Random(5), "elf", "sage")
+    def test_the_npc_line_is_name_role_homeland_sex_age(self):
+        npc = people.make_npc(random.Random(5), "mortellaria", "sage")
         line = people.npc_line(npc)
-        self.assertEqual(line, f"{npc['name']} (sage) -- elf {npc['sex']}, "
+        self.assertEqual(line, f"{npc['name']} (sage) -- mortellaria "
+                               f"{npc['sex']}, "
                                f"age {npc['age']}")
 
     def test_no_face_in_a_generated_world_carries_traits(self):
@@ -438,7 +442,7 @@ class TheTraitRollback(unittest.TestCase):
         (kinds, skins, leader, label)."""
         rng = random.Random(6)
         for build in (karma.build_posse, karma.build_hell_posse):
-            _kinds, _skins, leader, _label = build(5, "human", rng)
+            _kinds, _skins, leader, _label = build(5, "firascir", rng)
             self.assertNotIn("traits", leader)
             self.assertEqual(leader["level"], 5)
 
