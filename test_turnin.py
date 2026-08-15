@@ -32,6 +32,7 @@ from unittest import mock
 
 import karma
 import crime
+import places
 import quests
 import rpg
 import session
@@ -731,22 +732,38 @@ class TheReturnLeg(unittest.TestCase):
             if quest.get("kind") == "delivery" or not quest.get("sites"):
                 continue
             legs = quests.return_leg_days(world, quest)
-            self.assertIn(legs, (0, quests.TRAVEL_DAYS_IN_LAND,
-                                 quests.TRAVEL_DAYS_CROSS))
+            origin = world["areas"][quest["origin"]]
+            last = world["sites"][quest["sites"][-1]]
+            self.assertEqual(legs, places.path_days(
+                world["areas"][last["area"]]["tile"], origin["tile"]))
             lo, hi = quests.QUEST_WINDOW_DAYS
             self.assertGreaterEqual(quest["window"], lo + legs)
             self.assertLessEqual(quest["window"], hi + legs)
 
-    def test_a_cross_land_job_buys_the_most(self):
+    def test_the_road_home_is_the_real_distance_and_is_symmetric(self):
+        """The leg is priced off the grid since 2026-08-15, not off a flat
+        same-land/cross-land constant -- so a job across the map buys more
+        window than one next door, and the price does not depend on which
+        end you measure from."""
         world = _world()
         settlement = quests.settlements(world)[0]
-        far = next(a for a in quests.all_areas(world)
-                   if a["land"] != settlement["land"])
-        site_id = "site/test/leg"
-        quests.new_site(world, far["key"], site_id, "the far place", 3)
-        quest = {"origin": settlement["key"], "sites": [site_id]}
-        self.assertEqual(quests.return_leg_days(world, quest),
-                         quests.TRAVEL_DAYS_CROSS)
+        far = max((a for a in quests.all_areas(world)
+                   if a["land"] != settlement["land"]),
+                  key=lambda a: places.path_days(settlement["tile"],
+                                                 a["tile"]))
+        near = world["areas"][world["tiles"][settlement["tile"]]
+                              ["natural_area"]]
+        for area, site_id in ((far, "site/test/far"),
+                              (near, "site/test/near")):
+            quests.new_site(world, area["key"], site_id, "a place", 3)
+        far_legs = quests.return_leg_days(
+            world, {"origin": settlement["key"], "sites": ["site/test/far"]})
+        near_legs = quests.return_leg_days(
+            world, {"origin": settlement["key"], "sites": ["site/test/near"]})
+        self.assertEqual(near_legs, 0)          # same Tile: no road home
+        self.assertGreater(far_legs, near_legs)
+        self.assertEqual(far_legs, places.path_days(settlement["tile"],
+                                                    far["tile"]))
 
 
 class TheWorkDoneStage(unittest.TestCase):

@@ -2019,7 +2019,7 @@ touching no melee bench.
 | **fire** | attack | firebolt (1 P) / rank bonus / **FIREBALL**: one roll sweeps up to 3 foes (4 P, thrown when 3+ stand) |
 | **ice** | attack | rime bolt (1 P, −1 DEX stacking) / rank bonus / **FLASH-FREEZE**: a wounding bolt also costs the target its next action (4 P; rime −2) |
 | **telekinesis** | attack | **DISARM**: tear a weapon away — the broken-weapon state, once per foe (2 P) / **HURL** debris (2 P, +4 flat) / **HURL FOE**: a wounding slam costs its next action (4 P) |
-| **teleport** | opener | **BLINK STRIKE**: open at a foe's back — an ambush strike (3 P) / **BLINK OUT**: retreat with NO parting blows and NO chase (`retreat --blink`, 5 P; a fizzled door falls back to the honest retreat) / **TRAVEL**: step to any VISITED settlement, 3 P per road day skipped — no days, no road, no interception (`cast`) |
+| **teleport** | opener | **BLINK STRIKE**: open at a foe's back — an ambush strike (3 P) / **BLINK OUT**: retreat with NO parting blows and NO chase (`retreat --blink`, 5 P; a fizzled door falls back to the honest retreat) / **TRAVEL**: step to any VISITED settlement, 3 P per **shortest-path road day** skipped (2026-08-15: the real grid distance, so the far side of Europe is out of reach of any pool) — no days, no road, no interception (`cast`) |
 | **invisibility** | opener | **UNSEEN ENTRY**: untargetable until the first strike, which lands as an ambush (3 P) / **VANISH**: re-fade mid-fight — a pause action / standing order (4 P) / **GHOST-WALK**: a scene unseen, out of combat (roleplay tier) |
 | **stop time** | opener | 1 / 2 / 3 **stolen strikes** — ambushes before the lines meet (4/5/6 P) |
 | **possession** | opener | seize a living mind: the puppet fights for the party 1 / 2 / 3 rounds (4/5/6 P; DC + target training + 2 × ward; the dead have no mind) |
@@ -2687,9 +2687,10 @@ as much at level 20 as at level 1; a bed is not.
 
 **Every posting carries a window.** A quest is stamped with `posted_day`, a
 `window` rolled at `QUEST_WINDOW_DAYS` = 3–7 days **plus the return leg**
-(2026-08-08: 0 days if the work is in the giver's own area, 1 elsewhere in
-the land, 2 across a border — the delivery kind's round-trip precedent),
-and the `deadline_day` that follows. The clock starts at **posting**, not at
+(2026-08-08, the delivery kind's round-trip precedent; since 2026-08-15 the
+leg is the real **shortest-path days** from the job's last Site's Tile back
+to the giver's — 0 when the work is on the giver's own Tile, and honestly
+long when it is across the map), and the `deadline_day` that follows. The clock starts at **posting**, not at
 taking: a job already five days old is five days into its window, so reading
 the board's clock is part of reading the board. The windows were tuned when
 a job completed instantly in the field; the return leg is now inside the
@@ -2869,10 +2870,13 @@ The quest kind that sends the party **travelling**: taken at its origin
 settlement, paid at a named settlement in another land. No sites — the
 road is the content:
 
-- **Pay scales with the trip**: 20 g + 25 XP per one-way travel day (the
-  standard cross-land run is 2 days: 40 g + 50 XP). Gold-rich for the
-  effort — the courier premium — and XP-light next to site work: walking
-  isn't fighting. The CHA negotiation bonus applies like any quest gold.
+- **Pay scales with the trip**: 20 g + 25 XP per one-way **shortest-path**
+  day. Since the grid shipped (2026-08-15) that is the real distance across
+  Europe rather than a flat two-day constant, so a courier run to the far
+  side of the map is a 15–40 day commitment paying 300–800 g — a genuine
+  career choice, not a chore. Gold-rich for the effort — the courier
+  premium — and XP-light next to site work: walking isn't fighting. The CHA
+  negotiation bonus applies like any quest gold.
 - **One guaranteed interception** on the travel leg that reaches the
   destination: a road-table event at chance 1 — the road's own
   party-independent level table, spotted/ambush valves included, paying
@@ -2889,21 +2893,22 @@ road is the content:
   delivery shows **DELIVERY** where a level would go: the road's danger
   is the road's table, not a site level.
 - **A courier job's window buys its road** (2026-07-26): the standard
-  3–7 day window plus twice the trip's travel days, so a cross-land run is
-  not late before it starts. Its hand-off is banded like any turn-in.
+  3–7 day window plus twice the trip's shortest-path days, so a cross-map
+  run is not late before it starts. Its hand-off is banded like any turn-in.
 
 ---
 
-# The World & Navigation — Add-on (2026-07-09; hierarchy 2026-07-22)
+# The World & Navigation — Add-on (2026-07-09; hierarchy 2026-07-22; the grid 2026-08-15)
 
 The geography under the quest system: the party is always **somewhere**, and
 quests refer to places in the same world rather than carrying private maps.
-It is a fixed square grid; weighted grid movement and its rendered map are
-the next staged build. `places.py`, `place_catalog.json` and
+It is a fixed square grid, and since 2026-08-15 the party WALKS it: cardinal
+Tile edges, symmetric day costs, deterministic shortest paths and a rendered
+40-column map. `places.py`, `place_catalog.json` and
 `resources/europe_map.txt` own place definitions, deterministic
-materialization, knowledge, contents, and mutation. `quests.py` owns encounter
-placement and travel constants/tables; `session.py` owns position, discovery,
-movement, and displays.
+materialization, knowledge, contents, mutation, the edge cost, the
+pathfinder and the map render. `quests.py` owns encounter placement and the
+road's tables; `session.py` owns position, the walk itself, and displays.
 
 ## The hierarchy
 
@@ -2977,8 +2982,18 @@ materialize lazily.
   on reveal, historical towns are known from day zero, and ordinary
   settlements stay hidden until their slot materializes. Revealing a Tile
   materializes every settlement slot on it and never changes the fixed census.
-  `map` and `ui/map.txt` remain the transitional 40-column macro list until
-  the grid-navigation session replaces them.
+- **The map page.** `map` and `ui/map.txt` draw the whole 30x18 grid under a
+  two-line numeric column axis, with two-digit row labels — 33 characters
+  wide, inside the 40-column rule, so the map is never windowed or scrolled.
+  Base glyphs are the authored `. # ^ ~`; known overlays replace them in a
+  strict priority: **`@` the party, `!` an active quest objective, `C` a
+  known capital, `T` any other known town, `v` known village(s) with no
+  known town, then the terrain**. One cell never tries to show everything on
+  its Tile — the detail block below the grid names the current Tile, its
+  coordinate, country, biome, derived ground tags and every Area on it the
+  party knows, and a compact legend groups known settlements by country,
+  historical cities first. No border characters are drawn through the grid:
+  the fixed partition rule and that legend carry political geography.
 - **Position.** The save carries a breadcrumb with `land`, `tile`, `area`,
   and optional `site` / `room` IDs. Status and `look` print Country, Tile,
   Area, Site and Room in order. A new game chooses uniformly from **all
@@ -3006,17 +3021,42 @@ materialize lazily.
 
 ## Travel
 
-- **`travel AREA`** is the day-scale move: **1 day** between areas of the
-  same land, **2 days** crossing into another land. It returns the position
-  to area level. Every travel day is a camp night: the ordinary overnight
-  recovery applies, so *travel heals*.
-- **The road rolls one encounter check per trip** (~15%/day, compounded),
-  rolled ON THE ROAD since 2026-07-26 — before the arrival, off the
-  **origin** land's pool. A road fight interrupts the trip: the days are
-  spent, the party is still where it set out from, and the player re-issues
-  `travel`. (A true mid-road position wants the local navigation layer;
-  plan.md parks it. A sighting is simply slipped past — the party is
-  moving.)
+Travel is a walk along **cardinal Tile edges**. There are no diagonals, and
+no half-edge position exists: an edge is atomic.
+
+- **The edge cost is symmetric and comes off the map, not off the save.**
+  East/west is **1 day**, north/south **2** (a Tile is 30 km wide and 60
+  tall). **A mountain at *either* end adds 1 day** — which is what makes the
+  cost symmetric: descending a pass costs exactly what climbing it cost.
+  **River is ordinary inhabited land** at this scale and carries no
+  surcharge; **sea is navigable open water** and carries the directional base
+  and nothing more; **crossing a country border costs nothing**. Distance is
+  therefore pure geography: identical in every campaign, on every seed.
+- **`travel north|south|east|west`** is the primitive: one edge, one move.
+  **`travel R09C18`** and **`travel NAME`** (a known settlement, or a
+  historical city, which is also its Tile's name) are a convenience over it —
+  the cheapest route is found by deterministic Dijkstra with a stable
+  north-then-west tie-break and then WALKED edge by edge. A settlement
+  nobody has found yet is not a destination. Arriving by coordinate puts the
+  party in the Tile's natural Area; arriving by settlement name puts it in
+  that settlement.
+- **Every landmass is reachable**, because sea is navigable: no ports, no
+  ships in inventory, no passage price. Sea nights are ordinary travel nights
+  — weather, exposure and the usual overnight recovery — and the passage is
+  abstracted rather than sailed.
+- **Each edge is spent whole**: its days pass as camp nights (so *travel
+  heals*), the world clock and the boards run, the party is PLACED in the
+  Tile it reached, and only then does the road roll. Weather detours and
+  road tolls are priced **per edge**, not per command — otherwise ten
+  single steps would cost ten tolls where one long route cost one.
+- **The road rolls one encounter check per edge** (~15%/day, compounded over
+  the edge's days), rolled at the Tile just reached, off **that country's**
+  pool — what roams the ground you arrived on. **A fight or a sighting stops
+  a multi-edge route where it stands**; the party keeps the ground it walked
+  and never bounces back to the settlement it left. (This is why the old
+  paid-crossing marker is gone: nothing is ever walked twice, so nothing is
+  ever charged twice.) **A SEA edge rolls no encounter at all** — the MVP has
+  no naval combat.
   The road's level table is **party-independent** (the OSR stance): any
   level can appear, geometrically weighted toward the low end — the rare
   high tail is how the world above the party's level stays real, met on the
@@ -3036,34 +3076,42 @@ materialize lazily.
 
 ## Local movement
 
-- **`look`** prints the breadcrumb, stored description, one salient known
-  state or feature, known children, usable links/services, and visible Room
-  contents. **`look --dm`** prints the complete current record: ID,
-  template/source, seed, all facts/reveal flags, children, links, occupants,
-  quest attachments, and used natural-Site inventory.
-- **`go NAME`** moves from an area into a known site, or from a site to one of
-  its known rooms. Entering a Site reveals its first Room; entering one Room
-  reveals the next. It costs no day; local walking is not another survival
-  tax.
+- **`look`** names the **TILE** first — coordinate, real name where it has
+  one, country and biome — and then the Area standing on it: its stored
+  description, one salient known state or feature, known Sites, services,
+  the **sibling Areas on the same Tile**, and the four roads out with the
+  Tile each reaches, its biome and what the edge costs in days. They are
+  different places now, and a breadcrumb that named only the Area left the
+  player with no idea which map cell they were on. **`look --dm`** prints the
+  complete current record: ID, template/source, seed, all facts/reveal flags,
+  children, links, occupants, quest attachments, and used natural-Site
+  inventory.
+- **`go NAME`** moves from an area into a known site, from a site to one of
+  its known rooms, **or across to a known sibling Area on the same Tile** —
+  the town and the countryside around it are one 30x60 km map cell, so
+  crossing between them costs no day either. (`travel NAME` for a place on
+  the current Tile does the same thing and says so.) Entering a Site reveals
+  its first Room; entering one Room reveals the next. Local walking is not
+  another survival tax.
 - **`back`** moves one level outward (room to site, site to area).
 - Settlement-wide conveniences (`board`, tavern, recruiting, shops) remain
   area-scoped shortcuts. The hierarchy supports meaningful local choices; it
   does not force repeated walks through streets with no decision.
-- `ui/map.txt` is the macro Land/Area page. A companion `ui/minimap.txt` is
-  planned for Site/Room detail and local quest markers; it is UI work, not
-  built in this hierarchy slice. Until then, `look` is the local display and
-  `map.txt` retains the taken-quest site summary it already shipped with.
+- `ui/map.txt` is the macro grid page (see **The map** above). A companion
+  `ui/minimap.txt` for Site/Room detail stays out of the Europe MVP: the
+  macro map plus `look`'s local breadcrumb is enough.
 
 ## The explore move & the hunt
 
-- **`explore`** spends a day ranging the current place and its roads. From a
-  settlement it reveals the next existing natural Area in the Land's stable
-  shuffled discovery order. Inside a natural Area it materializes the next
-  unused one of that Area's three authored ordinary Site templates, including
-  its full Room skeleton, then reveals the Site and entrance. Each template
-  appears once; after all three, ordinary exploration reports nothing new in
-  the MVP. New Areas and Sites pay discovery XP; revisits do not. The day
-  still camps rough and checks for a wild encounter.
+- **`explore`** spends a day afield in **this Tile's** countryside. From a
+  settlement the party first walks out into the Tile's natural Area (a free
+  step — same map cell), then materializes the next unused one of that
+  Area's three authored ordinary Site templates, including its full Room
+  skeleton, and reveals the Site and entrance. Each template appears once;
+  after all three, exploring that Tile reports nothing new and the answer is
+  to `travel` for fresh ground. New Sites pay discovery XP; revisits do not.
+  The day still camps rough and checks for a wild encounter — **except on
+  open water**, which rolls none.
 - **`house`** materializes an ordinary house in the current settlement. It
   casts a culture-compatible resident, creates a Main Room plus zero to two
   optional Rooms, and stores two to five visible Main-Room contents plus at
@@ -3077,7 +3125,9 @@ materialize lazily.
   DM override surface. Identity survives every transition:
   `blighted -> recovering -> no adverse state`.
 - **`hunt`** is the always-available farm loop: stalk prey in the current
-  land NOW (no day cost). The party chooses this fight, so unlike the road
+  Tile's wilds NOW (no day cost), off the country's own pool. **Open water
+  refuses it** — there is nothing out there to stalk, and a night camped at
+  sea draws no visitor either. The party chooses this fight, so unlike the road
   the level rolls at-or-below the party's (down to −2) — grinding XP, loot
   rolls, and drops is always possible. It pays **wild rates** (one
   encounter's share of a three-fight quest, no turn-in lump), deliberately
@@ -4556,12 +4606,12 @@ is walked (small on purpose — the fords cost a *day*, and days are the
 expensive currency). A purse that cannot pay walks anyway and owes
 nothing: the bridge is not a wall.
 
-**One crossing, one charge.** A leg broken off by a road fight leaves the
-party where it started and the player re-issues `travel` — and the toll is
-not asked twice, nor the washed-out ford walked round twice. The base days
-ARE walked again (the road is still the road), and the crossing is paid for
-until it is either made or given up on: any other move the party makes
-spends the marker, and the next attempt is a fresh charge.
+**One EDGE, one charge** (2026-08-15). Toll and ford are priced per Tile
+edge, not per `travel` command, so ten single steps cost what one long route
+across the same ground costs. The old paid-crossing marker is gone with the
+grid: a broken-off route leaves the party at the Tile it *reached*, so no
+edge is ever walked twice and nothing is ever charged twice. The next
+`travel` starts from new ground and is honestly a new road.
 
 ## The local encounter table (the encounter outlet)
 
@@ -4866,15 +4916,14 @@ with them — and the casing prints whichever came up like any other face.
 
 ---
 
-# The World Map — Add-on (2026-08-15, fixed resource — NOT at the table yet)
+# The World Map — Add-on (2026-08-15, the authored resource)
 
-The geography the location system will move onto is the fixed 30x18
-Europe-shaped character map in `resources/europe_map.txt`. The two
-procedural approaches were rejected and remain only as archived
-experiments under `archive/`. **Nothing in play reads the fixed map yet.**
-The World & Navigation add-on above still governs the table — the world
-remains list-shaped in play — and plan.md's "The fixed Europe map" item
-carries the hook-up.
+The geography the game is played on: the fixed 30x18 Europe-shaped
+character map in `resources/europe_map.txt`. The two procedural approaches
+were rejected and remain only as archived experiments under `archive/`.
+This section owns the RESOURCE — its frame, its scale and its terrain
+vocabulary. What the game does with it (Tiles, Areas, the walk, the map
+page) is the World & Navigation add-on above.
 
 ## The frame
 
@@ -4896,10 +4945,12 @@ carries the hook-up.
   walk north-south against one day's east-west.
 - **A party walks about one tile east in a day, or half a tile south** —
   30 km a day either way. **There is no diagonal movement.**
-- **A tile corresponds to an AREA** in the World & Navigation hierarchy:
-  a world-map destination at the same day-travel granularity the game
-  already prices. Which tile each existing Area becomes, and how travel
-  days read off the grid, is the hook-up work — plan.md owns it.
+- **A tile is a TILE**, and it OWNS its Areas — it is not itself one. The
+  earlier "a tile corresponds to an Area" reading was rejected when the
+  hierarchy was settled (2026-08-15): a 30x60 km cell holds a town, its
+  villages and the countryside around them at once, and moving between them
+  costs no day. The World & Navigation add-on above owns the edge cost, the
+  pathfinder and the map page.
 
 ## The terrain vocabulary
 
@@ -4923,11 +4974,13 @@ carries the hook-up.
 
 ## Why this shape
 
-The old travel model prices distance in days; the map makes distance
+The old travel model priced distance in days; the map makes distance
 VISIBLE without changing the currency. The scale is chosen so that one
-tile east is one day — the map is a calendar as much as a chart. The
-fixed authored shape makes the geography recognizable and stable across
-every campaign. The map is read, not rendered, so the four-character
-vocabulary stays deliberately plain. Integration details remain in
-plan.md; the rejected algorithms and their original assumptions are
-preserved in `archive/` and in the dated designlog entries.
+tile east is one day — the map is a calendar as much as a chart, and since
+the grid shipped that is literal: `places.path_days` between two Tiles is
+what the road costs, what a quest window buys and what a teleport charges.
+The fixed authored shape makes the geography recognizable and stable across
+every campaign. The four-character vocabulary stays deliberately plain
+because the *overlay* is what carries the campaign; the rejected algorithms
+and their original assumptions are preserved in `archive/` and in the dated
+designlog entries.

@@ -176,8 +176,8 @@ a pointer: what the file is, how it's run, where its docs are.
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap and build contract**. Since the
   2026-08-15 reset it contains only the unbuilt fixed Europe-map rework.
-  Human World Contraction and Fixed Europe Geography have shipped; the
-  remaining sessions are Grid Navigation and Map UI, Local Quest Geography,
+  Human World Contraction, Fixed Europe Geography and Grid Navigation and
+  Map UI have shipped; the remaining sessions are Local Quest Geography
   and Europe MVP Closure. Name the session when triggering
   work; do not refer to a rung number. **Nothing implemented lives there**:
   when a session ships, delete its completed contract and write the result in
@@ -246,6 +246,28 @@ a pointer: what the file is, how it's run, where its docs are.
   consumes an existing fitting slot (wrapped whole by
   `quests.found_settlement`); `reveal_tile` reveals the natural Area and all
   settlement slots without changing the seeded census.
+  **Grid navigation and the map render** (2026-08-15, rules.md's World &
+  Navigation add-on): the whole distance model lives here and takes TILE IDs,
+  never a world — the map is authored and immutable, so an edge's cost is a
+  pure function of two biomes and a direction, identical in every campaign,
+  and a reader that asked for a world would invite a caller to believe
+  distance is mutable. `EDGE_DAYS_EAST_WEST` 1 / `EDGE_DAYS_NORTH_SOUTH` 2 /
+  `MOUNTAIN_EDGE_SURCHARGE` 1 (at EITHER end, which is what makes the model
+  symmetric), `DIRECTIONS` / `DIRECTION_WORDS` / `OPPOSITE_DIRECTION`,
+  `europe_grid` (load + validate, cached per process), the strict parsers
+  (`tile_row_column` / `tile_key` / `tile_label` / `biome_at` /
+  `parse_coordinate` / `direction_word` — an off-frame coordinate RAISES,
+  it is never clamped), `neighbor_id` / `edge_direction` / `edge_days`, and
+  the pathfinder: `_single_source` (Dijkstra, frontier ordered by
+  (cost, row, column) with strict relaxation, so equal-cost routes settle
+  northernmost-then-westernmost with no hash order anywhere), memoized per
+  origin in `_PATHS`, behind `path_days` and `shortest_path`. The DISPLAY
+  half: `MAP_OVERLAY_PRIORITY` / `BIOME_LETTERS` / `known_slots` /
+  `settlement_glyph` / `map_glyph` (`@ ! C T v` then terrain), `map_lines`
+  (33 columns — a two-line numeric axis over 18 labelled rows),
+  `map_legend_lines` (known settlements by country, cities first, wrapped to
+  40) and `tile_detail_lines`. `discover_area` — the Session-2 country-wide
+  reveal sweep — is DELETED; entering a Tile is the whole of discovery.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: the three active
   country template records, required settlement Site/Room skeletons, natural
@@ -258,6 +280,27 @@ a pointer: what the file is, how it's run, where its docs are.
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
+- `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
+  (2026-08-15), four parts in build order. *The edge*: every case of the
+  symmetric cost rule (east/west, north/south, a mountain at either end and
+  at both, the non-surcharges — river, sea, border), reciprocity across all
+  540 Tiles, the frame's hard limits, and the rejection of diagonals,
+  two-step "edges" and a Tile to itself. *The path*: symmetry over a random
+  sample, a route being a chain of real edges summing to its own cost, the
+  PINNED representative distances (Paris–Prague 8, Rome–Kyiv 21,
+  Paris–Rome 14, Amsterdam–Paris 4, Paris–Dublin 16 by sea), every landmass
+  reachable because sea is, no route leaving the frame, and the same answer
+  off a cold cache. *The walk*: a direction moving exactly one edge and
+  landing in the natural Area, the frame refusing a step off the map, a
+  coordinate and a named city each walking their whole route, an unknown
+  ordinary settlement not being a destination, the free step between Areas
+  of one Tile, the interrupted route keeping the ground it walked (across a
+  save), and the sea passage that spends days and rolls no encounter — plus
+  hunting refused on open water. *The surfaces*: teleport priced in real
+  path days, and the map page (the axis, the overlay priority in both
+  directions, an unknown settlement never showing, terrain never fogged,
+  ASCII and the 40-column rule).
+  `python -m unittest -v test_navigation.py`.
 - `rulers.py` — **the ruler character: the politics rung's person half**
   (2026-08-10, rules.md's Politics & the Ruler add-on): one weighted pool of
   357 words (`AXES` / `EXTREMES` / `FLAGS`, flattened into `VOCABULARY` with
@@ -666,7 +709,13 @@ a pointer: what the file is, how it's run, where its docs are.
   and outside the refill rule (`_post_card_quest`, keyed by `world_card`
   so one board never carries two copies). `generate_world` therefore calls
   `worldsim.open_world` FIRST, before the opening postings, instead of
-  last. `python quests.py
+  last. Since 2026-08-15 (the grid) `TRAVEL_DAYS_IN_LAND` /
+  `TRAVEL_DAYS_CROSS` are DELETED and both readers that used them —
+  `return_leg_days` and `build_delivery_quest` — take `places.path_days`
+  between the two Tiles instead. Deliveries therefore moved a long way:
+  15–39 one-way days, 300–780 g and 375–975 XP against the old flat 2 days
+  / 40 g / 50 XP. The per-day rates are untouched; only the distance became
+  honest. `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Three country
@@ -851,10 +900,11 @@ a pointer: what the file is, how it's run, where its docs are.
   subcommand with its rules; dm.md says which decisions belong to the
   player. Quest play: `board` (LOCAL by default since 2026-07-09) /
   `show QID` / `take QID` / `room`, plus `forge` (the DM quest creator).
-  World play (2026-07-09; hierarchy 2026-07-22): `map` / `travel` / `look` /
+  World play (2026-07-09; hierarchy 2026-07-22; the grid 2026-08-15):
+  `map` / `travel` / `look` /
   `go` / `back` / `explore` / `house` / `place-state` / `hunt` / `engage` —
-  breadcrumb position, finite Area/Site discovery, persistent ordinary
-  houses, DM mutation,
+  breadcrumb position, weighted cardinal Tile movement, finite Site
+  discovery, persistent ordinary houses, DM mutation,
   macro and local navigation, local boards, road encounters;
   since 2026-07-10 also `tavern` (the paid settlement night with
   the one-day HP/STA overcharge), wilderness `camp` night encounters, the
@@ -891,11 +941,13 @@ a pointer: what the file is, how it's run, where its docs are.
   **`sheet`** — the end-of-every-DM-message command (one commit per message;
   best-effort git, never fatal). **`ui/party.txt`** (`party_sheet_lines` —
   the full party board) and,
-  since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — lands, known areas
-  with settlement open-job counts + a visited/here marker, and, until the
-  planned `ui/minimap.txt` takes over local detail, the sites of every TAKEN
-  quest with
-  its progress cursor; `accepted_quests` gates it on the new `accepted`
+  since 2026-07-22, **`ui/map.txt`** (`map_sheet_lines` — since 2026-08-15
+  the drawn 30x18 GRID with numeric axes, the party and its taken work
+  marked on it, the current Tile in detail (`here_lines`), the country's
+  state diff, a by-country legend of everything known, and the sites of
+  every TAKEN quest with its progress cursor plus the road days to its next
+  mark (`_quest_road_lines` / `quest_objective_tiles`); `accepted_quests`
+  gates it on the `accepted`
   save key — offered-but-untaken jobs never appear) and, since
   2026-08-04 (session C), **`ui/history.txt`** (`history_sheet_lines` —
   QUESTS DONE / REMARKABLE / THE TALLY OF SIN / SUGGESTIONS, over the
@@ -996,6 +1048,30 @@ a pointer: what the file is, how it's run, where its docs are.
   before falling back to the land's own wildlife (`skins` ride through
   `fight_wild_encounter` / `_spawn_wild_foes` and the stored sighting, so
   `engage` meets the same faces).
+  **The grid walk** (2026-08-15, Grid Navigation and Map UI): `cmd_travel`
+  was rewritten around one atomic primitive, `_walk_edge` — cost, nights,
+  arrival, road roll, in that order, with the party PLACED before the roll,
+  which is what makes an interrupted route stop at the Tile it reached.
+  `travel_target` resolves the argument (direction, then coordinate, then
+  raw Tile ID for the DM, then known Area, then Tile name) to a
+  (Tile, arrival Area) pair; `_natural_area` is where an ordinary leg lands;
+  `_road_costs` prices weather and tolls PER EDGE; `_road_roll` compounds
+  the per-day chance over the edge and carries the delivery interception;
+  `arrive` is the stop ceremony (occupation, departures, board, wave,
+  conquest/world/crime news, weather, prices, punishment, enforcement,
+  assignment, delivery hand-off), run once where the party stops rather
+  than at every Tile a route passes through. `at_sea` / `_sea_leg` gate the
+  no-naval-combat rule and gate `hunt`, `camp`'s visitor and `explore`'s
+  wilds roll; `party_wiped_out` keeps the ceremony off a wipe. `road_paid`
+  and its save keys are DELETED (nothing is walked twice, so nothing is
+  charged twice), `discover_area` is gone from `explore` (which now works
+  the current Tile's own countryside, walking out of a settlement for
+  free), `cmd_go` gained the sibling-Area step, `cmd_look` leads with the
+  TILE and prints the four roads out with their day costs, `_cast_teleport`
+  charges `places.path_days` (and finally matches a settlement by NAME
+  again — the tile-scoped Area keys had broken the old key-substring
+  match), and the hell-task road estimate in `cmd_take` reads the same
+  path.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -1205,10 +1281,16 @@ mechanic *does* and *why* is rules.md's job.
   `PACK_CAP`, `BOSS_ALLOWANCE`, the quest-clock block `QUEST_WINDOW_DAYS` /
   `QUEST_QUICK_SHARE` / `QUEST_GRACE_DAYS` / `QUEST_PAY_BANDS` /
   `QUEST_REFILL_PER_DAY`, settlement bands), and
-  so do the navigation layer's (`TRAVEL_DAYS_*`, `TRAVEL_ENCOUNTER_CHANCE`,
+  so do the road layer's (`TRAVEL_ENCOUNTER_CHANCE`,
   `EXPLORE_*`, `WILD_LEVEL_DECAY`, `SPOTTED_MARGIN`, `AMBUSH_CHANCE`,
   `WILD_SPOTTED_CHANCE`, `HUNT_LEVEL_REACH`, `HUNT_AMBUSH_CHANCE`,
-  `CAMP_ENCOUNTER_CHANCE`).
+  `CAMP_ENCOUNTER_CHANCE`). **DISTANCE is not a quests.py knob**: since
+  2026-08-15 it comes off the map, and its three constants
+  (`EDGE_DAYS_EAST_WEST`, `EDGE_DAYS_NORTH_SOUTH`,
+  `MOUNTAIN_EDGE_SURCHARGE`) sit in `places.py` beside the pathfinder that
+  reads them. Everything that used to ask "same land or not?" —
+  `quests.return_leg_days`, `build_delivery_quest`, `session._cast_teleport`
+  and `cmd_take`'s hell-task road estimate — now calls `places.path_days`.
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -1532,20 +1614,26 @@ mechanic *does* and *why* is rules.md's job.
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
   `position` (`land`, `tile`, `area`, optional `site`/`room`), `current_area` /
   `local_settlement` / `at_quest_origin` / `at_quest_site`; `cmd_map` and
-  `ui/map.txt` as the macro Land/Area view; `cmd_look` / `cmd_go` / `cmd_back`
-  as the local view and movement precursor to the planned `ui/minimap.txt`;
-  `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` /
-  finite `cmd_explore`, `cmd_house`, `cmd_place_state`, `cmd_hunt` /
+  `ui/map.txt` as the drawn 30x18 grid page; `cmd_look` / `cmd_go` /
+  `cmd_back` as the local view and movement (including the free step to a
+  sibling Area on the same Tile);
+  `wild_event` (the one roll: nothing / fight / sighting), `cmd_travel` and
+  its `_walk_edge` / `travel_target` / `_road_costs` / `_road_roll` /
+  `arrive` parts, `cmd_explore` (this Tile's own countryside),
+  `cmd_house`, `cmd_place_state`, `cmd_hunt` /
   `cmd_engage`; `look --dm` is the complete place-fact readout.
   **`move_party` is the one way position moves** once a game is running
-  (travel arrival, explore's discovery, teleport): it stands the party in
-  the area and spends the paid-crossing marker. Never assign
-  `state["position"]` at a new call site.
+  (a travel arrival, a sibling-Area step, a teleport): it stands the party
+  in the area. Never assign `state["position"]` at a new call site.
 - **The world map** (2026-08-15 — rules.md's The World Map add-on) —
   `resources/europe_map.txt` is the authoritative 30x18 geography: `.` ocean,
   `#` land, `^` mountains, `~` major river. `places.py` loads it into the
-  Country -> Tile -> Area hierarchy. Grid pathfinding, travel costs and the
-  30x18 player map remain in plan.md's next session. The procedural attempts
+  Country -> Tile -> Area hierarchy AND owns everything derived from it:
+  the symmetric edge cost, the memoized deterministic pathfinder
+  (`path_days` / `shortest_path`) and the map render (`map_lines` /
+  `map_glyph` / `map_legend_lines` / `tile_detail_lines`). Distance takes
+  Tile IDs, never a world — the map is immutable, so distance is geography.
+  The procedural attempts
   under `archive/` are historical tools, not alternate worldgen paths.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
@@ -1603,8 +1691,9 @@ mechanic *does* and *why* is rules.md's job.
   learns where it came from, which is how the sims stay out of the world
   layer. `session.py`: `local_term` / `local_prices` / `price_note`, the
   markups threaded into every shop path, `worldsim.road_charges` in
-  `cmd_travel` (behind the `road_paid` marker — one crossing, one charge,
-  and the marker RIDES THE SAVE because the re-issue is a fresh process),
+  `cmd_travel`'s `_road_costs` (charged PER TILE EDGE since 2026-08-15 —
+  the `road_paid` marker is gone with the grid, because a route now stops
+  at the Tile it reached and no edge is ever walked or charged twice),
   and `wild_event(where=)` + the `skins` thread through
   `fight_wild_encounter` / `_spawn_wild_foes` / the sighting / `engage`.
   `test_worldsim.py` is the contract.
@@ -1844,10 +1933,7 @@ mechanic *does* and *why* is rules.md's job.
   / `rooms`, each land carrying its `reserve` since the settlement trim and
   its `world` layer since the frame — wealth, deck, drawn record, news, day
   stamps),
-  `sighting`, `road_paid` (the from/to leg whose toll and weather detour
-  are already bought — an interrupted trip's re-issue is a fresh process,
-  so a marker that does not ride the save is no marker at all),
-  `site_clears` set-site pay
+  `sighting`, `site_clears` set-site pay
   tracking, `holdings` (the conquest ledger, 2026-07-27 — plain dict,
   garrison heads + tribute/raid day stamps per held settlement), and
   `recruits` (the on-request candidate pool, keyed to its

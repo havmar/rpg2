@@ -164,7 +164,6 @@ from quests import (generate_world, forge_quest, board_lines,
                     complete_quest_place_state,
                     roll_wild_level, build_wild_encounter,
                     wild_encounter_xp,
-                    TRAVEL_DAYS_IN_LAND, TRAVEL_DAYS_CROSS,
                     TRAVEL_ENCOUNTER_CHANCE, EXPLORE_ENCOUNTER_CHANCE,
                     EXPLORE_XP, SPOTTED_MARGIN, AMBUSH_CHANCE,
                     HUNT_AMBUSH_CHANCE,
@@ -178,11 +177,15 @@ from quests import (generate_world, forge_quest, board_lines,
                     cast_service_providers,
                     QUEST_GRACE_DAYS, QUEST_PAY_BANDS)
 from places import (
-    discover_area, materialize_natural_site, materialize_house,
+    materialize_natural_site, materialize_house,
     active_known_facts, place_debug_lines, find_place,
     add_state as add_place_state, replace_state as replace_place_state,
     clear_state as clear_place_state, land_homeland, reveal_tile,
     settlement_tier,
+    direction_word, edge_days, edge_direction, map_legend_lines, map_lines,
+    neighbor_id, parse_coordinate, path_days, shortest_path, tile_coordinate,
+    tile_detail_lines as places_tile_detail, tile_id as tile_id_of, tile_label,
+    MAP_GLYPH_LEGEND, MAP_MARK_LEGEND,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -233,8 +236,8 @@ def _spawn_foe(kind: str, rng, n: int):
 # Position (the navigation layer, 2026-07-09; hierarchy 2026-07-22)
 # --------------------------------------------------------------------------- #
 # The party's position is a breadcrumb through Country -> Tile -> Area ->
-# Site -> Room. Direct Area travel remains the staged bridge until Session 3
-# adds weighted Tile movement; Sites and Rooms are local.
+# Site -> Room. Day-scale movement is a walk along cardinal TILE edges
+# (2026-08-15); Areas inside one Tile, Sites and Rooms are local and free.
 
 def _area_position(area: dict) -> dict:
     return {"land": area["land"], "tile": area["tile"], "area": area["key"],
@@ -243,14 +246,9 @@ def _area_position(area: dict) -> dict:
 
 def move_party(state: dict, area: dict) -> None:
     """Stand the party in `area` -- the one way position moves once a game
-    is running (a travel arrival, explore's discovery, a teleport).
-
-    Every move drops the paid-crossing marker (`road_paid`, cmd_travel):
-    what it buys is the leg the party is standing at the START of, and a
-    marker that outlived the standing still would hand a free toll to the
-    same crossing weeks later."""
+    is running (a travel arrival, a free step to a sibling Area, a
+    teleport)."""
     state["position"] = _area_position(area)
-    state.pop("road_paid", None)
 
 
 def location_line(state: dict) -> str:
@@ -280,6 +278,12 @@ def home_settlement(state: dict) -> dict:
     sites lie outside it. (Since 2026-07-13 a new game starts at the
     settlement with the lowest-level job, which may be elsewhere.)"""
     return settlements(state["world"])[0]
+
+
+def party_wiped_out(state: dict) -> bool:
+    """Nobody left standing. A route that ends this way is over: the fight's
+    own machinery has saved, and there is no arrival to narrate."""
+    return all(h.dead for h in state["party"])
 
 
 def clear_sighting(state: dict, quiet: bool = False) -> None:
@@ -666,68 +670,111 @@ def _quest_site_lines(world: dict, q: dict) -> list[str]:
     return lines
 
 
+def _quest_road_lines(state: dict, quest: dict) -> list[str]:
+    """How far the job's next mark is, in shortest-path days from where the
+    party stands. The clock is priced in road days, so the map says them."""
+    world, pos = state["world"], state["position"]
+    if quest.get("kind") == "delivery":
+        area = world["areas"].get(quest.get("dest"))
+    else:
+        sites = quest_sites(world, quest)
+        index = min(quest["next"]["site"], len(sites) - 1) if sites else -1
+        area = world["areas"][sites[index]["area"]] if index >= 0 else None
+    if area is None:
+        return []
+    tile = world["tiles"][area["tile"]]
+    days = path_days(pos["tile"], tile["id"])
+    where = tile_coordinate(tile["row"], tile["column"])
+    return [f"{where}: {'here' if not days else f'{days} road day(s)'}"]
+
+
+def quest_objective_tiles(state: dict) -> list[str]:
+    """The Tiles the party's TAKEN work points at -- a delivery's
+    destination, or the next unfinished Site of every other job. What the
+    map marks `!`."""
+    world = state["world"]
+    tiles: list[str] = []
+    for quest in accepted_quests(state):
+        if quest.get("kind") == "delivery":
+            area = world["areas"].get(quest.get("dest"))
+            if area is not None:
+                tiles.append(area["tile"])
+            continue
+        sites = quest_sites(world, quest)
+        index = min(quest["next"]["site"], len(sites) - 1) if sites else -1
+        if index >= 0:
+            tiles.append(world["areas"][sites[index]["area"]]["tile"])
+    return list(dict.fromkeys(tiles))
+
+
+def here_lines(state: dict) -> list[str]:
+    """The detail block under the grid: which Tile the party stands on,
+    whose it is, what it is made of, and which of its Areas it knows --
+    everything the one-character glyph had to drop."""
+    world, pos = state["world"], state["position"]
+    tile = world["tiles"][pos["tile"]]
+    lines = places_tile_detail(world, tile, areas=False)
+    for aid in tile["areas"]:
+        area = world["areas"][aid]
+        if not area.get("known"):
+            continue
+        marks = []
+        if aid == pos["area"]:
+            marks.append("<- the party")
+        if area["kind"] == "settlement":
+            marks.append(f"{board_forecast(world, area, state['clock'].day)}"
+                         f" job(s)")
+            if aid in (state.get("holdings") or {}):
+                marks.append("YOURS")
+        facts = active_known_facts(area)
+        if facts:
+            marks.append(facts[0]["id"])
+        kind = area.get("subtype", area["kind"])
+        note = ("  " + ", ".join(marks)) if marks else ""
+        lines.append(f"  {area['name']} ({kind}){note}")
+    if len(tile["areas"]) > len([a for a in tile["areas"]
+                                 if world["areas"][a].get("known")]):
+        lines.append("  (more here is unknown)")
+    return lines
+
+
 def map_sheet_lines(state: dict) -> list[str]:
-    """The world map written to map.txt on every save (2026-07-22): the
-    game's second GitHub-UI page. Lists the LANDS and known AREAS with their
-    settlement open-job counts and a visited/here marker, and -- until the
-    planned minimap takes over local detail -- in its own section the
-    sites of every TAKEN quest with its progress. Player-facing, so it never
-    prints the DM-only board (untaken postings, hidden givers): only where
-    the party has been and where its accepted work leads."""
+    """The world map written to map.txt on every save (2026-07-22; the GRID
+    since 2026-08-15): the game's second GitHub-UI page. The whole fixed
+    30x18 Europe under a numeric axis, the party and its taken work marked
+    on it, the current Tile in detail below, a compact known-settlement
+    legend by country, and the sites of every TAKEN quest with its progress.
+    Player-facing, so it never prints the DM-only board (untaken postings,
+    hidden givers): terrain is common knowledge, but settlements appear only
+    once the party knows them."""
     world = state.get("world")
     if not world:
         return ["RPG2 MAP", "(no world yet -- start one with `new`)"]
     pos = state["position"]
     st = state.get("story")
+    objectives = quest_objective_tiles(state)
     lines = [f"RPG2 MAP -- day {state['clock'].day}",
-             f"the party is at {location_line(state)}",
-             f"(travel: {TRAVEL_DAYS_IN_LAND} day within a land, "
-             f"{TRAVEL_DAYS_CROSS} days to another)"]
-    visited = set(state.get("visited") or [])
-    for polity, land_rec in world["lands"].items():
-        mark = "  <- here" if polity == pos["land"] else ""
-        if st and st.get("fallen") == polity:
-            mark += "  [UNDER THE YOKE]"
+             f"the party is at {location_line(state)}", ""]
+    lines.extend(map_lines(world, party=pos["tile"], objectives=objectives))
+    lines.append("")
+    lines.append(MAP_GLYPH_LEGEND)
+    lines.append(MAP_MARK_LEGEND)
+    lines.append("")
+    lines.extend(here_lines(state))
+    # The STATE DIFF (2026-08-07, the world layer): the country's wealth
+    # band and whatever it is living through -- its own states and the ones
+    # its trade edges derive. The country the party is STANDING in: word
+    # travels where the party is, and this is what shows the world moved
+    # while it was on the road.
+    lines.append("")
+    yoke = "  [UNDER THE YOKE]" if st and st.get("fallen") == pos["land"] else ""
+    lines.append(f"-- {world['lands'][pos['land']]['name']} --{yoke}")
+    lines.extend(worldsim.land_lines(world, pos["land"]))
+    legend = map_legend_lines(world)
+    if legend:
         lines.append("")
-        lines.append(f"== {land_rec['name']} =={mark}")
-        # The STATE DIFF (2026-08-07, the world layer): the land's wealth
-        # band and whatever it is living through -- its own states and the
-        # ones its trade edges derive. Only for a land the party has SEEN:
-        # word travels within a land, and a place nobody has visited has no
-        # news to give. This is what shows the world moved while the party
-        # was away.
-        if polity == pos["land"] or any(
-                world["areas"][key].get("visited")
-                for key in land_rec["areas"]):
-            lines.extend(worldsim.land_lines(world, polity))
-        for key in land_rec["areas"]:
-            area = world["areas"][key]
-            if not area.get("known"):
-                continue
-            # What a visit would FIND today, not what is stored: the board's
-            # clock only runs where the party stands, so a raw count would
-            # show a land it left decaying to zero (quests.board_forecast).
-            # Settlements only -- wilderness has no board (no
-            # SETTLEMENT_KINDS row to forecast from).
-            open_q = (board_forecast(world, area, state["clock"].day)
-                      if area["kind"] == "settlement" else 0)
-            if area["key"] == pos["area"]:
-                where = "  <- the party"
-            elif area["key"] in visited or area.get("visited"):
-                where = "  (visited)"
-            else:
-                where = ""
-            kind = area.get("subtype", area["kind"])
-            jobs = (f" -- {open_q} job(s)"
-                    if area["kind"] == "settlement" else "")
-            found = (f", found day {area['discovered_day']}"
-                     if "discovered_day" in area else "")
-            facts = active_known_facts(area)
-            state_note = f" [{facts[0]['id']}]" if facts else ""
-            yours = (" [YOURS]"
-                     if area["key"] in (state.get("holdings") or {}) else "")
-            lines.append(f"  {area['name']} ({kind}{found}){state_note}"
-                         f"{yours}{jobs}{where}")
+        lines.append("-- known settlements --")
+        lines.extend(legend)
     taken = accepted_quests(state)
     if taken:
         lines.append("")
@@ -743,6 +790,7 @@ def map_sheet_lines(state: dict) -> list[str]:
             else:
                 lines.append(f"[{q['id']}] {q['name']} (L{q['level']}){posted}")
                 lines.extend(_quest_site_lines(world, q))
+            lines.extend(f"  - {line}" for line in _quest_road_lines(state, q))
     hold = conquest.holdings_lines(world, state.get("holdings") or {},
                                    state["clock"].day)
     if hold:
@@ -978,12 +1026,6 @@ def save(state: dict) -> None:
         "story": state.get("story"),
         "position": state.get("position"),
         "sighting": state.get("sighting"),
-        # The paid-crossing marker (2026-08-08): the from/to leg whose toll
-        # and weather detour are already bought. It only ever means anything
-        # ACROSS a save -- an interrupted trip's fight saves here and the
-        # player re-issues `travel` in a fresh process -- so leaving it out
-        # of the doc was leaving the guard out of the game.
-        "road_paid": state.get("road_paid"),
         "site_clears": state.get("site_clears", {}),
         "recruits": state.get("recruits"),
         "visited": state.get("visited", []),
@@ -1051,8 +1093,6 @@ def load() -> dict:
         "story": doc.get("story"),
         "position": position,
         "sighting": doc.get("sighting"),
-        # The paid crossing the party broke off from, if any (cmd_travel).
-        "road_paid": doc.get("road_paid"),
         "site_clears": doc.get("site_clears", {}),
         "recruits": doc.get("recruits"),
         "visited": doc.get("visited", []),
@@ -4531,12 +4571,7 @@ def cmd_take(args: argparse.Namespace) -> None:
         else:
             first = quest_sites(state["world"], quest)[quest["next"]["site"]]
             target_area = state["world"]["areas"][first["area"]]
-            if target_area["key"] == state["position"]["area"]:
-                road = 0
-            elif target_area["land"] == state["position"]["land"]:
-                road = TRAVEL_DAYS_IN_LAND
-            else:
-                road = TRAVEL_DAYS_CROSS
+            road = path_days(state["position"]["tile"], target_area["tile"])
         window = state["rng"].randint(*karma.TASK_WINDOW_DAYS) + road
         quest["posted_day"] = day
         quest["window"] = window
@@ -5007,57 +5042,110 @@ def wild_event(state: dict, chance: float, banner: str,
     return True
 
 
-def cmd_travel(args: argparse.Namespace) -> None:
-    state = load()
-    if not require_no_pending(state):
-        return
-    world = state.get("world")
-    if not world:
-        print("No world in this save -- start one with `new`.")
-        return
-    want = " ".join(args.dest).lower()
-    want_slug = re.sub(r"[^a-z0-9]+", "-", want).strip("-")
-    target = next((a for a in all_areas(world)
-                   if a.get("known")
-                   and (want in a["key"].lower()
-                        or want in a["name"].lower()
-                        or want_slug in a["key"].lower())), None)
-    if target is None:
-        known = [a["name"] for a in all_areas(world) if a.get("known")]
-        print(f"No known place matches {want!r}. Known: {', '.join(known)}.")
-        return
-    if target["key"] == state["position"]["area"]:
-        print(f"The party is already at {target['name']}.")
-        return
-    days = (TRAVEL_DAYS_IN_LAND
-            if target["land"] == state["position"]["land"]
-            else TRAVEL_DAYS_CROSS)
-    clear_sighting(state)
-    worldsim.roll_world(world, state["clock"].day)   # quote TODAY's fords
-    # An interrupted trip leaves the party at the origin and the player
-    # re-issues `travel` -- but the tolls were paid and the detour walked
-    # on the first attempt. One crossing, one charge.
-    crossing = {"from": state["position"]["area"], "to": target["key"]}
-    charged = state.get("road_paid") == crossing
-    # What the weather costs the road (2026-08-08): a washed-out ford or a
-    # dust storm on either end of the leg is a day going round.
-    legs = [state["position"]["land"], target["land"]]
-    slow, why = ((0, []) if charged
-                 else worldsim.travel_delay(world, legs))
-    days += slow
-    print(f"The party sets out for {target['name']} -- {days} day(s) on "
-          f"the road, camping as they go.")
+# --------------------------------------------------------------------------- #
+# Travel: the grid walk (2026-08-15, Grid Navigation and Map UI)
+# --------------------------------------------------------------------------- #
+# `travel` walks CARDINAL TILE EDGES. One edge is the atomic unit: its days
+# are spent as camp nights, the party is PLACED in the Tile it reached, and
+# only then does the road roll its encounter. That order is the whole point
+# of the rework -- an interrupted trip now leaves the party where it got to,
+# never back where it set out from, so there is no half-edge position to save
+# and no paid-crossing marker to carry across one (both are gone with it).
+#
+# A named or coordinate destination is a CONVENIENCE over that primitive: the
+# cheapest route is walked edge by edge and stops the moment something wants
+# the player's attention. Weather detours and tolls are priced PER EDGE, not
+# per command -- otherwise ten `travel north`s would cost ten tolls where one
+# `travel Rome` across the same ground cost one.
+
+SEA_ARRIVALS = ("The party takes ship and stands out into open water.",
+                "Sail and oar carry the party across the water.",
+                "The party crosses by water, sighting no other sail.")
+
+
+def at_sea(state: dict) -> bool:
+    """Is the party on a water Tile? The sea has no road table, no game to
+    hunt and no ground to walk -- it has weather and time."""
+    return state["world"]["tiles"][state["position"]["tile"]]["biome"] == "sea"
+
+
+def _sea_leg(world: dict, origin: str, dest: str) -> bool:
+    """A passage rather than a road: either end is water. Nothing rolls off
+    the land's encounter table on one (the MVP has no naval combat), and
+    stepping ashore from a boat is not a road arrival either -- the rule is
+    symmetric because the edge is."""
+    return "sea" in (world["tiles"][origin]["biome"],
+                     world["tiles"][dest]["biome"])
+
+
+def _natural_area(world: dict, tile: dict) -> dict:
+    """Where an ordinary leg puts the party down: the Tile's natural Area.
+    A named settlement destination overrides this on the FINAL leg only."""
+    return world["areas"][tile["natural_area"]]
+
+
+def travel_target(state: dict, want: str) -> tuple[dict, dict] | None:
+    """Resolve `travel`'s argument to (destination Tile, arrival Area).
+
+    Four spellings, in priority order: a cardinal direction (the primitive),
+    a coordinate, a known Area, and a Tile by name -- which in practice
+    means a historical city, since every other Tile is named after its own
+    coordinate. An ordinary settlement nobody has found yet is not a
+    destination: the party cannot walk to a rumour."""
+    world, pos = state["world"], state["position"]
+    here = world["tiles"][pos["tile"]]
+    direction = direction_word(want)
+    if direction is not None:
+        nid = neighbor_id(here, direction)
+        if nid is None:
+            print(f"The map ends {direction} of "
+                  f"{tile_coordinate(here['row'], here['column'])} -- "
+                  f"nothing lies that way.")
+            return None
+        tile = world["tiles"][nid]
+        return tile, _natural_area(world, tile)
+    try:
+        coordinate = parse_coordinate(want)
+    except ValueError as exc:
+        print(str(exc))
+        return None
+    if coordinate is not None:
+        tile = world["tiles"][tile_id_of(*coordinate)]
+        return tile, _natural_area(world, tile)
+    if want.strip().lower() in world["tiles"]:      # a raw Tile ID (DM/debug)
+        tile = world["tiles"][want.strip().lower()]
+        return tile, _natural_area(world, tile)
+    low = want.lower()
+    want_slug = re.sub(r"[^a-z0-9]+", "-", low).strip("-")
+    area = next((a for a in all_areas(world)
+                 if a.get("known")
+                 and (low in a["key"].lower()
+                      or low in a["name"].lower()
+                      or (want_slug and want_slug in a["key"].lower()))), None)
+    if area is not None:
+        return world["tiles"][area["tile"]], area
+    tile = next((world["tiles"][tid] for tid in world["tile_order"]
+                 if low in world["tiles"][tid]["name"].lower()), None)
+    if tile is not None:
+        return tile, _natural_area(world, tile)
+    known = sorted({a["name"] for a in all_areas(world)
+                    if a.get("known") and a["kind"] == "settlement"})
+    print(f"No known place matches {want!r}. Name a direction (north / "
+          f"south / east / west), a coordinate (R09C18), or a known "
+          f"settlement: {', '.join(known)}.")
+    return None
+
+
+def _road_costs(state: dict, origin: dict, dest: dict) -> int:
+    """What the weather and the toll-men take off ONE edge, before it is
+    walked. Returns the extra days; the gold is charged here. A purse that
+    cannot cover a toll crosses anyway -- the bridge is not a wall."""
+    world = state["world"]
+    legs = [origin["country"], dest["country"]]
+    slow, why = worldsim.travel_delay(world, legs)
     for line in why:
         print(line)
-    # ...and what the road TAKES (2026-08-09, the priced menu's other half):
-    # a doubled toll on a bridge the baron's men hold, a ferryman's price
-    # where the fords are gone. Charged before the trip, because that is
-    # where the hand comes out. A purse that cannot cover it crosses anyway
-    # -- the bridge is not a wall.
-    take, tolls = ((0, []) if charged
-                   else worldsim.road_charges(world, legs))
-    if take or slow:
-        state["road_paid"] = crossing   # honored if the trip breaks off
+    take, tolls = worldsim.road_charges(world, legs)
     if take:
         paid = min(take, state["purse"].gold)
         state["purse"].gold -= paid
@@ -5073,12 +5161,49 @@ def cmd_travel(args: argparse.Namespace) -> None:
             print(f"  The purse is empty and the toll-men can see it. "
                   f"The party is waved through, owing nothing but the "
                   f"look of it.")
+    return slow
+
+
+def _road_roll(state: dict, arrival: dict, days: int) -> bool:
+    """The leg's own encounter check (the per-day chance compounded over the
+    days it took), plus the delivery's one guaranteed interception when this
+    is the leg that reaches the cargo's destination."""
+    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
+    banner = f"On the road at {arrival['name']}"
+    delivery = active_delivery(state)
+    if (delivery is not None and arrival["key"] == delivery["dest"]
+            and not delivery.get("intercepted")):
+        # The leg that reaches the destination is watched. Rolled off the
+        # road's own table like any travel event (spotted/ambush valves
+        # included), just at chance 1.
+        delivery["intercepted"] = True
+        print(f"  Word of {delivery['cargo']} travelled faster than the "
+              f"party -- the road is watched.")
+        return wild_event(state, 1.0, banner, where="road")
+    return wild_event(state, chance, banner, where="road")
+
+
+def _walk_edge(state: dict, dest: dict, arrival: dict) -> str:
+    """One cardinal edge, whole: cost, nights, arrival, road roll.
+
+    Returns `"on"` (the route may walk another edge) or `"stop"` (something
+    wants the player -- a fight, a sighting, a wipe)."""
+    world = state["world"]
+    origin = world["tiles"][state["position"]["tile"]]
+    direction = edge_direction(origin, dest)
+    days = edge_days(origin, dest)
+    clear_sighting(state)
+    worldsim.roll_world(world, state["clock"].day)   # quote TODAY's fords
+    days += _road_costs(state, origin, dest)
+    where = tile_coordinate(dest["row"], dest["column"])
+    label = arrival["name"] if arrival["kind"] == "settlement" else where
+    print(f"The party goes {direction} to {label} -- {days} day(s).")
     weather_note(state)
     log = CombatLog()
     for _ in range(days):
-        # Each night on the road is a night in the open: the sky it is spent
-        # under decides whether anyone catches a chill, and a storm night
-        # rolls the cabin table for a roof first.
+        # Each night on the road (or at sea) is a night in the open: the sky
+        # it is spent under decides whether anyone catches a chill, and a
+        # storm night rolls the cabin table for a roof first.
         sky = exposure_sky(state)
         roof = (shelter_here(state, log)
                 if worldsim.storming(world, state["position"]["land"])
@@ -5090,84 +5215,115 @@ def cmd_travel(args: argparse.Namespace) -> None:
         night_upkeep(state, log)
     print_play(log)
     print_board_clock(state)    # the road costs days, and days cost jobs
-    # THE ROAD, before the gates (2026-07-26). The trip's encounter used to
-    # be rolled after the arrival was printed, so a road fight was narrated
-    # at the destination and drew its roster from the DESTINATION land's
-    # pool. It is rolled here instead, with the party still standing in the
-    # ORIGIN land -- what roams the road you are on is the road you left
-    # from. On a fight the trip is interrupted: the days are spent, the party
-    # is where it started, and the player re-issues `travel`. (A true
-    # mid-road position wants the local navigation layer -- plan.md parks
-    # it.) A sighting is slipped past: the party is moving, and moving on is
-    # what "any other move" has always meant.
-    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
-    dq = active_delivery(state)
-    if (dq is not None and target["key"] == dq["dest"]
-            and not dq.get("intercepted")):
-        # The delivery's guaranteed encounter: the leg that reaches the
-        # destination is watched. Rolled off the road's own table like any
-        # travel event (spotted/ambush valves included), just at chance 1.
-        dq["intercepted"] = True
-        print(f"  Word of {dq['cargo']} travelled faster than the party -- "
-              f"the road is watched.")
-        interrupted = wild_event(state, 1.0,
-                                 f"On the road to {target['name']}",
-                                 where="road")
-    else:
-        interrupted = wild_event(state, chance,
-                                 f"On the road to {target['name']}",
-                                 where="road")
-    if interrupted:
-        print(f"  The trip breaks off here -- the party is still at "
-              f"{location_line(state)}. `travel {target['key']}` again "
-              f"when the road is clear.")
-        return              # the fight machinery has already saved (the
-                            # position was never moved, so there is nothing
-                            # else to pin)
-    if state.get("sighting"):
-        clear_sighting(state, quiet=True)
-        print("  The party gives them a wide berth and keeps moving.")
+    sea = _sea_leg(world, origin["id"], dest["id"])
     existing = {area["id"] for area in settlements(world)}
-    revealed = reveal_tile(world, target["tile"], day=state["clock"].day)
-    for settlement in revealed:
+    for settlement in reveal_tile(world, dest, day=state["clock"].day):
         if settlement["id"] not in existing:
             cast_service_providers(world, settlement, state["rng"])
-    move_party(state, target)   # the crossing is made; the next one is a
-                                # fresh charge (the marker goes with the move)
-    target["visited"] = True
-    if target.get("kind") == "settlement":
+    arrival = world["areas"][arrival["key"]]
+    move_party(state, arrival)
+    arrival["visited"] = True
+    if arrival["kind"] == "settlement":
         visited = state.setdefault("visited", [])
-        if target["key"] not in visited:
-            visited.append(target["key"])  # known ground for teleport
-    print(f"The party arrives at {location_line(state)} (day "
+        if arrival["key"] not in visited:
+            visited.append(arrival["key"])   # known ground for teleport
+    if sea:
+        print(state["rng"].choice(SEA_ARRIVALS))
+    print(f"The party reaches {location_line(state)} (day "
           f"{state['clock'].day}).")
+    # THE ROAD, at the gates it reached (2026-08-15). The encounter is rolled
+    # with the party STANDING IN the Tile it walked to, off that country's
+    # own pool -- what roams the ground you arrived on. A fight stops the
+    # route here, and here is where the party stays. A SEA leg rolls nothing:
+    # the MVP has no naval combat, only weather and time.
+    if not sea and _road_roll(state, arrival, days):
+        return "stop"
+    if state.get("sighting"):
+        return "stop"           # spotted something: the player decides
+    return "on"
+
+
+def arrive(state: dict) -> bool:
+    """The ceremony where the party STOPS -- run once, at journey's end or
+    wherever the road broke off, never at every Tile a route passes through.
+    Returns True when something took over (the law, hell): that machinery
+    has already saved."""
     here = occupied_here(state)
     if here is not None:
         print(occupation_line(state, here))
     # Settling the books at the walls: the dead are buried, anyone done with
     # this party walks (with their head-split of the purse).
-    log = []
+    log: list[str] = []
     process_departures(state, log)
     if log:
         print("\n".join(log))
-    print_board_clock(state)    # and the new land's boards are read on
-                                # arrival (a board's first look fills it)
+    print_board_clock(state)    # a board's first look fills it
     maybe_post_wave(state)      # news travels; arrivals are where it lands
     conquest_news(state)        # word from the holdings travels with it
-    world_news(state)           # and the land tells the party what moved
+    world_news(state)           # and the country tells the party what moved
                                 # while it was on the road (the state diff)
     weather_note(state)         # ...under whatever sky it is standing under
     price_note(state)           # ...and what that has done to the prices
     crime_news(state)           # hell suggests work on arrival too
     if maybe_punish(state):     # the law meets the party at the walls
-        return                  # (karma & heat; the machinery saved)
+        return True             # (karma & heat; the machinery saved)
     if maybe_enforce(state):    # hell's collections travel the same roads
-        return                  # (the pact; the machinery saved)
+        return True             # (the pact; the machinery saved)
     maybe_assign_task(state)    # and hell's mail finds arrivals
     log = []
     if deliver_if_arrived(state, log):
         print("\n".join(log))
-    save(state)
+    return False
+
+
+def cmd_travel(args: argparse.Namespace) -> None:
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    resolved = travel_target(state, " ".join(args.dest))
+    if resolved is None:
+        return
+    target_tile, target_area = resolved
+    pos = state["position"]
+    if target_tile["id"] == pos["tile"]:
+        # Same Tile: switching Areas is free. A Tile is 30x60 km and its
+        # Areas are a walk across local ground, not a journey.
+        if target_area["key"] == pos["area"]:
+            print(f"The party is already at {target_area['name']}.")
+            return
+        move_party(state, target_area)
+        target_area["visited"] = True
+        print(f"The party crosses to {location_line(state)} -- no day "
+              f"passes; it is the same Tile.")
+        save(state)
+        return
+    route = shortest_path(pos["tile"], target_tile["id"])
+    if len(route) > 2:
+        total = sum(edge_days(route[i], route[i + 1])
+                    for i in range(len(route) - 1))
+        print(f"The road to {target_area['name']}: {len(route) - 1} legs, "
+              f"{total} day(s) at the least.")
+    for step, nid in enumerate(route[1:], 1):
+        final = step == len(route) - 1
+        dest = world["tiles"][nid]
+        arrival = target_area if final else _natural_area(world, dest)
+        if _walk_edge(state, dest, arrival) == "stop":
+            if state.get("pending") or party_wiped_out(state):
+                return          # a paused fight or a wipe owns the turn,
+                                # and its machinery has already saved
+            if not final:
+                print(f"  The road stops here -- the party is at "
+                      f"{location_line(state)}. `travel "
+                      f"{target_area['name']}` again when it is clear.")
+            if not arrive(state):
+                save(state)
+            return
+    if not arrive(state):
+        save(state)
 
 
 def cmd_explore(args: argparse.Namespace) -> None:
@@ -5181,10 +5337,18 @@ def cmd_explore(args: argparse.Namespace) -> None:
     clear_sighting(state)
     party, clock, rng = state["party"], state["clock"], state["rng"]
     polity = state["position"]["land"]
-    land_name = world["lands"][polity]["name"]
     here = current_area(state)
-    print(f"The party explores {here['name']} and the roads beyond -- "
-          f"a day afield, camping rough.")
+    if here["kind"] != "natural":
+        # Exploring is going AFIELD: from a settlement the party walks out
+        # into its own Tile's countryside, which costs no day of its own
+        # (2026-08-15 -- the old country-wide "next undiscovered Area"
+        # sweep went with the list-shaped world).
+        here = world["areas"][world["tiles"][state["position"]["tile"]]
+                              ["natural_area"]]
+        here["known"] = here["visited"] = True
+        move_party(state, here)
+    print(f"The party explores {here['name']} -- a day afield, camping "
+          f"rough.")
     weather_note(state)
     log = CombatLog()
     sky = exposure_sky(state)
@@ -5197,35 +5361,21 @@ def cmd_explore(args: argparse.Namespace) -> None:
     night_upkeep(state, log)
     print_play(log)
     print_board_clock(state)    # a day afield is a day off the board's clock
-    found_area = None
-    found_site = None
-    if here["kind"] == "natural":
-        found_site = materialize_natural_site(world, here, day=clock.day)
-    else:
-        found_area = discover_area(world, polity, clock.day)
+    found_site = materialize_natural_site(world, here, day=clock.day)
     log = []
-    if found_area is not None:
-        found_area["visited"] = True
-        move_party(state, found_area)
-        award_xp(party, EXPLORE_XP, log, "discovery")
-        print(f"A known route opens onto {found_area['name']}.")
-        print(found_area["description"])
-        found_name = found_area["name"]
-    elif found_site is not None:
+    if found_site is not None:
         award_xp(party, EXPLORE_XP, log, "discovery")
         print(f"A local place is found: {found_site['name']}.")
         found_name = found_site["name"]
     else:
         found_name = here["name"]
-        if here["kind"] == "natural":
-            print(f"Nothing new is found in {here['name']}. Its three "
-                  f"ordinary sites are already mapped.")
-        else:
-            print(f"No unknown natural Area remains in {land_name}. "
-                  f"Travel to a known natural Area to explore its Sites.")
+        print(f"Nothing new is found in {here['name']}. Its three "
+              f"ordinary sites are already mapped -- `travel` to another "
+              f"Tile for fresh ground.")
     print("\n".join(log))
-    if not wild_event(state, EXPLORE_ENCOUNTER_CHANCE,
-                      f"In the wilds at {found_name}"):
+    # Open water has no wilds table (the sea rolls weather, not foes).
+    if at_sea(state) or not wild_event(state, EXPLORE_ENCOUNTER_CHANCE,
+                                       f"In the wilds at {found_name}"):
         save(state)
 
 
@@ -5249,16 +5399,20 @@ def cmd_house(args: argparse.Namespace) -> None:
 
 
 def cmd_hunt(args: argparse.Namespace) -> None:
-    """The farm loop: stalk prey in the current land's wilds. The party
-    CHOOSES this fight, so unlike the road table it rolls at-or-below the
-    party's level -- grinding XP and loot is always available, at wild
-    (below-board) rates."""
+    """The farm loop: stalk prey in the Tile's wilds, off the country's own
+    pool. The party CHOOSES this fight, so unlike the road table it rolls
+    at-or-below the party's level -- grinding XP and loot is always
+    available, at wild (below-board) rates."""
     state = load()
     if not require_no_pending(state):
         return
     world = state.get("world")
     if not world:
         print("No world in this save -- start one with `new`.")
+        return
+    if at_sea(state):
+        print("There is nothing to stalk on open water. `travel` to land "
+              "to hunt.")
         return
     clear_sighting(state)
     party, rng = state["party"], state["rng"]
@@ -5450,6 +5604,12 @@ def cmd_look(args: argparse.Namespace) -> None:
         return
     visible = [s for s in area_sites(world, area) if s.get("known")]
     kind = area.get("subtype", area["kind"])
+    tile = world["tiles"][pos["tile"]]
+    # The TILE first, then the Area standing on it (2026-08-15): they are
+    # different places now, and a breadcrumb that only named the Area left
+    # the player with no idea which map cell they were on.
+    print(f"TILE {tile_label(tile)} -- "
+          f"{world['lands'][tile['country']]['name']}, {tile['biome']}")
     print(area.get("description") or f"{area['name']} is a {kind} Area.")
     facts = active_known_facts(area)
     if facts:
@@ -5464,14 +5624,29 @@ def cmd_look(args: argparse.Namespace) -> None:
     services = area.get("services", ())
     if services:
         print("Services: " + ", ".join(s["label"] for s in services) + ".")
-    links = [link for link in area.get("links", ())
-             if world["areas"].get(link["target"], {}).get("known")]
-    if links:
-        print("Links: " + ", ".join(
-            world["areas"][link["target"]]["name"] for link in links) + ".")
+    siblings = [world["areas"][aid] for aid in tile["areas"]
+                if aid != area["key"] and world["areas"][aid].get("known")]
+    if siblings:
+        print("Also on this Tile (a free `go`, no day):")
+        for other in siblings:
+            print(f"  {other['name']} "
+                  f"({other.get('subtype', other['kind'])})")
+    ways = []
+    for direction in ("north", "south", "east", "west"):
+        nid = neighbor_id(tile, direction)
+        if nid is None:
+            continue
+        other = world["tiles"][nid]
+        ways.append(f"{direction} {tile_label(other)} {other['biome']} "
+                    f"({edge_days(tile, other)}d)")
+    print("Roads out (`travel DIRECTION`):")
+    for way in ways:
+        print(f"  {way}")
 def cmd_go(args: argparse.Namespace) -> None:
-    """Move locally within the current area. Local movement costs no day;
-    `travel` remains the explicit day-scale move between areas."""
+    """Move locally: a Room, a Site, or a SIBLING AREA on the same Tile
+    (2026-08-15 -- the town and the countryside around it are one map cell,
+    so crossing between them costs no day either). `travel` remains the
+    day-scale move, and it is what leaves the Tile."""
     state = load()
     if not require_no_pending(state):
         return
@@ -5505,8 +5680,20 @@ def cmd_go(args: argparse.Namespace) -> None:
         print(f"You enter {location_line(state)}.")
         save(state)
         return
+    tile = world["tiles"][pos["tile"]]
+    siblings = [world["areas"][aid] for aid in tile["areas"]
+                if aid != area["key"] and world["areas"][aid].get("known")
+                and want in world["areas"][aid]["name"].lower()]
+    if siblings:
+        other = siblings[0]
+        move_party(state, other)
+        other["visited"] = True
+        print(f"You cross to {location_line(state)} -- the same Tile, so "
+              f"no day passes.")
+        save(state)
+        return
     print(f"No local destination matches {want!r}. `look` shows what is "
-          "in reach; `travel` moves between areas.")
+          "in reach on this Tile; `travel` leaves it.")
 
 
 def cmd_back(args: argparse.Namespace) -> None:
@@ -5852,6 +6039,9 @@ def cmd_camp(args: argparse.Namespace) -> None:
         log = CombatLog()
         in_wilds = (state.get("world")
                     and current_area(state)["kind"] != "settlement")
+        # A night on the water is a night in the open, but no visitor can
+        # walk up to it: the sea has weather and time and nothing else.
+        afloat = bool(state.get("world")) and at_sea(state)
         scout = None
         if in_wilds:
             # Survivalist (the ability): a made MIND check picks ground that
@@ -5860,7 +6050,7 @@ def cmd_camp(args: argparse.Namespace) -> None:
             scout = survivalist_ground(party, state["rng"], log)
             weather_note(state)
         print_play(log)
-        if in_wilds:
+        if in_wilds and not afloat:
             # A night in the wilds is not a night behind walls (2026-07-10):
             # the fire can draw a visitor. A fight cuts the stay short before
             # anyone has slept -- the party fights it as tired as the day
@@ -6950,7 +7140,10 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
     visited = state.get("visited", [])
     target = None
     for s in settlements(world):
-        if want in s["key"]:
+        # By NAME as well as by key since the Areas moved under their Tiles
+        # (2026-08-15): a settlement key is now `tile/rNN/cNN/area/...`, so
+        # the old key-substring match could never find "prague" again.
+        if want in s["key"].lower() or want in s["name"].lower():
             target = s
             break
     if target is None:
@@ -6964,9 +7157,7 @@ def _cast_teleport(state: dict, hero, want: str, log: list[str]) -> None:
     if target["key"] == state["position"]["area"]:
         print(f"The party is already at {target['name']}.")
         return
-    days = (TRAVEL_DAYS_IN_LAND
-            if target["land"] == state["position"]["land"]
-            else TRAVEL_DAYS_CROSS)
+    days = path_days(state["position"]["tile"], target["tile"])
     cost = TELEPORT_TRAVEL_COST_PER_DAY * days
     if hero.cur_power < cost:
         print(f"{hero.name} lacks the Power for that distance "
@@ -7308,31 +7499,38 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "travel",
-        help=f"move to a known area (settlement or natural geography): "
-             f"{TRAVEL_DAYS_IN_LAND} day within a land, {TRAVEL_DAYS_CROSS} "
-             f"days to another land. Every travel day is a camp night "
-             f"(overnight recovery -- travel heals) and risks a road "
-             f"encounter, rolled ON THE ROAD off the ORIGIN land's table "
-             f"before the party reaches the gates -- a fight interrupts the "
-             f"trip and leaves the party where it started "
+        help=f"walk the map grid. `travel north|south|east|west` is the "
+             f"primitive: one cardinal Tile edge, 1 day east/west, 2 days "
+             f"north/south, +1 if either end is mountain (sea costs the "
+             f"base and nothing more). `travel R09C18` or `travel NAME` "
+             f"follows the cheapest route to a coordinate, a known "
+             f"settlement or a historical city, edge by edge. Every travel "
+             f"day is a camp night (overnight recovery -- travel heals); "
+             f"each LAND edge risks a road encounter rolled at the Tile "
+             f"just reached, off THAT country's table "
              f"(~{int(TRAVEL_ENCOUNTER_CHANCE * 100)}%%/day, ANY level -- "
              f"the higher the rarer; foes far above the party are usually "
              f"spotted at range first, but can ambush, and ordinary "
              f"trouble runs the NOTICE CONTEST: party MIND vs their "
              f"senses, over each side's conspicuousness -- spotted, "
-             f"ambushed, or met square on the open field)")
-    p.add_argument("dest", nargs="+", help="settlement or place (substring)")
+             f"ambushed, or met square on the open field). A fight or a "
+             f"sighting stops a route AT THE TILE REACHED, never back at "
+             f"its origin. SEA edges spend time, weather and recovery and "
+             f"roll no encounter at all.")
+    p.add_argument("dest", nargs="+",
+                   help="direction, coordinate, or known place (substring)")
     p.set_defaults(func=cmd_travel)
 
     p = sub.add_parser(
         "explore",
-        help=f"a day ranging the current Area and its roads: from a "
-             f"settlement, reveals the next finite natural Area; inside a "
-             f"natural Area, reveals its next ordinary Site. A new place "
+        help=f"a day afield in THIS Tile's countryside (from a settlement "
+             f"the party walks out into it first): reveals the natural "
+             f"Area's next ordinary Site, three to a Tile. A new place "
              f"pays {EXPLORE_XP} XP and persists; revisits do not. Camps "
              f"rough (overnight recovery), and beats more "
              f"bushes than the road "
-             f"({int(EXPLORE_ENCOUNTER_CHANCE * 100)}%% encounter chance)")
+             f"({int(EXPLORE_ENCOUNTER_CHANCE * 100)}%% encounter chance; "
+             f"open water rolls none)")
     p.set_defaults(func=cmd_explore)
 
     p = sub.add_parser(

@@ -2,16 +2,16 @@
 
 This is the sole active roadmap. The 2026-08-15 design sessions replace the
 former world with a fixed 30x18 Europe-shaped grid inhabited only by humans.
-The Human World Contraction is implemented and documented in `rules.md` and
-`designlog.md`; the former roadmap is preserved, explicitly
+The Human World Contraction, the Fixed Europe Geography and Grid Navigation
+and Map UI are implemented and documented in `rules.md`, `dm.md`,
+`develop.md` and `designlog.md`; the former roadmap is preserved, explicitly
 inactive, in `archive/plan-pre-europe-2026-08-15.md`.
 
-Three implementation sessions remain. A future session may be
+Two implementation sessions remain. A future session may be
 started simply by asking to implement its exact title:
 
-1. **Grid Navigation and Map UI**
-2. **Local Quest Geography**
-3. **Europe MVP Closure**
+1. **Local Quest Geography**
+2. **Europe MVP Closure**
 
 Implement them in order. Each session must leave its own slice coherent and
 tested; do not begin a later session as an incidental extension of an earlier
@@ -455,86 +455,22 @@ clearly historical; do not rewrite project history as part of this build.
 
 ---
 
-## Grid movement, path cost and position
+## Grid movement, path cost and position — BUILT
 
-Travel uses orthogonal Tile edges. There are no diagonals.
+Shipped 2026-08-15 (Grid Navigation and Map UI). The played rule lives in
+`rules.md`'s World & Navigation add-on ("Travel" and "Local movement"); the
+code map is in `develop.md` under `places.py` and `session.py`; the build
+record and the calls this contract left open are in `designlog.md`.
 
-### Symmetric edge cost
+What later sessions need to know: distance is `places.path_days(a, b)`
+between two Tile IDs — symmetric, deterministic, finite between any two
+Tiles because sea is navigable — and `places.shortest_path` returns the
+route. Nothing asks "same land or another?" any more.
 
-- East/west edge base: 1 day.
-- North/south edge base: 2 days.
-- Add 1 day if either endpoint is a mountain Tile.
-- River has no surcharge. It is ordinary inhabited land at this scale.
-- Sea has no surcharge beyond directional base.
-- Crossing a country border has no intrinsic surcharge.
+## Map and local displays — BUILT
 
-The mountain surcharge is symmetric: descending the same edge costs what
-ascending it cost. Path cost must therefore be symmetric between two Tiles.
-
-Use deterministic Dijkstra (or an equivalent weighted shortest-path
-algorithm) with a stable row/column tie-break. The pathfinder may cross known
-sea and terrain because the whole base map is known. It may not leave the
-18x30 frame.
-
-### Travel commands
-
-- `travel north|south|east|west` moves one cardinal edge and is the canonical
-  primitive.
-- `travel R09C18` and `travel NAME` may follow the cheapest route to a known
-  Tile or settlement as a convenience. Execute it edge by edge and stop after
-  a fight, sighting requiring input, party wipe, or other interruption.
-- Traveling to a Tile coordinate arrives in its natural Area.
-- Traveling to a settlement name arrives in that settlement Area.
-- An unknown ordinary settlement cannot be a named destination.
-
-An edge is atomic. Spend its days, apply recovery/world clocks, place the
-party in the destination Tile/Area, then resolve its arrival-road encounter.
-There is no half-edge save position. A fight stops a multi-edge route at the
-Tile just reached; the party never bounces back to the journey's origin.
-
-Each land/mountain/river edge keeps the current compounded per-day road
-encounter chance and the avoidability valves, using the destination country's
-human/cultural pool. Sea edges roll weather/exposure and time but no random
-combat encounter in the MVP. Sea nights grant ordinary travel recovery: the
-passage is abstracted and no ship inventory is created.
-
-Teleport travel remains settlement-to-settlement and visited-only. Its Power
-cost uses shortest-path days rather than the old same-Land/cross-Land
-constant.
-
----
-
-## Map and local displays
-
-`map` and `ui/map.txt` become the 30x18 terrain display with numeric axes,
-fitting within 40 columns. Do not draw border characters through the grid;
-the fixed partition rule and grouped city legend carry political geography,
-and the current-Tile detail always names its country.
-
-Base glyphs remain `. # ^ ~`. Known overlays have this priority:
-
-1. `@` party;
-2. `!` active quest objective;
-3. `C` capital;
-4. `T` any known town in the Tile;
-5. `v` known village(s) with no known town;
-6. biome glyph.
-
-One cell never attempts to show all settlements. A detail block below the map
-lists the current Tile's name, coordinates, country, biome, known Areas and
-active quest markers. A second compact legend groups known historical cities
-and other known settlements by country as space permits. All generated map
-lines and legends must use the existing 40-column fitting utilities and ASCII
-output.
-
-Terrain is visible from world creation. Discovery governs ordinary
-settlements, Areas and Sites, not the continental outline.
-
-`look` at Tile/Area level must distinguish the Tile from the current Area and
-list known sibling Areas. `ui/minimap.txt` remains out of this MVP; the macro
-map plus existing local breadcrumb is enough.
-
----
+Shipped 2026-08-15 with the above. `rules.md`'s World & Navigation add-on
+owns the rule ("The map" and "Local movement"), `develop.md` the code.
 
 ## Local quest geography — approved quick patch
 
@@ -678,57 +614,6 @@ compatibility helpers for the old save or old six-Land schema.
 ---
 
 # Implementation sessions
-
-## Session 3 — Grid Navigation and Map UI
-
-**Trigger:** `Implement Grid Navigation and Map UI from plan.md.`
-
-### Objective
-
-Make the fixed map navigable and legible: weighted cardinal movement,
-sea access, persistent intermediate position, destination pathfinding and the
-40-column map.
-
-### Required work
-
-1. Implement reciprocal cardinal edges, symmetric edge cost and deterministic
-   shortest paths.
-2. Replace 1-day/2-day Land travel with Tile-edge movement while preserving
-   recovery, clocks, weather, sightings, fights, news, punishment and arrival
-   hooks in correct order.
-3. Add directional travel and known destination/settlement convenience paths;
-   stop multi-edge travel after interruption at the Tile reached.
-4. Make sea navigable without ports/inventory and suppress random sea combat.
-5. Adapt wild/hunt/camp context and teleport cost to Tile/country/path data.
-6. Render the fixed map with axes and overlay priority; update `ui/map.txt`.
-7. Update `look`, location breadcrumbs and sibling-Area movement for the new
-   hierarchy.
-8. Remove the old list-shaped map display and direct Land-distance logic.
-
-### Primary files
-
-`places.py`, `quests.py`, `session.py`, `worldsim.py`, `dm.md`, `rules.md`,
-`develop.md`, `test_places.py`, `test_start.py`, `test_turnin.py`,
-`test_worldsim.py`, UI log tests and new focused navigation tests if warranted.
-
-### Non-goals
-
-No roads, ports, ships, naval encounters, diagonal motion, Tile climate
-profiles or dynamic borders. Do not implement the quest-radius patch in this
-session.
-
-### Verification
-
-- Unit-test every edge-cost case and reciprocal path symmetry.
-- Pin representative shortest paths across each country, a mountain edge,
-  a river Tile, country borders and sea to all three small landmasses.
-- Interrupted route leaves the party at the reached Tile, never the original
-  settlement.
-- Sea travel spends time/recovery/weather but rolls no combat encounter.
-- Teleport charges actual path days.
-- Map overlays obey priority and every line fits 40 ASCII columns.
-- Manual smoke: start, travel by direction, travel to a named city, cross sea,
-  save/load and continue from the same Tile/Area.
 
 ## Session 4 — Local Quest Geography
 

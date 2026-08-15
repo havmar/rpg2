@@ -9,9 +9,11 @@ does not own encounter budgets or quest rewards.
 from __future__ import annotations
 
 import hashlib
+import heapq
 import json
 import random
 import re
+import textwrap
 from pathlib import Path
 from typing import Iterable
 
@@ -1058,6 +1060,331 @@ def create_geography(seed: int | None) -> dict:
     return world
 
 
+# --------------------------------------------------------------------------- #
+# Grid navigation (2026-08-15, Grid Navigation and Map UI)
+# --------------------------------------------------------------------------- #
+# Distance is GEOGRAPHY, not save state. The map is authored and immutable,
+# so an edge's cost is a pure function of the two Tiles' biomes and the
+# direction between them -- identical in every campaign, on every seed. That
+# is why the pathfinder takes Tile IDs and never a world: there is nothing a
+# world could tell it that the grid does not already know, and a reader that
+# asked for one would invite a caller to believe distance is mutable.
+#
+# The cost model (rules.md's Travel section): a tile is 30 km east-west and
+# 60 km north-south, so an east/west edge is one day and a north/south edge
+# two. A mountain at EITHER end adds a day, which makes the cost symmetric by
+# construction -- descending a pass costs exactly what climbing it cost.
+# River is ordinary land at this scale and sea is navigable open water; both
+# take the directional base and nothing more.
+
+EDGE_DAYS_EAST_WEST = 1
+EDGE_DAYS_NORTH_SOUTH = 2
+MOUNTAIN_EDGE_SURCHARGE = 1
+
+DIRECTIONS = {"north": (-1, 0), "west": (0, -1),
+              "east": (0, 1), "south": (1, 0)}
+DIRECTION_WORDS = {**{name: name for name in DIRECTIONS},
+                   "n": "north", "w": "west", "e": "east", "s": "south"}
+OPPOSITE_DIRECTION = {"north": "south", "south": "north",
+                      "east": "west", "west": "east"}
+BIOME_LETTERS = {biome: glyph for glyph, biome in BIOME_GLYPHS.items()}
+
+_GRID: tuple[str, ...] | None = None
+# Single-source Dijkstra results, keyed by origin Tile ID. Cacheable across
+# worlds for the reason above: the grid the search runs on is the checked-in
+# map, which no campaign can edit.
+_PATHS: dict[str, tuple[dict[str, int], dict[str, str]]] = {}
+
+
+def europe_grid() -> tuple[str, ...]:
+    """The validated map rows, read and checked once per process."""
+    global _GRID
+    if _GRID is None:
+        rows = load_europe_map()
+        _validate_fixed_data(rows)
+        _GRID = rows
+    return _GRID
+
+
+def tile_row_column(tile: dict | str) -> tuple[int, int]:
+    """The 1-based (row, column) of a Tile record or Tile ID.
+
+    Raises on anything that is not a Tile inside the frame -- an unknown
+    coordinate is a bug in the caller, never a place to invent.
+    """
+    if isinstance(tile, dict):
+        return tile["row"], tile["column"]
+    match = re.fullmatch(r"tile/r(\d{2})/c(\d{2})", tile)
+    if match is None:
+        raise ValueError(f"not a Tile ID: {tile!r}")
+    row, column = int(match[1]), int(match[2])
+    if not (1 <= row <= MAP_ROWS and 1 <= column <= MAP_COLUMNS):
+        raise ValueError(f"{tile} lies outside the "
+                         f"{MAP_ROWS}x{MAP_COLUMNS} frame")
+    return row, column
+
+
+def tile_key(tile: dict | str) -> str:
+    """The Tile ID of a Tile record or a validated Tile ID."""
+    if isinstance(tile, dict):
+        return tile["id"]
+    tile_row_column(tile)
+    return tile
+
+
+def biome_at(row: int, column: int) -> str:
+    if not (1 <= row <= MAP_ROWS and 1 <= column <= MAP_COLUMNS):
+        raise ValueError(f"R{row:02d}C{column:02d} lies outside the frame")
+    return BIOME_GLYPHS[europe_grid()[row - 1][column - 1]]
+
+
+def direction_word(text: str) -> str | None:
+    """`n` / `North` -> `north`; anything else -> None (not a direction)."""
+    return DIRECTION_WORDS.get(text.strip().lower())
+
+
+def parse_coordinate(text: str) -> tuple[int, int] | None:
+    """`R09C18`, `r9c18` or `9,18` -> (9, 18). None when it is not a
+    coordinate at all; a coordinate OUTSIDE the frame raises, because the
+    player named a cell the world does not have."""
+    match = re.fullmatch(r"r\s*(\d{1,2})\s*[c,]\s*(\d{1,2})",
+                         text.strip().lower().replace(" ", ""))
+    if match is None:
+        match = re.fullmatch(r"(\d{1,2})\s*[,x]\s*(\d{1,2})", text.strip())
+    if match is None:
+        return None
+    row, column = int(match[1]), int(match[2])
+    if not (1 <= row <= MAP_ROWS and 1 <= column <= MAP_COLUMNS):
+        raise ValueError(
+            f"R{row:02d}C{column:02d} is off the map -- rows are 1-"
+            f"{MAP_ROWS}, columns 1-{MAP_COLUMNS}")
+    return row, column
+
+
+def neighbor_id(tile: dict | str, direction: str) -> str | None:
+    """The Tile one cardinal step away, or None at the frame's edge."""
+    name = direction_word(direction)
+    if name is None:
+        raise ValueError(f"not a cardinal direction: {direction!r}")
+    row, column = tile_row_column(tile)
+    row_step, column_step = DIRECTIONS[name]
+    row, column = row + row_step, column + column_step
+    if not (1 <= row <= MAP_ROWS and 1 <= column <= MAP_COLUMNS):
+        return None
+    return tile_id(row, column)
+
+
+def edge_direction(origin: dict | str, dest: dict | str) -> str:
+    """Which way one cardinal edge runs. Raises on a non-edge."""
+    origin_row, origin_column = tile_row_column(origin)
+    dest_row, dest_column = tile_row_column(dest)
+    step = (dest_row - origin_row, dest_column - origin_column)
+    for name, offset in DIRECTIONS.items():
+        if offset == step:
+            return name
+    raise ValueError(f"{tile_key(origin)} and {tile_key(dest)} are not "
+                     f"cardinal neighbors")
+
+
+def edge_days(origin: dict | str, dest: dict | str) -> int:
+    """The symmetric day cost of one cardinal edge (see the block above)."""
+    edge_direction(origin, dest)        # rejects diagonals and non-edges
+    origin_row, origin_column = tile_row_column(origin)
+    dest_row, dest_column = tile_row_column(dest)
+    days = (EDGE_DAYS_NORTH_SOUTH if dest_row != origin_row
+            else EDGE_DAYS_EAST_WEST)
+    if "mountain" in (biome_at(origin_row, origin_column),
+                      biome_at(dest_row, dest_column)):
+        days += MOUNTAIN_EDGE_SURCHARGE
+    return days
+
+
+def _single_source(origin: str) -> tuple[dict[str, int], dict[str, str]]:
+    """Dijkstra from one Tile over the whole frame.
+
+    Deterministic without a tie-break table: the frontier is ordered by
+    (cost, row, column), relaxation is strict, and neighbors are expanded
+    north/west/east/south. Equal-cost routes therefore always settle on the
+    one whose frontier tile is northernmost, then westernmost -- the same
+    answer in every process, with no reliance on dict or hash order.
+    """
+    cached = _PATHS.get(origin)
+    if cached is not None:
+        return cached
+    row, column = tile_row_column(origin)
+    distance: dict[str, int] = {origin: 0}
+    previous: dict[str, str] = {}
+    frontier = [(0, row, column, origin)]
+    while frontier:
+        cost, _row, _column, current = heapq.heappop(frontier)
+        if cost > distance[current]:
+            continue
+        for direction in DIRECTIONS:
+            nid = neighbor_id(current, direction)
+            if nid is None:
+                continue
+            step = cost + edge_days(current, nid)
+            if step < distance.get(nid, step + 1):
+                distance[nid] = step
+                previous[nid] = current
+                nrow, ncolumn = tile_row_column(nid)
+                heapq.heappush(frontier, (step, nrow, ncolumn, nid))
+    _PATHS[origin] = (distance, previous)
+    return distance, previous
+
+
+def path_days(origin: dict | str, dest: dict | str) -> int:
+    """Shortest-path days between two Tiles. Symmetric, and always finite:
+    sea is navigable, so every Tile in the frame reaches every other."""
+    start, end = tile_key(origin), tile_key(dest)
+    distance, _previous = _single_source(start)
+    if end not in distance:
+        raise ValueError(f"no route from {start} to {end}")
+    return distance[end]
+
+
+def shortest_path(origin: dict | str, dest: dict | str) -> list[str]:
+    """The cheapest route as Tile IDs, origin first, destination last."""
+    start, end = tile_key(origin), tile_key(dest)
+    distance, previous = _single_source(start)
+    if end not in distance:
+        raise ValueError(f"no route from {start} to {end}")
+    route = [end]
+    while route[-1] != start:
+        route.append(previous[route[-1]])
+    route.reverse()
+    return route
+
+
+# --------------------------------------------------------------------------- #
+# The 40-column map display
+# --------------------------------------------------------------------------- #
+# One cell never tries to show everything on a Tile: the overlay is a strict
+# priority, party first and terrain last, and the detail block below the grid
+# carries what the glyph had to drop.
+
+MAP_OVERLAY_PRIORITY = ("@", "!", "C", "T", "v")
+MAP_GUTTER = "   "               # room for the two-digit row label
+MAP_GLYPH_LEGEND = ". sea  # land  ^ mtns  ~ river"
+MAP_MARK_LEGEND = "@ party  ! job  C capital  T town  v village"
+
+
+def known_slots(world: dict, tile: dict | str) -> list[dict]:
+    """The settlement slots on a Tile the player knows about."""
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    return [world["settlement_slots"][sid] for sid in tile["settlement_slots"]
+            if world["settlement_slots"][sid]["known"]]
+
+
+def settlement_glyph(world: dict, tile: dict) -> str | None:
+    """`C` a known capital, `T` any other known town, `v` known village(s)
+    with no known town, None when nothing here is known."""
+    mark = None
+    for slot in known_slots(world, tile):
+        if slot["capital"]:
+            return "C"
+        if slot["tier"] == "town":
+            mark = "T"
+        elif mark is None:
+            mark = "v"
+    return mark
+
+
+def map_glyph(world: dict, tile: dict, party: str | None = None,
+              objectives: Iterable[str] = ()) -> str:
+    if tile["id"] == party:
+        return "@"
+    if tile["id"] in set(objectives):
+        return "!"
+    return settlement_glyph(world, tile) or BIOME_LETTERS[tile["biome"]]
+
+
+def map_lines(world: dict, party: str | None = None,
+              objectives: Iterable[str] = ()) -> list[str]:
+    """The whole 30x18 world as 18 rows under a two-line numeric axis.
+
+    Thirty glyph columns plus a three-column row gutter is 33 -- inside the
+    40-column rule with room to spare, which is why the map is drawn whole
+    and never windowed."""
+    objectives = set(objectives)
+    tens = "".join(" " if column < 10 else str(column // 10)
+                   for column in range(1, MAP_COLUMNS + 1))
+    units = "".join(str(column % 10)
+                    for column in range(1, MAP_COLUMNS + 1))
+    lines = [MAP_GUTTER + tens, MAP_GUTTER + units]
+    for row in range(1, MAP_ROWS + 1):
+        cells = "".join(
+            map_glyph(world, world["tiles"][tile_id(row, column)],
+                      party, objectives)
+            for column in range(1, MAP_COLUMNS + 1))
+        lines.append(f"{row:02d} {cells}")
+    return lines
+
+
+def _legend_group(prefix: str, items: list[str], width: int = 40) -> list[str]:
+    return textwrap.wrap(prefix + ", ".join(items), width,
+                         subsequent_indent="    ", break_long_words=False,
+                         break_on_hyphens=False)
+
+
+def map_legend_lines(world: dict, width: int = 40,
+                     limit: int = 10) -> list[str]:
+    """Known settlements grouped by country: the historical cities first,
+    then as many other known places as the page has room for."""
+    lines: list[str] = []
+    for country, land in world["lands"].items():
+        cities: list[str] = []
+        others: list[str] = []
+        for sid in land["settlement_slots"]:
+            slot = world["settlement_slots"][sid]
+            if not slot["known"]:
+                continue
+            tile = world["tiles"][slot["tile"]]
+            label = (f"{slot['name']} "
+                     f"{tile_coordinate(tile['row'], tile['column'])}")
+            if slot["capital"]:
+                label += "*"
+            (cities if slot["authored"] else others).append(label)
+        if cities:
+            lines.extend(_legend_group(f"{land['name']} cities: ", cities,
+                                       width))
+        if others:
+            shown = sorted(others)[:limit]
+            if len(others) > limit:
+                shown.append(f"+{len(others) - limit} more")
+            lines.extend(_legend_group(f"{land['name']} known: ", shown,
+                                       width))
+    return lines
+
+
+def tile_label(tile: dict) -> str:
+    """`R11C20`, or `Paris (R09C10)` where the Tile carries a real name."""
+    coordinate = tile_coordinate(tile["row"], tile["column"])
+    return (coordinate if tile["name"] == coordinate
+            else f"{tile['name']} ({coordinate})")
+
+
+def tile_detail_lines(world: dict, tile: dict | str,
+                      areas: bool = True) -> list[str]:
+    """What the glyph could not say: where this Tile is, whose it is, what
+    it is made of, and (unless the caller lists them itself) which of its
+    Areas the party knows."""
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    lines = [f"HERE: {tile_label(tile)} -- "
+             f"{world['lands'][tile['country']]['name']}, {tile['biome']}"]
+    extra = [tag for tag in tile["tags"]
+             if tag not in (tile["biome"], tile["country"])]
+    if extra:
+        lines.append("  ground: " + ", ".join(extra))
+    known = [world["areas"][aid] for aid in tile["areas"]
+             if world["areas"][aid].get("known")]
+    if areas and known:
+        lines.append("  areas: " + ", ".join(area["name"] for area in known))
+    return lines
+
+
 def land_homeland(world: dict, polity: str) -> str:
     """The country a local person calls home."""
     return world["lands"][polity]["homeland"]
@@ -1070,23 +1397,6 @@ def land_culture(world: dict, polity: str) -> str:
 def settlement_tier(area: dict) -> str:
     """Mechanical service/board/conquest tier for a settlement Area."""
     return "capital" if area.get("capital") else area["subtype"]
-
-
-def discover_area(world: dict, polity: str, day: int) -> dict | None:
-    """Reveal the first still-hidden natural Area in country tile order.
-
-    This remains the temporary Session-2 exploration hook. Directional Tile
-    travel replaces it in Grid Navigation and Map UI.
-    """
-    for tid in world["lands"][polity]["tiles"]:
-        aid = world["tiles"][tid]["natural_area"]
-        area = world["areas"][aid]
-        if not area["known"]:
-            area["known"] = True
-            area["discovered_day"] = day
-            _event(world, day, aid, "reveal")
-            return area
-    return None
 
 
 def materialize_natural_site(world: dict, area: dict | str,
