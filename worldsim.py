@@ -5058,6 +5058,38 @@ def _validate_state_tables() -> None:
                                  f"the game produces that state")
 
 
+def _validate_three_countries() -> None:
+    """The world layer against the fixed Europe map (2026-08-15, Europe MVP
+    Closure). The contraction used to be enforced by FILTERING the catalog
+    at import, which meant a packet could go missing without anything
+    noticing. Nothing filters now, so this says out loud what every country
+    owes: its own deck on every track it can draw from, its own lore, and a
+    place in the relations table -- an isolated country is a country whose
+    neighbours' troubles never reach it."""
+    if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
+        raise ValueError("the world layer expects the three Europe "
+                         f"countries, got {tuple(LAND_SPECS)}")
+    for polity in LAND_SPECS:
+        for track in TRACKS:
+            if not [c for c in CARDS
+                    if c["track"] == track and in_land(c, polity)]:
+                raise ValueError(f"{polity}: no {track} card can be drawn "
+                                 f"there")
+        if not FACTS_BY_LAND.get(polity):
+            raise ValueError(f"{polity}: no standing lore")
+        if not [e for e in RELATIONS
+                if polity in (e["from"], e["to"])]:
+            raise ValueError(f"{polity}: no relation reaches it")
+        if polity not in ENVIRONMENT_PROFILES_BY_LAND:
+            raise ValueError(f"{polity}: no environment profile, so no sky")
+
+
+ENVIRONMENT_PROFILES_BY_LAND = {
+    polity: ENVIRONMENT_PROFILES[spec["environment"]]
+    for polity, spec in LAND_SPECS.items()
+}
+
+
 def validate_content() -> None:
     keys = set()
     for drawn in CARDS:
@@ -5123,6 +5155,7 @@ def validate_content() -> None:
     _validate_menu_tables()
     _validate_politics_tables()
     _validate_lore_tables()
+    _validate_three_countries()
     for state_id, entry in STATE_ENCOUNTERS.items():
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")

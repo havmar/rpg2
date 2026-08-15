@@ -1073,7 +1073,95 @@ def create_geography(seed: int | None) -> dict:
     # The opening settlement posts ordinary work whatever its own roll said:
     # the game has to start somewhere, and it starts at a board.
     world["areas"][world["start_area"]]["board_active"] = True
+    validate_world(world)
     return world
+
+
+CAPITAL_TOWNS = frozenset(name for *_r, name, _p, _b, capital
+                          in HISTORICAL_CITIES if capital)
+
+
+def validate_world(world: dict) -> None:
+    """The fixed geography's own contract, checked once at world creation.
+
+    Every clause here is a cross-cutting invariant of the Europe build, and
+    every one of them is cheap over 540 Tiles. They live in the CONSTRUCTOR
+    rather than only in the suite because a world that breaks one of them is
+    not a world the readers below may be handed: the whole point of the
+    strict-reader discipline is that illegal world state raises where it is
+    made, not three commands later inside a display.
+    """
+    tiles = world["tiles"]
+    order = world["tile_order"]
+    expected = [tile_id(row, column)
+                for row in range(1, MAP_ROWS + 1)
+                for column in range(1, MAP_COLUMNS + 1)]
+    if order != expected:
+        raise ValueError("tile_order is not the row-major 30x18 frame")
+    if set(tiles) != set(expected):
+        raise ValueError("the tile store and tile_order disagree")
+
+    capitals, slot_ids = set(), set()
+    for tid in order:
+        tile = tiles[tid]
+        if tile["country"] not in COUNTRIES:
+            raise ValueError(f"{tid}: no such country: {tile['country']}")
+        natural = tile["natural_area"]
+        if natural is None or natural not in world["areas"]:
+            raise ValueError(f"{tid}: every Tile has one natural Area")
+        if world["areas"][natural]["kind"] != "natural":
+            raise ValueError(f"{tid}: natural_area is not natural")
+        for nid in tile["neighbors"]:
+            other = tiles.get(nid)
+            if other is None:
+                raise ValueError(f"{tid}: neighbor off the frame: {nid}")
+            step = (abs(other["row"] - tile["row"])
+                    + abs(other["column"] - tile["column"]))
+            if step != 1:
+                raise ValueError(f"{tid}: {nid} is not a cardinal neighbor")
+            if tid not in other["neighbors"]:
+                raise ValueError(f"{tid} -> {nid} is not reciprocal")
+        slots = [world["settlement_slots"][sid]
+                 for sid in tile["settlement_slots"]]
+        if tile["biome"] == "sea" and slots:
+            raise ValueError(f"{tid}: the sea is never populated")
+        historical = HISTORICAL_BY_TILE.get((tile["row"], tile["column"]))
+        if historical:
+            name, country, biome, capital = historical
+            if (tile["biome"], tile["country"]) != (biome, country):
+                raise ValueError(f"{tid}: {name} declares {country}/{biome}")
+            if tile["name"] != name:
+                raise ValueError(f"{tid}: a historical Tile IS its city")
+            authored = [slot for slot in slots if slot["authored"]]
+            if len(authored) != 1 or authored[0]["name"] != name:
+                raise ValueError(f"{tid}: {name} has no authored town")
+            if authored[0]["capital"] != capital:
+                raise ValueError(f"{tid}: {name}'s capital flag is wrong")
+        elif tile["biome"] == "mountain":
+            if any(slot["tier"] == "town" for slot in slots):
+                raise ValueError(f"{tid}: only authored towns sit on a "
+                                 f"mountain")
+        for slot in slots:
+            if slot["id"] in slot_ids:
+                raise ValueError(f"duplicate settlement slot: {slot['id']}")
+            slot_ids.add(slot["id"])
+            if slot["tile"] != tid:
+                raise ValueError(f"{slot['id']}: not scoped to its Tile")
+            if slot["id"] not in \
+                    world["lands"][tile["country"]]["settlement_slots"]:
+                raise ValueError(f"{slot['id']}: not on its country")
+            if slot["capital"]:
+                capitals.add(slot["name"])
+
+    if slot_ids != set(world["settlement_slots"]):
+        raise ValueError("the slot store and the Tiles disagree")
+    if capitals != CAPITAL_TOWNS:
+        raise ValueError(f"the three capitals are {sorted(CAPITAL_TOWNS)}, "
+                         f"got {sorted(capitals)}")
+    if world["start_slot"] not in world["settlement_slots"]:
+        raise ValueError("the start is not a settlement slot")
+    if world["start_area"] not in world["areas"]:
+        raise ValueError("the start settlement was never materialized")
 
 
 # --------------------------------------------------------------------------- #
