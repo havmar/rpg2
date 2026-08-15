@@ -4043,3 +4043,153 @@ passed against the broken code, which is the whole lesson of the bug. The
 sky test rolls a twin world by hand day by day and demands the reader
 agree with it on every one of twelve days, and that the twelve are not
 one frozen sky.
+
+## 2026-08-15 — THE ASCII WORLD MAP: the generator built, the location rework opened
+
+The designer asked for a graphical ASCII map as the ground for a big
+change to the location system, and supplied the reference himself: a
+hand-drawn 30x18 Europe in `.` / `#` / `^` with `~` rivers, plus the
+whole geographic contract. One character is 30 km east-west and 60 km
+north-south (a character cell is twice as tall as wide, so the map reads
+near-isotropic); a day walks one tile east or half a tile south; no
+diagonal movement. The full world is rolled large but only a 40x20
+northwest corner is the playable game world — one civilisation's view,
+the way the reference map is Europe's. Two or three continents carry
+most of the land, islands yes but never an archipelago, coasts ragged
+the Europe way. The west edge is water down the whole column — visibly
+sailable, kept organic, never a straight cut — the north edge may carry
+land to the frame, and the east and south edges cut continents mid-body
+(his own re-read settled that: continents generate as islands, so the
+west needs no special landmass rule beyond the open column). Two
+hard local rules: no two ocean tiles touching only at a corner (fix by
+drowning land — straits open, inner seas grow), and rivers in
+box-drawing glyphs, never `~`, because a tilde cannot say which way a
+river runs or bends. A tile will correspond to an AREA; this session
+ships the generator and its documentation ONLY — nothing in the game
+reads the map yet.
+
+**Shipped:** `worldmap.py` (standalone, stdlib-only, imports nothing
+from the game) plus `test_worldmap.py`; rules.md's The World Map add-on
+(the geography principles, flagged NOT AT THE TABLE); develop.md's
+Files / dev-map / Running registrations; plan.md's "The ASCII world
+map" item carrying the hook-up. `python worldmap.py --seed N` is the
+eyeball check; `--lift` floats the playable corner out of the full map
+with a border of spaces, `--play` prints the corner alone, `--check N`
+sweeps constraint pass rates, `--template-stats` re-measures the
+embedded reference.
+
+### The algorithm (what was chosen and why)
+
+- **Elevation = plateau continent masks + anisotropy-corrected fractal
+  value noise, domain-warped.** Masks are flat-cored domes (flat middle,
+  linear rim), so INSIDE a continent the noise decides land against
+  water — that is where the Europe-grade bays and inner seas come from —
+  while the rim fades the coast out organically. All distances and
+  wavelengths run in 30-km units (y doubled), so features are round in
+  kilometers, not in characters. Two to three continents (60/40 weighted),
+  unequal by design, the first always anchored under the playable corner;
+  3-7 small island masks besides.
+- **Sea level by percentile, not by constant.** The land/water ratio is
+  the template's number, so the cut is simply the elevation percentile
+  that yields it (plus slack for the fix-ups that drown tiles). Ratio
+  drift is impossible by construction.
+- **Fix-ups in proved order.** West column to ocean first; then the
+  diagonal-ocean rule, always drowning the lower-elevation shoulder,
+  looped to stability (converges: land only shrinks); then the island
+  budget (specks beyond eight drown, smallest first). Dropping whole
+  components cannot create new diagonal contacts — two components
+  corner-touching would themselves be the forbidden pattern, already
+  fixed — so the passes compose cleanly.
+- **Mountains as ranges walked uphill.** Tournament-picked
+  high-elevation starts, 4-9 steps with momentum, occasional flank tile;
+  budgeted to the template's mountain share of land. Chains and massifs
+  land on continent spines because the walk follows the same field the
+  coasts came from.
+- **Rivers descend a BFS distance-to-sea field with mountains
+  impassable.** Every step goes to a strictly closer tile, so every
+  river provably reaches water (sea or inner sea) and no loop is
+  possible; bounded sideways meanders and a momentum-then-bend rule
+  (straight runs flip to preferring a turn after four tiles) keep them
+  from beelining. Touching an existing river joins it — the junction
+  becomes a tee. Sources want a mountain foot 4-11 tiles inland;
+  spacing from other rivers guarantees the three-tile minimum before a
+  merge can happen. Mountains impassable IS the geography rule at this
+  scale: a range is a watershed divide, and a `^` tile is a massif, not
+  a peak with springs on both slopes.
+- **The glyph is the river's connections.** `│ ─` runs, `┌ ┐ └ ┘`
+  bends, `├ ┤ ┬ ┴ ┼` junctions, half-line stubs `╵ ╷ ╶ ╴` for sources,
+  and a mouth is an arm pointing into a `.` tile. The contract tests
+  every link reciprocal and every connection set printable — the
+  box-drawing answer to the `#~ / ~#` ambiguity the designer ruled out.
+- **Generate-validate-retry.** A rolled map must pass the hard rules
+  (west column, diagonal rule, continent shape, ratio bands, the
+  playable corner neither empty sea nor wall-to-wall land, river
+  grammar). `generate(seed)` walks deterministic sub-attempts until one
+  passes: same seed, same world, always.
+
+### The road there (what failed first)
+
+The first working version already hit every ratio, and then the sweep
+said a third of worlds rolled ONE landmass. Three lessons, all now in
+the knobs:
+
+- **Cover must exceed the land target.** With domes covering 55% of the
+  map and the percentile demanding 59.5% land, the cut was FORCED into
+  the noise between continents — bridges by construction. Domes now
+  cover 68% and the cut stays inside their rims.
+- **An overlap penalty is not a strait.** The first anti-bridge term
+  keyed on the second-highest MASK — which is zero exactly in the
+  channel between two separated continents, so it did nothing once
+  separation was raised. The fix is REACH: each continent repels land
+  out to 1.35 of its radius, and the trench digs wherever the
+  second-highest reach is positive — that is, precisely in the channel.
+  Islands are exempt (a Britain may hug one coast) but may not seed in
+  the strait between two continents, and may not seed inside a
+  continent's core, where they vanished into the mainland and left
+  island-less worlds.
+- **The corner is a view, so it gets its own band.** The playable
+  corner kept rolling 75%+ land (the anchor dome sat square on it). Its
+  placement box moved east and south so the anchor's coast rim falls
+  inside the view, and validation holds the corner to 0.30-0.72 land.
+
+**Measured** (benchlog carries the runs): the reference map is land
+0.585, mountains 0.092 of land, rivers 0.066 of land, zero diagonal
+contacts — the designer's own drawing already obeys the rule he asked
+for. Rolled worlds: land 0.59, mountains 0.090, rivers 0.066-0.068,
+continents 2-3 holding 0.97+ of land. Three hundred seeds swept: zero
+unresolved, 54-58% pass on the first roll, mean 1.6-1.75 rolls, worst
+seed 7 rolls.
+
+### The calls the spec left open that the build settled
+
+- **80x40 over 60x30** as the default (both asked-about sizes work,
+  `--size` picks): at 80x40 the playable corner is a QUARTER of the
+  world, so two or three continents genuinely surround it and sailing
+  east or south leaves the page long before the world — at 60x30 the
+  corner is 44% of the map and the world barely outreaches the view.
+  Also 80 columns still fits a terminal.
+- **Box glyphs are the one deliberate exception** to the ASCII-output
+  convention, recorded in rules.md, develop.md's conventions note, and
+  the module head (pipe with UTF-8 on Windows).
+- **A river tile is land.** The overlay never changes terrain — "mostly
+  land, with the hard-to-cross river", as specified — so the ocean
+  rules ignore rivers entirely, and the paid-crossing marker has a
+  future home.
+- **"2-3 continents, most of the landmass" made checkable:** second
+  component at least 10% of land, top three at least 78%, at most 8
+  specks under 12 tiles. "Some islands desirable" stayed SOFT (zero
+  islands is a legal world; the placement bias makes them common).
+- **The playable corner is exactly 40 columns wide** — the display
+  width writing.md already enforces; the full map is a dev view and may
+  be wider.
+- **The lift is a cross,** not a floating panel: the space border runs
+  the full width and height, so tiles stay column-aligned across the
+  gap and the corner still reads against the rest of the world.
+- **A merged mouth is legal.** Two rivers may share an estuary tile
+  (the junction tee at the coast); the grammar allows it and the eye
+  reads it as a confluence, so no rule forbids it.
+
+Nothing in session.py, places.py, or quests.py moved. The hook-up — a
+tile per Area, travel off the grid, the map as the macro display,
+worldgen placing settlements ON the map — is plan.md's item, opened
+this session with its open calls listed.
