@@ -391,6 +391,13 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
     "raiders-out": "raiders are on the border",
+    # ...the rest of what the three lands sell each other (2026-08-15)
+    "timber-dear": "there is no northern timber to be had",
+    "credit-dry": "the southern banks have stopped lending",
+    "southern-goods-short": "the southern road brings nothing",
+    "horses-dear": "remounts are scarce and dear",
+    "hides-dear": "hides and wool are short",
+    "swords-gone": "the hired clans have gone home",
     # ...the religion and magic rung's own edges (2026-08-11)
     "schism-near": "the two rites are one insult apart",
     "hostage-given": "an heir of this land is a hostage abroad",
@@ -426,6 +433,12 @@ STATE_MENU = {
     # derived (the edges' end of the table)
     "grain-scarce": {"lodging": 1.50, "goods": 1.15},
     "raiders-out": {"goods": 1.20, "lodging": 1.20},
+    "timber-dear": {"goods": 1.20, "lodging": 1.15},
+    "credit-dry": {"goods": 1.20, "steel": 1.25},
+    "southern-goods-short": {"goods": 1.35, "healer": 1.20},
+    "horses-dear": {"goods": 1.15, "steel": 1.10},
+    "hides-dear": {"goods": 1.25},
+    "swords-gone": {"steel": 1.20, "goods": 1.10},
     # held (the states a card leaves standing after its own terms lapse)
     "harvest-failed": {"lodging": 1.60, "goods": 1.20},
     "bread-dear": {"lodging": 1.25},
@@ -3409,6 +3422,37 @@ RELATIONS = (
     # A clan with no herd goes where the grain is.
     relation("tergal", "firascir", "raid", when=("herd-loss", "raiding"),
              then="raiders-out", because="the dying Tergal herds"),
+    # -- what each land SELLS the others (2026-08-15, the Europe closure) -- #
+    # rules.md's three-country economy in full: Firascir sells grain and
+    # TIMBER, Mortellaria sells COIN and the SOUTHERN TRADE (its luxury
+    # shelf and the road that carries it are one flow, so they are one
+    # edge), Tergal sells HORSES, LIVESTOCK and MILITARY SERVICE. Each edge
+    # is the same shape as the granary above: a state the seller is holding
+    # that stops the goods, and the word the buyer wears while it does.
+    # THE FOREST: the treeless steppe roofs itself with northern wood.
+    relation("firascir", "tergal", "timber",
+             when=("forest-law", "wildfire", "burned-over"),
+             then="timber-dear", because="the closed Firascir woods"),
+    # THE BANKS: the northern crowns borrow where the coin is.
+    relation("mortellaria", "firascir", "coin",
+             when=("paper-worthless", "shares-mad"),
+             then="credit-dry", because="the shut Mortellarian banks"),
+    # THE SOUTHERN ROAD: salt, silk and glass all ride the same wagons.
+    relation("mortellaria", "tergal", "trade",
+             when=("salt-revolt", "quarter-ruined"),
+             then="southern-goods-short",
+             because="the broken southern trade"),
+    # THE HERDS, sold twice: the remounts north, the hides and wool south.
+    relation("tergal", "firascir", "horses",
+             when=("herd-loss", "grass-gone"),
+             then="horses-dear", because="the dying Tergal herds"),
+    relation("tergal", "mortellaria", "livestock",
+             when=("herd-loss", "grass-gone"),
+             then="hides-dear", because="the dying Tergal herds"),
+    # THE HIRED CLANS: a war at home is a company the south cannot buy.
+    relation("tergal", "mortellaria", "service",
+             when=("mourning-war", "raiding"),
+             then="swords-gone", because="the clans' own war"),
     # -- politics (2026-08-10) -------------------------------------------- #
     # THE DIPLOMATIC INSTRUMENTS -- how wars end and stay ended. Each is a
     # state one land holds and a state the other derives off it, and each

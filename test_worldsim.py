@@ -1709,10 +1709,29 @@ class TheEconomyFloorContent(unittest.TestCase):
             self.assertTrue(good, polity)
 
     def test_the_relations_table_contains_only_surviving_realms(self) -> None:
-        self.assertEqual(len(worldsim.RELATIONS), 8)
         for edge in worldsim.RELATIONS:
             self.assertIn(edge["from"], places.LAND_SPECS)
             self.assertIn(edge["to"], places.LAND_SPECS)
+
+    def test_every_land_sells_what_the_rules_say_it_sells(self) -> None:
+        """rules.md's three-country economy, edge by edge. A bare COUNT of
+        the table said nothing about whether the goods were there -- the
+        Europe closure shipped with only the granary built and the count
+        green (2026-08-15)."""
+        sells = {"firascir": {"grain", "timber"},
+                 "mortellaria": {"coin", "trade"},
+                 "tergal": {"horses", "livestock", "service"}}
+        for polity, goods in sells.items():
+            sold = {e["kind"] for e in worldsim.RELATIONS
+                    if e["from"] == polity}
+            self.assertTrue(goods <= sold, f"{polity} does not sell {goods - sold}")
+        # ...and every export is FELT: a derived word with a price on it.
+        for edge in worldsim.RELATIONS:
+            if edge["kind"] not in {g for gs in sells.values() for g in gs}:
+                continue
+            self.assertIn(edge["then"], worldsim.STATE_WORDS)
+            self.assertTrue(worldsim.STATE_MENU.get(edge["then"]),
+                            f"{edge['then']} reaches no shelf")
         # ...and the drought stands beside the failed harvest at the head
         # of the grain edges (plan.md's own instruction to this session).
         grain = [e for e in worldsim.RELATIONS

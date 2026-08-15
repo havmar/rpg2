@@ -490,7 +490,7 @@ class TheThreeHumanCountries(unittest.TestCase):
     HOMELANDS = {"firascir", "mortellaria", "tergal"}
     REMOVED = re.compile(
         r"\b(?:elf|elves|elven|dwarf|dwarves|dwarven|goblin|goblins|"
-        r"orc|orcs|orcen|ensimaa|dvarvengrond|gibili|middenland)\b",
+        r"orc|orcs|orcish|ensimaa|dvarvengrond|gibili|middenland)\b",
         re.IGNORECASE)
 
     @staticmethod

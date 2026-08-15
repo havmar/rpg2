@@ -5125,17 +5125,28 @@ def travel_target(state: dict, want: str) -> tuple[dict, dict] | None:
     if want.strip().lower() in world["tiles"]:      # a raw Tile ID (DM/debug)
         tile = world["tiles"][want.strip().lower()]
         return tile, _natural_area(world, tile)
-    low = want.lower()
+    low = want.strip().lower()
     want_slug = re.sub(r"[^a-z0-9]+", "-", low).strip("-")
-    area = next((a for a in all_areas(world)
-                 if a.get("known")
-                 and (low in a["key"].lower()
-                      or low in a["name"].lower()
-                      or (want_slug and want_slug in a["key"].lower()))), None)
+    # THE WHOLE NAME FIRST (2026-08-15). Substring matching is the
+    # convenience, not the rule: `travel Rome` must reach Rome even when
+    # some other known Area merely CONTAINS the word, so an exact name (or
+    # key, or slug) wins outright and the loose pass only runs when nothing
+    # answered to its full name.
+    known_areas = [a for a in all_areas(world) if a.get("known")]
+    area = next((a for a in known_areas
+                 if low in (a["name"].lower(), a["key"].lower())
+                 or (want_slug and want_slug == a["key"].lower())), None)
+    if area is None:
+        area = next((a for a in known_areas
+                     if low in a["key"].lower()
+                     or low in a["name"].lower()
+                     or (want_slug and want_slug in a["key"].lower())), None)
     if area is not None:
         return world["tiles"][area["tile"]], area
-    tile = next((world["tiles"][tid] for tid in world["tile_order"]
-                 if low in world["tiles"][tid]["name"].lower()), None)
+    tiles = [world["tiles"][tid] for tid in world["tile_order"]]
+    tile = next((t for t in tiles if low == t["name"].lower()), None)
+    if tile is None:
+        tile = next((t for t in tiles if low in t["name"].lower()), None)
     if tile is not None:
         return tile, _natural_area(world, tile)
     known = sorted({a["name"] for a in all_areas(world)
@@ -5204,7 +5215,13 @@ def _walk_edge(state: dict, dest: dict, arrival: dict) -> str:
     days = edge_days(origin, dest)
     clear_sighting(state)
     worldsim.roll_world(world, state["clock"].day)   # quote TODAY's fords
-    days += _road_costs(state, origin, dest)
+    sea = _sea_leg(world, origin["id"], dest["id"])
+    # A PASSAGE PAYS NO ROAD (2026-08-15). Both halves of the road's price
+    # are land: the ford that is out and the toll-men at the bridge. Neither
+    # is in the water, so a sea leg skips them -- its weather is the nights
+    # themselves (exposure sky, the storm's shelter roll) as the MVP asks.
+    if not sea:
+        days += _road_costs(state, origin, dest)
     where = tile_coordinate(dest["row"], dest["column"])
     label = arrival["name"] if arrival["kind"] == "settlement" else where
     print(f"The party goes {direction} to {label} -- {days} day(s).")
@@ -5225,7 +5242,6 @@ def _walk_edge(state: dict, dest: dict, arrival: dict) -> str:
         night_upkeep(state, log)
     print_play(log)
     print_board_clock(state)    # the road costs days, and days cost jobs
-    sea = _sea_leg(world, origin["id"], dest["id"])
     existing = {area["id"] for area in settlements(world)}
     for settlement in reveal_tile(world, dest, day=state["clock"].day):
         if settlement["id"] not in existing:

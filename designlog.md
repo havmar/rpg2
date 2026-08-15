@@ -4827,3 +4827,70 @@ run. That is the wound track and the satisfaction track both working as
 designed, but the fixed map made the consequence much sharper: the road is
 now genuinely long, so "walk somewhere and recruit" costs a dozen days a
 wounded PC does not have. Worth watching in play before touching anything.
+
+---
+
+## 2026-08-15 — Post-build review of the Europe five (fixes)
+
+**Where it started.** A read-over of the five shipped Europe commits
+against the contract they were built from: did the build follow the plan,
+is it complete, is it sound. The answer was yes on almost everything —
+the pinned census, the components, the city table, the name pools, the
+edge-cost model and the two radii all re-derive from the raw map and the
+plan text, 794 tests pass, and a fresh smoke game plays the loop. Four
+things did not survive the read.
+
+**The DM's forged job was counted as the board's own work.**
+`is_ordinary_posting` has exempted the forged family since Local Quest
+Geography, keyed on `quest["forced"]` — and nothing ever set that key.
+`forge_quest` built its dict without it, so the flag was unreachable and
+the only test covering it fed a hand-written `{"forced": True}` the
+builder never produced. Two things broke in play: a forged job at a shut
+board vanished from `board_forecast` (the forecast clamps ordinary work
+to a capacity of zero), and a forged job at an open board ate one of that
+board's generated slots. One line in `forge_quest`, plus a test that
+takes its quest from the builder instead of a literal.
+
+**The relations table was a third of its contract.** The Human World
+Contraction spec named eight export lines — Firascir grain and timber,
+Mortellaria coin, luxury and southern trade, Tergal horses, livestock and
+military service. Only the granary was ever rebuilt: the edges carrying
+the other seven all pointed at deleted countries and were dropped rather
+than re-homed, and nothing caught it, because the validator only asks that
+some relation reach each land and the test pinned a bare `len(RELATIONS)
+== 8`. The six missing edges are now authored off states their seller
+already holds (`forest-law`, `paper-worthless`, `salt-revolt`,
+`herd-loss`, `mourning-war`...), each deriving a new priced word, so every
+one is felt on a shelf rather than merely present in a table. Luxury goods
+and the southern road are deliberately ONE edge: they are one flow, and a
+second state saying the same thing would be content for the count's sake.
+**The count assertion is replaced by a coverage assertion** — the table is
+now tested against what each land SELLS, which is the thing the spec
+actually said.
+
+**A passage paid the road's price.** Both halves of `_road_costs` are
+land — the ford that is out and the toll-men at the bridge — and a sea leg
+ran them anyway, so a mid-ocean crossing could be charged gold at a bridge
+that is not there. Sea legs now skip it; the passage's weather is the
+nights themselves, which is all the MVP asked for.
+
+**`travel` matched too loosely.** Any known Area whose name merely
+CONTAINED the query could answer to it, and Tile names are coordinates
+that contain each other (`R09C1` is inside both `R09C10` and `R09C18`).
+The whole name — exact on name, key or slug — now wins outright, and the
+substring pass only runs when nothing answered to its full name.
+
+**Also swept:** `quests.land_areas` was the one lenient reader left (an
+unknown country returned `[]` instead of raising); the species sweep's
+regex said `orcen` where it meant `orcish`; develop.md's places.py entry
+still listed `OPPOSITE_DIRECTION` and `MAP_OVERLAY_PRIORITY` as live
+twenty lines above its own note that they were deleted; and the density
+table lived only in code, so rules.md now carries it beside the board
+rates it already had.
+
+**What this says about the build.** Every one of the four real defects sat
+behind a test that was green — a flag tested through a literal, a table
+tested by length, a cost path tested only on land, a matcher tested only
+with whole names. The lesson worth keeping: **assert the contract, not the
+shape.** A test that counts is a test that will pass while the thing it
+counts is wrong.

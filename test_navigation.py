@@ -338,6 +338,24 @@ class TheGridWalk(unittest.TestCase):
         self.assertEqual(arrived["kind"], "settlement")
         self.assertEqual(arrived["name"], "Prague")
 
+    def test_a_whole_name_beats_a_place_that_merely_contains_it(self
+                                                                ) -> None:
+        """Substring matching is the convenience, not the rule: a Tile
+        named for its own coordinate contains every shorter coordinate, so
+        `travel R09C1` must not outrank an exact `R09C1x` -- and an exact
+        city name must win outright."""
+        state = _state(self.world,
+                       self.world["areas"][
+                           self.world["tiles"][PARIS]["natural_area"]])
+        tile, area = session.travel_target(state, "Prague")
+        self.assertEqual(tile["id"], PRAGUE)
+        self.assertEqual(area["name"], "Prague")
+        # the natural Area of R09C1 does not exist; R09C10 and R09C18 both
+        # contain "R09C1", and the exact spelling must pick its own Tile.
+        for want, expect in (("R09C10", PARIS), ("R09C18", PRAGUE)):
+            tile, _ = session.travel_target(state, want)
+            self.assertEqual(tile["id"], expect, want)
+
     def test_an_unknown_ordinary_settlement_is_not_a_destination(self
                                                                  ) -> None:
         hidden = next(slot for slot in self.world["settlement_slots"].values()
@@ -406,6 +424,28 @@ class TheSeaPassage(unittest.TestCase):
         self.assertEqual(self.state["clock"].day,
                          day + places.edge_days(self.coast, self.sea))
         self.assertEqual(rolled, [])            # no road table at sea
+
+    def test_a_passage_pays_no_toll_and_waits_on_no_ford(self) -> None:
+        """Both halves of the road's price are land. A ship does not queue
+        at a bridge, so a sea leg asks `_road_costs` for nothing."""
+        day = self.state["clock"].day
+        gold = self.state["purse"].gold
+        charged: list = []
+        out = io.StringIO()
+        with _save_sandbox(), \
+                unittest.mock.patch("session.load", return_value=self.state), \
+                unittest.mock.patch("worldsim.road_charges",
+                                    side_effect=lambda *a, **k:
+                                    charged.append(a) or (0, [])), \
+                unittest.mock.patch("worldsim.travel_delay",
+                                    side_effect=lambda *a, **k:
+                                    charged.append(a) or (0, [])), \
+                redirect_stdout(out):
+            session.cmd_travel(argparse.Namespace(dest=[self.sea]))
+        self.assertEqual(charged, [])           # neither half was consulted
+        self.assertEqual(self.state["purse"].gold, gold)
+        self.assertEqual(self.state["clock"].day,
+                         day + places.edge_days(self.coast, self.sea))
 
     def test_the_sea_tile_is_a_real_place_with_a_natural_area(self) -> None:
         tile = self.world["tiles"][self.sea]
