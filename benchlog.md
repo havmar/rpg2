@@ -2097,3 +2097,47 @@ smaller-slate effect: fewer, closer, better-priced jobs.
 this session. The full suite is 787 tests (730 after Grid Navigation and
 Map UI; `test_quest_geography.py` adds 56 and the rewritten road-inside-the-
 window class in `test_turnin.py` one).
+
+## 2026-08-15 — Europe MVP Closure: the career re-measured, nothing tuned
+
+`bench_quests --part career`, 300 careers, against this morning's Local
+Quest Geography column (also 300). The closure session changed no combat,
+pay, threat or refill constant; what it changed that the career sim can
+see is the **settlement templates** (a slot is now cut from a template its
+Tile can honor, so a coast Tile draws a harbour town and a plain inland one
+draws from the templates that ask for nothing) and the **world layer's
+catalog** (the three deleted countries' packets are physically gone, and
+three weather cards were rescued into the surviving countries).
+
+| | now (300) | Local Quest Geography (300) |
+|---|---:|---:|
+| reached L20 | 0.0% | 1.7% |
+| L5 / L8 / L11 | 83 / 65 / 34 | 87 / 66 / 35 |
+| L14 / L17 | 8 / 1 | 9 / 4 |
+| median death level | 9 | 9 |
+| turn-ins quick/on time/late/expired | 30 / 53 / 13 / 4 | 30 / 52 / 13 / 4 |
+| expired postings per career | 296.8 | 303.9 |
+| board exhausted | 0.0% | 0.0% |
+| forced-up picks per career | 0.00 | 0.00 |
+| live board at the end (median) | 51 open | 51 open |
+
+**Flat.** The turn-in band split is identical to the point, the median
+death level is identical, the two starvation guards both still read zero,
+and the median career still ends with 51 open jobs standing. L5/L8/L11
+move 4/1/1 points, which is inside the noise this cell has shown at n=300
+all along. The L20 and L17 cells are five careers and twelve careers
+respectively in the old column and zero and three in this one — the same
+tail cell the last two entries both warned not to read.
+
+Template fitting was the change most likely to move something, because it
+changes which livelihood overlay and which required Sites a generated
+settlement gets. It moved nothing measurable: the board's capacity is the
+tier's, not the template's, and pay derives from level and distance.
+
+**Combat was not re-measured against a change, because there was none:**
+`rpg.py`, `sites.py` and `weapons.py` are byte-identical across this
+session. `bench_bestiary` and `bench_party` were run as a sanity check and
+print their usual columns (2x Warlord at the annotated L19: 69.2% win /
+25.9% wipe; the barrow at rank 0: 97.3 / 50.8 / 7.6 / 0.5% wipe by party
+size). The full suite is 794 tests (787 before; `test_places.py` adds
+seven).

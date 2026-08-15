@@ -1,4 +1,19 @@
-"""Verification for fixed Europe geography and procedural places."""
+"""The fixed Europe world's contract suite.
+
+Two parts, both describing the MODEL rather than the sessions that built
+it. *The geography and its places*: the pinned map census and country
+partition, the Tile/Area hierarchy and its cardinal links, the historical
+city overlay and the three capitals, the rolled slot density, IDs and
+lazy names, derived seeds, name exhaustion, the uniform start, finite
+discovery, the templates a Tile can honor and their stability across the
+save, the required services and Room content, quest routing, hidden
+facts, the ASCII and 40-column rules, and one broken world per clause of
+`places.validate_world`. *The three human countries*: the closed
+homeland set, records that carry a homeland and never a race, the war
+each country's own packet supports, the deck every country is owed, and
+the sweep for removed peoples and realms over the runtime catalogs, a
+whole built world, and the play-facing documents.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +29,7 @@ import places
 import quests
 import rpg
 import session
+import sites
 import story
 import worldsim
 
@@ -213,12 +229,107 @@ class PlaceGenerationTests(unittest.TestCase):
         for room in world["rooms"].values():
             self.assertTrue(room["contents"], room["id"])
 
-    def test_catalog_no_longer_owns_world_adjacency(self) -> None:
-        self.assertFalse({"land_order", "adjacency", "travel_links",
-                          "water_links"}.intersection(places._CATALOG))
+    def test_the_map_owns_geography_and_the_catalog_owns_content(self) -> None:
+        """The source-data boundary. `resources/europe_map.txt` is the only
+        thing that says where anything is; the catalog is culture, roles,
+        skeletons and Room layouts, and carries no position at all."""
+        self.assertFalse(set(places.OBSOLETE_CATALOG_KEYS)
+                         .intersection(places._CATALOG))
         self.assertFalse({"links", "water_links"}.intersection(self.world))
         for country in self.world["lands"].values():
             self.assertFalse({"neighbors", "links"}.intersection(country))
+        for polity, land in places.LAND_SPECS.items():
+            self.assertFalse(set(places.OBSOLETE_LAND_KEYS).intersection(land),
+                             polity)
+            self.assertTrue(land["settlement_templates"], polity)
+
+    def test_a_settlement_is_cut_from_a_template_its_tile_can_honor(self
+                                                                    ) -> None:
+        """A harbour needs a coast, a ford needs a river, a hill town needs
+        a mountain at its foot -- and a plain inland Tile still gets a
+        settlement, from the templates that ask for nothing."""
+        seen = set()
+        for seed in range(41, 45):
+            world = places.create_geography(seed)
+            for tid in [t for t in world["tile_order"]
+                        if world["tiles"][t]["settlement_slots"]
+                        and not world["tiles"][t]["visited"]]:
+                places.reveal_tile(world, tid, day=1)
+            for area in world["areas"].values():
+                if area["kind"] != "settlement":
+                    continue
+                tile = world["tiles"][area["tile"]]
+                spec = (places.LAND_SPECS[tile["country"]]
+                        ["settlement_templates"])
+                fits = set(spec[area["role"]]["fits"])
+                self.assertLessEqual(fits, set(tile["tags"]),
+                                     f"{area['name']} / {area['role']}")
+                seen.add((tile["country"], area["role"]))
+        for polity, land in places.LAND_SPECS.items():
+            for role in land["settlement_templates"]:
+                self.assertIn((polity, role), seen)
+
+    def test_the_template_choice_is_stable_across_the_save(self) -> None:
+        world = places.create_geography(42)
+        target = next(t for t in world["tiles"].values()
+                      if t["settlement_slots"] and not t["visited"])
+        clone = json.loads(json.dumps(world))
+        self.assertEqual(
+            [(a["role"], a["description"])
+             for a in places.reveal_tile(world, target, day=2)],
+            [(a["role"], a["description"])
+             for a in places.reveal_tile(clone, target["id"], day=7)])
+
+    def test_an_illegal_world_raises_where_it_is_made(self) -> None:
+        """validate_world's clauses, one broken world each. A reader is
+        never handed a world that breaks one of these."""
+        def broken(mutate):
+            world = copy.deepcopy(self.world)
+            mutate(world)
+            with self.assertRaises(ValueError):
+                places.validate_world(world)
+
+        def lose_natural(world):
+            world["tiles"]["tile/r01/c01"]["natural_area"] = None
+
+        def go_diagonal(world):
+            world["tiles"]["tile/r01/c01"]["neighbors"].append("tile/r02/c02")
+
+        def break_reciprocity(world):
+            tile = world["tiles"]["tile/r05/c05"]
+            world["tiles"][tile["neighbors"][0]]["neighbors"].remove(
+                "tile/r05/c05")
+
+        def populate_the_sea(world):
+            sea = next(t for t in world["tiles"].values()
+                       if t["biome"] == "sea")
+            land = next(t for t in world["tiles"].values()
+                        if t["settlement_slots"])
+            sea["settlement_slots"] = list(land["settlement_slots"])
+
+        def town_on_a_mountain(world):
+            tile = next(t for t in world["tiles"].values()
+                        if t["biome"] == "mountain"
+                        and t["settlement_slots"])
+            world["settlement_slots"][
+                tile["settlement_slots"][0]]["tier"] = "town"
+
+        def uncrown_paris(world):
+            slot = next(s for s in world["settlement_slots"].values()
+                        if s["name"] == "Paris")
+            slot["capital"] = False
+
+        def rename_a_city_tile(world):
+            world["tiles"]["tile/r14/c14"]["name"] = "R14C14"
+
+        def scramble_the_frame(world):
+            world["tile_order"] = world["tile_order"][::-1]
+
+        for mutate in (lose_natural, go_diagonal, break_reciprocity,
+                       populate_the_sea, town_on_a_mountain, uncrown_paris,
+                       rename_a_city_tile, scramble_the_frame):
+            with self.subTest(mutate.__name__):
+                broken(mutate)
 
     def test_name_exhaustion_is_persisted_per_country_and_tier(self) -> None:
         world = places.create_geography(131)
@@ -372,7 +483,10 @@ class PlaceGenerationTests(unittest.TestCase):
                                 for line in wrapped.splitlines()))
 
 
-class HumanWorldContractionTests(unittest.TestCase):
+class TheThreeHumanCountries(unittest.TestCase):
+    """Everybody is human and the world has exactly three countries: the
+    model, not the contraction that produced it."""
+
     HOMELANDS = {"firascir", "mortellaria", "tergal"}
     REMOVED = re.compile(
         r"\b(?:elf|elves|elven|dwarf|dwarves|dwarven|goblin|goblins|"
@@ -384,10 +498,10 @@ class HumanWorldContractionTests(unittest.TestCase):
         if isinstance(value, dict):
             for key, item in value.items():
                 yield key
-                yield from HumanWorldContractionTests._walk(item)
+                yield from TheThreeHumanCountries._walk(item)
         elif isinstance(value, (list, tuple, set)):
             for item in value:
-                yield from HumanWorldContractionTests._walk(item)
+                yield from TheThreeHumanCountries._walk(item)
         elif isinstance(value, str):
             yield value
 
@@ -418,22 +532,80 @@ class HumanWorldContractionTests(unittest.TestCase):
     def test_active_catalogs_name_no_removed_people_or_realms(self) -> None:
         active = (
             places._CATALOG,
+            places.AREA_SPECS,
+            places.SETTLEMENT_SITE_SPECS,
+            places.NATURAL_SITE_SPECS,
+            places.SETTLEMENT_NAMES,
+            people.NAMES,
             quests.TEMPLATES,
+            quests.DELIVERY_TEMPLATES,
             story.CONQUESTS,
+            karma.POSSE_BANDS,
             worldsim.CARDS,
             worldsim.RELATIONS,
             worldsim.FACTS,
             worldsim.OPTIONS,
             worldsim.CONSTITUTIONS,
             worldsim.TENSIONS,
+            worldsim.FACTIONS,
+            worldsim.FACTION_EDGES,
+            worldsim.STATE_WORDS,
             worldsim.STATE_MENU,
             worldsim.STATE_ENCOUNTERS,
             worldsim.STATE_MARKS,
             [weapon.description for weapon in rpg.WEAPONS.values()],
+            [spec.display for spec in sites.FOES.values()],
         )
         offenders = sorted({text for text in self._walk(active)
                             if self.REMOVED.search(text)})
         self.assertEqual(offenders, [])
+
+    def test_a_whole_built_world_names_no_removed_people_or_realms(self
+                                                                   ) -> None:
+        """The catalogs are the source; this is what actually reaches a
+        player -- a world built, walked into and read."""
+        world = quests.generate_world(58)
+        for tid in [t for t in world["tile_order"]
+                    if world["tiles"][t]["settlement_slots"]
+                    and not world["tiles"][t]["visited"]][:40]:
+            places.reveal_tile(world, tid, day=1)
+        offenders = sorted({text for text in self._walk(world)
+                            if self.REMOVED.search(text)})
+        self.assertEqual(offenders, [])
+
+    def test_the_play_facing_documents_name_no_removed_people(self) -> None:
+        """dm.md, writing.md and the worked scene page are read at the
+        table. The dev docs and the spec companions are history and are
+        deliberately not swept."""
+        for name in ("dm.md", "writing.md", "scene-example.md"):
+            with open(name, encoding="utf-8") as handle:
+                text = handle.read()
+            self.assertIsNone(self.REMOVED.search(text), name)
+
+    def test_each_country_wages_the_war_its_own_packet_supports(self
+                                                                ) -> None:
+        """The conquest variants are not interchangeable. Mortellaria owns
+        the death rite, the tomb cults and the academy's necromancers, so
+        the Undead Kingdom is hers; Firascir's own religion cards are the
+        accusations made against that rite, so its war is the Golden
+        Empire's machines; Tergal's is the Iron Horde."""
+        self.assertEqual(
+            {polity: spec["banner"]
+             for polity, spec in story.CONQUESTS.items()},
+            {"firascir": "the Golden Empire",
+             "mortellaria": "the Undead Kingdom",
+             "tergal": "the Iron Horde"})
+
+    def test_the_world_layer_owes_every_country_a_deck(self) -> None:
+        for polity in self.HOMELANDS:
+            for track in worldsim.TRACKS:
+                self.assertTrue([c for c in worldsim.CARDS
+                                 if c["track"] == track
+                                 and worldsim.in_land(c, polity)],
+                                (polity, track))
+            self.assertTrue(worldsim.FACTS_BY_LAND[polity], polity)
+            self.assertTrue([e for e in worldsim.RELATIONS
+                             if polity in (e["from"], e["to"])], polity)
 
     def test_every_story_variant_builds_all_four_waves(self) -> None:
         for n, aggressor in enumerate(story.AGGRESSORS):

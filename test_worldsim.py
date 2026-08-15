@@ -381,6 +381,13 @@ class TheRecordShapes(unittest.TestCase):
                 self.assertTrue(deck, (polity, track))
 
     def test_a_slot_member_is_never_set_as_a_free_state(self) -> None:
+        """The exclusive-slot discipline. STATE_SLOTS is EMPTY since the
+        human contraction -- both authored slots belonged wholly to deleted
+        countries -- so this guard is currently watching nothing, which is
+        the state the assertion below pins. The frame stays because the next
+        country packet plugs a slot in with one row, and on that day this
+        test is what stops it being set as a free state."""
+        self.assertEqual(worldsim.SLOT_OF, {})
         for card in worldsim.CARDS:
             state = card["outlets"].get("state") or {}
             for group in ("set", "while", "clear"):
@@ -636,7 +643,8 @@ class TheDeckDraw(unittest.TestCase):
 class TheCardsClock(unittest.TestCase):
     """What a pulse leaves behind when its day-stamp runs out."""
 
-    def test_a_while_state_comes_off_and_a_slot_stands(self) -> None:
+    def test_a_while_state_comes_off_and_the_mark_it_left_stands(self
+                                                                 ) -> None:
         world = _world()
         layer = _fire(world, "tergal", "tergal/herd-fails", 10)
         held = lambda: [s["id"] for s in worldsim.held_states(world,

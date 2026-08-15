@@ -4627,3 +4627,203 @@ positions became legal `session._area_position` records.
 board supply fell 22% and both starvation guards held — zero exhausted
 boards, zero forced-up picks, 51 open jobs standing at the median career's
 end. Nothing was tuned.
+
+---
+
+## 2026-08-15 — Europe MVP Closure (the fifth and last Europe session)
+
+The Europe rework's closing session: delete the scaffolding four staged
+sessions left behind, audit what a player can actually read, tighten the
+validation, reshape the tests around the model rather than the migration,
+and prove the whole loop in a played game. plan.md's Europe contract is
+emptied by this entry.
+
+### What the closure found
+
+**The contraction had never actually happened.** The Human World
+Contraction session shipped by FILTERING: `worldsim.py` still held the
+Ensimaa, Dvarvengrond and Gibili packets in full, and five comprehension
+filters plus `_surviving_cards` and `_prune_unreachable_cards` cut them
+out at import. About 1500 lines of cards, factions, constitutions,
+tensions, relations, facts, options and state vocabulary for three
+countries that do not exist, and — worse — a `validate_content` that was
+policing a catalog somebody else had already cleaned behind its back.
+
+**The place catalog was still the old world's geography, working as a
+template source.** This was the find of the session and it is the one a
+player would have hit in the first hour. `place_catalog.json` kept the
+six-Land census — eight named Firascir settlements, four Mortellarian,
+four Tergal — and `_settlement_template` used those records as templates
+while `materialize_slot` overwrote only the NAME. So a generated Firascir
+town called Tomburgh was cut from the Walhaven record and came out
+containing a WALHAVEN SMITHY. Warsaw described itself as guarding "the
+Flumenpur crossing" with "traders from Caelum" camped outside its western
+wall — a river and a country the map does not have. Dublin and Amsterdam
+shared a description word for word. Every ordinary settlement in Europe
+carried one of sixteen descriptions asserting a geography that had been
+deleted a session earlier.
+
+**The conquest variants were on the wrong countries.** plan.md's contract
+says Firascir is the Golden Empire and Mortellaria the Undead Kingdom;
+`story.py` and `rules.md` both had the first two swapped. The tiebreak is
+not the contract but the world layer: Mortellaria owns the death rite, the
+tomb cults, `necromancy-open` and the academy's necromancers, and
+Firascir's own religion cards are the ACCUSATIONS made against that rite.
+A deathless Firascir contradicts its own deck. Fixed to the contract.
+
+### What shipped
+
+**worldsim.py lost 1526 lines and gained a contract.** The three packets
+are physically gone — 56 cards, 22 factions, three constitution tables,
+three tension tables, their standing tensions, 22 faction edges, 14
+relations, 10 facts, 5 options and 62 words of state vocabulary — and so
+are the filters, so import-time validation is now the only thing between
+the file and a bad row. Proof the cut was surgical: the live catalog was
+snapshotted before and after, and every surviving record is identical.
+
+Three cards were rescued rather than deleted, because their scope was
+land-specific by accident rather than by identity. `weather/wildfire` and
+`weather/green-again` — the drought's own consequence and the scar that
+outlives it — become ANY_LAND: every surviving country has woods and a dry
+summer, and the drought card that feeds them already was. `weather/smog`
+moved to Firascir as the close-built northern town's own hearth and forge
+smoke, reworded off its mill origins; it is the SOLE producer of `smog`,
+which is the one sky a roof does not keep out (`rpg.INDOOR_SKY`), so
+deleting it would have orphaned a shipped engine mechanic and the
+exposure rule that reads it. It fired in the smoke game on day 9, which is
+how we know.
+
+`firascir/franchise` was deleted instead: its producer was a Gibili
+relation, so `_prune_unreachable_cards` had been silently dropping it
+since the contraction. Live catalog: **107 cards** (was 104 with three
+rescues and one deletion), 8 relations, 16 facts, 7 options, 27 faction
+edges, 26 factions (was 48).
+
+**The catalog became content.** `place_catalog.json` is restructured
+around `settlement_templates`: a role per settlement kind, each with its
+tier, the Tile tags it `fits`, its own tags, a description and its
+required Sites. The whole fixed census is gone. Nothing in the file now
+names a position, a river, a region or a neighbouring country — a
+template's description has to be true of every Tile its `fits` admits,
+because it will be read at all of them. Site names lost the proper nouns
+they carried (TOMBURGH SMITHY -> TOWN SMITHY, FLUMENPUR BRIDGE -> RIVER
+BRIDGE, CAELUM ROAD -> WEST ROAD), and CITY HALL became TOWN HALL, there
+being no city subtype.
+
+**`_settlement_template` chooses by fit**, which plan.md asked for
+("a generated settlement chooses a fitting country/tier role
+deterministically") and the staged build had never wired: only roles whose
+`fits` tags the Tile carries are in the draw, and a Tile that fits none
+draws from the roles that ask for nothing — which is why
+`validate_catalog` now requires each country to keep one of those per
+tier. The pick stays `slot["seed"] % n`, so it is stable across
+materialization and the save.
+
+**Validation says the contract out loud.** `places.validate_world` runs at
+the end of `create_geography` and asserts plan.md's cross-cutting
+invariants: the row-major 540-Tile frame, a natural Area and a real
+country on every Tile, reciprocal cardinal links with no diagonals and
+nothing off-frame, no settlement at sea, no ordinary town on a mountain,
+each historical Tile carrying its declared country, biome and its one
+authored town, unique slot ids registered on both their Tile and their
+country, exactly Paris/Rome/Kyiv flagged capital, and a start that is a
+materialized slot. `validate_catalog` grew the schema half: the old census
+must be gone, every tier covered, exactly one capital role, real Tile
+tags, no `city` anywhere. `worldsim._validate_three_countries` replaces
+the discipline the import filter used to provide by accident — every
+country owes a card on every track, standing lore, a relation that reaches
+it, and an environment profile to roll a sky from.
+
+**Dead branches.** `quests.NAME_PARTS` / `_settlement_name` (the old
+fragment-assembled naming), `places.area_id` / `CULTURE_PROFILES` /
+`MAP_OVERLAY_PRIORITY` / `OPPOSITE_DIRECTION`, worldsim's three orphaned
+authority hooks, `_ELF_TOUGHS` / `_GOBLIN_TOUGHS` (`_DWARF_TOUGHS` became
+`_GUNHANDS`, still used by `firascir/silver-vein`), and `places._room_pool`'s
+"human yard" matcher. `session.py`'s save readers stopped defaulting nine
+keys the writer always emits — the project has no save compatibility, so a
+save missing `wounds` is damaged, not old, and should raise.
+
+**Tests describe the model.** `HumanWorldContractionTests` became
+`TheThreeHumanCountries`; `test_catalog_no_longer_owns_world_adjacency`
+became `test_the_map_owns_geography_and_the_catalog_owns_content`. New:
+templates fit their Tiles across a four-seed sweep with every role
+reached, that choice surviving a save, one broken world per clause of
+`validate_world`, each country waging the war its own packet supports (the
+assertion that would have caught the swapped variants), and the
+removed-peoples sweep widened from twelve catalogs to twenty-three plus a
+whole built and walked-into world plus the play-facing documents. 794
+tests, green.
+
+### The calls this session had to settle
+
+- **The exclusive-slot frame stays, empty.** Both authored `STATE_SLOTS`
+  entries — the standing of a land's foreigners, the stage of its ore
+  deposits — belonged wholly to deleted countries. Re-homing the deposit
+  chain to Firascir was considered and rejected twice over: its gate is a
+  Dvarvengrond politics tension Firascir does not have, and
+  `firascir/silver-vein` already tells the found-seam story there. Deleting
+  the frame was rejected too — it is a shipped world-layer mechanic and
+  this session's invariants forbid changing one. So the table is empty, the
+  machinery and its validation stand, and `test_worldsim`'s guard now pins
+  the emptiness and says why, so it is not a silently vacuous test.
+- **`_CROWNED` stays a named tuple** although it is now all three
+  countries, so a later crownless country reads as an exception rather
+  than a silent inclusion.
+- **The spec companions are not rewritten.** `placegen.md` and
+  `worldsim.md` still describe six Lands and four removed peoples. Both
+  gained a HISTORICAL banner saying which parts are no longer the game and
+  which method still holds; neither was edited to match the present,
+  because project history is not edited. They are the only files the
+  removed-peoples test deliberately does not sweep.
+- **"City" is a fiction word, not a subtype.** The map legend still groups
+  historical towns as "cities" and the world layer's Mortellarian cards
+  still say "the city watch", because plan.md itself calls Rome and
+  Constantinople historical cities. What was removed is the `city` SUBTYPE
+  and every assertion that a generated settlement is one — the war heralds
+  now evacuate the capital, and `validate_catalog` rejects a `city` tier
+  or tag.
+
+### The MVP smoke game
+
+Seed 4242, level 2, played from `new` to a total party wipe on day 29,
+covering every item under plan.md's Goal and MVP proof.
+
+The random start was **Leehaven, a Firascir town on R09C15** — a
+coordinate Tile with a town and two villages on it, both villages posting
+nothing (the sparse-board roll). `map` drew the whole 30x18 grid at 33
+columns with the party, the terrain, the known cities and the Tile detail.
+The opening quest's target sat at **Prague, three days east**: the party
+walked basic -> river -> basic at one day an edge, cleared two rooms at
+the tollhouse road, walked home and turned in on day 7, inside a window
+the road was priced into. `go Sturworth` crossed to a sibling Area for no
+day; `explore` turned up a WOODCUTTER'S CAMP in the countryside. Two
+`travel north` legs put the party **on open water at R07C15**, and a later
+run west crossed the sea at R08C05 onto the **island** London stands on —
+both landmasses walked, not asserted. The re-homed smog card fired in
+Firascir and moved the healer's fee. Save and reload left tiles, slots,
+areas, sites, rooms, name reserves and both start keys byte-identical, and
+`validate_world` passes on the played save. A sweep of that save for
+removed peoples returns nothing.
+
+The rumor radius wanted a world with something to hear, so it was read on
+seed 19 (the seed `test_quest_geography` already uses): from **Shepham**,
+Dublin two days off posts a job and is heard, London three days off is in
+earshot but has a shut board and is correctly silent, and nothing beyond
+three days appears at all.
+
+### Two notes for the designer, from the chair
+
+**The template system will repeat itself, and that is not a bug to fix in
+code.** Leehaven and Prague are both `market_town` and read the same
+sentence. With four town roles and five village roles a country, any world
+with twenty settlements will double up. The DM narrating over it is the
+intended answer; if it ever grates, the cheap fix is more roles per
+country, not a generator.
+
+**A companion quitting mid-career is close to a death sentence now.**
+Rowan quit at Leehaven on day 7 with the PC at HP ceiling 5 and six
+wounds, and the solo leg that followed met a dire-wolf pack and ended the
+run. That is the wound track and the satisfaction track both working as
+designed, but the fixed map made the consequence much sharper: the road is
+now genuinely long, so "walk somewhere and recruit" costs a dozen days a
+wounded PC does not have. Worth watching in play before touching anything.

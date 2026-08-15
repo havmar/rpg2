@@ -1,10 +1,22 @@
 # RPG2 — Place Generation MVP Specification
 
-Status: **MVP implemented 2026-07-25**. This document preserves the complete
-content catalog and implementation contract behind the shipped pass.
-`places.py` and `place_catalog.json` are the runtime catalog/materializer;
-`rules.md` describes player-facing behavior. The optional special-feature,
-pirate, wilderness, and Caelum material below remains post-MVP.
+Status: **MVP implemented 2026-07-25**; **HISTORICAL for the world it
+describes since 2026-08-15** (the Europe map rework). This document
+preserves the complete content catalog and implementation contract behind
+the shipped pass. `places.py` and `place_catalog.json` are the runtime
+catalog/materializer; `rules.md` describes player-facing behavior. The
+optional special-feature, pirate, wilderness, and Caelum material below
+remains post-MVP.
+
+> **What in here is no longer the game.** Everything about SIX Lands, about
+> dwarf, elf, goblin and orc cultures and their name sounds and livelihood
+> overlays, about Land-to-Land travel links, and about a Land being an Area
+> is history: the world is a fixed 30x18 Europe of three human countries
+> (rules.md's World & Navigation add-on). This file is deliberately not
+> rewritten -- project history is not edited to match the present. What
+> still holds is the METHOD: the authored-vs-generated boundary, the
+> persistent feature and Room-content schema, the weighting, reveal,
+> mutation and seed rules, and the string-review discipline.
 
 The generator extends the persistent **Land -> Area -> Site -> Room** world
 tree already used by quests and navigation. It is meant to give the DM compact,

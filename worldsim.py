@@ -78,10 +78,11 @@ The shape, in the order the loop runs it:
 - **The states.** Day-stamped words on the land record, held through
   places.py's own state machinery (`add_state` / `clear_state`), so the
   world's states and a place's states are one vocabulary and one readout.
-  Some live in EXCLUSIVE SLOTS (a land holds one deposit stage, one
-  standing of its foreigners) -- setting a slot clears whatever it held.
+  A state may live in an EXCLUSIVE SLOT -- setting a slot clears whatever
+  it held -- though `STATE_SLOTS` is empty since the human contraction and
+  the frame is waiting on the next country packet.
 - **The relations.** Authored directed edges between lands: who eats whose
-  grain, who logs whose forest, whose mercenaries come when called. Never a
+  grain, who raids whose border, whose crowns are kin. Never a
   traded quantity -- a lookup. The states they DERIVE (a failed harvest in
   Firascir puts grain-scarce on everyone it feeds) are computed at read
   time and never stored, so an edge can be re-authored without a migration.
@@ -104,10 +105,9 @@ The shape, in the order the loop runs it:
   the admitting conditions already read what the last card left behind. The
   famine chain (a failed harvest leaves bread dear, and the dear bread is
   what the riot admits on), the forgers who move in after the bank fails,
-  the rush that follows the strike, the eviction that follows the elves
-  turning on their tenants, and the raid a dead pasture sends out are the
-  five shipped chains. One of them crosses a RELATION: the Gibili mills run
-  short of timber because the ELVES threw the loggers out.
+  and the raid a dead pasture sends out are the shipped chains. One of
+  them crosses a RELATION: a Tergal clan whose herds died raids the
+  Firascir grain the same failed harvest already made dear.
 - **The sky.** Every land rolls one weather word a day against its
   environment profile's distribution (`places.ENVIRONMENT_PROFILES`, whose
   climate sentence is what those weights say in numbers), tracking the WET
@@ -290,22 +290,6 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "note-hunt": "the note-hunters are out",
     "paper-pay": "wages are paid in paper",
     "coin-flush": "the colony fleet is in",
-    # Ensimaa
-    "craft-lost": "a master's work is lost",
-    "children-taken": "children are being taken",
-    "art-boom": "the art market is hot",
-    "eviction-on": "the evictions have started",
-    # Dvarvengrond
-    "strike": "the pits stand idle",
-    "claims-collide": "two clans claim one seam",
-    "rush-on": "the rush is on",
-    "caravan-due": "the food caravan is coming up",
-    # Gibili
-    "mills-stopped": "the mills have stopped",
-    "convoy-running": "the arms convoys are running",
-    "pistoleros": "the company police are hiring",
-    "mills-starved": "the mills have run out of timber",
-    "gadget-fair": "the gadget fair is on",
     # Tergal
     "herd-loss": "the herds are dying",
     "grass-gone": "the grass has not come back",
@@ -361,32 +345,16 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "salt-revolt": "the salt country is in revolt",
     "auto-da-fe": "the tribunal is staging its penance",
     "bandit-king": "a bandit king holds the tax roads",
-    "writ-revoked": "a great name has been struck off",
-    "search-on": "the search for the newborn crown is on",
-    "record-scandal": "the founders' record is in question",
-    "feral-band": "a band has gone feral in the reserve",
-    "hunters-out": "hunters have been sent after the exiles",
-    "staff-hunt": "the mortal staff are being counted",
     "hostage-guard": "the chiefs' sons ride in the guard",
     "sworn-brothers": "two chiefs are brothers by oath",
     "mourning-war": "the clans are raiding for people",
     "shaming-pole": "a pole is up with a name on it",
     "ghost-dance": "the ghost dance is in the camps",
-    "veins-married": "two clans are marrying their claims",
-    "claim-frozen": "a dead founder has refused",
-    "arbitration": "the king must rule on the seam",
-    "general-strike": "the whole country has stopped",
-    "plot-seeded": "the police have a man in every cell",
-    "war-fever": "the papers are shouting for war",
-    "barricades-up": "a district is behind barricades",
-    "machine-breakers": "the engines are being smashed",
-    "story-unprinted": "a story is worth killing to stop",
     # The succession cluster (the war layer's feed)
     "regency-on": "an infant wears the crown",
     "claim-pressed": "three branches claim the inheritance",
     "pretender": "a dead king has come back",
     "recognition-bought": "the neighbours accept the heir",
-    "conclave-locked": "the electors have not agreed in a year",
     "tanist-scramble": "every able kinsman is counting spears",
     # Religion (2026-08-11) -- worship, rite and the week's own calendar.
     # Politics kept church POWER; these are what a parish actually does.
@@ -401,23 +369,11 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "dead-abroad": "the dead are guests tonight",
     "two-hoods": "two burial clubs want one corpse",
     "debate-riot": "the theology debate has gone to clubs",
-    "mission-open": "the sun-church mission is open",
-    "seeress-here": "the seeress holds the high seat",
-    "tombs-open": "a tomb gallery has been opened",
-    "knockers-quiet": "the knockers have stopped knocking",
-    "oath-broken": "an oath was broken on the ring",
-    "blot-due": "the great sacrifice is due",
     "called-child": "a child has the shaman sickness",
     "river-fouled": "the river was fouled; a fine is due",
     "black-tent": "the black shaman's tent is busy",
     "foreign-graves": "a foreign graveyard makes ghosts",
     "cairn-angry": "the pass-spirit has been offended",
-    "pyramid-on": "the tithe pyramid is still paying out",
-    "pyramid-burst": "the tithe pyramid has collapsed",
-    "end-dated": "a street prophet has dated the end",
-    "parlor-boom": "every parlor is talking to the dead",
-    "club-run": "a burial club's fund is gone",
-    "revival-war": "rival revivals fight for the street",
     # Magic (2026-08-11) -- the gift, the theory, the reagents and the hunt
     "talent-loose": "an untrained talent is loose",
     "hunt-up": "there is a witch-hunt posted",
@@ -426,9 +382,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "basement-open": "the academy basement is counted",
     "necromancy-open": "the necromancers are working openly",
     "necromancy-purged": "the academy burned its necromancy",
-    "masters-hiring": "a master is buying errands",
     "tower-open": "a tower wizard is taking volunteers",
-    "teaching-open": "a school is weighing an outsider",
     "rain-bought": "a shaman has been paid for rain",
     # The diplomatic instruments (held on the source land)
     "marriage-pact": "a marriage pact binds two crowns",
@@ -436,42 +390,28 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "personal-union": "a foreign king wears this crown too",
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
-    "timber-dear": "timber is expensive",
-    "metal-scarce": "metal is hard to come by",
-    "steel-dear": "steel is expensive",
-    "luxury-dear": "the fine work has stopped coming",
-    "mills-busy": "the mills have all the work they want",
-    "claims-revoked": "the claims are revoked",
-    "concession-lost": "the concession is lost",
-    "arms-scarce": "arms are scarce",
     "raiders-out": "raiders are on the border",
     # ...the religion and magic rung's own edges (2026-08-11)
     "schism-near": "the two rites are one insult apart",
-    "young-abroad": "the young have gone to the death feast",
-    "franchise-here": "a ladder faith has opened a branch",
-    "old-practice": "the old spirit-practice is stirring",
-    "academy-exiles": "the academy's cast-out men are here",
-    # ...and the politics rung's own edges (2026-08-10)
-    "elf-hunters": "elven hunters are working this side",
     "hostage-given": "an heir of this land is a hostage abroad",
     "danegeld-paid": "the danegeld is being raised here",
     "pact-kin": "the pact makes the two crowns kin",
     "union-crown": "the two crowns are one head now",
 }
 
-STATE_SLOTS = {                 # slot -> its exclusive members, in order
-    "foreigners": ("foreigners-welcome", "foreigners-tolerated",
-                   "foreigners-unwelcome"),
-    "deposit": ("deposit-normal", "deposit-found", "deposit-drying"),
-}
-SLOT_WORDS = {
-    "foreigners-welcome": "foreigners are welcome",
-    "foreigners-tolerated": "foreigners are tolerated",
-    "foreigners-unwelcome": "foreigners are no longer welcome",
-    "deposit-normal": "the seams run as they always have",
-    "deposit-found": "a new seam has been found",
-    "deposit-drying": "the seams are drying up",
-}
+# The CARD-DECLARABLE exclusive slots, EMPTY since the human contraction
+# (2026-08-15, Europe MVP Closure). Both authored slots -- the standing of a
+# land's foreigners, and the stage of its ore deposits -- belonged wholly to
+# countries the contraction deleted, and neither survived re-homing: Firascir
+# already tells the found-seam story in `firascir/silver-vein`, and the sealed
+# realm's xenophobia axis has no successor among the three. The FRAME stays:
+# `card()` still validates a `slot` payload against these tables, `set_state`
+# still clears whatever a slot held, and the next country packet plugs a slot
+# in by adding one row here and its member words below. The game's other two
+# exclusive slots -- the wealth band and the constitution -- have never gone
+# through this table; each has its own setter.
+STATE_SLOTS: dict[str, tuple[str, ...]] = {}    # slot -> members, in order
+SLOT_WORDS: dict[str, str] = {}                 # member -> what it reads as
 SLOT_OF = {member: slot for slot, members in STATE_SLOTS.items()
            for member in members}
 STATE_WORDS.update(SLOT_WORDS)
@@ -480,34 +420,22 @@ STATE_WORDS.update(SLOT_WORDS)
 # own `menu` payload covers what IT charges for; this table covers what a
 # state charges for no matter which card -- or which RELATION -- put it
 # there. It is the only way a derived state can reach a price, and derived
-# states are the whole point of the relations table: the elves throwing the
-# loggers out is felt in a dwarven smithy three lands away, as a number.
+# states are the whole point of the relations table: a failed harvest in
+# Firascir is felt on a shelf in Tergal, three weeks' road away, as a number.
 STATE_MENU = {
     # derived (the edges' end of the table)
     "grain-scarce": {"lodging": 1.50, "goods": 1.15},
-    "timber-dear": {"steel": 1.15},
-    "metal-scarce": {"steel": 1.50},
-    "steel-dear": {"steel": 1.30},
-    "arms-scarce": {"steel": 1.40},
-    "luxury-dear": {"goods": 1.20},
-    "mills-busy": {"steel": 0.85},
     "raiders-out": {"goods": 1.20, "lodging": 1.20},
-    "claims-revoked": {"steel": 1.15},
-    "concession-lost": {"steel": 1.15},
     # held (the states a card leaves standing after its own terms lapse)
     "harvest-failed": {"lodging": 1.60, "goods": 1.20},
     "bread-dear": {"lodging": 1.25},
     "drought": {"lodging": 1.25, "goods": 1.10},
     "storm-bound": {"lodging": 1.30},
     "wildfire": {"goods": 1.20},
-    "strike": {"steel": 1.35},
-    "deposit-drying": {"steel": 1.20},
-    "deposit-found": {"steel": 0.85},
     "coin-flush": {"goods": 1.25, "lodging": 1.40, "steel": 1.15},
     "overtaxed": {"goods": 1.15, "steel": 1.15},
     "tax-farmed": {"goods": 1.25, "lodging": 1.15},
     "paper-worthless": {"goods": 1.30, "steel": 1.25},
-    "children-taken": {"lodging": 0.85},
     "herd-loss": {"goods": 1.20},
     # politics (2026-08-10) -- the states that outlive their card, and the
     # ones an edge derives, are the ones that have to reach a price here
@@ -517,11 +445,9 @@ STATE_MENU = {
     "silver-strike": {"lodging": 1.30, "steel": 0.90},
     "warband-settled": {"lodging": 1.15},
     "royal-progress": {"lodging": 1.60, "goods": 1.25},
-    "general-strike": {"goods": 1.35, "steel": 1.30},
     "interdict": {"healer": 1.30},
     "free-company": {"toll": 1.80},
     "forest-law": {"goods": 1.15},
-    "barricades-up": {"goods": 1.25, "lodging": 0.80},
     "quarter-ruined": {"goods": 1.25, "lodging": 0.80},
     "salt-revolt": {"goods": 1.25},
     "bandit-king": {"goods": 1.15},
@@ -531,16 +457,8 @@ STATE_MENU = {
     "carnival-on": {"lodging": 1.50, "goods": 1.15},
     "penance-season": {"goods": 0.90, "lodging": 0.85},
     "holy-well": {"healer": 0.75},
-    "knockers-quiet": {"steel": 1.25},
-    "blot-due": {"goods": 1.15},
-    "end-dated": {"goods": 0.80},
-    "parlor-boom": {"goods": 1.15},
-    "pyramid-burst": {"goods": 1.20, "lodging": 0.85},
     "reagents-moving": {"goods": 1.15},
     "hunt-up": {"lodging": 1.15},
-    "franchise-here": {"goods": 1.10},
-    "academy-exiles": {"healer": 1.20},
-    "young-abroad": {"goods": 1.15},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -557,13 +475,6 @@ STATE_ENCOUNTERS = {
                     "skins": {"cutthroat": "Rider", "bruiser": "Horse-Chief",
                               "soldier": "Lance"},
                     "chance": 0.45},
-    # politics (2026-08-10)
-    "elf-hunters": {"kinds": ("cutthroat", "archer", "hunter"),
-                    "where": "road", "as": "quiet elves asking after a name",
-                    "skins": {"cutthroat": "Erasure",
-                              "archer": "Quiet Archer",
-                              "hunter": "Name-Taker"},
-                    "chance": 0.35},
     "free-company": {"kinds": ("cutthroat", "archer", "soldier", "veteran"),
                      "where": "road", "as": "the unpaid company's toll post",
                      "skins": {"cutthroat": "Free Lance",
@@ -600,27 +511,6 @@ STATE_ENCOUNTERS = {
                        "skins": {"skeleton": "Grave-Made",
                                  "ghoul": "Earth-Eater"},
                        "chance": 0.45},
-    "revival-war": {"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "road",
-                    "as": "two processions meeting at one corner",
-                    "skins": {"cutthroat": "Tract-Seller",
-                              "slinger": "Choir Sling",
-                              "bruiser": "Brass Band"},
-                    "chance": 0.35},
-    "old-practice": {"kinds": ("hexer", "cutthroat", "ghoul"),
-                     "where": "wilds",
-                     "as": "somebody paying a spirit by name",
-                     "skins": {"hexer": "Name-Caller",
-                               "cutthroat": "Debt-Payer",
-                               "ghoul": "The Answer"},
-                     "chance": 0.30},
-    "academy-exiles": {"kinds": ("hexer", "skeleton", "magus"),
-                       "where": "wilds",
-                       "as": "an examined man practising in a field",
-                       "skins": {"hexer": "Expelled Scholar",
-                                 "skeleton": "Coursework",
-                                 "magus": "Doctor Of Nothing"},
-                       "chance": 0.30},
 }
 
 # WHAT A STATE PUTS IN THE CRIME LAYER'S MARK TABLE (2026-08-11, the
@@ -637,11 +527,6 @@ STATE_MARKS = {
         "burglary": ("a wizard's reagent case, locked twice",),
         "caravan": ("the reagent train: four wagons and one wizard",),
         "powder": ("a crate of golden fleece, and worse",),
-    },
-    "tombs-open": {
-        "graverob": ("a founder still holding his hoard",
-                     "the deep tomb the rites just released"),
-        "heist": ("the tomb gallery's grave goods",),
     },
     "relic-hunt": {
         "burglary": ("the rival shrine's reliquary",),
@@ -908,17 +793,6 @@ CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "the treasury is empty and the old estates are "
                      "called for the first time in living memory"),
     ),
-    "ensimaa": (
-        constitution("constitutional", "CONSTITUTIONAL MONARCHY", 6,
-                     "an ancient crown that reigns and rules nothing, over "
-                     "a parliament where every faction holds a veto"),
-        constitution("elders", "THE COUNCIL OF ELDERS", 2,
-                     "the crown set aside; the oldest rule because they "
-                     "are the oldest"),
-        constitution("sealed", "THE SEALED REALM", 1,
-                     "isolation is law: entry is a capital crime and "
-                     "leaving is permanent exile"),
-    ),
     "tergal": (
         constitution("confederacy", "THE CLAN CONFEDERACY", 6,
                      "sovereign clans under a great council that elects "
@@ -932,31 +806,6 @@ CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
         constitution("fractured", "THE FRACTURED CLANS", 1,
                      "no high chief, and the feuds run with nobody to "
                      "settle them"),
-    ),
-    "dvarvengrond": (
-        constitution("arbiter", "THE ARBITER CROWN", 6,
-                     "the king under the mountain keeps the great ledger "
-                     "of every claim and water right, and his real work is "
-                     "keeping the clans out of civil war"),
-        constitution("war-king", "THE WAR KING", 2,
-                     "an outside threat has handed the arbiter real "
-                     "command, and the clans fear what he will keep"),
-        constitution("empty-throne", "THE EMPTY THRONE", 1,
-                     "the electors have deadlocked for years and the "
-                     "ledger's clerks quietly run everything"),
-    ),
-    "gibili": (
-        constitution("paper-state", "THE PAPER STATE", 6,
-                     "a flag, a parliament, an army, and no writ that runs "
-                     "past the mill gates"),
-        constitution("junta", "THE JUNTA", 1,
-                     "the generals have lost patience"),
-        constitution("commune", "THE COMMUNE", 1,
-                     "a syndicate city has won and kept itself: schools, "
-                     "courts, rations, firing squads"),
-        constitution("occupation", "THE OCCUPATION", 1,
-                     "foreign soldiers hold the capital and the mills pay "
-                     "their taxes to a foreign clerk"),
     ),
 }
 
@@ -973,22 +822,11 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("new-men", "the new men"),
     faction("manor-lord", "the lord of the manor"),
     faction("village", "the village"),
-    # Ensimaa
-    faction("elders", "the ageless elders", face="sage"),
-    faction("young", "the young"),
-    faction("purity-board", "the purity board"),
-    faction("fringe", "the authenticity fringe"),
-    faction("machine-keepers", "the machine-keepers"),
-    faction("primitivists", "the primitivists"),
     # Tergal
     faction("clans", "the clans"),
     faction("rival-clans", "the rival clans"),
     faction("clan-mothers", "the clan mothers"),
     faction("outlaws", "the outlaw bands"),
-    # Dvarvengrond
-    faction("deep-clans", "the deep clans"),
-    faction("envoys", "the surface envoys", face="wildcard"),
-    faction("unclanned", "the unclanned"),
     # Mortellaria
     faction("sword", "the sword nobility"),
     faction("robe", "the robe nobility", face="wildcard"),
@@ -996,15 +834,6 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("hidden-faith", "the hidden faith"),
     faction("commissioners", "the king's commissioners"),
     faction("provinces", "the provinces"),
-    # Gibili
-    faction("parliament", "the parliament"),
-    faction("mill-barons", "the mill barons", face="wildcard"),
-    faction("syndicates", "the syndicates"),
-    faction("generals", "the generals", face="wildcard"),
-    faction("ranks", "the ranks"),
-    faction("secret-police", "the secret police", face="wildcard"),
-    faction("anarchists", "the anarchist cells"),
-    faction("companies", "the hired companies"),
     # -- religion and magic (2026-08-11). Politics kept church POWER; these
     # are the blocs that fight over worship, rite and the art itself.
     faction("shrines", "the shrine towns"),
@@ -1013,13 +842,8 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("penitents", "the penitent wing"),
     faction("carnival", "the carnival wing"),
     faction("academy", "the wizards' academy", face="sage"),
-    faction("schools", "the contemplative schools", face="sage"),
-    faction("rival-schools", "the rival schools"),
-    faction("tomb-priests", "the tomb priests", face="sage"),
     faction("white-shamans", "the white shamans", face="sage"),
     faction("black-shaman", "the black shaman"),
-    faction("chapels", "the storefront chapels"),
-    faction("ladder-faiths", "the ladder faiths"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
@@ -1059,20 +883,6 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
                 "the academy against the tribunal",
                 factions=("academy", "tribunal")),
     ),
-    "ensimaa": (
-        tension("elders-vs-young",
-                "the ageless elders against the young",
-                factions=("elders", "young")),
-        tension("purity-vs-fringe",
-                "the purity board against the fringe",
-                factions=("purity-board", "fringe")),
-        tension("machines-vs-wild",
-                "the machines against the primitivists",
-                factions=("machine-keepers", "primitivists")),
-        tension("school-vs-school",
-                "one word in one old text, two schools",
-                factions=("schools", "rival-schools")),
-    ),
     "tergal": (
         tension("clan-vs-clan", "clan against clan over the pasture",
                 factions=("clans", "rival-clans")),
@@ -1086,35 +896,6 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
                 "the white shamans against the dark one",
                 factions=("white-shamans", "black-shaman")),
     ),
-    "dvarvengrond": (
-        tension("clan-vs-clan-wall",
-                "clan against clan along the walls",
-                factions=("deep-clans", "clans")),
-        tension("deep-vs-surface",
-                "the deep clans against the envoys",
-                factions=("deep-clans", "envoys")),
-        tension("clans-vs-unclanned",
-                "the clans against the unclanned",
-                factions=("clans", "unclanned")),
-        tension("tombs-vs-tonnage",
-                "the tomb priests against the quota",
-                factions=("tomb-priests", "deep-clans")),
-    ),
-    "gibili": (
-        tension("parliament-deadlock",
-                "the parliament's three-way deadlock",
-                factions=("parliament", "mill-barons", "syndicates")),
-        tension("army-vs-ranks",
-                "the generals against their own ranks",
-                factions=("generals", "ranks", "syndicates")),
-        tension("syndicate-vs-syndicate",
-                "the syndicates against each other",
-                factions=("syndicates", "mill-barons", "secret-police",
-                          "anarchists", "companies")),
-        tension("chapel-vs-ladder",
-                "the chapels against the ladder faiths",
-                factions=("chapels", "ladder-faiths")),
-    ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
 # rollable pool. Firascir's manor is the econ packet's oppression axis and
@@ -1123,10 +904,9 @@ STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
     "firascir": ("manor-vs-village",),
 }
 
-# The wiring: directed verb edges between blocs. The designer's worked model
-# (a crowned frame over Gibili's cast) is the shape -- the formalism has to
-# serve a parliament and a manor alike, so the verb is a word and nothing
-# reads it but a card.
+# The wiring: directed verb edges between blocs. The formalism has to serve
+# a royal council, a clan confederacy and a manor alike, so the verb is a
+# word and nothing reads it but a card.
 FACTION_EDGES: tuple[dict, ...] = (
     # Firascir
     edge("firascir", "crown", "leans-on", "great-lords",
@@ -1156,17 +936,6 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the king's commissioners overrule the provincial courts"),
     edge("mortellaria", "provinces", "resist", "commissioners",
          "the provinces answer the commissioners with closed gates"),
-    # Ensimaa
-    edge("ensimaa", "elders", "block", "young",
-         "the elders hold every seat the young would take"),
-    edge("ensimaa", "purity-board", "certifies", "elders",
-         "the purity board certifies the elders and nobody else"),
-    edge("ensimaa", "fringe", "mocks", "purity-board",
-         "the fringe mocks the purity board in public"),
-    edge("ensimaa", "machine-keepers", "feed", "young",
-         "the machines feed the young, who do nothing for them"),
-    edge("ensimaa", "primitivists", "break", "machine-keepers",
-         "the primitivists break the machines when they can reach them"),
     # Tergal
     edge("tergal", "clans", "feud", "rival-clans",
          "the clans are in feud with each other"),
@@ -1176,32 +945,6 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the council declares its outlaws killable"),
     edge("tergal", "outlaws", "raid", "clans",
          "the outlaw bands raid the clans that cast them out"),
-    # Dvarvengrond
-    edge("dvarvengrond", "deep-clans", "despise", "envoys",
-         "the deep clans call the surface envoys sun-addled"),
-    edge("dvarvengrond", "envoys", "fund", "deep-clans",
-         "the envoys pay for everything the deep clans eat"),
-    edge("dvarvengrond", "clans", "hire", "unclanned",
-         "the clans hire the unclanned for the work nobody counts"),
-    edge("dvarvengrond", "unclanned", "undercut", "clans",
-         "the unclanned work the condemned galleries for themselves"),
-    # Gibili -- the designer's worked model, in its own cast
-    edge("gibili", "mill-barons", "lobby", "parliament",
-         "the mill barons own the parliament outright"),
-    edge("gibili", "mill-barons", "fund", "secret-police",
-         "the mill barons pay for the secret police"),
-    edge("gibili", "secret-police", "infiltrate", "anarchists",
-         "the secret police have a man in every cell"),
-    edge("gibili", "anarchists", "sabotage", "mill-barons",
-         "the anarchist cells go after the mills"),
-    edge("gibili", "mill-barons", "hire", "companies",
-         "the mill barons hire their own companies"),
-    edge("gibili", "companies", "guard", "mill-barons",
-         "the hired companies guard the mill gates"),
-    edge("gibili", "generals", "despise", "mill-barons",
-         "the generals despise the men they are ordered to protect"),
-    edge("gibili", "syndicates", "shield", "ranks",
-         "the syndicates shelter the soldiers who will not fire"),
     # -- religion and magic (2026-08-11) ---------------------------------- #
     edge("firascir", "shrines", "steal-from", "rival-shrines",
          "the shrine towns steal each other's relics outright"),
@@ -1219,22 +962,10 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the tribunal keeps a list of what the academy teaches"),
     edge("mortellaria", "academy", "shelters", "tribunal",
          "the academy hands the tribunal a scapegoat every few years"),
-    edge("ensimaa", "schools", "dispute", "rival-schools",
-         "the schools have disputed one word for nine centuries"),
-    edge("ensimaa", "rival-schools", "outlast", "schools",
-         "the rival schools intend to outlast the argument"),
-    edge("dvarvengrond", "tomb-priests", "veto", "deep-clans",
-         "the tomb priests can stop a gallery with a word"),
-    edge("dvarvengrond", "deep-clans", "buy", "tomb-priests",
-         "the deep clans buy the rites that release a founder"),
     edge("tergal", "white-shamans", "shun", "black-shaman",
          "the white shamans camp the dark one outside the ring"),
     edge("tergal", "black-shaman", "serves", "white-shamans",
          "the dark one does the work the white shamans will not"),
-    edge("gibili", "chapels", "split", "ladder-faiths",
-         "the storefront chapels split off the ladder faiths weekly"),
-    edge("gibili", "ladder-faiths", "buy-out", "chapels",
-         "the ladder faiths buy failing chapels for their congregations"),
 )
 
 # The war layer's WHY line: rolled beside story.py's aggressor, said once at
@@ -1450,20 +1181,16 @@ def _authority_hook(key: str, role: str, field: str = "who"):
 # servants, the sulfur trade) are not here.
 #
 # The pools a card's own posted work draws from are catalog rows like every
-# other roster in the game, and they honor the CULTURAL ARMS rule (rules.md's
-# Ranged Combat: elves shoot bows, goblins sling, dwarves shoot powder). A
-# pool's spread is also its LEVEL BAND (quests.template_band), so these run
-# wide on purpose: a card's job has to be postable in a village and in a
-# capital.
+# other roster in the game. A pool's spread is also its LEVEL BAND
+# (quests.template_band), so these run wide on purpose: a card's job has to
+# be postable in a village and in a capital. Since the human contraction the
+# pools differ by what the work ARMS, not by who the people are -- the three
+# per-people rosters the world used to keep are gone.
 
 _TOUGHS = ("cutthroat", "archer", "bruiser", "soldier", "veteran",
            "champion")                                      # band 1-12
-_ELF_TOUGHS = ("cutthroat", "archer", "hunter", "bruiser", "soldier",
-               "veteran", "champion")
-_GOBLIN_TOUGHS = ("cutthroat", "slinger", "bruiser", "soldier", "veteran",
-                  "champion")
-_DWARF_TOUGHS = ("cutthroat", "gunner", "bruiser", "soldier", "veteran",
-                 "champion")
+_GUNHANDS = ("cutthroat", "gunner", "bruiser", "soldier", "veteran",
+             "champion")                                    # band 1-12
 _BEASTS = ("wolf", "dire wolf", "bear")                     # band 1-6
 # The religion & magic rung's two additions (2026-08-11). Neither is a new
 # creature ROW -- the monsters & fauna dump still owns that -- they are two
@@ -1647,281 +1374,6 @@ CARDS = (
          state={"while": ("coin-flush",)},
          quest={"slots": 1, "reprice": 1.20}),
 
-    # -- Ensimaa: MANPOWER & DECADENCE -------------------------------------- #
-    card("ensimaa/master-dies", "An old master dies", "ensimaa",
-         wealth=("crisis", "normal"), days=(25, 40),
-         news="An old master of the elves is dead, and the work he alone "
-              "could make is dead with him. His apprentice is asking after "
-              "the last commission.",
-         state={"while": ("craft-lost",)},
-         quest={"post": job(
-             "The Last Commission",
-             "The dead master's apprentice needs what the piece was to be "
-             "made of. The only stand of it is in an old grove nobody "
-             "walks into any more.",
-             pool=_BEASTS, sites=("the old grove",),
-             giver="the master's apprentice",
-             epilogue="The apprentice has the material. What comes off "
-                      "that bench will not be the master's work, and "
-                      "everyone in the town knows it.",
-             failure_epilogue="The apprentice has given up the "
-                              "commission. The workshop is shut and the "
-                              "tools are sold."),
-             "pay": 1.20}),
-    # The eviction CHAIN. The slot the first card sets OUTLIVES it, so the
-    # second card admits on it a week or a season later -- and clears the
-    # chain by moving the same slot on.
-    card("ensimaa/rented-land", "The rented land turns", "ensimaa",
-         wealth=("crisis", "normal"), days=None,
-         news="The goblin loggers and the dwarven crystal crews are out of "
-              "line, the elves say. Word is they want them gone whether "
-              "they are or not.",
-         state={"slot": {"foreigners": "foreigners-unwelcome"}}),
-    card("ensimaa/eviction", "The evictions begin", "ensimaa",
-         states=("foreigners-unwelcome",), days=(12, 20),
-         news="The elves have started clearing the rented ground. The "
-              "goblin loggers are not going, the dwarven crews have "
-              "barricaded the crystal cut, and there is hiring on both "
-              "sides.",
-         state={"slot": {"foreigners": "foreigners-tolerated"},
-                "while": ("eviction-on",)},
-         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "wilds", "as": "loggers holding their camp",
-                    "skins": {"cutthroat": "Logger",
-                              "slinger": "Sling-Hand",
-                              "bruiser": "Camp Boss"},
-                    "chance": 0.40},
-         quest={"post": job(
-             "The Rented Ground",
-             "Somebody is paying to clear the logging camp and somebody is "
-             "paying to hold it. Both offer the same rate. Pick the side "
-             "you can live with.",
-             pool=_GOBLIN_TOUGHS, sites=("the logging camp",),
-             giver="the estate's agent",
-             epilogue="The camp is settled, one way or the other. The "
-                      "agent pays and the elves say nothing at all.",
-             failure_epilogue="The camp is still there and there are more "
-                              "men in it. Nobody on either side is "
-                              "talking terms now."),
-             "pay": 1.15}),
-    card("ensimaa/child-thieves", "The dark clan takes children",
-         "ensimaa", wealth=("crisis", "normal"), days=(20, 30),
-         news="Children are being taken from the forest villages. Everyone "
-              "knows which clan does it. Nobody has gone to look.",
-         state={"while": ("children-taken",)},
-         quest={"post": job(
-             "Nobody Has Gone To Look",
-             "The forest villages know which hollow the children are "
-             "taken to. They have known for a month. They will pay "
-             "somebody else to walk in.",
-             pool=_ELF_TOUGHS, sites=("the dark clan's hollow",),
-             giver="the village elder",
-             epilogue="The hollow is cleared. Two children came back. "
-                      "Nobody says out loud how many did not.",
-             failure_epilogue="Nobody came back from the hollow, and the "
-                              "villages have stopped letting the children "
-                              "out of doors."),
-             "pay": 1.30}),
-    # The flavor anchor: money, not disaster -- and thieves, because that
-    # is what money brings (the packet's own standing marks).
-    card("ensimaa/art-market", "The art market runs hot", "ensimaa",
-         wealth=("normal", "prosperous"), days=(15, 25),
-         news="Bidding is up again and so is theft. Three pieces went out "
-              "of three houses this month, and the buyers ask fewer "
-              "questions every week.",
-         state={"while": ("art-boom",)},
-         menu={"goods": 1.25, "lodging": 1.20},
-         quest={"post": job(
-             "The Stolen Piece",
-             "A house wants a piece back before the sale it was stolen "
-             "for. The thieves are still in the country and still holding "
-             "it.",
-             pool=_ELF_TOUGHS, sites=("the thieves' lodge",),
-             giver="the house steward",
-             epilogue="The piece is back on its stand. The house pays and "
-                      "asks you not to say where it had been.",
-             failure_epilogue="The piece went to a buyer with no name. "
-                              "The house has stopped saying it ever owned "
-                              "it."),
-             "pay": 1.30}),
-
-    # -- Dvarvengrond: EXTRACTION & CLAN CLAIMS ----------------------------- #
-    # The rush CHAIN: the seam is found (a slot, so it outlives the card),
-    # and the bust that follows admits on it and puts the slot back.
-    card("dvarvengrond/new-seam", "A new seam is found", "dvarvengrond",
-         wealth=("normal", "prosperous"), without=("claims-collide",),
-         days=(15, 25),
-         news="A new seam has been found under the mountain. Two clans "
-              "claim it and a third is strong enough to work it.",
-         state={"slot": {"deposit": "deposit-found"},
-                "set": ("claims-collide",), "wealth_while": "prosperous"},
-         quest={"post": job(
-             "Two Clans, One Seam",
-             "The clan that found the seam wants the shaft head held while "
-             "the claim is argued. The clan that owns the rock has men "
-             "walking up there tonight.",
-             pool=_DWARF_TOUGHS, sites=("the new shaft head",),
-             giver="the clan's claim-keeper",
-             epilogue="The shaft head held through the argument. The "
-                      "claim went to whoever was standing on it.",
-             failure_epilogue="The shaft head changed hands twice and the "
-                              "claim went to the clan with the most men."),
-             "pay": 1.20}),
-    card("dvarvengrond/gold-rush", "The rush and the bust", "dvarvengrond",
-         states=("deposit-found",), days=(12, 20),
-         news="Everyone who could walk came up for the new seam, and it is "
-              "already thinning. The town has four times the people it can "
-              "feed and half of them have nothing left to dig.",
-         state={"slot": {"deposit": "deposit-normal"}, "while": ("rush-on",)},
-         menu={"goods": 1.40, "lodging": 2.00},
-         encounter={"kinds": ("cutthroat", "bruiser"), "where": "wilds",
-                    "as": "claim-jumpers off the new workings",
-                    "skins": {"cutthroat": "Claim-Jumper",
-                              "bruiser": "Pit Boss"},
-                    "chance": 0.40},
-         quest={"post": job(
-             "The Jumped Claim",
-             "A digger who paid for his claim cannot get back onto it. The "
-             "men on it now have been there a week and are not arguing "
-             "about paper.",
-             pool=_DWARF_TOUGHS, sites=("the jumped workings",),
-             giver="the ruined digger",
-             epilogue="The claim is back in the digger's hands. It is "
-                      "worth about a third of what he paid for it.",
-             failure_epilogue="The digger has left the mountain with "
-                              "nothing. The men on his claim are still "
-                              "there."),
-             "pay": 1.15}),
-    card("dvarvengrond/vein-dries", "The vein runs out", "dvarvengrond",
-         wealth=("normal", "prosperous"), days=None,
-         news="The vein that fed the city is running out. The clan books "
-              "say otherwise, and the clan books are the law.",
-         state={"slot": {"deposit": "deposit-drying"}, "wealth": "crisis"}),
-    card("dvarvengrond/veins-reopened", "The dead veins are reopened",
-         "dvarvengrond", wealth=("crisis",), states=("deposit-drying",),
-         days=None,
-         news="A dwarf has found a way to work a seam everyone had written "
-              "off. Every clan with a dead pit wants him, and one of them "
-              "wants him quiet.",
-         state={"slot": {"deposit": "deposit-normal"}, "wealth": "normal"}),
-    card("dvarvengrond/strike", "The pits stand idle", "dvarvengrond",
-         wealth=("crisis",), days=(12, 20),
-         news="The pits stand idle. The workers want their share of the "
-              "new find before the clan books it, and the company shop has "
-              "stopped giving credit.",
-         state={"while": ("strike",)},
-         quest={"post": job(
-             "The Company Shop",
-             "The clan wants the company shop and the winding gear held "
-             "while it waits the strike out. The men at the gate are the "
-             "same men who dug the pit.",
-             pool=_DWARF_TOUGHS, sites=("the pit gate",),
-             giver="the clan's under-thane",
-             epilogue="The gear is intact and the shop opened again on "
-                      "the clan's terms. The men went back down.",
-             failure_epilogue="The winding gear is wrecked and the shop "
-                              "is empty. The pit will not open this "
-                              "season."),
-             "pay": 1.20, "slots": -1}),
-    # The relation reaching the BOARD: this card cannot be drawn at all
-    # until somebody else's harvest fails, and the edge is what tells the
-    # mountain about it.
-    card("dvarvengrond/food-caravan", "The food caravan", "dvarvengrond",
-         states=("grain-scarce",), days=(10, 18),
-         news="A food caravan is coming up the mountain road. Every clan "
-              "with an empty larder knows the day it is due, and so does "
-              "everybody else on that road.",
-         state={"while": ("caravan-due",)},
-         menu={"goods": 1.20},
-         quest={"post": job(
-             "The Mountain Road",
-             "The food caravan wants swords for the last three days of the "
-             "climb. Grain is treasure up here and everyone on that road "
-             "knows it.",
-             pool=_DWARF_TOUGHS,
-             sites=("the mountain road", "the switchback camp"),
-             giver="the caravan master",
-             epilogue="The caravan is through the gate. The city eats, "
-                      "and the price of bread comes down a little.",
-             failure_epilogue="The caravan was taken on the switchbacks. "
-                              "Nothing came up that road all week."),
-             "pay": 1.35}),
-
-    # -- Gibili: LABOR vs CAPITAL, NO STATE --------------------------------- #
-    card("gibili/uprising", "The mills stop", "gibili",
-         wealth=("crisis",), without=("mills-stopped",), days=(12, 20),
-         news="The mills have stopped. The workers hold the gates and the "
-              "company police are hiring anyone who can hold a stick.",
-         state={"set": ("mills-stopped",)},
-         quest={"post": job(
-             "Both Sides Are Hiring",
-             "The company wants the mill gate opened. The union wants it "
-             "held. The rate is the same and both of them pay in advance.",
-             pool=_GOBLIN_TOUGHS, sites=("the mill gate",),
-             giver="the company agent",
-             epilogue="The gate is settled. Whichever side hired you is "
-                      "counting it a win this morning.",
-             failure_epilogue="The gate is still shut and there are twice "
-                              "as many sticks in front of it."),
-             "pay": 1.20}),
-    card("gibili/arms-contract", "The firearms contract", "gibili",
-         wealth=("normal", "prosperous"), days=(15, 25),
-         news="A firearms contract for Mortellaria is going out by the "
-              "cartload. Worth guarding. Worth robbing.",
-         state={"while": ("convoy-running",)},
-         menu={"steel": 0.90},
-         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "road", "as": "raiders working the convoy road",
-                    "skins": {"cutthroat": "Convoy Raider",
-                              "slinger": "Slinger",
-                              "bruiser": "Raid Boss"},
-                    "chance": 0.45},
-         quest={"post": job(
-             "The Cartload",
-             "A gun cart is going south and the road it takes is public "
-             "knowledge. The company wants it guarded. Somebody else has "
-             "already asked what it would take to lose it.",
-             pool=_GOBLIN_TOUGHS, sites=("the convoy road",),
-             giver="the company clerk",
-             epilogue="The guns are on the border and signed for. The "
-                      "clerk pays without looking up.",
-             failure_epilogue="The cart never reached the border. Two "
-                              "hundred pistols are somewhere, and the "
-                              "company is asking where."),
-             "pay": 1.25}),
-    card("gibili/pistoleros", "The company police", "gibili",
-         wealth=("crisis", "normal"), days=(15, 25),
-         news="The companies are hiring gunmen by the week and paying in "
-              "advance. The union halls are hiring too, and paying less.",
-         state={"while": ("pistoleros",)},
-         menu={"steel": 1.25, "healer": 1.20},
-         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "road", "as": "company men working the gate road",
-                    "skins": {"cutthroat": "Company Man",
-                              "slinger": "Company Slinger",
-                              "bruiser": "Company Sergeant"},
-                    "chance": 0.45}),
-    # The chain that crosses a RELATION: the elves threw the loggers out,
-    # the edge derives `concession lost` here, and this card admits on it.
-    # It is also the CANCEL verb -- a town with cold mills posts nothing.
-    card("gibili/timber-short", "The mills run out of timber", "gibili",
-         states=("concession-lost",), days=(15, 25),
-         news="The timber has stopped coming down from the elven forest. "
-              "Two mills are cold, the yards are laying men off, and "
-              "nobody in this town is hiring for anything.",
-         state={"while": ("mills-starved",)},
-         menu={"steel": 1.30, "goods": 1.15},
-         quest={"slots": -2, "reprice": 0.80}),
-    # The flavor anchor.
-    card("gibili/gadget-fair", "The gadget fair", "gibili",
-         wealth=("normal", "prosperous"), days=(8, 14),
-         news="The gadget fair is on. Everything on the tables is cheap, "
-              "clever, and warranted for exactly as long as the fair "
-              "lasts.",
-         state={"while": ("gadget-fair",)},
-         menu={"goods": 0.80, "steel": 0.80, "lodging": 1.30},
-         quest={"slots": 1}),
-
     # -- Tergal: PASTURE & OBLIGATION --------------------------------------- #
     # The raid CHAIN: the herds die, the dead pasture outlives the dying,
     # and a clan with no grass and no herd goes where the grain is.
@@ -2026,7 +1478,11 @@ CARDS = (
                     "skins": {"skeleton": "Fog-Walker",
                               "ghoul": "Grave-Thing"},
                     "chance": 0.60}),
-    card("weather/wildfire", "The forest burns", "ensimaa", track="weather",
+    # The FIRE CHAIN: the drought's own consequence, and the scar that
+    # outlives it. Both were authored for the forest land the contraction
+    # deleted; every surviving country has woods and a dry summer, so the
+    # pair is land-wide now rather than re-homed to one of the three.
+    card("weather/wildfire", "The forest burns", ANY_LAND, track="weather",
          states=("drought",), weather=("clear", "heat", "wind"),
          chance=0.30, days=(4, 8),
          news="The forest is burning above the river villages. They are "
@@ -2046,6 +1502,16 @@ CARDS = (
              failure_epilogue="The fire took the river villages with "
                               "people still in them."),
              "pay": 1.20}),
+    # THE TOWN SMOKE: the one sky a roof does not keep out (rpg.INDOOR_SKY).
+    # Firascir is the land of close-built northern towns, and a still winter
+    # week puts every hearth, forge and tannery back down in the street.
+    card("weather/smog", "The smoke settles", "firascir", track="weather",
+         weather=("cloud", "fog"), chance=0.20, days=(2, 5),
+         news="The town's own smoke has nowhere to go and has settled in "
+              "the streets. Everyone is coughing. The aldermen say it is "
+              "the weather.",
+         state={"while": ("smog",)},
+         menu={"healer": 1.30, "lodging": 0.85}),
     card("weather/dust-storm", "The dust storm", "tergal", track="weather",
          states=("drought",), weather=("wind", "heat", "clear"),
          chance=0.35, days=(1, 3), sky="wind",
@@ -2065,25 +1531,17 @@ CARDS = (
              failure_epilogue="The herd is gone into other clans' hands "
                               "and there is no arguing it back."),
              "pay": 1.15}),
-    card("weather/smog", "The smog settles", "gibili", track="weather",
-         weather=("cloud", "fog"), chance=0.20, days=(2, 5),
-         news="The mill smoke has nowhere to go and has settled over the "
-              "town. Everyone is coughing. The owners say it is the "
-              "weather.",
-         state={"while": ("smog",)},
-         menu={"healer": 1.30, "lodging": 0.85}),
-
     # -- THE SEASON TRACK: the slow states the day roll reads ---------------- #
     card("weather/drought", "The rains do not come", ANY_LAND,
          track="season", dry=PROFILE_SPELL, chance=0.25, days=(45, 80),
          news="The rains have not come. The rivers are low, the grass is "
               "going brown, and the wells are being counted.",
          state={"while": ("drought",)}),
-    card("weather/green-again", "The burn goes green", "ensimaa",
+    card("weather/green-again", "The burn goes green", ANY_LAND,
          track="season", states=("burned-over",),
          without=("drought", "wildfire"), chance=0.03, days=None,
-         news="Green is coming up through the black. The elves will not "
-              "call it healed for a century, but the deer are back.",
+         news="Green is coming up through the black. Nobody alive will "
+              "call it healed, but the deer are back.",
          state={"clear": ("burned-over",)}),
 )
 
@@ -2108,7 +1566,7 @@ CARDS = (
 # there the next time the card comes round, which is what makes him a face
 # instead of a pulse.
 
-_CROWNED = ("firascir", "mortellaria", "ensimaa", "dvarvengrond", "tergal")
+_CROWNED = ("firascir", "mortellaria", "tergal")
 
 _BAN_HOOK = _authority_hook("banned-lord", "the banned lord", "lord")
 _FINDER_HOOK = _authority_hook("witch-finder", "the witch-finder", "finder")
@@ -2452,7 +1910,7 @@ POLITICS_CARDS = (
              "The prospectors have a claim under mining law and the lord "
              "has a title under this one. Both are hiring, both are "
              "right, and the hole in the ground does not care.",
-             pool=_DWARF_TOUGHS, sites=("the silver adit",),
+             pool=_GUNHANDS, sites=("the silver adit",),
              giver="the prospectors' claim-holder",
              epilogue="The adit is held and the claim is written down "
                       "twice, in two laws that still disagree.",
@@ -2891,186 +2349,6 @@ POLITICS_CARDS = (
                               "village for it."),
              "pay": 1.25, "slots": 1}),
 
-    # == Ensimaa: FACE, PURITY & THE FROZEN LADDER ========================= #
-    card("ensimaa/writ-revoked", "The writ is revoked", "ensimaa",
-         tension=("purity-vs-fringe",),
-         days=None,
-         news="A great name's purity certificate has been denied over an "
-              "old association. Offices, tenants and name are cascading "
-              "away inside the season, and nobody will say the name out "
-              "loud. Somebody arranged this.",
-         state={"set": ("writ-revoked",)},
-         quest={"post": job(
-             "Prove The Sin Or The Frame",
-             "There is work on both sides of the interview room: the "
-             "association was real, or the letter that reported it was "
-             "written to order. Both parties are paying, quietly.",
-             pool=_ELF_TOUGHS, sites=("the purity board's rooms",
-                                      "the struck house"),
-             giver="the struck grandee's steward", places=2,
-             epilogue="The letter's author is named and the board has "
-                      "reopened the file. The grandee's name is back, "
-                      "with a mark on it.",
-             failure_epilogue="The file is closed. The grandee is looked "
-                              "through in the street and his tenants have "
-                              "new landlords."),
-             "pay": 1.25, "reprice": 1.15}),
-    card("ensimaa/the-search", "The crown dies", "ensimaa",
-         tension=("elders-vs-young",),
-         constitution=("constitutional", "elders"),
-         without=("search-on",),
-         chance=0.05, days=None,
-         news="The crown has actually died -- the first succession in an "
-              "age. Doctrine says the sovereign returns in a newborn. "
-              "Every faction has produced its own infant, and a regency "
-              "of decades has begun.",
-         state={"set": ("search-on",), "succession": "disputed"},
-         quest={"post": job(
-             "Four Infants",
-             "One faction's candidate has to be carried from a river "
-             "village to the capital before the others' are presented. "
-             "Three other parties are being paid for exactly the same "
-             "week.",
-             pool=_ELF_TOUGHS, sites=("the river village", "the capital "
-                                      "road"),
-             giver="the faction's elder", places=2,
-             epilogue="The child was presented first. Whether that is the "
-                      "sovereign returned is now a matter of record.",
-             failure_epilogue="Another faction's child was presented "
-                              "first. The regency has a name and it is "
-                              "not the one that hired you."),
-             "pay": 1.35, "reprice": 1.2}),
-    card("ensimaa/one-heir", "One heir, four brothers", "ensimaa",
-         tension=("elders-vs-young",), days=(15, 25),
-         news="A great house has concentrated four brothers on a single "
-              "heir to keep the estate whole. The scandal can be managed. "
-              "The fight over the inheritance cannot, and one child belongs to "
-              "everybody.",
-         quest={"post": job(
-             "The Child Belongs To Everybody",
-             "The youngest brother wants the child out of the house for a "
-             "season and will not say which of the others he is afraid "
-             "of. He is right to be.",
-             pool=_ELF_TOUGHS, sites=("the great house", "the far "
-                                      "orchard"),
-             giver="the youngest brother", places=2,
-             epilogue="The child is out of the house and the estate is "
-                      "still whole. Two brothers are not speaking.",
-             failure_epilogue="The child never left the house. The estate "
-                              "is being divided, which is the one thing "
-                              "the arrangement existed to prevent."),
-             "pay": 1.20, "reprice": 1.1}),
-    card("ensimaa/unearthed-record", "The unearthed record", "ensimaa",
-         tension=("elders-vs-young",),
-         faction_edge=("ensimaa/elders-block-young",), days=(15, 25),
-         news="A document has surfaced that contradicts the elders' "
-              "account of the founding, and the elders were there. The "
-              "scandal is not the discovery. It is the proof that living "
-              "memory has been edited.",
-         state={"while": ("record-scandal",)},
-         quest={"post": job(
-             "The Rest Of The Archive",
-             "Whoever found the first sheet knows where the rest is and "
-             "will not last the week alone. The elders' clerks are "
-             "already on the road to the same cellar.",
-             pool=_ELF_TOUGHS, sites=("the sealed cellar",),
-             giver="the young archivist",
-             epilogue="The archive is out and copied. The elders have "
-                      "stopped explaining and started ignoring.",
-             failure_epilogue="The cellar was cleared before you reached "
-                              "it. The first sheet is now agreed to be a "
-                              "forgery."),
-             "pay": 1.25, "reprice": 1.1}),
-    card("ensimaa/mortality-club", "The mortality club", "ensimaa",
-         tension=("elders-vs-young", "machines-vs-wild"), days=(12, 20),
-         news="Young elves who idolise the short-lived are fighting "
-              "un-warded, keeping their scars and buying grime by the "
-              "jar. Their patrons pay to watch real work being done.",
-         quest={"post": job(
-             "Take One Along",
-             "A patron will pay well for the party to work a job with one "
-             "of his club along, and better if it comes back alive. The "
-             "club member has never been hit before.",
-             pool=_ELF_TOUGHS, sites=("the un-warded ground",),
-             giver="the club's patron",
-             epilogue="The club member came home with a real scar and a "
-                      "story he will tell wrong. The patron paid on the "
-                      "spot.",
-             failure_epilogue="The club member did not come home. The "
-                              "patron has paid nothing and said nothing, "
-                              "which is worse."),
-             "pay": 1.30, "slots": 1}),
-    card("ensimaa/primitivists", "A band goes feral", "ensimaa",
-         tension=("machines-vs-wild",),
-         faction_edge=("ensimaa/primitivists-break-machine-keepers",),
-         days=(15, 25),
-         news="The woodland-ways purists forage on a manicured reserve "
-              "with healing wards on standby. One band has stopped coming "
-              "back. That band is on the reserve now and the wards have "
-              "been turned off.",
-         state={"while": ("feral-band",)},
-         encounter={"kinds": ("cutthroat", "hunter", "bruiser"),
-                    "where": "wilds", "as": "the band that did not come "
-                                            "back",
-                    "skins": {"cutthroat": "Feral Elf",
-                              "hunter": "Reserve Hunter",
-                              "bruiser": "Wild One"},
-                    "chance": 0.45},
-         quest={"post": job(
-             "The Wards Are Off",
-             "The reserve's owner wants his band brought in quietly "
-             "before the real hermits further up the valley are blamed "
-             "for it. The hermits would also like that.",
-             pool=_ELF_TOUGHS, sites=("the private reserve",),
-             giver="the reserve's owner",
-             epilogue="The band is in and the wards are back on. The "
-                      "hermits were never mentioned in the report.",
-             failure_epilogue="The band is deeper in the valley and the "
-                              "owner has told the city it was the "
-                              "hermits."),
-             "pay": 1.20, "reprice": 1.1}),
-    card("ensimaa/hunters-sent", "The hunters are sent after", "ensimaa",
-         constitution=("sealed",), days=(25, 40),
-         news="Under the sealed realm, leaving is exile and a prominent "
-              "exile is followed. Quiet fanatics have gone abroad with "
-              "instructions to erase names, and they are patient.",
-         state={"set": ("hunters-out",)},
-         quest={"post": job(
-             "The Name On The List",
-             "An exile's family here wants word carried out of the realm "
-             "before the hunters get where they are going. Carrying it is "
-             "itself the crime.",
-             pool=_ELF_TOUGHS, sites=("the sealed border",),
-             giver="the exile's sister",
-             epilogue="The word is out of the realm and ahead of the "
-                      "hunters. Somebody abroad has time to move.",
-             failure_epilogue="The word never left. The hunters are "
-                              "already in the right city."),
-             "pay": 1.30, "reprice": 1.15}),
-    card("ensimaa/invisible-staff", "The invisible staff", "ensimaa",
-         tension=("purity-vs-fringe", "machines-vs-wild"), days=(15, 25),
-         news="Somebody has started counting the mortal labourers who do "
-              "the maintenance elves will not. They are unseen by custom "
-              "and therefore the best-informed network in the land, and "
-              "they know exactly what the count is for.",
-         state={"while": ("staff-hunt",)},
-         menu={"lodging": 1.20},
-         quest={"post": job(
-             "Nobody Guards Their Tongue",
-             "The staff want their register out of the board's rooms "
-             "before the count is finished. In exchange they will tell "
-             "you everything they have heard in forty years of being "
-             "furniture.",
-             pool=_ELF_TOUGHS, sites=("the board's rooms",),
-             giver="the staff's own foreman",
-             epilogue="The register is ash and the count has restarted "
-                      "from nothing. The foreman talks for two hours and "
-                      "names four houses.",
-             failure_epilogue="The count is finished. Two hundred people "
-                              "who were furniture yesterday are being put "
-                              "on carts."),
-             "pay": 1.25, "slots": -1}),
-
     # == Tergal: AUTHORITY IS PERSONAL ===================================== #
     card("tergal/hostage-guard", "The hostage guard", "tergal",
          tension=("clan-vs-clan",),
@@ -3211,263 +2489,13 @@ POLITICS_CARDS = (
                               "his tents south."),
              "pay": 1.25, "slots": -1}),
 
-    # == Dvarvengrond: THE LEDGER IS THE STATE ============================= #
-    card("dvarvengrond/marriage-of-veins", "The marriage of veins",
-         "dvarvengrond", tension=("clan-vs-clan-wall",), days=(20, 30),
-         news="Two clans are betrothing a couple to consolidate the two "
-              "halves of one iron seam. The couple are the smallest thing "
-              "in the room, and one of them is looking for somebody to "
-              "hire.",
-         state={"while": ("veins-married",)},
-         quest={"post": job(
-             "The Smallest Thing In The Room",
-             "One of the betrothed wants a week's escort to an aunt three "
-             "galleries down, and both clans want the wedding on "
-             "schedule. Nobody has asked either of them anything.",
-             pool=_DWARF_TOUGHS, sites=("the deep gallery",),
-             giver="the betrothed's cousin",
-             epilogue="The runaway is at the aunt's and both clans are "
-                      "renegotiating with lawyers instead of a wedding.",
-             failure_epilogue="The wedding went ahead on schedule. The "
-                              "seam is one claim now and the couple have "
-                              "separate rooms."),
-             "pay": 1.20, "reprice": 1.1}),
-    card("dvarvengrond/founder-says-no", "The founder says no",
-         "dvarvengrond", tension=("clan-vs-clan-wall", "deep-vs-surface"),
-         chance=0.30, days=None,
-         news="The rites to release a dead founder's tunnel were "
-              "performed properly and the dead one refused. The claim is "
-              "frozen, the clan is arguing about what he meant, and "
-              "somebody wants a second opinion.",
-         state={"set": ("claim-frozen",)},
-         quest={"post": job(
-             "A Second Opinion",
-             "The priestly way takes a year. The other way takes a night "
-             "and a specialist, and the clan head has already sent for "
-             "one. Somebody has to walk him in past the family.",
-             pool=_DWARF_TOUGHS, sites=("the founder's tunnel",),
-             giver="the clan head's second",
-             epilogue="The specialist got his night. What the founder "
-                      "said the second time is being kept very quiet.",
-             failure_epilogue="The specialist never reached the tunnel. "
-                              "The claim is frozen for a generation and "
-                              "the family is satisfied."),
-             "pay": 1.30, "slots": -1}),
-    card("dvarvengrond/arbitration", "The arbitration", "dvarvengrond",
-         tension=("clan-vs-clan-wall",), states=("claims-collide",),
-         days=(15, 25),
-         news="Two great clans are at the brink over one silver vein. The "
-              "king has to rule, both sides have sworn to defy him, and "
-              "the crown survives only if the ruling is too clever to "
-              "defy.",
-         state={"clear": ("claims-collide",), "while": ("arbitration",)},
-         quest={"post": job(
-             "Too Clever To Defy",
-             "The king's clerk needs the seam surveyed by somebody with "
-             "no clan, before the hearing. Both clans have men in the "
-             "gallery making sure the survey says the right thing.",
-             pool=_DWARF_TOUGHS, sites=("the disputed seam",),
-             giver="the king's ledger-clerk",
-             epilogue="The survey is honest and the ruling held. The "
-                      "crown is stronger this month than it was last.",
-             failure_epilogue="The survey never happened. The king ruled "
-                              "blind, both clans defied him, and the "
-                              "galleries are being walled off."),
-             "pay": 1.30, "reprice": 1.15}),
-
-    # == Gibili: THE STATE THAT ISN'T ====================================== #
-    card("gibili/general-strike", "The general strike", "gibili",
-         tension=("army-vs-ranks", "parliament-deadlock"),
-         states=("mills-stopped",), without=("general-strike",),
-         days=(12, 20),
-         news="Every industry at once. The nation has simply stopped. It "
-              "began, as it always does, with the match-workers the "
-              "phosphorus is eating, and it ends however the army "
-              "decides.",
-         state={"set": ("general-strike",), "clear": ("mills-stopped",)},
-         quest={"post": job(
-             "The Match Works",
-             "The match-workers' committee wants its own building held "
-             "for three days: the ledgers in it name every child on the "
-             "benches and the company wants them burned.",
-             pool=_GOBLIN_TOUGHS, sites=("the match works",),
-             giver="the match-workers' committee",
-             epilogue="The ledgers are out and printed. Two directors "
-                      "have left the country and the strike has a "
-                      "martyr's list.",
-             failure_epilogue="The building burned with the ledgers in "
-                              "it. Nobody can prove a single child ever "
-                              "worked there."),
-             "pay": 1.30, "slots": -2}),
-    card("gibili/provocateur", "The provocateur", "gibili",
-         tension=("parliament-deadlock", "syndicate-vs-syndicate"),
-         faction_edge=("gibili/secret-police-infiltrate-anarchists",),
-         days=(15, 25),
-         news="The secret police keep a card catalogue and a man in every "
-              "cell. The bomb plot the papers are shouting about was his "
-              "idea, and the archive is the one organ of this state that "
-              "works.",
-         state={"while": ("plot-seeded",)},
-         quest={"post": job(
-             "Expose Him, Protect Him, Be Him",
-             "Three people want the same man: the cell wants him named, "
-             "his handler wants him extracted, and a rival bureau wants "
-             "him kept exactly where he is. All three are paying.",
-             pool=_GOBLIN_TOUGHS, sites=("the cellar meeting", "the "
-                                         "archive stair"),
-             giver="the cell's printer", places=2,
-             epilogue="The man is where one of the three wanted him, and "
-                      "the other two are asking who arranged it.",
-             failure_epilogue="The plot went off. Eleven dead in a "
-                              "tram-yard, and the archive has a fresh "
-                              "reason for everything it does next."),
-             "pay": 1.30, "reprice": 1.15}),
-    card("gibili/manufactured-atrocity", "The manufactured atrocity",
-         "gibili", tension=("parliament-deadlock",), days=(12, 20),
-         news="A press baron has invented an outrage to sell papers and "
-              "force the war party's hand. Under the buffer doctrine, a "
-              "manufactured border incident can bring a real empire in.",
-         state={"while": ("war-fever",)},
-         menu={"steel": 1.20},
-         quest={"post": job(
-             "The Border Incident",
-             "Somebody has to reach the border post the papers are "
-             "describing and come back with what is actually there. Two "
-             "other parties have been hired to make sure the story holds "
-             "up.",
-             pool=_GOBLIN_TOUGHS, sites=("the border post",),
-             giver="the rival paper's editor",
-             epilogue="The truth is printed with names attached. The war "
-                      "party has gone quiet and the baron is suing.",
-             failure_epilogue="The story stands. The parliament has voted "
-                              "the credits and the empire is watching "
-                              "with interest."),
-             "pay": 1.25, "slots": 1}),
-    card("gibili/barricade-days", "The barricade days", "gibili",
-         tension=("army-vs-ranks",), states=("general-strike",),
-         without=("barricades-up",), days=(10, 18),
-         news="A district has overturned its trams, pried up its cobbles "
-              "and declared itself autonomous. Inside it, three flags are "
-              "arguing and shooting at each other nearly as readily as at "
-              "the police.",
-         state={"clear": ("general-strike",), "set": ("barricades-up",)},
-         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "road", "as": "a barricade under three flags",
-                    "skins": {"cutthroat": "Barricade Boy",
-                              "slinger": "Cobble-Slinger",
-                              "bruiser": "Flag-Bearer"},
-                    "chance": 0.50},
-         quest={"post": job(
-             "Three Flags, One Street",
-             "The district's own clinic is behind the barricade and out "
-             "of everything. Getting a cart in means getting past the "
-             "police line and then past two of the three flags.",
-             pool=_GOBLIN_TOUGHS, sites=("the police line", "the "
-                                         "barricade street"),
-             giver="the district's doctor", places=2,
-             epilogue="The cart is at the clinic. Whatever happens to the "
-                      "district next, it happens with bandages.",
-             failure_epilogue="The cart never got in. The clinic has "
-                              "closed and the district is running out of "
-                              "reasons to hold."),
-             "pay": 1.25, "slots": -1}),
-    card("gibili/junta", "The generals lose patience", "gibili",
-         tension=("army-vs-ranks",), states=("barricades-up",),
-         chance=0.25, days=None,
-         news="The generals have lost patience. The parliament was "
-              "dissolved by a colonel with a written list, and the mill "
-              "barons are discovering what they bought.",
-         state={"clear": ("barricades-up",), "constitution": "junta"},
-         quest={"post": job(
-             "The Written List",
-             "A name on the colonel's list has twelve hours and a "
-             "printing press he will not leave behind. The press weighs "
-             "as much as he does.",
-             pool=_GOBLIN_TOUGHS, sites=("the press cellar", "the harbour "
-                                         "steps"),
-             giver="the listed man's daughter", places=2,
-             epilogue="The man and the press are on a boat. The colonel's "
-                      "list is one name shorter and everybody knows which.",
-             failure_epilogue="The press was taken with him beside it. "
-                              "The list is being worked through in "
-                              "order."),
-             "pay": 1.35, "slots": -1}),
-    card("gibili/commune", "The soldiers stand with the street", "gibili",
-         tension=("army-vs-ranks",), states=("barricades-up",),
-         chance=0.25, days=None,
-         news="The soldiers were sent in and stood with the district "
-              "instead. The syndicates hold the city now -- schools, "
-              "courts, rations, firing squads -- and are calling it "
-              "settled.",
-         state={"clear": ("barricades-up",), "constitution": "commune"},
-         quest={"post": job(
-             "The Grain Barge",
-             "The commune eats off one grain barge a week and the mill "
-             "barons' money is paying the boom-keeper to turn it back. "
-             "The ration committee pays in silver it printed nothing on.",
-             pool=_GOBLIN_TOUGHS, sites=("the river boom", "the ration "
-                                         "hall"),
-             giver="the ration committee", places=2,
-             epilogue="The barge came through the boom and unloaded under "
-                      "guard. The queue moved all day and the commune has "
-                      "bread to govern with.",
-             failure_epilogue="The barge turned back at the boom. The "
-                              "queue stood until dark, and the firing "
-                              "squads have a new word for hoarder."),
-             "pay": 1.35, "slots": -1}),
-    card("gibili/machine-breakers", "The machine-breakers", "gibili",
-         tension=("syndicate-vs-syndicate",), days=(12, 20),
-         news="A fringe has appeared that wants no wage rise at all. It "
-              "wants the engines dead. The unions fear them more than the "
-              "barons do: every broken loom is the strike blamed.",
-         state={"while": ("machine-breakers",)},
-         encounter={"kinds": ("cutthroat", "slinger", "bruiser"),
-                    "where": "wilds", "as": "men with hammers and no "
-                                            "demands",
-                    "skins": {"cutthroat": "Breaker",
-                              "slinger": "Sabot", "bruiser": "Hammer-Man"},
-                    "chance": 0.40},
-         quest={"post": job(
-             "Every Broken Loom",
-             "The syndicate wants the breakers stopped before the papers "
-             "hang the next mill fire on the strike. It will not say so "
-             "in writing and will not be seen paying.",
-             pool=_GOBLIN_TOUGHS, sites=("the weaving floor",),
-             giver="the syndicate's steward",
-             epilogue="The breakers are stopped and the syndicate was "
-                      "never there. The looms are running and the strike "
-                      "still has a name.",
-             failure_epilogue="Another mill is ash. The papers have the "
-                              "strike's name on the front page and the "
-                              "syndicate has lost the town."),
-             "pay": 1.20, "reprice": 1.1}),
-    card("gibili/muckraker", "The muckraker", "gibili",
-         tension=("parliament-deadlock", "syndicate-vs-syndicate"),
-         days=(12, 20),
-         news="A journalist went undercover into a mill and came out with "
-              "a story somebody will kill to keep unprinted. Three "
-              "parties have already offered to buy it.",
-         state={"while": ("story-unprinted",)},
-         quest={"post": job(
-             "Escort It, Bury It, Finish It",
-             "The story needs a press, or a fire, or a second half. One "
-             "quest shape and three employers, and the journalist has "
-             "opinions about which.",
-             pool=_GOBLIN_TOUGHS, sites=("the news office", "the mill "
-                                         "yard"),
-             giver="the journalist", places=2,
-             epilogue="The story is where the party's employer wanted it. "
-                      "The journalist is alive and knows exactly who "
-                      "arranged that.",
-             failure_epilogue="The journalist is in the river and the "
-                              "notes went with her. The mill is hiring "
-                              "again next week."),
-             "pay": 1.30, "reprice": 1.1}),
-
     # == THE WAR LAYER'S FEED ============================================== #
     # The succession cluster: the cards that admit on the crown's
-    # circumstance, and move it. They are land-wide over the CROWNED lands
-    # -- Gibili has no crown to pass, and its version is the junta above.
+    # circumstance, and move it. They are land-wide over the CROWNED lands,
+    # which since the human contraction is all three: Tergal's high chief
+    # is elected, but a contested election is a succession like any other.
+    # The tuple stays named rather than becoming ANY_LAND so that a later
+    # crownless country reads as an exception instead of a silent inclusion.
     card("crown/infant-heir", "The infant heir", _CROWNED,
          succession=("disputed",), without=("regency-on",), days=(25, 40),
          news="The crown has passed to a child and a regency council is "
@@ -3589,26 +2617,6 @@ POLITICS_CARDS = (
                               "The cousin has taken his people east and "
                               "is not coming to the council."),
              "pay": 1.25, "slots": 1}),
-    card("dvarvengrond/conclave", "The electors do not agree",
-         "dvarvengrond", constitution=("arbiter", "empty-throne"),
-         succession=("disputed", "heirless"), days=(30, 50),
-         news="The electors' conclave has sat for a year without "
-              "agreeing. The ledger's clerks are running the mountain in "
-              "the meantime, and are getting rather good at it.",
-         state={"while": ("conclave-locked",)},
-         quest={"post": job(
-             "The Ledger's Clerks",
-             "A clerk who has been quietly governing for a year wants a "
-             "sealed box carried out of the conclave hall. He will not "
-             "say what is in it and pays as if he knows.",
-             pool=_DWARF_TOUGHS, sites=("the conclave hall",),
-             giver="the ledger's chief clerk",
-             epilogue="The box is out and the conclave voted three days "
-                      "later. Nobody has explained the connection.",
-             failure_epilogue="The box was opened by the wrong clan. The "
-                              "conclave has adjourned for another year."),
-             "pay": 1.25, "slots": -1}),
-
     # -- the diplomatic instruments: how wars end, and stay ended ---------- #
     # Each is a state one land HOLDS and an authored relation edge the other
     # derives off it -- and each has a card in it, which is the whole point
@@ -3762,11 +2770,8 @@ POLITICS_CARDS = (
 # and the packet stays a wide pool instead of a content budget. What is left
 # ungated is one card a land at most, kept rare by its own `chance`.
 
-_SEERESS_HOOK = _authority_hook("seeress", "the seeress", "seeress")
 _HERMIT_HOOK = _authority_hook("hermit", "the walled-in hermit", "hermit")
-_PROPHET_HOOK = _authority_hook("prophet", "the street prophet", "prophet")
 _TALENT_HOOK = _authority_hook("wild-talent", "the wild talent", "talent")
-_MASTER_HOOK = _authority_hook("master", "the master for hire", "master")
 
 RELIGION_CARDS = (
     # == Firascir: THE PARISH IS THE SECOND STATE ========================== #
@@ -3902,28 +2907,6 @@ RELIGION_CARDS = (
                               "gone. Nobody in the village saw who did "
                               "that either."),
              "slots": 1, "pay": 1.10}),
-    card("firascir/franchise", "The ladder faith opens a branch", "firascir",
-         states=("franchise-here",), days=(12, 20),
-         news="A goblin ladder faith has opened a branch in the market "
-              "town. It has handbills, a brass band and a tiered price "
-              "list, and the parish priest has stopped sleeping.",
-         menu={"goods": 1.10},
-         quest={"post": job(
-             "The Handbill War",
-             "The parish priest wants the branch shut and will not say how. "
-             "The branch's recruiter wants his handbill men walked to the "
-             "next four villages. Neither of them asked first who else was "
-             "hiring.",
-             pool=_TOUGHS, sites=("the market square", "the village road"),
-             giver="the parish priest",
-             epilogue="The branch is shut and its recruiter has gone south "
-                      "with the takings. The parish is counting its "
-                      "collection again, hopefully.",
-             failure_epilogue="The branch has three hundred subscribers "
-                              "and a second storefront. The priest has "
-                              "written to the bishop twice."),
-             "pay": 1.10}),
-
     # == The Sun communion: ONE CHURCH, TWO RITES ========================== #
     # The one card that belongs to both human lands, because the argument
     # does: every joint synod ends one insult short of the split.
@@ -4058,207 +3041,6 @@ RELIGION_CARDS = (
                               "a year. Everyone is doing it in cellars."),
              "slots": -1, "pay": 1.20}),
 
-    # == Ensimaa: REVERENCE WITHOUT WORSHIP ================================ #
-    # The one land packet that runs four worship cards, not five: the
-    # funeral card was cut 2026-08-11 (designer call; designlog).
-    card("ensimaa/the-mission", "The mission that converted no one",
-         "ensimaa", tension=("purity-vs-fringe",),
-         wealth=("normal", "prosperous"), days=(15, 25),
-         news="The Sun-church mission has stood in the capital for four "
-              "hundred years and converted no one. The elves send polite "
-              "questions the missionaries cannot answer, and fix the "
-              "mission's roof when it leaks. Both sides call it a "
-              "success.",
-         state={"while": ("mission-open",)},
-         menu={"lodging": 0.90},
-         quest={"post": job(
-             "The Mission's Roof",
-             "The mission's roof is going again and the purity board has "
-             "found a reason the repair cannot be certified. The mission "
-             "wants the timber brought up the river road anyway.",
-             pool=_ELF_TOUGHS, sites=("the river road", "the mission house"),
-             giver="the mission's dean",
-             epilogue="The roof is on. The purity board has entered the "
-                      "repair as an unlicensed structure and taken no "
-                      "further action for four hundred years.",
-             failure_epilogue="The timber never arrived. The mission has "
-                              "moved its books into the one dry room."),
-             "slots": 1}),
-    card("ensimaa/one-word", "One word in one old text", "ensimaa",
-         tension=("school-vs-school",),
-         faction_edge=("ensimaa/schools-dispute-rival-schools",),
-         days=(15, 25),
-         news="Two contemplative schools have disputed one word in one old "
-              "text for nine hundred years. An essay answering the other "
-              "side has just been finished. From outside, nothing has "
-              "happened at all.",
-         quest={"post": job(
-             "The Answering Essay",
-             "The essay has to reach the other school's teacher, who lives "
-             "nine days up the valley and does not admit visitors. The "
-             "writer will not send it by any hand that has read it.",
-             pool=_ELF_TOUGHS, sites=("the upper valley", "the still court"),
-             giver="the school's copyist",
-             epilogue="The essay was delivered unread. The answer is "
-                      "expected within the decade.",
-             failure_epilogue="The essay was read on the road and the "
-                              "wording is now public. Both schools have "
-                              "stopped writing to each other."),
-             "pay": 1.15, "reprice": 1.10}),
-    card("ensimaa/the-remembrance", "The remembrance is challenged",
-         "ensimaa", tension=("elders-vs-young",),
-         faction_edge=("ensimaa/elders-block-young",), days=(12, 20),
-         news="The dead are not prayed to here but remembered exactly -- "
-              "recited, name by name, deed by deed, for millennia. Somebody "
-              "has stood up in the star-court and said that one of the "
-              "deeds is not what happened.",
-         quest={"post": job(
-             "Name By Name, Deed By Deed",
-             "The challenge stands or falls on what four witnesses said "
-             "eight hundred years ago, and two of the four wrote it down "
-             "somewhere the house would rather nobody went. Curating the "
-             "record is sacrilege in the one place elves keep something "
-             "sacred, which is what makes this worth paying for.",
-             pool=_ELF_TOUGHS, sites=("the star-court", "the sealed room"),
-             giver="the challenger's second",
-             epilogue="The recitation was corrected in public and the "
-                      "house that kept the sealed room said nothing at "
-                      "all. It will be reciting the new version by "
-                      "spring.",
-             failure_epilogue="The challenge was withdrawn and the "
-                              "challenger is not recited with anybody now. "
-                              "The sealed room is sealed again."),
-             "pay": 1.20, "reprice": 1.10}),
-    card("ensimaa/the-young-south", "The ones who go to learn endings",
-         "ensimaa", states=("young-abroad",), days=(12, 20),
-         news="The young have gone south again to stand where death has a "
-              "face. The elders call it a sickness. A few of them are old "
-              "enough to remember going.",
-         quest={"post": job(
-             "Fetch Them Back",
-             "A house wants its young brought home from the southern death "
-             "feast before the season ends. They are not lost, they are "
-             "not held, and they do not want to come.",
-             pool=_TOUGHS, sites=("the southern road", "the lit graveyard"),
-             giver="the young elf's grandmother",
-             epilogue="They came home. One of them has started keeping a "
-                      "list of names and dates, which the family does not "
-                      "discuss.",
-             failure_epilogue="They stayed south. The grandmother has "
-                              "begun the remembrance early, which is not "
-                              "done."),
-             "pay": 1.20}),
-
-    # == Dvarvengrond: THE DEAD ARE THE CHURCH ============================= #
-    card("dvarvengrond/the-seeress", "The seeress takes the high seat",
-         "dvarvengrond", tension=("tombs-vs-tonnage",), days=(10, 18),
-         hook=_SEERESS_HOOK,
-         news="{seeress} has come. The high seat is built, the questions "
-              "are submitted in order, and there are no second answers. "
-              "Her word on a vein or a succession moves markets, and "
-              "somebody always wants the question asked again.",
-         state={"while": ("seeress-here",)},
-         quest={"post": job(
-             "The Question In Order",
-             "A thane's rival has bought the place in the queue ahead of "
-             "him and means to ask the same question first. The thane "
-             "wants his own man at the front of the hall, and does not "
-             "care how.",
-             pool=_DWARF_TOUGHS, sites=("the high seat hall",),
-             giver="the thane's steward",
-             epilogue="The question was asked in the right order and "
-                      "answered once. What she said is already in the "
-                      "price of the seam.",
-             failure_epilogue="The rival asked first. The answer is his "
-                              "now, and there are no second answers."),
-             "slots": 1, "pay": 1.20}),
-    card("dvarvengrond/grave-goods", "The tomb gallery is opened",
-         "dvarvengrond", tension=("tombs-vs-tonnage",),
-         faction_edge=("dvarvengrond/deep-clans-buy-tomb-priests",),
-         without=("tombs-open",), days=(15, 25),
-         news="The rites have released a founder and his gallery is open. "
-              "Wealth goes into the ground here, so the mountain's richest "
-              "rooms are its tombs -- and tomb-robbing is the deepest "
-              "sacrilege on the books.",
-         state={"set": ("tombs-open",)},
-         quest={"post": job(
-             "Count What Is In There",
-             "The tomb priests want the gallery inventoried before the "
-             "clan works it, and want the counting party to be outsiders "
-             "with no claim in the mountain. Something has been down "
-             "there with the founder.",
-             pool=_UNDEAD, sites=("the opened gallery",),
-             giver="the tomb priest",
-             epilogue="The gallery is counted and the list is sealed. The "
-                      "clan is already arguing with the list.",
-             failure_epilogue="The counting party came back short and the "
-                              "gallery was sealed again the same day. The "
-                              "list was never written."),
-             "pay": 1.25}),
-    card("dvarvengrond/knockers-quiet", "The knockers stop knocking",
-         "dvarvengrond", tension=("tombs-vs-tonnage",),
-         faction_edge=("dvarvengrond/tomb-priests-veto-deep-clans",),
-         days=(12, 20),
-         news="The mine-spirits knock before a collapse and are paid for it "
-              "with the last bite of every meal. They have stopped "
-              "knocking. Nobody will go down, and whistling underground is "
-              "still forbidden.",
-         state={"while": ("knockers-quiet",)},
-         quest={"post": job(
-             "Somebody Has To Go Down",
-             "The gallery has to be walked to the face and back before the "
-             "quota is missed, and no dwarf in the mountain will do it "
-             "this week. The wildcatters in the condemned levels are "
-             "already down there.",
-             pool=_DWARF_TOUGHS, sites=("the silent gallery",),
-             giver="the clan's shift captain",
-             epilogue="The gallery was walked and the face is sound. The "
-                      "last bite is being left again, twice.",
-             failure_epilogue="Nobody reached the face. The quota is "
-                              "missed, which before the ancestors is a "
-                              "spiritual failing and not merely a debt."),
-             "slots": -1, "pay": 1.25}),
-    card("dvarvengrond/oath-ring", "The oath ring is broken",
-         "dvarvengrond", tension=("tombs-vs-tonnage", "clans-vs-unclanned"),
-         days=(15, 25),
-         news="An oath sworn on the shrine's iron ring binds in law. One "
-              "has been broken in front of witnesses, and oath-breaking is "
-              "the one crime the priests own outright.",
-         state={"while": ("oath-broken",)},
-         quest={"post": job(
-             "Sworn On The Ring",
-             "The priests mean to bring the oath-breaker to the shrine and "
-             "read the oath back to him in public. His clan means to have "
-             "him over the wall by then.",
-             pool=_DWARF_TOUGHS, sites=("the ring shrine", "the wall road"),
-             giver="the shrine's oath-keeper",
-             epilogue="The oath was read back to him at the ring. What "
-                      "happens to him now is the law's, and the law here "
-                      "is the priests'.",
-             failure_epilogue="He is over the wall and unclanned. The ring "
-                              "has been taken off the shrine until the "
-                              "matter is settled."),
-             "pay": 1.15}),
-    card("dvarvengrond/the-blot", "The great sacrifice", "dvarvengrond",
-         wealth=("normal", "prosperous"), chance=0.30, days=(8, 14),
-         news="The seasonal sacrifice is due. Formal worship is thin here "
-              "-- a hall blessing, a beast, and a long night -- because the "
-              "gods are far away and the ancestors are right here.",
-         state={"while": ("blot-due",)},
-         quest={"post": job(
-             "The Beasts For The Hall",
-             "The beasts for the sacrifice have to come up the mountain "
-             "road in one drive, and the road above the treeline is not "
-             "empty this season.",
-             pool=_BEASTS, sites=("the mountain road",),
-             giver="the hall's steward",
-             epilogue="The beasts are in the hall and the night went as it "
-                      "should. The steward pays out of the feast money.",
-             failure_epilogue="The drive was scattered on the road. The "
-                              "hall was blessed with what could be found, "
-                              "which everyone noticed."),
-             "slots": 1}),
-
     # == Tergal: THE PRACTICE, NOT THE CREED =============================== #
     card("tergal/called-child", "The called child", "tergal",
          tension=("white-vs-black",), days=(15, 25),
@@ -4363,138 +3145,6 @@ RELIGION_CARDS = (
                               "four days a crossing."),
              "pay": 1.15}),
 
-    # == Gibili: SALVATION AS BUSINESS ===================================== #
-    # The tithe CHAIN: early tithers are paid out of late tithers' money,
-    # and the card after it is the morning the money runs out.
-    card("gibili/prosperity-pyramid", "The prosperity pyramid", "gibili",
-         tension=("chapel-vs-ladder",),
-         faction_edge=("gibili/ladder-faiths-buy-out-chapels",),
-         without=("pyramid-on", "pyramid-burst"), days=(15, 25),
-         news="THE ONE GOD WANTS YOU RICH. Tithes are promised back "
-              "tenfold, the early tithers are being paid out of the late "
-              "tithers' offerings, and three streets have handed over "
-              "their savings this week.",
-         state={"set": ("pyramid-on",)},
-         quest={"post": job(
-             "The Collection Walk",
-             "The takings go across the district twice a week in a locked "
-             "box with two deacons and no guard. Half the district has "
-             "worked out what is in it.",
-             pool=_GOBLIN_TOUGHS, sites=("the tithe road",),
-             giver="the temple's deacon",
-             epilogue="The box got through. The deacon pays out of it, "
-                      "which is either the tenfold return or the last of "
-                      "the float.",
-             failure_epilogue="The box went in the street and the "
-                              "congregation watched it go. The tenfold "
-                              "return is being recalculated."),
-             "pay": 1.15}),
-    card("gibili/pyramid-burst", "The pyramid collapses", "gibili",
-         states=("pyramid-on",), days=(15, 25),
-         news="The tithe pyramid has stopped paying. The preacher is gone, "
-              "three streets have nothing, and the ones who recruited "
-              "their own families are the ones being looked for.",
-         state={"clear": ("pyramid-on",), "while": ("pyramid-burst",)},
-         quest={"post": job(
-             "The Preacher's Coach",
-             "The preacher went south in a hired coach with the float. "
-             "Four separate congregations are paying to have him brought "
-             "back, and they have not been told about each other.",
-             pool=_GOBLIN_TOUGHS, sites=("the south road", "the empty hall"),
-             giver="the ruined congregation's elder",
-             epilogue="The preacher is back, and so is rather less of the "
-                      "float than left. The four congregations are now "
-                      "suing each other.",
-             failure_epilogue="The preacher is somewhere south with the "
-                              "money, opening. The district is being "
-                              "recruited by a different ladder already."),
-             "pay": 1.20}),
-    card("gibili/great-disappointment", "The end is dated", "gibili",
-         tension=("chapel-vs-ladder",), days=(12, 20), hook=_PROPHET_HOOK,
-         news="{prophet} dated the End and the date has passed. Believers had "
-              "quit the mills, sold everything and gone up the slag hill "
-              "in white robes. Now come the debts, the emptied houses, "
-              "and the fringe insisting it worked, invisibly.",
-         state={"while": ("end-dated",)},
-         quest={"post": job(
-             "The Day After",
-             "Whole streets sold up at any price and want their houses "
-             "back off the men who bought them. The men who bought them "
-             "have hired the company police. The prophet has a new date.",
-             pool=_GOBLIN_TOUGHS, sites=("the sold street", "the slag hill"),
-             giver="the ruined householder",
-             epilogue="Nine families are back in their houses and the "
-                      "paperwork is a disgrace. The prophet's new date is "
-                      "in eleven months.",
-             failure_epilogue="The houses stayed sold. The slag hill has "
-                              "a permanent camp on it now, waiting for "
-                              "the new date."),
-             "pay": 1.15}),
-    card("gibili/seance-parlors", "The parlors are full", "gibili",
-         tension=("chapel-vs-ladder",), days=(12, 20),
-         news="Mediumship is a parlor business here and every parlor is "
-              "full. Most are knee-under-the-table frauds. A few are real "
-              "necromancers moonlighting, and telling which is which is "
-              "the job.",
-         state={"while": ("parlor-boom",)},
-         quest={"post": job(
-             "Which One Is Real",
-             "A widow has paid the same parlor eleven times and something "
-             "has started answering. She wants to know which of the four "
-             "parlors on her street is doing it, and she wants it stopped "
-             "at whichever one it is.",
-             pool=_CASTERS, sites=("the parlor row", "the back room"),
-             giver="the paying widow",
-             epilogue="It was the fourth parlor and it is shut. The medium "
-                      "has gone to the coast and left the furniture.",
-             failure_epilogue="All four parlors are still open and the "
-                              "widow has stopped going out. Something is "
-                              "still answering."),
-             "pay": 1.25}),
-    card("gibili/burial-club", "The burial club's fund is gone", "gibili",
-         tension=("chapel-vs-ladder",),
-         faction_edge=("gibili/chapels-split-ladder-faiths",),
-         days=(12, 20),
-         news="Weekly dues, a grand funeral guaranteed: plumes, band, the "
-              "good hearse. A goblin funeral is the one show everyone "
-              "gets, and this club's secretary has spent forty years of "
-              "dues.",
-         state={"while": ("club-run",)},
-         quest={"post": job(
-             "Plumes And The Good Hearse",
-             "Two thousand members want the secretary and the money, in "
-             "that order of preference, and a rival club has offered to "
-             "take the whole membership on if somebody brings the ledger "
-             "out of the office first.",
-             pool=_GOBLIN_TOUGHS, sites=("the club office",),
-             giver="the club's committee",
-             epilogue="The ledger is out and the secretary is in the "
-                      "cells. The funerals are running again, plainer.",
-             failure_epilogue="The ledger burned with the office. Two "
-                              "thousand members have forty years of dues "
-                              "and no proof of any of it."),
-             "pay": 1.20}),
-    card("gibili/revival-war", "The revival war", "gibili",
-         tension=("chapel-vs-ladder",), days=(10, 18),
-         news="Storefront temples, revival tents, rival processions with "
-              "brass bands, jingles and handbills. Two of them have "
-              "started booking the same corner on the same evening, and "
-              "the basement presses are printing tract against tract.",
-         state={"while": ("revival-war",)},
-         quest={"post": job(
-             "The Same Corner",
-             "Both congregations have paid for the corner on Friday and "
-             "both intend to be on it. The magistrate has hired whoever "
-             "will stand between two brass bands.",
-             pool=_GOBLIN_TOUGHS, sites=("the disputed corner",),
-             giver="the district magistrate",
-             epilogue="Friday passed with one band on the corner and one "
-                      "in the next street. The magistrate calls that "
-                      "policing.",
-             failure_epilogue="Friday went to the clubs and the corner is "
-                              "closed to both. Three storefronts have "
-                              "merged out of sheer solidarity."),
-             "slots": 1, "pay": 1.10}),
 )
 
 # --------------------------------------------------------------------------- #
@@ -4566,8 +3216,7 @@ MAGIC_CARDS = (
                               "the road collecting it."),
              "pay": 1.25}),
     card("magic/recruiters", "The scouts are out",
-         ("firascir", "mortellaria", "ensimaa", "dvarvengrond", "gibili"),
-         chance=0.25, days=(12, 20),
+         ("firascir", "mortellaria"), chance=0.25, days=(12, 20),
          news="Talent born poor stays untrained, so the wizard "
               "organizations look for it: the scout at the fair, the "
               "family paid off, the tested orphan. Two of the scouts are "
@@ -4589,8 +3238,7 @@ MAGIC_CARDS = (
                               "The scout is writing a report, and the "
                               "villages are hiding their bright ones."),
              "pay": 1.15}),
-    card("magic/reagent-road", "The reagent road",
-         ("ensimaa", "dvarvengrond", "mortellaria", "gibili"),
+    card("magic/reagent-road", "The reagent road", "mortellaria",
          chance=0.30, days=(12, 20),
          news="Great workings want rare and expensive reagents: crystal, "
               "specific animal parts, the wool of golden sheep. A "
@@ -4684,70 +3332,6 @@ MAGIC_CARDS = (
                               "there."),
              "pay": 1.25}),
 
-    # -- Gibili: THE MASTERS FOR HIRE ------------------------------------- #
-    card("gibili/masters-hiring", "A master is buying errands", "gibili",
-         traits=("spell-friendly", "gifted", "trade-minded"), days=(12, 20),
-         hook=_MASTER_HOOK,
-         news="Any master here teaches, for a price or for quests run on "
-              "the master's errands. {master} is buying errands this month "
-              "and paying in lessons. No law here protects the buyer.",
-         state={"while": ("masters-hiring",)},
-         quest={"post": job(
-             "Paid In Lessons",
-             "The master's errand is four days out and he has been "
-             "unusually exact about the route and unusually vague about "
-             "what is at the end of it. The last two men he sent have not "
-             "come back to complain.",
-             pool=_CASTERS, sites=("the master's errand",),
-             giver="the master for hire",
-             epilogue="The errand is done and the lessons are being given, "
-                      "which is more than the last two got.",
-             failure_epilogue="The errand failed and the master has "
-                              "stopped answering his door. The fee was "
-                              "paid in advance."),
-             "pay": 1.20}),
-    card("gibili/old-practice", "The old practice, recognized", "gibili",
-         states=("old-practice",), days=(12, 20),
-         news="The preindustrial past's spirit-practice -- spirits, minor "
-              "gods and demons dealt with by name -- survives at the "
-              "margins here, and somebody who runs it at full strength has "
-              "come over the border. The people who kept the residue "
-              "recognized him at once.",
-         quest={"post": job(
-             "Dealt With By Name",
-             "A district has been paying something by name for two "
-             "generations without knowing what the payments were for, and "
-             "the visitor from over the border has told them. They would "
-             "now like to stop paying.",
-             pool=_CASTERS, sites=("the margin district", "the old shrine"),
-             giver="the district's oldest tenant",
-             epilogue="The payments have stopped and nothing has come to "
-                      "collect yet. The visitor left the same night and "
-                      "would not say why.",
-             failure_epilogue="The district is paying double now, and "
-                              "three streets have started paying who "
-                              "never used to."),
-             "pay": 1.25}),
-    card("gibili/the-exiles", "The academy's exiles", "gibili",
-         states=("academy-exiles",), days=(12, 20),
-         news="The seance parlors' moonlighting necromancers trained "
-              "somewhere, and it is usually the southern academy. This "
-              "year's examined men have arrived, and they are practising "
-              "in fields outside town because the rent is cheaper.",
-         quest={"post": job(
-             "Practising In A Field",
-             "A farmer wants the men out of his back field and the field "
-             "put back the way it was. He is very clear that he does not "
-             "care in which order.",
-             pool=_UNDEAD, sites=("the back field",),
-             giver="the farmer",
-             epilogue="The field is empty and mostly level. The men have "
-                      "moved to a district where nobody owns anything.",
-             failure_epilogue="The men are still in the field and the "
-                              "farmer has stopped going out past the "
-                              "gate."),
-             "pay": 1.20}),
-
     # -- Tergal: THE PRACTICE (religion owns the rest) --------------------- #
     # The dedupe doctrine: the call, the white and black shamans, the
     # weather-worker and taboo law are all in the religion packet. What
@@ -4802,73 +3386,9 @@ MAGIC_CARDS = (
                               "advertising for a new subject."),
              "pay": 1.30}),
 
-    # -- Ensimaa: THE INTEGRATED ART -------------------------------------- #
-    card("ensimaa/teaching-outsider", "The schools weigh an outsider",
-         "ensimaa", tension=("school-vs-school",),
-         wealth=("normal", "prosperous"), days=(15, 25),
-         news="A visitor sees more working magic in a market morning here "
-              "than in a Firascir year, and the best of it sits where "
-              "every other advantage sits: at the top, with the ageless. "
-              "A school is weighing an outsider's application anyway.",
-         state={"while": ("teaching-open",)},
-         quest={"post": job(
-             "The Ladder Of Sponsors",
-             "Teaching an outsider is priced twice: in fees, and in "
-             "standing. The applicant's sponsor needs three errands run "
-             "before the interview, and one of them is an apology to "
-             "somebody who has been owed it for two centuries.",
-             pool=_ELF_TOUGHS, sites=("the white court", "the old grievance"),
-             giver="the applicant's sponsor",
-             epilogue="The interview happened and the answer was yes, on "
-                      "terms. What is taught is real; how long the ladder "
-                      "runs still depends on who is asking.",
-             failure_epilogue="The interview was postponed indefinitely, "
-                              "which here means exactly what it says."),
-             "pay": 1.20}),
-
-    # -- Dvarvengrond: THE PRACTICAL ARTS --------------------------------- #
-    card("dvarvengrond/bad-runework", "The runework fails inspection",
-         "dvarvengrond", tension=("deep-vs-surface",), days=(12, 20),
-         news="Magic is a trade skill here -- artificing, alchemy, healing, "
-              "worked in workshops and inspected like smithing. A whole "
-              "season's runework has failed inspection, and it was sold "
-              "abroad six months ago.",
-         menu={"steel": 1.20},
-         quest={"post": job(
-             "Six Months Of It, Abroad",
-             "The guild wants the bad work bought back before anybody "
-             "above ground works out whose mark is on it. The envoys have "
-             "the list of buyers and no authority anywhere.",
-             pool=_DWARF_TOUGHS, sites=("the surface road", "the buyer's "
-                                        "yard"),
-             giver="the guild's inspector",
-             epilogue="Most of the season is back in the mountain and "
-                      "quietly melted. The guild's mark is intact and the "
-                      "inspector has aged.",
-             failure_epilogue="The work stayed sold. Two of it have "
-                              "already failed in use, and the mark on "
-                              "them is being read out in a foreign "
-                              "court."),
-             "pay": 1.20}),
 )
 
-def _surviving_cards(cards: tuple[dict, ...]) -> tuple[dict, ...]:
-    """Keep the three country packets and narrow shared scopes to them."""
-    kept = []
-    for spec in cards:
-        scope = tuple(polity for polity in spec["land"]
-                      if polity == ANY_LAND or polity in LAND_SPECS)
-        if not scope:
-            continue
-        kept.append(spec if scope == spec["land"] else {**spec, "land": scope})
-    return tuple(kept)
-
-
-CONSTITUTIONS = {p: rows for p, rows in CONSTITUTIONS.items()
-                 if p in LAND_SPECS}
-TENSIONS = {p: rows for p, rows in TENSIONS.items() if p in LAND_SPECS}
-CARDS = _surviving_cards(
-    CARDS + POLITICS_CARDS + RELIGION_CARDS + MAGIC_CARDS)
+CARDS = CARDS + POLITICS_CARDS + RELIGION_CARDS + MAGIC_CARDS
 CARDS_BY_KEY = {c["key"]: c for c in CARDS}
 
 GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
@@ -4881,67 +3401,15 @@ GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
                                                 # boards and shelves)
 
 RELATIONS = (
-    # THE GRANARY (Firascir) and the southern harvest (Mortellaria).
-    relation("firascir", "ensimaa", "grain", when=GRAIN_FAILS,
-             then="grain-scarce", because="the Firascir grain"),
-    relation("firascir", "dvarvengrond", "grain", when=GRAIN_FAILS,
-             then="grain-scarce", because="the Firascir grain"),
-    relation("firascir", "gibili", "grain", when=GRAIN_FAILS,
-             then="grain-scarce", because="the Firascir grain"),
+    # -- the economy floor (2026-08-09) ----------------------------------- #
+    # THE GRANARY: Firascir grows the bread the steppe does not, so a
+    # failed northern harvest is felt on a Tergal shelf.
     relation("firascir", "tergal", "grain", when=GRAIN_FAILS,
              then="grain-scarce", because="the Firascir grain"),
-    relation("mortellaria", "dvarvengrond", "grain",
-             when=("tax-farmed", "paper-worthless", "drought"),
-             then="grain-scarce", because="the southern food ships"),
-    relation("mortellaria", "ensimaa", "grain",
-             when=("tax-farmed", "paper-worthless", "drought"),
-             then="grain-scarce", because="the southern food ships"),
-    # Timber and the roads it comes down.
-    relation("firascir", "dvarvengrond", "timber", when=("toll-squeeze",),
-             then="timber-dear", because="the tolls on the timber road"),
-    # The elves' rented ground: the claims and the concession hang on it.
-    relation("ensimaa", "dvarvengrond", "crystal",
-             when=("foreigners-unwelcome",), then="claims-revoked",
-             because="the elven crystal claim"),
-    relation("ensimaa", "gibili", "timber",
-             when=("foreigners-unwelcome", "eviction-on"),
-             then="concession-lost", because="the elven logging concession"),
-    # ...and the fine work the south buys from it.
-    relation("ensimaa", "mortellaria", "luxury",
-             when=("craft-lost", "eviction-on"), then="luxury-dear",
-             because="the elven workshops"),
-    # The mountain's metal, and what an idle pit does to everyone who
-    # buys out of it.
-    relation("dvarvengrond", "firascir", "steel",
-             when=("strike", "deposit-drying"), then="steel-dear",
-             because="the dwarven forges"),
-    relation("dvarvengrond", "tergal", "metal",
-             when=("strike", "deposit-drying"), then="metal-scarce",
-             because="the dwarven metal"),
-    # Gibili arms Mortellaria -- and Mortellaria's money is what keeps the
-    # mills warm, which is the one edge on this table that is GOOD news.
-    relation("gibili", "mortellaria", "arms", when=("mills-stopped",),
-             then="arms-scarce", because="the Gibili gun mills"),
-    relation("gibili", "tergal", "arms",
-             when=("mills-stopped", "mills-starved"), then="arms-scarce",
-             because="the Gibili gun mills"),
-    relation("mortellaria", "gibili", "orders", when=("coin-flush",),
-             then="mills-busy", because="the southern arms orders"),
-    # A tribe with no herd goes where the grain is.
+    # A clan with no herd goes where the grain is.
     relation("tergal", "firascir", "raid", when=("herd-loss", "raiding"),
              then="raiders-out", because="the dying Tergal herds"),
-    relation("tergal", "ensimaa", "raid", when=("raiding",),
-             then="raiders-out", because="the riding Tergal clans"),
-    # -- politics (2026-08-10) ------------------------------------------- #
-    # The exile edge: what the sealed realm sends after the people who
-    # left. It fires in OTHER lands, which is the only way a card about
-    # leaving a country can reach the party at all.
-    relation("ensimaa", "gibili", "exiles", when=("hunters-out",),
-             then="elf-hunters", because="the Ensimaa exile hunters"),
-    relation("ensimaa", "mortellaria", "exiles", when=("hunters-out",),
-             then="elf-hunters", because="the Ensimaa exile hunters"),
-    relation("ensimaa", "firascir", "exiles", when=("hunters-out",),
-             then="elf-hunters", because="the Ensimaa exile hunters"),
+    # -- politics (2026-08-10) -------------------------------------------- #
     # THE DIPLOMATIC INSTRUMENTS -- how wars end and stay ended. Each is a
     # state one land holds and a state the other derives off it, and each
     # has a card standing in it: the courtly hostage, the yearly tribute,
@@ -4969,34 +3437,7 @@ RELATIONS = (
              when=("interdict", "relic-hunt", "bones-tested"),
              then="schism-near",
              because="the northern rite's accusations"),
-    # THE ONES WHO GO TO LEARN ENDINGS: the young elves travel to the one
-    # place where death has a face, and the edge fires at HOME, where the
-    # elders are.
-    relation("mortellaria", "ensimaa", "pilgrims",
-             when=("dead-abroad", "carnival-on"), then="young-abroad",
-             because="the southern death feast"),
-    # THE FRANCHISE MISSION: Gibili exports religion the way it exports
-    # guns, and the parish priest's reaction writes itself.
-    relation("gibili", "firascir", "mission",
-             when=("revival-war", "pyramid-on"), then="franchise-here",
-             because="the Gibili ladder faiths"),
-    # THE OLD PRACTICE: spirits, minor gods and demons dealt with by name --
-    # shared inheritance run at full strength in Tergal and surviving at the
-    # margins in Gibili, where practitioners recognize each other.
-    relation("tergal", "gibili", "practice", when=("black-tent",),
-             then="old-practice", because="the old practice across the "
-                                          "border"),
-    # ...and where the parlors' real necromancers were trained: the purge
-    # in the southern academy is an arrival in the goblin districts.
-    relation("mortellaria", "gibili", "exiles", when=("necromancy-purged",),
-             then="academy-exiles", because="the academy's purge"),
 )
-
-# Relations are only live when both countries survive the contraction. The
-# retained eight edges cover grain, raids, tribute, dynastic politics and the
-# north/south religious split without inventing replacement packets.
-RELATIONS = tuple(edge for edge in RELATIONS
-                  if edge["from"] in LAND_SPECS and edge["to"] in LAND_SPECS)
 
 
 # --------------------------------------------------------------------------- #
@@ -5063,61 +3504,6 @@ FACTS = (
          "death-face rite makes it thinkable; the northern rite cites it "
          "as proof of the creeping heresy."),
 
-    # -- Ensimaa: REVERENCE WITHOUT WORSHIP ------------------------------- #
-    fact("ensimaa", "unpetitioned-heaven", "THE UNPETITIONED HEAVEN",
-         "Elves acknowledge the powers humans call gods -- they are old "
-         "enough to have met a few -- and do not worship them. Reverence "
-         "goes to the whole of things, never to a person in it. Asking a "
-         "power for favours strikes them as a category error."),
-    fact("ensimaa", "star-courts", "THE STAR-COURTS",
-         "The land's only religious architecture: open-roofed white marble "
-         "courts, silent by custom. No clergy, no services, no images. An "
-         "elf sits with the night sky; that is the whole liturgy. "
-         "Visitors are admitted and the silence is kept without one "
-         "posted rule."),
-    fact("ensimaa", "the-schools", "THE SCHOOLS",
-         "A handful of contemplative disciplines older than human "
-         "civilization: teacher lineages, essays exchanged a decade apart. "
-         "From outside they are indistinguishable; inside, one word in one "
-         "old text is a gulf. It is also why the sealed realm never seized "
-         "a church -- there has never been one to seize."),
-    fact("ensimaa", "memory-afterlife", "MEMORY IS THE AFTERLIFE",
-         "The dead are not prayed to but remembered exactly: recited, name "
-         "by name, deed by deed, for millennia. Curating that record is "
-         "sacrilege in the one place elves keep something sacred."),
-    fact("ensimaa", "integrated-art", "THE INTEGRATED ART",
-         "Much more magic here, and no profession fencing it in: the "
-         "automation, the wards and the life-extending work are one "
-         "continuous fabric with everyday life. The frozen ladder applies "
-         "to the art too -- the best of it sits with the ageless."),
-
-    # -- Dvarvengrond: THE DEAD ARE THE CHURCH ---------------------------- #
-    fact("dvarvengrond", "ancestors", "THE DEAD ARE RIGHT HERE",
-         "The gods are far away. Formal worship is thin -- a hall "
-         "blessing, a seasonal sacrifice -- and the working faith is the "
-         "dead in the stone: consulted, fed, and still holding claims. The "
-         "deepest galleries are tombs and the tombs are the holiest ground "
-         "in the mountain."),
-    fact("dvarvengrond", "knockers", "THE KNOCKERS",
-         "The mine-spirits knock before a collapse and are paid for it: "
-         "the last bite of every meal, left at the working face. "
-         "Whistling underground is forbidden. Skeptics exist; they are "
-         "assigned the unluckiest shifts."),
-    fact("dvarvengrond", "oath-ring", "THE OATH RING",
-         "An oath sworn on the shrine's iron ring binds in LAW -- the "
-         "Grand Ledger's sacred sibling. Oath-breaking is the one crime "
-         "the priests own outright."),
-    fact("dvarvengrond", "grave-goods", "GRAVE GOODS",
-         "Wealth is buried with the dead: hoarding as statesmanship, "
-         "continued past death. The mountain's richest rooms are its "
-         "tombs, tomb-robbing is the deepest sacrilege on the books, and "
-         "the crime layer's most lucrative marks are its worst ideas."),
-    fact("dvarvengrond", "practical-arts", "THE PRACTICAL ARTS",
-         "Dwarven magic is artificing, alchemy and healing: a trade skill "
-         "inside the clan and guild structures, worked in workshops rather "
-         "than towers, priced like smithing and inspected like it too. "
-         "Runes in the work, not fire from the hand."),
-
     # -- Tergal: THE PRACTICE, NOT THE CREED ------------------------------ #
     fact("tergal", "the-call", "THE CALL",
          "Shamans do not choose. A sickness or madness takes the marked "
@@ -5148,38 +3534,7 @@ FACTS = (
          "there is a ritual there is an art: the fire dance, and the "
          "flicker dance where a dancer blinks in and out of sight."),
 
-    # -- Gibili: SALVATION AS BUSINESS ------------------------------------ #
-    fact("gibili", "religion-market", "THE RELIGION MARKET",
-         "No church -- a market. Storefront temples, revival tents, rival "
-         "processions with brass bands, jingles and handbills. "
-         "Congregations are founded, merged, split and failed like firms, "
-         "weekly."),
-    fact("gibili", "ladder-faiths", "THE LADDER FAITHS",
-         "Enlightenment sold in ranked tiers, each rank's secrets priced "
-         "above the last and the top tiers' price never printed. "
-         "Recruiting five converts is itself a sacrament, and the "
-         "downline IS the congregation."),
-    fact("gibili", "burial-clubs", "THE BURIAL CLUBS",
-         "Weekly dues, a grand funeral guaranteed: plumes, band, the good "
-         "hearse. A goblin funeral is the one show everyone gets, which "
-         "is why an embezzled club fund is a street riot."),
-    fact("gibili", "charm-trade", "THE CHARM TRADE",
-         "Amulets, blessed machine-oil, curse insurance with printed "
-         "policies. Folk superstition as light industry, sold door to "
-         "door."),
-    fact("gibili", "masters-for-hire", "THE MASTERS FOR HIRE",
-         "Goblin magic is open and transactional: any master teaches, for "
-         "a price or for errands. Buyer beware, constitutionally -- the "
-         "useless book sold dear, the master who vanishes with the fee, "
-         "the master who now prefers his errand-runner disappeared."),
-    fact("gibili", "old-practice-residue", "THE OLD PRACTICE'S RESIDUE",
-         "The preindustrial goblin past's spirit-practice -- spirits, "
-         "minor gods and demons dealt with by name -- survives at the "
-         "margins. Tergal runs it at full strength; practitioners "
-         "recognize each other across the border."),
 )
-
-FACTS = tuple(entry for entry in FACTS if entry["land"] in LAND_SPECS)
 
 FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
     polity: tuple(f for f in FACTS if f["land"] == polity)
@@ -5228,24 +3583,6 @@ OPTIONS = (
            gives=1,
            line="a hooded burial brotherhood buries you whoever you turn "
                 "out to have been, and the hood is nobody's business"),
-    # -- Gibili: salvation as business, capability as commerce ------------- #
-    option("gibili/charm", "a charm and a printed policy", "gibili",
-           does="bless", gold=10, term="goods", days=3, gives=1,
-           line="amulet, blessed machine-oil, curse insurance -- the policy "
-                "is printed and the small print is enormous"),
-    option("gibili/burial-club", "a week's burial club dues", "gibili",
-           does="bless", gold=8, term="lodging", days=5, gives=1,
-           line="plumes, band, the good hearse, guaranteed; the fund is "
-                "held by a secretary nobody has met"),
-    option("gibili/masters-fee", "a master's teaching", "gibili",
-           does="book", gold=90, term="goods", states=("masters-hiring",),
-           line="any master teaches, for a price. Buyer beware, "
-                "constitutionally"),
-    # -- Dvarvengrond: the hall, and the dead in it ------------------------ #
-    option("dvarvengrond/hall-blessing", "a hall blessing", "dvarvengrond",
-           does="bless", gold=30, term="steel", days=6, gives=1,
-           line="the ancestors are consulted and fed, and the hall answers "
-                "for you while you are under its roof"),
     # -- Tergal: the priced thumb on the weather's scale ------------------- #
     option("tergal/rain-stone", "the rain stone", "tergal", does="sky",
            gold=60, term="goods", word="rain", holds=2,
@@ -5262,15 +3599,7 @@ OPTIONS = (
            does="book", gold=150, term="goods", states=("tower-open",),
            line="gold might open the door; volunteering as the subject of "
                 "the experiment opens it faster and costs less"),
-    # -- Ensimaa: priced twice, and the second price is not gold ----------- #
-    option("ensimaa/teaching", "a school's teaching", "ensimaa",
-           does="book", gold=220, term="goods", states=("teaching-open",),
-           line="high fees AND standing: the ladder of sponsors has already "
-                "been climbed by the time this price is quoted"),
 )
-
-OPTIONS = tuple(spec for spec in OPTIONS
-                if any(polity in LAND_SPECS for polity in spec["land"]))
 
 OPTIONS_BY_KEY = {o["key"]: o for o in OPTIONS}
 
@@ -6729,53 +5058,36 @@ def _validate_state_tables() -> None:
                                  f"the game produces that state")
 
 
-def _prune_unreachable_cards(cards: tuple[dict, ...]) -> tuple[dict, ...]:
-    """Remove chain links whose producer belonged to a deleted packet."""
-    cards = tuple(cards)
-    while True:
-        outlives = set(EXTERNAL_STATES)
-        outlives.update(edge["then"] for edge in RELATIONS)
-        held_while: dict[str, set[str]] = {}
-        for drawn in cards:
-            state = drawn["outlets"].get("state") or {}
-            outlives.update(state.get("set", ()))
-            outlives.update((state.get("slot") or {}).values())
-            for state_id in state.get("while", ()):
-                held_while.setdefault(state_id, set()).add(drawn["track"])
-        kept = tuple(
-            drawn for drawn in cards
-            if all(state_id in outlives
-                   or bool(held_while.get(state_id, set()) - {drawn["track"]})
-                   for state_id in drawn["admits"]["states"])
-        )
-        if len(kept) == len(cards):
-            return kept
-        cards = kept
+def _validate_three_countries() -> None:
+    """The world layer against the fixed Europe map (2026-08-15, Europe MVP
+    Closure). The contraction used to be enforced by FILTERING the catalog
+    at import, which meant a packet could go missing without anything
+    noticing. Nothing filters now, so this says out loud what every country
+    owes: its own deck on every track it can draw from, its own lore, and a
+    place in the relations table -- an isolated country is a country whose
+    neighbours' troubles never reach it."""
+    if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
+        raise ValueError("the world layer expects the three Europe "
+                         f"countries, got {tuple(LAND_SPECS)}")
+    for polity in LAND_SPECS:
+        for track in TRACKS:
+            if not [c for c in CARDS
+                    if c["track"] == track and in_land(c, polity)]:
+                raise ValueError(f"{polity}: no {track} card can be drawn "
+                                 f"there")
+        if not FACTS_BY_LAND.get(polity):
+            raise ValueError(f"{polity}: no standing lore")
+        if not [e for e in RELATIONS
+                if polity in (e["from"], e["to"])]:
+            raise ValueError(f"{polity}: no relation reaches it")
+        if polity not in ENVIRONMENT_PROFILES_BY_LAND:
+            raise ValueError(f"{polity}: no environment profile, so no sky")
 
 
-CARDS = _prune_unreachable_cards(CARDS)
-CARDS_BY_KEY = {c["key"]: c for c in CARDS}
-STANDING_TENSIONS = {p: rows for p, rows in STANDING_TENSIONS.items()
-                     if p in LAND_SPECS}
-FACTION_EDGES = tuple(edge for edge in FACTION_EDGES
-                      if edge["land"] in LAND_SPECS)
-
-# State outlet tables are player-facing only when a surviving card or relation
-# can produce their key. Dropping the dead rows completes the packet removal
-# and keeps the import-time validator strict.
-_ACTIVE_STATES = set(EXTERNAL_STATES)
-_ACTIVE_STATES.update(edge["then"] for edge in RELATIONS)
-for _drawn in CARDS:
-    _state = _drawn["outlets"].get("state") or {}
-    for _group in ("set", "while"):
-        _ACTIVE_STATES.update(_state.get(_group, ()))
-    _ACTIVE_STATES.update((_state.get("slot") or {}).values())
-STATE_MENU = {key: value for key, value in STATE_MENU.items()
-              if key in _ACTIVE_STATES}
-STATE_ENCOUNTERS = {key: value for key, value in STATE_ENCOUNTERS.items()
-                    if key in _ACTIVE_STATES}
-STATE_MARKS = {key: value for key, value in STATE_MARKS.items()
-               if key in _ACTIVE_STATES}
+ENVIRONMENT_PROFILES_BY_LAND = {
+    polity: ENVIRONMENT_PROFILES[spec["environment"]]
+    for polity, spec in LAND_SPECS.items()
+}
 
 
 def validate_content() -> None:
@@ -6843,6 +5155,7 @@ def validate_content() -> None:
     _validate_menu_tables()
     _validate_politics_tables()
     _validate_lore_tables()
+    _validate_three_countries()
     for state_id, entry in STATE_ENCOUNTERS.items():
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")

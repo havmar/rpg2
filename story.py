@@ -6,9 +6,12 @@ four waves of it -- pinned at levels 2 / 5 / 8 / 10 -- carry the campaign's
 first half. (The apocalypse questline, the L12-20 second spine, waits on
 the magic tier -- plan.md.) The design (2026-07-12, designer-vetted):
 
-- **Three country variants**, one rolled per playthrough: Mortellaria's
-  magic-fuelled Golden Empire, Firascir's deathless kingdom, and Tergal's
-  Iron Horde. The peoples are all human; the country supplies the culture.
+- **Three country variants**, one rolled per playthrough: Firascir's
+  machine-driven Golden Empire, Mortellaria's deathless kingdom, and
+  Tergal's Iron Horde. The peoples are all human; the country supplies the
+  culture. The pairing is not arbitrary -- Mortellaria owns the death rite
+  and the academy's necromancers in worldsim.py, and Firascir's own
+  religion cards are the accusations made against them.
 - **Waves are ordinary quests underneath**: same schema, same threat math
   (quests.build_site_rooms), same level-pay formulas. What is authored:
   titles, descriptions, site names, reskins, heralds, epilogues, and the
@@ -74,7 +77,7 @@ AGGRESSORS = ("firascir", "mortellaria", "tergal")
 # named faces ("Karg, the Khagan").
 
 CONQUESTS: dict[str, dict] = {
-    "mortellaria": dict(
+    "firascir": dict(
         banner="the Golden Empire",
         creed="The Golden Empire believes its neighbors are weak and must be "
               "ruled. Its army of magic machines is crossing the border.",
@@ -109,7 +112,7 @@ CONQUESTS: dict[str, dict] = {
                  desc="{lt2} leads the main army into the {land} lands. The "
                       "walls will fall. Keep the escape road open.",
                  herald="the main imperial army has reached the {land} lands. The "
-                        "city must be evacuated.",
+                        "capital must be evacuated.",
                  sites=("the burning defenses", "the last gate",
                         "the evacuation road"),
                  epilogue="The {land} lands fall to the empire. The party "
@@ -125,9 +128,9 @@ CONQUESTS: dict[str, dict] = {
                           "and its armies leave the conquered lands."),
         ),
     ),
-    "firascir": dict(
+    "mortellaria": dict(
         banner="the Undead Kingdom",
-        creed="A human king serves a dark god. His army raises the dead and "
+        creed="A king serves a dark god. His army raises the dead and "
               "sends them to conquer nearby lands.",
         conqueror_title="Undead King",
         lieutenant_titles=("Grave General", "Bone Priest"),
@@ -152,7 +155,7 @@ CONQUESTS: dict[str, dict] = {
             dict(title="The Army of the Dead",
                  desc="The undead army has entered the {land} lands. A black "
                       "relic controls it. Destroy the relic before the army "
-                      "reaches the city.",
+                      "reaches the capital.",
                  herald="the undead army has invaded the {land} lands. It "
                         "marches through the night and grows at every "
                         "graveyard.",
@@ -165,7 +168,7 @@ CONQUESTS: dict[str, dict] = {
                       "lands. Fallen defenders rise and join the enemy. Keep "
                       "the escape road open.",
                  herald="the undead have broken the defenses of the {land} "
-                        "lands. The city must be evacuated.",
+                        "lands. The capital must be evacuated.",
                  sites=("the ruined outskirts", "the last gate",
                         "the evacuation road"),
                  epilogue="The {land} lands fall to the undead. The party "
@@ -207,7 +210,7 @@ CONQUESTS: dict[str, dict] = {
                  desc="The Iron Horde has invaded the {land} lands. {lt1} "
                       "leads the siege. Break the camp and stop the attack.",
                  herald="the Iron Horde has invaded the {land} lands. The War "
-                        "Chief is attacking the main city.",
+                        "Chief is attacking the capital.",
                  sites=("the occupied farms", "the siege camp",
                         "the broken wall"),
                  epilogue="The siege is broken. The horde leaves the {land} "
@@ -216,7 +219,7 @@ CONQUESTS: dict[str, dict] = {
                  desc="The Warlord sends the whole horde into the {land} "
                       "lands. The walls will fall. Keep the escape road open.",
                  herald="the whole horde is attacking the {land} lands. The "
-                        "city must be evacuated.",
+                        "capital must be evacuated.",
                  sites=("the ruined farms", "the last gate",
                         "the evacuation road"),
                  epilogue="The {land} lands fall to the horde. The party "
