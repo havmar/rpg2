@@ -2,15 +2,10 @@
 ladder's own suite -- no sim and no bench imports it. Sessions are named,
 not numbered: the ladder renumbers itself every time a rung ships.
 
-THE SETTLEMENT TRIM (2026-08-07). The rules this pins: a land
-BEGINS with three settlements (one capital, one town, one village, topped
-up from what the catalog holds when a tier is missing); everything else the
-catalog holds is the land's RESERVE POOL, unbuilt until something needs it
-to exist; the need-to-exist draw builds a whole usable place (Sites, the
-guaranteed services, their faces, a board that fills on the first look) and
-records WHY it was founded; the draw can be steered by tier and by tags;
-a land whose reserve is dry says no rather than inventing geography; and
-the whole thing is seeded, stable, and JSON-clean so it rides the save.
+FIXED EUROPE GEOGRAPHY (2026-08-15). The rules this pins: the authored
+30x18 map and country census; one natural Area per Tile; fixed, seeded
+settlement slots; historical towns and explicit capitals; lazy settlement
+materialization with stable name reserves; and JSON-clean persistence.
 
 THE WORLD FRAME (2026-08-07, `worldsim.py`). The rules this pins: the card
 and relation record shapes and their validation; the 2d6 wealth roll at
@@ -131,29 +126,31 @@ def _settlements(world: dict, polity: str) -> list[dict]:
 
 
 class OpeningCensus(unittest.TestCase):
-    """What a fresh world holds: three settlements a land, not a catalog."""
+    """What a fresh fixed-Europe world holds before travel."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.world = _world()
 
-    def test_every_land_opens_with_three_settlements(self) -> None:
-        for polity in self.world["lands"]:
-            self.assertEqual(len(_settlements(self.world, polity)),
-                             places.SETTLEMENTS_AT_WORLDGEN, polity)
+    def test_historical_towns_plus_the_start_tile_are_materialized(self) -> None:
+        historical = {name for _r, _c, name, _p, _b, _cap
+                      in places.HISTORICAL_CITIES}
+        built = {s["name"] for s in quests.settlements(self.world)}
+        self.assertTrue(historical <= built)
+        start_slot = self.world["settlement_slots"][self.world["start_slot"]]
+        self.assertIn(start_slot["area"], self.world["areas"])
 
     def test_one_capital_a_land_and_it_stays_first(self) -> None:
         # story.py raises its waves from settlements_by_land[land][0] and
         # casts the land's notables onto it: the capital is that seat.
         for polity, setts in quests.settlements_by_land(self.world).items():
-            capitals = [s for s in setts if s["subtype"] == "capital"]
+            capitals = [s for s in setts if s["capital"]]
             self.assertEqual(len(capitals), 1, polity)
             self.assertIs(setts[0], capitals[0], polity)
 
-    def test_the_world_is_15_natural_areas_and_9_settlements(self) -> None:
+    def test_the_world_is_540_natural_areas(self) -> None:
         areas = self.world["areas"].values()
-        self.assertEqual(sum(a["kind"] == "natural" for a in areas), 15)
-        self.assertEqual(sum(a["kind"] == "settlement" for a in areas), 9)
+        self.assertEqual(sum(a["kind"] == "natural" for a in areas), 540)
 
     def test_every_opening_settlement_is_usable(self) -> None:
         # A settlement the party can stand in: known from day one, its
@@ -169,46 +166,39 @@ class OpeningCensus(unittest.TestCase):
 
 
 class TheReservePool(unittest.TestCase):
-    """The catalog's remainder: names and skeletons, not places."""
+    """Rolled settlement slots are the finite unbuilt census."""
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.world = _world()
 
-    def test_unbuilt_catalog_settlements_wait_in_the_reserve(self) -> None:
-        # Nothing authored is lost by the trim: every catalog settlement is
-        # either one of the opening three or waiting in the reserve.
-        for polity, spec in places.LAND_SPECS.items():
-            built = {s["name"] for s in _settlements(self.world, polity)}
-            waiting = {e["name"]
-                       for e in places.reserve_settlements(self.world, polity)}
-            authored = {name for name, _tier, _role, _tags
-                        in spec["settlements"]}
-            self.assertEqual(authored, authored & (built | waiting), polity)
-            self.assertFalse(built & waiting, polity)
+    def test_unmaterialized_slots_wait_in_the_fixed_census(self) -> None:
+        for polity in self.world["lands"]:
+            waiting = places.reserve_settlements(self.world, polity)
+            self.assertTrue(waiting, polity)
+            self.assertTrue(all(slot["area"] is None for slot in waiting))
 
     def test_reserve_entries_are_unbuilt(self) -> None:
         for polity in self.world["lands"]:
-            for entry in places.reserve_settlements(self.world, polity):
-                aid = places.area_id(polity, entry["name"])
-                self.assertNotIn(aid, self.world["areas"])
+            for slot in places.reserve_settlements(self.world, polity):
+                self.assertIsNone(slot["area"])
+                self.assertIn(slot["id"], self.world["settlement_slots"])
 
-    def test_generated_villages_pair_the_name_pool_with_the_roles(self) -> None:
-        for polity, spec in places.LAND_SPECS.items():
-            entries = [e for e in places.reserve_settlements(self.world, polity)
-                       if e["source"] == "worldgen"]
-            roles = {role_id for role_id, _heading, _tags in spec["villages"]}
-            if not roles:
-                self.assertEqual(entries, [], polity)
-                continue
-            names = [e["name"] for e in entries]
-            self.assertEqual(len(names), len(set(names)), polity)
-            self.assertTrue(set(names) <= set(spec["village_names"]), polity)
-            self.assertTrue({e["role"] for e in entries} <= roles, polity)
+    def test_name_reserves_are_shuffled_without_loss(self) -> None:
+        for polity, tiers in places.SETTLEMENT_NAMES.items():
+            for tier, names in tiers.items():
+                remaining = self.world["name_reserves"][polity][tier]
+                used = [slot["name"] for slot in
+                        self.world["settlement_slots"].values()
+                        if slot["tier"] == tier and not slot["authored"]
+                        and slot["name"] in names]
+                self.assertEqual(set(remaining) | set(used), set(names))
 
     def test_the_reserve_rides_the_save(self) -> None:
         clone = json.loads(json.dumps(self.world))
-        self.assertEqual(clone["lands"], self.world["lands"])
+        self.assertEqual(clone["settlement_slots"],
+                         self.world["settlement_slots"])
+        self.assertEqual(clone["name_reserves"], self.world["name_reserves"])
 
 
 class TheNeedToExistDraw(unittest.TestCase):
@@ -237,12 +227,11 @@ class TheNeedToExistDraw(unittest.TestCase):
 
     def test_tier_narrows_the_draw(self) -> None:
         world = _world()
-        for _ in range(2):
-            area = places.materialize_settlement(world, "mortellaria",
-                                                 need="a rival", tier="town")
+        expected = len(places.reserve_settlements(world, "mortellaria", "town"))
+        for _ in range(expected):
+            area = places.materialize_settlement(
+                world, "mortellaria", need="a rival", tier="town")
             self.assertEqual(area["subtype"], "town")
-        # Mortellaria authored three towns; two were left after the opening
-        # draw, so the third ask finds no town at all.
         self.assertIsNone(places.materialize_settlement(
             world, "mortellaria", need="a rival", tier="town"))
 
@@ -1345,8 +1334,9 @@ class TheBoardOutlet(unittest.TestCase):
     def test_the_band_moves_the_slot_count(self) -> None:
         world = _world()
         _all_quiet(world)
-        town = quests.settlements_by_land(world)["firascir"][0]
-        base = quests.SETTLEMENT_KINDS[town["subtype"]][0]
+        town = next(s for s in quests.settlements_by_land(world)["firascir"]
+                    if not s["capital"] and s["subtype"] == "town")
+        base = quests.SETTLEMENT_KINDS[places.settlement_tier(town)][0]
         for band, want in worldsim.BAND_SLOTS.items():
             _quiet(world, "firascir", band)
             self.assertEqual(quests.board_slots(world, town), base + want,

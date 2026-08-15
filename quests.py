@@ -2,7 +2,7 @@
 
 sites.py holds the CATALOG (foe rows, the two hand-built anchor sites); this
 file turns that catalog into a WORLD of areas and quests. Geography is a
-persistent Land -> Area -> Site -> Room tree; quests point at world-owned
+persistent Country -> Tile -> Area -> Site -> Room tree; quests point at world-owned
 sites instead of carrying disposable geography inside themselves. Every
 roster is still assembled from the bestiary by its bench-calibrated level
 annotations. The design (2026-07):
@@ -55,7 +55,8 @@ from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
 from sites import FOES, Site
 from places import (
     LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
-    materialize_settlement, stable_seed, land_homeland, add_state, replace_state,
+    materialize_settlement, stable_seed, land_homeland, settlement_tier,
+    add_state, replace_state,
 )
 import worldsim                  # the world layer (2026-08-09, the economy
                                  # floor): the board asks it how big it is,
@@ -725,15 +726,20 @@ def failure_line(quest: dict) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Persistent geography -- Land -> Area -> Site -> Room
+# Persistent geography -- Country -> Tile -> Area -> Site -> Room
 # --------------------------------------------------------------------------- #
 
 def new_area(world: dict, key: str, name: str, land: str, kind: str,
-             *, subtype: str | None = None, known: bool = True,
+             tile: str, *, subtype: str | None = None, known: bool = True,
              discovered_day: int | None = None) -> dict:
-    """Add a DM-authored Area with the same persistent schema as worldgen."""
+    """Add a DM-authored Area beneath an existing Tile."""
+    tile_record = world["tiles"][tile]
+    if tile_record["country"] != land:
+        raise ValueError(f"{tile} belongs to {tile_record['country']}, not {land}")
+    area_key = f"{tile}/area/{slug_name(key)}"
     area = {
-        "id": key, "key": key, "name": name, "land": land, "kind": kind,
+        "id": area_key, "key": area_key, "name": name, "land": land,
+        "tile": tile, "kind": kind, "capital": False,
         "subtype": subtype or kind, "role": "dm", "description": "",
         "source": "dm", "template": "dm",
         "seed": stable_seed(world.get("seed"), f"land/{land}", "dm-area",
@@ -745,8 +751,9 @@ def new_area(world: dict, key: str, name: str, land: str, kind: str,
     }
     if discovered_day is not None:
         area["discovered_day"] = discovered_day
-    world["areas"][key] = area
-    world["lands"][land]["areas"].append(key)
+    world["areas"][area_key] = area
+    world["lands"][land]["areas"].append(area_key)
+    tile_record["areas"].append(area_key)
     return area
 
 
@@ -863,7 +870,8 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
         candidates = [a for a in all_areas(world)
                       if wanted.intersection(a.get("tags", ()))]
     if not candidates:
-        candidates = [origin]
+        tile = world["tiles"][origin["tile"]]
+        candidates = [world["areas"][tile["natural_area"]]]
     domain = requirement.get("domain")
     if domain == "natural":
         natural = [a for a in candidates if a["kind"] == "natural"]
@@ -969,7 +977,7 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
             rooms = build_site_rooms(level, n_rooms, tpl["pool"], rng,
                                      roles, shares=place_shares,
                                      final_room=last_place)
-            site_id = f"site/{target_area['land']}/{slug_name(target_area['name'])}/quest-{qid}-{j + 1}"
+            site_id = f"{target_area['id']}/site/quest-{qid}-{j + 1}"
             new_site(world, target_area["key"], site_id, stem, level,
                      quest=qid, template=requirement["site_template"],
                      domain=requirement["domain"])
@@ -1110,9 +1118,7 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
             shares=tuple(shares[cut:cut + n_rooms]),
             final_room=j == places - 1)
         cut += n_rooms
-        site_id = (f"site/{world['areas'][area_key]['land']}/"
-                   f"{slug_name(world['areas'][area_key]['name'])}/"
-                   f"quest-{qid}-{j + 1}")
+        site_id = f"{world['areas'][area_key]['id']}/site/quest-{qid}-{j + 1}"
         new_site(world, area_key, site_id, f"site {j + 1}", level,
                  quest=qid, template="wild", domain="mixed", source="dm")
         for k, (rn, kinds) in enumerate(rooms):
@@ -1287,17 +1293,18 @@ def release_quest_places(world: dict, quest: dict) -> None:
 
 def _post_quest(world: dict, settlement: dict, rng: random.Random,
                 used_people: set[str] | None = None,
-                day: int = 0) -> dict:
+                day: int = 0, forced_level: int | None = None) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the homeland's table (the capital also draws the epics)
     among those whose band contains the roll. Since 2026-07-26 the posting is
     stamped with the day and a window (`stamp_quest_clock`)."""
-    lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
-    level = rng.randint(lo, hi)
+    tier = settlement_tier(settlement)
+    lo, hi = SETTLEMENT_KINDS[tier][1]
+    level = forced_level if forced_level is not None else rng.randint(lo, hi)
     homeland = land_homeland(world, settlement["land"])
     tables = list(TEMPLATES[homeland])
-    if settlement["subtype"] == "capital":
+    if settlement.get("capital"):
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
                if template_band(t)[0] <= level <= template_band(t)[1]]
@@ -1364,7 +1371,7 @@ def board_slots(world: dict, settlement: dict) -> int:
     floor). A prosperous land posts more work and a land in crisis posts
     less ORDINARY work -- its crises post their own on top. The floor keeps
     every settlement a place with something in it."""
-    base = SETTLEMENT_KINDS[settlement["subtype"]][0]
+    base = SETTLEMENT_KINDS[settlement_tier(settlement)][0]
     shift = worldsim.board_shift(world, settlement["land"])
     return max(worldsim.BOARD_SLOTS_FLOOR, base + shift)
 
@@ -1440,7 +1447,7 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
     reward mode is a flat share of the ordinary board, and a card that pays
     a premium in gold should not silently pay it in steel instead."""
     tpl = posting["job"]
-    lo, hi = SETTLEMENT_KINDS[settlement["subtype"]][1]
+    lo, hi = SETTLEMENT_KINDS[settlement_tier(settlement)][1]
     t_lo, t_hi = template_band(tpl)
     level = max(t_lo, min(t_hi, rng.randint(lo, hi)))
     qid = next_quest_id(world)
@@ -1509,8 +1516,8 @@ def refresh_settlement_board(world: dict, settlement: dict, day: int,
                      for _ in range(max(0, room))]
 
 
-def generate_world(seed: int | None = None) -> dict:
-    """Create the six-Land persistent world and seed its quest inventory.
+def generate_world(seed: int | None = None, start_level: int = 1) -> dict:
+    """Create fixed Europe and seed its initially materialized boards.
 
     Since 2026-07-26 worldgen posts ONE job per settlement and stops. The
     board is filled and kept filled by `refresh_settlement_board` as the
@@ -1533,10 +1540,16 @@ def generate_world(seed: int | None = None) -> dict:
     for settlement in settlements(world):
         cast_service_providers(world, settlement, rng)
     for polity, setts in settlements_by_land(world).items():
-        _cast_the_land(world, polity, setts[0], rng, used_people)
+        capital = next(s for s in setts if s.get("capital"))
+        _cast_the_land(world, polity, capital, rng, used_people)
 
+    start = world["areas"][world["start_area"]]
+    opening = _post_quest(world, start, rng, used_people,
+                          forced_level=start_level)
+    world["opening_quest"] = opening["id"]
     for settlement in settlements(world):
-        _post_quest(world, settlement, rng, used_people)
+        if settlement is not start:
+            _post_quest(world, settlement, rng, used_people)
 
     for _ in range(DELIVERIES_PER_WORLD):
         _post_delivery(world, rng, used_people)

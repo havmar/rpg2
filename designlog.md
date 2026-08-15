@@ -4344,3 +4344,43 @@ removed peoples/countries from active catalogs, and the contracted opening
 census of 15 natural Areas and nine settlements. The content-only contraction
 does not alter combat or progression knobs, so no balance benchmark was
 remeasured.
+
+## 2026-08-15 (E) — Fixed Europe Geography shipped
+
+The runtime now loads the authored 30x18 Europe map as the sole geography.
+World creation validates all 540 glyphs, the 224/266/29/21 sea/basic/
+mountain/river census, the three country totals and the four land-component
+sizes. It creates a stable Country -> Tile -> Area -> Site -> Room tree: each
+Tile has reciprocal cardinal neighbors and exactly one natural Area, while
+settlements are sibling Areas scoped beneath that Tile.
+
+Population is rolled once into lightweight settlement slots. The exact
+country density tables apply to non-sea Tiles, ordinary mountain towns are
+downgraded to villages, and every historical city has the fixed dense shape.
+The sixteen historical towns exist at world creation; Paris, Kyiv and Rome
+are ordinary `town` records carrying the explicit `capital: true` flag.
+Capital services, rulers, boards, conquest and equipment now read that flag
+instead of relying on subtype or creation order.
+
+Ordinary settlement Areas remain lazy, but the census does not. Revealing a
+Tile materializes all of its slots; a quest, event or DM request may consume
+an unused fitting slot elsewhere. Per-country town and village name reserves
+are stably shuffled, and numbered placeholders are deterministic after
+exhaustion. Saving and revisiting therefore cannot add, remove, rename or
+move a settlement. The catalog's named natural Areas were retired as runtime
+geography, but their natural Site definitions remain reusable content pools.
+
+New games choose uniformly from every settlement slot in Europe, then
+materialize and reveal that Tile. One combat quest is forced at the party's
+exact starting level, and both heroes inherit the settlement's country as
+homeland; the `--homeland` override was removed. `world["lands"]` and the
+position's `land` field retain their existing internal spelling for the
+country record so downstream world-simulation work does not need an unrelated
+rename. Direct list-style travel remains temporarily runnable, but arrival
+now reveals the destination Tile; weighted grid travel and map UI belong to
+the next roadmap session.
+
+The contract suite pins map structure, historical overlays, capital flags,
+settlement density, name exhaustion, uniform-start reachability, lazy
+persistence and derived homelands. The full 699-test suite passes. No combat,
+progression or economy constant moved, so no balance benchmark was rerun.

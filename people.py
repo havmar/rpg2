@@ -290,17 +290,19 @@ MENTOR_AGE_GAP = 10     # a mentor at least this much older than the mentee
 
 
 def make_pair(rng: random.Random, level: int,
-              used_names: set[str] | None = None
+              used_names: set[str] | None = None,
+              homeland: str | None = None,
               ) -> tuple[str, list[Entity]]:
     """A bonded pair of recruits (one option slot, two heads, one fate):
     both at the option's level; parent/child share a homeland; ages fixed up
     the relationship reads (parent 16+ years older, mentor 10+)."""
     kind = rng.choice(PAIR_KINDS)
-    homeland = rng.choice(HOMELANDS)
-    a = make_character(rng, level, homeland=homeland, used_names=used_names)
+    first_homeland = homeland or rng.choice(HOMELANDS)
+    a = make_character(rng, level, homeland=first_homeland,
+                       used_names=used_names)
     b = make_character(rng, level,
-                       homeland=(homeland if kind == "parent and child"
-                                 else None),
+                       homeland=(first_homeland if homeland is not None
+                                 or kind == "parent and child" else None),
                        used_names=used_names)
     if kind == "parent and child":
         a, b = (a, b) if a.age >= b.age else (b, a)     # a = the parent
@@ -426,8 +428,9 @@ def downtime_match(e: Entity, settlement: dict) -> str | None:
     if rpg.has_trait(e, "patriotic") and settlement.get(
             "homeland", settlement["land"]) == e.homeland:
         return "walking their own land"
-    subtype = settlement.get("subtype")
-    if rpg.has_trait(e, "religious") and subtype == "capital":
+    subtype = ("capital" if settlement.get("capital")
+               else settlement.get("subtype"))
+    if rpg.has_trait(e, "religious") and settlement.get("capital"):
         return "the temples"
     interest = e.traits.get("interest")
     if interest and subtype in INTEREST_PLACES.get(interest, ()):

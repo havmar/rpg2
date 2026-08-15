@@ -1,10 +1,5 @@
 {
-  "version": 1,
-  "land_order": [
-    "firascir",
-    "mortellaria",
-    "tergal"
-  ],
+  "version": 2,
   "lands": {
     "firascir": {
       "name": "Firascir",
@@ -5201,42 +5196,5 @@
         "tergal_basin_village": "A small village stands beside a deep well in Namak Basin. Salt grass and goat pens surround it."
       }
     }
-  },
-  "adjacency": {
-    "firascir": [
-      "mortellaria",
-      "tergal"
-    ],
-    "mortellaria": [
-      "firascir"
-    ],
-    "tergal": [
-      "firascir"
-    ]
-  },
-  "travel_links": [
-    {
-      "a": "firascir",
-      "b": "tergal",
-      "kind": "transit",
-      "name": "Flumenpur Route",
-      "days": 2
-    }
-  ],
-  "water_links": [
-    {
-      "name": "Stura River",
-      "areas": [
-        "firascir/stura-river",
-        "mortellaria/stura-river"
-      ]
-    },
-    {
-      "name": "Flumenpur River",
-      "areas": [
-        "firascir/flumenpur-river",
-        "tergal/flumenpur-river"
-      ]
-    }
-  ]
+  }
 }

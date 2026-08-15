@@ -47,7 +47,7 @@ from rpg import quest_xp_total
 from quests import (LADDER_POOL, ROOM_SHARES, build_site_rooms,
                     split_encounters, threat_value, new_site, new_room,
                     next_quest_id, settlements)
-from places import land_homeland, stable_seed, slug
+from places import land_homeland, settlement_tier, stable_seed, slug
 
 # --------------------------------------------------------------------------- #
 # The knobs (all hand-set, sim-unverified -- the karma layer's doctrine)
@@ -109,7 +109,7 @@ _ROOM_ROLES = ("the outer wall", "the gatehouse", "the keep")
 def garrison_level(world: dict, settlement: dict) -> int:
     """The settlement's garrison level -- stable-seeded off the world seed
     and the settlement id, so it never rerolls: difficulty is geography."""
-    lo, hi = GARRISON_BANDS[settlement["subtype"]]
+    lo, hi = GARRISON_BANDS[settlement_tier(settlement)]
     rng = random.Random(stable_seed(world.get("seed"), settlement["id"],
                                     "garrison-level", 0))
     return rng.randint(lo, hi)
@@ -134,7 +134,8 @@ def build_conquest_quest(world: dict, settlement: dict,
     from people import make_npc     # runtime import (people imports quests)
     level = garrison_level(world, settlement)
     homeland = land_homeland(world, settlement["land"])
-    encounters = CONQUEST_ENCOUNTERS[settlement["subtype"]]
+    tier = settlement_tier(settlement)
+    encounters = CONQUEST_ENCOUNTERS[tier]
     pool = garrison_pool(homeland)
     qid = next_quest_id(world)
     name = settlement["name"]
@@ -142,7 +143,7 @@ def build_conquest_quest(world: dict, settlement: dict,
         "id": qid,
         "name": f"Take {name}",
         "desc": (f"{name} can be taken. Break the garrison at the keep "
-                 f"and the {settlement['subtype']} is yours. The crown "
+                 f"and the {tier} is yours. The crown "
                  f"will not forgive it."),
         "origin": settlement["key"],
         "level": level,
@@ -152,7 +153,7 @@ def build_conquest_quest(world: dict, settlement: dict,
         "xp_total": quest_xp_total(level, encounters),
         # The strongbox: the one-day sack, in days of tribute. The dark
         # premium rides on top at the turn-in like any dark work.
-        "gold_total": PLUNDER_MULT * TRIBUTE_PER_DAY[settlement["subtype"]],
+        "gold_total": PLUNDER_MULT * TRIBUTE_PER_DAY[tier],
         "next": {"site": 0, "room": 0},
         "status": "open",
         "align": "dark",
@@ -167,8 +168,7 @@ def build_conquest_quest(world: dict, settlement: dict,
     rooms = build_site_rooms(level, n_rooms, pool, rng, roles,
                              shares=tuple(ROOM_SHARES[encounters]),
                              final_room=True)
-    site_id = (f"site/{settlement['land']}/{slug(settlement['name'])}/"
-               f"garrison-{qid}")
+    site_id = f"{settlement['id']}/site/garrison-{qid}"
     new_site(world, settlement["key"], site_id, "the garrison keep", level,
              quest=qid, template="tower", domain="built")
     for rn, kinds in rooms:
@@ -207,11 +207,11 @@ def take_settlement(world: dict, holdings: dict, settlement: dict,
     holdings[settlement["key"]] = new_holding(day)
     settlement["owner"] = "party"
     return [f"*** {settlement['name'].upper()} IS YOURS. ***",
-            f"  Tribute: {TRIBUTE_PER_DAY[settlement['subtype']]} g/day, "
+            f"  Tribute: {TRIBUTE_PER_DAY[settlement_tier(settlement)]} g/day, "
             f"collected when the party stands in a holding.",
             f"  It is held by levies, not luck: `garrison N` buys "
             f"{GARRISON_HIRE_COST}g-a-head guards (cap "
-            f"{GARRISON_CAP[settlement['subtype']]}). An unguarded "
+            f"{GARRISON_CAP[settlement_tier(settlement)]}). An unguarded "
             f"holding falls to the first raid.",
             f"  Holding land is standing wickedness: the heat floor "
             f"rises while the flag flies."]
@@ -227,7 +227,7 @@ def lose_holding(world: dict, holdings: dict, key: str) -> None:
 def tribute_pending(world: dict, holdings: dict, day: int) -> int:
     total = 0
     for key, rec in holdings.items():
-        subtype = world["areas"][key]["subtype"]
+        subtype = settlement_tier(world["areas"][key])
         total += (day - rec["last_tribute_day"]) * TRIBUTE_PER_DAY[subtype]
     return total
 
@@ -259,7 +259,7 @@ def roll_raids(world: dict, holdings: dict, rng: random.Random, day: int,
         if rng.random() >= 1 - (1 - RAID_CHANCE_PER_DAY) ** days:
             continue
         area = world["areas"][key]
-        strength = rng.randint(*RAID_STRENGTH[area["subtype"]])
+        strength = rng.randint(*RAID_STRENGTH[settlement_tier(area)])
         g = rec["garrison"]
         if g >= strength:
             loss = strength // RAID_GARRISON_LOSS
@@ -311,7 +311,7 @@ def holdings_lines(world: dict, holdings: dict, day: int) -> list[str]:
     lines = ["-- your holdings --"]
     for key, rec in sorted(holdings.items()):
         area = world["areas"][key]
-        subtype = area["subtype"]
+        subtype = settlement_tier(area)
         due = (day - rec["last_tribute_day"]) * TRIBUTE_PER_DAY[subtype]
         lines.append(f"  {area['name']} ({subtype}) -- garrison "
                      f"{rec['garrison']}/{GARRISON_CAP[subtype]}, "
@@ -333,10 +333,11 @@ def main() -> None:
     world = generate_world(seed=args.seed)
     print("Garrison levels (stable per settlement):")
     for s in settlements(world):
-        print(f"  {s['name']:14} {s['subtype']:8} "
+        tier = settlement_tier(s)
+        print(f"  {s['name']:14} {tier:8} "
               f"L{garrison_level(world, s):>2}  "
-              f"({CONQUEST_ENCOUNTERS[s['subtype']]} fight(s), "
-              f"tribute {TRIBUTE_PER_DAY[s['subtype']]} g/day)")
+              f"({CONQUEST_ENCOUNTERS[tier]} fight(s), "
+              f"tribute {TRIBUTE_PER_DAY[tier]} g/day)")
     target = next(s for s in settlements(world)
                   if s["subtype"] == "village")
     quest = build_conquest_quest(world, target, rng)

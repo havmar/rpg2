@@ -363,7 +363,7 @@ def roll_armory(world: dict, rng: random.Random) -> list[dict]:
                 if n.get("post") not in (None, "service")]
     rng.shuffle(notables)
     wilds = [a for a in world["areas"].values()
-             if a.get("subtype") not in ("village", "town", "capital")]
+             if a.get("kind") == "natural"]
     armory = []
     for i, sp in enumerate(ARMORY_TIERS):
         w = generate_weapon(rng, sp, name=names[i])
@@ -407,8 +407,7 @@ def roll_smiths(world: dict, rng: random.Random) -> list[dict]:
     (cap - 1) below which they will not work. Commissions are the one way
     gold buys magic steel -- new steel, never the famous names."""
     from people import make_npc     # runtime: people imports quests
-    capitals = [a for a in world["areas"].values()
-                if a.get("subtype") == "capital"]
+    capitals = [a for a in world["areas"].values() if a.get("capital")]
     rng.shuffle(capitals)
     styles = list(SMITH_STYLES)
     rng.shuffle(styles)

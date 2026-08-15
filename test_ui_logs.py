@@ -79,10 +79,11 @@ class MapSheetTests(unittest.TestCase):
         world = generate_world(seed=27)
         land = next(iter(world["lands"]))
         start = next(s for s in settlements(world) if s["land"] == land)
+        tile = start["tile"]
         new_area(world, "whitweld-forest", "Whitweld Forest", land,
-                 "forest", known=True, discovered_day=3)
+                 "forest", tile, known=True, discovered_day=3)
         new_area(world, "test-river", "the Test River", land,
-                 "river", known=True, discovered_day=5)
+                 "river", tile, known=True, discovered_day=5)
         state = {"world": world, "clock": Clock(),
                  "position": _area_position(start),
                  "visited": [start["key"]], "accepted": []}

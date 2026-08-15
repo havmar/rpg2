@@ -18,6 +18,7 @@ import unittest
 
 import conquest
 import karma
+import places
 import quests
 import story
 
@@ -28,7 +29,7 @@ def _world(seed: int = 11) -> dict:
 
 def _first(world: dict, subtype: str) -> dict:
     return next(s for s in quests.settlements(world)
-                if s["subtype"] == subtype)
+                if places.settlement_tier(s) == subtype)
 
 
 class GarrisonLevels(unittest.TestCase):
@@ -37,10 +38,11 @@ class GarrisonLevels(unittest.TestCase):
     def test_bands_by_subtype(self):
         world = _world()
         for s in quests.settlements(world):
-            lo, hi = conquest.GARRISON_BANDS[s["subtype"]]
+            tier = places.settlement_tier(s)
+            lo, hi = conquest.GARRISON_BANDS[tier]
             level = conquest.garrison_level(world, s)
             self.assertTrue(lo <= level <= hi,
-                            f"{s['name']} ({s['subtype']}) rolled L{level} "
+                            f"{s['name']} ({tier}) rolled L{level} "
                             f"outside {lo}-{hi}")
 
     def test_stable_across_calls(self):
@@ -53,7 +55,9 @@ class GarrisonLevels(unittest.TestCase):
         # 2026-07-27: the accidental "city" tier was merged into "town".
         world = _world()
         subtypes = {s["subtype"] for s in quests.settlements(world)}
-        self.assertEqual(subtypes, {"village", "town", "capital"})
+        self.assertEqual(subtypes, {"village", "town"})
+        self.assertEqual(sum(s["capital"] for s in quests.settlements(world)),
+                         3)
         self.assertNotIn("city", quests.SETTLEMENT_KINDS)
 
     def test_bands_are_a_contiguous_ladder(self):

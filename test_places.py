@@ -1,4 +1,4 @@
-"""Verification for the place-generation MVP contract."""
+"""Verification for fixed Europe geography and procedural places."""
 
 from __future__ import annotations
 
@@ -18,15 +18,25 @@ import story
 import worldsim
 
 
-# Natural Areas, then the OPENING settlement census per land: capital plus
-# towns, and villages (2026-08-07, the settlement trim -- a land begins with
-# three settlements and grows on need; everything else is the reserve pool,
-# see test_worldsim.py).
-EXPECTED = {
-    "firascir": (4, 2, 1),
-    "mortellaria": (5, 2, 1),
-    "tergal": (6, 2, 1),
-}
+EXPECTED_COUNTRY_BIOMES = places.PINNED_COUNTRY_BIOMES
+EXPECTED_HISTORICAL_CITIES = (
+    (5, 2, "Dublin", "firascir", "basic", False),
+    (6, 5, "London", "firascir", "basic", False),
+    (8, 12, "Amsterdam", "firascir", "river", False),
+    (9, 10, "Paris", "firascir", "basic", True),
+    (9, 18, "Prague", "firascir", "basic", False),
+    (3, 23, "Stockholm", "tergal", "basic", False),
+    (7, 28, "Moscow", "tergal", "basic", False),
+    (8, 22, "Warsaw", "tergal", "basic", False),
+    (10, 27, "Kyiv", "tergal", "river", True),
+    (13, 3, "Lisbon", "mortellaria", "river", False),
+    (13, 7, "Madrid", "mortellaria", "basic", False),
+    (12, 14, "Venice", "mortellaria", "river", False),
+    (14, 14, "Rome", "mortellaria", "basic", True),
+    (14, 19, "Athens", "mortellaria", "basic", False),
+    (14, 27, "Constantinople", "mortellaria", "basic", False),
+    (17, 12, "Carthage", "mortellaria", "basic", False),
+)
 
 
 class PlaceGenerationTests(unittest.TestCase):
@@ -34,42 +44,127 @@ class PlaceGenerationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.world = quests.generate_world(73025)
 
-    def test_required_land_and_area_counts(self) -> None:
-        self.assertEqual(list(self.world["lands"]), list(EXPECTED))
-        for polity, (natural, standing, villages) in EXPECTED.items():
-            areas = [self.world["areas"][aid]
-                     for aid in self.world["lands"][polity]["areas"]]
-            self.assertEqual(sum(a["kind"] == "natural" for a in areas),
-                             natural)
-            settlements = [a for a in areas
-                           if a["kind"] == "settlement"]
-            self.assertEqual(len(settlements),
-                             places.SETTLEMENTS_AT_WORLDGEN, polity)
-            self.assertEqual(sum(a["subtype"] != "village"
-                                 for a in settlements), standing)
-            self.assertEqual(sum(a["subtype"] == "village"
-                                 for a in settlements), villages)
+    def test_fixed_map_census_and_country_partition(self) -> None:
+        rows = places.load_europe_map()
+        self.assertEqual((len(rows), {len(row) for row in rows}), (18, {30}))
+        counts = {biome: 0 for biome in places.PINNED_BIOME_COUNTS}
+        country_counts = {
+            country: {biome: 0 for biome in ("basic", "mountain", "river")}
+            for country in EXPECTED_COUNTRY_BIOMES}
+        for tile in self.world["tiles"].values():
+            counts[tile["biome"]] += 1
+            if tile["biome"] != "sea":
+                country_counts[tile["country"]][tile["biome"]] += 1
+        self.assertEqual(counts, places.PINNED_BIOME_COUNTS)
+        self.assertEqual(country_counts, EXPECTED_COUNTRY_BIOMES)
+        self.assertEqual(
+            tuple(len(c) for c in places._land_components(rows)),
+            places.PINNED_LAND_COMPONENTS)
+
+    def test_map_validation_identifies_bad_row_and_column(self) -> None:
+        class Source:
+            def __init__(self, text: str):
+                self.text = text
+
+            def read_text(self, **_kwargs) -> str:
+                return self.text
+
+            def __str__(self) -> str:
+                return "test-map"
+
+        rows = list(places.load_europe_map())
+        rows[6] = rows[6][:10] + "?" + rows[6][11:]
+        with self.assertRaisesRegex(ValueError, r"row 7, column 11"):
+            places.load_europe_map(Source("\n".join(rows)))
+        rows[6] = rows[6][:-1]
+        with self.assertRaisesRegex(ValueError, r"row 7 .*29 columns"):
+            places.load_europe_map(Source("\n".join(rows)))
+
+    def test_every_tile_has_one_natural_area_and_cardinal_neighbors(self) -> None:
+        self.assertEqual(len(self.world["tiles"]), 540)
+        naturals = [a for a in self.world["areas"].values()
+                    if a["kind"] == "natural"]
+        self.assertEqual(len(naturals), 540)
+        for tid in self.world["tile_order"]:
+            tile = self.world["tiles"][tid]
+            self.assertEqual(tile["areas"][0], tile["natural_area"])
+            natural = self.world["areas"][tile["natural_area"]]
+            self.assertEqual(natural["tile"], tid)
+            for neighbor_id in tile["neighbors"]:
+                neighbor = self.world["tiles"][neighbor_id]
+                self.assertIn(tid, neighbor["neighbors"])
+                self.assertEqual(
+                    abs(tile["row"] - neighbor["row"])
+                    + abs(tile["column"] - neighbor["column"]), 1)
+
+    def test_historical_city_overlay_and_capitals(self) -> None:
+        self.assertEqual(places.HISTORICAL_CITIES,
+                         EXPECTED_HISTORICAL_CITIES)
+        actual = []
+        for row, column, name, country, biome, capital in places.HISTORICAL_CITIES:
+            tile = self.world["tiles"][places.tile_id(row, column)]
+            self.assertEqual((tile["name"], tile["country"], tile["biome"]),
+                             (name, country, biome))
+            slots = [self.world["settlement_slots"][sid]
+                     for sid in tile["settlement_slots"]]
+            self.assertEqual([slot["tier"] for slot in slots],
+                             ["town", "village", "village"])
+            if not tile["visited"]:
+                self.assertEqual([slot["area"] is not None for slot in slots],
+                                 [True, False, False])
+            town = next(self.world["areas"][self.world["settlement_slots"][sid]["area"]]
+                        for sid in tile["settlement_slots"]
+                        if self.world["settlement_slots"][sid]["authored"])
+            self.assertEqual((town["name"], town["subtype"], town["capital"]),
+                             (name, "town", capital))
+            self.assertTrue(town["known"])
+            actual.append(town)
+        self.assertEqual({a["name"] for a in actual if a["capital"]},
+                         {"Paris", "Rome", "Kyiv"})
+
+    def test_population_constraints(self) -> None:
+        self.assertEqual(places.SETTLEMENT_DENSITY, {
+            "mortellaria": (0.10, 0.35),
+            "firascir": (0.06, 0.24),
+            "tergal": (0.03, 0.17),
+        })
+        for tile in self.world["tiles"].values():
+            slots = [self.world["settlement_slots"][sid]
+                     for sid in tile["settlement_slots"]]
+            if tile["biome"] == "sea":
+                self.assertEqual(slots, [])
+            if (tile["biome"] == "mountain"
+                    and (tile["row"], tile["column"])
+                    not in places.HISTORICAL_BY_TILE):
+                self.assertNotIn("town", {slot["tier"] for slot in slots})
 
     def test_ids_and_generated_village_names_are_unique(self) -> None:
         ids = []
         for store in ("lands", "areas", "sites", "rooms"):
             ids.extend(record["id"] for record in self.world[store].values())
         self.assertEqual(len(ids), len(set(ids)))
+        for area in self.world["areas"].values():
+            self.assertTrue(area["id"].startswith(f"{area['tile']}/area/"))
+        for site in self.world["sites"].values():
+            self.assertTrue(site["id"].startswith(f"{site['area']}/"))
+        for room in self.world["rooms"].values():
+            self.assertTrue(room["id"].startswith(f"{room['site']}/"))
         names = [a["name"] for a in self.world["areas"].values()
                  if a["source"] == "worldgen"]
         self.assertEqual(len(names), len(set(names)))
 
-    def test_seed_is_stable_and_changes_variable_structure(self) -> None:
+    def test_seed_is_stable_and_changes_only_variable_structure(self) -> None:
         again = quests.generate_world(73025)
         other = quests.generate_world(73026)
         self.assertEqual(self.world, again)
-        villages = lambda w: [a["name"] for a in w["areas"].values()
-                              if a["source"] == "worldgen"]
-        orders = lambda w: [a["natural_site_order"]
-                            for a in w["areas"].values()
-                            if a["kind"] == "natural"]
-        self.assertTrue(villages(self.world) != villages(other)
-                        or orders(self.world) != orders(other))
+        terrain = lambda w: [(t["id"], t["biome"], t["country"], t["name"])
+                             for t in w["tiles"].values()]
+        population = lambda w: [(t["id"], tuple(
+            w["settlement_slots"][sid]["tier"]
+            for sid in t["settlement_slots"])) for t in w["tiles"].values()]
+        self.assertEqual(terrain(self.world), terrain(other))
+        self.assertNotEqual((population(self.world), self.world["start_slot"]),
+                            (population(other), other["start_slot"]))
 
     def test_discovery_reveals_existing_area(self) -> None:
         world = places.create_geography(11)
@@ -82,7 +177,7 @@ class PlaceGenerationTests(unittest.TestCase):
 
     def test_natural_area_yields_three_distinct_persistent_sites(self) -> None:
         world = places.create_geography(12)
-        area = world["areas"]["area/firascir/whitweld-forest"]
+        area = world["areas"]["tile/r05/c02/area/natural"]
         area["known"] = True
         sites = [places.materialize_natural_site(world, area, day=i)
                  for i in range(1, 4)]
@@ -102,7 +197,7 @@ class PlaceGenerationTests(unittest.TestCase):
             kinds = {service["kind"] for service in area["services"]}
             self.assertTrue({"lodging", "smith", "general_goods"} <= kinds,
                             area["name"])
-            if area["subtype"] == "capital":
+            if area["capital"]:
                 self.assertTrue(
                     {"alchemist", "market", "government"} <= kinds,
                     area["name"])
@@ -110,17 +205,48 @@ class PlaceGenerationTests(unittest.TestCase):
         for room in world["rooms"].values():
             self.assertTrue(room["contents"], room["id"])
 
-    def test_transit_routes_are_not_land_borders(self) -> None:
-        world = places.create_geography(130)
-        firascir = world["lands"]["firascir"]["links"]
-        mortellaria = world["lands"]["mortellaria"]["links"]
-        self.assertIn(("tergal", "transit"),
-                      {(link["target"], link["kind"]) for link in firascir})
-        self.assertNotIn(("tergal", "border"),
-                         {(link["target"], link["kind"]) for link in firascir})
-        self.assertIn(("firascir", "border"),
-                      {(link["target"], link["kind"])
-                       for link in mortellaria})
+    def test_catalog_no_longer_owns_world_adjacency(self) -> None:
+        self.assertFalse({"land_order", "adjacency", "travel_links",
+                          "water_links"}.intersection(places._CATALOG))
+        self.assertFalse({"links", "water_links"}.intersection(self.world))
+        for country in self.world["lands"].values():
+            self.assertFalse({"neighbors", "links"}.intersection(country))
+
+    def test_name_exhaustion_is_persisted_per_country_and_tier(self) -> None:
+        world = places.create_geography(131)
+        for country in places.COUNTRIES:
+            for tier in ("town", "village"):
+                world["name_reserves"][country][tier].clear()
+                first = places._next_settlement_name(world, country, tier)
+                second = places._next_settlement_name(world, country, tier)
+                label = world["lands"][country]["name"]
+                self.assertEqual(first, f"{label} {tier.title()} 1")
+                self.assertEqual(second, f"{label} {tier.title()} 2")
+
+    def test_start_is_a_slot_and_seed_sweep_reaches_countries_and_tiers(self) -> None:
+        countries, tiers = set(), set()
+        for seed in range(90):
+            world = places.create_geography(seed)
+            slot = world["settlement_slots"][world["start_slot"]]
+            self.assertEqual(slot["area"], world["start_area"])
+            countries.add(world["tiles"][slot["tile"]]["country"])
+            tiers.add(slot["tier"])
+        self.assertEqual(countries, set(places.COUNTRIES))
+        self.assertEqual(tiers, {"town", "village"})
+
+    def test_materialization_and_revisit_do_not_change_census_or_names(self) -> None:
+        world = places.create_geography(132)
+        target = next(t for t in world["tiles"].values()
+                      if t["settlement_slots"] and not t["visited"])
+        census = {tid: tuple(tile["settlement_slots"])
+                  for tid, tile in world["tiles"].items()}
+        first = places.reveal_tile(world, target, day=3)
+        names = [area["name"] for area in first]
+        snapshot = json.loads(json.dumps(world))
+        second = places.reveal_tile(snapshot, target["id"], day=9)
+        self.assertEqual(census, {tid: tuple(tile["settlement_slots"])
+                                  for tid, tile in snapshot["tiles"].items()})
+        self.assertEqual(names, [area["name"] for area in second])
 
     def test_house_contents_and_culture_restrictions(self) -> None:
         world = quests.generate_world(14)
@@ -207,7 +333,8 @@ class PlaceGenerationTests(unittest.TestCase):
 
     def test_hidden_facts_stay_out_of_player_fact_selection(self) -> None:
         place = copy.deepcopy(
-            self.world["areas"]["area/firascir/whitweld-forest"])
+            next(a for a in self.world["areas"].values()
+                 if a["kind"] == "natural"))
         place["features"].append({
             "id": "sealed_crypt", "reveal": "hidden",
             "known": False, "active": True,

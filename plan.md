@@ -6,13 +6,12 @@ The Human World Contraction is implemented and documented in `rules.md` and
 `designlog.md`; the former roadmap is preserved, explicitly
 inactive, in `archive/plan-pre-europe-2026-08-15.md`.
 
-Four implementation sessions remain. A future session may be
+Three implementation sessions remain. A future session may be
 started simply by asking to implement its exact title:
 
-1. **Fixed Europe Geography**
-2. **Grid Navigation and Map UI**
-3. **Local Quest Geography**
-4. **Europe MVP Closure**
+1. **Grid Navigation and Map UI**
+2. **Local Quest Geography**
+3. **Europe MVP Closure**
 
 Implement them in order. Each session must leave its own slice coherent and
 tested; do not begin a later session as an incidental extension of an earlier
@@ -679,62 +678,6 @@ compatibility helpers for the old save or old six-Land schema.
 ---
 
 # Implementation sessions
-
-## Session 2 — Fixed Europe Geography
-
-**Trigger:** `Implement Fixed Europe Geography from plan.md.`
-
-### Objective
-
-Replace list geography with the fixed Tile hierarchy, natural Areas,
-population slots, historical cities, lazy names and uniformly random start.
-Travel may still use a temporary direct move until Session 3.
-
-### Required work
-
-1. Load and validate `resources/europe_map.txt`; build 540 Tile records and
-   three country Tile inventories.
-2. Add Tile IDs/schema, cardinal neighbors, derived tags and one natural Area
-   per Tile.
-3. Refactor Area IDs/records and position to include Tile without weakening
-   required-record reads.
-4. Add historical city data exactly as specified; materialize/know their town
-   Areas and keep their village slots lazy.
-5. Roll ordinary settlement slots with the pinned tables and mountain
-   downgrade.
-6. Restore all three country name reserves, including Firascir's older pool,
-   plus deterministic exhaustion counters.
-7. Rework settlement materialization/founding around fixed slots and reuse
-   surviving Site/Room/service templates.
-8. Select the start uniformly across settlement slots, materialize it, assign
-   PC homeland and force a legal opening hook.
-9. Remove old authored natural-Area geography, Land adjacency and reserve
-   census from runtime source data.
-
-### Primary files
-
-`resources/europe_map.txt` (read-only source), `place_catalog.json`,
-`places.py`, `quests.py`, `session.py`, `weapons.py` where smith placement
-reads settlements, `test_places.py`, `test_start.py`, affected world tests,
-`rules.md`, `dm.md`, `develop.md`.
-
-### Non-goals
-
-No final pathfinder, sea encounter design, map overlay or three-day rumor
-patch. Do not re-detail `basic` or name rural Tiles.
-
-### Verification
-
-- Pin dimensions, glyph counts, country/biome counts, component sizes,
-  historical city table and three capitals.
-- Assert 540 Tiles and 540 natural Areas.
-- Assert every sea Tile has zero slots and ordinary mountains have no towns.
-- Same-seed full structure equality; different-seed density/name/start
-  variation with identical terrain.
-- Force name-pool exhaustion for every country/tier.
-- Repeated fresh starts reach every country and multiple settlement tiers
-  over a seed sweep; selection tests prove the candidate unit is a slot.
-- Materialize/reload/revisit tests prove no census or name changes.
 
 ## Session 3 — Grid Navigation and Map UI
 

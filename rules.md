@@ -2613,7 +2613,7 @@ markers.
 # The Quest System — Add-on (2026-07)
 
 The generation layer over the bestiary: a generated **world** with persistent
-Land -> Area -> Site -> Room geography, and settlements posting combat
+Country -> Tile -> Area -> Site -> Room geography, and settlements posting combat
 **quests** that point into it. Every roster is assembled from the catalog by
 its level annotations. `quests.py` owns it; `bench_quests.py` is its
 calibration harness. The two hand-built sites stay hand-built — they are the
@@ -2898,26 +2898,28 @@ road is the content:
 
 The geography under the quest system: the party is always **somewhere**, and
 quests refer to places in the same world rather than carrying private maps.
-It remains deliberately list-shaped, not coordinate-shaped — no hex grid.
-`places.py` and `place_catalog.json` own place definitions, deterministic
+It is a fixed square grid; weighted grid movement and its rendered map are
+the next staged build. `places.py`, `place_catalog.json` and
+`resources/europe_map.txt` own place definitions, deterministic
 materialization, knowledge, contents, and mutation. `quests.py` owns encounter
 placement and travel constants/tables; `session.py` owns position, discovery,
 movement, and displays.
 
 ## The hierarchy
 
-The canonical spatial vocabulary is **Land -> Area -> Site -> Room**:
+The canonical spatial vocabulary is **Country -> Tile -> Area -> Site -> Room**:
 
-- **Land** is the macro territory: identity, owner, culture, default
+- **Country** is the macro territory: identity, owner, culture, default
   environment, war state, wilderness encounter profile, and cross-land
   links. Firascir, Mortellaria and Tergal are distinct human realms with
   different cultures and environments, and conquest may change `owner`
   without changing geography. `homeland` routes names and culture; it never
   modifies statistics.
-- **Area** is a world-map destination. Its broad `kind` is `settlement` or
-  `natural`; its subtype says capital/town/village or forest, mountain, plain,
-  swamp, and similar. Travel between areas costs days. This handles both kinds
-  of destination without making them parallel hierarchies.
+- **Tile** is the day-scale map cell, with fixed coordinates, biome, country,
+  cardinal neighbors, settlement slots and child Area IDs.
+- **Area** is a local destination within a Tile. Its broad `kind` is
+  `settlement` or `natural`; settlement subtype is town/village and natural
+  subtype follows the Tile biome.
 - **Site** is a local destination in an area, reached without day-scale
   travel: a castle, street, tavern, cave, tower, grove, bridge, or battlefield.
 - **Room** is the smallest persistent navigable place and encounter node. It
@@ -2942,48 +2944,49 @@ instance rather than calling the generator again.
 Room contents are persistent facts, not automatic loot. Fixtures, furniture,
 tools, food, containers, and personal objects make ordinary interiors
 concrete; only a record with a mechanical item reference enters the existing
-inventory systems. Required settlement Sites and Room skeletons exist with
-their settlement — at world creation for the opening three, at the draw for
-every settlement the world grows later. Natural Sites and ordinary houses
+inventory systems. Required settlement Sites and Room skeletons exist when
+their fixed settlement slot materializes. Natural Sites and ordinary houses
 materialize lazily.
 
 ## The map
 
-- **The finite world.** The transitional list-shaped world has Firascir,
-  Mortellaria and Tergal: 15 natural Areas and **three settlements a
-  country** at world creation — one capital, one town and one village.
-  Nine settlements stand on day one. The fixed Europe grid replaces this
-  temporary geography in the next roadmap session.
-- **The catalog is the reserve, not the census** (2026-08-07, the settlement
-  trim). Every other authored settlement, and every generated village name
-  paired with its livelihood role, waits UNBUILT in its land's reserve pool.
-  One is materialized only when something in the world needs it to exist — a
-  relation naming a rival center of power, a card needing a counterparty
-  port. It arrives whole: required Sites, the guaranteed services and their
-  faces, a board that fills to its band the first time the party looks at
-  it, a garrison in its tier's band — and it records the day it was founded
-  and the need that founded it. A land whose reserve has run dry says no:
-  the world stays finite, and what cannot be built does not happen. This is
-  the lazy materialization of Sites and houses, lifted one tier: places
-  exist because the world asked for them.
-- **Lands and Areas.** Each Land owns IDs in stable authored order.
-  Settlement Areas are known as soon as they exist — the opening three from
-  day one, a drawn one from the day it is founded; all natural Areas already
-  exist but join the player map only when revealed. Discovery changes knowledge,
-  never creates or rerolls the Area. `map` and `ui/map.txt` show the known
-  macro Land/Area view as a 40-column list.
-- **Links.** Country adjacency is explicit. Firascir touches Mortellaria and
-  Tergal; the catalog retains the surviving river and transit links until the
-  fixed grid becomes authoritative.
-- **Position.** The save carries a breadcrumb with `land`, `area`, and
-  optional `site` / `room` IDs. Status and `look` print it as, for example,
-  `Firascir > Whitweld Forest > Wizard's Tower > Library`. A new game starts
-  in the settlement area posting the open quest closest to the party's
-  level (2026-07-13 — the opening hook must be takeable; generalized
-  2026-08-05 when the start level became a roll, and identical to the old
-  lowest-posting rule at level 1). The two hand-built set
-  sites (hideout, barrow) lie outside
-  the **capital** (the first settlement worldgen made) and are **DEV/TEST
+- **The finite world.** Europe is an authored **30 columns by 18 rows**:
+  exactly 540 Tiles. `.` is sea, `#` ordinary land, `^` mountain and `~`
+  major river. Every Tile owns one natural Area, including sea. World
+  creation validates the dimensions, glyphs, biome totals, country totals
+  and connected land masses before play can begin.
+- **Countries and Tiles.** Firascir owns the northwest/west, Tergal the
+  northeast/east and Mortellaria the south. Their non-sea census is fixed at
+  97, 75 and 144 Tiles respectively. Coordinates and cardinal neighbors
+  are stable IDs, and every Area ID is scoped beneath its Tile. The place
+  catalog supplies reusable Site content, not a second geography.
+- **Settlement slots are the census.** Every non-sea Tile receives a stable
+  seeded count and mix of town/village slots from its country's density
+  table. Sea has none. Ordinary mountain Tiles cannot receive a town: a
+  rolled town is downgraded to a village. A slot exists before its Area is
+  materialized, so revealing, saving and revisiting cannot move it or change
+  its name. Country-and-tier name reserves are shuffled once per seed;
+  deterministic numbered names continue after a reserve is exhausted.
+- **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
+  in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
+  Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
+  Kyiv and Rome carry `capital: true`. Capital is an explicit flag, not a
+  settlement subtype; each remains a town.
+- **Knowledge.** All 540 Tiles, their terrain and countries are public from
+  world creation; the base map is never fogged. Natural Areas become known
+  on reveal, historical towns are known from day zero, and ordinary
+  settlements stay hidden until their slot materializes. Revealing a Tile
+  materializes every settlement slot on it and never changes the fixed census.
+  `map` and `ui/map.txt` remain the transitional 40-column macro list until
+  the grid-navigation session replaces them.
+- **Position.** The save carries a breadcrumb with `land`, `tile`, `area`,
+  and optional `site` / `room` IDs. Status and `look` print Country, Tile,
+  Area, Site and Room in order. A new game chooses uniformly from **all
+  settlement slots in Europe**, regardless of country or tier, materializes
+  that settlement, reveals its Tile and posts one combat quest at the
+  party's exact starting level. The PC and long-time companion both take
+  that settlement's country as their homeland. The two hand-built set
+  sites (hideout, barrow) lie outside the capital and are **DEV/TEST
   calibration content only** since 2026-07-13 — presented alongside
   generated quests they confused the board's fiction, and the generator
   covers the level band; the benches still run them.
@@ -3179,8 +3182,8 @@ is testing one band. The reason is played reality: no campaign has ever
 gone past level 4, and hours of play stand between a fresh save and the
 bands the ladder is built for — a start that lands anywhere on it is how
 the rest of the game gets seen at all. The roll stops at 18 so there is
-always ladder left above the party. `--homeland R` optionally fixes the PC's
-country of origin; the default rolls one.
+always ladder left above the party. Homeland is not a start option: the
+uniformly selected starting settlement determines it for both heroes.
 
 **The career a level-N start arrives with.** Everything above level 1 is
 autogenerated history, not a bonus:

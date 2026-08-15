@@ -17,7 +17,8 @@ and is not needed for play.
   Present the PC's sheet without mechanics chatter (see The player
   character below).
 - **The party's LEVEL is rolled 1-18** unless the player asks for one
-  (`new --level N`, 1-20; `--homeland R` fixes the PC's country of origin).
+  (`new --level N`, 1-20). The uniformly selected starting settlement fixes
+  both heroes' homeland.
   Above level 1
   the pair arrives with the career those levels bought -- points spent,
   quality steel, a job-reward weapon, spellbooks, a purse -- and the
@@ -25,8 +26,8 @@ and is not needed for play.
   a past: they have been doing this work for years, and the telling simply
   starts today. Don't invent a backstory the player can't act on; if the
   player wants one, build it with him.
-- **Open at the hook.** `new` prints an OPENING HOOK: the most
-  level-appropriate local job and its giver. Set the first scene at that
+- **Open at the hook.** `new` prints an OPENING HOOK: a combat job posted at
+  the party's exact level in their randomly selected settlement. Set the first scene at that
   job's doorstep -- the giver is already explaining the problem, and the
   problem is concrete -- then hand the turn over: the player can take the
   job or refuse it and do anything else (`board`, `hunt`, `travel`). The
@@ -154,8 +155,9 @@ the lookback; the page has no reason to repeat it.
 
 ## The world and the quests (the game's spine)
 
-The world is one persistent **Land -> Area -> Site -> Room** tree. Areas
-are world-map destinations: settlements and substantial natural geography.
+The world is one persistent **Country -> Tile -> Area -> Site -> Room** tree.
+Tiles are day-scale map cells; Areas are sibling settlements and natural
+destinations within them.
 Sites are local destinations; rooms are immediate indoor or outdoor places.
 Quests point to those world-owned places. **The party is always somewhere,
 and quest offers are LOCAL**: the jobs you can take are the current
@@ -357,14 +359,11 @@ it.
   heart, and any face a card has named). Use it for pacing -- never read it
   out. `place-state` remains your override for a state you want to set by
   hand.
-- **The map can grow when you decide it should.** A land opens with three
-  settlements and keeps the rest of its authored catalog as a RESERVE
-  (rules.md, "The map"). When play wants a place that is not on the map --
-  the player strikes out to just travel and see the country, a scene needs
-  the fishing village that ought to be on this coast, a rumor needs a real
-  town behind it -- FOUND one from the reserve instead of inventing an
-  untracked one. It is a between-commands override in the save-editing
-  family, run as a snippet:
+- **Settlement geography is fixed.** The 30x18 Europe map rolls lightweight
+  town and village slots at world creation. Entering a Tile reveals its
+  natural Area and materializes every slot there. When a quest, world event
+  or scene needs a settlement elsewhere, draw an unused matching slot instead
+  of inventing an untracked place. The existing between-commands tool remains:
 
   ```
   python3 - <<'EOF'
@@ -380,14 +379,13 @@ it.
   EOF
   ```
 
-  The new settlement is created complete -- named off the authored reserve,
+  The selected slot is materialized complete -- named from its country's
+  stable tier reserve,
   its Sites, its services and their faces, known and travelable at once,
   stamped with the day and the reason (`founded_for`) so the record shows
-  why it exists. Its board fills the first time the party reads it, like
-  any board. `None` back means the land's reserve is empty: the world is
-  finite, so tell the player there is nothing further that way. Use it for
-  story, not bookkeeping -- three settlements a land is the design, and a
-  founding should be an event the player caused.
+  why it was needed. `None` means no unused fitting slot remains: the world
+  is finite, so the requesting event does not happen. Materialization never
+  adds a slot or changes the census.
 
 The wealth band works as a price list, and as a shorter or longer board.
 Everything below is already in the script output -- your job is to have

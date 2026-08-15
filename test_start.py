@@ -89,7 +89,7 @@ class TheStartLevel(unittest.TestCase):
     def test_the_flags_exist_and_default_to_a_roll(self):
         args = session.build_parser().parse_args(["new"])
         self.assertIsNone(args.level)
-        self.assertIsNone(args.homeland)
+        self.assertFalse(hasattr(args, "homeland"))
 
     def test_the_default_rolls_inside_the_band(self):
         for seed in range(40):
@@ -133,13 +133,12 @@ class TheStartLevel(unittest.TestCase):
             self.assertIsNone(state, bad)
             self.assertIn("--level", out)
 
-    def test_a_homeland_can_be_fixed_and_a_bad_one_refused(self):
-        state, _ = run_new("--seed", "2", "--level", "3",
-                           "--homeland", "tergal")
-        self.assertEqual(state["party"][0].homeland, "tergal")
-        state, out = run_new("--seed", "2", "--homeland", "nowhere")
-        self.assertIsNone(state)
-        self.assertIn("--homeland", out)
+    def test_homeland_comes_from_the_starting_settlement(self):
+        for seed in range(12):
+            state, _ = run_new("--seed", str(seed), "--level", "3")
+            here = session.local_settlement(state)
+            self.assertEqual(state["party"][0].homeland, here["land"])
+            self.assertEqual(state["party"][1].homeland, here["land"])
 
     def test_the_level_is_printed_and_marked_when_rolled(self):
         _, out = run_new("--seed", "4")
@@ -365,23 +364,17 @@ class TheOpeningGround(unittest.TestCase):
                    if world["quests"][qid]["status"] == "open"
                    and world["quests"][qid].get("kind") != "delivery")
 
-    def test_level_one_starts_where_the_lowest_job_is_posted(self):
+    def test_start_uses_the_worlds_uniform_slot_selection(self):
         state, _ = run_new("--seed", "3", "--level", "1")
         world = state["world"]
-        lowest = min(q["level"] for q in world["quests"].values()
-                     if q["status"] == "open" and q.get("kind") != "delivery")
-        self.assertEqual(self._hook_level(state), lowest)
+        slot = world["settlement_slots"][world["start_slot"]]
+        self.assertEqual(state["position"]["area"], slot["area"])
+        self.assertEqual(state["position"]["tile"], slot["tile"])
 
-    def test_a_career_start_opens_where_the_work_fits_it(self):
+    def test_every_start_gets_work_at_the_partys_level(self):
         for level in (8, 14):
             state, _ = run_new("--seed", "3", "--level", str(level))
-            world = state["world"]
-            here = min(abs(self._hook_level(state) - level), 99)
-            best = min(abs(q["level"] - level)
-                       for q in world["quests"].values()
-                       if q["status"] == "open"
-                       and q.get("kind") != "delivery")
-            self.assertEqual(here, best, level)
+            self.assertEqual(self._hook_level(state), level)
 
     def test_the_hook_names_a_job_at_the_partys_own_level(self):
         _, out = run_new("--seed", "3", "--level", "10")

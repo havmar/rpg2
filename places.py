@@ -17,6 +17,7 @@ from typing import Iterable
 
 
 CATALOG_PATH = Path(__file__).with_name("place_catalog.json")
+EUROPE_MAP_PATH = Path(__file__).with_name("resources") / "europe_map.txt"
 with CATALOG_PATH.open(encoding="utf-8") as _catalog_file:
     _CATALOG = json.load(_catalog_file)
 
@@ -79,6 +80,7 @@ ENVIRONMENT_PROFILES = {
 }
 
 LAND_SPECS = _CATALOG["lands"]
+COUNTRIES = tuple(LAND_SPECS)
 CULTURE_PROFILES = {
     land["culture"]: {"homeland": polity,
                       "environment": land["environment"]}
@@ -87,6 +89,71 @@ CULTURE_PROFILES = {
 AREA_SPECS: dict[str, dict] = {}
 SETTLEMENT_SITE_SPECS: dict[str, list[dict]] = {}
 NATURAL_SITE_SPECS: dict[str, list[dict]] = {}
+
+MAP_ROWS = 18
+MAP_COLUMNS = 30
+BIOME_GLYPHS = {".": "sea", "#": "basic", "^": "mountain",
+                "~": "river"}
+PINNED_BIOME_COUNTS = {"basic": 266, "mountain": 29, "river": 21,
+                       "sea": 224}
+PINNED_COUNTRY_BIOMES = {
+    "firascir": {"basic": 81, "mountain": 11, "river": 5},
+    "mortellaria": {"basic": 117, "mountain": 15, "river": 12},
+    "tergal": {"basic": 68, "mountain": 3, "river": 4},
+}
+PINNED_LAND_COMPONENTS = (302, 11, 2, 1)
+
+HISTORICAL_CITIES = (
+    (5, 2, "Dublin", "firascir", "basic", False),
+    (6, 5, "London", "firascir", "basic", False),
+    (8, 12, "Amsterdam", "firascir", "river", False),
+    (9, 10, "Paris", "firascir", "basic", True),
+    (9, 18, "Prague", "firascir", "basic", False),
+    (3, 23, "Stockholm", "tergal", "basic", False),
+    (7, 28, "Moscow", "tergal", "basic", False),
+    (8, 22, "Warsaw", "tergal", "basic", False),
+    (10, 27, "Kyiv", "tergal", "river", True),
+    (13, 3, "Lisbon", "mortellaria", "river", False),
+    (13, 7, "Madrid", "mortellaria", "basic", False),
+    (12, 14, "Venice", "mortellaria", "river", False),
+    (14, 14, "Rome", "mortellaria", "basic", True),
+    (14, 19, "Athens", "mortellaria", "basic", False),
+    (14, 27, "Constantinople", "mortellaria", "basic", False),
+    (17, 12, "Carthage", "mortellaria", "basic", False),
+)
+HISTORICAL_BY_TILE = {(row, column): (name, country, biome, capital)
+                      for row, column, name, country, biome, capital
+                      in HISTORICAL_CITIES}
+
+SETTLEMENT_DENSITY = {
+    "mortellaria": (0.10, 0.35),
+    "firascir": (0.06, 0.24),
+    "tergal": (0.03, 0.17),
+}
+SETTLEMENT_NAMES = {
+    "firascir": {
+        "town": ("Tomburgh", "Leehaven", "Walhaven", "Bradwhitchip",
+                 "Redflurton"),
+        "village": ("Sturford", "Ackham", "Flurham", "Sturham",
+                    "Sturworth", "Newton", "Midton", "Aston", "Tomton",
+                    "Walham", "Coldcot", "Thornley", "Blackton",
+                    "Astmoor", "Ackbridge", "Ackton", "Mickleham",
+                    "Shepham"),
+    },
+    "mortellaria": {
+        "town": ("Castavera", "Portomera", "Belafonte", "Montaro"),
+        "village": ("Alavera", "Beloro", "Calavento", "Doramonte",
+                    "Fontela", "Lunaro", "Maravento", "Oliveta",
+                    "Rosavera", "Sanoro", "Solavela", "Toralba",
+                    "Valesero", "Ventoro", "Vilaro"),
+    },
+    "tergal": {
+        "town": ("Ulus-Gal", "Kharuk", "Temenur", "Ordubal"),
+        "village": ("Aradun", "Balurun", "Borkal", "Enkhar", "Eshkar",
+                    "Guratai", "Kharnam", "Kurugan", "Namuruk", "Ordaki",
+                    "Sargul", "Teguren", "Tumengal", "Urkhal", "Zamutar"),
+    },
+}
 
 
 def slug(text: str) -> str:
@@ -98,8 +165,23 @@ def land_id(value: str) -> str:
     return value if value.startswith("land/") else f"land/{value}"
 
 
-def area_id(land: str, name: str) -> str:
-    return f"area/{land.removeprefix('land/')}/{slug(name)}"
+def tile_id(row: int, column: int) -> str:
+    return f"tile/r{row:02d}/c{column:02d}"
+
+
+def tile_coordinate(row: int, column: int) -> str:
+    return f"R{row:02d}C{column:02d}"
+
+
+def area_id(parent: str, name: str) -> str:
+    """An Area ID scoped beneath its Tile.
+
+    The old country/name spelling is used only for catalog template indexes;
+    runtime Areas always pass a Tile ID as `parent`.
+    """
+    if parent.startswith("tile/"):
+        return f"{parent}/area/{slug(name)}"
+    return f"template/area/{parent.removeprefix('land/')}/{slug(name)}"
 
 
 def stable_seed(world_seed: int | None, parent_id: str, purpose: str,
@@ -112,20 +194,34 @@ def stable_seed(world_seed: int | None, parent_id: str, purpose: str,
 
 def _build_definition_indexes() -> None:
     for polity, land in LAND_SPECS.items():
-        for name, subtype, role, tags in land["natural"]:
-            aid = area_id(polity, name)
-            AREA_SPECS[aid] = {
-                "id": aid, "name": name, "kind": "natural",
-                "subtype": subtype, "role": role, "tags": tuple(tags),
-                "description": land["descriptions"][name],
-            }
-            specs = land["natural_sites"][name]
-            NATURAL_SITE_SPECS[aid] = specs
+        natural = list(land.get("natural", ()))
+        by_biome = {
+            "river": next((entry for entry in natural
+                           if entry[1] == "river"), natural[0]),
+            "mountain": next((entry for entry in natural
+                              if entry[1] in ("hills", "ridge")),
+                             natural[0]),
+            "basic": next((entry for entry in natural
+                           if entry[1] != "river"), natural[0]),
+        }
+        for biome, entry in by_biome.items():
+            template = f"natural/{polity}/{biome}"
+            NATURAL_SITE_SPECS[template] = land["natural_sites"][entry[0]]
+        NATURAL_SITE_SPECS[f"natural/{polity}/sea"] = [
+            {"id": "open-water", "name": "OPEN WATER", "rooms": [],
+             "anchors": ["long swell", "distant gulls", "floating weed"]},
+            {"id": "shoal", "name": "SHOAL", "rooms": [],
+             "anchors": ["pale water", "sand below", "driftwood"]},
+            {"id": "rocky-islet", "name": "ROCKY ISLET", "rooms": [],
+             "anchors": ["black rocks", "tide pools", "bird nests"]},
+        ]
         for name, tier, role, tags in land["settlements"]:
             aid = area_id(polity, name)
             AREA_SPECS[aid] = {
                 "id": aid, "name": name, "kind": "settlement",
-                "subtype": tier, "role": role, "tags": tuple(tags),
+                "subtype": "town" if tier == "capital" else tier,
+                "capital": tier == "capital", "role": role,
+                "tags": tuple(tags),
                 "description": land["descriptions"][name],
             }
             SETTLEMENT_SITE_SPECS[aid] = land["settlement_sites"][name]
@@ -432,8 +528,9 @@ def generic_room_contents(room_id: str, room_name: str, site_name: str,
         room_id, _choose_pool_contents(seed, pool_id))
 
 
-def _new_area_record(spec: dict, polity: str, world_seed: int | None,
-                     index: int, source: str = "authored") -> dict:
+def _new_area_record(spec: dict, polity: str, tile: dict,
+                     world_seed: int | None, index: int,
+                     source: str = "authored") -> dict:
     aid = spec["id"]
     is_settlement = spec["kind"] == "settlement"
     tags = list(spec["tags"])
@@ -441,13 +538,15 @@ def _new_area_record(spec: dict, polity: str, world_seed: int | None,
         land = LAND_SPECS[polity]
         tags.extend(("settlement", spec["subtype"], land["culture"],
                      polity))
+    capital = bool(spec.get("capital"))
     return {
         "id": aid, "key": aid, "name": spec["name"],
-        "land": polity, "kind": spec["kind"], "subtype": spec["subtype"],
+        "land": polity, "tile": tile["id"], "kind": spec["kind"],
+        "subtype": spec["subtype"], "capital": capital,
         "culture": LAND_SPECS[polity]["culture"], "homeland": polity,
         "role": spec["role"], "description": spec["description"],
         "source": source, "template": aid,
-        "seed": stable_seed(world_seed, f"land/{polity}", "area", index),
+        "seed": stable_seed(world_seed, tile["id"], "area", index),
         "known": is_settlement, "visited": False,
         "sites": [], "quests": [], "tags": list(dict.fromkeys(tags)),
         "features": [], "states": [], "used_natural_sites": [],
@@ -465,9 +564,8 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
         "environment": spec["environment"],
         "description": spec.get("description", ""),
         "seed": stable_seed(world_seed, "world", "land", index),
-        "areas": [], "neighbors": list(_CATALOG["adjacency"][polity]),
-        "features": [], "states": [], "links": [], "sequences": {},
-        "discovery_order": [], "reserve": [],
+        "areas": [], "tiles": [], "settlement_slots": [],
+        "features": [], "states": [], "sequences": {},
     }
 
 
@@ -530,8 +628,7 @@ def materialize_site(world: dict, area: dict, spec: dict, *,
     sequence = area["sequences"].get(purpose, 0) + 1
     area["sequences"][purpose] = sequence
     template = _site_template(spec["name"], domain)
-    sid = (f"site/{area['land']}/{slug(area['name'])}/"
-           f"{slug(spec['name'])}/{sequence}")
+    sid = f"{area['id']}/site/{slug(spec['name'])}/{sequence}"
     seed = stable_seed(world["seed"], area["id"], purpose, sequence)
     site = {
         "id": sid, "name": spec["name"], "area": area["id"],
@@ -605,7 +702,7 @@ def _attach_services(area: dict, sites: list[dict]) -> None:
                  "label": "healer", "site": host["id"], "provider": None})
             host["services"].append("healer")
     required = {"lodging", "smith", "general_goods", "healer"}
-    if area["subtype"] == "capital":
+    if area.get("capital"):
         required |= {"alchemist", "market", "government"}
     missing = required - seen
     if missing:
@@ -625,82 +722,201 @@ def _generated_village_spec(polity: str, role_id: str, name: str,
 
 
 # --------------------------------------------------------------------------- #
-# THE SETTLEMENT TRIM (2026-08-07 -- the worldsim ladder's first rung)
+# Fixed Europe geography
 # --------------------------------------------------------------------------- #
-# A land BEGINS with three settlements: one capital, one town, one village.
-# Everything else the catalog holds is the RESERVE POOL -- unbuilt names and
-# skeletons that materialize only when something needs them to EXIST (a
-# relation names a rival center of power, a card needs a counterparty port).
-# This is places.py's own lazy Site/house pattern lifted one tier: the
-# catalog stopped being the world's census and became its reserve, so places
-# arrive because the world asked for them, not because a table was filled in
-# advance. A land whose reserve runs dry simply says no (see
-# `materialize_settlement`) -- the world stays finite.
-SETTLEMENTS_AT_WORLDGEN = 3
-OPENING_TIERS = ("town", "village")     # beside the capital, in draw order
+
+def load_europe_map(path: Path = EUROPE_MAP_PATH) -> tuple[str, ...]:
+    """Read and hard-validate the checked-in 30x18 source grid."""
+    try:
+        text = path.read_text(encoding="ascii")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{path}: map must be ASCII/UTF-8 text") from exc
+    rows = text.splitlines()
+    if len(rows) != MAP_ROWS:
+        raise ValueError(f"{path}: expected {MAP_ROWS} rows, got {len(rows)}")
+    for row_number, row in enumerate(rows, 1):
+        if len(row) != MAP_COLUMNS:
+            raise ValueError(
+                f"{path}: row {row_number} has {len(row)} columns; "
+                f"expected {MAP_COLUMNS}")
+        for column, glyph in enumerate(row, 1):
+            if glyph not in BIOME_GLYPHS:
+                raise ValueError(
+                    f"{path}: invalid glyph {glyph!r} at row {row_number}, "
+                    f"column {column}")
+    return tuple(rows)
 
 
-def _reserve_entry(name: str, tier: str, role: str, tags: Iterable[str],
-                   source: str) -> dict:
-    """One unbuilt settlement: the name, the skeleton it will be built from,
-    and the tags a need is matched against. Plain JSON -- it rides the save."""
-    return {"name": name, "tier": tier, "role": role,
-            "tags": list(tags), "source": source}
+def country_at(row: int, column: int) -> str:
+    if row >= 11:
+        return "mortellaria"
+    return "firascir" if column <= 21 else "tergal"
 
 
-def _land_reserve(polity: str, spec: dict,
-                  world_seed: int | None) -> list[dict]:
-    """The land's unbuilt settlements in the stable order they are drawn in:
-    the catalog's remaining towns first (hand-written skeletons), then its
-    villages -- authored ones before the generated roles, which pair the
-    land's name pool with its village roles in rotation."""
-    towns, authored_villages, generated = [], [], []
-    for name, tier, role, tags in spec["settlements"]:
-        if tier == "capital":
-            continue
-        entry = _reserve_entry(name, tier, role, tags, "authored")
-        (authored_villages if tier == "village" else towns).append(entry)
-    roles = [(role_id, tags) for role_id, _heading, tags in spec["villages"]]
-    if roles:
-        names = list(spec["village_names"])
-        random.Random(stable_seed(world_seed, f"land/{polity}",
-                                  "generated-villages", 0)).shuffle(names)
-        for index, name in enumerate(names):
-            role_id, tags = roles[index % len(roles)]
-            generated.append(_reserve_entry(name, "village", role_id, tags,
-                                            "worldgen"))
-    rng = random.Random(stable_seed(world_seed, f"land/{polity}",
-                                    "settlement-reserve", 0))
-    rng.shuffle(towns)
-    rng.shuffle(authored_villages)
-    return towns + authored_villages + generated
+def _land_components(rows: tuple[str, ...]) -> list[set[tuple[int, int]]]:
+    remaining = {(row, column)
+                 for row, line in enumerate(rows, 1)
+                 for column, glyph in enumerate(line, 1) if glyph != "."}
+    components = []
+    while remaining:
+        component = set()
+        stack = [min(remaining)]
+        while stack:
+            cell = stack.pop()
+            if cell not in remaining:
+                continue
+            remaining.remove(cell)
+            component.add(cell)
+            row, column = cell
+            stack.extend((row + dr, column + dc)
+                         for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)))
+        components.append(component)
+    return sorted(components, key=len, reverse=True)
 
 
-def _reserve_build(polity: str, entry: dict) -> tuple[dict, list[dict]]:
-    """The Area spec and required-Site skeleton behind one reserve entry."""
-    land = LAND_SPECS[polity]
-    if entry["source"] == "authored":
-        aid = area_id(polity, entry["name"])
-        return dict(AREA_SPECS[aid]), SETTLEMENT_SITE_SPECS[aid]
-    spec = _generated_village_spec(polity, entry["role"], entry["name"],
-                                   entry["tags"])
-    return spec, land["village_sites"][entry["role"]]
+def _validate_fixed_data(rows: tuple[str, ...]) -> None:
+    counts = {biome: 0 for biome in PINNED_BIOME_COUNTS}
+    countries = {country: {biome: 0 for biome in ("basic", "mountain",
+                                                   "river")}
+                 for country in COUNTRIES}
+    for row, line in enumerate(rows, 1):
+        for column, glyph in enumerate(line, 1):
+            biome = BIOME_GLYPHS[glyph]
+            counts[biome] += 1
+            if biome != "sea":
+                countries[country_at(row, column)][biome] += 1
+    if counts != PINNED_BIOME_COUNTS:
+        raise ValueError(f"Europe map biome census changed: {counts}")
+    if countries != PINNED_COUNTRY_BIOMES:
+        raise ValueError(f"Europe map country census changed: {countries}")
+    sizes = tuple(len(component) for component in _land_components(rows))
+    if sizes != PINNED_LAND_COMPONENTS:
+        raise ValueError(f"Europe map land components changed: {sizes}")
+    for row, column, name, country, biome, _capital in HISTORICAL_CITIES:
+        actual_biome = BIOME_GLYPHS[rows[row - 1][column - 1]]
+        actual_country = country_at(row, column)
+        if (actual_biome, actual_country) != (biome, country):
+            raise ValueError(
+                f"{name} at {tile_coordinate(row, column)} declares "
+                f"{country}/{biome}, map has {actual_country}/{actual_biome}")
+    capitals = {name for _r, _c, name, _p, _b, cap in HISTORICAL_CITIES
+                if cap}
+    if capitals != {"Paris", "Rome", "Kyiv"}:
+        raise ValueError(f"historical capitals changed: {sorted(capitals)}")
 
 
-def _add_settlement(world: dict, polity: str, entry: dict, *,
-                    day: int | None = None,
-                    need: str | None = None) -> dict:
-    """Build one settlement Area out of a reserve entry: the Area record, its
-    required Sites and Rooms, and its guaranteed services. `need` marks the
-    ones the world asked for after worldgen (the opening three pass None)."""
-    land = world["lands"][polity]
-    spec, site_specs = _reserve_build(polity, entry)
-    area = _new_area_record(spec, polity, world["seed"],
-                            len(land["areas"]) + 1, entry["source"])
-    world["areas"][area["id"]] = area
-    land["areas"].append(area["id"])
+def _slot(slot_id: str, tier: str, seed: int, *, name: str | None = None,
+          capital: bool = False, authored: bool = False) -> dict:
+    return {"id": slot_id, "tier": tier, "name": name,
+            "capital": capital, "authored": authored, "area": None,
+            "known": authored, "seed": seed}
+
+
+def _population_slots(seed: int | None, tile: dict) -> list[dict]:
+    if tile["biome"] == "sea":
+        return []
+    historical = HISTORICAL_BY_TILE.get((tile["row"], tile["column"]))
+    if historical:
+        name, _country, _biome, capital = historical
+        tiers = ("town", "village", "village")
+    else:
+        dense, village = SETTLEMENT_DENSITY[tile["country"]]
+        roll = random.Random(stable_seed(seed, tile["id"],
+                                        "population", 0)).random()
+        if roll < dense:
+            tiers = ("village",) if tile["biome"] == "mountain" else (
+                "town", "village", "village")
+        elif roll < dense + village:
+            tiers = ("village",)
+        else:
+            tiers = ()
+        name, capital = None, False
+    slots = []
+    for index, tier in enumerate(tiers, 1):
+        sid = f"{tile['id']}/settlement/{index:02d}"
+        slots.append(_slot(
+            sid, tier, stable_seed(seed, tile["id"], "settlement-slot", index),
+            name=name if historical and index == 1 else None,
+            capital=capital if index == 1 else False,
+            authored=bool(historical and index == 1)))
+    return slots
+
+
+def _name_state(seed: int | None) -> tuple[dict, dict]:
+    reserves, counters = {}, {}
+    for country, pools in SETTLEMENT_NAMES.items():
+        reserves[country], counters[country] = {}, {}
+        for tier, names in pools.items():
+            draw = list(names)
+            random.Random(stable_seed(seed, f"land/{country}",
+                                      f"{tier}-names", 0)).shuffle(draw)
+            reserves[country][tier] = draw
+            counters[country][tier] = 0
+    return reserves, counters
+
+
+def _next_settlement_name(world: dict, country: str, tier: str) -> str:
+    reserve = world["name_reserves"][country][tier]
+    if reserve:
+        return reserve.pop(0)
+    world["name_counters"][country][tier] += 1
+    return (f"{world['lands'][country]['name']} {tier.title()} "
+            f"{world['name_counters'][country][tier]}")
+
+
+def _settlement_template(country: str, tier: str, slot: dict
+                         ) -> tuple[dict, list[dict]]:
+    land = LAND_SPECS[country]
+    if slot.get("capital"):
+        entry = next(e for e in land["settlements"] if e[1] == "capital")
+        key = area_id(country, entry[0])
+        return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
+    entries = [e for e in land["settlements"]
+               if ("town" if e[1] == "capital" else e[1]) == tier
+               and e[1] != "capital"]
+    if entries:
+        entry = entries[slot["seed"] % len(entries)]
+        key = area_id(country, entry[0])
+        return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
+    roles = list(land.get("villages", ()))
+    if not roles:
+        entries = [e for e in land["settlements"] if e[1] == "village"]
+        entry = entries[slot["seed"] % len(entries)]
+        key = area_id(country, entry[0])
+        return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
+    role, _heading, tags = roles[slot["seed"] % len(roles)]
+    spec = _generated_village_spec(country, role, slot["name"], list(tags))
+    return spec, land["village_sites"][role]
+
+
+def materialize_slot(world: dict, slot: dict | str, *,
+                     need: str | None = None, day: int | None = None,
+                     known: bool = True) -> dict:
+    if isinstance(slot, str):
+        slot = world["settlement_slots"][slot]
+    if slot["area"] is not None:
+        return world["areas"][slot["area"]]
+    tile = world["tiles"][slot["tile"]]
+    country = tile["country"]
+    if slot["name"] is None:
+        slot["name"] = _next_settlement_name(world, country, slot["tier"])
+    template, site_specs = _settlement_template(country, slot["tier"], slot)
+    aid = f"{tile['id']}/area/settlement/{slot['index']:02d}"
+    spec = {**template, "id": aid, "name": slot["name"],
+            "subtype": slot["tier"], "capital": slot["capital"]}
+    area = _new_area_record(spec, country, tile, world["seed"],
+                            slot["index"] + 1,
+                            "historical" if slot["authored"] else "worldgen")
+    area["tags"] = list(dict.fromkeys(area["tags"] + tile["tags"]))
+    area["known"] = known
+    area["settlement_slot"] = slot["id"]
+    world["areas"][aid] = area
+    tile["areas"].append(aid)
+    world["lands"][country]["areas"].append(aid)
+    slot["area"] = aid
+    slot["known"] = known
     sites = [materialize_site(world, area, site_spec, source="authored",
-                              domain="built", known=True,
+                              domain="built", known=known,
                               purpose="required-site")
              for site_spec in site_specs]
     _attach_services(area, sites)
@@ -713,116 +929,132 @@ def _add_settlement(world: dict, polity: str, entry: dict, *,
 
 def reserve_settlements(world: dict, polity: str,
                         tier: str | None = None) -> list[dict]:
-    """What the land can still be asked to grow -- read before committing to
-    a card or a relation that names a place the world may not hold."""
-    return [entry for entry in world["lands"][polity]["reserve"]
-            if tier is None or entry["tier"] == tier]
+    return [world["settlement_slots"][sid]
+            for sid in world["lands"][polity]["settlement_slots"]
+            if world["settlement_slots"][sid]["area"] is None
+            and (tier is None or world["settlement_slots"][sid]["tier"] == tier)]
 
 
 def materialize_settlement(world: dict, polity: str, *,
                            need: str, tier: str | None = None,
                            tags: Iterable[str] = (),
                            day: int | None = None) -> dict | None:
-    """Draw the next settlement out of a land's reserve because something
-    needs it to exist. `tier` narrows the draw, `tags` prefer a fitting
-    skeleton (a port for a counterparty port), and `need` is recorded on the
-    Area as the reason it was founded.
-
-    Returns None when the reserve holds nothing that fits: the world is
-    finite, and a card whose counterparty cannot be built simply does not
-    fire (the exclusive-slot discipline, applied to geography)."""
-    reserve = world["lands"][polity]["reserve"]
-    pool = [entry for entry in reserve
-            if tier is None or entry["tier"] == tier]
+    pool = reserve_settlements(world, polity, tier)
     wanted = set(tags)
-    entry = next((e for e in pool if wanted.intersection(e["tags"])),
-                 pool[0] if pool else None)
-    if entry is None:
-        return None
-    reserve.remove(entry)
-    return _add_settlement(world, polity, entry, day=day, need=need)
+    fitting = [slot for slot in pool
+               if wanted.intersection(world["tiles"][slot["tile"]]["tags"])]
+    slot = (fitting or pool or [None])[0]
+    return (materialize_slot(world, slot, need=need, day=day)
+            if slot is not None else None)
+
+
+def reveal_tile(world: dict, tile: dict | str, day: int | None = None) -> list[dict]:
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    tile["known"] = tile["visited"] = True
+    natural = world["areas"][tile["natural_area"]]
+    natural["known"] = True
+    if day is not None and "discovered_day" not in natural:
+        natural["discovered_day"] = day
+    found = []
+    for sid in tile["settlement_slots"]:
+        found.append(materialize_slot(world, sid, day=day, known=True))
+    return found
 
 
 def create_geography(seed: int | None) -> dict:
-    """Create the finite Lands and natural Areas, and open every land with
-    its three settlements (the trim) -- the rest of the catalog becomes the
-    land's reserve, drawn on need by `materialize_settlement`."""
+    """Build the fixed 540-Tile Europe frame and its seeded population."""
+    rows = load_europe_map()
+    _validate_fixed_data(rows)
+    name_reserves, name_counters = _name_state(seed)
     world = {
-        "seed": seed, "lands": {}, "areas": {}, "sites": {}, "rooms": {},
+        "seed": seed, "lands": {}, "tiles": {}, "tile_order": [],
+        "settlement_slots": {}, "areas": {}, "sites": {}, "rooms": {},
         "quests": {}, "npcs": [], "events": [],
-        "links": list(_CATALOG["travel_links"]),
-        "water_links": list(_CATALOG["water_links"]),
+        "name_reserves": name_reserves,
+        "name_counters": name_counters,
     }
-    for land_index, polity in enumerate(_CATALOG["land_order"], 1):
-        spec = LAND_SPECS[polity]
-        land = _new_land_record(polity, spec, seed, land_index)
-        world["lands"][polity] = land
-        natural_ids = []
-        for index, (name, _subtype, _role, _tags) in enumerate(
-                spec["natural"], 1):
-            aid = area_id(polity, name)
-            area = _new_area_record(AREA_SPECS[aid], polity, seed, index)
-            world["areas"][aid] = area
-            land["areas"].append(aid)
-            natural_ids.append(aid)
-        # The opening three (the trim): the authored capital, then a town and
-        # a village drawn off the reserve. A land whose catalog is short of a
-        # tier tops up from the head of what is left, so every country still
-        # opens with three.
-        capital = next(entry for entry in spec["settlements"]
-                       if entry[1] == "capital")
-        _add_settlement(world, polity,
-                        _reserve_entry(capital[0], "capital", capital[2],
-                                       capital[3], "authored"))
-        land["reserve"] = _land_reserve(polity, spec, seed)
-        opening = []
-        for tier in OPENING_TIERS:
-            opening.extend([entry for entry in land["reserve"]
-                            if entry["tier"] == tier][:1])
-        for entry in land["reserve"]:
-            if len(opening) >= SETTLEMENTS_AT_WORLDGEN - 1:
-                break
-            if entry not in opening:
-                opening.append(entry)
-        for entry in opening:
-            land["reserve"].remove(entry)
-            _add_settlement(world, polity, entry)
-        order_rng = random.Random(
-            stable_seed(seed, land["id"], "area-discovery", 0))
-        order_rng.shuffle(natural_ids)
-        land["discovery_order"] = natural_ids
-        for aid in natural_ids:
-            site_specs = NATURAL_SITE_SPECS[aid]
-            ids = [spec["id"] for spec in site_specs]
-            site_rng = random.Random(
-                stable_seed(seed, aid, "natural-site-order", 0))
-            site_rng.shuffle(ids)
-            world["areas"][aid]["natural_site_order"] = ids
+    for index, country in enumerate(COUNTRIES, 1):
+        world["lands"][country] = _new_land_record(
+            country, LAND_SPECS[country], seed, index)
 
-    for polity, land in world["lands"].items():
-        routed_pairs = {
-            frozenset((link["a"], link["b"])) for link in world["links"]
-        }
-        land["links"] = [
-            {"target": neighbor, "kind": "border"}
-            for neighbor in land["neighbors"]
-            if frozenset((polity, neighbor)) not in routed_pairs
-        ]
-        for link in world["links"]:
-            if polity == link["a"]:
-                land["links"].append({**link, "target": link["b"]})
-            elif polity == link["b"]:
-                land["links"].append({**link, "target": link["a"]})
-    for water in world["water_links"]:
-        ids = [f"area/{value}" for value in water["areas"]]
-        for left, right in zip(ids, ids[1:]):
-            if left in world["areas"] and right in world["areas"]:
-                world["areas"][left]["links"].append(
-                    {"target": right, "kind": "river",
-                     "name": water["name"]})
-                world["areas"][right]["links"].append(
-                    {"target": left, "kind": "river",
-                     "name": water["name"]})
+    mainland = _land_components(rows)[0]
+    for row, line in enumerate(rows, 1):
+        for column, glyph in enumerate(line, 1):
+            tid = tile_id(row, column)
+            biome = BIOME_GLYPHS[glyph]
+            country = country_at(row, column)
+            historical = HISTORICAL_BY_TILE.get((row, column))
+            name = historical[0] if historical else tile_coordinate(row, column)
+            neighbors = [tile_id(row + dr, column + dc)
+                         for dr, dc in ((-1, 0), (0, -1), (0, 1), (1, 0))
+                         if 1 <= row + dr <= MAP_ROWS
+                         and 1 <= column + dc <= MAP_COLUMNS]
+            tags = [biome, country]
+            if biome == "river":
+                tags.append("riverside")
+            tile = {"id": tid, "row": row, "column": column, "name": name,
+                    "country": country, "biome": biome, "known": True,
+                    "visited": False, "neighbors": neighbors, "areas": [],
+                    "natural_area": None, "settlement_slots": [],
+                    "tags": tags, "seed": stable_seed(seed, tid, "tile", 0)}
+            world["tiles"][tid] = tile
+            world["tile_order"].append(tid)
+            world["lands"][country]["tiles"].append(tid)
+
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        row, column = tile["row"], tile["column"]
+        neighbors = [world["tiles"][nid] for nid in tile["neighbors"]]
+        if tile["biome"] != "sea" and any(n["biome"] == "sea" for n in neighbors):
+            tile["tags"].append("coast")
+        if tile["biome"] != "sea" and any(n["biome"] == "mountain" for n in neighbors):
+            tile["tags"].append("mountain-foot")
+        if any(n["country"] != tile["country"] for n in neighbors):
+            tile["tags"].append("border")
+        if tile["biome"] != "sea" and (row, column) not in mainland:
+            tile["tags"].append("island")
+        suffix = {"basic": "Countryside", "mountain": "Mountains",
+                  "river": "Riverlands", "sea": "Sea"}[tile["biome"]]
+        aid = f"{tid}/area/natural"
+        template = f"natural/{tile['country']}/{tile['biome']}"
+        spec = {"id": aid, "name": f"{tile['name']} {suffix}",
+                "kind": "natural", "subtype": tile["biome"],
+                "role": tile["biome"], "tags": tuple(tile["tags"]),
+                "description": f"{tile['name']} is {suffix.lower()}."}
+        area = _new_area_record(spec, tile["country"], tile, seed, 1)
+        area["template"] = template
+        ids = [site["id"] for site in NATURAL_SITE_SPECS[template]]
+        random.Random(stable_seed(seed, aid, "natural-site-order", 0)).shuffle(ids)
+        area["natural_site_order"] = ids
+        world["areas"][aid] = area
+        tile["areas"].append(aid)
+        tile["natural_area"] = aid
+        world["lands"][tile["country"]]["areas"].append(aid)
+        slots = _population_slots(seed, tile)
+        for index, slot in enumerate(slots, 1):
+            slot.update(tile=tid, index=index)
+            world["settlement_slots"][slot["id"]] = slot
+            tile["settlement_slots"].append(slot["id"])
+            world["lands"][tile["country"]]["settlement_slots"].append(slot["id"])
+
+    # Historical towns exist and are known from day zero; their villages do
+    # not. Capitals materialize first so country-level cast code has a stable
+    # political seat without relying on coordinate order.
+    historical = [slot for slot in world["settlement_slots"].values()
+                  if slot["authored"]]
+    for slot in sorted(historical, key=lambda value: not value["capital"]):
+        materialize_slot(world, slot, known=True)
+
+    candidates = list(world["settlement_slots"])
+    if not candidates:
+        raise ValueError("fixed Europe population produced no settlement slots")
+    start_slot = random.Random(stable_seed(seed, "world", "start-slot", 0)).choice(
+        candidates)
+    world["start_slot"] = start_slot
+    start_tile = world["settlement_slots"][start_slot]["tile"]
+    reveal_tile(world, start_tile, day=0)
+    world["start_area"] = world["settlement_slots"][start_slot]["area"]
     return world
 
 
@@ -835,10 +1067,19 @@ def land_culture(world: dict, polity: str) -> str:
     return world["lands"][polity]["culture"]
 
 
+def settlement_tier(area: dict) -> str:
+    """Mechanical service/board/conquest tier for a settlement Area."""
+    return "capital" if area.get("capital") else area["subtype"]
+
+
 def discover_area(world: dict, polity: str, day: int) -> dict | None:
-    """Reveal the next finite natural Area in its stable shuffled order."""
-    land = world["lands"][polity]
-    for aid in land["discovery_order"]:
+    """Reveal the first still-hidden natural Area in country tile order.
+
+    This remains the temporary Session-2 exploration hook. Directional Tile
+    travel replaces it in Grid Navigation and Map UI.
+    """
+    for tid in world["lands"][polity]["tiles"]:
+        aid = world["tiles"][tid]["natural_area"]
         area = world["areas"][aid]
         if not area["known"]:
             area["known"] = True
@@ -1186,6 +1427,11 @@ def place_debug_lines(world: dict, place: dict) -> list[str]:
 
 
 def validate_catalog() -> None:
+    if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
+        raise ValueError("place catalog must define the three Europe countries")
+    if any(key in _CATALOG for key in ("land_order", "adjacency",
+                                       "travel_links", "water_links")):
+        raise ValueError("place catalog still contains obsolete geography")
     for aid, specs in {**NATURAL_SITE_SPECS,
                        **SETTLEMENT_SITE_SPECS}.items():
         for site in specs:
@@ -1199,6 +1445,12 @@ def validate_catalog() -> None:
     for value in json.dumps(_CATALOG, ensure_ascii=False):
         if ord(value) > 127:
             raise ValueError("place catalog contains non-ASCII output")
+    for country in COUNTRIES:
+        for tier in ("town", "village"):
+            names = SETTLEMENT_NAMES[country][tier]
+            if not names or len(names) != len(set(names)):
+                raise ValueError(f"invalid {country} {tier} name reserve")
+    _validate_fixed_data(load_europe_map())
 
 
 validate_catalog()

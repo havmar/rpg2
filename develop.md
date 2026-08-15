@@ -176,9 +176,9 @@ a pointer: what the file is, how it's run, where its docs are.
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap and build contract**. Since the
   2026-08-15 reset it contains only the unbuilt fixed Europe-map rework.
-  Human World Contraction has shipped; the remaining sessions are Fixed
-  Europe Geography, Grid Navigation and Map UI, Local Quest Geography, and
-  Europe MVP Closure. Name the session when triggering
+  Human World Contraction and Fixed Europe Geography have shipped; the
+  remaining sessions are Grid Navigation and Map UI, Local Quest Geography,
+  and Europe MVP Closure. Name the session when triggering
   work; do not refer to a rung number. **Nothing implemented lives there**:
   when a session ships, delete its completed contract and write the result in
   the permanent docs and designlog as described above.
@@ -230,10 +230,11 @@ a pointer: what the file is, how it's run, where its docs are.
   MODIFIER COLUMNS with the tribal rewording, and the PC's own blank
   sheet. The spec-cut convention (a section is CUT when its session
   lands) and the cut dates live at the head of the file itself.
-- `places.py` — **the procedural-place runtime**: loads the immutable catalog,
-  derives stable BLAKE2 child seeds, creates the three human countries and finite Areas,
-  materializes the opening settlements (three a land since the 2026-08-07
-  trim) and the reserve draws / lazy natural Sites / ordinary houses,
+- `places.py` — **the fixed-geography and procedural-place runtime**: loads and
+  validates the immutable 30x18 Europe map, derives stable BLAKE2 child
+  seeds, creates the three human countries, 540 Tiles and 540 natural Areas,
+  rolls fixed settlement slots and materializes them lazily, including the
+  historical towns, required settlement Sites, ordinary natural Sites and houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation
   — whose state records carry a `since` day stamp and an optional `slot`
   since the world frame (same day), so a land's world states and a place's
@@ -241,19 +242,19 @@ a pointer: what the file is, how it's run, where its docs are.
   also AUTHOR THE WEATHER (2026-08-08): per-environment day-roll weights
   over `worldsim.WEATHER_WORDS` (the climate sentence in numbers,
   year-round — there is no season track) plus `drought_days`, how many
-  rainless days that ground calls a drought. Its need-to-exist draw
-  (`materialize_settlement`, wrapped whole by `quests.found_settlement`)
-  has no authored caller yet — plan.md parks the content half — but is a
-  documented DM TOOL since 2026-08-12: dm.md's "The map can grow at your
-  call" is the play-facing recipe.
+  rainless days that ground calls a drought. `materialize_settlement`
+  consumes an existing fitting slot (wrapped whole by
+  `quests.found_settlement`); `reveal_tile` reveals the natural Area and all
+  settlement slots without changing the seeded census.
 - `place_catalog.json` — **the checked-in ordinary place catalog** extracted
   from the accepted concrete content in `placegen.md`: the three active
-  country/Area
-  records, required settlement Site/Room skeletons, natural three-Site
-  inventories, generated-village roles/names, adjacency, and river/routes.
-  Since the settlement trim it is the world's RESERVE, not its census.
-- `test_places.py` — **the place-generation MVP contract suite**: counts,
-  IDs/names, deterministic seeds, finite discovery, lazy persistence,
+  country template records, required settlement Site/Room skeletons, natural
+  three-Site inventories, and settlement livelihoods. Fixed Tile geography,
+  historical settlements and country/tier name pools live in `places.py`.
+- `test_places.py` — **the fixed-geography and place-generation contract suite**:
+  map dimensions/glyph/country/component census, Tile/Area hierarchy,
+  historical towns/capitals, slot density, IDs/names, deterministic seeds,
+  name exhaustion, uniform starts, finite discovery, lazy persistence,
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, and 40-column display wrapping.
   `python -m unittest -v test_places.py`.
@@ -487,9 +488,8 @@ a pointer: what the file is, how it's run, where its docs are.
   a news line posted late on a told day surviving to the next telling.
   `python -m unittest -v test_worldsim.py`.
 - `resources/europe_map.txt` — **the canonical fixed world map**
-  (2026-08-15): an authored 30x18 Europe in `.` / `#` / `^` / `~`.
-  Nothing in the game reads it yet; plan.md's "The fixed Europe map"
-  item owns the location-system hook-up.
+  (2026-08-15): the runtime's authored 30x18 Europe in `.` / `#` / `^` /
+  `~`. `places.load_europe_map` validates and loads it during world creation.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
@@ -790,8 +790,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `karma` alias — read off `session.build_parser`).
   `python -m unittest -v test_history.py`.
 - `test_start.py` — the GAME START contract suite (2026-08-05, plan.md's
-  specs A and B): the level roll (`1..START_LEVEL_ROLL_MAX`, seeded, and
-  `--level` / `--homeland` with their refusals), the PC's two guarantees (the
+  specs A and B; fixed-geography start updated 2026-08-15): the level roll
+  (`1..START_LEVEL_ROLL_MAX`, seeded, and `--level` with its refusals), the
+  starting settlement's homeland for both heroes, the PC's two guarantees (the
   gift always, the sketch never — plus the asymmetry that motivates them:
   a wizard trains steel, a warrior can never learn a spell), the career a
   level-N start arrives with (doctrine points, the reward weapon and the
@@ -1509,21 +1510,18 @@ mechanic *does* and *why* is rules.md's job.
   `cmd_travel`, and the delivery guards in take/room/status/sheet/
   opening-hook/board-rumors.
 - **The world, places & navigation** (2026-07-09; hierarchy 2026-07-22;
-  procedural-place MVP 2026-07-25; the settlement trim 2026-08-07) —
+  procedural-place MVP 2026-07-25; fixed Europe geography 2026-08-15) —
   `places.py` +
-  `place_catalog.json`: independent country/culture/owner/environment records,
-  15 natural Areas plus three settlements a country (24 Areas at worldgen), stable
-  BLAKE2 child seeds, required
-  settlement skeletons/services/providers, three-entry natural Site
-  inventories, Room contents, ordinary houses, knowledge, links, and the
-  explicit state mutation/event API. **The settlement trim** (worldsim ladder
-  session 1): `SETTLEMENTS_AT_WORLDGEN` / `OPENING_TIERS` and the opening
-  draw in `create_geography`, the per-land `reserve` in the save,
-  `_land_reserve` (towns shuffled, then authored villages, then the
-  generated role/name pairing), `reserve_settlements` (read before
-  committing to a card that names a place), and `materialize_settlement`
-  (the need-to-exist draw: `need` / `tier` / `tags` / `day`, None when the
-  reserve is dry). `quests.py`: `found_settlement` — the whole-stack draw
+  `place_catalog.json` + `resources/europe_map.txt`: independent
+  country/culture/owner/environment records; strict 30x18 map validation;
+  stable country assignment and cardinal Tile links; one natural Area per
+  Tile; fixed seeded settlement slots; historical towns and explicit capital
+  flags; stable country/tier name reserves; BLAKE2 child seeds; required
+  settlement skeletons/services/providers; natural Site inventories; Room
+  contents; ordinary houses; knowledge; and state mutation/events.
+  `materialize_settlement` consumes an unused fitting slot and `reveal_tile`
+  reveals a Tile's natural Area plus every settlement there without changing
+  its census. `quests.py`: `found_settlement` — the whole-stack draw
   (the place plus `cast_service_providers`, refactored per settlement), and
   the world-owned
   `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
@@ -1532,7 +1530,7 @@ mechanic *does* and *why* is rules.md's job.
   (what roams a land = the union of its country's template pools),
   `roll_wild_level` (the road's party-independent geometric level table),
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
-  `position` (`land`, `area`, optional `site`/`room`), `current_area` /
+  `position` (`land`, `tile`, `area`, optional `site`/`room`), `current_area` /
   `local_settlement` / `at_quest_origin` / `at_quest_site`; `cmd_map` and
   `ui/map.txt` as the macro Land/Area view; `cmd_look` / `cmd_go` / `cmd_back`
   as the local view and movement precursor to the planned `ui/minimap.txt`;
@@ -1543,15 +1541,12 @@ mechanic *does* and *why* is rules.md's job.
   (travel arrival, explore's discovery, teleport): it stands the party in
   the area and spends the paid-crossing marker. Never assign
   `state["position"]` at a new call site.
-- **The world map** (2026-08-15, fixed resource only — rules.md's The
-  World Map add-on) — `resources/europe_map.txt` is the 30x18 authored
-  geography the location system will later move onto: `.` ocean, `#`
-  land, `^` mountains, `~` major river. A tile will correspond to an
-  Area; plan.md's "The fixed Europe map" item owns loading, validation,
-  Land/Area placement, travel and display. Nothing in the game reads the
-  resource yet. The two procedural attempts and the first one's contract
-  remain under `archive/`; they are historical tools, not alternate
-  worldgen paths.
+- **The world map** (2026-08-15 — rules.md's The World Map add-on) —
+  `resources/europe_map.txt` is the authoritative 30x18 geography: `.` ocean,
+  `#` land, `^` mountains, `~` major river. `places.py` loads it into the
+  Country -> Tile -> Area hierarchy. Grid pathfinding, travel costs and the
+  30x18 player map remain in plan.md's next session. The procedural attempts
+  under `archive/` are historical tools, not alternate worldgen paths.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -1735,12 +1730,11 @@ mechanic *does* and *why* is rules.md's job.
   (`START_LEVEL_ROLL_MAX` = 18, `START_QUESTS_PER_LEVEL`,
   `START_PURSE_SHARE`, `START_SPELL_LEVELS`, `start_level`,
   `career_purse`, `career_kit`, `_start_pact`, `career_line`),
-  `cmd_new` rebuilt around them (the `--level` / `--homeland` flags and
-  their refusals, the always-wizard trait-less PC, the trash arms now
+  `cmd_new` rebuilt around them (`--level`, the always-wizard trait-less PC,
+  the starting settlement's country as both heroes' homeland, trash arms now
   level-1 only, the war and pact lines that no longer promise level 2),
-  `_starting_settlement(world, level)` and `opening_hook` picking the
-  posting CLOSEST to the party's level (identical to the old
-  lowest-posting rule at level 1), and `cmd_chatter` skipping heroes
+  `_starting_settlement(world)` and `opening_hook` using the uniformly chosen
+  settlement and its forced exact-level combat quest, and `cmd_chatter` skipping heroes
   with no sketch. `people.py`: `make_character`'s `with_traits` /
   `wizard` switches (`WIZARD_ROLL_TRIES`), `roll_traits` minus
   `no_family`, `make_npc` minus the sketch (plus the optional `level`

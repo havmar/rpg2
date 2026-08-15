@@ -155,7 +155,7 @@ import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_gold, PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
-from quests import (generate_world, forge_quest, board_lines, HOMELANDS,
+from quests import (generate_world, forge_quest, board_lines,
                     quest_gold_posted,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade,
@@ -175,12 +175,14 @@ from quests import (generate_world, forge_quest, board_lines, HOMELANDS,
                     refresh_deliveries, next_quest_id, release_quest_places,
                     quest_band, quest_expired, deadline_note, failure_line,
                     open_quests, board_forecast,
+                    cast_service_providers,
                     QUEST_GRACE_DAYS, QUEST_PAY_BANDS)
 from places import (
     discover_area, materialize_natural_site, materialize_house,
     active_known_facts, place_debug_lines, find_place,
     add_state as add_place_state, replace_state as replace_place_state,
-    clear_state as clear_place_state, land_homeland,
+    clear_state as clear_place_state, land_homeland, reveal_tile,
+    settlement_tier,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -230,11 +232,12 @@ def _spawn_foe(kind: str, rng, n: int):
 # --------------------------------------------------------------------------- #
 # Position (the navigation layer, 2026-07-09; hierarchy 2026-07-22)
 # --------------------------------------------------------------------------- #
-# The party's position is a breadcrumb through Land -> Area -> Site -> Room.
-# Areas are the day-scale travel destinations; sites and rooms are local.
+# The party's position is a breadcrumb through Country -> Tile -> Area ->
+# Site -> Room. Direct Area travel remains the staged bridge until Session 3
+# adds weighted Tile movement; Sites and Rooms are local.
 
 def _area_position(area: dict) -> dict:
-    return {"land": area["land"], "area": area["key"],
+    return {"land": area["land"], "tile": area["tile"], "area": area["key"],
             "site": None, "room": None}
 
 
@@ -253,7 +256,8 @@ def move_party(state: dict, area: dict) -> None:
 def location_line(state: dict) -> str:
     world, pos = state["world"], state["position"]
     area = world["areas"][pos["area"]]
-    names = [world["lands"][pos["land"]]["name"], area["name"]]
+    tile = world["tiles"][pos["tile"]]
+    names = [world["lands"][pos["land"]]["name"], tile["name"], area["name"]]
     if pos.get("site"):
         names.append(world["sites"][pos["site"]]["name"])
     if pos.get("room"):
@@ -1387,26 +1391,9 @@ def career_line(h: Entity) -> str | None:
     return "career: " + "; ".join(bits) if bits else None
 
 
-def _starting_settlement(world: dict, level: int = 1) -> dict:
-    """Where a new game begins (2026-07-13): the settlement posting the
-    open COMBAT quest CLOSEST to the party's level, so the opening hook is
-    a job the party can actually take. Deliveries are excluded (2026-07-19
-    fix: they carry level 0, so a settlement with a delivery and only
-    high-level combat work used to win this contest -- and the hook, which
-    is always a combat job, then opened the game on a level-5 door). At
-    level 1 -- every game before 2026-08-05 -- closest-to-level IS the
-    lowest posting, so the ordinary start is unchanged; a career start
-    (`new --level N`) opens where the work fits it. (The capital --
-    settlements[0] -- keeps its story-layer role regardless of where the
-    party starts.)"""
-    def distance(s: dict) -> tuple[int, int]:
-        levels = [world["quests"][qid]["level"] for qid in s["quests"]
-                  if world["quests"][qid]["status"] == "open"
-                  and world["quests"][qid].get("kind") != "delivery"]
-        # (how far off the party's level, then the lower job) -- the second
-        # term keeps the tie-break the level-1 game always had.
-        return min(((abs(l - level), l) for l in levels), default=(99, 99))
-    return min(settlements(world), key=distance)
+def _starting_settlement(world: dict) -> dict:
+    """The settlement slot selected uniformly by fixed-Europe worldgen."""
+    return world["areas"][world["start_area"]]
 
 
 def opening_hook(state: dict) -> list[str]:
@@ -1441,11 +1428,12 @@ def cmd_new(args: argparse.Namespace) -> None:
     if args.level is not None and not 1 <= args.level <= LEVEL_CAP:
         print(f"--level takes a level of 1-{LEVEL_CAP}.")
         return
-    if args.homeland is not None and args.homeland not in HOMELANDS:
-        print(f"--homeland takes one of: {', '.join(HOMELANDS)}.")
-        return
     rng = random.Random(args.seed)
     level = start_level(args, rng)
+    world_seed = rng.randrange(1 << 30)
+    world = generate_world(world_seed, start_level=level)
+    start = _starting_settlement(world)
+    homeland = start["land"]
     # The PC is GENERATED, not chosen (2026-07-13, designer call -- the old
     # three-candidate pick is gone): male by designer fiat, no trait sketch
     # (2026-08-05: traits are the companion layer -- they are chosen against
@@ -1462,7 +1450,7 @@ def cmd_new(args: argparse.Namespace) -> None:
     # gift takes nothing away and opens everything.
     while True:
         pc = make_character(rng, level=level, sex="m",
-                            homeland=args.homeland,
+                            homeland=homeland,
                             with_traits=False, wizard=True)
         if party_capacity(pc.cha) >= 1:
             break
@@ -1472,7 +1460,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     # having been at his side for years (2026-07-13 reframe -- nobody
     # "joins" in the first scene), on a hire's terms otherwise -- the trait
     # sketch included, because his is the layer traits are FOR.
-    ally = make_character(rng, level=level, used_names=used)
+    ally = make_character(rng, level=level, homeland=homeland,
+                          used_names=used)
     ally.satisfaction = SATISFACTION_START
     ally.bond, ally.bond_kind = pc.name, "old companion"
     career_log: list[str] = []
@@ -1488,10 +1477,6 @@ def cmd_new(args: argparse.Namespace) -> None:
                 h.weapon = random_trash_weapon(rng)
     else:
         career_kit(pc, ally, level, rng, career_log)
-    world_seed = rng.randrange(1 << 30)     # derived, so --seed pins the
-                                            # whole playthrough, world and all
-    world = generate_world(world_seed)
-    start = _starting_settlement(world, level)
     start["visited"] = True
     state = {"party": [pc, ally], "clock": Clock(), "purse": Purse(),
              "rng": rng, "foe_count": 0, "pending": None, "rooms": {},
@@ -1596,9 +1581,11 @@ def roll_recruits(state: dict) -> None:
     for _ in range(cap):
         level = max(1, pc.level + rng.randint(-1, 1))
         if rng.random() < PAIR_CHANCE:
-            kind, members = make_pair(rng, level, used_names=used)
+            kind, members = make_pair(rng, level, used_names=used,
+                                      homeland=here["land"])
         else:
             kind, members = None, [make_character(rng, level,
+                                                  homeland=here["land"],
                                                   used_names=used)]
         options.append({"kind": kind,
                         "members": [_entity_to_dict(m) for m in members]})
@@ -3541,7 +3528,7 @@ def place_kind(state: dict) -> str:
     """Which crime market the party stands in: a settlement's subtype, or
     the wilds (where the road work lives)."""
     here = local_settlement(state)
-    return here["subtype"] if here is not None else "wilds"
+    return settlement_tier(here) if here is not None else "wilds"
 
 
 def place_id(state: dict) -> str:
@@ -5140,6 +5127,11 @@ def cmd_travel(args: argparse.Namespace) -> None:
     if state.get("sighting"):
         clear_sighting(state, quiet=True)
         print("  The party gives them a wide berth and keeps moving.")
+    existing = {area["id"] for area in settlements(world)}
+    revealed = reveal_tile(world, target["tile"], day=state["clock"].day)
+    for settlement in revealed:
+        if settlement["id"] not in existing:
+            cast_service_providers(world, settlement, state["rng"])
     move_party(state, target)   # the crossing is made; the next one is a
                                 # fresh charge (the marker goes with the move)
     target["visited"] = True
@@ -5477,12 +5469,6 @@ def cmd_look(args: argparse.Namespace) -> None:
     if links:
         print("Links: " + ", ".join(
             world["areas"][link["target"]]["name"] for link in links) + ".")
-    neighbors = world["lands"][area["land"]].get("neighbors", ())
-    if neighbors:
-        print("Neighboring Lands: " + ", ".join(
-            world["lands"][land]["name"] for land in neighbors) + ".")
-
-
 def cmd_go(args: argparse.Namespace) -> None:
     """Move locally within the current area. Local movement costs no day;
     `travel` remains the explicit day-scale move between areas."""
@@ -6074,7 +6060,7 @@ def cmd_healer(args: argparse.Namespace) -> None:
         print("Nobody is carrying a wound or an illness. Save the fee.")
         return
     party, clock, purse = state["party"], state["clock"], state["purse"]
-    subtype = here.get("subtype", "village")
+    subtype = settlement_tier(here)
     log = CombatLog()
     log.append(f"  The party spends the day with {here['name']}'s healer.")
     fee_mult = local_term(state, "healer")
@@ -6281,7 +6267,7 @@ def cmd_garrison(args: argparse.Namespace) -> None:
               "`conquer` wins new ones).")
         return
     rec = state["holdings"][here["key"]]
-    cap = conquest.GARRISON_CAP[here["subtype"]]
+    cap = conquest.GARRISON_CAP[settlement_tier(here)]
     if not args.heads:
         print(f"{here['name']}: garrison {rec['garrison']}/{cap} "
               f"({conquest.GARRISON_HIRE_COST}g a head -- `garrison N` "
@@ -6352,7 +6338,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
         # The master smiths' nonmagical best (2026-07-28): shoppable, but
         # only where master smiths work -- capitals, like spellbooks.
         here = local_settlement(state)
-        if here is None or here.get("subtype") != "capital":
+        if here is None or not here.get("capital"):
             print(f"Masterwork steel is sold only in a capital -- the "
                   f"party is at {location_line(state)}.")
             return
@@ -6371,7 +6357,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
                   f"{', '.join(sorted(SPELLS))}.")
             return
         here = local_settlement(state)
-        if here is None or here.get("subtype") != "capital":
+        if here is None or not here.get("capital"):
             print(f"Spellbooks are sold only in a capital -- the party is "
                   f"at {location_line(state)}.")
             return
@@ -6384,7 +6370,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
             print(f"{hero.name} has no need of medicine.")
             return
         here = local_settlement(state)
-        if here is None or here.get("subtype") != "capital":
+        if here is None or not here.get("capital"):
             print(f"Doses are compounded only in a capital -- the party is "
                   f"at {location_line(state)}.")
             return
@@ -7070,9 +7056,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="start a fresh game (overwrites save): rolls the world, "
              "GENERATES the player character -- male, no trait sketch, "
              "ALWAYS A MAGIC USER, CHA always holds at least one "
-             "companion -- with his long-time companion at his side, and "
-             "prints the OPENING HOOK, the local job closest to the "
-             "party's level, to frame the first scene on. No character "
+             "companion -- in a uniformly selected settlement slot, with "
+             "his homeland set from that country and his long-time "
+             "companion at his side. It prints a level-fit OPENING HOOK "
+             "there to frame the first scene on. No character "
              "pick, no tavern opening (2026-07-13). The party's LEVEL is "
              f"rolled 1-{START_LEVEL_ROLL_MAX} unless `--level N` fixes "
              "it (2026-08-05): above level 1 the pair arrives with the "
@@ -7087,9 +7074,6 @@ def build_parser() -> argparse.ArgumentParser:
                    help=f"start the party at this level (1-{LEVEL_CAP}); "
                         f"omitted, the level is ROLLED 1-"
                         f"{START_LEVEL_ROLL_MAX}")
-    p.add_argument("--homeland", default=None,
-                   help=f"fix the PC's homeland ({', '.join(HOMELANDS)}); "
-                        f"omitted, it is rolled")
     p.add_argument("--no-pact", action="store_true",
                    help="a neutral adventurer: no pact, no assignments "
                         "(the pre-2026-07-19 game)")
