@@ -2770,11 +2770,8 @@ POLITICS_CARDS = (
 # and the packet stays a wide pool instead of a content budget. What is left
 # ungated is one card a land at most, kept rare by its own `chance`.
 
-_SEERESS_HOOK = _authority_hook("seeress", "the seeress", "seeress")
 _HERMIT_HOOK = _authority_hook("hermit", "the walled-in hermit", "hermit")
-_PROPHET_HOOK = _authority_hook("prophet", "the street prophet", "prophet")
 _TALENT_HOOK = _authority_hook("wild-talent", "the wild talent", "talent")
-_MASTER_HOOK = _authority_hook("master", "the master for hire", "master")
 
 RELIGION_CARDS = (
     # == Firascir: THE PARISH IS THE SECOND STATE ========================== #

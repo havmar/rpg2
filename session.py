@@ -379,18 +379,18 @@ def _entity_to_dict(e: Entity) -> dict:
 def _entity_from_dict(d: dict) -> Entity:
     d = dict(d)
     d["weapon"] = _weapon_from(d["weapon"])
-    d["abilities"] = set(d.get("abilities", ()))
-    d["moves"] = set(d.get("moves", ()))
-    d["moves_spent"] = set(d.get("moves_spent", ()))
+    d["abilities"] = set(d["abilities"])
+    d["moves"] = set(d["moves"])
+    d["moves_spent"] = set(d["moves_spent"])
     d["feint_target"] = None
-    # Conditions come back as dicts (and are simply absent in a pre-slice-3a
-    # save, which is the same thing as carrying none).
-    d["conditions"] = [Condition(**c) for c in d.get("conditions", ())]
-    # Wounds (slice 3b). Absent in a pre-slice save, which is the same thing
-    # as an unwounded party -- and since such a save's stats were never
-    # docked, its (missing) wound_stat_pen is correctly empty too.
-    d["wounds"] = [Wound(**w) for w in d.get("wounds", ())]
-    d["wound_stat_pen"] = dict(d.get("wound_stat_pen", {}))
+    # Conditions and WOUNDS come back as dicts; `wound_stat_pen` with them,
+    # because the saved stats are ALREADY docked and the reload has to know
+    # how much is folded away or _sync_wound_stats would charge for it twice.
+    # `_entity_to_dict` writes all four every time, so a save that lacks one
+    # is damaged rather than old -- let it raise.
+    d["conditions"] = [Condition(**c) for c in d["conditions"]]
+    d["wounds"] = [Wound(**w) for w in d["wounds"]]
+    d["wound_stat_pen"] = dict(d["wound_stat_pen"])
     e = Entity(**d)
     # __post_init__ resets the live tracks to full; restore the saved state.
     e.hp = d["hp"]
@@ -426,33 +426,27 @@ def _pending_to_dict(pending: dict | None, party: list) -> dict | None:
 def _pending_from_dict(d: dict | None, party: list) -> dict | None:
     if d is None:
         return None
+    # `_pending_to_dict` writes every key below on every save, so this reads
+    # them all straight. A save missing one is damaged, not old.
     by_name = {h.name: h for h in party}
-    crossings = [tuple(c) for c in d["crossings"]]
-    pause_kind = d.get(
-        "pause_kind",
-        "fate" if any(kind == "fate" for kind, _ in crossings) else "normal",
-    )
     return {
         "foes": [_entity_from_dict(f) for f in d["foes"]],
         "fired": {(kind, by_name[name]) for kind, name in d["fired"]},
         "round": d["round"],
-        "crossings": crossings,
+        "crossings": [tuple(c) for c in d["crossings"]],
         "xp": d["xp"],
         "site": d["site"],
         "room": d["room"],
-        "quest": d.get("quest"),
-        "crime": d.get("crime"),
-        "pursuit": d.get("pursuit"),
-        "dead_before": d.get("dead_before", []),
-        "field": d.get("field", 0),
-        "weather": d.get("weather", ""),
-        "align": d.get("align", "neutral"),
-        "mercy": d.get("mercy"),
-        "pause_kind": pause_kind,
-        # Fate now consumes the one ordinary pause. A pre-slice pending save
-        # was necessarily the old ordinary pause, so True is the safe default
-        # for either shape.
-        "normal_pause_used": d.get("normal_pause_used", True),
+        "quest": d["quest"],
+        "crime": d["crime"],
+        "pursuit": d["pursuit"],
+        "dead_before": d["dead_before"],
+        "field": d["field"],
+        "weather": d["weather"],
+        "align": d["align"],
+        "mercy": d["mercy"],
+        "pause_kind": d["pause_kind"],
+        "normal_pause_used": d["normal_pause_used"],
     }
 
 

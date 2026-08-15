@@ -83,11 +83,6 @@ ENVIRONMENT_PROFILES = {
 
 LAND_SPECS = _CATALOG["lands"]
 COUNTRIES = tuple(LAND_SPECS)
-CULTURE_PROFILES = {
-    land["culture"]: {"homeland": polity,
-                      "environment": land["environment"]}
-    for polity, land in LAND_SPECS.items()
-}
 AREA_SPECS: dict[str, dict] = {}
 SETTLEMENT_SITE_SPECS: dict[str, list[dict]] = {}
 NATURAL_SITE_SPECS: dict[str, list[dict]] = {}
@@ -185,11 +180,6 @@ def tile_id(row: int, column: int) -> str:
 
 def tile_coordinate(row: int, column: int) -> str:
     return f"R{row:02d}C{column:02d}"
-
-
-def area_id(parent: str, name: str) -> str:
-    """An Area ID scoped beneath its Tile."""
-    return f"{parent}/area/{slug(name)}"
 
 
 def template_id(polity: str, role: str) -> str:
@@ -1111,8 +1101,6 @@ DIRECTIONS = {"north": (-1, 0), "west": (0, -1),
               "east": (0, 1), "south": (1, 0)}
 DIRECTION_WORDS = {**{name: name for name in DIRECTIONS},
                    "n": "north", "w": "west", "e": "east", "s": "south"}
-OPPOSITE_DIRECTION = {"north": "south", "south": "north",
-                      "east": "west", "west": "east"}
 BIOME_LETTERS = {biome: glyph for glyph, biome in BIOME_GLYPHS.items()}
 
 _GRID: tuple[str, ...] | None = None
@@ -1289,7 +1277,6 @@ def shortest_path(origin: dict | str, dest: dict | str) -> list[str]:
 # priority, party first and terrain last, and the detail block below the grid
 # carries what the glyph had to drop.
 
-MAP_OVERLAY_PRIORITY = ("@", "!", "C", "T", "v")
 MAP_GUTTER = "   "               # room for the two-digit row label
 MAP_GLYPH_LEGEND = ". sea  # land  ^ mtns  ~ river"
 MAP_MARK_LEGEND = "@ party  ! job  C capital  T town  v village"
