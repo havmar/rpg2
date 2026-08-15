@@ -174,14 +174,15 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the sole active roadmap and build contract**. Since the
-  2026-08-15 reset it contains only the unbuilt fixed Europe-map rework.
-  Human World Contraction, Fixed Europe Geography, Grid Navigation and
-  Map UI and Local Quest Geography have shipped; the one remaining session
-  is Europe MVP Closure. Name the session when triggering
-  work; do not refer to a rung number. **Nothing implemented lives there**:
-  when a session ships, delete its completed contract and write the result in
-  the permanent docs and designlog as described above.
+- `plan.md` — **the sole active roadmap and build contract**. The whole
+  fixed Europe-map rework shipped across five sessions ending 2026-08-15
+  (Human World Contraction, Fixed Europe Geography, Grid Navigation and
+  Map UI, Local Quest Geography, Europe MVP Closure), so what remains
+  there is the deferred list plus what the closure discovered. Name a
+  session when triggering work; do not refer to a rung number. **Nothing
+  implemented lives there**: when a session ships, delete its completed
+  contract and write the result in the permanent docs and designlog as
+  described above.
 - `archive/plan-pre-europe-2026-08-15.md` — **historical, not authority**:
   the complete roadmap displaced by the Europe-map reset, including its
   unfinished and parked ideas. Nothing in it is scheduled unless a later
@@ -210,6 +211,13 @@ a pointer: what the file is, how it's run, where its docs are.
   stable materialization, quest routing, readouts, and minimum verification.
   Pirate, wilderness, Caelum, and special-feature content remain post-MVP;
   shipped behavior belongs in `rules.md`.
+  **HISTORICAL for everything about the removed peoples and countries**
+  (2026-08-15): it still describes six Lands with dwarf, elf, goblin and
+  orc cultures, their name sounds, their livelihood overlays and their
+  Land-to-Land travel links. None of that is the game. Read it for the
+  authored-vs-generated boundary, the Room-content schema and the
+  seed/reveal/mutation rules, which all still hold; read `rules.md` and
+  this file for what the world actually is.
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -230,6 +238,12 @@ a pointer: what the file is, how it's run, where its docs are.
   MODIFIER COLUMNS with the tribal rewording, and the PC's own blank
   sheet. The spec-cut convention (a section is CUT when its session
   lands) and the cut dates live at the head of the file itself.
+  **HISTORICAL for the six-country world** (2026-08-15): the residue is
+  written against Ensimaa, Dvarvengrond and Gibili as much as against the
+  three survivors, and its packet material for those three is not
+  scheduled. What survives is the FRAMEWORK it describes — the record
+  kinds, the gates, the outlets — and the residue items that name a
+  surviving country or nothing in particular.
 - `places.py` — **the fixed-geography and procedural-place runtime**: loads and
   validates the immutable 30x18 Europe map, derives stable BLAKE2 child
   seeds, creates the three human countries, 540 Tiles and 540 natural Areas,
@@ -276,11 +290,36 @@ a pointer: what the file is, how it's run, where its docs are.
   `map_legend_lines` (known settlements by country, cities first, wrapped to
   40) and `tile_detail_lines`. `discover_area` — the Session-2 country-wide
   reveal sweep — is DELETED; entering a Tile is the whole of discovery.
-- `place_catalog.json` — **the checked-in ordinary place catalog** extracted
-  from the accepted concrete content in `placegen.md`: the three active
-  country template records, required settlement Site/Room skeletons, natural
-  three-Site inventories, and settlement livelihoods. Fixed Tile geography,
-  historical settlements and country/tier name pools live in `places.py`.
+  **The template layer and the world's own contract** (2026-08-15, Europe
+  MVP Closure; rules.md's World & Navigation add-on, "A settlement is cut
+  from a template its Tile can honor" and "The world validates itself where
+  it is made"): `template_id` names a catalog role in a namespace of its
+  own (a settlement Area is named by its SLOT and scoped under its Tile, so
+  a template must not look like a runtime ID), `_build_definition_indexes`
+  loads `settlement_templates` into `AREA_SPECS` / `SETTLEMENT_SITE_SPECS`,
+  and `_settlement_template` picks by FIT — the roles whose `fits` tags the
+  Tile carries, else the roles that ask for nothing, indexed by
+  `slot["seed"] % n`. `validate_catalog` grew the schema half
+  (`OBSOLETE_CATALOG_KEYS` / `OBSOLETE_LAND_KEYS` / `TILE_FIT_TAGS`: the old
+  census must be gone, every tier must be covered, exactly one capital
+  role, a no-tag role per tier, real Tile tags, and no `city` anywhere) and
+  `validate_world` is the new post-build check `create_geography` calls on
+  every world. `area_id`, `CULTURE_PROFILES`, `MAP_OVERLAY_PRIORITY` and
+  `OPPOSITE_DIRECTION` are DELETED — nothing read them.
+- `place_catalog.json` — **the checked-in ordinary place catalog**, and
+  since 2026-08-15 (Europe MVP Closure) content ONLY. Each of the three
+  countries carries `name` / `culture` / `environment` / `description`, its
+  `natural` biome-to-template map and `natural_sites` inventories, and
+  `settlement_templates`: a role per settlement kind, each with `tier`,
+  the Tile tags it `fits`, its own `tags`, a `description` and its required
+  `sites`. The old fixed settlement census — `settlements`, `descriptions`,
+  `villages`, `village_sites`, `village_descriptions`, `settlement_sites` —
+  is GONE, and `places.validate_catalog` rejects a catalog that has any of
+  it back. Nothing in the file names a position, a river, a region or a
+  neighbouring country: a template's description has to be true of every
+  Tile its `fits` admits, because it will be read at all of them. Fixed
+  Tile geography, historical settlements and country/tier name pools live
+  in `places.py`.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -308,12 +347,23 @@ a pointer: what the file is, how it's run, where its docs are.
   an active board, always inside the radius, always walkable inside its own
   window.
   `python -m unittest -v test_quest_geography.py`.
-- `test_places.py` — **the fixed-geography and place-generation contract suite**:
-  map dimensions/glyph/country/component census, Tile/Area hierarchy,
-  historical towns/capitals, slot density, IDs/names, deterministic seeds,
-  name exhaustion, uniform starts, finite discovery, lazy persistence,
+- `test_places.py` — **the fixed Europe world's contract suite**, two parts,
+  both describing the MODEL rather than the sessions that built it.
+  *The geography and its places*: map dimensions/glyph/country/component
+  census, Tile/Area hierarchy and cardinal links, historical
+  towns/capitals, slot density, IDs/names, deterministic seeds, name
+  exhaustion, uniform starts, finite discovery, lazy persistence, the
+  template a Tile can honor and its stability across the save,
   services/content, house constraints, quest routing/state transitions,
-  hidden facts, ASCII, and 40-column display wrapping.
+  hidden facts, ASCII, 40-column display wrapping, and ONE BROKEN WORLD
+  per clause of `places.validate_world`. *The three human countries*
+  (`TheThreeHumanCountries`): the closed homeland set, records carrying a
+  homeland and never a race, the war each country's own worldsim packet
+  supports, the deck every country is owed, and the removed-peoples sweep
+  over twenty-three runtime catalogs, a whole built and walked-into world,
+  and the play-facing documents (`dm.md`, `writing.md`,
+  `scene-example.md` — the dev docs and the spec companions are history
+  and are deliberately not swept).
   `python -m unittest -v test_places.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
@@ -370,7 +420,7 @@ a pointer: what the file is, how it's run, where its docs are.
   (`roll_land` / `roll_world`, lazy and day-seeded, so catching up is
   living through it), the news (`take_news`, told once) and the readouts
   (`land_lines` — the state diff on the map page — and `world_lines` —
-  the DM inventory behind `world`). The contracted active catalog has 104
+  the DM inventory behind `world`). The contracted active catalog has 107
   cards and eight relations across three countries. **The weather rung**
   (2026-08-08) added THREE TRACKS over one
   land — `TRACKS` / `DECK_KEY` / `LIVE_KEY`, so a storm never blocks a
@@ -459,6 +509,29 @@ a pointer: what the file is, how it's run, where its docs are.
   unproducible (`_validate_state_tables` now polices the keyed
   tables), and `EXTERNAL_STATES` names the states a verb sets that no
   card does.
+  **The Europe MVP Closure cut (2026-08-15)** finished the human
+  contraction, which had until then been enforced by FILTERING a
+  six-country catalog down to three at import. The Ensimaa, Dvarvengrond
+  and Gibili packets — 56 cards, 22 factions, their constitutions,
+  tensions, standing tensions, faction edges, relations, facts, options
+  and 62 words of state vocabulary — are physically GONE, and so are
+  `_surviving_cards`, `_prune_unreachable_cards` and the five comprehension
+  filters over the keyed tables, so import-time validation is now the only
+  thing between the file and a bad row. Three cards were rescued rather
+  than deleted because their scope was land-specific by accident:
+  `weather/wildfire` and `weather/green-again` (the drought's own
+  consequence and the scar that outlives it) are ANY_LAND, and
+  `weather/smog` moved to Firascir as the close-built northern town's own
+  hearth and forge smoke — it is the SOLE producer of the one sky a roof
+  does not keep out (`rpg.INDOOR_SKY`). `firascir/franchise` is deleted
+  (its producer was a Gibili relation, so it had been unreachable since
+  the contraction) and `_CROWNED` is now all three lands. `STATE_SLOTS` is
+  EMPTY — both authored slots belonged wholly to deleted countries and
+  neither survived re-homing — but the frame, `card()`'s slot validation
+  and `set_state`'s slot discipline stay, so the next country packet plugs
+  a slot in with one row. New: `_validate_three_countries`, which makes
+  every country owe a card on every track, standing lore, a relation that
+  reaches it and an environment profile to roll a sky from.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -776,12 +849,18 @@ a pointer: what the file is, how it's run, where its docs are.
   `build_quest(radius=)`. *The clock*: `route_days` (was `return_leg_days`)
   — the ordered walk out through every Site and home again, so a one-Site
   job buys twice its distance instead of only the leg home.
+  Since 2026-08-15 (Europe MVP Closure) `NAME_PARTS` and `_settlement_name`
+  are DELETED — the old fragment-assembled settlement naming, dead since
+  names started coming from `places.SETTLEMENT_NAMES`.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `story.py` — **the authored story layer: the conquest questline**
   (2026-07-12, rules.md's Story Layer & Conquest add-on). Three country
-  variants (Firascir, Mortellaria and Tergal — content dicts at the top: creeds,
-  reskins, waves, heralds, epilogues), the named faces (conqueror + two
+  variants (Firascir's Golden Empire, Mortellaria's Undead Kingdom and
+  Tergal's Iron Horde — content dicts at the top: creeds,
+  reskins, waves, heralds, epilogues; the first two were assigned to the
+  WRONG countries until 2026-08-15's closure, against both the build
+  contract and Mortellaria's own necromancy packet), the named faces (conqueror + two
   lieutenants as display names over budget-honest rosters), waves pinned
   at L2/5/8/10 built by quests.py's own threat math, wave gating
   (previous wave done + party at level + party at a settlement since
@@ -2202,6 +2281,16 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   doubling is a further widening the sim cannot see at all. If the clock
   needs retuning, remember the sim still teleports: its bands under-report
   the road, and both widenings correct for legs the sim never walks.
+
+**The Europe MVP Closure (2026-08-15) moved nothing.** No combat, pay,
+threat or refill constant changed, and `rpg.py`, `sites.py` and
+`weapons.py` are byte-identical across it. The career column was
+re-measured anyway because the session changed which template a settlement
+is cut from and physically deleted three countries' worth of world cards;
+it is flat to the point (turn-in bands 30/53/13/4 against 30/52/13/4,
+median death L9 both, zero board exhaustions and zero forced-up picks in
+both, 51 open jobs at the end in both). benchlog 2026-08-15 has the
+column and why the L17/L20 cells are not signal.
 
 **The rout knobs (2026-08-08).** `CHASE_HP_WEIGHT_FLOOR` = 0.3 (how much a
 nearly-dead runner's DEX still counts), `TRACK_WOUND_BONUS` = 2 (`pursue`'s

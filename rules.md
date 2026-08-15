@@ -3014,7 +3014,10 @@ materialize lazily.
   northeast/east and Mortellaria the south. Their non-sea census is fixed at
   97, 75 and 144 Tiles respectively. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
-  catalog supplies reusable Site content, not a second geography.
+  catalog supplies reusable Site content, not a second geography: since
+  2026-08-15 it holds no settlement census, no positions and no named
+  rivers or regions at all, only country cultures, settlement roles,
+  natural Site templates, Room layouts and livelihood overlays.
 - **Settlement slots are the census.** Every non-sea Tile receives a stable
   seeded count and mix of town/village slots from its country's density
   table. Sea has none. Ordinary mountain Tiles cannot receive a town: a
@@ -3022,6 +3025,27 @@ materialize lazily.
   materialized, so revealing, saving and revisiting cannot move it or change
   its name. Country-and-tier name reserves are shuffled once per seed;
   deterministic numbered names continue after a reserve is exhausted.
+- **A settlement is cut from a template its Tile can honor** (2026-08-15,
+  Europe MVP Closure). Each country authors a handful of settlement ROLES
+  per tier -- a harbour town, a market town, a ford village -- and each
+  role declares the Tile tags it needs. Only roles the Tile can honor are
+  in the draw, so a harbour wants a `coast`, a ford wants a `river` and a
+  hill town wants a `mountain-foot`; a plain inland Tile draws from the
+  roles that ask for nothing, and every country keeps at least one of
+  those per tier. The pick is a stable function of the slot's own seed, so
+  it is the same whenever the slot materializes and it survives the save.
+  A role carries the description, the tags and the required Sites; the
+  NAME comes from the slot, never from the template, so no two settlements
+  share a smithy's name because they share a trade.
+- **The world validates itself where it is made.** World creation checks
+  the whole contract before returning: the row-major 540-Tile frame, a
+  natural Area and a real country on every Tile, reciprocal cardinal links
+  with no diagonals and nothing off the frame, no settlement at sea, no
+  ordinary town on a mountain, each historical Tile carrying its declared
+  country, biome and its one named town, unique slot ids registered on both
+  their Tile and their country, exactly three capitals, and a start that is
+  a materialized slot. An illegal world raises at creation rather than
+  surfacing later inside a display.
 - **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
   in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
   Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
@@ -3543,13 +3567,20 @@ people's war of conquest read wrong; the roll excludes it). Four
 **2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
 are always the easier ones). The variants:
 
-- **Mortellaria — the Golden Empire.** Imperial magic-machines and a creed
+- **Firascir — the Golden Empire.** Imperial war machines and a creed
   that weak neighbors should be ruled.
-- **Firascir — the Undead Kingdom.** A king corrupted by a hungry god;
+- **Mortellaria — the Undead Kingdom.** A king corrupted by a hungry god;
   necromancy as conscription that does not end at death (the undead pool
   plus living cultist soldiery).
-- **Tergal — the Iron Horde.** A human warlord unites the clans: might is
+- **Tergal — the Iron Horde.** A warlord unites the clans: might is
   right, war is glorious, and every neighboring country is a prize.
+
+The pairing is fixed, and it is not arbitrary (corrected 2026-08-15,
+Europe MVP Closure — the code had the first two the wrong way round).
+Mortellaria owns the death rite, the tomb cults and the academy's
+necromancers in the world layer; Firascir's own religion cards are the
+ACCUSATIONS made against that rite, so a deathless Firascir would
+contradict its own deck.
 
 The mechanics, all of them reuses:
 

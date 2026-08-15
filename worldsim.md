@@ -18,6 +18,15 @@ session left unbuilt, two magic-doctrine lines, the ruler sheet's
 per-land and per-race MODIFIER COLUMNS, and the PC's own blank sheet.
 None of it blocks anything; all of it is a design round away.
 
+> **HISTORICAL for the six-country world (2026-08-15).** This file was
+> written when the world had six Lands, and its packet material for
+> Ensimaa, Dvarvengrond and Gibili -- and its per-RACE ruler modifier
+> columns -- describe countries and peoples the Europe rework deleted.
+> None of that is scheduled; nothing here is rewritten to match, because
+> project history is not edited. Read the FRAMEWORK -- the record kinds,
+> the gates, the outlets -- and read the residue items that name a
+> surviving country or nothing in particular.
+
 When a piece ships, its rules move to rules.md and its entry here is cut
 (the plan.md convention) — the record framework went that way on
 2026-08-07, the weather on 2026-08-08, the six ECONOMY land packets on

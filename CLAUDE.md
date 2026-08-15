@@ -53,9 +53,9 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the sole active roadmap and build contract. Since the
-  2026-08-15 reset it specifies the remaining fixed Europe-map rework as
-  independently triggerable implementation sessions. Shipped sessions are
+- `plan.md` — the sole active roadmap and build contract. The fixed
+  Europe-map rework shipped in full on 2026-08-15, so what remains there
+  is the deferred list and what the closure parked. Shipped sessions are
   removed from it.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.

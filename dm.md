@@ -399,7 +399,15 @@ it.
   hand.
 - **Settlement geography is fixed.** The 30x18 Europe map rolls lightweight
   town and village slots at world creation. Entering a Tile reveals its
-  natural Area and materializes every slot there. When a quest, world event
+  natural Area and materializes every slot there.
+- **A settlement's description is a ROLE, not a portrait.** Each is cut
+  from one of its country's handful of settlement templates, chosen for
+  what its Tile can carry -- a harbour on a coast, a ford on a river. Two
+  places in one campaign will read the same sentence sooner or later; that
+  is the system, not a bug. The sentence is the floor of the scene, so
+  narrate ONE thing over it that is this place's own -- who is in the
+  square, what the smith is short of, why the gate is shut -- and let the
+  name and the people do the distinguishing. When a quest, world event
   or scene needs a settlement elsewhere, draw an unused matching slot instead
   of inventing an untracked place. The existing between-commands tool remains:
 
@@ -749,8 +757,8 @@ direct mechanical effects.
 
 ## The war -- the conquest questline
 
-Every world seeds ONE war at `new`: an aggressor country (Mortellaria's
-Golden Empire / Firascir's Undead Kingdom / Tergal's Iron Horde) and four
+Every world seeds ONE war at `new`: an aggressor country (Firascir's
+Golden Empire / Mortellaria's Undead Kingdom / Tergal's Iron Horde) and four
 wave quests pinned at levels **2 / 5 / 8 / 10**. The scripts run the clock;
 your job is the narration:
 
