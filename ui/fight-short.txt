@@ -1,40 +1,108 @@
-=== Renegade Wizards ===
-the tollhouse road (L2),
-room 1/1: ruined yard
-Hexer 1 -- dagger
-DEX 4  STR 2  STA 6  HP 10/10
-takes spoils, leaves the fallen,
-caster: ice 2; 8 Power
+=== Deserter Raiders ===
+the burned farm (L3),
+room 1/1: outer watch
+3x Deserter -- spear
+DEX 5  STR 4  STA 6  HP 10/10
+takes spoils, leaves the fallen
 Round 1:
-The lines close.
-Edwin's fire bolt overwhelms Hexer 1,
-deals 6 dmg!!! [5 Power left]
-Hexer 1's ice bolt is warded off.
-Round 2:
 The lines meet -- steel range.
 !! Edwin is Winded.
-Edwin's fire bolt edges past Hexer 1,
-deals 4 dmg!! [4 Power left]
-Hexer 1 falls.
-Hexer 1's ice bolt is warded off.
+Edwin's fire bolt is warded off.
+Round 2:
+Edwin's fire bolt
+outmaneuvers Deserter 2, deals 4 dmg!!
+[2 Power left]
+Brand attacks Deserter 2, parried.
+Deserter 2 (6/10)
+attacks Brand, parried.
+Deserter 3 attacks Brand, parried.
+Deserter 4 slips through the press.
+Round 3:
+Edwin downs a stamina draught (0 left).
+Brand overwhelms Deserter 2,
+deals 4 dmg!!
+Deserter 2 (2/10)
+attacks Brand, parried.
+Deserter 3 overwhelms Brand,
+deals 4 dmg!!
+Brand takes a wound:
+a deep wound in the right arm.
+Deserter 4 and Edwin: they circle.
+Round 4:
+Edwin's fire bolt edges past Deserter 2,
+deals 2 dmg! [1 Power left]
+Deserter 2 falls.
+Deserter 2 strikes as they fall:
+Brand parries.
+Brand (5/9) attacks Deserter 3, parried.
+!! Deserter 3 is Winded.
+Deserter 3 and Brand: Clash!
+Deserter 4 attacks Edwin, parried.
+Round 5:
+!! Edwin is Winded.
+Edwin's fire bolt overwhelms Deserter 3,
+deals 6 dmg!!! [0 Power left]
+Brand: Thrust at Deserter 3!
+Brand (5/9) outmaneuvers Deserter 3,
+deals 1 dmg.
+Deserter 3 and Brand: Clash!
+!! Deserter 4 is Winded.
+Deserter 4 attacks Edwin, parried.
+Round 6:
+Edwin outmaneuvers Deserter 4,
+deals 2 dmg!
+Brand (5/9) overwhelms Deserter 3,
+deals 1 dmg.
+Deserter 3 (2/10)
+attacks Brand, parried.
+Deserter 4 and Edwin: Clash!
+Round 7:
+Edwin and Deserter 4: they circle.
+!! Brand is Winded.
+Brand (5/9) overwhelms Deserter 3,
+deals 2 dmg! It falls.
+Deserter 3 strikes as they fall:
+Brand parries.
+Deserter 4 (8/10) overwhelms Brand,
+deals 6 dmg!!!
+Brand takes a wound: a caved-in chest.
+Brand is SLAIN.
+Round 8:
+!! Edwin is SPENT.
+Edwin attacks Deserter 4, parried.
+!! Deserter 4 is SPENT.
+Deserter 4 (8/10)
+attacks Edwin, deflected.
+The beaten foes break and run!
+The survivors escape.
+The field belongs to the party.
 The party catches its breath (+1 STA)
-Edwin +53 XP (encounter) [53/200]
-Brand +53 XP (encounter) [53/200]
+Edwin +70 XP (encounter) [206/200]
+*** Edwin reaches level 3!
+(4 skill points unspent) ***
+Loot: 5 gold (purse 16g).
 Left among the dead:
-a dagger (+0 atk/-1 sev, 2g).
+2x spear (+0 atk/+0 sev, 5g).
+(LOOSE END le1: Deserter 4 got away -- `pursue` while the trail is warm: today, here, before a night's sleep)
 
-*** THE JOB IS DONE: Renegade Wizards --
-the tollhouse road. Return to Garrick
+*** THE JOB IS DONE (driven off, not slain):
+Deserter Raiders -- the burned farm.
+Return to Ulric
 at Solavela -- due day 4:
-`turnin q01`. ***
-Edwin +53 XP (the work done) [106/200]
-Brand +53 XP (the work done) [106/200]
+`turnin q11`. ***
+Edwin +71 XP (the work done) [77/300]
+Brand's rapier
+is taken up from where they fell
+(`give HERO rapier`).
+Brand's potions are taken up
+from where they fell (2 vial(s)).
+The party shares out its potions:
+Edwin: 2 healing, 1 stamina.
 
 -- the party --
-Edwin: Unhurt STA 4/5 Power 4/6
-  (healing x1, stamina x1)
-Brand: Unhurt STA 8/8 Power 6/6
-  (healing x1, stamina x1)
-Purse 22g; day 1.
-The work is done: return to Garrick at Solavela -- the turn-in pays 41g, 30 XP (`turnin q01`).
+Edwin: Unhurt STA 1/5 Power 0/6
+  (Winded -2 to rolls)
+  (healing x2, stamina x1)
+Purse 16g; day 1.
+The work is done: return to Ulric at Solavela -- the turn-in pays 62g, 40 XP (`turnin q11`).
   (due day 4 -- 3 days left; quick pay, x1.15)

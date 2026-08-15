@@ -1,31 +1,40 @@
 RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > R16C30 > Solavela > the
-  tollhouse road > ruined yard
-purse: 71g
-party: 1/2 companion slot(s) filled (CHA
+  Mortellaria > R16C30 > R16C30
+  Countryside > the burned farm > outer
+  watch
+purse: 16g
+party: 0/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Edwin -- mortellaria m, age 24
-  L2  training 1  XP 136/200  points 1
+  L3  training 1  XP 77/300  points 4
   DEX 5  STR 5  MIND 6  CHA 5
-  HP 8/8  STA 4/5  Power 4/6
-  wooden staff | healingx1, staminax1
+  HP 8/8  STA 1/5  Power 0/6
+  wooden staff | healingx2, staminax1
   spells: fire 1
 
 (companion) Brand -- mortellaria m, age
-  36
+  36 [DEAD]
   L2  training 1  XP 136/200  points 0
-  DEX 4  STR 3  MIND 3  CHA 6
-  HP 9/9  STA 8/8  Power 6/6
-  dagger, prof 1 | healingx1, staminax1
+  DEX 4  STR 2  MIND 3  CHA 6
+  HP 0/4 of 9  STA 3/6  Power 6/6
+  rapier | no kit
   moves: thrust
+  drilled, not in hand: dagger 1
   satisfaction 8/10
   temperament: gloomy; speech: verbose;
     dress: luxurious
+  - a caved-in chest (sev 3)
+  - a deep wound in the right arm (sev
+    2)
+  wound load 5 -> HP ceiling 4/9
 
-active quest [q01] Renegade Wizards is
-  COMPLETE
+active quest [q11] Deserter Raiders: THE
+  WORK IS DONE -- return to Ulric at
+  Solavela (`turnin q11`)
+  due day 4 -- 3 days left
 THE PACT: no current assignment (the
-  next is pinned to PC level 3).
+  level-3 pin is due -- it lands at the
+  next settlement).
 THE WAR: [w1] L2 Machines at the Border
   -- raised at Kyiv.

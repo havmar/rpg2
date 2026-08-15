@@ -1,42 +1,128 @@
-=== Renegade Wizards -- the tollhouse road (L2), room 1/1: ruined yard ===
-  Hexer 1 -- dagger
-  DEX 4  STR 2  STA 6  HP 10/10
-  takes spoils, leaves the fallen,
-  caster: ice 2; 8 Power
+=== Deserter Raiders -- the burned farm (L3), room 1/1: outer watch ===
+  3x Deserter -- spear
+  DEX 5  STR 4  STA 6  HP 10/10
+  takes spoils, leaves the fallen
   Round 1:
-    Brand close the distance (the gap narrows to 1).
-    Edwin's fire bolt overwhelms Hexer 1 -- a crippling blow! [Hexer 1: 4/10 HP, -3 to rolls]
-        pressure: Edwin: 19 (2d6=11, +6 AIM, +1 training, +1 proficiency) vs Hexer 1: 13 (2d6=9, +4 DEX) [fire bolt: -1 Power, 5 left]
-        severity: 10 = margin 6 +5 fire bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
-    Hexer 1 sends ice bolt at Brand -- warded off.
-        pressure: Hexer 1: 14 (2d6=7, +8 AIM, +2 proficiency, -3 wounds) vs Brand: 15 (2d6=10, +4 DEX, +1 training) [ice bolt: -1 Power, 7 left]
-    stamina: Edwin 4/5, Brand 8/8 | Hexer 1 5/6
-  Round 2:
-    Brand close the distance -- the lines meet!
+    Brand, Deserter 2, Deserter 3, Deserter 4 close the distance -- the lines meet!
     !! Edwin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Edwin's fire bolt edges past Hexer 1 -- a grievous injury! [Hexer 1: 0/10 HP, -5 to rolls]
-        pressure: Edwin: 10 (2d6=4, +6 AIM, +1 training, +1 proficiency, -2 winded) vs Hexer 1: 8 (2d6=7, +4 DEX, -3 wounds) [fire bolt: -1 Power, 4 left]
-        severity: 6 = margin 2 +5 fire bolt +1 spell rank -2 soak -> grievous (-4 HP)
-    *** Hexer 1 falls. ***
-    (Hexer 1 strikes even as they fall)
-    Hexer 1 sends ice bolt at Brand -- warded off.
-        pressure: Hexer 1: 12 (2d6=5, +8 AIM, +2 proficiency, -3 wounds) vs Brand: 16 (2d6=11, +4 DEX, +1 training) [ice bolt: -1 Power, 6 left]
-    stamina: Edwin 3/5*, Brand 8/8   (* = Winded)
+    Edwin sends fire bolt at Deserter 2 -- warded off.
+        pressure: Edwin: 12 (2d6=6, +6 AIM, +1 training, +1 proficiency, -2 winded) vs Deserter 2: 14 (2d6=9, +5 DEX) [fire bolt: -1 Power, 3 left]
+    stamina: Edwin 3/5*, Brand 8/8 | Deserter 2 6/6, Deserter 3 6/6, Deserter 4 6/6   (* = Winded)
+  Round 2:
+    Edwin's fire bolt outmaneuvers Deserter 2 -- a grievous injury! [Deserter 2: 6/10 HP, -2 to rolls]
+        pressure: Edwin: 14 (2d6=8, +6 AIM, +1 training, +1 proficiency, -2 winded) vs Deserter 2: 10 (2d6=5, +5 DEX) [fire bolt: -1 Power, 2 left]
+        severity: 6 = margin 4 +5 fire bolt +1 spell rank -4 soak -> grievous (-4 HP)
+    Brand attacks Deserter 2 -- parried.
+        pressure: Brand: 11 (2d6=4, +4 DEX, +1 training, +2 rapier) vs Deserter 2: 12 (2d6=9, +5 DEX, -2 wounds)
+    Deserter 2 attacks Brand -- parried.
+        pressure: Deserter 2: 9 (2d6=6, +5 DEX, -2 wounds) vs Brand: 10 (2d6=5, +4 DEX, +1 training)
+    Deserter 3 attacks Brand -- parried.
+        pressure: Deserter 3: 7 (2d6=2, +5 DEX) vs Brand: 10 (2d6=5, +4 DEX, +1 training)
+    Deserter 4 slips through the press, pushing deeper (advance 2/2).
+    stamina: Edwin 2/5*, Brand 7/8 | Deserter 2 5/6, Deserter 3 5/6, Deserter 4 6/6   (* = Winded)
+  Round 3:
+    Edwin downs a stamina draught mid-fight (STA 2 -> 5/5; 0 left) -- no attack this round, -2 defending while they drink
+    Brand overwhelms Deserter 2 -- a grievous injury! [Deserter 2: 2/10 HP, -4 to rolls]
+        pressure: Brand: 15 (2d6=8, +4 DEX, +1 training, +2 rapier) vs Deserter 2: 8 (2d6=5, +5 DEX, -2 wounds)
+        severity: 5 = margin 7 +3 STR -1 rapier -4 soak -> grievous (-4 HP)
+    Deserter 2 attacks Brand -- parried.
+        pressure: Deserter 2: 8 (2d6=7, +5 DEX, -4 wounds) vs Brand: 12 (2d6=7, +4 DEX, +1 training)
+    Deserter 3 overwhelms Brand -- a grievous injury! [Brand: 5/9 HP, -1 to rolls]
+        pressure: Deserter 3: 17 (2d6=12, +5 DEX) vs Brand: 12 (2d6=7, +4 DEX, +1 training)
+        severity: 6 = margin 5 +4 STR -3 soak -> grievous (-4 HP)
+    Brand takes a wound: a deep wound in the right arm (severity 2; HP ceiling 7/9)
+    Deserter 4 and Edwin -- Lull. They circle, probing for an opening.
+        pressure: Deserter 4: 12 (2d6=7, +5 DEX) vs Edwin: 12 (2d6=7, +5 DEX, +1 training, +1 wooden staff, -2 drinking)
+    stamina: Edwin 5/5, Brand 6/8 | Deserter 2 4/6, Deserter 3 4/6, Deserter 4 5/6
+  Round 4:
+    Edwin's fire bolt edges past Deserter 2 -- a solid wound! [Deserter 2: 0/10 HP, -5 to rolls]
+        pressure: Edwin: 11 (2d6=3, +6 AIM, +1 training, +1 proficiency) vs Deserter 2: 9 (2d6=8, +5 DEX, -4 wounds) [fire bolt: -1 Power, 1 left]
+        severity: 4 = margin 2 +5 fire bolt +1 spell rank -4 soak -> wound (-2 HP)
+    *** Deserter 2 falls. ***
+    (Deserter 2 strikes even as they fall)
+    Deserter 2 attacks Brand -- parried.
+        pressure: Deserter 2: 9 (2d6=8, +5 DEX, -4 wounds) vs Brand: 12 (2d6=8, +4 DEX, +1 training, -1 wounds)
+    Brand attacks Deserter 3 -- parried.
+        pressure: Brand: 11 (2d6=5, +4 DEX, +1 training, +2 rapier, -1 wounds) vs Deserter 3: 15 (2d6=10, +5 DEX)
+    !! Deserter 3 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Deserter 3 and Brand -- Clash! Steel rings; neither yields.
+        pressure: Deserter 3: 12 (2d6=9, +5 DEX, -2 winded) vs Brand: 12 (2d6=8, +4 DEX, +1 training, -1 wounds)
+    Deserter 4 attacks Edwin -- parried.
+        pressure: Deserter 4: 8 (2d6=3, +5 DEX) vs Edwin: 13 (2d6=6, +5 DEX, +1 training, +1 wooden staff)
+    stamina: Edwin 4/5, Brand 5/8 | Deserter 3 3/6*, Deserter 4 4/6   (* = Winded)
+  Round 5:
+    !! Edwin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Edwin's fire bolt overwhelms Deserter 3 -- a crippling blow! [Deserter 3: 4/10 HP, -3 to rolls]
+        pressure: Edwin: 14 (2d6=8, +6 AIM, +1 training, +1 proficiency, -2 winded) vs Deserter 3: 6 (2d6=3, +5 DEX, -2 winded) [fire bolt: -1 Power, 0 left]
+        severity: 10 = margin 8 +5 fire bolt +1 spell rank -4 soak -> crippling blow (-6 HP)
+    Brand lunges into a driving thrust at Deserter 3. (+1 STA)
+    Brand outmaneuvers Deserter 3 -- a graze! [Deserter 3: 3/10 HP, -3 to rolls]
+        pressure: Brand: 15 (2d6=7, +4 DEX, +1 training, +2 rapier, +2 Thrust, -1 wounds) vs Deserter 3: 12 (2d6=12, +5 DEX, -3 wounds, -2 winded)
+        severity: 0 = margin 3 +2 STR -1 rapier -4 soak -> deflected -> the rapier's point finds a seam: graze (-1 HP)
+    Deserter 3 and Brand -- Clash! Steel rings; neither yields.
+        pressure: Deserter 3: 9 (2d6=9, +5 DEX, -3 wounds, -2 winded) vs Brand: 9 (2d6=5, +4 DEX, +1 training, -1 wounds)
+    !! Deserter 4 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Deserter 4 attacks Edwin -- parried.
+        pressure: Deserter 4: 7 (2d6=4, +5 DEX, -2 winded) vs Edwin: 14 (2d6=9, +5 DEX, +1 training, +1 wooden staff, -2 winded)
+    stamina: Edwin 3/5*, Brand 5/8 | Deserter 3 2/6*, Deserter 4 3/6*   (* = Winded)
+  Round 6:
+    Edwin outmaneuvers Deserter 4 -- a solid wound! [Deserter 4: 8/10 HP, -1 to rolls]
+        pressure: Edwin: 14 (2d6=10, +5 DEX, +1 training, -2 winded) vs Deserter 4: 10 (2d6=7, +5 DEX, -2 winded)
+        severity: 4 = margin 4 +5 STR -1 wooden staff -4 soak -> wound (-2 HP)
+    Brand overwhelms Deserter 3 -- a graze! [Deserter 3: 2/10 HP, -4 to rolls]
+        pressure: Brand: 14 (2d6=8, +4 DEX, +1 training, +2 rapier, -1 wounds) vs Deserter 3: 9 (2d6=9, +5 DEX, -3 wounds, -2 winded)
+        severity: 2 = margin 5 +2 STR -1 rapier -4 soak -> graze (-1 HP)
+    Deserter 3 attacks Brand -- parried.
+        pressure: Deserter 3: 6 (2d6=7, +5 DEX, -4 wounds, -2 winded) vs Brand: 14 (2d6=10, +4 DEX, +1 training, -1 wounds)
+    Deserter 4 and Edwin -- Clash! Steel rings; neither yields.
+        pressure: Deserter 4: 10 (2d6=8, +5 DEX, -1 wounds, -2 winded) vs Edwin: 10 (2d6=5, +5 DEX, +1 training, +1 wooden staff, -2 winded)
+    stamina: Edwin 2/5*, Brand 4/8 | Deserter 3 1/6*, Deserter 4 2/6*   (* = Winded)
+  Round 7:
+    Edwin and Deserter 4 -- Lull. They circle, probing for an opening.
+        pressure: Edwin: 7 (2d6=3, +5 DEX, +1 training, -2 winded) vs Deserter 4: 7 (2d6=5, +5 DEX, -1 wounds, -2 winded)
+    !! Brand is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Brand overwhelms Deserter 3 -- a solid wound! [Deserter 3: 0/10 HP, -5 to rolls]
+        pressure: Brand: 13 (2d6=9, +4 DEX, +1 training, +2 rapier, -1 wounds, -2 winded) vs Deserter 3: 6 (2d6=7, +5 DEX, -4 wounds, -2 winded)
+        severity: 4 = margin 7 +2 STR -1 rapier -4 soak -> wound (-2 HP)
+    *** Deserter 3 falls. ***
+    (Deserter 3 strikes even as they fall)
+    Deserter 3 attacks Brand -- parried.
+        pressure: Deserter 3: 3 (2d6=4, +5 DEX, -4 wounds, -2 winded) vs Brand: 12 (2d6=10, +4 DEX, +1 training, -1 wounds, -2 winded)
+    Deserter 4 overwhelms Brand -- a crippling blow! [Brand: 0/9 HP, -3 to rolls]
+        pressure: Deserter 4: 12 (2d6=10, +5 DEX, -1 wounds, -2 winded) vs Brand: 6 (2d6=4, +4 DEX, +1 training, -1 wounds, -2 winded)
+        severity: 8 = margin 6 +4 STR -2 soak -> crippling blow (-6 HP)
+    Brand takes a wound: a caved-in chest (severity 3; HP ceiling 4/9)
+    *** Brand is SLAIN. ***
+    stamina: Edwin 1/5* | Deserter 4 1/6*   (* = Winded)
+  Round 8:
+    !! Edwin is SPENT -- running on empty (-6 to all rolls until the fight ends)
+    Edwin attacks Deserter 4 -- parried.
+        pressure: Edwin: 8 (2d6=8, +5 DEX, +1 training, -6 spent) vs Deserter 4: 12 (2d6=10, +5 DEX, -1 wounds, -2 winded)
+    !! Deserter 4 is SPENT -- running on empty (-6 to all rolls until the fight ends)
+    Deserter 4 edges past Edwin, but the blow glances off -- deflected.
+        pressure: Deserter 4: 7 (2d6=9, +5 DEX, -1 wounds, -6 spent) vs Edwin: 6 (2d6=5, +5 DEX, +1 training, +1 wooden staff, -6 spent)
+        severity: 0 = margin 1 +4 STR -5 soak -> deflected
+    stamina: Edwin 0/5!! | Deserter 4 0/6!!   (!! = Spent)
+    The beaten foe line breaks and runs!
+    The survivors escape. The field belongs to the party.
     The party catches its breath (+1 STA)
-    Edwin gains 53 XP (encounter) [53/200]
-    Brand gains 53 XP (encounter) [53/200]
+    Edwin gains 70 XP (encounter) [206/200]
+    *** Edwin reaches level 3! (+3 skill points, 4 unspent) ***
+    Loot: 5 gold (purse 16g).
 Left among the dead:
-a dagger (+0 atk/-1 sev, 2g).
+2x spear (+0 atk/+0 sev, 5g).
+  (LOOSE END le1: Deserter 4 got away -- `pursue` while the trail is warm: today, here, before a night's sleep)
 
-  *** THE JOB IS DONE: Renegade Wizards -- the tollhouse road. Return to Garrick at Solavela -- due day 4: `turnin q01`. ***
-    Edwin gains 53 XP (the work done) [106/200]
-    Brand gains 53 XP (the work done) [106/200]
+  *** THE JOB IS DONE (driven off, not slain): Deserter Raiders -- the burned farm. Return to Ulric at Solavela -- due day 4: `turnin q11`. ***
+    Edwin gains 71 XP (the work done) [77/300]
+  Brand's rapier is taken up from where they fell -- quality steel stays with the party (`give HERO rapier`).
+    Brand's potions are taken up from where they fell (2 vial(s) -- the kit stays with the party).
+    The party shares out its potions -- Edwin: 2 healing, 1 stamina.
 
 -- the party --
-Edwin: Unhurt STA 4/5 Power 4/6
-  (healing x1, stamina x1)
-Brand: Unhurt STA 8/8 Power 6/6
-  (healing x1, stamina x1)
-Purse 22g; day 1.
-The work is done: return to Garrick at Solavela -- the turn-in pays 41g, 30 XP (`turnin q01`).
+Edwin: Unhurt STA 1/5 Power 0/6
+  (Winded -2 to rolls)
+  (healing x2, stamina x1)
+Purse 16g; day 1.
+The work is done: return to Ulric at Solavela -- the turn-in pays 62g, 40 XP (`turnin q11`).
   (due day 4 -- 3 days left; quick pay, x1.15)
