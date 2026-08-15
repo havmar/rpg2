@@ -1097,7 +1097,7 @@ def validate_world(world: dict) -> None:
                 for row in range(1, MAP_ROWS + 1)
                 for column in range(1, MAP_COLUMNS + 1)]
     if order != expected:
-        raise ValueError("tile_order is not the row-major 30x18 frame")
+        raise ValueError("tile_order is not the row-major 18x30 frame")
     if set(tiles) != set(expected):
         raise ValueError("the tile store and tile_order disagree")
 

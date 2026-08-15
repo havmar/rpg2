@@ -831,8 +831,9 @@ def settlements(world: dict) -> list[dict]:
 
 
 def land_areas(world: dict, land: str) -> list[dict]:
-    rec = world["lands"].get(land)
-    return [world["areas"][key] for key in rec["areas"]] if rec else []
+    # strict like every other reader here: an unknown country is a broken
+    # world, not an empty one (rules.md, the world validates itself).
+    return [world["areas"][key] for key in world["lands"][land]["areas"]]
 
 
 def area_sites(world: dict, area: dict | str) -> list[dict]:
@@ -1164,6 +1165,10 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
              "xp_total": quest_xp_total(level, encounters),
              "gold_total": quest_gold(level, encounters),
              "next": {"site": 0, "room": 0},
+             # the DM's own job rides a board without being of it: it never
+             # eats an ordinary slot and it posts where there is no board
+             # at all (`is_ordinary_posting`).
+             "forced": True,
              "status": "open", "align": align, "epilogue": ""}
     if proof:
         quest["proof"] = proof

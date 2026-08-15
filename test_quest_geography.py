@@ -269,6 +269,37 @@ class TheForcedFamilies(unittest.TestCase):
                                    area_key=self.shut["key"])
         self.assertEqual(quest["origin"], self.shut["key"])
         self.assertTrue(quest["sites"])
+        # THE FLAG COMES OFF THE BUILDER, not off a hand-written dict: the
+        # closure shipped with `forge_quest` never setting it, so the DM's
+        # own job was counted as the board's ordinary work (2026-08-15).
+        self.assertFalse(quests.is_ordinary_posting(quest))
+
+    def test_a_forged_job_neither_hides_nor_eats_a_slot(self) -> None:
+        """The two things the missing flag actually broke: a forged job at a
+        shut board vanished from the forecast, and a forged job at an open
+        one ate a slot of generated work."""
+        world = _world(31)
+        shut = _inactive(world)
+        self.assertEqual(quests.board_forecast(world, shut, 3), 0)
+        forged = quests.forge_quest(world, "qS", 3, 1, 1, ("wolf",),
+                                    "Shut-board Work", random.Random(8),
+                                    area_key=shut["key"])
+        shut["quests"].append(forged["id"])
+        world["quests"][forged["id"]] = forged
+        self.assertEqual(quests.board_forecast(world, shut, 3), 1)
+
+        town = next(s for s in quests.settlements(world)
+                    if s["board_active"] and not s["capital"])
+        job = quests.forge_quest(world, "qT", 3, 1, 1, ("wolf",),
+                                 "Open-board Work", random.Random(9),
+                                 area_key=town["key"])
+        town["quests"].append(job["id"])
+        world["quests"][job["id"]] = job
+        slots = quests.board_slots(world, town)
+        quests.refresh_settlement_board(world, town, 1, random.Random(2))
+        ordinary = [q for q in quests.open_quests(world, town)
+                    if quests.is_ordinary_posting(q)]
+        self.assertEqual(len(ordinary), slots)
 
     def test_a_story_wave_reaches_its_settlement_whatever_its_board(self) -> None:
         world = _world(27)

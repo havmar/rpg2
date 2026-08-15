@@ -3020,7 +3020,18 @@ materialize lazily.
   natural Site templates, Room layouts and livelihood overlays.
 - **Settlement slots are the census.** Every non-sea Tile receives a stable
   seeded count and mix of town/village slots from its country's density
-  table. Sea has none. Ordinary mountain Tiles cannot receive a town: a
+  table (`places.SETTLEMENT_DENSITY`) — the south is the crowded end of the
+  world and the steppe the empty one:
+
+  | Country | Town + 2 villages | 1 village | No settlement |
+  |---|---:|---:|---:|
+  | Mortellaria | 10% | 35% | 55% |
+  | Firascir | 6% | 24% | 70% |
+  | Tergal | 3% | 17% | 80% |
+
+  Historical-city Tiles are excluded from the roll and always carry the
+  dense three-slot shape. Sea has none. Ordinary mountain Tiles cannot
+  receive a town: a
   rolled town is downgraded to a village. A slot exists before its Area is
   materialized, so revealing, saving and revisiting cannot move it or change
   its name. Country-and-tier name reserves are shuffled once per seed;
@@ -4457,6 +4468,24 @@ whose mercenaries come when called. They are lookups, never traded
 quantities, and the states they cause are **derived at read time and never
 stored**. Only edges whose two ends are Firascir, Mortellaria or Tergal are
 active; cards admit on their derived states like any other.
+
+**What each land sells** (2026-08-15) — the three-country economy in full.
+Every line is one edge: a state the SELLER is holding that stops the goods,
+and the priced word the BUYER wears while it does.
+
+| Seller | Sells | Buyer | When the seller holds | The buyer wears |
+|---|---|---|---|---|
+| Firascir | grain | Tergal | a failed harvest, drought | grain is scarce |
+| Firascir | timber | Tergal | forest law, wildfire, burn | no northern timber |
+| Mortellaria | coin | Firascir | worthless paper, mad shares | the banks stop lending |
+| Mortellaria | southern trade | Tergal | salt revolt, a ruined quarter | the road brings nothing |
+| Tergal | horses | Firascir | herd loss, the grass gone | remounts are dear |
+| Tergal | livestock | Mortellaria | herd loss, the grass gone | hides and wool are short |
+| Tergal | military service | Mortellaria | a mourning war, raiding | the hired clans go home |
+
+Mortellaria's luxury shelf and the southern road are one flow and one edge.
+Every derived word above reaches a **price** (`worldsim.STATE_MENU`) — an
+edge the party cannot feel on a shelf is not worth authoring.
 
 ## Where the world is rolled, and where the player meets it
 

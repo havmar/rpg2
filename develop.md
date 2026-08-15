@@ -275,7 +275,7 @@ a pointer: what the file is, how it's run, where its docs are.
   and a reader that asked for a world would invite a caller to believe
   distance is mutable. `EDGE_DAYS_EAST_WEST` 1 / `EDGE_DAYS_NORTH_SOUTH` 2 /
   `MOUNTAIN_EDGE_SURCHARGE` 1 (at EITHER end, which is what makes the model
-  symmetric), `DIRECTIONS` / `DIRECTION_WORDS` / `OPPOSITE_DIRECTION`,
+  symmetric), `DIRECTIONS` / `DIRECTION_WORDS`,
   `europe_grid` (load + validate, cached per process), the strict parsers
   (`tile_row_column` / `tile_key` / `tile_label` / `biome_at` /
   `parse_coordinate` / `direction_word` — an off-frame coordinate RAISES,
@@ -284,7 +284,7 @@ a pointer: what the file is, how it's run, where its docs are.
   (cost, row, column) with strict relaxation, so equal-cost routes settle
   northernmost-then-westernmost with no hash order anywhere), memoized per
   origin in `_PATHS`, behind `path_days` and `shortest_path`. The DISPLAY
-  half: `MAP_OVERLAY_PRIORITY` / `BIOME_LETTERS` / `known_slots` /
+  half: `BIOME_LETTERS` / `known_slots` /
   `settlement_glyph` / `map_glyph` (`@ ! C T v` then terrain), `map_lines`
   (33 columns — a two-line numeric axis over 18 labelled rows),
   `map_legend_lines` (known settlements by country, cities first, wrapped to
@@ -421,7 +421,12 @@ a pointer: what the file is, how it's run, where its docs are.
   living through it), the news (`take_news`, told once) and the readouts
   (`land_lines` — the state diff on the map page — and `world_lines` —
   the DM inventory behind `world`). The contracted active catalog has 107
-  cards and eight relations across three countries. **The weather rung**
+  cards and fourteen relations across three countries — the eight the
+  three-country reset left standing plus the six export edges the
+  post-build review found missing (2026-08-15: timber, coin, the southern
+  road, horses, livestock and hired service, each deriving a word that
+  `STATE_MENU` prices; rules.md's "What each land sells" is the table).
+  **The weather rung**
   (2026-08-08) added THREE TRACKS over one
   land — `TRACKS` / `DECK_KEY` / `LIVE_KEY`, so a storm never blocks a
   harvest failing nor a season of drought a storm — and with them the
