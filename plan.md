@@ -253,39 +253,40 @@ above: play the build first.
 
 ---
 
-## The ASCII world map — the location system rework (2026-08-15)
+## The fixed Europe map — the location system rework (2026-08-15)
 
-The generator SHIPPED 2026-08-15: `worldmap.py` rolls the world as a
-character map — 80x40, whose 40x20 northwest corner is the playable game
-world — with the geography rules in rules.md's The World Map add-on and
-the session in designlog. **Nothing in the game reads it yet.** What
-this item holds is the hook-up, and it is a big change to the present
-location system: the world stops being list-shaped (the World &
-Navigation add-on's explicit stance) and becomes coordinate-shaped.
+Two procedural-generator experiments were rejected after review. They
+remain available as `archive/worldmap.py` (with its contract in
+`archive/test_worldmap.py`) and `archive/mapgen.py`; designlog carries
+the proceedings. **The map to integrate is now the fixed 30x18 Europe
+map in `resources/europe_map.txt`. Nothing in the game reads it yet.**
+What this item holds is still the hook-up, and it remains a big change
+to the present location system: the world stops being list-shaped (the
+World & Navigation add-on's explicit stance) and becomes
+coordinate-shaped.
 
 - **A tile becomes an Area.** The Land -> Area -> Site -> Room hierarchy
-  keeps its lower floors; the Area floor moves onto the grid. Open
-  calls: how the six authored Lands map onto rolled continents (regions
-  of tiles? re-authored lands per world?), what a `natural` Area's kind
-  reads off the tile (terrain is on the map now), and what happens to
-  the authored 28-Area inventory and `place_catalog.json` adjacency
-  when adjacency is the grid.
+  keeps its lower floors; the Area floor moves onto the fixed grid. Open
+  calls: how the six authored Lands divide the Europe-shaped landmass,
+  what a `natural` Area's kind reads off `#`, `^`, and `~`, and what
+  happens to the authored 28-Area inventory and
+  `place_catalog.json` adjacency when adjacency is the grid.
 - **Travel reads the map.** One tile east-west is a day, north-south
   two; no diagonals. Rivers are the hard crossings (the paid-crossing
   marker finally has a place to live), mountain tiles want a rule
-  (impassable? pass-hunting?), and sea travel — the west edge is kept
-  sailable on purpose — wants pricing. The road-encounter roll would
-  price per tile instead of per trip.
-- **The map is the display.** The playable corner replaces the
-  `ui/map.txt` Land/Area list as the macro view (40 wide — it already
-  fits the display rule); settlements, quest markers, and the party's
-  position want glyphs or an overlay legend that stays legible in
-  ASCII-plus-box-glyphs. Fog of war: discovery already exists
-  (`discover_area`), so the map likely reveals by tile.
-- **Worldgen order.** The map roll would join `generate_world` on its
-  own derived seed (the armory's rule — no worldgen stream moves), with
-  settlements placed ON the map (coasts, rivers, and mountain feet are
-  the natural sites) rather than beside it.
+  (impassable? pass-hunting?), and sea travel wants pricing. The
+  road-encounter roll would price per tile instead of per trip.
+- **The map is the display.** The fixed map replaces the `ui/map.txt`
+  Land/Area list as the macro view. At 30 columns it fits the 40-column
+  display with room for framing; settlements, quest markers, and the
+  party's position still want a legible overlay or legend. Fog of war:
+  discovery already exists (`discover_area`), so reveal likely happens
+  by tile.
+- **Worldgen loads geography; it does not roll it.** The integration
+  should validate and load `resources/europe_map.txt`, then place the
+  settlements ON that map (coasts, rivers, and mountain feet are the
+  natural sites). Any population or placement rolls must use derived
+  seeds so the existing worldgen streams do not move.
 
 ---
 

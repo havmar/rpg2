@@ -4193,3 +4193,40 @@ Nothing in session.py, places.py, or quests.py moved. The hook-up — a
 tile per Area, travel off the grid, the map as the macro display,
 worldgen placing settlements ON the map — is plan.md's item, opened
 this session with its open calls listed.
+
+## 2026-08-15 (B) — The fixed Europe map replaces the generators
+
+The generated maps did not earn the location-system rework. A second
+standalone attempt was reviewed beside the generator from the preceding
+commit, and the designer rejected the procedural direction rather than
+spending another pass tuning either algorithm. The world geography will
+be the supplied Europe-shaped character map, fixed across campaigns.
+Nothing was connected to play in this session.
+
+**Shipped:** `resources/europe_map.txt`, the canonical 30x18 map in the
+designer's exact `.` / `#` / `^` / `~` vocabulary. The first
+generator and its contract moved together to `archive/worldmap.py` and
+`archive/test_worldmap.py`; the second received script was preserved
+verbatim as `archive/mapgen.py`. Both rejected implementations therefore
+remain inspectable and runnable in the repository without presenting
+either as the game's worldgen path.
+
+The roadmap's open hook-up item was rewritten around loading the fixed
+resource: a tile still becomes an Area, travel still moves on the grid,
+and the map still replaces the list-shaped macro display, but geography
+no longer consumes a seed or needs generation retries. The rules and dev
+index now describe the fixed source; the preceding entry remains the
+historical record of what the first experiment tried and measured.
+
+### The calls this change settled
+
+- **The source is literal.** Integration must validate and load the text
+  file without normalizing its geography. In particular, its ninth row is
+  the designer's supplied `...########~####~######~##~##^`, not the
+  slightly different calibration row embedded in the first generator.
+- **The archive is live history, not an alternate engine.** The scripts
+  remain runnable and the first contract remains beside its code, but no
+  game module imports them and no roadmap item offers procedural maps as
+  an option.
+- **The integration remains a later session.** No Area records,
+  settlements, travel rules, discovery state, or UI pages changed here.

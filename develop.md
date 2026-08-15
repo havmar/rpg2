@@ -499,41 +499,22 @@ a pointer: what the file is, how it's run, where its docs are.
   term reaching the road, the rain stone delivering every paid day, and
   a news line posted late on a told day surviving to the next telling.
   `python -m unittest -v test_worldsim.py`.
-- `worldmap.py` — **the ASCII world-map generator** (2026-08-15,
-  rules.md's The World Map add-on — generation only, nothing in the game
-  reads it yet; plan.md's "The ASCII world map" item is the hook-up).
-  Standalone and stdlib-only, imports nothing from the rest of the game.
-  Rolls an 80x40 world (60x30 supported) whose 40x20 northwest corner is
-  the playable game world: 2-3 continents by plateau masks over
-  anisotropy-corrected, domain-warped value noise; sea level set by
-  PERCENTILE so the land ratio matches the embedded reference map
-  (`TEMPLATE`, the hand-drawn Europe it is calibrated against); the
-  fix-up passes (all-ocean west column, the diagonal-ocean rule fixed by
-  drowning the lower shoulder, the island budget); mountain RANGES
-  walked uphill with momentum; rivers traced down a BFS
-  distance-to-sea field with mountains impassable, drawn in box glyphs
-  chosen by actual connections (bends, tributary tees, source stubs,
-  mouths — the module's one deliberate non-ASCII surface).
-  `generate(seed)` retries deterministic sub-attempts until
-  `validate` passes, so a seed always names one world. The knobs sit
-  together under "Generation knobs" in the module head: the target
-  ratios (`LAND_FRAC` / `MOUNTAIN_FRAC` / `RIVER_FRAC`, measured off the
-  template), the field mix (`CONTINENT_WEIGHT` / `NOISE_WEIGHT` /
-  `PLATEAU` / `STRAIT_WEIGHT` / `REACH` / `COVER` / `SEPARATION`), the
-  west sea (`WEST_SEA` / `WEST_PENALTY`), the island budget, the range
-  walk, and the river trace (source band, momentum, meander, the
-  riverside penalties). `python worldmap.py --seed N` is the eyeball
-  check (`--lift` floats the playable corner, `--play` shows it alone,
-  `--check N` sweeps constraint pass rates, `--template-stats` re-measures
-  the reference).
-- `test_worldmap.py` — **the world-map generator's contract suite**
-  (2026-08-15): determinism per seed, every rolled world validating
-  clean, the all-ocean west column, the no-diagonal-ocean rule, the
-  river glyph grammar (every connection set printable, every link
-  reciprocal, every river on plain land and reaching a mouth), the
-  continent shape, the ratio bands against the template, the three
-  render views, and the embedded reference map's measured constants.
-  `python -m unittest -v test_worldmap.py`.
+- `resources/europe_map.txt` — **the canonical fixed world map**
+  (2026-08-15): an authored 30x18 Europe in `.` / `#` / `^` / `~`.
+  Nothing in the game reads it yet; plan.md's "The fixed Europe map"
+  item owns the location-system hook-up.
+- `archive/worldmap.py` — **the first rejected procedural map
+  experiment**, preserved verbatim from the generator commit: the 80x40
+  noise / continent-mask implementation and all of its inspection
+  commands. Standalone and stdlib-only. `python archive/worldmap.py
+  --seed N`.
+- `archive/test_worldmap.py` — **the first experiment's archived
+  contract**, kept with the implementation so its original geography
+  claims remain reproducible. `python archive/test_worldmap.py`.
+- `archive/mapgen.py` — **the second rejected procedural map
+  experiment**, preserved verbatim as received: a separate 80x40
+  fractal generator with a 40x20 playable corner. Standalone and
+  stdlib-only. `python archive/mapgen.py N`.
 - `test_potions.py` — the QUARTERMASTER PASS contract suite (2026-07-26):
   the deal order and round-robin, the companion tiebreak, the lone hero,
   recovering the fallen's kit, the opening-only drink fence (`drink=`,
@@ -1129,10 +1110,9 @@ python weapons.py --seed 1            # one world's armory + smiths (eyeball)
 python worldsim.py --seed 1 --days 60 # the world layer after 60 days (eyeball)
 python rulers.py --seed 1 --count 8   # eight rolled crowns (eyeball)
 python rulers.py --lesser             # ...and the two-draw lesser authority
-python worldmap.py --seed 1           # roll one ASCII world map (eyeball)
-python worldmap.py --seed 1 --lift    # ...playable corner floated out
-python worldmap.py --check 100        # map-gen constraint pass-rate sweep
-python -m unittest -v test_worldmap.py    # the map generator's contract
+python archive/worldmap.py --seed 1  # archived first map experiment
+python archive/mapgen.py 1           # archived second map experiment
+python archive/test_worldmap.py      # archived first experiment's contract
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -1151,10 +1131,10 @@ python -m unittest -v test_history.py # the campaign record + the sin rename
 python -m unittest -v test_start.py   # the start level, the wizard PC, traits
 ```
 
-Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default). Output
-is intentionally ASCII-only, so plain runs are usually fine — except
-`worldmap.py`, whose river glyphs are box-drawing characters by design (the
-one exception; see rules.md's The World Map add-on), so pipe it with UTF-8.
+Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default).
+Current game output and the fixed map resource are ASCII-only. The two
+archived generator experiments retain their box-drawing river glyphs, so
+pipe those historical tools with UTF-8.
 
 ## The dev map (where mechanics live in the code)
 
@@ -1579,18 +1559,15 @@ mechanic *does* and *why* is rules.md's job.
   (travel arrival, explore's discovery, teleport): it stands the party in
   the area and spends the paid-crossing marker. Never assign
   `state["position"]` at a new call site.
-- **The world map** (2026-08-15, generation only — rules.md's The World
-  Map add-on) — `worldmap.py`: the ASCII map generator the location
-  system will later move onto (a tile will correspond to an Area; the
-  hook-up is plan.md's "The ASCII world map" item, and NOTHING in the
-  game imports the module yet). The pipeline is
-  `generate` → `_elevation` (noise + continent masks) → `_sea_level`
-  (percentile cut) → the fix-ups (`_enforce_west`,
-  `_fix_diagonal_ocean`, `_prune_islands`) → `_place_mountains` →
-  `_trace_rivers` → `validate`, with deterministic per-seed retries.
-  Displays: `render` (full / play / lift), `stats_lines`,
-  `template_stats`. The knobs are the module-head "Generation knobs"
-  block (see Files). `test_worldmap.py` is the contract.
+- **The world map** (2026-08-15, fixed resource only — rules.md's The
+  World Map add-on) — `resources/europe_map.txt` is the 30x18 authored
+  geography the location system will later move onto: `.` ocean, `#`
+  land, `^` mountains, `~` major river. A tile will correspond to an
+  Area; plan.md's "The fixed Europe map" item owns loading, validation,
+  Land/Area placement, travel and display. Nothing in the game reads the
+  resource yet. The two procedural attempts and the first one's contract
+  remain under `archive/`; they are historical tools, not alternate
+  worldgen paths.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
