@@ -1,0 +1,42 @@
+=== Renegade Wizards -- the tollhouse road (L2), room 1/1: ruined yard ===
+  Hexer 1 -- dagger
+  DEX 4  STR 2  STA 6  HP 10/10
+  takes spoils, leaves the fallen,
+  caster: ice 2; 8 Power
+  Round 1:
+    Brand close the distance (the gap narrows to 1).
+    Edwin's fire bolt overwhelms Hexer 1 -- a crippling blow! [Hexer 1: 4/10 HP, -3 to rolls]
+        pressure: Edwin: 19 (2d6=11, +6 AIM, +1 training, +1 proficiency) vs Hexer 1: 13 (2d6=9, +4 DEX) [fire bolt: -1 Power, 5 left]
+        severity: 10 = margin 6 +5 fire bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
+    Hexer 1 sends ice bolt at Brand -- warded off.
+        pressure: Hexer 1: 14 (2d6=7, +8 AIM, +2 proficiency, -3 wounds) vs Brand: 15 (2d6=10, +4 DEX, +1 training) [ice bolt: -1 Power, 7 left]
+    stamina: Edwin 4/5, Brand 8/8 | Hexer 1 5/6
+  Round 2:
+    Brand close the distance -- the lines meet!
+    !! Edwin is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Edwin's fire bolt edges past Hexer 1 -- a grievous injury! [Hexer 1: 0/10 HP, -5 to rolls]
+        pressure: Edwin: 10 (2d6=4, +6 AIM, +1 training, +1 proficiency, -2 winded) vs Hexer 1: 8 (2d6=7, +4 DEX, -3 wounds) [fire bolt: -1 Power, 4 left]
+        severity: 6 = margin 2 +5 fire bolt +1 spell rank -2 soak -> grievous (-4 HP)
+    *** Hexer 1 falls. ***
+    (Hexer 1 strikes even as they fall)
+    Hexer 1 sends ice bolt at Brand -- warded off.
+        pressure: Hexer 1: 12 (2d6=5, +8 AIM, +2 proficiency, -3 wounds) vs Brand: 16 (2d6=11, +4 DEX, +1 training) [ice bolt: -1 Power, 6 left]
+    stamina: Edwin 3/5*, Brand 8/8   (* = Winded)
+    The party catches its breath (+1 STA)
+    Edwin gains 53 XP (encounter) [53/200]
+    Brand gains 53 XP (encounter) [53/200]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+
+  *** THE JOB IS DONE: Renegade Wizards -- the tollhouse road. Return to Garrick at Solavela -- due day 4: `turnin q01`. ***
+    Edwin gains 53 XP (the work done) [106/200]
+    Brand gains 53 XP (the work done) [106/200]
+
+-- the party --
+Edwin: Unhurt STA 4/5 Power 4/6
+  (healing x1, stamina x1)
+Brand: Unhurt STA 8/8 Power 6/6
+  (healing x1, stamina x1)
+Purse 22g; day 1.
+The work is done: return to Garrick at Solavela -- the turn-in pays 41g, 30 XP (`turnin q01`).
+  (due day 4 -- 3 days left; quick pay, x1.15)

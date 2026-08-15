@@ -1,27 +1,30 @@
 RPG2 PARTY SHEET -- day 1, at
-  Mortellaria > R16C30 > Solavela
-purse: 22g
+  Mortellaria > R16C30 > Solavela > the
+  tollhouse road > ruined yard
+purse: 71g
 party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Edwin -- mortellaria m, age 24
-  L2  training 1  XP 0/200  points 1
+  L2  training 1  XP 136/200  points 1
   DEX 5  STR 5  MIND 6  CHA 5
-  HP 8/8  STA 5/5  Power 6/6
+  HP 8/8  STA 4/5  Power 4/6
   wooden staff | healingx1, staminax1
   spells: fire 1
 
 (companion) Brand -- mortellaria m, age
   36
-  L2  training 1  XP 0/200  points 0
+  L2  training 1  XP 136/200  points 0
   DEX 4  STR 3  MIND 3  CHA 6
   HP 9/9  STA 8/8  Power 6/6
   dagger, prof 1 | healingx1, staminax1
   moves: thrust
-  satisfaction 7/10
+  satisfaction 8/10
   temperament: gloomy; speech: verbose;
     dress: luxurious
 
+active quest [q01] Renegade Wizards is
+  COMPLETE
 THE PACT: no current assignment (the
   next is pinned to PC level 3).
 THE WAR: [w1] L2 Machines at the Border

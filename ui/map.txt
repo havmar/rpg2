@@ -1,6 +1,7 @@
 RPG2 MAP -- day 1
 the party is at Mortellaria > R16C30 >
-  Solavela
+  Solavela > the tollhouse road > ruined
+  yard
 
             111111111122222222223
    123456789012345678901234567890
@@ -29,7 +30,7 @@ the party is at Mortellaria > R16C30 >
 
 HERE: R16C30 -- Mortellaria, basic
   R16C30 Countryside (basic)
-  Solavela (village)  <- the party, 2
+  Solavela (village)  <- the party, 1
     job(s)
 
 -- Mortellaria --

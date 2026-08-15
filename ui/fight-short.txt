@@ -1,0 +1,40 @@
+=== Renegade Wizards ===
+the tollhouse road (L2),
+room 1/1: ruined yard
+Hexer 1 -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
+Round 1:
+The lines close.
+Edwin's fire bolt overwhelms Hexer 1,
+deals 6 dmg!!! [5 Power left]
+Hexer 1's ice bolt is warded off.
+Round 2:
+The lines meet -- steel range.
+!! Edwin is Winded.
+Edwin's fire bolt edges past Hexer 1,
+deals 4 dmg!! [4 Power left]
+Hexer 1 falls.
+Hexer 1's ice bolt is warded off.
+The party catches its breath (+1 STA)
+Edwin +53 XP (encounter) [53/200]
+Brand +53 XP (encounter) [53/200]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2g).
+
+*** THE JOB IS DONE: Renegade Wizards --
+the tollhouse road. Return to Garrick
+at Solavela -- due day 4:
+`turnin q01`. ***
+Edwin +53 XP (the work done) [106/200]
+Brand +53 XP (the work done) [106/200]
+
+-- the party --
+Edwin: Unhurt STA 4/5 Power 4/6
+  (healing x1, stamina x1)
+Brand: Unhurt STA 8/8 Power 6/6
+  (healing x1, stamina x1)
+Purse 22g; day 1.
+The work is done: return to Garrick at Solavela -- the turn-in pays 41g, 30 XP (`turnin q01`).
+  (due day 4 -- 3 days left; quick pay, x1.15)
