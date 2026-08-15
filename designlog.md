@@ -4230,3 +4230,73 @@ historical record of what the first experiment tried and measured.
   an option.
 - **The integration remains a later session.** No Area records,
   settlements, travel rules, discovery state, or UI pages changed here.
+
+## 2026-08-15 (C) — The Europe-map implementation contract
+
+This was a design and planning session only. It settled the fixed map's
+location model, population, travel, human cultures, city overlay, quest
+radius and staged build before implementation begins. No game behavior
+changed.
+
+The designer removed Dvarvengrond, Ensimaa and Gibili and removed dwarves,
+elves, goblins and orcs as peoples. Firascir, Mortellaria and Tergal are now
+three human countries. Tergal keeps its existing steppe, clan, horse, shaman
+and Sky identity; only the biological/species claim is removed. Content
+routing therefore moves from race to country/culture and characters retain a
+homeland only where nationality has a rule to serve.
+
+The first map-hook proposal said one Tile would be one Area. Discussion
+rejected that collapse: the hierarchy becomes Country -> Tile -> Area -> Site
+-> Room. A Tile is the travel node and may contain a natural Area beside a
+town and villages. Every one of the 540 fixed Tiles receives a natural Area
+in the MVP, including sea and famous-city Tiles. River Tiles are ordinary
+inhabited land and are themselves riverside; an adjacent 30x60 km Tile is too
+far away to inherit that tag. Mountain Tiles may roll villages but not towns.
+Sea is navigable and uses the same coordinate country partition as land.
+
+The political split is literal and 1-based: rows 11-18 are Mortellaria;
+above them, columns 1-21 are Firascir and 22-30 are Tergal. The fixed terrain
+is common knowledge. Ordinary settlement density is seeded and stored as
+lightweight slots, with Mortellaria 10/35/55, Firascir 6/24/70 and Tergal
+3/17/80 over town-plus-two-villages / one-village / none. Full settlement
+records remain lazy. The opening is uniform over settlement slots anywhere
+in the world, not over countries or populated Tiles.
+
+Sixteen historical city Tiles were placed by reading the recognizable map
+silhouette: Dublin, London, Amsterdam, Paris and Prague in Firascir;
+Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid, Venice, Rome,
+Athens, Constantinople and Carthage in Mortellaria. Paris, Kyiv and Rome are
+the three capitals, implemented as towns carrying `capital: true`. Each
+historical Tile has the dense three-slot shape; the historical town is known
+at world creation and the two villages stay lazy.
+
+The review also recovered Firascir's apparently missing village pool. The
+shipped catalog intentionally fixed Sturford, Ackham and Flurham and therefore
+stored no generated reserve, but `placegen.md` still held fifteen models:
+Sturham, Sturworth, Newton, Midton, Aston, Tomton, Walham, Coldcot, Thornley,
+Blackton, Astmoor, Ackbridge, Ackton, Mickleham and Shepham. The new contract
+restores them beside the three fixed names. Every country now has separate
+town and village reserves and stable numbered placeholders after exhaustion.
+
+Travel is cardinal: one day east/west, two north/south, plus one day on an
+edge touching a mountain. Rivers and sea add no surcharge; sea requires no
+ship or port system and rolls no random combat in the MVP. Weighted paths are
+deterministic and symmetric. An edge completes atomically and an interruption
+leaves the party at the Tile reached instead of returning it to the journey's
+origin.
+
+Quest knowledge becomes local. Capitals always have ordinary boards, other
+towns on a stable 60% roll and villages on 25%; forced quest families may
+still post anywhere. Reading a board refreshes and reports known settlements
+within three shortest-path days. Ordinary quest targets also stay within
+three days, while story and deliveries may explicitly exceed the radius.
+Deadlines add the actual outward and return route, and delivery pay reads
+actual path days. An empty settlement is a valid result.
+
+The old roadmap was not discarded. It moved intact to
+`archive/plan-pre-europe-2026-08-15.md`, marked as a historical snapshot with
+no implementation authority. `plan.md` became the sole active contract and
+splits the rework into five triggerable sessions: Human World Contraction;
+Fixed Europe Geography; Grid Navigation and Map UI; Local Quest Geography;
+Europe MVP Closure. Each must ship and be documented independently before the
+next begins.

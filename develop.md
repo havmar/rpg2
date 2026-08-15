@@ -174,22 +174,18 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the roadmap: planned features, parked ideas and open
-  questions ONLY**, in build order (next up: the world & NPC simulation
-  thread — the 2026-08-05 framing lives there, and its remaining order
-  is a ladder implementing what is left of worldsim.md — the ladder is
-  EMPTY since 2026-08-11: the settlement trim and the world frame shipped
-  2026-08-07, the weather 2026-08-08, the economy floor 2026-08-09,
-  politics & the ruler 2026-08-10 and religion & magic 2026-08-11 —
-  every settleable call settled
-  up front in its
-  rulings block; jerkify, bullies, monsters & fauna, and science &
-  technology postponed past the build, and the build now WANTS PLAYING
-  before anything else is added to it). The ladder RENUMBERS itself as
-  rungs ship: name a session, never its number. **Nothing implemented lives
-  there**: when a feature ships, delete its entry and write the session
-  up in designlog.md — see "Where a finished feature is written up"
-  above.
+- `plan.md` — **the sole active roadmap and build contract**. Since the
+  2026-08-15 reset it contains only the fixed Europe-map rework, split into
+  five named sessions which must be implemented in order: Human World
+  Contraction, Fixed Europe Geography, Grid Navigation and Map UI, Local
+  Quest Geography, and Europe MVP Closure. Name the session when triggering
+  work; do not refer to a rung number. **Nothing implemented lives there**:
+  when a session ships, delete its completed contract and write the result in
+  the permanent docs and designlog as described above.
+- `archive/plan-pre-europe-2026-08-15.md` — **historical, not authority**:
+  the complete roadmap displaced by the Europe-map reset, including its
+  unfinished and parked ideas. Nothing in it is scheduled unless a later
+  design session deliberately moves an item back into `plan.md`.
 - `benchlog.md` — **the dated tuning history**: the full report of every
   measured bench-suite run, oldest first. Append a dated entry after every
   re-measurement; the "Balance / tuning" section below keeps only the

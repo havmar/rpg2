@@ -53,14 +53,20 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the roadmap: planned features, parked ideas and open
-  questions only. Nothing implemented lives there.
+- `plan.md` — the sole active roadmap and build contract. Since the
+  2026-08-15 reset it specifies the fixed Europe-map rework as five named,
+  independently triggerable implementation sessions. Nothing implemented
+  lives there.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every
   re-measurement; develop.md keeps only the current summary).
 - `designlog.md` — the dated design-session history (the reasoning trail
   behind plan.md's decisions; append after every major design session).
+- `archive/plan-pre-europe-2026-08-15.md` — the complete roadmap snapshot
+  displaced by the Europe-map reset. It is marked historical and is not
+  implementation authority; its unfinished and parked ideas return only if
+  a later design session deliberately moves them back into `plan.md`.
 
 > **When a feature ships, DELETE its entry from plan.md and write the
 > session up in designlog.md** — played rules to rules.md, code pointers
