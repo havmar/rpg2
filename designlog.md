@@ -4894,3 +4894,90 @@ tested by length, a cost path tested only on land, a matcher tested only
 with whole names. The lesson worth keeping: **assert the contract, not the
 shape.** A test that counts is a test that will pass while the thing it
 counts is wrong.
+
+## 2026-08-20 — The tile economy arc: planning the plan
+
+**Where it started.** The Europe MVP is built and plan.md said the honest
+next input is play — but the designer opened the next thread instead, and
+named the mode on purpose: a LOOSER one, where indulging in simulation is
+trusted to be good for the game and does not have to justify itself
+feature by feature or ship fast. The want: deeper simulation of
+geography, climate, resources and economy on the tile map. The
+inspiration: researching the Firascir and Mortellaria economy and
+politics cards had shown that the historical middle ages offer simple,
+dramatic, formalizable dynamics — scarcity causing wars, overtaxation,
+crime, banditry, revolts — and the tile map should carry them.
+
+**The road the discussion took.** The first framing pass observed that
+the dramatic dynamics are already formalized — the card/state/relation
+machinery at country level IS the scarcity-to-revolt engine — and what
+the country layer lacks is an ADDRESS, so the tile layer's job is to give
+the existing dynamics geography rather than to build a second simulation
+beside them. It proposed thinking in three economic shapes (flows that
+fail, stocks that deplete, networks that get robbed), keeping value as
+words rather than a stored score, and history over EU4-likes as the
+content source (though EU4's one-trade-good-word-per-province is the
+representation lesson). The designer zoomed out and corrected the frame
+in four ways that stuck. One: population per tile is the interesting
+quantity — the current rolled settlement-slot census is scaffolding, and
+the chain should run geography → climate → agriculture → population →
+census. Two: this is GENERATION, not simulation — roll the world by law
+at worldgen, keep almost nothing running after; the event pulse stays
+the part that lives forward. Three: the campaign year is spring to
+autumn (about level 20 at half a year of played time), winter is out of
+scope as played time and exists only as rolls — so the product is a
+SPRING SNAPSHOT, and spring is the hungry gap, the point where last
+year's harvest is most felt. Four: trouble should come as organic spots
+in every country — never everything-everywhere, never one needle —
+which is a spatial-correlation problem (multi-scale rolls; margins
+amplify variance; trouble = shortfall × pressure ÷ access; state reach
+siting tax squeeze near the crown and banditry far from it).
+
+**What was decided.** The next work is THE TILE ECONOMY ARC — climate,
+terrain, economy, population — planned as DESIGN rounds whose output is
+settled specs (vocabularies, laws, tables, numbers) with implementation
+trivial afterward. Five rounds, now Part 1 of plan.md: climate by law
+(each tile a computed climate property; absorbs the deferred
+tile-weather item; the Africa stripe authored as a river-fed, high-yield
+LOW-VARIANCE granary), terrain and potential (author the physical,
+derive the human — farmland is population's footprint via a
+deforestation law; herding is the complement where arable potential is
+low, not a second authored layer; absorbs the deferred sub-biome item
+and the quest-vocabulary reconciliation), population and the census
+(hidden numbers, transport bonus, penalties, calibration by RETRODICTION
+against the authored historical towns, a census table with zero as a
+real tier — replacing the slot census, no compatibility), resources and
+routes (mines authored semi-historically and few, with the parked
+deposit slot returning to service; trade goods sparse and authored with
+the exotics kept off-map so the legendary routes matter; ordinary routes
+computed by the pathfinder between surplus and populous regions, the
+silk road and the sea lane authored at the frame edges), and the hookup
+(the read surface — deliberately the vaguest round). The snapshot and
+trouble arc, politics with MORE COUNTRIES (a viking/pirate-analogue
+raider culture; Tergal as an aggressor), fantasy/magic, and a
+settlements-revisited round went to Part 2 as the draft roadmap. The era
+anchor is leaning **about 1500 without the age of exploration** —
+the Europe frame argues against colonial dynamics, and higher technology
+is heaven/hell/magic, not a tech line; pre-Columbus trade (silk roads,
+the spice entrepôt monopoly, Hanse north, wool-cloth west, gold from
+the south) is the model for what enters at the frame edges.
+
+**Parked on the way**: the past-epidemic population scar (round 3's
+entry), generated region names (take if cheap), and the wealth-band
+question — whether the land's 2d6 becomes the aggregate of its tiles'
+spring — which belongs to the snapshot arc.
+
+**Calls the rounds will have to settle**, recorded so they are not lost:
+the climate vocabulary and the numbers each word carries (the variance
+column is what the snapshot arc rolls against); whether the Africa
+stripe's river is authored into `resources/europe_map.txt` itself (row
+18 is plain `#` today); the deforestation law's exact form (the proposal
+on the table: two passes — provisional population off raw potential,
+clearance off that population); the population scale anchor (what a
+number means, the village/town/city thresholds); the census table's
+exact bands; the mine and trade-good lists; the sea-leg route rule; and
+round 5's storage question (overlay resources beside the map vs computed
+tables in `places.py`). The arc's standing rules — hidden numbers
+visible words, author-the-physical derive-the-human, derived seeds
+throughout, validate-where-made, the render-script eyeball from round 1
+— are written at the head of plan.md's Part 1.
