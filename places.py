@@ -723,8 +723,8 @@ CROSSROADS_ROUTES = 2       # routes crossing a Tile before it is a crossroads
 # whether this one normally posts ORDINARY generated work at all. A capital
 # always does, a town usually does, a village usually does not -- and a
 # village with no work is a correct village, not a bug. What the flag gates
-# is `quests.board_slots` (ordinary capacity); the forced families -- story
-# waves, world-card jobs, deliveries, pact assignments, punishment and the
+# is `quests.board_slots` (ordinary capacity); the forced families --
+# world-card jobs, deliveries, pact assignments, punishment and the
 # DM's own forged work -- post at an inactive board regardless and never
 # turn it into an active one. The starting settlement is forced active by
 # `create_geography`, because the opening quest has to have somewhere to be.

@@ -20,8 +20,9 @@ ground under the party", develop.md's Files and dev map, and benchlog's
 
 This file now carries one ACTIVE build contract again: **THE MEDIEVAL
 WORLD ARC, Part 1** (designed 2026-08-21, designlog (J)) — nine countries,
-names and tongues, the Thule packet, and the rolled wars. Its five
-sessions are the next builds. Below the contract is the roadmap BEYOND
+names and tongues, the Thule packet, and the rolled wars. Its session 1
+(the fallen banner) shipped on 2026-08-21 (designlog (K)); sessions 2
+through 5 are the next builds. Below the contract is the roadmap BEYOND
 it: main points only, each a future design conversation, none scheduled.
 Two habits from the earlier arcs continue to apply everywhere — **hidden
 numbers, visible words** (a per-tile quantity is a worldgen intermediate;
@@ -35,7 +36,11 @@ derive the human**.
 Designed 2026-08-21 (designlog (J) is the session record). This is the
 build contract: five sessions, in order, each leaving the game true and
 green. When a session ships, delete its contract here and write it up per
-develop.md's "Where a finished feature is written up".
+develop.md's "Where a finished feature is written up". **Session 1 — the
+fallen banner** shipped on 2026-08-21 and is gone from this file: the
+scripted conquest questline (`story.py`), the war feed and every
+touchpoint were deleted whole, and the game runs warless (designlog (K);
+rules.md's Story Layer add-on carries the note). Sessions 2-5 follow.
 
 ## The frame
 
@@ -105,39 +110,6 @@ Settled calls, so they stay settled:
   `world["lands"]["andalusia"]["liege"]` (a polity key or None), read
   by `politics_lines`, the map legend and the Reconquista template. No
   other mechanical effect in this arc.
-
-## Session 1 — the fallen banner (the old conquest questline goes)
-
-The scripted main quest (`story.py`: one aggressor country, war waves at
-levels 2/5/8/10, the Golden Empire / Undead Kingdom / Iron Horde) is
-REMOVED, whole. It is three-country content at its core, the rolled wars
-of session 5 replace its job, and deleting it first means no later
-session renames a line of it.
-
-- **Delete `story.py`** and every touchpoint: `session.py`'s
-  `init_story` at `new`, save/load of `"story"`, `war_status_lines` in
-  status and board, the map page's yoke tag and `-- the war --` block,
-  `maybe_post_wave`, the wave-completion hook, all `occupied_here` /
-  `occupation_line` gates, the `story_wave` pay routing, the new-game
-  "story layer is armed" print, and the help copy naming war waves.
-  Also `quests.is_ordinary_posting`'s `story_wave` clause and the
-  `karma.py` comment.
-- **The war feed goes with its one customer**: `worldsim.CASUS_BELLI`,
-  `STANDING_CASUS_BELLI`, `roll_casus_belli`, `casus_belli_line` and
-  their validation. Session 5's war templates carry authored herald
-  lines instead. **`post_news` stays** — the campaign sim is its next
-  customer.
-- **`conquest.py` (the player's own holdings layer) STAYS** — conquer /
-  garrison / holdings, tribute, raids, the heat floor. Only
-  `seize_by_occupation` (which reads `story["fallen"]`) is deleted; the
-  campaign sim of this arc never touches party holdings.
-- **Docs and tests**: rules.md's Story Layer & Conquest add-on loses its
-  questline half (the player-conquest half stays), dm.md's "The war"
-  section goes, `test_worldsim.TheWarFeed` and every `story` assertion
-  in `test_places` / `test_start` / `test_conquest` /
-  `test_quest_geography` go, and state stubs drop `"story"`.
-- **Interim contract**: the game runs warless and green; a new game
-  prints no war line at all.
 
 ## Session 2 — the map of nine
 

@@ -140,8 +140,8 @@ class TheDeck(unittest.TestCase):
 
 
 class ThePins(unittest.TestCase):
-    """Assignments are pinned to the PC's odd levels -- ten a career, the
-    war waves' shape. Pins never queue."""
+    """Assignments are pinned to the PC's odd levels -- ten a career.
+    Pins never queue."""
 
     def test_the_pins_are_the_odd_levels_to_the_cap(self):
         self.assertEqual(karma.TASK_PIN_LEVELS,

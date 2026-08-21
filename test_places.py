@@ -9,8 +9,8 @@ discovery, the templates a Tile can honor and their stability across the
 save, the required services and Room content, quest routing, hidden
 facts, the ASCII and 40-column rules, and one broken world per clause of
 `places.validate_world`. *The three human countries*: the closed
-homeland set, records that carry a homeland and never a race, the war
-each country's own packet supports, the deck every country is owed, and
+homeland set, records that carry a homeland and never a race, the deck
+every country is owed, and
 the sweep for removed peoples and realms over the runtime catalogs, a
 whole built world, and the play-facing documents.
 """
@@ -30,7 +30,6 @@ import quests
 import rpg
 import session
 import sites
-import story
 import worldsim
 
 
@@ -523,8 +522,6 @@ class TheThreeHumanCountries(unittest.TestCase):
         self.assertEqual(set(places.LAND_SPECS), self.HOMELANDS)
         self.assertEqual(set(quests.HOMELANDS), self.HOMELANDS)
         self.assertEqual(set(people.NAMES), self.HOMELANDS)
-        self.assertEqual(set(story.CONQUESTS), self.HOMELANDS)
-        self.assertEqual(set(story.AGGRESSORS), self.HOMELANDS)
 
     def test_runtime_records_use_homeland_and_never_race(self) -> None:
         for seed in range(8):
@@ -553,7 +550,6 @@ class TheThreeHumanCountries(unittest.TestCase):
             people.NAMES,
             quests.TEMPLATES,
             quests.DELIVERY_TEMPLATES,
-            story.CONQUESTS,
             karma.POSSE_BANDS,
             worldsim.CARDS,
             worldsim.RELATIONS,
@@ -596,20 +592,6 @@ class TheThreeHumanCountries(unittest.TestCase):
                 text = handle.read()
             self.assertIsNone(self.REMOVED.search(text), name)
 
-    def test_each_country_wages_the_war_its_own_packet_supports(self
-                                                                ) -> None:
-        """The conquest variants are not interchangeable. Mortellaria owns
-        the death rite, the tomb cults and the academy's necromancers, so
-        the Undead Kingdom is hers; Firascir's own religion cards are the
-        accusations made against that rite, so its war is the Golden
-        Empire's machines; Tergal's is the Iron Horde."""
-        self.assertEqual(
-            {polity: spec["banner"]
-             for polity, spec in story.CONQUESTS.items()},
-            {"firascir": "the Golden Empire",
-             "mortellaria": "the Undead Kingdom",
-             "tergal": "the Iron Horde"})
-
     def test_the_world_layer_owes_every_country_a_deck(self) -> None:
         for polity in self.HOMELANDS:
             for track in worldsim.TRACKS:
@@ -620,20 +602,6 @@ class TheThreeHumanCountries(unittest.TestCase):
             self.assertTrue(worldsim.FACTS_BY_LAND[polity], polity)
             self.assertTrue([e for e in worldsim.RELATIONS
                              if polity in (e["from"], e["to"])], polity)
-
-    def test_every_story_variant_builds_all_four_waves(self) -> None:
-        for n, aggressor in enumerate(story.AGGRESSORS):
-            rng = random.Random(9000 + n)
-            world = quests.generate_world(9100 + n)
-            campaign = story.init_story(world, rng, aggressor=aggressor)
-            self.assertEqual(campaign["aggressor"], aggressor)
-            self.assertEqual(campaign["conqueror"]["homeland"], aggressor)
-            for _ in story.WAVE_LEVELS:
-                quest, lines = story.post_wave(world, campaign, rng, day=1)
-                self.assertTrue(lines)
-                self.assertFalse(self.REMOVED.search(" ".join(
-                    self._walk(quest))))
-            self.assertEqual(campaign["wave_posted"], 4)
 
 
 if __name__ == "__main__":

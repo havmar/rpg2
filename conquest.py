@@ -5,15 +5,14 @@ hold it, and bleed it for tribute. The design calls settled in the
 2026-07-27 session (designlog):
 
 - **The settlement is the unit of ownership.** No provinces, no tiles: the
-  map stays a list, ownership is a tag on the settlement (`[YOURS]`), the
-  same shape the war's occupation layer already prints.
+  map stays a list, ownership is a tag on the settlement (`[YOURS]`).
 - **The garrison fight is the conquest.** `conquer` builds a garrison job
   at the settlement's GARRISON LEVEL -- rolled once per settlement, stable
   across the save (village 3-5, town 6-10, capital 11-15), so the geography
   of difficulty is fixed terrain the player reads and routes around, like
   the board's straight levels. Win the last room and the tag flips. The
-  defender is a named face over a budget-honest roster (the story layer's
-  boss doctrine -- stats never fork on a skin).
+  defender is a named face over a budget-honest roster -- a display name
+  over the strongest slot, stats never fork on a skin.
 - **Conquest is dark work.** Every XP a garrison job pays is sin, and
   each holding RAISES THE HEAT FLOOR by one step: holding land is standing
   wickedness, and the law comes collecting whether or not the party sins
@@ -27,9 +26,6 @@ hold it, and bleed it for tribute. The design calls settled in the
 - **Tribute is the income.** Accrues per held day, collected when the party
   stands in any of its holdings. A holding that falls loses its uncollected
   chest.
-- **The aggressor's yoke outranks the party's flag.** A story-fallen land
-  seizes the party's holdings there; retaking them is a fresh conquest.
-
 The sims never import this file (karma.py's pattern): state is one plain
 dict in the save (`holdings`) plus an `owner` tag on held settlement
 records; no bench number can move from it. All knobs are hand-set and
@@ -113,7 +109,7 @@ HOLDING_HEAT_STEP = 1       # each holding raises the heat floor this much
 
 # The named defender's role, by country (writing.md: role first,
 # CRPG vocabulary). A display name over the strongest final-room slot --
-# the story layer's boss doctrine, stats never fork.
+# stats never fork.
 DEFENDER_ROLES = {
     "firascir": "castellan",
     "mortellaria": "captain of the walls",
@@ -294,24 +290,6 @@ def roll_raids(world: dict, holdings: dict, rng: random.Random, day: int,
                          f"{strength} heads against your {g} levies -- "
                          f"{area['name'].upper()} IS LOST. The uncollected "
                          f"tribute goes with it. ***")
-    return lines
-
-
-def seize_by_occupation(world: dict, holdings: dict,
-                        story: dict | None) -> list[str]:
-    """The aggressor's yoke outranks the party's flag: a story-fallen land
-    takes the party's holdings with it. Retaking one is a fresh
-    conquest."""
-    fallen = story.get("fallen") if story else None
-    if not fallen:
-        return []
-    lines = []
-    for key in list(holdings):
-        area = world["areas"][key]
-        if area["land"] == fallen:
-            lose_holding(world, holdings, key)
-            lines.append(f"*** The yoke takes {area['name']} -- your "
-                         f"garrison is scattered with the rest. ***")
     return lines
 
 

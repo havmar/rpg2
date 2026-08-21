@@ -39,7 +39,6 @@ import places
 import quests
 import rpg
 import session
-import story
 import weapons
 
 
@@ -380,11 +379,15 @@ class TheOpeningGround(unittest.TestCase):
         _, out = run_new("--seed", "3", "--level", "10")
         self.assertIn("OPENING HOOK", out)
 
-    def test_the_war_line_stops_promising_level_two_to_a_career_party(self):
-        _, low = run_new("--seed", "3", "--level", "1")
-        self.assertIn(f"level-{story.WAVE_LEVELS[0]} party", low)
-        _, high = run_new("--seed", "3", "--level", "12")
-        self.assertIn("already due", high)
+    def test_a_new_game_says_nothing_about_a_war(self):
+        """The scripted questline is gone (2026-08-21): a new game arms no
+        war layer and says no word about one, at any start level."""
+        for level in ("1", "12"):
+            _, out = run_new("--seed", "3", "--level", level)
+            low = out.lower()
+            for word in ("story layer is armed", "a war is seeded",
+                         "the war"):
+                self.assertNotIn(word, low)
 
 
 # --------------------------------------------------------------------------- #

@@ -53,9 +53,8 @@ constitution slot off each land's own default-heavy die; the tension roll
 what keeps a packet a wide pool instead of a content budget; the faction
 edges that need both ends in the rolled cast; the five ANY-OF admits and
 the two new state effects; the lesser authority a card names and the land
-keeps; the war layer's feed (the derived-seed casus belli said once at the
-first herald, the four instruments as edges with cards in them, the
-succession cluster); and the surfaces -- the constitution on the map page,
+keeps; the war material (the four instruments as edges with cards in them,
+the succession cluster); and the surfaces -- the constitution on the map page,
 the whole polity on `world`, and the ruler's PUBLIC reputation under his
 face on the board, with his heart never leaving the DM's readout.
 
@@ -80,7 +79,6 @@ import quests
 import rpg
 import rulers
 import session
-import story
 import worldsim
 
 
@@ -142,8 +140,8 @@ class OpeningCensus(unittest.TestCase):
         self.assertIn(start_slot["area"], self.world["areas"])
 
     def test_one_capital_a_land_and_it_stays_first(self) -> None:
-        # story.py raises its waves from settlements_by_land[land][0] and
-        # casts the land's notables onto it: the capital is that seat.
+        # quests.py casts the land's notables onto
+        # settlements_by_land[land][0]: the capital is that seat.
         for polity, setts in quests.settlements_by_land(self.world).items():
             capitals = [s for s in setts if s["capital"]]
             self.assertEqual(len(capitals), 1, polity)
@@ -1938,7 +1936,7 @@ class TheRoadCharges(unittest.TestCase):
                 "history": [], "position": session._area_position(here),
                 "accepted": [], "active_quest": None, "loose_ends": [],
                 "foe_count": 0, "pending": None, "rooms": {},
-                "site_clears": {}, "holdings": {}, "story": None,
+                "site_clears": {}, "holdings": {},
                 "pact": None, "services": {}, "visited": [here["key"]]}
 
     @staticmethod
@@ -2379,7 +2377,7 @@ class ThePoliticsContent(unittest.TestCase):
     def test_every_instrument_is_an_edge_with_a_card_in_it(self) -> None:
         """The four diplomatic instruments: each is a state one land holds,
         an authored relation edge the other derives off it, and a card
-        standing in that edge (worldsim.md's war feed)."""
+        standing in that edge (worldsim.md's war material)."""
         instruments = {"hostage", "tribute", "marriage", "union"}
         edges = {e["kind"]: e for e in worldsim.RELATIONS
                  if e["kind"] in instruments}
@@ -2453,60 +2451,6 @@ class ThePoliticsContent(unittest.TestCase):
                 self.assertTrue(spec["line"].isascii(), spec["key"])
         for entry in worldsim.FACTION_EDGES:
             self.assertTrue(entry["line"].isascii(), entry["key"])
-
-
-class TheWarFeed(unittest.TestCase):
-    """The war had waves and no reason. Now it has one."""
-
-    def test_the_casus_belli_is_rolled_off_a_derived_seed(self) -> None:
-        world = _world(90)
-        tale = story.init_story(world, random.Random(3))
-        want = worldsim.roll_casus_belli(
-            random.Random(f"casus:{world['seed']}:{tale['aggressor_land']}"),
-            tale["aggressor"])
-        self.assertEqual(tale["casus_belli"], want)
-
-    def test_the_line_names_both_realms(self) -> None:
-        longest = max((land["name"] for land in places.LAND_SPECS.values()),
-                      key=len)
-        for _key, line in (worldsim.CASUS_BELLI
-                           + tuple(worldsim.STANDING_CASUS_BELLI.values())):
-            text = worldsim.casus_belli_line({"line": line}, longest, longest)
-            self.assertNotIn("{", text)
-            self.assertTrue(text.isascii(), text)
-            self.assertLessEqual(len(text), 72, text)
-
-    def test_the_herald_says_it_once_and_leaves_it_on_the_news(self
-                                                              ) -> None:
-        world = _world(90)
-        tale = story.init_story(world, random.Random(3))
-        _, lines = story.post_wave(world, tale, random.Random(1), day=6)
-        why = story.casus_belli_line(world, tale)
-        self.assertTrue(why)
-        self.assertTrue(any(why in line for line in lines))
-        heard = "\n".join(worldsim.take_news(
-            world, world["areas"][world["quests"]["w1"]["origin"]]["land"],
-            6))
-        self.assertIn(why, heard)
-        # ...once: wave 2's herald does not repeat it.
-        world["quests"]["w1"]["status"] = "done"
-        tale["wave_done"] = 1
-        _, again = story.post_wave(world, tale, random.Random(1), day=20)
-        self.assertFalse(any(why in line for line in again))
-
-    def test_every_rolled_war_carries_a_reason(self) -> None:
-        """...and the reader is STRICT about it: a story without one is a
-        bug, not a save to be humoured (develop.md's no-compat rule)."""
-        for seed in range(12):
-            world = _world(seed)
-            tale = story.init_story(world, random.Random(seed))
-            self.assertIn(tale["casus_belli"]["key"],
-                          {k for k, _line in worldsim.CASUS_BELLI}
-                          | {k for k, _line
-                             in worldsim.STANDING_CASUS_BELLI.values()})
-            self.assertTrue(story.casus_belli_line(world, tale))
-        with self.assertRaises(KeyError):
-            story.casus_belli_line(_world(1), {})
 
 
 class ThePoliticsSurfaces(unittest.TestCase):

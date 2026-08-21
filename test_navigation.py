@@ -74,7 +74,7 @@ def _state(world: dict, area: dict, day: int = 3) -> dict:
             "history": [], "position": session._area_position(area),
             "accepted": [], "active_quest": None, "loose_ends": [],
             "foe_count": 0, "pending": None, "rooms": {},
-            "site_clears": {}, "holdings": {}, "story": None,
+            "site_clears": {}, "holdings": {},
             "pact": None, "services": {}, "visited": [area["key"]]}
 
 

@@ -32,11 +32,9 @@ annotations. The design (2026-07):
   assert are gone -- they asserted a total that expiry makes meaningless.
 
 Local quests are FORMULAIC ON PURPOSE (placeholders, not authored content):
-a country/culture table x a themed foe pool. The authored
-questline layer lives in story.py (the conquest, 2026-07-12); since the
-same date every quest also carries a GIVER (the face behind the job) and
-an EPILOGUE, and each land a small persistent cast -- see rules.md's
-Story Layer add-on.
+a country/culture table x a themed foe pool. Since 2026-07-12 every
+quest also carries a GIVER (the face behind the job) and an EPILOGUE, and
+each land a small persistent cast.
 
 Run:  python quests.py [--seed N]     # print a generated world's board
       python quests.py --demo         # also dump one quest's full rosters
@@ -161,8 +159,8 @@ QUEST_REFILL_PER_DAY = 1     # new jobs a settlement posts per day once its
 # happens within three days of the settlement that posted it. Both radii are
 # `places.path_days`, so a mountain range or a sea crossing genuinely puts a
 # settlement out of earshot -- and both are ORDINARY rules only: the forced
-# families (story waves, world-card jobs, deliveries, pact assignments,
-# punishment, the DM's forged work) pass `radius=None` and reach anywhere.
+# families (world-card jobs, deliveries, pact assignments, punishment,
+# the DM's forged work) pass `radius=None` and reach anywhere.
 QUEST_RUMOR_DAYS = 3         # how far word of open work travels
 ORDINARY_TARGET_DAYS = 3     # how far an ordinary job's target may sit from
                              # the settlement that posted it
@@ -639,8 +637,8 @@ def quest_gold_posted(quest: dict) -> int:
 # --------------------------------------------------------------------------- #
 # A quest carries `posted_day`, `window` and `deadline_day`, and nothing else:
 # every band below is derived, so a save written before the clocks (or a job
-# that deliberately has none -- the war waves, the shadow board's day-scoped
-# offers) reads as an untimed job and behaves exactly as it always did.
+# that deliberately has none -- the shadow board's day-scoped offers)
+# reads as an untimed job and behaves exactly as it always did.
 
 def stamp_quest_clock(quest: dict, day: int, rng: random.Random,
                       extra_days: int = 0) -> dict:
@@ -1401,14 +1399,13 @@ def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
 
 def is_ordinary_posting(quest: dict) -> bool:
     """Is this posting the BOARD's own generated work? The forced families
-    -- a world card's job, a courier run, a story wave, hell's assignment,
-    anything the DM forged -- ride a settlement's board without being of it
+    -- a world card's job, a courier run, hell's assignment, anything the
+    DM forged -- ride a settlement's board without being of it
     (2026-08-15): they do not consume ordinary capacity, they are not
     blocked when there is none, and they never convert a settlement with no
     ordinary board into one that has one."""
     return not (quest.get("kind") == "delivery"
                 or quest.get("world_card")
-                or quest.get("story_wave") is not None
                 or quest.get("hell_task")
                 or quest.get("forced"))
 

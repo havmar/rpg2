@@ -37,11 +37,10 @@ content rather than a system of its own:
                       `heart`, the succession and accession circumstances.
                       Cards admit on the bare trait word.
 
-The WAR FEED rides the same tables: a CASUS BELLI pool story.py rolls beside
-its aggressor, four DIPLOMATIC INSTRUMENTS authored as relation edges (the
-courtly hostage, the yearly tribute, the marriage pact, the personal union),
-and the SUCCESSION cluster -- cards that admit on the crown's succession
-state and can move it.
+The WAR MATERIAL rides the same tables: four DIPLOMATIC INSTRUMENTS
+authored as relation edges (the courtly hostage, the yearly tribute, the
+marriage pact, the personal union), and the SUCCESSION cluster -- cards
+that admit on the crown's succession state and can move it.
 
 THE TWO INVARIANTS (the thread's own, landed by the economy floor):
 
@@ -1004,28 +1003,6 @@ FACTION_EDGES: tuple[dict, ...] = (
     edge("tergal", "black-shaman", "serves", "white-shamans",
          "the dark one does the work the white shamans will not"),
 )
-
-# The war layer's WHY line: rolled beside story.py's aggressor, said once at
-# the first herald and carried on the land's news. Cheap, and the highest
-# rumor value in the war (worldsim.md: the war has waves and no reason).
-CASUS_BELLI: tuple[tuple[str, str], ...] = (
-    ("border", "a stretch of border nobody has agreed on in eighty years"),
-    ("betrothal", "a marriage pact broken at the church door"),
-    ("succession", "a claim on the {victim} throne, pressed from abroad"),
-    ("faith", "a faith the {victim} lands will not stop persecuting"),
-    ("embargo", "an embargo on {aggressor} goods, answered in kind"),
-    ("seizure", "{aggressor} merchants' goods seized in a {victim} port"),
-    ("pretender", "a pretender the {victim} court is sheltering"),
-    ("wardship", "a bought wardship the {victim} lords will not honour"),
-    ("prospectors", "prospectors cutting shafts on the wrong side of the "
-                    "border"),
-)
-# One land's casus belli is standing and needs no roll: the Sky says the
-# neighbours are rebels who have not yet submitted (Tergal's packet).
-STANDING_CASUS_BELLI = {
-    "tergal": ("mandate", "the Sky's mandate: the {victim} lands have "
-                          "not yet submitted"),
-}
 
 
 # --------------------------------------------------------------------------- #
@@ -4573,27 +4550,10 @@ def roll_world(world: dict, day: int) -> None:
 
 
 def post_news(world: dict, polity: str, day: int, line: str) -> None:
-    """Put a line on a land's news from OUTSIDE the deck. The war layer is
-    the one customer: story.py's waves are authored content that happens to
-    the world without a card behind them, and the herald's reason belongs
-    on the same feed as everything else the land hears."""
+    """Put a line on a land's news from OUTSIDE the deck: authored content
+    that happens to the world without a card behind it belongs on the same
+    feed as everything else the land hears."""
     _news(world, polity, day, line)
-
-
-def roll_casus_belli(rng: random.Random, homeland: str) -> dict:
-    """The war's WHY line, rolled beside story.py's aggressor. One country has
-    a STANDING one and needs no roll: the Sky says the neighbours are rebels
-    who have not yet submitted, which is Tergal's whole foreign policy."""
-    key, line = (STANDING_CASUS_BELLI.get(homeland)
-                 or rng.choice(CASUS_BELLI))
-    return {"key": key, "line": line}
-
-
-def casus_belli_line(entry: dict, aggressor: str, victim: str) -> str:
-    """The line with the two realms' names in it, for the herald and the
-    news. Both names are always supplied -- a template that wants neither
-    simply ignores them."""
-    return entry["line"].format(aggressor=aggressor, victim=victim)
 
 
 def take_news(world: dict, polity: str, day: int) -> list[str]:
@@ -5265,9 +5225,6 @@ def _validate_politics_tables() -> None:
                                                  "wildcard"):
             raise ValueError(f"{face['key']}: no such notable post: "
                              f"{face['face']}")
-    for _key, line in CASUS_BELLI + tuple(STANDING_CASUS_BELLI.values()):
-        line.format(aggressor="X", victim="Y")      # raises on a bad field
-
 
 def _validate_lore_tables() -> None:
     """The religion & magic rung's two record kinds (2026-08-11): every fact

@@ -2773,7 +2773,6 @@ with a giver to return to:
 | kind | why |
 |---|---|
 | **deliveries** | the hand-off at the destination already IS the turn-in |
-| **war waves** | no clock, the giver is a ruler mid-war, and wave 3's scripted fall makes the return scene impossible by design |
 | **conquest garrisons** | no giver — the town is the pay |
 | **hell assignments, dark work** | hell verifies its own work and the purse arrives by infernal delivery (narrate the receipt); a settled twist is a hand-off on the spot by definition |
 
@@ -2855,11 +2854,10 @@ lie within a week. What replaces the guarantee is measured, not asserted: the
 career sim runs a full 1–20 career with the board never running dry
 (benchlog).
 
-One kind of job deliberately carries **no clock**: the war waves (an authored
-questline does not lapse). Hell's assignments carry their own pair of clocks
-instead — the grace to take one, then the completion window — and never lapse
-off the board (the Karma & Heat add-on). The DM's `forge` is timeless unless
-given `--days N`.
+Hell's assignments carry their own pair of clocks — the grace to take one,
+then the completion window — and never lapse off the board (the Karma & Heat
+add-on). The conquest garrison job carries none (a keep does not lapse), and
+the DM's `forge` is timeless unless given `--days N`.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
   row is mechanics — a "Scrap-Hound" is the wolf row, a named gunner
   "Hold-Lord" the wight. Balance never forks on a skin.
@@ -2940,8 +2938,7 @@ road is the content:
   the hand-off fires whenever the party stands at the destination with
   the quest active — at travel arrivals, or when a fight there settles.
   Every delivery carries a giver face at the origin AND a **recipient**
-  face at the destination (the turn-in scene), plus an epilogue. An
-  occupied destination cannot pay — the delivery waits on the war.
+  face at the destination (the turn-in scene), plus an epilogue.
 - **A couple live at a time** (2): worldgen posts them and the board's
   refill tops them back up as they are run or lapse. On the board a
   delivery shows **DELIVERY** where a level would go: the road's danger
@@ -3674,9 +3671,7 @@ level**, and `new` prints that job as the **OPENING HOOK** — the game
 opens at a combat quest's doorstep (giver mid-pitch), not in a tavern. At
 level 1 closest-to-level IS the world's lowest posting, so the ordinary
 opening is unchanged. Taking it stays the player's call; the hook is a
-doorstep, not a railroad. The story layer's war waves gate on party level,
-so a career start finds the war's first word already due at the next
-settlement stop.
+doorstep, not a railroad.
 
 ## Character generation (recruits, and NPCs with DM edits)
 
@@ -3813,13 +3808,19 @@ real move (dismiss, then hire into the freed capacity) with a real price.
 
 ---
 
-# The Story Layer & the Conquest — Add-on (2026-07-12)
+# The Story Layer — Add-on (2026-07-12; questline cut 2026-08-21)
 
-The quest system gave the game its work; this layer gives the work faces,
-aftermath, and a spine. Design stance: **story is people and consequences,
+The quest system gave the game its work; this layer gives the work faces
+and aftermath. Design stance: **story is people and consequences,
 not new combat mechanics** — everything here rides the existing quest
 schema, threat math, and pay formulas. The engine (`rpg.py`) is untouched;
 the sims never see any of it.
+
+The layer's other half — the scripted conquest questline (one aggressor
+country, war waves at levels 2/5/8/10, the occupation) — was **removed
+whole on 2026-08-21**: it was three-country content at its core, and the
+rolled wars of the medieval world arc replace its job. What follows is
+what the layer is now.
 
 ## Quest givers & the funnel (there is no board)
 
@@ -3865,8 +3866,8 @@ the age roll for anyone with a job title.
 ## The central cast
 
 Each land gets three persistent figures at worldgen, in the save for the
-whole playthrough: a **ruler** (country-titled — the war-wave
-questgiver), a **sage** (loremaster, court wizard... — the exposition and
+whole playthrough: a **ruler** (country-titled), a **sage**
+(loremaster, court wizard... — the exposition and
 foreshadowing voice), and a **wildcard** from a small role table
 (spymaster, mercenary captain, master smith, high priest, war profiteer,
 guild factor). The design rule for giving them life: **attach each to a
@@ -3882,69 +3883,6 @@ with — a trait, plus their satisfaction state when it's loud (sullen at
 <= 3, one boot out the door when quitting). Deliberately **unseeded and
 stateless**: flavor must never perturb the game's dice, so `chatter`
 draws from a throwaway rng and saves nothing.
-
-## The conquest — the first questline (levels 2-10)
-
-One aggressor country per playthrough rolls at worldgen and starts a war —
-**never the PC's own homeland** (2026-07-13: the player fighting his own
-people's war of conquest read wrong; the roll excludes it). Four
-**waves**, each an ordinary multi-site quest pinned at levels
-**2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
-are always the easier ones). The variants:
-
-- **Firascir — the Golden Empire.** Imperial war machines and a creed
-  that weak neighbors should be ruled.
-- **Mortellaria — the Undead Kingdom.** A king corrupted by a hungry god;
-  necromancy as conscription that does not end at death (the undead pool
-  plus living cultist soldiery).
-- **Tergal — the Iron Horde.** A warlord unites the clans: might is
-  right, war is glorious, and every neighboring country is a prize.
-
-The pairing is fixed, and it is not arbitrary (corrected 2026-08-15,
-Europe MVP Closure — the code had the first two the wrong way round).
-Mortellaria owns the death rite, the tomb cults and the academy's
-necromancers in the world layer; Firascir's own religion cards are the
-ACCUSATIONS made against that rite, so a deathless Firascir would
-contradict its own deck.
-
-The mechanics, all of them reuses:
-
-- **Rosters are reskins.** Every war body is an existing bench-calibrated
-  row wearing a themed display name (`make_foe(display=...)`); v1 adds
-  zero stat blocks. The **named villains** — the conqueror and two
-  lieutenants, generated faces with titles — cap waves 2/3/4 as a display
-  name on the strongest slot the threat math put in the final room:
-  the boss fight is exactly as hard as an honest room of that level.
-- **Wave gating**: wave N+1 posts when wave N's quest is DONE, the
-  party has reached the wave's level, **and the party is at a
-  settlement** (2026-07-13: the messenger no longer finds them mid-quest
-  in the middle of nowhere — a level-up in the field keeps until the next
-  town) — checked at boards, arrivals, and settlement nights, delivered
-  as a day-stamped messenger scene (herald line + the ruler raising the
-  call). The war can neither outrun the party nor lag it; a fresh party
-  hears nothing until its first level-up.
-- **Targets**: waves 1-2 press one victim land (skirmishes, then an
-  invasion beaten back); wave 3 takes a second land — chosen never to be
-  the capital's; wave 4 is raised from the capital against the
-  conqueror's own seat.
-- **Wave 3 is scripted loss.** The land falls regardless of the quest's
-  outcome — success buys the evacuation (the epilogue), full quest pay,
-  and the lieutenant's head, never the walls. The design point: the
-  player must get something REAL out of a won quest inside a lost battle,
-  or the script reads as a cheat.
-- **Occupation** is light but mechanical: the fallen land's settlements
-  refuse `board`/`take`/`tavern`/`downtime` (and with the tavern, all
-  hiring) with one line; travel through is allowed; the map marks the
-  land `[UNDER THE YOKE]`. Wave 4's victory lifts it.
-- **Pay is the standard formulas** at the pinned levels — war work is
-  rich because punching at your own level in 2-3-site quests is rich
-  (~250/750/1200/1500 quoted XP across the four waves; the whole war
-  roughly levels a party from 2 to ~10-11 on its own if pressed).
-
-Story state (aggressor, faces, targets, wave cursors, day-stamped event
-log, occupation) lives in the save under `story`. The **apocalypse
-questline** — the L12-20 second spine — stays parked on the magic tier
-(plan.md).
 
 ---
 
@@ -4067,8 +4005,8 @@ hell is a fully supported campaign — the mechanics below only price it.
 
 - **Assignments — the pinned ladder (2026-08-04, was an interval
   clock).** Hell's work is **pinned to the PC's odd levels**:
-  `TASK_PIN_LEVELS` = 1, 3, 5 … 19, ten milestone jobs across a career,
-  on the war waves' proven shape (`story.WAVE_LEVELS`). Crossing an
+  `TASK_PIN_LEVELS` = 1, 3, 5 … 19, ten milestone jobs across a career.
+  Crossing an
   unserved pin makes an assignment due; it lands at the next settlement
   stop, printed as a WORD FROM BELOW block (delivery flavor rolled from
   `HELL_MAIL`: unseen job boards — searched for by paladins —
@@ -4170,7 +4108,7 @@ optional authored fields on a template, riding the site dicts through
   lump. `room` refuses them and fights for the full pay.
 
 Both paths close sites through `_close_site` (advance_quest's tail,
-split out), so lumps, epilogues, the war hook, and the pact ledger all
+split out), so lumps, epilogues and the pact ledger all
 fire identically however a site ends.
 
 ### Balance stance (designer directive, 2026-07-19)
@@ -4446,8 +4384,7 @@ vanishing), 40-column wrapped like every other page:
   that closed it. Dark work is tagged `[DARK]`. A job LOST to its window
   is recorded here too, with the giver's failure line: the section is
   the campaign's job record, not a trophy case.
-- **REMARKABLE** — the war's waves broken (and the scripted fall, and
-  the war's end), conquests taken and holdings lost, hell's assignments
+- **REMARKABLE** — conquests taken and holdings lost, hell's assignments
   served and its write-offs, defeats survived (the level's one mercy,
   LEFT FOR DEAD, THE LESSON), maimings, named kills, and the DM's own
   named off-script sins.
@@ -4475,7 +4412,7 @@ write-offs and the maimings off the page.
 **Named kills** are detected by shape, not by a flag: ordinary rows are
 numbered off the catalog ("Cutthroat 2"), so a dead foe whose name has no
 trailing number is somebody the fiction cast — a quest boss, a conquest
-defender, a posse leader, one of the war's lieutenants.
+defender, a posse leader.
 
 The **tally's `last` day** is stored separately from the monotony
 window's day stamps (`crime.stamp`). The window prunes itself as it is
@@ -4497,8 +4434,8 @@ knobs hand-set and table-tuned.
 ## Design spine
 
 - **The settlement is the unit of ownership.** No provinces, no tiles: the
-  map stays a list and ownership is a tag (`[YOURS]`), exactly the shape
-  the war's occupation layer prints. One object to point a quest at.
+  map stays a list and ownership is a tag (`[YOURS]`). One object to
+  point a quest at.
 - **Garrison levels are geography, not gates.** Each settlement rolls its
   garrison level ONCE (stable-seeded): hamlet and village 3–5, town 6–10,
   city, metropolis and capital
@@ -4523,19 +4460,17 @@ knobs hand-set and table-tuned.
 an ordinary dark quest underneath (same schema, threat math and pay
 ladder), one place — "the garrison keep" — at the settlement's garrison
 level, with the land's cultural ladder pool. Hamlet and village 1
-encounter, town 2, city-grade 3 (the war waves' maximum). The last room is capped by a **named
+encounter, town 2, city-grade 3. The last room is capped by a **named
 defender** (a generated face, country role: castellan, warden of the
 walls, gate warden, wall-crew boss, war-chief of the garrison) worn as a
 display name over the budget-honest strongest slot. The job has **no
 clock** (a keep does not lapse), **no giver**, and is **not posted on the
-board** — it exists because the player declared it, and is taken like a
-war wave (`take QID`, at the settlement).
+board** — it exists because the player declared it, and is taken by id
+(`take QID`, at the settlement).
 
 Winning the last room flips the tag: `*** NAME IS YOURS ***`. The quest's
 gold is the keep's strongbox (10 days of the settlement's tribute, with
-the dark premium on the turn-in); its XP is all sin. An
-aggressor-occupied settlement cannot be conquered — the yoke holds it,
-and the war decides.
+the dark premium on the turn-in); its XP is all sin.
 
 ## Holding
 
@@ -4564,9 +4499,6 @@ tribute meter, the raid clock.
 - **The board goes dark.** A held settlement posts no honest work for
   its conqueror; crime and the pact serve instead. The tavern, the shops,
   recruiting and downtime keep the party's custom — it is their town now.
-- **The yoke outranks the flag.** When the war's wave 3 fells a land, the
-  aggressor seizes the party's holdings there; retaking one after the war
-  turns is a fresh conquest.
 
 ## Display
 
@@ -5124,7 +5056,7 @@ country chains ship:
 The land stopped being an economy with a sky over it and became a **polity**:
 who holds it, what it is fighting about, who is pulling at whom, and what
 kind of person sits at the top of it. `worldsim.py` owns the frame and the
-cards; `rulers.py` owns the person; `story.py` gained the war's reason.
+cards; `rulers.py` owns the person.
 
 Everything here is a **gate on content**, not a system of its own. Nothing
 ticks, nothing accumulates, and no political value is ever a quantity.
@@ -5220,18 +5152,12 @@ A card that has to **name somebody** names him once and the land keeps him
 witch-finder, the bandit king, the pretender each roll a two-word crown-less
 sheet, and the same man is still there the next time the card comes round.
 
-## The war layer's feed
+## The war material
 
-- **The casus belli.** The war had waves and no reason; now it has one,
-  rolled beside story.py's aggressor off a **derived seed** (so every
-  existing world's aggressor, faces and targets are untouched). It is said
-  ONCE, at the first herald, and left on the land's news for whoever arrives
-  later. Tergal needs no roll: the Sky's mandate says the neighbours are
-  rebels who have not yet submitted.
 - **The diplomatic instruments** — how wars end and stay ended — are
   **authored relation edges with cards standing in them**: the courtly
   hostage (a child of one hall grows up in the other), the yearly tribute,
-  the marriage pact whose breaking is its own casus belli, and the personal
+  the marriage pact whose breaking is its own grievance, and the personal
   union that puts two crowns on one head and both realms' quarrels at one
   table.
 - **The succession cluster** admits on the crown's circumstance and moves

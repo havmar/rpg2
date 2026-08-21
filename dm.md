@@ -168,7 +168,7 @@ settlement area's. Which quest to take -- and whether it is worth the road
 to another area -- is the player's core decision:
 
 - `map` shows the macro world: lands, known areas, settlement open-quest
-  counts, the war's status, and the party's position. `look` shows the
+  counts, and the party's position. `look` shows the
   stored description, salient known state, sites/rooms, services, links,
   and visible Room contents; `go NAME` enters one and `back` moves one
   local level outward. `look` leads with the TILE (coordinate, country,
@@ -260,8 +260,7 @@ to another area -- is the player's core decision:
     with a job in hand is choosing between the job's window and the HP
     ceiling. Say so when the player asks for a long rest with a job in hand
     -- one line, not a lecture ("the crypt job is wanted by day 9").
-  - The war waves carry NO clock (an authored questline does not lapse).
-    Hell's assignments carry their own pair instead -- the grace to take
+  - Hell's assignments carry their own pair instead -- the grace to take
     one, then the completion window -- and never lapse off the board.
 - **The job ends in TWO beats now (2026-08-08): the field, then the
   giver.** Clearing the last place prints **THE JOB IS DONE** and names the
@@ -287,7 +286,7 @@ to another area -- is the player's core decision:
   party worked; don't skip it, don't pad it, and don't paste it and move
   on. A LATE turn-in prints its own band line; play the giver accordingly
   -- paid, but not pleased. If the fiction has made the ordinary turn-in
-  impossible -- the giver is dead, the town is occupied -- `turnin QID
+  impossible -- the giver is dead, the town is burned -- `turnin QID
   --here` pays it wherever the story says; use the valve rather than
   bending the scene around the gate.
 - **A job whose window closes on the road home is DONE, NEVER PAID.** The
@@ -360,7 +359,7 @@ to another area -- is the player's core decision:
   20% land at the giver, banded by the turn-in day. An intermediate place
   clears with a SITE CLEARED banner and no purse. The persistent
   geographical site itself does not intrinsically pay. `award GOLD XP NAME`
-  remains for off-script scenes only. (Deliveries, war waves, conquest
+  remains for off-script scenes only. (Deliveries, conquest
   garrisons and hell/dark work skip the turn-in stage and pay whole in the
   field -- the script knows which; you never have to decide.)
 - `forge --level L --places N --encounters N --kinds a,b,c --name "..."
@@ -507,11 +506,6 @@ about.
   witch-finder, the bandit king, the pretender -- when a news line says a
   name, that man exists, `world` carries his two words, and he is the same
   man the next time his card comes round. Use the name again.
-- **The war has a stated reason.** The first herald says it once ("the
-  reason given: a pretender the Mortellaria court is sheltering") and it
-  stays on the land's news. Let people disagree about whether it is the
-  real one.
-
 ### What is believed here (2026-08-11, religion & magic)
 
 Two commands, both free and neither costing a day. `lore` is your readout;
@@ -828,45 +822,6 @@ direct mechanical effects.
   the script prints the negotiation line; give it a sentence of fiction
   when it fires.
 
-## The war -- the conquest questline
-
-Every world seeds ONE war at `new`: an aggressor country (Firascir's
-Golden Empire / Mortellaria's Undead Kingdom / Tergal's Iron Horde) and four
-wave quests pinned at levels **2 / 5 / 8 / 10**. The scripts run the clock;
-your job is the narration:
-
-- **Waves post themselves** when the previous wave is done, the party hits
-  the level, AND the party is in a settlement (war news is only delivered
-  when the party is in a settlement, never mid-quest in the middle of
-  nowhere) -- the script prints a `*** WORD OF THE WAR ***` block (herald
-  line + the ruler raising the call) at boards, arrivals, and settlement
-  nights. **Deliver it as a scene** -- a rider, a bell, a refugee column --
-  not as a system message. Wave 1 doubles as the war's reveal: give the
-  creed line its moment. **Don't foreshadow a due wave in the field**: if
-  the party levels past a threshold out in the wilds, say nothing (at most,
-  if asked, that word of the wider war waits in town).
-- The aggressor is never the PC's own homeland (rolled at `new`).
-- **Wave quests are quests**: taken from their giver (the target land's
-  ruler) AT their settlement, fought with `room`, paid by the formulas. The
-  named villains (two lieutenants, then the conqueror) cap waves 2/3/4 --
-  the log carries their names; give them a line of dialogue and a death
-  worth the title. Their stats are an honest room of the wave's level:
-  narrate the name over the printed row, and use the row's numbers as
-  they are.
-- **Wave 3 is a scripted fall -- play it straight.** The land falls even if
-  the quest is cleared: success gets the evacuation, the pay, and the
-  lieutenant's head; it never saves the city. Say so in the fiction (the
-  quest is framed as holding the road out, not saving the city) so the
-  player is never told they failed when they won. The fallen land's
-  settlements then refuse boards/taverns/hiring/downtime (the script prints
-  the occupation line; travel through is allowed) until wave 4 wins the war
-  and frees them.
-- Between waves, the war is BACKDROP: color local scenes with it (levies,
-  prices, refugees) but don't invent extra war quests -- the next wave will
-  come when the party is ready. `status`/`map`/`board` print the war's
-  current line; the player may always ignore the war and do local work --
-  the war waits.
-
 ## The dark path -- the pact with Hell, villainy, karma & heat
 
 **The frame: the PC is not a neutral adventurer.** He is a LOW-RANKING
@@ -896,8 +851,8 @@ scenes freeform, `forge` any fight there with infernal reskins, and keep
 visits scene-sized.
 
 - **Assignments (the pinned ladder).** Hell's work comes at the PC's ODD
-  LEVELS -- 1, 3, 5 ... 19, ten milestone jobs in a career, like the war's
-  waves. Crossing a pin makes one due; it lands at the next settlement as a
+  LEVELS -- 1, 3, 5 ... 19, ten milestone jobs in a career.
+  Crossing a pin makes one due; it lands at the next settlement as a
   WORD FROM BELOW block (unseen job boards -- which paladins search for --
   black-waxed letters, ember-eyed couriers; the script rolls the delivery).
   They are the OCCULT work -- blood on the altar, the hellgate, the
@@ -1055,8 +1010,8 @@ rules.md's Crime add-on has the numbers.
 
 The campaign's memory page, rewritten on every save and committed by
 `sheet` like the party and map pages. Four sections: QUESTS DONE (one
-day-stamped line per job with its epilogue), REMARKABLE (the war's waves,
-conquests, defeats survived, maimings, hell's write-offs, named kills), THE
+day-stamped line per job with its epilogue), REMARKABLE (conquests,
+defeats survived, maimings, hell's write-offs, named kills), THE
 TALLY OF SIN (per crime category, plus the meter and the lifetime ledgers),
 and SUGGESTIONS.
 
@@ -1084,8 +1039,8 @@ Holdings add-on); your job is the scenes.
 
 - **`conquer` declares the assault** where the party stands: it prints the
   garrison job (fixed level -- village 3-5, town 6-10, capital 11-15; the
-  fight is the gate, there is no other). The player takes it by id like a
-  war wave and fights it with `room`. Narrate the walls, the declaration,
+  fight is the gate, there is no other). The player takes it by id and
+  fights it with `room`. Narrate the walls, the declaration,
   the moment the town understands. The last room's named defender (the
   castellan, the wall-crew boss) is a scene-worthy character: give him
   three lines before the fight.
@@ -1106,10 +1061,6 @@ Holdings add-on); your job is the scenes.
 - **The flag keeps the heat floor up**: posses come even at clean karma --
   narrate them as the crown's answer to a usurper, not as bounty hunters
   after a criminal (the banner prints the difference).
-- **The war outranks the party**: an aggressor-occupied settlement cannot
-  be conquered, and wave 3's fall seizes the party's holdings in the fallen
-  land. That loss is authored drama -- use it.
-
 ## Flavor beats -- two per session rhythm, always brief
 
 The game is combat-centered; these two beats are how the world stays bigger
@@ -1381,8 +1332,9 @@ than the fights WITHOUT pages of narration:
   tavern night). A terse display block of the options, a line of fiction,
   hand the turn over. The world offers the options; the player chooses.
 - **Options live in the block, never in a closing sentence.** Don't weave
-  the choices into prose ("the board is here, the war waits two lands east,
-  Hell's clock is ticking, and there's the wrong corner too -- where to?")
+  the choices into prose ("the board is here, the road east runs two lands
+  over, Hell's clock is ticking, and there's the wrong corner too -- where
+  to?")
   -- that is display content written as a sentence, and it reads badly. The
   block lists the options, one per line, simple words; the sentence after
   it is one plain question ("Where to?") and nothing else. Never do both:
@@ -1420,7 +1372,7 @@ than the fights WITHOUT pages of narration:
   pieces (the desc, the giver line, `show QID`, the map's state) BEFORE
   narrating an offer, a twist, or an ending, and settle the coherent
   reading; where they clash, the fiction adjusts and the numbers stay the
-  engine's. The same duty covers events: a war wave, a news line, a WORD
+  engine's. The same duty covers events: a news line, a WORD
   FROM BELOW should land as something that makes sense here, today, to
   these people.
 - **Compose your own display blocks for ad-hoc mechanics.** Mechanical

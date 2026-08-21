@@ -427,8 +427,8 @@ a pointer: what the file is, how it's run, where its docs are.
   override is doing real work), and what a shut board does — no ordinary
   capacity, no floor reaching it, no refill, nothing at worldgen, a
   forecast of nothing. *The forced families*: the flag reader, then a world
-  card's job, a courier run, hell's assignment, a forged job and a story
-  wave each reaching a shut settlement without opening it, plus the two
+  card's job, a courier run, hell's assignment and a forged job each
+  reaching a shut settlement without opening it, plus the two
   capacity contracts (forced work eats no ordinary slot; it still shows in
   the forecast). *The rumor radius* (seed 19: Shepham, with Dublin two days
   off carrying work and London three carrying none — the populated group
@@ -457,8 +457,8 @@ a pointer: what the file is, how it's run, where its docs are.
   hidden facts, ASCII, 40-column display wrapping, and ONE BROKEN WORLD
   per clause of `places.validate_world`. *The three human countries*
   (`TheThreeHumanCountries`): the closed homeland set, records carrying a
-  homeland and never a race, the war each country's own worldsim packet
-  supports, the deck every country is owed, and the removed-peoples sweep
+  homeland and never a race, the deck every country is owed, and the
+  removed-peoples sweep
   over twenty-three runtime catalogs, a whole built and walked-into world,
   and the play-facing documents (`dm.md`, `writing.md`,
   `scene-example.md` — the dev docs and the spec companions are history
@@ -672,9 +672,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `succession` / `faction_edge` — and the state payload grew
   `constitution` / `succession`. `_authority_hook` generalizes the fog
   necromancer's naming trick to any card that has to name a lesser
-  authority (`named_authority` keeps him). The war feed is `CASUS_BELLI` /
-  `STANDING_CASUS_BELLI` / `roll_casus_belli` / `casus_belli_line` and
-  `post_news` (the one door into a land's news from outside the deck).
+  authority (`named_authority` keeps him). `post_news` is the one door
+  into a land's news from outside the deck (its CASUS BELLI pool went with
+  the questline on 2026-08-21).
   Readouts: `politics_lines` (the whole polity, on `world`) and
   `notable_lines` (the ruler's PUBLIC half, under his face on the board).
   `_validate_politics` / `_validate_politics_tables` police it at import.
@@ -827,10 +827,7 @@ a pointer: what the file is, how it's run, where its docs are.
   cluster, the cluster skipping the crownless land, every instrument an edge
   with a card in it, the exile edge firing abroad, no card in the rung being
   dead data -- every one of the five gates forced, and it admits -- and the
-  widths); the war
-  feed (the derived-seed casus belli, Tergal's fixed mandate, the line
-  naming both realms, the herald saying it once and leaving it on the news,
-  and a pre-politics save saying nothing); and the surfaces (the map page's
+  widths); and the surfaces (the map page's
   constitution, the DM inventory's whole polity, the town saying the
   reputation and never the heart, and the board printing it under the face).
   *Religion & magic* (2026-08-11, the last rung): the two record kinds (a
@@ -1118,7 +1115,7 @@ a pointer: what the file is, how it's run, where its docs are.
   readout grouped `1/2/3 DAY(S) AWAY`, empty groups omitted; the `HERE`
   group is the caller's, because that is where the givers are).
   *The sparse board*: `is_ordinary_posting` — the ONE reader of the forced-
-  family flags (`kind == delivery`, `world_card`, `story_wave`, `hell_task`,
+  family flags (`kind == delivery`, `world_card`, `hell_task`,
   plus a plain `forced`); `board_slots` returning 0 for an inactive board;
   `board_forecast` counting forced work straight and forecasting only the
   ordinary rest; `refresh_settlement_board` posting the cards OUTSIDE
@@ -1136,27 +1133,6 @@ a pointer: what the file is, how it's run, where its docs are.
   names started coming from `places.SETTLEMENT_NAMES`.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
-- `story.py` — **the authored story layer: the conquest questline**
-  (2026-07-12, rules.md's Story Layer & Conquest add-on). Three country
-  variants (Firascir's Golden Empire, Mortellaria's Undead Kingdom and
-  Tergal's Iron Horde — content dicts at the top: creeds,
-  reskins, waves, heralds, epilogues; the first two were assigned to the
-  WRONG countries until 2026-08-15's closure, against both the build
-  contract and Mortellaria's own necromancy packet), the named faces (conqueror + two
-  lieutenants as display names over budget-honest rosters), waves pinned
-  at L2/5/8/10 built by quests.py's own threat math, wave gating
-  (previous wave done + party at level + party at a settlement since
-  2026-07-13; the aggressor roll excludes the PC's homeland), the
-  wave-3 scripted fall with
-  occupation, and the war readouts. Since the politics rung (2026-08-10)
-  the war also has a WHY: `init_story` rolls `casus_belli` off a derived
-  rng (`worldsim.roll_casus_belli`, so no existing world's aggressor,
-  faces or targets move), `casus_belli_line` reads it back with both
-  realms named, and `post_wave` says it at the FIRST herald and leaves it
-  on the target land's news for whoever arrives later. State lives in the
-  session save (`story` key); the sims never import it. `python story.py
-  [--seed N] [--aggressor R]` dumps one rolled conquest, all waves
-  force-posted.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
   Heat add-on; the direction it serves is plan.md's VILLAIN PIVOT):
   the karma state dict + heat math (`new_karma` / `heat` /
@@ -1196,15 +1172,15 @@ a pointer: what the file is, how it's run, where its docs are.
   defender over the strongest slot, no clock, never on the board), the
   holdings ledger (`take_settlement` / `lose_holding`), tribute accrual
   and collection, the lazy crown raids (`roll_raids` -- heads against
-  heads, the engine never sees them), the story-occupation seizure, and
-  `heat_floor`. The sims never import it; every knob is hand-set (the
+  heads, the engine never sees them), and `heat_floor`
+  (`seize_by_occupation` went with the questline on 2026-08-21). The sims never import it; every knob is hand-set (the
   karma layer's doctrine). `python conquest.py [--seed N]` dumps every
   settlement's garrison level and one built job.
 - `test_conquest.py` — the CONQUEST contract suite (2026-07-27): garrison
   bands and stability, the merged city tier, the job's shape/pricing/boss,
   the holding ledger flips, tribute arithmetic, raid resolution (full
   garrison always repels; unguarded always falls; present party is never
-  raided), the yoke's seizure, the save round-trip, display fit.
+  raided), the save round-trip, display fit.
   `python -m unittest -v test_conquest.py`.
 - `test_pact.py` — the HELL PACT assignment-ladder contract suite
   (2026-08-04, THE DARK REWORK session A): the template sort (occult ten
@@ -1346,18 +1322,18 @@ a pointer: what the file is, how it's run, where its docs are.
   GIVERS via the one-message ask-around funnel, dm.md), quest turn-ins
   print the day-stamped EPILOGUE + giver prompt, `chatter` (the party-
   flavor seed: unseeded rng, no state change), day headers on board/map,
-  local notables on the board, and the war plumbing (`maybe_post_wave`,
-  `occupied_here` gates on
-  board/take/tavern/downtime, the boss-name spawn in `room`, `story` in
-  the save). Reworked 2026-07-13 (the streamlining batch): `new`
+  local notables on the board, and the boss-name spawn in `room`.
+  (The war plumbing that rode beside them -- `maybe_post_wave`,
+  the `occupied_here` gates and the `story` save key -- was deleted
+  2026-08-21 with the questline.) Reworked 2026-07-13 (the streamlining
+  batch): `new`
   GENERATES the PC (no `pick`; min capacity 1, the long-time companion,
-  the OPENING HOOK at the closest-level-quest settlement, aggressor
-  excludes the PC homeland — and since 2026-08-05 a rolled start level, an
+  the OPENING HOOK at the closest-level-quest settlement — and since
+  2026-08-05 a rolled start level, an
   always-wizard PC and no trait sketch on him), `recruit` rolls candidates
   ON REQUEST (once per settlement/day; the tavern stopped popping them),
   companions AUTOLEVEL after fights/hire (`rpg.autospend_points`) while
-  the PC's level-up auto-prints the `levelup` menu, `maybe_post_wave` is
-  settlement-gated (no war news mid-wilds), a dead companion's quality
+  the PC's level-up auto-prints the `levelup` menu, a dead companion's quality
   weapon stays with the party, `give --as` reskins weapons, ALL output
   (and the UI pages) is hard-wrapped at `WRAP_WIDTH` = 40 for the
   designer's phone, and the **UI pages in `ui/`** are committed only by
@@ -1975,9 +1951,9 @@ mechanic *does* and *why* is rules.md's job.
   (the settlement's `rumors` list, told once), the band multiplier in
   `_close_site` and `deliver_if_arrived`, the clock lines in `tally_lines` /
   `cmd_status` / `cmd_take` / `party_sheet_lines`, `open_quests` in
-  `map_sheet_lines`, and `forge --days N`. `karma.py` and `story.py` post
-  jobs with NO clock on purpose (day-scoped shadow offers; an authored
-  questline does not lapse). `bench_quests.py`: `run_board_clock` and the
+  `map_sheet_lines`, and `forge --days N`. `karma.py` posts
+  jobs with NO clock on purpose (day-scoped shadow offers).
+  `bench_quests.py`: `run_board_clock` and the
   banded turn-in in `run_career`. `people.py`: `pick_name` numbers its
   overflow (`Brand II`, `Brand 3`) instead of choosing from an empty pool —
   a churning board asks for far more faces than a homeland/sex pool
@@ -1987,12 +1963,11 @@ mechanic *does* and *why* is rules.md's job.
   `epilogue` fields, `attach_giver`, the central cast
   (`_cast_the_land` + the role tables, `world["npcs"]`). `people.py`:
   `make_npc` / `npc_line` / `NPC_MIN_AGE` (the targeted generator).
-  `story.py`: `CONQUESTS` (the three country variants' content), `WAVE_LEVELS` /
-  `WAVE_ROOMS`, `init_story` / `next_wave_due` / `post_wave` /
-  `on_wave_done` / `occupied` / `war_status_lines`. `session.py`:
-  `maybe_post_wave`, `occupied_here` / `occupation_line`, the epilogue +
+  `session.py`: the epilogue +
   `done_day` stamp in `advance_quest`, the boss-name spawn in `cmd_room`,
-  `cmd_chatter` + `CHATTER_PROMPTS`.
+  `cmd_chatter` + `CHATTER_PROMPTS`. Its OTHER half -- `story.py`, the
+  scripted conquest questline -- was cut whole on 2026-08-21 (designlog
+  (K)); what is listed here is what survived.
 - **Magic & Mind** (2026-07-15, replacing the 2026-07-14 placeholder) —
   `rpg.py`: the constants block (the `SPELLS` catalog, cast costs/
   severities, the DC knobs, opener costs, `SPELLBOOK_PRICE`),
@@ -2233,17 +2208,14 @@ mechanic *does* and *why* is rules.md's job.
   column itself, which is measured and should move only with a reason.
   `worldsim.py`: the constitution slot, the tension roll and its DECK GATE,
   the faction edges, the ruler on the layer, the five new admits, the two
-  new state effects, `_authority_hook`, the casus belli pool, `post_news`,
+  new state effects, `_authority_hook`, `post_news`,
   and `politics_lines` / `notable_lines` (see Files); the knobs are
   `TENSION_ROLLS` / `CRISIS_TENSION_ROLLS`, each constitution entry's own
   weight, and each card's own `chance`. `quests.py`: `_cast_the_land` writes
   the ruler notable's id onto the rolled sheet (`worldsim.ruler_sheet(...)
-  ["npc"]`) — one copy of the words, one face wearing them. `story.py`:
-  `init_story` rolls `casus_belli` on a DERIVED rng (`casus:<seed>:<land>`,
-  so no existing world's aggressor, faces or targets move), `casus_belli_line`
-  reads it back with both realms named (STRICT -- every rolled war carries
-  one), and `post_wave` says it at the first herald and posts it to the
-  land's news. `session.py`: the notables block
+  ["npc"]`) — one copy of the words, one face wearing them. (The rung's
+  CASUS BELLI pool went with the questline on 2026-08-21; `post_news`
+  stays.) `session.py`: the notables block
   prints `worldsim.notable_lines` under the ruler's face. `test_worldsim.py`
   is the contract.
 - **Religion & magic** (2026-08-11, the worldsim ladder's LAST content rung
@@ -2349,7 +2321,7 @@ mechanic *does* and *why* is rules.md's job.
   `career_purse`, `career_kit`, `_start_pact`, `career_line`),
   `cmd_new` rebuilt around them (`--level`, the always-wizard trait-less PC,
   the starting settlement's country as both heroes' homeland, trash arms now
-  level-1 only, the war and pact lines that no longer promise level 2),
+  level-1 only, the pact line that no longer promises level 2),
   `_starting_settlement(world)` and `opening_hook` using the uniformly chosen
   settlement and its forced exact-level combat quest, and `cmd_chatter` skipping heroes
   with no sketch. `people.py`: `make_character`'s `with_traits` /

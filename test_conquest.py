@@ -5,7 +5,7 @@ The rules this pins: the garrison level is FIXED TERRAIN (stable across
 rerolls, banded by settlement kind), the conquest job is an ordinary dark
 quest underneath (schema, threat-honest rooms, the named defender over the
 strongest slot, no clock, not on the board), the holding ledger's flips
-(take / raid loss / the yoke's seizure), the tribute arithmetic, the raid
+(take / raid loss), the tribute arithmetic, the raid
 resolution (heads against heads, the engine never sees it), the heat
 floor, and the save round-trip. Display fit is checked against the
 40-column wrap.
@@ -20,7 +20,6 @@ import conquest
 import karma
 import places
 import quests
-import story
 
 
 def _world(seed: int = 11) -> dict:
@@ -86,7 +85,7 @@ class GarrisonLevels(unittest.TestCase):
 
 
 class TheConquestJob(unittest.TestCase):
-    """An ordinary dark quest underneath -- the war waves' doctrine."""
+    """An ordinary dark quest underneath."""
 
     def setUp(self):
         self.world = _world()
@@ -246,25 +245,6 @@ class Raids(unittest.TestCase):
             self.assertEqual(
                 conquest.roll_raids(self.world, self.holdings,
                                     random.Random(seed), day=30), [])
-
-
-class TheYokeOutranksTheFlag(unittest.TestCase):
-
-    def test_story_fall_seizes_holdings_in_the_fallen_land(self):
-        world = _world()
-        holdings: dict = {}
-        village = _first(world, "village")
-        conquest.take_settlement(world, holdings, village, day=0)
-        other = next(s for s in quests.settlements(world)
-                     if s["land"] != village["land"])
-        conquest.take_settlement(world, holdings, other, day=0)
-        lines = conquest.seize_by_occupation(
-            world, holdings, {"fallen": village["land"]})
-        self.assertEqual(len(lines), 1)
-        self.assertNotIn(village["key"], holdings)
-        self.assertIn(other["key"], holdings)      # other lands untouched
-        self.assertEqual(
-            conquest.seize_by_occupation(world, holdings, None), [])
 
 
 class SaveRoundTrip(unittest.TestCase):

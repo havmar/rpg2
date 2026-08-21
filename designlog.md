@@ -6287,3 +6287,103 @@ packet, the card audit and the ~20-edge relations table fourth; the wars
 last, on top of everything. The roadmap's "Politics, war & more
 countries" section collapsed into the contract, leaving dynamic borders,
 mechanical languages and vassalage-with-teeth parked.
+
+## 2026-08-21 (K) — Session 1 of the medieval world arc: the fallen banner (the conquest questline removed)
+
+**What shipped: a deletion.** plan.md's Session 1 whole. The scripted
+main quest — one aggressor country, four war waves pinned at levels
+2/5/8/10, the Golden Empire / Undead Kingdom / Iron Horde, the scripted
+wave-3 fall and the occupation that followed it — is gone from the game,
+code, docs and tests. It was three-country content at its core, the
+rolled wars of session 5 replace its job, and taking it out first means
+no later session in this arc renames a line of it. The game runs
+warless: a new game prints no war line at all, and nothing on the board,
+the map page, the status page or the save mentions a war.
+
+**The death list.**
+
+- **`story.py` deleted whole** (527 lines): `CONQUESTS`, `AGGRESSORS`,
+  `WAVE_LEVELS` / `WAVE_ENCOUNTERS` / `WAVE_ROOMS`, `init_story`,
+  `next_wave_due`, `wave_target_land`, `post_wave`, `on_wave_done`,
+  `occupied`, `casus_belli_line`, `war_status_lines` and its `main`.
+- **`session.py`**: `init_story` at `new` and the "the story layer is
+  armed" print with its level-2/already-due branch; the `"story"` key in
+  both `save` and `load`; `war_status_lines` in `status_lines` and in
+  `map_sheet_lines` (with the `-- the war --` block and the
+  `[UNDER THE YOKE]` land tag); `maybe_post_wave` and its six call
+  sites (board, arrive, tavern, downtime, healer, teleport);
+  `occupied_here` / `occupation_line` and all nine gates (recruit, take,
+  board, tavern, downtime, healer, conquer, hell's assignment, the
+  delivery hand-off); the wave-completion hook in `advance_quest`
+  (the THE WAR record line and `on_wave_done`); `story_wave` in
+  `pays_here` and in the `FEROCITY_RELENTLESS` spawn (the import went
+  with it); and the help copy naming war waves.
+- **`worldsim.py`**: `CASUS_BELLI`, `STANDING_CASUS_BELLI`,
+  `roll_casus_belli`, `casus_belli_line` and the format-check clause in
+  `_validate_politics_tables`. **`post_news` stays** — the campaign sim
+  of session 5 is its next customer, and its docstring now says so
+  without naming a customer that no longer exists.
+- **`quests.py`**: the `story_wave` clause in `is_ordinary_posting` (the
+  forced families are now delivery / world card / hell task / forced).
+- **`conquest.py`**: `seize_by_occupation` only. The player's own
+  holdings layer — conquer, garrison, holdings, tribute, raids, the heat
+  floor — is untouched.
+- **Tests**: `test_worldsim.TheWarFeed` (4 tests), `test_places`'s two
+  story tests (the fixed banner pairing and the four-wave build sweep),
+  `test_conquest.TheYokeOutranksTheFlag`,
+  `test_quest_geography`'s story-wave posting, and `test_turnin`'s
+  war-wave pay routing. Every state stub dropped `"story"`. 948 tests
+  before, **939 after, OK**.
+
+**Docs.** rules.md's add-on lost its questline half and is now *The Story
+Layer — Add-on (2026-07-12; questline cut 2026-08-21)*, with a paragraph
+at its head recording what was cut and why; the givers, epilogues, the
+targeted NPC generator, the central cast and party chatter all stay.
+Politics & the Ruler lost its casus-belli bullet and its section is now
+"The war material" (the instruments and the succession cluster). dm.md
+lost "The war -- the conquest questline" whole plus every war-wave
+mention in the clock, turn-in, record, conquest and narration sections.
+develop.md lost story.py's Files entry and rewrote the war plumbing out
+of the session.py entry, the dev map's story-layer and politics rungs,
+and the conquest/test_conquest entries. CLAUDE.md's code-file list lost
+`story.py`.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **What replaces a war-flavoured comparison, rather than what deletes
+   it.** A dozen docs and docstrings used the war waves as the reference
+   shape for something else — hell's ten pins ("the war waves' proven
+   shape"), the conquest job's room count ("the war waves' maximum"),
+   how a conquest job is taken ("like a war wave"), the named-kill
+   doctrine ("one of the war's lieutenants"). Each was rewritten to
+   state the thing directly instead of pointing at a system that no
+   longer exists; none of the numbers moved. The rule applied: a
+   comparison to deleted content is a dangling reference even when it
+   compiles.
+2. **The occupation gates were removed, not neutered.** Nine commands
+   asked `occupied_here(state)` before doing their work. Deleting the
+   reader and leaving the guards would have meant nine `if False`
+   branches; deleting both leaves the commands reading as they did
+   before the war existed. The `--here` turn-in valve survives — the DM
+   still needs it for a dead giver — with its help text pointing at a
+   burned town rather than an occupied one.
+3. **`FEROCITY_RELENTLESS` left session.py with the waves.** War-wave
+   foes were the only rosters the session layer spawned relentless;
+   with them gone the import was dead. `sites.py` still uses the
+   constant for the catalog rows that carry it, so nothing about
+   ferocity itself changed.
+4. **`test_start` kept a test where one was deleted.** The old
+   `test_the_war_line_stops_promising_level_two_to_a_career_party`
+   pinned the new-game war print. Rather than delete it outright, it
+   became `test_a_new_game_says_nothing_about_a_war`, which asserts the
+   interim contract at both a level-1 and a career start — the arc's
+   later sessions will put a war back, and this is what says the world
+   in between is genuinely warless.
+5. **worldsim.md was not touched.** Its war-feed mentions are its record
+   of what the politics session SHIPPED on 2026-08-10, and project
+   history is not edited (the file's own rule). designlog and benchlog
+   likewise keep their war-wave entries.
+
+**Not re-measured.** Nothing tunable moved: no constant, no pay formula,
+no threat number. The bench suite is unaffected and benchlog gets no
+entry.

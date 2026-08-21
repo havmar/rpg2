@@ -75,7 +75,7 @@ the checked-out copy already contains the latest UI or rules changes.
 > plan.md marked SHIPPED or COMPLETE. develop.md's "Where a finished
 > feature is written up" has the full rule.
 
-The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
+The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`,
 `karma.py`, `conquest.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 
