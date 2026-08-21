@@ -3228,7 +3228,8 @@ materialize lazily.
   `port`, `sea-lane`) and the route records — id, name for a legendary
   road, the ordered Tile path, the cargo and the length in days. Measured
   over 500 worlds: about 59 routes, 114 of the 314 land Tiles on one, 27
-  ports and 26 sea-lane Tiles, ~37 crossroads where three or more meet.
+  ports and 26 sea-lane Tiles, ~34 land crossroads where three or more
+  meet.
   **The trade words are TILE words, not Area words**: a settlement Area
   inherits its Tile's ground tags and not these four, so the quest
   generator is not quietly a reader of the trade layer.
@@ -3243,9 +3244,7 @@ materialize lazily.
   two looms, the armouries, the horse fairs); anything else — a rolled
   market the party has never heard of — reads as its coordinate, the way
   the map labels it. All three are common knowledge, because a mine, a
-  vineyard and a road are things you can see from the road. Endpoints
-  name themselves through the historical cities, the mine towns and the
-  authored marks; anything else reads as its coordinate. Since the read
+  vineyard and a road are things you can see from the road. Since the read
   surface shipped, the label CAPS the road list at four lines with a
   `+N more` tail — Paris is crossed by a dozen roads and the page has to
   stay readable — and the NAMED roads lead when it caps. The DM's own tile

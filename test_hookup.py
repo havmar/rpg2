@@ -491,6 +491,8 @@ class TheDMsBrief(unittest.TestCase):
         self.assertIn("mine: Goslar", there)
         refused, _saved = _run(session.cmd_tile, state, coordinate=["Goslar"])
         self.assertIn("not a coordinate", refused)
+        beyond, _saved = _run(session.cmd_tile, state, coordinate=["R25C31"])
+        self.assertIn("off the map", beyond)
 
     def test_the_verb_costs_no_day_and_writes_nothing(self) -> None:
         world = self.world
