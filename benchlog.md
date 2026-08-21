@@ -2141,3 +2141,58 @@ print their usual columns (2x Warlord at the annotated L19: 69.2% win /
 25.9% wipe; the barrow at rank 0: 97.3 / 50.8 / 7.6 / 0.5% wipe by party
 size). The full suite is 794 tests (787 before; `test_places.py` adds
 seven).
+
+## 2026-08-21 — The ground & the sky (arc session 1): the career moved, nothing tuned
+
+The tile economy arc's first build session (designlog's (F) entry) shipped
+the two authored overlays onto the Tiles, the potential law behind them,
+the reconciled tag vocabulary, and the sky rebuilt onto climate x season.
+No combat, pay, threat or refill constant was touched — `rpg.py`,
+`sites.py` and `weapons.py` are byte-identical across the session — so the
+suite was run as a sanity check with one expected exception.
+
+**Unmoved, byte for byte:** `bench_training.py`, `bench_party.py`,
+`bench_weapons.py`, `bench_ranged.py`, `bench_rout.py`,
+`bench_bestiary.py` and `tune.py`. The full-suite count went 798 -> 828
+(`test_ground.py` adds 30), all green.
+
+**`bench_quests.py`'s career sim moved, and it was supposed to.**
+
+| | now (200) | before (200) |
+|---|---:|---:|
+| reached L20 | 1.5% | 0.5% |
+| L5 / L8 / L11 | 82 / 66 / 32 | 84 / 66 / 30 |
+| L14 / L17 | 10 / 3 | 10 / 2 |
+| median death level | 9 | 9 |
+| turn-ins quick/on time/late/expired | 39 / 50 / 10 / 2 | 30 / 52 / 13 / 4 |
+| expired postings per career | 241.7 | 294.0 |
+| defeat mercies per career | 0.90 | 0.95 |
+| XP a fresh world seeds | ~11,374 | ~10,631 |
+| live board at the end (median) | 51 open | 51 open |
+
+The site-honesty half of the bench is identical row for row across the
+change; only the career sim's posting side moved.
+
+**The cause is the reconciliation, not a tuning drift.** Before this
+session the quest tables asked for `forest` / `hills` / `pasture` /
+`farmland` / `prairie` and NO natural Area carried any of those words, so
+every such job silently fell back to the origin Tile's own countryside —
+distance zero. Those words are now real ground, so a wolf hunt is posted at
+a wood that is genuinely a wood, out on the map. A job's posted window is
+priced by the road, so targets that are actually somewhere carry longer
+windows: **turn-ins land earlier in their window (quick 30% -> 39%), fewer
+run late (13% -> 10%) and a sixth fewer postings expire (294 -> 242)**. Pay
+and XP scale with distance too, which is the +7% a fresh world now seeds.
+
+**The progression cells are flat, and the tail is demonstrably noise at
+this n.** L8 and L14 are identical, L11 and L17 move two and one points,
+the median death level is 9 both ways. The tail cell was watched
+deliberately: an intermediate run of this session (before Tergal's wood
+village was added, which changes nothing but which template a forest Tile
+draws) printed **L14 5% and L20 0.5%**, and adding the village put them at
+**10% and 1.5%** — three careers against one at L20. That is the same
+tail cell the last three entries warned not to read, caught swinging on a
+change that cannot affect combat at all. If the designer ever wants the
+top band settled it needs n=1000, not a lever.
+
+**Nothing was tuned.** The levers are where the closure session left them.

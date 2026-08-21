@@ -4,54 +4,31 @@
     "firascir": {
       "name": "Firascir",
       "culture": "firascir",
-      "environment": "temperate",
       "description": "The northern and western kingdom: islands, a long Atlantic coast and the cool inland country behind it, temperate, wooded and heavily farmed.",
-      "natural": [
-        [
-          "old_forest",
-          "forest",
-          "old_forest",
-          [
-            "forest",
-            "road",
-            "timber",
-            "ruin"
-          ]
+      "natural": {
+        "fields": [
+          "fields"
         ],
-        [
-          "fields",
-          "farmland",
-          "fields",
-          [
-            "farmland",
-            "pasture",
-            "hills",
-            "road"
-          ]
+        "forest": [
+          "old_forest"
         ],
-        [
+        "hills": [
+          "hill_country"
+        ],
+        "mountains": [
+          "hill_country"
+        ],
+        "marsh": [
+          "fen"
+        ],
+        "river": [
           "river_south",
-          "river",
-          "southbound_river",
-          [
-            "river",
-            "road",
-            "crossing",
-            "mill"
-          ]
+          "river_east"
         ],
-        [
-          "river_east",
-          "river",
-          "eastbound_river",
-          [
-            "river",
-            "road",
-            "crossing",
-            "island"
-          ]
+        "coast": [
+          "fields"
         ]
-      ],
+      },
       "natural_sites": {
         "old_forest": [
           {
@@ -400,6 +377,160 @@
                   "canvas shelter",
                   "fish basket",
                   "cold firepit"
+                ]
+              }
+            ],
+            "anchors": []
+          }
+        ],
+        "hill_country": [
+          {
+            "id": "moor-road",
+            "name": "MOOR ROAD",
+            "rooms": [
+              {
+                "id": "heather-crossing",
+                "name": "HEATHER CROSSING",
+                "anchors": [
+                  "deep heather",
+                  "peat cuttings",
+                  "sunk track"
+                ]
+              },
+              {
+                "id": "standing-cairn",
+                "name": "STANDING CAIRN",
+                "anchors": [
+                  "piled stones",
+                  "wind-scoured face",
+                  "small offerings"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "high-glen",
+            "name": "HIGH GLEN",
+            "rooms": [
+              {
+                "id": "glen-floor",
+                "name": "GLEN FLOOR",
+                "anchors": [
+                  "boulder field",
+                  "fast stream",
+                  "bracken"
+                ]
+              },
+              {
+                "id": "waterfall-pool",
+                "name": "WATERFALL POOL",
+                "anchors": [
+                  "black water",
+                  "wet rock",
+                  "hanging spray"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "hill-shieling",
+            "name": "HILL SHIELING",
+            "rooms": [
+              {
+                "id": "turf-hut",
+                "name": "TURF HUT",
+                "anchors": [
+                  "cold hearth",
+                  "heather bedding",
+                  "smoke hole"
+                ]
+              },
+              {
+                "id": "stock-pen",
+                "name": "STOCK PEN",
+                "anchors": [
+                  "dry-stone wall",
+                  "hurdle gate",
+                  "trodden mud"
+                ]
+              }
+            ],
+            "anchors": []
+          }
+        ],
+        "fen": [
+          {
+            "id": "fen-causeway",
+            "name": "FEN CAUSEWAY",
+            "rooms": [
+              {
+                "id": "raised-track",
+                "name": "RAISED TRACK",
+                "anchors": [
+                  "sunk causeway stones",
+                  "standing water either side",
+                  "reed beds"
+                ]
+              },
+              {
+                "id": "plank-bridge",
+                "name": "PLANK BRIDGE",
+                "anchors": [
+                  "wet planks",
+                  "black dyke water",
+                  "rope handrail"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "eel-camp",
+            "name": "EEL CAMP",
+            "rooms": [
+              {
+                "id": "drying-racks",
+                "name": "DRYING RACKS",
+                "anchors": [
+                  "split eels",
+                  "smoke fire",
+                  "wicker traps"
+                ]
+              },
+              {
+                "id": "punt-landing",
+                "name": "PUNT LANDING",
+                "anchors": [
+                  "flat-bottomed punt",
+                  "pole rack",
+                  "mud steps"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "drowned-church",
+            "name": "DROWNED CHURCH",
+            "rooms": [
+              {
+                "id": "flooded-nave",
+                "name": "FLOODED NAVE",
+                "anchors": [
+                  "water to the knee",
+                  "floating pew",
+                  "green walls"
+                ]
+              },
+              {
+                "id": "bell-tower",
+                "name": "BELL TOWER",
+                "anchors": [
+                  "dry stair",
+                  "cracked bell",
+                  "the whole fen in view"
                 ]
               }
             ],
@@ -1362,7 +1493,9 @@
         },
         "forest_village": {
           "tier": "village",
-          "fits": [],
+          "fits": [
+            "forest"
+          ],
           "tags": [
             "village",
             "forest",
@@ -1571,72 +1704,251 @@
               "anchors": []
             }
           ]
+        },
+        "fen_village": {
+          "tier": "village",
+          "fits": [
+            "marsh"
+          ],
+          "tags": [
+            "village",
+            "marsh",
+            "fishing",
+            "wetland"
+          ],
+          "description": "A village of raised houses on the fen's one dry rise. Every door has a punt drawn up beside it, and the dykes are behind on their work.",
+          "sites": [
+            {
+              "id": "causeway-green",
+              "name": "CAUSEWAY GREEN",
+              "rooms": [
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "punt-and-pole-inn",
+              "name": "PUNT AND POLE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "village-smithy",
+              "name": "VILLAGE SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "eel-house",
+              "name": "EEL HOUSE",
+              "rooms": [
+                {
+                  "id": "smoke-room",
+                  "name": "SMOKE ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "trap-store",
+                  "name": "TRAP STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "field_village": {
+          "tier": "village",
+          "fits": [],
+          "tags": [
+            "village",
+            "farmland",
+            "road",
+            "market"
+          ],
+          "description": "A village of a dozen farms around a green, with ploughland running to the hedges on every side and one road through it.",
+          "sites": [
+            {
+              "id": "village-green",
+              "name": "VILLAGE GREEN",
+              "rooms": [
+                {
+                  "id": "old-oak",
+                  "name": "OLD OAK",
+                  "anchors": []
+                },
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "plough-inn",
+              "name": "PLOUGH INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "village-smithy",
+              "name": "VILLAGE SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "tithe-barn",
+              "name": "TITHE BARN",
+              "rooms": [
+                {
+                  "id": "threshing-floor",
+                  "name": "THRESHING FLOOR",
+                  "anchors": []
+                },
+                {
+                  "id": "grain-store",
+                  "name": "GRAIN STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
         }
       }
     },
     "mortellaria": {
       "name": "Mortellaria",
       "culture": "mortellaria",
-      "environment": "mediterranean",
       "description": "The southern kingdom around the middle sea: dry hills, olive terraces, old stone roads, and every coast it can reach by water.",
-      "natural": [
-        [
+      "natural": {
+        "fields": [
+          "river_plain"
+        ],
+        "forest": [
+          "pine_valley"
+        ],
+        "hills": [
           "vineyard_hills",
-          "hills",
-          "vineyard_hills",
-          [
-            "hills",
-            "vineyard",
-            "olive",
-            "road",
-            "pasture"
-          ]
+          "pine_valley"
         ],
-        [
-          "rocky_coast",
-          "coast",
-          "rocky_coast",
-          [
-            "coast",
-            "road",
-            "cave",
-            "fishing"
-          ]
+        "mountains": [
+          "pine_valley"
         ],
-        [
-          "pine_valley",
-          "valley",
-          "pine_valley",
-          [
-            "forest",
-            "hills",
-            "road",
-            "pasture"
-          ]
+        "marsh": [
+          "river_plain"
         ],
-        [
-          "river_plain",
-          "plain",
-          "river_plain",
-          [
-            "farmland",
-            "river",
-            "wetland",
-            "road"
-          ]
-        ],
-        [
+        "river": [
           "river_south",
-          "river",
-          "southbound_river",
-          [
-            "river",
-            "road",
-            "crossing",
-            "mill"
-          ]
+          "river_plain"
+        ],
+        "coast": [
+          "rocky_coast"
         ]
-      ],
+      },
       "natural_sites": {
         "vineyard_hills": [
           {
@@ -2527,7 +2839,7 @@
         "hill_town": {
           "tier": "town",
           "fits": [
-            "mountain-foot"
+            "hills"
           ],
           "tags": [
             "town",
@@ -3003,79 +3315,36 @@
     "tergal": {
       "name": "Tergal",
       "culture": "tergal",
-      "environment": "prairie",
       "description": "The eastern realm of the open grass: herd roads, river crossings and dry basins, held by clans under one high chief.",
-      "natural": [
-        [
-          "open_prairie",
-          "prairie",
-          "open_prairie",
-          [
-            "prairie",
-            "road",
-            "pasture",
-            "hunt"
-          ]
+      "natural": {
+        "fields": [
+          "open_steppe",
+          "dry_basin"
         ],
-        [
+        "forest": [
+          "taiga_wood"
+        ],
+        "hills": [
           "broken_hills",
-          "hills",
+          "grazing_range"
+        ],
+        "mountains": [
           "broken_hills",
-          [
-            "hills",
-            "pass",
-            "quarry",
-            "tomb"
-          ]
+          "grazing_range"
         ],
-        [
-          "grazing_range",
-          "ridge",
-          "grazing_range",
-          [
-            "hills",
-            "pasture",
-            "road",
-            "lookout"
-          ]
+        "marsh": [
+          "great_fen"
         ],
-        [
-          "dry_basin",
-          "basin",
-          "dry_basin",
-          [
-            "prairie",
-            "basin",
-            "road",
-            "salt",
-            "livestock"
-          ]
-        ],
-        [
+        "river": [
           "river_east",
-          "river",
-          "eastern_river",
-          [
-            "river",
-            "crossing",
-            "fishing",
-            "willow"
-          ]
+          "river_west"
         ],
-        [
-          "river_west",
-          "river",
-          "western_river",
-          [
-            "river",
-            "road",
-            "crossing",
-            "trade"
-          ]
+        "coast": [
+          "open_steppe"
         ]
-      ],
+      },
       "natural_sites": {
-        "open_prairie": [
+        "open_steppe": [
           {
             "id": "herd-road",
             "name": "HERD ROAD",
@@ -3558,6 +3827,160 @@
                   "stacked crates",
                   "rope coils",
                   "tally board"
+                ]
+              }
+            ],
+            "anchors": []
+          }
+        ],
+        "taiga_wood": [
+          {
+            "id": "timber-road",
+            "name": "TIMBER ROAD",
+            "rooms": [
+              {
+                "id": "log-corduroy",
+                "name": "LOG CORDUROY",
+                "anchors": [
+                  "sunken logs",
+                  "black mud",
+                  "axe-cut stumps"
+                ]
+              },
+              {
+                "id": "sawpit-clearing",
+                "name": "SAWPIT CLEARING",
+                "anchors": [
+                  "open pit",
+                  "two-man saw",
+                  "stacked planks"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "trappers-line",
+            "name": "TRAPPER'S LINE",
+            "rooms": [
+              {
+                "id": "fur-cache",
+                "name": "FUR CACHE",
+                "anchors": [
+                  "pole platform",
+                  "stretched pelts",
+                  "bait sack"
+                ]
+              },
+              {
+                "id": "deadfall-trap",
+                "name": "DEADFALL TRAP",
+                "anchors": [
+                  "propped log",
+                  "scent trail",
+                  "old bones"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "charcoal-camp",
+            "name": "CHARCOAL CAMP",
+            "rooms": [
+              {
+                "id": "turf-kiln",
+                "name": "TURF KILN",
+                "anchors": [
+                  "smoking mound",
+                  "rake and shovel",
+                  "charcoal heap"
+                ]
+              },
+              {
+                "id": "sleeping-shelter",
+                "name": "SLEEPING SHELTER",
+                "anchors": [
+                  "pine-branch bed",
+                  "banked fire",
+                  "water pail"
+                ]
+              }
+            ],
+            "anchors": []
+          }
+        ],
+        "great_fen": [
+          {
+            "id": "marsh-crossing",
+            "name": "MARSH CROSSING",
+            "rooms": [
+              {
+                "id": "pole-ford",
+                "name": "POLE FORD",
+                "anchors": [
+                  "sounding pole",
+                  "brown water",
+                  "sucking mud"
+                ]
+              },
+              {
+                "id": "willow-hide",
+                "name": "WILLOW HIDE",
+                "anchors": [
+                  "bent willows",
+                  "trodden platform",
+                  "old fire ash"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "fowlers-camp",
+            "name": "FOWLER'S CAMP",
+            "rooms": [
+              {
+                "id": "reed-hide",
+                "name": "REED HIDE",
+                "anchors": [
+                  "cut reeds",
+                  "netted birds",
+                  "low bench"
+                ]
+              },
+              {
+                "id": "drying-frames",
+                "name": "DRYING FRAMES",
+                "anchors": [
+                  "split fowl",
+                  "smoke haze",
+                  "salt sack"
+                ]
+              }
+            ],
+            "anchors": []
+          },
+          {
+            "id": "sunken-idol",
+            "name": "SUNKEN IDOL",
+            "rooms": [
+              {
+                "id": "black-pool",
+                "name": "BLACK POOL",
+                "anchors": [
+                  "still black water",
+                  "no reeds",
+                  "bog oak"
+                ]
+              },
+              {
+                "id": "carved-post",
+                "name": "CARVED POST",
+                "anchors": [
+                  "weathered face",
+                  "cloth offerings",
+                  "split wood"
                 ]
               }
             ],
@@ -4196,10 +4619,12 @@
         },
         "herd_village": {
           "tier": "village",
-          "fits": [],
+          "fits": [
+            "steppe"
+          ],
           "tags": [
             "village",
-            "prairie",
+            "steppe",
             "pasture",
             "livestock"
           ],
@@ -4518,6 +4943,111 @@
                 {
                   "id": "feed-store",
                   "name": "FEED STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "wood_village": {
+          "tier": "village",
+          "fits": [
+            "forest"
+          ],
+          "tags": [
+            "village",
+            "forest",
+            "timber",
+            "furs"
+          ],
+          "description": "A village of log houses in a clearing the forest is taking back. Furs and sawn timber go south from here, and little else does.",
+          "sites": [
+            {
+              "id": "village-well",
+              "name": "VILLAGE WELL",
+              "rooms": [
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "notice-post",
+                  "name": "NOTICE POST",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "sable-inn",
+              "name": "SABLE INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "smiths-forge",
+              "name": "SMITH'S FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "fur-store",
+              "name": "FUR STORE",
+              "rooms": [
+                {
+                  "id": "drying-loft",
+                  "name": "DRYING LOFT",
+                  "anchors": []
+                },
+                {
+                  "id": "log-yard",
+                  "name": "LOG YARD",
                   "anchors": []
                 }
               ],

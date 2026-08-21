@@ -172,7 +172,7 @@ to another area -- is the player's core decision:
   stored description, salient known state, sites/rooms, services, links,
   and visible Room contents; `go NAME` enters one and `back` moves one
   local level outward. `look` leads with the TILE (coordinate, country,
-  biome), then the Area on it, then the sibling Areas sharing that Tile and
+  terrain), then the Area on it, then the sibling Areas sharing that Tile and
   the four roads out with their day costs. `look --dm` is the full fact
   record, including seeds, hidden facts, occupants, and quest attachments.
   Local moves cost no day -- and since the grid shipped that includes
@@ -545,6 +545,13 @@ Two commands, both free and neither costing a day. `lore` is your readout;
 Every land rolls a sky every day. Unlike the wealth band, the weather has
 direct mechanical effects.
 
+- **The sky is the GROUND's, and the season's** (2026-08-21). The roll
+  reads the climate of the Tile the party is standing on and the day of
+  the campaign year (day 1 is April 1st), so a march south changes what
+  the afternoon can do and a hard frost in the same place is a winter
+  thing. You do not track a season -- the script does the lookup. What
+  this buys you at the table is a free line of scene-setting: heat in the
+  Aegean summer, cold rain in the taiga, fen fog on the five marsh Tiles.
 - **The `WEATHER:` line prints where the sky matters** -- setting out, a
   day afield, a night in the open, on arrival. Work it into the FIRST
   sentence of the scene and then drop it: weather is background for the
@@ -1806,9 +1813,10 @@ than the fights WITHOUT pages of narration:
   it feeds as a derived state for exactly as long as it lasts. Nothing
   ticks in the background: the world's day is rolled where the calendar
   advances, so a land is always where its own dice put it, visited or not.
-- **The weather in numbers:** one sky a land a day off its climate --
-  roughly a third of days are wet or freezing in the north and forest, a
-  fifth in the south. A storm holds 1-3 days; a wilds night under one finds
+- **The weather in numbers:** one sky a land a day, off the climate of
+  the Tile underfoot and the season (a land the party is not in reads its
+  capital's) -- roughly a third of days are wet or freezing in the north
+  and the taiga, a fifth in the south. A storm holds 1-3 days; a wilds night under one finds
   a cabin a bit under half the time. The exposure check is 2d6 + STR vs the
   sky (a rainy night gets through ~6% of the time, a stormy one ~33%); a
   cold costs 2 HP off the ceiling and pneumonia 5, and the nightly shake is

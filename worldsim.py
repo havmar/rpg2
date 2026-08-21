@@ -108,13 +108,15 @@ The shape, in the order the loop runs it:
   and the raid a dead pasture sends out are the shipped chains. One of
   them crosses a RELATION: a Tergal clan whose herds died raids the
   Firascir grain the same failed harvest already made dear.
-- **The sky.** Every land rolls one weather word a day against its
-  environment profile's distribution (`places.ENVIRONMENT_PROFILES`, whose
-  climate sentence is what those weights say in numbers), tracking the WET
-  and DRY spells running behind it. A held DROUGHT bends the roll that
-  produced it. The sky is what the weather track's cards admit on, what the
-  exposure check and the storm penalties read, and what the party sees on
-  the road.
+- **The sky.** Every land rolls one weather word a day against the weights
+  of the GROUND THE PARTY IS STANDING ON and the season of the year
+  (`CLIMATE_WEATHER` x `season_of`), tracking the WET and DRY spells
+  running behind it. A land the party is not in reads its capital's
+  climate instead; the spells stay on the land, which is why crossing a
+  climate border does not reset the drought behind you. A held DROUGHT
+  bends the roll that produced it. The sky is what the weather track's
+  cards admit on, what the exposure check and the storm penalties read,
+  and what the party sees on the road.
 
 Everything is LAZY, SEEDED and DAY-STAMPED: nothing ticks in the
 background. A land's day is rolled off `stable_seed(world, land, day)`, so
@@ -140,7 +142,8 @@ import random
 
 import rulers                    # the politics rung's person half: the
                                  # weighted trait pool a crown is rolled off
-from places import (ENVIRONMENT_PROFILES, LAND_SPECS, add_state, clear_state,
+from places import (CAPITAL_TILES, CLIMATE_PROFILES, LAND_SPECS, add_state,
+                    clear_state,
                     land_id, stable_seed)
 from sites import FOES           # the encounter outlet's vocabulary: a card
                                  # that puts foes on a road names catalog rows
@@ -192,8 +195,8 @@ DRY_WEATHER = ("clear", "heat", "wind")     # ...and one that breaks a wet one
 # overcast day does not -- three days of rain with a grey one in the middle
 # is still what puts the fords out.
 PROFILE_SPELL = "profile"       # a card's `dry` may name this instead of a
-                                # number: the threshold is then the LAND's
-                                # own (places.ENVIRONMENT_PROFILES'
+                                # number: the threshold is then the
+                                # GROUND's own (places.CLIMATE_PROFILES'
                                 # drought_days), because a drought is a
                                 # relative thing -- a fortnight without rain
                                 # is a disaster in the forest and a Tuesday
@@ -1005,13 +1008,40 @@ STANDING_CASUS_BELLI = {
 
 
 # --------------------------------------------------------------------------- #
-# The sky: the day roll (2026-08-08, the weather session)
+# The sky: the season calendar and the day roll (2026-08-08, the weather
+# session; rebuilt 2026-08-21 onto climate and season)
 # --------------------------------------------------------------------------- #
 # Weather is a day-scale state with outlet effects: the cheapest world content
 # there is, land-agnostic, and the only one that touches the party every day
 # it is out of doors. The vocabulary is nine words shared by every land; what
-# differs is the WEIGHTS, which each environment profile authors as the
-# numbers behind its climate sentence (places.ENVIRONMENT_PROFILES).
+# differs is the WEIGHTS, and since the ground session those come from two
+# places -- the CLIMATE of the tile the party is standing on, and the SEASON
+# of the year.
+#
+# A CALENDAR, NOT A TRACK. Day 1 of the campaign is April 1st. Nothing ticks,
+# nothing is stored and nothing else in the game reads the season: it is a
+# lookup that says which column of the weather table today uses. Autumn
+# reuses spring's column -- the same cool wet middle -- so the table carries
+# three. Winter is 150 days long and is not played time (the campaign year is
+# spring to autumn); it exists here so that a long absence rolls a plausible
+# sky and so the snapshot arc has a calendar to hang a winter on.
+
+YEAR_DAYS = 360
+SEASONS = (("spring", 60), ("summer", 90), ("autumn", 60), ("winter", 150))
+SEASON_COLUMN = {"spring": "spring", "autumn": "spring",
+                 "summer": "summer", "winter": "winter"}
+
+
+def season_of(day: int) -> str:
+    """Which season day `day` of the campaign falls in. Day 1 is April 1st
+    and the year wraps at 360, so day 361 is spring again."""
+    left = (day - 1) % YEAR_DAYS + 1
+    for name, length in SEASONS:
+        if left <= length:
+            return name
+        left -= length
+    raise ValueError(f"the calendar does not cover day {day}")
+
 
 WEATHER_WORDS = {               # word -> what the party sees
     "clear": "clear skies",
@@ -1024,14 +1054,64 @@ WEATHER_WORDS = {               # word -> what the party sees
     "snow": "snow",
     "heat": "hard heat",
 }
-# The same word reads differently on different ground. Display only -- never
-# a second vocabulary.
-WEATHER_LOCAL = {
-    "alpine_tundra": {"storm": "a snowstorm", "rain": "sleet",
-                      "cloud": "low cloud"},
-    "mediterranean": {"cloud": "haze", "wind": "the sea wind"},
-    "prairie": {"wind": "a wind with no cover from it"},
+WEATHER_ORDER = ("clear", "cloud", "wind", "rain", "storm", "fog", "frost",
+                 "snow", "heat")
+# Per climate, per season, per hundred days, in WEATHER_ORDER. Every row
+# sums to 100 by contract (`validate_content` checks it at import), so a row
+# can be read as a percentage and edited as one. The nile shares the
+# desert's sky -- its granary is the river, not the rain.
+_SKY = {
+    "oceanic": ((20, 26, 12, 26, 4, 8, 4, 0, 0),
+                (30, 24, 10, 24, 6, 4, 0, 0, 2),
+                (12, 30, 16, 24, 6, 6, 5, 1, 0)),
+    "continental": ((26, 22, 12, 20, 5, 5, 8, 2, 0),
+                    (34, 16, 8, 18, 10, 2, 0, 0, 12),
+                    (16, 22, 10, 4, 2, 6, 22, 18, 0)),
+    "taiga": ((18, 24, 10, 16, 3, 10, 12, 7, 0),
+              (28, 22, 8, 22, 5, 8, 4, 0, 3),
+              (14, 20, 10, 0, 2, 6, 26, 22, 0)),
+    "tundra": ((16, 20, 22, 6, 4, 8, 14, 10, 0),
+               (22, 22, 16, 14, 4, 10, 8, 4, 0),
+               (12, 16, 22, 0, 6, 4, 20, 20, 0)),
+    "alpine": ((18, 20, 18, 12, 6, 8, 10, 8, 0),
+               (26, 18, 14, 16, 10, 6, 6, 4, 0),
+               (14, 16, 16, 0, 6, 6, 20, 22, 0)),
+    "mediterranean": ((34, 14, 14, 18, 4, 4, 2, 0, 10),
+                      (48, 8, 12, 4, 4, 2, 0, 0, 22),
+                      (24, 20, 14, 30, 6, 4, 2, 0, 0)),
+    "wet_mediterranean": ((32, 14, 12, 24, 4, 4, 0, 0, 10),
+                          (42, 10, 10, 12, 6, 2, 0, 0, 18),
+                          (26, 18, 12, 32, 6, 4, 0, 0, 2)),
+    "steppe": ((28, 12, 24, 14, 6, 2, 10, 4, 0),
+               (38, 8, 20, 8, 8, 0, 0, 0, 18),
+               (18, 14, 22, 2, 4, 2, 22, 16, 0)),
+    "desert": ((52, 6, 18, 4, 2, 2, 2, 0, 14),
+               (50, 2, 14, 0, 2, 0, 0, 0, 32),
+               (50, 10, 16, 6, 2, 4, 8, 0, 4)),
 }
+_SKY["nile"] = _SKY["desert"]
+CLIMATE_WEATHER = {
+    climate: {column: dict(zip(WEATHER_ORDER, row))
+              for column, row in zip(("spring", "summer", "winter"), rows)}
+    for climate, rows in _SKY.items()
+}
+# The same word reads differently on different ground. Display only -- never
+# a second vocabulary. Keyed by CLIMATE, with one TERRAIN key: the fen's fog
+# is the one place where relief and not the sky picks the words, and it
+# beats the climate line when both have something to say.
+WEATHER_LOCAL = {
+    "alpine": {"storm": "a snowstorm", "rain": "sleet",
+               "cloud": "low cloud"},
+    "taiga": {"rain": "cold rain"},
+    "tundra": {"rain": "cold rain"},
+    "mediterranean": {"cloud": "haze", "wind": "the sea wind"},
+    "wet_mediterranean": {"cloud": "haze", "wind": "the sea wind"},
+    "steppe": {"wind": "a wind with no cover from it"},
+    "desert": {"storm": "a dust storm", "wind": "a dry wind"},
+    "nile": {"storm": "a dust storm", "wind": "a dry wind"},
+    "marsh": {"fog": "fen fog"},
+}
+WEATHER_LOCAL_TERRAINS = ("marsh",)
 # What the sky COSTS a party out in it: exposure (the STR check that gives
 # colds -- rpg.py's disease family) and the storm's field penalties.
 EXPOSURE_WEATHER = ("rain", "storm", "frost", "snow")
@@ -1039,19 +1119,43 @@ STORM_WEATHER = ("storm",)      # ...and the sky that drags a shot and trips
                                 # a step (rpg.STORM_SHOT_PENALTY / _SLIP_DC)
 
 
-def weather_phrase(environment: str, word: str) -> str:
+def sky_tile(world: dict, polity: str) -> dict:
+    """The GROUND this land's sky is read off today.
+
+    The party's own tile when the party is in that land -- so a march from
+    the Danube into the steppe changes what the sky can do that afternoon --
+    and the land's capital otherwise, because the other two realms still
+    have weather while nobody is watching. The open sea has no ground to
+    read, so a party at sea reads the capital too."""
+    tile = world["tiles"][world["party_tile"]]
+    if tile["country"] == polity and tile["climate"] is not None:
+        return tile
+    return world["tiles"][CAPITAL_TILES[polity]]
+
+
+def weather_phrase(climate: str, word: str,
+                   terrain: str | None = None) -> str:
     """What this ground calls that sky."""
-    return WEATHER_LOCAL.get(environment, {}).get(
+    if terrain is not None and word in WEATHER_LOCAL.get(terrain, {}):
+        return WEATHER_LOCAL[terrain][word]
+    return WEATHER_LOCAL.get(climate, {}).get(
         word, WEATHER_WORDS.get(word, word))
 
 
-def weather_weights(world: dict, polity: str) -> dict[str, float]:
-    """The land's climate distribution, bent by whatever season-scale state
-    it is holding. A drought is the state that made itself: it cuts the rain
-    and storm weights to DROUGHT_WET_MULT and lifts the dry ones, which is
-    why droughts last past the day that started them."""
-    environment = world["lands"][polity]["environment"]
-    base = ENVIRONMENT_PROFILES[environment]["weather"]
+def sky_phrase(world: dict, polity: str, word: str) -> str:
+    """...for the ground this land's sky is being read off right now."""
+    tile = sky_tile(world, polity)
+    return weather_phrase(tile["climate"], word, tile["terrain"])
+
+
+def weather_weights(world: dict, polity: str, day: int) -> dict[str, float]:
+    """The distribution today's sky is rolled from: the ground's climate,
+    the season, and whatever season-scale state the land is holding. A
+    drought is the state that made itself -- it cuts the rain and storm
+    weights to DROUGHT_WET_MULT and lifts the dry ones, which is why
+    droughts last past the day that started them."""
+    climate = sky_tile(world, polity)["climate"]
+    base = CLIMATE_WEATHER[climate][SEASON_COLUMN[season_of(day)]]
     weights = {word: float(w) for word, w in base.items() if w}
     if "drought" in state_ids(world, polity):
         for word in weights:
@@ -1062,10 +1166,17 @@ def weather_weights(world: dict, polity: str) -> dict[str, float]:
     return weights
 
 
-def roll_weather(world: dict, polity: str, rng: random.Random) -> str:
+def drought_days(world: dict, polity: str) -> int:
+    """How many rainless days THIS ground calls a drought."""
+    return CLIMATE_PROFILES[sky_tile(world, polity)["climate"]][
+        "drought_days"]
+
+
+def roll_weather(world: dict, polity: str, day: int,
+                 rng: random.Random) -> str:
     """One day's sky for one land. The weights are the die -- there is no
     separate chance anywhere in the weather track."""
-    weights = weather_weights(world, polity)
+    weights = weather_weights(world, polity, day)
     words = sorted(weights)
     return rng.choices(words, weights=[weights[w] for w in words])[0]
 
@@ -1082,8 +1193,7 @@ def weather_line(world: dict, polity: str) -> str:
     word = layer.get("weather")
     if not word:
         return ""
-    environment = world["lands"][polity]["environment"]
-    line = f"WEATHER: {weather_phrase(environment, word)}"
+    line = f"WEATHER: {sky_phrase(world, polity, word)}"
     wet, dry = layer.get("wet", 0), layer.get("dry", 0)
     if word in WET_WEATHER and wet >= 3:
         line += f" -- the {_ordinal(wet)} wet day running"
@@ -4036,8 +4146,7 @@ def admits(world: dict, polity: str, spec: dict,
         return False
     need = spec.get("dry")
     if need == PROFILE_SPELL:
-        need = ENVIRONMENT_PROFILES[
-            world["lands"][polity]["environment"]]["drought_days"]
+        need = drought_days(world, polity)
     if need and layer.get("dry", 0) < need:
         return False
     # The politics slots. Each is ANY-OF: the land holds one constitution
@@ -4221,7 +4330,7 @@ def _roll_sky(world: dict, polity: str, day: int,
         else:
             layer["bought_sky"] = None
             drop_state(world, polity, "rain-bought", day)
-    word = forced or roll_weather(world, polity, rng)
+    word = forced or roll_weather(world, polity, day, rng)
     if word in WET_WEATHER:
         layer["wet"], layer["dry"] = layer.get("wet", 0) + 1, 0
     else:
@@ -4632,7 +4741,7 @@ def world_lines(world: dict) -> list[str]:
         if sky:
             spell = (f"wet {layer.get('wet', 0)}"
                      if layer.get("wet") else f"dry {layer.get('dry', 0)}")
-            lines.append(f"  sky: {weather_phrase(land['environment'], sky)} "
+            lines.append(f"  sky: {sky_phrase(world, polity, sky)} "
                          f"[{sky}, {spell}]")
         for entry in held_states(world, polity):
             lines.append(f"  state: {state_line(entry)}")
@@ -5124,14 +5233,9 @@ def _validate_three_countries() -> None:
         if not [e for e in RELATIONS
                 if polity in (e["from"], e["to"])]:
             raise ValueError(f"{polity}: no relation reaches it")
-        if polity not in ENVIRONMENT_PROFILES_BY_LAND:
-            raise ValueError(f"{polity}: no environment profile, so no sky")
-
-
-ENVIRONMENT_PROFILES_BY_LAND = {
-    polity: ENVIRONMENT_PROFILES[spec["environment"]]
-    for polity, spec in LAND_SPECS.items()
-}
+        if polity not in CAPITAL_TILES:
+            raise ValueError(f"{polity}: no capital Tile, so no sky to "
+                             f"read while the party is elsewhere")
 
 
 def validate_content() -> None:
@@ -5215,23 +5319,31 @@ def validate_content() -> None:
             if state_id not in STATE_WORDS:
                 raise ValueError(f"relation {edge}: no such state: "
                                  f"{state_id}")
-    for environment, profile in ENVIRONMENT_PROFILES.items():
-        weights = profile.get("weather")
-        if not weights:
-            raise ValueError(f"{environment}: no weather distribution")
+    if sum(length for _name, length in SEASONS) != YEAR_DAYS:
+        raise ValueError("the season calendar does not fill the year")
+    for climate, profile in CLIMATE_PROFILES.items():
         if not profile.get("drought_days"):
-            raise ValueError(f"{environment}: no drought threshold")
-        for word in weights:
-            if word not in WEATHER_WORDS:
-                raise ValueError(f"{environment}: no such weather: {word}")
-        if not sum(weights.values()):
-            raise ValueError(f"{environment}: a sky that never rolls")
-    for environment, local in WEATHER_LOCAL.items():
-        if environment not in ENVIRONMENT_PROFILES:
-            raise ValueError(f"no such environment: {environment}")
+            raise ValueError(f"{climate}: no drought threshold")
+        if climate not in CLIMATE_WEATHER:
+            raise ValueError(f"{climate}: no sky of its own")
+    for climate, seasons in CLIMATE_WEATHER.items():
+        if climate not in CLIMATE_PROFILES:
+            raise ValueError(f"no such climate: {climate}")
+        for column, weights in seasons.items():
+            if set(weights) != set(WEATHER_WORDS):
+                raise ValueError(f"{climate}/{column}: the sky is nine "
+                                 f"words, got {sorted(weights)}")
+            if sum(weights.values()) != 100:
+                raise ValueError(f"{climate}/{column}: the weights are per "
+                                 f"hundred days, got "
+                                 f"{sum(weights.values())}")
+    for ground, local in WEATHER_LOCAL.items():
+        if ground not in CLIMATE_PROFILES \
+                and ground not in WEATHER_LOCAL_TERRAINS:
+            raise ValueError(f"no such ground: {ground}")
         for word in local:
             if word not in WEATHER_WORDS:
-                raise ValueError(f"{environment}: no such weather: {word}")
+                raise ValueError(f"{ground}: no such weather: {word}")
 
 
 validate_content()

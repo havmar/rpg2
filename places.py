@@ -14,6 +14,7 @@ import json
 import random
 import re
 import textwrap
+from collections import Counter
 from pathlib import Path
 from typing import Iterable
 
@@ -24,62 +25,206 @@ with CATALOG_PATH.open(encoding="utf-8") as _catalog_file:
     _CATALOG = json.load(_catalog_file)
 
 
-# The `weather` table is the climate SENTENCE made mechanical (2026-08-08,
-# the worldsim ladder's weather session): the day-roll's weights over
-# worldsim.WEATHER_WORDS, per hundred days, YEAR-ROUND -- the game has no
-# season track, so a profile's winters and summers are averaged into one
-# distribution rather than modelled. worldsim.py owns the roll, the states
-# and the cards; the profile only says what this ground's sky does.
+# --------------------------------------------------------------------------- #
+# The ground and the sky: climate, terrain, and the land's potential
+# (2026-08-21, the tile economy arc's session 1)
+# --------------------------------------------------------------------------- #
+# AUTHOR THE PHYSICAL, DERIVE THE HUMAN. Two hand-painted overlays ride
+# beside the base map -- `resources/europe_climate.txt` (the sky's zone) and
+# `resources/europe_terrain.txt` (relief and drainage) -- and everything
+# below falls out of them by law: how much of a tile a plow can touch, how
+# much of that its people bother to clear, what wildwood survives the
+# clearing, and what the ground is good for when the plow does badly. The
+# overlays carry no rng and no seed, so this whole layer is identical in
+# every campaign, exactly like the map it sits on.
 #
-# `drought_days` is how many rainless days THIS ground calls a drought, and
-# it is per-profile because a drought is a RELATIVE thing: a fortnight
-# without rain is a disaster in the shaded forest and an ordinary Tuesday in
-# the dry south. Each is set so a land's drought is about a one-in-a-hundred
-# day (worldsim's own card chance thins it further from there) -- without
-# that, the wet lands could never have one at all and the dry ones would
-# never be out of it.
-ENVIRONMENT_PROFILES = {
-    "alpine_tundra": {
-        "climate": "Cold, windy highlands with long winters and short summers.",
-        "vegetation": ("mountain pine", "juniper", "lichen", "moss",
-                       "alpine grass", "mountain flowers"),
-        "weather": {"clear": 18, "cloud": 18, "wind": 18, "rain": 6,
-                    "storm": 6, "fog": 6, "frost": 14, "snow": 14, "heat": 0},
-        "drought_days": 15,
-    },
-    "temperate": {
-        "climate": "Mild country with rain, cloud, wind, fog, and winter frost.",
-        "vegetation": ("oak", "beech", "ash", "elm", "hedges",
-                       "meadow grass", "reeds"),
-        "weather": {"clear": 22, "cloud": 25, "wind": 10, "rain": 21,
-                    "storm": 5, "fog": 8, "frost": 9, "snow": 0, "heat": 0},
-        "drought_days": 15,
-    },
-    "temperate_forest": {
-        "climate": "A damp, shaded forest with rain, mist, and winter frost.",
-        "vegetation": ("oak", "beech", "birch", "fern", "bramble",
-                       "moss", "mushrooms"),
-        "weather": {"clear": 16, "cloud": 24, "wind": 5, "rain": 26,
-                    "storm": 5, "fog": 16, "frost": 8, "snow": 0, "heat": 0},
-        "drought_days": 12,
-    },
-    "mediterranean": {
-        "climate": "Hot dry summers, mild wet winters, and sea wind.",
-        "vegetation": ("olive", "cypress", "pine", "scrub oak",
-                       "grapevine", "rosemary", "dry grass"),
-        "weather": {"clear": 38, "cloud": 14, "wind": 15, "rain": 13,
-                    "storm": 4, "fog": 4, "frost": 2, "snow": 0, "heat": 10},
-        "drought_days": 25,
-    },
-    "prairie": {
-        "climate": "Windy grassland with hot summers and cold winters.",
-        "vegetation": ("tall grass", "short grass", "sage", "wildflowers",
-                       "reeds", "willow"),
-        "weather": {"clear": 26, "cloud": 15, "wind": 23, "rain": 12,
-                    "storm": 6, "fog": 3, "frost": 7, "snow": 3, "heat": 5},
-        "drought_days": 20,
-    },
+# HIDDEN NUMBERS, VISIBLE WORDS: the fractions below are worldgen
+# intermediates and are never stored. What a Tile keeps is its climate, its
+# terrain, its `cover` word and its tag list -- which is all the rest of the
+# game ever asks for.
+
+CLIMATE_PATH = Path(__file__).with_name("resources") / "europe_climate.txt"
+TERRAIN_PATH = Path(__file__).with_name("resources") / "europe_terrain.txt"
+
+# The overlay letters are FILE FORMAT ONLY: a Tile stores the full word.
+CLIMATE_LETTERS = {
+    "u": "tundra",
+    "t": "taiga",
+    "c": "continental",
+    "o": "oceanic",
+    "m": "mediterranean",       # the medieval DRY one (its bad year is dry)
+    "w": "wet_mediterranean",   # the southern shore's Roman Warm regime
+    "s": "steppe",
+    "d": "desert",
+    "n": "nile",                # river-fed floodplain granary
+    "a": "alpine",              # exactly the mountain tiles
 }
+TERRAIN_LETTERS = {
+    "p": "plains",
+    "h": "hills",
+    "w": "marsh",               # authored by hand, five and famous
+    "m": "mountains",           # exactly the `^` tiles
+}
+CLIMATES = tuple(CLIMATE_LETTERS.values())
+TERRAINS = tuple(TERRAIN_LETTERS.values())
+
+# THE LABEL TABLE. One row per climate, and the row is what the rest of the
+# game reads instead of a per-tile weather record.
+#
+#   `ffd`         frost-free days at the climate's REFERENCE row, before the
+#                 latitude gradient below
+#   `reference`   the map row that ffd is quoted at (None: no gradient --
+#                 alpine is altitude, not latitude)
+#   `yield`       the wheat multiplier: what an acre of this climate gives
+#   `winter`      winter severity 0-3 (the snapshot arc's input, shipped now
+#                 as data so that arc starts from an authority)
+#   `harvest`     the day of the campaign year the crop comes in, or None
+#                 where there is no crop. THE GAME IS STATIC IN TIME, so
+#                 chronological difference becomes REGIONAL difference: the
+#                 south is already reaping while the north is still weeding
+#   `drought_days` how many rainless days THIS ground calls a drought. It is
+#                 per-climate because a drought is a RELATIVE thing -- a
+#                 fortnight without rain is a disaster in the shaded forest
+#                 and an ordinary Tuesday in the dry south
+CLIMATE_PROFILES = {
+    "tundra": {"ffd": 60, "reference": 2, "yield": 0.0, "winter": 3,
+               "harvest": None, "drought_days": 20},
+    "taiga": {"ffd": 100, "reference": 4, "yield": 0.3, "winter": 3,
+              "harvest": 125, "drought_days": 15},
+    "alpine": {"ffd": 90, "reference": None, "yield": 0.15, "winter": 3,
+               "harvest": 125, "drought_days": 15},
+    "continental": {"ffd": 170, "reference": 8, "yield": 1.0, "winter": 2,
+                    "harvest": 100, "drought_days": 18},
+    "oceanic": {"ffd": 220, "reference": 8, "yield": 1.0, "winter": 1,
+                "harvest": 110, "drought_days": 15},
+    "mediterranean": {"ffd": 270, "reference": 13, "yield": 0.8, "winter": 0,
+                      "harvest": 50, "drought_days": 30},
+    "wet_mediterranean": {"ffd": 300, "reference": 17, "yield": 1.3,
+                          "winter": 0, "harvest": 45, "drought_days": 25},
+    "steppe": {"ffd": 160, "reference": 10, "yield": 0.5, "winter": 3,
+               "harvest": 90, "drought_days": 25},
+    "desert": {"ffd": 330, "reference": 17, "yield": 0.05, "winter": 0,
+               "harvest": None, "drought_days": 40},
+    "nile": {"ffd": 330, "reference": 18, "yield": 1.5, "winter": 0,
+             "harvest": 40, "drought_days": 40},
+}
+FFD_PER_ROW = 8             # the latitude gradient: frost-free days gained
+FFD_SPREAD = 40             # per row south of the reference, clamped +-this
+
+CLIMATE_ARABLE = {          # fraction of this climate's ground a plow can
+    "tundra": 0.00, "taiga": 0.10,      # ever touch, before relief says
+    "continental": 0.65, "oceanic": 0.60,   # its word
+    "mediterranean": 0.50, "wet_mediterranean": 0.60,
+    "steppe": 0.35, "desert": 0.02,
+    "nile": 0.85, "alpine": 0.05,
+}
+TERRAIN_ARABLE = {          # ...and what relief and drainage leave of that
+    "plains": 1.00, "hills": 0.45, "mountains": 0.10, "marsh": 0.15,
+}
+ALLUVIAL_BONUS = 0.12       # a river tile's floodplain soils (marsh IS the
+ARABLE_CAP = 0.90           # undrained floodplain, so it takes no bonus)
+CLEARANCE_K = 0.20          # clearance = wheat / (wheat + K): how much of
+                            # its potential a population bothers to realize.
+                            # The two-pass deforestation sketch collapsed to
+                            # this closed form -- the provisional population
+                            # it wanted is itself a function of potential
+                            # wheat, so the middle variable cancels
+FOREST_CAP = {              # the wildwood: what nature forests, before man
+    "tundra": 0.05, "taiga": 0.95, "continental": 0.85, "oceanic": 0.85,
+    "mediterranean": 0.45, "wet_mediterranean": 0.55, "steppe": 0.08,
+    "desert": 0.00, "nile": 0.05, "alpine": 0.50,
+}
+MARSH_WOOD = 0.5            # carr and fen scrub, never the full wildwood
+GRAZE_CLIMATE = {           # the pastoral index: herding by climate law,
+    "tundra": 0.15, "taiga": 0.15,      # no hand-picking (the steppe, the
+    "continental": 0.35, "oceanic": 0.45,   # Mesta's med hills and the
+    "mediterranean": 0.50, "wet_mediterranean": 0.40,   # alpine summer
+    "steppe": 0.90, "desert": 0.05,     # pastures all read pastoral by law
+    "nile": 0.10, "alpine": 0.35,       # alone)
+}
+GRAZE_TERRAIN = {
+    "plains": 0.60, "hills": 0.90, "mountains": 0.60, "marsh": 0.30,
+}
+DEEP_FOREST_MIN = 0.55      # surviving forest >= this: deep forest, the
+WOODED_MIN = 0.25           # wilderness; >= this: wooded (the forest tag)
+FARMLAND_MIN = 0.30         # realized arable >= this: the farmland tag
+PASTURE_MIN = 0.20          # pastoral >= this AND > realized arable
+CHARACTER_TAGS = ("steppe", "desert", "tundra")     # the climate words that
+                            # ARE ground character; the rest stay sky-only
+HAND_MARKS = {              # authored character the law cannot see: extra
+    (11, 19): ("pasture",),  # tags per (row, column). The one seeded mark
+}                           # is the middle Danube's horse country
+HAND_ALLUVIAL = {           # floodplain soils with no drawn river: the Po
+    (12, 12), (12, 13), (12, 14),   # plain, whose lagoon river the map
+}                           # redraw cut for looks -- the water still exists
+HAND_FOREST = {             # THE EASTERN WILDWOOD. The deforestation law
+    (7, 24), (7, 25),       # clears the continental east the way it clears
+    (8, 24), (8, 25),       # the west, but history left the great forest
+}                           # standing between the marsh and the frontier:
+                            # a Bialowieza writ at map scale. Clearance is
+HAND_FOREST_CLEARANCE = 0.25    # capped here and the wood stands
+
+
+def frost_free_days(climate: str, row: int) -> int:
+    """This tile's growing season: the climate's own, bent by latitude."""
+    profile = CLIMATE_PROFILES[climate]
+    base, reference = profile["ffd"], profile["reference"]
+    if reference is None:
+        return base
+    return max(base - FFD_SPREAD,
+               min(base + FFD_SPREAD, base + FFD_PER_ROW * (row - reference)))
+
+
+def tile_economy(climate: str, terrain: str, river: bool,
+                 row: int, column: int) -> dict:
+    """One tile's derived numbers and its cover word, by law. The numbers
+    are worldgen intermediates -- recomputable from the same authorities by
+    any later layer, and never stored on the Tile."""
+    arable = CLIMATE_ARABLE[climate] * TERRAIN_ARABLE[terrain]
+    if terrain != "marsh" and (river or (row, column) in HAND_ALLUVIAL):
+        arable += ALLUVIAL_BONUS
+    arable = min(ARABLE_CAP, arable)
+    base = CLIMATE_PROFILES[climate]["ffd"]
+    wheat = (arable * CLIMATE_PROFILES[climate]["yield"]
+             * frost_free_days(climate, row) / base)
+    clearance = wheat / (wheat + CLEARANCE_K)
+    if (row, column) in HAND_FOREST:
+        clearance = min(clearance, HAND_FOREST_CLEARANCE)
+    wildwood = FOREST_CAP[climate] * (MARSH_WOOD if terrain == "marsh"
+                                     else 1.0)
+    forest = wildwood * (1 - clearance)
+    if forest >= DEEP_FOREST_MIN:
+        cover = "deep forest"
+    elif forest >= WOODED_MIN:
+        cover = "wooded"
+    else:
+        cover = "open"
+    return {"arable": arable, "wheat": wheat, "clearance": clearance,
+            "realized": arable * clearance, "forest": forest,
+            "pastoral": GRAZE_CLIMATE[climate] * GRAZE_TERRAIN[terrain],
+            "cover": cover}
+
+
+def derived_tags(economy: dict, climate: str, row: int,
+                 column: int) -> list[str]:
+    """The words the law adds to a land Tile, in their settled order. This
+    is the vocabulary the quest tables were reconciled against: every word
+    here is one a job may ask for and a natural Area can answer with."""
+    tags = []
+    if economy["cover"] != "open":
+        tags.append("forest")
+    if economy["realized"] >= FARMLAND_MIN:
+        tags.append("farmland")
+    if (economy["pastoral"] >= PASTURE_MIN
+            and economy["pastoral"] > economy["realized"]):
+        tags.append("pasture")
+    if climate in CHARACTER_TAGS:
+        tags.append(climate)
+    for mark in HAND_MARKS.get((row, column), ()):
+        if mark not in tags:
+            tags.append(mark)
+    return tags
+
 
 LAND_SPECS = _CATALOG["lands"]
 COUNTRIES = tuple(LAND_SPECS)
@@ -99,6 +244,27 @@ PINNED_COUNTRY_BIOMES = {
     "tergal": {"basic": 68, "mountain": 3, "river": 4},
 }
 PINNED_LAND_COMPONENTS = (300, 11, 2, 1)
+
+# The two overlays' own censuses, pinned the way the base map's is: this
+# land is AUTHORED, and a repaint that moves a number is a decision, not a
+# drift. The marsh five are pinned by NAME because five hand-placed tiles
+# are content, not statistics.
+PINNED_CLIMATE_COUNTS = {"tundra": 8, "taiga": 42, "continental": 83,
+                         "oceanic": 28, "mediterranean": 46,
+                         "wet_mediterranean": 32, "steppe": 24,
+                         "desert": 18, "nile": 4, "alpine": 29}
+PINNED_TERRAIN_COUNTS = {"plains": 213, "hills": 67, "marsh": 5,
+                         "mountains": 29}
+PINNED_MARSHES = {(6, 6): "the Fens",
+                  (8, 11): "the Low Countries delta",
+                  (9, 23): "the Pripet",
+                  (9, 24): "the Pripet",
+                  (11, 24): "the Danube delta"}
+# ...and what the LAW makes of them: the derived tag census and the cover
+# census, which move only when a constant above moves.
+PINNED_TAG_COUNTS = {"farmland": 128, "pasture": 116, "forest": 101,
+                     "steppe": 24, "desert": 18, "tundra": 8}
+PINNED_COVER_COUNTS = {"open": 213, "wooded": 55, "deep forest": 46}
 
 HISTORICAL_CITIES = (
     (5, 2, "Dublin", "firascir", "basic", False),
@@ -197,29 +363,84 @@ def stable_seed(world_seed: int | None, parent_id: str, purpose: str,
                           "big")
 
 
+# THE NATURAL CHARACTER of a Tile: one word for what the ground IS, read
+# off the two overlays and the deforestation law rather than off the base
+# map's four glyphs (2026-08-21). It is the one authority behind both halves
+# of a natural Area -- the name it carries and the site inventory it draws
+# from -- so a Tile called Marshes cannot be stocked with windmills.
+#
+# The order is a priority: water beats ground, ground beats cover, and the
+# `coast` character is the one that reads a POSITION, so a shore tile that
+# would otherwise be plain countryside gets the country's coast inventory
+# where it has one. `deep forest` and not merely `wooded` earns the forest
+# character: a wooded tile still carries the `forest` TAG, which is what a
+# job asking for woods matches on.
+NATURAL_CHARACTERS = ("sea", "mountains", "river", "marsh", "forest",
+                      "hills", "coast", "fields")
+AREA_SUFFIXES = {"sea": "Sea", "mountains": "Mountains",
+                 "river": "Riverlands", "marsh": "Marshes",
+                 "forest": "Forest", "hills": "Hills",
+                 "coast": "Countryside", "fields": "Countryside"}
+AREA_CHARACTER_LINES = {
+    "sea": "open sea",
+    "mountains": "high mountain country",
+    "river": "river country",
+    "marsh": "fen and standing water",
+    "forest": "deep forest",
+    "hills": "hill country",
+    "coast": "coastal countryside",
+    "fields": "open countryside",
+}
+SEA_SITES = (
+    {"id": "open-water", "name": "OPEN WATER", "rooms": [],
+     "anchors": ["long swell", "distant gulls", "floating weed"]},
+    {"id": "shoal", "name": "SHOAL", "rooms": [],
+     "anchors": ["pale water", "sand below", "driftwood"]},
+    {"id": "rocky-islet", "name": "ROCKY ISLET", "rooms": [],
+     "anchors": ["black rocks", "tide pools", "bird nests"]},
+)
+
+
+def natural_character(tile: dict) -> str:
+    """What this Tile's own ground is, in one word."""
+    if tile["biome"] == "sea":
+        return "sea"
+    if tile["terrain"] == "mountains":
+        return "mountains"
+    if tile["biome"] == "river":
+        return "river"
+    if tile["terrain"] == "marsh":
+        return "marsh"
+    if tile["cover"] == "deep forest":
+        return "forest"
+    if tile["terrain"] == "hills":
+        return "hills"
+    if "coast" in tile["tags"]:
+        return "coast"
+    return "fields"
+
+
+def natural_template(polity: str, character: str, row: int,
+                     column: int) -> str:
+    """The natural site inventory this ground draws from. A country may
+    author more than one per character -- Tergal's high ground is quarries
+    or summer pasture -- and the pick alternates by POSITION, not by seed:
+    the ground is the same in every campaign, and a checkerboard puts the
+    two kinds next to each other instead of clumping them."""
+    if character == "sea":
+        return f"natural/{polity}/sea"
+    keys = LAND_SPECS[polity]["natural"][character]
+    return f"natural/{polity}/{keys[(row + column) % len(keys)]}"
+
+
 def _build_definition_indexes() -> None:
     for polity, land in LAND_SPECS.items():
-        natural = list(land.get("natural", ()))
-        by_biome = {
-            "river": next((entry for entry in natural
-                           if entry[1] == "river"), natural[0]),
-            "mountain": next((entry for entry in natural
-                              if entry[1] in ("hills", "ridge")),
-                             natural[0]),
-            "basic": next((entry for entry in natural
-                           if entry[1] != "river"), natural[0]),
-        }
-        for biome, entry in by_biome.items():
-            template = f"natural/{polity}/{biome}"
-            NATURAL_SITE_SPECS[template] = land["natural_sites"][entry[0]]
+        for keys in land["natural"].values():
+            for key in keys:
+                NATURAL_SITE_SPECS[f"natural/{polity}/{key}"] = \
+                    land["natural_sites"][key]
         NATURAL_SITE_SPECS[f"natural/{polity}/sea"] = [
-            {"id": "open-water", "name": "OPEN WATER", "rooms": [],
-             "anchors": ["long swell", "distant gulls", "floating weed"]},
-            {"id": "shoal", "name": "SHOAL", "rooms": [],
-             "anchors": ["pale water", "sand below", "driftwood"]},
-            {"id": "rocky-islet", "name": "ROCKY ISLET", "rooms": [],
-             "anchors": ["black rocks", "tide pools", "bird nests"]},
-        ]
+            dict(spec) for spec in SEA_SITES]
         for role, spec in land["settlement_templates"].items():
             key = template_id(polity, role)
             AREA_SPECS[key] = {
@@ -568,7 +789,6 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
     return {
         "id": lid, "key": polity, "name": spec["name"], "owner": polity,
         "culture": spec["culture"], "homeland": polity,
-        "environment": spec["environment"],
         "description": spec.get("description", ""),
         "seed": stable_seed(world_seed, "world", "land", index),
         "areas": [], "tiles": [], "settlement_slots": [],
@@ -737,6 +957,36 @@ def load_europe_map(path: Path = EUROPE_MAP_PATH) -> tuple[str, ...]:
                 f"expected {MAP_COLUMNS}")
         for column, glyph in enumerate(row, 1):
             if glyph not in BIOME_GLYPHS:
+                raise ValueError(
+                    f"{path}: invalid glyph {glyph!r} at row {row_number}, "
+                    f"column {column}")
+    return tuple(rows)
+
+
+def load_overlay(path: Path, letters: dict[str, str]) -> tuple[str, ...]:
+    """Read and hard-validate one authored overlay beside the base map.
+
+    The overlay grids are the same 30x18 frame as `europe_map.txt`, one
+    letter per tile plus `.` for the sea. Shape and vocabulary are checked
+    here; what the letters MEAN against the ground under them -- painted iff
+    land, alpine and mountains exactly on the `^` tiles, the pinned censuses
+    -- is `validate_world`'s business, because that is where the tiles are.
+    """
+    legal = set(letters) | {"."}
+    try:
+        text = path.read_text(encoding="ascii")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{path}: overlays must be ASCII text") from exc
+    rows = text.splitlines()
+    if len(rows) != MAP_ROWS:
+        raise ValueError(f"{path}: expected {MAP_ROWS} rows, got {len(rows)}")
+    for row_number, row in enumerate(rows, 1):
+        if len(row) != MAP_COLUMNS:
+            raise ValueError(
+                f"{path}: row {row_number} has {len(row)} columns; "
+                f"expected {MAP_COLUMNS}")
+        for column, glyph in enumerate(row, 1):
+            if glyph not in legal:
                 raise ValueError(
                     f"{path}: invalid glyph {glyph!r} at row {row_number}, "
                     f"column {column}")
@@ -981,6 +1231,8 @@ def create_geography(seed: int | None) -> dict:
     """Build the fixed 540-Tile Europe frame and its seeded population."""
     rows = load_europe_map()
     _validate_fixed_data(rows)
+    climate_rows = load_overlay(CLIMATE_PATH, CLIMATE_LETTERS)
+    terrain_rows = load_overlay(TERRAIN_PATH, TERRAIN_LETTERS)
     name_reserves, name_counters = _name_state(seed)
     world = {
         "seed": seed, "lands": {}, "tiles": {}, "tile_order": [],
@@ -1005,11 +1257,25 @@ def create_geography(seed: int | None) -> dict:
                          for dr, dc in ((-1, 0), (0, -1), (0, 1), (1, 0))
                          if 1 <= row + dr <= MAP_ROWS
                          and 1 <= column + dc <= MAP_COLUMNS]
-            tags = [biome, country]
-            if biome == "river":
-                tags.append("riverside")
+            climate = CLIMATE_LETTERS.get(climate_rows[row - 1][column - 1])
+            terrain = TERRAIN_LETTERS.get(terrain_rows[row - 1][column - 1])
+            # The sea carries neither overlay and no derived word: the
+            # laws below are about GROUND. What a sea Tile has is its one
+            # biome word and its country, which is all the map asks of it.
+            if biome == "sea":
+                tags, cover = ["sea", country], None
+            else:
+                economy = tile_economy(climate, terrain,
+                                       biome == "river", row, column)
+                cover = economy["cover"]
+                tags = [terrain, country]
+                if biome == "river":
+                    tags += ["river", "riverside"]
+                tags += derived_tags(economy, climate, row, column)
             tile = {"id": tid, "row": row, "column": column, "name": name,
-                    "country": country, "biome": biome, "known": True,
+                    "country": country, "biome": biome,
+                    "climate": climate, "terrain": terrain, "cover": cover,
+                    "known": True,
                     "visited": False, "neighbors": neighbors, "areas": [],
                     "natural_area": None, "settlement_slots": [],
                     "tags": tags, "seed": stable_seed(seed, tid, "tile", 0)}
@@ -1029,14 +1295,15 @@ def create_geography(seed: int | None) -> dict:
             tile["tags"].append("border")
         if tile["biome"] != "sea" and (row, column) not in mainland:
             tile["tags"].append("island")
-        suffix = {"basic": "Countryside", "mountain": "Mountains",
-                  "river": "Riverlands", "sea": "Sea"}[tile["biome"]]
+        character = natural_character(tile)
         aid = f"{tid}/area/natural"
-        template = f"natural/{tile['country']}/{tile['biome']}"
-        spec = {"id": aid, "name": f"{tile['name']} {suffix}",
-                "kind": "natural", "subtype": tile["biome"],
-                "role": tile["biome"], "tags": tuple(tile["tags"]),
-                "description": f"{tile['name']} is {suffix.lower()}."}
+        template = natural_template(tile["country"], character, row, column)
+        spec = {"id": aid,
+                "name": f"{tile['name']} {AREA_SUFFIXES[character]}",
+                "kind": "natural", "subtype": character,
+                "role": character, "tags": tuple(tile["tags"]),
+                "description": f"{tile['name']} is "
+                               f"{AREA_CHARACTER_LINES[character]}."}
         area = _new_area_record(spec, tile["country"], tile, seed, 1)
         area["template"] = template
         ids = [site["id"] for site in NATURAL_SITE_SPECS[template]]
@@ -1068,6 +1335,10 @@ def create_geography(seed: int | None) -> dict:
         candidates)
     world["start_slot"] = start_slot
     start_tile = world["settlement_slots"][start_slot]["tile"]
+    # WHERE THE PARTY IS STANDING, on the world rather than in the session
+    # state, because the world layer's sky reads it every day (session.py's
+    # `move_party` is the one writer once a game is running).
+    world["party_tile"] = start_tile
     reveal_tile(world, start_tile, day=0)
     world["start_area"] = world["settlement_slots"][start_slot]["area"]
     # The opening settlement posts ordinary work whatever its own roll said:
@@ -1079,6 +1350,78 @@ def create_geography(seed: int | None) -> dict:
 
 CAPITAL_TOWNS = frozenset(name for *_r, name, _p, _b, capital
                           in HISTORICAL_CITIES if capital)
+# The Tile a land's own sky is read off when the party is somewhere else
+# (2026-08-21, the ground session). The day roll now takes its weights from
+# the ground the party is standing on, which leaves the other two lands
+# needing a reference: their CAPITAL is the concrete, pinned answer -- Paris
+# weather for Firascir, Rome's for Mortellaria, Kyiv's for Tergal -- and it
+# is also what stands in for the party itself when it is out at sea, where
+# there is no ground to read.
+CAPITAL_TILES = {country: tile_id(row, column)
+                 for row, column, _name, country, _biome, capital
+                 in HISTORICAL_CITIES if capital}
+
+
+def _validate_ground(world: dict) -> None:
+    """The two authored overlays and the law over them, checked against the
+    world that was built from them (2026-08-21, the tile economy arc).
+
+    THE LAW IS A LINT. The map is hand-painted, so nothing here computes
+    what the climate ought to be -- it checks the things a rule can state
+    about an authored picture: that the paint reaches every land Tile and
+    no sea Tile, that the two words nature fixes (alpine, mountains) sit
+    exactly on the high ground, and that the censuses are the ones the
+    painting was signed off with. The DERIVED censuses are pinned too,
+    because they move only when one of the law's constants moves, and that
+    is a decision somebody should have to make on purpose.
+    """
+    climates, terrains, covers, marshes = (Counter(), Counter(), Counter(),
+                                           {})
+    tag_counts = Counter()
+    for tid, tile in world["tiles"].items():
+        where = tile_coordinate(tile["row"], tile["column"])
+        if tile["biome"] == "sea":
+            if (tile["climate"], tile["terrain"], tile["cover"]) != \
+                    (None, None, None):
+                raise ValueError(f"{where}: the sea carries no ground")
+            continue
+        if tile["climate"] not in CLIMATE_PROFILES:
+            raise ValueError(f"{where}: no such climate: {tile['climate']!r}")
+        if tile["terrain"] not in TERRAINS:
+            raise ValueError(f"{where}: no such terrain: {tile['terrain']!r}")
+        if tile["cover"] not in ("open", "wooded", "deep forest"):
+            raise ValueError(f"{where}: no such cover: {tile['cover']!r}")
+        high = tile["biome"] == "mountain"
+        if (tile["climate"] == "alpine") != high:
+            raise ValueError(f"{where}: alpine is exactly the mountain "
+                             f"Tiles, and this one is {tile['biome']}")
+        if (tile["terrain"] == "mountains") != high:
+            raise ValueError(f"{where}: mountains is exactly the mountain "
+                             f"Tiles, and this one is {tile['biome']}")
+        for retired in ("basic", "mountain"):
+            if retired in tile["tags"]:
+                raise ValueError(f"{where}: the bare biome word "
+                                 f"{retired!r} left the tag vocabulary")
+        climates[tile["climate"]] += 1
+        terrains[tile["terrain"]] += 1
+        covers[tile["cover"]] += 1
+        if tile["terrain"] == "marsh":
+            marshes[(tile["row"], tile["column"])] = tid
+        for tag in tile["tags"]:
+            if tag in PINNED_TAG_COUNTS:
+                tag_counts[tag] += 1
+    if dict(climates) != PINNED_CLIMATE_COUNTS:
+        raise ValueError(f"the climate census changed: {dict(climates)}")
+    if dict(terrains) != PINNED_TERRAIN_COUNTS:
+        raise ValueError(f"the terrain census changed: {dict(terrains)}")
+    if set(marshes) != set(PINNED_MARSHES):
+        raise ValueError(f"the marsh five are {sorted(PINNED_MARSHES)}, "
+                         f"got {sorted(marshes)}")
+    if dict(covers) != PINNED_COVER_COUNTS:
+        raise ValueError(f"the cover census changed: {dict(covers)}")
+    if dict(tag_counts) != PINNED_TAG_COUNTS:
+        raise ValueError(f"the derived tag census changed: "
+                         f"{dict(tag_counts)}")
 
 
 def validate_world(world: dict) -> None:
@@ -1100,6 +1443,7 @@ def validate_world(world: dict) -> None:
         raise ValueError("tile_order is not the row-major 18x30 frame")
     if set(tiles) != set(expected):
         raise ValueError("the tile store and tile_order disagree")
+    _validate_ground(world)
 
     capitals, slot_ids = set(), set()
     for tid in order:
@@ -1162,6 +1506,8 @@ def validate_world(world: dict) -> None:
         raise ValueError("the start is not a settlement slot")
     if world["start_area"] not in world["areas"]:
         raise ValueError("the start settlement was never materialized")
+    if world["party_tile"] not in tiles:
+        raise ValueError("the party is standing off the frame")
 
 
 # --------------------------------------------------------------------------- #
@@ -1466,6 +1812,14 @@ def tile_label(tile: dict) -> str:
             else f"{tile['name']} ({coordinate})")
 
 
+def tile_ground(tile: dict) -> str:
+    """The one word for what a Tile is made of, as the player reads it.
+    The base map's four glyphs are a DRAWING vocabulary -- `basic` was
+    never a thing anybody stands on -- so what is spoken is the terrain
+    word, and the sea is the sea (2026-08-21)."""
+    return "sea" if tile["biome"] == "sea" else tile["terrain"]
+
+
 def tile_detail_lines(world: dict, tile: dict | str,
                       areas: bool = True) -> list[str]:
     """What the glyph could not say: where this Tile is, whose it is, what
@@ -1473,10 +1827,11 @@ def tile_detail_lines(world: dict, tile: dict | str,
     Areas the party knows."""
     if isinstance(tile, str):
         tile = world["tiles"][tile]
+    ground = tile_ground(tile)
     lines = [f"HERE: {tile_label(tile)} -- "
-             f"{world['lands'][tile['country']]['name']}, {tile['biome']}"]
+             f"{world['lands'][tile['country']]['name']}, {ground}"]
     extra = [tag for tag in tile["tags"]
-             if tag not in (tile["biome"], tile["country"])]
+             if tag not in (ground, tile["country"])]
     if extra:
         lines.append("  ground: " + ", ".join(extra))
     known = [world["areas"][aid] for aid in tile["areas"]
@@ -1819,7 +2174,7 @@ def place_debug_lines(world: dict, place: dict) -> list[str]:
         f"known/visited: {place.get('known', True)} / "
         f"{place.get('visited', False)}",
     ]
-    for key in ("owner", "culture", "homeland", "environment", "kind",
+    for key in ("owner", "culture", "homeland", "kind",
                 "subtype", "role", "domain", "level", "description",
                 "discovered_day", "founded_day", "founded_for"):
         if key in place and place[key] not in (None, ""):
@@ -1842,8 +2197,16 @@ OBSOLETE_CATALOG_KEYS = ("land_order", "adjacency", "travel_links",
 OBSOLETE_LAND_KEYS = ("settlements", "descriptions", "villages",
                       "village_sites", "village_descriptions",
                       "settlement_sites")
+# What a settlement template may ask its Tile for. Until 2026-08-21 this
+# was POSITION only (plus the three bare biome words), so the only thing a
+# town could want was a shore, a ford or a mountain at its back. The ground
+# session added CHARACTER: the terrain word and the words the law derives,
+# which is how a hill town lands on hills and a fen village on the fen.
+# `mountains` is deliberately absent -- nobody settles the high ground, and
+# `mountain-foot` is the word for living under it.
 TILE_FIT_TAGS = ("coast", "riverside", "mountain-foot", "border", "island",
-                 "basic", "mountain", "river", "sea")
+                 "river", "plains", "hills", "marsh", "forest", "farmland",
+                 "pasture", "steppe")
 
 
 def validate_catalog() -> None:
@@ -1856,6 +2219,29 @@ def validate_catalog() -> None:
         if stale:
             raise ValueError(f"{polity}: the fixed settlement census is "
                              f"gone; drop {stale}")
+        if "environment" in land:
+            raise ValueError(f"{polity}: the environment profile retired "
+                             f"with the climate overlay (2026-08-21)")
+        natural = land["natural"]
+        missing = [character for character in NATURAL_CHARACTERS
+                   if character != "sea" and character not in natural]
+        if missing:
+            raise ValueError(f"{polity}: every ground a Tile can be needs a "
+                             f"natural inventory; missing {missing}")
+        for character, keys in natural.items():
+            if character not in NATURAL_CHARACTERS:
+                raise ValueError(f"{polity}: no such ground: {character}")
+            if not keys:
+                raise ValueError(f"{polity}/{character}: no inventory")
+            for key in keys:
+                if key not in land["natural_sites"]:
+                    raise ValueError(f"{polity}/{character}: no such "
+                                     f"natural inventory: {key}")
+        unused = [key for key in land["natural_sites"]
+                  if not any(key in keys for keys in natural.values())]
+        if unused:
+            raise ValueError(f"{polity}: authored natural inventory no "
+                             f"ground draws from: {unused}")
         templates = land["settlement_templates"]
         tiers = {spec["tier"] for spec in templates.values()}
         if tiers != {"capital", "town", "village"}:
