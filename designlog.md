@@ -5324,3 +5324,175 @@ charter/manor read surface (politics arc); hamlet and metropolis detail
 (Settlements revisited); whether board activity should later derive from
 the tile's band rather than the extended `BOARD_ACTIVE_CHANCE` table
 (round 5's existing candidate list already carries it).
+
+## 2026-08-21 (D) — Round 4 of the tile economy arc: mines, goods & the trade network
+
+**Where it started.** The designer opened round 4 hands-off — decide and
+lead everything not mentioned — with directives: hand back some eastern
+European plains forest the deforestation law cleared against the
+historical analogues; the big question of whether the old Dvarvengrond
+dwarf cards can return from the pre-cut commits as a miners' guild or
+league, best if it works for any mountain with mining; five mines to
+hand-place (Rammelsberg/Harz, Kutna Hora, Falun, Banska Stiavnica,
+Melle) with license to override; route tiles labelled with endpoints
+and goods traded; a challenge to the plan's keep-the-exotics-off-the-map
+remark ("they are just goods on routes — why not treat them the same");
+and a draft goods list to round out. A separate directive — the DM's
+easy access to tile facts, the map.txt fold-in, the neighbours in less
+detail — was named as NOT this round's and went to round 5's candidate
+list in plan.md.
+
+**The exotics reversal.** The designer is right, and the remark is dead.
+The unification that survives everything the remark wanted: every good
+has ORIGIN TILES on the map, and an exotic's origins are simply the
+frame's doors — the eastern gate (R11C30, the steppe corner south of
+the mountains) and the delta port (R18C24) — plus the entrepôts the
+legendary roads connect. The legendary roads stay worth taxing and
+robbing not because their cargo is off-map but because the door is the
+only place it enters; nothing else about exotics is special. Silk,
+spice, sugar and dyes move only on the authored legendary roads; amber
+kept its own authored road for the same reason.
+
+**The goods model, settled** (the piece the designer said he did not
+understand — recorded carefully). Three kinds of origin, one route law.
+(1) DERIVED produce, by law over rounds 1–3's own numbers: grain where
+realized arable ≥ 0.55 (only the alluvial river corridors and the Nile
+— ordinary plains feed themselves and export nothing, which keeps the
+map sparse), wine on med farmland, wool in the oceanic and med hill
+country, horses on the steppe, timber where forest meets water (never
+the fen carr), furs-and-wax in the cold deep forest. Contiguous origin
+tiles aggregate into one REGION and a region under two tiles is local
+colour, not an export (grain exempt: one alluvial tile is a granary).
+(2) AUTHORED colour where no law can see it: the bay salt pans, the
+wine coast, the Sound's herring, the amber shore, the two cloth looms
+(the Low Countries, Tuscany), the Lombard armouries, the horse fairs.
+(3) The MINES. Then one law moves everything: per good, a destination
+kind (markets / cities / the metropolises / the smiths / the cloth
+looms / the capital), a count and a bulk range — silver to the crown's
+mint, wool to the looms, arms to the capitals, grain to the nearest
+market — and the pathfinder draws the line. Routes with shared
+endpoints merge cargo. The result reads like the real map: the silver
+roads converge on Paris, the wool crosses to the looms, Venice becomes
+the hub by construction (the Spice Lane, the Amber Road and the Fairs
+Road all meet there — the middleman monopoly the roadmap wants as a
+Mortellaria hook emerges from three authored endpoint pairs).
+
+**The mines: five given, nine authored.** The given five sited by the
+historical anchors: Goslar R09C14 (the Rammelsberg's town; silver,
+copper), Kutna Hora R09C19 (east of Prague, the rim's silver at the
+plain's edge), Falun R03C22 (moved one column EAST of the literal spot
+so the copper mountain sits beside Stockholm in Tergal — with it every
+country hosts mines and the League reaches all three lands), Banska
+Stiavnica R10C20 (the Carpathian arc north of the middle Danube), Melle
+R10C08 (the old western seam — long dead by 1500, but the game is
+static in time and chronological difference becomes regional
+difference, the round-1 principle). Four added under the override
+license: Erzberg R11C14 (the iron mountain — iron was on the designer's
+goods list and needed an origin; its ore feeds the Lombard armouries
+two tiles away), Novo Brdo R13C18 (the Balkan silver, so Mortellaria
+mines too — Rome's own mint road), and the two salt mines the old plan
+entry always wanted, Luneburg R08C16 (beside the Elbe) and Wieliczka
+R10C21 (the Carpathian foothills). Salt also rises at the authored bay
+pans R10C05. **The mining-town rule became two laws**: every mine seats
+an authored TOWN in census slot 1 (tier town, named by the mine, always
+free — mining law is its charter; companions from the tile's own band,
+so Falun stands alone in the wilderness while Luneburg gathers
+villages), and a mine whose tile cannot feed itself (realized < 0.30)
+gets a grain road from the nearest granary within 6 days — the food
+caravan, a route and a vulnerability in one stroke, and exactly the
+recovered card's geography. Seven of nine mines are hungry; six get
+caravans; **Falun finds no grain in reach and stays unfed by design**
+(pinned) — the north's grain problem is real history and a standing DM
+story.
+
+**The eastern wildwood** (the forest directive). Round 2 had parked
+exactly this: no lowland continental deep forest survives the law, and
+a Bialowieza-shaped wildwood would need a hand mark. Authored now as
+`HAND_FOREST`: four continental-plains tiles east of Warsaw and north
+of the Pripet pair (R07C24, R07C25, R08C24, R08C25), where clearance is
+capped at 0.25 — the law would clear the continental east like the
+west, and history left the great forest standing between the marsh and
+the frontier. The block reads as one deep-forest island on the
+character map, joins the Pripet into a single great wilderness, and
+feeds the furs-and-wax trade (the fur rule admits continental deep
+forest for exactly this reason — Lithuanian furs were real). Round 2's
+unshipped contract was amended in place, Scotland-precedent: farmland
+132→128, pasture 112→116, forest 97→101, cover open 217→213, deep
+forest 42→46. The Ardennes-shaped western mark is still unauthored and
+stays parked.
+
+**The Miners' League — the recovery, investigated and settled yes.**
+The pre-cut catalog (`git show 4d9155b^:worldsim.py`) holds the
+Dvarvengrond EXTRACTION & CLAN CLAIMS family: new-seam → gold-rush (the
+rush chain over the `deposit` slot), vein-dries → veins-reopened (the
+bust and the recovery), strike, and food-caravan (admits on
+grain-scarce — the mining town that cannot feed itself, already
+written). Read line by line, the wording is almost entirely period
+human mining language — claim-keepers, jumped claims, the company shop,
+the winding gear, pit bosses, "grain is treasure up here" — and the
+dwarf residue is exactly four things: "clan" throughout, one "A dwarf
+has found a way", one "under-thane", and the `_DWARF_TOUGHS` pool name.
+The re-homing: the MINERS' LEAGUE (the name over "guild" for its
+Hanse-like cross-border sound and the free-miner Bergrecht flavor), a
+brotherhood with chapters at every mine, cards re-keyed `mining/*` for
+all three lands — which works "for any mountain with mining" at the
+land level, and gains the specific mine as an address when the snapshot
+arc gives all cards geography. THE KNOCKERS fact returns verbatim: it
+was always human mining folklore. The deposit slot, its three words and
+its two `STATE_MENU` steel prices return with the chain. The scrub
+table is in the round-4 contract.
+
+**The label** (the designer's route-label directive) ships as the
+round's ONE read surface: `tile_detail_lines` grows the mine line, the
+goods line, and a line per route with named endpoints and cargo —
+`Goslar – Paris: silver`; `the Silk Road: the eastern gate –
+Constantinople, silk and dyes`. Endpoints name themselves through the
+historical towns, the mine towns and the authored endpoint names (the
+eastern gate, the delta port, the Nile granary, the amber shore...).
+The rest of the read surface stays round 5's, where the DM tile brief
+directive now sits.
+
+**The sea rule, settled minimally**: sea sails at the settled edge cost
+— no cheap freight, one distance model for war, trade and play (a
+cheaper sea would fork the game's one notion of distance for a layer
+nothing plays yet). A route's sea tiles are its sea lane, the two
+shores where it changes element are ports, and the Spice Lane and Grain
+Fleet sail by construction. Rejected on the way: re-export chains (the
+entrepôt story is told by routes MEETING at Venice, not by transshipped
+cargo); a Hanse-shaped authored northern circuit (the derived north —
+Falun's copper, the taiga timber, the Sound's herring, Luneburg's salt,
+the amber shore — draws the circuit organically); oil as a separate
+good (wine carries the med export story; the old plan list's honey
+folded into wax).
+
+**Built and tuned in econmap.py** (`routes [SEED]` / `routes --sweep`),
+with two instructive wrong turns recorded: the first cut derived grain
+at realized ≥ 0.42, which painted half the continent as surplus — the
+threshold sits at 0.55 now, above the ordinary-plains baseline (~0.50),
+so only the alluvial corridors and the Nile export and the goods map
+stays sparse; and an empty-census-tile chief tested `in "MC"`, which is
+True for the empty string in Python, so every EMPTY tile briefly read
+as a city and routes ended in wilderness — the kind of bug only the
+eyeball map catches. Measured over 100 seeds: ~59 routes (58–59 — the
+network is nearly deterministic, moving only with the rolled cities),
+~114 of 314 land tiles on a route, ~27 ports, ~36 sea-lane tiles at
+seed 1, crossroads (3+ routes) ~41. Wool capped at 12 days (an 18-day
+Anatolian wool haul to Tuscany read wrong); horses at 12 (the eastern
+gate's steppe was shipping horses 22 days to Rome).
+
+**What was decided** is plan.md's Round 4 implementation contract,
+replacing the design entry: storage and tags, the nine mines and the
+two mining-town laws, the nineteen goods with their origin laws and
+destination table, the computed network plus the legendary five, the
+sea rule, the label as the one read surface, the Miners' League
+recovery with its scrub table, and the pinned tests. econmap.py's
+constants ARE the contract's numbers. Rounds 2 and 3's unshipped
+contracts were amended in place (HAND_FOREST; the mine towns and both
+rounds' re-measured pins).
+
+**Parked on the way**: the Hanse circuit and the Ardennes wildwood (the
+contract footer); route-aware prices and boards (round 5's list); the
+DM tile brief with the neighbour lines (round 5's list, designer
+directive); the cards' tile addresses and everything that walks the
+network — inns, tolls, banditry, the plague from a port (the snapshot
+and later arcs, addresses now on the map).

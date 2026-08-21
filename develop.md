@@ -703,6 +703,19 @@ a pointer: what the file is, how it's run, where its docs are.
   population section's head comment carries the SCALE DOCTRINE (a tile
   30×60 km spoken / ~160×220 km real, the ~20× area reduction, the 2×2
   slot lattice).
+  Since round 4 settled (2026-08-21, designlog's round-4 entry) it also
+  carries the TRADE layer: `python econmap.py routes [SEED]` (the nine
+  authored `MINES` — each an authored mine town in the census — the
+  authored goods colour and exotic doors, the derived produce origins
+  by law over rounds 1-3's numbers, and the routes: the computed
+  origin-to-market network over a restated `places.py` edge model plus
+  the five authored LEGENDARY roads, rendered as goods and traffic maps
+  with the route list, ports and censuses) and `python econmap.py
+  routes --sweep` (route stability over 100 seeds). The same sitting
+  added `HAND_FOREST` to the round-2 laws (the eastern wildwood — four
+  clearance-capped tiles east of Warsaw) and the mine towns to the
+  round-3 census roll; both unshipped contracts were amended in place.
+  Its constants ARE the Round 4 contract's numbers.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
