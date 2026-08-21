@@ -47,35 +47,106 @@ Standing rules for the arc:
 
 # Part 1 — THE TILE ECONOMY ARC (climate, terrain, economy, population)
 
-## Round 1 — Climate
+## Round 1 — Climate: the implementation contract (design settled 2026-08-21)
 
-Every tile receives a **climate property, computed by law** from position
-and terrain — no hand-picking, only a short authored exception list where
-the law reads wrong. The inputs the law has: latitude (growing season,
-winter severity), distance from the western ocean (continentality — wider
-variance, harsher winters), mountains (highland), the southern coast
-(mediterranean: winter rain, summer drought — its bad year is a *dry*
-year), and the Africa stripe (rows 17–18) as the fertile southern band.
+The design is designlog 2026-08-21 (including the reversal it records:
+climate is HAND-PAINTED, not computed — the law is demoted to a lint).
+The authored overlay and the eyeball tool are already in the tree
+(`resources/europe_climate.txt`, `econmap.py`); **econmap.py's constants
+ARE this contract's numbers** — the tables live there and ship from
+there, restated below only where the build needs more than the tool
+carries. Derived seeds throughout; no reader surface beyond the sky
+(round 5 owns the read surface, the snapshot arc owns cards and states).
 
-To settle in the round:
+**1. The ground.** `create_geography` loads
+`resources/europe_climate.txt` beside the base map and stamps
+`tile["climate"]` with the full word (the letters are file format only):
+tundra, taiga, continental, oceanic, mediterranean, wet_mediterranean,
+steppe, desert, nile, alpine. `validate_world` grows the lint's clauses —
+every land tile painted, sea unpainted, alpine exactly the mountain
+tiles, only the ten words — and pins the climate census (u8 t42 c83 o29
+m46 w32 s24 d18 n4 a28).
 
-- The **climate vocabulary** itself — how many words, their names.
-- The **numbers each word carries**: growing season / yield multiplier,
-  **variance** (the column the snapshot arc will later roll against),
-  winter severity, and a weather profile (per-environment day-roll weights
-  plus `drought_days`), so the sky can be rolled off the TILE rather than
-  the country. This absorbs the deferred "seasonal or Tile-specific
-  weather profiles" item whole.
-- The **Africa stripe's treatment**: river-fed granary — high yield and
-  LOW variance, because the reliability is its character as much as the
-  fertility (the south's grain buffer, a strategic prize, the reason the
-  sea lanes matter) — and whether its river is authored into
-  `resources/europe_map.txt` itself (row 18 is plain `#` today).
-- **[remark]** The arc's tooling: a standalone, stdlib-only pipeline
-  script in the `archive/worldmap.py` manner that renders every layer as
-  a 30x18 ASCII overlay — climate now; fertility, population, routes as
-  later rounds land. Every later round is eyeballed against these maps,
-  so the tooling belongs to the first round, not the last.
+**2. The label table**, a `CLIMATE_PROFILES` table in `places.py`
+replacing `ENVIRONMENT_PROFILES` (the five old profiles and the
+catalog's per-country `environment` key retire as scaffolding). Columns
+per climate — frost-free days, wheat-yield multiplier, winter severity
+0–3, harvest day, `drought_days`:
+
+| climate | ffd | yield | winter | harvest day | drought_days |
+|---|---|---|---|---|---|
+| tundra | 60 | 0 | 3 | — | 20 |
+| taiga | 100 | 0.3 | 3 | 125 | 15 |
+| alpine | 90 | 0.15 | 3 | 125 | 15 |
+| continental | 170 | 1.0 | 2 | 100 | 18 |
+| oceanic | 220 | 1.0 | 1 | 110 | 15 |
+| mediterranean | 270 | 0.8 | 0 | 50 | 30 |
+| wet_mediterranean | 300 | 1.3 | 0 | 45 | 25 |
+| steppe | 160 | 0.5 | 3 | 90 | 25 |
+| desert | 330 | 0.05 | 0 | — | 40 |
+| nile | 330 | 1.5 | 0 | 40 | 40 |
+
+The latitude gradient: ffd(tile) = base + 8 × (row − reference row),
+clamped to base ± 40; reference rows tundra 2, taiga 4, oceanic 8,
+continental 8, steppe 10, mediterranean 13, wet_mediterranean 17,
+desert 17, nile 18, alpine none. Only the sky columns have a reader this
+round — ffd/yield/winter/harvest-day are rounds 2–3 and the snapshot
+arc's inputs, shipped now as data so those rounds start from authority.
+
+**3. The sky** (absorbs the deferred "seasonal or Tile-specific weather
+profiles" item whole). A season CALENDAR, not a season track: day 1 =
+April 1st; spring days 1–60, summer 61–150, autumn 151–210 (autumn
+reuses spring's weights), winter 211–360; `season_of(day)` is a lookup
+and nothing else reads it. Weather weights become per climate × season —
+the settled tables, per hundred days over the nine words in the order
+clear / cloud / wind / rain / storm / fog / frost / snow / heat (each
+row sums to 100; autumn = spring; nile shares desert's sky):
+
+| climate | spring | summer | winter |
+|---|---|---|---|
+| oceanic | 20/26/12/26/4/8/4/0/0 | 30/24/10/24/6/4/0/0/2 | 12/30/16/24/6/6/5/1/0 |
+| continental | 26/22/12/20/5/5/8/2/0 | 34/16/8/18/10/2/0/0/12 | 16/22/10/4/2/6/22/18/0 |
+| taiga | 18/24/10/16/3/10/12/7/0 | 28/22/8/22/5/8/4/0/3 | 14/20/10/0/2/6/26/22/0 |
+| tundra | 16/20/22/6/4/8/14/10/0 | 22/22/16/14/4/10/8/4/0 | 12/16/22/0/6/4/20/20/0 |
+| alpine | 18/20/18/12/6/8/10/8/0 | 26/18/14/16/10/6/6/4/0 | 14/16/16/0/6/6/20/22/0 |
+| mediterranean | 34/14/14/18/4/4/2/0/10 | 48/8/12/4/4/2/0/0/22 | 24/20/14/30/6/4/2/0/0 |
+| wet_mediterranean | 32/14/12/24/4/4/0/0/10 | 42/10/10/12/6/2/0/0/18 | 26/18/12/32/6/4/0/0/2 |
+| steppe | 28/12/24/14/6/2/10/4/0 | 38/8/20/8/8/0/0/0/18 | 18/14/22/2/4/2/22/16/0 |
+| desert, nile | 52/6/18/4/2/2/2/0/14 | 50/2/14/0/2/0/0/0/32 | 50/10/16/6/2/4/8/0/4 |
+
+The day roll takes its weights from the party's
+CURRENT TILE's climate and the season instead of the land's environment;
+still one sky per land per day, and the wet/dry counters, the drought
+bend, cards' own skies and bought skies are untouched. `WEATHER_LOCAL`
+re-keys by climate: alpine keeps the snowstorm rows, steppe inherits
+prairie's wind line, desert's storm reads "a dust storm", taiga and
+tundra rain reads "cold rain". `drought_days` moves onto the climate
+profile.
+
+**4. The last harvest**, rolled at worldgen off derived seeds. Stored:
+`tile["harvest"]` (an int percent) and `tile["harvest_cause"]`, plus the
+region records (cause, center, member tiles) on the world — the
+addresses the snapshot arc will wire. The scale: 100 = a full excellent
+harvest; 110–120 legendary, 95–109 excellent, 75–94 ordinary, 55–74
+poor, 35–54 failed, below 35 apocalyptic; a PROBLEM tile is below 75.
+The method and every constant are `econmap.py`'s `roll_harvest`: 4–6
+regions, centers seeded by `CENTER_WEIGHT` with 4+ tiles separation,
+cause drawn per center climate (`CAUSES`), contagion growth by ring
+(`SPREAD` × `SUSCEPTIBILITY`), severity 30–65 at the core softening 6
+per ring ± 8 clamped 25–74, a fine year elsewhere (gauss 90/9 clamped
+75–120, 3% legendary tail). Two guarantees: at least one DROUGHT region
+per world (the most drought-apt center re-causes), and the NEARBY
+TROUBLE nudge — if no region center lies within 5 path-days of the start
+tile, relocate the last-rolled region to a `CENTER_WEIGHT`-weighted tile
+inside that radius with chance 3 in 4, re-drawing its cause from the new
+climate before growth (measured on raw rolls: trouble within 6 days of
+the start in only ~52% of worlds; the nudge lifts the played posture to
+~88% — the campaign usually opens in or beside a bad year, and the
+genuinely quiet start survives at about one world in eight). The causes'
+fiction names (writing.md register) come with their first read surface,
+not now. Tests: regions contiguous, the sweep distribution pinned (~17%
+mean problem coverage, never zero), the drought always, the save
+round-trip, and every existing bench unmoved (derived seeds).
 
 ## Round 2 — Terrain & the land's potential
 
@@ -188,17 +259,22 @@ scheduled or specified.
 
 ## The spring snapshot & trouble arc (the natural next)
 
-- **Two worldgen rolls: last harvest and last winter.** Arable country
-  reads the harvest roll (the grain stores); pastoral country reads the
-  winter roll (fodder, herd losses, animal disease, wolves and monsters
-  at the herd's edges) — two countries' bad years are different dice by
-  construction. Spring is the hungry gap: the snapshot the party walks
-  into is the year's maximum tension, and this year's harvest stays
-  unwritten — the shipped weather tracks are its story.
-- **Organic distribution by multi-scale rolls**: a country/season term, a
-  region term, per-tile jitter — never everything-everywhere, never one
-  needle. Margins amplify variance: rich cores rarely fail, the edges
-  often do.
+- **The last-harvest roll ships with round 1** (settled early, designlog
+  2026-08-21: contiguous cause-carrying problem regions, the contagion
+  model). This arc KEEPS: the **last-winter roll** for pastoral country
+  (fodder, herd losses, animal disease, wolves and monsters at the herd's
+  edges — reading the climate table's winter column, and the great-rains
+  regions doubling as murrain country, 1315-style); the READING of both
+  rolls (states, prices, trouble); and the harvest-day consequences (the
+  day the new harvest replaces last year's story — this year's harvest
+  stays unwritten until then, the shipped weather tracks its story).
+  Spring is the hungry gap: the snapshot the party walks into is the
+  year's maximum tension.
+- **Organic distribution**: round 1's seeded contagion (centers, causes,
+  susceptibility) is the worked model — never everything-everywhere,
+  never one needle; margins amplify variance because the centers seed
+  where the climate is failure-prone. The winter roll wants the same
+  shape over pastoral ground.
 - **Trouble siting laws**: trouble = shortfall × population pressure ÷
   trade access; **state reach** (path distance from the capital along
   routes) sites the tax squeeze near and banditry and outlawry far;

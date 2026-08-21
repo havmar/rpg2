@@ -47,7 +47,7 @@ DUBLIN = places.tile_id(5, 2)           # a two-Tile island off the west
 PARIS = places.tile_id(9, 10)
 ROME = places.tile_id(14, 14)
 KYIV = places.tile_id(10, 27)
-AMSTERDAM = places.tile_id(8, 12)       # river
+AMSTERDAM = places.tile_id(8, 11)       # river
 PRAGUE = places.tile_id(9, 18)
 ISLAND_11 = places.tile_id(3, 4)        # the eleven-Tile northern island
 ISLET = places.tile_id(14, 10)          # the one-Tile island
@@ -237,7 +237,7 @@ class TheShortestPath(unittest.TestCase):
         self.assertEqual(places.path_days(PARIS, PRAGUE), 8)     # Firascir
         self.assertEqual(places.path_days(ROME, KYIV), 21)       # two realms
         self.assertEqual(places.path_days(PARIS, ROME), 14)
-        self.assertEqual(places.path_days(AMSTERDAM, PARIS), 4)  # river end
+        self.assertEqual(places.path_days(AMSTERDAM, PARIS), 3)  # river end
         self.assertEqual(places.path_days(PARIS, DUBLIN), 16)    # by sea
 
     def test_every_landmass_is_reachable_because_the_sea_is(self) -> None:
@@ -382,15 +382,21 @@ class TheGridWalk(unittest.TestCase):
         far = max(self.world["tiles"].values(),
                   key=lambda t: places.path_days(tile, t["id"]))
         route = places.shortest_path(tile, far["id"])
+        # The road roll fires on LAND legs only (a sea passage rolls no
+        # encounter), so the fight stops the party at the first tile the
+        # route reaches over a land edge.
+        stop = next(route[i] for i in range(1, len(route))
+                    if not session._sea_leg(self.world, route[i - 1],
+                                            route[i]))
         with _save_sandbox():
             _travel(self.state, far["id"].replace("tile/r", "R")
                     .replace("/c", "C"), interrupted=True)
             session.save(self.state)
             reloaded = session.load()
-        self.assertEqual(self.state["position"]["tile"], route[1])
+        self.assertEqual(self.state["position"]["tile"], stop)
         self.assertNotEqual(self.state["position"]["area"],
                             self.start["key"])
-        self.assertEqual(reloaded["position"]["tile"], route[1])
+        self.assertEqual(reloaded["position"]["tile"], stop)
 
 
 class TheSeaPassage(unittest.TestCase):
