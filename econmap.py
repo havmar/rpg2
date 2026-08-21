@@ -15,6 +15,8 @@ their rounds land.
     python econmap.py harvest --sweep  # the distribution over 500 seeds
     python econmap.py population [SEED]   # one rolled settlement census
     python econmap.py population --sweep  # the census over 500 seeds
+    python econmap.py routes [SEED]    # the mines, goods and trade routes
+    python econmap.py routes --sweep   # route stability over 100 seeds
 
 Validation (the law demoted to a lint -- the map is authored, the rules
 only check it): every land tile carries exactly one climate letter, sea
@@ -51,6 +53,22 @@ is the unit, the census IS the population, and the tier words carry the
 scale (hamlet under a hundred souls, village hundreds, town thousands,
 city tens of thousands, metropolis a hundred thousand and more).
 
+The ROUTES mode is round 4's layer.  Author the physical, derive the
+human: the MINES and the goods no law can derive are authored, few and
+famous; the land's produce (grain, wine, wool, horses, timber, furs) is
+derived from rounds 1-3's own outputs; the ROUTES are computed by the
+pathfinder between origins and markets -- except the named legendary
+roads, whose endpoints and cargo are authored and whose line the same
+pathfinder draws.  The EXOTICS are goods like any other (2026-08-21,
+round 4 -- the plan's keep-them-off-the-map remark reversed at the
+designer's direction): their origin tiles are simply the frame's doors,
+the eastern gate and the delta port, which is exactly what keeps the
+legendary roads worth taxing and robbing.  A mine seats an authored
+MINE TOWN in the census (slot 1, tier town, always free -- the mining
+law is its charter), and a mine town whose own ground cannot feed it
+gets a grain road: the food caravan, a route and a vulnerability in one
+stroke.
+
 The HARVEST mode is the round's rolled layer: last year's harvest as a
 percentage per tile (100 = a full excellent harvest), generated as
 contiguous problem REGIONS over the painted climates -- centers seeded
@@ -64,6 +82,7 @@ standing rule.
 
 from __future__ import annotations
 
+import heapq
 import random
 import sys
 from collections import Counter, deque
@@ -259,6 +278,14 @@ HAND_ALLUVIAL = {           # floodplain soils with no drawn river: the Po
     (12, 12), (12, 13),     # plain (the 2026-08-21 redraw cut the lagoon
     (12, 14),               # river for looks; the water still exists)
 }
+HAND_FOREST = {             # the eastern wildwood (2026-08-21, round 4 at
+    (7, 24), (7, 25),       # the designer's direction): the deforestation
+    (8, 24), (8, 25),       # law clears the continental east like the
+}                           # west, but history left the great forest
+                            # standing between the marsh and the frontier
+                            # -- a Bialowieza writ at map scale.  Clearance
+                            # is capped here; the wood stands.
+HAND_FOREST_CLEARANCE = 0.25
 
 
 def tile_economy(letter: str, terrain: str, river: bool, row: int,
@@ -278,6 +305,8 @@ def tile_economy(letter: str, terrain: str, river: bool, row: int,
         ffd = max(base - 40, min(base + 40, ffd))
     wheat = arable * WHEAT_YIELD[letter] * ffd / base
     clearance = wheat / (wheat + CLEARANCE_K)
+    if column is not None and (row, column) in HAND_FOREST:
+        clearance = min(clearance, HAND_FOREST_CLEARANCE)
     realized = arable * clearance
     wildwood = FOREST_CAP[letter] * (MARSH_WOOD if terrain == "marsh"
                                      else 1.0)
@@ -724,9 +753,12 @@ def roll_census(base: list[str], climate: list[str], terrain: list[str],
                                river, r + 1, c + 1)
             band = score_band(score, r + 1, c + 1)
             name = HISTORICAL_TILES.get((r + 1, c + 1))
+            mine = MINES.get((r + 1, c + 1))
             if name:
                 tiers = (HISTORICAL_TIERS[name]
                          + _draw(rng, ARRANGEMENTS[band])[:3])
+            elif mine:                  # the mine town: authored tier town
+                tiers = "T" + _draw(rng, ARRANGEMENTS[band])[:3]
             else:
                 tiers = _draw(rng, ARRANGEMENTS[band])
             tiers = "".join(sorted(tiers, key=TIER_ORDER.index))
@@ -738,13 +770,15 @@ def roll_census(base: list[str], climate: list[str], terrain: list[str],
                     free.append(rng.random() < CHARTER_CHANCE)
                 else:
                     free.append(False)
-            if name:                    # the famous names hold their own
-                free[0] = True          # charters, always
+            if name or mine:            # the famous names hold their own
+                free[0] = True          # charters, always -- a mine town's
+                                        # mining law IS its charter
             manor = (len(tiers) >= 2 and tiers[0] == "V"
                      and rng.random() < MANOR_CHANCE)
             census[(r, c)] = {"band": band, "score": score,
                               "tiers": tiers, "free": free, "manor": manor,
-                              "historical": name}
+                              "historical": name,
+                              "mine": mine[0] if mine else None}
     return census
 
 
@@ -811,6 +845,13 @@ def render_population(base: list[str], climate: list[str],
         print(f"  {name:<15} {HISTORICAL_TIERS[name]} at "
               f"R{row:02d}C{column:02d}: {tile['band']:<10} "
               f"(score {tile['score']:.2f}) rolled {tile['tiers']}")
+    print("\nMINE TOWNS (authored town in slot 1; round 4)")
+    for (row, column), (name, goods) in sorted(MINES.items(),
+                                               key=lambda kv: kv[1][0]):
+        tile = census[(row - 1, column - 1)]
+        print(f"  {name:<17} at R{row:02d}C{column:02d}: "
+              f"{tile['band']:<10} rolled {tile['tiers']}  "
+              f"({', '.join(goods)})")
 
 
 def sweep_population(base: list[str], climate: list[str],
@@ -846,6 +887,417 @@ def sweep_population(base: list[str], climate: list[str],
           f"{100 * max(quiet_share):.0f}%)")
 
 
+# --------------------------------------------------------------------------- #
+# The trade layer (round 4: mines, goods & the routes)
+# --------------------------------------------------------------------------- #
+# Author the physical, derive the human.  Mines and the goods no law can
+# derive are AUTHORED, few and famous; the land's produce is DERIVED from
+# rounds 1-3's outputs; the ordinary routes are COMPUTED between origins
+# and markets by the same edge model the game walks, and the legendary
+# roads are authored endpoints whose line the pathfinder draws.  Exotics
+# are goods like any other -- their origins are the frame's doors.
+
+MINES = {                   # (row, column): (the mine town, its goods).
+    (9, 14): ("Goslar", ("silver", "copper")),    # Rammelsberg & the Harz
+    (9, 19): ("Kutna Hora", ("silver",)),         # Bohemia's silver
+    (3, 22): ("Falun", ("copper", "iron")),       # the great copper mount
+    (10, 20): ("Banska Stiavnica", ("silver", "copper")),   # Carpathian
+    (10, 8): ("Melle", ("silver",)),              # the old western seam
+    (11, 14): ("Erzberg", ("iron",)),             # the iron mountain
+    (13, 18): ("Novo Brdo", ("silver",)),         # the Balkan silver
+    (8, 16): ("Luneburg", ("salt",)),             # the northern salt
+    (10, 21): ("Wieliczka", ("salt",)),           # the eastern salt
+}
+GOODS_AUTHORED = {          # origin colour with no mine town under it
+    (10, 5): ("salt",),             # the bay salt pans
+    (11, 6): ("wine",),             # the western wine coast
+    (6, 15): ("herring",),          # the Sound's herring fair
+    (6, 22): ("amber",),            # the amber shore
+    (8, 11): ("cloth",),            # the Low Countries' looms
+    (13, 14): ("cloth",),           # the Tuscan looms
+    (12, 13): ("arms",),            # the Lombard armourers
+    (11, 19): ("horses",),          # the middle Danube horse fairs
+    (11, 30): ("silk", "dyes"),     # the eastern gate (the Silk Road's door)
+    (18, 24): ("spice", "sugar", "dyes"),   # the delta port
+}
+ENDPOINT_NAMES = {          # labels for endpoints that are not towns
+    (11, 30): "the eastern gate", (18, 24): "the delta port",
+    (18, 26): "the Nile granary", (6, 22): "the amber shore",
+    (6, 15): "the Sound", (10, 5): "the salt pans",
+    (11, 6): "the wine coast", (8, 11): "the Low Countries' looms",
+    (13, 14): "the Tuscan looms", (12, 13): "the armouries",
+    (11, 19): "the horse fairs",
+}
+
+# The derived origins, by law over rounds 1-3's numbers.
+GRAIN_SURPLUS = 0.55        # realized arable at/above this exports grain:
+                            # the alluvial river corridors and the Nile --
+                            # ordinary plain country feeds itself only
+WINE_CLIMATES = "mw"        # the vine: med and wet-med farmland
+WINE_MIN = 0.30
+WOOL_CLIMATES = "om"        # the sheep west: oceanic and med hill country
+WOOL_PASTORAL = 0.40
+HORSE_PASTORAL = 0.40       # the steppe's herds (plus the authored fairs)
+FUR_CLIMATES = "tuc"        # deep forest in the cold north and east
+MIN_PRODUCE_REGION = 2      # a derived produce region under this many
+                            # tiles is local colour, never an export
+                            # (grain exempt: one alluvial tile is a
+                            # granary; timber moves by water only)
+
+# Where each good goes.  destinations: markets = city-grade chiefs +
+# historical towns + mine towns; cities = the same without mine towns;
+# metropolises = the three M chiefs; smiths = the arms towns + cities;
+# cloth = the cloth towns; capital = the origin's own crown; capitals =
+# all three.  k = how many destinations; max_days = bulk range (None =
+# rich goods travel any distance).  Silk, spice, sugar, dyes and amber
+# have no row: they move only on the legendary roads.
+GOOD_ROUTES = {
+    "grain": ("markets", 1, 8),
+    "timber": ("markets", 1, 10),
+    "furs": ("markets", 1, 12),
+    "wax": ("markets", 1, 12),
+    "salt": ("markets", 2, 8),
+    "herring": ("markets", 2, 10),
+    "wine": ("metropolises", 1, 12),
+    "wool": ("cloth", 1, 12),
+    "horses": ("capital", 1, 12),
+    "silver": ("capital", 1, None),
+    "copper": ("cities", 1, None),
+    "iron": ("smiths", 1, None),
+    "cloth": ("metropolises", 2, None),
+    "arms": ("capitals", 2, None),
+}
+MINE_FOOD_DAYS = 6          # a hungry mine's grain road reaches this far
+CAPITALS = {"firascir": (9, 10), "mortellaria": (14, 14),
+            "tergal": (10, 27)}
+
+LEGENDARY = (               # authored endpoints and cargo; computed line
+    {"name": "the Silk Road", "from": (11, 30), "to": (14, 27),
+     "goods": ("silk", "dyes")},
+    {"name": "the Spice Lane", "from": (18, 24), "to": (12, 14),
+     "goods": ("spice", "sugar", "dyes")},
+    {"name": "the Amber Road", "from": (6, 22), "to": (12, 14),
+     "goods": ("amber",)},
+    {"name": "the Fairs Road", "from": (12, 14), "to": (9, 10),
+     "goods": ("silk", "spice", "sugar")},
+    {"name": "the Grain Fleet", "from": (18, 26), "to": (14, 27),
+     "goods": ("grain",)},
+)
+
+# places.py's settled edge model, restated so the tool stays standalone:
+# north-south 2 days, east-west 1, +1 when EITHER end is a mountain (once,
+# which is what keeps it symmetric); sea sails at land cost.
+EAST_WEST_DAYS = 1
+NORTH_SOUTH_DAYS = 2
+MOUNTAIN_SURCHARGE = 1
+
+
+def _at0(rc: tuple[int, int]) -> tuple[int, int]:
+    return (rc[0] - 1, rc[1] - 1)
+
+
+def _grid_neighbors(r: int, c: int):
+    for dr, dc in ((-1, 0), (0, -1), (0, 1), (1, 0)):
+        rr, cc = r + dr, c + dc
+        if 0 <= rr < ROWS and 0 <= cc < COLUMNS:
+            yield rr, cc
+
+
+def _edge_days(base: list[str], a: tuple[int, int],
+               b: tuple[int, int]) -> int:
+    days = EAST_WEST_DAYS if a[0] == b[0] else NORTH_SOUTH_DAYS
+    if "^" in (base[a[0]][a[1]], base[b[0]][b[1]]):
+        days += MOUNTAIN_SURCHARGE
+    return days
+
+
+def _tree(base: list[str], start: tuple[int, int]):
+    """Dijkstra from one tile over the whole frame (sea included);
+    frontier ordered by (cost, row, column) like places._single_source."""
+    distance = {start: 0}
+    previous: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
+    heap = [(0, start)]
+    while heap:
+        d, node = heapq.heappop(heap)
+        if d > distance[node]:
+            continue
+        for nxt in _grid_neighbors(*node):
+            nd = d + _edge_days(base, node, nxt)
+            if nd < distance.get(nxt, 10 ** 9):
+                distance[nxt] = nd
+                previous[nxt] = node
+                heapq.heappush(heap, (nd, nxt))
+    return distance, previous
+
+
+def _path_from(previous, tile):
+    """The path from `tile` back to the tree's root, tile first."""
+    path = [tile]
+    while previous[path[-1]] is not None:
+        path.append(previous[path[-1]])
+    return path
+
+
+def _regions(tiles: set) -> list[set]:
+    """Connected components (4-neighbor) of an origin tile set."""
+    remaining, out = set(tiles), []
+    while remaining:
+        seed_tile = min(remaining)
+        component, frontier = {seed_tile}, deque([seed_tile])
+        while frontier:
+            r, c = frontier.popleft()
+            for nxt in _grid_neighbors(r, c):
+                if nxt in remaining and nxt not in component:
+                    component.add(nxt)
+                    frontier.append(nxt)
+        remaining -= component
+        out.append(component)
+    return out
+
+
+def build_origins(base, climate, terrain, economies) -> list[dict]:
+    """Every goods origin: authored mines and colour, derived produce."""
+    origins = []
+    for rc, (name, goods) in MINES.items():
+        origins.append({"tiles": {_at0(rc)}, "goods": tuple(goods),
+                        "name": name})
+    for rc, goods in GOODS_AUTHORED.items():
+        origins.append({"tiles": {_at0(rc)}, "goods": tuple(goods),
+                        "name": None})
+    derived = {good: set() for good in
+               ("grain", "wine", "wool", "horses", "timber", "furs")}
+    for (r, c), eco in economies.items():
+        letter = climate[r][c]
+        river = base[r][c] == "~" or letter == "n"
+        coast = _is_coast(base, r, c)
+        if eco["realized"] >= GRAIN_SURPLUS:
+            derived["grain"].add((r, c))
+        if letter in WINE_CLIMATES and eco["realized"] >= WINE_MIN:
+            derived["wine"].add((r, c))
+        if letter in WOOL_CLIMATES and eco["pastoral"] >= WOOL_PASTORAL:
+            derived["wool"].add((r, c))
+        if letter == "s" and eco["pastoral"] >= HORSE_PASTORAL:
+            derived["horses"].add((r, c))
+        if (eco["forest"] >= WOODED_MIN and (river or coast)
+                and TERRAINS[terrain[r][c]] != "marsh"):
+            derived["timber"].add((r, c))      # fen carr is not ship timber
+        if eco["cover"] == "deep forest" and letter in FUR_CLIMATES:
+            derived["furs"].add((r, c))
+    for good, tiles in derived.items():
+        goods = ("furs", "wax") if good == "furs" else (good,)
+        for region in _regions(tiles):
+            if good != "grain" and len(region) < MIN_PRODUCE_REGION:
+                continue                # a lone hill's wool is local colour,
+            origins.append({"tiles": region, "goods": goods, "name": None})
+    return origins                      # not an export; grain is exempt (a
+                                        # single alluvial tile IS a granary)
+
+
+def roll_routes(base, climate, terrain, seed: int):
+    """One world's trade network: routes, origins, census, unfed mines."""
+    census = roll_census(base, climate, terrain, seed)
+    economies, _tags, _character = economy_grids(base, climate, terrain)
+    origins = build_origins(base, climate, terrain, economies)
+    historical = {_at0(rc) for rc in HISTORICAL_TILES}
+    mine_tiles = {_at0(rc) for rc in MINES}
+    chiefs = {t: (rec["tiers"][0] if rec["tiers"] else "")
+              for t, rec in census.items()}
+    cities = {t for t, chief in chiefs.items()
+              if chief in ("M", "C")} | historical
+    demand_sets = {
+        "markets": cities | mine_tiles,
+        "cities": cities,
+        "metropolises": {t for t, chief in chiefs.items() if chief == "M"},
+        "smiths": cities | {_at0(rc) for rc, goods in GOODS_AUTHORED.items()
+                            if "arms" in goods},
+        "cloth": {_at0(rc) for rc, goods in GOODS_AUTHORED.items()
+                  if "cloth" in goods},
+        "capitals": {_at0(rc) for rc in CAPITALS.values()},
+    }
+    trees: dict[tuple[int, int], tuple] = {}
+
+    def tree(dest):
+        if dest not in trees:
+            trees[dest] = _tree(base, dest)
+        return trees[dest]
+
+    raw = []
+    for origin in origins:
+        by_rule: dict[tuple, list[str]] = {}
+        for good in origin["goods"]:
+            rule = GOOD_ROUTES.get(good)
+            if rule is not None:        # exotics ride the legendary roads
+                by_rule.setdefault(rule, []).append(good)
+        for (dest_kind, k, max_days), goods in by_rule.items():
+            if dest_kind == "capital":
+                r, c = min(origin["tiles"])
+                dests = {_at0(CAPITALS[country_at(r + 1, c + 1)])}
+            else:
+                dests = demand_sets[dest_kind]
+            ranked = []
+            for dest in sorted(dests - origin["tiles"]):
+                distance, _previous = tree(dest)
+                member = min(origin["tiles"],
+                             key=lambda t: (distance[t], t))
+                ranked.append((distance[member], dest, member))
+            ranked.sort()
+            for days, dest, member in ranked[:k]:
+                if max_days is not None and days > max_days:
+                    continue
+                _distance, previous = tree(dest)
+                raw.append({"name": None, "goods": tuple(goods),
+                            "days": days,
+                            "path": _path_from(previous, member)})
+    unfed = []
+    for rc, (name, _goods) in MINES.items():
+        mine = _at0(rc)
+        if economies[mine]["realized"] >= FARMLAND_MIN:
+            continue                    # the mine's own ground feeds it
+        distance, previous = tree(mine)
+        grain = [(distance[t], t) for origin in origins
+                 if "grain" in origin["goods"] for t in origin["tiles"]
+                 if distance[t] <= MINE_FOOD_DAYS]
+        if not grain:
+            unfed.append(name)          # no grain within reach: the
+            continue                    # mountain feeds itself badly
+        days, member = min(grain)
+        raw.append({"name": None, "goods": ("grain",), "days": days,
+                    "path": _path_from(previous, member)})
+        # the tree is rooted at the mine, so the path already runs
+        # grain-country -> mine town: the food caravan's own direction
+    for spec in LEGENDARY:
+        goal = _at0(spec["to"])
+        distance, previous = tree(goal)
+        start = _at0(spec["from"])
+        raw.append({"name": spec["name"], "goods": tuple(spec["goods"]),
+                    "days": distance[start],
+                    "path": _path_from(previous, start)})
+    routes: dict[tuple, dict] = {}      # merged on shared endpoints
+    for route in raw:
+        key = (route["path"][0], route["path"][-1])
+        kept = routes.get(key)
+        if kept is None:
+            routes[key] = route
+        else:
+            kept["goods"] = tuple(dict.fromkeys(kept["goods"]
+                                                + route["goods"]))
+            kept["name"] = kept["name"] or route["name"]
+    return list(routes.values()), origins, census, unfed
+
+
+def _endpoint_label(tile, census) -> str:
+    rc = (tile[0] + 1, tile[1] + 1)
+    if rc in HISTORICAL_TILES:
+        return HISTORICAL_TILES[rc]
+    if rc in MINES:
+        return MINES[rc][0]
+    if rc in ENDPOINT_NAMES:
+        return ENDPOINT_NAMES[rc]
+    return f"R{rc[0]:02d}C{rc[1]:02d}"
+
+
+GOOD_PRIORITY = ("grain", "wine", "wool", "horses", "furs", "timber",
+                 "salt", "herring", "amber", "cloth", "arms")
+GOOD_MARKS = {"grain": "g", "wine": "v", "wool": "w", "horses": "h",
+              "furs": "f", "timber": "t", "salt": "s", "herring": "r",
+              "amber": "b", "cloth": "c", "arms": "a"}
+
+
+def render_routes(base, climate, terrain, seed: int) -> None:
+    routes, origins, census, unfed = roll_routes(base, climate, terrain,
+                                                 seed)
+    goods_at: dict[tuple[int, int], list[str]] = {}
+    for origin in origins:
+        for t in origin["tiles"]:
+            goods_at.setdefault(t, []).extend(origin["goods"])
+    traffic = Counter()
+    ports, sea_tiles = set(), set()
+    for route in routes:
+        for t in route["path"]:
+            traffic[t] += 1
+            if base[t[0]][t[1]] == ".":
+                sea_tiles.add(t)
+        for a, b in zip(route["path"], route["path"][1:]):
+            a_sea, b_sea = base[a[0]][a[1]] == ".", base[b[0]][b[1]] == "."
+            if a_sea != b_sea:
+                ports.add(b if a_sea else a)
+    left, right = [], []
+    for r in range(ROWS):
+        goods_line, traffic_line = "", ""
+        for c in range(COLUMNS):
+            if base[r][c] == ".":
+                goods_line += "."
+                traffic_line += (str(min(9, traffic[(r, c)]))
+                                 if (r, c) in sea_tiles else ".")
+                continue
+            if (r + 1, c + 1) in MINES:
+                goods_line += "M"
+            elif (r + 1, c + 1) in ((11, 30), (18, 24)):
+                goods_line += "x"
+            else:
+                here = goods_at.get((r, c), ())
+                mark = next((GOOD_MARKS[g] for g in GOOD_PRIORITY
+                             if g in here), "-")
+                goods_line += mark
+            traffic_line += (str(min(9, traffic[(r, c)]))
+                             if traffic[(r, c)] else "-")
+        left.append(goods_line)
+        right.append(traffic_line)
+    render_side_by_side(left, right,
+                        ("GOODS & MINES", "TRAFFIC (routes crossing)"))
+    print("\ngoods: M mine, x exotic door, g grain, v wine, w wool, "
+          "h horses,\n  f furs+wax, t timber, s salt, r herring, b amber, "
+          "c cloth, a arms")
+    print(f"\nROUTES, seed {seed} ({len(routes)} after merging; "
+          f"{len(LEGENDARY)} legendary)")
+    named = [route for route in routes if route["name"]]
+    plain = [route for route in routes if not route["name"]]
+    for route in named + sorted(plain, key=lambda x: x["goods"]):
+        label = (f"{_endpoint_label(route['path'][0], census)} -> "
+                 f"{_endpoint_label(route['path'][-1], census)}")
+        name = route["name"] or ""
+        print(f"  {name:<15} {label:<28} {', '.join(route['goods'])} "
+              f"({route['days']}d)")
+    land_on = sum(1 for t, n in traffic.items()
+                  if n and base[t[0]][t[1]] != ".")
+    print(f"\nTRAFFIC {land_on} land tiles on a route, "
+          f"{len(sea_tiles)} sea-lane tiles, {len(ports)} ports; "
+          f"crossroads (3+): "
+          f"{sum(1 for n in traffic.values() if n >= 3)}")
+    goods_census = Counter()
+    for origin in origins:
+        for good in origin["goods"]:
+            goods_census[good] += len(origin["tiles"])
+    print("GOODS CENSUS (origin tiles) " + ", ".join(
+        f"{good}:{n}" for good, n in goods_census.most_common()))
+    if unfed:
+        print(f"UNFED MINES (no grain within {MINE_FOOD_DAYS} days): "
+              + ", ".join(unfed))
+
+
+def sweep_routes(base, climate, terrain, seeds: int = 100) -> None:
+    counts, land_on, port_counts = [], [], []
+    for seed in range(seeds):
+        routes, _origins, _census, _unfed = roll_routes(
+            base, climate, terrain, seed)
+        counts.append(len(routes))
+        traffic = Counter(t for route in routes for t in route["path"])
+        land_on.append(sum(1 for t in traffic if base[t[0]][t[1]] != "."))
+        ports = set()
+        for route in routes:
+            for a, b in zip(route["path"], route["path"][1:]):
+                a_sea = base[a[0]][a[1]] == "."
+                b_sea = base[b[0]][b[1]] == "."
+                if a_sea != b_sea:
+                    ports.add(b if a_sea else a)
+        port_counts.append(len(ports))
+    n = seeds
+    print(f"{n} seeds: routes mean {sum(counts) / n:.1f} "
+          f"(min {min(counts)}, max {max(counts)}); "
+          f"land tiles on a route mean {sum(land_on) / n:.0f}/314; "
+          f"ports mean {sum(port_counts) / n:.1f}")
+
+
 def main() -> None:
     base = load_grid(BASE_PATH, BASE_GLYPHS)
     climate = load_grid(CLIMATE_PATH, set(CLIMATES) | {"."})
@@ -868,6 +1320,13 @@ def main() -> None:
         else:
             seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
             render_population(base, climate, terrain, seed)
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "routes":
+        if "--sweep" in sys.argv[2:]:
+            sweep_routes(base, climate, terrain)
+        else:
+            seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+            render_routes(base, climate, terrain, seed)
         return
     if len(sys.argv) > 1 and sys.argv[1] == "harvest":
         if "--sweep" in sys.argv[2:]:
