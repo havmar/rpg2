@@ -550,6 +550,59 @@ Two commands, both free and neither costing a day. `lore` is your readout;
   `case` turns up a reagent consignment, an opened tomb or a masked house,
   that is the world state in the crime tables. It is not there next month.
 
+### The ground under the party (2026-08-21, the tile economy arc)
+
+Four layers of geography sit on every Tile now, and two commands surface
+them. `tile` is yours; the Tile's block on `ui/map.txt` is the player's.
+
+- **`tile [COORD]` is the DM page behind one Tile** -- the sibling of
+  `lore`, one level down. It is free, costs no day, and the engine never
+  reads a word of it. Bare `tile` is the ground under the party; `tile
+  R09C14` is any cell on the map. What it prints: the terrain, climate and
+  cover; the CHARACTER phrase; the ground tags; last year's harvest and
+  what caused it; the mine and its metals; the goods; every road across
+  the Tile with its endpoints and cargo; the whole settlement CENSUS,
+  including the places nobody has met (`a village (unmet)`); and the four
+  NEIGHBOURS in a line each.
+- **Consult the brief on arrival, and again before you narrate travel.**
+  Arriving, it tells you what kind of country this is and what the people
+  here ate last winter. Setting out, the neighbour lines tell you what the
+  road ahead looks like and whether the next Tile is in trouble -- so the
+  march reads as a journey through a real place instead of a day counter.
+- **It is narration material, NEVER a dump to the player.** Do not read it
+  out, do not paraphrase it as a list, and do not turn it into a briefing.
+  Take one or two facts and put them in the scene: the carts on the ore
+  road, the vines on the terraces, the empty granary. The brief exists so
+  you never have to invent geography that contradicts the map.
+- **The character line is one phrase and it is yours to compose from**,
+  not to recite. "silver country" becomes *The road climbs between spoil
+  heaps. Every second cart coming down is loaded with ore.* The phrase is
+  the Tile's own -- the mine names it first, then what it grows, then the
+  land itself.
+- **The harvest speaks a WORD and never a number.** Legendary, excellent,
+  ordinary, poor, failed, apocalyptic -- and the cause by its name: the
+  drought, the great rains, the black frost, and on the Nile the low Nile.
+  A `failed` harvest is a licence to make bread dear, the inn thin and the
+  people frightened, exactly the way a land's `harvest-failed` state is.
+  **Never say the percent** -- it is a worldgen number and there is no
+  in-fiction way anyone would know it. When a neighbour Tile's line shows
+  a harvest, that Tile is in trouble; a neighbour with no harvest word had
+  a fine year and is not news.
+- **The Tile's block on the map page is COMMON KNOWLEDGE** -- the
+  character phrase, the harvest word, the mine, the goods and up to four
+  roads (a busy Tile says `+N more`; the brief has them all). The party can
+  see all of it from the road, so relay it freely when it matters.
+- **The ground charges its own prices now.** A grain-country Tile has
+  cheap beds, a mine Tile cheap steel, and a crossroads full shelves and
+  expensive beds. It stacks with whatever the land is doing and `prices`
+  names both hands separately. Play it as a fact of the place: "a bed here
+  is half what it was in the hills" is the granary talking.
+- **The Miners' League is a live packet** in all three lands. When a
+  mining card fires, the fiction is chapter masters, claim-keepers, the
+  company shop and the winding gear -- a cross-border brotherhood of free
+  miners, not a guild of anybody's craftsmen. THE KNOCKERS is standing lore
+  everywhere: nobody whistles underground.
+
 ### The sky (2026-08-08, the weather)
 
 Every land rolls a sky every day. Unlike the wealth band, the weather has
@@ -1442,11 +1495,28 @@ than the fights WITHOUT pages of narration:
   board is live one time in twenty, it hires one face a day, and it is not
   drawn on the map. Play it as a place to pass through -- steel, a real
   market and a hiring crowd are a walk away, and that walk is the game.
-- **Last year's harvest is already rolled** into every Tile, in regions of
-  trouble with a cause (drought, the great rains, frost). Nothing reads it
-  yet and nothing prints it, so it is not yet narration material -- the
-  words arrive with the read surface. Do not invent numbers for it at the
-  table.
+- **The season calendar**: the campaign year runs day 1 (April 1st) to
+  the autumn, and the script does every season lookup itself. **The ten
+  climate words** the map is painted in: tundra, taiga, alpine,
+  continental, oceanic, mediterranean, wet mediterranean, steppe, desert
+  and nile. They set the sky, the growing season and what the ground can
+  grow; `tile` prints the one underfoot.
+- **Last year's harvest PRINTS** (2026-08-21). Every land Tile carries it
+  and speaks it as a WORD -- legendary, excellent, ordinary, poor, failed,
+  apocalyptic -- with its cause named: the drought, the great rains, the
+  black frost, and on the Nile the low Nile. About a sixth of the land is
+  in trouble in an average world, in regions of about eleven Tiles, and
+  the campaign usually opens within five days of one. It is common
+  knowledge and it is narration material. **Never speak the stored
+  percent**, and never invent one.
+- **The tile character line PRINTS**: one phrase for what kind of country
+  a Tile is -- `silver country`, `wine country`, `deep forest`, `rich
+  farmland`, `the open steppe`. The mine names a Tile first, then the good
+  it exports, then the land itself. Compose your scene over it; never
+  recite it.
+- **`tile [COORD]` is your page behind one Tile** -- everything above plus
+  the whole census (unmet places included) and the four neighbours. Free,
+  costs no day, never read out. See "The ground under the party".
 - **The trade layer PRINTS** (2026-08-21): the Tile's detail block on
   `ui/map.txt` now carries its mine, the goods it is an origin of, and one
   line per route crossing it -- `Goslar - Paris: silver`, `the Silk Road:
@@ -1459,10 +1529,13 @@ than the fights WITHOUT pages of narration:
   the party has never heard of, so the label says its coordinate and you
   narrate it as "the market east of here", not by inventing a name.
   **Falun is fed by nobody** -- no granary within reach of the copper
-  mountain -- and that is a standing story the north owes you. Nothing else
-  reads the layer yet: prices, boards, encounters, tolls and banditry are
-  unchanged, so do not charge a toll or roll a bandit off a road the
-  engine has not armed.
+  mountain -- and that is a standing story the north owes you. The page
+  caps the road list at four with a `+N more`; `tile` prints them all.
+  **PRICES read the ground now** (2026-08-21) -- cheap beds in grain
+  country, cheap steel at a pithead, full shelves and dear beds at a
+  crossroads. Tolls, ferries, boards and encounters still do NOT read
+  routes, so do not charge a toll or roll a bandit off a road the engine
+  has not armed.
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is
   free. Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT:

@@ -6,227 +6,35 @@ is written to the permanent docs (`rules.md`, `dm.md`, `develop.md`,
 `benchlog.md`) and the build record to `designlog.md`. See develop.md's
 "Where a finished feature is written up".
 
-The fixed Europe map is **BUILT** (2026-08-15, five sessions; designlog
-2026-08-15 and develop.md hold the pointers). **THE TILE ECONOMY ARC**
-(Part 1) is now fully **DESIGNED** — five design rounds, settled
-2026-08-20 through 2026-08-21 (the designlog entries from "planning the
-plan" through round 5's "(E)") — and queued as **four numbered
-implementation sessions**. Trigger one by prompting **"implement
-session N"**; a session is a full dev sitting (read develop.md first,
-ship the contract, run the suites, do the shipping paperwork). The
-sessions ship **in order** — each reads the layers the one before it
-stamped, and **Sessions 1 (the ground & the sky), 2 (the rolled world:
-the last harvest & the census) and 3 (the trade network: mines, goods &
-routes) all shipped 2026-08-21** (designlog's (F), (G) and (H) entries;
-the built layers are documented in rules.md, dm.md and develop.md, and
-their measured numbers in benchlog). **Session 4 is the last, and when
-it ships Part 1 is deleted whole.** The numbers are kept as they were
-cut, so 4 still means what the designlog says it means. Part 2 is the
-draft roadmap
-beyond the arc — main points only, each a future design conversation,
-none scheduled.
+Two whole arcs have shipped out of this file. The fixed Europe map was
+**BUILT** across five sessions ending 2026-08-15 (designlog 2026-08-15 and
+develop.md hold the pointers). **THE TILE ECONOMY ARC** was designed in
+five rounds (2026-08-20 through 2026-08-21 (E)) and **BUILT WHOLE on
+2026-08-21** across four numbered implementation sessions — the ground and
+the sky, the rolled world, the trade network, and the hookup — whose build
+records are designlog's (F), (G), (H) and (I) entries. Its Part 1 contract
+is gone from this file, per the rule above; what it built lives in
+rules.md's World & Navigation and Miners' League add-ons, dm.md's "The
+ground under the party", develop.md's Files and dev map, and benchlog's
+2026-08-21 entries.
 
-The cut is by implementation seam, not one-round-one-session (the
-designlog's round names stay the design authority): session 4 is round 5 —
-everything that READS — plus round 4's Miners' League recovery, which is
-old-system integration and belongs with the hookup.
-
-**The arc's product is a WORLDGEN PIPELINE, not a running simulation.**
-Geography and climate determine agriculture, agriculture determines
-population, population determines the settlement census — rolled by law at
-worldgen off derived seeds, eyeballed as ASCII overlay maps, then left
-alone. The event pulse (cards, weather, the boards) stays the part of the
-world that lives forward in time. The spring snapshot, trouble and
-politics are the NEXT arcs (Part 2); this arc builds the ground they stand
-on.
-
-Standing rules for the arc:
-
-- **Hidden numbers, visible words.** Per-tile quantities (population,
-  yield, traffic) are worldgen intermediates the player never sees; what
-  the game stores and speaks are words and records the existing machinery
-  can read.
-- **Author the physical, derive the human.** Nature's layer (terrain,
-  climate exceptions, mines, the legendary routes) is hand-authored;
-  mankind's layer (farmland, population, the census, the ordinary routes)
-  is computed from it. Hand-tuned exceptions to a law are legitimate — the
-  map is authored; the law is a helper.
-- **Derived seeds throughout**, so every existing bench measures the same
-  board it always did; `validate_world` grows a clause per layer.
-- **The campaign year is spring to autumn.** No season track; winter is
-  out of scope as played time and exists only as a worldgen roll (the
-  snapshot arc's).
-- **One authority per constant.** econmap.py's constants ARE each
-  contract's numbers until its session ships; the session then moves them
-  into `places.py` and re-points econmap.py to import them back — the
-  tool keeps the rendering and never a second copy.
+What follows is the roadmap BEYOND both arcs: main points only, each a
+future design conversation, none scheduled. The arc's own standing rules
+were written for its build and are not repeated here; two of them are
+worth carrying forward as habits and are stated where they apply below —
+**hidden numbers, visible words** (a per-tile quantity is a worldgen
+intermediate; what the game stores and speaks are words), and **author the
+physical, derive the human**.
 
 ---
 
-# Part 1 — THE TILE ECONOMY ARC: the last implementation session
-
-## Session 4 — The hookup: the read surface & the League
-
-The design is designlog 2026-08-21 (E) (round 5 — the read surface, the
-integration minimum, the storage settlements); the Miners' League's
-design is designlog 2026-08-21 (D)'s own scrub, moved here because the
-old-world cards returning IS the hookup's business. This is the arc's
-last session: when it ships, Part 1 is deleted whole and any parked
-item still standing folds into Part 2.
-
-**1. The tile character line.** A `TILE_CHARACTER` table in `places.py`
-and `tile_character(world, tile)` — ONE short phrase in the writing.md
-register, composed from the tile's facts by fixed priority: the mine
-first (by its first good — "silver country", "salt country", "iron
-country"), then the goods-origin words ("grain country", "wine
-country", "wool country", "horse country", "timber country", "fur
-country", and the authored colours' own), then land character off cover
-+ terrain + climate ("deep forest", "hill country", "fenland", "the
-open steppe", "bare tundra", "open desert", "rich farmland" where the
-farmland tag, else the terrain's plain word). One phrase, never a list
-— composition into fuller sentences is the DM's, not the code's. The
-exact word table is settled at build under writing.md; the examples
-here are canon.
-
-**2. The harvest words** (discharging round 1's parked fiction names —
-this is the harvest's first read surface). The spoken scale words are
-the settled ones — legendary / excellent / ordinary / poor / failed /
-apocalyptic — and NEVER the stored percent (hidden numbers, visible
-words: the DM speaks the word too). The causes read through
-`HARVEST_CAUSE_LINES`: `drought` → "the drought", `rains` → "the great
-rains" (on nile tiles "the low Nile" — the failed flood), `frost` →
-"the black frost". The line: `last harvest: failed -- the great rains`.
-
-**3. The tile detail fold-in.** `tile_detail_lines` grows the character
-line and the last-harvest line (both common knowledge — the player sees
-them on map.txt's here-block; inside the 40-column wrap). With session
-3's mine, goods and route lines this completes the tile's public file.
-
-**4. The DM tile brief** (designer directive, the round-4 sitting).
-`places.tile_brief_lines(world, tile)` — one tile's WHOLE file for DM
-eyes, the way `lore` serves the land's: the header (label, country,
-biome, terrain, climate, cover), the character line, the last harvest
-with its cause, the goods, the mine, the routes with endpoints and
-cargo, the census (every slot: tier, the name where materialized —
-"a village (unmet)" otherwise — the charter/manor words, the quiet
-board marked), then the four NEIGHBOURS in a line each — label,
-character phrase, chief settlement tier and name if any, the harvest
-word where it is a problem — so the DM narrates toward the next tile
-knowingly. A new verb `tile [COORD]` beside `world` and `lore` — DM
-eyes, free, costs no day; defaults to the party's tile, takes any
-coordinate. The land layer stays `world` / `lore`'s business — the
-brief is the TILE's file only. dm.md gains the protocol (consult the
-brief on arrival and before narrating travel; it is narration material,
-never a dump to the player) and the quick reference gains the five
-tiers, the season calendar and the climate words.
-
-**5. The tile menu** — the settled minimum of existing systems reading
-the new ground (the priced menu grows a STATIC tile factor beside the
-land's dynamic terms; round 4's parked route-aware-prices item resolves
-to exactly this). A `TILE_MENU` table, three rows: a grain-origin tile
-prices `lodging` 0.90 (bread is cheap at the granary — the mirror of
-grain-scarce's 1.50), a mine tile prices `steel` 0.90 (stacking under
-deposit-found is right — a strike at the pithead is the cheapest steel
-in the world), a crossroads tile (2+ routes crossing) prices `goods`
-0.95 and `lodging` 1.10 (full shelves, full beds). Read by
-`session.local_term` and the `prices` sheet as a multiplier beside
-`worldsim.term`, clamped by the same `MENU_FLOOR` / `MENU_CEILING`;
-static, derived, never stored. `toll` and `ferry` stay untouched —
-tolls walking the route network is the snapshot and politics arcs'
-work.
-
-**6. The Miners' League** — the recovery (designer directive; the
-worked scrub is designlog 2026-08-21 (D)). The `deposit` slot returns
-to `worldsim.STATE_SLOTS` with its three stages and words, and
-`STATE_MENU` prices them again (deposit-drying: steel 1.20;
-deposit-found: steel 0.85). The six-card extraction chain is recovered
-from the pre-cut catalog (`git show 4d9155b^:worldsim.py`) and re-keyed
-`mining/*` for all three lands (each now holds mines): new-seam,
-gold-rush, vein-dries, veins-reopened, strike, food-caravan — the chain
-discipline unchanged. The scrub: clans → the MINERS' LEAGUE and its
-chapter masters; "A dwarf has found a way" → an old engineer; the
-under-thane → the League steward; the clan books → the League's books;
-`_DWARF_TOUGHS` → the standard human tough pool. The claim-keeper, the
-company shop, the winding gear and the pit bosses stay — they were
-always human mining language. THE KNOCKERS fact returns verbatim (it
-was always human mining folklore), plus a League fact per land naming
-its chapter and its mines. The cards fire at land level like every
-card; their tile address (the mine) arrives with the snapshot arc.
-
-**7. The standing eyeball and the bench.** Sessions 1–3 each moved
-their constants into `places.py` and re-pointed econmap.py (the
-standing-rules bullet); this session finishes the tool's turn: its
-render commands draw FROM a built world (`places.create_geography`)
-rather than a private simulation, and its `--sweep` commands retire in
-favor of **`bench_worldgen.py`** — the arc's measured suite over real
-worldgen: the harvest sweep (coverage, region sizes, cause mix, the
-drought guarantee), the census sweep (per tier, slots per tile, empty
-tiles, souls, the quiet-rich share), the trade sweep (routes, ports,
-crossroads), default 100 seeds with the census and harvest pins
-measured at 500. Register it in develop.md's Files and append a dated
-benchlog entry per run, per doctrine.
-
-**8. The scaffolding sweep.** One test in the removed-peoples-sweep
-manner: the pre-Europe scaffolding is GONE — no `ENVIRONMENT_PROFILES`,
-no `SETTLEMENT_DENSITY` / `_population_slots`, no catalog `environment`
-key, no `prairie` in any runtime table or play-facing doc, no bare
-`basic` / `mountain` tag on any Area, and econmap.py holds no private
-copy of a constant `places.py` owns.
-
-**9. Tests.** The character line and the harvest line on representative
-tiles (a mine, a granary, a crossroads, a quiet wilderness tile), inside
-the wrap; the brief complete for a start tile and its neighbours, the
-unmet settlements unnamed, the DM-only fields absent from the player's
-detail lines; the tile menu's three rows reaching `local_term` and
-`prices`, stacking with the land's terms under the clamps; the League
-chain run in a mining land (seam → rush, dries → reopened, and the
-caravan admitted on grain-scarce); the sweep test; one broken world per
-new `validate_world` clause if any; every existing bench unmoved.
-
-**What session 3 left on session 4's desk** (2026-08-21, designlog (H)):
-
-- **The label is crowded where the trade is.** Paris carries fourteen
-  route lines and the busiest tile in an average world is crossed by
-  twelve or thirteen routes, which on a 40-column page is twenty-odd lines
-  under the grid. The contract asked for one line per route and got it;
-  this session owns the whole read surface, so it is the place to decide
-  whether a `+N more` cap (the `map_legend_lines` pattern) belongs there.
-- **The trade tags are deliberately kept off an Area's tag list.**
-  `materialize_slot` merges the tile's GROUND tags only, because an Area's
-  tags are quest vocabulary and `quests._fallback_place_requirement`
-  already asks for a `mine` tag. Wiring them back on PURPOSE — a mine job
-  landing at a real mine rather than on any mountain — is a one-line
-  change with the reason written beside it in `places.py`.
-
-**Parked from round 4** (moved here when session 3 shipped): a
-Hanse-shaped authored northern circuit (the derived north draws its own
-for now); the Ardennes-shaped western wildwood mark (the eastern one
-shipped; the west still has none). Both fold into Part 2 if this session
-does not take them.
-
-**Settled non-changes** (round 5's design, so the arc stays this arc):
-board activity stays the tier table — deriving it from the band would
-count the census twice (the tier IS the band's expression); no trouble
-score, no forward simulation, no card changes and no card addresses
-(the snapshot arc); creature and encounter geography stays the fauna
-dump's — `hunt` and the road keep the land pools; the wealth band stays
-the land's 2d6 (the snapshot arc argues the aggregate); the charter and
-the manor stay write-only (the politics arc); no new map overlay page —
-the 33-column map is settled, and the tile's character lives in the
-detail lines and the brief.
-
----
-
-# Part 2 — The roadmap draft beyond the arc
-
-Main points only. Each is a future design conversation; nothing here is
-scheduled or specified.
 
 ## The spring snapshot & trouble arc (the natural next)
 
-- **The last-harvest roll SHIPPED with session 2** (2026-08-21 — the
-  layer is in `places.roll_harvest` and documented in rules.md's World &
-  Navigation add-on; nothing reads it yet). This arc KEEPS: the
+- **The last-harvest roll SHIPPED with session 2 and is READ since
+  session 4** (2026-08-21 — the layer is `places.roll_harvest`, its words
+  are `places.harvest_line`, and rules.md's World & Navigation add-on
+  documents both). This arc KEEPS: the
   **last-winter roll** for pastoral
   country (fodder, herd losses, animal disease, wolves and monsters at
   the herd's edges — reading the climate table's winter column, and the
@@ -251,7 +59,11 @@ scheduled or specified.
   the aggregate — the macro story and the map then agree by construction.
 - **Cards gain addresses**: a firing card stamps tile-level states (place
   and land states already share one record shape), and admits read
-  geography, so the harvest fails where the grain grows.
+  geography, so the harvest fails where the grain grows. The Miners'
+  League (session 4) is the concrete customer waiting: its six cards fire
+  at LAND level over a map that knows exactly which nine tiles have pits
+  on them, so a new seam is found *somewhere in Firascir* rather than at
+  Goslar. Giving it the address is this arc's cheapest visible win.
 - **The past-epidemic population scar** — the plague chain's mark on the
   census, parked out of the census session (2026-08-21) and waiting for
   this arc's own trouble model.
@@ -300,17 +112,47 @@ the **hamlet** is deliberately one minimal role a country — a well, a
 shrine, a cot and a store — that a detail round would widen. Both live in
 `place_catalog.json` and are described in develop.md's Files entry for it.
 
+## Parked from the tile economy arc (2026-08-21, when session 4 shipped)
+
+None of these is blocked; the arc declined them rather than deferring
+them, so each is a cheap sitting whenever the map wants it.
+
+- **A Hanse-shaped authored northern circuit.** Round 4 declined it because
+  the DERIVED north already draws the circuit organically — Falun's copper,
+  the taiga timber, the Sound's herring, Luneburg's salt, the amber shore.
+  Authoring it would be for the NAME and the story, not for the roads.
+- **An Ardennes-shaped western wildwood mark.** The eastern one shipped as
+  `places.HAND_FOREST` (four clearance-capped tiles east of Warsaw); the
+  west still has none, so no lowland deep forest survives the deforestation
+  law there. One entry in the same table.
+- **Two land-character rows the goods layer always outranks**, plus the
+  `plains` fall-through. `deep forest` and `the open steppe` never reach a
+  page on the shipped overlays, because every deep-forest tile is already
+  a fur or timber origin and every non-marsh steppe tile is horse country;
+  `plains` never does either, because an earlier rule covers every plains
+  tile that lacks the farmland tag. They are law rows over the whole
+  authored vocabulary rather than dead fallbacks, and `econmap.py
+  character` prints which are unused so the fact stays visible; a later
+  overlay change may bring any of them back on its own. Only revisit if
+  the priority itself starts reading wrong at the table.
+
 ## Small deferred leftovers (from the Europe build, still true)
 
-- **The charter and the manor have no readers.** Session 2 stores both
-  words on every settlement slot and nothing looks at them; what freedom
-  is worth — taxes, revolts, entry at the gate — is the politics arc's
-  design (rules.md's World & Navigation add-on describes what is stored).
+- **The charter and the manor have no MECHANICAL readers.** Session 2
+  stores both words on every settlement slot and session 4's tile brief
+  prints them for the DM, but nothing in the engine acts on either; what
+  freedom is worth — taxes, revolts, entry at the gate — is the politics
+  arc's design (rules.md's World & Navigation add-on describes what is
+  stored).
 - **Named natural regions** (the Alps, the Pripet, the Danube corridor) —
   take if cheap, still unscheduled.
 - Roads and road quality; bridges, mandatory river tolls and ferries;
   ports, owned ships, passage prices and naval encounters — natural
-  continuations of the routes session, none scheduled.
+  continuations of the routes session, none scheduled. Session 4 wired
+  the priced menu's TILE half (a granary's cheap beds, a pithead's cheap
+  steel, a crossroads' full shelves) and deliberately left `toll` and
+  `ferry` alone: tolls walking the route network want the snapshot and
+  politics arcs first.
 - Fogging the base terrain map. Diagonal movement.
 - **Two calibration benches are not reproducible run to run**, and
   neither can clear a change. `bench_abilities.py` (found 2026-08-21,
@@ -320,7 +162,9 @@ shrine, a cot and a store — that a detail round would widen. Both live in
   tree): parts 1 and 2 are byte-stable and PART 3, the career sim, is not
   — reached-L20 came back 0.5%, 1.5% and 0.0%. Both develop.md Files
   entries carry the warning. Worth a sitting of its own: a safety net that
-  cannot be compared against itself is not one.
+  cannot be compared against itself is not one. (`bench_worldgen.py`,
+  added by session 4, is NOT one of them — its layers are deterministic
+  per seed, so it can clear a change.)
 - Watch in play: a companion quitting mid-career is much harsher on the
   fixed map (closure note, unchanged — the wound and satisfaction tracks
   are behaving as designed; the road is just genuinely long now).

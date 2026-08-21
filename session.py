@@ -185,6 +185,7 @@ from places import (
     settlement_tier, has_service,
     direction_word, edge_days, edge_direction, map_legend_lines, map_lines,
     neighbor_id, parse_coordinate, path_days, shortest_path, tile_coordinate,
+    tile_brief_lines, tile_terms,
     tile_detail_lines as places_tile_detail, tile_ground as places_tile_ground,
     tile_id as tile_id_of, tile_label,
     MAP_GLYPH_LEGEND, MAP_MARK_LEGEND,
@@ -2970,12 +2971,21 @@ def local_term(state: dict, name: str) -> float:
     so every shop call can ask without checking first.
 
     The world is rolled up to today first: a price is a thing you are quoted
-    now, not a thing that was true when the party last looked."""
+    now, not a thing that was true when the party last looked.
+
+    THE TILE MENU (2026-08-21, session 4) multiplies in beside it: the
+    land's term is DYNAMIC (a band, a card, a neighbour's failed harvest)
+    and the Tile's is STATIC (a granary, a pithead, a crossroads), and the
+    same clamps catch the product. Bread is cheap at the granary and steel
+    is cheap at the mine whatever the month is doing."""
     world = state.get("world")
     if not world or not state.get("position"):
         return 1.0
     worldsim.roll_world(world, state["clock"].day)
-    return worldsim.term(world, state["position"]["land"], name)
+    land = worldsim.term(world, state["position"]["land"], name)
+    tile = tile_terms(world, state["position"]["tile"]).get(name, 1.0)
+    return max(worldsim.MENU_FLOOR,
+               min(worldsim.MENU_CEILING, land * tile))
 
 
 def price_note(state: dict) -> None:
@@ -6818,11 +6828,37 @@ def cmd_train(args: argparse.Namespace) -> None:
 def local_prices(state: dict | None) -> dict[str, float]:
     """The priced terms over wherever the party is standing, or an empty
     sheet when there is nowhere and nothing (`prices` is callable with no
-    save at all -- it is the DM's reference as well as the player's shop)."""
+    save at all -- it is the DM's reference as well as the player's shop).
+
+    Both hands, multiplied and clamped exactly as `local_term` does it:
+    the LAND's dynamic terms and the TILE's static ones (2026-08-21)."""
     if not state or not state.get("world") or not state.get("position"):
         return {}
-    worldsim.roll_world(state["world"], state["clock"].day)
-    return worldsim.menu_terms(state["world"], state["position"]["land"])
+    world = state["world"]
+    worldsim.roll_world(world, state["clock"].day)
+    terms = worldsim.menu_terms(world, state["position"]["land"])
+    for name, mult in tile_terms(world, state["position"]["tile"]).items():
+        terms[name] = terms.get(name, 1.0) * mult
+    return {name: max(worldsim.MENU_FLOOR,
+                      min(worldsim.MENU_CEILING, mult))
+            for name, mult in terms.items() if abs(mult - 1.0) > 0.001}
+
+
+def tile_price_lines(state: dict) -> list[str]:
+    """What the GROUND under the party is doing to the shelf -- the tile
+    menu's own state diff, beside `worldsim.menu_lines`' one for the land.
+    The labels are worldsim's, because the terms are."""
+    terms = tile_terms(state["world"], state["position"]["tile"])
+    if not terms:
+        return []
+    lines = ["-- and what this ground charges --"]
+    for key in worldsim.MENU_TERMS:
+        mult = terms.get(key)
+        if mult is None:
+            continue
+        way = "up" if mult > 1 else "down"
+        lines.append(f"  {worldsim.MENU_LABEL[key]}: {way} x{mult:.2f}")
+    return lines
 
 
 def cmd_prices(args: argparse.Namespace) -> None:
@@ -6847,6 +6883,8 @@ def cmd_prices(args: argparse.Namespace) -> None:
     if terms:
         for line in worldsim.menu_lines(state["world"],
                                         state["position"]["land"]):
+            print(line)
+        for line in tile_price_lines(state):
             print(line)
         print("  (the sheet below is what that comes to at the counter)")
     print("-- SHOP PRICES (gold) --")
@@ -7050,6 +7088,30 @@ def cmd_lore(args: argparse.Namespace) -> None:
         polity = hits[0]
     worldsim.roll_world(world, state["clock"].day)
     print("\n".join(worldsim.lore_lines(world, polity)))
+
+
+def cmd_tile(args: argparse.Namespace) -> None:
+    """The DM's page behind a TILE (2026-08-21, session 4): everything the
+    ground, the census and the trade network stamped on one cell of the
+    map, plus its four neighbours in a line each. Free, costs no day, and
+    the engine never reads a word of it -- the sibling of `lore`, one level
+    down. Defaults to the Tile the party is standing on."""
+    state = load()
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    wanted = " ".join(args.coordinate).strip()
+    if not wanted:
+        tid = state["position"]["tile"]
+    else:
+        parsed = parse_coordinate(wanted)
+        if parsed is None:
+            print(f"{wanted!r} is not a coordinate -- use RxxCyy "
+                  f"(e.g. R09C10).")
+            return
+        tid = tile_id_of(*parsed)
+    print("\n".join(tile_brief_lines(world, tid)))
 
 
 def cmd_use(args: argparse.Namespace) -> None:
@@ -7955,6 +8017,20 @@ def build_parser() -> argparse.ArgumentParser:
              "the party is standing in")
     p.add_argument("land", nargs="*", help="a land, by name or key")
     p.set_defaults(func=cmd_lore)
+
+    p = sub.add_parser(
+        "tile",
+        help="the DM's page behind one TILE (2026-08-21): its ground, "
+             "climate and character, last year's harvest and what caused "
+             "it, the mine, the goods, every road across it, the whole "
+             "settlement census (including the places nobody has met "
+             "yet), and the four neighbours in a line each. Free, costs "
+             "no day, never read out to the player -- narration material "
+             "for arriving and for describing the road on. Defaults to "
+             "the Tile the party is standing on")
+    p.add_argument("coordinate", nargs="*",
+                   help="a map coordinate (e.g. R09C10); omit for here")
+    p.set_defaults(func=cmd_tile)
 
     p = sub.add_parser(
         "give",
