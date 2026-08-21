@@ -5898,3 +5898,131 @@ the leftovers list pointing at the politics arc, and the hamlet/metropolis
 detail to Settlements revisited. Session 3 (the trade network) is next and
 unblocked: its `MINES` table is already in `places.py` and its mine towns
 are already seated.
+
+## 2026-08-21 (H) — Session 3 of the tile economy arc: the trade network, built
+
+**What shipped.** Plan.md's Session 3 whole: round 4's trade layer — the
+nine mines' whole reading, the nineteen goods and their three kinds of
+origin, the computed route network with the five legendary roads, the sea
+rule, the four tags, the `validate_world` clauses and the tile label that
+is the layer's one read surface. econmap.py took its third and last turn:
+**no constant in the tool is authored any more**, and its restated
+pathfinder is gone.
+
+- **The layer is a pure function of the census.** `places.roll_routes(world)`
+  runs in `create_geography` immediately after `roll_census` and consumes
+  NO rng — it takes no derived seed of its own, because it needs none.
+  Sessions 1 and 2 each argued their derived seed carefully; this one
+  argues the absence of one. The layer is still each world's own, because
+  which Tiles are cities is what decides where the ordinary network goes:
+  the trade skeleton is fixed in character (the mines, the origins, the
+  legendary five) and each world's own in detail.
+- **The three kinds of origin, one law.** `goods_origins` builds the
+  authored mines, the authored colour with its two exotic doors, and the
+  derived produce regions by law over sessions 1-2's numbers; `GOOD_ROUTES`
+  then moves all of them with one table — destination kind, count, bulk
+  range in days — and the pathfinder draws every line. Routes sharing both
+  endpoints merge their cargo. On top of that the two authored additions:
+  a grain road to every mine whose own ground cannot feed it, and the five
+  legendary roads whose authored endpoint pairs the same pathfinder joins.
+- **The label** — the one read surface. `tile_detail_lines` grew the mine
+  line, the goods line and one line per route crossing the Tile, all of it
+  common knowledge: `mine: Goslar`, `goods: silver, copper`, `Goslar -
+  Paris: silver`, `the Silk Road: the eastern gate - Constantinople, silk
+  and dyes`.
+- **Measured over 500 worlds**, landing exactly on the round's pins: 58.7
+  routes (58-59), 113.7 of 314 land Tiles on a route, 27.0 ports, 26.0
+  sea-lane Tiles, ~37 crossroads. Falun unfed in all 500. Every
+  reproducible bench byte-identical, and an exact five-seed worldgen hash
+  identical on both trees. benchlog's 2026-08-21 (C) entry has the tables.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **The pathfinder is rooted at the DESTINATION, not the origin.** The
+   plan said "places.py's own `_single_source`; ties settle
+   deterministically" and left which end the tree hangs from open. Rooting
+   at the market is the load-bearing choice: many origins ship to one
+   market, so one tree serves them all AND every road into that market
+   settles its ties the same way — the silver roads converge on the mint
+   instead of each drawing its own equally cheap line one tile over.
+   Rooting at the origin would have been correct and ugly. It is also what
+   made the shipped numbers reproduce econmap's exactly, which is how the
+   swap was verified: the tool's output before and after the pathfinder
+   retirement is byte-identical.
+2. **No derived seed for the routes.** Call 1's sibling. The arc's standing
+   rule is "derived seeds throughout, so every existing bench measures the
+   same board"; the honest reading here is that a layer which draws no
+   random numbers cannot disturb a stream, and inventing a seed for it
+   would have been ceremony. The benches confirm it.
+3. **The trade tags are kept OFF an Area's tag list.** This was the one
+   real bug the session found, and it was invisible until the benches ran.
+   `materialize_slot` merges the Tile's tags into the settlement Area, and
+   an Area's tags are QUEST vocabulary: `_select_quest_area` picks by them,
+   and `quests._fallback_place_requirement` already asks for a `mine` tag
+   for any forged job whose text says mine, deep or cave. Letting the four
+   trade words through would have made the quest generator a silent reader
+   of the trade layer — precisely what the contract's "nothing reads routes
+   yet beyond the label" forbids. `materialize_slot` now merges the GROUND
+   tags only. Worth noting for session 4: wiring that back on PURPOSE (a
+   mine quest landing at a real mine is better fiction than a mine quest
+   landing on any mountain) is a one-line change with the reason written
+   beside it.
+4. **The label wraps itself.** `tile_detail_lines` gained a `width` and a
+   `_detail_wrap` that mirrors session.py's rule exactly (continuation two
+   spaces past the indent), so the output is byte-identical after the
+   driver's own wrap and the Tile's file is the same list of lines whoever
+   asks for it. Without it a label test would have had to re-implement the
+   wrap to check the wrap.
+5. **An unnamed endpoint reads as its coordinate.** The design named the
+   historical cities, the mine towns and the authored marks as the naming
+   authorities and said nothing about a rolled market. Naming it would leak
+   a settlement the party has not met; the coordinate is what the map
+   already calls that Tile, so `R09C17 - Luneburg: salt` is consistent with
+   the rest of the page. dm.md now says to narrate such an end as "the
+   market east of here" rather than inventing a name.
+6. **The `port` clause is about the SHORE, and the delta port is a grain
+   origin.** Two small confirmations the build made concrete: a port is the
+   LAND tile of an element change (so `validate_world` can demand `coast`
+   on it), and the delta port at R18C24 turns out to sit on alluvial ground
+   that clears the grain threshold — so it exports spice, sugar, dyes AND
+   grain. That is the exotics reversal working as designed rather than an
+   accident: an exotic door is an ordinary tile with an ordinary goods
+   list, and the test now pins it.
+7. **Two fixtures were re-pinned, both because the world moved.**
+   `test_ground`'s seed-invariance test compares the GROUND tags only now —
+   the three road words follow the rolled census, so which Tiles wear them
+   IS the seed's business, and test_trade asserts the other half of the
+   claim (the mines, the origins and the legendary roads identical across
+   seeds). `test_ui_logs`'s wilderness test matched "the first indented
+   line containing the settlement's name", and seed 27 opens at Goslar, so
+   `  Goslar - Paris: silver` started answering; it now matches the Area
+   line by its `name (` prefix.
+
+**The finding that is not this session's.** `bench_quests.py` came back
+different and was tested against ITSELF on an unmodified tree, three
+consecutive runs: parts 1 and 2 (the room and site honesty blocks) are
+byte-stable, and the CAREER block is not — reached-L20 came back 0.5%,
+1.5% and 0.0% from identical code. This is the same defect session 2 found
+in `bench_abilities.py`. Two of the five calibration benches now cannot be
+compared against themselves; develop.md's Files entries carry both
+warnings, and plan.md's leftovers list now names both. It is worth a
+sitting of its own, because a bench that cannot clear a change is not a
+safety net.
+
+**One thing to feel at the table.** The label is crowded where the trade
+is: Paris carries fourteen route lines, and the busiest Tile in an average
+world is crossed by twelve or thirteen routes. That is honest — Paris IS
+where the roads meet — but on a 40-column phone page it is twenty-odd lines
+under the grid, and it will read as a wall before it reads as a trade
+capital. The contract asked for one line per route and got it; the natural
+place to decide whether a `+N more` cap belongs there is session 4, which
+owns the whole read surface and is already giving the DM a separate tile
+brief.
+
+**Parked on the way**: nothing new. The round-4 footer's two items (the
+Hanse-shaped northern circuit, the Ardennes-shaped western wildwood mark)
+move to Part 2 with the rest of the arc's leftovers when session 4 deletes
+Part 1; until then they stay on session 4's contract footer. Session 4 (the
+hookup: the read surface and the Miners' League) is next and unblocked —
+its tile character line, its harvest words, its tile brief and its tile
+menu all read layers that are now on the ground.

@@ -337,6 +337,13 @@ def _by_letter(table: dict) -> dict:
     return {letter: table[word] for letter, word in CLIMATES.items()}
 
 
+def _letters(words) -> str:
+    """A tuple of climate WORDS as the letter string the tool's grids test
+    membership against -- the same window, in the other direction."""
+    return "".join(letter for letter, word in CLIMATES.items()
+                   if word in words)
+
+
 REGION_COUNT = places.HARVEST_REGIONS
 CENTER_SEPARATION = places.HARVEST_SEPARATION
 CENTER_WEIGHT = _by_letter(places.CENTER_WEIGHT)
@@ -706,95 +713,43 @@ def sweep_population(base: list[str], climate: list[str],
 # roads are authored endpoints whose line the pathfinder draws.  Exotics
 # are goods like any other -- their origins are the frame's doors.
 
-MINES = places.MINES        # SHIPPED 2026-08-21 (session 2): the nine
-                            # authored mines and their towns live in
-                            # places.py now, where the census seats them.
-GOODS_AUTHORED = {          # origin colour with no mine town under it
-    (10, 5): ("salt",),             # the bay salt pans
-    (11, 6): ("wine",),             # the western wine coast
-    (6, 15): ("herring",),          # the Sound's herring fair
-    (6, 22): ("amber",),            # the amber shore
-    (8, 11): ("cloth",),            # the Low Countries' looms
-    (13, 14): ("cloth",),           # the Tuscan looms
-    (12, 13): ("arms",),            # the Lombard armourers
-    (11, 19): ("horses",),          # the middle Danube horse fairs
-    (11, 30): ("silk", "dyes"),     # the eastern gate (the Silk Road's door)
-    (18, 24): ("spice", "sugar", "dyes"),   # the delta port
-}
-ENDPOINT_NAMES = {          # labels for endpoints that are not towns
-    (11, 30): "the eastern gate", (18, 24): "the delta port",
-    (18, 26): "the Nile granary", (6, 22): "the amber shore",
-    (6, 15): "the Sound", (10, 5): "the salt pans",
-    (11, 6): "the wine coast", (8, 11): "the Low Countries' looms",
-    (13, 14): "the Tuscan looms", (12, 13): "the armouries",
-    (11, 19): "the horse fairs",
-}
-
-# The derived origins, by law over rounds 1-3's numbers.
-GRAIN_SURPLUS = 0.55        # realized arable at/above this exports grain:
-                            # the alluvial river corridors and the Nile --
-                            # ordinary plain country feeds itself only
-WINE_CLIMATES = "mw"        # the vine: med and wet-med farmland
-WINE_MIN = 0.30
-WOOL_CLIMATES = "om"        # the sheep west: oceanic and med hill country
-WOOL_PASTORAL = 0.40
-HORSE_PASTORAL = 0.40       # the steppe's herds (plus the authored fairs)
-FUR_CLIMATES = "tuc"        # deep forest in the cold north and east
-MIN_PRODUCE_REGION = 2      # a derived produce region under this many
-                            # tiles is local colour, never an export
-                            # (grain exempt: one alluvial tile is a
-                            # granary; timber moves by water only)
-
-# Where each good goes.  destinations: markets = city-grade chiefs +
-# historical towns + mine towns; cities = the same without mine towns;
-# metropolises = the three M chiefs; smiths = the arms towns + cities;
-# cloth = the cloth towns; capital = the origin's own crown; capitals =
-# all three.  k = how many destinations; max_days = bulk range (None =
-# rich goods travel any distance).  Silk, spice, sugar, dyes and amber
-# have no row: they move only on the legendary roads.
-GOOD_ROUTES = {
-    "grain": ("markets", 1, 8),
-    "timber": ("markets", 1, 10),
-    "furs": ("markets", 1, 12),
-    "wax": ("markets", 1, 12),
-    "salt": ("markets", 2, 8),
-    "herring": ("markets", 2, 10),
-    "wine": ("metropolises", 1, 12),
-    "wool": ("cloth", 1, 12),
-    "horses": ("capital", 1, 12),
-    "silver": ("capital", 1, None),
-    "copper": ("cities", 1, None),
-    "iron": ("smiths", 1, None),
-    "cloth": ("metropolises", 2, None),
-    "arms": ("capitals", 2, None),
-}
-MINE_FOOD_DAYS = 6          # a hungry mine's grain road reaches this far
-CAPITALS = {"firascir": (9, 10), "mortellaria": (14, 14),
-            "tergal": (10, 27)}
-
-LEGENDARY = (               # authored endpoints and cargo; computed line
-    {"name": "the Silk Road", "from": (11, 30), "to": (14, 27),
-     "goods": ("silk", "dyes")},
-    {"name": "the Spice Lane", "from": (18, 24), "to": (12, 14),
-     "goods": ("spice", "sugar", "dyes")},
-    {"name": "the Amber Road", "from": (6, 22), "to": (12, 14),
-     "goods": ("amber",)},
-    {"name": "the Fairs Road", "from": (12, 14), "to": (9, 10),
-     "goods": ("silk", "spice", "sugar")},
-    {"name": "the Grain Fleet", "from": (18, 26), "to": (14, 27),
-     "goods": ("grain",)},
-)
-
-# places.py's settled edge model, restated so the tool stays standalone:
-# north-south 2 days, east-west 1, +1 when EITHER end is a mountain (once,
-# which is what keeps it symmetric); sea sails at land cost.
-EAST_WEST_DAYS = 1
-NORTH_SOUTH_DAYS = 2
-MOUNTAIN_SURCHARGE = 1
+# ONE AUTHORITY PER CONSTANT: the trade layer SHIPPED with session 3 on
+# 2026-08-21, so every number below now lives in places.py and the names
+# here are the tool's window onto the same objects.  The tool still runs
+# its own private simulation (a plain seeded rng where worldgen derives its
+# seeds), which session 4 retires in favor of rendering a BUILT world.
+MINES = places.MINES
+GOODS = places.GOODS
+GOODS_AUTHORED = places.GOODS_AUTHORED
+ENDPOINT_NAMES = places.ENDPOINT_NAMES
+GRAIN_SURPLUS = places.GRAIN_SURPLUS
+WINE_CLIMATES = _letters(places.WINE_CLIMATES)
+WINE_MIN = places.WINE_MIN
+WOOL_CLIMATES = _letters(places.WOOL_CLIMATES)
+WOOL_PASTORAL = places.WOOL_PASTORAL
+HORSE_PASTORAL = places.HORSE_PASTORAL
+FUR_CLIMATES = _letters(places.FUR_CLIMATES)
+MIN_PRODUCE_REGION = places.MIN_PRODUCE_REGION
+DERIVED_GOODS = places.DERIVED_GOODS
+GOOD_ROUTES = places.GOOD_ROUTES
+MINE_FOOD_DAYS = places.MINE_FOOD_DAYS
+CAPITALS = {country: places.tile_row_column(tid)
+            for country, tid in places.CAPITAL_TILES.items()}
+LEGENDARY = places.LEGENDARY
 
 
 def _at0(rc: tuple[int, int]) -> tuple[int, int]:
     return (rc[0] - 1, rc[1] - 1)
+
+
+def _tid(tile: tuple[int, int]) -> str:
+    """The tool's 0-based (row, column) as the game's own Tile ID."""
+    return places.tile_id(tile[0] + 1, tile[1] + 1)
+
+
+def _rc(tid: str) -> tuple[int, int]:
+    row, column = places.tile_row_column(tid)
+    return row - 1, column - 1
 
 
 def _grid_neighbors(r: int, c: int):
@@ -804,31 +759,16 @@ def _grid_neighbors(r: int, c: int):
             yield rr, cc
 
 
-def _edge_days(base: list[str], a: tuple[int, int],
-               b: tuple[int, int]) -> int:
-    days = EAST_WEST_DAYS if a[0] == b[0] else NORTH_SOUTH_DAYS
-    if "^" in (base[a[0]][a[1]], base[b[0]][b[1]]):
-        days += MOUNTAIN_SURCHARGE
-    return days
-
-
-def _tree(base: list[str], start: tuple[int, int]):
-    """Dijkstra from one tile over the whole frame (sea included);
-    frontier ordered by (cost, row, column) like places._single_source."""
-    distance = {start: 0}
-    previous: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
-    heap = [(0, start)]
-    while heap:
-        d, node = heapq.heappop(heap)
-        if d > distance[node]:
-            continue
-        for nxt in _grid_neighbors(*node):
-            nd = d + _edge_days(base, node, nxt)
-            if nd < distance.get(nxt, 10 ** 9):
-                distance[nxt] = nd
-                previous[nxt] = node
-                heapq.heappush(heap, (nd, nxt))
-    return distance, previous
+def _tree(start: tuple[int, int]):
+    """A window onto `places._single_source` -- the GAME's pathfinder over
+    the game's own edge model, restated here only as 0-based coordinates.
+    The tool kept a copy of both until session 3 shipped the routes; a
+    second distance model was exactly the drift the arc's one-authority
+    rule exists to prevent."""
+    distance, previous = places._single_source(_tid(start))
+    back = {_rc(tid): _rc(prev) for tid, prev in previous.items()}
+    back[start] = None                  # the root has no predecessor
+    return {_rc(tid): days for tid, days in distance.items()}, back
 
 
 def _path_from(previous, tile):
@@ -865,8 +805,7 @@ def build_origins(base, climate, terrain, economies) -> list[dict]:
     for rc, goods in GOODS_AUTHORED.items():
         origins.append({"tiles": {_at0(rc)}, "goods": tuple(goods),
                         "name": None})
-    derived = {good: set() for good in
-               ("grain", "wine", "wool", "horses", "timber", "furs")}
+    derived = {good: set() for good in DERIVED_GOODS}
     for (r, c), eco in economies.items():
         letter = climate[r][c]
         river = base[r][c] == "~" or letter == "n"
@@ -919,7 +858,7 @@ def roll_routes(base, climate, terrain, seed: int):
 
     def tree(dest):
         if dest not in trees:
-            trees[dest] = _tree(base, dest)
+            trees[dest] = _tree(dest)
         return trees[dest]
 
     raw = []

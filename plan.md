@@ -15,18 +15,19 @@ implementation sessions**. Trigger one by prompting **"implement
 session N"**; a session is a full dev sitting (read develop.md first,
 ship the contract, run the suites, do the shipping paperwork). The
 sessions ship **in order** — each reads the layers the one before it
-stamped, and **Sessions 1 (the ground & the sky) and 2 (the rolled world:
-the last harvest & the census) both shipped 2026-08-21** (designlog's (F)
-and (G) entries; the built layers are documented in rules.md, dm.md and
-develop.md, and their measured numbers in benchlog). The numbers are kept
-as they were cut, so 3 and 4 still mean what the designlog says they
-mean. Part 2 is the draft roadmap
+stamped, and **Sessions 1 (the ground & the sky), 2 (the rolled world:
+the last harvest & the census) and 3 (the trade network: mines, goods &
+routes) all shipped 2026-08-21** (designlog's (F), (G) and (H) entries;
+the built layers are documented in rules.md, dm.md and develop.md, and
+their measured numbers in benchlog). **Session 4 is the last, and when
+it ships Part 1 is deleted whole.** The numbers are kept as they were
+cut, so 4 still means what the designlog says it means. Part 2 is the
+draft roadmap
 beyond the arc — main points only, each a future design conversation,
 none scheduled.
 
 The cut is by implementation seam, not one-round-one-session (the
-designlog's round names stay the design authority): session 3 is round 4's
-trade network over the census session 2 rolled; session 4 is round 5 —
+designlog's round names stay the design authority): session 4 is round 5 —
 everything that READS — plus round 4's Miners' League recovery, which is
 old-system integration and belongs with the hookup.
 
@@ -62,115 +63,7 @@ Standing rules for the arc:
 
 ---
 
-# Part 1 — THE TILE ECONOMY ARC: the remaining implementation sessions
-
-## Session 3 — The trade network: mines, goods & routes
-
-The design is designlog 2026-08-21 (D) (the round-4 entry), including
-the reversal it records: **exotics are goods like any other** — the old
-keep-them-off-the-map remark is dead; an exotic's origin tile is simply
-the frame's door (the eastern gate, the delta port), and the legendary
-roads stay worth taxing and robbing because that is where their whole
-cargo walks. The layer and the eyeball tool are in the tree
-(`econmap.py routes [SEED]` / `routes --sweep`); **econmap.py's
-constants ARE this contract's numbers** (`MINES`, `GOODS_AUTHORED`,
-`ENDPOINT_NAMES`, the derived-origin thresholds, `GOOD_ROUTES`,
-`MINE_FOOD_DAYS`, `MIN_PRODUCE_REGION`, `LEGENDARY`). The mines, the
-authored colour, the derived origins and the legendary roads are
-deterministic like the map; the ordinary network is rolled WITH the
-census it reads (derived seeds, after the census roll), so the trade
-skeleton is fixed in character and each world's own in detail. Measured
-over 100 seeds: ~59 routes a world (58–59), ~114 of 314 land tiles on a
-route, ~27 ports. The Miners' League recovery is SESSION 4's; this
-session builds the ground it will speak of.
-
-**1. The ground.** Rolled at worldgen after the census. Stored:
-`tile["goods"]` (the origin's good words — sparse, most tiles carry
-none), `tile["mine"]` (the mine town's name), and the world's route
-records — id, name (legendary only), the ordered tile path, the goods
-carried, the length in days. Tags grow: `mine` on mine tiles,
-`trade-route` on land tiles a route crosses, `port` where a route steps
-between land and sea, `sea-lane` on the sea tiles it sails.
-`validate_world` grows the clauses: every mine tile carries its town,
-its goods and its tags; only legal good words anywhere; every legendary
-road present with its authored endpoints and cargo; every route path a
-chain of real edges whose days sum to the record's; ports on coast.
-
-**2. The mines**, authored, few and famous (`MINES` — nine, each also
-an authored mine TOWN in the census, seated in session 2): Goslar
-R09C14 (silver, copper — the Rammelsberg), Kutna Hora R09C19 (silver),
-Falun R03C22 (copper, iron), Banska Stiavnica R10C20 (silver, copper),
-Melle R10C08 (silver), Erzberg R11C14 (iron), Novo Brdo R13C18
-(silver), Luneburg R08C16 (salt), Wieliczka R10C21 (salt). **The
-mining-town rule is two laws**: the town law (slot 1, tier town, named
-by the mine, always free — shipped in session 2) and the hunger law — a
-mine tile whose own realized arable is under 0.30 gets a GRAIN ROAD
-from the nearest grain origin within `MINE_FOOD_DAYS` (6): the food
-caravan, a route and a vulnerability in one stroke. Falun finds no
-grain in reach and stays UNFED by design (pinned): the north's grain
-problem is real, and the DM has a standing story.
-
-**3. The goods**, nineteen words. Derived origins, by law over the
-prior sessions' numbers (regions of at least `MIN_PRODUCE_REGION` = 2
-contiguous tiles, except grain — one alluvial tile IS a granary):
-**grain** (realized ≥ 0.55: the river corridors and the Nile), **wine**
-(med and wet-med farmland), **wool** (oceanic and med hill country,
-pastoral ≥ 0.40), **horses** (the steppe's herds, pastoral ≥ 0.40),
-**timber** (wooded + river or coast, never marsh), **furs + wax** (deep
-forest in taiga, tundra or continental — the north and the eastern
-wildwood). Authored colour (`GOODS_AUTHORED`): the bay salt pans
-R10C05, the wine coast R11C06, the Sound's herring R06C15, the amber
-shore R06C22, the cloth looms R08C11 and R13C14, the Lombard armouries
-R12C13, the middle Danube horse fairs R11C19. The exotic doors: the
-eastern gate R11C30 (silk, dyes), the delta port R18C24 (spice, sugar,
-dyes). Mines carry silver, copper, iron, salt.
-
-**4. The routes.** The ordinary network is computed: per origin and
-good, `GOOD_ROUTES` names the destination kind (markets = city-grade
-chiefs + historical + mine towns; cities; the three metropolises; the
-smiths; the cloth looms; the origin's own capital or all three), how
-many destinations, and the bulk range in days (rich goods travel any
-distance — silver to the crown's mint, wool to the looms, cloth and
-wine to the metropolises, arms to the capitals). The pathfinder is
-places.py's own (`_single_source` — this session retires econmap's
-restated copy); ties settle deterministically. The LEGENDARY five are
-authored endpoints whose line the same pathfinder draws: the Silk Road
-(the eastern gate → Constantinople; silk, dyes), the Spice Lane (the
-delta port → Venice by sea; spice, sugar, dyes), the Amber Road (the
-amber shore → Venice), the Fairs Road (Venice → Paris; silk, spice,
-sugar) and the Grain Fleet (the Nile granary → Constantinople). **The
-sea rule**: sea sails at the settled edge cost (no cheap freight — one
-distance model for war, trade and play); a route's sea tiles are its
-sea lane, and the two shores where it changes element are ports. Routes
-with shared endpoints merge their cargo.
-
-**5. The label** — the one read surface this session ships (designer
-directive): `tile_detail_lines` grows the mine line, the goods line and
-one line per route crossing the tile — endpoints by name and the cargo,
-`Goslar – Paris: silver`, `the Silk Road: the eastern gate –
-Constantinople, silk and dyes` — inside the 40-column wrap. Everything
-else that READS the trade layer (the DM tile brief, the map page,
-prices, boards, encounters) is session 4's.
-
-**6. Tests.** Origins, mines and legendary roads identical across
-seeds; the network's pinned sweep (~59 routes, ~114 land tiles on a
-route, ~27 ports); the mines by name with their towns and tags; a grain
-road for every hungry mine and Falun pinned unfed; route records
-well-formed end to end; the label lines wrapped; one broken world per
-new `validate_world` clause; every existing bench unmoved (derived
-seeds).
-
-**Explicit non-changes** (settled, not deferred): the edge model is
-untouched — no cheap sea freight; no re-export chains — a route is one
-origin to one destination, and the entrepôt story is told by routes
-MEETING at Venice, not by cargo transshipping; the exotic doors are
-ordinary tiles with no special rule; nothing reads routes yet beyond
-the label (inns, tolls, banditry, plague walking in from a port stay
-later arcs' work, with their addresses now on the map).
-
-**Parked here**: a Hanse-shaped authored northern circuit (the derived
-north draws its own for now); the Ardennes-shaped western wildwood mark
-(the eastern one shipped; the west still has none).
+# Part 1 — THE TILE ECONOMY ARC: the last implementation session
 
 ## Session 4 — The hookup: the read surface & the League
 
@@ -290,6 +183,27 @@ chain run in a mining land (seam → rush, dries → reopened, and the
 caravan admitted on grain-scarce); the sweep test; one broken world per
 new `validate_world` clause if any; every existing bench unmoved.
 
+**What session 3 left on session 4's desk** (2026-08-21, designlog (H)):
+
+- **The label is crowded where the trade is.** Paris carries fourteen
+  route lines and the busiest tile in an average world is crossed by
+  twelve or thirteen routes, which on a 40-column page is twenty-odd lines
+  under the grid. The contract asked for one line per route and got it;
+  this session owns the whole read surface, so it is the place to decide
+  whether a `+N more` cap (the `map_legend_lines` pattern) belongs there.
+- **The trade tags are deliberately kept off an Area's tag list.**
+  `materialize_slot` merges the tile's GROUND tags only, because an Area's
+  tags are quest vocabulary and `quests._fallback_place_requirement`
+  already asks for a `mine` tag. Wiring them back on PURPOSE — a mine job
+  landing at a real mine rather than on any mountain — is a one-line
+  change with the reason written beside it in `places.py`.
+
+**Parked from round 4** (moved here when session 3 shipped): a
+Hanse-shaped authored northern circuit (the derived north draws its own
+for now); the Ardennes-shaped western wildwood mark (the eastern one
+shipped; the west still has none). Both fold into Part 2 if this session
+does not take them.
+
 **Settled non-changes** (round 5's design, so the arc stays this arc):
 board activity stays the tier table — deriving it from the band would
 count the census twice (the tier IS the band's expression); no trouble
@@ -398,12 +312,15 @@ shrine, a cot and a store — that a detail round would widen. Both live in
   ports, owned ships, passage prices and naval encounters — natural
   continuations of the routes session, none scheduled.
 - Fogging the base terrain map. Diagonal movement.
-- **`bench_abilities.py` is not reproducible run to run** (found
-  2026-08-21 and verified against an unmodified tree): its warrior-moves
-  matchup and alchemist career blocks swing several points between two
-  runs of identical code, so a diff of that file proves nothing. Worth a
-  sitting when somebody next touches it; develop.md's Files entry carries
-  the warning.
+- **Two calibration benches are not reproducible run to run**, and
+  neither can clear a change. `bench_abilities.py` (found 2026-08-21,
+  session 2): its warrior-moves matchup and alchemist career blocks swing
+  several points between two runs of identical code. `bench_quests.py`
+  (found 2026-08-21, session 3, verified over three runs of an unmodified
+  tree): parts 1 and 2 are byte-stable and PART 3, the career sim, is not
+  — reached-L20 came back 0.5%, 1.5% and 0.0%. Both develop.md Files
+  entries carry the warning. Worth a sitting of its own: a safety net that
+  cannot be compared against itself is not one.
 - Watch in play: a companion quitting mid-career is much harsher on the
   fixed map (closure note, unchanged — the wound and satisfaction tracks
   are behaving as designed; the road is just genuinely long now).

@@ -528,6 +528,127 @@ def score_band(score: float, row: int, column: int) -> str:
             return band
     return "dense"
 
+# --------------------------------------------------------------------------- #
+# The trade network
+# --------------------------------------------------------------------------- #
+# (2026-08-21, the tile economy arc's session 3 -- round 4's design.) The
+# last authored layer and the last derived one, in one pass. AUTHOR THE
+# PHYSICAL, DERIVE THE HUMAN: the mines above and the goods colour below are
+# hand-placed, few and famous; the land's own produce falls out of sessions
+# 1-3's numbers by law; and the ordinary routes are COMPUTED between those
+# origins and the census's markets by the same edge model the party walks.
+#
+# EXOTICS ARE GOODS LIKE ANY OTHER. Silk, spice, sugar and dyes have origin
+# tiles on the map like wool does -- theirs are the frame's DOORS, the
+# eastern gate and the delta port -- and they move on the five authored
+# legendary roads because the door is the only place they enter, not because
+# anything about them is off the board.
+
+GOODS = ("grain", "wine", "wool", "horses", "timber", "furs", "wax",
+         "silver", "copper", "iron", "salt", "herring", "amber",
+         "cloth", "arms", "silk", "spice", "sugar", "dyes")
+# The four words the layer stamps on a Tile. Unlike the ground's tags these
+# are NOT the same in every campaign: `mine` is authored, but the three road
+# words follow the routes, and the routes follow the rolled census.
+TRADE_TAGS = ("mine", "trade-route", "port", "sea-lane")
+GOODS_AUTHORED = {          # origin colour with no mine town under it: the
+    (10, 5): ("salt",),             # the bay salt pans
+    (11, 6): ("wine",),             # the western wine coast
+    (6, 15): ("herring",),          # the Sound's herring fair
+    (6, 22): ("amber",),            # the amber shore
+    (8, 11): ("cloth",),            # the Low Countries' looms
+    (13, 14): ("cloth",),           # the Tuscan looms
+    (12, 13): ("arms",),            # the Lombard armourers
+    (11, 19): ("horses",),          # the middle Danube horse fairs
+    (11, 30): ("silk", "dyes"),     # the eastern gate (the Silk Road's door)
+    (18, 24): ("spice", "sugar", "dyes"),   # the delta port
+}
+ENDPOINT_NAMES = {          # what a route endpoint is CALLED where no
+    (11, 30): "the eastern gate",   # historical city and no mine town names
+    (18, 24): "the delta port",     # it. Anything not named here or by the
+    (18, 26): "the Nile granary",   # two answer keys reads as its coordinate
+    (6, 22): "the amber shore",     # -- the rolled market has no name the
+    (6, 15): "the Sound",           # party could know yet
+    (10, 5): "the salt pans",
+    (11, 6): "the wine coast",
+    (8, 11): "the Low Countries' looms",
+    (13, 14): "the Tuscan looms",
+    (12, 13): "the armouries",
+    (11, 19): "the horse fairs",
+}
+
+# THE DERIVED ORIGINS, by law over sessions 1-2's own numbers. The
+# thresholds are deliberately high: an origin is a place that EXPORTS, and
+# ordinary plain country that feeds itself and no one else is the map's
+# baseline, not its trade.
+DERIVED_GOODS = ("grain", "wine", "wool", "horses", "timber", "furs")
+GRAIN_SURPLUS = 0.55        # realized arable at/above this exports grain:
+                            # the alluvial river corridors and the Nile --
+                            # ordinary plain country (~0.50) feeds itself
+WINE_CLIMATES = ("mediterranean", "wet_mediterranean")      # the vine
+WINE_MIN = 0.30
+WOOL_CLIMATES = ("oceanic", "mediterranean")    # the sheep west's hill
+WOOL_PASTORAL = 0.40                            # country
+HORSE_PASTORAL = 0.40       # the steppe's herds (plus the authored fairs)
+FUR_CLIMATES = ("taiga", "tundra", "continental")   # deep forest in the
+                            # cold north and the eastern wildwood
+MIN_PRODUCE_REGION = 2      # a derived produce region under this many
+                            # contiguous tiles is local colour, never an
+                            # export. Grain is exempt: one alluvial tile IS
+                            # a granary. Timber moves by water only.
+
+# WHERE EACH GOOD GOES: (destination kind, how many, the bulk range in
+# days). Rich goods carry their own freight and take `None` -- silver walks
+# to the crown's mint from anywhere, cloth and wine to the metropolises,
+# arms to the capitals. Bulk stops when the cart stops paying.
+#   markets       city-grade chiefs + the historical towns + the mine towns
+#   cities        the same without the mine towns
+#   metropolises  the three M chiefs
+#   smiths        the cities plus the armouries
+#   cloth         the two authored loom tiles
+#   capital       the origin's OWN crown; capitals: all three
+# Silk, spice, sugar, dyes and amber have no row: they move only on the
+# legendary roads.
+GOOD_ROUTES = {
+    "grain": ("markets", 1, 8),
+    "timber": ("markets", 1, 10),
+    "furs": ("markets", 1, 12),
+    "wax": ("markets", 1, 12),
+    "salt": ("markets", 2, 8),
+    "herring": ("markets", 2, 10),
+    "wine": ("metropolises", 1, 12),
+    "wool": ("cloth", 1, 12),
+    "horses": ("capital", 1, 12),
+    "silver": ("capital", 1, None),
+    "copper": ("cities", 1, None),
+    "iron": ("smiths", 1, None),
+    "cloth": ("metropolises", 2, None),
+    "arms": ("capitals", 2, None),
+}
+MINE_FOOD_DAYS = 6          # THE GRAIN ROAD. A mine whose own tile cannot
+                            # feed it (realized arable under FARMLAND_MIN)
+                            # eats from the nearest granary this far off:
+                            # the food caravan, a route and a vulnerability
+                            # in one stroke. Falun finds no grain in reach
+                            # and stands UNFED by design -- the north's
+                            # grain problem is real, and the DM has a
+                            # standing story in it.
+
+LEGENDARY = (               # authored endpoints and cargo; the line between
+    {"name": "the Silk Road", "from": (11, 30), "to": (14, 27),
+     "goods": ("silk", "dyes")},                # them is the same
+    {"name": "the Spice Lane", "from": (18, 24), "to": (12, 14),
+     "goods": ("spice", "sugar", "dyes")},      # pathfinder's, so a
+    {"name": "the Amber Road", "from": (6, 22), "to": (12, 14),
+     "goods": ("amber",)},                      # legendary road walks the
+    {"name": "the Fairs Road", "from": (12, 14), "to": (9, 10),
+     "goods": ("silk", "spice", "sugar")},      # ground everything else
+    {"name": "the Grain Fleet", "from": (18, 26), "to": (14, 27),
+     "goods": ("grain",)},                      # walks. Venice is the hub
+)                                               # by construction: three of
+                                                # the five meet there.
+
+
 # SPARSE ORDINARY BOARDS (2026-08-15, Local Quest Geography). A settlement
 # is not a job dispenser: at materialization a stable derived roll decides
 # whether this one normally posts ORDINARY generated work at all. A capital
@@ -1444,6 +1565,274 @@ def population_band(world: dict, tile: dict | str) -> str:
     return score_band(score, row, column)
 
 
+def _origin_regions(world: dict, tiles: set[str]) -> list[set[str]]:
+    """The connected components (cardinal) of one good's origin tiles. Each
+    walk starts at the remainder's row-major minimum, so the components come
+    out in the same order in every process."""
+    remaining, out = set(tiles), []
+    while remaining:
+        start = min(remaining)
+        component, frontier = {start}, deque([start])
+        while frontier:
+            tid = frontier.popleft()
+            for nid in world["tiles"][tid]["neighbors"]:
+                if nid in remaining and nid not in component:
+                    component.add(nid)
+                    frontier.append(nid)
+        remaining -= component
+        out.append(component)
+    return out
+
+
+def goods_origins(world: dict) -> list[dict]:
+    """Every place a good comes FROM: the authored mines, the authored
+    colour, and the produce regions the law derives from sessions 1-2's
+    numbers. A region is one origin however many tiles it spans, so the
+    Danube's wine ships from the Danube rather than from eleven separate
+    vineyards.
+
+    Not stored: the origins are a worldgen intermediate, and what survives
+    them is `tile["goods"]` and the routes they drew.
+    """
+    origins = [{"tiles": {tile_id(row, column)}, "goods": tuple(goods),
+                "name": name}
+               for (row, column), (name, goods) in MINES.items()]
+    origins += [{"tiles": {tile_id(row, column)}, "goods": tuple(goods),
+                 "name": None}
+                for (row, column), goods in GOODS_AUTHORED.items()]
+    derived: dict[str, set[str]] = {good: set() for good in DERIVED_GOODS}
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        if tile["biome"] == "sea":
+            continue
+        row, column, climate = tile["row"], tile["column"], tile["climate"]
+        economy = tile_economy(climate, tile["terrain"],
+                               tile["biome"] == "river", row, column)
+        river = tile["biome"] == "river" or climate == "nile"
+        watered = river or _is_coast(world, tile)
+        if economy["realized"] >= GRAIN_SURPLUS:
+            derived["grain"].add(tid)
+        if climate in WINE_CLIMATES and economy["realized"] >= WINE_MIN:
+            derived["wine"].add(tid)
+        if climate in WOOL_CLIMATES and economy["pastoral"] >= WOOL_PASTORAL:
+            derived["wool"].add(tid)
+        if climate == "steppe" and economy["pastoral"] >= HORSE_PASTORAL:
+            derived["horses"].add(tid)
+        if (economy["forest"] >= WOODED_MIN and watered
+                and tile["terrain"] != "marsh"):
+            derived["timber"].add(tid)      # fen carr is not ship timber
+        if economy["cover"] == "deep forest" and climate in FUR_CLIMATES:
+            derived["furs"].add(tid)
+    for good in DERIVED_GOODS:
+        goods = ("furs", "wax") if good == "furs" else (good,)
+        for region in _origin_regions(world, derived[good]):
+            if good != "grain" and len(region) < MIN_PRODUCE_REGION:
+                continue        # a lone hill's wool is local colour
+            origins.append({"tiles": region, "goods": goods, "name": None})
+    return origins
+
+
+def _route_path(destination: str, origin: str) -> list[str]:
+    """The cheapest line from `origin` to `destination`, walked back down a
+    tree ROOTED AT THE DESTINATION.
+
+    Rooting at the market rather than at the origin is the deliberate half:
+    many origins ship to one market, so one tree serves them all and every
+    road into that market settles its ties the same way. The silver roads
+    converge on the mint instead of each drawing its own equally cheap line
+    beside the last.
+    """
+    _distance, previous = _single_source(destination)
+    path = [origin]
+    while path[-1] != destination:
+        path.append(previous[path[-1]])
+    return path
+
+
+def roll_routes(world: dict) -> None:
+    """THE TRADE NETWORK, drawn at worldgen over the census it reads.
+
+    Three kinds of origin (`goods_origins`) and one law moves all of them:
+    per good, `GOOD_ROUTES` names a destination kind, how many, and the
+    bulk range in days; the pathfinder draws the line; routes that share
+    both endpoints merge their cargo. On top of that the two authored
+    additions -- a GRAIN ROAD from the nearest granary to every mine whose
+    own ground cannot feed it, and the five LEGENDARY roads, authored
+    endpoint pairs whose line the same pathfinder draws.
+
+    Nothing here rolls dice. The layer is each world's own anyway, because
+    the CENSUS it reads was rolled: which tiles are cities decides where the
+    ordinary network goes, so the trade skeleton is fixed in character
+    (mines, origins, the legendary five) and each world's own in detail.
+
+    THE SEA RULE: sea sails at the settled edge cost. There is no cheap
+    freight, because there is one notion of distance in this game and war,
+    trade and travel all use it. A route's sea tiles are its SEA LANE and
+    the two shores where it changes element are its PORTS.
+
+    Stored: `tile["goods"]`, `tile["mine"]`, the four tags, and the route
+    records on `world["routes"]`.
+    """
+    tiles = world["tiles"]
+    origins = goods_origins(world)
+    historical = {tile_id(row, column) for row, column in HISTORICAL_BY_TILE}
+    mine_tiles = {tile_id(row, column) for row, column in MINES}
+    chiefs = {tid: (world["settlement_slots"][
+                        tiles[tid]["settlement_slots"][0]]["tier"]
+                    if tiles[tid]["settlement_slots"] else None)
+              for tid in world["tile_order"]}
+    # A market is a place with a market: city-grade rolled chiefs, the
+    # sixteen historical towns whatever tier they wear, and the mine towns,
+    # which buy far above their thousand souls. An EMPTY tile has no chief
+    # and is nobody's destination -- a route that ended in wilderness would
+    # be a road to a field.
+    cities = {tid for tid, tier in chiefs.items()
+              if tier in CITY_GRADE} | historical
+    demand = {
+        "markets": cities | mine_tiles,
+        "cities": cities,
+        "metropolises": {tid for tid, tier in chiefs.items()
+                         if tier == "metropolis"},
+        "smiths": cities | {tile_id(*rc) for rc, goods
+                            in GOODS_AUTHORED.items() if "arms" in goods},
+        "cloth": {tile_id(*rc) for rc, goods in GOODS_AUTHORED.items()
+                  if "cloth" in goods},
+        "capitals": set(CAPITAL_TILES.values()),
+    }
+
+    raw: list[dict] = []
+    for origin in origins:
+        by_rule: dict[tuple, list[str]] = {}
+        for good in origin["goods"]:
+            rule = GOOD_ROUTES.get(good)
+            if rule is not None:        # the exotics ride the legendary
+                by_rule.setdefault(rule, []).append(good)
+        for (kind, count, max_days), goods in by_rule.items():
+            if kind == "capital":
+                row, column = tile_row_column(min(origin["tiles"]))
+                targets = {CAPITAL_TILES[country_at(row, column)]}
+            else:
+                targets = demand[kind]
+            ranked = []
+            for dest in sorted(targets - origin["tiles"]):
+                distance, _previous = _single_source(dest)
+                member = min(origin["tiles"],
+                             key=lambda t, d=distance: (d[t], t))
+                ranked.append((distance[member], dest, member))
+            ranked.sort()
+            for days, dest, member in ranked[:count]:
+                if max_days is not None and days > max_days:
+                    continue    # the nearest buyer is past the cart's range
+                raw.append({"name": None, "goods": tuple(goods),
+                            "days": days,
+                            "path": _route_path(dest, member)})
+
+    granaries = [tid for origin in origins if "grain" in origin["goods"]
+                 for tid in origin["tiles"]]
+    for (row, column), (_name, _goods) in MINES.items():
+        mine = tile_id(row, column)
+        tile = tiles[mine]
+        economy = tile_economy(tile["climate"], tile["terrain"],
+                               tile["biome"] == "river", row, column)
+        if economy["realized"] >= FARMLAND_MIN:
+            continue                # the mine's own ground feeds it
+        distance, _previous = _single_source(mine)
+        reach = [(distance[tid], tid) for tid in granaries
+                 if distance[tid] <= MINE_FOOD_DAYS]
+        if not reach:
+            continue                # UNFED: no granary within reach
+        days, member = min(reach)
+        # The tree is rooted at the MINE, so the path already runs
+        # grain-country -> mine town: the food caravan's own direction.
+        raw.append({"name": None, "goods": ("grain",), "days": days,
+                    "path": _route_path(mine, member)})
+
+    for spec in LEGENDARY:
+        start, goal = tile_id(*spec["from"]), tile_id(*spec["to"])
+        distance, _previous = _single_source(goal)
+        raw.append({"name": spec["name"], "goods": tuple(spec["goods"]),
+                    "days": distance[start],
+                    "path": _route_path(goal, start)})
+
+    merged: dict[tuple[str, str], dict] = {}
+    for route in raw:
+        key = (route["path"][0], route["path"][-1])
+        kept = merged.get(key)
+        if kept is None:
+            merged[key] = route
+        else:                       # one road, two cargoes
+            kept["goods"] = tuple(dict.fromkeys(kept["goods"]
+                                                + route["goods"]))
+            kept["name"] = kept["name"] or route["name"]
+    world["routes"] = [{"id": f"route/{index:02d}", "name": route["name"],
+                        "goods": list(route["goods"]), "days": route["days"],
+                        "path": list(route["path"])}
+                       for index, route in enumerate(merged.values(), 1)]
+
+    goods_at: dict[str, list[str]] = {}
+    for origin in origins:
+        for tid in origin["tiles"]:
+            goods_at.setdefault(tid, []).extend(origin["goods"])
+    on_route, sea_lane, ports = set(), set(), set()
+    for route in world["routes"]:
+        for tid in route["path"]:
+            (sea_lane if tiles[tid]["biome"] == "sea" else on_route).add(tid)
+        for a, b in zip(route["path"], route["path"][1:]):
+            at_sea = (tiles[a]["biome"] == "sea", tiles[b]["biome"] == "sea")
+            if at_sea[0] != at_sea[1]:
+                ports.add(b if at_sea[0] else a)
+    for tid in world["tile_order"]:
+        tile = tiles[tid]
+        mine = MINES.get((tile["row"], tile["column"]))
+        tile["mine"] = mine[0] if mine else None
+        tile["goods"] = list(dict.fromkeys(goods_at.get(tid, ())))
+        for tag, carried in zip(TRADE_TAGS, (mine is not None,
+                                             tid in on_route,
+                                             tid in ports,
+                                             tid in sea_lane)):
+            if carried:
+                tile["tags"].append(tag)
+
+
+def tile_routes(world: dict, tile: dict | str) -> list[dict]:
+    """Every route crossing one Tile, in the world's own route order."""
+    tid = tile_key(tile)
+    return [route for route in world["routes"] if tid in route["path"]]
+
+
+def endpoint_name(world: dict, tile: dict | str) -> str:
+    """What a route's end is CALLED. The historical cities and the mine
+    towns name themselves, the authored doors and marks have their own
+    words, and anything else -- a rolled city the party has never heard of
+    -- reads as its coordinate, the same way the map labels it."""
+    row, column = tile_row_column(tile)
+    historical = HISTORICAL_BY_TILE.get((row, column))
+    if historical:
+        return historical[0]
+    if (row, column) in MINES:
+        return MINES[(row, column)][0]
+    return ENDPOINT_NAMES.get((row, column), tile_coordinate(row, column))
+
+
+def _cargo_words(goods: Iterable[str]) -> str:
+    """`silver` / `copper and iron` / `spice, sugar and dyes`."""
+    words = list(goods)
+    if len(words) < 2:
+        return "".join(words)
+    return ", ".join(words[:-1]) + " and " + words[-1]
+
+
+def route_line(world: dict, route: dict) -> str:
+    """One route as the tile's label speaks it: `Goslar - Paris: silver`,
+    and a legendary road by its own name first."""
+    ends = (f"{endpoint_name(world, route['path'][0])} - "
+            f"{endpoint_name(world, route['path'][-1])}")
+    cargo = _cargo_words(route["goods"])
+    if route["name"]:
+        return f"{route['name']}: {ends}, {cargo}"
+    return f"{ends}: {cargo}"
+
+
 def _harvest_neighbors(world: dict, tid: str):
     for nid in world["tiles"][tid]["neighbors"]:
         if world["tiles"][nid]["biome"] != "sea":
@@ -1647,7 +2036,15 @@ def materialize_slot(world: dict, slot: dict | str, *,
     area = _new_area_record(spec, country, tile, world["seed"],
                             slot["index"] + 1,
                             "historical" if slot["authored"] else "worldgen")
-    area["tags"] = list(dict.fromkeys(area["tags"] + tile["tags"]))
+    # THE AREA INHERITS THE GROUND, NOT THE TRADE (2026-08-21, session 3).
+    # An Area's tag list is QUEST vocabulary -- `quests._select_quest_area`
+    # picks by it, and `mine` is already a word a forged job asks for -- so
+    # letting the four trade words through would quietly make the quest
+    # generator a reader of the trade layer, which this session's one read
+    # surface (the tile label) deliberately is not. The words are on the
+    # TILE, where the hookup session's readers will find them.
+    ground = [tag for tag in tile["tags"] if tag not in TRADE_TAGS]
+    area["tags"] = list(dict.fromkeys(area["tags"] + ground))
     area["known"] = known
     area["settlement_slot"] = slot["id"]
     area["board_active"] = board_active_roll(world["seed"], slot)
@@ -1790,10 +2187,12 @@ def create_geography(seed: int | None) -> dict:
         tile["natural_area"] = aid
         world["lands"][tile["country"]]["areas"].append(aid)
 
-    # THE ROLLED WORLD (2026-08-21, session 2): the census first -- it is
-    # what a start can stand in -- then the start, then the harvest, whose
-    # nearby-trouble nudge needs to know where the campaign opens.
+    # THE ROLLED WORLD (2026-08-21, sessions 2 and 3): the census first --
+    # it is what a start can stand in -- then the trade network the census
+    # feeds, then the start, then the harvest, whose nearby-trouble nudge
+    # needs to know where the campaign opens.
     roll_census(world)
+    roll_routes(world)
 
     # Historical towns exist and are known from day zero; their villages do
     # not. Capitals materialize first so country-level cast code has a stable
@@ -2032,7 +2431,100 @@ def validate_world(world: dict) -> None:
         raise ValueError("the party is standing off the frame")
     if world["settlement_slots"][world["start_slot"]]["tier"] == "hamlet":
         raise ValueError("a career does not open in a hamlet")
+    _validate_trade(world)
     _validate_harvest(world)
+
+
+def _validate_trade(world: dict) -> None:
+    """The trade network, checked against the world it was drawn on.
+
+    The ordinary half is the census's own, so nothing here pins a count.
+    What a rule CAN state about it: that the authored half is all present
+    and ends where it was authored to end, that every word anywhere is a
+    good the game knows, that a route is a real walk over real edges whose
+    days are the walk's own, and that the four tags say exactly what the
+    routes did -- a `port` with no route through it, or a road across a
+    Tile the tag forgot, is the kind of damage a display would render
+    without complaint.
+    """
+    tiles = world["tiles"]
+    on_route, sea_lane, ports = set(), set(), set()
+    for index, route in enumerate(world["routes"], 1):
+        where = route["id"]
+        if where != f"route/{index:02d}":
+            raise ValueError(f"{where}: the routes are numbered in order")
+        path = route["path"]
+        if len(path) < 2:
+            raise ValueError(f"{where}: a route runs between two Tiles")
+        if not route["goods"]:
+            raise ValueError(f"{where}: a route carries something")
+        illegal = [good for good in route["goods"] if good not in GOODS]
+        if illegal:
+            raise ValueError(f"{where}: no such good: {illegal}")
+        days = 0
+        for a, b in zip(path, path[1:]):
+            days += edge_days(a, b)     # raises on anything but a real edge
+        if days != route["days"]:
+            raise ValueError(f"{where}: a {days}-day walk recorded as "
+                             f"{route['days']} days")
+        for tid in path:
+            if tid not in tiles:
+                raise ValueError(f"{where}: {tid} is off the frame")
+            (sea_lane if tiles[tid]["biome"] == "sea"
+             else on_route).add(tid)
+        for a, b in zip(path, path[1:]):
+            at_sea = (tiles[a]["biome"] == "sea", tiles[b]["biome"] == "sea")
+            if at_sea[0] != at_sea[1]:
+                ports.add(b if at_sea[0] else a)
+    named = sorted(route["name"] for route in world["routes"]
+                   if route["name"])
+    if named != sorted(spec["name"] for spec in LEGENDARY):
+        raise ValueError(f"the named roads are the legendary {len(LEGENDARY)}"
+                         f", got {named}")
+    by_name = {route["name"]: route for route in world["routes"]
+               if route["name"]}
+    for spec in LEGENDARY:
+        route = by_name[spec["name"]]
+        ends = (tile_id(*spec["from"]), tile_id(*spec["to"]))
+        if (route["path"][0], route["path"][-1]) != ends:
+            raise ValueError(f"{spec['name']} runs {ends[0]} to {ends[1]}, "
+                             f"not {route['path'][0]} to "
+                             f"{route['path'][-1]}")
+        dropped = [good for good in spec["goods"]
+                   if good not in route["goods"]]
+        if dropped:
+            raise ValueError(f"{spec['name']} carries {dropped}")
+
+    for tid in world["tile_order"]:
+        tile = tiles[tid]
+        where = tile_coordinate(tile["row"], tile["column"])
+        mine = MINES.get((tile["row"], tile["column"]))
+        illegal = [good for good in tile["goods"] if good not in GOODS]
+        if illegal:
+            raise ValueError(f"{where}: no such good: {illegal}")
+        if tile["biome"] == "sea" and (tile["goods"] or tile["mine"]):
+            raise ValueError(f"{where}: the sea digs and grows nothing")
+        if mine:
+            if tile["mine"] != mine[0]:
+                raise ValueError(f"{where}: the {mine[0]} mine is not on "
+                                 f"its own Tile ({tile['mine']!r})")
+            absent = [good for good in mine[1]
+                      if good not in tile["goods"]]
+            if absent:
+                raise ValueError(f"{where}: {mine[0]} raises {absent} and "
+                                 f"the Tile does not carry it")
+        elif tile["mine"] is not None:
+            raise ValueError(f"{where}: {tile['mine']!r} is not one of the "
+                             f"{len(MINES)} authored mines")
+        for tag, carried in zip(TRADE_TAGS, (mine is not None,
+                                             tid in on_route,
+                                             tid in ports,
+                                             tid in sea_lane)):
+            if (tag in tile["tags"]) != carried:
+                raise ValueError(f"{where}: the {tag!r} tag and the routes "
+                                 f"disagree")
+        if tid in ports and "coast" not in tile["tags"]:
+            raise ValueError(f"{where}: a port stands on the coast")
 
 
 def _validate_harvest(world: dict) -> None:
@@ -2413,11 +2905,37 @@ def tile_ground(tile: dict) -> str:
     return "sea" if tile["biome"] == "sea" else tile["terrain"]
 
 
+def _detail_wrap(lines: list[str], width: int) -> list[str]:
+    """The page's own hard wrap, the same rule session.py prints by:
+    continuation lines hang two spaces past the original indent. The driver
+    wraps everything it prints anyway, so doing it here changes no output --
+    what it buys is that the Tile's file is the SAME list of lines whoever
+    asks for it, which is what a label test can read."""
+    out: list[str] = []
+    for line in lines:
+        if len(line) <= width:
+            out.append(line)
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        out.extend(textwrap.wrap(
+            line, width, break_long_words=False, break_on_hyphens=False,
+            subsequent_indent=" " * min(indent + 2, width // 2)) or [""])
+    return out
+
+
 def tile_detail_lines(world: dict, tile: dict | str,
-                      areas: bool = True) -> list[str]:
+                      areas: bool = True, width: int = 40) -> list[str]:
     """What the glyph could not say: where this Tile is, whose it is, what
-    it is made of, and (unless the caller lists them itself) which of its
-    Areas the party knows."""
+    it is made of, what it digs and grows, which roads cross it, and
+    (unless the caller lists them itself) which of its Areas the party
+    knows.
+
+    THE TRADE LABEL (2026-08-21, session 3) is the one read surface the
+    trade layer ships: the mine, the goods the Tile is an origin of, and
+    one line per route crossing it -- the endpoints by name and the cargo.
+    All three are common knowledge, because a mine, a vineyard and a road
+    are things you can see from the road.
+    """
     if isinstance(tile, str):
         tile = world["tiles"][tile]
     ground = tile_ground(tile)
@@ -2427,11 +2945,17 @@ def tile_detail_lines(world: dict, tile: dict | str,
              if tag not in (ground, tile["country"])]
     if extra:
         lines.append("  ground: " + ", ".join(extra))
+    if tile["mine"]:
+        lines.append(f"  mine: {tile['mine']}")
+    if tile["goods"]:
+        lines.append("  goods: " + ", ".join(tile["goods"]))
+    lines.extend(f"  {route_line(world, route)}"
+                 for route in tile_routes(world, tile))
     known = [world["areas"][aid] for aid in tile["areas"]
              if world["areas"][aid].get("known")]
     if areas and known:
         lines.append("  areas: " + ", ".join(area["name"] for area in known))
-    return lines
+    return _detail_wrap(lines, width)
 
 
 def land_homeland(world: dict, polity: str) -> str:

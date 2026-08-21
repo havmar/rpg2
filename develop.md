@@ -352,6 +352,32 @@ a pointer: what the file is, how it's run, where its docs are.
   a three-rung ladder over `_GLYPH_TIERS` / `_GLYPH_RANK` with the hamlet
   undrawn, and `validate_world` grew the census clauses and
   `_validate_harvest`.
+  **THE TRADE NETWORK** (2026-08-21, the arc's session 3) added the last
+  authored layer and the last derived one, in one section under the census
+  laws. The words and the authored half: `GOODS` (the nineteen),
+  `TRADE_TAGS` (`mine` / `trade-route` / `port` / `sea-lane`),
+  `GOODS_AUTHORED` (the colour and the two exotic doors), `ENDPOINT_NAMES`
+  (what a route end is CALLED where no city and no mine name it) and
+  `LEGENDARY` (the five authored endpoint pairs and their cargo). The
+  derived half: `DERIVED_GOODS` and its thresholds — `GRAIN_SURPLUS` 0.55,
+  `WINE_CLIMATES` / `WINE_MIN`, `WOOL_CLIMATES` / `WOOL_PASTORAL`,
+  `HORSE_PASTORAL`, `FUR_CLIMATES`, `MIN_PRODUCE_REGION` — behind
+  `goods_origins(world)` and its `_origin_regions`. The network:
+  `GOOD_ROUTES` (destination kind, count, bulk range in days),
+  `MINE_FOOD_DAYS` and `roll_routes(world)`, which draws every line
+  through `_route_path` — a walk back down a `_single_source` tree ROOTED
+  AT THE DESTINATION, so many origins share one tree and every road into a
+  market settles its ties the same way. The readers: `tile_routes`,
+  `endpoint_name`, `_cargo_words` and `route_line`, which
+  `tile_detail_lines` prints as the layer's ONE read surface (and which
+  gained a `width` and `_detail_wrap`, the driver's own wrap rule applied
+  where the lines are made). `validate_world` grew `_validate_trade`.
+  Two build-order facts worth knowing: `roll_routes` runs immediately
+  after `roll_census` and consumes NO rng — the layer is each world's own
+  because the census it reads was rolled — and `materialize_slot` merges
+  only the Tile's GROUND tags into an Area, excluding `TRADE_TAGS`,
+  because an Area's tag list is quest vocabulary (`mine` is already a word
+  a forged job asks for) and the label is this session's only reader.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. Each of the three
   countries carries `name` / `culture` / `description`, its `natural`
@@ -457,6 +483,28 @@ a pointer: what the file is, how it's run, where its docs are.
   recruit cap, the metropolis wearing the city role, and twenty-two broken
   worlds — one per clause the session added to `validate_world`.
   `python -m unittest -v test_rolled_world.py`.
+- `test_trade.py` — **the trade network's contract suite** (2026-08-21,
+  the tile economy arc's session 3), four parts. *The authored half*: the
+  nine mines with their towns, metals and tags and their names pinned, no
+  mine anywhere else, the authored colour where it was placed, the exotic
+  doors as ordinary tiles (the delta port also exports the Nile's grain),
+  the five legendary roads by name with their endpoints and cargo, three
+  of them meeting at Venice, and the split claim — the mines, the origins
+  and the legendary roads identical across seeds while the ordinary
+  network is each world's own. *The derived half*: only legal good words
+  anywhere, nothing grown at sea, grain confined to the alluvial
+  corridors, every non-grain derived origin a contiguous region at or above
+  the minimum, no fen timber, furs and wax always together, and the pinned
+  sweep. *The routes*: well-formed records end to end with the merge on
+  shared endpoints, the tags agreeing with the paths, a port being a shore
+  a route changes element on, the sea at the settled edge cost, the six
+  grain roads with Falun pinned unfed, and the save round-trip. *The
+  label*: the mine, goods and route lines on the Tiles that own them, a
+  legendary road leading with its name, an unnamed endpoint reading as its
+  coordinate, a quiet tile saying nothing, the cargo words as English,
+  every line inside the 40-column wrap, and twenty broken worlds — one per
+  clause the session added to `validate_world`.
+  `python -m unittest -v test_trade.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
   symmetric cost rule (east/west, north/south, a mountain at either end and
@@ -826,7 +874,17 @@ a pointer: what the file is, how it's run, where its docs are.
   added `HAND_FOREST` to the round-2 laws (the eastern wildwood — four
   clearance-capped tiles east of Warsaw) and the mine towns to the
   round-3 census roll; both unshipped contracts were amended in place.
-  Its constants ARE the Round 4 contract's numbers.
+  Those trade constants SHIPPED on 2026-08-21 with session 3 and now live
+  in `places.py`; the tool imports every one of them back (climate-word
+  tuples through a `_letters` window, the mirror of `_by_letter`), and its
+  restated pathfinder is GONE — `_tree` is now a window onto
+  `places._single_source`, so there is no second distance model to drift.
+  **No constant in econmap.py is authored any more.** What the tool still
+  keeps is the rendering and its own private simulation: a plain seeded
+  rng where worldgen derives its seeds, and no start tile, so its harvest
+  draws without the nearby-trouble nudge and its census is not the
+  census a world of the same seed rolls. Session 4 retires that too, in
+  favor of rendering a BUILT world.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
@@ -1464,7 +1522,16 @@ a pointer: what the file is, how it's run, where its docs are.
   world, play the board to the level cap or the grave; reports the
   reached-level distribution, pace (days/quests), and board coverage.
   **Re-run after touching quests.py's threat math, the bestiary, or the
-  reward formulas.** `python bench_quests.py [--trials N] [--careers N]
+  reward formulas.**
+  **Part 3 is NOT REPRODUCIBLE run to run** (found 2026-08-21 during
+  session 3 of the tile economy arc, tested against itself on an
+  unmodified tree over three runs): parts 1 and 2 — the room and site
+  honesty blocks — are byte-stable, but the CAREER block swings freely
+  (reached-L20 came back 0.5%, 1.5% and 0.0% from identical code, with the
+  pace, mercy and expiry lines moving with it). Diff the first 48 lines
+  and read the career block as a mood, not a measurement, until that is
+  fixed. It is the same class of defect as `bench_abilities.py`'s.
+  `python bench_quests.py [--trials N] [--careers N]
   [--part enc|site|career]`.
 - `bench_rout.py` — the ROUT acceptance bench (2026-08-08): per foe row,
   the share of WON fights the survivors escaped from and the share of
@@ -1520,8 +1587,10 @@ python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_rolled_world.py # the harvest and the census
+python -m unittest -v test_trade.py   # mines, goods and the trade network
 python econmap.py harvest --sweep     # the harvest layer's distribution
 python econmap.py population --sweep  # the census's distribution
+python econmap.py routes --sweep      # the trade network's distribution
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
 python -m unittest -v test_potions.py # the quartermaster pass contract
@@ -1997,6 +2066,28 @@ mechanic *does* and *why* is rules.md's job.
   `session.require_service` the gate a hamlet's missing smith needs.
   Nothing yet READS the harvest or the two feudal words: their surfaces
   are the arc's later sessions and the politics arc.
+- **The trade network** (2026-08-21, the tile economy arc's session 3 —
+  rules.md's World & Navigation add-on, "Goods, mines and the trade
+  network") — `places.roll_routes(world)`, run by `create_geography`
+  immediately after `roll_census` and before the start draw. It consumes
+  NO rng and takes no derived seed of its own: it is a pure function of
+  the census it reads, which is why the layer is each world's own and why
+  no existing bench moved. `goods_origins` builds the three kinds of
+  origin (authored mines, authored colour, derived produce regions);
+  `GOOD_ROUTES` moves them all with one law; `_route_path` draws every
+  line off a `_single_source` tree rooted at the DESTINATION, so origins
+  sharing a market share a tree and settle their ties together. Stored on
+  the Tile: `goods`, `mine`, and the `TRADE_TAGS`; stored on the world:
+  `routes`, each with an id, a name for a legendary road, the ordered path,
+  the cargo and the days. The ONE reader is `tile_detail_lines`'s label
+  (`route_line` / `endpoint_name` / `tile_routes`) — prices, boards,
+  encounters and tolls are the hookup session's and later arcs'.
+  Two things to know before touching it: the trade tags are deliberately
+  kept off an Area's tag list in `materialize_slot` (an Area's tags are
+  QUEST vocabulary, and `mine` is a word `quests._fallback_place_requirement`
+  already asks for), and `econmap.py` no longer authors any of these
+  numbers — it imports them back and its pathfinder is a window onto
+  `places._single_source`.
 - **The world map** (2026-08-15 — rules.md's The World Map add-on) —
   `resources/europe_map.txt` is the authoritative 30x18 geography: `.` ocean,
   `#` land, `^` mountains, `~` major river. `places.py` loads it into the

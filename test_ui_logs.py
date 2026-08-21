@@ -96,8 +96,11 @@ class MapSheetTests(unittest.TestCase):
         river = next(l for l in lines if "the Test River" in l)
         self.assertNotIn("job(s)", forest)   # wilderness has no board
         self.assertNotIn("job(s)", river)
+        # The Area line, not any other line naming the place: since the
+        # trade label shipped (2026-08-21) a route can print "  Goslar -
+        # Paris: silver" above it, and seed 27 opens at a mine town.
         settle = next(l for l in lines
-                      if start["name"] in l and l.startswith("  "))
+                      if l.startswith(f"  {start['name']} ("))
         self.assertIn("job(s)", settle)      # settlements still forecast
 
 

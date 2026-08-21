@@ -166,15 +166,24 @@ class TheLandsPotential(unittest.TestCase):
 
     def test_the_ground_is_the_same_in_every_campaign(self) -> None:
         """Two authored overlays and a law with no rng in it: the seed
-        moves the people, never the land."""
+        moves the people, never the land.
+
+        The trade layer's tags are deliberately exempt (2026-08-21, session
+        3): the roads follow the rolled census, so which Tiles wear
+        `trade-route`, `port` and `sea-lane` IS the seed's business. That
+        those words move while every ground word holds is the claim, and
+        test_trade.py asserts the other half of it."""
         first, second = _world(1), _world(999)
         for tid, tile in first["tiles"].items():
             other = second["tiles"][tid]
+            ground = [tag for tag in tile["tags"]
+                      if tag not in places.TRADE_TAGS]
+            theirs = [tag for tag in other["tags"]
+                      if tag not in places.TRADE_TAGS]
             self.assertEqual(
-                (tile["climate"], tile["terrain"], tile["cover"],
-                 tile["tags"]),
+                (tile["climate"], tile["terrain"], tile["cover"], ground),
                 (other["climate"], other["terrain"], other["cover"],
-                 other["tags"]), tid)
+                 theirs), tid)
 
     def test_an_illegal_ground_raises_where_it_is_made(self) -> None:
         """One broken world per clause the ground session added."""
