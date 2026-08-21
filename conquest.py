@@ -53,19 +53,33 @@ from places import land_homeland, settlement_tier, stable_seed, slug
 # The knobs (all hand-set, sim-unverified -- the karma layer's doctrine)
 # --------------------------------------------------------------------------- #
 
+# The five census tiers (2026-08-21, the tile economy arc's session 2).
+# CITY-GRADE -- metropolis and city -- takes the capital's rows: a great
+# city is a crown-scale prize whoever wears the crown. The HAMLET takes the
+# village's rows everywhere except TRIBUTE, which halves: a hundred souls
+# are barely worth holding, and the ledger should say so.
 GARRISON_BANDS = {          # the garrison level rolled ONCE per settlement,
-    "village": (3, 5),      # stable across the save: a contiguous ladder --
-    "town": (6, 10),        # villages takeable around L4-5, towns 6-10,
-    "capital": (11, 15),    # capitals 13-15 ("conquer a country by 15")
+    "hamlet": (3, 5),       # stable across the save: a contiguous ladder --
+    "village": (3, 5),      # villages takeable around L4-5, towns 6-10,
+    "town": (6, 10),        # capitals 13-15 ("conquer a country by 15")
+    "city": (11, 15),
+    "metropolis": (11, 15),
+    "capital": (11, 15),
 }
 CONQUEST_ENCOUNTERS = {     # the job shape scales with the prize: a village
-    "village": 1,           # is one hard fight, a capital is the biggest
-    "town": 2,              # job shape the game has (the war waves' 3)
+    "hamlet": 1,            # is one hard fight, a capital is the biggest
+    "village": 1,           # job shape the game has (the war waves' 3)
+    "town": 2,
+    "city": 3,
+    "metropolis": 3,
     "capital": 3,
 }
 TRIBUTE_PER_DAY = {         # gold per held day, collected at the party's
-    "village": 3,           # holdings; deliberately small next to quest
-    "town": 8,              # pay -- tribute is a trickle, not a wage
+    "hamlet": 1,            # holdings; deliberately small next to quest
+    "village": 3,           # pay -- tribute is a trickle, not a wage
+    "town": 8,
+    "city": 20,
+    "metropolis": 20,
     "capital": 20,
 }
 PLUNDER_MULT = 10           # the keep's strongbox on the day it falls:
@@ -74,15 +88,21 @@ PLUNDER_MULT = 10           # the keep's strongbox on the day it falls:
                             # on top like any dark work)
 GARRISON_HIRE_COST = 5      # gold per levy head (`garrison N`)
 GARRISON_CAP = {            # how many levies a holding can quarter
+    "hamlet": 12,
     "village": 12,
     "town": 24,
+    "city": 48,
+    "metropolis": 48,
     "capital": 48,
 }
 RAID_CHANCE_PER_DAY = 0.06  # per holding per elapsed day (lazy roll, at
                             # most one raid per holding per check)
 RAID_STRENGTH = {           # heads in a crown raid: bigger prizes draw
-    "village": (2, 6),      # bigger columns. A FULL garrison always
-    "town": (5, 12),        # repels the worst raid its tier rolls
+    "hamlet": (2, 6),       # bigger columns. A FULL garrison always
+    "village": (2, 6),      # repels the worst raid its tier rolls
+    "town": (5, 12),
+    "city": (10, 24),
+    "metropolis": (10, 24),
     "capital": (10, 24),
 }
 RAID_GARRISON_LOSS = 2      # a repelled raid costs the garrison strength

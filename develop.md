@@ -322,10 +322,36 @@ a pointer: what the file is, how it's run, where its docs are.
   `PINNED_COVER_COUNTS`. `validate_catalog` grew the schema half
   (`OBSOLETE_CATALOG_KEYS` / `OBSOLETE_LAND_KEYS` / `TILE_FIT_TAGS`: the old
   census must be gone, every tier must be covered, exactly one capital
-  role, a no-tag role per tier, real Tile tags, and no `city` anywhere) and
+  role, a no-tag role per tier and real Tile tags) and
   `validate_world` is the new post-build check `create_geography` calls on
   every world. `area_id`, `CULTURE_PROFILES`, `MAP_OVERLAY_PRIORITY` and
   `OPPOSITE_DIRECTION` are DELETED — nothing read them.
+  **THE ROLLED WORLD** (2026-08-21, the arc's session 2) added the half
+  that is each world's own, in one section under the ground laws. The
+  LAST HARVEST: `HARVEST_REGIONS` / `HARVEST_SEPARATION` / `CENTER_WEIGHT`
+  / `HARVEST_CAUSES` / `SUSCEPTIBILITY` / `HARVEST_SPREAD` /
+  `SEVERITY_*` / `GOOD_*` / `LEGENDARY_CHANCE` / `HARVEST_PROBLEM` and the
+  nudge's `TROUBLE_DAYS` / `TROUBLE_CHANCE`, behind `roll_harvest(world)`
+  and its `_nudge_trouble` — the one thing in the layer that reads the
+  census, since it needs `world["party_tile"]`, which is why the harvest
+  rolls LAST in `create_geography`. The CENSUS: the scale doctrine as a
+  comment block, `TIERS` / `TIER_LETTERS` / `TIER_LETTERS_BY_TIER` /
+  `TIER_ORDER` / `CITY_GRADE`, the score law (`PASTORAL_PEOPLE`,
+  `FISH_COAST` / `FISH_RIVER`, `TRANSPORT_FACTOR`, `MARSH_MALUS` /
+  `HIGHLAND_MALUS`, the `EAST_MALUS_*` frontier, `HAND_DENSE`) behind
+  `tile_score` / `score_band` / `BANDS` / `BAND_WORDS`, the `ARRANGEMENTS`
+  tables and `SLOT_CAP`, the authored answer keys `HISTORICAL_TIERS` and
+  `MINES`, and `CHARTER_CHANCE` / `MANOR_CHANCE` — all behind
+  `roll_census(world)`, which REPLACED `_population_slots` and
+  `SETTLEMENT_DENSITY` whole. A slot grew `charter` and `manor`;
+  `population_band(world, tile)` is the recomputing reader for the score,
+  which is never stored. `_settlement_template` maps metropolis onto the
+  CITY role, `REQUIRED_SERVICES` is the per-tier service row (the hamlet's
+  is short a smith) with `has_service` as its reader, `BOARD_ACTIVE_CHANCE`
+  and `SETTLEMENT_NAMES` grew to the five words, `settlement_glyph` became
+  a three-rung ladder over `_GLYPH_TIERS` / `_GLYPH_RANK` with the hamlet
+  undrawn, and `validate_world` grew the census clauses and
+  `_validate_harvest`.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. Each of the three
   countries carries `name` / `culture` / `description`, its `natural`
@@ -335,7 +361,11 @@ a pointer: what the file is, how it's run, where its docs are.
   `natural_sites` inventories, and
   `settlement_templates`: a role per settlement kind, each with `tier`,
   the Tile tags it `fits`, its own `tags`, a `description` and its required
-  `sites`. The old fixed settlement census — `settlements`, `descriptions`,
+  `sites` — since 2026-08-21 covering five tiers, with one `walled_city`
+  and one `cot_hamlet` role added per country (a METROPOLIS wears the city
+  role; it gets one of its own when Settlements are revisited). The hamlet
+  is the minimal settlement: a well, a wayside shrine, a cot inn and a
+  general store, and no smith at all. The old fixed settlement census — `settlements`, `descriptions`,
   `villages`, `village_sites`, `village_descriptions`, `settlement_sites` —
   is GONE, and `places.validate_catalog` rejects a catalog that has any of
   it back. Nothing in the file names a position, a river, a region or a
@@ -406,6 +436,27 @@ a pointer: what the file is, how it's run, where its docs are.
   is elsewhere or at sea), the display re-key including the fen's fog,
   and the drought threshold off the climate profile.
   `python -m unittest -v test_ground.py`.
+- `test_rolled_world.py` — **the rolled world's contract suite**
+  (2026-08-21, the tile economy arc's session 2), four parts. *The last
+  harvest*: the scale and the sea's silence, a cause and a problem being
+  the same fact, contiguous regions on land holding their own centers, the
+  drought guarantee, the nearby-trouble posture (a region center within
+  five days of the start in more than three worlds in four, and never all
+  of them), the pinned coverage and region size, and the save round-trip.
+  *The census*: the band being law where the roll is not, the six bands
+  covering the map, the slot cap and the tier vocabulary, chief-first
+  ordering, zero as a real tier, the sixteen historical tiers, the three
+  metropolises and three capitals, the nine mine towns by name (Falun
+  standing alone in the wilderness band), a generated city only in the
+  dense band, quiet rich country never zero, the pinned per-tier sweep,
+  the charter and manor rates, and both save round-trips. *The two rolls
+  apart*: the harvest reading the start tile and nothing else of the
+  census, a moved start moving only the nudge, and both rolls stable per
+  seed. *The five words in the machinery*: every tier-keyed table covering
+  the census, the board ladder, the hamlet's short service row, the
+  recruit cap, the metropolis wearing the city role, and twenty-two broken
+  worlds — one per clause the session added to `validate_world`.
+  `python -m unittest -v test_rolled_world.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
   symmetric cost rule (east/west, north/south, a mountain at either end and
@@ -756,6 +807,13 @@ a pointer: what the file is, how it's run, where its docs are.
   population section's head comment carries the SCALE DOCTRINE (a tile
   30×60 km spoken / ~160×220 km real, the ~20× area reduction, the 2×2
   slot lattice).
+  Its harvest and population constants SHIPPED on 2026-08-21 with session
+  2 and now live in `places.py`; the tool imports them back through a
+  `_by_letter` window (it draws letter grids, the game speaks words) and
+  keeps only the rendering. Two differences from the shipped layer are
+  deliberate: the tool rolls a plain seeded rng where worldgen derives its
+  seeds, and it knows no start tile, so it draws the harvest WITHOUT the
+  nearby-trouble nudge.
   Since round 4 settled (2026-08-21, designlog's round-4 entry) it also
   carries the TRADE layer: `python econmap.py routes [SEED]` (the nine
   authored `MINES` — each an authored mine town in the census — the
@@ -1389,6 +1447,12 @@ a pointer: what the file is, how it's run, where its docs are.
   (`alchemist_matchup`: the L15 alchemist read three ways — the mixed
   alchemist+fighter duo, the two-fighter reference, and the pure-bomber
   trap-control — on the room/site/duel rows).
+  **NOT REPRODUCIBLE run to run** (found 2026-08-21, tested against itself
+  on an unmodified tree): the matrix, the utility table and the disarm
+  check are stable, but the two blocks session B and C added — the
+  warrior-moves matchup and the alchemist career — swing 1-6 points
+  between two runs of identical code. Do not read a diff of this file as
+  evidence of a change until that is fixed.
   `python bench_abilities.py [--trials N] [--frame 8]`.
 - `bench_party.py` — the party-size sweep behind rules.md's "Balanced for
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
@@ -1455,6 +1519,9 @@ python archive/test_worldmap.py      # archived first experiment's contract
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
 python -m unittest -v test_ground.py  # the ground, the laws and the sky
+python -m unittest -v test_rolled_world.py # the harvest and the census
+python econmap.py harvest --sweep     # the harvest layer's distribution
+python econmap.py population --sweep  # the census's distribution
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
 python -m unittest -v test_potions.py # the quartermaster pass contract
@@ -1906,6 +1973,30 @@ mechanic *does* and *why* is rules.md's job.
   **`move_party` is the one way position moves** once a game is running
   (a travel arrival, a sibling-Area step, a teleport): it stands the party
   in the area. Never assign `state["position"]` at a new call site.
+- **The rolled world** (2026-08-21, the tile economy arc's session 2 —
+  rules.md's World & Navigation add-on, "Settlement slots are the census"
+  and "The last harvest") — `places.py` owns both rolls and
+  `create_geography` runs them in a fixed order: `roll_census(world)` (a
+  start has to have somewhere to stand), then the start draw, then
+  `roll_harvest(world)` (the nearby-trouble nudge needs to know where the
+  campaign opens). Each takes its OWN derived seed
+  (`stable_seed(seed, "world", "census"|"harvest", 0)`), so neither
+  consumes the other's stream and no existing bench moved. What is stored
+  is words and records: the slot's `tier` / `charter` / `manor`, the
+  Tile's `harvest` percent and `harvest_cause`, and
+  `world["harvest_regions"]`. What is NOT stored is every number behind
+  them — the population score is recomputed by `population_band` the same
+  way session 1's fractions are recomputed by `tile_economy`. The five
+  tier words reach `quests.SETTLEMENT_KINDS`, conquest's
+  `GARRISON_BANDS` / `CONQUEST_ENCOUNTERS` / `TRIBUTE_PER_DAY` /
+  `GARRISON_CAP` / `RAID_STRENGTH`, `rpg.HEALER_TIER_CAP` /
+  `rpg.DISEASE_REACH`, `places.BOARD_ACTIVE_CHANCE` /
+  `places.REQUIRED_SERVICES` and — through `crime.TIER_ROW`, an
+  equivalence rather than thirty rewritten rows — the crime market;
+  `session.RECRUIT_OPTIONS` / `recruit_options` is the hiring cap and
+  `session.require_service` the gate a hamlet's missing smith needs.
+  Nothing yet READS the harvest or the two feudal words: their surfaces
+  are the arc's later sessions and the politics arc.
 - **The world map** (2026-08-15 — rules.md's The World Map add-on) —
   `resources/europe_map.txt` is the authoritative 30x18 geography: `.` ocean,
   `#` land, `^` mountains, `~` major river. `places.py` loads it into the
@@ -2130,7 +2221,11 @@ mechanic *does* and *why* is rules.md's job.
   `holdings` save key. `quests.py`: the "city" settlement tier was
   merged into "town" the same day (SETTLEMENT_KINDS; the catalog
   retiered Leehaven, Walhaven and Portomera) — `rpg.HEALER_TIER_CAP`
-  lost its city row with it.
+  lost its city row with it. **That merge was UNDONE on 2026-08-21** (the
+  tile economy arc's census session): the rolled census makes the city a
+  design rung, and every conquest table now carries all five tier words
+  with city-grade on the capital's rows and the hamlet on the village's
+  (tribute excepted, which halves).
 - **Defeat without death** (2026-07-26, attrition slice 4 — rules.md's
   Ferocity and Mercy section) — `rpg.py`: the ferocity constants,
   `Entity.ferocity` / `withdrew` / `break_tried` / `mercy_level` /
@@ -2388,7 +2483,8 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   `QUEST_QUICK_SHARE` = 1/3, `QUEST_GRACE_DAYS` = 3, pay bands
   **quick 1.15 / on time 1.00 / late 0.60 / expired 0**.
   `QUEST_REFILL_PER_DAY` = 1 per settlement (a board's first look fills it to
-  its `SETTLEMENT_KINDS` slot count).
+  its `SETTLEMENT_KINDS` slot count — five words since 2026-08-21: hamlet
+  and village 2, town 4, city-grade 5).
 - **Careers** (500): reach **L5 89% / L8 72% / L11 47% / L14 16% / L17 9% /
   L20 4.2%**, median death **L10**, capped median **78 days / 34 quests**
   (p10-p90 60-94 days). Against slice 1's 85/70/40/17/8/6.4, death L9, 81
@@ -2396,7 +2492,11 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   slightly survival-ward again, and **days to cap held at ~78** (the
   designer's call: the 158-day calendar is not coming back, and 80 is fine).
 - **The board never runs dry:** 0/500 careers exhausted it, ~660 postings
-  expire unfinished per career, ~129 live jobs standing at the end. The
+  expire unfinished per career, ~129 live jobs standing at the end. (The
+  rolled census tripled the world on 2026-08-21 — 617 settlements and 184
+  active boards against 192 and 64 — which moved the world-wide posting
+  inventory 43% and the career's own numbers barely at all; benchlog's
+  2026-08-21 (B) entry has the table.) The
   up-front XP-coverage assert is deleted and nothing replaced it but the
   measurement. The active contraction now opens nine settlements; no balance
   remeasurement was taken because it changed content routing rather than
@@ -2835,6 +2935,9 @@ damage persist, and ferocity plus one mercy per character level lets a
 career carry one defeat without making relentless enemies harmless. Its
 design spine remains: *do not make rest expensive, make rest incomplete* —
 gate recovery on rate and access, never on price, because price is the only
-thing that inflates across a 1-20 career. See plan.md for the parked
-follow-ons — and for the active thread, the world & NPC simulation build
-(worldsim.md is its content companion).
+thing that inflates across a 1-20 career. **The tile economy arc is
+building now** (2026-08-21): sessions 1 (the ground and the sky) and 2
+(the rolled world — the last harvest and the settlement census, and with
+it the five settlement tiers) have shipped; session 3 is the trade
+network and session 4 the read surface. See plan.md for the two remaining
+contracts and for the parked follow-ons.

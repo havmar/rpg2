@@ -5737,3 +5737,164 @@ band caught swinging on a change that cannot touch combat.
 still cost no travel day, terrain is still out of the weather law and out
 of the harvest model — and Session 2 (the rolled world: the last harvest
 and the census) is next and unblocked.
+
+## 2026-08-21 (G) — Session 2 of the tile economy arc: the rolled world, built
+
+**What shipped.** Plan.md's Session 2 whole: the arc's two ROLLED layers —
+round 1's last harvest and round 3's settlement census — plus the five-tier
+vocabulary they speak in, the content the tiers owed, and every fixture
+re-pin the churn cost. This was the arc's one fixture-churn sitting by
+design, and it was verified once.
+
+- **The last harvest rolls at worldgen.** `places.roll_harvest(world)`
+  stamps `tile["harvest"]` (an int percent, 100 = a full excellent
+  harvest) and `tile["harvest_cause"]`, and puts the region records —
+  id, cause, center, member tiles — on `world["harvest_regions"]` as the
+  addresses the snapshot arc will wire. Four to six regions, centers
+  weighted by `CENTER_WEIGHT`, a cause drawn per center climate, contagion
+  growth by ring, a fine year everywhere else. Both guarantees hold: the
+  drought is re-caused onto the most drought-apt center when no region
+  rolled one, and the NEARBY TROUBLE nudge relocates the last-rolled
+  region into five path days of the start three times in four.
+- **The census replaced `_population_slots` and `SETTLEMENT_DENSITY`
+  whole.** `places.roll_census(world)` scores every land tile by law
+  (`tile_score` / `score_band`, never stored — `population_band` recomputes
+  it), draws a weighted ARRANGEMENT from the band's table, and turns the
+  letters into slots sorted chief-first. Historical tiles take their
+  authored tier from `HISTORICAL_TIERS`; the nine `MINES` seat their mine
+  town in slot 1; both then draw companions from their own band, truncated
+  to the three seats left. The charter and the manor ride along as one
+  stored word each and are read by nothing.
+- **Five tier words, everywhere they are keyed.** hamlet / village / town /
+  city / metropolis. `quests.SETTLEMENT_KINDS`, conquest's
+  `GARRISON_BANDS` / `CONQUEST_ENCOUNTERS` / `TRIBUTE_PER_DAY` /
+  `GARRISON_CAP` / `RAID_STRENGTH`, `rpg.HEALER_TIER_CAP`,
+  `rpg.DISEASE_REACH`, `places.BOARD_ACTIVE_CHANCE` and the crime market
+  all carry them: city-grade takes the capital's rows, the hamlet the
+  village's, and tribute halves for the hamlet. The 2026-07-27 merge of
+  "city" into "town" is undone — the tier is a design rung now.
+- **The map ladder is three rungs over five tiers.** `C` is any city-grade
+  place (capital, metropolis, city), `T` a town, `v` a village, and a
+  HAMLET IS NOT DRAWN. `MAP_MARK_LEGEND` says "C city"; a tile of only
+  hamlets reads as its own ground and its hamlets appear in the detail
+  lines.
+- **The content the tiers owed.** A `walled_city` and a `cot_hamlet` role
+  per country in `place_catalog.json`, city and hamlet name reserves per
+  country and a modest village-pool growth. `validate_catalog` now demands
+  a free role at every generated tier and rejects a metropolis role, and
+  the "no `city` anywhere" clause the ground session added is gone.
+- **econmap.py took its second turn.** The harvest and population
+  constants moved into `places.py` and the tool imports them back through
+  a `_by_letter` window (it draws letter grids; the game speaks words),
+  keeping only the rendering. Only the trade constants are still authored
+  there.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **Order inside `create_geography`.** Census, then the start draw, then
+   the harvest. The harvest's nudge needs `world["party_tile"]`, and the
+   start needs a census to stand in, so the harvest goes last. That is the
+   ONE thing the harvest layer reads from the census, and the suite pins
+   it: tear the whole census out, re-roll, and the same year comes back.
+2. **The nudge runs BEFORE the drought guarantee.** The plan fixed the
+   nudge only as "before growth". Running it first means re-drawing the
+   relocated region's cause can never cost a world its year of dust; the
+   other order could.
+3. **The nudge's measured posture is 86%, not the plan's ~88%, and its raw
+   base is 36%, not ~52%.** The plan's raw number came off econmap's
+   private simulation with a different start-tile draw; the shipped one
+   also excludes hamlets from the start. 36% + 64% x 0.75 = 84%, and the
+   500-seed measurement is 86% for a center within five days and 92% for
+   an actual problem tile within six. The posture the round asked for —
+   the campaign usually opens in or beside a bad year, and the quiet start
+   survives at about one world in eight — holds exactly.
+4. **The hamlet has no smith.** The plan asked for a minimal hamlet ("a
+   well, a shrine, no board sites") while also saying the hamlet takes the
+   village's service gates. Cutting ALL four required services would have
+   broken the standing contract that every settlement is a place the party
+   can stand in — which this session was not asked to change — so the
+   hamlet keeps a bed, a counter and the healer behind it and loses
+   exactly the SMITH: a hundred souls cannot keep a forge, and a broken
+   sword is a reason to walk to the next village. `REQUIRED_SERVICES` is
+   now per tier, `places.has_service` is its reader, and
+   `session.require_service` gates `buy`'s steel branch with a line that
+   names the tier. Its four sites — the well, the wayside shrine, the cot
+   inn and the general store — carry no hall, no market and no notice
+   post, which is the "no board sites" line honored where it costs
+   nothing.
+5. **The hamlet's tribute is 1 g/day, not the plan's parenthetical 6.**
+   The contract says the hamlet takes the village's rows "except tribute
+   halved (6 g/day)", and the village's shipped row is 3. The intent —
+   halved, barely worth holding — was taken over the number, so the
+   hamlet pays 1. If 6 was meant literally it is a raise, not a halving,
+   and it should be set deliberately.
+6. **A metropolis wears the CITY role.** The plan cut metropolises from the
+   city role "until the Settlements-revisited round gives them their own",
+   which leaves them nothing to be cut FROM. `_settlement_template` maps
+   metropolis onto the city role, `validate_catalog` rejects an authored
+   metropolis role so the debt stays visible, and plan.md's Settlements
+   section now carries it.
+7. **The band is not stored.** The plan stores the harvest percent and the
+   census, and says the score is "deterministic and never saved". The BAND
+   is one derived step from the score, so it went the same way:
+   `population_band(world, tile)` recomputes it, exactly as `tile_economy`
+   recomputes session 1's fractions. Nothing stores a number this session
+   did not name.
+8. **The crime market reads an equivalence, not thirty rewritten rows.**
+   `crime.py` keys 27 categories and six mark bands on three words.
+   `crime.TIER_ROW` maps hamlet onto village and city/metropolis onto
+   capital and is strict — every word a settlement can carry is in it — so
+   a city is not silently a place with no marks.
+9. **A mine town is authored but not KNOWN.** `slot["authored"]` means
+   "known from day zero and listed among the historical cities", which is
+   a privilege of the sixteen. A mine town has an authored NAME and an
+   authored tier and stays hidden until its tile is entered; `validate_world`
+   admits it on a mountain by looking the tile up in `MINES` rather than by
+   a new stored flag. Two of the nine (Banska Stiavnica, Erzberg) sit on
+   mountain tiles, which is what forced the clause to widen at all.
+10. **Three fixtures were re-pinned, all because the world moved under
+    them.** `test_quest_geography`'s rumor-radius class moved from seed 19
+    to **seed 21** (Aston, with Dublin two days off carrying nothing and
+    London three off carrying work — the same populated/empty pair,
+    mirrored), and its one-day fixture from seed 28 to **seed 18**
+    (Tomton, Prague a day off). Only ONE seed in 160 produced the pair at
+    all, which is worth knowing: the rumor radius plus sparse boards make
+    that fixture genuinely rare. Its plural test also stopped asserting
+    `"1 days"` is absent — the window text "(11 days left)" contains it —
+    and now asserts the two things it actually meant. `test_places`'
+    historical-tile and population-constraint tests were rewritten around
+    the new model, and `test_conquest`'s `test_city_tier_is_gone` became
+    `test_every_census_tier_is_priced`.
+11. **Two "usable settlement" tests became tier-aware.** `test_worldsim`
+    asserted all four services of every settlement; both now read
+    `places.REQUIRED_SERVICES` and additionally assert that the smith is
+    present exactly where the tier is not hamlet. They passed unchanged by
+    luck — the seeds they use happened to materialize no hamlet — which is
+    precisely why they were fixed rather than left.
+
+**Measured.** `test_rolled_world.py` is the new contract suite (33 tests,
+four parts, twenty-two broken worlds); the full suite went 828 to 861, all
+green. Over 500 worlds the census lands where the round said it would:
+614.5 settlements a world (3.0 metropolis, 17.7 city, 100.6 town, 401.7
+village, 91.6 hamlet), 1.96 slots per land tile, 49 of 314 tiles empty,
+37% of high-and-dense tiles with no town (min 25%, never zero), 1.32M
+souls, 64 chartered settlements and 52 manors. The harvest: 17.7% mean
+problem coverage (6–33%, never zero), 5.1 regions of 11.3 tiles, a drought
+in every world. benchlog's 2026-08-21 entry has the bench table.
+
+**One finding that is not this session's.** `bench_abilities.py` came back
+different and was tested against ITSELF on an unmodified tree: two
+consecutive runs of the original code differ in the same cells. Its
+warrior-moves matchup and alchemist career blocks are not reproducible;
+the rest of the file is. develop.md's Files entry and plan.md's leftovers
+list now carry the warning, because a bench that cannot be compared
+against itself cannot be used to clear a change.
+
+**Parked on the way**: nothing new that the plan did not already carry.
+The four items session 2's contract footer held were moved into Part 2
+where their owners are — the past-epidemic scar and named natural regions
+to the snapshot arc and the leftovers list, the charter/manor readers to
+the leftovers list pointing at the politics arc, and the hamlet/metropolis
+detail to Settlements revisited. Session 3 (the trade network) is next and
+unblocked: its `MINES` table is already in `places.py` and its mine towns
+are already seated.

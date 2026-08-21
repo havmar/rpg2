@@ -15,20 +15,20 @@ implementation sessions**. Trigger one by prompting **"implement
 session N"**; a session is a full dev sitting (read develop.md first,
 ship the contract, run the suites, do the shipping paperwork). The
 sessions ship **in order** — each reads the layers the one before it
-stamped, and **Session 1 (the ground & the sky) shipped 2026-08-21**
-(designlog's (F) entry; the built layer is documented in rules.md and
-develop.md). The numbers are kept as they were cut, so 2, 3 and 4 still
-mean what the designlog says they mean. Part 2 is the draft roadmap
+stamped, and **Sessions 1 (the ground & the sky) and 2 (the rolled world:
+the last harvest & the census) both shipped 2026-08-21** (designlog's (F)
+and (G) entries; the built layers are documented in rules.md, dm.md and
+develop.md, and their measured numbers in benchlog). The numbers are kept
+as they were cut, so 3 and 4 still mean what the designlog says they
+mean. Part 2 is the draft roadmap
 beyond the arc — main points only, each a future design conversation,
 none scheduled.
 
 The cut is by implementation seam, not one-round-one-session (the
-designlog's round names stay the design authority): session 2 concentrates
-every derived-seed roll and every acknowledged fixture re-pin in one
-sitting (round 1's harvest + round 3's census); session 3 is round 4's
-trade network over that census; session 4 is round 5 — everything that
-READS — plus round 4's Miners' League recovery, which is old-system
-integration and belongs with the hookup.
+designlog's round names stay the design authority): session 3 is round 4's
+trade network over the census session 2 rolled; session 4 is round 5 —
+everything that READS — plus round 4's Miners' League recovery, which is
+old-system integration and belongs with the hookup.
 
 **The arc's product is a WORLDGEN PIPELINE, not a running simulation.**
 Geography and climate determine agriculture, agriculture determines
@@ -63,150 +63,6 @@ Standing rules for the arc:
 ---
 
 # Part 1 — THE TILE ECONOMY ARC: the remaining implementation sessions
-
-## Session 2 — The rolled world: the last harvest & the census
-
-The design is designlog 2026-08-21 (the round-1 entry's second sitting)
-and 2026-08-21 (C) (the round-3 entry), including the direction change
-it records: **real, historical and downscaled densities are abandoned**
-— the tile is the unit, the rolled census IS the population, and the
-tier words carry the scale. The layers and the eyeball tool are in the
-tree (`econmap.py harvest [SEED]` / `harvest --sweep`, `econmap.py
-population [SEED]` / `population --sweep`); **econmap.py's constants
-ARE this contract's numbers**. Both layers roll at worldgen off derived
-seeds, differing per playthrough on purpose (the bands and laws are
-fixed, so France always feels like France; which tiles carry the towns,
-and where last year failed, are each world's own). This is the arc's
-one fixture-churn session: both rolls and the acknowledged re-pins land
-in the same sitting.
-
-**1. The last harvest**, rolled at worldgen off derived seeds. Stored:
-`tile["harvest"]` (an int percent) and `tile["harvest_cause"]`, plus the
-region records (cause, center, member tiles) on the world — the
-addresses the snapshot arc will wire. The scale: 100 = a full excellent
-harvest; 110–120 legendary, 95–109 excellent, 75–94 ordinary, 55–74
-poor, 35–54 failed, below 35 apocalyptic; a PROBLEM tile is below 75.
-The method and every constant are `econmap.py`'s `roll_harvest`: 4–6
-regions, centers seeded by `CENTER_WEIGHT` with 4+ tiles separation,
-cause drawn per center climate (`CAUSES`), contagion growth by ring
-(`SPREAD` × `SUSCEPTIBILITY`), severity 30–65 at the core softening 6
-per ring ± 8 clamped 25–74, a fine year elsewhere (gauss 90/9 clamped
-75–120, 3% legendary tail). Two guarantees: at least one DROUGHT region
-per world (the most drought-apt center re-causes), and the NEARBY
-TROUBLE nudge — if no region center lies within 5 path-days of the start
-tile, relocate the last-rolled region to a `CENTER_WEIGHT`-weighted tile
-inside that radius with chance 3 in 4, re-drawing its cause from the new
-climate before growth (measured on raw rolls: trouble within 6 days of
-the start in only ~52% of worlds; the nudge lifts the played posture to
-~88% — the campaign usually opens in or beside a bad year, and the
-genuinely quiet start survives at about one world in eight). The causes'
-fiction names come with session 4's read surface (settled there —
-`HARVEST_CAUSE_LINES`); this session stores the cause words only.
-
-**2. The scale doctrine** (recorded prominently — it will be asked
-about). A tile is SPOKEN OF as 30 km east–west by 60 km north–south (one
-travel day east–west, two north–south; 1800 km²). The drawn map
-corresponds to real Europe at ~160 km per column × ~220 km per row
-(~35,000 km² per tile): the height is **1.4× the width, not the 2× the
-travel costs suggest** — the map is a deliberately squashed Europe, and
-north–south travel is priced by the fictional 60 km, not the real 220.
-By AREA the game world is ~20× smaller than the real one (5.3×
-east–west, 3.7× north–south linear). Slots: **at most 4 per tile**,
-thought of as a 2×2 lattice 15 km apart east–west and 30 km north–south
-(twice as dense horizontally, mirroring the travel anisotropy) — a
-settlement every 15–30 km is the medieval market-day spacing, and about
-four is what a head can hold. Slots carry no coordinates; the lattice is
-doctrine for fiction and scale statements, not a stored position.
-
-**3. The score**, deterministic and never saved (recomputable by any
-later arc, like session 1's numbers): food = realized arable +
-`PASTORAL_PEOPLE` × pastoral + `FISH_COAST` on sea-adjacent tiles (else
-`FISH_RIVER` on river tiles; nile counts as river); × `TRANSPORT_FACTOR`
-on coast or river (a town exceeds its land's carrying capacity only with
-transport); × the penalties — `MARSH_MALUS`, `HIGHLAND_MALUS`, and the
-eastern-frontier malus (`EAST_MALUS_*`, columns past 22 on rows 1–13
-only: the frontier is the steppe's reach, and the southern sea-lane
-stripe with the Nile granary is not raider country). `HAND_DENSE` names
-the authored exceptions with their reasons (the drained Low Countries
-delta; the Lombardy–Veneto city belt). The score buckets into six
-`BANDS`: wilderness / thin / low / mid / high / dense.
-
-**4. The census roll**, at worldgen off derived seeds, replacing
-`_population_slots` and `SETTLEMENT_DENSITY` whole (the rolled slot
-census is acknowledged scaffolding; no compatibility). Per tile the band
-picks a weighted ARRANGEMENT — a string over the five tiers — from
-`ARRANGEMENTS`; **the variance is in the tables** (every settled band
-keeps a village-only or emptier roll — ~39% of high+dense tiles roll no
-town, which is what keeps rich country from reading as a town grid — and
-only the dense band ever rolls a generated city). **Zero is a real
-tier**: ~50 tiles of 314 roll empty. A historical tile takes its
-authored tier (`HISTORICAL_TIERS`: Paris, Venice and Constantinople are
-the three metropolises; the rest city or town) in slot 1 — capital flags
-unchanged on Paris, Rome, Kyiv — plus companions from ITS OWN BAND's
-table truncated to three, so Paris gathers towns while Stockholm stands
-alone. A MINE tile seats its authored mine town the same way — tier
-town, named by the mine, always free (its mining law IS its charter) —
-so Falun stands alone in the wilderness band while Luneburg gathers
-villages. The `MINES` table (nine authored mines with their towns and
-goods) lands in `places.py` THIS session as data for the seating;
-session 3 gives it its whole trade reading. Slots sort chief-first
-(`TIER_ORDER`). Measured over 500 seeds: ~615 settlements (3 metropolis,
-~18 city, ~101 town, ~402 village, ~92 hamlet), ~1.96 slots per land
-tile, world ~1.3M souls.
-
-**5. The tier vocabulary** grows to five words: **hamlet** (under a
-hundred souls), **village** (hundreds), **town** (thousands), **city**
-(tens of thousands), **metropolis** (a hundred thousand and more —
-"supercity" is dev slang only). The headcounts are fiction anchors for
-the DM, never stored numbers. Mechanical mapping: **every
-`settlement_tier`-keyed table grows the five words** — city and
-metropolis take the capital-grade rows (`quests.SETTLEMENT_KINDS`,
-conquest's `TRIBUTE_PER_DAY` / `GARRISON_CAP` / `GARRISON_BANDS` /
-`RAID_STRENGTH`), hamlet takes the village's rows and service gates
-except tribute halved (6 g/day — a hamlet is barely worth holding);
-`BOARD_ACTIVE_CHANCE` extends to metropolis/city 1.0, town 0.6, village
-0.25, hamlet 0.05. The map glyph ladder stays ASCII — `C` for
-city-grade (metropolis, city, capital — the legend distinguishes), `T`
-town, `v` village, hamlets NOT drawn on the map (tile detail lines
-only); the uniform start draw excludes hamlets. **The recruit pool
-reads the tier** (settled in round 5's design): `roll_recruits` caps
-the day's candidate OPTIONS by the settlement — hamlet 1, village 2,
-town and above the full CHA capacity — a hamlet is not a hiring market.
-
-**6. Content owed** (writing.md register): a `hamlet` role and a `city`
-role per country in the catalog (`TILE_FIT_TAGS` fits per session 1's
-vocabulary; the hamlet minimal — a well, a shrine, no board sites);
-metropolises cut from the city role until the Settlements-revisited
-round gives them their own; hamlet naming (own small pools with a
-humbler sound, or the village reserve) and a modest village-pool
-growth — naming is lazy at materialization, so pools need to cover play,
-not the census.
-
-**7. The charter and the manor**, one stored word each, rolled with the
-census and read by nothing yet (the politics arc owns the read surface):
-cities and metropolises always hold a **charter** (`free`), a generated
-town does at `CHARTER_CHANCE` (1 in 3; an unchartered town is a lord's
-town), and a village-led tile of two or more settlements seats a
-resident lord at `MANOR_CHANCE` (1 in 2) — the manor mark on its chief
-village.
-
-**8. Tests.** The harvest: regions contiguous, the sweep distribution
-pinned (~17% mean problem coverage, never zero), the drought always,
-the save round-trip. The census: the sweep distribution pinned
-(settlement counts per tier, slots per tile, empty-tile count, the
-quiet-rich-country share never zero); slot cap 4 and legal tier words
-as `validate_world` clauses; the historical tiles carrying their
-authored tiers and the capital set unchanged; the mine towns seated by
-name; derived seeds (each roll identical when unrelated layers roll);
-the keyed tables covering all five words; the recruit cap; and the
-acknowledged fixture re-pins — the quest-geography and places fixtures
-that pinned the old slot rolls find new seeds, per the no-compatibility
-doctrine. Every existing bench unmoved (derived seeds).
-
-**Parked here, still**: the past-epidemic population scar (the snapshot
-arc's plague chain); named natural regions (take if cheap, later); the
-charter/manor readers and what freedom is worth (the politics arc);
-hamlet/metropolis detail (Settlements revisited).
 
 ## Session 3 — The trade network: mines, goods & routes
 
@@ -454,9 +310,10 @@ scheduled or specified.
 
 ## The spring snapshot & trouble arc (the natural next)
 
-- **The last-harvest roll ships with session 2** (settled early,
-  designlog 2026-08-21: contiguous cause-carrying problem regions, the
-  contagion model). This arc KEEPS: the **last-winter roll** for pastoral
+- **The last-harvest roll SHIPPED with session 2** (2026-08-21 — the
+  layer is in `places.roll_harvest` and documented in rules.md's World &
+  Navigation add-on; nothing reads it yet). This arc KEEPS: the
+  **last-winter roll** for pastoral
   country (fodder, herd losses, animal disease, wolves and monsters at
   the herd's edges — reading the climate table's winter column, and the
   great-rains regions doubling as murrain country, 1315-style); the
@@ -481,6 +338,9 @@ scheduled or specified.
 - **Cards gain addresses**: a firing card stamps tile-level states (place
   and land states already share one record shape), and admits read
   geography, so the harvest fails where the grain grows.
+- **The past-epidemic population scar** — the plague chain's mark on the
+  census, parked out of the census session (2026-08-21) and waiting for
+  this arc's own trouble model.
 
 ## Politics, war & more countries
 
@@ -520,14 +380,30 @@ For now **the tile is the defining element** and settlements stay thin. A
 later round returns to give them detail: more authored template roles per
 country (the closure's parked repeat problem), megacities with no natural
 Area (the Tile record already permits it), and whatever the census rework
-makes wantable.
+makes wantable. The census session (2026-08-21) left two specific debts
+here: a **metropolis** wears the city role and owes one of its own, and
+the **hamlet** is deliberately one minimal role a country — a well, a
+shrine, a cot and a store — that a detail round would widen. Both live in
+`place_catalog.json` and are described in develop.md's Files entry for it.
 
 ## Small deferred leftovers (from the Europe build, still true)
 
+- **The charter and the manor have no readers.** Session 2 stores both
+  words on every settlement slot and nothing looks at them; what freedom
+  is worth — taxes, revolts, entry at the gate — is the politics arc's
+  design (rules.md's World & Navigation add-on describes what is stored).
+- **Named natural regions** (the Alps, the Pripet, the Danube corridor) —
+  take if cheap, still unscheduled.
 - Roads and road quality; bridges, mandatory river tolls and ferries;
   ports, owned ships, passage prices and naval encounters — natural
   continuations of the routes session, none scheduled.
 - Fogging the base terrain map. Diagonal movement.
+- **`bench_abilities.py` is not reproducible run to run** (found
+  2026-08-21 and verified against an unmodified tree): its warrior-moves
+  matchup and alchemist career blocks swing several points between two
+  runs of identical code, so a diff of that file proves nothing. Worth a
+  sitting when somebody next touches it; develop.md's Files entry carries
+  the warning.
 - Watch in play: a companion quitting mid-career is much harsher on the
   fixed map (closure note, unchanged — the wound and satisfaction tracks
   are behaving as designed; the road is just genuinely long now).

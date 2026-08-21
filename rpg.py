@@ -1689,11 +1689,15 @@ DISEASE_BED_BONUS = 2   # ...- this under a roof. A cold is ~2-3 nights in
                         # got easier to shake as you levelled would inflate
                         # exactly the way this game's costs never do.
 DISEASE_FEE = 15        # what a healer's day charges to break one outright
-DISEASE_REACH = {"cold": ("village", "town", "capital"),
-                 "pneumonia": ("town", "capital")}
+DISEASE_REACH = {"cold": ("hamlet", "village", "town", "city",
+                          "metropolis", "capital"),
+                 "pneumonia": ("town", "city", "metropolis", "capital")}
                         # the treatment ladder's tier gate, applied to the
                         # illness half: a village herb-wife can break a cold
                         # and cannot touch a pneumonia. The cap is the gate.
+                        # The five census tiers since 2026-08-21: city-grade
+                        # reaches what a capital reaches, and the hamlet
+                        # exactly as far as the village.
 
 # --- the storm's field penalties (same session) ---------------------------- #
 # worldsim.md asks for "one field knob and one save", and that is exactly
@@ -1844,10 +1848,14 @@ BED_SEVERITY_PER_NIGHT = 1  # a night in a settlement bed knits this much
 HEALER_FEE = 20             # flat, per severity treated. Deliberately not
                             # scaled -- see above.
 HEALER_DAYS = 1             # the visit costs a day (the quest clock prices it)
-HEALER_TIER_CAP = {"village": 2, "town": 4, "capital": None}
+HEALER_TIER_CAP = {"hamlet": 2, "village": 2, "town": 4,
+                   "city": None, "metropolis": None, "capital": None}
                             # total severity one visit can clear, by settlement
                             # subtype; None = everything non-permanent. THE
-                            # CAP IS THE GATE.
+                            # CAP IS THE GATE. The five census tiers since
+                            # 2026-08-21: city-grade clears what a capital
+                            # clears, and the hamlet's herb-wife reaches
+                            # exactly as far as the village's.
 SALVE_SEVERITY = 1          # the salve (the medium potion tier): closes one
                             # non-permanent wound outright, worst first
 SALVE_PRICE = 40            # dearer than a healing potion, cheaper than a day
@@ -7622,7 +7630,7 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
 
     Returns (severity closed, gold spent)."""
     fee = marked_up(HEALER_FEE, markup)
-    cap = HEALER_TIER_CAP.get(subtype, HEALER_TIER_CAP["village"])
+    cap = HEALER_TIER_CAP[subtype]
     hurt = [h for h in party
             if not h.dead and any(not w.permanent for w in h.wounds)]
     if not hurt:

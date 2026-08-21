@@ -4,12 +4,13 @@ Stdlib-only and close to standalone: it reads the authored resources
 directly and renders them as 30x18 ASCII with censuses underneath, so it
 can be run against a half-drawn overlay while the rules it will obey are
 still being designed.  What it no longer does is keep its own copy of a
-number the game already owns: as each round SHIPS, its constants move
+number the game already owns: as each session SHIPS, its constants move
 into places.py and the tool imports them back (the arc's one-authority-
 per-constant rule).  The climate and terrain vocabularies and the whole
-potential law went that way on 2026-08-21 with session 1; the harvest,
-population and trade constants below are still authored here, because
-their sessions have not shipped.
+potential law went that way with session 1; the harvest roll, the
+population score, the census tables and the MINES went with session 2
+(both on 2026-08-21).  Only the TRADE constants below are still authored
+here, because session 3 has not shipped.
 
     python econmap.py                  # the climate overlay + lint
     python econmap.py terrain          # the terrain overlay + land character
@@ -82,8 +83,9 @@ where the climate is failure-prone, each with a CAUSE (drought, the great
 rains, frost), grown outward by contagion into the ground that cause can
 hurt, severity deepest at the core.  One drought region is guaranteed in
 every world: no year is a good year everywhere.  The tool rolls a plain
-seeded rng; the shipped worldgen will use derived seeds per the arc's
-standing rule.
+seeded rng and knows no start tile, so it draws the layer WITHOUT the
+shipped nearby-trouble nudge (`places.roll_harvest` has it); worldgen
+also rolls off derived seeds, so a tool seed is not a world seed.
 """
 
 from __future__ import annotations
@@ -327,41 +329,28 @@ def render_potential(base: list[str], climate: list[str],
 # excellent, 75-94 ordinary, 55-74 poor, 35-54 failed, below 35 apocalyptic.
 # A tile is a PROBLEM tile below 75.
 
-REGION_COUNT = (4, 6)               # rolled uniformly, inclusive
-CENTER_SEPARATION = 4               # min manhattan distance between centers
-CENTER_WEIGHT = {                   # who hosts trouble (the variance column's
-    "m": 1.0, "s": 1.0, "c": 0.7,   # first half): rich reliable cores rarely,
-    "t": 0.5, "w": 0.4, "o": 0.3,   # the dry and open margins often, the
-    "a": 0.3, "n": 0.2,             # tundra and open desert never -- nothing
-    "u": 0.0, "d": 0.0,             # grows there to lose
-}
-CAUSES = {                          # what a center's climate can suffer
-    "m": (("drought", 0.8), ("rains", 0.2)),
-    "s": (("drought", 0.6), ("frost", 0.3), ("rains", 0.1)),
-    "w": (("drought", 0.7), ("rains", 0.3)),
-    "c": (("rains", 0.45), ("drought", 0.35), ("frost", 0.2)),
-    "o": (("rains", 0.8), ("drought", 0.2)),
-    "t": (("frost", 0.6), ("rains", 0.4)),
-    "a": (("frost", 0.7), ("rains", 0.3)),
-    "n": (("rains", 1.0),),         # the Nile's failure is the bad flood
-    "u": (("frost", 1.0),),
-}
-SUSCEPTIBILITY = {                  # how far a cause spreads into a climate
-    "drought": {"m": 1.0, "s": 1.0, "d": 1.0, "w": 0.7, "c": 0.5, "a": 0.3,
-                "o": 0.2, "n": 0.15, "t": 0.1, "u": 0.1},
-    "rains":   {"o": 1.0, "c": 0.8, "t": 0.7, "a": 0.6, "n": 0.5, "u": 0.4,
-                "m": 0.3, "w": 0.3, "s": 0.2, "d": 0.0},
-    "frost":   {"t": 1.0, "u": 1.0, "a": 1.0, "c": 0.7, "s": 0.7, "o": 0.4,
-                "m": 0.1, "w": 0.0, "n": 0.0, "d": 0.0},
-}
-SPREAD = {1: 1.0, 2: 0.95, 3: 0.70, 4: 0.40, 5: 0.18}   # join chance by ring
-SEVERITY_CENTER = (30, 65)          # the core's harvest percent
-SEVERITY_RING = 6                   # it softens this much per ring outward
-SEVERITY_JITTER = 8                 # plus this much noise either way
-SEVERITY_CLAMP = (25, 74)           # a problem tile stays a problem tile
-GOOD_MEAN, GOOD_SIGMA = 90, 9       # the fine-year distribution elsewhere
-GOOD_CLAMP = (75, 120)
-LEGENDARY_CHANCE = 0.03             # ...with a rare 110-120 tail
+# SHIPPED 2026-08-21 (session 2): every number below lives in places.py
+# now and is imported back, per the arc's one-authority-per-constant rule.
+# The tool renders letter grids, so the climate-keyed tables are re-keyed
+# from the game's words through `CLIMATES` -- a window, never a copy.
+def _by_letter(table: dict) -> dict:
+    return {letter: table[word] for letter, word in CLIMATES.items()}
+
+
+REGION_COUNT = places.HARVEST_REGIONS
+CENTER_SEPARATION = places.HARVEST_SEPARATION
+CENTER_WEIGHT = _by_letter(places.CENTER_WEIGHT)
+CAUSES = _by_letter(places.HARVEST_CAUSES)
+SUSCEPTIBILITY = {cause: _by_letter(table)
+                  for cause, table in places.SUSCEPTIBILITY.items()}
+SPREAD = places.HARVEST_SPREAD
+SEVERITY_CENTER = places.SEVERITY_CENTER
+SEVERITY_RING = places.SEVERITY_RING
+SEVERITY_JITTER = places.SEVERITY_JITTER
+SEVERITY_CLAMP = places.SEVERITY_CLAMP
+GOOD_MEAN, GOOD_SIGMA = places.GOOD_MEAN, places.GOOD_SIGMA
+GOOD_CLAMP = places.GOOD_CLAMP
+LEGENDARY_CHANCE = places.LEGENDARY_CHANCE
 CAUSE_MARKS = {"drought": "D", "rains": "R", "frost": "F"}
 
 
@@ -499,83 +488,36 @@ def sweep_harvest(climate: list[str], seeds: int = 500) -> None:
 #     mirroring the travel anisotropy).  A settlement every 15-30 km is
 #     the medieval market-day spacing; that is why four is the cap.
 
-PASTORAL_PEOPLE = 0.35      # herds feed fewer than fields per unit of index
-FISH_COAST = 0.08           # the shore feeds people the plow never counted
-FISH_RIVER = 0.05           # so does the river, half as well
-TRANSPORT_FACTOR = 1.15     # grain moves by water: a river or coast tile
-                            # can feed a settlement its own fields cannot
-MARSH_MALUS = 0.60          # the fen fever
-HIGHLAND_MALUS = 0.60       # the high ground holds fewer, past low arable
-EAST_MALUS_START = 22       # the raiding frontier: columns past this lose
-EAST_MALUS_STEP = 0.04      # this much per column...
-EAST_MALUS_FLOOR = 0.65     # ...down to this floor
-EAST_MALUS_LAST_ROW = 13    # the frontier is the STEPPE's reach: the
-                            # southern sea-lane stripe (rows 14-18, the
-                            # Nile granary included) is not raider country
-HAND_DENSE = {              # score the law cannot see, authored:
-    (8, 11),                # - the Low Countries delta reads as fen by
-                            #   law, but its people drained it -- the
-                            #   polders ARE the land
-    (12, 13), (12, 14),     # - the Lombardy-Veneto city belt: the redraw
-                            #   cut the lagoon river for looks, and no law
-                            #   sees the city culture of the Italian north
-}
-BANDS = (                   # score -> band; the census table's key
-    (0.05, "wilderness"), (0.15, "thin"), (0.30, "low"),
-    (0.50, "mid"), (0.82, "high"), (9.99, "dense"),
-)
+# SHIPPED 2026-08-21 (session 2): the score law, the bands, the census
+# tables, the authored answer key, the mines and the two feudal words all
+# live in places.py now. What stays here is the RENDERING and the letter
+# grids it draws on.
+PASTORAL_PEOPLE = places.PASTORAL_PEOPLE
+FISH_COAST = places.FISH_COAST
+FISH_RIVER = places.FISH_RIVER
+TRANSPORT_FACTOR = places.TRANSPORT_FACTOR
+MARSH_MALUS = places.MARSH_MALUS
+HIGHLAND_MALUS = places.HIGHLAND_MALUS
+EAST_MALUS_START = places.EAST_MALUS_START
+EAST_MALUS_STEP = places.EAST_MALUS_STEP
+EAST_MALUS_FLOOR = places.EAST_MALUS_FLOOR
+EAST_MALUS_LAST_ROW = places.EAST_MALUS_LAST_ROW
+HAND_DENSE = places.HAND_DENSE
+BANDS = places.BANDS
 BAND_MARKS = {"wilderness": "-", "thin": "t", "low": "l", "mid": "m",
               "high": "h", "dense": "D"}
-
-# The census: arrangement strings over the tier letters -- H hamlet,
-# V village, T town, C city, M metropolis -- weighted per band.  The
-# variance is IN the tables: every settled band keeps a village-only
-# (or emptier) roll, so France still hides quiet country, and only the
-# dense band ever rolls a generated city.  At most 4 letters anywhere.
-ARRANGEMENTS = {
-    "wilderness": (("", 72), ("H", 18), ("V", 10)),
-    "thin": (("", 25), ("H", 30), ("V", 20), ("HH", 12), ("VH", 13)),
-    "low": (("V", 28), ("VH", 22), ("VV", 14), ("H", 12), ("VHH", 9),
-            ("VVH", 8), ("", 7)),
-    "mid": (("VV", 20), ("VVV", 15), ("VVH", 12), ("V", 12), ("VH", 10),
-            ("TV", 8), ("VVVH", 8), ("T", 5), ("VVVV", 5), ("VHH", 5)),
-    "high": (("TVV", 20), ("TV", 15), ("VVV", 15), ("TVVV", 10),
-             ("VVVV", 10), ("VV", 10), ("T", 5), ("TT", 5), ("V", 5),
-             ("VVH", 5)),
-    "dense": (("CTV", 15), ("TTV", 15), ("TVV", 15), ("CT", 10),
-              ("CVV", 10), ("TTVV", 10), ("TVVV", 10), ("CC", 5),
-              ("CTT", 5), ("VVV", 5)),
-}
-# An authored historical settlement fills slot 1; its companions come from
-# ITS OWN BAND's table, truncated to the three remaining slots -- so Paris
-# gathers towns and villages (city-with-towns, the realistic pattern) while
-# Stockholm and Moscow stand nearly alone in thin country, frontier
-# metropolis style.
-HISTORICAL_TIERS = {        # the authored answer key, NOT downscaled: the
-    "Paris": "M", "Venice": "M", "Constantinople": "M",   # metropolises
-    "London": "C", "Amsterdam": "C", "Prague": "C", "Moscow": "C",
-    "Kyiv": "C", "Lisbon": "C", "Rome": "C", "Carthage": "C",
-    "Dublin": "T", "Stockholm": "T", "Warsaw": "T", "Madrid": "T",
-    "Athens": "T",
-}
-HISTORICAL_TILES = {        # (row, column) -> name; restates places.py's
-    (5, 2): "Dublin", (6, 5): "London", (8, 11): "Amsterdam",
-    (9, 10): "Paris", (9, 18): "Prague", (3, 23): "Stockholm",
-    (7, 28): "Moscow", (8, 22): "Warsaw", (10, 27): "Kyiv",
-    (13, 3): "Lisbon", (13, 7): "Madrid", (12, 14): "Venice",
-    (14, 14): "Rome", (14, 19): "Athens", (14, 27): "Constantinople",
-    (17, 12): "Carthage",
-}                           # list so the tool stays standalone
+ARRANGEMENTS = places.ARRANGEMENTS
+HISTORICAL_TIERS = {name: places.TIER_LETTERS_BY_TIER[tier]
+                    for name, tier in places.HISTORICAL_TIERS.items()}
+HISTORICAL_TILES = {(row, column): name for row, column, name, *_rest
+                    in places.HISTORICAL_CITIES}
 TIER_PEOPLE = {             # fiction anchors for the eyeball totals only --
     "H": 60, "V": 300,      # the game stores tier WORDS, never heads
     "T": 3000, "C": 25000, "M": 150000,
 }
-TIER_ORDER = "MCTVH"        # chief settlement first: slot 1 leads the tile
-CHARTER_CHANCE = 1 / 3      # a generated town holds a charter this often;
-                            # cities and metropolises always do
-MANOR_CHANCE = 0.5          # a village-led tile of 2+ settlements seats a
-                            # resident lord this often (else the lord is
-                            # absent and the tile answers to a distant seat)
+TIER_ORDER = places.TIER_ORDER
+CHARTER_CHANCE = places.CHARTER_CHANCE
+MANOR_CHANCE = places.MANOR_CHANCE
 
 
 def _is_coast(base: list[str], r: int, c: int) -> bool:
@@ -588,32 +530,13 @@ def _is_coast(base: list[str], r: int, c: int) -> bool:
 
 def tile_score(economy: dict, letter: str, terrain_word: str,
                coast: bool, river: bool, row: int, column: int) -> float:
-    """The deterministic population score, by law.  1-based coordinates."""
-    food = economy["realized"] + PASTORAL_PEOPLE * economy["pastoral"]
-    if coast:
-        food += FISH_COAST
-    elif river:
-        food += FISH_RIVER
-    score = food
-    if coast or river:
-        score *= TRANSPORT_FACTOR
-    if terrain_word == "marsh":
-        score *= MARSH_MALUS
-    elif terrain_word == "mountains":
-        score *= HIGHLAND_MALUS
-    if row <= EAST_MALUS_LAST_ROW:
-        east = 1.0 - EAST_MALUS_STEP * max(0, column - EAST_MALUS_START)
-        score *= max(EAST_MALUS_FLOOR, east)
-    return score
+    """A window onto `places.tile_score` -- the game's own law."""
+    return places.tile_score(economy, terrain_word, coast, river,
+                             row, column)
 
 
 def score_band(score: float, row: int, column: int) -> str:
-    if (row, column) in HAND_DENSE:
-        return "dense"
-    for ceiling, band in BANDS:
-        if score < ceiling:
-            return band
-    return "dense"
+    return places.score_band(score, row, column)
 
 
 def _draw(rng: random.Random, table) -> str:
@@ -783,17 +706,9 @@ def sweep_population(base: list[str], climate: list[str],
 # roads are authored endpoints whose line the pathfinder draws.  Exotics
 # are goods like any other -- their origins are the frame's doors.
 
-MINES = {                   # (row, column): (the mine town, its goods).
-    (9, 14): ("Goslar", ("silver", "copper")),    # Rammelsberg & the Harz
-    (9, 19): ("Kutna Hora", ("silver",)),         # Bohemia's silver
-    (3, 22): ("Falun", ("copper", "iron")),       # the great copper mount
-    (10, 20): ("Banska Stiavnica", ("silver", "copper")),   # Carpathian
-    (10, 8): ("Melle", ("silver",)),              # the old western seam
-    (11, 14): ("Erzberg", ("iron",)),             # the iron mountain
-    (13, 18): ("Novo Brdo", ("silver",)),         # the Balkan silver
-    (8, 16): ("Luneburg", ("salt",)),             # the northern salt
-    (10, 21): ("Wieliczka", ("salt",)),           # the eastern salt
-}
+MINES = places.MINES        # SHIPPED 2026-08-21 (session 2): the nine
+                            # authored mines and their towns live in
+                            # places.py now, where the census seats them.
 GOODS_AUTHORED = {          # origin colour with no mine town under it
     (10, 5): ("salt",),             # the bay salt pans
     (11, 6): ("wine",),             # the western wine coast
