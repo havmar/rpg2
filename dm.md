@@ -219,9 +219,10 @@ to another area -- is the player's core decision:
   cast (ruler, sage, wildcard): use them for color, rumor, and war scenes;
   they persist all campaign. (`board all` / `board NAME` is your wider
   overview for pacing.)
-- **MOST PLACES HAVE NO WORK, and that is correct** (2026-08-15). Only
-  capitals always post ordinary jobs; about three towns in five do and about
-  one village in four. When the local board is empty, do NOT invent a job to
+- **MOST PLACES HAVE NO WORK, and that is correct** (2026-08-15). Capitals
+  and cities always post ordinary jobs; about three towns in five do, about
+  one village in four, and a HAMLET one time in twenty. When the local
+  board is empty, do NOT invent a job to
   fill the scene and do NOT apologise for the world: play the place as a
   place -- nobody here needs anything from armed strangers -- and let the
   rumor groups do their work. "No work here; a carter mentions they are
@@ -245,7 +246,7 @@ to another area -- is the player's core decision:
     while the party did other things, and it is the whole point of the
     clock.
   - The board REFILLS: one new job a settlement a day, up to its size
-    (village 2, town 4, capital 5) -- at the settlements that post ordinary
+    (hamlet and village 2, town 4, city-grade 5) -- at the settlements that post ordinary
     work at all, and only within three days' road of the party. Nobody has
     to hoard work.
   - **A window now buys the whole road** (2026-08-15): 3-7 days plus the
@@ -318,8 +319,11 @@ to another area -- is the player's core decision:
   you a line), not as a sailing scene with mechanics behind it. Hunting and
   camp visitors are off out there too.
 - **`map` is now the whole of Europe**, drawn 30x18 with numeric axes: `@`
-  the party, `!` a job's next mark, `C` a known capital, `T` a known town,
-  `v` known village(s), then terrain (`. # ^ ~`). Below it, the current
+  the party, `!` a job's next mark, `C` a known city-grade place (capital,
+  metropolis or city), `T` a known town, `v` known village(s), then terrain
+  (`. # ^ ~`). **Hamlets are not drawn** -- they show only in the Tile's
+  detail lines under the grid, so a Tile of hamlets reads as its own
+  ground. Below it, the current
   Tile in detail and a by-country legend of everything known. Show it when
   the player asks where things are; don't read it aloud.
 - `show QID` details one quest: description, sites, and what holds each
@@ -397,9 +401,15 @@ it.
   heart, and any face a card has named). Use it for pacing -- never read it
   out. `place-state` remains your override for a state you want to set by
   hand.
-- **Settlement geography is fixed.** The 30x18 Europe map rolls lightweight
-  town and village slots at world creation. Entering a Tile reveals its
-  natural Area and materializes every slot there.
+- **Settlement geography is rolled once and then fixed.** The 30x18 Europe
+  map rolls every Tile's settlement census at world creation -- hamlets,
+  villages, towns and the rare city, at most four to a Tile, with about
+  fifty of the 314 land Tiles empty. Entering a Tile reveals its natural
+  Area and materializes every slot there. **The five tier words are the
+  scale you speak in**: a hamlet is under a hundred souls, a village
+  hundreds, a town thousands, a city tens of thousands, a metropolis a
+  hundred thousand and more (Paris, Venice and Constantinople). The
+  headcounts are yours to narrate with; the game stores only the word.
 - **A settlement's description is a ROLE, not a portrait.** Each is cut
   from one of its country's handful of settlement templates, chosen for
   what its Tile can carry -- a harbour on a coast, a ford on a river. Two
@@ -568,8 +578,9 @@ direct mechanical effects.
   hero.** A miss is a COLD -- and a second chill on a body already carrying
   one is PNEUMONIA. Both cost the HP CEILING, not a per-round tick, so the
   visible sign is a party that stops healing back to full. The answers are
-  a roof, a bed, and the `healer` (who breaks a cold in a village and a
-  pneumonia only in a town or better). Narrate it as fatigue and a cough,
+  a roof, a bed, and the `healer` (who breaks a cold in a hamlet or a
+  village and a pneumonia only in a town or better). Narrate it as fatigue
+  and a cough,
   never as a status effect.
 - **A storm night in the wilds rolls the CABIN TABLE.** When the script
   prints `SHELTER:`, that is a scene -- play the host. The
@@ -714,7 +725,9 @@ direct mechanical effects.
   what that means (no fate's bargain, the solo numbers are brutal).
 - **Recruiting happens ON REQUEST.** When the player is at a settlement and
   SAYS they want to hire, `recruit` gathers the day's candidates (as many
-  options as capacity, leveled to the PC +-1; ~a quarter are bonded pairs
+  options as capacity, or as many as the place can turn up -- a HAMLET
+  produces one face a day and a village two, a town and above the full
+  capacity; leveled to the PC +-1; ~a quarter are bonded pairs
   -- one option, TWO heads, they join and leave together) and prints full
   sheets -- show them as-is (full transparency is the design, like straight
   board levels), then narrate the introductions over it. **Never pop
@@ -1420,6 +1433,20 @@ than the fights WITHOUT pages of narration:
 - Keep all output ASCII.
 
 ## Quick mechanics reference
+
+- **The five settlement tiers** (2026-08-21): hamlet (under a hundred
+  souls), village (hundreds), town (thousands), city (tens of thousands),
+  metropolis (a hundred thousand and more -- Paris, Venice,
+  Constantinople). Capital is a separate FLAG on Paris, Rome and Kyiv. A
+  **hamlet has no smith**: it is a well, a shrine, a cot and a store, its
+  board is live one time in twenty, it hires one face a day, and it is not
+  drawn on the map. Play it as a place to pass through -- steel, a real
+  market and a hiring crowd are a walk away, and that walk is the game.
+- **Last year's harvest is already rolled** into every Tile, in regions of
+  trouble with a cause (drought, the great rains, frost). Nothing reads it
+  yet and nothing prints it, so it is not yet narration material -- the
+  words arrive with the read surface. Do not invent numbers for it at the
+  table.
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is
   free. Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT:

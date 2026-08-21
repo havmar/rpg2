@@ -155,13 +155,21 @@ class OpeningCensus(unittest.TestCase):
 
     def test_every_opening_settlement_is_usable(self) -> None:
         # A settlement the party can stand in: known from day one, its
-        # required Sites built, its services attached and faced.
+        # required Sites built, its services attached and faced. What it
+        # OWES is its tier's row (2026-08-21): a bed, a counter and someone
+        # who sets bones everywhere, plus a smith at every tier above the
+        # hamlet.
         for settlement in quests.settlements(self.world):
             self.assertTrue(settlement["known"], settlement["name"])
             self.assertTrue(settlement["sites"], settlement["name"])
             kinds = {s["kind"] for s in settlement["services"]}
-            self.assertTrue({"lodging", "smith", "general_goods", "healer"}
-                            <= kinds, settlement["name"])
+            owed = set(places.REQUIRED_SERVICES[settlement["subtype"]])
+            self.assertTrue(owed <= kinds, settlement["name"])
+            self.assertTrue({"lodging", "general_goods", "healer"} <= kinds,
+                            settlement["name"])
+            self.assertEqual("smith" in kinds,
+                             settlement["subtype"] != "hamlet",
+                             settlement["name"])
             for service in settlement["services"]:
                 self.assertIsNotNone(service["provider"], settlement["name"])
 
@@ -219,7 +227,7 @@ class TheNeedToExistDraw(unittest.TestCase):
         self.assertFalse(area["visited"])
         self.assertTrue(area["sites"])
         kinds = {s["kind"] for s in area["services"]}
-        self.assertTrue({"lodging", "smith", "general_goods", "healer"}
+        self.assertTrue(set(places.REQUIRED_SERVICES[area["subtype"]])
                         <= kinds)
         for service in area["services"]:
             self.assertIsNotNone(service["provider"])
@@ -270,8 +278,8 @@ class SeededAndStable(unittest.TestCase):
         self.assertEqual(first["lands"], second["lands"])
 
     def test_another_seed_opens_another_three(self) -> None:
-        # The opening draw is the variety: the town and village a land
-        # begins with move between playthroughs.
+        # The opening draw is the variety: the settlements a land begins
+        # with move between playthroughs.
         opening = lambda w: {s["name"] for s in quests.settlements(w)}
         self.assertNotEqual(opening(_world(881)), opening(_world(882)))
 

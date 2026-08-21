@@ -14,7 +14,7 @@ import json
 import random
 import re
 import textwrap
-from collections import Counter
+from collections import Counter, deque
 from pathlib import Path
 from typing import Iterable
 
@@ -288,11 +288,245 @@ HISTORICAL_BY_TILE = {(row, column): (name, country, biome, capital)
                       for row, column, name, country, biome, capital
                       in HISTORICAL_CITIES}
 
-SETTLEMENT_DENSITY = {
-    "mortellaria": (0.10, 0.35),
-    "firascir": (0.06, 0.24),
-    "tergal": (0.03, 0.17),
+# --------------------------------------------------------------------------- #
+# THE ROLLED WORLD (2026-08-21, the tile economy arc's session 2)
+# --------------------------------------------------------------------------- #
+# The ground above is AUTHORED and identical in every campaign. What follows
+# is the half that is each world's own: the LAST HARVEST (round 1's second
+# sitting) and the SETTLEMENT CENSUS (round 3), both rolled once at worldgen
+# off derived seeds, both left alone afterwards. The bands and the laws are
+# fixed, so France always feels like France; which tiles carry the towns, and
+# where last year failed, are this world's business.
+
+# --------------------------------------------------------------------------- #
+# The last harvest
+# --------------------------------------------------------------------------- #
+# THE SCALE: 100 is a full excellent harvest. 110-120 legendary, 95-109
+# excellent, 75-94 ordinary, 55-74 poor, 35-54 failed, below 35 apocalyptic.
+# A tile is a PROBLEM tile below 75. The percent is STORED and the words are
+# session 4's (`HARVEST_CAUSE_LINES` and the spoken scale) -- this layer
+# keeps the number and the cause word only.
+#
+# The method is seeded contagion, not noise: a handful of regions, each with
+# a CAUSE its center's climate can actually suffer, spreading outward into
+# the ground that cause can hurt. A drought sweeps the steppe and dies at the
+# oceanic border; the great rains rot the Atlantic coast and never reach the
+# desert.
+
+HARVEST_REGIONS = (4, 6)            # rolled uniformly, inclusive
+HARVEST_SEPARATION = 4              # min manhattan distance between centers
+CENTER_WEIGHT = {                   # who hosts trouble: rich reliable cores
+    "mediterranean": 1.0,           # rarely, the dry and open margins often,
+    "steppe": 1.0,                  # the tundra and the open desert never --
+    "continental": 0.7,             # nothing grows there to lose
+    "taiga": 0.5,
+    "wet_mediterranean": 0.4,
+    "oceanic": 0.3,
+    "alpine": 0.3,
+    "nile": 0.2,
+    "tundra": 0.0,
+    "desert": 0.0,
 }
+HARVEST_CAUSES = {                  # what a center's climate can suffer
+    "mediterranean": (("drought", 0.8), ("rains", 0.2)),
+    "steppe": (("drought", 0.6), ("frost", 0.3), ("rains", 0.1)),
+    "wet_mediterranean": (("drought", 0.7), ("rains", 0.3)),
+    "continental": (("rains", 0.45), ("drought", 0.35), ("frost", 0.2)),
+    "oceanic": (("rains", 0.8), ("drought", 0.2)),
+    "taiga": (("frost", 0.6), ("rains", 0.4)),
+    "alpine": (("frost", 0.7), ("rains", 0.3)),
+    "nile": (("rains", 1.0),),      # the Nile's only failure is the bad flood
+    "tundra": (("frost", 1.0),),
+    "desert": (("drought", 1.0),),
+}
+SUSCEPTIBILITY = {                  # how far a cause spreads into a climate
+    "drought": {"mediterranean": 1.0, "steppe": 1.0, "desert": 1.0,
+                "wet_mediterranean": 0.7, "continental": 0.5, "alpine": 0.3,
+                "oceanic": 0.2, "nile": 0.15, "taiga": 0.1, "tundra": 0.1},
+    "rains": {"oceanic": 1.0, "continental": 0.8, "taiga": 0.7,
+              "alpine": 0.6, "nile": 0.5, "tundra": 0.4,
+              "mediterranean": 0.3, "wet_mediterranean": 0.3, "steppe": 0.2,
+              "desert": 0.0},
+    "frost": {"taiga": 1.0, "tundra": 1.0, "alpine": 1.0, "continental": 0.7,
+              "steppe": 0.7, "oceanic": 0.4, "mediterranean": 0.1,
+              "wet_mediterranean": 0.0, "nile": 0.0, "desert": 0.0},
+}
+HARVEST_SPREAD = {1: 1.0, 2: 0.95, 3: 0.70, 4: 0.40, 5: 0.18}   # by ring
+SEVERITY_CENTER = (30, 65)          # the core's harvest percent
+SEVERITY_RING = 6                   # it softens this much per ring outward
+SEVERITY_JITTER = 8                 # plus this much noise either way
+SEVERITY_CLAMP = (25, 74)           # a problem tile stays a problem tile
+GOOD_MEAN, GOOD_SIGMA = 90, 9       # the fine-year distribution elsewhere
+GOOD_CLAMP = (75, 120)
+LEGENDARY_CHANCE = 0.03             # ...with a rare 110-120 tail
+HARVEST_PROBLEM = 75                # below this the tile is in trouble
+# THE NEARBY TROUBLE NUDGE. Raw rolls put a region center within five path
+# days of the start in only about half of worlds, and a campaign that opens
+# nowhere near the year's trouble opens with nothing to walk toward. So when
+# no center is in reach, the LAST-rolled region moves into that radius three
+# times in four -- which lifts the played posture to about seven worlds in
+# eight and leaves the genuinely quiet start standing as the eighth.
+TROUBLE_DAYS = 5
+TROUBLE_CHANCE = 0.75
+
+# --------------------------------------------------------------------------- #
+# The settlement census
+# --------------------------------------------------------------------------- #
+# THE SCALE DOCTRINE (2026-08-21, round 3 -- it will be asked about):
+#   - A tile is SPOKEN OF as 30 km east-west by 60 km north-south (one
+#     travel day east-west, two north-south; 1800 km2).
+#   - The drawn map corresponds to real Europe at roughly 160 km per column
+#     and 220 km per row (about 35,000 km2 per tile): the height is 1.4x the
+#     width, NOT the 2x the travel costs suggest. The map is a deliberately
+#     squashed Europe, and north-south travel is priced by the fictional
+#     60 km, not the real 220.
+#   - By AREA the game world is therefore about 20x smaller than the real
+#     one (5.3x east-west, 3.7x north-south linear).
+#   - Consequence, and the round's direction change: real, historical and
+#     downscaled densities are NEVER an input. The tile is the unit, the
+#     rolled census IS the population, and the tier words carry the scale.
+#   - Slots: at most 4 per tile, thought of as a 2x2 lattice 15 km apart
+#     east-west and 30 km north-south (twice as dense horizontally,
+#     mirroring the travel anisotropy). A settlement every 15-30 km is the
+#     medieval market-day spacing, and about four is what a head can hold.
+#     Slots carry NO coordinates: the lattice is doctrine for fiction and
+#     scale statements, never a stored position.
+#
+# THE FIVE TIERS and their fiction anchors -- headcounts the DM speaks with,
+# never numbers the game stores:
+#   hamlet      under a hundred souls
+#   village     hundreds
+#   town        thousands
+#   city        tens of thousands
+#   metropolis  a hundred thousand and more ("supercity" is dev slang)
+
+TIERS = ("metropolis", "city", "town", "village", "hamlet")
+TIER_LETTERS = {"M": "metropolis", "C": "city", "T": "town",
+                "V": "village", "H": "hamlet"}
+TIER_LETTERS_BY_TIER = {tier: letter for letter, tier in TIER_LETTERS.items()}
+TIER_ORDER = "MCTVH"        # chief settlement first: slot 1 leads the tile
+CITY_GRADE = ("metropolis", "city")     # the tiers that read as a great city
+
+# THE SCORE, deterministic and NEVER stored: a relative number whose only
+# job is to pick a band. Recomputable by any later arc from the same
+# authorities, exactly like session 1's fractions.
+PASTORAL_PEOPLE = 0.35      # herds feed fewer than fields per unit of index
+FISH_COAST = 0.08           # the shore feeds people the plow never counted
+FISH_RIVER = 0.05           # so does the river, half as well
+TRANSPORT_FACTOR = 1.15     # grain moves by water: a river or coast tile can
+                            # feed a settlement its own fields cannot
+MARSH_MALUS = 0.60          # the fen fever
+HIGHLAND_MALUS = 0.60       # the high ground holds fewer, past low arable
+EAST_MALUS_START = 22       # the raiding frontier: columns past this lose
+EAST_MALUS_STEP = 0.04      # this much per column...
+EAST_MALUS_FLOOR = 0.65     # ...down to this floor
+EAST_MALUS_LAST_ROW = 13    # the frontier is the STEPPE's reach: the southern
+                            # sea-lane stripe (rows 14-18, the Nile granary
+                            # included) is not raider country
+HAND_DENSE = {              # score the law cannot see, authored:
+    (8, 11),                # - the Low Countries delta reads as fen by law,
+                            #   but its people drained it: the polders ARE
+                            #   the land
+    (12, 13), (12, 14),     # - the Lombardy-Veneto city belt: the redraw cut
+                            #   the lagoon river for looks, and no law sees
+                            #   the city culture of the Italian north
+}
+BANDS = (                   # score -> band; the census table's key
+    (0.05, "wilderness"), (0.15, "thin"), (0.30, "low"),
+    (0.50, "mid"), (0.82, "high"), (9.99, "dense"),
+)
+BAND_WORDS = tuple(band for _ceiling, band in BANDS)
+
+# THE CENSUS TABLES: arrangement strings over the tier letters, weighted per
+# band. THE VARIANCE IS IN THE TABLES -- every settled band keeps a
+# village-only or emptier roll, so rich country never reads as a town grid,
+# and only the dense band ever rolls a generated city. At most four letters
+# anywhere, because four is the slot cap.
+ARRANGEMENTS = {
+    "wilderness": (("", 72), ("H", 18), ("V", 10)),
+    "thin": (("", 25), ("H", 30), ("V", 20), ("HH", 12), ("VH", 13)),
+    "low": (("V", 28), ("VH", 22), ("VV", 14), ("H", 12), ("VHH", 9),
+            ("VVH", 8), ("", 7)),
+    "mid": (("VV", 20), ("VVV", 15), ("VVH", 12), ("V", 12), ("VH", 10),
+            ("TV", 8), ("VVVH", 8), ("T", 5), ("VVVV", 5), ("VHH", 5)),
+    "high": (("TVV", 20), ("TV", 15), ("VVV", 15), ("TVVV", 10),
+             ("VVVV", 10), ("VV", 10), ("T", 5), ("TT", 5), ("V", 5),
+             ("VVH", 5)),
+    "dense": (("CTV", 15), ("TTV", 15), ("TVV", 15), ("CT", 10),
+              ("CVV", 10), ("TTVV", 10), ("TVVV", 10), ("CC", 5),
+              ("CTT", 5), ("VVV", 5)),
+}
+SLOT_CAP = 4                # the 2x2 lattice: no tile seats a fifth place
+# The authored answer key, NOT downscaled -- a metropolis is a real
+# hundred-thousand city. A historical tile takes its own tier in slot 1 and
+# draws its COMPANIONS from its own band's table, so Paris gathers towns and
+# villages while Stockholm stands nearly alone in thin country.
+HISTORICAL_TIERS = {
+    "Paris": "metropolis", "Venice": "metropolis",
+    "Constantinople": "metropolis",
+    "London": "city", "Amsterdam": "city", "Prague": "city",
+    "Moscow": "city", "Kyiv": "city", "Lisbon": "city", "Rome": "city",
+    "Carthage": "city",
+    "Dublin": "town", "Stockholm": "town", "Warsaw": "town",
+    "Madrid": "town", "Athens": "town",
+}
+# THE MINES, authored, few and famous (round 4's table, landing here as data
+# for the SEATING it drives: a mine tile seats its mine town in slot 1, tier
+# town, named by the mine, always free -- its mining law IS its charter).
+# Session 3 gives the goods their whole trade reading.
+MINES = {
+    (9, 14): ("Goslar", ("silver", "copper")),      # the Rammelsberg
+    (9, 19): ("Kutna Hora", ("silver",)),
+    (3, 22): ("Falun", ("copper", "iron")),
+    (10, 20): ("Banska Stiavnica", ("silver", "copper")),
+    (10, 8): ("Melle", ("silver",)),
+    (11, 14): ("Erzberg", ("iron",)),
+    (13, 18): ("Novo Brdo", ("silver",)),
+    (8, 16): ("Luneburg", ("salt",)),
+    (10, 21): ("Wieliczka", ("salt",)),
+}
+# THE CHARTER AND THE MANOR, one stored word each, rolled with the census and
+# read by NOTHING yet -- the politics arc owns what freedom is worth.
+# Historically the distinction is law, not size: market towns held charters,
+# and lords founded seigneurial towns precisely to farm the tolls.
+CHARTER_CHANCE = 1 / 3      # a generated town holds a charter this often;
+                            # cities and metropolises always do
+MANOR_CHANCE = 0.5          # a village-led tile of 2+ settlements seats a
+                            # resident lord this often (else the lord is
+                            # absent and the tile answers to a distant seat)
+
+
+def tile_score(economy: dict, terrain: str, coast: bool, river: bool,
+               row: int, column: int) -> float:
+    """One tile's population score, by law -- the hidden relative number
+    whose only job is to pick a band. Never stored: any later arc recomputes
+    it from the same authorities the way it recomputes `tile_economy`."""
+    food = economy["realized"] + PASTORAL_PEOPLE * economy["pastoral"]
+    if coast:
+        food += FISH_COAST
+    elif river:
+        food += FISH_RIVER
+    score = food
+    if coast or river:
+        score *= TRANSPORT_FACTOR
+    if terrain == "marsh":
+        score *= MARSH_MALUS
+    elif terrain == "mountains":
+        score *= HIGHLAND_MALUS
+    if row <= EAST_MALUS_LAST_ROW:
+        east = 1.0 - EAST_MALUS_STEP * max(0, column - EAST_MALUS_START)
+        score *= max(EAST_MALUS_FLOOR, east)
+    return score
+
+
+def score_band(score: float, row: int, column: int) -> str:
+    """The six-band bucket the census table is keyed on."""
+    if (row, column) in HAND_DENSE:
+        return "dense"
+    for ceiling, band in BANDS:
+        if score < ceiling:
+            return band
+    return "dense"
 
 # SPARSE ORDINARY BOARDS (2026-08-15, Local Quest Geography). A settlement
 # is not a job dispenser: at materialization a stable derived roll decides
@@ -304,29 +538,60 @@ SETTLEMENT_DENSITY = {
 # DM's own forged work -- post at an inactive board regardless and never
 # turn it into an active one. The starting settlement is forced active by
 # `create_geography`, because the opening quest has to have somewhere to be.
-BOARD_ACTIVE_CHANCE = {"capital": 1.00, "town": 0.60, "village": 0.25}
+BOARD_ACTIVE_CHANCE = {"capital": 1.00, "metropolis": 1.00,
+                       "city": 1.00, "town": 0.60,
+                       "village": 0.25, "hamlet": 0.05}
+# The name reserves, drawn from at MATERIALIZATION and never at worldgen, so
+# a pool has to cover what one playthrough walks into rather than what the
+# census counts (~615 settlements a world). A tier that runs dry falls back
+# to a numbered name. Metropolis carries no pool on purpose: the census rolls
+# no generated one, and all three authored ones are named.
+#
+# The HAMLET pools take a humbler sound than the villages above them --
+# Firascir's small endings (-cot, -stead, -hay, -garth), Mortellaria's
+# diminutives, Tergal's short camp words. A hamlet is under a hundred souls
+# and its name should not sound like a market.
 SETTLEMENT_NAMES = {
     "firascir": {
+        "city": ("Kingsmarch", "Highwater", "Greatbourne", "Stonegate",
+                 "Crownford"),
         "town": ("Tomburgh", "Leehaven", "Walhaven", "Bradwhitchip",
                  "Redflurton"),
         "village": ("Sturford", "Ackham", "Flurham", "Sturham",
                     "Sturworth", "Newton", "Midton", "Aston", "Tomton",
                     "Walham", "Coldcot", "Thornley", "Blackton",
                     "Astmoor", "Ackbridge", "Ackton", "Mickleham",
-                    "Shepham"),
+                    "Shepham", "Coldbridge", "Thornham", "Bradmoor",
+                    "Leeworth", "Shepton", "Blackford"),
+        "hamlet": ("Ackcot", "Sturend", "Thornhay", "Walcroft",
+                   "Oldstead", "Mickleshaw", "Redgarth", "Flurend",
+                   "Blackhay", "Shepcot"),
     },
     "mortellaria": {
+        "city": ("Aurelia", "Corvenza", "Palamare", "Serravalle",
+                 "Tarenna"),
         "town": ("Castavera", "Portomera", "Belafonte", "Montaro"),
         "village": ("Alavera", "Beloro", "Calavento", "Doramonte",
                     "Fontela", "Lunaro", "Maravento", "Oliveta",
                     "Rosavera", "Sanoro", "Solavela", "Toralba",
-                    "Valesero", "Ventoro", "Vilaro"),
+                    "Valesero", "Ventoro", "Vilaro", "Aldovera",
+                    "Cantoro", "Meravela", "Pontela", "Serovento",
+                    "Valoro"),
+        "hamlet": ("Casella", "Pozzino", "Fontina", "Solino", "Vallino",
+                   "Roqueta", "Olivella", "Beloreta", "Sanino",
+                   "Ventina"),
     },
     "tergal": {
+        "city": ("Altan-Ordu", "Sarugan", "Khorgat", "Bayan-Tal",
+                 "Temughal"),
         "town": ("Ulus-Gal", "Kharuk", "Temenur", "Ordubal"),
         "village": ("Aradun", "Balurun", "Borkal", "Enkhar", "Eshkar",
                     "Guratai", "Kharnam", "Kurugan", "Namuruk", "Ordaki",
-                    "Sargul", "Teguren", "Tumengal", "Urkhal", "Zamutar"),
+                    "Sargul", "Teguren", "Tumengal", "Urkhal", "Zamutar",
+                    "Batugan", "Chulun", "Erkhet", "Naranbal", "Sukhal",
+                    "Tovkhar"),
+        "hamlet": ("Ukhta", "Baruk", "Sarai", "Nogai", "Chagan", "Tolui",
+                   "Kubai", "Ergen", "Zamut", "Khaya"),
     },
 }
 
@@ -905,6 +1170,20 @@ def _service_kind(site_name: str) -> list[str]:
 # then the general shop, then the inn.
 _HEALER_HOSTS = ("alchemist", "general_goods", "lodging")
 
+# What a settlement of each tier OWES the party. Every settlement is a place
+# the party can stand in -- a bed, a counter and somebody who sets bones --
+# and until 2026-08-21 that was every settlement's whole required list. The
+# HAMLET is the first tier that legitimately falls short of it: a hundred
+# souls have no smith, and a broken sword is a reason to walk to the next
+# village. `session.cmd_buy` is the one reader that has to notice.
+REQUIRED_SERVICES = {
+    "metropolis": ("lodging", "smith", "general_goods", "healer"),
+    "city": ("lodging", "smith", "general_goods", "healer"),
+    "town": ("lodging", "smith", "general_goods", "healer"),
+    "village": ("lodging", "smith", "general_goods", "healer"),
+    "hamlet": ("lodging", "general_goods", "healer"),
+}
+
 
 def _attach_services(area: dict, sites: list[dict]) -> None:
     seen = set()
@@ -928,7 +1207,7 @@ def _attach_services(area: dict, sites: list[dict]) -> None:
                 {"id": f"{area['id']}/service/healer", "kind": "healer",
                  "label": "healer", "site": host["id"], "provider": None})
             host["services"].append("healer")
-    required = {"lodging", "smith", "general_goods", "healer"}
+    required = set(REQUIRED_SERVICES[area["subtype"]])
     if area.get("capital"):
         required |= {"alchemist", "market", "government"}
     missing = required - seen
@@ -1052,40 +1331,232 @@ def _validate_fixed_data(rows: tuple[str, ...]) -> None:
 
 
 def _slot(slot_id: str, tier: str, seed: int, *, name: str | None = None,
-          capital: bool = False, authored: bool = False) -> dict:
+          capital: bool = False, authored: bool = False,
+          charter: str | None = None, manor: str | None = None) -> dict:
     return {"id": slot_id, "tier": tier, "name": name,
             "capital": capital, "authored": authored, "area": None,
-            "known": authored, "seed": seed}
+            "known": authored, "seed": seed,
+            "charter": charter, "manor": manor}
 
 
-def _population_slots(seed: int | None, tile: dict) -> list[dict]:
-    if tile["biome"] == "sea":
-        return []
-    historical = HISTORICAL_BY_TILE.get((tile["row"], tile["column"]))
-    if historical:
-        name, _country, _biome, capital = historical
-        tiers = ("town", "village", "village")
-    else:
-        dense, village = SETTLEMENT_DENSITY[tile["country"]]
-        roll = random.Random(stable_seed(seed, tile["id"],
-                                        "population", 0)).random()
-        if roll < dense:
-            tiers = ("village",) if tile["biome"] == "mountain" else (
-                "town", "village", "village")
-        elif roll < dense + village:
-            tiers = ("village",)
+def _is_coast(world: dict, tile: dict) -> bool:
+    return any(world["tiles"][nid]["biome"] == "sea"
+               for nid in tile["neighbors"])
+
+
+def _draw(rng: random.Random, table) -> str:
+    return rng.choices([row[0] for row in table],
+                       [row[1] for row in table])[0]
+
+
+def roll_census(world: dict) -> None:
+    """THE SETTLEMENT CENSUS, rolled once at worldgen off a derived seed.
+
+    Per land Tile: the deterministic score picks a band, the band draws a
+    weighted ARRANGEMENT over the five tier letters, and the letters become
+    settlement slots sorted chief-first. An authored tile -- a historical
+    city or a mine -- takes its own tier in slot 1 and draws its companions
+    from ITS OWN BAND's table truncated to the three seats left, which is
+    what makes Paris gather towns while Stockholm stands nearly alone.
+
+    Zero is a real tier: about fifty of the 314 land Tiles roll empty, and a
+    tile of quiet country is a correct tile, not a gap in the map.
+
+    The two feudal words ride along -- the CHARTER (cities and metropolises
+    always, a generated town one time in three) and the MANOR (a village-led
+    tile of two or more seats one time in two). Both are stored and read by
+    nothing yet; the politics arc owns what freedom is worth.
+    """
+    seed = world["seed"]
+    rng = random.Random(stable_seed(seed, "world", "census", 0))
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        if tile["biome"] == "sea":
+            continue
+        row, column = tile["row"], tile["column"]
+        economy = tile_economy(tile["climate"], tile["terrain"],
+                               tile["biome"] == "river", row, column)
+        river = tile["biome"] == "river" or tile["climate"] == "nile"
+        score = tile_score(economy, tile["terrain"], _is_coast(world, tile),
+                           river, row, column)
+        band = score_band(score, row, column)
+        historical = HISTORICAL_BY_TILE.get((row, column))
+        mine = MINES.get((row, column))
+        if historical:
+            letters = (TIER_LETTERS_BY_TIER[HISTORICAL_TIERS[historical[0]]]
+                       + _draw(rng, ARRANGEMENTS[band])[:SLOT_CAP - 1])
+        elif mine:      # the mine town: authored, tier town, slot 1
+            letters = "T" + _draw(rng, ARRANGEMENTS[band])[:SLOT_CAP - 1]
         else:
-            tiers = ()
-        name, capital = None, False
-    slots = []
-    for index, tier in enumerate(tiers, 1):
-        sid = f"{tile['id']}/settlement/{index:02d}"
-        slots.append(_slot(
-            sid, tier, stable_seed(seed, tile["id"], "settlement-slot", index),
-            name=name if historical and index == 1 else None,
-            capital=capital if index == 1 else False,
-            authored=bool(historical and index == 1)))
-    return slots
+            letters = _draw(rng, ARRANGEMENTS[band])
+        letters = "".join(sorted(letters, key=TIER_ORDER.index))
+        charters = []
+        for letter in letters:
+            tier = TIER_LETTERS[letter]
+            if tier in CITY_GRADE:
+                charters.append("free")
+            elif tier == "town":
+                charters.append("free" if rng.random() < CHARTER_CHANCE
+                                else None)
+            else:
+                charters.append(None)
+        if letters and (historical or mine):
+            charters[0] = "free"    # the famous names hold their own
+                                    # charters, and a mine town's mining
+                                    # law IS its charter
+        manor = ("manor" if len(letters) >= 2 and letters[0] == "V"
+                 and rng.random() < MANOR_CHANCE else None)
+        for index, letter in enumerate(letters, 1):
+            first = index == 1
+            name = capital = None
+            if first and historical:
+                name, capital = historical[0], historical[3]
+            elif first and mine:
+                name = mine[0]
+            sid = f"{tile['id']}/settlement/{index:02d}"
+            slot = _slot(sid, TIER_LETTERS[letter],
+                         stable_seed(seed, tile["id"], "settlement-slot",
+                                     index),
+                         name=name, capital=bool(capital),
+                         authored=bool(first and historical),
+                         charter=charters[index - 1],
+                         manor=manor if first else None)
+            slot.update(tile=tid, index=index)
+            world["settlement_slots"][sid] = slot
+            tile["settlement_slots"].append(sid)
+            world["lands"][tile["country"]]["settlement_slots"].append(sid)
+
+
+def population_band(world: dict, tile: dict | str) -> str:
+    """One land Tile's population band, RECOMPUTED. The score behind it is a
+    worldgen intermediate and is never stored, so this is how a later arc --
+    or the eyeball tool -- asks what the census was rolled against."""
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    if tile["biome"] == "sea":
+        raise ValueError(f"{tile['id']}: the sea carries no population band")
+    row, column = tile["row"], tile["column"]
+    economy = tile_economy(tile["climate"], tile["terrain"],
+                           tile["biome"] == "river", row, column)
+    river = tile["biome"] == "river" or tile["climate"] == "nile"
+    score = tile_score(economy, tile["terrain"], _is_coast(world, tile),
+                       river, row, column)
+    return score_band(score, row, column)
+
+
+def _harvest_neighbors(world: dict, tid: str):
+    for nid in world["tiles"][tid]["neighbors"]:
+        if world["tiles"][nid]["biome"] != "sea":
+            yield nid
+
+
+def roll_harvest(world: dict) -> None:
+    """THE LAST HARVEST, rolled once at worldgen off a derived seed.
+
+    Four to six regions of trouble, their centers weighted toward the
+    climates that fail, each drawing a CAUSE its own ground can suffer and
+    growing outward by contagion into the ground that cause can hurt. Every
+    other tile had a fine year. Two postures are guaranteed:
+
+    - NO WORLD IS A GOOD YEAR EVERYWHERE. If nothing rolled a drought, the
+      most drought-apt center re-causes: somewhere there is always dust.
+    - THE CAMPAIGN USUALLY OPENS IN OR BESIDE A BAD YEAR. The nearby-trouble
+      nudge (`TROUBLE_DAYS` / `TROUBLE_CHANCE`) moves one region into reach
+      of the start when none is there -- three worlds in four, so the quiet
+      start survives as the fourth.
+
+    Stored: `tile["harvest"]` (an int percent) and `tile["harvest_cause"]`
+    (the cause word, or None for a fine year), plus the region records on
+    the world. The cause's fiction name is session 4's read surface.
+    """
+    rng = random.Random(stable_seed(world["seed"], "world", "harvest", 0))
+    land = [tid for tid in world["tile_order"]
+            if world["tiles"][tid]["biome"] != "sea"]
+    climate = {tid: world["tiles"][tid]["climate"] for tid in land}
+    weights = [CENTER_WEIGHT[climate[tid]] for tid in land]
+    centers: list[str] = []
+    n_regions = rng.randint(*HARVEST_REGIONS)
+    while len(centers) < n_regions:
+        pick = rng.choices(land, weights=weights)[0]
+        row, column = tile_row_column(pick)
+        if all(abs(row - r) + abs(column - c) > HARVEST_SEPARATION
+               for r, c in (tile_row_column(t) for t in centers)):
+            centers.append(pick)
+    regions = [{"center": tid, "cause": _draw(rng, HARVEST_CAUSES[
+        climate[tid]])} for tid in centers]
+    _nudge_trouble(world, rng, regions, land, weights, climate)
+    if not any(region["cause"] == "drought" for region in regions):
+        # No year is a good year everywhere: the most drought-apt center
+        # re-causes, so every world has its year of dust somewhere.
+        best = max(regions,
+                   key=lambda g: SUSCEPTIBILITY["drought"][climate[g["center"]]])
+        best["cause"] = "drought"
+
+    harvest: dict[str, int] = {}
+    cause_at: dict[str, str] = {}
+    for index, region in enumerate(regions, 1):
+        members = {region["center"]: 0}
+        frontier = deque([(region["center"], 0)])
+        while frontier:
+            tid, ring = frontier.popleft()
+            if ring >= max(HARVEST_SPREAD):
+                continue
+            for nid in _harvest_neighbors(world, tid):
+                if nid in members:
+                    continue
+                chance = (HARVEST_SPREAD[ring + 1]
+                          * SUSCEPTIBILITY[region["cause"]][climate[nid]])
+                if rng.random() < chance:
+                    members[nid] = ring + 1
+                    frontier.append((nid, ring + 1))
+        region["id"] = f"harvest/{index:02d}"
+        region["tiles"] = list(members)
+        core = rng.randint(*SEVERITY_CENTER)
+        for tid, ring in members.items():
+            severity = core + SEVERITY_RING * ring + rng.randint(
+                -SEVERITY_JITTER, SEVERITY_JITTER)
+            severity = min(SEVERITY_CLAMP[1], max(SEVERITY_CLAMP[0],
+                                                  severity))
+            if tid not in harvest or severity < harvest[tid]:
+                harvest[tid] = severity
+                cause_at[tid] = region["cause"]
+    for tid in land:
+        if tid not in harvest:
+            draw = rng.gauss(GOOD_MEAN, GOOD_SIGMA)
+            if rng.random() < LEGENDARY_CHANCE:
+                draw = rng.uniform(110, 120)
+            harvest[tid] = int(min(GOOD_CLAMP[1], max(GOOD_CLAMP[0], draw)))
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        tile["harvest"] = harvest.get(tid)
+        tile["harvest_cause"] = cause_at.get(tid)
+    world["harvest_regions"] = [
+        {"id": region["id"], "cause": region["cause"],
+         "center": region["center"], "tiles": region["tiles"]}
+        for region in regions]
+
+
+def _nudge_trouble(world: dict, rng: random.Random, regions: list[dict],
+                   land: list[str], weights: list[float],
+                   climate: dict[str, str]) -> None:
+    """THE NEARBY TROUBLE NUDGE. When no region center lies within
+    `TROUBLE_DAYS` path days of the start, relocate the LAST-rolled region
+    into that radius `TROUBLE_CHANCE` of the time, re-drawing its cause from
+    the new climate -- before growth, so the region grows out of the ground
+    it actually sits on. Runs before the drought guarantee, so the nudge can
+    never cost a world its year of dust."""
+    start = world["party_tile"]
+    near = [tid for tid, weight in zip(land, weights)
+            if weight > 0 and path_days(start, tid) <= TROUBLE_DAYS]
+    if any(path_days(start, region["center"]) <= TROUBLE_DAYS
+           for region in regions):
+        return
+    if not near or rng.random() >= TROUBLE_CHANCE:
+        return
+    moved = rng.choices(near, weights=[CENTER_WEIGHT[climate[tid]]
+                                       for tid in near])[0]
+    regions[-1]["center"] = moved
+    regions[-1]["cause"] = _draw(rng, HARVEST_CAUSES[climate[moved]])
 
 
 def _name_state(seed: int | None) -> tuple[dict, dict]:
@@ -1129,8 +1600,13 @@ def _settlement_template(country: str, tier: str, slot: dict,
         key = template_id(country, role)
         return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
     have = set(tile_tags)
+    # A METROPOLIS draws the city role (2026-08-21, the census session):
+    # the census rolls no generated metropolis, and the three authored ones
+    # wear a great city's shape until the Settlements-revisited round gives
+    # them their own.
+    wanted_tier = "city" if tier == "metropolis" else tier
     roles = [role for role, spec in templates.items()
-             if spec["tier"] == tier]
+             if spec["tier"] == wanted_tier]
     if not roles:
         raise ValueError(f"{country}: no {tier} settlement template")
     fitting = [role for role in roles
@@ -1313,12 +1789,11 @@ def create_geography(seed: int | None) -> dict:
         tile["areas"].append(aid)
         tile["natural_area"] = aid
         world["lands"][tile["country"]]["areas"].append(aid)
-        slots = _population_slots(seed, tile)
-        for index, slot in enumerate(slots, 1):
-            slot.update(tile=tid, index=index)
-            world["settlement_slots"][slot["id"]] = slot
-            tile["settlement_slots"].append(slot["id"])
-            world["lands"][tile["country"]]["settlement_slots"].append(slot["id"])
+
+    # THE ROLLED WORLD (2026-08-21, session 2): the census first -- it is
+    # what a start can stand in -- then the start, then the harvest, whose
+    # nearby-trouble nudge needs to know where the campaign opens.
+    roll_census(world)
 
     # Historical towns exist and are known from day zero; their villages do
     # not. Capitals materialize first so country-level cast code has a stable
@@ -1328,7 +1803,10 @@ def create_geography(seed: int | None) -> dict:
     for slot in sorted(historical, key=lambda value: not value["capital"]):
         materialize_slot(world, slot, known=True)
 
-    candidates = list(world["settlement_slots"])
+    # The uniform start draw skips HAMLETS (2026-08-21): a hundred souls
+    # with no inn, no smith and no board is not a place to begin a career.
+    candidates = [sid for sid, slot in world["settlement_slots"].items()
+                  if slot["tier"] != "hamlet"]
     if not candidates:
         raise ValueError("fixed Europe population produced no settlement slots")
     start_slot = random.Random(stable_seed(seed, "world", "start-slot", 0)).choice(
@@ -1344,6 +1822,7 @@ def create_geography(seed: int | None) -> dict:
     # The opening settlement posts ordinary work whatever its own roll said:
     # the game has to start somewhere, and it starts at a board.
     world["areas"][world["start_area"]]["board_active"] = True
+    roll_harvest(world)
     validate_world(world)
     return world
 
@@ -1470,6 +1949,7 @@ def validate_world(world: dict) -> None:
         if tile["biome"] == "sea" and slots:
             raise ValueError(f"{tid}: the sea is never populated")
         historical = HISTORICAL_BY_TILE.get((tile["row"], tile["column"]))
+        mine = MINES.get((tile["row"], tile["column"]))
         if historical:
             name, country, biome, capital = historical
             if (tile["biome"], tile["country"]) != (biome, country):
@@ -1481,10 +1961,30 @@ def validate_world(world: dict) -> None:
                 raise ValueError(f"{tid}: {name} has no authored town")
             if authored[0]["capital"] != capital:
                 raise ValueError(f"{tid}: {name}'s capital flag is wrong")
+            if authored[0]["tier"] != HISTORICAL_TIERS[name]:
+                raise ValueError(f"{tid}: {name} is a "
+                                 f"{HISTORICAL_TIERS[name]}, not a "
+                                 f"{authored[0]['tier']}")
+            if authored[0] is not slots[0]:
+                raise ValueError(f"{tid}: {name} leads its own Tile")
+        elif mine:
+            # THE MINE TOWN (2026-08-21): seated in slot 1, tier town, named
+            # by the mine, always free -- its mining law IS its charter.
+            if not slots or slots[0]["name"] != mine[0]:
+                raise ValueError(f"{tid}: the {mine[0]} mine seats no town")
+            if slots[0]["tier"] != "town":
+                raise ValueError(f"{tid}: a mine town is a town")
+            if slots[0]["charter"] != "free":
+                raise ValueError(f"{tid}: a mine town is always free")
         elif tile["biome"] == "mountain":
-            if any(slot["tier"] == "town" for slot in slots):
-                raise ValueError(f"{tid}: only authored towns sit on a "
+            if any(slot["tier"] not in ("village", "hamlet")
+                   for slot in slots):
+                raise ValueError(f"{tid}: only an AUTHORED town -- a "
+                                 f"historical city or a mine -- sits on a "
                                  f"mountain")
+        if len(slots) > SLOT_CAP:
+            raise ValueError(f"{tid}: {len(slots)} settlements on a Tile "
+                             f"the lattice seats {SLOT_CAP}")
         for slot in slots:
             if slot["id"] in slot_ids:
                 raise ValueError(f"duplicate settlement slot: {slot['id']}")
@@ -1494,8 +1994,30 @@ def validate_world(world: dict) -> None:
             if slot["id"] not in \
                     world["lands"][tile["country"]]["settlement_slots"]:
                 raise ValueError(f"{slot['id']}: not on its country")
+            if slot["tier"] not in TIERS:
+                raise ValueError(f"{slot['id']}: no such settlement tier: "
+                                 f"{slot['tier']!r}")
+            if slot["charter"] not in (None, "free"):
+                raise ValueError(f"{slot['id']}: no such charter: "
+                                 f"{slot['charter']!r}")
+            if slot["manor"] not in (None, "manor"):
+                raise ValueError(f"{slot['id']}: no such manor mark: "
+                                 f"{slot['manor']!r}")
+            if slot["tier"] in CITY_GRADE and slot["charter"] != "free":
+                raise ValueError(f"{slot['id']}: a city is always free")
             if slot["capital"]:
                 capitals.add(slot["name"])
+        if len(slots) > 1 and [TIER_ORDER.index(TIER_LETTERS_BY_TIER[s["tier"]])
+                               for s in slots] != sorted(
+                TIER_ORDER.index(TIER_LETTERS_BY_TIER[s["tier"]])
+                for s in slots):
+            raise ValueError(f"{tid}: the slots are not chief-first")
+        manors = [slot for slot in slots if slot["manor"]]
+        if manors and (manors[0] is not slots[0]
+                       or slots[0]["tier"] != "village"
+                       or len(slots) < 2):
+            raise ValueError(f"{tid}: the manor mark rides the chief "
+                             f"village of a Tile of two or more")
 
     if slot_ids != set(world["settlement_slots"]):
         raise ValueError("the slot store and the Tiles disagree")
@@ -1508,6 +2030,69 @@ def validate_world(world: dict) -> None:
         raise ValueError("the start settlement was never materialized")
     if world["party_tile"] not in tiles:
         raise ValueError("the party is standing off the frame")
+    if world["settlement_slots"][world["start_slot"]]["tier"] == "hamlet":
+        raise ValueError("a career does not open in a hamlet")
+    _validate_harvest(world)
+
+
+def _validate_harvest(world: dict) -> None:
+    """The last harvest, checked against the world it was rolled onto.
+
+    The roll is each world's own, so nothing here pins a number: what a rule
+    can state about it is that every land Tile has a percent on the settled
+    scale, that the sea has none, that each region is a CONTIGUOUS piece of
+    land whose tiles all carry its cause, and that the two guarantees held.
+    """
+    tiles = world["tiles"]
+    regions = world["harvest_regions"]
+    caused = set()
+    for tid in world["tile_order"]:
+        tile = tiles[tid]
+        where = tile_coordinate(tile["row"], tile["column"])
+        if tile["biome"] == "sea":
+            if (tile["harvest"], tile["harvest_cause"]) != (None, None):
+                raise ValueError(f"{where}: the sea has no harvest")
+            continue
+        percent = tile["harvest"]
+        if not isinstance(percent, int) or not (
+                SEVERITY_CLAMP[0] <= percent <= GOOD_CLAMP[1]):
+            raise ValueError(f"{where}: {percent!r} is off the harvest "
+                             f"scale ({SEVERITY_CLAMP[0]}-{GOOD_CLAMP[1]})")
+        cause = tile["harvest_cause"]
+        if cause is not None and cause not in SUSCEPTIBILITY:
+            raise ValueError(f"{where}: no such harvest cause: {cause!r}")
+        if (cause is None) != (percent >= HARVEST_PROBLEM):
+            raise ValueError(f"{where}: a caused Tile is a problem Tile and "
+                             f"a fine year has no cause ({percent}, "
+                             f"{cause!r})")
+        if cause is not None:
+            caused.add(tid)
+    if not regions:
+        raise ValueError("no world is a good year everywhere")
+    if not any(region["cause"] == "drought" for region in regions):
+        raise ValueError("every world has its year of dust somewhere")
+    members = set()
+    for region in regions:
+        if region["cause"] not in SUSCEPTIBILITY:
+            raise ValueError(f"{region['id']}: no such cause")
+        if region["center"] not in region["tiles"]:
+            raise ValueError(f"{region['id']}: a region holds its center")
+        reached, frontier = {region["center"]}, [region["center"]]
+        pool = set(region["tiles"])
+        while frontier:
+            tid = frontier.pop()
+            for nid in tiles[tid]["neighbors"]:
+                if nid in pool and nid not in reached:
+                    reached.add(nid)
+                    frontier.append(nid)
+        if reached != pool:
+            raise ValueError(f"{region['id']}: the region is not contiguous")
+        for tid in pool:
+            if tiles[tid]["biome"] == "sea":
+                raise ValueError(f"{region['id']}: trouble at sea")
+        members |= pool
+    if members != caused:
+        raise ValueError("the caused Tiles and the regions disagree")
 
 
 # --------------------------------------------------------------------------- #
@@ -1713,7 +2298,7 @@ def shortest_path(origin: dict | str, dest: dict | str) -> list[str]:
 
 MAP_GUTTER = "   "               # room for the two-digit row label
 MAP_GLYPH_LEGEND = ". sea  # land  ^ mtns  ~ river"
-MAP_MARK_LEGEND = "@ party  ! job  C capital  T town  v village"
+MAP_MARK_LEGEND = "@ party  ! job  C city  T town  v village"
 
 
 def known_slots(world: dict, tile: dict | str) -> list[dict]:
@@ -1724,17 +2309,25 @@ def known_slots(world: dict, tile: dict | str) -> list[dict]:
             if world["settlement_slots"][sid]["known"]]
 
 
+# The glyph ladder is three rungs over five tiers (2026-08-21): `C` is any
+# CITY-GRADE place -- a metropolis, a city or a capital, which the legend
+# distinguishes -- `T` a town, `v` a village, and a HAMLET IS NOT DRAWN. At
+# 30x18 the map is a country-scale picture and a hundred souls are not a
+# feature of it; the hamlet lives in the Tile's detail lines instead.
+_GLYPH_TIERS = {"metropolis": "C", "city": "C", "town": "T", "village": "v"}
+_GLYPH_RANK = {"C": 0, "T": 1, "v": 2}
+
+
 def settlement_glyph(world: dict, tile: dict) -> str | None:
-    """`C` a known capital, `T` any other known town, `v` known village(s)
-    with no known town, None when nothing here is known."""
+    """`C` a known city-grade place (metropolis, city or capital), `T` a
+    known town, `v` known village(s) with nothing greater, None when nothing
+    drawable here is known -- a Tile of hamlets reads as its own ground."""
     mark = None
     for slot in known_slots(world, tile):
-        if slot["capital"]:
-            return "C"
-        if slot["tier"] == "town":
-            mark = "T"
-        elif mark is None:
-            mark = "v"
+        glyph = "C" if slot["capital"] else _GLYPH_TIERS.get(slot["tier"])
+        if glyph is not None and (mark is None
+                                  or _GLYPH_RANK[glyph] < _GLYPH_RANK[mark]):
+            mark = glyph
     return mark
 
 
@@ -1848,6 +2441,14 @@ def land_homeland(world: dict, polity: str) -> str:
 
 def land_culture(world: dict, polity: str) -> str:
     return world["lands"][polity]["culture"]
+
+
+def has_service(area: dict, kind: str) -> bool:
+    """Does this settlement keep a counter of this kind? Every tier above
+    hamlet owes the four basics (`REQUIRED_SERVICES`), so this only ever
+    says no about a hamlet's missing smith or about the capital-grade
+    counters -- which is exactly what it is for."""
+    return any(service["kind"] == kind for service in area["services"])
 
 
 def settlement_tier(area: dict) -> str:
@@ -2244,15 +2845,18 @@ def validate_catalog() -> None:
                              f"ground draws from: {unused}")
         templates = land["settlement_templates"]
         tiers = {spec["tier"] for spec in templates.values()}
-        if tiers != {"capital", "town", "village"}:
+        # METROPOLIS is deliberately absent: it draws the city role until
+        # the Settlements-revisited round gives it its own (2026-08-21).
+        if tiers != {"capital", "city", "town", "village", "hamlet"}:
             raise ValueError(f"{polity}: settlement templates must cover "
-                             f"capital, town and village; got {sorted(tiers)}")
+                             f"capital, city, town, village and hamlet; "
+                             f"got {sorted(tiers)}")
         capitals = [r for r, s in templates.items()
                     if s["tier"] == "capital"]
         if len(capitals) != 1:
             raise ValueError(f"{polity}: expected one capital template, "
                              f"got {capitals}")
-        for tier in ("town", "village"):
+        for tier in ("city", "town", "village", "hamlet"):
             free = [r for r, s in templates.items()
                     if s["tier"] == tier and not s["fits"]]
             if not free:
@@ -2264,9 +2868,9 @@ def validate_catalog() -> None:
             bad = [tag for tag in spec["fits"] if tag not in TILE_FIT_TAGS]
             if bad:
                 raise ValueError(f"{polity}/{role}: no such Tile tag: {bad}")
-            if "city" in (spec["tier"], *spec["tags"]):
-                raise ValueError(f"{polity}/{role}: there is no city "
-                                 f"subtype; a great town is a town")
+            if spec["tier"] == "metropolis":
+                raise ValueError(f"{polity}/{role}: a metropolis wears the "
+                                 f"city role; it has none of its own yet")
     for aid, specs in {**NATURAL_SITE_SPECS,
                        **SETTLEMENT_SITE_SPECS}.items():
         for site in specs:
@@ -2281,10 +2885,19 @@ def validate_catalog() -> None:
         if ord(value) > 127:
             raise ValueError("place catalog contains non-ASCII output")
     for country in COUNTRIES:
-        for tier in ("town", "village"):
-            names = SETTLEMENT_NAMES[country][tier]
+        # Every tier the census can roll GENERATED needs a name reserve;
+        # metropolis carries none because it never rolls one.
+        pools = SETTLEMENT_NAMES[country]
+        if set(pools) != {"city", "town", "village", "hamlet"}:
+            raise ValueError(f"{country}: the name reserves are the four "
+                             f"generated tiers; got {sorted(pools)}")
+        for tier, names in pools.items():
             if not names or len(names) != len(set(names)):
                 raise ValueError(f"invalid {country} {tier} name reserve")
+        taken = [name for names in pools.values() for name in names]
+        if len(taken) != len(set(taken)):
+            raise ValueError(f"{country}: a settlement name is in two "
+                             f"reserves")
     _validate_fixed_data(load_europe_map())
 
 

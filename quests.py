@@ -585,12 +585,21 @@ DELIVERY_TEMPLATES: list[dict] = [
 HOMELANDS = tuple(LAND_SPECS)
 
 SETTLEMENT_KINDS = {         # (quest slots, level band)
-    "capital": (5, (1, LEVEL_CAP)),
-    "town":    (4, (1, 14)),
-    "village": (2, (1, 8)),
-}                            # the "city" tier was merged into "town"
-                             # 2026-07-27 -- it existed by accident (three
-                             # harbor settlements), never as a design rung
+    "capital":    (5, (1, LEVEL_CAP)),
+    "metropolis": (5, (1, LEVEL_CAP)),
+    "city":       (5, (1, LEVEL_CAP)),
+    "town":       (4, (1, 14)),
+    "village":    (2, (1, 8)),
+    "hamlet":     (2, (1, 8)),
+}                            # The five census words (2026-08-21, the tile
+                             # economy arc's session 2). City-grade takes
+                             # the capital's rows -- a metropolis posts the
+                             # whole ladder -- and the HAMLET takes the
+                             # village's, because what actually keeps a
+                             # hamlet quiet is its board-activity roll (1
+                             # in 20), not a smaller number of slots. The
+                             # 2026-07-27 merge of "city" into "town" is
+                             # hereby undone: the tier is a design rung now.
 
 
 def template_band(tpl: dict) -> tuple[int, int]:

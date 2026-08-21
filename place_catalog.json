@@ -732,6 +732,171 @@
             }
           ]
         },
+        "walled_city": {
+          "tier": "city",
+          "fits": [],
+          "tags": [
+            "city",
+            "market",
+            "walls",
+            "road",
+            "trade"
+          ],
+          "description": "A walled city of tens of thousands, gates shut at dusk. A minster tower stands over the roofs and the market runs the length of the main street.",
+          "sites": [
+            {
+              "id": "city-hall",
+              "name": "CITY HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "great-market",
+              "name": "GREAT MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cloth-row",
+                  "name": "CLOTH ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "minster",
+              "name": "MINSTER",
+              "rooms": [
+                {
+                  "id": "nave",
+                  "name": "NAVE",
+                  "anchors": []
+                },
+                {
+                  "id": "crypt",
+                  "name": "CRYPT",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "bell-and-crown-inn",
+              "name": "BELL AND CROWN INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-smithy",
+              "name": "CITY SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-gate",
+              "name": "CITY GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
         "harbor_town": {
           "tier": "town",
           "fits": [
@@ -1917,6 +2082,74 @@
               "anchors": []
             }
           ]
+        },
+        "cot_hamlet": {
+          "tier": "hamlet",
+          "fits": [],
+          "tags": [
+            "hamlet"
+          ],
+          "description": "A handful of cottages at a crossing of tracks, too few to have a market or a hall. The well is where the news is told.",
+          "sites": [
+            {
+              "id": "hamlet-well",
+              "name": "THE WELL",
+              "rooms": [
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "old-tree",
+                  "name": "OLD TREE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "wayside-shrine",
+              "name": "WAYSIDE SHRINE",
+              "rooms": [
+                {
+                  "id": "shrine-step",
+                  "name": "SHRINE STEP",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "cot-inn",
+              "name": "THE COT INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "hamlet-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
         }
       }
     },
@@ -2499,6 +2732,171 @@
                 {
                   "id": "guard-room",
                   "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "walled_city": {
+          "tier": "city",
+          "fits": [],
+          "tags": [
+            "city",
+            "market",
+            "walls",
+            "road",
+            "trade"
+          ],
+          "description": "A city of tens of thousands inside old walls, its quarters stacked up the slope above a market that never empties before dark.",
+          "sites": [
+            {
+              "id": "city-hall",
+              "name": "CITY HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "great-market",
+              "name": "GREAT MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "cloth-row",
+                  "name": "CLOTH ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "old-basilica",
+              "name": "OLD BASILICA",
+              "rooms": [
+                {
+                  "id": "nave",
+                  "name": "NAVE",
+                  "anchors": []
+                },
+                {
+                  "id": "crypt",
+                  "name": "CRYPT",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "two-lions-inn",
+              "name": "TWO LIONS INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-smithy",
+              "name": "CITY SMITHY",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-gate",
+              "name": "CITY GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
                   "anchors": []
                 },
                 {
@@ -3303,6 +3701,74 @@
                 {
                   "id": "salt-store",
                   "name": "SALT STORE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "cot_hamlet": {
+          "tier": "hamlet",
+          "fits": [],
+          "tags": [
+            "hamlet"
+          ],
+          "description": "A few stone houses on a terrace, too few to have a market or a hall. The well under the fig tree is where the news is told.",
+          "sites": [
+            {
+              "id": "hamlet-well",
+              "name": "THE WELL",
+              "rooms": [
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "old-tree",
+                  "name": "OLD TREE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "wayside-shrine",
+              "name": "WAYSIDE SHRINE",
+              "rooms": [
+                {
+                  "id": "shrine-step",
+                  "name": "SHRINE STEP",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "cot-inn",
+              "name": "THE COT INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "hamlet-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
                   "anchors": []
                 }
               ],
@@ -4149,6 +4615,171 @@
                 {
                   "id": "guard-room",
                   "name": "GUARD ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "wall-walk",
+                  "name": "WALL WALK",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "walled_city": {
+          "tier": "city",
+          "fits": [],
+          "tags": [
+            "city",
+            "market",
+            "walls",
+            "road",
+            "trade"
+          ],
+          "description": "A city of tens of thousands grown out of a great camp, its earth wall ringing a market where the roads from four directions meet.",
+          "sites": [
+            {
+              "id": "city-hall",
+              "name": "CITY HALL",
+              "rooms": [
+                {
+                  "id": "public-hall",
+                  "name": "PUBLIC HALL",
+                  "anchors": []
+                },
+                {
+                  "id": "council-room",
+                  "name": "COUNCIL ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "records-room",
+                  "name": "RECORDS ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "great-market",
+              "name": "GREAT MARKET",
+              "rooms": [
+                {
+                  "id": "food-row",
+                  "name": "FOOD ROW",
+                  "anchors": []
+                },
+                {
+                  "id": "horse-market",
+                  "name": "HORSE MARKET",
+                  "anchors": []
+                },
+                {
+                  "id": "foreign-yard",
+                  "name": "FOREIGN YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "sky-shrine",
+              "name": "SKY SHRINE",
+              "rooms": [
+                {
+                  "id": "shrine-step",
+                  "name": "SHRINE STEP",
+                  "anchors": []
+                },
+                {
+                  "id": "offering-yard",
+                  "name": "OFFERING YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "long-road-inn",
+              "name": "LONG ROAD INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "kitchen",
+                  "name": "KITCHEN",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-forge",
+              "name": "CITY FORGE",
+              "rooms": [
+                {
+                  "id": "forge",
+                  "name": "FORGE",
+                  "anchors": []
+                },
+                {
+                  "id": "yard",
+                  "name": "YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "general-shop",
+              "name": "GENERAL SHOP",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "store-room",
+                  "name": "STORE ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "alchemists-shop",
+              "name": "ALCHEMIST'S SHOP",
+              "rooms": [
+                {
+                  "id": "shop",
+                  "name": "SHOP",
+                  "anchors": []
+                },
+                {
+                  "id": "work-room",
+                  "name": "WORK ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "city-gate",
+              "name": "CITY GATE",
+              "rooms": [
+                {
+                  "id": "gate-passage",
+                  "name": "GATE PASSAGE",
                   "anchors": []
                 },
                 {
@@ -5048,6 +5679,74 @@
                 {
                   "id": "log-yard",
                   "name": "LOG YARD",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            }
+          ]
+        },
+        "cot_hamlet": {
+          "tier": "hamlet",
+          "fits": [],
+          "tags": [
+            "hamlet"
+          ],
+          "description": "A few felt-roofed houses around a well, too few to have a market or a hall. Whoever waters last carries the news on.",
+          "sites": [
+            {
+              "id": "hamlet-well",
+              "name": "THE WELL",
+              "rooms": [
+                {
+                  "id": "well",
+                  "name": "WELL",
+                  "anchors": []
+                },
+                {
+                  "id": "old-tree",
+                  "name": "OLD TREE",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "wayside-shrine",
+              "name": "WAYSIDE SHRINE",
+              "rooms": [
+                {
+                  "id": "shrine-step",
+                  "name": "SHRINE STEP",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "cot-inn",
+              "name": "THE COT INN",
+              "rooms": [
+                {
+                  "id": "common-room",
+                  "name": "COMMON ROOM",
+                  "anchors": []
+                },
+                {
+                  "id": "guest-room",
+                  "name": "GUEST ROOM",
+                  "anchors": []
+                }
+              ],
+              "anchors": []
+            },
+            {
+              "id": "hamlet-store",
+              "name": "GENERAL STORE",
+              "rooms": [
+                {
+                  "id": "sales-room",
+                  "name": "SALES ROOM",
                   "anchors": []
                 }
               ],

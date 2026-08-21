@@ -123,36 +123,46 @@ class PlaceGenerationTests(unittest.TestCase):
                              (name, country, biome))
             slots = [self.world["settlement_slots"][sid]
                      for sid in tile["settlement_slots"]]
-            self.assertEqual([slot["tier"] for slot in slots],
-                             ["town", "village", "village"])
+            # The authored city LEADS its own Tile at its authored tier;
+            # its companions come from the Tile's own band, so the shape
+            # below the first slot is the census's business and varies.
+            self.assertEqual(slots[0]["tier"], places.HISTORICAL_TIERS[name])
+            self.assertTrue(slots[0]["authored"])
+            self.assertLessEqual(len(slots), places.SLOT_CAP)
+            self.assertFalse([s for s in slots[1:] if s["authored"]])
             if not tile["visited"]:
                 self.assertEqual([slot["area"] is not None for slot in slots],
-                                 [True, False, False])
+                                 [True] + [False] * (len(slots) - 1))
             town = next(self.world["areas"][self.world["settlement_slots"][sid]["area"]]
                         for sid in tile["settlement_slots"]
                         if self.world["settlement_slots"][sid]["authored"])
-            self.assertEqual((town["name"], town["subtype"], town["capital"]),
-                             (name, "town", capital))
+            self.assertEqual(
+                (town["name"], town["subtype"], town["capital"]),
+                (name, places.HISTORICAL_TIERS[name], capital))
             self.assertTrue(town["known"])
             actual.append(town)
         self.assertEqual({a["name"] for a in actual if a["capital"]},
                          {"Paris", "Rome", "Kyiv"})
 
     def test_population_constraints(self) -> None:
-        self.assertEqual(places.SETTLEMENT_DENSITY, {
-            "mortellaria": (0.10, 0.35),
-            "firascir": (0.06, 0.24),
-            "tergal": (0.03, 0.17),
-        })
+        # The rolled census (2026-08-21): the sea is empty, the 2x2 lattice
+        # caps a Tile at four, every tier is one of the five words, and the
+        # high ground carries nothing above a village unless the map put an
+        # authored name on it -- a historical city or a mine town.
         for tile in self.world["tiles"].values():
             slots = [self.world["settlement_slots"][sid]
                      for sid in tile["settlement_slots"]]
             if tile["biome"] == "sea":
                 self.assertEqual(slots, [])
+            self.assertLessEqual(len(slots), places.SLOT_CAP)
+            for slot in slots:
+                self.assertIn(slot["tier"], places.TIERS)
+            where = (tile["row"], tile["column"])
             if (tile["biome"] == "mountain"
-                    and (tile["row"], tile["column"])
-                    not in places.HISTORICAL_BY_TILE):
-                self.assertNotIn("town", {slot["tier"] for slot in slots})
+                    and where not in places.HISTORICAL_BY_TILE
+                    and where not in places.MINES):
+                self.assertTrue(all(slot["tier"] in ("village", "hamlet")
+                                    for slot in slots))
 
     def test_ids_and_generated_village_names_are_unique(self) -> None:
         ids = []
@@ -351,7 +361,11 @@ class PlaceGenerationTests(unittest.TestCase):
             countries.add(world["tiles"][slot["tile"]]["country"])
             tiers.add(slot["tier"])
         self.assertEqual(countries, set(places.COUNTRIES))
-        self.assertEqual(tiers, {"town", "village"})
+        # A career never opens in a HAMLET (2026-08-21): a hundred souls
+        # with no smith and no board are not a place to begin.
+        self.assertTrue(tiers <= set(places.TIERS), tiers)
+        self.assertNotIn("hamlet", tiers)
+        self.assertTrue({"town", "village"} <= tiers, tiers)
 
     def test_materialization_and_revisit_do_not_change_census_or_names(self) -> None:
         world = places.create_geography(132)

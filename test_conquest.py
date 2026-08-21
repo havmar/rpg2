@@ -51,20 +51,38 @@ class GarrisonLevels(unittest.TestCase):
             self.assertEqual(conquest.garrison_level(world, s),
                              conquest.garrison_level(world, s))
 
-    def test_city_tier_is_gone(self):
-        # 2026-07-27: the accidental "city" tier was merged into "town".
+    def test_every_census_tier_is_priced(self):
+        # 2026-08-21 (the tile economy arc's census session): the accidental
+        # "city" merge of 2026-07-27 is undone and the five census words are
+        # a design rung each. Every tier a settlement can carry has to reach
+        # every conquest table, or a holding falls off the ledger.
         world = _world()
         subtypes = {s["subtype"] for s in quests.settlements(world)}
-        self.assertEqual(subtypes, {"village", "town"})
+        self.assertTrue(subtypes <= set(places.TIERS), subtypes)
         self.assertEqual(sum(s["capital"] for s in quests.settlements(world)),
                          3)
-        self.assertNotIn("city", quests.SETTLEMENT_KINDS)
+        for table in (conquest.GARRISON_BANDS, conquest.CONQUEST_ENCOUNTERS,
+                      conquest.TRIBUTE_PER_DAY, conquest.GARRISON_CAP,
+                      conquest.RAID_STRENGTH, quests.SETTLEMENT_KINDS):
+            self.assertEqual(set(table),
+                             set(places.TIERS) | {"capital"}, table)
 
     def test_bands_are_a_contiguous_ladder(self):
         self.assertEqual(conquest.GARRISON_BANDS["village"][1] + 1,
                          conquest.GARRISON_BANDS["town"][0])
         self.assertEqual(conquest.GARRISON_BANDS["town"][1] + 1,
                          conquest.GARRISON_BANDS["capital"][0])
+        # City-grade takes the capital's rung; the hamlet takes the
+        # village's everywhere except tribute, which halves.
+        for tier in ("city", "metropolis"):
+            self.assertEqual(conquest.GARRISON_BANDS[tier],
+                             conquest.GARRISON_BANDS["capital"])
+            self.assertEqual(conquest.RAID_STRENGTH[tier],
+                             conquest.RAID_STRENGTH["capital"])
+        self.assertEqual(conquest.GARRISON_BANDS["hamlet"],
+                         conquest.GARRISON_BANDS["village"])
+        self.assertLess(conquest.TRIBUTE_PER_DAY["hamlet"],
+                        conquest.TRIBUTE_PER_DAY["village"])
 
 
 class TheConquestJob(unittest.TestCase):

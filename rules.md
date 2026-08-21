@@ -2568,8 +2568,8 @@ forever.
 | **surgeon's salve** | one non-permanent wound outright | gold, or alchemy rank 3 (stock-capped) |
 | **elixir of mending / rank-3 healing spell** | permanents and maimings | scarce, authored |
 
-**Healer tier caps: village 2 severity a visit, town 4, capital
-everything short of a maiming.** The **cap is the gate**, which is why the fee
+**Healer tier caps: hamlet and village 2 severity a visit, town 4, a city
+or a capital everything short of a maiming.** The **cap is the gate**, which is why the fee
 never needs to scale — a village that cannot touch your third wound is worth
 exactly as much at level 20 as at level 1. Treatment also *dresses* what it
 cannot close: a packed wound stops bleeding and stops draining morale while
@@ -2578,7 +2578,9 @@ its severity knits.
 Every settlement has a healer service (`places._service_kind`, and
 `_attach_services` hangs one on the alchemist, the general shop or the inn
 where no building of its own exists) — the game gates on the **service's
-tier**, never on which door it is behind.
+tier**, never on which door it is behind. The HAMLET (2026-08-21) is the
+one tier that owes less than the full counter: a bed, a store and a healer
+behind it, and no smith at all.
 
 The salve is shop-stocked and brewable; the elixir is neither, and neither
 ever enters creation rolls, drops, or the overnight kit. That was deliberate:
@@ -2685,9 +2687,14 @@ anchors the formulas were fitted to.
   board** (see *Sparse boards*, below), and stops. The board
   is not a census taken at worldgen — it is a **live inventory** that expires
   and refills (see *The clock*, below). Quest
-  levels still roll uniformly in their settlement bands (village 1–8, town
-  1–14, capital 1–20; the accidental "city" tier was merged into town
-  2026-07-27). Too-easy and too-hard work both exists;
+  levels still roll uniformly in their settlement bands (hamlet and village
+  1–8, town 1–14, capital, city and metropolis 1–20). The 2026-07-27 merge
+  of "city" into "town" is undone since 2026-08-21: the census makes the
+  city a design rung, and city-grade takes the capital's own rows — five
+  ordinary slots and the whole ladder — while the hamlet takes the
+  village's, because what actually keeps a hamlet quiet is its
+  board-activity roll of 1 in 20, not a shorter shelf.
+  Too-easy and too-hard work both exists;
   geography selects where it happens without changing its threat budget.
 
 ## The clock: windows, bands, and the live board (2026-07-26)
@@ -2821,9 +2828,10 @@ identity decides whether it normally posts ordinary generated work at all:
 
 | Settlement | Ordinary board active |
 |---|---:|
-| Capital | 100% |
-| Other town | 60% |
+| Capital, metropolis, city | 100% |
+| Town | 60% |
 | Village | 25% |
+| Hamlet | 5% |
 
 The **starting settlement is forced active** whatever its roll said — the
 game has to start at a board. An inactive board has ordinary capacity
@@ -2975,8 +2983,9 @@ The canonical spatial vocabulary is **Country -> Tile -> Area -> Site -> Room**:
   climate, terrain, cover, ground tags, cardinal neighbors, settlement slots
   and child Area IDs.
 - **Area** is a local destination within a Tile. Its broad `kind` is
-  `settlement` or `natural`; settlement subtype is town/village and natural
-  subtype is the Tile's own ground CHARACTER (2026-08-21) — sea,
+  `settlement` or `natural`; settlement subtype is one of the five census
+  tiers — hamlet, village, town, city, metropolis (2026-08-21) — and
+  natural subtype is the Tile's own ground CHARACTER (2026-08-21) — sea,
   mountains, river, marsh, forest, hills, coast or fields.
 - **Site** is a local destination in an area, reached without day-scale
   travel: a castle, street, tavern, cave, tower, grove, bridge, or battlefield.
@@ -3074,24 +3083,95 @@ materialize lazily.
   2026-08-15 it holds no settlement census, no positions and no named
   rivers or regions at all, only country cultures, settlement roles,
   natural Site templates, Room layouts and livelihood overlays.
-- **Settlement slots are the census.** Every non-sea Tile receives a stable
-  seeded count and mix of town/village slots from its country's density
-  table (`places.SETTLEMENT_DENSITY`) — the south is the crowded end of the
-  world and the steppe the empty one:
-
-  | Country | Town + 2 villages | 1 village | No settlement |
-  |---|---:|---:|---:|
-  | Mortellaria | 10% | 35% | 55% |
-  | Firascir | 6% | 24% | 70% |
-  | Tergal | 3% | 17% | 80% |
-
-  Historical-city Tiles are excluded from the roll and always carry the
-  dense three-slot shape. Sea has none. Ordinary mountain Tiles cannot
-  receive a town: a
-  rolled town is downgraded to a village. A slot exists before its Area is
-  materialized, so revealing, saving and revisiting cannot move it or change
-  its name. Country-and-tier name reserves are shuffled once per seed;
-  deterministic numbered names continue after a reserve is exhausted.
+- **Settlement slots are the census, and the census is ROLLED**
+  (2026-08-21, the tile economy arc's second build session; the old
+  per-country density table is gone). Every land Tile gets a hidden
+  population SCORE by law over the ground above — realized arable plus a
+  weighted pastoral index plus coastal or river fishing, multiplied by a
+  transport factor on water (a town exceeds its land's carrying capacity
+  only with transport) and cut by the fen, the highland and the eastern
+  raiding frontier — and the score buckets into six BANDS: wilderness,
+  thin, low, mid, high, dense. Two authored exceptions override the law
+  where it cannot see: the drained Low Countries delta and the
+  Lombardy–Veneto city belt are dense whatever the fractions say. The
+  score is a worldgen intermediate and is never stored.
+  The band then draws a weighted ARRANGEMENT over the five tiers — a
+  string like `TVV` or `VH` or the empty one — and the letters become the
+  Tile's settlement slots, sorted chief-first. **The variance is in the
+  tables**: every settled band keeps a village-only or emptier roll (about
+  37% of high and dense Tiles roll no town at all), only the dense band
+  ever rolls a generated city, and **zero is a real tier** — about fifty
+  of the 314 land Tiles are empty. At most **four** slots on a Tile.
+  Two kinds of Tile are answered before the roll: a **historical city**
+  takes its authored tier in slot 1 (`places.HISTORICAL_TIERS`) and a
+  **mine Tile** seats its authored mine town there — tier town, named by
+  the mine, always chartered, because a mining law IS a charter. Both then
+  draw their COMPANIONS from their own band's table, truncated to the
+  three seats left, which is why Paris gathers towns and Stockholm stands
+  nearly alone. Nothing above a village sits on an ordinary mountain.
+  The whole census is rolled once at world creation off a derived seed and
+  differs per playthrough on purpose: the bands are law, so France always
+  feels like France, but which Tiles carry the towns is each world's own.
+  A slot exists before its Area is materialized, so revealing, saving and
+  revisiting cannot move it or change its name. Country-and-tier name
+  reserves are shuffled once per seed; deterministic numbered names
+  continue after a reserve is exhausted.
+  Measured over 500 seeds: about 615 settlements a world — 3 metropolis,
+  ~18 city, ~101 town, ~402 village, ~92 hamlet — 1.96 slots per land
+  Tile, and roughly 1.3M souls at the tier anchors below.
+- **The five tiers, and what their words mean.** `hamlet` is under a
+  hundred souls, `village` hundreds, `town` thousands, `city` tens of
+  thousands, `metropolis` a hundred thousand and more. The headcounts are
+  fiction anchors for the DM and are never stored numbers; the words are.
+  Paris, Venice and Constantinople are the three metropolises; the other
+  thirteen historical cities are authored city or town. `capital` remains
+  an explicit FLAG on Paris, Rome and Kyiv rather than a tier, so a
+  capital also has a tier of its own.
+  Everything the game keys on a settlement tier carries all five words —
+  the board's slots and level bands, the conquest garrison, tribute,
+  levy cap and raid tables, the healer's reach and the crime market.
+  **City-grade takes the capital's rows** everywhere (a great city is a
+  crown-scale place whoever wears the crown) and the **hamlet takes the
+  village's** — except tribute, which halves: a hundred souls are barely
+  worth holding.
+- **A hamlet is the first settlement that is not a full stop.** It has a
+  well, a wayside shrine, a cot that beds a traveller and a general store
+  — and **no smith**: steel is a trade a hundred souls cannot keep, and a
+  broken sword is a reason to walk to the next village. Its ordinary board
+  is active one time in twenty, its hiring market turns up one face a day
+  whatever the PC's presence, and it is **not drawn on the map** at all.
+  A new game never opens in one.
+- **The charter and the manor** (2026-08-21). Two words ride the census
+  and are read by nothing yet — the politics arc owns what they are worth.
+  Historically the distinction was law, not size: a market town could hold
+  a charter and a lord could found a town to farm its tolls. So every city
+  and metropolis is `free` (chartered), a generated town is one time in
+  three (an unchartered town is a lord's town), and a village-led Tile of
+  two or more settlements seats a resident lord one time in two — the
+  `manor` mark on its chief village.
+- **The last harvest** (2026-08-21). Last year's harvest is rolled once at
+  world creation onto every land Tile as a percent, where **100 is a full
+  excellent harvest**: 110–120 legendary, 95–109 excellent, 75–94
+  ordinary, 55–74 poor, 35–54 failed, below 35 apocalyptic. Below 75 is a
+  PROBLEM Tile. The method is seeded contagion, not noise: four to six
+  REGIONS, their centers weighted toward the climates that fail, each
+  drawing a CAUSE its own ground can suffer — `drought`, `rains` (the
+  great rains, the 1315 famine promoted to a first-class cause) or
+  `frost`, and the Nile's only failure is the bad flood — and growing
+  outward ring by ring into the ground that cause can hurt, so a drought
+  sweeps the steppe and dies at the oceanic border. Severity is deepest at
+  the core and softens outward; everywhere else had a fine year. Two
+  postures are guaranteed: **no world is a good year everywhere** (a
+  drought region always exists somewhere) and **the campaign usually opens
+  in or beside a bad year** — when no region center lies within five path
+  days of the start, one region relocates into that radius three times in
+  four, which lifts the played posture from about a third of worlds to
+  seven in eight and leaves the genuinely quiet start standing as the
+  eighth. Stored: the percent and the cause word per Tile, plus the region
+  records (cause, center, member Tiles) on the world. About 18% of the land
+  is in trouble in an average world, in regions of about eleven Tiles. The
+  spoken words — and the causes' fiction names — arrive with the read
+  surface; nothing reads the layer yet.
 - **A settlement is cut from a template its Tile can honor** (2026-08-15,
   Europe MVP Closure). Each country authors a handful of settlement ROLES
   per tier -- a harbour town, a market town, a ford village -- and each
@@ -3111,16 +3191,26 @@ materialize lazily.
   ordinary town on a mountain, each historical Tile carrying its declared
   country, biome and its one named town, unique slot ids registered on both
   their Tile and their country, exactly three capitals, a start that is
-  a materialized slot, a party standing on a real Tile, and the ground's
+  a materialized slot and never a hamlet, a party standing on a real Tile,
+  the ground's
   own clauses — every land Tile painted and no sea Tile, alpine and
   mountains only on the high ground, legal words throughout, and the
-  climate, terrain, cover and derived-tag censuses unmoved. An illegal
+  climate, terrain, cover and derived-tag censuses unmoved — and the
+  rolled world's: at most four slots on a Tile, only legal tier, charter
+  and manor words, slots sorted chief-first, every city chartered, each
+  historical Tile carrying its authored tier in the lead and each mine
+  Tile its named free mine town, the manor mark only on the chief village
+  of a Tile of two or more, a harvest percent on the scale for every land
+  Tile and none at sea, a cause exactly where the year is a problem, at
+  least one drought region, and every region a contiguous piece of land
+  holding its own center. An illegal
   world raises at creation rather than surfacing later inside a display.
 - **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
   in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
   Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
   Kyiv and Rome carry `capital: true`. Capital is an explicit flag, not a
-  settlement subtype; each remains a town.
+  settlement tier: each also carries its authored tier, so Paris is a
+  capital AND a metropolis while Kyiv is a capital and a city.
 - **Knowledge.** All 540 Tiles, their terrain and countries are public from
   world creation; the base map is never fogged. Natural Areas become known
   on reveal, historical towns are known from day zero, and ordinary
@@ -3130,9 +3220,13 @@ materialize lazily.
   two-line numeric column axis, with two-digit row labels — 33 characters
   wide, inside the 40-column rule, so the map is never windowed or scrolled.
   Base glyphs are the authored `. # ^ ~`; known overlays replace them in a
-  strict priority: **`@` the party, `!` an active quest objective, `C` a
-  known capital, `T` any other known town, `v` known village(s) with no
-  known town, then the terrain**. One cell never tries to show everything on
+  strict priority: **`@` the party, `!` an active quest objective, `C` any
+  known CITY-GRADE place (a capital, a metropolis or a city), `T` a known
+  town, `v` known village(s) with nothing greater, then the terrain**.
+  **A hamlet is never drawn**: at 30x18 the map is a country-scale
+  picture, and a hundred souls are not a feature of it — a Tile of only
+  hamlets reads as its own ground and the hamlets appear in its detail
+  lines instead. One cell never tries to show everything on
   its Tile — the detail block below the grid names the current Tile, its
   coordinate, country, terrain word (`places.tile_ground`: what the player
   reads is the ground, never the map glyph's `basic`), derived ground tags
@@ -3142,8 +3236,10 @@ materialize lazily.
   the fixed partition rule and that legend carry political geography.
 - **Position.** The save carries a breadcrumb with `land`, `tile`, `area`,
   and optional `site` / `room` IDs. Status and `look` print Country, Tile,
-  Area, Site and Room in order. A new game chooses uniformly from **all
-  settlement slots in Europe**, regardless of country or tier, materializes
+  Area, Site and Room in order. A new game chooses uniformly from **every
+  settlement slot in Europe except the hamlets**, regardless of country or
+  tier (2026-08-21 — a hundred souls with no smith and almost never a
+  board are not a place to begin a career), materializes
   that settlement, reveals its Tile and posts one combat quest at the
   party's exact starting level. The PC and long-time companion both take
   that settlement's country as their homeland. The two hand-built set
@@ -3490,7 +3586,12 @@ settlement stop.
 
 Candidates are gathered **when the player asks** (`recruit`, settlements
 only, once per settlement per day — the day is the reroll gate): as many
-**options** as the PC's capacity, each leveled to the PC ±1, full sheets
+**options** as the PC's capacity **or as many as the settlement can turn
+up, whichever is fewer** — a hamlet produces 1 face a day and a village 2,
+a town and anything above it the full capacity (2026-08-21: a hamlet is
+not a hiring market, and the CAPACITY itself is untouched — this is how
+many candidates exist, not how many the party may hold). Each is leveled
+to the PC ±1, full sheets
 shown — transparency over realism, the same stance as straight-shown board
 levels. The tavern **never pops candidates unasked** (it used to; the
 pregens-every-night surface read as noise): a paid night is a bed and a
@@ -4002,7 +4103,10 @@ people, so a village holds nobody worth a heist. The **wilds** admit the
 bands that TRAVEL (commoner through merchant, and the crown's tax cart),
 which is what makes road work a real ladder instead of a village-capped
 one; a category also declares WHERE it happens, so a caravan is robbed on
-the road and never inside the walls.
+the road and never inside the walls. The census's five tiers read onto
+these three rows rather than adding to them (2026-08-21): a **hamlet**
+holds what a village holds, and a **city** or **metropolis** what a
+capital holds.
 
 **Farming down is self-defeating**, and that is the whole point of
 pricing off the mark: robbing commoners forever pays commoner money
@@ -4244,7 +4348,8 @@ knobs hand-set and table-tuned.
   map stays a list and ownership is a tag (`[YOURS]`), exactly the shape
   the war's occupation layer prints. One object to point a quest at.
 - **Garrison levels are geography, not gates.** Each settlement rolls its
-  garrison level ONCE (stable-seeded): village 3–5, town 6–10, capital
+  garrison level ONCE (stable-seeded): hamlet and village 3–5, town 6–10,
+  city, metropolis and capital
   11–15 — a contiguous ladder, so one land is a whole campaign: first
   village around L4, towns through the mid band, the capital around
   L13-15. Nothing forbids attacking early; the fight is the gate, the
@@ -4265,8 +4370,8 @@ knobs hand-set and table-tuned.
 `conquer`, standing in the target settlement, builds the garrison job:
 an ordinary dark quest underneath (same schema, threat math and pay
 ladder), one place — "the garrison keep" — at the settlement's garrison
-level, with the land's cultural ladder pool. Village 1 encounter, town 2,
-capital 3 (the war waves' maximum). The last room is capped by a **named
+level, with the land's cultural ladder pool. Hamlet and village 1
+encounter, town 2, city-grade 3 (the war waves' maximum). The last room is capped by a **named
 defender** (a generated face, country role: castellan, warden of the
 walls, gate warden, wall-crew boss, war-chief of the garrison) worn as a
 display name over the budget-honest strongest slot. The job has **no
@@ -4285,13 +4390,15 @@ and the war decides.
 Each holding is a record in the save (`holdings`): garrison heads, the
 tribute meter, the raid clock.
 
-- **Tribute** accrues per held day (village 3g / town 8g / capital 20g)
+- **Tribute** accrues per held day (hamlet 1g / village 3g / town 8g /
+  city-grade 20g — the hamlet's is the village's HALVED, because a hundred
+  souls are barely worth holding)
   and is collected automatically when the party stands in ANY holding —
   the stewards bring every chest to the flag. A holding that falls loses
   its uncollected tribute.
 - **Levies**: `garrison N`, at the holding, buys N heads at 5g each,
-  capped by the settlement (village 12 / town 24 / capital 48). A FULL
-  garrison always repels the worst raid its tier rolls.
+  capped by the settlement (hamlet and village 12 / town 24 / city-grade
+  48). A FULL garrison always repels the worst raid its tier rolls.
 - **Raids**: the crown's counterstroke, rolled lazily over elapsed days at
   the news points (arrivals, settlement nights, the board), ~6%/day per
   holding, only where the party is NOT standing. Heads against heads: a

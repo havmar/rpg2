@@ -182,7 +182,7 @@ from places import (
     active_known_facts, place_debug_lines, find_place,
     add_state as add_place_state, replace_state as replace_place_state,
     clear_state as clear_place_state, land_homeland, reveal_tile,
-    settlement_tier,
+    settlement_tier, has_service,
     direction_word, edge_days, edge_direction, map_legend_lines, map_lines,
     neighbor_id, parse_coordinate, path_days, shortest_path, tile_coordinate,
     tile_detail_lines as places_tile_detail, tile_ground as places_tile_ground,
@@ -1599,10 +1599,26 @@ def cmd_new(args: argparse.Namespace) -> None:
 # Recruiting, departures, and the nightly upkeep (the companion layer)
 # --------------------------------------------------------------------------- #
 
+# THE HIRING MARKET, by settlement (2026-08-21, the tile economy arc's
+# census session). The day's OPTIONS were the PC's whole CHA capacity
+# wherever the party stood, so a hamlet of eighty souls dealt the same
+# three faces a capital did. It caps by tier instead: a hamlet turns up one
+# person who might come, a village two, and a town and up the full
+# capacity. The CAPACITY itself is untouched -- this is how many candidates
+# the place can produce, not how many the party may hold.
+RECRUIT_OPTIONS = {"hamlet": 1, "village": 2}
+
+
+def recruit_options(cap: int, settlement: dict) -> int:
+    """How many candidate options this settlement can turn up today."""
+    return min(cap, RECRUIT_OPTIONS.get(settlement_tier(settlement), cap))
+
+
 def roll_recruits(state: dict) -> None:
     """Roll a settlement day's recruit candidates: as many OPTIONS as
     the PC's CHA capacity (three choices even if only one slot is free --
-    seeing the market is part of the pitch), each leveled to the PC +-1,
+    seeing the market is part of the pitch) or as many as the settlement
+    can turn up, whichever is fewer; each leveled to the PC +-1,
     a quarter of them bonded pairs (one option, two heads). Rolled ON
     REQUEST by `recruit` (2026-07-13 -- the tavern stopped popping
     candidates unasked), once per settlement per day: the day is the
@@ -1614,6 +1630,7 @@ def roll_recruits(state: dict) -> None:
     if here is None or cap == 0:
         state["recruits"] = None
         return
+    cap = recruit_options(cap, here)
     used = {h.name for h in party}
     options = []
     for _ in range(cap):
@@ -1654,6 +1671,11 @@ def cmd_recruit(args: argparse.Namespace) -> None:
     companions = [h for h in party[1:] if not h.dead]
     print(f"{pc.name}'s presence (CHA {pc.cha}) can hold {cap} "
           f"companion(s); the party has {len(companions)}.")
+    here_now = local_settlement(state)
+    if here_now is not None and recruit_options(cap, here_now) < cap:
+        print(f"({here_now['name']} is a {settlement_tier(here_now)} -- it "
+              f"turns up {recruit_options(cap, here_now)} face(s) a day, "
+              f"whatever the party could hold.)")
     if cap == 0:
         print("No one would sign on -- this party is a party of one.")
         return
@@ -6532,6 +6554,22 @@ def cmd_holdings(args: argparse.Namespace) -> None:
           f"falls.)")
 
 
+def require_service(state: dict, kind: str, what: str) -> bool:
+    """Gate a counter on the settlement actually keeping one. Until the
+    census session there was nothing to gate -- every settlement owed the
+    four basics -- and the HAMLET is the first place that does not."""
+    here = local_settlement(state)
+    if here is None:
+        print(f"{what} -- the party is at {location_line(state)}.")
+        return False
+    if not has_service(here, kind):
+        print(f"{what}, and {here['name']} is a "
+              f"{settlement_tier(here)} with none. The next village will "
+              f"have one.")
+        return False
+    return True
+
+
 def cmd_buy(args: argparse.Namespace) -> None:
     state = load()
     if not require_no_pending(state):
@@ -6566,6 +6604,10 @@ def cmd_buy(args: argparse.Namespace) -> None:
         _buy_weapon(hero, purse, thing, log,
                     markup=local_term(state, "steel"))
     elif thing in WEAPONS:
+        # Steel wants a smith, and a HAMLET has none (2026-08-21): a
+        # hundred souls carry a broken sword to the next village.
+        if not require_service(state, "smith", "Steel is a smith's trade"):
+            return
         _buy_weapon(hero, purse, thing, log,
                     markup=local_term(state, "steel"))
     elif thing.startswith("book"):
@@ -6813,10 +6855,13 @@ def cmd_prices(args: argparse.Namespace) -> None:
           f"{marked_up(SALVE_PRICE, goods)}g")
     print(f"healer's day: {marked_up(HEALER_FEE, fee)}g per severity, "
           f"{HEALER_DAYS} day -- reach by settlement:")
+    reaches: dict[str, list[str]] = {}
     for sub, cap in HEALER_TIER_CAP.items():
         reach = ("everything short of a maiming" if cap is None
                  else f"{cap} severity a visit")
-        print(f"  {sub}: {reach}")
+        reaches.setdefault(reach, []).append(sub)
+    for reach, subs in reaches.items():
+        print(f"  {'/'.join(subs)}: {reach}")
     print("  (a maiming wants the rank-3 healing spell or an authored "
           "elixir; a bed knits "
           f"{BED_SEVERITY_PER_NIGHT} severity a night for free)")
@@ -7461,10 +7506,11 @@ def build_parser() -> argparse.ArgumentParser:
              f"ACCESS rung): {HEALER_FEE}g per severity closed, worst wound "
              f"first across the whole party, and it costs the day like any "
              f"other night. How far the art reaches is set by the "
-             f"SETTLEMENT, not the purse -- village "
+             f"SETTLEMENT, not the purse -- hamlet and village "
              f"{HEALER_TIER_CAP['village']} severity a visit, town "
              f"{HEALER_TIER_CAP['town']}, "
-             f"a capital everything short of a maiming. A maiming wants the "
+             f"a city or a capital everything short of a maiming. A "
+             f"maiming wants the "
              f"rank-3 healing spell or an authored elixir; a free bed knits "
              f"{BED_SEVERITY_PER_NIGHT} severity a night on its own.")
     p.set_defaults(func=cmd_healer)

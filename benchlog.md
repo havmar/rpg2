@@ -2196,3 +2196,91 @@ change that cannot affect combat at all. If the designer ever wants the
 top band settled it needs n=1000, not a lever.
 
 **Nothing was tuned.** The levers are where the closure session left them.
+
+## 2026-08-21 (B) — The rolled world (arc session 2): the world tripled, the career did not
+
+The tile economy arc's second build session (designlog's (G) entry) shipped
+the last-harvest roll and the settlement census, replaced `_population_slots`
+and `SETTLEMENT_DENSITY` whole, and grew every `settlement_tier`-keyed table
+to five words. No combat, pay, threat or refill constant was touched —
+`sites.py` and `weapons.py` are byte-identical and `rpg.py`'s only edits are
+the two tier TABLES (`HEALER_TIER_CAP`, `DISEASE_REACH`) gaining rows — so
+the suite was run as a sanity check with one expected exception and one
+finding about the suite itself.
+
+**Unmoved, byte for byte:** `bench_training.py`, `bench_party.py`,
+`bench_weapons.py`, `bench_ranged.py`, `bench_rout.py`, `bench_bestiary.py`
+and `tune.py`, plus the whole site-honesty half of `bench_quests.py` (its
+first 48 lines are identical line for line). The full-suite count went
+828 -> 861 (`test_rolled_world.py` adds 33), all green.
+
+**`bench_abilities.py` is NOT REPRODUCIBLE, and never was.** It came back
+different, so it was tested against ITSELF on the unmodified tree
+(`git archive HEAD` into a scratch dir, run twice): two consecutive runs of
+the ORIGINAL code differ in exactly the same cells this session's run
+differs in — the warrior-moves matchup block (L4/L8/L14 with-repertoire
+columns swinging 1-6 points) and the alchemist career block (room/site/duel
+swinging 1-5). Its other blocks are stable. Nothing here is evidence about
+this session; it is a standing measurement problem worth a look when
+somebody next touches that bench, because a bench that cannot be compared
+against itself cannot be compared against anything.
+
+### The worldgen numbers (the layer's own measurement, 500 seeds)
+
+**The census**, per world: 614.5 settlements — 3.0 metropolis, 17.7 city,
+100.6 town, 401.7 village, 91.6 hamlet — at 1.96 slots per land Tile, with
+49 of 314 Tiles empty (38-64). 37% of high-and-dense Tiles roll no town at
+all (25-52%, never zero), which is the quiet-rich-country guarantee. At the
+tier anchors the world holds 1.32M souls (1.14M-1.60M). 64 settlements hold
+a charter and 52 village Tiles seat a resident lord. The BAND census is law
+and identical in every world: wilderness 54, thin 47, low 30, mid 69,
+high 95, dense 19.
+
+**The harvest**, per world: 17.7% of the land in trouble (6-33%, never
+zero), 5.1 regions of 11.3 Tiles (max 38), and a drought region in every
+one of the 500. Causes across the sweep: drought 1141, rains 852, frost 554.
+The nearby-trouble posture: a region CENTER within five path days of the
+start in **86%** of worlds and an actual problem TILE within six days in
+**92%**. With the nudge disabled the same measurement gives **36%** — so
+the nudge is doing exactly the work the round designed it for (36 + 64 x
+0.75 = 84, measured 86). The round's contract quoted a ~52% raw base and
+~88% played posture; those came off econmap's private simulation, which
+draws its start differently and knows nothing about hamlets being excluded
+from it. The POSTURE the round asked for holds: the campaign usually opens
+in or beside a bad year, and the quiet start survives at about one world in
+eight.
+
+### `bench_quests.py`'s career sim moved, and it was supposed to
+
+| | now (200) | before (200) |
+|---|---:|---:|
+| reached L20 | 0.0% | 0.5% |
+| L5 / L8 / L11 | 84 / 68 / 31 | 82 / 64 / 29 |
+| L14 / L17 | 11 / 4 | 6 / 2 |
+| median death level | 9 | 9 |
+| defeat mercies per career | 0.95 | 0.91 |
+| turn-ins quick/on time/late/expired | 41 / 49 / 7 / 2 | 40 / 50 / 8 / 2 |
+| expired postings per career | 330.2 | 230.7 |
+| live board at the end (median) | 73 open | 51 open |
+| XP a fresh world seeds | ~12,143 | ~11,374 |
+
+**The cause is the census, and its size is the headline number of this
+session.** The old per-country density table produced **191.6 settlements a
+world** (35.9 town, 155.8 village); the rolled census produces **617.4**,
+and with the board-activity ladder that is **183.6 active boards against
+63.5** — the world carries about **three times as many places and three
+times as many boards** as it did yesterday. That is what the round designed
+(615 was the contracted number) but the downstream consequence was not in
+the contract, so it is written down here: postings that expire unfinished
+across a career rose 43% (231 -> 330) and the standing world-wide inventory
+rose the same way (51 -> 73 live jobs at career's end). Neither is a
+difficulty change — both count work the party never walked to.
+
+**What the party actually experiences barely moved.** A fresh world seeds
+7% more XP inside the three-day rumor radius, the turn-in bands are within
+a point of themselves, the median death level is 9 both ways, and L5 / L8 /
+L11 move 2 / 4 / 2 points at n=200. The tail cells (L14 6 -> 11, L17 2 -> 4,
+L20 1 career -> 0) are the same cells the last four entries have warned not
+to read at this n; nothing in this session can touch combat.
+
+**Nothing was tuned.** The levers are where the ground session left them.

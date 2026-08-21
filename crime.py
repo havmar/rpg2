@@ -230,6 +230,21 @@ def protection_dress(cat: dict) -> tuple[tuple[str, ...], dict]:
 #   hint   -- what stands in the way (the casing report's protection note)
 
 SETTLEMENT_KINDS = ("village", "town", "capital")
+# THE CENSUS ROW (2026-08-21, the tile economy arc's session 2). The census
+# speaks five tier words and the tables above speak three. The extra two are
+# not new crime markets -- they are the same markets under a bigger and a
+# smaller name: a HAMLET holds what a village holds (a purse, a miller, no
+# magnate) and a CITY or a METROPOLIS holds what a capital holds. Saying the
+# equivalence once here beats writing five words into thirty authored rows.
+# It is strict: every word a settlement can carry is in the table.
+TIER_ROW = {"hamlet": "village", "village": "village", "town": "town",
+            "city": "capital", "metropolis": "capital",
+            "capital": "capital", "wilds": "wilds"}
+
+
+def tier_row(place_kind: str) -> str:
+    """Which authored row a place kind reads."""
+    return TIER_ROW[place_kind]
 
 CATEGORIES: list[dict] = [
     # ----------------------------- petty ---------------------------------- #
@@ -597,6 +612,7 @@ def bands_here(cat: dict, place_kind: str) -> list[dict]:
     """The mark bands this category can draw where the party stands: the
     crime has to belong here at all, and the place has to hold the band
     (no magnate in a village, no caravan inside the walls)."""
+    place_kind = tier_row(place_kind)
     if place_kind not in where_of(cat):
         return []
     return [band_of(k) for k in cat["bands"]
@@ -728,7 +744,7 @@ def main() -> None:
           f"{sum(1 for c in CATEGORIES if c['shape'] == 'deed')} deed, "
           f"{sum(1 for c in CATEGORIES if c['shape'] == 'force')} force)")
     print()
-    for kind in ("village", "town", "capital", "wilds"):
+    for kind in ("hamlet", "village", "town", "city", "capital", "wilds"):
         print(f"-- local marks at a {kind} (day {args.day}) --")
         for cat in CATEGORIES:
             mark = roll_mark(cat, seed, f"demo-{kind}", kind, args.day)

@@ -517,11 +517,15 @@ class TheMapPage(unittest.TestCase):
     def test_the_overlay_obeys_its_priority(self) -> None:
         world = self.world
         capital = world["tiles"][PARIS]
-        town = world["tiles"][PRAGUE]
+        city = world["tiles"][PRAGUE]        # authored CITY since 2026-08-21
+        town = world["tiles"][DUBLIN]        # ...and Dublin an authored town
         empty = next(t for t in world["tiles"].values()
                      if t["biome"] == "sea")
-        # 3/4: a known capital beats a known town beats terrain.
+        # 3/4: a known city-grade place beats a known town beats terrain.
+        # `C` is the whole city grade -- capital, metropolis and city --
+        # which is why Prague and Paris draw the same glyph.
         self.assertEqual(places.map_glyph(world, capital), "C")
+        self.assertEqual(places.map_glyph(world, city), "C")
         self.assertEqual(places.map_glyph(world, town), "T")
         self.assertEqual(places.map_glyph(world, empty), ".")
         # 5: villages only where no town is known.
@@ -532,6 +536,16 @@ class TheMapPage(unittest.TestCase):
                      for slot in places.known_slots(world, t))), None)
         if village_tile is not None:
             self.assertEqual(places.map_glyph(world, village_tile), "v")
+        # ...and a Tile of nothing but HAMLETS is not drawn at all: the
+        # 30x18 map is a country-scale picture.
+        hamlets = next(
+            (t for t in world["tiles"].values()
+             if places.known_slots(world, t)
+             and all(slot["tier"] == "hamlet"
+                     for slot in places.known_slots(world, t))), None)
+        if hamlets is not None:
+            self.assertEqual(places.map_glyph(world, hamlets),
+                             places.BIOME_LETTERS[hamlets["biome"]])
         # 2 then 1: the objective outranks the capital, the party outranks
         # everything.
         self.assertEqual(places.map_glyph(world, capital,

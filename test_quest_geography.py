@@ -3,8 +3,9 @@
 The session that made work a LOCAL fact. What is pinned here, in build
 order:
 
-  A. **Sparse ordinary boards** -- the stable capital/town/village activity
-     roll and its measured rates, the starting settlement's override, the
+  A. **Sparse ordinary boards** -- the stable per-tier activity roll and
+     its measured rates (all five census words since 2026-08-21, with the
+     hamlet at 1 in 20), the starting settlement's override, the
      flag surviving materialization and the save, and what an inactive
      board actually does: no ordinary capacity, no ordinary refill, nothing
      posted at worldgen.
@@ -101,17 +102,19 @@ def _inactive(world: dict) -> dict:
 # --------------------------------------------------------------------------- #
 
 class TheBoardActivityRoll(unittest.TestCase):
-    def test_the_rates_are_the_authored_hundred_sixty_twentyfive(self) -> None:
+    def test_the_rates_are_the_authored_ladder(self) -> None:
         """Measured over a large deterministic sample of slot identities.
-        A capital always posts work; most towns do; most villages do not --
-        and a village with nothing to offer is a correct village."""
+        A capital or a city always posts work; most towns do; most villages
+        do not -- and a village with nothing to offer is a correct village.
+        A HAMLET (2026-08-21) almost never does: one in twenty, which is
+        what makes a hamlet a place to walk through."""
         counted = {band: [0, 0] for band in places.BOARD_ACTIVE_CHANCE}
+        cases = [("town", True)] + [(tier, False) for tier in places.TIERS]
         for n in range(3000):
-            for tier, capital in (("town", True), ("town", False),
-                                  ("village", False)):
+            for tier, capital in cases:
                 band = "capital" if capital else tier
                 slot = {"id": f"tile/r{n % 18 + 1:02d}/c{n % 30 + 1:02d}"
-                              f"/settlement/{tier}",
+                              f"/settlement/{band}",
                         "tier": tier, "capital": capital}
                 counted[band][1] += 1
                 counted[band][0] += places.board_active_roll(n, slot)
@@ -341,12 +344,13 @@ class TheForcedFamilies(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 
 class TheRumorRadius(unittest.TestCase):
-    """Seed 19 opens at Shepham, with Dublin two days off (one job posted)
-    and London three (none): one populated group and one empty one, which
-    is the pair the readout has to tell apart."""
+    """Seed 21 opens at Aston, with Dublin two days off carrying nothing
+    and London three off carrying work: one populated group and one empty
+    one, which is the pair the readout has to tell apart. (Re-pinned
+    2026-08-21 from seed 19 -- the rolled census moved the board.)"""
 
     def setUp(self) -> None:
-        self.world = _world(19)
+        self.world = _world(21)
         self.here = self.world["areas"][self.world["start_area"]]
 
     def test_the_seed_stands_where_this_class_thinks_it_does(self) -> None:
@@ -426,25 +430,27 @@ class TheRumorRadius(unittest.TestCase):
             self.assertIn(f"[{quest['id']}]", text)
 
     def test_the_empty_group_is_omitted(self) -> None:
-        """London is three days off and has nothing posted; the readout
-        does not print an empty heading over it."""
+        """Dublin is two days off and has nothing posted; the readout does
+        not print an empty heading over it, though London's group three
+        days out is printed."""
         world, here = self.world, self.here
         lines = quests.rumor_lines(
             world, quests.nearby_settlements(world, here["tile"]), 2)
         text = "\n".join(lines)
-        self.assertIn("2 DAYS AWAY:", text)
-        self.assertNotIn("3 DAYS AWAY:", text)
+        self.assertIn("3 DAYS AWAY:", text)
+        self.assertNotIn("2 DAYS AWAY:", text)
         self.assertNotIn("HERE", text)
 
     def test_the_single_day_group_says_day_not_days(self) -> None:
-        world = _world(28)      # Solavela, with Madrid one day's road off
+        world = _world(18)      # Tomton, with Prague one day's road off
         here = world["areas"][world["start_area"]]
         lines = quests.rumor_lines(
             world, quests.nearby_settlements(world, here["tile"]), 2)
         text = "\n".join(lines)
         self.assertIn("1 DAY AWAY:", text)
         self.assertIn("1 day off", text)
-        self.assertNotIn("1 days", text)
+        self.assertNotIn("1 DAYS AWAY:", text)
+        self.assertNotIn("1 days off", text)
 
     def test_the_here_group_is_not_repeated_as_a_rumor(self) -> None:
         world, here = self.world, self.here
