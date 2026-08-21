@@ -540,7 +540,8 @@ a pointer: what the file is, how it's run, where its docs are.
   (two at the frame's edge) with a harvest word only where it is a problem
   and the indefinite article standing in for `(unmet)` (with the wrap rate
   pinned under 30%), the DM-only half absent from the player's page, and
-  the verb registered, defaulting to here, refusing a non-coordinate and
+  the verb registered, defaulting to here, refusing a non-coordinate or an
+  off-frame one (with the parser's own message, the way `travel` does) and
   writing nothing. *The tile menu*: the three rows and only those, the granary,
   the pithead and the crossroads, two rows multiplying on one Tile, the
   crossroads threshold agreeing with the route count, the product reaching

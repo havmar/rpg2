@@ -7105,7 +7105,11 @@ def cmd_tile(args: argparse.Namespace) -> None:
     if not wanted:
         tid = state["position"]["tile"]
     else:
-        parsed = parse_coordinate(wanted)
+        try:
+            parsed = parse_coordinate(wanted)
+        except ValueError as exc:    # a real coordinate, off the frame --
+            print(str(exc))          # the same answer `travel` gives one
+            return
         if parsed is None:
             print(f"{wanted!r} is not a coordinate -- use RxxCyy "
                   f"(e.g. R09C10).")
