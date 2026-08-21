@@ -13,6 +13,8 @@ their rounds land.
     python econmap.py potential        # the derived numbers (round 3's input)
     python econmap.py harvest [SEED]   # one rolled last-harvest layer
     python econmap.py harvest --sweep  # the distribution over 500 seeds
+    python econmap.py population [SEED]   # one rolled settlement census
+    python econmap.py population --sweep  # the census over 500 seeds
 
 Validation (the law demoted to a lint -- the map is authored, the rules
 only check it): every land tile carries exactly one climate letter, sea
@@ -32,6 +34,22 @@ surviving forest falling out of it, and the pastoral index as the
 complement -- what habitable ground does where the plow does poorly.
 Everything here is DETERMINISTIC: authored overlays plus laws, no rng,
 identical in every campaign like the map itself.
+
+The POPULATION mode is round 3's layer, in two halves.  The SCORE is
+deterministic law over rounds 1-2's outputs: food capacity (realized
+arable + weighted pasture + coastal and river fishing), a transport
+multiplier on rivers and coasts (a town exceeds its land's carrying
+capacity only with transport), and the penalties -- marsh disease,
+highland, the eastern frontier.  The CENSUS is a rolled arrangement per
+tile, seeded per world: the score picks a BAND, the band picks from a
+weighted table of settlement arrangements (hamlets, villages, towns,
+cities, the authored metropolises) with deliberately high variance -- a
+rich band can and does roll a village-only tile, which is what keeps the
+grid from reading as a grid.  The absolute numbers of the real or the
+downscaled world are ABANDONED BY DESIGN (2026-08-21, round 3): the tile
+is the unit, the census IS the population, and the tier words carry the
+scale (hamlet under a hundred souls, village hundreds, town thousands,
+city tens of thousands, metropolis a hundred thousand and more).
 
 The HARVEST mode is the round's rolled layer: last year's harvest as a
 percentage per tile (100 = a full excellent harvest), generated as
@@ -546,6 +564,288 @@ def sweep_harvest(climate: list[str], seeds: int = 500) -> None:
           + ", ".join(f"{c}: {n}" for c, n in causes.most_common()))
 
 
+# --------------------------------------------------------------------------- #
+# The population layer (round 3: a deterministic score, a rolled census)
+# --------------------------------------------------------------------------- #
+# THE SCALE DOCTRINE (2026-08-21, round 3 -- the designer will ask):
+#   - A tile is SPOKEN OF as 30 km east-west by 60 km north-south (one
+#     travel day east-west, two north-south; 1800 km2).
+#   - The drawn map corresponds to real Europe at roughly 160 km per
+#     column and 220 km per row (about 35,000 km2 per tile): the height
+#     is 1.4x the width, NOT the 2x the travel costs suggest.  The map is
+#     a deliberately squashed Europe; north-south travel is priced by the
+#     fictional 60 km, not the real 220.
+#   - By AREA the game world is therefore about 20x smaller than the real
+#     one (5.3x east-west, 3.7x north-south linear).
+#   - Consequence: real, historical or downscaled densities are NEVER an
+#     input.  The tile is the unit; the census below IS the population.
+#   - Slots: at most 4 per tile, thought of as a 2x2 lattice -- 15 km
+#     apart east-west, 30 km north-south (twice as dense horizontally,
+#     mirroring the travel anisotropy).  A settlement every 15-30 km is
+#     the medieval market-day spacing; that is why four is the cap.
+
+PASTORAL_PEOPLE = 0.35      # herds feed fewer than fields per unit of index
+FISH_COAST = 0.08           # the shore feeds people the plow never counted
+FISH_RIVER = 0.05           # so does the river, half as well
+TRANSPORT_FACTOR = 1.15     # grain moves by water: a river or coast tile
+                            # can feed a settlement its own fields cannot
+MARSH_MALUS = 0.60          # the fen fever
+HIGHLAND_MALUS = 0.60       # the high ground holds fewer, past low arable
+EAST_MALUS_START = 22       # the raiding frontier: columns past this lose
+EAST_MALUS_STEP = 0.04      # this much per column...
+EAST_MALUS_FLOOR = 0.65     # ...down to this floor
+EAST_MALUS_LAST_ROW = 13    # the frontier is the STEPPE's reach: the
+                            # southern sea-lane stripe (rows 14-18, the
+                            # Nile granary included) is not raider country
+HAND_DENSE = {              # score the law cannot see, authored:
+    (8, 11),                # - the Low Countries delta reads as fen by
+                            #   law, but its people drained it -- the
+                            #   polders ARE the land
+    (12, 13), (12, 14),     # - the Lombardy-Veneto city belt: the redraw
+                            #   cut the lagoon river for looks, and no law
+                            #   sees the city culture of the Italian north
+}
+BANDS = (                   # score -> band; the census table's key
+    (0.05, "wilderness"), (0.15, "thin"), (0.30, "low"),
+    (0.50, "mid"), (0.82, "high"), (9.99, "dense"),
+)
+BAND_MARKS = {"wilderness": "-", "thin": "t", "low": "l", "mid": "m",
+              "high": "h", "dense": "D"}
+
+# The census: arrangement strings over the tier letters -- H hamlet,
+# V village, T town, C city, M metropolis -- weighted per band.  The
+# variance is IN the tables: every settled band keeps a village-only
+# (or emptier) roll, so France still hides quiet country, and only the
+# dense band ever rolls a generated city.  At most 4 letters anywhere.
+ARRANGEMENTS = {
+    "wilderness": (("", 72), ("H", 18), ("V", 10)),
+    "thin": (("", 25), ("H", 30), ("V", 20), ("HH", 12), ("VH", 13)),
+    "low": (("V", 28), ("VH", 22), ("VV", 14), ("H", 12), ("VHH", 9),
+            ("VVH", 8), ("", 7)),
+    "mid": (("VV", 20), ("VVV", 15), ("VVH", 12), ("V", 12), ("VH", 10),
+            ("TV", 8), ("VVVH", 8), ("T", 5), ("VVVV", 5), ("VHH", 5)),
+    "high": (("TVV", 20), ("TV", 15), ("VVV", 15), ("TVVV", 10),
+             ("VVVV", 10), ("VV", 10), ("T", 5), ("TT", 5), ("V", 5),
+             ("VVH", 5)),
+    "dense": (("CTV", 15), ("TTV", 15), ("TVV", 15), ("CT", 10),
+              ("CVV", 10), ("TTVV", 10), ("TVVV", 10), ("CC", 5),
+              ("CTT", 5), ("VVV", 5)),
+}
+# An authored historical settlement fills slot 1; its companions come from
+# ITS OWN BAND's table, truncated to the three remaining slots -- so Paris
+# gathers towns and villages (city-with-towns, the realistic pattern) while
+# Stockholm and Moscow stand nearly alone in thin country, frontier
+# metropolis style.
+HISTORICAL_TIERS = {        # the authored answer key, NOT downscaled: the
+    "Paris": "M", "Venice": "M", "Constantinople": "M",   # metropolises
+    "London": "C", "Amsterdam": "C", "Prague": "C", "Moscow": "C",
+    "Kyiv": "C", "Lisbon": "C", "Rome": "C", "Carthage": "C",
+    "Dublin": "T", "Stockholm": "T", "Warsaw": "T", "Madrid": "T",
+    "Athens": "T",
+}
+HISTORICAL_TILES = {        # (row, column) -> name; restates places.py's
+    (5, 2): "Dublin", (6, 5): "London", (8, 11): "Amsterdam",
+    (9, 10): "Paris", (9, 18): "Prague", (3, 23): "Stockholm",
+    (7, 28): "Moscow", (8, 22): "Warsaw", (10, 27): "Kyiv",
+    (13, 3): "Lisbon", (13, 7): "Madrid", (12, 14): "Venice",
+    (14, 14): "Rome", (14, 19): "Athens", (14, 27): "Constantinople",
+    (17, 12): "Carthage",
+}                           # list so the tool stays standalone
+TIER_PEOPLE = {             # fiction anchors for the eyeball totals only --
+    "H": 60, "V": 300,      # the game stores tier WORDS, never heads
+    "T": 3000, "C": 25000, "M": 150000,
+}
+TIER_ORDER = "MCTVH"        # chief settlement first: slot 1 leads the tile
+CHARTER_CHANCE = 1 / 3      # a generated town holds a charter this often;
+                            # cities and metropolises always do
+MANOR_CHANCE = 0.5          # a village-led tile of 2+ settlements seats a
+                            # resident lord this often (else the lord is
+                            # absent and the tile answers to a distant seat)
+
+
+def _is_coast(base: list[str], r: int, c: int) -> bool:
+    for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        rr, cc = r + dr, c + dc
+        if 0 <= rr < ROWS and 0 <= cc < COLUMNS and base[rr][cc] == ".":
+            return True
+    return False
+
+
+def tile_score(economy: dict, letter: str, terrain_word: str,
+               coast: bool, river: bool, row: int, column: int) -> float:
+    """The deterministic population score, by law.  1-based coordinates."""
+    food = economy["realized"] + PASTORAL_PEOPLE * economy["pastoral"]
+    if coast:
+        food += FISH_COAST
+    elif river:
+        food += FISH_RIVER
+    score = food
+    if coast or river:
+        score *= TRANSPORT_FACTOR
+    if terrain_word == "marsh":
+        score *= MARSH_MALUS
+    elif terrain_word == "mountains":
+        score *= HIGHLAND_MALUS
+    if row <= EAST_MALUS_LAST_ROW:
+        east = 1.0 - EAST_MALUS_STEP * max(0, column - EAST_MALUS_START)
+        score *= max(EAST_MALUS_FLOOR, east)
+    return score
+
+
+def score_band(score: float, row: int, column: int) -> str:
+    if (row, column) in HAND_DENSE:
+        return "dense"
+    for ceiling, band in BANDS:
+        if score < ceiling:
+            return band
+    return "dense"
+
+
+def _draw(rng: random.Random, table) -> str:
+    return rng.choices([row[0] for row in table],
+                       [row[1] for row in table])[0]
+
+
+def roll_census(base: list[str], climate: list[str], terrain: list[str],
+                seed: int):
+    """One world's settlement census: {tile: {band, tiers, flags}}."""
+    rng = random.Random(seed)
+    economies, _tags, _character = economy_grids(base, climate, terrain)
+    census = {}
+    for r in range(ROWS):
+        for c in range(COLUMNS):
+            if (r, c) not in economies:
+                continue
+            letter = climate[r][c]
+            word = TERRAINS[terrain[r][c]]
+            river = base[r][c] == "~" or letter == "n"
+            coast = _is_coast(base, r, c)
+            score = tile_score(economies[(r, c)], letter, word, coast,
+                               river, r + 1, c + 1)
+            band = score_band(score, r + 1, c + 1)
+            name = HISTORICAL_TILES.get((r + 1, c + 1))
+            if name:
+                tiers = (HISTORICAL_TIERS[name]
+                         + _draw(rng, ARRANGEMENTS[band])[:3])
+            else:
+                tiers = _draw(rng, ARRANGEMENTS[band])
+            tiers = "".join(sorted(tiers, key=TIER_ORDER.index))
+            free = []
+            for tier in tiers:
+                if tier in "MC":
+                    free.append(True)
+                elif tier == "T":
+                    free.append(rng.random() < CHARTER_CHANCE)
+                else:
+                    free.append(False)
+            if name:                    # the famous names hold their own
+                free[0] = True          # charters, always
+            manor = (len(tiers) >= 2 and tiers[0] == "V"
+                     and rng.random() < MANOR_CHANCE)
+            census[(r, c)] = {"band": band, "score": score,
+                              "tiers": tiers, "free": free, "manor": manor,
+                              "historical": name}
+    return census
+
+
+def render_population(base: list[str], climate: list[str],
+                      terrain: list[str], seed: int) -> None:
+    census = roll_census(base, climate, terrain, seed)
+    bands, chiefs = [], []
+    for r in range(ROWS):
+        band_line, chief_line = "", ""
+        for c in range(COLUMNS):
+            if (r, c) not in census:
+                band_line += "."
+                chief_line += "."
+            else:
+                tile = census[(r, c)]
+                band_line += BAND_MARKS[tile["band"]]
+                if not tile["tiers"]:
+                    chief_line += "0"
+                else:
+                    chief = tile["tiers"][0]
+                    chief_line += {"H": "h", "V": "v", "T": "T",
+                                   "C": "C", "M": "M"}[chief]
+        bands.append(band_line)
+        chiefs.append(chief_line)
+    render_side_by_side(bands, chiefs, ("BAND", "CHIEF SETTLEMENT"))
+    print("\nband: - wilderness, t thin, l low, m mid, h high, D dense;"
+          "\nchief: M metropolis, C city, T town, v village, h hamlet, "
+          "0 empty")
+    band_census = Counter(tile["band"] for tile in census.values())
+    print("\nBAND CENSUS " + ", ".join(
+        f"{band}:{band_census.get(band, 0)}"
+        for _ceiling, band in BANDS))
+    tier_census = Counter(tier for tile in census.values()
+                          for tier in tile["tiers"])
+    slots = Counter(len(tile["tiers"]) for tile in census.values())
+    print("SETTLEMENTS " + ", ".join(
+        f"{tier}:{tier_census.get(tier, 0)}" for tier in TIER_ORDER)
+        + f"  (total {sum(tier_census.values())})")
+    print("SLOTS FILLED " + ", ".join(
+        f"{n}:{slots.get(n, 0)}" for n in range(5)))
+    by_country = Counter()
+    for (r, c), tile in census.items():
+        by_country[country_at(r + 1, c + 1)] += sum(
+            TIER_PEOPLE[tier] for tier in tile["tiers"])
+    print("SOULS " + ", ".join(
+        f"{country}: {by_country[country]:,}"
+        for country in ("firascir", "mortellaria", "tergal"))
+        + f"  (world {sum(by_country.values()):,})")
+    high = [tile for tile in census.values()
+            if tile["band"] in ("high", "dense") and not tile["historical"]]
+    quiet = sum(1 for tile in high if "T" not in tile["tiers"]
+                and "C" not in tile["tiers"])
+    print(f"QUIET RICH COUNTRY {quiet}/{len(high)} high+dense tiles "
+          f"rolled no town at all")
+    frees = sum(1 for tile in census.values() for flag in tile["free"]
+                if flag)
+    manors = sum(1 for tile in census.values() if tile["manor"])
+    print(f"CHARTERS {frees} free settlements; MANORS {manors} "
+          f"village tiles with a resident lord")
+    print("\nRETRODICTION (authored tile: its band by law)")
+    for (row, column), name in sorted(HISTORICAL_TILES.items(),
+                                      key=lambda kv: kv[1]):
+        tile = census[(row - 1, column - 1)]
+        print(f"  {name:<15} {HISTORICAL_TIERS[name]} at "
+              f"R{row:02d}C{column:02d}: {tile['band']:<10} "
+              f"(score {tile['score']:.2f}) rolled {tile['tiers']}")
+
+
+def sweep_population(base: list[str], climate: list[str],
+                     terrain: list[str], seeds: int = 500) -> None:
+    tier_totals = Counter()
+    souls, filled, empties, quiet_share = [], [], [], []
+    for seed in range(seeds):
+        census = roll_census(base, climate, terrain, seed)
+        tier_totals.update(tier for tile in census.values()
+                           for tier in tile["tiers"])
+        souls.append(sum(TIER_PEOPLE[tier] for tile in census.values()
+                         for tier in tile["tiers"]))
+        counts = [len(tile["tiers"]) for tile in census.values()]
+        filled.append(sum(counts) / len(counts))
+        empties.append(sum(1 for n in counts if n == 0))
+        high = [tile for tile in census.values()
+                if tile["band"] in ("high", "dense")
+                and not tile["historical"]]
+        quiet_share.append(sum(1 for tile in high
+                               if "T" not in tile["tiers"]
+                               and "C" not in tile["tiers"]) / len(high))
+    n = seeds
+    print(f"{n} seeds: souls mean {sum(souls) / n:,.0f} "
+          f"(min {min(souls):,}, max {max(souls):,})")
+    print("settlements per world " + ", ".join(
+        f"{tier}: {tier_totals[tier] / n:.1f}" for tier in TIER_ORDER)
+        + f"; total {sum(tier_totals.values()) / n:.1f}")
+    print(f"slots filled per land tile mean {sum(filled) / n:.2f}; "
+          f"empty tiles mean {sum(empties) / n:.0f}/314")
+    print(f"quiet rich country: {100 * sum(quiet_share) / n:.0f}% of "
+          f"high+dense tiles roll no town (min "
+          f"{100 * min(quiet_share):.0f}%, max "
+          f"{100 * max(quiet_share):.0f}%)")
+
+
 def main() -> None:
     base = load_grid(BASE_PATH, BASE_GLYPHS)
     climate = load_grid(CLIMATE_PATH, set(CLIMATES) | {"."})
@@ -561,6 +861,13 @@ def main() -> None:
         return
     if len(sys.argv) > 1 and sys.argv[1] == "potential":
         render_potential(base, climate, terrain)
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "population":
+        if "--sweep" in sys.argv[2:]:
+            sweep_population(base, climate, terrain)
+        else:
+            seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+            render_population(base, climate, terrain, seed)
         return
     if len(sys.argv) > 1 and sys.argv[1] == "harvest":
         if "--sweep" in sys.argv[2:]:

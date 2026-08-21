@@ -690,6 +690,19 @@ a pointer: what the file is, how it's run, where its docs are.
   forest off the climate wildwood cap, the pastoral index by graze law,
   and the derived words/tags (cover, farmland, pasture, forest,
   `HAND_MARKS`). Its constants ARE the Round 2 contract's numbers.
+  Since round 3 settled (2026-08-21, designlog's round-3 entry) it also
+  carries the POPULATION layer: `python econmap.py population [SEED]`
+  (the deterministic score law over rounds 1–2's outputs — food,
+  transport, the penalties, `HAND_DENSE` — bucketed into six bands, then
+  one rolled settlement census: weighted arrangement tables per band
+  over the five tiers hamlet/village/town/city/metropolis, the authored
+  `HISTORICAL_TIERS` answer key, the charter and manor rolls, and the
+  retrodiction listing) and `python econmap.py population --sweep` (the
+  500-seed distribution). The census is rolled per world; the score is
+  law. Its constants ARE the Round 3 contract's numbers, and its
+  population section's head comment carries the SCALE DOCTRINE (a tile
+  30×60 km spoken / ~160×220 km real, the ~20× area reduction, the 2×2
+  slot lattice).
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection

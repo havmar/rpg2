@@ -5185,3 +5185,142 @@ continental deep forest survives the law (a Białowieża- or
 Ardennes-shaped wildwood would need a hand mark — none authored now;
 the taiga, the mountains and the marshes carry the wilderness); and
 wool as trade colour for the pastoral west (round 4's list).
+
+## 2026-08-21 (C) — Round 3 of the tile economy arc: population & the settlement census
+
+**Where it started.** The designer opened round 3 hands-off — decide and
+present everything not mentioned — with directives: modifiers on the
+farming base (shores and rivers a bonus, the eastern periphery a malus);
+a hamlet tier under a hundred people; several cities in one tile only in
+the densest country (the Low Countries, Tuscany); city-with-towns as the
+realistic pattern; countries of 10–25 tiles that must NOT read as a town
+per tile — a medieval feel needs village-only tiles even in France, even
+when that drags the density "unrealistically low"; 2–3 filled slots as
+the organic norm; make it very gamey; and, above all, a DIRECTION
+CHANGE — completely depart from calculated, historical or downscaled
+densities and start at the tile level.
+
+**The scale doctrine**, settled and recorded prominently because it will
+be asked about. A tile is SPOKEN OF as 30 km east–west by 60 km
+north–south (one travel day east–west, two north–south; 1800 km²). The
+drawn map corresponds to real Europe at roughly 160 km per column by
+220 km per row (about 35,000 km² per tile) — the height is 1.4× the
+width, NOT the 2× the travel costs suggest. The map is a deliberately
+squashed Europe: north–south travel is priced by the fictional 60 km,
+not the real 220. By area the game world is about 20× smaller than the
+real one (5.3× east–west, 3.7× north–south linear). The designer's own
+20× calculation is confirmed — it is the AREA ratio. Slots follow the
+same anisotropy: at most 4 per tile, thought of as a 2×2 lattice 15 km
+apart east–west and 30 km north–south (twice as dense horizontally),
+which is the medieval market-day spacing and the reason four is the
+natural cap. Slots carry no stored coordinates — the lattice is doctrine
+for fiction and scale statements only.
+
+**The direction change, made law.** The old plan wording ("population
+per tile, a hidden number, scale anchoring, census table") survives with
+its meaning inverted: the hidden number is no longer a population count
+but a relative SCORE whose only job is to pick a band, and the scale
+anchor is no longer a density but the tier words' headcounts. Real
+medieval Europe held 40–80 million; downscaling suggested a few million;
+the settled census lands at ~1.3M souls — accepted, gamey, and the
+famous cities are deliberately NOT downscaled (a metropolis is a real
+hundred-thousand city), so the urban ratio runs far above the medieval
+one. The designer pre-accepted that. The census IS the population: no
+rural remainder is tracked, and the low-density character the numbers
+"lose" is expressed the way the designer asked — a 1800 km² tile of
+thin country rolls a village and a hamlet, about a thousand people,
+rather than the 5–10k a 2–5/km² calculation would demand.
+
+**The law and its tuning.** Score = realized arable + 0.35 × pastoral +
+fishing (0.08 coast, 0.05 river; nile counts as river), × 1.15 transport
+on coast or river (a town exceeds local carrying capacity only with
+transport), × 0.6 marsh (fen fever), × 0.6 highland, × the eastern
+frontier malus (−0.04 per column past 22, floor 0.65). Six bands:
+wilderness / thin / low / mid / high / dense at 0.05 / 0.15 / 0.30 /
+0.50 / 0.82. The first cut (transport 1.25, coast 0.10, dense at 0.72)
+lit every shoreline dense — 62 dense tiles and 40 generated cities, a
+city-studded Ireland — so transport and fish came down and the dense
+threshold went up until dense meant what the designer said it should:
+~19 tiles (the Rhine, the Danube corridor, the Nile, plus the hand
+marks). Retrodiction against the authored towns forced three calls.
+One: the eastern malus is the STEPPE's reach, so it row-gates to rows
+1–13 — the first cut had it cutting the Nile granary and
+Constantinople's shore, which are sea-lane country, not raider country.
+Two: two `HAND_DENSE` exceptions with written reasons — the Low
+Countries delta (the law reads undrained fen; its people drained it —
+the polders ARE the land) and the Lombardy–Veneto belt (the redraw cut
+the lagoon river for looks, and no law sees the Italian north's city
+culture). Three: a historical city's COMPANION settlements roll from
+its own band's table (truncated to the three remaining slots), not from
+a flat table — Paris gathers towns and villages, Stockholm and Moscow
+stand nearly alone, frontier-metropolis style. Round 2's parked
+Stockholm case dissolved on inspection: the 2026-08-21 redraw left
+Stockholm's tile two tiles from the drawn sea, so no fishing law can
+reach it — the authored override carries the town, and the coast law
+instead carries what it was really for, the Norwegian shore (coastal
+taiga and tundra read thin-to-low with fishing hamlets while the inland
+north stays wilderness). Prague reads low (the Bohemian rim's hills) —
+accepted, not patched: the one-tile Bohemia cannot be both forested rim
+and dense center, and the authored city carries it.
+
+**The census.** Five tiers — hamlet (under a hundred souls), village
+(hundreds), town (thousands), city (tens of thousands), metropolis (a
+hundred thousand and more; "supercity" stays dev slang — the game word
+is metropolis). Three metropolises authored: Paris, Constantinople, and
+Venice promoted on the designer's own megacity principle (Venice was a
+real ~100k city in 1500). The rest of the sixteen historical towns are
+authored city or town (`HISTORICAL_TIERS`); capitals unchanged (Paris,
+Rome, Kyiv). Per ordinary tile the band draws a weighted ARRANGEMENT
+string; **the variance lives in the tables** — every settled band keeps
+a village-only or emptier roll, only the dense band ever rolls a
+generated city (including the rare two-city tile), and the mid/high
+tables carry the designer's named patterns: town-and-three-villages (the
+lord's tile), two-to-three villages in rich France, one lone town.
+Measured over 500 seeds: ~610 settlements a world (3 metropolis, ~18
+city, ~93 town, ~406 village, ~90 hamlet), 1.94 slots per land tile,
+~52 of 314 tiles empty (zero is a real tier), 39% of high+dense tiles
+with no town at all (min 23%, never zero), world 1.30M souls (1.12–1.52M).
+The slot histogram (58/66/73/81/36 for 0–4 filled at seed 1) delivers
+the organic 2–3-not-all-four feel.
+
+**Randomized per playthrough — settled yes.** The census rolls off
+derived seeds and differs between worlds; the worry about later
+difficulty dissolved on inspection, because this is ALREADY the status
+quo — the old slot census rolled per world too, and everything authored
+(the sixteen cities, the capitals, the bands themselves) is fixed. The
+sweet spot falls out: the CHARACTER of every region is deterministic
+(France always feels like France), the instances are each world's own.
+
+**The manor and the charter** (the designer's feudal-status question,
+answered then minimally built). Historically the distinction is law, not
+size: towns absolutely could hold charters (market towns, free and royal
+towns, Stadtrecht), lords founded seigneurial towns precisely to farm
+the tolls, and "city" as a legal word was a separate thing from
+population. So the game's word is not a tier but a flag: cities and
+metropolises always FREE (chartered), a generated town free 1 in 3 (an
+unchartered town is a lord's town), and a village-led tile of 2+
+settlements seats a resident lord 1 in 2 — the MANOR mark on its chief
+village, the designer's lord-of-three-villages arrangement made a
+stored word. Both words are rolled with the census and read by NOTHING
+yet; what freedom is worth (taxes, revolts, entry at the gate) belongs
+to the politics arc.
+
+**What was decided** is plan.md's Round 3 implementation contract,
+replacing the design entry: the scale doctrine written prominently; the
+score law with its hand marks; the census roll off derived seeds
+replacing `_population_slots` and `SETTLEMENT_DENSITY` (no
+compatibility — the quest-geography and places fixtures re-pin); the
+five-tier vocabulary with fiction headcounts and the mechanical mapping
+(service bands, `BOARD_ACTIVE_CHANCE` extension, `C`/`T`/`v` glyphs with
+hamlets kept off the map, starts never in a hamlet); the content owed
+(hamlet and city roles per country, hamlet naming, pool growth); the
+charter/manor words; and the pinned tests. econmap.py's constants ARE
+the contract's numbers (`python econmap.py population --sweep` is the
+measurement).
+
+**Parked on the way**: the past-epidemic population scar and named
+natural regions (unchanged, in the round's contract footer); the
+charter/manor read surface (politics arc); hamlet and metropolis detail
+(Settlements revisited); whether board activity should later derive from
+the tile's band rather than the extended `BOARD_ACTIVE_CHANCE` table
+(round 5's existing candidate list already carries it).

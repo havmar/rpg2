@@ -244,36 +244,106 @@ distance survives; terrain stays out of the sky (climate owns weather; a
 marsh fog line is round-5 flavor) and out of the harvest contagion
 model.
 
-## Round 3 — Population & the settlement census
+## Round 3 — Population & the census: the implementation contract (design settled 2026-08-21)
 
-Population per tile, a **hidden number**, from the ground up:
+The design is designlog 2026-08-21 (C), including the direction change it
+records: **real, historical and downscaled densities are abandoned** —
+the tile is the unit, the rolled census IS the population, and the tier
+words carry the scale. The layer and the eyeball tool are in the tree
+(`econmap.py population [SEED]` / `population --sweep`); **econmap.py's
+constants ARE this contract's numbers**. The score is deterministic law
+over rounds 1–2's outputs; the census is rolled at worldgen off derived
+seeds, differing per playthrough on purpose (the bands are fixed, so
+France always feels like France; which tiles carry the towns is each
+world's own).
 
-- **The law**: base = realized arable × climate factor, plus pasture at a
-  lower weight and fishing on coasts; a **transport bonus** on rivers and
-  coasts (towns exceed local carrying capacity only with transport); then
-  the **penalties** — frontier insecurity, marsh disease, highland.
-- **Scale anchoring**: the world is smaller than the real thing — settle
-  what a population number means and the village / town / city
-  thresholds.
-- **Calibration by retrodiction**: the authored historical towns are the
-  answer key. Tune the law until the density map lights up where the
-  cities already are; where it will not, either fix the law or author an
-  exception and write down why. Named case from round 2's eyeball:
-  Stockholm sits in taiga deep forest with realized arable ~0 — coastal
-  fishing plus the transport bonus must be able to carry a historical
-  town the plow cannot.
-- **The census table**: population → settlement count and tier per tile.
-  Dense urban = several towns and a village; prosperous countryside =
-  four villages; remote = one village; **zero is a real tier** (steppe,
-  deep forest, high massif — authored wilderness). About four settlements
-  is the ceiling a player and DM can hold in the head for one tile.
-- This **replaces the rolled slot census**, acknowledged as scaffolding
-  (2026-08-20). No compatibility — the doctrine is standing.
-- **Parked here**: the past-epidemic population scar (a region's number
-  cut by a plague that already happened — colour now, and the plague
-  chain's geography later). Named regions may fall out of the density and
-  terrain clusters (the deferred "named natural regions" item) — take the
-  win if it is cheap, park it if not.
+**0. The scale doctrine** (recorded prominently — it will be asked
+about). A tile is SPOKEN OF as 30 km east–west by 60 km north–south (one
+travel day east–west, two north–south; 1800 km²). The drawn map
+corresponds to real Europe at ~160 km per column × ~220 km per row
+(~35,000 km² per tile): the height is **1.4× the width, not the 2× the
+travel costs suggest** — the map is a deliberately squashed Europe, and
+north–south travel is priced by the fictional 60 km, not the real 220.
+By AREA the game world is ~20× smaller than the real one (5.3×
+east–west, 3.7× north–south linear). Slots: **at most 4 per tile**,
+thought of as a 2×2 lattice 15 km apart east–west and 30 km north–south
+(twice as dense horizontally, mirroring the travel anisotropy) — a
+settlement every 15–30 km is the medieval market-day spacing, and about
+four is what a head can hold. Slots carry no coordinates; the lattice is
+doctrine for fiction and scale statements, not a stored position.
+
+**1. The score**, deterministic and never saved (recomputable by any
+later arc, like round 2's numbers): food = realized arable +
+`PASTORAL_PEOPLE` × pastoral + `FISH_COAST` on sea-adjacent tiles (else
+`FISH_RIVER` on river tiles; nile counts as river); × `TRANSPORT_FACTOR`
+on coast or river (a town exceeds its land's carrying capacity only with
+transport); × the penalties — `MARSH_MALUS`, `HIGHLAND_MALUS`, and the
+eastern-frontier malus (`EAST_MALUS_*`, columns past 22 on rows 1–13
+only: the frontier is the steppe's reach, and the southern sea-lane
+stripe with the Nile granary is not raider country). `HAND_DENSE` names
+the authored exceptions with their reasons (the drained Low Countries
+delta; the Lombardy–Veneto city belt). The score buckets into six
+`BANDS`: wilderness / thin / low / mid / high / dense.
+
+**2. The census roll**, at worldgen off derived seeds, replacing
+`_population_slots` and `SETTLEMENT_DENSITY` whole (the rolled slot
+census is acknowledged scaffolding; no compatibility). Per tile the band
+picks a weighted ARRANGEMENT — a string over the five tiers — from
+`ARRANGEMENTS`; **the variance is in the tables** (every settled band
+keeps a village-only or emptier roll — ~39% of high+dense tiles roll no
+town, which is what keeps rich country from reading as a town grid — and
+only the dense band ever rolls a generated city). **Zero is a real
+tier**: ~52 tiles of 314 roll empty. A historical tile takes its
+authored tier (`HISTORICAL_TIERS`: Paris, Venice and Constantinople are
+the three metropolises; the rest city or town) in slot 1 — capital flags
+unchanged on Paris, Rome, Kyiv — plus companions from ITS OWN BAND's
+table truncated to three, so Paris gathers towns while Stockholm stands
+alone. Slots sort chief-first (`TIER_ORDER`). Measured over 500 seeds:
+~610 settlements (3 metropolis, ~18 city, ~93 town, ~406 village, ~90
+hamlet), ~1.9 slots per land tile, world ~1.3M souls.
+
+**3. The tier vocabulary** grows to five words: **hamlet** (under a
+hundred souls), **village** (hundreds), **town** (thousands), **city**
+(tens of thousands), **metropolis** (a hundred thousand and more —
+"supercity" is dev slang only). The headcounts are fiction anchors for
+the DM, never stored numbers. Mechanical mapping: city and metropolis
+take the capital-grade service/board band, hamlet takes the village's
+service gates with `BOARD_ACTIVE_CHANCE` extended (metropolis/city 1.0,
+town 0.6, village 0.25, hamlet 0.05); the map glyph ladder stays ASCII —
+`C` for city-grade (metropolis, city, capital — the legend
+distinguishes), `T` town, `v` village, hamlets NOT drawn on the map
+(tile detail lines only); the uniform start draw excludes hamlets.
+
+**4. Content owed** (writing.md register): a `hamlet` role and a `city`
+role per country in the catalog (`TILE_FIT_TAGS` fits per round 2's
+vocabulary; the hamlet minimal — a well, a shrine, no board sites);
+metropolises cut from the city role until the Settlements-revisited
+round gives them their own; hamlet naming (own small pools with a
+humbler sound, or the village reserve) and a modest village-pool
+growth — naming is lazy at materialization, so pools need to cover play,
+not the census.
+
+**5. The charter and the manor**, one stored word each, rolled with the
+census and read by nothing yet (the politics arc owns the read surface):
+cities and metropolises always hold a **charter** (`free`), a generated
+town does at `CHARTER_CHANCE` (1 in 3; an unchartered town is a lord's
+town), and a village-led tile of two or more settlements seats a
+resident lord at `MANOR_CHANCE` (1 in 2) — the manor mark on its chief
+village.
+
+**6. Tests.** The sweep distribution pinned (settlement counts per tier,
+slots per tile, empty-tile count, the quiet-rich-country share never
+zero); slot cap 4 and legal tier words as `validate_world` clauses; the
+historical tiles carrying their authored tiers and the capital set
+unchanged; derived seeds (the census identical when unrelated layers
+roll); and the acknowledged fixture re-pins — the quest-geography and
+places fixtures that pinned the old slot rolls find new seeds, per the
+no-compatibility doctrine.
+
+**Parked here, still**: the past-epidemic population scar (the snapshot
+arc's plague chain); named natural regions (take if cheap, later); the
+charter/manor readers and what freedom is worth (the politics arc);
+hamlet/metropolis detail (Settlements revisited).
 
 ## Round 4 — Resources, trade goods & routes
 
