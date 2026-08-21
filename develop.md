@@ -644,8 +644,24 @@ a pointer: what the file is, how it's run, where its docs are.
   a news line posted late on a told day surviving to the next telling.
   `python -m unittest -v test_worldsim.py`.
 - `resources/europe_map.txt` — **the canonical fixed world map**
-  (2026-08-15): the runtime's authored 30x18 Europe in `.` / `#` / `^` /
-  `~`. `places.load_europe_map` validates and loads it during world creation.
+  (2026-08-15; redrawn 2026-08-21 — Denmark added, Scandinavia adjusted,
+  seaside rivers cut): the runtime's authored 30x18 Europe in `.` / `#` /
+  `^` / `~`. `places.load_europe_map` validates and loads it during world
+  creation.
+- `resources/europe_climate.txt` — **the hand-painted climate overlay**
+  (2026-08-21, the tile economy arc's round 1 — DRAFT until the round
+  settles): one climate letter per land tile over the same 30x18 frame,
+  sea left as `.`. The vocabulary and the letters live in `econmap.py`'s
+  `CLIMATES`; nothing in the runtime reads the file yet — it becomes
+  authority when round 1's implementation contract ships it into
+  `places.py`.
+- `econmap.py` — **the tile economy arc's eyeball tool** (2026-08-21,
+  plan.md Part 1's tooling item): standalone and stdlib-only in the
+  `archive/worldmap.py` manner, it validates each authored overlay against
+  the base map (every land tile painted, sea unpainted, `a` exactly on the
+  `^` tiles) and renders them side by side with censuses — climate now;
+  fertility, population and routes as their rounds land. `python
+  econmap.py`.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
