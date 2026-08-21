@@ -2387,3 +2387,123 @@ prints above it.
 
 **Nothing was tuned.** No lever moved; the layer added numbers and read one
 of them.
+
+## 2026-08-21 (D) — The hookup (arc session 4): the arc's own bench arrives
+
+The tile economy arc's last session, and the first time its three rolled
+layers have been measured over REAL worldgen. econmap.py's `--sweep`
+commands retired into **`bench_worldgen.py`**, whose every world comes out
+of `places.create_geography` — derived seeds, the nearby-trouble nudge and
+the authored answer keys included. The tool used to sweep a private
+simulation with a plain seeded rng and no start tile, so its numbers were
+*like* the game's; these ARE the game's.
+
+`python bench_worldgen.py --seeds 500` (108s, three sweeps over 500
+worlds).
+
+### The last harvest
+
+| measure | mean | range | the round's pin |
+|---|---|---|---|
+| problem coverage (% of land) | 17.7% | 5.7-33.4% | ~17-18% |
+| regions a world | 5.1 | 4-6 | 4-6 by law |
+| region size (tiles) | 11.3 | 1-38 | ~11 |
+| worlds with no drought region | **0** | — | 0 (the guarantee) |
+| trouble within 5 days of the start | **86%** | — | "seven in eight" |
+
+Spoken-word distribution over every land Tile of every world: legendary
+3.5%, excellent 22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%,
+apocalyptic 0.4%. Causes drawn across all regions: drought 1141, rains 852,
+frost 554 — the drought guarantee's thumb is visible in that first number
+and is doing exactly what it was written to do.
+
+**The 86% is the number econmap could never produce.** The nudge needs the
+start tile and real path days, so round 1 could only reason about it (it
+argued the posture rises from about a third of worlds to seven in eight,
+leaving the genuinely quiet start as the eighth). Measured for the first
+time here at 86%, which is seven in eight to within the sample.
+
+### The settlement census
+
+| measure | mean | range |
+|---|---|---|
+| metropolis / city / town / village / hamlet a world | 3.0 / 17.7 / 100.6 / 401.7 / 91.6 | — |
+| total settlements | 614.5 | — |
+| slots filled a land tile | 1.96 | 1.82-2.07 |
+| empty tiles (of 314) | 49 | 38-64 |
+| souls (fiction anchors) | 1,319,163 | 1.14M-1.60M |
+| quiet rich country (% no town) | 37% | 25-52% |
+| free (chartered) settlements | 63.6 | 49-80 |
+| manors | 51.5 | 34-68 |
+
+Session 2's pins were ~18 city, ~101 town, ~402 village, ~92 hamlet, 1.96
+slots a land tile, ~50 empty tiles. Every one reproduces. The three
+metropolises are authored and never move.
+
+### The trade network
+
+| measure | mean | range |
+|---|---|---|
+| routes after merging | 58.7 | 58-59 |
+| land tiles on a route (of 314) | 113.7 | 113-115 |
+| ports | 27.0 | 27-27 |
+| sea-lane tiles | 26.0 | 26-26 |
+| crossroads (3+ routes) | 33.6 | 32-36 |
+| unfed mines | **Falun, 500/500** | — |
+
+Identical to session 3's own 500-world run on every line but one: crossroads
+reads 33.6 here against 36.6 there, because that entry counted every Tile
+with three or more crossings including SEA tiles, and a sea lane is not a
+crossroads. The land-only count is the honest one and is what the bench
+prints.
+
+### How often the tile menu is felt
+
+Over 30 worlds, 7,924 settled land Tiles (a Tile with at least one
+settlement slot on it — the only ones a party can shop at):
+
+| the row | Tiles | share |
+|---|---|---|
+| any tile-menu row at all | 1,867 | **23.6%** |
+| `lodging` moved | 1,867 | 23.6% |
+| `goods` moved (the crossroads) | 1,617 | 20.4% |
+| `steel` moved (a pithead) | 270 | 3.4% |
+
+Just under a quarter of the places a party can buy anything charge
+something the GROUND decided, and the crossroads row carries almost all of
+it — which is the right shape: a road junction is common and a mine town
+is not. The mine's 3.4% is nine authored Tiles plus whatever settles on
+them, so a pithead's cheap steel stays a thing you go looking for.
+
+### What did not move
+
+Worldgen is **byte-identical** to session 3's tree: a five-seed BLAKE2 hash
+over every stamped word on all 540 Tiles (climate, terrain, cover, tags,
+mine, goods, harvest, cause), every settlement slot (tier, charter, manor,
+capital), every route record and the start, comes back the same on both
+trees. That is the claim the session needed: everything it added READS, and
+nothing it added consumes a random number at worldgen.
+
+Every reproducible bench is unmoved (`bench_training`, `bench_weapons`,
+`bench_ranged`, `bench_bestiary`, `bench_rout`, `bench_party`, `tune`),
+compared file-for-file against a worktree at the session-3 commit.
+`bench_abilities` and `bench_quests` were not compared and cannot be: both
+are still non-reproducible against themselves (develop.md's Files entries
+and plan.md's leftovers list carry the warning). **`bench_worldgen.py` is
+not one of those** — its layers are deterministic per seed, so it can clear
+a change, which is half of why it was worth building.
+
+### The suite
+
+892 tests before, **947 after** — `test_hookup.py` is 55 new tests in five
+parts, including three broken worlds for the one `validate_world` clause
+the session added (`_validate_read_surface`: every Tile can say what it is
+and what it ate). Two existing fixtures were re-pinned, both because the world changed
+under them and neither a tuning decision: `test_worldsim`'s quiet-land shop
+test (the party stands at Paris, which is a crossroads now, so the 1.0
+claim is made against `worldsim.term`) and its slot-discipline test (which
+asserted `SLOT_OF == {}` to document the empty-slot era the deposit slot
+ends).
+
+**Nothing was tuned.** No lever moved. The session added readers, a price
+factor of three static rows, and a recovered content packet.

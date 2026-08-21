@@ -389,13 +389,13 @@ class TheRecordShapes(unittest.TestCase):
                 self.assertTrue(deck, (polity, track))
 
     def test_a_slot_member_is_never_set_as_a_free_state(self) -> None:
-        """The exclusive-slot discipline. STATE_SLOTS is EMPTY since the
-        human contraction -- both authored slots belonged wholly to deleted
-        countries -- so this guard is currently watching nothing, which is
-        the state the assertion below pins. The frame stays because the next
-        country packet plugs a slot in with one row, and on that day this
-        test is what stops it being set as a free state."""
-        self.assertEqual(worldsim.SLOT_OF, {})
+        """The exclusive-slot discipline. STATE_SLOTS stood EMPTY from the
+        human contraction until the Miners' League put the DEPOSIT slot
+        back (2026-08-21): the guard is watching something again, and what
+        it watches is that a slot member only ever moves through `slot`."""
+        self.assertEqual(set(worldsim.STATE_SLOTS), {"deposit"})
+        self.assertEqual(set(worldsim.SLOT_OF),
+                         set(worldsim.STATE_SLOTS["deposit"]))
         for card in worldsim.CARDS:
             state = card["outlets"].get("state") or {}
             for group in ("set", "while", "clear"):
@@ -645,7 +645,9 @@ class TheDeckDraw(unittest.TestCase):
         _layer(world, polity)["deck"] = []
         drawn = worldsim._draw(world, polity, random.Random(5))
         self.assertIsNotNone(drawn)
-        self.assertEqual(drawn["land"], (polity,))
+        # A land's deck holds its own cards and the ANY_LAND ones -- the two
+        # weather scars, and the Miners' League since 2026-08-21.
+        self.assertTrue(worldsim.in_land(drawn, polity), drawn["key"])
 
 
 class TheCardsClock(unittest.TestCase):
@@ -1798,9 +1800,15 @@ class TheEconomyFloorWiring(unittest.TestCase):
         world = _world()
         _all_quiet(world)
         state = self._state(world, 3)
-        self.assertEqual(session.local_term(state, "goods"), 1.0)
+        # The LAND's half is what this test is about. Since 2026-08-21 the
+        # TILE's static menu multiplies in beside it and the party stands
+        # at Paris, where twelve roads meet -- so the quiet-land claim is
+        # made against worldsim's own term, and the shop is asked whether
+        # the card moved it.
+        self.assertEqual(worldsim.term(world, "firascir", "goods"), 1.0)
+        quiet = session.local_term(state, "goods")
         _fire(world, "firascir", "firascir/monopoly", 3)
-        self.assertGreater(session.local_term(state, "goods"), 1.0)
+        self.assertGreater(session.local_term(state, "goods"), quiet)
 
     def test_the_price_sheet_reads_the_world(self) -> None:
         import session

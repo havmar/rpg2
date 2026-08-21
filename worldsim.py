@@ -407,21 +407,34 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "danegeld-paid": "the danegeld is being raised here",
     "pact-kin": "the pact makes the two crowns kin",
     "union-crown": "the two crowns are one head now",
+    # THE MINERS' LEAGUE (2026-08-21, the tile economy arc's session 4).
+    # Recovered from the pre-contraction catalog and re-homed: every one of
+    # the three countries holds mines now, so the extraction chain belongs
+    # to all of them and to no one of them.
+    "claims-collide": "two chapters claim one seam",
+    "rush-on": "the rush is on",
+    "strike": "the pits stand idle",
+    "caravan-due": "the food caravan is coming up",
 }
 
-# The CARD-DECLARABLE exclusive slots, EMPTY since the human contraction
-# (2026-08-15, Europe MVP Closure). Both authored slots -- the standing of a
-# land's foreigners, and the stage of its ore deposits -- belonged wholly to
-# countries the contraction deleted, and neither survived re-homing: Firascir
-# already tells the found-seam story in `firascir/silver-vein`, and the sealed
-# realm's xenophobia axis has no successor among the three. The FRAME stays:
-# `card()` still validates a `slot` payload against these tables, `set_state`
-# still clears whatever a slot held, and the next country packet plugs a slot
-# in by adding one row here and its member words below. The game's other two
+# The CARD-DECLARABLE exclusive slots. Both authored slots went out with the
+# human contraction (2026-08-15) and the table stood EMPTY until the tile
+# economy arc put mines back on the map: the DEPOSIT slot returns with the
+# Miners' League (2026-08-21, session 4), and it returns land-wide rather
+# than mine-wide -- a card's tile ADDRESS is the snapshot arc's, so for now
+# a land holds one deposit stage the way it holds one constitution. The
+# other authored slot -- the standing of a sealed realm's foreigners -- has
+# no successor among the three and stays gone. The game's other two
 # exclusive slots -- the wealth band and the constitution -- have never gone
 # through this table; each has its own setter.
-STATE_SLOTS: dict[str, tuple[str, ...]] = {}    # slot -> members, in order
-SLOT_WORDS: dict[str, str] = {}                 # member -> what it reads as
+STATE_SLOTS: dict[str, tuple[str, ...]] = {
+    "deposit": ("deposit-normal", "deposit-found", "deposit-drying"),
+}
+SLOT_WORDS: dict[str, str] = {                  # member -> what it reads as
+    "deposit-normal": "the seams run as they always have",
+    "deposit-found": "a new seam has been found",
+    "deposit-drying": "the seams are drying up",
+}
 SLOT_OF = {member: slot for slot, members in STATE_SLOTS.items()
            for member in members}
 STATE_WORDS.update(SLOT_WORDS)
@@ -475,6 +488,14 @@ STATE_MENU = {
     "holy-well": {"healer": 0.75},
     "reagents-moving": {"goods": 1.15},
     "hunt-up": {"lodging": 1.15},
+    # the Miners' League (2026-08-21) -- the ore price IS the steel price,
+    # and the deposit slot is the one state in the game that makes steel
+    # CHEAP. It stacks under the tile menu's own pithead discount, which is
+    # right: a strike at a working mine in a year of new seams is the
+    # cheapest steel in the world
+    "deposit-drying": {"steel": 1.20},
+    "deposit-found": {"steel": 0.85},
+    "strike": {"steel": 1.35},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -1572,6 +1593,123 @@ CARDS = (
                               "herd is loose on the plain and the "
                               "rustlers are still working."),
              "slots": 1}),
+
+    # -- THE MINERS' LEAGUE: EXTRACTION & THE CLAIMS ------------------------ #
+    # (2026-08-21, the tile economy arc's session 4.) Recovered from the
+    # catalog the human contraction cut and re-homed onto ANY_LAND: the
+    # trade session put nine mines on the map and every country holds some,
+    # so the extraction story is every land's. What was scrubbed was four
+    # words, not a design -- the clans became the MINERS' LEAGUE and its
+    # chapter masters, the under-thane the League steward, the clan books
+    # the League's books, and the dwarf who found a way an old engineer.
+    # The claim-keeper, the company shop, the winding gear and the pit
+    # bosses stayed: they were period human mining language all along.
+    #
+    # The rush CHAIN: the seam is found (a slot, so it outlives the card),
+    # and the bust that follows admits on it, puts the slot back, and
+    # settles the argument the find started.
+    card("mining/new-seam", "A new seam is found", ANY_LAND,
+         wealth=("normal", "prosperous"), without=("claims-collide",),
+         days=(15, 25),
+         news="A new seam has been found in the hills. Two League "
+              "chapters claim it and a third is strong enough to work it.",
+         state={"slot": {"deposit": "deposit-found"},
+                "set": ("claims-collide",), "wealth_while": "prosperous"},
+         quest={"post": job(
+             "Two Chapters, One Seam",
+             "The chapter that found the seam wants the shaft head held "
+             "while the claim is argued. The chapter that owns the rock "
+             "has men walking up there tonight.",
+             pool=_TOUGHS, sites=("the new shaft head",),
+             giver="the chapter's claim-keeper",
+             epilogue="The shaft head held through the argument. The "
+                      "claim went to whoever was standing on it.",
+             failure_epilogue="The shaft head changed hands twice and the "
+                              "claim went to the chapter with the most "
+                              "men."),
+             "pay": 1.20}),
+    card("mining/gold-rush", "The rush and the bust", ANY_LAND,
+         states=("deposit-found",), days=(12, 20),
+         news="Everyone who could walk came up for the new seam, and it is "
+              "already thinning. The town has four times the people it can "
+              "feed and half of them have nothing left to dig.",
+         state={"slot": {"deposit": "deposit-normal"},
+                "clear": ("claims-collide",), "while": ("rush-on",)},
+         menu={"goods": 1.40, "lodging": 2.00},
+         encounter={"kinds": ("cutthroat", "bruiser"), "where": "wilds",
+                    "as": "claim-jumpers off the new workings",
+                    "skins": {"cutthroat": "Claim-Jumper",
+                              "bruiser": "Pit Boss"},
+                    "chance": 0.40},
+         quest={"post": job(
+             "The Jumped Claim",
+             "A digger who paid for his claim cannot get back onto it. The "
+             "men on it now have been there a week and are not arguing "
+             "about paper.",
+             pool=_TOUGHS, sites=("the jumped workings",),
+             giver="the ruined digger",
+             epilogue="The claim is back in the digger's hands. It is "
+                      "worth about a third of what he paid for it.",
+             failure_epilogue="The digger has left the hills with "
+                              "nothing. The men on his claim are still "
+                              "there."),
+             "pay": 1.15}),
+    # The bust CHAIN: the vein runs out and the land goes to crisis, and
+    # only the reopening takes it back out.
+    card("mining/vein-dries", "The vein runs out", ANY_LAND,
+         wealth=("normal", "prosperous"), days=None,
+         news="The vein that fed the district is running out. The League's "
+              "books say otherwise, and the League's books are the law.",
+         state={"slot": {"deposit": "deposit-drying"}, "wealth": "crisis"}),
+    card("mining/veins-reopened", "The dead veins are reopened", ANY_LAND,
+         wealth=("crisis",), states=("deposit-drying",), days=None,
+         news="An old engineer has found a way to work a seam everyone had "
+              "written off. Every chapter with a dead pit wants him, and "
+              "one of them wants him quiet.",
+         state={"slot": {"deposit": "deposit-normal"}, "wealth": "normal"}),
+    card("mining/strike", "The pits stand idle", ANY_LAND,
+         wealth=("crisis",), days=(12, 20),
+         news="The pits stand idle. The workers want their share of the "
+              "new find before the League books it, and the company shop "
+              "has stopped giving credit.",
+         state={"while": ("strike",)},
+         quest={"post": job(
+             "The Company Shop",
+             "The League wants the company shop and the winding gear held "
+             "while it waits the strike out. The men at the gate are the "
+             "same men who dug the pit.",
+             pool=_TOUGHS, sites=("the pit gate",),
+             giver="the League steward",
+             epilogue="The gear is intact and the shop opened again on "
+                      "the League's terms. The men went back down.",
+             failure_epilogue="The winding gear is wrecked and the shop "
+                              "is empty. The pit will not open this "
+                              "season."),
+             "pay": 1.20, "slots": -1}),
+    # The relation reaching the BOARD: this card cannot be drawn at all
+    # until somebody else's harvest fails, and the edge is what tells the
+    # mining country about it. The trade layer drew the road it walks (the
+    # grain road to a mine that cannot feed itself) two sessions ago.
+    card("mining/food-caravan", "The food caravan", ANY_LAND,
+         states=("grain-scarce",), days=(10, 18),
+         news="A food caravan is coming up the mine road. Every chapter "
+              "with an empty larder knows the day it is due, and so does "
+              "everybody else on that road.",
+         state={"while": ("caravan-due",)},
+         menu={"goods": 1.20},
+         quest={"post": job(
+             "The Mine Road",
+             "The food caravan wants swords for the last three days of the "
+             "climb. Grain is treasure up here and everyone on that road "
+             "knows it.",
+             pool=_TOUGHS,
+             sites=("the mine road", "the switchback camp"),
+             giver="the caravan master",
+             epilogue="The caravan is through the gate. The district eats, "
+                      "and the price of bread comes down a little.",
+             failure_epilogue="The caravan was taken on the switchbacks. "
+                              "Nothing came up that road all week."),
+             "pay": 1.35}),
 
     # -- THE WEATHER TRACK: the day-scale sky (2026-08-08) ------------------- #
     # Land-agnostic first, then the three that belong to one land's ground.
@@ -3688,10 +3826,44 @@ FACTS = (
          "there is a ritual there is an art: the fire dance, and the "
          "flicker dance where a dancer blinks in and out of sight."),
 
+    # -- THE MINERS' LEAGUE (2026-08-21, the tile economy arc) ------------- #
+    # The standing colour behind the extraction cards. THE KNOCKERS comes
+    # back word for word from the catalog the contraction cut: it was human
+    # mining folklore when it was written and it is human mining folklore
+    # now. It is also the file's first ANY_LAND fact, because the belief
+    # follows the pits and all three countries have them.
+    fact(ANY_LAND, "knockers", "THE KNOCKERS",
+         "The mine-spirits knock before a collapse and are paid for it: "
+         "the last bite of every meal, left at the working face. "
+         "Whistling underground is forbidden. Skeptics exist; they are "
+         "assigned the unluckiest shifts."),
+    fact("firascir", "league-firascir", "THE MINERS' LEAGUE (FIRASCIR)",
+         "Six of the nine famous mines are here and the League was born "
+         "in them: Goslar is the oldest chapter, Kutna Hora, Banska "
+         "Stiavnica and Melle cut silver, and Luneburg and Wieliczka cut "
+         "salt. A free miner answers to his chapter master and to mining "
+         "law, not to the lord whose field he digs under -- which is why "
+         "the manors hate the League and the crown protects it."),
+    fact("mortellaria", "league-mortellaria", "THE MINERS' LEAGUE "
+         "(MORTELLARIA)",
+         "Two chapters, both strategic. Erzberg is the iron mountain and "
+         "sells to whoever forges; the League there argues with arms "
+         "buyers rather than with lords, and the price of a sword in this "
+         "country starts at that pithead. Novo Brdo's silver is the "
+         "mint's, and its chapter is half a garrison -- the crown reads "
+         "any dispute over that seam as a matter of state."),
+    fact("tergal", "league-tergal", "THE MINERS' LEAGUE (TERGAL)",
+         "One chapter, and the hardest of them: Falun's copper mountain "
+         "is the northernmost pit in the world and no grain grows within "
+         "a week's road of it, so it eats what the carts bring. The "
+         "southern chapters send steward after steward to run it and none "
+         "of them stays two winters."),
+
 )
 
 FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
-    polity: tuple(f for f in FACTS if f["land"] == polity)
+    polity: tuple(f for f in FACTS
+                  if f["land"] in (polity, ANY_LAND))
     for polity in LAND_SPECS
 }
 
@@ -4377,10 +4549,27 @@ def roll_land(world: dict, polity: str, day: int) -> None:
 def roll_world(world: dict, day: int) -> None:
     """Bring EVERY land up to `day`. Called at the roll points the game
     already has -- settlement arrivals, nights, travel legs, wherever the
-    board's refill and the crown's raids fire. The whole world moves
-    together so a relation never reads a land that is behind the calendar."""
-    for polity in world["lands"]:
-        roll_land(world, polity, day)
+    board's refill and the crown's raids fire.
+
+    ONE DAY AT A TIME ACROSS THE WHOLE WORLD (2026-08-21, session 4). This
+    used to run each land to `day` in turn, which meant the second land's
+    day 5 draw read the first land's day 60 -- so a card admitting on a
+    DERIVED state (`mining/food-caravan` on grain-scarce, the synod on
+    schism-near) fired on a different history depending on whether the
+    party had been watching. Six cards could see it and it only ever
+    surfaced when the League made one of them ANY_LAND. Stepping the
+    calendar instead of the land is what the promise above always said:
+    a relation never reads a land that is ahead of it either.
+
+    `roll_land` is a no-op for a land already at `today`, so a world whose
+    lands are level costs one call each per day and nothing else."""
+    if not world["lands"]:
+        return
+    start = min(land_layer(world, polity)["rolled_day"]
+                for polity in world["lands"])
+    for today in range(start + 1, day + 1):
+        for polity in world["lands"]:
+            roll_land(world, polity, today)
 
 
 def post_news(world: dict, polity: str, day: int, line: str) -> None:
@@ -5084,10 +5273,14 @@ def _validate_lore_tables() -> None:
     """The religion & magic rung's two record kinds (2026-08-11): every fact
     belongs to a land and says something, every option names a real term, a
     real tier and real states, and no option is dead data -- an option whose
-    gate no card in the game can open would never appear at a counter."""
+    gate no card in the game can open would never appear at a counter.
+
+    A fact may name ANY_LAND since 2026-08-21 (the Miners' League): a belief
+    that follows the pits rather than the crown is every land's, exactly the
+    way a card is."""
     seen: set[str] = set()
     for entry in FACTS:
-        if entry["land"] not in LAND_SPECS:
+        if entry["land"] not in LAND_SPECS and entry["land"] != ANY_LAND:
             raise ValueError(f"fact {entry['key']}: no such land")
         if entry["key"] in seen:
             raise ValueError(f"duplicate fact: {entry['key']}")

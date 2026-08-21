@@ -3243,8 +3243,75 @@ materialize lazily.
   two looms, the armouries, the horse fairs); anything else — a rolled
   market the party has never heard of — reads as its coordinate, the way
   the map labels it. All three are common knowledge, because a mine, a
-  vineyard and a road are things you can see from the road. Prices, the
-  boards, encounters, tolls and banditry do not read routes yet.
+  vineyard and a road are things you can see from the road. Endpoints
+  name themselves through the historical cities, the mine towns and the
+  authored marks; anything else reads as its coordinate. Since the read
+  surface shipped, the label CAPS the road list at four lines with a
+  `+N more` tail — Paris is crossed by a dozen roads and the page has to
+  stay readable — and the NAMED roads lead when it caps. The DM's own tile
+  brief prints them all.
+- **The tile character line** (2026-08-21, the tile economy arc's fourth
+  and last build session — the read surface). Every land Tile can say what
+  kind of country it is in ONE short phrase, composed from its own facts by
+  a fixed priority: the MINE first, by its first metal — `silver country`,
+  `salt country`, `iron country` — then the GOOD it is an origin of —
+  `grain country`, `wine country`, `wool country`, `horse country`,
+  `timber country`, `fur country`, `cloth country`, `armourers' country`,
+  and the authored colour's own words (`the herring coast`, `the amber
+  shore`) — then the LAND itself off cover, terrain and climate: `deep
+  forest`, `hill country`, `fenland`, `the open steppe`, `bare tundra`,
+  `open desert`, `rich farmland` where the farmland tag is, else the
+  terrain's own plain word. The two exotic doors are PLACES rather than
+  products and say so: `the eastern gate`, `the delta port`. One phrase,
+  never a list — composing the fuller sentence is the DM's job, and the
+  Tile's other lines are there to compose it from. The phrase is a pure
+  function of the authored ground and the goods layer, so it is the same
+  in every campaign; the mine outranking the produce is what makes Falun
+  `copper country` and not `fur country`.
+- **The harvest speaks a word, never a number** (2026-08-21). Last year's
+  harvest, rolled at world creation, finally has a reader: the stored
+  percent is spoken as its scale word — legendary, excellent, ordinary,
+  poor, failed, apocalyptic — and the cause by its fiction name:
+  `drought` is *the drought*, `rains` is *the great rains*, `frost` is
+  *the black frost*, and on the Nile the failure of the rains is the
+  failure of the FLOOD, so it reads as *the low Nile*. The line is
+  `last harvest: failed -- the great rains`, and a fine year says
+  `last harvest: ordinary` with no cause. **The percent is never printed
+  and never spoken at the table** — it is a worldgen intermediate, and the
+  word is the whole public fact.
+- **The Tile's public file is complete.** The detail block under the map
+  grid now carries, in order: the header (label, country, ground), the
+  character phrase, the ground tags, the last harvest, the mine, the
+  goods, the roads (capped), and the known Areas. All of it is common
+  knowledge — everyone alive on a Tile knows what kind of country it is
+  and what they ate last winter — so all of it is narration material.
+- **The DM's tile brief** (2026-08-21): `tile [COORD]` is to a Tile what
+  `lore` is to a land — free, costing no day, never read out to the
+  player. It prints one Tile's WHOLE file: the header with terrain,
+  climate and cover, the character phrase, the ground tags, the last
+  harvest with its cause, the mine and its metals, the goods, EVERY road
+  uncapped, the census in full — every slot by tier, with the name only
+  where the party has met the place (`a village (unmet)` otherwise), the
+  capital, charter and manor marks and a quiet board named — and the four
+  NEIGHBOURS in a line each: label, character phrase, chief settlement,
+  and the harvest word only where that neighbour's year is a problem. It
+  defaults to the Tile the party is standing on and takes any coordinate.
+  The land layer stays `world` and `lore`'s business; the brief is the
+  TILE's file only.
+- **The tile menu: what the ground under you charges** (2026-08-21). The
+  priced menu grows a STATIC second factor beside the land's dynamic
+  terms. Three rows, all derived and none stored: a grain-origin Tile
+  prices `lodging` at 0.90 (bread is cheap at the granary — the mirror of
+  grain-scarce's 1.50), a mine Tile prices `steel` at 0.90 (a pithead is
+  the cheapest steel in the world, and it stacks under a found seam), and
+  a CROSSROADS — two or more routes crossing — prices `goods` at 0.95 and
+  `lodging` at 1.10 (full shelves, full beds). The tile factor multiplies
+  into `worldsim.term` and the product is caught by the same
+  `MENU_FLOOR` / `MENU_CEILING` clamps, so the ground can make a bad month
+  cheaper but never free. `toll` and `ferry` are untouched: tolls walking
+  the route network belong to a later arc. The price sheet names both
+  hands separately, so a player can see which is the month and which is
+  the place.
 - **A settlement is cut from a template its Tile can honor** (2026-08-15,
   Europe MVP Closure). Each country authors a handful of settlement ROLES
   per tier -- a harbour town, a market town, a ford village -- and each
@@ -3282,7 +3349,10 @@ materialize lazily.
   at sea, every mine Tile carrying its own named town and metal, no mine
   anywhere else, all five legendary roads present with their authored
   endpoints and cargo and no other road named, the four trade tags saying
-  exactly what the routes did, and every port on a coast. An illegal
+  exactly what the routes did, and every port on a coast; and the read
+  surface's: every good carrying a character phrase, every Tile's phrase a
+  legal word, every land Tile's harvest landing on the spoken scale, and
+  every cause carrying its fiction name. An illegal
   world raises at creation rather than surfacing later inside a display.
 - **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
   in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
@@ -4683,10 +4753,13 @@ are `worldsim.md`'s.
   changeable — `harvest-failed`, `strike`, `toll-squeeze`. They ride the
   same machinery as a place's states, so the world and the map speak one
   vocabulary.
-- Some belong to an **exclusive slot** (the land's `deposit` stage, the
-  standing of its `foreigners`): setting one clears whatever the slot
-  held, and a card that would only re-assert a slot the land already
-  holds does not fire at all.
+- Some belong to an **exclusive slot** — currently one, the land's
+  `deposit` stage (the seams running as they always have, a new seam
+  found, the seams drying up): setting one clears whatever the slot held,
+  and a card that would only re-assert a slot the land already holds does
+  not fire at all. The other two exclusive things in the game, the wealth
+  band and the constitution, have their own setters and never go through
+  this table.
 - **What a card sets outlives it; what it sets *while* it stands comes
   off with it.** That holds for the wealth band too: a failed harvest is
   a season of crisis and then it is over, while a vein running out is
@@ -5300,6 +5373,51 @@ with them — and the casing prints whichever came up like any other face.
 - **`world`** carries the counter and the live mark categories for the DM.
 
 ---
+
+# The Miners' League — Add-on (2026-08-21, the tile economy arc's fourth build session)
+
+The world layer's extraction story, recovered and re-homed. It was written
+for a dwarf realm the human contraction deleted in 2026-08-15, and it came
+back because the trade session put nine famous mines on the map and every
+one of the three countries holds some. What was scrubbed was four words,
+not a design: the clans became the **Miners' League** and its chapter
+masters, the under-thane the League steward, the clan books the League's
+books, and the dwarf who found a way an old engineer. The claim-keeper, the
+company shop, the winding gear and the pit bosses stayed — they were period
+human mining language all along.
+
+- **The League is a brotherhood with chapters at every mine**, and its writ
+  is mining law: a free miner answers to his chapter master and not to the
+  lord whose field he digs under. Six of the nine mines are Firascir's
+  (Goslar, Kutna Hora, Banska Stiavnica, Melle, Luneburg, Wieliczka), two
+  Mortellaria's (Erzberg, Novo Brdo) and one Tergal's (Falun). Each land's
+  `lore` page names its own chapters; **THE KNOCKERS** — the mine-spirits
+  who knock before a collapse and are paid the last bite of every meal — is
+  the first fact in the game that belongs to every land at once, because
+  the belief follows the pits and not the crown.
+- **The `deposit` slot is back**, and it is the only exclusive slot the
+  card catalog declares. Its three stages: the seams run as they always
+  have, a new seam has been found, the seams are drying up. The last two
+  are the only states in the game that move `steel` in either direction on
+  their own — a found seam prices it at 0.85, a drying one at 1.20.
+- **Six cards, on the crisis track, in every land's deck.** The RUSH chain:
+  *A new seam is found* sets the slot and the argument over the claim
+  (`claims-collide`, so a second find cannot start while the first is
+  unsettled) and makes the land prosperous while it stands; *The rush and
+  the bust* admits on the found seam, puts the slot back, CLEARS the
+  argument, and charges rush prices while the town holds four times the
+  people it can feed. The BUST chain: *The vein runs out* puts the land in
+  crisis and the slot into drying, and only *The dead veins are reopened*
+  takes it back out. Standing alone: *The pits stand idle*, a crisis-only
+  strike that makes steel dear and takes a posting off the board; and *The
+  food caravan*, which cannot fire until somebody ELSE's harvest has
+  failed and the relation has carried the word here — the same road the
+  trade layer already drew from the nearest granary to a mine that cannot
+  feed itself.
+- **The cards fire at LAND level, like every card.** Their tile
+  address — this seam, that pithead — arrives with the snapshot arc, which
+  is when cards get geography at all.
+
 
 # The World Map — Add-on (2026-08-15, the authored resource)
 

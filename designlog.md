@@ -6026,3 +6026,154 @@ Part 1; until then they stay on session 4's contract footer. Session 4 (the
 hookup: the read surface and the Miners' League) is next and unblocked —
 its tile character line, its harvest words, its tile brief and its tile
 menu all read layers that are now on the ground.
+
+## 2026-08-21 (I) — Session 4 of the tile economy arc: the hookup, built (and Part 1 deleted)
+
+**What shipped.** plan.md's Session 4 whole, which is round 5 (the read
+surface, the integration minimum) plus round 4's Miners' League recovery.
+With it **the tile economy arc is finished and Part 1 is gone from
+plan.md** — the file now carries only the roadmap beyond both arcs.
+
+- **The read surface: one phrase and one word.** `tile_character` composes
+  a Tile's whole geography into ONE short phrase by fixed priority — the
+  mine by its first metal, then the good it is an origin of, then the land
+  itself off cover, terrain and climate — and `harvest_line` speaks last
+  year's harvest as its scale word plus its cause's fiction name. Both fold
+  into `tile_detail_lines`, so the Tile's public file is now complete:
+  header, character, ground tags, harvest, mine, goods, roads, Areas. The
+  arc's hidden-numbers-visible-words rule finally has the page it was
+  written for: the percent, the score and the yield are never printed.
+- **The DM's tile brief.** `places.tile_brief_lines` behind a new `tile
+  [COORD]` verb — the sibling of `lore`, one level down. One Tile's WHOLE
+  file, including the two things the player's page must not have: the
+  census in full (every slot by tier, `a village (unmet)` where nobody has
+  been) and the four neighbours in a line each, so the DM narrates toward
+  the next Tile knowing what is there. dm.md gained "The ground under the
+  party" and its quick reference gained the tier scale, the season
+  calendar and the climate words.
+- **The tile menu.** Three static rows — grain-origin lodging 0.90, mine
+  steel 0.90, crossroads goods 0.95 and lodging 1.10 — multiplying into
+  `worldsim.term` under worldsim's own clamps, read by `session.local_term`
+  and the `prices` sheet. Nothing stored, nothing rolled. This resolves
+  round 4's parked route-aware-prices item at exactly the size round 5 cut
+  it to; `toll` and `ferry` stay untouched.
+- **The Miners' League.** The pre-contraction extraction family recovered,
+  scrubbed of four dwarf words and re-keyed `mining/*` on ANY_LAND. The
+  `deposit` slot is back (the first entry in `STATE_SLOTS` since the
+  closure emptied it) with its three stages and its two steel prices; six
+  cards; THE KNOCKERS returns verbatim as the game's first land-agnostic
+  FACT, plus a League fact per land.
+- **econmap.py finished its turn.** Every mode now renders a BUILT world
+  (`places.create_geography`) — the tool's private `roll_harvest`,
+  `roll_census`, `roll_routes` and their coordinate plumbing are gone, so
+  its numbers are the game's rather than merely like them — and its
+  `--sweep` commands retired into **`bench_worldgen.py`**, the arc's
+  measured suite over real worldgen. A new `character` mode draws session
+  4's own read surface.
+
+**Measured over 500 worlds** (benchlog's 2026-08-21 (D) entry), landing on
+every pin the arc published: harvest problem coverage 17.7%, 5.1 regions of
+11.3 tiles, drought guaranteed in all 500, **trouble within five days of
+the start in 86%** — the round-1 design said seven in eight and this is the
+first time the shipped nudge has been measured at all, because econmap knew
+no start tile; census 3 / 17.7 / 100.6 / 401.7 / 91.6 by tier and 1.96
+slots a land tile; trade 58.7 routes, 113.7 land tiles on one, 27 ports, 26
+sea-lane tiles, Falun unfed in all 500. Worldgen is byte-identical to
+session 3's tree over a five-seed hash of every stamped word, and every
+reproducible bench is unmoved.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **The chain the recovery would have left open, closed.** The pre-cut
+   `new-seam` set `claims-collide` and guarded on it, and the card that
+   CLEARED it was a politics card belonging to the deleted country. Brought
+   back as written, the rush chain would have fired exactly once per world
+   forever. `gold-rush` now clears it — which is not a repair bolted on but
+   the 2026-08-12 chain rule applied exactly ("a link is a `set` state the
+   successor admits on and clears"): the bust settles the argument the find
+   started, and the chain closes so it can run again next year.
+2. **`roll_world` was advancing the wrong axis, and the League found it.**
+   It brought each land up to the target day IN TURN, so the second land's
+   day 5 draw read the first land's day 60 — a world caught up at an
+   arrival was not the world that had been watched. Six cards admit on a
+   DERIVED state and could see it; it had never surfaced because none of
+   them had ever fired on the differing side at a benched seed. Making
+   `mining/food-caravan` ANY_LAND put it in all three decks and the
+   catching-up test failed the same hour. It now steps the CALENDAR — one
+   day across all lands, then the next — which is what its docstring
+   already promised. This is a real pre-existing bug, not a fixture repin.
+3. **`TILE_CHARACTER` is the goods half and `LAND_CHARACTER` the land
+   half.** The contract named one table; the two halves have genuinely
+   different shapes (a lookup by good, an ordered rule list over four
+   fields), and forcing them into one structure would have made both
+   unreadable. They sit in one commented block and are documented as one
+   table.
+4. **Three land-character rows never fire on the shipped overlays.** Every
+   deep-forest Tile is already a fur or timber origin and every non-marsh
+   steppe Tile is horse country, so `deep forest` and `the open steppe`
+   never reach a page — and `plains` never does either, because the earlier
+   rules cover every plains Tile that lacks the farmland tag. They are kept:
+   they are LAW rows over the whole climate/terrain/cover vocabulary, not
+   fallbacks softening a state the code cannot produce, and an overlay
+   change could bring any of them back tomorrow. `econmap.py character`
+   prints which are unused so the fact stays visible, and plan.md carries
+   the note. The alternative — letting the wilderness words outrank the
+   produce — was rejected: "fur country" for the Lithuanian wildwood and
+   "horse country" for the steppe are the better fiction, and the DM has
+   the cover word in the brief either way.
+5. **The route cap is 4, and the named roads lead.** Session 3 left the
+   question on this desk (Paris carries fourteen lines). Four fits the
+   phone page beside everything else the block now prints, and when the cap
+   bites, a legendary road is what a player would want named — so
+   `route_lines` sorts named-first and tails with `+N more`, the
+   `map_legend_lines` pattern. The DM's brief is uncapped, because it is a
+   file rather than a page.
+6. **The character line is skipped where it would only repeat the header.**
+   A bare-terrain Tile falls through to its own terrain word, which the
+   HERE line has already said; printing it twice is noise. Sixteen mountain
+   Tiles and every sea Tile take the guard.
+7. **`fact()` may name ANY_LAND now.** THE KNOCKERS "returns verbatim" and
+   belongs to all three lands; the alternative was three copies of the same
+   paragraph. `FACTS_BY_LAND` admits it exactly the way `in_land` admits a
+   card, which is the frame the file already had.
+8. **The trade tags stayed OFF an Area's tag list.** Session 3 flagged
+   wiring them back on purpose (a mine job landing at a real mine) as a
+   one-line change for this session. Declined: the contract's own
+   non-changes list says quest and encounter geography is a later arc's,
+   and `mine` reaching `_fallback_place_requirement` would make the quest
+   generator a reader of the trade layer through a side door. It stays a
+   deliberate one-line change waiting for the arc that wants it.
+9. **econmap's harvest numbers moved, and that is the point.** The tool
+   used to roll a plain seeded rng with no start tile; it now draws the
+   real layer, nudge and derived seeds included. Its output before and
+   after is NOT comparable and was never meant to be — the deterministic
+   censuses (terrain, cover, tags) reproduce exactly, which is the half
+   that could be checked.
+
+10. **The session added one `validate_world` clause after all.** The
+   contract said "if any", and the layer stores nothing, so the honest
+   first answer was none. But `tile_character` raises a KeyError on a good
+   with no phrase, and it would raise INSIDE a map page mid-play, on
+   whichever Tile happened to carry it. `_validate_read_surface` moves that
+   to world creation: every Tile can say what it is and what it ate, in
+   words the tables actually hold. Three broken worlds pin it.
+
+**Two fixtures were re-pinned**, both because the world genuinely changed.
+`test_worldsim`'s quiet-land shop test stands the party at Paris, which is
+now a crossroads, so its 1.0 claim is made against `worldsim.term` and the
+card is asked to move the price; and its slot-discipline test asserted
+`SLOT_OF == {}` to document the empty-slot era, which the deposit slot ends.
+
+**One thing to feel at the table.** The Tile block is a fuller page than it
+was — on a busy Tile it is the header, the character phrase, the tags, the
+harvest, the mine, the goods, four roads and the Areas. That is the whole
+point of the arc and it should read as a place rather than a coordinate,
+but it is worth watching in play whether the character phrase earns its
+line on the 227 Tiles that are farmland, hill country or wine country. If
+it does not, the cheapest cut is to print it only where it says something
+the ground word does not.
+
+**Parked on the way**: the arc's two round-4 leftovers (a Hanse-shaped
+authored northern circuit, an Ardennes-shaped western wildwood mark) moved
+into plan.md's own section as Part 1 was deleted, joined by the three
+unused land-character rows. Nothing else was parked: the arc is closed.

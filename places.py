@@ -649,6 +649,75 @@ LEGENDARY = (               # authored endpoints and cargo; the line between
                                                 # the five meet there.
 
 
+# --------------------------------------------------------------------------- #
+# THE READ SURFACE (2026-08-21, the arc's session 4 -- round 5's design)
+# --------------------------------------------------------------------------- #
+# Everything above this line WRITES the tile. This is what SPEAKS it. The
+# arc's standing rule -- hidden numbers, visible words -- lands here: the
+# percent, the score and the yield stay worldgen intermediates, and what a
+# page prints is one phrase and one word.
+
+# THE CHARACTER LINE. One short phrase for what kind of country a Tile is,
+# composed by fixed priority: the mine first (by its first metal), then the
+# good the Tile is an origin of, then the land itself. ONE phrase, never a
+# list -- composing a fuller sentence out of the tile's facts is the DM's
+# job, not the code's.
+TILE_CHARACTER = {          # a mine's metal or an origin's good -> the phrase
+    "silver": "silver country", "copper": "copper country",
+    "iron": "iron country", "salt": "salt country",
+    "grain": "grain country", "wine": "wine country",
+    "wool": "wool country", "horses": "horse country",
+    "timber": "timber country", "furs": "fur country",
+    "wax": "wax country", "cloth": "cloth country",
+    "arms": "armourers' country", "dyes": "dye country",
+    "herring": "the herring coast", "amber": "the amber shore",
+    "silk": "the eastern gate",     # the two exotic DOORS are places, not
+    "spice": "the delta port",      # products: what the country is there is
+    "sugar": "the delta port",      # the gate itself
+}
+LAND_CHARACTER = (          # ...and the fall-through, in priority order:
+    ("cover", "deep forest", "deep forest"),        # (field, value, phrase)
+    ("terrain", "hills", "hill country"),
+    ("terrain", "marsh", "fenland"),
+    ("climate", "steppe", "the open steppe"),
+    ("climate", "tundra", "bare tundra"),
+    ("climate", "desert", "open desert"),
+    ("tag", "farmland", "rich farmland"),
+)                           # ...else the terrain's own plain word
+
+# THE HARVEST WORDS, discharging round 1's parked fiction names. The stored
+# percent is NEVER spoken -- not by the page and not by the DM. The scale is
+# rules.md's: 100 is a full excellent harvest.
+HARVEST_WORDS = ((110, "legendary"), (95, "excellent"), (75, "ordinary"),
+                 (55, "poor"), (35, "failed"), (0, "apocalyptic"))
+HARVEST_CAUSE_LINES = {"drought": "the drought",
+                       "rains": "the great rains",
+                       "frost": "the black frost"}
+NILE_CAUSE_LINES = {"rains": "the low Nile"}    # on the Nile the failure of
+                            # the flood is the failure of the rains upstream
+
+# HOW MANY ROUTES THE PLAYER'S PAGE PRINTS (2026-08-21, session 3's finding:
+# Paris carries fourteen). The named roads lead, the rest follow in route
+# order, and the overflow reads as `+N more` the way the map legend's does.
+# The DM's brief is uncapped -- it is a file, not a page.
+ROUTE_LINES = 4
+
+# THE TILE MENU (round 5's integration minimum). A STATIC factor beside the
+# land's dynamic terms: the tile's own economy on the shelf, derived from
+# what is already stored and never itself stored. Three rows only -- the
+# ones a party can feel by walking a day.
+TILE_MENU = {
+    # bread is cheap at the granary: the mirror of grain-scarce's 1.50
+    "grain": {"lodging": 0.90},
+    # a strike at the pithead is the cheapest steel in the world, and it
+    # STACKS under deposit-found, which is right
+    "mine": {"steel": 0.90},
+    # full shelves and full beds where the roads meet
+    "crossroads": {"goods": 0.95, "lodging": 1.10},
+}
+CROSSROADS_ROUTES = 2       # routes crossing a Tile before it is a crossroads
+
+
 # SPARSE ORDINARY BOARDS (2026-08-15, Local Quest Geography). A settlement
 # is not a job dispenser: at materialization a stable derived roll decides
 # whether this one normally posts ORDINARY generated work at all. A capital
@@ -1833,6 +1902,24 @@ def route_line(world: dict, route: dict) -> str:
     return f"{ends}: {cargo}"
 
 
+def route_lines(world: dict, tile: dict | str,
+                limit: int | None = None) -> list[str]:
+    """Every road across one Tile, as lines. `limit` caps the list with a
+    `+N more` tail the way the map legend's does (2026-08-21, session 4 --
+    Paris carries fourteen roads and a phone page carries four). The NAMED
+    roads lead when the list is capped: a legendary road is the one a
+    player would want named, and the ordinary ones keep route order behind
+    it. Uncapped, the order is the world's own."""
+    routes = tile_routes(world, tile)
+    if limit is None or len(routes) <= limit:
+        return [route_line(world, route) for route in routes]
+    named = [route for route in routes if route["name"]]
+    rest = [route for route in routes if not route["name"]]
+    shown = (named + rest)[:limit]
+    return ([route_line(world, route) for route in shown]
+            + [f"+{len(routes) - limit} more"])
+
+
 def _harvest_neighbors(world: dict, tid: str):
     for nid in world["tiles"][tid]["neighbors"]:
         if world["tiles"][nid]["biome"] != "sea":
@@ -2433,6 +2520,36 @@ def validate_world(world: dict) -> None:
         raise ValueError("a career does not open in a hamlet")
     _validate_trade(world)
     _validate_harvest(world)
+    _validate_read_surface(world)
+
+
+def _validate_read_surface(world: dict) -> None:
+    """THE READ SURFACE's one clause (2026-08-21, session 4). Every Tile
+    can say what it is and what it ate, in words the tables actually hold.
+
+    This exists because the failure it catches is a KeyError raised INSIDE
+    a display, mid-play, on whichever Tile happens to carry the good
+    somebody added to `GOODS` without a phrase. The strict-reader
+    discipline says an illegal world raises where it is made."""
+    legal = set(TILE_CHARACTER.values())
+    legal.update(phrase for _field, _value, phrase in LAND_CHARACTER)
+    legal.update(TERRAINS)
+    legal.add("open sea")
+    missing = [good for good in GOODS if good not in TILE_CHARACTER]
+    if missing:
+        raise ValueError(f"goods with no character phrase: {missing}")
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        phrase = tile_character(world, tile)
+        if phrase not in legal:
+            raise ValueError(f"{tid}: {phrase!r} is not a character phrase")
+        if tile["biome"] == "sea":
+            continue
+        if harvest_word(tile["harvest"]) is None:
+            raise ValueError(f"{tid}: a land Tile with no harvest word")
+        cause = tile["harvest_cause"]
+        if cause and cause not in HARVEST_CAUSE_LINES:
+            raise ValueError(f"{tid}: {cause!r} has no fiction name")
 
 
 def _validate_trade(world: dict) -> None:
@@ -2905,6 +3022,88 @@ def tile_ground(tile: dict) -> str:
     return "sea" if tile["biome"] == "sea" else tile["terrain"]
 
 
+def tile_character(world: dict, tile: dict | str) -> str:
+    """ONE short phrase for what kind of country this Tile is (2026-08-21,
+    session 4). The priority is fixed and the answer is one phrase: what a
+    traveller would call the country in three words, not an inventory of
+    everything true about it.
+
+    The mine leads, because a mine is what a place is known for wherever
+    there is one; then the good the Tile is an origin of, because a
+    vineyard is visible from the road; then the land itself off cover,
+    terrain and climate. The DM composes the sentence -- this hands over
+    the phrase.
+    """
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    if tile["biome"] == "sea":
+        return "open sea"
+    if tile["mine"]:
+        metal = MINES[(tile["row"], tile["column"])][1][0]
+        return TILE_CHARACTER[metal]
+    if tile["goods"]:
+        return TILE_CHARACTER[tile["goods"][0]]
+    for field, value, phrase in LAND_CHARACTER:
+        here = tile["tags"] if field == "tag" else [tile[field]]
+        if value in here:
+            return phrase
+    return tile["terrain"]
+
+
+def harvest_word(percent: int | None) -> str | None:
+    """The spoken scale word for a stored harvest percent. The percent
+    itself is never spoken -- not by a page and not by the DM."""
+    if percent is None:
+        return None
+    for floor, word in HARVEST_WORDS:
+        if percent >= floor:
+            return word
+    return HARVEST_WORDS[-1][1]
+
+
+def harvest_line(world: dict, tile: dict | str) -> str | None:
+    """`last harvest: failed -- the great rains`, or None at sea. The cause
+    reads through its fiction name, and on the Nile the failure of the
+    rains is the failure of the FLOOD, which is its own thing entirely."""
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    word = harvest_word(tile["harvest"])
+    if word is None:
+        return None
+    cause = tile["harvest_cause"]
+    if not cause:
+        return f"last harvest: {word}"
+    if tile["climate"] == "nile" and cause in NILE_CAUSE_LINES:
+        named = NILE_CAUSE_LINES[cause]
+    else:
+        named = HARVEST_CAUSE_LINES[cause]
+    return f"last harvest: {word} -- {named}"
+
+
+def tile_terms(world: dict, tile: dict | str) -> dict[str, float]:
+    """THE TILE MENU (2026-08-21, session 4): what standing on THIS ground
+    does to a priced term, beside what the land's world layer is doing.
+
+    Static and derived -- the granary, the pithead and the crossroads are
+    facts of the map, not events -- so nothing is stored and nothing is
+    rolled. `session.local_term` multiplies it into `worldsim.term` and the
+    same clamps catch the product."""
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    terms: dict[str, float] = {}
+    rows = []
+    if "grain" in tile["goods"]:
+        rows.append(TILE_MENU["grain"])
+    if tile["mine"]:
+        rows.append(TILE_MENU["mine"])
+    if len(tile_routes(world, tile)) >= CROSSROADS_ROUTES:
+        rows.append(TILE_MENU["crossroads"])
+    for row in rows:
+        for name, mult in row.items():
+            terms[name] = terms.get(name, 1.0) * mult
+    return terms
+
+
 def _detail_wrap(lines: list[str], width: int) -> list[str]:
     """The page's own hard wrap, the same rule session.py prints by:
     continuation lines hang two spaces past the original indent. The driver
@@ -2935,26 +3134,134 @@ def tile_detail_lines(world: dict, tile: dict | str,
     one line per route crossing it -- the endpoints by name and the cargo.
     All three are common knowledge, because a mine, a vineyard and a road
     are things you can see from the road.
+
+    THE CHARACTER AND THE HARVEST (2026-08-21, session 4) complete the
+    file: what kind of country this is, and how last year's harvest came
+    in. Both are common knowledge too -- everyone alive here knows what
+    they ate last winter -- and neither speaks a number.
     """
     if isinstance(tile, str):
         tile = world["tiles"][tile]
     ground = tile_ground(tile)
     lines = [f"HERE: {tile_label(tile)} -- "
              f"{world['lands'][tile['country']]['name']}, {ground}"]
+    character = tile_character(world, tile)
+    if tile["biome"] != "sea" and character != ground:
+        lines.append(f"  {character}")  # the bare terrain words fall through
+                                        # to themselves; the header said it
     extra = [tag for tag in tile["tags"]
              if tag not in (ground, tile["country"])]
     if extra:
         lines.append("  ground: " + ", ".join(extra))
+    harvest = harvest_line(world, tile)
+    if harvest:
+        lines.append(f"  {harvest}")
     if tile["mine"]:
         lines.append(f"  mine: {tile['mine']}")
     if tile["goods"]:
         lines.append("  goods: " + ", ".join(tile["goods"]))
-    lines.extend(f"  {route_line(world, route)}"
-                 for route in tile_routes(world, tile))
+    lines.extend(f"  {line}" for line in route_lines(world, tile,
+                                                    limit=ROUTE_LINES))
     known = [world["areas"][aid] for aid in tile["areas"]
              if world["areas"][aid].get("known")]
     if areas and known:
         lines.append("  areas: " + ", ".join(area["name"] for area in known))
+    return _detail_wrap(lines, width)
+
+
+def _slot_line(world: dict, slot: dict) -> str:
+    """One census slot as the DM's brief reads it. A slot the party has
+    never walked into has no NAME yet -- the name reserve is drawn at
+    materialization -- so it reads by its tier and says so, rather than
+    leaking a settlement nobody has met."""
+    area = world["areas"].get(slot["area"]) if slot["area"] else None
+    if area is None:
+        who = f"a {slot['tier']} (unmet)"
+    else:
+        who = f"{slot['tier']} {area['name']}"
+    marks = []
+    if slot["capital"]:
+        marks.append("CAPITAL")
+    if slot["charter"]:
+        marks.append(slot["charter"])
+    if slot["manor"]:
+        marks.append(slot["manor"])
+    if area is not None and not area.get("board_active"):
+        marks.append("board quiet")
+    return who + (f" -- {', '.join(marks)}" if marks else "")
+
+
+def _neighbour_line(world: dict, tile: dict) -> str:
+    """A neighbouring Tile in one line: what it is called, what kind of
+    country it is, who is the biggest thing on it, and its harvest ONLY
+    where the harvest is a problem -- the DM is narrating toward it, not
+    running a scene on it."""
+    parts = [tile_character(world, tile)]
+    if tile["settlement_slots"]:
+        chief = world["settlement_slots"][tile["settlement_slots"][0]]
+        area = world["areas"].get(chief["area"]) if chief["area"] else None
+        parts.append(f"{chief['tier']} {area['name']}" if area
+                     else f"a {chief['tier']} (unmet)")
+    if tile["harvest"] is not None and tile["harvest"] < HARVEST_PROBLEM:
+        parts.append(f"harvest {harvest_word(tile['harvest'])}")
+    return f"{tile_label(tile)} -- " + ", ".join(parts)
+
+
+def tile_brief_lines(world: dict, tile: dict | str,
+                     width: int = 40) -> list[str]:
+    """ONE TILE'S WHOLE FILE, for DM eyes (2026-08-21, session 4 -- the
+    round-4 sitting's designer directive). What `lore` is to a land, this
+    is to a Tile: everything the layers below stamped on it, in one page,
+    free and costing no day.
+
+    It is NARRATION MATERIAL, never a dump to the player (dm.md has the
+    protocol). Two things it carries that the player's own detail block
+    does not: the census in full -- every slot, including the ones nobody
+    has met, by tier and never by name -- and the four NEIGHBOURS in a line
+    each, so the DM narrates toward the next Tile knowing what is there.
+
+    The land layer stays `world` and `lore`'s business. This is the TILE's
+    file only.
+    """
+    if isinstance(tile, str):
+        tile = world["tiles"][tile]
+    land = world["lands"][tile["country"]]["name"]
+    lines = [f"TILE {tile_label(tile)} -- {land}"]
+    if tile["biome"] == "sea":
+        lines.append("  open sea")
+        return _detail_wrap(lines, width)
+    ground = [tile["terrain"], tile["climate"], tile["cover"]]
+    if tile["biome"] != "basic":        # `basic` is a map GLYPH, not ground
+        ground.append(tile["biome"])
+    lines.append("  " + " / ".join(ground))
+    lines.append(f"  {tile_character(world, tile)}")
+    extra = [tag for tag in tile["tags"]
+             if tag not in (tile["terrain"], tile["country"])]
+    if extra:
+        lines.append("  tags: " + ", ".join(extra))
+    harvest = harvest_line(world, tile)
+    if harvest:
+        lines.append(f"  {harvest}")
+    if tile["mine"]:
+        metals = ", ".join(MINES[(tile["row"], tile["column"])][1])
+        lines.append(f"  mine: {tile['mine']} ({metals})")
+    if tile["goods"]:
+        lines.append("  goods: " + ", ".join(tile["goods"]))
+    roads = route_lines(world, tile)        # uncapped: this is a file
+    if roads:
+        lines.append("  roads:")
+        lines.extend(f"    {line}" for line in roads)
+    slots = [world["settlement_slots"][sid] for sid in
+             tile["settlement_slots"]]
+    lines.append("  census: empty" if not slots else "  census:")
+    lines.extend(f"    {_slot_line(world, slot)}" for slot in slots)
+    lines.append("  neighbours:")
+    for direction in DIRECTIONS:
+        nid = neighbor_id(tile, direction)
+        if nid is None:
+            continue
+        lines.append(f"    {direction[0].upper()} "
+                     f"{_neighbour_line(world, world['tiles'][nid])}")
     return _detail_wrap(lines, width)
 
 

@@ -1,120 +1,95 @@
 """The tile economy arc's eyeball tool (2026-08-21, plan.md Part 1).
 
-Stdlib-only and close to standalone: it reads the authored resources
-directly and renders them as 30x18 ASCII with censuses underneath, so it
-can be run against a half-drawn overlay while the rules it will obey are
-still being designed.  What it no longer does is keep its own copy of a
-number the game already owns: as each session SHIPS, its constants move
-into places.py and the tool imports them back (the arc's one-authority-
-per-constant rule).  The climate and terrain vocabularies and the whole
-potential law went that way with session 1; the harvest roll, the
-population score, the census tables and the MINES went with session 2
-(both on 2026-08-21).  Only the TRADE constants below are still authored
-here, because session 3 has not shipped.
+Stdlib-only, and since session 4 it renders a **BUILT WORLD**: every mode
+below calls `places.create_geography(seed)` and draws what worldgen
+actually stamped on the Tiles.  It no longer keeps a constant, a law or a
+simulation of its own -- the arc's one-authority-per-constant rule, carried
+to its end.  What is left here is the RENDERING: 30x18 letter grids with
+censuses underneath, which is the one thing the game itself has no reason
+to do.
 
-    python econmap.py                  # the climate overlay + lint
+    python econmap.py                  # the climate overlay + the lint
     python econmap.py terrain          # the terrain overlay + land character
-    python econmap.py potential        # the derived numbers (round 3's input)
-    python econmap.py harvest [SEED]   # one rolled last-harvest layer
-    python econmap.py harvest --sweep  # the distribution over 500 seeds
-    python econmap.py population [SEED]   # one rolled settlement census
-    python econmap.py population --sweep  # the census over 500 seeds
+    python econmap.py potential        # the derived numbers under the words
+    python econmap.py harvest [SEED]   # one world's last harvest
+    python econmap.py population [SEED]   # one world's settlement census
     python econmap.py routes [SEED]    # the mines, goods and trade routes
-    python econmap.py routes --sweep   # route stability over 100 seeds
+    python econmap.py character [SEED] # what each Tile is CALLED
 
-Validation (the law demoted to a lint -- the map is authored, the rules
-only check it): every land tile carries exactly one climate letter, sea
-carries none, and `a` (alpine) sits exactly on the `^` tiles.  The terrain
-overlay lints the same way: every land tile painted, sea unpainted, and
-`m` (mountains) exactly on the `^` tiles.
+The `--sweep` commands are GONE (2026-08-21, session 4).  Measuring the
+layers over many worlds is a bench, not an eyeball, and it belongs to a
+suite whose numbers land in benchlog: **`python bench_worldgen.py`**.
 
-The TERRAIN mode is round 2's layer.  The authored half is relief and
-drainage only -- plains, hills, marsh, with mountains fixed by the base
-map; FOREST IS NOT AUTHORED (2026-08-21, round 2's reversal of its own
-plan wording): the wildwood cap comes from climate and the deforestation
-law decides what survives, so deep forest appears exactly where people
-are few.  The derived half is the two-pass deforestation proposal made
-law: arable potential from climate x terrain (+ the alluvial bonus),
-clearance a saturating function of potential wheat, realized arable and
-surviving forest falling out of it, and the pastoral index as the
-complement -- what habitable ground does where the plow does poorly.
-Everything here is DETERMINISTIC: authored overlays plus laws, no rng,
-identical in every campaign like the map itself.  Both layers SHIPPED into
-worldgen on 2026-08-21 (designlog's (F) entry): a Tile now carries its
-climate, its terrain, its cover word and the derived tags, and this mode
-draws the same law the game does.
+THE OVERLAY LINT still reads the two resource files directly, because it
+has to survive a half-drawn overlay -- a world cannot be built from one.
+Every land tile carries exactly one climate letter, sea carries none, and
+`a` (alpine) / `m` (mountains) sit exactly on the `^` tiles.  Everything
+after the lint is read off the world.
 
-The POPULATION mode is round 3's layer, in two halves.  The SCORE is
-deterministic law over rounds 1-2's outputs: food capacity (realized
-arable + weighted pasture + coastal and river fishing), a transport
-multiplier on rivers and coasts (a town exceeds its land's carrying
-capacity only with transport), and the penalties -- marsh disease,
-highland, the eastern frontier.  The CENSUS is a rolled arrangement per
-tile, seeded per world: the score picks a BAND, the band picks from a
-weighted table of settlement arrangements (hamlets, villages, towns,
-cities, the authored metropolises) with deliberately high variance -- a
-rich band can and does roll a village-only tile, which is what keeps the
-grid from reading as a grid.  The absolute numbers of the real or the
-downscaled world are ABANDONED BY DESIGN (2026-08-21, round 3): the tile
-is the unit, the census IS the population, and the tier words carry the
-scale (hamlet under a hundred souls, village hundreds, town thousands,
-city tens of thousands, metropolis a hundred thousand and more).
+What the modes show, in the order the arc built them:
 
-The ROUTES mode is round 4's layer.  Author the physical, derive the
-human: the MINES and the goods no law can derive are authored, few and
-famous; the land's produce (grain, wine, wool, horses, timber, furs) is
-derived from rounds 1-3's own outputs; the ROUTES are computed by the
-pathfinder between origins and markets -- except the named legendary
-roads, whose endpoints and cargo are authored and whose line the same
-pathfinder draws.  The EXOTICS are goods like any other (2026-08-21,
-round 4 -- the plan's keep-them-off-the-map remark reversed at the
-designer's direction): their origin tiles are simply the frame's doors,
-the eastern gate and the delta port, which is exactly what keeps the
-legendary roads worth taxing and robbing.  A mine seats an authored
-MINE TOWN in the census (slot 1, tier town, always free -- the mining
-law is its charter), and a mine town whose own ground cannot feed it
-gets a grain road: the food caravan, a route and a vulnerability in one
-stroke.
+  CLIMATE and TERRAIN are the two hand-painted overlays (rounds 1 and 2).
+  Relief and drainage are authored; FOREST IS NOT -- the wildwood cap comes
+  from climate and the deforestation law decides what survives, so deep
+  forest appears exactly where people are few.
 
-The HARVEST mode is the round's rolled layer: last year's harvest as a
-percentage per tile (100 = a full excellent harvest), generated as
-contiguous problem REGIONS over the painted climates -- centers seeded
-where the climate is failure-prone, each with a CAUSE (drought, the great
-rains, frost), grown outward by contagion into the ground that cause can
-hurt, severity deepest at the core.  One drought region is guaranteed in
-every world: no year is a good year everywhere.  The tool rolls a plain
-seeded rng and knows no start tile, so it draws the layer WITHOUT the
-shipped nearby-trouble nudge (`places.roll_harvest` has it); worldgen
-also rolls off derived seeds, so a tool seed is not a world seed.
+  POTENTIAL is the law over them: arable from climate x terrain (+ the
+  alluvial bonus), clearance a saturating function of potential wheat, and
+  realized arable and surviving forest falling out of it.  Deterministic --
+  identical in every campaign, like the map.
+
+  HARVEST is last year's, rolled per world: contiguous problem REGIONS
+  seeded where the climate fails, each with a cause (drought, the great
+  rains, frost), grown outward by contagion.  One drought is guaranteed,
+  and since it is the real layer being drawn, the nearby-trouble nudge is
+  in it: a region usually sits within five days of the start.
+
+  POPULATION is the deterministic score bucketed into six bands, and the
+  rolled census over it -- the arrangement tables, the authored historical
+  tiers, the mine towns, the charters and the manors.
+
+  ROUTES is the trade network: authored mines and colour, derived produce
+  by law, and the computed origin-to-market roads plus the five legendary
+  ones.
+
+  CHARACTER is session 4's read surface -- the one phrase a Tile is called
+  by, which is what the DM actually speaks.
+
+THE SCALE DOCTRINE (round 3, kept here because the designer will ask):
+  - A tile is SPOKEN OF as 30 km east-west by 60 km north-south (one travel
+    day east-west, two north-south; 1800 km2).
+  - The drawn map corresponds to real Europe at roughly 160 km per column
+    and 220 km per row (about 35,000 km2 per tile): the height is 1.4x the
+    width, NOT the 2x the travel costs suggest.  The map is a deliberately
+    squashed Europe; north-south travel is priced by the fictional 60 km.
+  - By AREA the game world is therefore about 20x smaller than the real
+    one.  Real, historical or downscaled densities are NEVER an input: the
+    tile is the unit and the census IS the population.
+  - Slots: at most 4 a tile, a 2x2 lattice 15 km apart east-west and 30 km
+    north-south.  A settlement every 15-30 km is medieval market-day
+    spacing; that is why four is the cap.
 """
 
 from __future__ import annotations
 
-import heapq
-import random
 import sys
-from collections import Counter, deque
+from collections import Counter
 from pathlib import Path
 
-import places                   # the shipped layers' one authority
+import places                   # the one authority for every layer below
 
 RESOURCES = Path(__file__).with_name("resources")
 BASE_PATH = RESOURCES / "europe_map.txt"
-CLIMATE_PATH = RESOURCES / "europe_climate.txt"
-TERRAIN_PATH = RESOURCES / "europe_terrain.txt"
 
-ROWS, COLUMNS = 18, 30
+ROWS, COLUMNS = places.MAP_ROWS, places.MAP_COLUMNS
 BASE_GLYPHS = {".", "#", "^", "~"}
-
-# ONE AUTHORITY PER CONSTANT (the arc's standing rule). The climate and
-# terrain vocabularies and every number of the potential law SHIPPED with
-# the ground session on 2026-08-21: they live in places.py now, and the
-# tool imports them back rather than keeping a second copy. What is still
-# authored HERE is what has not shipped yet -- the harvest roll, the
-# population score and census, and the trade layer.
 CLIMATES = places.CLIMATE_LETTERS
 TERRAINS = places.TERRAIN_LETTERS
 
+
+# --------------------------------------------------------------------------- #
+# The overlay lint (the only thing that reads a file rather than a world)
+# --------------------------------------------------------------------------- #
 
 def load_grid(path: Path, legal: set[str]) -> list[str]:
     rows = path.read_text(encoding="ascii").splitlines()
@@ -131,51 +106,45 @@ def load_grid(path: Path, legal: set[str]) -> list[str]:
     return rows
 
 
-def country_at(row: int, column: int) -> str:
-    # places.country_at, restated so the tool stays standalone. Nothing here
-    # is pinned -- the census below is an eyeball, not a contract.
-    if row >= 11:
-        return "mortellaria"
-    return "firascir" if column <= 21 else "tergal"
-
-
-def validate_climate(base: list[str], climate: list[str]) -> list[str]:
+def lint_overlay(base: list[str], overlay: list[str],
+                 high: str, what: str) -> list[str]:
+    """Every land tile painted, sea unpainted, and the high-ground letter
+    exactly on the `^` tiles. `validate_world` says the same thing about a
+    BUILT world; this says it about a half-drawn file, which is the case a
+    world cannot be made for."""
     problems = []
     for r in range(ROWS):
         for c in range(COLUMNS):
-            ground, label = base[r][c], climate[r][c]
+            ground, label = base[r][c], overlay[r][c]
             where = f"R{r + 1:02d}C{c + 1:02d}"
             if ground == "." and label != ".":
                 problems.append(f"{where}: sea tile carries {label!r}")
             elif ground != "." and label == ".":
                 problems.append(f"{where}: land tile ({ground}) unpainted")
-            elif ground == "^" and label != "a":
+            elif ground == "^" and label != high:
                 problems.append(f"{where}: mountain painted {label!r}, "
-                                f"expected 'a'")
-            elif ground != "^" and label == "a":
-                problems.append(f"{where}: alpine off the mountain "
+                                f"expected {high!r} ({what})")
+            elif ground != "^" and label == high:
+                problems.append(f"{where}: {what} off the mountain "
                                 f"({ground!r})")
     return problems
 
 
-def validate_terrain(base: list[str], terrain: list[str]) -> list[str]:
-    problems = []
-    for r in range(ROWS):
-        for c in range(COLUMNS):
-            ground, label = base[r][c], terrain[r][c]
-            where = f"R{r + 1:02d}C{c + 1:02d}"
-            if ground == "." and label != ".":
-                problems.append(f"{where}: sea tile carries {label!r}")
-            elif ground != "." and label == ".":
-                problems.append(f"{where}: land tile ({ground}) unpainted")
-            elif ground == "^" and label != "m":
-                problems.append(f"{where}: mountain painted {label!r}, "
-                                f"expected 'm'")
-            elif ground != "^" and label == "m":
-                problems.append(f"{where}: mountains off the mountain "
-                                f"({ground!r})")
-    return problems
+def run_lint() -> None:
+    base = load_grid(BASE_PATH, BASE_GLYPHS)
+    climate = load_grid(places.CLIMATE_PATH, set(CLIMATES) | {"."})
+    terrain = load_grid(places.TERRAIN_PATH, set(TERRAINS) | {"."})
+    problems = (lint_overlay(base, climate, "a", "alpine")
+                + lint_overlay(base, terrain, "m", "mountains"))
+    if problems:
+        for line in problems:
+            print(f"LINT: {line}")
+        sys.exit(f"{len(problems)} problem(s) -- fix the overlay")
 
+
+# --------------------------------------------------------------------------- #
+# Rendering a built world
+# --------------------------------------------------------------------------- #
 
 def render_side_by_side(left: list[str], right: list[str],
                         titles: tuple[str, str]) -> None:
@@ -189,894 +158,378 @@ def render_side_by_side(left: list[str], right: list[str],
         print(f"{number:2d}   {a}{gap}  {b}")
 
 
-def censuses(climate: list[str]) -> None:
-    total = Counter()
-    by_country: dict[str, Counter] = {}
+def tiles_of(world: dict) -> dict[tuple[int, int], dict]:
+    """The world's Tiles by 0-based (row, column), which is what a grid
+    row and column index into."""
+    return {(tile["row"] - 1, tile["column"] - 1): tile
+            for tile in world["tiles"].values()}
+
+
+def grid(world: dict, cell) -> list[str]:
+    """One 30x18 letter grid. `cell(tile)` returns a character, or the
+    empty string to leave the Tile as the sea's own dot."""
+    by_rc = tiles_of(world)
+    rows = []
     for r in range(ROWS):
+        line = ""
         for c in range(COLUMNS):
-            label = climate[r][c]
-            if label == ".":
-                continue
-            total[label] += 1
-            by_country.setdefault(country_at(r + 1, c + 1),
-                                  Counter())[label] += 1
-    print("\nCLIMATE CENSUS "
-          f"({sum(total.values())} land tiles)")
-    for letter in CLIMATES:
-        print(f"  {letter} {CLIMATES[letter]:<18} {total.get(letter, 0):3d}")
-    for country in ("firascir", "mortellaria", "tergal"):
+            line += cell(by_rc[(r, c)]) or "."
+        rows.append(line)
+    return rows
+
+
+def land_tiles(world: dict) -> list[dict]:
+    return [world["tiles"][tid] for tid in world["tile_order"]
+            if world["tiles"][tid]["biome"] != "sea"]
+
+
+def economy_of(tile: dict) -> dict:
+    """The Tile's derived numbers, recomputed from the words it stores --
+    exactly as `places.goods_origins` and `roll_census` recompute them.
+    They are worldgen intermediates and are deliberately never stored."""
+    return places.tile_economy(tile["climate"], tile["terrain"],
+                               tile["biome"] == "river",
+                               tile["row"], tile["column"])
+
+
+def letter_of(table: dict, word: str) -> str:
+    """A climate or terrain WORD as the overlay letter that painted it."""
+    for letter, value in table.items():
+        if value == word:
+            return letter
+    raise KeyError(word)
+
+
+def country_census(world: dict, label: str, of) -> None:
+    total: Counter = Counter()
+    by_country: dict[str, Counter] = {}
+    for tile in land_tiles(world):
+        value = of(tile)
+        total[value] += 1
+        by_country.setdefault(tile["country"], Counter())[value] += 1
+    print(f"\n{label} ({sum(total.values())} land tiles)")
+    for value, count in total.most_common():
+        print(f"  {value:<20} {count:3d}")
+    for country in places.COUNTRIES:
         counts = by_country.get(country, Counter())
-        parts = ", ".join(f"{letter}:{counts[letter]}"
-                          for letter in CLIMATES if counts.get(letter))
+        parts = ", ".join(f"{value}:{n}" for value, n in counts.most_common())
         print(f"  {country:<12} {parts}")
 
 
-# --------------------------------------------------------------------------- #
-# The land's potential (derived, deterministic -- SHIPPED 2026-08-21)
-# --------------------------------------------------------------------------- #
-# Author the physical, derive the human.  The law and every constant behind
-# it now live in places.py, where worldgen reads them; the names below are
-# the tool's window onto the same objects, so the eyeball map and the game
-# can never drift.  What the game itself stores and speaks are the words --
-# the cover word and the derived tags -- and those come from places too.
+# --- climate (the default mode) -------------------------------------------- #
 
-WOODED_MIN = places.WOODED_MIN
-FARMLAND_MIN = places.FARMLAND_MIN
-HAND_MARKS = places.HAND_MARKS
-tile_economy = places.tile_economy
+def render_climate(world: dict) -> None:
+    base = grid(world, lambda t: places.BIOME_LETTERS[t["biome"]])
+    climate = grid(world, lambda t: ("" if t["biome"] == "sea"
+                                     else letter_of(CLIMATES, t["climate"])))
+    render_side_by_side(base, climate, ("TERRAIN", "CLIMATE"))
+    print("\nclimate letters: " + ", ".join(
+        f"{letter} {word}" for letter, word in CLIMATES.items()))
+    country_census(world, "CLIMATE CENSUS", lambda t: t["climate"])
 
 
-def tile_tags(economy: dict, terrain: str, letter: str,
-              row: int, column: int) -> list[str]:
-    """The tag list worldgen stamps on a land Tile, minus the country and
-    the positional words the tool has no world to ask for."""
-    return [terrain] + places.derived_tags(economy, CLIMATES[letter],
-                                           row, column)
+# --- terrain and the land's character -------------------------------------- #
+
+CHARACTER_GLYPHS = "M mountains, w marsh, F deep forest, f wooded, " \
+                   "G farmland, P pasture, - waste"
 
 
-def character_glyph(economy: dict, terrain: str, tags: list[str]) -> str:
+def character_glyph(tile: dict) -> str:
     """One letter of land character for the eyeball map."""
-    if terrain == "mountains":
+    if tile["terrain"] == "mountains":
         return "M"
-    if terrain == "marsh":
+    if tile["terrain"] == "marsh":
         return "w"
-    if economy["cover"] == "deep forest":
+    if tile["cover"] == "deep forest":
         return "F"
-    if "farmland" in tags:
+    if "farmland" in tile["tags"]:
         return "G"
-    if "pasture" in tags:
+    if "pasture" in tile["tags"]:
         return "P"
-    if economy["cover"] == "wooded":
+    if tile["cover"] == "wooded":
         return "f"
     return "-"
 
 
-def economy_grids(base: list[str], climate: list[str],
-                  terrain: list[str]):
-    """Per-tile economy dicts, tags and character glyphs for the whole map."""
-    economies, tags, character = {}, {}, []
-    for r in range(ROWS):
-        line = ""
-        for c in range(COLUMNS):
-            if climate[r][c] == ".":
-                line += "."
-                continue
-            word = TERRAINS[terrain[r][c]]
-            economy = tile_economy(CLIMATES[climate[r][c]], word,
-                                   base[r][c] == "~", r + 1, c + 1)
-            economies[(r, c)] = economy
-            tags[(r, c)] = tile_tags(economy, word, climate[r][c],
-                                     r + 1, c + 1)
-            line += character_glyph(economy, word, tags[(r, c)])
-        character.append(line)
-    return economies, tags, character
-
-
-def render_terrain(base: list[str], climate: list[str],
-                   terrain: list[str]) -> None:
-    economies, tags, character = economy_grids(base, climate, terrain)
+def render_terrain(world: dict) -> None:
+    terrain = grid(world, lambda t: ("" if t["biome"] == "sea"
+                                     else letter_of(TERRAINS, t["terrain"])))
+    character = grid(world, lambda t: ("" if t["biome"] == "sea"
+                                       else character_glyph(t)))
     render_side_by_side(terrain, character, ("TERRAIN", "CHARACTER"))
-    print("\ncharacter: M mountains, w marsh, F deep forest, f wooded, "
-          "G grain country, P pasture, - waste")
-    total = Counter()
-    for r in range(ROWS):
-        for c in range(COLUMNS):
-            if terrain[r][c] != ".":
-                total[TERRAINS[terrain[r][c]]] += 1
-    land = sum(total.values())
+    print("\ncharacter: " + CHARACTER_GLYPHS)
+    counts = Counter(tile["terrain"] for tile in land_tiles(world))
+    land = sum(counts.values())
     print(f"\nTERRAIN CENSUS ({land} land tiles)")
     for word in ("plains", "hills", "marsh", "mountains"):
-        print(f"  {word:<10} {total[word]:3d}")
-    open_land = land - total["mountains"] - total["marsh"]
-    print(f"  hills are {100 * total['hills'] / open_land:.0f}% of the "
+        print(f"  {word:<10} {counts[word]:3d}")
+    open_land = land - counts["mountains"] - counts["marsh"]
+    print(f"  hills are {100 * counts['hills'] / open_land:.0f}% of the "
           f"open (non-mountain, non-marsh) land")
-    tag_census = Counter(tag for value in tags.values() for tag in value)
-    print("\nDERIVED TAGS " + ", ".join(
-        f"{tag}:{n}" for tag, n in tag_census.most_common()))
-    covers = Counter(economy["cover"] for economy in economies.values())
+    tags = Counter(tag for tile in land_tiles(world) for tag in tile["tags"]
+                   if tag in ("forest", "farmland", "pasture")
+                   or tag in places.CHARACTER_TAGS)
+    print("\nDERIVED TAGS " + ", ".join(f"{tag}:{n}"
+                                        for tag, n in tags.most_common()))
+    covers = Counter(tile["cover"] for tile in land_tiles(world))
     print("COVER " + ", ".join(f"{word}:{n}"
                                for word, n in covers.most_common()))
 
 
-def render_potential(base: list[str], climate: list[str],
-                     terrain: list[str]) -> None:
-    economies, _tags, _character = economy_grids(base, climate, terrain)
-    wheat, forest = [], []
-    for r in range(ROWS):
-        wheat_line, forest_line = "", ""
-        for c in range(COLUMNS):
-            if (r, c) not in economies:
-                wheat_line += "."
-                forest_line += "."
-            else:
-                economy = economies[(r, c)]
-                wheat_line += str(min(9, int(economy["realized"] * 10)))
-                forest_line += str(min(9, int(economy["forest"] * 10)))
-        wheat.append(wheat_line)
-        forest.append(forest_line)
-    render_side_by_side(wheat, forest,
+def render_potential(world: dict) -> None:
+    def tenths(key):
+        return lambda t: ("" if t["biome"] == "sea"
+                          else str(min(9, int(economy_of(t)[key] * 10))))
+    render_side_by_side(grid(world, tenths("realized")),
+                        grid(world, tenths("forest")),
                         ("REALIZED ARABLE (tenths)", "FOREST (tenths)"))
-    values = [economy["realized"] for economy in economies.values()]
+    values = [economy_of(tile)["realized"] for tile in land_tiles(world)]
     print(f"\nrealized arable: mean {sum(values) / len(values):.2f}, "
-          f"max {max(values):.2f}; "
-          f"tiles at 0.30+: {sum(1 for v in values if v >= 0.30)}")
+          f"max {max(values):.2f}; tiles at {places.FARMLAND_MIN:.2f}+: "
+          f"{sum(1 for v in values if v >= places.FARMLAND_MIN)}")
 
 
-# --------------------------------------------------------------------------- #
-# The last-harvest layer (rolled, not authored)
-# --------------------------------------------------------------------------- #
-# The scale: 100 = a full excellent harvest. 110-120 legendary, 95-109
-# excellent, 75-94 ordinary, 55-74 poor, 35-54 failed, below 35 apocalyptic.
-# A tile is a PROBLEM tile below 75.
+# --- the last harvest ------------------------------------------------------ #
 
-# SHIPPED 2026-08-21 (session 2): every number below lives in places.py
-# now and is imported back, per the arc's one-authority-per-constant rule.
-# The tool renders letter grids, so the climate-keyed tables are re-keyed
-# from the game's words through `CLIMATES` -- a window, never a copy.
-def _by_letter(table: dict) -> dict:
-    return {letter: table[word] for letter, word in CLIMATES.items()}
-
-
-def _letters(words) -> str:
-    """A tuple of climate WORDS as the letter string the tool's grids test
-    membership against -- the same window, in the other direction."""
-    return "".join(letter for letter, word in CLIMATES.items()
-                   if word in words)
-
-
-REGION_COUNT = places.HARVEST_REGIONS
-CENTER_SEPARATION = places.HARVEST_SEPARATION
-CENTER_WEIGHT = _by_letter(places.CENTER_WEIGHT)
-CAUSES = _by_letter(places.HARVEST_CAUSES)
-SUSCEPTIBILITY = {cause: _by_letter(table)
-                  for cause, table in places.SUSCEPTIBILITY.items()}
-SPREAD = places.HARVEST_SPREAD
-SEVERITY_CENTER = places.SEVERITY_CENTER
-SEVERITY_RING = places.SEVERITY_RING
-SEVERITY_JITTER = places.SEVERITY_JITTER
-SEVERITY_CLAMP = places.SEVERITY_CLAMP
-GOOD_MEAN, GOOD_SIGMA = places.GOOD_MEAN, places.GOOD_SIGMA
-GOOD_CLAMP = places.GOOD_CLAMP
-LEGENDARY_CHANCE = places.LEGENDARY_CHANCE
 CAUSE_MARKS = {"drought": "D", "rains": "R", "frost": "F"}
 
 
-def land_tiles(climate: list[str]) -> list[tuple[int, int]]:
-    return [(r, c) for r in range(ROWS) for c in range(COLUMNS)
-            if climate[r][c] != "."]
-
-
-def _neighbors(climate: list[str], r: int, c: int):
-    for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        rr, cc = r + dr, c + dc
-        if 0 <= rr < ROWS and 0 <= cc < COLUMNS and climate[rr][cc] != ".":
-            yield rr, cc
-
-
-def roll_harvest(climate: list[str], seed: int):
-    """One world's last harvest: {tile: percent}, {tile: cause}, regions."""
-    rng = random.Random(seed)
-    land = land_tiles(climate)
-    n_regions = rng.randint(*REGION_COUNT)
-    weights = [CENTER_WEIGHT[climate[r][c]] for r, c in land]
-    centers: list[tuple[int, int]] = []
-    while len(centers) < n_regions:
-        pick = rng.choices(land, weights=weights)[0]
-        if all(abs(pick[0] - r) + abs(pick[1] - c) > CENTER_SEPARATION
-               for r, c in centers):
-            centers.append(pick)
-    regions = []
-    for r, c in centers:
-        pool = CAUSES[climate[r][c]]
-        cause = rng.choices([p[0] for p in pool], [p[1] for p in pool])[0]
-        regions.append({"center": (r, c), "cause": cause})
-    if not any(g["cause"] == "drought" for g in regions):
-        # No year is a good year everywhere: the most drought-apt center
-        # re-causes, so every world has its year of dust somewhere.
-        best = max(regions, key=lambda g: SUSCEPTIBILITY["drought"][
-            climate[g["center"][0]][g["center"][1]]])
-        best["cause"] = "drought"
-    harvest: dict[tuple[int, int], int] = {}
-    cause_at: dict[tuple[int, int], str] = {}
-    for region in regions:
-        members = {region["center"]: 0}
-        frontier = deque([(region["center"], 0)])
-        while frontier:
-            (r, c), ring = frontier.popleft()
-            if ring >= max(SPREAD):
-                continue
-            for rr, cc in _neighbors(climate, r, c):
-                if (rr, cc) in members:
-                    continue
-                chance = (SPREAD[ring + 1]
-                          * SUSCEPTIBILITY[region["cause"]][climate[rr][cc]])
-                if rng.random() < chance:
-                    members[(rr, cc)] = ring + 1
-                    frontier.append(((rr, cc), ring + 1))
-        region["members"] = members
-        core = rng.randint(*SEVERITY_CENTER)
-        for (r, c), ring in members.items():
-            sev = core + SEVERITY_RING * ring + rng.randint(
-                -SEVERITY_JITTER, SEVERITY_JITTER)
-            sev = min(SEVERITY_CLAMP[1], max(SEVERITY_CLAMP[0], sev))
-            if (r, c) not in harvest or sev < harvest[(r, c)]:
-                harvest[(r, c)] = sev
-                cause_at[(r, c)] = region["cause"]
-    for r, c in land:
-        if (r, c) not in harvest:
-            draw = rng.gauss(GOOD_MEAN, GOOD_SIGMA)
-            if rng.random() < LEGENDARY_CHANCE:
-                draw = rng.uniform(110, 120)
-            harvest[(r, c)] = int(min(GOOD_CLAMP[1],
-                                      max(GOOD_CLAMP[0], draw)))
-    return harvest, cause_at, regions
-
-
-def render_harvest(climate: list[str], seed: int) -> None:
-    harvest, cause_at, regions = roll_harvest(climate, seed)
+def render_harvest(world: dict, seed: int) -> None:
+    regions = world["harvest_regions"]
     print(f"LAST HARVEST, seed {seed}: " + "; ".join(
-        f"{g['cause']} at R{g['center'][0] + 1:02d}"
-        f"C{g['center'][1] + 1:02d} ({len(g['members'])} tiles)"
-        for g in regions))
-    causes, tens = [], []
-    for r in range(ROWS):
-        cause_line, tens_line = "", ""
-        for c in range(COLUMNS):
-            if climate[r][c] == ".":
-                cause_line += "."
-                tens_line += "."
-            elif (r, c) in cause_at:
-                cause_line += CAUSE_MARKS[cause_at[(r, c)]]
-                tens_line += str(min(9, harvest[(r, c)] // 10))
-            else:
-                cause_line += "-"
-                tens_line += str(min(9, harvest[(r, c)] // 10))
-        causes.append(cause_line)
-        tens.append(tens_line)
+        f"{region['cause']} at "
+        f"{places.tile_coordinate(*places.tile_row_column(region['center']))}"
+        f" ({len(region['tiles'])} tiles)" for region in regions))
+    causes = grid(world, lambda t: (
+        "" if t["biome"] == "sea"
+        else CAUSE_MARKS[t["harvest_cause"]] if t["harvest_cause"] else "-"))
+    tens = grid(world, lambda t: ("" if t["biome"] == "sea"
+                                  else str(min(9, t["harvest"] // 10))))
     render_side_by_side(causes, tens, ("CAUSE", "HARVEST (tens of %)"))
-    bad = [v for v in harvest.values() if v < 75]
-    print(f"\nproblem tiles: {len(bad)}/{len(harvest)} "
-          f"= {100 * len(bad) / len(harvest):.0f}% of the land, "
+    start = world["party_tile"]
+    print(f"\nthe campaign opens at {places.tile_label(world['tiles'][start])}"
+          f"; nearest region center "
+          f"{min(places.path_days(start, region['center']) for region in regions)}"
+          f" days off")
+    land = land_tiles(world)
+    bad = [tile["harvest"] for tile in land
+           if tile["harvest"] < places.HARVEST_PROBLEM]
+    print(f"problem tiles: {len(bad)}/{len(land)} "
+          f"= {100 * len(bad) / len(land):.0f}% of the land, "
           f"mean severity {sum(bad) / len(bad):.0f}%")
+    words = Counter(places.harvest_word(tile["harvest"]) for tile in land)
+    print("SPOKEN WORDS " + ", ".join(
+        f"{word}:{words.get(word, 0)}" for _floor, word
+        in places.HARVEST_WORDS))
 
 
-def sweep_harvest(climate: list[str], seeds: int = 500) -> None:
-    coverage, sizes, causes = [], [], Counter()
-    for seed in range(seeds):
-        harvest, cause_at, regions = roll_harvest(climate, seed)
-        coverage.append(len(cause_at) / len(harvest))
-        sizes += [len(g["members"]) for g in regions]
-        causes.update(g["cause"] for g in regions)
-    print(f"{seeds} seeds: problem coverage mean "
-          f"{100 * sum(coverage) / len(coverage):.1f}% "
-          f"(min {100 * min(coverage):.0f}%, max {100 * max(coverage):.0f}%)")
-    print(f"region size mean {sum(sizes) / len(sizes):.1f} tiles "
-          f"(max {max(sizes)}); causes: "
-          + ", ".join(f"{c}: {n}" for c, n in causes.most_common()))
+# --- the census ------------------------------------------------------------ #
 
-
-# --------------------------------------------------------------------------- #
-# The population layer (round 3: a deterministic score, a rolled census)
-# --------------------------------------------------------------------------- #
-# THE SCALE DOCTRINE (2026-08-21, round 3 -- the designer will ask):
-#   - A tile is SPOKEN OF as 30 km east-west by 60 km north-south (one
-#     travel day east-west, two north-south; 1800 km2).
-#   - The drawn map corresponds to real Europe at roughly 160 km per
-#     column and 220 km per row (about 35,000 km2 per tile): the height
-#     is 1.4x the width, NOT the 2x the travel costs suggest.  The map is
-#     a deliberately squashed Europe; north-south travel is priced by the
-#     fictional 60 km, not the real 220.
-#   - By AREA the game world is therefore about 20x smaller than the real
-#     one (5.3x east-west, 3.7x north-south linear).
-#   - Consequence: real, historical or downscaled densities are NEVER an
-#     input.  The tile is the unit; the census below IS the population.
-#   - Slots: at most 4 per tile, thought of as a 2x2 lattice -- 15 km
-#     apart east-west, 30 km north-south (twice as dense horizontally,
-#     mirroring the travel anisotropy).  A settlement every 15-30 km is
-#     the medieval market-day spacing; that is why four is the cap.
-
-# SHIPPED 2026-08-21 (session 2): the score law, the bands, the census
-# tables, the authored answer key, the mines and the two feudal words all
-# live in places.py now. What stays here is the RENDERING and the letter
-# grids it draws on.
-PASTORAL_PEOPLE = places.PASTORAL_PEOPLE
-FISH_COAST = places.FISH_COAST
-FISH_RIVER = places.FISH_RIVER
-TRANSPORT_FACTOR = places.TRANSPORT_FACTOR
-MARSH_MALUS = places.MARSH_MALUS
-HIGHLAND_MALUS = places.HIGHLAND_MALUS
-EAST_MALUS_START = places.EAST_MALUS_START
-EAST_MALUS_STEP = places.EAST_MALUS_STEP
-EAST_MALUS_FLOOR = places.EAST_MALUS_FLOOR
-EAST_MALUS_LAST_ROW = places.EAST_MALUS_LAST_ROW
-HAND_DENSE = places.HAND_DENSE
-BANDS = places.BANDS
 BAND_MARKS = {"wilderness": "-", "thin": "t", "low": "l", "mid": "m",
               "high": "h", "dense": "D"}
-ARRANGEMENTS = places.ARRANGEMENTS
-HISTORICAL_TIERS = {name: places.TIER_LETTERS_BY_TIER[tier]
-                    for name, tier in places.HISTORICAL_TIERS.items()}
-HISTORICAL_TILES = {(row, column): name for row, column, name, *_rest
-                    in places.HISTORICAL_CITIES}
+CHIEF_MARKS = {"metropolis": "M", "city": "C", "town": "T",
+               "village": "v", "hamlet": "h"}
 TIER_PEOPLE = {             # fiction anchors for the eyeball totals only --
-    "H": 60, "V": 300,      # the game stores tier WORDS, never heads
-    "T": 3000, "C": 25000, "M": 150000,
+    "hamlet": 60, "village": 300, "town": 3000,     # the game stores tier
+    "city": 25000, "metropolis": 150000,            # WORDS, never heads
 }
-TIER_ORDER = places.TIER_ORDER
-CHARTER_CHANCE = places.CHARTER_CHANCE
-MANOR_CHANCE = places.MANOR_CHANCE
 
 
-def _is_coast(base: list[str], r: int, c: int) -> bool:
-    for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        rr, cc = r + dr, c + dc
-        if 0 <= rr < ROWS and 0 <= cc < COLUMNS and base[rr][cc] == ".":
-            return True
-    return False
+def tiers_of(world: dict, tile: dict) -> list[str]:
+    return [world["settlement_slots"][sid]["tier"]
+            for sid in tile["settlement_slots"]]
 
 
-def tile_score(economy: dict, letter: str, terrain_word: str,
-               coast: bool, river: bool, row: int, column: int) -> float:
-    """A window onto `places.tile_score` -- the game's own law."""
-    return places.tile_score(economy, terrain_word, coast, river,
-                             row, column)
-
-
-def score_band(score: float, row: int, column: int) -> str:
-    return places.score_band(score, row, column)
-
-
-def _draw(rng: random.Random, table) -> str:
-    return rng.choices([row[0] for row in table],
-                       [row[1] for row in table])[0]
-
-
-def roll_census(base: list[str], climate: list[str], terrain: list[str],
-                seed: int):
-    """One world's settlement census: {tile: {band, tiers, flags}}."""
-    rng = random.Random(seed)
-    economies, _tags, _character = economy_grids(base, climate, terrain)
-    census = {}
-    for r in range(ROWS):
-        for c in range(COLUMNS):
-            if (r, c) not in economies:
-                continue
-            letter = climate[r][c]
-            word = TERRAINS[terrain[r][c]]
-            river = base[r][c] == "~" or letter == "n"
-            coast = _is_coast(base, r, c)
-            score = tile_score(economies[(r, c)], letter, word, coast,
-                               river, r + 1, c + 1)
-            band = score_band(score, r + 1, c + 1)
-            name = HISTORICAL_TILES.get((r + 1, c + 1))
-            mine = MINES.get((r + 1, c + 1))
-            if name:
-                tiers = (HISTORICAL_TIERS[name]
-                         + _draw(rng, ARRANGEMENTS[band])[:3])
-            elif mine:                  # the mine town: authored tier town
-                tiers = "T" + _draw(rng, ARRANGEMENTS[band])[:3]
-            else:
-                tiers = _draw(rng, ARRANGEMENTS[band])
-            tiers = "".join(sorted(tiers, key=TIER_ORDER.index))
-            free = []
-            for tier in tiers:
-                if tier in "MC":
-                    free.append(True)
-                elif tier == "T":
-                    free.append(rng.random() < CHARTER_CHANCE)
-                else:
-                    free.append(False)
-            if name or mine:            # the famous names hold their own
-                free[0] = True          # charters, always -- a mine town's
-                                        # mining law IS its charter
-            manor = (len(tiers) >= 2 and tiers[0] == "V"
-                     and rng.random() < MANOR_CHANCE)
-            census[(r, c)] = {"band": band, "score": score,
-                              "tiers": tiers, "free": free, "manor": manor,
-                              "historical": name,
-                              "mine": mine[0] if mine else None}
-    return census
-
-
-def render_population(base: list[str], climate: list[str],
-                      terrain: list[str], seed: int) -> None:
-    census = roll_census(base, climate, terrain, seed)
-    bands, chiefs = [], []
-    for r in range(ROWS):
-        band_line, chief_line = "", ""
-        for c in range(COLUMNS):
-            if (r, c) not in census:
-                band_line += "."
-                chief_line += "."
-            else:
-                tile = census[(r, c)]
-                band_line += BAND_MARKS[tile["band"]]
-                if not tile["tiers"]:
-                    chief_line += "0"
-                else:
-                    chief = tile["tiers"][0]
-                    chief_line += {"H": "h", "V": "v", "T": "T",
-                                   "C": "C", "M": "M"}[chief]
-        bands.append(band_line)
-        chiefs.append(chief_line)
+def render_population(world: dict, seed: int) -> None:
+    bands = grid(world, lambda t: ("" if t["biome"] == "sea" else
+                                   BAND_MARKS[places.population_band(world, t)]))
+    chiefs = grid(world, lambda t: (
+        "" if t["biome"] == "sea"
+        else CHIEF_MARKS[tiers_of(world, t)[0]] if t["settlement_slots"]
+        else "0"))
     render_side_by_side(bands, chiefs, ("BAND", "CHIEF SETTLEMENT"))
     print("\nband: - wilderness, t thin, l low, m mid, h high, D dense;"
           "\nchief: M metropolis, C city, T town, v village, h hamlet, "
           "0 empty")
-    band_census = Counter(tile["band"] for tile in census.values())
-    print("\nBAND CENSUS " + ", ".join(
+    land = land_tiles(world)
+    band_census = Counter(places.population_band(world, tile)
+                          for tile in land)
+    print(f"\nBAND CENSUS, seed {seed} " + ", ".join(
         f"{band}:{band_census.get(band, 0)}"
-        for _ceiling, band in BANDS))
-    tier_census = Counter(tier for tile in census.values()
-                          for tier in tile["tiers"])
-    slots = Counter(len(tile["tiers"]) for tile in census.values())
-    print("SETTLEMENTS " + ", ".join(
-        f"{tier}:{tier_census.get(tier, 0)}" for tier in TIER_ORDER)
-        + f"  (total {sum(tier_census.values())})")
-    print("SLOTS FILLED " + ", ".join(
-        f"{n}:{slots.get(n, 0)}" for n in range(5)))
-    by_country = Counter()
-    for (r, c), tile in census.items():
-        by_country[country_at(r + 1, c + 1)] += sum(
-            TIER_PEOPLE[tier] for tier in tile["tiers"])
-    print("SOULS " + ", ".join(
-        f"{country}: {by_country[country]:,}"
-        for country in ("firascir", "mortellaria", "tergal"))
-        + f"  (world {sum(by_country.values()):,})")
-    high = [tile for tile in census.values()
-            if tile["band"] in ("high", "dense") and not tile["historical"]]
-    quiet = sum(1 for tile in high if "T" not in tile["tiers"]
-                and "C" not in tile["tiers"])
-    print(f"QUIET RICH COUNTRY {quiet}/{len(high)} high+dense tiles "
+        for _ceiling, band in places.BANDS))
+    tiers = Counter(slot["tier"] for slot in world["settlement_slots"].values())
+    print("SETTLEMENTS " + ", ".join(f"{tier}:{tiers.get(tier, 0)}"
+                                     for tier in places.TIERS)
+          + f"  (total {sum(tiers.values())})")
+    filled = Counter(len(tile["settlement_slots"]) for tile in land)
+    print("SLOTS FILLED " + ", ".join(f"{n}:{filled.get(n, 0)}"
+                                      for n in range(places.SLOT_CAP + 1)))
+    souls: Counter = Counter()
+    for tile in land:
+        souls[tile["country"]] += sum(TIER_PEOPLE[tier]
+                                      for tier in tiers_of(world, tile))
+    print("SOULS " + ", ".join(f"{country}: {souls[country]:,}"
+                               for country in places.COUNTRIES)
+          + f"  (world {sum(souls.values()):,})")
+    rich = [tile for tile in land
+            if places.population_band(world, tile) in ("high", "dense")
+            and (tile["row"], tile["column"]) not in places.HISTORICAL_BY_TILE]
+    quiet = sum(1 for tile in rich
+                if not set(tiers_of(world, tile)) & {"town", *places.CITY_GRADE})
+    print(f"QUIET RICH COUNTRY {quiet}/{len(rich)} high+dense tiles "
           f"rolled no town at all")
-    frees = sum(1 for tile in census.values() for flag in tile["free"]
-                if flag)
-    manors = sum(1 for tile in census.values() if tile["manor"])
-    print(f"CHARTERS {frees} free settlements; MANORS {manors} "
+    slots = world["settlement_slots"].values()
+    print(f"CHARTERS {sum(1 for s in slots if s['charter'])} free "
+          f"settlements; MANORS {sum(1 for s in slots if s['manor'])} "
           f"village tiles with a resident lord")
     print("\nRETRODICTION (authored tile: its band by law)")
-    for (row, column), name in sorted(HISTORICAL_TILES.items(),
-                                      key=lambda kv: kv[1]):
-        tile = census[(row - 1, column - 1)]
-        print(f"  {name:<15} {HISTORICAL_TIERS[name]} at "
-              f"R{row:02d}C{column:02d}: {tile['band']:<10} "
-              f"(score {tile['score']:.2f}) rolled {tile['tiers']}")
-    print("\nMINE TOWNS (authored town in slot 1; round 4)")
-    for (row, column), (name, goods) in sorted(MINES.items(),
+    for (row, column), (name, *_rest) in sorted(
+            places.HISTORICAL_BY_TILE.items(), key=lambda kv: kv[1][0]):
+        tile = world["tiles"][places.tile_id(row, column)]
+        print(f"  {name:<15} {places.HISTORICAL_TIERS[name]:<11} at "
+              f"R{row:02d}C{column:02d}: "
+              f"{places.population_band(world, tile):<10} rolled "
+              f"{''.join(places.TIER_LETTERS_BY_TIER[t] for t in tiers_of(world, tile))}")
+    print("\nMINE TOWNS (authored town in slot 1)")
+    for (row, column), (name, goods) in sorted(places.MINES.items(),
                                                key=lambda kv: kv[1][0]):
-        tile = census[(row - 1, column - 1)]
+        tile = world["tiles"][places.tile_id(row, column)]
         print(f"  {name:<17} at R{row:02d}C{column:02d}: "
-              f"{tile['band']:<10} rolled {tile['tiers']}  "
-              f"({', '.join(goods)})")
+              f"{places.population_band(world, tile):<10} rolled "
+              f"{''.join(places.TIER_LETTERS_BY_TIER[t] for t in tiers_of(world, tile))}"
+              f"  ({', '.join(goods)})")
 
 
-def sweep_population(base: list[str], climate: list[str],
-                     terrain: list[str], seeds: int = 500) -> None:
-    tier_totals = Counter()
-    souls, filled, empties, quiet_share = [], [], [], []
-    for seed in range(seeds):
-        census = roll_census(base, climate, terrain, seed)
-        tier_totals.update(tier for tile in census.values()
-                           for tier in tile["tiers"])
-        souls.append(sum(TIER_PEOPLE[tier] for tile in census.values()
-                         for tier in tile["tiers"]))
-        counts = [len(tile["tiers"]) for tile in census.values()]
-        filled.append(sum(counts) / len(counts))
-        empties.append(sum(1 for n in counts if n == 0))
-        high = [tile for tile in census.values()
-                if tile["band"] in ("high", "dense")
-                and not tile["historical"]]
-        quiet_share.append(sum(1 for tile in high
-                               if "T" not in tile["tiers"]
-                               and "C" not in tile["tiers"]) / len(high))
-    n = seeds
-    print(f"{n} seeds: souls mean {sum(souls) / n:,.0f} "
-          f"(min {min(souls):,}, max {max(souls):,})")
-    print("settlements per world " + ", ".join(
-        f"{tier}: {tier_totals[tier] / n:.1f}" for tier in TIER_ORDER)
-        + f"; total {sum(tier_totals.values()) / n:.1f}")
-    print(f"slots filled per land tile mean {sum(filled) / n:.2f}; "
-          f"empty tiles mean {sum(empties) / n:.0f}/314")
-    print(f"quiet rich country: {100 * sum(quiet_share) / n:.0f}% of "
-          f"high+dense tiles roll no town (min "
-          f"{100 * min(quiet_share):.0f}%, max "
-          f"{100 * max(quiet_share):.0f}%)")
-
-
-# --------------------------------------------------------------------------- #
-# The trade layer (round 4: mines, goods & the routes)
-# --------------------------------------------------------------------------- #
-# Author the physical, derive the human.  Mines and the goods no law can
-# derive are AUTHORED, few and famous; the land's produce is DERIVED from
-# rounds 1-3's outputs; the ordinary routes are COMPUTED between origins
-# and markets by the same edge model the game walks, and the legendary
-# roads are authored endpoints whose line the pathfinder draws.  Exotics
-# are goods like any other -- their origins are the frame's doors.
-
-# ONE AUTHORITY PER CONSTANT: the trade layer SHIPPED with session 3 on
-# 2026-08-21, so every number below now lives in places.py and the names
-# here are the tool's window onto the same objects.  The tool still runs
-# its own private simulation (a plain seeded rng where worldgen derives its
-# seeds), which session 4 retires in favor of rendering a BUILT world.
-MINES = places.MINES
-GOODS = places.GOODS
-GOODS_AUTHORED = places.GOODS_AUTHORED
-ENDPOINT_NAMES = places.ENDPOINT_NAMES
-GRAIN_SURPLUS = places.GRAIN_SURPLUS
-WINE_CLIMATES = _letters(places.WINE_CLIMATES)
-WINE_MIN = places.WINE_MIN
-WOOL_CLIMATES = _letters(places.WOOL_CLIMATES)
-WOOL_PASTORAL = places.WOOL_PASTORAL
-HORSE_PASTORAL = places.HORSE_PASTORAL
-FUR_CLIMATES = _letters(places.FUR_CLIMATES)
-MIN_PRODUCE_REGION = places.MIN_PRODUCE_REGION
-DERIVED_GOODS = places.DERIVED_GOODS
-GOOD_ROUTES = places.GOOD_ROUTES
-MINE_FOOD_DAYS = places.MINE_FOOD_DAYS
-CAPITALS = {country: places.tile_row_column(tid)
-            for country, tid in places.CAPITAL_TILES.items()}
-LEGENDARY = places.LEGENDARY
-
-
-def _at0(rc: tuple[int, int]) -> tuple[int, int]:
-    return (rc[0] - 1, rc[1] - 1)
-
-
-def _tid(tile: tuple[int, int]) -> str:
-    """The tool's 0-based (row, column) as the game's own Tile ID."""
-    return places.tile_id(tile[0] + 1, tile[1] + 1)
-
-
-def _rc(tid: str) -> tuple[int, int]:
-    row, column = places.tile_row_column(tid)
-    return row - 1, column - 1
-
-
-def _grid_neighbors(r: int, c: int):
-    for dr, dc in ((-1, 0), (0, -1), (0, 1), (1, 0)):
-        rr, cc = r + dr, c + dc
-        if 0 <= rr < ROWS and 0 <= cc < COLUMNS:
-            yield rr, cc
-
-
-def _tree(start: tuple[int, int]):
-    """A window onto `places._single_source` -- the GAME's pathfinder over
-    the game's own edge model, restated here only as 0-based coordinates.
-    The tool kept a copy of both until session 3 shipped the routes; a
-    second distance model was exactly the drift the arc's one-authority
-    rule exists to prevent."""
-    distance, previous = places._single_source(_tid(start))
-    back = {_rc(tid): _rc(prev) for tid, prev in previous.items()}
-    back[start] = None                  # the root has no predecessor
-    return {_rc(tid): days for tid, days in distance.items()}, back
-
-
-def _path_from(previous, tile):
-    """The path from `tile` back to the tree's root, tile first."""
-    path = [tile]
-    while previous[path[-1]] is not None:
-        path.append(previous[path[-1]])
-    return path
-
-
-def _regions(tiles: set) -> list[set]:
-    """Connected components (4-neighbor) of an origin tile set."""
-    remaining, out = set(tiles), []
-    while remaining:
-        seed_tile = min(remaining)
-        component, frontier = {seed_tile}, deque([seed_tile])
-        while frontier:
-            r, c = frontier.popleft()
-            for nxt in _grid_neighbors(r, c):
-                if nxt in remaining and nxt not in component:
-                    component.add(nxt)
-                    frontier.append(nxt)
-        remaining -= component
-        out.append(component)
-    return out
-
-
-def build_origins(base, climate, terrain, economies) -> list[dict]:
-    """Every goods origin: authored mines and colour, derived produce."""
-    origins = []
-    for rc, (name, goods) in MINES.items():
-        origins.append({"tiles": {_at0(rc)}, "goods": tuple(goods),
-                        "name": name})
-    for rc, goods in GOODS_AUTHORED.items():
-        origins.append({"tiles": {_at0(rc)}, "goods": tuple(goods),
-                        "name": None})
-    derived = {good: set() for good in DERIVED_GOODS}
-    for (r, c), eco in economies.items():
-        letter = climate[r][c]
-        river = base[r][c] == "~" or letter == "n"
-        coast = _is_coast(base, r, c)
-        if eco["realized"] >= GRAIN_SURPLUS:
-            derived["grain"].add((r, c))
-        if letter in WINE_CLIMATES and eco["realized"] >= WINE_MIN:
-            derived["wine"].add((r, c))
-        if letter in WOOL_CLIMATES and eco["pastoral"] >= WOOL_PASTORAL:
-            derived["wool"].add((r, c))
-        if letter == "s" and eco["pastoral"] >= HORSE_PASTORAL:
-            derived["horses"].add((r, c))
-        if (eco["forest"] >= WOODED_MIN and (river or coast)
-                and TERRAINS[terrain[r][c]] != "marsh"):
-            derived["timber"].add((r, c))      # fen carr is not ship timber
-        if eco["cover"] == "deep forest" and letter in FUR_CLIMATES:
-            derived["furs"].add((r, c))
-    for good, tiles in derived.items():
-        goods = ("furs", "wax") if good == "furs" else (good,)
-        for region in _regions(tiles):
-            if good != "grain" and len(region) < MIN_PRODUCE_REGION:
-                continue                # a lone hill's wool is local colour,
-            origins.append({"tiles": region, "goods": goods, "name": None})
-    return origins                      # not an export; grain is exempt (a
-                                        # single alluvial tile IS a granary)
-
-
-def roll_routes(base, climate, terrain, seed: int):
-    """One world's trade network: routes, origins, census, unfed mines."""
-    census = roll_census(base, climate, terrain, seed)
-    economies, _tags, _character = economy_grids(base, climate, terrain)
-    origins = build_origins(base, climate, terrain, economies)
-    historical = {_at0(rc) for rc in HISTORICAL_TILES}
-    mine_tiles = {_at0(rc) for rc in MINES}
-    chiefs = {t: (rec["tiers"][0] if rec["tiers"] else "")
-              for t, rec in census.items()}
-    cities = {t for t, chief in chiefs.items()
-              if chief in ("M", "C")} | historical
-    demand_sets = {
-        "markets": cities | mine_tiles,
-        "cities": cities,
-        "metropolises": {t for t, chief in chiefs.items() if chief == "M"},
-        "smiths": cities | {_at0(rc) for rc, goods in GOODS_AUTHORED.items()
-                            if "arms" in goods},
-        "cloth": {_at0(rc) for rc, goods in GOODS_AUTHORED.items()
-                  if "cloth" in goods},
-        "capitals": {_at0(rc) for rc in CAPITALS.values()},
-    }
-    trees: dict[tuple[int, int], tuple] = {}
-
-    def tree(dest):
-        if dest not in trees:
-            trees[dest] = _tree(dest)
-        return trees[dest]
-
-    raw = []
-    for origin in origins:
-        by_rule: dict[tuple, list[str]] = {}
-        for good in origin["goods"]:
-            rule = GOOD_ROUTES.get(good)
-            if rule is not None:        # exotics ride the legendary roads
-                by_rule.setdefault(rule, []).append(good)
-        for (dest_kind, k, max_days), goods in by_rule.items():
-            if dest_kind == "capital":
-                r, c = min(origin["tiles"])
-                dests = {_at0(CAPITALS[country_at(r + 1, c + 1)])}
-            else:
-                dests = demand_sets[dest_kind]
-            ranked = []
-            for dest in sorted(dests - origin["tiles"]):
-                distance, _previous = tree(dest)
-                member = min(origin["tiles"],
-                             key=lambda t: (distance[t], t))
-                ranked.append((distance[member], dest, member))
-            ranked.sort()
-            for days, dest, member in ranked[:k]:
-                if max_days is not None and days > max_days:
-                    continue
-                _distance, previous = tree(dest)
-                raw.append({"name": None, "goods": tuple(goods),
-                            "days": days,
-                            "path": _path_from(previous, member)})
-    unfed = []
-    for rc, (name, _goods) in MINES.items():
-        mine = _at0(rc)
-        if economies[mine]["realized"] >= FARMLAND_MIN:
-            continue                    # the mine's own ground feeds it
-        distance, previous = tree(mine)
-        grain = [(distance[t], t) for origin in origins
-                 if "grain" in origin["goods"] for t in origin["tiles"]
-                 if distance[t] <= MINE_FOOD_DAYS]
-        if not grain:
-            unfed.append(name)          # no grain within reach: the
-            continue                    # mountain feeds itself badly
-        days, member = min(grain)
-        raw.append({"name": None, "goods": ("grain",), "days": days,
-                    "path": _path_from(previous, member)})
-        # the tree is rooted at the mine, so the path already runs
-        # grain-country -> mine town: the food caravan's own direction
-    for spec in LEGENDARY:
-        goal = _at0(spec["to"])
-        distance, previous = tree(goal)
-        start = _at0(spec["from"])
-        raw.append({"name": spec["name"], "goods": tuple(spec["goods"]),
-                    "days": distance[start],
-                    "path": _path_from(previous, start)})
-    routes: dict[tuple, dict] = {}      # merged on shared endpoints
-    for route in raw:
-        key = (route["path"][0], route["path"][-1])
-        kept = routes.get(key)
-        if kept is None:
-            routes[key] = route
-        else:
-            kept["goods"] = tuple(dict.fromkeys(kept["goods"]
-                                                + route["goods"]))
-            kept["name"] = kept["name"] or route["name"]
-    return list(routes.values()), origins, census, unfed
-
-
-def _endpoint_label(tile, census) -> str:
-    rc = (tile[0] + 1, tile[1] + 1)
-    if rc in HISTORICAL_TILES:
-        return HISTORICAL_TILES[rc]
-    if rc in MINES:
-        return MINES[rc][0]
-    if rc in ENDPOINT_NAMES:
-        return ENDPOINT_NAMES[rc]
-    return f"R{rc[0]:02d}C{rc[1]:02d}"
-
+# --- the trade network ----------------------------------------------------- #
 
 GOOD_PRIORITY = ("grain", "wine", "wool", "horses", "furs", "timber",
                  "salt", "herring", "amber", "cloth", "arms")
 GOOD_MARKS = {"grain": "g", "wine": "v", "wool": "w", "horses": "h",
               "furs": "f", "timber": "t", "salt": "s", "herring": "r",
               "amber": "b", "cloth": "c", "arms": "a"}
+EXOTIC_DOORS = frozenset(places.ENDPOINT_NAMES) & frozenset(
+    rc for rc, goods in places.GOODS_AUTHORED.items()
+    if set(goods) & {"silk", "spice", "sugar"})
 
 
-def render_routes(base, climate, terrain, seed: int) -> None:
-    routes, origins, census, unfed = roll_routes(base, climate, terrain,
-                                                 seed)
-    goods_at: dict[tuple[int, int], list[str]] = {}
-    for origin in origins:
-        for t in origin["tiles"]:
-            goods_at.setdefault(t, []).extend(origin["goods"])
-    traffic = Counter()
-    ports, sea_tiles = set(), set()
-    for route in routes:
-        for t in route["path"]:
-            traffic[t] += 1
-            if base[t[0]][t[1]] == ".":
-                sea_tiles.add(t)
-        for a, b in zip(route["path"], route["path"][1:]):
-            a_sea, b_sea = base[a[0]][a[1]] == ".", base[b[0]][b[1]] == "."
-            if a_sea != b_sea:
-                ports.add(b if a_sea else a)
-    left, right = [], []
-    for r in range(ROWS):
-        goods_line, traffic_line = "", ""
-        for c in range(COLUMNS):
-            if base[r][c] == ".":
-                goods_line += "."
-                traffic_line += (str(min(9, traffic[(r, c)]))
-                                 if (r, c) in sea_tiles else ".")
-                continue
-            if (r + 1, c + 1) in MINES:
-                goods_line += "M"
-            elif (r + 1, c + 1) in ((11, 30), (18, 24)):
-                goods_line += "x"
-            else:
-                here = goods_at.get((r, c), ())
-                mark = next((GOOD_MARKS[g] for g in GOOD_PRIORITY
-                             if g in here), "-")
-                goods_line += mark
-            traffic_line += (str(min(9, traffic[(r, c)]))
-                             if traffic[(r, c)] else "-")
-        left.append(goods_line)
-        right.append(traffic_line)
-    render_side_by_side(left, right,
+def render_routes(world: dict, seed: int) -> None:
+    traffic = Counter(tid for route in world["routes"]
+                      for tid in route["path"])
+
+    def goods_cell(tile: dict) -> str:
+        if tile["biome"] == "sea":
+            return ""
+        if tile["mine"]:
+            return "M"
+        if (tile["row"], tile["column"]) in EXOTIC_DOORS:
+            return "x"
+        return next((GOOD_MARKS[good] for good in GOOD_PRIORITY
+                     if good in tile["goods"]), "-")
+
+    def traffic_cell(tile: dict) -> str:
+        crossings = traffic.get(tile["id"], 0)
+        if tile["biome"] == "sea":
+            return str(min(9, crossings)) if crossings else ""
+        return str(min(9, crossings)) if crossings else "-"
+
+    render_side_by_side(grid(world, goods_cell), grid(world, traffic_cell),
                         ("GOODS & MINES", "TRAFFIC (routes crossing)"))
     print("\ngoods: M mine, x exotic door, g grain, v wine, w wool, "
           "h horses,\n  f furs+wax, t timber, s salt, r herring, b amber, "
           "c cloth, a arms")
+    routes = world["routes"]
     print(f"\nROUTES, seed {seed} ({len(routes)} after merging; "
-          f"{len(LEGENDARY)} legendary)")
+          f"{len(places.LEGENDARY)} legendary)")
     named = [route for route in routes if route["name"]]
-    plain = [route for route in routes if not route["name"]]
-    for route in named + sorted(plain, key=lambda x: x["goods"]):
-        label = (f"{_endpoint_label(route['path'][0], census)} -> "
-                 f"{_endpoint_label(route['path'][-1], census)}")
-        name = route["name"] or ""
-        print(f"  {name:<15} {label:<28} {', '.join(route['goods'])} "
-              f"({route['days']}d)")
-    land_on = sum(1 for t, n in traffic.items()
-                  if n and base[t[0]][t[1]] != ".")
-    print(f"\nTRAFFIC {land_on} land tiles on a route, "
-          f"{len(sea_tiles)} sea-lane tiles, {len(ports)} ports; "
-          f"crossroads (3+): "
-          f"{sum(1 for n in traffic.values() if n >= 3)}")
-    goods_census = Counter()
-    for origin in origins:
-        for good in origin["goods"]:
-            goods_census[good] += len(origin["tiles"])
+    plain = sorted((route for route in routes if not route["name"]),
+                   key=lambda route: tuple(route["goods"]))
+    for route in named + plain:
+        label = (f"{places.endpoint_name(world, route['path'][0])} -> "
+                 f"{places.endpoint_name(world, route['path'][-1])}")
+        print(f"  {route['name'] or '':<15} {label:<28} "
+              f"{', '.join(route['goods'])} ({route['days']}d)")
+    tiles = world["tiles"]
+    on_land = sum(1 for tid in traffic if tiles[tid]["biome"] != "sea")
+    sea_lane = sum(1 for tid in traffic if tiles[tid]["biome"] == "sea")
+    ports = sum(1 for tile in land_tiles(world) if "port" in tile["tags"])
+    crossroads = sum(1 for tid, n in traffic.items()
+                     if n >= 3 and tiles[tid]["biome"] != "sea")
+    print(f"\nTRAFFIC {on_land} land tiles on a route, {sea_lane} sea-lane "
+          f"tiles, {ports} ports; crossroads (3+): {crossroads}")
+    census: Counter = Counter()
+    for tile in land_tiles(world):
+        census.update(tile["goods"])
     print("GOODS CENSUS (origin tiles) " + ", ".join(
-        f"{good}:{n}" for good, n in goods_census.most_common()))
+        f"{good}:{n}" for good, n in census.most_common()))
+    fed = {route["path"][-1] for route in routes if "grain" in route["goods"]}
+    unfed = [name for (row, column), (name, _goods) in places.MINES.items()
+             if places.tile_id(row, column) not in fed
+             and economy_of(world["tiles"][places.tile_id(row, column)])
+             ["realized"] < places.FARMLAND_MIN]
     if unfed:
-        print(f"UNFED MINES (no grain within {MINE_FOOD_DAYS} days): "
-              + ", ".join(unfed))
+        print(f"UNFED MINES (no grain within {places.MINE_FOOD_DAYS} days): "
+              + ", ".join(sorted(unfed)))
 
 
-def sweep_routes(base, climate, terrain, seeds: int = 100) -> None:
-    counts, land_on, port_counts = [], [], []
-    for seed in range(seeds):
-        routes, _origins, _census, _unfed = roll_routes(
-            base, climate, terrain, seed)
-        counts.append(len(routes))
-        traffic = Counter(t for route in routes for t in route["path"])
-        land_on.append(sum(1 for t in traffic if base[t[0]][t[1]] != "."))
-        ports = set()
-        for route in routes:
-            for a, b in zip(route["path"], route["path"][1:]):
-                a_sea = base[a[0]][a[1]] == "."
-                b_sea = base[b[0]][b[1]] == "."
-                if a_sea != b_sea:
-                    ports.add(b if a_sea else a)
-        port_counts.append(len(ports))
-    n = seeds
-    print(f"{n} seeds: routes mean {sum(counts) / n:.1f} "
-          f"(min {min(counts)}, max {max(counts)}); "
-          f"land tiles on a route mean {sum(land_on) / n:.0f}/314; "
-          f"ports mean {sum(port_counts) / n:.1f}")
+# --- the character line (session 4's read surface) ------------------------- #
+
+def render_character(world: dict, seed: int) -> None:
+    """What each Tile is CALLED -- the phrase the DM speaks. The map is a
+    legend index rather than a glyph key, because the vocabulary is bigger
+    than the alphabet is comfortable with."""
+    phrases = sorted({places.tile_character(world, tile)
+                      for tile in land_tiles(world)})
+    index = {phrase: "0123456789abcdefghijklmnopqrstuvwxyz"[n]
+             for n, phrase in enumerate(phrases)}
+    chief = grid(world, lambda t: (
+        "" if t["biome"] == "sea"
+        else CHIEF_MARKS[tiers_of(world, t)[0]] if t["settlement_slots"]
+        else "0"))
+    render_side_by_side(grid(world, lambda t: (
+        "" if t["biome"] == "sea" else index[places.tile_character(world, t)])),
+        chief, ("TILE CHARACTER", "CHIEF SETTLEMENT"))
+    counts = Counter(places.tile_character(world, tile)
+                     for tile in land_tiles(world))
+    print(f"\nTILE CHARACTER, seed {seed} ({len(phrases)} phrases)")
+    for phrase in phrases:
+        print(f"  {index[phrase]}  {phrase:<20} {counts[phrase]:3d}")
+    unused = [phrase for _f, _v, phrase in places.LAND_CHARACTER
+              if phrase not in counts]
+    if unused:
+        print("  (land rows the goods layer always outranks on this map: "
+              + ", ".join(unused) + ")")
+
+
+# --------------------------------------------------------------------------- #
+
+MODES = {"terrain": render_terrain, "potential": render_potential,
+         "harvest": render_harvest, "population": render_population,
+         "routes": render_routes, "character": render_character}
 
 
 def main() -> None:
-    base = load_grid(BASE_PATH, BASE_GLYPHS)
-    climate = load_grid(CLIMATE_PATH, set(CLIMATES) | {"."})
-    terrain = load_grid(TERRAIN_PATH, set(TERRAINS) | {"."})
-    problems = validate_climate(base, climate) + validate_terrain(base,
-                                                                  terrain)
-    if problems:
-        for line in problems:
-            print(f"LINT: {line}")
-        sys.exit(f"{len(problems)} problem(s) -- fix the overlay")
-    if len(sys.argv) > 1 and sys.argv[1] == "terrain":
-        render_terrain(base, climate, terrain)
+    run_lint()
+    argv = sys.argv[1:]
+    mode = argv[0] if argv and not argv[0].isdigit() else ""
+    if "--sweep" in argv:
+        sys.exit("`--sweep` retired 2026-08-21 -- the layers are measured "
+                 "over many worlds by `python bench_worldgen.py`.")
+    if mode and mode not in MODES:
+        sys.exit(f"no such mode: {mode!r} -- "
+                 f"{', '.join(sorted(MODES))}, or none for the climate map")
+    rest = argv[1:] if mode else argv
+    if rest and not rest[0].isdigit():
+        sys.exit(f"not a seed: {rest[0]!r}")
+    seed = int(rest[0]) if rest else 1
+    world = places.create_geography(seed)
+    if not mode:
+        render_climate(world)
         return
-    if len(sys.argv) > 1 and sys.argv[1] == "potential":
-        render_potential(base, climate, terrain)
-        return
-    if len(sys.argv) > 1 and sys.argv[1] == "population":
-        if "--sweep" in sys.argv[2:]:
-            sweep_population(base, climate, terrain)
-        else:
-            seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-            render_population(base, climate, terrain, seed)
-        return
-    if len(sys.argv) > 1 and sys.argv[1] == "routes":
-        if "--sweep" in sys.argv[2:]:
-            sweep_routes(base, climate, terrain)
-        else:
-            seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-            render_routes(base, climate, terrain, seed)
-        return
-    if len(sys.argv) > 1 and sys.argv[1] == "harvest":
-        if "--sweep" in sys.argv[2:]:
-            sweep_harvest(climate)
-        else:
-            seed = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-            render_harvest(climate, seed)
-        return
-    render_side_by_side(base, climate, ("TERRAIN", "CLIMATE"))
-    censuses(climate)
+    render = MODES[mode]
+    if render in (render_terrain, render_potential):
+        render(world)               # the deterministic layers: no seed to
+    else:                           # name, because every world has them
+        render(world, seed)
 
 
 if __name__ == "__main__":

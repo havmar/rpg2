@@ -53,10 +53,11 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the sole active roadmap and build contract. Part 1 is the
-  tile economy arc's build: four numbered implementation sessions,
-  triggered by "implement session N" and shipped in order. Shipped
-  sessions are removed from it.
+- `plan.md` — the sole active roadmap and build contract. Shipped work is
+  removed from it: since 2026-08-21 it carries only the roadmap BEYOND the
+  fixed-Europe and tile-economy arcs (the spring snapshot and trouble,
+  politics and war, fantasy and magic, settlements revisited, the deferred
+  leftovers). Each item is a future design conversation; none is scheduled.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every
