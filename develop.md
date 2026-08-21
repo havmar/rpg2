@@ -645,15 +645,25 @@ a pointer: what the file is, how it's run, where its docs are.
   `python -m unittest -v test_worldsim.py`.
 - `resources/europe_map.txt` — **the canonical fixed world map**
   (2026-08-15; redrawn 2026-08-21 — Denmark added, Scandinavia adjusted,
-  seaside rivers cut): the runtime's authored 30x18 Europe in `.` / `#` /
-  `^` / `~`. `places.load_europe_map` validates and loads it during world
-  creation.
+  seaside rivers cut; northern Scotland R03C04 became a mountain tile in
+  the arc's round-2 sitting the same day): the runtime's authored 30x18
+  Europe in `.` / `#` / `^` / `~`. `places.load_europe_map` validates and
+  loads it during world creation.
 - `resources/europe_climate.txt` — **the hand-painted climate overlay**
   (2026-08-21, the tile economy arc's round 1; the round's design settled
   the same day — designlog): one climate letter per land tile over the
   same 30x18 frame, sea left as `.`. The vocabulary and the letters live
   in `econmap.py`'s `CLIMATES`; nothing in the runtime reads the file yet
   — plan.md's Round 1 implementation contract ships it into `places.py`.
+- `resources/europe_terrain.txt` — **the hand-authored terrain overlay**
+  (2026-08-21, the tile economy arc's round 2; design settled the same
+  day — designlog's round-2 entry): one terrain letter per land tile over
+  the same 30x18 frame, sea left as `.`. Relief and drainage ONLY —
+  plains, hills, marsh, with `m` (mountains) exactly on the `^` tiles;
+  forest is NOT authored (it is derived by the deforestation law from
+  climate and clearance). The vocabulary and letters live in
+  `econmap.py`'s `TERRAINS`; nothing in the runtime reads the file yet —
+  plan.md's Round 2 implementation contract ships it into `places.py`.
 - `econmap.py` — **the tile economy arc's eyeball tool** (2026-08-21,
   plan.md Part 1's tooling item): standalone and stdlib-only in the
   `archive/worldmap.py` manner, it validates each authored overlay against
@@ -669,6 +679,17 @@ a pointer: what the file is, how it's run, where its docs are.
   settled (2026-08-21, designlog) its constants ARE the Round 1
   contract's numbers — plan.md restates only what the tool cannot carry
   (the nearby-trouble nudge needs the start tile and real path days).
+  Since round 2 settled (2026-08-21, designlog's round-2 entry) it also
+  carries the TERRAIN layer and the land's potential: `python econmap.py
+  terrain` (the authored overlay beside the derived land-character map,
+  with the terrain, tag and cover censuses) and `python econmap.py
+  potential` (realized arable and surviving forest in tenths). The laws
+  are deterministic — no rng: arable potential from climate × terrain
+  (+ the alluvial bonus and the `HAND_ALLUVIAL` Po plain), the
+  deforestation clearance in closed form (wheat/(wheat+K)), surviving
+  forest off the climate wildwood cap, the pastoral index by graze law,
+  and the derived words/tags (cover, farmland, pasture, forest,
+  `HAND_MARKS`). Its constants ARE the Round 2 contract's numbers.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection

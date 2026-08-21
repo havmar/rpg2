@@ -91,10 +91,10 @@ MAP_ROWS = 18
 MAP_COLUMNS = 30
 BIOME_GLYPHS = {".": "sea", "#": "basic", "^": "mountain",
                 "~": "river"}
-PINNED_BIOME_COUNTS = {"basic": 268, "mountain": 28, "river": 18,
+PINNED_BIOME_COUNTS = {"basic": 267, "mountain": 29, "river": 18,
                        "sea": 226}
 PINNED_COUNTRY_BIOMES = {
-    "firascir": {"basic": 80, "mountain": 10, "river": 5},
+    "firascir": {"basic": 79, "mountain": 11, "river": 5},
     "mortellaria": {"basic": 120, "mountain": 15, "river": 9},
     "tergal": {"basic": 68, "mountain": 3, "river": 4},
 }

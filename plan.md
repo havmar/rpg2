@@ -64,8 +64,9 @@ carries. Derived seeds throughout; no reader surface beyond the sky
 tundra, taiga, continental, oceanic, mediterranean, wet_mediterranean,
 steppe, desert, nile, alpine. `validate_world` grows the lint's clauses —
 every land tile painted, sea unpainted, alpine exactly the mountain
-tiles, only the ten words — and pins the climate census (u8 t42 c83 o29
-m46 w32 s24 d18 n4 a28).
+tiles, only the ten words — and pins the climate census (u8 t42 c83 o28
+m46 w32 s24 d18 n4 a29 — o 29→28 and a 28→29 since the round-2 sitting
+made northern Scotland a mountain tile).
 
 **2. The label table**, a `CLIMATE_PROFILES` table in `places.py`
 replacing `ENVIRONMENT_PROFILES` (the five old profiles and the
@@ -148,32 +149,100 @@ not now. Tests: regions contiguous, the sweep distribution pinned (~17%
 mean problem coverage, never zero), the drought always, the save
 round-trip, and every existing bench unmoved (derived seeds).
 
-## Round 2 — Terrain & the land's potential
+## Round 2 — Terrain: the implementation contract (design settled 2026-08-21)
 
-The hand-authored overlay is what nature put there — forest, hills, marsh
-(the vocabulary is the round's first job). **Farmland is not authored**:
-it is population's footprint, resolved by the deforestation law below.
+The design is designlog 2026-08-21 (the round-2 entry), including the
+reversal it records: **forest is NOT authored** — the overlay is relief
+and drainage only, the wildwood comes from climate and the deforestation
+law decides what survives, so deep forest appears exactly where people
+are few. The authored overlay and the extended eyeball tool are already
+in the tree (`resources/europe_terrain.txt`, `econmap.py terrain` /
+`potential`); **econmap.py's constants ARE this contract's numbers**
+(`CLIMATE_ARABLE`, `TERRAIN_ARABLE`, `ALLUVIAL_BONUS`, `HAND_ALLUVIAL`,
+`FFD`, `CLEARANCE_K`, `FOREST_CAP`, `MARSH_WOOD`, `GRAZE_CLIMATE`,
+`GRAZE_TERRAIN`, the word thresholds, `HAND_MARKS`). The whole layer is
+**deterministic** — authored overlays plus laws, no rng, identical in
+every campaign like the map itself, so derived seeds are moot and every
+bench is unmoved by construction. The northern-Scotland flip (R03C04
+basic→mountain) shipped with the round as ordinary dev work.
 
-- Per tile: **arable potential and potential wheat yield**, by rule from
-  climate + terrain + river (alluvial bonus), hand-tuned where the rule
-  reads wrong.
-- **The deforestation law** (the named gap): how much of its arable
-  potential a tile REALIZES. **[remark]** Proposal: realized arable =
-  potential × clearance(population pressure), solved in two passes —
-  provisional population off raw potential, clearance off that
-  population, final forest = authored forest − cleared. Deep forest then
-  survives exactly where people are few, which is the wilderness the game
-  wants.
-- **Herding is the complement, not a second authored layer**: pastoral
-  share is what habitable land does where arable potential is low — the
-  steppe, the hills, the highland margins, dry country. Tergal reads
-  pastoral by climate law with no hand-picking; hand-mark exceptions only
-  where character demands one (horse country, a transhumance corridor).
-- **Reconcile the quest tables' terrain vocabulary** — `forest` / `hills`
-  / `prairie` / `pasture` / `farmland` — absorbing the deferred sub-biomes
-  item whole, including the `mountain`-vs-`mountains` near-miss and
-  something better than `coast` / `riverside` / `mountain-foot` for the
-  settlement templates to fit against.
+**1. The ground.** `create_geography` loads
+`resources/europe_terrain.txt` beside the base map and stamps
+`tile["terrain"]` with the full word (letters are file format only):
+plains, hills, marsh, mountains. `validate_world` grows the lint's
+clauses — every land tile painted, sea unpainted, mountains exactly the
+`^` tiles, only the four words — and pins the terrain census
+(plains 213, hills 67, marsh 5, mountains 29) plus the marsh five by
+name: the Fens R06C06, the Low Countries delta R08C11, the Pripet pair
+R09C23 + R09C24, the Danube delta R11C24.
+
+**2. The laws** ship into `places.py` beside `CLIMATE_PROFILES`, computed
+at worldgen per tile: arable potential = climate × terrain (+ the
+alluvial bonus on river tiles and the `HAND_ALLUVIAL` Po plain; marsh
+takes no bonus — marsh IS the undrained floodplain); potential wheat =
+arable × the climate yield column × the round-1 ffd gradient (ffd/base);
+clearance = wheat / (wheat + 0.2) — the two-pass deforestation proposal
+collapsed to its closed form; realized arable = arable × clearance;
+surviving forest = wildwood × (1 − clearance); pastoral index = climate
+graze × terrain graze. **Stored words, hidden numbers**: the tile keeps
+`tile["terrain"]` (authored) and `tile["cover"]` (deep forest ≥ 0.55 /
+wooded ≥ 0.25 / open); the numbers are pipeline intermediates round 3
+recomputes from the same authorities, never saved.
+
+**3. The tags — the quest-vocabulary reconciliation.** Tile and natural
+Area tags become: the terrain word, the country, the positional set
+(`river` + `riverside`, `coast`, `mountain-foot`, `border`, `island`),
+then the derived words — `forest` (cover wooded or deeper), `farmland`
+(realized ≥ 0.30), `pasture` (pastoral ≥ 0.20 and > realized), the
+character climates (`steppe`, `desert`, `tundra`), plus `HAND_MARKS`
+(the middle Danube's horse country). The bare biome words `basic` and
+`mountain` leave the tag lists; **`mountains` is the one word for high
+ground** everywhere outside `BIOME_GLYPHS` and the edge-cost rule — the
+mountain-vs-mountains near-miss retires, and the quest tables' words
+finally match real natural Areas (today `forest` / `hills` / `prairie` /
+`pasture` / `farmland` match NO natural Area — every such job falls back
+to the origin tile's countryside). Pinned tag census: farmland 132,
+pasture 112, forest 97, steppe 24, desert 18, tundra 8; cover open 217,
+wooded 55, deep forest 42. `prairie` is renamed `steppe` everywhere
+(quests.py tables, the Tergal catalog content, the round-1 contract
+already re-keys `WEATHER_LOCAL`); `marsh` joins the den-family quest
+tables.
+
+**4. Area naming and the natural templates.** The natural Area suffix
+reads character instead of biome: sea / mountain / river keep Sea /
+Mountains / Riverlands; then marsh → Marshes, deep forest → Forest,
+hills → Hills, else Countryside. Natural template selection goes by
+terrain + cover instead of one-template-per-biome (which currently
+leaves Firascir's whole `fields` inventory dead — every basic tile draws
+`old_forest`): forest tiles take the forest inventory, cleared plains
+the fields, hills the hill one, marsh the fen one. New natural site
+inventories owed: firascir hills (moor and glen), firascir marsh (the
+fen), tergal marsh (the Pripet); Tergal's `open_prairie` becomes
+`open_steppe`. The catalog natural entries' own tag lists are dead data
+— drop them (writing.md register for all new content).
+
+**5. Settlement fits.** `TILE_FIT_TAGS` grows the terrain and derived
+words (`hills`, `marsh`, `forest`, `farmland`, `pasture`, `steppe`,
+`plains`) and drops `basic` / `mountain` / `sea` — position stops being
+the only fit vocabulary. Re-fit the templates where character now says
+it better: hill_town and ridge_town fit `hills`, forest_village fits
+`forest`, herd_village fits `steppe`, plus one new firascir fen village
+fitting `marsh`. Template picks may shift on some tiles (the same
+`slot["seed"] % n` over a better candidate list) — no compatibility, per
+doctrine.
+
+**6. Tests.** The pinned terrain and tag censuses; determinism (two
+worlds off different seeds carry identical terrain, cover and tags); the
+marsh five by name; one broken world per new `validate_world` clause;
+and the reconciliation observable end to end — a den job landing in a
+genuinely wooded natural Area, a steppe job in Tergal's grass, a marsh
+tag reachable — plus every existing bench unmoved.
+
+**Explicit non-changes** (settled, not deferred): hills cost no travel
+day — the edge model stays biome-only and symmetric, every pinned
+distance survives; terrain stays out of the sky (climate owns weather; a
+marsh fog line is round-5 flavor) and out of the harvest contagion
+model.
 
 ## Round 3 — Population & the settlement census
 
@@ -189,7 +258,10 @@ Population per tile, a **hidden number**, from the ground up:
 - **Calibration by retrodiction**: the authored historical towns are the
   answer key. Tune the law until the density map lights up where the
   cities already are; where it will not, either fix the law or author an
-  exception and write down why.
+  exception and write down why. Named case from round 2's eyeball:
+  Stockholm sits in taiga deep forest with realized arable ~0 — coastal
+  fishing plus the transport bonus must be able to carry a historical
+  town the plow cannot.
 - **The census table**: population → settlement count and tier per tile.
   Dense urban = several towns and a village; prosperous countryside =
   four villages; remote = one village; **zero is a real tier** (steppe,

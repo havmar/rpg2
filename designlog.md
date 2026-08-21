@@ -5079,3 +5079,109 @@ high-variance climates in round 3 (carrying capacity is set by the bad
 years); whether the wet/dry spell counters ever move off the land
 layer (kept there — a party crossing a climate border keeps the
 land's spell, good enough at this scale).
+
+## 2026-08-21 (B) — Round 2 of the tile economy arc: terrain & the land's potential
+
+**Where it started.** The designer opened round 2 with directives and a
+hands-off mandate — decide and present everything not mentioned. Given:
+where it is not mountainous the land should be about half hilly and half
+plains, both staying `#` on the basic map; hills hand-placed at Scotland,
+dry-and-hilly Spain, the Apennines and the Balkans; marshes hand-placed
+at the Pripet, the Low Countries and the Fens (for flavor); and the
+question whether northernmost Scotland should be a mountain tile.
+
+**The map flip.** Northern Scotland — yes. R03C04 is a dead-end tip (sea
+on three sides), so no pinned route crosses it; the flip is one glyph,
+the climate letter `o`→`a`, and the census pins (basic 267 / mountain
+29; firascir 79/11; climate o 28 / a 29 — round 1's contract updated in
+place, since it has not shipped yet). Every map-facing suite passed
+unchanged: no slot fixture shifted. Britain gains its one wilderness
+massif — the Highlands.
+
+**The vocabulary: relief only, forest derived.** Plan.md's round entry
+said the authored overlay is "forest, hills, marsh"; the round reversed
+the forest part the way round 1 reversed climate-by-law. At ~1500 the
+wildwood is wherever people are not — authoring it per tile would be
+authoring the OUTPUT of the deforestation law the same round defines.
+So the overlay (`resources/europe_terrain.txt`, letters p/h/w/m) is
+relief and drainage only — plains, hills, marsh, mountains pinned to the
+`^` tiles by lint — and forest falls out of climate (the wildwood cap)
+minus clearance. Hand-authored exceptions stay possible but none proved
+necessary: the eyeball showed deep forest exactly where wanted (the
+whole taiga north, 42 tiles) without any.
+
+**The half-half prior vs. the drawn geography.** Painted by real
+geography — Grampians, Pennines, Meseta, Massif Central, the German
+Mittelgebirge belt, Bohemia's rim, Apennine flanks, the Balkan interior,
+Anatolia, the shield uplands, the Rif — hills land at 67 tiles, 24% of
+the open land, not half. The map's eastern half is the great plain and
+its southern stripe is desert; painting half of THAT hilly would lie
+about the North European Plain, the black-earth steppe and the Sahara.
+In the settled west and the Mediterranean the mix does approach
+half-and-half, which is likely the intuition's origin. The census is
+pinned at the drawn numbers; pushing toward a hillier world is a
+re-paint away if the played feel wants it.
+
+**The marsh five.** The three given, sited: the Fens R06C06, the Low
+Countries delta R08C11 (Amsterdam's own river tile — Holland IS the
+marsh, and the lint therefore allows marsh over `~`), and the Pripet as
+a pair R09C23+R09C24 at the river junction, the map's one great
+wilderness marsh. One added: the Danube delta R11C24, the river's last
+tile before the Black Sea. Marsh takes no alluvial bonus — it IS the
+undrained floodplain — and carries half wildwood (carr and fen scrub).
+
+**The laws, built and tuned in econmap.py.** Arable potential = climate
+fraction × terrain fraction (+0.12 alluvial on rivers), wheat = arable ×
+round 1's yield column × the ffd gradient; the two-pass deforestation
+proposal collapsed to a closed form — clearance = wheat/(wheat+0.2) —
+because the provisional population it wanted is itself a function of
+potential wheat, so the middle variable cancels; realized arable =
+arable × clearance; forest = wildwood × (1−clearance); pastoral index =
+climate graze × terrain graze, no hand-picking (the steppe, the med
+hills — the Mesta — and the alpine summer pastures all read pastoral by
+law alone). Two hand mechanisms, both seeded minimally: HAND_MARKS
+({(11,19): pasture} — the middle Danube's horse country) and
+HAND_ALLUVIAL (the Po plain tiles, whose lagoon river the 2026-08-21
+redraw cut for looks; without it Italy's richest farmland read as
+ordinary med country — the one place the rule read wrong against
+history). Measured: realized arable mean 0.25, the granaries ranked
+Nile 0.73, Danube corridor ~0.6, Rhineland ~0.6, Paris basin ~0.5,
+Po 0.44; farmland 132 tiles, pasture 112, forest 97, cover open 217 /
+wooded 55 / deep forest 42.
+
+**The quest-vocabulary audit** found the reconciliation is not cosmetic:
+natural Areas today carry only `basic`/`mountain`/`river` (+the
+positional tags), so the quest tables' `forest` / `hills` / `prairie` /
+`pasture` / `farmland` match NO natural Area — every such job silently
+falls back to the origin tile's countryside — and Firascir's `fields`
+site inventory is dead data because one-template-per-biome always picks
+`old_forest`. The contract therefore rewires Area tags to the terrain +
+derived words, renames `prairie`→`steppe` (the climate layer's word),
+settles `mountains` as the one word for high ground outside the glyph
+key (retiring the mountain/mountains near-miss), extends the fit
+vocabulary past coast/riverside/mountain-foot to character words, and
+selects natural templates by terrain + cover.
+
+**Decided against, on purpose**: hills costing travel days (the edge
+model is settled and symmetric; every pinned distance survives), a marsh
+glyph on the basic map (the designer's directive — hills and plains both
+stay `#`; the character shows in detail lines when round 5 builds them),
+terrain entering the harvest contagion (climate granularity is the
+model), and terrain entering the sky.
+
+**What was decided** is plan.md's Round 2 implementation contract,
+replacing the design entry: terrain loaded onto tiles with lint clauses
+and the pinned census, the laws into places.py with stored words and
+hidden numbers, the tag reconciliation with its pinned censuses, area
+naming and natural-template selection by character, the fit-tag
+extension, and the end-to-end tests. econmap.py's constants are the
+contract's numbers; the whole layer is deterministic (no rng, no seeds).
+
+**Parked on the way**: the Stockholm retrodiction case (written into
+round 3's entry — a taiga historical town that fishing and transport
+must carry); a marsh fog / fen flavor line for `WEATHER_LOCAL` when
+round 5 opens the read surface; the observation that no lowland
+continental deep forest survives the law (a Białowieża- or
+Ardennes-shaped wildwood would need a hand mark — none authored now;
+the taiga, the mountains and the marshes carry the wilderness); and
+wool as trade colour for the pastoral west (round 4's list).
