@@ -836,7 +836,8 @@ def _party(n: int = 2, level: int = 3) -> list:
 
 
 class TheDayRoll(unittest.TestCase):
-    """The sky: one word a land a day, off the environment's own climate."""
+    """The sky: one word a land a day, off the climate of the ground the
+    party is standing on and the season of the year."""
 
     def test_every_land_holds_a_legal_sky_once_it_has_been_rolled(self
                                                                   ) -> None:
@@ -878,9 +879,9 @@ class TheDayRoll(unittest.TestCase):
         """The season state bending the roll that produced it -- which is
         why a drought lasts past the day that started it."""
         world = _world()
-        base = worldsim.weather_weights(world, "firascir")
+        base = worldsim.weather_weights(world, "firascir", 1)
         worldsim.set_state(world, "firascir", "drought", day=1)
-        dry = worldsim.weather_weights(world, "firascir")
+        dry = worldsim.weather_weights(world, "firascir", 1)
         self.assertLess(dry["rain"], base["rain"])
         self.assertGreater(dry["clear"], base["clear"])
 

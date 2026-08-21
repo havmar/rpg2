@@ -2661,7 +2661,7 @@ anchors the formulas were fitted to.
 - **Quest placement follows place requirements — inside three days' road.**
   Each family specifies
   acceptable Area tags, a Site template/domain, and a reuse policy. A wolf
-  hunt selects forest, hills, pasture, or prairie; a mine job selects
+  hunt selects forest, hills, pasture, or marsh; a mine job selects
   mountains, mines, or quarries. Public roads, bridges, mines, markets, and
   towers may be reused when free; hidden camps, dens, and shrines are made
   fresh. Two active quests never share one Site. Since 2026-08-15 an
@@ -2964,17 +2964,20 @@ road's tables; `session.py` owns position, the walk itself, and displays.
 
 The canonical spatial vocabulary is **Country -> Tile -> Area -> Site -> Room**:
 
-- **Country** is the macro territory: identity, owner, culture, default
-  environment, war state, wilderness encounter profile, and cross-land
-  links. Firascir, Mortellaria and Tergal are distinct human realms with
-  different cultures and environments, and conquest may change `owner`
-  without changing geography. `homeland` routes names and culture; it never
-  modifies statistics.
+- **Country** is the macro territory: identity, owner, culture, war
+  state, wilderness encounter profile, and cross-land links. Firascir,
+  Mortellaria and Tergal are distinct human realms with different
+  cultures, and each spans several climates — since 2026-08-21 the
+  weather and the ground belong to the TILE, not to the country, and
+  conquest may change `owner` without changing geography. `homeland`
+  routes names and culture; it never modifies statistics.
 - **Tile** is the day-scale map cell, with fixed coordinates, biome, country,
-  cardinal neighbors, settlement slots and child Area IDs.
+  climate, terrain, cover, ground tags, cardinal neighbors, settlement slots
+  and child Area IDs.
 - **Area** is a local destination within a Tile. Its broad `kind` is
   `settlement` or `natural`; settlement subtype is town/village and natural
-  subtype follows the Tile biome.
+  subtype is the Tile's own ground CHARACTER (2026-08-21) — sea,
+  mountains, river, marsh, forest, hills, coast or fields.
 - **Site** is a local destination in an area, reached without day-scale
   travel: a castle, street, tavern, cave, tower, grove, bridge, or battlefield.
 - **Room** is the smallest persistent navigable place and encounter node. It
@@ -3010,6 +3013,59 @@ materialize lazily.
   major river. Every Tile owns one natural Area, including sea. World
   creation validates the dimensions, glyphs, biome totals, country totals
   and connected land masses before play can begin.
+- **The ground** (2026-08-21, the tile economy arc's first build
+  session). Two hand-painted overlays ride beside the base map and are
+  loaded onto the Tiles at world creation: a **climate** — tundra,
+  taiga, continental, oceanic, mediterranean, wet_mediterranean, steppe,
+  desert, nile or alpine — and a **terrain** — plains, hills, marsh or
+  mountains. Alpine and mountains sit exactly on the `^` Tiles; the marsh
+  is five hand-placed Tiles (the Fens, the Low Countries delta, the
+  Pripet pair and the Danube delta). Both censuses are pinned, and the
+  law over them is a LINT: the map is authored, so world creation checks
+  the painting rather than computing it.
+- **What the ground makes, by law.** `places.CLIMATE_PROFILES` gives each
+  climate its frost-free days (bent by a latitude gradient of +8 a row
+  south, clamped +-40), its wheat yield, its winter severity, its harvest
+  day and its drought threshold. From those: arable potential (climate x
+  terrain, plus a floodplain bonus on river Tiles), potential wheat,
+  **clearance** — how much of its potential a population bothers to
+  realize — realized arable, the **surviving forest** (the climate's
+  wildwood minus what was cleared), and a pastoral index. FOREST IS NOT
+  AUTHORED: deep forest stands exactly where people are few, which is why
+  the taiga north is wilderness and the Paris basin is not. **Hidden
+  numbers, visible words**: none of those fractions is stored. What a Tile
+  keeps is its terrain word, its `cover` (deep forest / wooded / open) and
+  its **tags** — the terrain word, the country, the positional words
+  (`river` + `riverside`, `coast`, `mountain-foot`, `border`, `island`)
+  and the derived ones (`forest`, `farmland`, `pasture`, and the
+  character climates `steppe` / `desert` / `tundra`). The bare biome words
+  `basic` and `mountain` are map glyphs and no longer tags; `mountains` is
+  the one word for high ground everywhere else. The whole layer is
+  authored plus law with no rng in it, so it is identical in every
+  campaign, exactly like the map.
+- **The label table** (`places.CLIMATE_PROFILES`). Frost-free days are
+  quoted at a reference row and bent by the gradient; the harvest day is
+  the day of the campaign year the crop comes in, and a dash means there
+  is no crop. THE GAME IS STATIC IN TIME, so chronological difference
+  becomes REGIONAL difference: the south is already reaping while the
+  north is still weeding.
+
+  | climate | ffd (row) | yield | winter | harvest day | drought days |
+  |---|---:|---:|---:|---:|---:|
+  | tundra | 60 (2) | 0 | 3 | — | 20 |
+  | taiga | 100 (4) | 0.3 | 3 | 125 | 15 |
+  | alpine | 90 (—) | 0.15 | 3 | 125 | 15 |
+  | continental | 170 (8) | 1.0 | 2 | 100 | 18 |
+  | oceanic | 220 (8) | 1.0 | 1 | 110 | 15 |
+  | mediterranean | 270 (13) | 0.8 | 0 | 50 | 30 |
+  | wet_mediterranean | 300 (17) | 1.3 | 0 | 45 | 25 |
+  | steppe | 160 (10) | 0.5 | 3 | 90 | 25 |
+  | desert | 330 (17) | 0.05 | 0 | — | 40 |
+  | nile | 330 (18) | 1.5 | 0 | 40 | 40 |
+
+  Winter severity and the harvest day are the SNAPSHOT arc's inputs,
+  shipped now as data so that arc starts from an authority; the sky and
+  the terrain laws are what read the table today.
 - **Countries and Tiles.** Firascir owns the northwest/west, Tergal the
   northeast/east and Mortellaria the south. Their non-sea census is fixed at
   97, 75 and 144 Tiles respectively. Coordinates and cardinal neighbors
@@ -3040,10 +3096,10 @@ materialize lazily.
   Europe MVP Closure). Each country authors a handful of settlement ROLES
   per tier -- a harbour town, a market town, a ford village -- and each
   role declares the Tile tags it needs. Only roles the Tile can honor are
-  in the draw, so a harbour wants a `coast`, a ford wants a `river` and a
-  hill town wants a `mountain-foot`; a plain inland Tile draws from the
-  roles that ask for nothing, and every country keeps at least one of
-  those per tier. The pick is a stable function of the slot's own seed, so
+  in the draw, so a harbour wants a `coast`, a ford wants a `river`, a
+  hill town wants `hills` and a fen village wants `marsh`; a plain inland
+  Tile draws from the roles that ask for nothing, and every country keeps
+  at least one of those per tier. The pick is a stable function of the slot's own seed, so
   it is the same whenever the slot materializes and it survives the save.
   A role carries the description, the tags and the required Sites; the
   NAME comes from the slot, never from the template, so no two settlements
@@ -3054,9 +3110,12 @@ materialize lazily.
   with no diagonals and nothing off the frame, no settlement at sea, no
   ordinary town on a mountain, each historical Tile carrying its declared
   country, biome and its one named town, unique slot ids registered on both
-  their Tile and their country, exactly three capitals, and a start that is
-  a materialized slot. An illegal world raises at creation rather than
-  surfacing later inside a display.
+  their Tile and their country, exactly three capitals, a start that is
+  a materialized slot, a party standing on a real Tile, and the ground's
+  own clauses — every land Tile painted and no sea Tile, alpine and
+  mountains only on the high ground, legal words throughout, and the
+  climate, terrain, cover and derived-tag censuses unmoved. An illegal
+  world raises at creation rather than surfacing later inside a display.
 - **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
   in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
   Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
@@ -3075,7 +3134,9 @@ materialize lazily.
   known capital, `T` any other known town, `v` known village(s) with no
   known town, then the terrain**. One cell never tries to show everything on
   its Tile — the detail block below the grid names the current Tile, its
-  coordinate, country, biome, derived ground tags and every Area on it the
+  coordinate, country, terrain word (`places.tile_ground`: what the player
+  reads is the ground, never the map glyph's `basic`), derived ground tags
+  and every Area on it the
   party knows, and a compact legend groups known settlements by country,
   historical cities first. No border characters are drawn through the grid:
   the fixed partition rule and that legend carry political geography.
@@ -4508,24 +4569,41 @@ edge the party cannot feel on a shelf is not worth authoring.
 
 ---
 
-# Weather — Add-on (2026-08-08, the worldsim build's first content rung)
+# Weather — Add-on (2026-08-08, the worldsim build's first content rung;
+rebuilt onto climate and season 2026-08-21)
 
-Every land rolls a **sky** every day, off its own climate. It is the
-cheapest world content there is — land-agnostic, and the only layer that
-touches the party on every day it is out of doors. `worldsim.py` owns the
-roll, the states and the cards; `places.py`'s environment profiles author
-the distribution; `rpg.py` owns the two things the sky does to a body (the
-DISEASE family, the storm's field penalties).
+Every land rolls a **sky** every day, off the climate of the ground the
+party is standing on. It is the cheapest world content there is, and the
+only layer that touches the party on every day it is out of doors.
+`worldsim.py` owns the roll, the calendar, the states and the cards;
+`places.CLIMATE_PROFILES` owns the drought threshold; `rpg.py` owns the
+two things the sky does to a body (the DISEASE family, the storm's field
+penalties).
 
 ## The day roll
 
 - **Nine words**, shared by every land: clear, cloud, wind, rain, storm,
-  fog, frost, snow, heat. What differs is the **weights**, which each
-  environment profile authors as the numbers behind its climate sentence.
-  The game has no season track, so a profile's winters and summers are
-  averaged into one year-round distribution rather than modelled.
-- The same word **reads differently on different ground**: a storm in cold
-  highlands is a *snowstorm*, and it is the same card underneath.
+  fog, frost, snow, heat. What differs is the **weights**, and since
+  2026-08-21 they come from two places: the **climate** of the Tile under
+  the party's feet, and the **season**.
+- **A season CALENDAR, not a season track.** Day 1 of the campaign is
+  April 1st; spring is days 1–60, summer 61–150, autumn 151–210 and
+  winter 211–360, and the year wraps. Autumn reuses spring's weights —
+  the same cool wet middle — so the table carries three columns per
+  climate, each summing to 100 days in a hundred. Nothing stores a
+  season and nothing else in the game reads it: it is a lookup that says
+  which column today uses.
+- **The sky follows the party across a climate border.** A march from the
+  Danube into the steppe changes what that afternoon can do. Still one
+  sky per land per day: a land the party is not in reads its CAPITAL's
+  climate instead (Paris, Rome, Kyiv), and so does the party's own land
+  while the party is out at sea. The wet and dry spells stay on the LAND,
+  so crossing a border does not reset the drought behind you.
+- The same word **reads differently on different ground**: a storm in the
+  high country is a *snowstorm*, a desert storm is a *dust storm*, taiga
+  rain is *cold rain*, and fog on one of the five marsh Tiles is *fen
+  fog* — the one line relief and not the sky picks. It is the same card
+  underneath.
 - Two counters run behind the roll. **DRY is days since the last rain**, so
   an overcast day extends it — a grey sky is not a drought ending. **WET is
   a run of wet days** that a dry day breaks and an overcast one does not:
@@ -4573,7 +4651,9 @@ two days is a storm on both of them.
 - **THE DUST STORM** — Tergal, under drought. The roads stop and the herds
   scatter: **a day** on the road, and recovery work after.
 - **THE RAINS DO NOT COME** — the season card, any land. A drought is a
-  **relative** thing, so the spell that triggers it is the land's own (a
+  **relative** thing, so the spell that triggers it is the GROUND's own —
+  the climate profile's `drought_days`, 15 days in the wet north and 40
+  in the desert (a
   fortnight without rain is a disaster in the shaded forest and an ordinary
   Tuesday in the dry south). It is the state the wildfire and the dust
   storm admit on, and the one the economy floor's relations will read.

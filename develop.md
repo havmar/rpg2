@@ -302,7 +302,24 @@ a pointer: what the file is, how it's run, where its docs are.
   loads `settlement_templates` into `AREA_SPECS` / `SETTLEMENT_SITE_SPECS`,
   and `_settlement_template` picks by FIT — the roles whose `fits` tags the
   Tile carries, else the roles that ask for nothing, indexed by
-  `slot["seed"] % n`. `validate_catalog` grew the schema half
+  `slot["seed"] % n`. **The ground session** (2026-08-21, the tile
+  economy arc's session 1) added the two authored overlays and the law
+  over them: `CLIMATE_PATH` / `TERRAIN_PATH` and `load_overlay`,
+  `CLIMATE_LETTERS` / `TERRAIN_LETTERS` (file format only -- a Tile
+  stores the word), `CLIMATE_PROFILES` (ffd + its reference row, wheat
+  yield, winter severity, harvest day, `drought_days`) replacing
+  `ENVIRONMENT_PROFILES`, `frost_free_days` (the latitude gradient),
+  `tile_economy` (arable, wheat, clearance, realized, forest, pastoral,
+  the cover word) and `derived_tags`, the hand mechanisms
+  (`HAND_ALLUVIAL` / `HAND_FOREST` / `HAND_MARKS`), `natural_character` /
+  `natural_template` / `AREA_SUFFIXES` (one authority behind an Area's
+  name and its site inventory), `tile_ground` (the one word the player
+  reads -- the terrain word, or `sea`; `basic` went back to being a map
+  glyph), `CAPITAL_TILES` and `world["party_tile"]`
+  (the ground the world layer's sky is read off), and `_validate_ground`
+  -- the law demoted to a LINT, with `PINNED_CLIMATE_COUNTS` /
+  `PINNED_TERRAIN_COUNTS` / `PINNED_MARSHES` / `PINNED_TAG_COUNTS` /
+  `PINNED_COVER_COUNTS`. `validate_catalog` grew the schema half
   (`OBSOLETE_CATALOG_KEYS` / `OBSOLETE_LAND_KEYS` / `TILE_FIT_TAGS`: the old
   census must be gone, every tier must be covered, exactly one capital
   role, a no-tag role per tier, real Tile tags, and no `city` anywhere) and
@@ -311,8 +328,11 @@ a pointer: what the file is, how it's run, where its docs are.
   `OPPOSITE_DIRECTION` are DELETED — nothing read them.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. Each of the three
-  countries carries `name` / `culture` / `environment` / `description`, its
-  `natural` biome-to-template map and `natural_sites` inventories, and
+  countries carries `name` / `culture` / `description`, its `natural`
+  CHARACTER-to-inventory map (2026-08-21 — the seven land characters, a
+  list per character so a country can author two kinds of hill country;
+  the `environment` key retired with the climate overlay) and its
+  `natural_sites` inventories, and
   `settlement_templates`: a role per settlement kind, each with `tier`,
   the Tile tags it `fits`, its own `tags`, a `description` and its required
   `sites`. The old fixed settlement census — `settlements`, `descriptions`,
@@ -368,6 +388,24 @@ a pointer: what the file is, how it's run, where its docs are.
   `scene-example.md` — the dev docs and the spec companions are history
   and are deliberately not swept).
   `python -m unittest -v test_places.py`.
+- `test_ground.py` — **the ground and the sky's contract suite**
+  (2026-08-21, the tile economy arc's session 1), four parts. *The two
+  overlays*: painted iff land, alpine and mountains exactly on the high
+  ground, the pinned climate and terrain censuses, the marsh five by
+  name, and a bad grid rejected. *The law over them*: the cover and
+  derived-tag censuses, the retired bare biome words, deep forest
+  standing where people are few, the three hand mechanisms, the clamped
+  latitude gradient, the layer's campaign-invariance, and twelve broken
+  worlds — one per clause the session added to `validate_world`. *The
+  reconciliation*: every word a quest table asks for carried by real
+  natural Areas, `prairie` gone, a den job landing in genuinely wooded
+  ground, Areas named and stocked by character, no dead authored
+  inventory anywhere, and settlements fitted by character. *The sky*: the
+  season calendar's boundaries, thirty weight rows each summing to 100,
+  the day roll reading the Tile underfoot (and the capital when the party
+  is elsewhere or at sea), the display re-key including the fen's fog,
+  and the drought threshold off the climate profile.
+  `python -m unittest -v test_ground.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
   symmetric cost rule (east/west, north/south, a mountain at either end and
@@ -434,7 +472,12 @@ a pointer: what the file is, how it's run, where its docs are.
   land — `TRACKS` / `DECK_KEY` / `LIVE_KEY`, so a storm never blocks a
   harvest failing nor a season of drought a storm — and with them the
   sky: `WEATHER_WORDS` / `WEATHER_LOCAL` (a cold-highland storm reads as a
-  snowstorm), `weather_weights` / `roll_weather` / `_roll_sky` (the day
+  snowstorm; re-keyed by CLIMATE 2026-08-21, with `marsh` as its one
+  terrain line), `SEASONS` / `season_of` / `SEASON_COLUMN` and
+  `CLIMATE_WEATHER` (the calendar and the thirty weight rows),
+  `sky_tile` / `sky_phrase` / `drought_days` (the ground the sky is read
+  off -- the party's Tile, or the land's capital),
+  `weather_weights` / `roll_weather` / `_roll_sky` (the day
   roll, the wet and dry spells, a card that IS the weather holding it),
   `weather_of` / `weather_line` / `exposed` / `storming`, the eight
   authored weather and season cards, `named_necromancer` (THE FOG RAISES
@@ -656,8 +699,9 @@ a pointer: what the file is, how it's run, where its docs are.
   (2026-08-21, the tile economy arc's round 1; the round's design settled
   the same day — designlog): one climate letter per land tile over the
   same 30x18 frame, sea left as `.`. The vocabulary and the letters live
-  in `econmap.py`'s `CLIMATES`; nothing in the runtime reads the file yet
-  — plan.md's Round 1 implementation contract ships it into `places.py`.
+  in `places.py`'s `CLIMATE_LETTERS` since the ground session shipped
+  (2026-08-21); `places.load_overlay` reads it during world creation and
+  `validate_world` lints it.
 - `resources/europe_terrain.txt` — **the hand-authored terrain overlay**
   (2026-08-21, the tile economy arc's round 2; design settled the same
   day — designlog's round-2 entry): one terrain letter per land tile over
@@ -665,8 +709,9 @@ a pointer: what the file is, how it's run, where its docs are.
   plains, hills, marsh, with `m` (mountains) exactly on the `^` tiles;
   forest is NOT authored (it is derived by the deforestation law from
   climate and clearance). The vocabulary and letters live in
-  `econmap.py`'s `TERRAINS`; nothing in the runtime reads the file yet —
-  plan.md's Round 2 implementation contract ships it into `places.py`.
+  `places.py`'s `TERRAIN_LETTERS` since the ground session shipped
+  (2026-08-21); `places.load_overlay` reads it during world creation and
+  `validate_world` lints it.
 - `econmap.py` — **the tile economy arc's eyeball tool** (2026-08-21,
   plan.md Part 1's tooling item): standalone and stdlib-only in the
   `archive/worldmap.py` manner, it validates each authored overlay against
@@ -692,7 +737,12 @@ a pointer: what the file is, how it's run, where its docs are.
   deforestation clearance in closed form (wheat/(wheat+K)), surviving
   forest off the climate wildwood cap, the pastoral index by graze law,
   and the derived words/tags (cover, farmland, pasture, forest,
-  `HAND_MARKS`). Its constants ARE the Round 2 contract's numbers.
+  `HAND_MARKS`). Those constants SHIPPED on 2026-08-21 (session 1): they
+  live in `places.py` now and the tool imports them back, per the arc's
+  one-authority-per-constant rule — `CLIMATES` / `TERRAINS` /
+  `WOODED_MIN` / `FARMLAND_MIN` / `HAND_MARKS` / `tile_economy` are
+  windows onto the game's own objects, and `tile_tags` is a thin wrapper
+  over `places.derived_tags`.
   Since round 3 settled (2026-08-21, designlog's round-3 entry) it also
   carries the POPULATION layer: `python econmap.py population [SEED]`
   (the deterministic score law over rounds 1–2's outputs — food,
@@ -1404,6 +1454,7 @@ python archive/mapgen.py 1           # archived second map experiment
 python archive/test_worldmap.py      # archived first experiment's contract
 python -m unittest -v test_weapon_gen.py  # the weapon generation contract
 python -m unittest -v test_places.py  # procedural-place MVP contract
+python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
 python -m unittest -v test_potions.py # the quartermaster pass contract
@@ -1882,10 +1933,12 @@ mechanic *does* and *why* is rules.md's job.
 - **The weather** (2026-08-08, the worldsim ladder's first content rung —
   rules.md's Weather add-on) — `worldsim.py`: the three tracks and the
   sky (see Files); the knobs are the two spell tables,
-  `DROUGHT_WET_MULT` / `DROUGHT_DRY_BONUS`, `SHELTER_CHANCE` and each
-  card's own `chance`. `places.py`: `ENVIRONMENT_PROFILES` gained
-  `weather` and `drought_days` — the profiles author the climate, the
-  world layer rolls it. `rpg.py`: the DISEASE family (`DISEASE_KINDS` in
+  `DROUGHT_WET_MULT` / `DROUGHT_DRY_BONUS`, `SHELTER_CHANCE`, each
+  card's own `chance` and — since 2026-08-21 — the thirty rows of
+  `CLIMATE_WEATHER` and the `SEASONS` lengths. `places.py`:
+  `CLIMATE_PROFILES` carries `drought_days`; the ground authors the
+  climate, the world layer rolls it, and the weights follow the party
+  across a climate border while the wet/dry spells stay on the land. `rpg.py`: the DISEASE family (`DISEASE_KINDS` in
   `CONDITION_KINDS`, `catch_chill` / `shake_disease` / `treat_disease` /
   `exposure_check`, `Entity.disease_load` / `.sick`, `hp_ceiling` docking
   it, `_tick_conditions` skipping it, `long_rest`'s `sky=` / `sheltered=`
@@ -2213,6 +2266,17 @@ defeat mercy. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**The career sim's POSTING side moved on 2026-08-21** (the tile economy
+arc's ground session; benchlog's entry has the table). No combat, pay,
+threat or refill constant was touched and seven of the eight benches are
+byte-identical — but the quest tables' geography words became real ground
+for the first time, so a job that used to fall back to the origin Tile's
+own countryside is now posted somewhere. Windows are priced by the road,
+so they got longer: **turn-ins quick 30% -> 39%, late 13% -> 10%,
+expired postings 294 -> 242 a career, and a fresh world seeds ~7% more
+XP**. The progression cells, the death level and the board-exhaustion
+guard did not move. Nothing was tuned.
 
 **The weapon generation system (2026-07-28) is bench-neutral by
 construction, with one honest economy shave.** Every engine hook is inert

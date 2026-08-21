@@ -205,7 +205,7 @@ class PlaceGenerationTests(unittest.TestCase):
         area["known"] = True
         sites = [places.materialize_natural_site(world, area, day=i)
                  for i in range(1, 4)]
-        self.assertEqual(len({s["template"] for s in sites}), 3)
+        self.assertEqual(len({s["id"] for s in sites}), 3)
         self.assertIsNone(places.materialize_natural_site(world, area, day=4))
         snapshot = json.loads(json.dumps(world))
         self.assertEqual(snapshot, world)

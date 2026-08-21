@@ -185,7 +185,8 @@ from places import (
     settlement_tier,
     direction_word, edge_days, edge_direction, map_legend_lines, map_lines,
     neighbor_id, parse_coordinate, path_days, shortest_path, tile_coordinate,
-    tile_detail_lines as places_tile_detail, tile_id as tile_id_of, tile_label,
+    tile_detail_lines as places_tile_detail, tile_ground as places_tile_ground,
+    tile_id as tile_id_of, tile_label,
     MAP_GLYPH_LEGEND, MAP_MARK_LEGEND,
 )
 
@@ -248,8 +249,10 @@ def _area_position(area: dict) -> dict:
 def move_party(state: dict, area: dict) -> None:
     """Stand the party in `area` -- the one way position moves once a game
     is running (a travel arrival, a free step to a sibling Area, a
-    teleport)."""
+    teleport). The world keeps its own copy of the Tile, because the world
+    layer's sky is rolled off the ground the party is standing on."""
     state["position"] = _area_position(area)
+    state["world"]["party_tile"] = area["tile"]
 
 
 def location_line(state: dict) -> str:
@@ -5635,7 +5638,8 @@ def cmd_look(args: argparse.Namespace) -> None:
     # different places now, and a breadcrumb that only named the Area left
     # the player with no idea which map cell they were on.
     print(f"TILE {tile_label(tile)} -- "
-          f"{world['lands'][tile['country']]['name']}, {tile['biome']}")
+          f"{world['lands'][tile['country']]['name']}, "
+          f"{places_tile_ground(tile)}")
     print(area.get("description") or f"{area['name']} is a {kind} Area.")
     facts = active_known_facts(area)
     if facts:
@@ -5663,7 +5667,8 @@ def cmd_look(args: argparse.Namespace) -> None:
         if nid is None:
             continue
         other = world["tiles"][nid]
-        ways.append(f"{direction} {tile_label(other)} {other['biome']} "
+        ways.append(f"{direction} {tile_label(other)} "
+                    f"{places_tile_ground(other)} "
                     f"({edge_days(tile, other)}d)")
     print("Roads out (`travel DIRECTION`):")
     for way in ways:

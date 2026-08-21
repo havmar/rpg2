@@ -88,9 +88,12 @@ def _board_output(state: dict, settlement: str | None = None) -> str:
 
 
 def _inactive(world: dict) -> dict:
-    """A materialized settlement whose ordinary board is shut."""
+    """A materialized settlement whose ordinary board is shut AND which the
+    forced families have not already posted to: the tests below measure a
+    forecast from zero, and a story wave standing at the first shut board is
+    a legal world, not a broken one."""
     return next(s for s in quests.settlements(world)
-                if not s["board_active"])
+                if not s["board_active"] and not s["quests"])
 
 
 # --------------------------------------------------------------------------- #

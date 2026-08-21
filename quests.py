@@ -466,7 +466,7 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
         area_any=("road", "farmland", "pasture", "coast"),
         site_template="camp", domain="mixed", reuse="never"),
     "Wolves Attack": dict(
-        area_any=("forest", "hills", "pasture", "prairie"),
+        area_any=("forest", "hills", "pasture", "steppe", "marsh"),
         site_template="den", domain="natural", reuse="never"),
     "The Restless Crypt": dict(
         area_any=("settlement",),
@@ -478,10 +478,10 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
         area_any=("ruin", "road", "settlement"),
         site_template="ruin", domain="built", reuse="prefer"),
     "The Great Hunt": dict(
-        area_any=("prairie", "pasture", "hills", "basin"),
+        area_any=("steppe", "pasture", "hills", "marsh"),
         site_template="den", domain="natural", reuse="never"),
     "Rival Warband": dict(
-        area_any=("prairie", "pasture", "road", "hills"),
+        area_any=("steppe", "pasture", "road", "hills"),
         site_template="camp", domain="mixed", reuse="never"),
     "Giants in the Pass": dict(
         area_any=("hills", "pass", "ridge"),
@@ -490,7 +490,7 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
         area_any=("hills", "ridge", "mountains"),
         site_template="den", domain="natural", reuse="never"),
     "Rebel Shamans": dict(
-        area_any=("prairie", "ridge", "basin", "hills"),
+        area_any=("steppe", "ridge", "basin", "hills"),
         site_template="shrine", domain="mixed", reuse="never"),
     "The Dragon's Tribute": dict(
         area_any=("mountains", "hills", "ridge"),
@@ -863,9 +863,9 @@ def _fallback_place_requirement(tpl: dict) -> dict:
     elif any(word in text for word in ("tower", "wizard", "guildhall")):
         template, tags, domain = "tower", ("ruin", "road", "settlement"), "built"
     elif any(word in text for word in ("den", "hunt", "beast", "dragon")):
-        template, tags, domain = "den", ("forest", "hills", "prairie"), "natural"
+        template, tags, domain = "den", ("forest", "hills", "marsh"), "natural"
     else:
-        template, tags, domain = "camp", ("road", "settlement", "prairie"), "mixed"
+        template, tags, domain = "camp", ("road", "settlement", "steppe"), "mixed"
     return {"area_any": tags, "site_template": template, "domain": domain,
             "reuse": "never"}
 

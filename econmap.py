@@ -1,12 +1,15 @@
 """The tile economy arc's eyeball tool (2026-08-21, plan.md Part 1).
 
-Standalone and stdlib-only, in the archive/worldmap.py manner: it reads the
-authored resources directly and imports nothing from the game, so it can be
-run against a half-drawn overlay while the rules it will obey are still
-being designed.  It validates each authored overlay against the base map
-and renders them side by side as 30x18 ASCII, with censuses underneath.
-Climate is the first layer; fertility, population and routes join it as
-their rounds land.
+Stdlib-only and close to standalone: it reads the authored resources
+directly and renders them as 30x18 ASCII with censuses underneath, so it
+can be run against a half-drawn overlay while the rules it will obey are
+still being designed.  What it no longer does is keep its own copy of a
+number the game already owns: as each round SHIPS, its constants move
+into places.py and the tool imports them back (the arc's one-authority-
+per-constant rule).  The climate and terrain vocabularies and the whole
+potential law went that way on 2026-08-21 with session 1; the harvest,
+population and trade constants below are still authored here, because
+their sessions have not shipped.
 
     python econmap.py                  # the climate overlay + lint
     python econmap.py terrain          # the terrain overlay + land character
@@ -35,7 +38,10 @@ clearance a saturating function of potential wheat, realized arable and
 surviving forest falling out of it, and the pastoral index as the
 complement -- what habitable ground does where the plow does poorly.
 Everything here is DETERMINISTIC: authored overlays plus laws, no rng,
-identical in every campaign like the map itself.
+identical in every campaign like the map itself.  Both layers SHIPPED into
+worldgen on 2026-08-21 (designlog's (F) entry): a Tile now carries its
+climate, its terrain, its cover word and the derived tags, and this mode
+draws the same law the game does.
 
 The POPULATION mode is round 3's layer, in two halves.  The SCORE is
 deterministic law over rounds 1-2's outputs: food capacity (realized
@@ -88,6 +94,8 @@ import sys
 from collections import Counter, deque
 from pathlib import Path
 
+import places                   # the shipped layers' one authority
+
 RESOURCES = Path(__file__).with_name("resources")
 BASE_PATH = RESOURCES / "europe_map.txt"
 CLIMATE_PATH = RESOURCES / "europe_climate.txt"
@@ -96,32 +104,14 @@ TERRAIN_PATH = RESOURCES / "europe_terrain.txt"
 ROWS, COLUMNS = 18, 30
 BASE_GLYPHS = {".", "#", "^", "~"}
 
-# The climate vocabulary (round 1, DRAFT until the round settles).
-CLIMATES = {
-    "u": "tundra",
-    "t": "taiga",
-    "c": "continental",
-    "o": "oceanic",
-    "m": "mediterranean",       # the medieval DRY one (its bad year is dry)
-    "w": "wet mediterranean",   # the southern shore's Roman Warm regime
-    "s": "steppe",
-    "d": "desert",
-    "n": "nile",                # river-fed floodplain granary
-    "a": "alpine",              # exactly the mountain tiles
-}
-
-
-# The terrain vocabulary (round 2). Relief and drainage, nothing else:
-# forest is derived below, farmland is population's footprint, and the
-# quest tables' word for the high tiles is the plural -- `mountains` --
-# which round 2's contract makes the one word everywhere outside the
-# base-map glyph key (retiring the mountain/mountains near-miss).
-TERRAINS = {
-    "p": "plains",
-    "h": "hills",
-    "w": "marsh",       # authored by hand, few and famous
-    "m": "mountains",   # exactly the ^ tiles
-}
+# ONE AUTHORITY PER CONSTANT (the arc's standing rule). The climate and
+# terrain vocabularies and every number of the potential law SHIPPED with
+# the ground session on 2026-08-21: they live in places.py now, and the
+# tool imports them back rather than keeping a second copy. What is still
+# authored HERE is what has not shipped yet -- the harvest roll, the
+# population score and census, and the trade layer.
+CLIMATES = places.CLIMATE_LETTERS
+TERRAINS = places.TERRAIN_LETTERS
 
 
 def load_grid(path: Path, legal: set[str]) -> list[str]:
@@ -220,130 +210,26 @@ def censuses(climate: list[str]) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# The land's potential (derived, deterministic -- round 2's laws)
+# The land's potential (derived, deterministic -- SHIPPED 2026-08-21)
 # --------------------------------------------------------------------------- #
-# Author the physical, derive the human.  The numbers below are round 3's
-# inputs (population reads realized arable, pastoral and fishing); what the
-# game itself stores and speaks are the words at the bottom -- the cover
-# word and the derived tags.
+# Author the physical, derive the human.  The law and every constant behind
+# it now live in places.py, where worldgen reads them; the names below are
+# the tool's window onto the same objects, so the eyeball map and the game
+# can never drift.  What the game itself stores and speaks are the words --
+# the cover word and the derived tags -- and those come from places too.
 
-CLIMATE_ARABLE = {          # fraction of this climate's ground a plow can
-    "u": 0.00, "t": 0.10,   # ever touch, before relief says its word
-    "c": 0.65, "o": 0.60,
-    "m": 0.50, "w": 0.60,
-    "s": 0.35, "d": 0.02,
-    "n": 0.85, "a": 0.05,
-}
-TERRAIN_ARABLE = {          # what relief and drainage leave of that
-    "plains": 1.00, "hills": 0.45, "mountains": 0.10, "marsh": 0.15,
-}
-ALLUVIAL_BONUS = 0.12       # a river tile's floodplain soils (marsh IS the
-ARABLE_CAP = 0.90           # undrained floodplain, so it takes no bonus)
-WHEAT_YIELD = {             # round 1's yield column, restated for the tool
-    "u": 0.0, "t": 0.3, "a": 0.15, "c": 1.0, "o": 1.0,
-    "m": 0.8, "w": 1.3, "s": 0.5, "d": 0.05, "n": 1.5,
-}
-FFD = {                     # round 1's frost-free days: (base, reference
-    "u": (60, 2), "t": (100, 4), "a": (90, None), "c": (170, 8),
-    "o": (220, 8), "m": (270, 13), "w": (300, 17), "s": (160, 10),
-    "d": (330, 17), "n": (330, 18),
-}                           # row); the gradient scales wheat by ffd/base
-CLEARANCE_K = 0.20          # clearance = wheat / (wheat + K): how much of
-                            # its potential a population bothers to realize
-FOREST_CAP = {              # the wildwood: what nature forests, before man
-    "u": 0.05, "t": 0.95, "c": 0.85, "o": 0.85, "m": 0.45,
-    "w": 0.55, "s": 0.08, "d": 0.00, "n": 0.05, "a": 0.50,
-}
-MARSH_WOOD = 0.5            # carr and fen scrub, never the full wildwood
-GRAZE_CLIMATE = {           # the pastoral index: herding by climate law,
-    "u": 0.15, "t": 0.15,   # no hand-picking (the steppe reads pastoral
-    "c": 0.35, "o": 0.45,   # everywhere; exceptions are HAND_MARKS)
-    "m": 0.50, "w": 0.40,
-    "s": 0.90, "d": 0.05,
-    "n": 0.10, "a": 0.35,
-}
-GRAZE_TERRAIN = {
-    "plains": 0.60, "hills": 0.90, "mountains": 0.60, "marsh": 0.30,
-}
-DEEP_FOREST_MIN = 0.55      # surviving forest >= this: deep forest, the
-WOODED_MIN = 0.25           # wilderness; >= this: wooded (the forest tag)
-FARMLAND_MIN = 0.30         # realized arable >= this: the farmland tag
-PASTURE_MIN = 0.20          # pastoral >= this AND > realized arable
-CHARACTER_TAGS = ("steppe", "desert", "tundra")   # climate words that ARE
-                            # terrain character; the rest stay sky-only
-HAND_MARKS = {              # authored character the law cannot see: extra
-    (11, 19): ("pasture",), # tags per (row, column).  The one seeded mark
-}                           # is the middle Danube's horse country.
-HAND_ALLUVIAL = {           # floodplain soils with no drawn river: the Po
-    (12, 12), (12, 13),     # plain (the 2026-08-21 redraw cut the lagoon
-    (12, 14),               # river for looks; the water still exists)
-}
-HAND_FOREST = {             # the eastern wildwood (2026-08-21, round 4 at
-    (7, 24), (7, 25),       # the designer's direction): the deforestation
-    (8, 24), (8, 25),       # law clears the continental east like the
-}                           # west, but history left the great forest
-                            # standing between the marsh and the frontier
-                            # -- a Bialowieza writ at map scale.  Clearance
-                            # is capped here; the wood stands.
-HAND_FOREST_CLEARANCE = 0.25
-
-
-def tile_economy(letter: str, terrain: str, river: bool, row: int,
-                 column: int | None = None) -> dict:
-    """One tile's derived numbers and words, by law.  1-based coordinates."""
-    arable = CLIMATE_ARABLE[letter] * TERRAIN_ARABLE[terrain]
-    alluvial = river or (column is not None
-                         and (row, column) in HAND_ALLUVIAL)
-    if alluvial and terrain != "marsh":
-        arable += ALLUVIAL_BONUS
-    arable = min(ARABLE_CAP, arable)
-    base, reference = FFD[letter]
-    if reference is None:
-        ffd = base
-    else:
-        ffd = base + 8 * (row - reference)
-        ffd = max(base - 40, min(base + 40, ffd))
-    wheat = arable * WHEAT_YIELD[letter] * ffd / base
-    clearance = wheat / (wheat + CLEARANCE_K)
-    if column is not None and (row, column) in HAND_FOREST:
-        clearance = min(clearance, HAND_FOREST_CLEARANCE)
-    realized = arable * clearance
-    wildwood = FOREST_CAP[letter] * (MARSH_WOOD if terrain == "marsh"
-                                     else 1.0)
-    forest = wildwood * (1 - clearance)
-    pastoral = GRAZE_CLIMATE[letter] * GRAZE_TERRAIN[terrain]
-    if forest >= DEEP_FOREST_MIN:
-        cover = "deep forest"
-    elif forest >= WOODED_MIN:
-        cover = "wooded"
-    else:
-        cover = "open"
-    return {"arable": arable, "wheat": wheat, "clearance": clearance,
-            "realized": realized, "forest": forest, "pastoral": pastoral,
-            "cover": cover}
-
-
-CLIMATE_WORDS = {"u": "tundra", "t": "taiga", "s": "steppe", "d": "desert"}
+WOODED_MIN = places.WOODED_MIN
+FARMLAND_MIN = places.FARMLAND_MIN
+HAND_MARKS = places.HAND_MARKS
+tile_economy = places.tile_economy
 
 
 def tile_tags(economy: dict, terrain: str, letter: str,
               row: int, column: int) -> list[str]:
-    """The derived tag list round 2 reconciles the quest tables against."""
-    tags = [terrain]
-    if economy["cover"] != "open":
-        tags.append("forest")
-    if economy["realized"] >= FARMLAND_MIN:
-        tags.append("farmland")
-    if (economy["pastoral"] >= PASTURE_MIN
-            and economy["pastoral"] > economy["realized"]):
-        tags.append("pasture")
-    word = CLIMATE_WORDS.get(letter)
-    if word in CHARACTER_TAGS:
-        tags.append(word)
-    for mark in HAND_MARKS.get((row, column), ()):
-        if mark not in tags:
-            tags.append(mark)
-    return tags
+    """The tag list worldgen stamps on a land Tile, minus the country and
+    the positional words the tool has no world to ask for."""
+    return [terrain] + places.derived_tags(economy, CLIMATES[letter],
+                                           row, column)
 
 
 def character_glyph(economy: dict, terrain: str, tags: list[str]) -> str:
@@ -374,7 +260,7 @@ def economy_grids(base: list[str], climate: list[str],
                 line += "."
                 continue
             word = TERRAINS[terrain[r][c]]
-            economy = tile_economy(climate[r][c], word,
+            economy = tile_economy(CLIMATES[climate[r][c]], word,
                                    base[r][c] == "~", r + 1, c + 1)
             economies[(r, c)] = economy
             tags[(r, c)] = tile_tags(economy, word, climate[r][c],

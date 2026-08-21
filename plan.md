@@ -15,12 +15,15 @@ implementation sessions**. Trigger one by prompting **"implement
 session N"**; a session is a full dev sitting (read develop.md first,
 ship the contract, run the suites, do the shipping paperwork). The
 sessions ship **in order** — each reads the layers the one before it
-stamped. Part 2 is the draft roadmap beyond the arc — main points only,
-each a future design conversation, none scheduled.
+stamped, and **Session 1 (the ground & the sky) shipped 2026-08-21**
+(designlog's (F) entry; the built layer is documented in rules.md and
+develop.md). The numbers are kept as they were cut, so 2, 3 and 4 still
+mean what the designlog says they mean. Part 2 is the draft roadmap
+beyond the arc — main points only, each a future design conversation,
+none scheduled.
 
 The cut is by implementation seam, not one-round-one-session (the
-designlog's round names stay the design authority): session 1 is rounds
-1+2's deterministic authored ground and the sky; session 2 concentrates
+designlog's round names stay the design authority): session 2 concentrates
 every derived-seed roll and every acknowledged fixture re-pin in one
 sitting (round 1's harvest + round 3's census); session 3 is round 4's
 trade network over that census; session 4 is round 5 — everything that
@@ -59,182 +62,7 @@ Standing rules for the arc:
 
 ---
 
-# Part 1 — THE TILE ECONOMY ARC: the four implementation sessions
-
-## Session 1 — The ground & the sky (climate + terrain)
-
-The design is designlog 2026-08-21 (the round-1 entry) and 2026-08-21 (B)
-(the round-2 entry), including the two reversals they record: climate is
-HAND-PAINTED, not computed — the law is demoted to a lint — and **forest
-is NOT authored** — the overlay is relief and drainage only, the wildwood
-comes from climate and the deforestation law decides what survives, so
-deep forest appears exactly where people are few. The authored overlays
-and the eyeball tool are already in the tree
-(`resources/europe_climate.txt`, `resources/europe_terrain.txt`,
-`econmap.py` / `econmap.py terrain` / `potential`); **econmap.py's
-constants ARE this contract's numbers** (the climate tables, and
-`CLIMATE_ARABLE`, `TERRAIN_ARABLE`, `ALLUVIAL_BONUS`, `HAND_ALLUVIAL`,
-`FFD`, `CLEARANCE_K`, `FOREST_CAP`, `MARSH_WOOD`, `GRAZE_CLIMATE`,
-`GRAZE_TERRAIN`, the word thresholds, `HAND_MARKS`, `HAND_FOREST` /
-`HAND_FOREST_CLEARANCE` — the eastern wildwood: four continental-plains
-tiles east of Warsaw where clearance is capped at 0.25 because history
-left the great forest standing where the law would clear it) — restated
-below only where the build needs more than the tool carries. Both layers
-are authored-plus-law with no rng — identical in every campaign like the
-map itself — so derived seeds are moot and every existing bench is
-unmoved by construction (the sky's day roll is lazy and day-seeded; no
-bench reads it). The last-harvest roll is SESSION 2's; no reader surface
-beyond the sky and the tile tags ships here (session 4 owns the read
-surface, the snapshot arc owns cards and states). The northern-Scotland
-flip (R03C04 basic→mountain) shipped with the design rounds as ordinary
-dev work.
-
-**1. The ground.** `create_geography` loads
-`resources/europe_climate.txt` and `resources/europe_terrain.txt` beside
-the base map and stamps `tile["climate"]` and `tile["terrain"]` with the
-full words (the letters are file format only): climates tundra, taiga,
-continental, oceanic, mediterranean, wet_mediterranean, steppe, desert,
-nile, alpine; terrains plains, hills, marsh, mountains. `validate_world`
-grows the lints' clauses — every land tile painted, sea unpainted,
-alpine and mountains exactly the mountain tiles, only the legal words —
-and pins the climate census (u8 t42 c83 o28 m46 w32 s24 d18 n4 a29) and
-the terrain census (plains 213, hills 67, marsh 5, mountains 29) plus
-the marsh five by name: the Fens R06C06, the Low Countries delta R08C11,
-the Pripet pair R09C23 + R09C24, the Danube delta R11C24.
-
-**2. The label table**, a `CLIMATE_PROFILES` table in `places.py`
-replacing `ENVIRONMENT_PROFILES` (the five old profiles and the
-catalog's per-country `environment` key retire as scaffolding). Columns
-per climate — frost-free days, wheat-yield multiplier, winter severity
-0–3, harvest day, `drought_days`:
-
-| climate | ffd | yield | winter | harvest day | drought_days |
-|---|---|---|---|---|---|
-| tundra | 60 | 0 | 3 | — | 20 |
-| taiga | 100 | 0.3 | 3 | 125 | 15 |
-| alpine | 90 | 0.15 | 3 | 125 | 15 |
-| continental | 170 | 1.0 | 2 | 100 | 18 |
-| oceanic | 220 | 1.0 | 1 | 110 | 15 |
-| mediterranean | 270 | 0.8 | 0 | 50 | 30 |
-| wet_mediterranean | 300 | 1.3 | 0 | 45 | 25 |
-| steppe | 160 | 0.5 | 3 | 90 | 25 |
-| desert | 330 | 0.05 | 0 | — | 40 |
-| nile | 330 | 1.5 | 0 | 40 | 40 |
-
-The latitude gradient: ffd(tile) = base + 8 × (row − reference row),
-clamped to base ± 40; reference rows tundra 2, taiga 4, oceanic 8,
-continental 8, steppe 10, mediterranean 13, wet_mediterranean 17,
-desert 17, nile 18, alpine none. The sky and the terrain laws below are
-this session's readers of the table; the winter and harvest-day columns
-are the snapshot arc's inputs, shipped now as data so that arc starts
-from authority.
-
-**3. The sky** (absorbs the deferred "seasonal or Tile-specific weather
-profiles" item whole). A season CALENDAR, not a season track: day 1 =
-April 1st; spring days 1–60, summer 61–150, autumn 151–210 (autumn
-reuses spring's weights), winter 211–360; `season_of(day)` is a lookup
-and nothing else reads it. Weather weights become per climate × season —
-the settled tables, per hundred days over the nine words in the order
-clear / cloud / wind / rain / storm / fog / frost / snow / heat (each
-row sums to 100; autumn = spring; nile shares desert's sky):
-
-| climate | spring | summer | winter |
-|---|---|---|---|
-| oceanic | 20/26/12/26/4/8/4/0/0 | 30/24/10/24/6/4/0/0/2 | 12/30/16/24/6/6/5/1/0 |
-| continental | 26/22/12/20/5/5/8/2/0 | 34/16/8/18/10/2/0/0/12 | 16/22/10/4/2/6/22/18/0 |
-| taiga | 18/24/10/16/3/10/12/7/0 | 28/22/8/22/5/8/4/0/3 | 14/20/10/0/2/6/26/22/0 |
-| tundra | 16/20/22/6/4/8/14/10/0 | 22/22/16/14/4/10/8/4/0 | 12/16/22/0/6/4/20/20/0 |
-| alpine | 18/20/18/12/6/8/10/8/0 | 26/18/14/16/10/6/6/4/0 | 14/16/16/0/6/6/20/22/0 |
-| mediterranean | 34/14/14/18/4/4/2/0/10 | 48/8/12/4/4/2/0/0/22 | 24/20/14/30/6/4/2/0/0 |
-| wet_mediterranean | 32/14/12/24/4/4/0/0/10 | 42/10/10/12/6/2/0/0/18 | 26/18/12/32/6/4/0/0/2 |
-| steppe | 28/12/24/14/6/2/10/4/0 | 38/8/20/8/8/0/0/0/18 | 18/14/22/2/4/2/22/16/0 |
-| desert, nile | 52/6/18/4/2/2/2/0/14 | 50/2/14/0/2/0/0/0/32 | 50/10/16/6/2/4/8/0/4 |
-
-The day roll takes its weights from the party's
-CURRENT TILE's climate and the season instead of the land's environment;
-still one sky per land per day, and the wet/dry counters, the drought
-bend, cards' own skies and bought skies are untouched. `WEATHER_LOCAL`
-re-keys by climate: alpine keeps the snowstorm rows, steppe inherits
-prairie's wind line, desert's storm reads "a dust storm", taiga and
-tundra rain reads "cold rain". One terrain flavor joins the re-key
-(settled in round 5's design, discharging round 2's parked fen line):
-on a MARSH tile, fog reads as fen fog — `WEATHER_LOCAL`'s one
-terrain-keyed line; the weather LAW stays climate-only. `drought_days`
-moves onto the climate profile.
-
-**4. The laws** ship into `places.py` beside `CLIMATE_PROFILES`, computed
-at worldgen per tile: arable potential = climate × terrain (+ the
-alluvial bonus on river tiles and the `HAND_ALLUVIAL` Po plain; marsh
-takes no bonus — marsh IS the undrained floodplain); potential wheat =
-arable × the climate yield column × the ffd gradient (ffd/base);
-clearance = wheat / (wheat + 0.2) — the two-pass deforestation proposal
-collapsed to its closed form — capped by `HAND_FOREST_CLEARANCE` on the
-`HAND_FOREST` tiles; realized arable = arable × clearance; surviving
-forest = wildwood × (1 − clearance); pastoral index = climate graze ×
-terrain graze. **Stored words, hidden numbers**: the tile keeps
-`tile["terrain"]` (authored) and `tile["cover"]` (deep forest ≥ 0.55 /
-wooded ≥ 0.25 / open); the numbers are pipeline intermediates session 2
-recomputes from the same authorities, never saved.
-
-**5. The tags — the quest-vocabulary reconciliation.** Tile and natural
-Area tags become: the terrain word, the country, the positional set
-(`river` + `riverside`, `coast`, `mountain-foot`, `border`, `island`),
-then the derived words — `forest` (cover wooded or deeper), `farmland`
-(realized ≥ 0.30), `pasture` (pastoral ≥ 0.20 and > realized), the
-character climates (`steppe`, `desert`, `tundra`), plus `HAND_MARKS`
-(the middle Danube's horse country). The bare biome words `basic` and
-`mountain` leave the tag lists; **`mountains` is the one word for high
-ground** everywhere outside `BIOME_GLYPHS` and the edge-cost rule — the
-mountain-vs-mountains near-miss retires, and the quest tables' words
-finally match real natural Areas (today `forest` / `hills` / `prairie` /
-`pasture` / `farmland` match NO natural Area — every such job falls back
-to the origin tile's countryside). Pinned tag census: farmland 128,
-pasture 116, forest 101, steppe 24, desert 18, tundra 8; cover open 213,
-wooded 55, deep forest 46. `prairie` is renamed `steppe` everywhere
-(quests.py tables, the Tergal catalog content, the sky section above
-already re-keys `WEATHER_LOCAL`); `marsh` joins the den-family quest
-tables.
-
-**6. Area naming and the natural templates.** The natural Area suffix
-reads character instead of biome: sea / mountain / river keep Sea /
-Mountains / Riverlands; then marsh → Marshes, deep forest → Forest,
-hills → Hills, else Countryside. Natural template selection goes by
-terrain + cover instead of one-template-per-biome (which currently
-leaves Firascir's whole `fields` inventory dead — every basic tile draws
-`old_forest`): forest tiles take the forest inventory, cleared plains
-the fields, hills the hill one, marsh the fen one. New natural site
-inventories owed: firascir hills (moor and glen), firascir marsh (the
-fen), tergal marsh (the Pripet); Tergal's `open_prairie` becomes
-`open_steppe`. The catalog natural entries' own tag lists are dead data
-— drop them (writing.md register for all new content).
-
-**7. Settlement fits.** `TILE_FIT_TAGS` grows the terrain and derived
-words (`hills`, `marsh`, `forest`, `farmland`, `pasture`, `steppe`,
-`plains`) and drops `basic` / `mountain` / `sea` — position stops being
-the only fit vocabulary. Re-fit the templates where character now says
-it better: hill_town and ridge_town fit `hills`, forest_village fits
-`forest`, herd_village fits `steppe`, plus one new firascir fen village
-fitting `marsh`. Template picks may shift on some tiles (the same
-`slot["seed"] % n` over a better candidate list) — no compatibility, per
-doctrine.
-
-**8. Tests.** The pinned climate, terrain and tag censuses; determinism
-(two worlds off different seeds carry identical climate, terrain, cover
-and tags); the marsh five by name; one broken world per new
-`validate_world` clause; the weight rows summing to 100 at import and
-the season calendar's boundaries; the day roll reading the party tile's
-climate (a med party can roll summer heat on a day the taiga could
-not); the `WEATHER_LOCAL` re-key including the fen fog; the drought
-counter reading the profile's `drought_days`; and the reconciliation
-observable end to end — a den job landing in a genuinely wooded natural
-Area, a steppe job in Tergal's grass, a marsh tag reachable — plus
-every existing bench unmoved.
-
-**Explicit non-changes** (settled, not deferred): hills cost no travel
-day — the edge model stays biome-only and symmetric, every pinned
-distance survives; terrain stays out of the weather LAW (climate owns
-the sky; the fen-fog line above is display flavor only) and out of the
-harvest contagion model.
+# Part 1 — THE TILE ECONOMY ARC: the remaining implementation sessions
 
 ## Session 2 — The rolled world: the last harvest & the census
 

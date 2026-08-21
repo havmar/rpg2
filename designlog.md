@@ -5595,3 +5595,145 @@ line (a build option, not contracted); creature and encounter geography
 network (the snapshot and politics arcs); the exact character-word and
 cause-name phrasings left to the build under writing.md, with the
 contract's examples as canon.
+
+## 2026-08-21 (F) — Session 1 of the tile economy arc: the ground & the sky, built
+
+**What shipped.** Plan.md's Session 1 whole: rounds 1+2's authored ground
+and the sky it hangs under, in one `create_geography` pass.
+
+- **The two overlays load onto the Tiles.** `places.load_overlay` reads
+  `resources/europe_climate.txt` and `resources/europe_terrain.txt` beside
+  the base map and `create_geography` stamps `tile["climate"]` and
+  `tile["terrain"]` with the full words (the letters stayed file format).
+  `_validate_ground`, called from `validate_world`, is the law demoted to a
+  lint: painted iff land, alpine and mountains exactly on the `^` tiles,
+  only legal words, and the pinned climate (u8 t42 c83 o28 m46 w32 s24 d18
+  n4 a29) and terrain (plains 213, hills 67, marsh 5, mountains 29)
+  censuses, plus the marsh five by coordinate.
+- **`CLIMATE_PROFILES` replaced `ENVIRONMENT_PROFILES`** — ffd and its
+  reference row, the wheat yield, winter severity, the harvest day and
+  `drought_days`, ten rows. The five old profiles, the catalog's
+  `environment` key, the land record's `environment` field and
+  `worldsim.ENVIRONMENT_PROFILES_BY_LAND` are gone.
+- **The laws moved into `places.py`** beside the table — arable potential,
+  the ffd gradient, the closed-form clearance, realized arable, surviving
+  forest, the pastoral index, the three hand mechanisms (`HAND_ALLUVIAL`,
+  `HAND_FOREST`, `HAND_MARKS`) — and `econmap.py` now imports them back,
+  which is the arc's one-authority-per-constant rule taking its first turn.
+  The tile keeps only the words: `terrain`, `cover` and the tag list; the
+  fractions are worldgen intermediates and are never stored.
+- **The tag vocabulary is reconciled.** A land Tile now leads with its
+  terrain word and carries the derived ones — `forest`, `farmland`,
+  `pasture`, the character climates — so the quest tables' `forest` /
+  `hills` / `pasture` / `farmland` match real natural Areas for the first
+  time (before this every such job fell back to the origin Tile's
+  countryside). `basic` and `mountain` left the tag lists, `prairie` was
+  renamed `steppe` everywhere, and `marsh` joined the beast-lair tables.
+  Pinned: farmland 128, pasture 116, forest 101, steppe 24, desert 18,
+  tundra 8; cover open 213, wooded 55, deep forest 46.
+- **Natural Areas are named and stocked by CHARACTER** — one
+  `natural_character` function behind both halves, so a Tile called
+  Marshes cannot be stocked with windmills. Firascir's whole `fields`
+  inventory was dead data before this (every basic tile drew
+  `old_forest`); now every authored inventory in the catalog is drawn from
+  somewhere, and `validate_catalog` fails if one is not.
+- **Settlements fit by character too.** `TILE_FIT_TAGS` dropped `basic` /
+  `mountain` / `sea` and grew the terrain and derived words, so a hill town
+  wants hills and a fen village wants the fen.
+- **The sky is climate x season.** A season CALENDAR (day 1 = April 1st,
+  60/90/60/150, autumn reusing spring's column, `season_of` a lookup
+  nothing stores), a `CLIMATE_WEATHER` table of thirty rows each summing to
+  100, and a day roll whose weights come from the ground the party is
+  standing on. `WEATHER_LOCAL` re-keyed by climate and grew its one
+  terrain-keyed line, the fen's fog. The wet/dry counters, the drought
+  bend, the cards' own skies and the bought sky are untouched.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **Where the party is standing.** The day roll needed a tile and
+   `roll_world(world, day)` has no session state, so the world carries
+   `world["party_tile"]`: stamped by `create_geography` with the start
+   Tile and kept current by `session.move_party`, the one writer. It is a
+   `validate_world` clause.
+2. **The sky of a land the party is NOT in.** Every land still rolls one
+   sky a day, so the other two realms needed a reference. The build chose
+   their CAPITAL Tile — Paris, Rome, Kyiv — because it is concrete and
+   already pinned, over a computed modal climate, which would have been a
+   statistic rather than a place. The same rule stands in when the party is
+   at sea, where there is no ground to read.
+3. **Where the weather weights live.** In `worldsim.py`, which owns the
+   sky, not in `CLIMATE_PROFILES`. The profile keeps the five columns the
+   contract named; the table of thirty rows sits next to the roll that
+   reads it, and `validate_content` checks the rows sum to 100 at import.
+4. **`forest` the character vs `forest` the tag.** The Area suffix and the
+   site inventory take DEEP forest only (46 Tiles), as the contract's
+   naming line says; a merely `wooded` Tile keeps its terrain character and
+   still carries the `forest` TAG, which is what a job matches on. That
+   keeps 101 Tiles answering a den job while only the real wilderness is
+   named Forest.
+5. **An eighth character, `coast`.** Naming has seven words; SELECTION has
+   eight. A shore Tile that would otherwise be plain countryside draws the
+   country's coast inventory where it authors one, which is what keeps
+   Mortellaria's `rocky_coast` alive. Its Area is still named Countryside.
+6. **The inventory pick is POSITION-based**, `(row + column) % n`, not
+   seed-based: this whole layer is identical in every campaign, and a
+   checkerboard puts a country's two kinds of hill country next to each
+   other instead of clumping them.
+7. **A fourth new natural inventory.** The contract owed three (firascir
+   hills, firascir marsh, tergal marsh). Tergal also needed a FOREST one:
+   thirty of its Tiles are deep forest and it had no wood in its catalog at
+   all. `taiga_wood` — the timber road, the trapper's line, the charcoal
+   camp — is the addition.
+8. **Two new settlement templates.** Moving `forest_village` onto
+   `forest` left Firascir with no free village role, which
+   `validate_catalog` requires (a plain inland Tile has to be able to draw
+   something). `field_village` — a green, a plough inn, a tithe barn — is
+   the free one now. Moving `herd_village` onto `steppe` did the mirror
+   damage in Tergal: with the herd village gated, every one of the thirty
+   forest Tiles in the taiga north drew `basin_village`, and a village of
+   salt grass and goat pens in a dry hollow is not what stands in the
+   Russian forest. `wood_village` — log houses, a sable inn, a fur store —
+   fits `forest` and takes them. A settled world now spreads Tergal's
+   villages 11 wood / 9 basin / 7 herd / 1 river instead of piling them
+   all on one role.
+9. **`ridge_town` kept `mountain-foot`.** The contract re-fitted both hill
+   towns onto `hills`; Tergal carries exactly ONE hills Tile (R04C22, which
+   the deforestation law makes deep forest and which rolls no settlement),
+   so the re-fit would have made an authored template dead data — the very
+   disease this session was cutting out. Mortellaria's `hill_town` took
+   `hills` as written.
+10. **`marsh` joined the beast-lair tables only** — Wolves Attack, The
+    Great Hunt and the fallback den — not the two dragon tables, which are
+    about high ground. The Great Hunt also lost `basin`: that word is
+    carried only by Tergal's settlement templates, so on a hunt's table it
+    was routing a den job at a town.
+11. **The player never reads `basic` again.** `places.tile_ground` is the
+    one word for what a Tile is made of — the terrain word, or `sea` — and
+    the `HERE:` block, `look`'s TILE line and its roads-out list all speak
+    it. The base map's four glyphs went back to being a drawing
+    vocabulary. The full composed character line is still session 4's.
+12. **Two test fixtures were re-pinned**, both because the world legitimately
+    moved under them: `test_places`' natural-site test asserted three
+    distinct site TEMPLATES (incidentally true of `old_forest`, not of
+    `fields`) and now asserts three distinct SITES, which is what its name
+    always said; `test_quest_geography`'s `_inactive` helper now asks for a
+    shut board with no forced work already standing at it, since the
+    template shift moved which settlement it picked.
+
+**Measured.** `test_ground.py` is the new contract suite (30 tests, four
+parts); the full suite went 798 to 828, all green, with only the two
+fixtures above touched. Seven of the eight benches are byte-identical.
+`bench_quests.py`'s career sim MOVED, and it was supposed to: with the
+tag words finally real, a wolf hunt is posted at a genuine wood out on
+the map instead of falling back to the origin Tile's own countryside, so
+windows priced by the road got longer — turn-ins land earlier in them
+(quick 30% to 39%), a sixth fewer postings expire (294 to 242 a career),
+and a fresh world seeds 7% more XP. The progression cells are flat (L8
+and L14 identical, the median death level 9 both ways). Nothing was
+tuned; benchlog's 2026-08-21 entry has the table, and a note on the top
+band caught swinging on a change that cannot touch combat.
+
+**Parked on the way**: nothing new. The plan's own non-changes hold — hills
+still cost no travel day, terrain is still out of the weather law and out
+of the harvest model — and Session 2 (the rolled world: the last harvest
+and the census) is next and unblocked.
