@@ -649,12 +649,11 @@ a pointer: what the file is, how it's run, where its docs are.
   `^` / `~`. `places.load_europe_map` validates and loads it during world
   creation.
 - `resources/europe_climate.txt` — **the hand-painted climate overlay**
-  (2026-08-21, the tile economy arc's round 1 — DRAFT until the round
-  settles): one climate letter per land tile over the same 30x18 frame,
-  sea left as `.`. The vocabulary and the letters live in `econmap.py`'s
-  `CLIMATES`; nothing in the runtime reads the file yet — it becomes
-  authority when round 1's implementation contract ships it into
-  `places.py`.
+  (2026-08-21, the tile economy arc's round 1; the round's design settled
+  the same day — designlog): one climate letter per land tile over the
+  same 30x18 frame, sea left as `.`. The vocabulary and the letters live
+  in `econmap.py`'s `CLIMATES`; nothing in the runtime reads the file yet
+  — plan.md's Round 1 implementation contract ships it into `places.py`.
 - `econmap.py` — **the tile economy arc's eyeball tool** (2026-08-21,
   plan.md Part 1's tooling item): standalone and stdlib-only in the
   `archive/worldmap.py` manner, it validates each authored overlay against
@@ -666,8 +665,10 @@ a pointer: what the file is, how it's run, where its docs are.
   --sweep` for the 500-seed distribution): contiguous problem regions
   seeded by climate, each with a cause — drought, the great rains, frost —
   grown by contagion into the ground that cause can hurt, one drought
-  guaranteed per world; tuned to ~17% problem coverage. Its constants are
-  the round's draft numbers until the implementation contract ships them.
+  guaranteed per world; tuned to ~17% problem coverage. Since the round
+  settled (2026-08-21, designlog) its constants ARE the Round 1
+  contract's numbers — plan.md restates only what the tool cannot carry
+  (the nearby-trouble nudge needs the start tile and real path days).
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection

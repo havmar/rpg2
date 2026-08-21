@@ -4981,3 +4981,101 @@ tables in `places.py`). The arc's standing rules — hidden numbers
 visible words, author-the-physical derive-the-human, derived seeds
 throughout, validate-where-made, the render-script eyeball from round 1
 — are written at the head of plan.md's Part 1.
+
+## 2026-08-21 — Round 1 of the tile economy arc: climate, the sky, the last harvest
+
+**Where it started.** The designer opened round 1 with a redrawn map
+(Denmark added, Scandinavia adjusted to it, the seaside rivers cut for
+looks), a proposed climate list, and the round's fundamental questions:
+climate vs biome, whether either can be computed from a 30x18 map,
+per-tile attributes vs a label, and which food-production factors the
+round owes as numbers. A second sitting brought the harvest question
+forward from the snapshot arc and closed the round.
+
+**The map redraw** shipped first as ordinary dev work: new pinned
+censuses (basic 268 / mountain 28 / river 18 / sea 226, mainland 300),
+and three calls the drawing forced — Amsterdam FOLLOWED THE RHINE to
+R08C11 to stay a river city (the pinned Amsterdam–Paris distance is now
+3), Lisbon and Venice became basic tiles with their rivers, the
+interrupted-route contract in test_navigation now computes its expected
+stop as the first LAND-leg tile (the sea rolls no encounter — the rule
+was already law, the test had assumed an inland start), and the one-day
+rumor fixture moved from seed 37 to seed 28 (Solavela, Madrid one day
+off) when the slot set shifted the uniform start draw.
+
+**The road the discussion took.** Plan.md's round-1 entry said climate
+by LAW; the designer reversed it — the map is too coarse for first
+principles, hand-paint instead — and the reversal kept the plan's
+spirit by DEMOTING THE LAW TO A LINT: the overlay is authored, the
+tool checks what a rule can state (painted iff land, alpine iff
+mountain, the census). Climate vs biome resolved as one merged zonal
+vocabulary (the list freely mixes true climates and biomes; round 2's
+terrain overlay carries within-climate texture, so a taiga tile with
+cleared farmland is legal — that is southern-taiga agriculture, no
+label bending). Per-tile climate attributes were REJECTED in favor of
+label columns plus a latitude gradient (+8 frost-free days per row
+south, clamped) — individual tile character enters at round 2 (soil,
+alluvium, exceptions), not in the sky. The designer's three food
+factors (growing season, precipitation reliability, winter severity)
+became authored label columns: reliability is the interesting one, and
+it ended as the harvest layer's tables rather than an abstract
+variance number. The mediterranean split in two — the medieval DRY
+European one and the Roman Warm WET southern shore — and Egypt got its
+own tenth label, `nile` (highest yield, no winter; its granary reads
+in the climate layer without authoring the river into the base map).
+The sky gained a season CALENDAR, not a track: day 1 = April 1,
+spring/summer/autumn/winter at 60/90/60/150, autumn reusing spring's
+weights, `season_of(day)` a lookup nothing else reads; weights are per
+climate x season and the day roll reads the party's current tile. The
+per-tile-weather worry dissolved on inspection: last year's harvest is
+history at worldgen and never counted rain days, this year's is
+unwritten and the sky is its STORY — so the label is enough, and the
+drought machinery stays the bridge.
+
+**The second sitting: the last harvest.** The designer separated what
+he had been conflating — population reads the label's averages (round
+3, static, per-climate is fine); the CRISIS layer is a separate seeded
+per-playthrough roll, and climate-wide uniformity is unacceptable
+there while checkerboard noise is worse. His two-pass sketch (seed
+problem spots low, reroll neighbours high) became SEEDED CONTAGION,
+built and tuned in econmap.py the same day: 4-6 regions, centers
+weighted to failure-prone climates, each region drawing a CAUSE from
+its center's climate — drought, THE GREAT RAINS (the 1315 famine,
+promoted to a first-class cause), frost; the Nile's only failure is
+the bad flood — growth gated by cause-vs-climate susceptibility so a
+drought sweeps the steppe and dies at the oceanic border, severity
+deepest at the core. Scale: 100 = a full excellent harvest (110-120
+legendary, below 35 apocalyptic, problem < 75). Measured over 500
+seeds: 17.2% mean problem coverage (min 3, max 35), mean region 11
+tiles, drought guaranteed always. Two postures were named and
+guaranteed: NO WORLD IS A GOOD YEAR EVERYWHERE (a drought region
+always exists), and the campaign USUALLY OPENS IN OR BESIDE A BAD
+YEAR — raw rolls put trouble within 6 days of the start in only ~52%
+of worlds, so the contract adds the nearby-trouble nudge (relocate one
+region into 5 days of the start with chance 3 in 4 when none is
+there), lifting it to ~88% while keeping the quiet start possible.
+Harvest DATES were pulled early per climate (mediterranean ~day 50,
+continental ~100, taiga ~125) under the designer's bring-forward
+principle, stated generally: **the game is static in time, so
+chronological difference becomes regional difference** — true for
+harvests now, for technology later.
+
+**What was decided** is plan.md's Round 1 implementation contract,
+replacing the design entry: climate loaded onto tiles with
+validate_world clauses and a pinned census; CLIMATE_PROFILES replacing
+ENVIRONMENT_PROFILES (the five old profiles and the catalog
+environment key acknowledged as scaffolding); the label table with the
+gradient; the seasonal sky off the party's tile; the harvest roll into
+worldgen with derived seeds, tiles and region records stored, the two
+guarantees, and the distribution pinned by test. econmap.py's
+constants are the contract's numbers. Part 2's snapshot arc was
+updated: it keeps the last-WINTER roll (pastoral, reading the winter
+column, with the great-rains regions doubling as murrain country), the
+reading of both rolls, and the harvest-day consequences.
+
+**Parked on the way**: the causes' fiction names (writing.md register,
+with their first read surface); a small population discount for
+high-variance climates in round 3 (carrying capacity is set by the bad
+years); whether the wet/dry spell counters ever move off the land
+layer (kept there — a party crossing a climate border keeps the
+land's spell, good enough at this scale).
