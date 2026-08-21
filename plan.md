@@ -7,15 +7,25 @@ is written to the permanent docs (`rules.md`, `dm.md`, `develop.md`,
 "Where a finished feature is written up".
 
 The fixed Europe map is **BUILT** (2026-08-15, five sessions; designlog
-2026-08-15 and develop.md hold the pointers). What is queued now is **THE
-TILE ECONOMY ARC** (Part 1) — a chain of **design rounds, not
-implementation sessions** (2026-08-20, designlog): each round settles its
-spec in full — vocabularies, laws, tables, numbers — so that the
-implementation afterward is trivial. When a round's design settles, its
-entry here is REPLACED by the implementation contract it produced; when
-that ships, the contract is deleted as usual. Part 2 is the draft roadmap
-beyond the arc — main points only, each a future design conversation, none
-scheduled.
+2026-08-15 and develop.md hold the pointers). **THE TILE ECONOMY ARC**
+(Part 1) is now fully **DESIGNED** — five design rounds, settled
+2026-08-20 through 2026-08-21 (the designlog entries from "planning the
+plan" through round 5's "(E)") — and queued as **four numbered
+implementation sessions**. Trigger one by prompting **"implement
+session N"**; a session is a full dev sitting (read develop.md first,
+ship the contract, run the suites, do the shipping paperwork). The
+sessions ship **in order** — each reads the layers the one before it
+stamped. Part 2 is the draft roadmap beyond the arc — main points only,
+each a future design conversation, none scheduled.
+
+The cut is by implementation seam, not one-round-one-session (the
+designlog's round names stay the design authority): session 1 is rounds
+1+2's deterministic authored ground and the sky; session 2 concentrates
+every derived-seed roll and every acknowledged fixture re-pin in one
+sitting (round 1's harvest + round 3's census); session 3 is round 4's
+trade network over that census; session 4 is round 5 — everything that
+READS — plus round 4's Miners' League recovery, which is old-system
+integration and belongs with the hookup.
 
 **The arc's product is a WORLDGEN PIPELINE, not a running simulation.**
 Geography and climate determine agriculture, agriculture determines
@@ -42,31 +52,55 @@ Standing rules for the arc:
 - **The campaign year is spring to autumn.** No season track; winter is
   out of scope as played time and exists only as a worldgen roll (the
   snapshot arc's).
+- **One authority per constant.** econmap.py's constants ARE each
+  contract's numbers until its session ships; the session then moves them
+  into `places.py` and re-points econmap.py to import them back — the
+  tool keeps the rendering and never a second copy.
 
 ---
 
-# Part 1 — THE TILE ECONOMY ARC (climate, terrain, economy, population)
+# Part 1 — THE TILE ECONOMY ARC: the four implementation sessions
 
-## Round 1 — Climate: the implementation contract (design settled 2026-08-21)
+## Session 1 — The ground & the sky (climate + terrain)
 
-The design is designlog 2026-08-21 (including the reversal it records:
-climate is HAND-PAINTED, not computed — the law is demoted to a lint).
-The authored overlay and the eyeball tool are already in the tree
-(`resources/europe_climate.txt`, `econmap.py`); **econmap.py's constants
-ARE this contract's numbers** — the tables live there and ship from
-there, restated below only where the build needs more than the tool
-carries. Derived seeds throughout; no reader surface beyond the sky
-(round 5 owns the read surface, the snapshot arc owns cards and states).
+The design is designlog 2026-08-21 (the round-1 entry) and 2026-08-21 (B)
+(the round-2 entry), including the two reversals they record: climate is
+HAND-PAINTED, not computed — the law is demoted to a lint — and **forest
+is NOT authored** — the overlay is relief and drainage only, the wildwood
+comes from climate and the deforestation law decides what survives, so
+deep forest appears exactly where people are few. The authored overlays
+and the eyeball tool are already in the tree
+(`resources/europe_climate.txt`, `resources/europe_terrain.txt`,
+`econmap.py` / `econmap.py terrain` / `potential`); **econmap.py's
+constants ARE this contract's numbers** (the climate tables, and
+`CLIMATE_ARABLE`, `TERRAIN_ARABLE`, `ALLUVIAL_BONUS`, `HAND_ALLUVIAL`,
+`FFD`, `CLEARANCE_K`, `FOREST_CAP`, `MARSH_WOOD`, `GRAZE_CLIMATE`,
+`GRAZE_TERRAIN`, the word thresholds, `HAND_MARKS`, `HAND_FOREST` /
+`HAND_FOREST_CLEARANCE` — the eastern wildwood: four continental-plains
+tiles east of Warsaw where clearance is capped at 0.25 because history
+left the great forest standing where the law would clear it) — restated
+below only where the build needs more than the tool carries. Both layers
+are authored-plus-law with no rng — identical in every campaign like the
+map itself — so derived seeds are moot and every existing bench is
+unmoved by construction (the sky's day roll is lazy and day-seeded; no
+bench reads it). The last-harvest roll is SESSION 2's; no reader surface
+beyond the sky and the tile tags ships here (session 4 owns the read
+surface, the snapshot arc owns cards and states). The northern-Scotland
+flip (R03C04 basic→mountain) shipped with the design rounds as ordinary
+dev work.
 
 **1. The ground.** `create_geography` loads
-`resources/europe_climate.txt` beside the base map and stamps
-`tile["climate"]` with the full word (the letters are file format only):
-tundra, taiga, continental, oceanic, mediterranean, wet_mediterranean,
-steppe, desert, nile, alpine. `validate_world` grows the lint's clauses —
-every land tile painted, sea unpainted, alpine exactly the mountain
-tiles, only the ten words — and pins the climate census (u8 t42 c83 o28
-m46 w32 s24 d18 n4 a29 — o 29→28 and a 28→29 since the round-2 sitting
-made northern Scotland a mountain tile).
+`resources/europe_climate.txt` and `resources/europe_terrain.txt` beside
+the base map and stamps `tile["climate"]` and `tile["terrain"]` with the
+full words (the letters are file format only): climates tundra, taiga,
+continental, oceanic, mediterranean, wet_mediterranean, steppe, desert,
+nile, alpine; terrains plains, hills, marsh, mountains. `validate_world`
+grows the lints' clauses — every land tile painted, sea unpainted,
+alpine and mountains exactly the mountain tiles, only the legal words —
+and pins the climate census (u8 t42 c83 o28 m46 w32 s24 d18 n4 a29) and
+the terrain census (plains 213, hills 67, marsh 5, mountains 29) plus
+the marsh five by name: the Fens R06C06, the Low Countries delta R08C11,
+the Pripet pair R09C23 + R09C24, the Danube delta R11C24.
 
 **2. The label table**, a `CLIMATE_PROFILES` table in `places.py`
 replacing `ENVIRONMENT_PROFILES` (the five old profiles and the
@@ -90,9 +124,10 @@ per climate — frost-free days, wheat-yield multiplier, winter severity
 The latitude gradient: ffd(tile) = base + 8 × (row − reference row),
 clamped to base ± 40; reference rows tundra 2, taiga 4, oceanic 8,
 continental 8, steppe 10, mediterranean 13, wet_mediterranean 17,
-desert 17, nile 18, alpine none. Only the sky columns have a reader this
-round — ffd/yield/winter/harvest-day are rounds 2–3 and the snapshot
-arc's inputs, shipped now as data so those rounds start from authority.
+desert 17, nile 18, alpine none. The sky and the terrain laws below are
+this session's readers of the table; the winter and harvest-day columns
+are the snapshot arc's inputs, shipped now as data so that arc starts
+from authority.
 
 **3. The sky** (absorbs the deferred "seasonal or Tile-specific weather
 profiles" item whole). A season CALENDAR, not a season track: day 1 =
@@ -121,10 +156,103 @@ still one sky per land per day, and the wet/dry counters, the drought
 bend, cards' own skies and bought skies are untouched. `WEATHER_LOCAL`
 re-keys by climate: alpine keeps the snowstorm rows, steppe inherits
 prairie's wind line, desert's storm reads "a dust storm", taiga and
-tundra rain reads "cold rain". `drought_days` moves onto the climate
-profile.
+tundra rain reads "cold rain". One terrain flavor joins the re-key
+(settled in round 5's design, discharging round 2's parked fen line):
+on a MARSH tile, fog reads as fen fog — `WEATHER_LOCAL`'s one
+terrain-keyed line; the weather LAW stays climate-only. `drought_days`
+moves onto the climate profile.
 
-**4. The last harvest**, rolled at worldgen off derived seeds. Stored:
+**4. The laws** ship into `places.py` beside `CLIMATE_PROFILES`, computed
+at worldgen per tile: arable potential = climate × terrain (+ the
+alluvial bonus on river tiles and the `HAND_ALLUVIAL` Po plain; marsh
+takes no bonus — marsh IS the undrained floodplain); potential wheat =
+arable × the climate yield column × the ffd gradient (ffd/base);
+clearance = wheat / (wheat + 0.2) — the two-pass deforestation proposal
+collapsed to its closed form — capped by `HAND_FOREST_CLEARANCE` on the
+`HAND_FOREST` tiles; realized arable = arable × clearance; surviving
+forest = wildwood × (1 − clearance); pastoral index = climate graze ×
+terrain graze. **Stored words, hidden numbers**: the tile keeps
+`tile["terrain"]` (authored) and `tile["cover"]` (deep forest ≥ 0.55 /
+wooded ≥ 0.25 / open); the numbers are pipeline intermediates session 2
+recomputes from the same authorities, never saved.
+
+**5. The tags — the quest-vocabulary reconciliation.** Tile and natural
+Area tags become: the terrain word, the country, the positional set
+(`river` + `riverside`, `coast`, `mountain-foot`, `border`, `island`),
+then the derived words — `forest` (cover wooded or deeper), `farmland`
+(realized ≥ 0.30), `pasture` (pastoral ≥ 0.20 and > realized), the
+character climates (`steppe`, `desert`, `tundra`), plus `HAND_MARKS`
+(the middle Danube's horse country). The bare biome words `basic` and
+`mountain` leave the tag lists; **`mountains` is the one word for high
+ground** everywhere outside `BIOME_GLYPHS` and the edge-cost rule — the
+mountain-vs-mountains near-miss retires, and the quest tables' words
+finally match real natural Areas (today `forest` / `hills` / `prairie` /
+`pasture` / `farmland` match NO natural Area — every such job falls back
+to the origin tile's countryside). Pinned tag census: farmland 128,
+pasture 116, forest 101, steppe 24, desert 18, tundra 8; cover open 213,
+wooded 55, deep forest 46. `prairie` is renamed `steppe` everywhere
+(quests.py tables, the Tergal catalog content, the sky section above
+already re-keys `WEATHER_LOCAL`); `marsh` joins the den-family quest
+tables.
+
+**6. Area naming and the natural templates.** The natural Area suffix
+reads character instead of biome: sea / mountain / river keep Sea /
+Mountains / Riverlands; then marsh → Marshes, deep forest → Forest,
+hills → Hills, else Countryside. Natural template selection goes by
+terrain + cover instead of one-template-per-biome (which currently
+leaves Firascir's whole `fields` inventory dead — every basic tile draws
+`old_forest`): forest tiles take the forest inventory, cleared plains
+the fields, hills the hill one, marsh the fen one. New natural site
+inventories owed: firascir hills (moor and glen), firascir marsh (the
+fen), tergal marsh (the Pripet); Tergal's `open_prairie` becomes
+`open_steppe`. The catalog natural entries' own tag lists are dead data
+— drop them (writing.md register for all new content).
+
+**7. Settlement fits.** `TILE_FIT_TAGS` grows the terrain and derived
+words (`hills`, `marsh`, `forest`, `farmland`, `pasture`, `steppe`,
+`plains`) and drops `basic` / `mountain` / `sea` — position stops being
+the only fit vocabulary. Re-fit the templates where character now says
+it better: hill_town and ridge_town fit `hills`, forest_village fits
+`forest`, herd_village fits `steppe`, plus one new firascir fen village
+fitting `marsh`. Template picks may shift on some tiles (the same
+`slot["seed"] % n` over a better candidate list) — no compatibility, per
+doctrine.
+
+**8. Tests.** The pinned climate, terrain and tag censuses; determinism
+(two worlds off different seeds carry identical climate, terrain, cover
+and tags); the marsh five by name; one broken world per new
+`validate_world` clause; the weight rows summing to 100 at import and
+the season calendar's boundaries; the day roll reading the party tile's
+climate (a med party can roll summer heat on a day the taiga could
+not); the `WEATHER_LOCAL` re-key including the fen fog; the drought
+counter reading the profile's `drought_days`; and the reconciliation
+observable end to end — a den job landing in a genuinely wooded natural
+Area, a steppe job in Tergal's grass, a marsh tag reachable — plus
+every existing bench unmoved.
+
+**Explicit non-changes** (settled, not deferred): hills cost no travel
+day — the edge model stays biome-only and symmetric, every pinned
+distance survives; terrain stays out of the weather LAW (climate owns
+the sky; the fen-fog line above is display flavor only) and out of the
+harvest contagion model.
+
+## Session 2 — The rolled world: the last harvest & the census
+
+The design is designlog 2026-08-21 (the round-1 entry's second sitting)
+and 2026-08-21 (C) (the round-3 entry), including the direction change
+it records: **real, historical and downscaled densities are abandoned**
+— the tile is the unit, the rolled census IS the population, and the
+tier words carry the scale. The layers and the eyeball tool are in the
+tree (`econmap.py harvest [SEED]` / `harvest --sweep`, `econmap.py
+population [SEED]` / `population --sweep`); **econmap.py's constants
+ARE this contract's numbers**. Both layers roll at worldgen off derived
+seeds, differing per playthrough on purpose (the bands and laws are
+fixed, so France always feels like France; which tiles carry the towns,
+and where last year failed, are each world's own). This is the arc's
+one fixture-churn session: both rolls and the acknowledged re-pins land
+in the same sitting.
+
+**1. The last harvest**, rolled at worldgen off derived seeds. Stored:
 `tile["harvest"]` (an int percent) and `tile["harvest_cause"]`, plus the
 region records (cause, center, member tiles) on the world — the
 addresses the snapshot arc will wire. The scale: 100 = a full excellent
@@ -144,125 +272,10 @@ climate before growth (measured on raw rolls: trouble within 6 days of
 the start in only ~52% of worlds; the nudge lifts the played posture to
 ~88% — the campaign usually opens in or beside a bad year, and the
 genuinely quiet start survives at about one world in eight). The causes'
-fiction names (writing.md register) come with their first read surface,
-not now. Tests: regions contiguous, the sweep distribution pinned (~17%
-mean problem coverage, never zero), the drought always, the save
-round-trip, and every existing bench unmoved (derived seeds).
+fiction names come with session 4's read surface (settled there —
+`HARVEST_CAUSE_LINES`); this session stores the cause words only.
 
-## Round 2 — Terrain: the implementation contract (design settled 2026-08-21)
-
-The design is designlog 2026-08-21 (the round-2 entry), including the
-reversal it records: **forest is NOT authored** — the overlay is relief
-and drainage only, the wildwood comes from climate and the deforestation
-law decides what survives, so deep forest appears exactly where people
-are few. The authored overlay and the extended eyeball tool are already
-in the tree (`resources/europe_terrain.txt`, `econmap.py terrain` /
-`potential`); **econmap.py's constants ARE this contract's numbers**
-(`CLIMATE_ARABLE`, `TERRAIN_ARABLE`, `ALLUVIAL_BONUS`, `HAND_ALLUVIAL`,
-`FFD`, `CLEARANCE_K`, `FOREST_CAP`, `MARSH_WOOD`, `GRAZE_CLIMATE`,
-`GRAZE_TERRAIN`, the word thresholds, `HAND_MARKS`, and — since the
-round-4 sitting — `HAND_FOREST` / `HAND_FOREST_CLEARANCE`, the eastern
-wildwood: four continental-plains tiles east of Warsaw where clearance
-is capped at 0.25 because history left the great forest standing where
-the law would clear it). The whole layer is
-**deterministic** — authored overlays plus laws, no rng, identical in
-every campaign like the map itself, so derived seeds are moot and every
-bench is unmoved by construction. The northern-Scotland flip (R03C04
-basic→mountain) shipped with the round as ordinary dev work.
-
-**1. The ground.** `create_geography` loads
-`resources/europe_terrain.txt` beside the base map and stamps
-`tile["terrain"]` with the full word (letters are file format only):
-plains, hills, marsh, mountains. `validate_world` grows the lint's
-clauses — every land tile painted, sea unpainted, mountains exactly the
-`^` tiles, only the four words — and pins the terrain census
-(plains 213, hills 67, marsh 5, mountains 29) plus the marsh five by
-name: the Fens R06C06, the Low Countries delta R08C11, the Pripet pair
-R09C23 + R09C24, the Danube delta R11C24.
-
-**2. The laws** ship into `places.py` beside `CLIMATE_PROFILES`, computed
-at worldgen per tile: arable potential = climate × terrain (+ the
-alluvial bonus on river tiles and the `HAND_ALLUVIAL` Po plain; marsh
-takes no bonus — marsh IS the undrained floodplain); potential wheat =
-arable × the climate yield column × the round-1 ffd gradient (ffd/base);
-clearance = wheat / (wheat + 0.2) — the two-pass deforestation proposal
-collapsed to its closed form; realized arable = arable × clearance;
-surviving forest = wildwood × (1 − clearance); pastoral index = climate
-graze × terrain graze. **Stored words, hidden numbers**: the tile keeps
-`tile["terrain"]` (authored) and `tile["cover"]` (deep forest ≥ 0.55 /
-wooded ≥ 0.25 / open); the numbers are pipeline intermediates round 3
-recomputes from the same authorities, never saved.
-
-**3. The tags — the quest-vocabulary reconciliation.** Tile and natural
-Area tags become: the terrain word, the country, the positional set
-(`river` + `riverside`, `coast`, `mountain-foot`, `border`, `island`),
-then the derived words — `forest` (cover wooded or deeper), `farmland`
-(realized ≥ 0.30), `pasture` (pastoral ≥ 0.20 and > realized), the
-character climates (`steppe`, `desert`, `tundra`), plus `HAND_MARKS`
-(the middle Danube's horse country). The bare biome words `basic` and
-`mountain` leave the tag lists; **`mountains` is the one word for high
-ground** everywhere outside `BIOME_GLYPHS` and the edge-cost rule — the
-mountain-vs-mountains near-miss retires, and the quest tables' words
-finally match real natural Areas (today `forest` / `hills` / `prairie` /
-`pasture` / `farmland` match NO natural Area — every such job falls back
-to the origin tile's countryside). Pinned tag census: farmland 128,
-pasture 116, forest 101, steppe 24, desert 18, tundra 8; cover open 213,
-wooded 55, deep forest 46 (the round-4 sitting's `HAND_FOREST` moved
-four tiles from farmland to deep forest). `prairie` is renamed `steppe` everywhere
-(quests.py tables, the Tergal catalog content, the round-1 contract
-already re-keys `WEATHER_LOCAL`); `marsh` joins the den-family quest
-tables.
-
-**4. Area naming and the natural templates.** The natural Area suffix
-reads character instead of biome: sea / mountain / river keep Sea /
-Mountains / Riverlands; then marsh → Marshes, deep forest → Forest,
-hills → Hills, else Countryside. Natural template selection goes by
-terrain + cover instead of one-template-per-biome (which currently
-leaves Firascir's whole `fields` inventory dead — every basic tile draws
-`old_forest`): forest tiles take the forest inventory, cleared plains
-the fields, hills the hill one, marsh the fen one. New natural site
-inventories owed: firascir hills (moor and glen), firascir marsh (the
-fen), tergal marsh (the Pripet); Tergal's `open_prairie` becomes
-`open_steppe`. The catalog natural entries' own tag lists are dead data
-— drop them (writing.md register for all new content).
-
-**5. Settlement fits.** `TILE_FIT_TAGS` grows the terrain and derived
-words (`hills`, `marsh`, `forest`, `farmland`, `pasture`, `steppe`,
-`plains`) and drops `basic` / `mountain` / `sea` — position stops being
-the only fit vocabulary. Re-fit the templates where character now says
-it better: hill_town and ridge_town fit `hills`, forest_village fits
-`forest`, herd_village fits `steppe`, plus one new firascir fen village
-fitting `marsh`. Template picks may shift on some tiles (the same
-`slot["seed"] % n` over a better candidate list) — no compatibility, per
-doctrine.
-
-**6. Tests.** The pinned terrain and tag censuses; determinism (two
-worlds off different seeds carry identical terrain, cover and tags); the
-marsh five by name; one broken world per new `validate_world` clause;
-and the reconciliation observable end to end — a den job landing in a
-genuinely wooded natural Area, a steppe job in Tergal's grass, a marsh
-tag reachable — plus every existing bench unmoved.
-
-**Explicit non-changes** (settled, not deferred): hills cost no travel
-day — the edge model stays biome-only and symmetric, every pinned
-distance survives; terrain stays out of the sky (climate owns weather; a
-marsh fog line is round-5 flavor) and out of the harvest contagion
-model.
-
-## Round 3 — Population & the census: the implementation contract (design settled 2026-08-21)
-
-The design is designlog 2026-08-21 (C), including the direction change it
-records: **real, historical and downscaled densities are abandoned** —
-the tile is the unit, the rolled census IS the population, and the tier
-words carry the scale. The layer and the eyeball tool are in the tree
-(`econmap.py population [SEED]` / `population --sweep`); **econmap.py's
-constants ARE this contract's numbers**. The score is deterministic law
-over rounds 1–2's outputs; the census is rolled at worldgen off derived
-seeds, differing per playthrough on purpose (the bands are fixed, so
-France always feels like France; which tiles carry the towns is each
-world's own).
-
-**0. The scale doctrine** (recorded prominently — it will be asked
+**2. The scale doctrine** (recorded prominently — it will be asked
 about). A tile is SPOKEN OF as 30 km east–west by 60 km north–south (one
 travel day east–west, two north–south; 1800 km²). The drawn map
 corresponds to real Europe at ~160 km per column × ~220 km per row
@@ -277,8 +290,8 @@ settlement every 15–30 km is the medieval market-day spacing, and about
 four is what a head can hold. Slots carry no coordinates; the lattice is
 doctrine for fiction and scale statements, not a stored position.
 
-**1. The score**, deterministic and never saved (recomputable by any
-later arc, like round 2's numbers): food = realized arable +
+**3. The score**, deterministic and never saved (recomputable by any
+later arc, like session 1's numbers): food = realized arable +
 `PASTORAL_PEOPLE` × pastoral + `FISH_COAST` on sea-adjacent tiles (else
 `FISH_RIVER` on river tiles; nile counts as river); × `TRANSPORT_FACTOR`
 on coast or river (a town exceeds its land's carrying capacity only with
@@ -290,7 +303,7 @@ the authored exceptions with their reasons (the drained Low Countries
 delta; the Lombardy–Veneto city belt). The score buckets into six
 `BANDS`: wilderness / thin / low / mid / high / dense.
 
-**2. The census roll**, at worldgen off derived seeds, replacing
+**4. The census roll**, at worldgen off derived seeds, replacing
 `_population_slots` and `SETTLEMENT_DENSITY` whole (the rolled slot
 census is acknowledged scaffolding; no compatibility). Per tile the band
 picks a weighted ARRANGEMENT — a string over the five tiers — from
@@ -303,28 +316,37 @@ authored tier (`HISTORICAL_TIERS`: Paris, Venice and Constantinople are
 the three metropolises; the rest city or town) in slot 1 — capital flags
 unchanged on Paris, Rome, Kyiv — plus companions from ITS OWN BAND's
 table truncated to three, so Paris gathers towns while Stockholm stands
-alone. A MINE tile (round 4's `MINES`) seats its authored mine town the
-same way — tier town, named by the mine, always free (its mining law IS
-its charter) — so Falun stands alone in the wilderness band while
-Luneburg gathers villages. Slots sort chief-first (`TIER_ORDER`).
-Measured over 500 seeds: ~615 settlements (3 metropolis, ~18 city, ~101
-town, ~402 village, ~92 hamlet), ~1.96 slots per land tile, world
-~1.3M souls.
+alone. A MINE tile seats its authored mine town the same way — tier
+town, named by the mine, always free (its mining law IS its charter) —
+so Falun stands alone in the wilderness band while Luneburg gathers
+villages. The `MINES` table (nine authored mines with their towns and
+goods) lands in `places.py` THIS session as data for the seating;
+session 3 gives it its whole trade reading. Slots sort chief-first
+(`TIER_ORDER`). Measured over 500 seeds: ~615 settlements (3 metropolis,
+~18 city, ~101 town, ~402 village, ~92 hamlet), ~1.96 slots per land
+tile, world ~1.3M souls.
 
-**3. The tier vocabulary** grows to five words: **hamlet** (under a
+**5. The tier vocabulary** grows to five words: **hamlet** (under a
 hundred souls), **village** (hundreds), **town** (thousands), **city**
 (tens of thousands), **metropolis** (a hundred thousand and more —
 "supercity" is dev slang only). The headcounts are fiction anchors for
-the DM, never stored numbers. Mechanical mapping: city and metropolis
-take the capital-grade service/board band, hamlet takes the village's
-service gates with `BOARD_ACTIVE_CHANCE` extended (metropolis/city 1.0,
-town 0.6, village 0.25, hamlet 0.05); the map glyph ladder stays ASCII —
-`C` for city-grade (metropolis, city, capital — the legend
-distinguishes), `T` town, `v` village, hamlets NOT drawn on the map
-(tile detail lines only); the uniform start draw excludes hamlets.
+the DM, never stored numbers. Mechanical mapping: **every
+`settlement_tier`-keyed table grows the five words** — city and
+metropolis take the capital-grade rows (`quests.SETTLEMENT_KINDS`,
+conquest's `TRIBUTE_PER_DAY` / `GARRISON_CAP` / `GARRISON_BANDS` /
+`RAID_STRENGTH`), hamlet takes the village's rows and service gates
+except tribute halved (6 g/day — a hamlet is barely worth holding);
+`BOARD_ACTIVE_CHANCE` extends to metropolis/city 1.0, town 0.6, village
+0.25, hamlet 0.05. The map glyph ladder stays ASCII — `C` for
+city-grade (metropolis, city, capital — the legend distinguishes), `T`
+town, `v` village, hamlets NOT drawn on the map (tile detail lines
+only); the uniform start draw excludes hamlets. **The recruit pool
+reads the tier** (settled in round 5's design): `roll_recruits` caps
+the day's candidate OPTIONS by the settlement — hamlet 1, village 2,
+town and above the full CHA capacity — a hamlet is not a hiring market.
 
-**4. Content owed** (writing.md register): a `hamlet` role and a `city`
-role per country in the catalog (`TILE_FIT_TAGS` fits per round 2's
+**6. Content owed** (writing.md register): a `hamlet` role and a `city`
+role per country in the catalog (`TILE_FIT_TAGS` fits per session 1's
 vocabulary; the hamlet minimal — a well, a shrine, no board sites);
 metropolises cut from the city role until the Settlements-revisited
 round gives them their own; hamlet naming (own small pools with a
@@ -332,7 +354,7 @@ humbler sound, or the village reserve) and a modest village-pool
 growth — naming is lazy at materialization, so pools need to cover play,
 not the census.
 
-**5. The charter and the manor**, one stored word each, rolled with the
+**7. The charter and the manor**, one stored word each, rolled with the
 census and read by nothing yet (the politics arc owns the read surface):
 cities and metropolises always hold a **charter** (`free`), a generated
 town does at `CHARTER_CHANCE` (1 in 3; an unchartered town is a lord's
@@ -340,24 +362,28 @@ town), and a village-led tile of two or more settlements seats a
 resident lord at `MANOR_CHANCE` (1 in 2) — the manor mark on its chief
 village.
 
-**6. Tests.** The sweep distribution pinned (settlement counts per tier,
-slots per tile, empty-tile count, the quiet-rich-country share never
-zero); slot cap 4 and legal tier words as `validate_world` clauses; the
-historical tiles carrying their authored tiers and the capital set
-unchanged; derived seeds (the census identical when unrelated layers
-roll); and the acknowledged fixture re-pins — the quest-geography and
-places fixtures that pinned the old slot rolls find new seeds, per the
-no-compatibility doctrine.
+**8. Tests.** The harvest: regions contiguous, the sweep distribution
+pinned (~17% mean problem coverage, never zero), the drought always,
+the save round-trip. The census: the sweep distribution pinned
+(settlement counts per tier, slots per tile, empty-tile count, the
+quiet-rich-country share never zero); slot cap 4 and legal tier words
+as `validate_world` clauses; the historical tiles carrying their
+authored tiers and the capital set unchanged; the mine towns seated by
+name; derived seeds (each roll identical when unrelated layers roll);
+the keyed tables covering all five words; the recruit cap; and the
+acknowledged fixture re-pins — the quest-geography and places fixtures
+that pinned the old slot rolls find new seeds, per the no-compatibility
+doctrine. Every existing bench unmoved (derived seeds).
 
 **Parked here, still**: the past-epidemic population scar (the snapshot
 arc's plague chain); named natural regions (take if cheap, later); the
 charter/manor readers and what freedom is worth (the politics arc);
 hamlet/metropolis detail (Settlements revisited).
 
-## Round 4 — Mines, trade goods & routes: the implementation contract (design settled 2026-08-21)
+## Session 3 — The trade network: mines, goods & routes
 
-The design is designlog 2026-08-21 (D), including the reversal it
-records: **exotics are goods like any other** — the old
+The design is designlog 2026-08-21 (D) (the round-4 entry), including
+the reversal it records: **exotics are goods like any other** — the old
 keep-them-off-the-map remark is dead; an exotic's origin tile is simply
 the frame's door (the eastern gate, the delta port), and the legendary
 roads stay worth taxing and robbing because that is where their whole
@@ -371,7 +397,8 @@ deterministic like the map; the ordinary network is rolled WITH the
 census it reads (derived seeds, after the census roll), so the trade
 skeleton is fixed in character and each world's own in detail. Measured
 over 100 seeds: ~59 routes a world (58–59), ~114 of 314 land tiles on a
-route, ~27 ports.
+route, ~27 ports. The Miners' League recovery is SESSION 4's; this
+session builds the ground it will speak of.
 
 **1. The ground.** Rolled at worldgen after the census. Stored:
 `tile["goods"]` (the origin's good words — sparse, most tiles carry
@@ -386,27 +413,27 @@ road present with its authored endpoints and cargo; every route path a
 chain of real edges whose days sum to the record's; ports on coast.
 
 **2. The mines**, authored, few and famous (`MINES` — nine, each also
-an authored mine TOWN in the census, per the round-3 contract's amended
-census section): Goslar R09C14 (silver, copper — the Rammelsberg),
-Kutna Hora R09C19 (silver), Falun R03C22 (copper, iron), Banska
-Stiavnica R10C20 (silver, copper), Melle R10C08 (silver), Erzberg
-R11C14 (iron), Novo Brdo R13C18 (silver), Luneburg R08C16 (salt),
-Wieliczka R10C21 (salt). **The mining-town rule is two laws**: the town
-law (slot 1, tier town, named by the mine, always free) and the hunger
-law — a mine tile whose own realized arable is under 0.30 gets a GRAIN
-ROAD from the nearest grain origin within `MINE_FOOD_DAYS` (6): the
-food caravan, a route and a vulnerability in one stroke. Falun finds no
+an authored mine TOWN in the census, seated in session 2): Goslar
+R09C14 (silver, copper — the Rammelsberg), Kutna Hora R09C19 (silver),
+Falun R03C22 (copper, iron), Banska Stiavnica R10C20 (silver, copper),
+Melle R10C08 (silver), Erzberg R11C14 (iron), Novo Brdo R13C18
+(silver), Luneburg R08C16 (salt), Wieliczka R10C21 (salt). **The
+mining-town rule is two laws**: the town law (slot 1, tier town, named
+by the mine, always free — shipped in session 2) and the hunger law — a
+mine tile whose own realized arable is under 0.30 gets a GRAIN ROAD
+from the nearest grain origin within `MINE_FOOD_DAYS` (6): the food
+caravan, a route and a vulnerability in one stroke. Falun finds no
 grain in reach and stays UNFED by design (pinned): the north's grain
 problem is real, and the DM has a standing story.
 
-**3. The goods**, nineteen words. Derived origins, by law over rounds
-1–3's numbers (regions of at least `MIN_PRODUCE_REGION` = 2 contiguous
-tiles, except grain — one alluvial tile IS a granary): **grain**
-(realized ≥ 0.55: the river corridors and the Nile), **wine** (med and
-wet-med farmland), **wool** (oceanic and med hill country, pastoral ≥
-0.40), **horses** (the steppe's herds, pastoral ≥ 0.40), **timber**
-(wooded + river or coast, never marsh), **furs + wax** (deep forest in
-taiga, tundra or continental — the north and the round's eastern
+**3. The goods**, nineteen words. Derived origins, by law over the
+prior sessions' numbers (regions of at least `MIN_PRODUCE_REGION` = 2
+contiguous tiles, except grain — one alluvial tile IS a granary):
+**grain** (realized ≥ 0.55: the river corridors and the Nile), **wine**
+(med and wet-med farmland), **wool** (oceanic and med hill country,
+pastoral ≥ 0.40), **horses** (the steppe's herds, pastoral ≥ 0.40),
+**timber** (wooded + river or coast, never marsh), **furs + wax** (deep
+forest in taiga, tundra or continental — the north and the eastern
 wildwood). Authored colour (`GOODS_AUTHORED`): the bay salt pans
 R10C05, the wine coast R11C06, the Sound's herring R06C15, the amber
 shore R06C22, the cloth looms R08C11 and R13C14, the Lombard armouries
@@ -421,25 +448,115 @@ smiths; the cloth looms; the origin's own capital or all three), how
 many destinations, and the bulk range in days (rich goods travel any
 distance — silver to the crown's mint, wool to the looms, cloth and
 wine to the metropolises, arms to the capitals). The pathfinder is
-places.py's own (`_single_source` — econmap restates it); ties settle
-deterministically. The LEGENDARY five are authored endpoints whose line
-the same pathfinder draws: the Silk Road (the eastern gate →
-Constantinople; silk, dyes), the Spice Lane (the delta port → Venice by
-sea; spice, sugar, dyes), the Amber Road (the amber shore → Venice),
-the Fairs Road (Venice → Paris; silk, spice, sugar) and the Grain Fleet
-(the Nile granary → Constantinople). **The sea rule**: sea sails at the
-settled edge cost (no cheap freight — one distance model for war, trade
-and play); a route's sea tiles are its sea lane, and the two shores
-where it changes element are ports. Routes with shared endpoints merge
-their cargo.
+places.py's own (`_single_source` — this session retires econmap's
+restated copy); ties settle deterministically. The LEGENDARY five are
+authored endpoints whose line the same pathfinder draws: the Silk Road
+(the eastern gate → Constantinople; silk, dyes), the Spice Lane (the
+delta port → Venice by sea; spice, sugar, dyes), the Amber Road (the
+amber shore → Venice), the Fairs Road (Venice → Paris; silk, spice,
+sugar) and the Grain Fleet (the Nile granary → Constantinople). **The
+sea rule**: sea sails at the settled edge cost (no cheap freight — one
+distance model for war, trade and play); a route's sea tiles are its
+sea lane, and the two shores where it changes element are ports. Routes
+with shared endpoints merge their cargo.
 
-**5. The label** — the one read surface this round ships (designer
+**5. The label** — the one read surface this session ships (designer
 directive): `tile_detail_lines` grows the mine line, the goods line and
 one line per route crossing the tile — endpoints by name and the cargo,
 `Goslar – Paris: silver`, `the Silk Road: the eastern gate –
 Constantinople, silk and dyes` — inside the 40-column wrap. Everything
 else that READS the trade layer (the DM tile brief, the map page,
-prices, boards, encounters) is round 5's.
+prices, boards, encounters) is session 4's.
+
+**6. Tests.** Origins, mines and legendary roads identical across
+seeds; the network's pinned sweep (~59 routes, ~114 land tiles on a
+route, ~27 ports); the mines by name with their towns and tags; a grain
+road for every hungry mine and Falun pinned unfed; route records
+well-formed end to end; the label lines wrapped; one broken world per
+new `validate_world` clause; every existing bench unmoved (derived
+seeds).
+
+**Explicit non-changes** (settled, not deferred): the edge model is
+untouched — no cheap sea freight; no re-export chains — a route is one
+origin to one destination, and the entrepôt story is told by routes
+MEETING at Venice, not by cargo transshipping; the exotic doors are
+ordinary tiles with no special rule; nothing reads routes yet beyond
+the label (inns, tolls, banditry, plague walking in from a port stay
+later arcs' work, with their addresses now on the map).
+
+**Parked here**: a Hanse-shaped authored northern circuit (the derived
+north draws its own for now); the Ardennes-shaped western wildwood mark
+(the eastern one shipped; the west still has none).
+
+## Session 4 — The hookup: the read surface & the League
+
+The design is designlog 2026-08-21 (E) (round 5 — the read surface, the
+integration minimum, the storage settlements); the Miners' League's
+design is designlog 2026-08-21 (D)'s own scrub, moved here because the
+old-world cards returning IS the hookup's business. This is the arc's
+last session: when it ships, Part 1 is deleted whole and any parked
+item still standing folds into Part 2.
+
+**1. The tile character line.** A `TILE_CHARACTER` table in `places.py`
+and `tile_character(world, tile)` — ONE short phrase in the writing.md
+register, composed from the tile's facts by fixed priority: the mine
+first (by its first good — "silver country", "salt country", "iron
+country"), then the goods-origin words ("grain country", "wine
+country", "wool country", "horse country", "timber country", "fur
+country", and the authored colours' own), then land character off cover
++ terrain + climate ("deep forest", "hill country", "fenland", "the
+open steppe", "bare tundra", "open desert", "rich farmland" where the
+farmland tag, else the terrain's plain word). One phrase, never a list
+— composition into fuller sentences is the DM's, not the code's. The
+exact word table is settled at build under writing.md; the examples
+here are canon.
+
+**2. The harvest words** (discharging round 1's parked fiction names —
+this is the harvest's first read surface). The spoken scale words are
+the settled ones — legendary / excellent / ordinary / poor / failed /
+apocalyptic — and NEVER the stored percent (hidden numbers, visible
+words: the DM speaks the word too). The causes read through
+`HARVEST_CAUSE_LINES`: `drought` → "the drought", `rains` → "the great
+rains" (on nile tiles "the low Nile" — the failed flood), `frost` →
+"the black frost". The line: `last harvest: failed -- the great rains`.
+
+**3. The tile detail fold-in.** `tile_detail_lines` grows the character
+line and the last-harvest line (both common knowledge — the player sees
+them on map.txt's here-block; inside the 40-column wrap). With session
+3's mine, goods and route lines this completes the tile's public file.
+
+**4. The DM tile brief** (designer directive, the round-4 sitting).
+`places.tile_brief_lines(world, tile)` — one tile's WHOLE file for DM
+eyes, the way `lore` serves the land's: the header (label, country,
+biome, terrain, climate, cover), the character line, the last harvest
+with its cause, the goods, the mine, the routes with endpoints and
+cargo, the census (every slot: tier, the name where materialized —
+"a village (unmet)" otherwise — the charter/manor words, the quiet
+board marked), then the four NEIGHBOURS in a line each — label,
+character phrase, chief settlement tier and name if any, the harvest
+word where it is a problem — so the DM narrates toward the next tile
+knowingly. A new verb `tile [COORD]` beside `world` and `lore` — DM
+eyes, free, costs no day; defaults to the party's tile, takes any
+coordinate. The land layer stays `world` / `lore`'s business — the
+brief is the TILE's file only. dm.md gains the protocol (consult the
+brief on arrival and before narrating travel; it is narration material,
+never a dump to the player) and the quick reference gains the five
+tiers, the season calendar and the climate words.
+
+**5. The tile menu** — the settled minimum of existing systems reading
+the new ground (the priced menu grows a STATIC tile factor beside the
+land's dynamic terms; round 4's parked route-aware-prices item resolves
+to exactly this). A `TILE_MENU` table, three rows: a grain-origin tile
+prices `lodging` 0.90 (bread is cheap at the granary — the mirror of
+grain-scarce's 1.50), a mine tile prices `steel` 0.90 (stacking under
+deposit-found is right — a strike at the pithead is the cheapest steel
+in the world), a crossroads tile (2+ routes crossing) prices `goods`
+0.95 and `lodging` 1.10 (full shelves, full beds). Read by
+`session.local_term` and the `prices` sheet as a multiplier beside
+`worldsim.term`, clamped by the same `MENU_FLOOR` / `MENU_CEILING`;
+static, derived, never stored. `toll` and `ferry` stay untouched —
+tolls walking the route network is the snapshot and politics arcs'
+work.
 
 **6. The Miners' League** — the recovery (designer directive; the
 worked scrub is designlog 2026-08-21 (D)). The `deposit` slot returns
@@ -459,55 +576,46 @@ was always human mining folklore), plus a League fact per land naming
 its chapter and its mines. The cards fire at land level like every
 card; their tile address (the mine) arrives with the snapshot arc.
 
-**7. Tests.** Origins, mines and legendary roads identical across
-seeds; the network's pinned sweep (~59 routes, ~114 land tiles on a
-route, ~27 ports); the mines by name with their towns and tags; a grain
-road for every hungry mine and Falun pinned unfed; route records
-well-formed end to end; the label lines wrapped; the League chain run
-in a mining land (seam → rush, dries → reopened, and the caravan
-admitted on grain-scarce); one broken world per new `validate_world`
-clause; every existing bench unmoved (derived seeds).
+**7. The standing eyeball and the bench.** Sessions 1–3 each moved
+their constants into `places.py` and re-pointed econmap.py (the
+standing-rules bullet); this session finishes the tool's turn: its
+render commands draw FROM a built world (`places.create_geography`)
+rather than a private simulation, and its `--sweep` commands retire in
+favor of **`bench_worldgen.py`** — the arc's measured suite over real
+worldgen: the harvest sweep (coverage, region sizes, cause mix, the
+drought guarantee), the census sweep (per tier, slots per tile, empty
+tiles, souls, the quiet-rich share), the trade sweep (routes, ports,
+crossroads), default 100 seeds with the census and harvest pins
+measured at 500. Register it in develop.md's Files and append a dated
+benchlog entry per run, per doctrine.
 
-**Explicit non-changes** (settled, not deferred): the edge model is
-untouched — no cheap sea freight; no re-export chains — a route is one
-origin to one destination, and the entrepôt story is told by routes
-MEETING at Venice, not by cargo transshipping; the exotic doors are
-ordinary tiles with no special rule; nothing reads routes yet beyond
-the label (inns, tolls, banditry, plague walking in from a port stay
-later arcs' work, with their addresses now on the map).
+**8. The scaffolding sweep.** One test in the removed-peoples-sweep
+manner: the pre-Europe scaffolding is GONE — no `ENVIRONMENT_PROFILES`,
+no `SETTLEMENT_DENSITY` / `_population_slots`, no catalog `environment`
+key, no `prairie` in any runtime table or play-facing doc, no bare
+`basic` / `mountain` tag on any Area, and econmap.py holds no private
+copy of a constant `places.py` owns.
 
-**Parked here**: a Hanse-shaped authored northern circuit (the derived
-north draws its own for now); the Ardennes-shaped western wildwood mark
-(the eastern one shipped; the west still has none); route-aware prices
-and boards (round 5's candidate list).
+**9. Tests.** The character line and the harvest line on representative
+tiles (a mine, a granary, a crossroads, a quiet wilderness tile), inside
+the wrap; the brief complete for a start tile and its neighbours, the
+unmet settlements unnamed, the DM-only fields absent from the player's
+detail lines; the tile menu's three rows reaching `local_term` and
+`prices`, stacking with the land's terms under the clamps; the League
+chain run in a mining land (seam → rush, dries → reopened, and the
+caravan admitted on grain-scarce); the sweep test; one broken world per
+new `validate_world` clause if any; every existing bench unmoved.
 
-## Round 5 — The hookup (the read surface)
-
-The vaguest round on purpose; its design session settles what the game
-READS off the new ground. Candidates, from cheap upward:
-
-- **Tile detail lines and the map page speak the tile's character** —
-  grain country, drove road, silver town — the writing.md register laid
-  over the tile's facts. **The DM's tile brief** (designer directive,
-  the round-4 sitting): the generated ground is good narration material
-  even before any card reads it, so build a function that prints one
-  tile's whole file for DM eyes — terrain, climate, cover, character
-  words, goods, mine, routes with endpoints and cargo, settlements and
-  tiers — the way `lore` serves the land's; fold the same facts into
-  the player's `map.txt` tile detail; print the NEIGHBOURING tiles in a
-  line each (less detail), so the DM narrates toward the next tile
-  knowingly; and give dm.md the prompt to consult it.
-- **Existing systems reading population**: board activity derived from
-  the tile instead of the hand-set `BOARD_ACTIVE_CHANCE` roll; recruit
-  pools; price nudges. The round decides the minimum set.
-- **Storage and wiring**: where each layer lives (an authored overlay
-  resource beside `europe_map.txt`, computed tables in `places.py` — to
-  settle), worldgen kept derived-seed clean, `validate_world` clauses per
-  layer, a `bench_worldgen`-style suite pinning the distributions the
-  rounds tuned, and the render script kept as the standing eyeball.
-- **Explicit non-goals, so the arc stays this arc**: no trouble score, no
-  forward simulation, no card changes — the cards gain their geography in
-  the snapshot arc.
+**Settled non-changes** (round 5's design, so the arc stays this arc):
+board activity stays the tier table — deriving it from the band would
+count the census twice (the tier IS the band's expression); no trouble
+score, no forward simulation, no card changes and no card addresses
+(the snapshot arc); creature and encounter geography stays the fauna
+dump's — `hunt` and the road keep the land pools; the wealth band stays
+the land's 2d6 (the snapshot arc argues the aggregate); the charter and
+the manor stay write-only (the politics arc); no new map overlay page —
+the 33-column map is settled, and the tile's character lives in the
+detail lines and the brief.
 
 ---
 
@@ -518,18 +626,18 @@ scheduled or specified.
 
 ## The spring snapshot & trouble arc (the natural next)
 
-- **The last-harvest roll ships with round 1** (settled early, designlog
-  2026-08-21: contiguous cause-carrying problem regions, the contagion
-  model). This arc KEEPS: the **last-winter roll** for pastoral country
-  (fodder, herd losses, animal disease, wolves and monsters at the herd's
-  edges — reading the climate table's winter column, and the great-rains
-  regions doubling as murrain country, 1315-style); the READING of both
-  rolls (states, prices, trouble); and the harvest-day consequences (the
-  day the new harvest replaces last year's story — this year's harvest
-  stays unwritten until then, the shipped weather tracks its story).
-  Spring is the hungry gap: the snapshot the party walks into is the
-  year's maximum tension.
-- **Organic distribution**: round 1's seeded contagion (centers, causes,
+- **The last-harvest roll ships with session 2** (settled early,
+  designlog 2026-08-21: contiguous cause-carrying problem regions, the
+  contagion model). This arc KEEPS: the **last-winter roll** for pastoral
+  country (fodder, herd losses, animal disease, wolves and monsters at
+  the herd's edges — reading the climate table's winter column, and the
+  great-rains regions doubling as murrain country, 1315-style); the
+  READING of both rolls (states, prices, trouble); and the harvest-day
+  consequences (the day the new harvest replaces last year's story — this
+  year's harvest stays unwritten until then, the shipped weather tracks
+  its story). Spring is the hungry gap: the snapshot the party walks into
+  is the year's maximum tension.
+- **Organic distribution**: the seeded contagion (centers, causes,
   susceptibility) is the worked model — never everything-everywhere,
   never one needle; margins amplify variance because the centers seed
   where the climate is failure-prone. The winter roll wants the same
@@ -590,7 +698,7 @@ makes wantable.
 
 - Roads and road quality; bridges, mandatory river tolls and ferries;
   ports, owned ships, passage prices and naval encounters — natural
-  continuations of the routes round, none scheduled.
+  continuations of the routes session, none scheduled.
 - Fogging the base terrain map. Diagonal movement.
 - Watch in play: a companion quitting mid-career is much harsher on the
   fixed map (closure note, unchanged — the wound and satisfaction tracks

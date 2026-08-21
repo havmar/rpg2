@@ -177,9 +177,12 @@ a pointer: what the file is, how it's run, where its docs are.
 - `plan.md` — **the sole active roadmap and build contract**. The whole
   fixed Europe-map rework shipped across five sessions ending 2026-08-15
   (Human World Contraction, Fixed Europe Geography, Grid Navigation and
-  Map UI, Local Quest Geography, Europe MVP Closure), so what remains
-  there is the deferred list plus what the closure discovered. Name a
-  session when triggering work; do not refer to a rung number. **Nothing
+  Map UI, Local Quest Geography, Europe MVP Closure). Part 1 is now THE
+  TILE ECONOMY ARC's build: four NUMBERED implementation sessions
+  (2026-08-21, designlog (E)) triggered by "implement session N" and
+  shipped in order — the design rounds behind them are settled and live
+  in designlog 2026-08-20 through 2026-08-21 (E). Part 2 is the draft
+  roadmap beyond the arc. **Nothing
   implemented lives there**: when a session ships, delete its completed
   contract and write the result in the permanent docs and designlog as
   described above.
