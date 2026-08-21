@@ -91,28 +91,28 @@ MAP_ROWS = 18
 MAP_COLUMNS = 30
 BIOME_GLYPHS = {".": "sea", "#": "basic", "^": "mountain",
                 "~": "river"}
-PINNED_BIOME_COUNTS = {"basic": 266, "mountain": 29, "river": 21,
-                       "sea": 224}
+PINNED_BIOME_COUNTS = {"basic": 268, "mountain": 28, "river": 18,
+                       "sea": 226}
 PINNED_COUNTRY_BIOMES = {
-    "firascir": {"basic": 81, "mountain": 11, "river": 5},
-    "mortellaria": {"basic": 117, "mountain": 15, "river": 12},
+    "firascir": {"basic": 80, "mountain": 10, "river": 5},
+    "mortellaria": {"basic": 120, "mountain": 15, "river": 9},
     "tergal": {"basic": 68, "mountain": 3, "river": 4},
 }
-PINNED_LAND_COMPONENTS = (302, 11, 2, 1)
+PINNED_LAND_COMPONENTS = (300, 11, 2, 1)
 
 HISTORICAL_CITIES = (
     (5, 2, "Dublin", "firascir", "basic", False),
     (6, 5, "London", "firascir", "basic", False),
-    (8, 12, "Amsterdam", "firascir", "river", False),
+    (8, 11, "Amsterdam", "firascir", "river", False),
     (9, 10, "Paris", "firascir", "basic", True),
     (9, 18, "Prague", "firascir", "basic", False),
     (3, 23, "Stockholm", "tergal", "basic", False),
     (7, 28, "Moscow", "tergal", "basic", False),
     (8, 22, "Warsaw", "tergal", "basic", False),
     (10, 27, "Kyiv", "tergal", "river", True),
-    (13, 3, "Lisbon", "mortellaria", "river", False),
+    (13, 3, "Lisbon", "mortellaria", "basic", False),
     (13, 7, "Madrid", "mortellaria", "basic", False),
-    (12, 14, "Venice", "mortellaria", "river", False),
+    (12, 14, "Venice", "mortellaria", "basic", False),
     (14, 14, "Rome", "mortellaria", "basic", True),
     (14, 19, "Athens", "mortellaria", "basic", False),
     (14, 27, "Constantinople", "mortellaria", "basic", False),

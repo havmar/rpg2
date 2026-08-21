@@ -434,7 +434,7 @@ class TheRumorRadius(unittest.TestCase):
         self.assertNotIn("HERE", text)
 
     def test_the_single_day_group_says_day_not_days(self) -> None:
-        world = _world(37)      # Sanoro, with Lisbon one day's road off
+        world = _world(28)      # Solavela, with Madrid one day's road off
         here = world["areas"][world["start_area"]]
         lines = quests.rumor_lines(
             world, quests.nearby_settlements(world, here["tile"]), 2)
