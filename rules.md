@@ -3294,7 +3294,10 @@ materialize lazily.
   where the party has met the place (`a village (unmet)` otherwise), the
   capital, charter and manor marks and a quiet board named — and the four
   NEIGHBOURS in a line each: label, character phrase, chief settlement,
-  and the harvest word only where that neighbour's year is a problem. It
+  and the harvest word only where that neighbour's year is a problem. On a
+  neighbour line the indefinite article is the unmet marker (`a village`
+  against `village Erkhet`), because the full `(unmet)` wrapped seven of
+  those lines in ten and the DM is glancing there, not reading. It
   defaults to the Tile the party is standing on and takes any coordinate.
   The land layer stays `world` and `lore`'s business; the brief is the
   TILE's file only.

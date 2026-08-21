@@ -108,10 +108,11 @@ def sweep_census(seeds: int) -> None:
                 if places.population_band(world, tile) in ("high", "dense")
                 and (tile["row"], tile["column"])
                 not in places.HISTORICAL_BY_TILE]
-        quiet.append(sum(1 for tile in rich if not {
-            world["settlement_slots"][sid]["tier"]
-            for sid in tile["settlement_slots"]}
-            & {"town", *places.CITY_GRADE}) / len(rich))
+        if rich:        # every real world has some; a repainted overlay
+            quiet.append(sum(1 for tile in rich if not {   # might not
+                world["settlement_slots"][sid]["tier"]
+                for sid in tile["settlement_slots"]}
+                & {"town", *places.CITY_GRADE}) / len(rich))
         slots = world["settlement_slots"].values()
         charters.append(sum(1 for slot in slots if slot["charter"]))
         manors.append(sum(1 for slot in slots if slot["manor"]))
@@ -122,7 +123,8 @@ def sweep_census(seeds: int) -> None:
     _stat(f"empty tiles (of {len(_land(places.create_geography(0)))})",
           empty, ".0f")
     _stat("souls in the world", souls, ",.0f")
-    _stat("quiet rich country (% no town)", quiet, ".0f", 100)
+    if quiet:
+        _stat("quiet rich country (% no town)", quiet, ".0f", 100)
     _stat("free (chartered) settlements", charters, ".1f")
     _stat("manors", manors, ".1f")
 
@@ -175,6 +177,10 @@ def main() -> None:
                     help="how many worlds to build (the arc's pins: 500)")
     ap.add_argument("--only", choices=sorted(SWEEPS), default=None)
     args = ap.parse_args()
+    if args.seeds < 1:      # a sweep of nothing has no mean, and the error
+        ap.error(           # should say so rather than being a
+            "--seeds wants at least one world")   # ZeroDivisionError three
+                                                  # frames down
     chosen = [args.only] if args.only else ["harvest", "census", "trade"]
     started = time.time()
     for name in chosen:

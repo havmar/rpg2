@@ -366,6 +366,39 @@ class TheDMsBrief(unittest.TestCase):
         self.assertIn("  census: empty", places.tile_brief_lines(world,
                                                                 empty))
 
+    def test_the_neighbour_line_marks_unmet_with_the_article(self) -> None:
+        """`a village` against `village Erkhet`. The census block says
+        `(unmet)` in full; the neighbour line cannot afford the eight
+        characters -- with them, seven of these lines in ten wrapped."""
+        world = self.world
+        unmet = next(world["tiles"][tid] for tid in world["tile_order"]
+                     if world["tiles"][tid]["settlement_slots"]
+                     and not world["tiles"][tid]["visited"])
+        line = places._neighbour_line(world, unmet)
+        tier = world["settlement_slots"][
+            unmet["settlement_slots"][0]]["tier"]
+        self.assertIn(f", a {tier}", line)
+        self.assertNotIn("(unmet)", line)
+        paris = world["tiles"][PARIS]
+        self.assertIn(", metropolis Paris",
+                      places._neighbour_line(world, paris))
+        # ...and the whole neighbours block stays one line per neighbour
+        # on the great majority of Tiles
+        wrapped = total = 0
+        for tid in world["tile_order"]:
+            tile = world["tiles"][tid]
+            if tile["biome"] == "sea":
+                continue
+            for direction in places.DIRECTIONS:
+                nid = places.neighbor_id(tile, direction)
+                if nid is None:
+                    continue
+                total += 1
+                head = f"    {direction[0].upper()} "
+                wrapped += len(head + places._neighbour_line(
+                    world, world["tiles"][nid])) > 40
+        self.assertLess(wrapped / total, 0.30, f"{wrapped}/{total} wrap")
+
     def test_the_four_neighbours_each_get_a_line(self) -> None:
         world = self.world
         lines = places.tile_brief_lines(world, PARIS)

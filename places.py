@@ -3200,8 +3200,13 @@ def _neighbour_line(world: dict, tile: dict) -> str:
     if tile["settlement_slots"]:
         chief = world["settlement_slots"][tile["settlement_slots"][0]]
         area = world["areas"].get(chief["area"]) if chief["area"] else None
+        # The indefinite article IS the unmet marker here -- `a village`
+        # against `village Erkhet` -- and it saves the eight characters
+        # that were wrapping seven of these lines in ten. The CENSUS block
+        # above says `(unmet)` in full, where the DM is reading rather
+        # than glancing and the room is there.
         parts.append(f"{chief['tier']} {area['name']}" if area
-                     else f"a {chief['tier']} (unmet)")
+                     else f"a {chief['tier']}")
     if tile["harvest"] is not None and tile["harvest"] < HARVEST_PROBLEM:
         parts.append(f"harvest {harvest_word(tile['harvest'])}")
     return f"{tile_label(tile)} -- " + ", ".join(parts)

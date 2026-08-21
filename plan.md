@@ -114,8 +114,8 @@ shrine, a cot and a store — that a detail round would widen. Both live in
 
 ## Parked from the tile economy arc (2026-08-21, when session 4 shipped)
 
-Neither is blocked; both were declined by the arc rather than deferred by
-it, so either is a cheap sitting whenever the map wants it.
+None of these is blocked; the arc declined them rather than deferring
+them, so each is a cheap sitting whenever the map wants it.
 
 - **A Hanse-shaped authored northern circuit.** Round 4 declined it because
   the DERIVED north already draws the circuit organically — Falun's copper,
@@ -125,14 +125,16 @@ it, so either is a cheap sitting whenever the map wants it.
   `places.HAND_FOREST` (four clearance-capped tiles east of Warsaw); the
   west still has none, so no lowland deep forest survives the deforestation
   law there. One entry in the same table.
-- **Three land-character rows the goods layer always outranks.** `deep
-  forest` and `the open steppe` never reach a page on the shipped overlays,
-  because every deep-forest tile is a fur or timber origin and every
-  non-marsh steppe tile is horse country. They are law rows over the whole
-  vocabulary rather than dead fallbacks, and `econmap.py character` names
-  which ones are unused; a later overlay change may bring them back on its
-  own. Only revisit if the priority itself starts reading wrong at the
-  table.
+- **Two land-character rows the goods layer always outranks**, plus the
+  `plains` fall-through. `deep forest` and `the open steppe` never reach a
+  page on the shipped overlays, because every deep-forest tile is already
+  a fur or timber origin and every non-marsh steppe tile is horse country;
+  `plains` never does either, because an earlier rule covers every plains
+  tile that lacks the farmland tag. They are law rows over the whole
+  authored vocabulary rather than dead fallbacks, and `econmap.py
+  character` prints which are unused so the fact stays visible; a later
+  overlay change may bring any of them back on its own. Only revisit if
+  the priority itself starts reading wrong at the table.
 
 ## Small deferred leftovers (from the Europe build, still true)
 
@@ -160,7 +162,9 @@ it, so either is a cheap sitting whenever the map wants it.
   tree): parts 1 and 2 are byte-stable and PART 3, the career sim, is not
   — reached-L20 came back 0.5%, 1.5% and 0.0%. Both develop.md Files
   entries carry the warning. Worth a sitting of its own: a safety net that
-  cannot be compared against itself is not one.
+  cannot be compared against itself is not one. (`bench_worldgen.py`,
+  added by session 4, is NOT one of them — its layers are deterministic
+  per seed, so it can clear a change.)
 - Watch in play: a companion quitting mid-career is much harsher on the
   fixed map (closure note, unchanged — the wound and satisfaction tracks
   are behaving as designed; the road is just genuinely long now).

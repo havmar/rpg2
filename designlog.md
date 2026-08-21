@@ -6108,7 +6108,8 @@ reproducible bench is unmoved.
    fields), and forcing them into one structure would have made both
    unreadable. They sit in one commented block and are documented as one
    table.
-4. **Three land-character rows never fire on the shipped overlays.** Every
+4. **Two land-character rows never fire on the shipped overlays**, nor
+   does the `plains` fall-through. Every
    deep-forest Tile is already a fur or timber origin and every non-marsh
    steppe Tile is horse country, so `deep forest` and `the open steppe`
    never reach a page — and `plains` never does either, because the earlier
@@ -6158,6 +6159,15 @@ reproducible bench is unmoved.
    to world creation: every Tile can say what it is and what it ate, in
    words the tables actually hold. Three broken worlds pin it.
 
+11. **The neighbour line says `a village`, not `a village (unmet)`.** The
+   contract asks the neighbour line for "chief settlement tier and name if
+   any" and asks the CENSUS for `a village (unmet)`; built with the full
+   marker on both, 70% of neighbour lines wrapped onto a second line and
+   the four-neighbour block was eight lines deep. The indefinite article
+   already carries the meaning against `village Erkhet`, and dropping the
+   eight characters took the wrap rate to 20%. The census keeps the full
+   word, where the DM is reading rather than glancing.
+
 **Two fixtures were re-pinned**, both because the world genuinely changed.
 `test_worldsim`'s quiet-land shop test stands the party at Paris, which is
 now a crossroads, so its 1.0 claim is made against `worldsim.term` and the
@@ -6175,5 +6185,5 @@ the ground word does not.
 
 **Parked on the way**: the arc's two round-4 leftovers (a Hanse-shaped
 authored northern circuit, an Ardennes-shaped western wildwood mark) moved
-into plan.md's own section as Part 1 was deleted, joined by the three
-unused land-character rows. Nothing else was parked: the arc is closed.
+into plan.md's own section as Part 1 was deleted, joined by the two unused
+land-character rows and the plains fall-through. Nothing else was parked: the arc is closed.

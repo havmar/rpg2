@@ -2495,7 +2495,7 @@ a change, which is half of why it was worth building.
 
 ### The suite
 
-892 tests before, **947 after** — `test_hookup.py` is 55 new tests in five
+892 tests before, **948 after** — `test_hookup.py` is 56 new tests in five
 parts, including three broken worlds for the one `validate_world` clause
 the session added (`_validate_read_surface`: every Tile can say what it is
 and what it ate). Two existing fixtures were re-pinned, both because the world changed
