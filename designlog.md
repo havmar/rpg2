@@ -6187,3 +6187,103 @@ the ground word does not.
 authored northern circuit, an Ardennes-shaped western wildwood mark) moved
 into plan.md's own section as Part 1 was deleted, joined by the two unused
 land-character rows and the plains fall-through. Nothing else was parked: the arc is closed.
+
+## 2026-08-21 (J) — The medieval world arc: nine countries, tongues & the rolled wars (design)
+
+The designer asked for the full, rounded-out design of a big change,
+delivered straight into plan.md as a build contract: replace the
+three-country world with a nine-country one, only Tergal keeping its
+name; give Thule (pagan vikings) a small deck of its own scoped like
+Tergal's; author settlement and person names for every new country plus a
+real historical town name per town-capable tile; give party members
+tongues (Latin plus the homeland's, a random extra for Byzantines); roll
+three standing wars at every new game from six historical templates and
+run a cosmetic campaign sim over their theaters using the conquest
+system; and remove the old main conquest questline. All open choices were
+delegated. The result is plan.md's THE MEDIEVAL WORLD ARC — Part 1, five
+sessions; this entry records the road and the calls.
+
+**The load-bearing move is the COUNTRY/CULTURE split.** Nine countries
+would be unaffordable if each owed what Firascir owed (53 cards, 12
+templates, a quest table, two name pools). Instead identity and content
+part ways: a COUNTRY owns tiles, capital, tongue, name pools, facts and
+wars; a CULTURE owns the reusable content, and there are only four —
+western (the Firascir packet, now serving Phyrascia, Seraptania, Teutonia
+and Vellisclavia), southern (the Mortellaria packet, serving Byzantium,
+Andalusia and Umaia), steppe (Tergal), and norse (Thule, new). The card
+record already takes a land tuple, so the mechanism is a `CULTURES` map
+and re-keyed ids, not new machinery. The catalog gets the same split
+(version 3: `cultures` for templates and inventories, `lands` for
+identity).
+
+**The map became an authored artifact.** `country_at` is today a
+two-line geometric rule; it becomes a fourth overlay grid
+(`resources/europe_countries.txt`), and the draft grid was drawn in this
+session and verified against the real census code: 314 land tiles
+partition into 13/23/28/37/60/51/17/60/25
+(p/s/t/h/v/b/a/u/g), every historical city and mine landing with a
+historically sensible owner without moving a tile — Goslar, Kutna Hora,
+Luneburg and Erzberg to Teutonia; Wieliczka and Banska Stiavnica to
+Vellisclavia; Melle to Seraptania; Falun to Thule; Novo Brdo to
+Byzantium. Sea tiles take the nearest land tile's country by rule
+(north-then-west ties), not paint.
+
+**Calls settled in this session**, so they stay settled:
+
+- **Kyiv stays Tergal's capital.** The user's brief said Tergal is
+  "same"; its capital today is Kyiv, and the horde seated in a taken
+  river city is the Golden Horde pattern. The alternative (Kyiv to
+  Vellisclavia, an authored Sarai in the east) was weighed and declined
+  for churn without gain; Vellisclavia's Rus identity rests on Moscow,
+  Warsaw and a build-time Novgorod. Cheap to reverse if it reads wrong.
+- **Seraptania loses its Mediterranean coast** to Byzantium — (11,10)
+  and (11,11) — per the brief; the Low Countries and the east Alps went
+  to Teutonia (so Amsterdam and Erzberg are imperial), the west Alps and
+  everything south to Byzantium, the Carpathian mines to Vellisclavia.
+- **Byzantium is the southern heir**: Latin tongue, the four great
+  southern cities, and the land-specific Mortellarian identity (death
+  rite, carnival, academy, schism) narrows to it alone in the card
+  audit; Umaia and Andalusia share only the culture-generic south.
+- **Three historical cities added**: Cordoba (Andalusia's capital),
+  Cairo (Umaia's capital and the FOURTH metropolis — the biggest city of
+  the age), Jerusalem (a town, the crusade's prize). Capitals grow to
+  nine; the sky-anchor rule is unchanged.
+- **Vassalage is a d3** — Byzantium's vassal / Umaia's / independent —
+  stored as `lands["andalusia"]["liege"]`, read by the readouts and the
+  Reconquista template, nothing else yet.
+- **The name check was actually run**: ~615 settlements a world; the
+  town-capable tiles (mid/high/dense bands, campaign-invariant) number
+  exactly 185, so the real-town table needs ~160 new authored names on
+  top of the 25 authored tiles; villages stay invented-generic on
+  purpose. Pools: city 4 / town 6 / village 24-or-16 / hamlet 10 per
+  country, with wholesale reuse (Firascir pools -> Phyrascia,
+  Mortellaria pools -> Byzantium, Tergal keeps its own) so only six
+  settlement pool sets and seven person-name lists are authored new.
+- **Tongues are a recorded fact plus a dm.md rule, not an engine gate.**
+  Latin is Byzantium's tongue and the church-and-scholars tongue
+  everywhere, which is why every character speaks it — the party is
+  never soft-locked out of a country, only textured in it.
+- **Wars are static, like the year.** Rolled once at worldgen (three
+  distinct of six, no exclusion rules — the age ran its wars
+  concurrently), standing for the whole campaign, smouldering through a
+  lazy day-stepped sim in conquest.py that reuses the garrison authority
+  for sieges and writes ordinary since-stamped states (war-raided,
+  war-camp, battlefield, under-siege, sacked, occupied capped at 2) with
+  hard caps and expiries. It never redraws a border, never touches
+  boards or holdings, never ends. Dynamic borders stay parked.
+- **The old conquest questline (story.py) is removed first**, whole —
+  session 1 — so no later session renames a line of it. The worldsim war
+  feed (CASUS_BELLI and kin) goes with its one customer; the war
+  templates carry authored herald lines instead; post_news survives with
+  the campaign sim as its next customer. conquest.py's player holdings
+  layer stays untouched except seize_by_occupation.
+
+**Session order was forced by green-ness**: the removal first; then the
+map session must carry names, catalog, plumbing AND a mechanically
+re-keyed worldsim (with a two-item Thule stub the validator demands),
+because a nine-land world with a three-land world layer does not boot;
+the town table and tongues are additive and come third; the full norse
+packet, the card audit and the ~20-edge relations table fourth; the wars
+last, on top of everything. The roadmap's "Politics, war & more
+countries" section collapsed into the contract, leaving dynamic borders,
+mechanical languages and vassalage-with-teeth parked.
