@@ -661,7 +661,13 @@ a pointer: what the file is, how it's run, where its docs are.
   the base map (every land tile painted, sea unpainted, `a` exactly on the
   `^` tiles) and renders them side by side with censuses — climate now;
   fertility, population and routes as their rounds land. `python
-  econmap.py`.
+  econmap.py`. Since the round's second sitting it also carries the
+  ROLLED last-harvest layer (`python econmap.py harvest [SEED]`, `harvest
+  --sweep` for the 500-seed distribution): contiguous problem regions
+  seeded by climate, each with a cause — drought, the great rains, frost —
+  grown by contagion into the ground that cause can hurt, one drought
+  guaranteed per world; tuned to ~17% problem coverage. Its constants are
+  the round's draft numbers until the implementation contract ships them.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
