@@ -5496,3 +5496,102 @@ DM tile brief with the neighbour lines (round 5's list, designer
 directive); the cards' tile addresses and everything that walks the
 network — inns, tolls, banditry, the plague from a port (the snapshot
 and later arcs, addresses now on the map).
+
+## 2026-08-21 (E) — Round 5 of the tile economy arc: the hookup, and the arc cut into four sessions
+
+**Where it started.** The designer closed the arc's design phase with a
+hands-off mandate: complete round 5 — the read surface, the vaguest
+round on purpose — solo, then reorganize plan.md's Part 1 into numbered
+implementation sessions triggerable by "implement session N". The stated
+point of the round: the new systems must actually APPEAR in the game,
+and the old pre-Europe-map systems must be integrated properly. One open
+question: does the build need four sessions, or fewer?
+
+**The road the discussion took: the read-surface audit.** Round 5's
+design work was an inventory of what the game already reads and where
+the new ground can enter without new machinery. The surfaces found: the
+tile's public file is `tile_detail_lines` inside map.txt's here-block
+(session.here_lines); the DM's per-land pages are `world` and `lore` —
+there is no per-tile equivalent, which is exactly the hole the round-4
+sitting's brief directive names; prices flow through one channel
+(worldsim.term via session.local_term, the six MENU_TERMS words, the
+clamps), so a tile's economy can price itself as one more multiplier
+with nothing stored; the recruit roll (roll_recruits) offers the PC's
+full CHA capacity in any settlement, so a hamlet currently hires like a
+town; the hunt and the road roll off land-level pools, and giving them
+tile geography would front-run the monsters & fauna dump; the tier
+tables that must grow the five census words turned out to be more than
+the board — quests.SETTLEMENT_KINDS and conquest's tribute, garrison
+and raid tables all key on settlement_tier, so the round named them
+explicitly in the census session's contract rather than leaving
+"service/board band" implicit. Round 3's parked question — board
+activity derived from the band instead of the tier table — was examined
+and REJECTED: the tier is already the band's expression through the
+census roll, and a second band read would count the same ground twice.
+
+**What was decided: the round 5 contract** (now plan.md's Session 4).
+The read surface, from cheap upward: (1) the CHARACTER LINE — one
+composed phrase per tile off a fixed priority (mine, then goods origin,
+then cover/terrain/climate), writing.md register, one phrase never a
+list; (2) the HARVEST WORDS — the spoken scale words only, never the
+stored percent, and the causes' fiction names settled (the drought, the
+great rains, the black frost, and on nile tiles the low Nile), which
+discharges round 1's parked fiction-names item since this is the
+harvest's first read surface; (3) both folded into tile_detail_lines,
+completing the tile's public file beside session 3's trade label; (4)
+the DM TILE BRIEF — places.tile_brief_lines plus a new `tile [COORD]`
+verb beside `world` and `lore`, DM eyes, free, the whole tile file plus
+the four neighbours in a line each, with the dm.md protocol (consult on
+arrival and before narrating travel; narration material, never a dump);
+(5) the TILE MENU — the integration minimum for prices: three static
+rows (grain origin lodging 0.90, mine steel 0.90, crossroads goods 0.95
++ lodging 1.10) multiplying beside the land's dynamic terms under the
+existing clamps, resolving round 4's parked route-aware-prices item
+minimally; toll and ferry untouched. Two smaller integrations were
+settled INTO earlier sessions where their data ships: the recruit tier
+cap (hamlet 1, village 2 — the census session's) and the fen-fog
+WEATHER_LOCAL line (the ground session's, discharging round 2's parked
+flavor item). The storage question the arc opened with was settled as a
+standing rule: one authority per constant — each session moves its
+layer's numbers from econmap.py into places.py and re-points the tool
+to import them back; session 4 finishes the turn by drawing econmap's
+renders from a built world and retiring its --sweep commands into
+**bench_worldgen.py**, the arc's measured suite over real worldgen
+(harvest, census and trade sweeps, benchlog discipline). A scaffolding
+sweep test in the removed-peoples manner closes the integration story:
+ENVIRONMENT_PROFILES, SETTLEMENT_DENSITY, _population_slots, the
+catalog environment key, prairie, and the bare basic/mountain tags all
+provably gone. Non-changes recorded so the arc stays this arc: no
+trouble score, no forward simulation, no card changes or addresses (the
+snapshot arc), no creature geography (the fauna dump), the wealth band
+stays the 2d6, the charter and manor stay write-only, no new map
+overlay page, and board activity stays the tier table.
+
+**The session cut — four, and why.** Part 1 was reorganized from five
+design rounds into four implementation sessions, cut by implementation
+seam rather than one-round-one-session: Session 1 is rounds 1+2's
+deterministic authored ground and the sky (both overlays load in one
+create_geography pass, round 2's laws read round 1's columns, and the
+whole layer moves no bench by construction); Session 2 is the ROLLED
+world — round 1's harvest moved out of its round to ride with round 3's
+census, so every derived-seed roll and every acknowledged fixture
+re-pin lands in one sitting, verified once; Session 3 is round 4's
+trade network over that census, minus the League; Session 4 is round 5
+plus the Miners' League recovery, moved from round 4 because the
+old-world cards returning is old-system integration — the hookup's own
+business — and because it balances the trade session down to one
+coherent layer. Fewer than four was considered and declined: merging
+sessions 3 and 4 makes a sitting whose verification pass (routes +
+League content + every read surface + the new bench) is too wide to
+trust, and session 1 is already the largest safe bite. Five (the
+literal round mapping) was declined too — the harvest alone under-fills
+a sitting and splits the fixture churn across two. The designlog's
+round names remain the design authority; the sessions are the build
+cut, and each session's contract header points at its rounds.
+
+**Parked on the way**: seeding `new`'s opening hook from the character
+line (a build option, not contracted); creature and encounter geography
+(the fauna dump, as before); tolls, inns and banditry walking the route
+network (the snapshot and politics arcs); the exact character-word and
+cause-name phrasings left to the build under writing.md, with the
+contract's examples as canon.
