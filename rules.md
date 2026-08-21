@@ -3172,6 +3172,79 @@ materialize lazily.
   is in trouble in an average world, in regions of about eleven Tiles. The
   spoken words — and the causes' fiction names — arrive with the read
   surface; nothing reads the layer yet.
+- **Goods, mines and the trade network** (2026-08-21, the tile economy
+  arc's third build session). Nineteen GOODS move on the map: grain, wine,
+  wool, horses, timber, furs, wax, silver, copper, iron, salt, herring,
+  amber, cloth, arms, silk, spice, sugar and dyes. Every one of them has
+  ORIGIN TILES, exotics included — an exotic's origin is simply the
+  frame's DOOR, the eastern gate in the steppe corner and the delta port
+  in the south — and nothing else about an exotic is special. Origins come
+  three ways.
+  **The mines** are authored, nine, famous and named: Goslar (silver and
+  copper, the Rammelsberg), Kutna Hora (silver), Falun (copper and iron),
+  Banska Stiavnica (silver and copper), Melle (silver), Erzberg (iron),
+  Novo Brdo (silver), Luneburg (salt) and Wieliczka (salt). Each seats its
+  own mine town in the census (above).
+  **The authored colour** is the trade no law can see: the bay salt pans,
+  the western wine coast, the Sound's herring, the amber shore, the Low
+  Countries' and the Tuscan looms, the Lombard armouries, the middle
+  Danube horse fairs, and the two exotic doors.
+  **The produce is DERIVED** by law over the ground: grain where realized
+  arable reaches 0.55 (only the alluvial corridors and the Nile — ordinary
+  plain country feeds itself and exports nothing), wine on the
+  mediterranean farmland, wool in the oceanic and mediterranean hill
+  country, horses on the steppe, timber where forest meets water but never
+  the fen carr, and furs-and-wax together in the cold deep forest.
+  Contiguous origin Tiles aggregate into one REGION, and a derived region
+  of a single Tile is local colour rather than an export — except grain,
+  where one alluvial Tile IS a granary.
+- **A route is one origin to one market, and the pathfinder draws it.**
+  Per good, a table names the destination kind (the markets, the cities,
+  the three metropolises, the smiths, the cloth looms, the origin's own
+  crown or all three crowns), how many, and the BULK RANGE in days beyond
+  which the cart stops paying — rich goods have no range at all, so silver
+  walks to the mint from anywhere while grain stops at eight days. A
+  MARKET is a city-grade rolled chief, a historical town whatever its tier,
+  or a mine town; an empty Tile is nobody's destination. Routes that share
+  BOTH endpoints merge their cargo, so Falun ships copper and iron down
+  one road. Two authored additions ride on top: a **grain road** from the
+  nearest granary to every mine whose own ground cannot feed it (within
+  six days — seven of the nine mines are hungry, six are fed, and **Falun
+  finds no grain in reach and stands unfed by design**), and the five
+  **legendary roads**, authored endpoint pairs whose line the same
+  pathfinder draws: the Silk Road (the eastern gate to Constantinople), the
+  Spice Lane (the delta port to Venice), the Amber Road (the amber shore to
+  Venice), the Fairs Road (Venice to Paris) and the Grain Fleet (the Nile
+  granary to Constantinople). Three of the five meet at Venice, so the
+  entrepôt is a fact of construction rather than a rule that says so.
+  **The sea rule**: sea sails at the settled edge cost. There is no cheap
+  freight, because the game keeps ONE notion of distance for war, trade and
+  travel alike. A route's sea Tiles are its SEA LANE and the two shores
+  where it changes element are its PORTS.
+  The layer rolls no dice; it is each world's own because the CENSUS it
+  reads was rolled, so the trade skeleton is fixed in character and each
+  world's own in detail. Stored: the good words on the origin Tile, the
+  mine town's name on a mine Tile, four tags (`mine`, `trade-route`,
+  `port`, `sea-lane`) and the route records — id, name for a legendary
+  road, the ordered Tile path, the cargo and the length in days. Measured
+  over 500 worlds: about 59 routes, 114 of the 314 land Tiles on one, 27
+  ports and 26 sea-lane Tiles, ~37 crossroads where three or more meet.
+  **The trade words are TILE words, not Area words**: a settlement Area
+  inherits its Tile's ground tags and not these four, so the quest
+  generator is not quietly a reader of the trade layer.
+- **What reads the trade layer: the tile label, and nothing else yet.**
+  The Tile's detail block gains its mine, the goods it is an origin of,
+  and one line per route crossing it — the endpoints by name and the
+  cargo: `Goslar - Paris: silver`, and a legendary road by its own name
+  first, `the Silk Road: the eastern gate - Constantinople, silk and
+  dyes`. Endpoints name themselves through the historical cities, the mine
+  towns and the authored marks (the eastern gate, the delta port, the Nile
+  granary, the amber shore, the Sound, the salt pans, the wine coast, the
+  two looms, the armouries, the horse fairs); anything else — a rolled
+  market the party has never heard of — reads as its coordinate, the way
+  the map labels it. All three are common knowledge, because a mine, a
+  vineyard and a road are things you can see from the road. Prices, the
+  boards, encounters, tolls and banditry do not read routes yet.
 - **A settlement is cut from a template its Tile can honor** (2026-08-15,
   Europe MVP Closure). Each country authors a handful of settlement ROLES
   per tier -- a harbour town, a market town, a ford village -- and each
@@ -3203,7 +3276,13 @@ materialize lazily.
   of a Tile of two or more, a harvest percent on the scale for every land
   Tile and none at sea, a cause exactly where the year is a problem, at
   least one drought region, and every region a contiguous piece of land
-  holding its own center. An illegal
+  holding its own center; and the trade layer's: routes numbered in
+  order, every route a real walk over real edges whose days sum to its
+  record, only legal good words on any Tile or route, nothing grown or dug
+  at sea, every mine Tile carrying its own named town and metal, no mine
+  anywhere else, all five legendary roads present with their authored
+  endpoints and cargo and no other road named, the four trade tags saying
+  exactly what the routes did, and every port on a coast. An illegal
   world raises at creation rather than surfacing later inside a display.
 - **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
   in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
@@ -3229,8 +3308,9 @@ materialize lazily.
   lines instead. One cell never tries to show everything on
   its Tile — the detail block below the grid names the current Tile, its
   coordinate, country, terrain word (`places.tile_ground`: what the player
-  reads is the ground, never the map glyph's `basic`), derived ground tags
-  and every Area on it the
+  reads is the ground, never the map glyph's `basic`), derived ground tags,
+  its mine, the goods it is an origin of, the routes crossing it, and every
+  Area on it the
   party knows, and a compact legend groups known settlements by country,
   historical cities first. No border characters are drawn through the grid:
   the fixed partition rule and that legend carry political geography.

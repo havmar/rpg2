@@ -2284,3 +2284,106 @@ L20 1 career -> 0) are the same cells the last four entries have warned not
 to read at this n; nothing in this session can touch combat.
 
 **Nothing was tuned.** The levers are where the ground session left them.
+
+## 2026-08-21 (C) — The trade network (arc session 3): nothing moved, and that is the result
+
+Session 3 of the tile economy arc built the trade layer — the nine mines,
+the nineteen goods and their origins, the computed route network, the five
+legendary roads, and the tile label that reads them. The layer **consumes
+no rng and takes no derived seed of its own**: it is a pure function of the
+census session 2 already rolled. The measurement question was therefore not
+"where did the numbers land" but "did anything downstream move", and the
+answer is no.
+
+### Every reproducible bench is byte-identical
+
+Run on this tree and on `HEAD` (a `git worktree` at b718fb1) and diffed:
+
+| bench | result |
+|---|---|
+| `tune.py` | IDENTICAL |
+| `bench_training.py` | IDENTICAL |
+| `bench_weapons.py` | IDENTICAL |
+| `bench_ranged.py` | IDENTICAL |
+| `bench_bestiary.py` | IDENTICAL |
+| `bench_party.py` | IDENTICAL |
+| `bench_rout.py` | IDENTICAL |
+| `bench_quests.py` parts 1-2 (rooms, sites) | IDENTICAL |
+| `bench_quests.py` part 3 (careers) | differs — see below |
+
+A stronger check than the benches, because it is exact rather than
+statistical: a probe that hashes the START draw, the whole settlement
+census (tile, index, tier, name, charter, manor), every Tile's harvest
+percent and cause, the harvest region records, every Tile's GROUND tags
+(the four trade words excluded), and every materialized Area with its
+role, name, board flag, tags and sites — over five seeds (1, 5, 12, 27, 42)
+— returns the same SHA-256 on both trees:
+`ae92889e78b5f2ef315769120dcfcc93b434aa0a2bbce53ef70a3ffd28c33bde`.
+Nothing outside the trade layer is different by one bit.
+
+### `bench_quests.py`'s career block is NOT REPRODUCIBLE either
+
+It came back different, so it was tested against ITSELF on the unmodified
+tree: **three consecutive runs of the ORIGINAL code, three different career
+blocks.**
+
+| | base run 1 | base run 2 | base run 3 | this tree |
+|---|---:|---:|---:|---:|
+| reached L20 | 0.5% | 1.5% | 0.0% | 1.0% |
+| L11 / L14 / L17 | 31 / 7 / 4 | 32 / 7 / 4 | 31 / 8 / 3 | 38 / 8 / 2 |
+| median capped days | 106 | 108 | — | 116 |
+| defeat mercies per career | 0.94 | 0.93 | 0.95 | 0.97 |
+| expired postings per career | 323.5 | 326.4 | 327.4 | 342.4 |
+
+Parts 1 and 2 are byte-stable across all four runs. This is the same class
+of defect `bench_abilities.py` carries (found in session 2), and it is now
+written into develop.md's Files entry for `bench_quests.py`: **diff the
+first 48 lines; read the career block as a mood, not a measurement.** Two
+of this project's five calibration benches now cannot be compared against
+themselves, which is worth a sitting of its own.
+
+### The trade layer's own numbers (500 worlds)
+
+| | mean | range |
+|---|---:|---:|
+| routes a world (after merging) | 58.7 | 58-59 |
+| land Tiles on a route (of 314) | 113.7 | 113-115 |
+| ports | 27.0 | 27-27 |
+| sea-lane Tiles | 26.0 | 26-26 |
+| crossroads (3+ routes) | 36.6 | 35-39 |
+| routes crossing the busiest Tile | 12.4 | 12-13 |
+| route length in days | 6.1 | 1-22 |
+
+The round-4 contract pinned ~59 routes, ~114 land tiles and ~27 ports off
+econmap's private simulation; the shipped layer over real worldgen lands on
+all three EXACTLY. That is not luck — the network is nearly deterministic,
+because only the rolled cities move under it, and the derived origins and
+the mines do not move at all.
+
+Hungry mines: **7 of 9** cannot feed themselves, **6 get a grain road**
+every world, and **Falun stands unfed in all 500** — the pinned posture the
+round asked for. Cargo counts per world are fixed to the route: grain 10,
+timber 8, salt 6, wool 6, silver 5, wine 5, cloth 4, copper 3, furs 3,
+wax 3, iron 2, herring 2, arms 2, silk 2, dyes 2, spice 2, sugar 2,
+horses 1, amber 1.
+
+The goods map stays sparse as designed: at seed 1, **169 of 314 land Tiles
+carry any good at all**, from 48 origins — furs and wax 46 Tiles each,
+wine 34, wool 28, timber 26, horses 22, grain 16, and everything else in
+single figures (silver 5, copper 3, salt 3, iron 2, cloth 2, dyes 2, and
+one Tile each for herring, amber, silk, arms, spice and sugar).
+
+### The suite
+
+861 tests before, **892 after** — `test_trade.py` is 31 new tests in four
+parts with twenty broken worlds. Two existing fixtures were re-pinned, both
+because the world genuinely changed under them and neither a tuning
+decision: `test_ground`'s seed-invariance test now compares the GROUND tags
+only (the three road words follow the rolled census, so they are the seed's
+business by design), and `test_ui_logs`'s wilderness test now matches the
+Area line by its `name (` prefix rather than by the name appearing anywhere
+indented — seed 27 opens at Goslar, and `  Goslar - Paris: silver` now
+prints above it.
+
+**Nothing was tuned.** No lever moved; the layer added numbers and read one
+of them.

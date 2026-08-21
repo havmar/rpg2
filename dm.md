@@ -1447,6 +1447,22 @@ than the fights WITHOUT pages of narration:
   yet and nothing prints it, so it is not yet narration material -- the
   words arrive with the read surface. Do not invent numbers for it at the
   table.
+- **The trade layer PRINTS** (2026-08-21): the Tile's detail block on
+  `ui/map.txt` now carries its mine, the goods it is an origin of, and one
+  line per route crossing it -- `Goslar - Paris: silver`, `the Silk Road:
+  the eastern gate - Constantinople, silk and dyes`. All of it is common
+  knowledge, so it IS narration material: the party sees the carts, the
+  pack trains and the ore road, and a tile with three roads meeting on it
+  is a busy place. Nineteen goods move on the map and nine mines are
+  famous by name (Goslar, Kutna Hora, Falun, Banska Stiavnica, Melle,
+  Erzberg, Novo Brdo, Luneburg, Wieliczka); an unnamed endpoint is a market
+  the party has never heard of, so the label says its coordinate and you
+  narrate it as "the market east of here", not by inventing a name.
+  **Falun is fed by nobody** -- no granary within reach of the copper
+  mountain -- and that is a standing story the north owes you. Nothing else
+  reads the layer yet: prices, boards, encounters, tolls and banditry are
+  unchanged, so do not charge a toll or roll a bandit off a road the
+  engine has not armed.
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is
   free. Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT:
