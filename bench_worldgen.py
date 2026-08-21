@@ -21,7 +21,7 @@ Three sweeps, in the order the arc built them:
 
 Run:  python bench_worldgen.py [--seeds N] [--only harvest|census|trade]
 
-100 seeds is the default and takes about fifteen seconds.  The arc's PINS
+100 seeds is the default and takes about twenty seconds.  The arc's PINS
 were measured at 500; re-measure with `--seeds 500` after touching any
 constant in places.py's rolled half, and append the result to benchlog.md.
 The layers are deterministic per seed, so this bench -- unlike two of the

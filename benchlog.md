@@ -2457,6 +2457,16 @@ with three or more crossings including SEA tiles, and a sea lane is not a
 crossroads. The land-only count is the honest one and is what the bench
 prints.
 
+### How often the route cap bites
+
+**15 of 314 land Tiles (4.8%)** carry more than four roads, so the `+N
+more` tail is a safety valve for the trade capitals rather than a routine
+truncation — 95% of Tiles print their whole road list. The busiest Tile in
+a typical world is Paris with twelve, which reads as four lines plus `+8
+more`; no Tile carries more than three NAMED roads, so the named-first
+rule can never hide an ordinary road behind a full house of legendary
+ones. The DM's brief prints all twelve.
+
 ### How often the tile menu is felt
 
 Over 30 worlds, 7,924 settled land Tiles (a Tile with at least one

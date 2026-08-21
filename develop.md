@@ -917,7 +917,7 @@ a pointer: what the file is, how it's run, where its docs are.
   and manors) and `trade` (routes, land tiles on a road, ports, sea-lane
   tiles, crossroads, the unfed mines). `python bench_worldgen.py
   [--seeds N] [--only harvest|census|trade]`; 100 seeds is the default and
-  takes about fifteen seconds, the arc's PINS were measured at 500 (about
+  takes about twenty seconds, the arc's PINS were measured at 500 (about
   two minutes). Unlike `bench_abilities.py` and `bench_quests.py` this one
   IS reproducible — the layers are deterministic per seed — so it can
   clear a change. Re-run and append to benchlog after touching any
