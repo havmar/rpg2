@@ -22,3 +22,89 @@
     Bleeding: Gell -1.
     stamina: Gruk 5/12, Gell 8/10 | Camp Swordmaster 4 7/8
     == Gell is badly cut up (HP 4/17) -- the fight hangs for a heartbeat. ==
+  Round 3:
+    Gell downs a healing potion mid-fight (HP 4 -> 8/17, now -3 to rolls; 0 left) -- no attack this round, -2 defending while they drink
+    Gruk attacks Camp Swordmaster 4 -- parried.
+        pressure: Gruk: 18 (2d6=11, +4 DEX, +3 training) vs Camp Swordmaster 4: 20 (2d6=10, +8 DEX, +2 training)
+    Camp Swordmaster 4 overwhelms Gruk -- a crippling blow! [Gruk: 8/16 HP, -2 to rolls]
+        pressure: Camp Swordmaster 4: 19 (2d6=8, +8 DEX, +2 training, +1 schweizersäbel) vs Gruk: 14 (2d6=6, +4 DEX, +3 training, +1 cruel staff)
+        severity: 8 = margin 5 +6 STR +1 schweizersäbel -4 soak -> crippling blow (-6 HP)
+    Gruk takes a wound: a broken leg, set crooked (severity 3; HP ceiling 13/16)
+        conditions: Gell -1 HP [bleed 1] -> 7/17, -3 to rolls
+    Bleeding: Gell -1.
+    stamina: Gruk 4/12, Gell 8/10 | Camp Swordmaster 4 6/8
+  Round 4:
+    !! Gruk is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Gruk attacks Camp Swordmaster 4 -- parried.
+        pressure: Gruk: 7 (2d6=4, +4 DEX, +3 training, -2 wounds, -2 winded) vs Camp Swordmaster 4: 14 (2d6=4, +8 DEX, +2 training)
+    Gell rolls a pommel strike into Camp Swordmaster 4. (+1 STA)
+    Gell attacks Camp Swordmaster 4 -- parried.
+        pressure: Gell: 15 (2d6=10, +1 DEX, +3 training, +1 zweihander, +3 proficiency, -3 wounds) vs Camp Swordmaster 4: 18 (2d6=8, +8 DEX, +2 training)
+    Camp Swordmaster 4 overwhelms Gell -- a crippling blow... Gell's Bulwark flares! Reduced to grievous. [Gell: 3/17 HP, -4 to rolls; 8 Power left]
+        pressure: Camp Swordmaster 4: 21 (2d6=10, +8 DEX, +2 training, +1 schweizersäbel) vs Gell: 7 (2d6=6, +1 DEX, +3 training, -1 zweihander, +1 armor, -3 wounds)
+        severity: 16 = margin 14 +6 STR +1 schweizersäbel -5 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
+    Gell takes a wound: a deep wound in the right arm (severity 2; HP ceiling 8/17)
+        conditions: Gell -1 HP [bleed 1] -> 2/17, -5 to rolls
+    Bleeding: Gell -1.
+    stamina: Gruk 3/12*, Gell 8/10 | Camp Swordmaster 4 5/8   (* = Winded)
+  Round 5:
+    Gruk attacks Camp Swordmaster 4 -- parried.
+        pressure: Gruk: 11 (2d6=8, +4 DEX, +3 training, -2 wounds, -2 winded) vs Camp Swordmaster 4: 18 (2d6=8, +8 DEX, +2 training)
+    Gell attacks Camp Swordmaster 4 -- parried.
+        pressure: Gell: 9 (2d6=6, +1 DEX, +3 training, +1 zweihander, +3 proficiency, -5 wounds) vs Camp Swordmaster 4: 17 (2d6=7, +8 DEX, +2 training)
+    Camp Swordmaster 4 overwhelms Gruk -- a crippling blow! [Gruk: 2/16 HP, -4 to rolls]
+        pressure: Camp Swordmaster 4: 21 (2d6=10, +8 DEX, +2 training, +1 schweizersäbel) vs Gruk: 8 (2d6=4, +4 DEX, +3 training, +1 cruel staff, -2 wounds, -2 winded)
+        severity: 16 = margin 13 +6 STR +1 schweizersäbel -4 soak -> crippling blow (-6 HP)
+    Gruk takes a wound: two fingers gone (severity 3; HP ceiling 10/16)
+        conditions: Gell -1 HP [bleed 1] -> 1/17, -5 to rolls
+    Bleeding: Gell -1.
+    stamina: Gruk 2/12*, Gell 7/10 | Camp Swordmaster 4 4/8   (* = Winded)
+  Round 6:
+    Gruk downs a stamina draught mid-fight (STA 2 -> 6/12; 0 left) -- no attack this round, -2 defending while they drink
+    Gell attacks Camp Swordmaster 4 -- parried.
+        pressure: Gell: 10 (2d6=7, +1 DEX, +3 training, +1 zweihander, +3 proficiency, -5 wounds) vs Camp Swordmaster 4: 16 (2d6=6, +8 DEX, +2 training)
+    !! Camp Swordmaster 4 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Camp Swordmaster 4 overwhelms Gell -- a crippling blow... Gell's Bulwark flares! Reduced to grievous. [Gell: 0/17 HP, -5 to rolls; 6 Power left]
+        pressure: Camp Swordmaster 4: 18 (2d6=9, +8 DEX, +2 training, +1 schweizersäbel, -2 winded) vs Gell: 5 (2d6=6, +1 DEX, +3 training, -1 zweihander, +1 armor, -5 wounds)
+        severity: 16 = margin 13 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
+    Gell takes a wound: a torn eyelid (severity 2; HP ceiling 8/17)
+    Gell goes down, out of the fight.
+    stamina: Gruk 6/12 | Camp Swordmaster 4 3/8*   (* = Winded)
+  Round 7:
+    Gruk attacks Camp Swordmaster 4 -- parried.
+        pressure: Gruk: 9 (2d6=7, +3 DEX, +3 training, -4 wounds) vs Camp Swordmaster 4: 13 (2d6=5, +8 DEX, +2 training, -2 winded)
+    Camp Swordmaster 4 edges past Gruk -- a grievous injury! [Gruk: 0/16 HP, -5 to rolls]
+        pressure: Camp Swordmaster 4: 12 (2d6=3, +8 DEX, +2 training, +1 schweizersäbel, -2 winded) vs Gruk: 10 (2d6=7, +3 DEX, +3 training, +1 cruel staff, -4 wounds)
+        severity: 5 = margin 2 +6 STR +1 schweizersäbel -4 soak -> grievous (-4 HP)
+    Gruk takes a wound: a deep wound in the right arm (severity 2; HP ceiling 8/16)
+    Gruk goes down, out of the fight.
+    stamina: Camp Swordmaster 4 2/8*   (* = Winded)
+  *** LEFT FOR DEAD -- the victors take 1048 g and the quality weapons, then leave the party breathing. ***
+    Taken: Gruk's cruel staff, Gell's zweihander.
+    The beaten party rises at 1 HP. Its wounds remain.
+
+-- the party --
+Gruk: Failing STA 5/12 Power 0/10
+  (hurt -5 to rolls)
+  - two fingers gone (sev 3)
+  - a broken leg, set crooked (sev 3)
+  - a deep wound in the right arm (sev 2)
+  - badly beaten (sev 1)
+  (HP ceiling 8/16 until they mend)
+  (no kit)
+Gell: Failing STA 6/10 Power 6/12
+  (hurt -5 to rolls)
+  [bleeding -1 HP/round]
+  - a deep wound in the right arm (sev 2)
+  - three ribs broken (sev 2)
+  - a torn eyelid (sev 2)
+  - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  - a shallow belly wound (sev 1)
+  (HP ceiling 8/17 until they mend)
+  (no kit)
+Purse 0s; day 1.
+Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
+  (due day 6 -- 5 days left; quick pay, x1.15)

@@ -19,3 +19,85 @@ Gell takes a wound:
 a deep wound in the thigh.
 Bleeding: Gell -1.
 == Gell is badly cut up ==
+Round 3:
+Gell downs a healing potion (0 left).
+Gruk (14/16)
+attacks Camp Swordmaster 4, parried.
+Camp Swordmaster 4 overwhelms Gruk,
+deals 6 dmg!!!
+Gruk takes a wound:
+a broken leg, set crooked.
+Bleeding: Gell -1.
+Round 4:
+!! Gruk is Winded.
+Gruk (8/16)
+attacks Camp Swordmaster 4, parried.
+Gell: Pommel Strike
+at Camp Swordmaster 4!
+Gell (7/17)
+attacks Camp Swordmaster 4, parried.
+Camp Swordmaster 4 overwhelms Gell,
+but Bulwark blunts it: deals 4 dmg!!
+Gell takes a wound:
+a deep wound in the right arm.
+Bleeding: Gell -1.
+Round 5:
+Gruk (8/16)
+attacks Camp Swordmaster 4, parried.
+Gell (2/17)
+attacks Camp Swordmaster 4, parried.
+Camp Swordmaster 4 overwhelms Gruk,
+deals 6 dmg!!!
+Gruk takes a wound: two fingers gone.
+Bleeding: Gell -1.
+Round 6:
+Gruk downs a stamina draught (0 left).
+Gell (1/17)
+attacks Camp Swordmaster 4, parried.
+!! Camp Swordmaster 4 is Winded.
+Camp Swordmaster 4 overwhelms Gell,
+but Bulwark blunts it: deals 4 dmg!!
+Gell takes a wound: a torn eyelid.
+Gell goes DOWN.
+Round 7:
+Gruk (2/16)
+attacks Camp Swordmaster 4, parried.
+Camp Swordmaster 4 edges past Gruk,
+deals 4 dmg!!
+Gruk takes a wound:
+a deep wound in the right arm.
+Gruk goes DOWN.
+*** LEFT FOR DEAD --
+the victors take 1048 g
+and the quality weapons,
+then leave the party breathing. ***
+Taken: Gruk's cruel staff,
+Gell's zweihander.
+The beaten party rises at 1 HP.
+Its wounds remain.
+
+-- the party --
+Gruk: Failing STA 5/12 Power 0/10
+  (hurt -5 to rolls)
+  - two fingers gone (sev 3)
+  - a broken leg, set crooked (sev 3)
+  - a deep wound in the right arm (sev 2)
+  - badly beaten (sev 1)
+  (HP ceiling 8/16 until they mend)
+  (no kit)
+Gell: Failing STA 6/10 Power 6/12
+  (hurt -5 to rolls)
+  [bleeding -1 HP/round]
+  - a deep wound in the right arm (sev 2)
+  - three ribs broken (sev 2)
+  - a torn eyelid (sev 2)
+  - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  - a shallow belly wound (sev 1)
+  (HP ceiling 8/17 until they mend)
+  (no kit)
+Purse 0s; day 1.
+Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
+  (due day 6 -- 5 days left; quick pay, x1.15)

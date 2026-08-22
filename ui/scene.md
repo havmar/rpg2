@@ -1,62 +1,73 @@
-## turn 4 (day 1)
+## turn 5 (day 1)
 
-> hp potion for him, press on
+> resume --heal Gell
 
-Gell drinks the last vial standing over the bodies. It takes him to ten; the wounds hold the rest back.
-
-```
-Gell drinks a healing potion: HP 10/17
-(0 left).
-```
-
-Over the rise the camp is a fire, a picket line of stolen horses, and one man sitting by the flames with a sabre across his knees. He stands up when he sees you. There is nobody else in the camp.
-
-```
-=== Rival Warband ===
-the raided trail (L14),
-room 2/2: campfire
-Camp Swordmaster 4 -- schweizersäbel
-DEX 8  STR 6  STA 8  HP 16/16
-drilled +2,
-takes spoils, leaves the fallen
-```
+Gell drinks and stands up into it. Nothing either of you throws at the swordmaster gets through: five rounds, every swing parried, and he is not scratched at the end of it. He breaks your leg, he takes two of your fingers, he opens Gell's arm and his eye. Gell goes down in round six and you go down in round seven.
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
 
-The first round is all parries. In the second Gell feints, the swordmaster reads it, and the answer goes through his armor and into his thigh. Bulwark took most of it. He is bleeding, and he has been standing in two fights on the same day.
+```
+*** LEFT FOR DEAD --
+the victors take 1048 g
+and the quality weapons,
+then leave the party breathing. ***
+Taken: Gruk's cruel staff,
+Gell's zweihander.
+The beaten party rises at 1 HP.
+Its wounds remain.
+
+-- the party --
+Gruk: Failing STA 5/12 Power 0/10
+  (hurt -5 to rolls)
+  - two fingers gone (sev 3)
+  - a broken leg, set crooked (sev 3)
+  - a deep wound in the right arm (sev
+    2)
+  - badly beaten (sev 1)
+  (HP ceiling 8/16 until they mend)
+  (no kit)
+Gell: Failing STA 6/10 Power 6/12
+  (hurt -5 to rolls)
+  [bleeding -1 HP/round]
+  - a deep wound in the right arm (sev
+    2)
+  - three ribs broken (sev 2)
+  - a torn eyelid (sev 2)
+  - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
+  - a deep wound in the thigh (sev 2)
+  - badly beaten (sev 1)
+  - a shallow belly wound (sev 1)
+  (HP ceiling 8/17 until they mend)
+  (no kit)
+Purse 0s; day 1.
+Ahead: 1 fight(s) at the raided trail;
+  the work done pays 423 XP in the
+  field, and the turn-in pays 0s, 243 XP
+  at the giver.
+  (due day 6 -- 5 days left; quick pay,
+    x1.15)
+```
 
 ```
-*** FIGHT PAUSED (after round 2): Gell
-  is badly cut up. ***
-  Facing: Camp Swordmaster 4 (16/16 HP)
-  Gruk: Scratched HP 14/15 (max 16) STA
-    5/12 Power 0/12
-    - a gash above the knee (sev 1)
-    healing x0, stamina x1
-  Gell: Bloodied HP 4/8 (max 17) STA
-    8/10 Power 10/12
-    (hurt -4 to rolls)
-    [bleeding -1 HP/round]
-    - three ribs broken (sev 2)
-    - a deep gash across the back (sev
-      2)
-    - a cut through the palm (sev 2)
-    - a deep wound in the thigh (sev 2)
-    - a shallow belly wound (sev 1)
-    healing x1, stamina x0
-  The player's call (a pause action
-    costs the round: defend at -2):
-    resume
-      fight on
-    resume --drink HERO
-      stamina draught, +4 STA now
-    resume --heal HERO
-      healing potion, +5 HP now (the
-        wound penalty lightens)
-    retreat
-      parting blows from foes still fit
-        to swing, then one group chase
-        roll
+day 1: DEFEAT at L14. The level's one
+  mercy is spent.
 ```
 
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/map.txt)
+You come around in the grass. The fire is out, the horses are gone, and so is he. He took your staff, he took Gell's zweihander, and he cut the purse off your belt: a thousand and forty-eight silver, the whole of fourteen years.
+
+Gell is sitting up a few feet away with one eye shut. He says a prayer for the two of you, out loud, in the melodious voice, and it takes a while.
+
+Sargul is an hour south. The three men you killed on the rise are still lying there with their longswords, and you are both empty-handed.
+
+```
+  options: take longswords off the
+    bodies, back to Sargul (camp
+    behind walls is free and knits
+    a wound a night), the job is
+    still open -- 1 fight, due day 6
+```
+
+Where to?
+
+[party](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/history.txt)
