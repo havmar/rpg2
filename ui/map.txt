@@ -1,11 +1,10 @@
 RPG2 MAP -- day 1
-the party is at Umaia > R17C11 > Dar
-  Aziza
+the party is at Tergal > R10C26 > Sargul
 
             111111111122222222223
    123456789012345678901234567890
 01 ..............................
-02 ...............#^^#######.....
+02 ...............#^^####T##.....
 03 ...^.........#^^###.##C###.###
 04 ...##......^^####...##########
 05 .T.##.....^#####...###########
@@ -13,34 +12,34 @@ the party is at Umaia > R17C11 > Dar
 07 ...####....#......#########C##
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~##~##^
-10 ....######~######^^^###~##C##^
+10 ....######~######^^^###~#@C##^
 11 .....######^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
-13 .#C#^#T#....##...###.........#
+13 .#CC^#T#....##...###.........#
 14 .##C##...#..^C...#T..###^^C###
 15 ..###......###........########
 16 ......###.................T###
-17 .##^^#####@C###...##......####
+17 .##^^######C###...##......####
 18 #######################C######
 
 . sea  # land  ^ mtns  ~ river
 @ party  ! job  C city  T town  v
   village
 
-HERE: R17C11 -- Umaia, plains
-  wine country
-  ground: farmland, coast
+HERE: R10C26 -- Tergal, plains
+  horse country
+  ground: pasture, steppe
   last harvest: ordinary
-  goods: wine
-  R17C11 Countryside (coast)
-  Wadi Sef (town)  0 job(s)
-  Dar Aziza (village)  <- the party, 2
+  goods: horses
+  R10C26 Countryside (fields)
+  Sargul (village)  <- the party, 2
     job(s)
+  Ukhta (hamlet)  0 job(s)
 
--- Umaia --
+-- Tergal --
   [NORMAL]
-  MINISTERIAL RULE
-  WEATHER: steady rain.
+  THE GREAT CHIEF
+  WEATHER: clear skies.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London
@@ -50,14 +49,17 @@ Teutonia cities: Amsterdam R08C11,
     Prague R09C18*
 Vellisclavia cities: Moscow R07C28*,
     Warsaw R08C22
-Thule cities: Stockholm R03C23*
+Thule cities: Uppsala R02C23, Stockholm
+    R03C23*
 Byzantium cities: Venice R12C14, Rome
     R14C14, Athens R14C19,
     Constantinople R14C27*
-Andalusia cities: Lisbon R13C03, Madrid
-    R13C07, Cordoba R14C04*
-Umaia cities: Jerusalem R16C27, Carthage
-    R17C12, Cairo R18C24*
-Umaia known: Dar Aziza R17C11, Wadi Sef
-    R17C11
+Andalusia (Byzantium's vassal) cities:
+    Lisbon R13C03, Toledo R13C04*,
+    Madrid R13C07
+Umaia cities: Qurtuba R14C04, Jerusalem
+    R16C27, Carthage R17C12, Cairo
+    R18C24*
 Tergal cities: Kyiv R10C27*
+Tergal known: Sargul R10C26, Ukhta
+    R10C26

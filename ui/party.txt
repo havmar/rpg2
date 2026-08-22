@@ -1,27 +1,31 @@
-RPG2 PARTY SHEET -- day 1, at Umaia >
-  R17C11 > Dar Aziza
-purse: 0s
+RPG2 PARTY SHEET -- day 1, at Tergal >
+  R10C26 > Sargul
+purse: 1048s
 party: 1/2 companion slot(s) filled (CHA
   5)
 
-(YOU) Nasir -- umaia m, age 21
-  L1  training 0  XP 0/100  points 0
-  DEX 3  STR 5  MIND 6  CHA 5
-  HP 9/9  STA 5/5  Power 7/7
-  wooden staff | healingx1, staminax1
-  spells: ice 1
+(YOU) Gruk -- tergal m, age 32
+  L14  training 3  XP 0/1400  points 4
+  DEX 5  STR 4  MIND 6  CHA 5
+  HP 16/16  STA 12/12  Power 12/12
+  cruel staff | healingx2
+  spells: fire 1, ice 3, scry 1
+  pools bought: hp +6, power +6, sta +6
+  speaks: Latin, Tergal
 
-(companion) Amina -- umaia f, age 33
-  L1  training 0  XP 0/100  points 0
-  DEX 6  STR 6  MIND 5  CHA 4
-  HP 9/9  STA 6/6  Power 3/3
-  whip | healingx1, staminax1
+(companion) Gell -- tergal m, age 35
+  L14  training 3  XP 0/1400  points 0
+  DEX 3  STR 6  MIND 3  CHA 4
+  HP 17/17  STA 12/12  Power 12/12
+  zweihander, prof 3 | healingx1,
+    staminax1
   abilities: bulwark
+  moves: feint, pommel, sweep
+  pools bought: hp +6, power +6, sta +6
+  speaks: Latin, Tergal
   satisfaction 7/10
-  quirk: has a child (with them: Maryam,
-    age 10); speech: swears a lot;
-    dress: colorful
+  quirk: religious; voice: melodious;
+    dress: armored
 
-THE PACT: assignment [q19] Desecrate the
-  Shrine at Dar Aziza (grace to take it
-  runs to day 11).
+THE PACT: no current assignment (the
+  next is pinned to PC level 15).
