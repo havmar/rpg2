@@ -56,3 +56,93 @@
     War Chief 3 struggles back to their footing -- no action this round.
     stamina: Gruk 9/12, Gell 10/10 | War Chief 2 6/8, War Chief 3 7/8
     == Gell is badly cut up (HP 7/17) -- the fight hangs for a heartbeat. ==
+  Round 4:
+    Gell downs a healing potion mid-fight (HP 7 -> 12/17, now -1 to rolls; 0 left) -- no attack this round, -2 defending while they drink
+    Gruk close the distance (the gap narrows to 0).
+    War Chief 2 edges past Gruk -- a solid wound! [Gruk: 14/16 HP, -0 to rolls]
+        pressure: War Chief 2: 19 (2d6=10, +7 DEX, +2 training) vs Gruk: 18 (2d6=9, +5 DEX, +3 training, +1 cruel staff)
+        severity: 4 = margin 1 +6 STR +1 longsword -4 soak -> wound (-2 HP)
+    Gruk takes a wound: a gash above the knee (severity 1; HP ceiling 15/16)
+    War Chief 3 attacks Gell -- parried.
+        pressure: War Chief 3: 2 (2d6=2, +7 DEX, -2 chilled, +2 training, -7 wounds) vs Gell: 13 (2d6=10, +3 DEX, +3 training, -1 zweihander, +1 armor, -1 wounds, -2 drinking)
+    stamina: Gruk 9/12, Gell 10/10 | War Chief 2 5/8, War Chief 3 6/8
+  Round 5:
+    Gruk and War Chief 3 -- Clash! Steel rings; neither yields.
+        pressure: Gruk: 11 (2d6=4, +4 DEX, +3 training) vs War Chief 3: 11 (2d6=11, +7 DEX, -2 chilled, +2 training, -7 wounds)
+    Gell overwhelms War Chief 3 -- a crippling blow! [War Chief 3: 0/17 HP, -8 to rolls]
+        pressure: Gell: 14 (2d6=5, +3 DEX, +3 training, +1 zweihander, +3 proficiency, -1 wounds) vs War Chief 3: 6 (2d6=6, +7 DEX, -2 chilled, +2 training, -7 wounds)
+        severity: 13 = margin 8 +5 STR +3 zweihander +3 proficiency -6 soak -> crippling blow (-6 HP)
+    *** War Chief 3 is SLAIN. ***
+    (War Chief 3 strikes even as they fall)
+    War Chief 3 attacks Gruk -- parried.
+        pressure: War Chief 3: 6 (2d6=6, +7 DEX, -2 chilled, +2 training, -7 wounds) vs Gruk: 12 (2d6=4, +4 DEX, +3 training, +1 cruel staff)
+    War Chief 2 attacks Gruk -- parried.
+        pressure: War Chief 2: 14 (2d6=5, +7 DEX, +2 training) vs Gruk: 18 (2d6=10, +4 DEX, +3 training, +1 cruel staff)
+    stamina: Gruk 8/12, Gell 9/10 | War Chief 2 4/8
+  Round 6:
+    Gruk attacks War Chief 2 -- parried.
+        pressure: Gruk: 11 (2d6=4, +4 DEX, +3 training) vs War Chief 2: 16 (2d6=7, +7 DEX, +2 training)
+    Gell rolls a pommel strike into War Chief 2. (+1 STA)
+    Gell attacks War Chief 2 -- parried.
+        pressure: Gell: 11 (2d6=2, +3 DEX, +3 training, +1 zweihander, +3 proficiency, -1 wounds) vs War Chief 2: 16 (2d6=7, +7 DEX, +2 training)
+    !! War Chief 2 is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    War Chief 2 outmaneuvers Gell -- a grievous injury! [Gell: 8/17 HP, -3 to rolls]
+        pressure: War Chief 2: 19 (2d6=12, +7 DEX, +2 training, -2 winded) vs Gell: 16 (2d6=11, +3 DEX, +3 training, -1 zweihander, +1 armor, -1 wounds)
+        severity: 5 = margin 3 +6 STR +1 longsword -5 soak -> grievous (-4 HP)
+    Gell takes a wound: a cut through the palm (severity 2; HP ceiling 10/17)
+    stamina: Gruk 7/12, Gell 9/10 | War Chief 2 3/8*   (* = Winded)
+  Round 7:
+    Gruk edges past War Chief 2, but the blow glances off -- deflected.
+        pressure: Gruk: 14 (2d6=7, +4 DEX, +3 training) vs War Chief 2: 12 (2d6=5, +7 DEX, +2 training, -2 winded)
+        severity: -1 = margin 2 +4 STR -1 cruel staff -6 soak -> deflected
+    Gell edges past War Chief 2 -- a grievous injury! [War Chief 2: 13/17 HP, -2 to rolls]
+        pressure: Gell: 16 (2d6=10, +2 DEX, +3 training, +1 zweihander, +3 proficiency, -3 wounds) vs War Chief 2: 15 (2d6=8, +7 DEX, +2 training, -2 winded)
+        severity: 6 = margin 1 +5 STR +3 zweihander +3 proficiency -6 soak -> grievous (-4 HP)
+    War Chief 2 attacks Gruk -- parried.
+        pressure: War Chief 2: 10 (2d6=5, +7 DEX, +2 training, -2 wounds, -2 winded) vs Gruk: 19 (2d6=11, +4 DEX, +3 training, +1 cruel staff)
+    stamina: Gruk 6/12, Gell 8/10 | War Chief 2 2/8*   (* = Winded)
+  Round 8:
+    Gruk overwhelms War Chief 2 -- a grievous injury! [War Chief 2: 9/17 HP, -4 to rolls]
+        pressure: Gruk: 18 (2d6=11, +4 DEX, +3 training) vs War Chief 2: 10 (2d6=5, +7 DEX, +2 training, -2 wounds, -2 winded)
+        severity: 5 = margin 8 +4 STR -1 cruel staff -6 soak -> grievous (-4 HP)
+    War Chief 2 is bleeding by the cruel staff (-1 HP at the end of each round, until it is treated -- it does not stop with the fight)
+    Gell edges past War Chief 2 -- a grievous injury! [War Chief 2: 5/17 HP, -6 to rolls]
+        pressure: Gell: 12 (2d6=6, +2 DEX, +3 training, +1 zweihander, +3 proficiency, -3 wounds) vs War Chief 2: 11 (2d6=8, +7 DEX, +2 training, -4 wounds, -2 winded)
+        severity: 6 = margin 1 +5 STR +3 zweihander +3 proficiency -6 soak -> grievous (-4 HP)
+    War Chief 2 attacks Gruk -- parried.
+        pressure: War Chief 2: 8 (2d6=7, +7 DEX, +2 training, -6 wounds, -2 winded) vs Gruk: 16 (2d6=8, +4 DEX, +3 training, +1 cruel staff)
+        conditions: War Chief 2 -1 HP [bleed 1] -> 4/17, -6 to rolls
+    Bleeding: War Chief 2 -1.
+    stamina: Gruk 5/12, Gell 7/10 | War Chief 2 1/8*   (* = Winded)
+    The beaten foe line breaks and runs!
+    Gruk outmaneuvers War Chief 2, but the hurried blow at a fleeing back glances off -- deflected.
+        pressure: Gruk: 13 (2d6=6, +4 DEX, +3 training) vs War Chief 2: 10 (2d6=11, +7 DEX, +2 training, -6 wounds, -2 winded, -2 fleeing)
+        severity: 0 = margin 3 +4 STR -1 cruel staff -6 soak -> deflected -> a clean hit still cuts: graze -> a hurried blow at a fleeing back: deflected
+    Gell overwhelms War Chief 2 -- a grievous injury! [War Chief 2: 0/17 HP, -8 to rolls]
+        pressure: Gell: 14 (2d6=8, +2 DEX, +3 training, +1 zweihander, +3 proficiency, -3 wounds) vs War Chief 2: 5 (2d6=6, +7 DEX, +2 training, -6 wounds, -2 winded, -2 fleeing)
+        severity: 14 = margin 9 +5 STR +3 zweihander +3 proficiency -6 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
+    *** War Chief 2 falls. ***
+    The party catches its breath (+1 STA)
+    Gruk gains 211 XP (encounter) [211/1400]
+    Gell gains 211 XP (encounter) [211/1400]
+Left among the dead:
+3x longsword (+0 atk/+1 sev, 15s).
+    Gell: satisfaction 7 -> 6/10 (badly bloodied)
+    The party shares out its potions -- Gruk: 1 healing, 1 stamina; Gell: 1 healing.
+
+-- the party --
+Gruk: Scratched STA 6/12 Power 0/12
+  - a gash above the knee (sev 1)
+  (HP ceiling 15/16 until they mend)
+  (healing x1, stamina x1)
+Gell: Scratched STA 8/10 Power 12/12
+  (hurt -3 to rolls)
+  - three ribs broken (sev 2)
+  - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
+  - a shallow belly wound (sev 1)
+  (HP ceiling 10/17 until they mend)
+  (healing x1)
+Purse 1048s; day 1.
+Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
+  (due day 6 -- 5 days left; quick pay, x1.15)

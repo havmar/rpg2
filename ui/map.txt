@@ -69,5 +69,5 @@ Tergal known: Sargul R10C26, Ukhta
 
 [q01] Rival Warband (L14) @ Sargul
   - the raided trail (L14): here, room
-    1/2
+    2/2
   - R10C26: here

@@ -55,3 +55,77 @@ Gell takes a wound:
 a deep gash across the back.
 War Chief 3 struggles up -- no action.
 == Gell is badly cut up ==
+Round 4:
+Gell downs a healing potion (0 left).
+War Chief 2 edges past Gruk,
+deals 2 dmg!
+Gruk takes a wound:
+a gash above the knee.
+War Chief 3 (3/17)
+attacks Gell, parried.
+Round 5:
+Gruk and War Chief 3: Clash!
+Gell (12/17) overwhelms War Chief 3,
+deals 6 dmg!!! SLAIN.
+War Chief 3 strikes as they fall:
+Gruk parries.
+War Chief 2 attacks Gruk, parried.
+Round 6:
+Gruk (14/16)
+attacks War Chief 2, parried.
+Gell: Pommel Strike at War Chief 2!
+Gell (12/17)
+attacks War Chief 2, parried.
+!! War Chief 2 is Winded.
+War Chief 2 outmaneuvers Gell,
+deals 4 dmg!!
+Gell takes a wound:
+a cut through the palm.
+Round 7:
+Gruk (14/16)
+attacks War Chief 2, deflected.
+Gell (8/17) edges past War Chief 2,
+deals 4 dmg!!
+War Chief 2 (13/17)
+attacks Gruk, parried.
+Round 8:
+Gruk (14/16) overwhelms War Chief 2,
+deals 4 dmg!!
+War Chief 2 is bleeding (-1 HP/round).
+Gell (8/17) edges past War Chief 2,
+deals 4 dmg!!
+War Chief 2 (5/17)
+attacks Gruk, parried.
+Bleeding: War Chief 2 -1.
+The beaten foes break and run!
+Gruk's parting blow at
+War Chief 2 -- deflected.
+Gell (8/17) overwhelms War Chief 2,
+deals 4 dmg!! It falls.
+The party catches its breath (+1 STA)
+Gruk +211 XP (encounter) [211/1400]
+Gell +211 XP (encounter) [211/1400]
+Left among the dead:
+3x longsword (+0 atk/+1 sev, 15s).
+Gell: satisfaction 7 -> 6/10
+(badly bloodied)
+The party shares out its potions:
+Gruk: 1 healing, 1 stamina;
+Gell: 1 healing.
+
+-- the party --
+Gruk: Scratched STA 6/12 Power 0/12
+  - a gash above the knee (sev 1)
+  (HP ceiling 15/16 until they mend)
+  (healing x1, stamina x1)
+Gell: Scratched STA 8/10 Power 12/12
+  (hurt -3 to rolls)
+  - three ribs broken (sev 2)
+  - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
+  - a shallow belly wound (sev 1)
+  (HP ceiling 10/17 until they mend)
+  (healing x1)
+Purse 1048s; day 1.
+Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
+  (due day 6 -- 5 days left; quick pay, x1.15)

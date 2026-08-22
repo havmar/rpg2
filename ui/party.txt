@@ -6,36 +6,36 @@ party: 1/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L14  training 3  XP 0/1400  points 4
-  DEX 5  STR 4  MIND 6  CHA 5
-  HP 16/16  STA 9/12  Power 0/12
-  cruel staff | healingx2
+  L14  training 3  XP 211/1400  points 4
+  DEX 4  STR 4  MIND 6  CHA 5
+  HP 14/15 of 16  STA 6/12  Power 0/12
+  cruel staff | healingx1, staminax1
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
+  - a gash above the knee (sev 1)
+  wound load 1 -> HP ceiling 15/16
 
 (companion) Gell -- tergal m, age 35
-  L14  training 3  XP 0/1400  points 0
-  DEX 3  STR 5  MIND 3  CHA 4
-  HP 7/12 of 17  STA 10/10  Power 12/12
-  zweihander, prof 3 | healingx1,
-    staminax1
+  L14  training 3  XP 211/1400  points 0
+  DEX 2  STR 5  MIND 3  CHA 4
+  HP 8/10 of 17  STA 8/10  Power 12/12
+  zweihander, prof 3 | healingx1
   abilities: bulwark
   moves: feint, pommel, sweep
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 7/10
+  satisfaction 6/10
   quirk: religious; voice: melodious;
     dress: armored
   - three ribs broken (sev 2)
   - a deep gash across the back (sev 2)
+  - a cut through the palm (sev 2)
   - a shallow belly wound (sev 1)
-  wound load 5 -> HP ceiling 12/17
+  wound load 7 -> HP ceiling 10/17
 
 active quest: [q01] L14 Rival Warband --
-  next: the raided trail (L14), room 1/2
+  next: the raided trail (L14), room 2/2
   due day 6 -- 5 days left
 THE PACT: no current assignment (the
   next is pinned to PC level 15).
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
