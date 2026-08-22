@@ -21,8 +21,9 @@ ground under the party", develop.md's Files and dev map, and benchlog's
 This file now carries one ACTIVE build contract again: **THE MEDIEVAL
 WORLD ARC, Part 1** (designed 2026-08-21, designlog (J)) — nine countries,
 names and tongues, the Thule packet, and the rolled wars. Its session 1
-(the fallen banner) shipped on 2026-08-21 (designlog (K)); sessions 2
-through 5 are the next builds. Below the contract is the roadmap BEYOND
+(the fallen banner) shipped on 2026-08-21 (designlog (K)) and so did
+session 2 (the map of nine, designlog (L)); sessions 3 through 5 are the
+next builds. Below the contract is the roadmap BEYOND
 it: main points only, each a future design conversation, none scheduled.
 Two habits from the earlier arcs continue to apply everywhere — **hidden
 numbers, visible words** (a per-tile quantity is a worldgen intermediate;
@@ -40,7 +41,12 @@ develop.md's "Where a finished feature is written up". **Session 1 — the
 fallen banner** shipped on 2026-08-21 and is gone from this file: the
 scripted conquest questline (`story.py`), the war feed and every
 touchpoint were deleted whole, and the game runs warless (designlog (K);
-rules.md's Story Layer add-on carries the note). Sessions 2-5 follow.
+rules.md's Story Layer add-on carries the note). **Session 2 — the map of
+nine** shipped the same day and is gone too: the country overlay, the
+catalog's culture/land split, the name pools, the norse culture and the
+mechanically re-keyed worldsim (designlog (L); rules.md's World &
+Navigation add-on, "Nine countries over four cultures"). Sessions 3-5
+follow.
 
 ## The frame
 
@@ -110,138 +116,6 @@ Settled calls, so they stay settled:
   `world["lands"]["andalusia"]["liege"]` (a polity key or None), read
   by `politics_lines`, the map legend and the Reconquista template. No
   other mechanical effect in this arc.
-
-## Session 2 — the map of nine
-
-The world builds and plays as nine countries. Everything worldgen needs
-on day one lands in this session: the overlay, the catalog, the names,
-the homeland plumbing, and a mechanically re-keyed worldsim.
-
-**The country overlay.** A fourth authored grid,
-`resources/europe_countries.txt`, letters on exactly the 314 land tiles
-(`.` on sea). `country_at(row, column)` reads it instead of the
-geometric split. The draft (this is the authored artifact; the build may
-adjust single tiles but the pinned census then moves with it):
-
-```
-..............................
-...............hhhhhhhhhh.....
-...p.........hhhhhh.hhhhhh.vvv
-...pp......hhhhhh...vvvvvvvvvv
-.p.pp.....hhhhhh...vvvvvvvvvvv
-.p..pp.......hh......vvvvvvvvv
-...pppp....h......vvvvvvvvvvvv
-........sstttttttttvvvvvvvvvvv
-...ssssssssttttttttvvggggggggg
-....sssssssttttttttvvggggggggg
-.....ssssbbtttbbbbbbbbbb.g.ggg
-.....ssaabbbbb.bbbbbbb......gg
-.aaaaaaa....bb...bbb.........g
-.aaaaa...b..bb...bb..bbbbbbbbb
-..aaa......bbb........bbbbbuuu
-......uuu.................uuuu
-.uuuuuuuuuuuuuu...uu......uuuu
-uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
-```
-
-(`p` Phyrascia, `s` Seraptania, `t` Teutonia, `h` Thule,
-`v` Vellisclavia, `b` Byzantium, `a` Andalusia, `u` Umaia, `g` Tergal.)
-A sea tile's country is DERIVED: the country of the nearest land tile by
-tile distance, ties settled north-then-west like the pathfinder — no
-hand-painted sea, no ambiguity. The `border` tag stays derived as today.
-Pinned: the per-country biome census off this grid replaces
-`PINNED_COUNTRY_BIOMES`, and the per-country BAND census (the bands are
-campaign-invariant) is pinned beside it:
-
-| country | land | wild | thin | low | mid | high | dense |
-|---|---|---|---|---|---|---|---|
-| phyrascia | 13 | 0 | 2 | 0 | 5 | 6 | 0 |
-| seraptania | 23 | 0 | 0 | 2 | 3 | 16 | 2 |
-| teutonia | 28 | 5 | 0 | 7 | 0 | 13 | 3 |
-| thule | 37 | 9 | 24 | 0 | 1 | 3 | 0 |
-| vellisclavia | 60 | 15 | 11 | 5 | 14 | 15 | 0 |
-| byzantium | 51 | 1 | 5 | 3 | 22 | 10 | 10 |
-| andalusia | 17 | 1 | 2 | 4 | 6 | 4 | 0 |
-| umaia | 60 | 4 | 16 | 0 | 8 | 28 | 4 |
-| tergal | 25 | 1 | 5 | 7 | 10 | 2 | 0 |
-
-The census machinery itself (score, bands, arrangements, mines, harvest,
-routes) does not change at all in this arc.
-
-**Historical cities.** The sixteen keep their tiles and tiers and take
-their new owners (Dublin and London Phyrascia; Paris Seraptania;
-Amsterdam and Prague Teutonia; Stockholm Thule; Moscow and Warsaw
-Vellisclavia; Kyiv Tergal; Venice, Rome, Athens and Constantinople
-Byzantium; Lisbon and Madrid Andalusia; Carthage Umaia). THREE are
-added: **Cordoba** (14,4), city, Andalusia's capital; **Cairo** (18,24),
-METROPOLIS on the Nile, Umaia's capital — the fourth metropolis, the
-biggest city of the age; **Jerusalem** (16,27), town, Umaia — the
-crusade's prize. `CAPITAL_TILES` grows to nine (the capitals column of
-the table above); each land's sky is read off its own capital as today.
-
-**The catalog** (`place_catalog.json`, version 3). Top level:
-`cultures` (settlement templates + natural inventories + natural
-character map, keyed western/southern/steppe/norse — the existing
-Firascir, Mortellaria and Tergal sets move under their culture names
-unchanged) and `lands` (nine records: `name`, `culture`, `tongue`,
-`description`; per-land template overrides possible later, none now).
-The NORSE culture is authored new, Tergal-scoped: templates `capital`
-(king's harbor), `walled_city`, `harbor_town` (fits coast),
-`market_town`, `shore_village` (fits coast), `wood_village` (fits
-forest), `field_village`, `cot_hamlet`; natural inventories
-`taiga_wood`, `fells`, `skerry_coast`, `river_north` (three sites each),
-mapped over the seven characters. `validate_catalog` learns the shape:
-every culture covers every tier with a no-fits role, every land names a
-real culture.
-
-**The names.** Reuse before authoring: Phyrascia inherits Firascir's
-settlement pools and person names whole; Byzantium inherits
-Mortellaria's settlement pools; Tergal keeps both of its own. Authored
-new: settlement pools for the six other countries and person-name lists
-(25 male + 25 female, `people.NAMES` shape) for the seven countries that
-lack one. Pool sizes per country — city 4, town 6, village 24
-(Vellisclavia, Byzantium, Umaia) or 16 (the rest), hamlet 10; the
-numbered-name fallback stays as the safety net. The sound briefs (per
-writing.md: invented sounds, not real-language claims, ASCII only):
-
-- Seraptania, French-flavored: Charmont, Vaudrienne, Roquefaille;
-  people Thierry, Gaspard, Alienor, Margot.
-- Teutonia, German-flavored: Falkenau, Steinbruck, Eberfeld; people
-  Konrad, Dietrich, Adelheid, Greta.
-- Thule, old-Norse mashup: Seljavik, Hrafnstad, Ulfsness; people Orm,
-  Ketil, Astrid, Sigrun.
-- Vellisclavia, old-Slavic-flavored: Dubrov, Zalesk, Mirogrod; people
-  Bogdan, Vsevolod, Ludmila, Milena.
-- Byzantium, Latin people (the places stay Mortellarian): Cassius,
-  Petronius, Livia, Marcella.
-- Andalusia, Spanish-flavored: Torrelava, Fuentebra, Almazora; people
-  Alvaro, Rodrigo, Beatriz, Ines.
-- Umaia, Arabic-flavored: Al-Qasrin, Bir Hakla, Wadi Sef; people Harun,
-  Yusuf, Zaynab, Layla.
-
-**The plumbing sweep.** `HOMELANDS` is nine. Every homeland-keyed
-catalog either re-keys by culture (`quests.TEMPLATES`, `wild_pool`,
-delivery skins — the norse culture gets five authored quest templates
-of its own here, longship- and grove-flavored) or grows to nine rows
-(`conquest.DEFENDER_ROLES`; `garrison_pool` stays `LADDER_POOL` for
-all). `worldsim` is re-keyed MECHANICALLY in this session so the game
-runs: card ids `firascir/*` -> `western/*` and `mortellaria/*` ->
-`southern/*`, `land=` fields name cultures (resolved through a
-`CULTURES` map to land tuples) or single lands where content is
-land-specific, `_validate_three_countries` becomes
-`_validate_countries` over nine, and Thule gets the MINIMUM the
-validator demands as real content: one standing fact (THE GROVE) and
-one relation edge. The full Thule packet and the per-card audit are
-session 4's. The Miners' League land facts re-home to the actual mine
-owners under the overlay: Teutonia (Goslar, Kutna Hora, Luneburg,
-Erzberg), Vellisclavia (Banska Stiavnica, Wieliczka), Seraptania
-(Melle), Thule (Falun), Byzantium (Novo Brdo).
-
-**Tests**: the nine-country sweep replaces `TheThreeHumanCountries`
-(closed homeland set over nine, records carry a homeland and never a
-race, every country owed a deck, lore, a relation and a capital), the
-overlay censuses pin, the border seam tests move off column 21, and the
-name-pool validation covers nine.
 
 ## Session 3 — the towns & the tongues
 

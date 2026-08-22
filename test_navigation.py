@@ -167,10 +167,13 @@ class TheEdgeCost(unittest.TestCase):
                    and places.biome_at(row, column + 1) == "sea")
         self.assertEqual(places.edge_days(
             sea, places.neighbor_id(sea, "east")), 1)
-        border = places.tile_id(9, 21)      # Firascir's last column...
-        beyond = places.tile_id(9, 22)      # ...and Tergal's first
-        self.assertNotEqual(places.country_at(9, 21),
-                            places.country_at(9, 22))
+        # A country SEAM is wherever the authored overlay changes letter
+        # (2026-08-21: not a column test any more -- there are nine of
+        # them and the borders are drawn, not computed).
+        border = places.tile_id(9, 11)      # Seraptania's eastern edge...
+        beyond = places.tile_id(9, 12)      # ...and Teutonia's first tile
+        self.assertNotEqual(places.country_at(9, 11),
+                            places.country_at(9, 12))
         self.assertEqual(places.edge_days(border, beyond),
                          places.edge_days(beyond, border))
 
@@ -234,7 +237,7 @@ class TheShortestPath(unittest.TestCase):
 
     def test_representative_distances_are_pinned(self) -> None:
         """The cost model in numbers. These move only when the rules do."""
-        self.assertEqual(places.path_days(PARIS, PRAGUE), 8)     # Firascir
+        self.assertEqual(places.path_days(PARIS, PRAGUE), 8)     # two crowns
         self.assertEqual(places.path_days(ROME, KYIV), 21)       # two realms
         self.assertEqual(places.path_days(PARIS, ROME), 14)
         self.assertEqual(places.path_days(AMSTERDAM, PARIS), 3)  # river end

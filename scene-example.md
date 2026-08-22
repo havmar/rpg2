@@ -22,11 +22,11 @@ so the one link it gets is to the board it does not hold.
 
 > new game
 
-You are Corvin: a Mortellarian, 35, a long way from anywhere that knows the name. You can throw fire; nobody taught you how. Your coat is worn through at the elbows and your purse is nearly empty. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
+You are Corvin: a Byzantine, 35, a long way from anywhere that knows the name. You can throw fire; nobody taught you how. Your coat is worn through at the elbows and your purse is nearly empty. Years ago you signed a contract with Hell -- wealth and power, terms pending. So far the terms are still pending.
 
-Isolde walks beside you: a woman out of Firascir, once a scholar. She throws ice when she is angry. She has watched your back for years.
+Isolde walks beside you: a woman out of Phyrascia, once a scholar. She throws ice when she is angry. She has watched your back for years.
 
-You are in Ventoro, a village of Mortellaria, on R12C11 -- vine country under the hills. Mud streets, one well. The morning market is setting up around a dry fountain.
+You are in Ventoro, a village of Byzantium, on R12C11 -- vine country under the hills. Mud streets, one well. The morning market is setting up around a dry fountain.
 
 Rosa the well-keeper stops you there. The rope is cut, the bucket is gone, and something knocks in the shaft at night. The village wants its well back. She wants the thing dead.
 

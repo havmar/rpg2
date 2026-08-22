@@ -52,9 +52,10 @@ from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
                  quest_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
 from places import (
-    LAND_SPECS, SITE_TEMPLATES, create_geography, generic_room_contents,
-    materialize_settlement, stable_seed, land_homeland, settlement_tier,
-    add_state, replace_state, path_days, tile_key,
+    CULTURE_OF, LAND_SPECS, SITE_TEMPLATES, create_geography,
+    generic_room_contents, materialize_settlement, stable_seed,
+    land_homeland, settlement_tier, add_state, replace_state, path_days,
+    tile_key,
 )
 import worldsim                  # the world layer (2026-08-09, the economy
                                  # floor): the board asks it how big it is,
@@ -284,8 +285,8 @@ def build_site_rooms(level: int, n_rooms: int, pool: tuple[str, ...],
 BANDIT_POOL = ("cutthroat", "archer", "bruiser")
 LADDER_POOL = BANDIT_POOL + ("soldier", "veteran", "champion",
                              "blademaster", "warlord")
-# The three human countries currently share the calibrated ladder. Cultural
-# arms can still appear as quest skins, but no homeland changes the stat rows.
+# The nine human countries share one calibrated ladder. Cultural arms can
+# still appear as quest skins, but no homeland changes the stat rows.
 # The casters get their OWN quests (2026-07-14; the Magic & Mind layer
 # kept the containment): one
 # caster template per country below plus the magus epic -- NOT the ladder
@@ -305,8 +306,11 @@ GIANTKIN_POOL = ("ogre", "troll", "giant")
 SPIDER_POOL = ("great spider",)
 DRAKE_POOL = ("wyvern", "drake", "dragon")
 
+# KEYED BY CULTURE (2026-08-21, the nine): nine countries share four card
+# packets and four quest tables. What a country owns is its names, its
+# capital and its tongue; what a culture owns is the work its people post.
 TEMPLATES: dict[str, list[dict]] = {
-    "firascir": [
+    "western": [
         dict(title="Bandits on the Road",
              desc="Bandits are attacking travelers on the king's road. Find "
                   "their camp and kill them. The sheriff will pay you.",
@@ -360,7 +364,7 @@ TEMPLATES: dict[str, list[dict]] = {
              failure_epilogue="The wizards hold the tollhouse. The road is "
                               "closed and traffic goes the long way round."),
     ],
-    "tergal": [
+    "steppe": [
         dict(title="The Great Hunt",
              desc="The hunting lodge has chosen a dangerous beast. Kill "
                   "it and bring back its hide.",
@@ -418,9 +422,73 @@ TEMPLATES: dict[str, list[dict]] = {
     ],
 }
 
-# Firascir and Mortellaria share the western table. The list itself is copied
-# so a future country-specific edit cannot mutate its neighbor by alias.
-TEMPLATES["mortellaria"] = [dict(template) for template in TEMPLATES["firascir"]]
+# The southern culture shares the western table for now. The list itself is
+# copied so a future edit cannot mutate its neighbor by alias.
+TEMPLATES["southern"] = [dict(template) for template in TEMPLATES["western"]]
+
+# The NORSE table (2026-08-21, the nine): the sea, the fells and the grove.
+TEMPLATES["norse"] = [
+    dict(title="Raiders from the Sea",
+         desc="A crew has beached its longship and is taking cattle and "
+              "people off the shore farms. Find the ship and kill them.",
+         pool=LADDER_POOL,
+         skins={"cutthroat": "Shore Raider", "archer": "Bow Raider",
+                "bruiser": "Ship Breaker", "soldier": "Shore Raider",
+                "veteran": "Raid Veteran", "champion": "Crew Chief",
+                "blademaster": "Sword Champion", "warlord": "Sea-King"},
+         sites=("the burned steading", "the beached longship",
+                "the raiders' camp"),
+         giver="the harbor warden",
+         epilogue="The crew is dead and the ship is burned. The shore farms "
+                  "put their cattle back out.",
+         failure_epilogue="The crew sailed with the cattle and four people. "
+                          "The shore farms are empty as far as the "
+                          "headland."),
+    dict(title="The Winter Pack",
+         desc="A wolf pack has come down out of the pine forest and is "
+              "killing byre cattle. Hunt it and bring back the pelts.",
+         pool=WOLF_POOL, skins={}, places=2, proof="the pelts",
+         sites=("the raided byres", "the den in the pines"),
+         giver="the byre-keeper",
+         epilogue="The pack is dead. The cattle stay in the byres and "
+                  "nothing comes for them.",
+         failure_epilogue="The pack is still in the wood. Two more byres "
+                          "were opened and the herds are penned in."),
+    dict(title="The Barrow on the Headland",
+         desc="The dead walk out of an old barrow above the shore. Go in "
+              "and destroy them.",
+         pool=UNDEAD_POOL, skins={"skeleton": "Barrow Draug",
+                                  "ghoul": "Grave-Walker",
+                                  "wight": "Barrow-Wight"},
+         sites=("the grave field", "the barrow chamber"),
+         giver="the grave-warden",
+         epilogue="The barrow is quiet. Its mound is closed and weighted "
+                  "with stones.",
+         failure_epilogue="The barrow is still open. The nearest steading "
+                          "has been abandoned and the road runs inland "
+                          "now."),
+    dict(title="Trolls in the High Fells",
+         desc="Trolls have taken the fell road and kill everyone who uses "
+              "it. Find their cave and kill them.",
+         pool=GIANTKIN_POOL, skins={},
+         sites=("the boulder field", "the cave under the fell"),
+         giver="the road-keeper",
+         epilogue="The trolls are dead. The fell road is walked again.",
+         failure_epilogue="The trolls hold the fell road. The carts go the "
+                          "long way round the water."),
+    dict(title="Blood in the Grove",
+         desc="Seers have taken the sacred grove and hang offerings in it. "
+              "They attack anyone who comes near. Kill them.",
+         pool=CASTER_POOL,
+         skins={"hexer": "Frost Seer", "pyromancer": "Fire Seer"},
+         proof="the seers' staves",
+         sites=("the grove path", "the offering trees"),
+         giver="the grove priest",
+         epilogue="The seers are dead. The grove's offerings are cut down "
+                  "and burned.",
+         failure_epilogue="The seers keep the grove. Nine of every kind "
+                          "hang in it and nobody goes to the trees."),
+]
 
 # Country-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
@@ -499,6 +567,21 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "The Renegade Wizard": dict(
         area_any=("ruin", "road", "settlement"),
         site_template="tower", domain="built", reuse="prefer"),
+    "Raiders from the Sea": dict(
+        area_any=("coast", "farmland", "road", "settlement"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "The Winter Pack": dict(
+        area_any=("forest", "hills", "pasture", "marsh"),
+        site_template="den", domain="natural", reuse="never"),
+    "The Barrow on the Headland": dict(
+        area_any=("coast", "hills", "settlement"),
+        site_template="crypt", domain="built", reuse="prefer"),
+    "Trolls in the High Fells": dict(
+        area_any=("hills", "mountains", "ridge"),
+        site_template="mine", domain="natural", reuse="never"),
+    "Blood in the Grove": dict(
+        area_any=("forest", "hills", "pasture"),
+        site_template="grove", domain="natural", reuse="never"),
 }
 
 for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
@@ -1194,9 +1277,17 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
 # instead of asking for new mechanics. They are dict NPCs (people.make_npc):
 # no stat blocks; if one must fight, forge the encounter.
 
+# One row a COUNTRY, not a culture: what the crown is called is identity,
+# and the nine wear nine different hats (2026-08-21).
 RULER_TITLES = {
-    "firascir": {"m": "king", "f": "queen"},
-    "mortellaria": {"m": "prince", "f": "princess"},
+    "phyrascia": {"m": "king", "f": "queen"},
+    "seraptania": {"m": "king", "f": "queen"},
+    "teutonia": {"m": "emperor", "f": "empress"},
+    "vellisclavia": {"m": "grand prince", "f": "grand princess"},
+    "thule": {"m": "sea-king", "f": "sea-queen"},
+    "byzantium": {"m": "emperor", "f": "empress"},
+    "andalusia": {"m": "prince", "f": "princess"},
+    "umaia": {"m": "sultan", "f": "sultana"},
     "tergal": {"m": "high chief", "f": "high chief"},
 }
 SAGE_ROLES = ("loremaster", "court wizard", "keeper of records",
@@ -1335,7 +1426,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     lo, hi = SETTLEMENT_KINDS[tier][1]
     level = forced_level if forced_level is not None else rng.randint(lo, hi)
     homeland = land_homeland(world, settlement["land"])
-    tables = list(TEMPLATES[homeland])
+    tables = list(TEMPLATES[CULTURE_OF[homeland]])
     if settlement.get("capital"):
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
@@ -1801,12 +1892,12 @@ def rumor_lines(world: dict, nearby: list[tuple[dict, int]],
 
 
 def wild_pool(homeland: str) -> tuple[str, ...]:
-    """What roams a land's wilderness: the union of every foe pool the
-    homeland's quest templates draw from, deduplicated, level-sorted."""
+    """What roams a land's wilderness: the union of every foe pool its
+    CULTURE's quest templates draw from, deduplicated, level-sorted."""
     if homeland not in HOMELANDS:
         raise KeyError(f"unknown homeland: {homeland}")
     kinds: set[str] = set()
-    for tpl in TEMPLATES[homeland]:
+    for tpl in TEMPLATES[CULTURE_OF[homeland]]:
         kinds.update(tpl["pool"])
     return tuple(sorted(kinds, key=lambda k: FOES[k].level))
 

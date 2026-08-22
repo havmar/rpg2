@@ -219,14 +219,18 @@ class TheCensus(unittest.TestCase):
                 self.assertEqual(slots[0]["charter"], "free")
                 self.assertTrue(slots[0]["authored"])
 
-    def test_the_three_metropolises_and_the_three_capitals(self) -> None:
+    def test_the_four_metropolises_and_the_nine_capitals(self) -> None:
         metros = {n for n, t in places.HISTORICAL_TIERS.items()
                   if t == "metropolis"}
-        self.assertEqual(metros, {"Paris", "Venice", "Constantinople"})
+        self.assertEqual(metros,
+                         {"Paris", "Venice", "Constantinople", "Cairo"})
         capitals = {slot["name"] for slot
                     in self.world["settlement_slots"].values()
                     if slot["capital"]}
-        self.assertEqual(capitals, {"Paris", "Rome", "Kyiv"})
+        self.assertEqual(capitals,
+                         {"London", "Paris", "Prague", "Stockholm",
+                          "Moscow", "Constantinople", "Cordoba", "Cairo",
+                          "Kyiv"})
 
     def test_the_mine_towns_are_seated_by_name(self) -> None:
         self.assertEqual(len(places.MINES), 9)
@@ -294,14 +298,14 @@ class TheCensus(unittest.TestCase):
             souls.append(sum(TIER_PEOPLE[s["tier"]]
                              for s in world["settlement_slots"].values()))
         per = {tier: total / SWEEP for tier, total in totals.items()}
-        self.assertEqual(per["metropolis"], 3.0)        # always the three
+        self.assertEqual(per["metropolis"], 4.0)        # always the four
         self.assertAlmostEqual(per["city"], 18, delta=3)
         self.assertAlmostEqual(per["town"], 101, delta=8)
         self.assertAlmostEqual(per["village"], 402, delta=20)
         self.assertAlmostEqual(per["hamlet"], 92, delta=12)
         self.assertAlmostEqual(sum(per.values()), 615, delta=25)
         self.assertAlmostEqual(sum(filled) / SWEEP, 1.96, delta=0.10)
-        self.assertAlmostEqual(sum(souls) / SWEEP, 1_300_000, delta=150_000)
+        self.assertAlmostEqual(sum(souls) / SWEEP, 1_500_000, delta=150_000)
 
     def test_the_charter_is_law_and_not_size(self) -> None:
         towns = free = 0
@@ -480,7 +484,7 @@ class TheFiveWords(unittest.TestCase):
         self.assertEqual(venice["subtype"], "metropolis")
         self.assertEqual(places.settlement_tier(venice), "metropolis")
         self.assertEqual(
-            places.LAND_SPECS["mortellaria"]["settlement_templates"][
+            places.CULTURE_SPECS["southern"]["settlement_templates"][
                 venice["role"]]["tier"], "city")
         self.assertIn("city", venice["tags"])
 

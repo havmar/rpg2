@@ -181,9 +181,15 @@ a pointer: what the file is, how it's run, where its docs are.
   Closure), and THE TILE ECONOMY ARC across four numbered sessions on
   2026-08-21 (the ground and the sky, the rolled world, the trade network,
   the hookup — designlog (F) through (I); the five design rounds behind
-  them are 2026-08-20 through 2026-08-21 (E)). What is left in the file is
-  the roadmap BEYOND the arc: the spring snapshot and trouble, politics and
-  war and more countries, fantasy and magic, settlements revisited, and the
+  them are 2026-08-20 through 2026-08-21 (E)). It carries one ACTIVE
+  contract: **THE MEDIEVAL WORLD ARC, Part 1** (designed 2026-08-21,
+  designlog (J)), whose sessions 1 (the fallen banner, designlog (K)) and
+  2 (the map of nine, designlog (L)) have shipped and are gone from it;
+  sessions 3-5 — the town names and the tongues, the norse packet and the
+  nine-land relations, the rolled wars and the campaign sim — are the next
+  builds. Below the contract is the roadmap BEYOND the arc: the spring
+  snapshot and trouble, politics and
+  war, fantasy and magic, settlements revisited, and the
   small deferred leftovers. **Nothing implemented lives there**: when a
   session ships, delete its completed contract and write the result in the
   permanent docs and designlog as described above.
@@ -208,7 +214,8 @@ a pointer: what the file is, how it's run, where its docs are.
   authored-vs-generated boundary, persistent feature and lightweight
   Room-content schema, weighting/reveal/mutation/seed rules, implementation
   order, and the canonical pre-implementation content catalog. The active
-  countries — Firascir, Mortellaria and Tergal — have finite Area inventories,
+  countries — Firascir, Mortellaria and Tergal, which since 2026-08-21 are
+  the western, southern and steppe CULTURES — have finite Area inventories,
   basic natural and settlement
   Site/Room layouts, generated-village roles, house overlays, and ordinary
   content pools. Its historical implementation contract fixes record fields,
@@ -250,7 +257,7 @@ a pointer: what the file is, how it's run, where its docs are.
   surviving country or nothing in particular.
 - `places.py` — **the fixed-geography and procedural-place runtime**: loads and
   validates the immutable 30x18 Europe map, derives stable BLAKE2 child
-  seeds, creates the three human countries, 540 Tiles and 540 natural Areas,
+  seeds, creates the nine countries, 540 Tiles and 540 natural Areas,
   rolls fixed settlement slots and materializes them lazily, including the
   historical towns, required settlement Sites, ordinary natural Sites and houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation
@@ -371,7 +378,8 @@ a pointer: what the file is, how it's run, where its docs are.
   market settles its ties the same way. The readers: `tile_routes`,
   `endpoint_name`, `_cargo_words` and `route_line`, which
   `tile_detail_lines` prints as the layer's ONE read surface (and which
-  gained a `width` and `_detail_wrap`, the driver's own wrap rule applied
+  gained a `width` and `detail_wrap` (`_detail_wrap` until 2026-08-21),
+  the driver's own wrap rule applied
   where the lines are made). `validate_world` grew `_validate_trade`.
   Two build-order facts worth knowing: `roll_routes` runs immediately
   after `roll_census` and consumes NO rng — the layer is each world's own
@@ -398,20 +406,53 @@ a pointer: what the file is, how it's run, where its docs are.
   `worldsim.term` under worldsim's own clamps. Nothing in this section is
   stored and nothing rolls: every answer is recomputed from what sessions
   1-3 stamped.
+  **THE MAP OF NINE** (2026-08-21, the medieval world arc's session 2)
+  re-drew who owns the map and split the catalog in two. The COUNTRY half:
+  `COUNTRY_PATH` / `COUNTRY_LETTERS` / `europe_countries` (the fourth
+  authored overlay, cached per process), `country_at` reading it instead of
+  the old row-and-column split, `_derive_sea_countries` (a sea Tile takes
+  the nearest land tile's country, ties north-then-west), the re-owned and
+  three-longer `HISTORICAL_CITIES` (Cordoba, Cairo and Jerusalem are new;
+  `CAPITAL_TILES` and `CAPITAL_TOWNS` derive nine from it),
+  `HISTORICAL_TIERS` grown to nineteen, `PINNED_COUNTRY_BIOMES` re-pinned
+  and `PINNED_COUNTRY_BANDS` added beside it, and `_validate_countries` —
+  the new `validate_world` clause that lints both censuses, the tag, the
+  unpainted sea and every capital standing on its own ground. The CULTURE
+  half: `CULTURE_SPECS` / `CULTURES` / `CULTURE_OF` / `CULTURE_LANDS` off
+  the v3 catalog, `template_id` and `natural_template` keyed by CULTURE,
+  `_settlement_template` resolving a country to its culture, the
+  `HOUSE_FOOD` / `HOUSE_HEAT` / `HOUSE_LIVELIHOOD` /
+  `HOUSE_LIVELIHOOD_BY_ROLE` tables re-keyed the same way (with a norse
+  row each), and `validate_catalog` rewritten around the split.
+  `SETTLEMENT_NAMES` stays per COUNTRY and is nine pools — a name is the
+  most country-shaped thing in the game. `_detail_wrap` became public
+  `detail_wrap` so the world layer's state diff can wrap by the page's own
+  rule instead of keeping a copy of it.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
-  since 2026-08-15 (Europe MVP Closure) content ONLY. Each of the three
-  countries carries `name` / `culture` / `description`, its `natural`
-  CHARACTER-to-inventory map (2026-08-21 — the seven land characters, a
-  list per character so a country can author two kinds of hill country;
-  the `environment` key retired with the climate overlay) and its
+  since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
+  2026-08-21** (the medieval world arc's session 2), and the version
+  number is what `validate_catalog` checks first. Two top-level keys:
+  `cultures` (four — `western`, `southern` and `steppe` are the old
+  Firascir, Mortellaria and Tergal content moved under culture names
+  UNCHANGED, plus the new `norse`) and `lands` (nine records of `name` /
+  `culture` / `tongue` / `description` and nothing else; per-land template
+  overrides are possible later and there are none now). A CULTURE carries
+  its `natural` CHARACTER-to-inventory map (the seven land characters, a
+  list per character so a culture can author two kinds of hill country;
+  the `environment` key retired with the climate overlay), its
   `natural_sites` inventories, and
   `settlement_templates`: a role per settlement kind, each with `tier`,
   the Tile tags it `fits`, its own `tags`, a `description` and its required
-  `sites` — since 2026-08-21 covering five tiers, with one `walled_city`
-  and one `cot_hamlet` role added per country (a METROPOLIS wears the city
+  `sites` — five tiers, with one `walled_city`
+  and one `cot_hamlet` role per culture (a METROPOLIS wears the city
   role; it gets one of its own when Settlements are revisited). The hamlet
   is the minimal settlement: a well, a wayside shrine, a cot inn and a
-  general store, and no smith at all. The old fixed settlement census — `settlements`, `descriptions`,
+  general store, and no smith at all. **Three roles are unreachable by
+  design** and `test_places` pins the set: `steppe`/`norse` `walled_city`
+  (neither Tergal nor Thule holds a dense-band Tile, so no generated city
+  ever rolls there) and `norse` `field_village` (every Thule Tile is coast
+  or forest). They are the validator's guarantee that no Tile can draw
+  nothing, not dead content. The old fixed settlement census — `settlements`, `descriptions`,
   `villages`, `village_sites`, `village_descriptions`, `settlement_sites` —
   is GONE, and `places.validate_catalog` rejects a catalog that has any of
   it back. Nothing in the file names a position, a river, a region or a
@@ -455,10 +496,16 @@ a pointer: what the file is, how it's run, where its docs are.
   template a Tile can honor and its stability across the save,
   services/content, house constraints, quest routing/state transitions,
   hidden facts, ASCII, 40-column display wrapping, and ONE BROKEN WORLD
-  per clause of `places.validate_world`. *The three human countries*
-  (`TheThreeHumanCountries`): the closed homeland set, records carrying a
-  homeland and never a race, the deck every country is owed, and the
-  removed-peoples sweep
+  per clause of `places.validate_world`. *The nine countries*
+  (`TheNineCountries`, 2026-08-21 — it replaced
+  `TheThreeHumanCountries`): the closed homeland set over NINE, the four
+  cultures that carry the shared content and the country/culture split
+  itself, each country's own name pools and tongue, the country overlay
+  painting the land and deriving the sea, both per-country censuses
+  pinned, records carrying a homeland and never a race, the deck every
+  country is owed (a card on every track, lore, a relation, a
+  constitution, a tension and a capital), every capital standing on its
+  own ground, and the removed-peoples sweep
   over twenty-three runtime catalogs, a whole built and walked-into world,
   and the play-facing documents (`dm.md`, `writing.md`,
   `scene-example.md` — the dev docs and the spec companions are history
@@ -616,7 +663,7 @@ a pointer: what the file is, how it's run, where its docs are.
   living through it), the news (`take_news`, told once) and the readouts
   (`land_lines` — the state diff on the map page — and `world_lines` —
   the DM inventory behind `world`). The contracted active catalog has 107
-  cards and fourteen relations across three countries — the eight the
+  cards and (until 2026-08-21) fourteen authored relations — the eight the
   three-country reset left standing plus the six export edges the
   post-build review found missing (2026-08-15: timber, coin, the southern
   road, horses, livestock and hired service, each deriving a word that
@@ -726,7 +773,8 @@ a pointer: what the file is, how it's run, where its docs are.
   than deleted because their scope was land-specific by accident:
   `weather/wildfire` and `weather/green-again` (the drought's own
   consequence and the scar that outlives it) are ANY_LAND, and
-  `weather/smog` moved to Firascir as the close-built northern town's own
+  `weather/smog` moved to the western packet as the close-built northern
+  town's own
   hearth and forge smoke — it is the SOLE producer of the one sky a roof
   does not keep out (`rpg.INDOOR_SKY`). `firascir/franchise` is deleted
   (its producer was a Gibili relation, so it had been unreachable since
@@ -741,7 +789,7 @@ a pointer: what the file is, how it's run, where its docs are.
   rules.md's Miners' League add-on) is the first content added to the file
   since the closure, and it is a RECOVERY: the Dvarvengrond extraction
   family, scrubbed of four dwarf words and re-keyed `mining/*` on
-  `ANY_LAND`, because the trade session put mines in all three countries.
+  `ANY_LAND`, because the trade session put mines in every culture.
   `STATE_SLOTS` is no longer empty — `deposit` is back with its three
   stages and its two `STATE_MENU` steel prices — and four free states come
   with it (`claims-collide`, `rush-on`, `strike`, `caravan-due`). Six
@@ -759,6 +807,32 @@ a pointer: what the file is, how it's run, where its docs are.
   depending on whether the party had been watching. It now steps the
   CALENDAR — one day across all lands, then the next — which is what its
   docstring always promised. `test_hookup` pins it.
+  **THE MAP OF NINE re-keyed the whole file MECHANICALLY** (2026-08-21,
+  the medieval world arc's session 2), which is what let nine countries
+  run in one session. Every authored `land=` field now names a CULTURE
+  (`western` / `southern` / `steppe` / `norse`), a single land where the
+  content is that land's own, or `ANY_LAND`; `CULTURES` (from
+  `places.CULTURE_LANDS`) and **`_expand`** are the one door between the
+  two vocabularies, and `card()` / `option()` / `fact()` / `edge()` all
+  run their scope through it, so every reader downstream still asks with
+  a LAND key. `_by_land` does the same for the tables a reader indexes by
+  land: `_CONSTITUTIONS` / `_TENSIONS` / `_STANDING_TENSIONS` are the
+  authored culture-keyed tables and `CONSTITUTIONS` / `TENSIONS` /
+  `STANDING_TENSIONS` are their land-keyed expansions. `_RELATIONS` is the
+  authored edge list and `RELATIONS` its land-by-land cross product (14
+  authored, 96 expanded; the per-land re-authoring is session 4's). Card,
+  option, fact and faction-edge ids went `firascir/*` -> `western/*` and
+  `mortellaria/*` -> `southern/*`; the `tergal/*` ids did not move,
+  because Tergal is still a country and its culture is exactly itself.
+  `_validate_three_countries` became **`_validate_countries`** over nine.
+  Thule got the MINIMUM the frame demands as real content — THE GROVE,
+  its League chapter fact, one relation edge, two constitutions and two
+  tensions over four blocs — and its full packet plus the per-card scope
+  audit are session 4's. The Miners' League land facts re-homed to the
+  actual mine owners under the overlay (Teutonia, Vellisclavia,
+  Seraptania, Byzantium, Thule); the four countries with no pits keep no
+  chapter. `land_lines` gained `MAP_WIDTH` and wraps through
+  `places.detail_wrap`.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -823,7 +897,7 @@ a pointer: what the file is, how it's run, where its docs are.
   moving the succession, the constitution slot moving only where a card says
   so and never re-asserting itself, a named authority kept, and the board
   moving on politics too); the authored content (nothing ungated, three
-  cards a land, Firascir deepest, one land per card outside the crown-wide
+  cards a land, the west deepest, one culture per card outside the crown-wide
   cluster, the cluster skipping the crownless land, every instrument an edge
   with a card in it, the exile edge firing abroad, no card in the rung being
   dead data -- every one of the five gates forced, and it admits -- and the
@@ -885,6 +959,17 @@ a pointer: what the file is, how it's run, where its docs are.
   `places.py`'s `TERRAIN_LETTERS` since the ground session shipped
   (2026-08-21); `places.load_overlay` reads it during world creation and
   `validate_world` lints it.
+- `resources/europe_countries.txt` — **the hand-authored country overlay**
+  (2026-08-21, the medieval world arc's session 2): one country letter per
+  land tile over the same 30x18 frame, sea left as `.`, and exactly the
+  314 land tiles painted. It replaced the geometric three-way split
+  `country_at` used to compute (a row test and a column test), and a SEA
+  tile's country is DERIVED from the nearest land tile (ties north-then-
+  west, like the pathfinder), so no water is painted and no border is
+  ambiguous. The letters live in `places.py`'s `COUNTRY_LETTERS`;
+  `places.europe_countries` loads it (cached per process) and
+  `_validate_countries` lints it against every built world, including
+  `PINNED_COUNTRY_BIOMES` and `PINNED_COUNTRY_BANDS`.
 - `econmap.py` — **the tile economy arc's eyeball tool** (2026-08-21,
   plan.md Part 1's tooling item), and since session 4 a pure RENDERER over
   a built world. Every mode calls `places.create_geography(seed)` and draws
@@ -1269,7 +1354,7 @@ a pointer: what the file is, how it's run, where its docs are.
   fit, the smiths' pride floor, the reward ladder, the trash chargen
   pool. `python -m unittest -v test_weapon_gen.py`.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
-  Charisma & Satisfaction add-on): three human homeland name pools with no
+  Charisma & Satisfaction add-on): nine human homeland name pools with no
   homeland stat or trait modifiers, plus the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
@@ -2136,6 +2221,27 @@ mechanic *does* and *why* is rules.md's job.
   Tile IDs, never a world — the map is immutable, so distance is geography.
   The procedural attempts
   under `archive/` are historical tools, not alternate worldgen paths.
+- **The map of nine, and the country/culture split** (2026-08-21, the
+  medieval world arc's session 2 — rules.md's World & Navigation add-on,
+  "Nine countries over four cultures") — **the split is the thing to hold
+  in your head before touching any homeland-keyed table.** A COUNTRY owns
+  identity (tiles, capital, tongue, name pools, ruler and defender titles,
+  its own facts and relations); a CULTURE owns reusable content
+  (settlement templates, natural inventories, quest tables, the world
+  layer's card packet). `places.CULTURE_OF` maps one to the other and
+  `places.CULTURE_LANDS` maps back. The four authored overlays are now
+  map / climate / terrain / **countries**. Files that changed and where:
+  `places.py` (the overlay, the derived sea, the nine capitals, the split
+  catalog readers, `_validate_countries`), `place_catalog.json` (v3:
+  `cultures` + `lands`), `people.NAMES` and `places.SETTLEMENT_NAMES`
+  (nine pools each, per COUNTRY), `quests.TEMPLATES` / `wild_pool` (by
+  culture, with the five norse templates) and `quests.RULER_TITLES` /
+  `conquest.DEFENDER_ROLES` (nine rows, because a crown's name is
+  identity), and `worldsim.py` (`_expand` / `_by_land` and the whole
+  mechanical re-key — see its Files entry). **When you add a
+  homeland-keyed table, decide which half it belongs to first**: content
+  the game reuses goes by culture, anything a player would call this
+  country's own goes by country.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -2487,6 +2593,21 @@ defeat mercy. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**The map of nine moved three worldgen numbers and nothing else
+(2026-08-21, the medieval world arc's session 2; benchlog 2026-08-21 (E)
+has the tables).** No combat, pay, threat or refill constant changed, and
+no census, harvest or route LAW changed — the session re-drew ownership.
+Three historical cities joined the answer key, so the census reads
+**metropolis 4.0 / city 18.7 / town 101.4** (was 3.0 / 17.7 / 100.6) and
+the soul total **1.50M** (was 1.32M) — Cairo is a metropolis on its own.
+Nine capitals instead of three re-aim the three capital-bound trade rules,
+which is the whole of the trade column's movement: **routes 59.0** (58.7),
+**land tiles on a road 115.7** (113.7), **crossroads 31.7** (33.6); ports,
+sea lanes and the unfed Falun are identical. The harvest layer reads no
+country and is unmoved except for the nearby-trouble nudge (**87%**, was
+86%), which reads the start tile — and the start draw moved with the three
+new authored slots. Nothing was tuned.
 
 **The career sim's POSTING side moved on 2026-08-21** (the tile economy
 arc's ground session; benchlog's entry has the table). No combat, pay,
@@ -3071,4 +3192,8 @@ through (I) entries are the build record; rules.md, dm.md and this file
 hold what it built and benchlog its numbers. What the arc deliberately
 did NOT do — the spring snapshot, trouble, cards with tile addresses,
 creature geography, tolls walking the routes — is plan.md's roadmap
-beyond it.
+beyond it. **THE MEDIEVAL WORLD ARC is building on top of it**: the
+scripted conquest questline is gone (session 1, designlog (K)) and the
+world is NINE countries over four cultures (session 2, designlog (L)),
+with the town-name table and the tongues, the norse packet and the
+nine-land relations, and the rolled wars still to come.

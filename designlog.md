@@ -6387,3 +6387,165 @@ and the conquest/test_conquest entries. CLAUDE.md's code-file list lost
 **Not re-measured.** Nothing tunable moved: no constant, no pay formula,
 no threat number. The bench suite is unaffected and benchlog gets no
 entry.
+
+## 2026-08-21 (L) — Session 2 of the medieval world arc: the map of nine
+
+**What shipped.** plan.md's Session 2 whole: the world builds and plays
+as NINE countries over FOUR cultures. A country owns identity — its
+tiles, its capital, its tongue, its name pools, its ruler's title, its
+League chapter; a culture owns the reusable content — settlement
+templates, natural inventories, quest tables and the world layer's card
+packet. Nothing about the census, the harvest, the routes or the read
+surface changed: this session re-drew who owns the map and re-keyed the
+catalogs that hung off the old three.
+
+**The country overlay.** `resources/europe_countries.txt` is the fourth
+authored 30x18 grid, one letter on each of the 314 land tiles and `.` on
+the sea. `places.country_at` reads it instead of the geometric split (a
+row test and a column test) that the human contraction had left behind,
+and a SEA tile derives its country from the nearest land tile by tile
+distance, ties settled north-then-west the way the pathfinder settles an
+equal-cost route — so nothing about the water is hand-painted and there
+is no ambiguity. The `border` tag stays derived. Two censuses are pinned
+off the grid and checked at every worldgen by the new
+`places._validate_countries`: `PINNED_COUNTRY_BIOMES` (which replaced the
+three-country version) and the new `PINNED_COUNTRY_BANDS`, which is
+authored data for the same reason — the population band reads only the
+ground and the shoreline, so a country's shape in the six bands moves
+when the overlay is repainted and never otherwise.
+
+**The historical cities.** The sixteen keep their tiles and tiers and
+take their new owners, and three are added: **Cordoba** (14,4), city,
+Andalusia's capital; **Cairo** (18,24), METROPOLIS on the Nile and the
+biggest city of the age, Umaia's capital; **Jerusalem** (16,27), town,
+Umaia. `CAPITAL_TILES` is nine — London, Paris, Prague, Stockholm,
+Moscow, Constantinople, Cordoba, Cairo, Kyiv — and each land's sky is
+read off its own capital exactly as before. Rome is no longer a capital;
+Constantinople is the southern empire's seat.
+
+**The catalog, version 3.** `place_catalog.json` split in two at the top
+level: `cultures` (the Firascir, Mortellaria and Tergal content moved
+under `western`, `southern` and `steppe` UNCHANGED, plus the new `norse`)
+and `lands` (nine records of `name` / `culture` / `tongue` /
+`description` and nothing else). `places.CULTURE_SPECS` / `CULTURE_OF` /
+`CULTURE_LANDS` are the readers, `template_id` and `natural_template` are
+keyed by culture, and `validate_catalog` learned the shape: version 3,
+nine lands, every land naming a real culture and carrying a letter on the
+overlay, no culture unworn, and the old per-tier and per-character rules
+applied to cultures instead of countries.
+
+**The norse culture, authored new**: eight settlement roles (the
+sea-king's harbor capital, a walled city, a harbor town, a market town, a
+shore village, a wood village, a field village and a cot hamlet) and four
+natural inventories of three sites each (`taiga_wood`, `fells`,
+`skerry_coast`, `river_north`) mapped over the seven land characters.
+Its houses eat barley bread and salt fish over a long hearth.
+
+**The names.** One pool per COUNTRY, not per culture — a name is the most
+country-shaped thing in the game, and Seraptania and Teutonia share a
+card deck without sharing a syllable. Phyrascia inherits Firascir's
+settlement pools and person names whole, Byzantium inherits
+Mortellaria's settlement pools, Tergal keeps both of its own, and the
+other six settlement pools and the other seven person-name lists (25
+male + 25 female each) are authored to the contract's sound briefs.
+
+**The plumbing sweep.** `HOMELANDS` is nine. `quests.TEMPLATES` and
+`wild_pool` re-key by culture and the norse table is five authored
+templates — the beached longship, the winter pack, the barrow on the
+headland, the trolls in the fells and the blood in the grove.
+`quests.RULER_TITLES` and `conquest.DEFENDER_ROLES` grew to nine rows
+(what a crown is called is identity, so those did NOT re-key by culture);
+`garrison_pool` stays `LADDER_POOL` for all. `worldsim` was re-keyed
+MECHANICALLY, which is what let the game run in one session: card,
+option, fact and faction-edge ids `firascir/*` -> `western/*` and
+`mortellaria/*` -> `southern/*`, `land=` fields naming cultures, and one
+door between the two vocabularies — `worldsim._expand`, which resolves an
+authored culture name into land keys and leaves ANY_LAND and a bare land
+key alone. `_by_land` does the same for the tables every reader indexes
+by land (constitutions, tensions, standing tensions).
+`_validate_three_countries` became `_validate_countries`. Thule got the
+minimum the frame demands as real content: THE GROVE, its League chapter
+fact, one relation edge (the raiding season), two constitutions and two
+tensions with their four blocs. The Miners' League land facts re-homed to
+the actual owners under the overlay — Teutonia (Goslar, Kutna Hora,
+Luneburg, Erzberg), Vellisclavia (Banska Stiavnica, Wieliczka),
+Seraptania (Melle), Byzantium (Novo Brdo), Thule (Falun).
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **The pinned band census is the MEASURED one, not the contract's.**
+   The grid shipped exactly as drafted and its land counts match the
+   contract to the tile (13/23/28/37/60/51/17/60/25). The BAND row
+   differs for four countries: Vellisclavia 18/8/5/15/14 against
+   15/11/5/14/15, Byzantium 1/5/4/21/10/10 against 1/5/3/22/10/10, Umaia
+   17/3/0/9/27/4 against 4/16/0/8/28/4, Tergal 3/3/8/9/2 against
+   1/5/7/10/2. The shipped numbers are what `places.population_band`
+   actually returns over a built world, so they are what got pinned. The
+   consequence for a LATER session: plan.md's Session 3 counts the tiles
+   that can ever roll a town or city as 185 (Byzantium 42, Tergal 12);
+   the measured figure is **183** (Byzantium 41, Tergal 11), and the
+   town-name table wants that many rows.
+2. **Relations expand by CULTURE, which is why Thule needed exactly one
+   edge.** The 14 authored edges name cultures now and `RELATIONS` is
+   their land-by-land cross product (96 edges), which is what makes every
+   land except Thule reachable without re-authoring anything. It is
+   deliberately crude — Phyrascia derives `pact-kin` off Umaia's marriage
+   pact — and session 4 re-authors the table whole for nine lands, which
+   is where that gets fixed. `derived_states` dedupes by the derived
+   word, so the crudeness costs nothing at the table today.
+3. **Byzantium's village pool is 21, not the contract's 24.** The
+   contract lists Byzantium among the 24-village countries AND says it
+   inherits Mortellaria's pools whole. Inheritance won: the pools are
+   Mortellaria's unchanged, and only the six genuinely new countries were
+   authored to the stated sizes.
+4. **Two authored inventories died with the old borders, and one moved.**
+   The steppe's `taiga_wood` had no ground left — Tergal is the Pontic
+   steppe now and holds no deep-forest tile — so it was cut and the
+   steppe's `forest` character points at `great_fen`, which is what a
+   wooded tile in the Pripet actually is. The norse `river_north` is
+   drawn on Thule's COAST alternating with `skerry_coast` (a northern
+   shore is skerries or a river mouth), because Thule holds no river and
+   no marsh tile and the shipped no-dead-inventory contract forbids
+   authoring one that nothing draws.
+5. **Three settlement roles are now unreachable BY DESIGN, and the suite
+   says so.** `validate_catalog` makes every culture keep a role per tier
+   that asks for no Tile tag, so no Tile can ever draw nothing. Neither
+   Tergal nor Thule holds a dense-band tile, so no generated city ever
+   rolls there and their `walled_city` roles are pure guarantee; every
+   Thule tile is coast or forest, so its `field_village` is too.
+   `test_places` pins that set of three rather than asserting every
+   authored role is drawn.
+6. **`land_lines` learned to wrap.** A land's state diff could overflow
+   the 40-column page whenever a long state word met a long clock stamp;
+   it always could, and the re-keyed content is what finally produced one
+   ("the village will not pay (day 1)", 43 columns). `places._detail_wrap`
+   became public `places.detail_wrap` and the world layer wraps by it
+   rather than keeping a copy of the rule. The page still says three
+   things at most.
+7. **Ruler titles did NOT become culture content.** They are the one
+   homeland-keyed table that reads as identity rather than as reusable
+   content, so nine rows: king, emperor, grand prince, sea-king, sultan,
+   prince, high chief. `conquest.DEFENDER_ROLES` went the same way for
+   the same reason.
+8. **The steppe's `ridge_town` needed a wider sweep to prove.** Tergal is
+   a quarter of its old size, so `test_places`' template sweep runs 12
+   seeds instead of 4 to reach every reachable role.
+
+**Measured** (benchlog 2026-08-21 (E)): the three worldgen sweeps moved
+where the three new cities are and nowhere else. Cairo makes the
+metropolis count 4 and adds ~178k souls; nine capitals instead of three
+re-aim the capital-bound trade rule, which is the whole of the trade
+column's movement (routes 58.7 -> 59.0, land tiles on a road 113.7 ->
+115.7, crossroads 33.6 -> 31.7). The harvest layer is unmoved except for
+the nearby-trouble nudge (86% -> 87%), which reads the start tile and the
+start draw moved with the three new authored slots.
+
+**The suite.** 939 tests before, **944 after, OK.**
+`test_places.TheThreeHumanCountries` became `TheNineCountries` — the
+closed homeland set over nine, the four cultures carrying the shared
+content, each country's own names and tongue, the overlay painting land
+and deriving sea, both country censuses pinned, every country owed a
+deck, lore, a relation, a constitution, a tension and a capital, and
+every capital standing on its own ground. The removed-peoples sweep is
+unchanged and still passes. The border-seam test moved off column 21 to
+the drawn Seraptania/Teutonia seam at (9,11)-(9,12).

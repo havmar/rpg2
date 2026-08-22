@@ -2279,7 +2279,7 @@ inputs (the notice contest):
 
 ## Ranged arms in the human world (2026-08-15)
 
-All three countries use the same calibrated combat ladder. Bows, slings and
+All nine countries use the same calibrated combat ladder. Bows, slings and
 powder weapons are equipment and role choices, not biological entitlements;
 guns and revolvers can be bought wherever the corresponding shop stock is
 available. Country-authored war-machine reskins remain display names over
@@ -2965,17 +2965,51 @@ materialization, knowledge, contents, mutation, the edge cost, the
 pathfinder and the map render. `quests.py` owns encounter placement and the
 road's tables; `session.py` owns position, the walk itself, and displays.
 
+## Nine countries over four cultures (2026-08-21)
+
+The world is **nine countries** wearing **four cultures**. The split is the
+whole of what a country is now:
+
+| country | seat of | tongue | culture | capital |
+|---|---|---|---|---|
+| Phyrascia | Britannia | Phyrascian | western | London |
+| Seraptania | France | Seraptanian | western | Paris |
+| Teutonia | Germany and the Low Countries | Teutonic | western | Prague |
+| Vellisclavia | Poland and the Rus | Vellisclav | western | Moscow |
+| Thule | Scandinavia | Norse | norse | Stockholm |
+| Byzantium | Italy, the Balkans, Anatolia | Latin | southern | Constantinople |
+| Andalusia | Iberia | Andalusian | southern | Cordoba |
+| Umaia | Africa and the Levant | Umaian | southern | Cairo |
+| Tergal | the Pontic steppe | Tergal | steppe | Kyiv |
+
+- **A COUNTRY owns identity**: its tiles on the authored overlay, its
+  capital, its tongue, its settlement and person name pools, its ruler's
+  title, its garrison commander's title, the standing facts that are its
+  own, and its place in the relations table.
+- **A CULTURE owns the reusable content**: settlement templates, natural
+  Site inventories, quest tables, and the world layer's card packet with
+  its constitutions, tensions, faction edges and options. Two western
+  kingdoms draw the same cards and share not one syllable of a name.
+- **Nothing forks on either.** A homeland selects names and content
+  routing; it never changes a statistic. All nine use one calibrated
+  combat ladder.
+- The era anchor is **about 1500 without the age of exploration**: silk in
+  from the east, spice through the southern entrepot, gold caravans from
+  beyond the desert, the wool-cloth axis in the west. Higher technology is
+  heaven, hell and magic, never a gunpowder tech line.
+
 ## The hierarchy
 
 The canonical spatial vocabulary is **Country -> Tile -> Area -> Site -> Room**:
 
-- **Country** is the macro territory: identity, owner, culture, war
-  state, wilderness encounter profile, and cross-land links. Firascir,
-  Mortellaria and Tergal are distinct human realms with different
-  cultures, and each spans several climates — since 2026-08-21 the
-  weather and the ground belong to the TILE, not to the country, and
-  conquest may change `owner` without changing geography. `homeland`
-  routes names and culture; it never modifies statistics.
+- **Country** is the macro territory: identity, owner, culture, tongue,
+  and the name pools its people and places are drawn from. There are
+  NINE of them (2026-08-21) — Phyrascia, Seraptania, Teutonia,
+  Vellisclavia, Thule, Byzantium, Andalusia, Umaia and Tergal — and each
+  spans several climates; since 2026-08-21 the weather and the ground
+  belong to the TILE, not to the country, and conquest may change `owner`
+  without changing geography. `homeland` routes names and culture; it
+  never modifies statistics.
 - **Tile** is the day-scale map cell, with fixed coordinates, biome, country,
   climate, terrain, cover, ground tags, cardinal neighbors, settlement slots
   and child Area IDs.
@@ -3072,9 +3106,13 @@ materialize lazily.
   Winter severity and the harvest day are the SNAPSHOT arc's inputs,
   shipped now as data so that arc starts from an authority; the sky and
   the terrain laws are what read the table today.
-- **Countries and Tiles.** Firascir owns the northwest/west, Tergal the
-  northeast/east and Mortellaria the south. Their non-sea census is fixed at
-  97, 75 and 144 Tiles respectively. Coordinates and cardinal neighbors
+- **Countries and Tiles.** Which of the nine a Tile belongs to is
+  AUTHORED, on the fourth overlay (`resources/europe_countries.txt`, one
+  letter per land Tile). Their non-sea censuses are fixed at Phyrascia 13,
+  Seraptania 23, Teutonia 28, Thule 37, Vellisclavia 60, Byzantium 51,
+  Andalusia 17, Umaia 60 and Tergal 25 Tiles. A SEA Tile takes the country
+  of the nearest land Tile, ties settled north-then-west; nothing about
+  the water is painted. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
   catalog supplies reusable Site content, not a second geography: since
   2026-08-15 it holds no settlement census, no positions and no named
@@ -3353,12 +3391,16 @@ materialize lazily.
   legal word, every land Tile's harvest landing on the spoken scale, and
   every cause carrying its fiction name. An illegal
   world raises at creation rather than surfacing later inside a display.
-- **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
-  in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
-  Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
-  Kyiv and Rome carry `capital: true`. Capital is an explicit flag, not a
-  settlement tier: each also carries its authored tier, so Paris is a
-  capital AND a metropolis while Kyiv is a capital and a city.
+- **Historical cities.** Nineteen of them (2026-08-21): Dublin and London
+  in Phyrascia; Paris in Seraptania; Amsterdam and Prague in Teutonia;
+  Stockholm in Thule; Moscow and Warsaw in Vellisclavia; Kyiv in Tergal;
+  Venice, Rome, Athens and Constantinople in Byzantium; Lisbon, Madrid and
+  Cordoba in Andalusia; Carthage, Jerusalem and Cairo in Umaia. NINE carry
+  `capital: true` — one a country: London, Paris, Prague, Stockholm,
+  Moscow, Constantinople, Cordoba, Cairo and Kyiv. Capital is an explicit
+  flag, not a settlement tier: each also carries its authored tier, so
+  Paris is a capital AND a metropolis while Kyiv is a capital and a city.
+  The four metropolises are Paris, Venice, Constantinople and Cairo.
 - **Knowledge.** All 540 Tiles, their terrain and countries are public from
   world creation; the base map is never fogged. Natural Areas become known
   on reveal, historical towns are known from day zero, and ordinary
@@ -3685,7 +3727,7 @@ doorstep, not a railroad.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Homeland**: Firascir, Mortellaria or Tergal. It selects a human name pool
+- **Homeland**: one of the nine countries. It selects a human name pool
   and supplies cultural context only; every homeland uses the same fixed stat
   floors, ceilings and trait tables.
 - **Sex**: random m/f (names come from homeland pools, `people.NAMES`
@@ -4721,24 +4763,30 @@ are `worldsim.md`'s.
 Authored **directed edges** — who eats whose grain, who trades with whom,
 whose mercenaries come when called. They are lookups, never traded
 quantities, and the states they cause are **derived at read time and never
-stored**. Only edges whose two ends are Firascir, Mortellaria or Tergal are
-active; cards admit on their derived states like any other.
+stored**. Since 2026-08-21 an edge is authored between two CULTURES and
+expands to every land-to-land pair between them, so trouble in one western
+kingdom reaches the whole steppe; cards admit on their derived states like
+any other. Only ONE HOP: an edge reads what its source land HOLDS, never
+what it derives.
 
-**What each land sells** (2026-08-15) — the three-country economy in full.
-Every line is one edge: a state the SELLER is holding that stops the goods,
-and the priced word the BUYER wears while it does.
+**What each culture sells** — every line is one authored edge: a state the
+SELLER is holding that stops the goods, and the priced word the BUYER wears
+while it does.
 
 | Seller | Sells | Buyer | When the seller holds | The buyer wears |
 |---|---|---|---|---|
-| Firascir | grain | Tergal | a failed harvest, drought | grain is scarce |
-| Firascir | timber | Tergal | forest law, wildfire, burn | no northern timber |
-| Mortellaria | coin | Firascir | worthless paper, mad shares | the banks stop lending |
-| Mortellaria | southern trade | Tergal | salt revolt, a ruined quarter | the road brings nothing |
-| Tergal | horses | Firascir | herd loss, the grass gone | remounts are dear |
-| Tergal | livestock | Mortellaria | herd loss, the grass gone | hides and wool are short |
-| Tergal | military service | Mortellaria | a mourning war, raiding | the hired clans go home |
+| the west | grain | Tergal | a failed harvest, drought | grain is scarce |
+| the west | timber | Tergal | forest law, wildfire, burn | no northern timber |
+| the south | coin | the west | worthless paper, mad shares | the banks stop lending |
+| the south | southern trade | Tergal | salt revolt, a ruined quarter | the road brings nothing |
+| Tergal | horses | the west | herd loss, the grass gone | remounts are dear |
+| Tergal | livestock | the south | herd loss, the grass gone | hides and wool are short |
+| Tergal | military service | the south | a mourning war, raiding | the hired clans go home |
+| Thule | raiding | the west | raiding, herd loss | the raiders are out |
 
-Mortellaria's luxury shelf and the southern road are one flow and one edge.
+The southern luxury shelf and the southern road are one flow and one edge.
+The per-LAND re-authoring of this table — a Baltic grain road, a Nile one,
+the crusade's own quarrels — is the norse packet session's.
 Every derived word above reaches a **price** (`worldsim.STATE_MENU`) — an
 edge the party cannot feel on a shelf is not worth authoring.
 
@@ -4831,7 +4879,7 @@ two days is a storm on both of them.
 - **THE STORM SETS IN** — any land, on a storm day, 1–3 days. Its state is
   `the storm has closed the roads`, and it is what the field penalties and the
   cabin table hang on.
-- **THE FORD IS OUT** — Firascir and Mortellaria, after three wet days. Fords
+- **THE FORD IS OUT** — the western and southern lands, after three wet days. Fords
   uncrossable, bridges and ferries tolled by men who know it: the road
   costs **a day** while it stands, and the toll racket is the vigilante
   invitation. (The ferrymen's own rates are authored on the card and wait
@@ -5028,10 +5076,10 @@ and clears it as it fires.** No new machinery — the frame's admitting
 conditions already read what the last card left behind. Three surviving
 country chains ship:
 
-| land | first card | the link it leaves | second card |
+| culture | first card | the link it leaves | second card |
 |---|---|---|---|
-| Firascir | the harvest fails | bread is expensive | the bread riot |
-| Mortellaria | the bank fails | forged notes are about | the note-hunters |
+| the west | the harvest fails | bread is expensive | the bread riot |
+| the south | the bank fails | forged notes are about | the note-hunters |
 | Tergal | the herds die | the grass has not come back | the clans ride |
 
 ## Where the player meets it
@@ -5066,8 +5114,11 @@ ticks, nothing accumulates, and no political value is ever a quantity.
 - **Rolled once at worldgen on a default-heavy die** — the wealth-band
   pattern. The country's political history is the constant and the variants
   are the colour, so the same country comes up differently across runs.
-- Firascir opens DECENTRALIZED FEUDALISM, Mortellaria ABSOLUTISM and Tergal
-  THE CLAN CONFEDERACY. Each carries its surviving authored variants.
+- The western culture opens DECENTRALIZED FEUDALISM, the southern one
+  ABSOLUTISM, Tergal THE CLAN CONFEDERACY and Thule THE SEA-KINGS. Each
+  carries its authored variants. The slot is per LAND, the table per
+  culture: two western kingdoms roll their constitutions separately off the
+  same die.
 - **Cards never flip it.** The two that do say so on their face (the junta
   takes the parliament; the commune keeps the barricade), and a card that
   would only re-assert the constitution a land already holds never fires.
@@ -5078,11 +5129,11 @@ ticks, nothing accumulates, and no political value is ever a quantity.
 - Each land's packet lists **standing tensions — two named blocs and what
   they fight over**. A land **rolls ONE at worldgen, and TWO if it opened in
   CRISIS**; a tension marked STANDING is held on top of the roll and never
-  rolled (Firascir's manor against its village is the econ packet's
-  oppression axis, so it is simply what the land is).
+  rolled (the western manor against its village is the econ packet's
+  oppression axis, so it is simply what those lands are).
 - **Only cards whose tension holds enter the land's crisis deck** — the same
   deck as the econ cards, no second pile. This is the whole economy of the
-  rung: a Firascir where the crown is fighting its lords never draws the
+  rung: a land where the crown is fighting its lords never draws the
   temple's cards at all, so the packet stays a wide pool and each rolled
   world stays specific.
 - A card that names no tension is land-wide and always passes: every economy
@@ -5164,9 +5215,9 @@ sheet, and the same man is still there the next time the card comes round.
   it: the infant heir and its regency council, three branches and three
   readings of the law, the dead king who comes back (or the man wearing his
   face), and the bought recognition that is void the day the king dies.
-  Per-country shapes ride the packets — Tergal's tanistry makes every
-  succession a scramble, while Firascir and Mortellaria keep their own
-  crown disputes.
+  Per-culture shapes ride the packets — Tergal's tanistry makes every
+  succession a scramble, while the western and southern crowns keep their
+  own disputes.
 
 ## Where the player meets it
 
@@ -5225,29 +5276,29 @@ machinery would be a feature request wearing a content hat.
 
 Priced, not penitential — the deliberate limit of this rung:
 
-- **Healing is the `healer` term itself.** In Firascir and Mortellaria the temple
-  *is* the healer, so no new counter exists: the interdict already puts the
-  fee up 30%, the unlicensed holy well already undercuts it by a quarter.
-- **Burial and blessing are options**, sold in both Sun-communion lands off
-  the same term. Beside them remain Firascir's pilgrim badge and
-  Mortellaria's hooded burial brotherhood.
+- **Healing is the `healer` term itself.** In the Sun-communion lands the
+  temple *is* the healer, so no new counter exists: the interdict already
+  puts the fee up 30%, the unlicensed holy well already undercuts it by a
+  quarter.
+- **Burial and blessing are options**, sold in every Sun-communion land off
+  the same term. Beside them remain the west's pilgrim badge and the
+  south's hooded burial brotherhood.
 - **The sin/penance wiring is not designed and is not here.** No option
   touches sin, heat or the karma layer at all.
 
 ## What the packets became
 
-- **The Sun communion is one church and two rites.** Firascir and
-  Mortellaria worship the same god; each land **derives `schism-near` off
-  the other's rites** through a relation edge that runs both ways, and the
-  joint synod is one card sitting in *both* their decks. Every synod ends
-  one insult short of the split.
-- **Each country keeps a religion axis and a tension to hang it on**: two
-  shrines and one saint, and the abbey against the families (Firascir);
-  which face of the god rules the year (Mortellaria); the white shamans
+- **The Sun communion is one church and two rites.** The western and
+  southern lands worship the same god; each **derives `schism-near` off the
+  other rite** through a relation edge that runs both ways, and the joint
+  synod is one card sitting in *both* their decks. Every synod ends one
+  insult short of the split. (Thule keeps the old gods and is outside the
+  communion entirely.)
+- **Each culture keeps a religion axis and a tension to hang it on**: two
+  shrines and one saint, and the abbey against the families (the west);
+  which face of the god rules the year (the south); the white shamans
   against the dark one (Tergal). The tension is the deck gate, exactly as in politics — a
   land whose shrines are at war never draws the abbey's cards at all.
-- Surviving religion relations cross only the three-country border graph;
-  edges depending on deleted packets are absent.
 - **Two named pools were added and no creature row**: the undead
   (skeleton/ghoul/wight) and the casters (hexer/pyromancer/magus), both off
   the catalog the game already had. The draugr and Tergal's grave-made
@@ -5306,8 +5357,8 @@ with them — and the casing prints whichever came up like any other face.
 
 The world layer's extraction story, recovered and re-homed. It was written
 for a dwarf realm the human contraction deleted in 2026-08-15, and it came
-back because the trade session put nine famous mines on the map and every
-one of the three countries holds some. What was scrubbed was four words,
+back because the trade session put nine famous mines on the map. What was
+scrubbed was four words,
 not a design: the clans became the **Miners' League** and its chapter
 masters, the under-thane the League steward, the clan books the League's
 books, and the dwarf who found a way an old engineer. The claim-keeper, the
@@ -5316,10 +5367,12 @@ human mining language all along.
 
 - **The League is a brotherhood with chapters at every mine**, and its writ
   is mining law: a free miner answers to his chapter master and not to the
-  lord whose field he digs under. Six of the nine mines are Firascir's
-  (Goslar, Kutna Hora, Banska Stiavnica, Melle, Luneburg, Wieliczka), two
-  Mortellaria's (Erzberg, Novo Brdo) and one Tergal's (Falun). Each land's
-  `lore` page names its own chapters; **THE KNOCKERS** — the mine-spirits
+  lord whose field he digs under. Under the country overlay (2026-08-21)
+  four of the nine mines are Teutonia's (Goslar, Kutna Hora, Luneburg,
+  Erzberg), two Vellisclavia's (Banska Stiavnica, Wieliczka), one
+  Seraptania's (Melle), one Byzantium's (Novo Brdo) and one Thule's
+  (Falun); the four countries with no pits keep no chapter. Each mining
+  land's `lore` page names its own chapters; **THE KNOCKERS** — the mine-spirits
   who knock before a collapse and are paid the last bite of every meal — is
   the first fact in the game that belongs to every land at once, because
   the belief follows the pits and not the crown.

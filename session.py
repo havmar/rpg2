@@ -6811,7 +6811,7 @@ def cmd_prices(args: argparse.Namespace) -> None:
           "are never for sale at any price); brewed potions can't be sold)")
     # The sixth outlet's standing half (2026-08-11): the things ONE land
     # sells that nothing else does -- the temple counter, the rain stone, the
-    # charm trade, the three lands where a wizard teaches.
+    # charm trade, the cultures where a wizard teaches.
     if state and state.get("world") and state.get("position"):
         lines = worldsim.service_lines(state["world"],
                                        state["position"]["land"],
@@ -7878,7 +7878,7 @@ def build_parser() -> argparse.ArgumentParser:
              "sells that no other does -- a burial or a blessing at the "
              "temple, a pilgrim badge, a burial club's dues, a charm and "
              "its printed policy, a hall blessing, Tergal's rain stone, "
-             "and the three lands where a wizard will teach. Bare "
+             "and the lands where a wizard will teach. Bare "
              "`service` lists what is on sale here at today's prices; "
              "`service WORD` buys it (a teaching wants `service WORD HERO "
              "SPELL`)")

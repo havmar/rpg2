@@ -111,8 +111,14 @@ HOLDING_HEAT_STEP = 1       # each holding raises the heat floor this much
 # CRPG vocabulary). A display name over the strongest final-room slot --
 # stats never fork.
 DEFENDER_ROLES = {
-    "firascir": "castellan",
-    "mortellaria": "captain of the walls",
+    "phyrascia": "castellan",
+    "seraptania": "castellan",
+    "teutonia": "captain of the town watch",
+    "vellisclavia": "voivode of the garrison",
+    "thule": "hall-captain",
+    "byzantium": "captain of the walls",
+    "andalusia": "keeper of the gate",
+    "umaia": "captain of the guard",
     "tergal": "war-chief of the garrison",
 }
 

@@ -83,7 +83,7 @@ The shape, in the order the loop runs it:
 - **The relations.** Authored directed edges between lands: who eats whose
   grain, who raids whose border, whose crowns are kin. Never a
   traded quantity -- a lookup. The states they DERIVE (a failed harvest in
-  Firascir puts grain-scarce on everyone it feeds) are computed at read
+  a granary puts grain-scarce on everyone it feeds) are computed at read
   time and never stored, so an edge can be re-authored without a migration.
 - **The deck.** Each land's cards, shuffled once at worldgen (the pact
   deck's pattern). A land in CRISIS draws on need; NORMAL and PROSPEROUS
@@ -106,7 +106,7 @@ The shape, in the order the loop runs it:
   what the riot admits on), the forgers who move in after the bank fails,
   and the raid a dead pasture sends out are the shipped chains. One of
   them crosses a RELATION: a Tergal clan whose herds died raids the
-  Firascir grain the same failed harvest already made dear.
+  western grain the same failed harvest already made dear.
 - **The sky.** Every land rolls one weather word a day against the weights
   of the GROUND THE PARTY IS STANDING ON and the season of the year
   (`CLIMATE_WEATHER` x `season_of`), tracking the WET and DRY spells
@@ -141,9 +141,9 @@ import random
 
 import rulers                    # the politics rung's person half: the
                                  # weighted trait pool a crown is rolled off
-from places import (CAPITAL_TILES, CLIMATE_PROFILES, LAND_SPECS, add_state,
-                    clear_state,
-                    land_id, stable_seed)
+from places import (CAPITAL_TILES, CLIMATE_PROFILES, CULTURE_LANDS,
+                    CULTURE_OF, LAND_SPECS, add_state, clear_state,
+                    detail_wrap, land_id, stable_seed)
 from sites import FOES           # the encounter outlet's vocabulary: a card
                                  # that puts foes on a road names catalog rows
                                  # like every other roster in the game
@@ -277,7 +277,7 @@ CRISIS_TENSION_ROLLS = 2        # ...and two when it opens in CRISIS, because
 # running out is simply what the mountain is now.
 
 STATE_WORDS = {                 # state id -> the readout's short phrase
-    # Firascir
+    # the western culture
     "harvest-failed": "the harvest has failed",
     "bread-dear": "bread is expensive",
     "bread-riots": "there is rioting over the bread",
@@ -285,7 +285,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "overtaxed": "the war tax is on",
     "monopoly-squeeze": "the lord's mill takes its share",
     "fair-on": "the great fair is on",
-    # Mortellaria
+    # the southern culture
     "tax-farmed": "the province is farmed out",
     "paper-worthless": "the banks have shut their doors",
     "bad-paper": "forged notes are about",
@@ -308,7 +308,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "burned-over": "the burn is still black",
     "dust-storm": "a dust storm covers the plain",
     "smog": "the smoke will not lift",
-    # Politics (2026-08-10) -- right, office and allegiance. Firascir
+    # Politics (2026-08-10) -- right, office and allegiance. The west
     # carries the most of them: the baseline land takes the deepest packet.
     "interdict": "the temple has closed the land",
     "order-trial": "the order hanged a local man",
@@ -393,7 +393,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     # Derived (never held -- computed off the relations table)
     "grain-scarce": "grain is scarce",
     "raiders-out": "raiders are on the border",
-    # ...the rest of what the three lands sell each other (2026-08-15)
+    # ...the rest of what the cultures sell each other (2026-08-15)
     "timber-dear": "there is no northern timber to be had",
     "credit-dry": "the southern banks have stopped lending",
     "southern-goods-short": "the southern road brings nothing",
@@ -408,7 +408,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "union-crown": "the two crowns are one head now",
     # THE MINERS' LEAGUE (2026-08-21, the tile economy arc's session 4).
     # Recovered from the pre-contraction catalog and re-homed: every one of
-    # the three countries holds mines now, so the extraction chain belongs
+    # every culture holds mines now, so the extraction chain belongs
     # to all of them and to no one of them.
     "claims-collide": "two chapters claim one seam",
     "rush-on": "the rush is on",
@@ -443,7 +443,7 @@ STATE_WORDS.update(SLOT_WORDS)
 # state charges for no matter which card -- or which RELATION -- put it
 # there. It is the only way a derived state can reach a price, and derived
 # states are the whole point of the relations table: a failed harvest in
-# Firascir is felt on a shelf in Tergal, three weeks' road away, as a number.
+# a western land is felt on a shelf in Tergal, three weeks' road away.
 STATE_MENU = {
     # derived (the edges' end of the table)
     "grain-scarce": {"lodging": 1.50, "goods": 1.15},
@@ -587,6 +587,34 @@ DECK_KEY = {"crisis": "deck", "weather": "weather_deck",
 LIVE_KEY = {"crisis": "live", "weather": "weather_live",
             "season": "season_live"}
 
+# COUNTRY vs CULTURE (2026-08-21, the medieval world arc's session 2). Nine
+# countries wear four card packets. Everything authored below names EITHER a
+# culture -- the packet is that culture's, wherever it is worn -- or a single
+# land, where the content is that land's own. `_expand` is the one door
+# between the two: it resolves the authored word into the land keys the
+# runtime actually asks about, and it leaves ANY_LAND and a bare land key
+# alone.
+CULTURES = dict(CULTURE_LANDS)
+
+
+def _expand(land: str | tuple[str, ...]) -> tuple[str, ...]:
+    """The land keys an authored `land=` field names."""
+    names = (land,) if isinstance(land, str) else tuple(land)
+    out: list[str] = []
+    for name in names:
+        out.extend(CULTURES.get(name, (name,)))
+    return tuple(dict.fromkeys(out))
+
+
+def _by_land(table: dict) -> dict:
+    """One authored table keyed by culture or by land, re-keyed by LAND --
+    which is what every reader of it asks with."""
+    out: dict = {}
+    for key, value in table.items():
+        for polity in _expand(key):
+            out[polity] = value
+    return out
+
 
 def card(key: str, name: str, land: str | tuple[str, ...], *,
          track: str = "crisis",
@@ -658,7 +686,7 @@ def card(key: str, name: str, land: str | tuple[str, ...], *,
         raise ValueError(f"{key}: a card with no clock never ends, so a "
                          f"'while' payload would never come off -- give it "
                          f"days or make the effect 'set'")
-    lands = (land,) if isinstance(land, str) else tuple(land)
+    lands = _expand(land)
     return {"key": key, "name": name, "land": lands, "track": track,
             "chance": chance, "hook": hook, "sky": sky,
             "admits": {"wealth": tuple(wealth), "states": tuple(states),
@@ -726,10 +754,12 @@ def relation(source: str, target: str, kind: str, *,
 SERVICES = ("bless", "book", "sky")     # the closed verb set an option buys
 
 
-def fact(land: str, key: str, title: str, line: str) -> dict:
-    """One standing fact about a land, for the DM. `title` is the SHOUTED
-    handle the table refers to it by; `line` is what it means in play."""
-    return {"land": land, "key": key, "title": title, "line": line}
+def fact(land: str | tuple[str, ...], key: str, title: str,
+         line: str) -> dict:
+    """One standing fact, for the DM. `land` is a land, a culture or
+    ANY_LAND, exactly like a card's. `title` is the SHOUTED handle the table
+    refers to it by; `line` is what it means in play."""
+    return {"land": _expand(land), "key": key, "title": title, "line": line}
 
 
 def option(key: str, name: str, land: str | tuple[str, ...], *,
@@ -754,7 +784,7 @@ def option(key: str, name: str, land: str | tuple[str, ...], *,
     holds it."""
     if does not in SERVICES:
         raise ValueError(f"{key}: no such service: {does}")
-    lands = (land,) if isinstance(land, str) else tuple(land)
+    lands = _expand(land)
     return {"key": key, "name": name, "land": lands, "does": does,
             "gold": gold, "term": term, "line": line,
             "states": tuple(states), "without": tuple(without),
@@ -794,16 +824,19 @@ def faction(key: str, name: str, face: str = "") -> dict:
     return {"key": key, "name": name, "face": face}
 
 
-def edge(land: str, source: str, verb: str, target: str, line: str) -> dict:
+def edge(scope: str, source: str, verb: str, target: str, line: str) -> dict:
     """One authored directed verb edge inside a land -- the in-land
-    counterpart of `relation`. It is LIVE when both its ends are in the
-    land's rolled faction cast, and a card admits on its key."""
-    return {"key": f"{land}/{source}-{verb}-{target}", "land": land,
+    counterpart of `relation`. `scope` is the culture (or the single land)
+    that owns the quarrel, and it is also the edge key's namespace. The edge
+    is LIVE when both its ends are in a land's rolled faction cast, and a
+    card admits on its key."""
+    return {"key": f"{scope}/{source}-{verb}-{target}",
+            "scope": scope, "land": _expand(scope),
             "from": source, "verb": verb, "to": target, "line": line}
 
 
-CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
-    "firascir": (
+_CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
+    "western": (
         constitution("feudal", "DECENTRALIZED FEUDALISM", 6,
                      "a crown among great lords, strong on its own manors "
                      "and weak past them"),
@@ -816,7 +849,7 @@ CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
         constitution("regency", "THE REGENCY", 1,
                      "an infant king, and a council governing in his name"),
     ),
-    "mortellaria": (
+    "southern": (
         constitution("absolutism", "ABSOLUTISM", 6,
                      "one king, one law, one faith: the king's "
                      "commissioners sit over the old courts"),
@@ -843,13 +876,23 @@ CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "no high chief, and the feuds run with nobody to "
                      "settle them"),
     ),
+    # The NORSE minimum (2026-08-21, the nine). Two entries so the slot
+    # rolls at all; the packet's other two and its cards are session 4's.
+    "norse": (
+        constitution("sea-kings", "THE SEA-KINGS", 6,
+                     "a dozen harbor lords with ships, and a first among "
+                     "them who is obeyed as far as his oars reach"),
+        constitution("allthing", "THE ALLTHING", 2,
+                     "the free men meet at the stone every summer, speak "
+                     "the law aloud, and go home again"),
+    ),
 }
 
 # The blocs. Most are named by exactly one land's tensions; the shared ones
 # (crown, clans) are named the same way in each so an edge reads the same
 # everywhere.
 FACTIONS: dict[str, dict] = {f["key"]: f for f in (
-    # Firascir
+    # the western culture
     faction("crown", "the crown", face="ruler"),
     faction("great-lords", "the great lords"),
     faction("guilds", "the merchant guilds", face="wildcard"),
@@ -863,7 +906,7 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("rival-clans", "the rival clans"),
     faction("clan-mothers", "the clan mothers"),
     faction("outlaws", "the outlaw bands"),
-    # Mortellaria
+    # the southern culture
     faction("sword", "the sword nobility"),
     faction("robe", "the robe nobility", face="wildcard"),
     faction("tribunal", "the faith's tribunal", face="wildcard"),
@@ -880,14 +923,19 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("academy", "the wizards' academy", face="sage"),
     faction("white-shamans", "the white shamans", face="sage"),
     faction("black-shaman", "the black shaman"),
+    # -- Thule (2026-08-21, the nine): the two blocs its minimum names.
+    faction("jarls", "the jarls", face="ruler"),
+    faction("freeholders", "the freeholders"),
+    faction("sea-kings", "the sea-kings"),
+    faction("land-chiefs", "the land-chiefs"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
 # STANDING entries are held on top of the roll, because some tensions are
-# not colour -- Firascir's manor is the econ packet's oppression axis and
+# not colour -- the western manor is the econ packet's oppression axis and
 # is always there.
-TENSIONS: dict[str, tuple[dict, ...]] = {
-    "firascir": (
+_TENSIONS: dict[str, tuple[dict, ...]] = {
+    "western": (
         tension("crown-vs-lords", "the crown against the great lords",
                 factions=("crown", "great-lords")),
         tension("crown-vs-guilds", "the crown against the guilds' money",
@@ -904,7 +952,7 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("abbey-vs-village", "the abbey against the families",
                 factions=("abbey", "village")),
     ),
-    "mortellaria": (
+    "southern": (
         tension("sword-vs-robe", "old swords against bought offices",
                 factions=("sword", "robe")),
         tension("crown-vs-faith", "the crown against the old faith",
@@ -932,45 +980,57 @@ TENSIONS: dict[str, tuple[dict, ...]] = {
                 "the white shamans against the dark one",
                 factions=("white-shamans", "black-shaman")),
     ),
+    "norse": (
+        tension("jarls-vs-thing", "the jarls against the assembly",
+                factions=("jarls", "freeholders")),
+        tension("sea-vs-land", "the sea-kings against the land-chiefs",
+                factions=("sea-kings", "land-chiefs")),
+    ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
-# rollable pool. Firascir's manor is the econ packet's oppression axis and
+# rollable pool. The western manor is the econ packet's oppression axis and
 # is simply what the land is.
-STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
-    "firascir": ("manor-vs-village",),
+_STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
+    "western": ("manor-vs-village",),
 }
+
+# The authored tables are keyed by CULTURE (or by a single land where the
+# content is that land's own); every reader asks with a LAND key.
+CONSTITUTIONS = _by_land(_CONSTITUTIONS)
+TENSIONS = _by_land(_TENSIONS)
+STANDING_TENSIONS = _by_land(_STANDING_TENSIONS)
 
 # The wiring: directed verb edges between blocs. The formalism has to serve
 # a royal council, a clan confederacy and a manor alike, so the verb is a
 # word and nothing reads it but a card.
 FACTION_EDGES: tuple[dict, ...] = (
-    # Firascir
-    edge("firascir", "crown", "leans-on", "great-lords",
+    # the western culture
+    edge("western", "crown", "leans-on", "great-lords",
          "the crown leans on the great lords"),
-    edge("firascir", "great-lords", "defy", "crown",
+    edge("western", "great-lords", "defy", "crown",
          "the great lords defy the crown"),
-    edge("firascir", "guilds", "buy", "crown",
+    edge("western", "guilds", "buy", "crown",
          "the guilds buy their charters from the crown"),
-    edge("firascir", "temple", "excommunicates", "crown",
+    edge("western", "temple", "excommunicates", "crown",
          "the temple threatens the crown with the interdict"),
-    edge("firascir", "militant-order", "answers", "temple",
+    edge("western", "militant-order", "answers", "temple",
          "the militant order answers only to the temple"),
-    edge("firascir", "new-men", "outbid", "great-lords",
+    edge("western", "new-men", "outbid", "great-lords",
          "the new men outbid the great lords for everything"),
-    edge("firascir", "manor-lord", "squeezes", "village",
+    edge("western", "manor-lord", "squeezes", "village",
          "the bailiff squeezes the village"),
-    edge("firascir", "village", "slows", "manor-lord",
+    edge("western", "village", "slows", "manor-lord",
          "the village works to the letter of the old custom"),
-    # Mortellaria
-    edge("mortellaria", "robe", "buy", "sword",
+    # the southern culture
+    edge("southern", "robe", "buy", "sword",
          "the robe nobility buys the sword's land out from under it"),
-    edge("mortellaria", "sword", "snub", "robe",
+    edge("southern", "sword", "snub", "robe",
          "the sword nobility will not be seated beside the robe"),
-    edge("mortellaria", "tribunal", "hunts", "hidden-faith",
+    edge("southern", "tribunal", "hunts", "hidden-faith",
          "the tribunal hunts the hidden faith"),
-    edge("mortellaria", "commissioners", "overrule", "provinces",
+    edge("southern", "commissioners", "overrule", "provinces",
          "the king's commissioners overrule the provincial courts"),
-    edge("mortellaria", "provinces", "resist", "commissioners",
+    edge("southern", "provinces", "resist", "commissioners",
          "the provinces answer the commissioners with closed gates"),
     # Tergal
     edge("tergal", "clans", "feud", "rival-clans",
@@ -982,21 +1042,21 @@ FACTION_EDGES: tuple[dict, ...] = (
     edge("tergal", "outlaws", "raid", "clans",
          "the outlaw bands raid the clans that cast them out"),
     # -- religion and magic (2026-08-11) ---------------------------------- #
-    edge("firascir", "shrines", "steal-from", "rival-shrines",
+    edge("western", "shrines", "steal-from", "rival-shrines",
          "the shrine towns steal each other's relics outright"),
-    edge("firascir", "rival-shrines", "undercut", "shrines",
+    edge("western", "rival-shrines", "undercut", "shrines",
          "the rival shrines undercut each other for the pilgrim trade"),
-    edge("firascir", "abbey", "holds", "village",
+    edge("western", "abbey", "holds", "village",
          "the abbey holds the village's children, land and law"),
-    edge("firascir", "village", "petitions", "abbey",
+    edge("western", "village", "petitions", "abbey",
          "the village petitions the abbey and is answered in writing"),
-    edge("mortellaria", "penitents", "denounce", "carnival",
+    edge("southern", "penitents", "denounce", "carnival",
          "the penitent wing preaches against the carnival wing"),
-    edge("mortellaria", "carnival", "outnumber", "penitents",
+    edge("southern", "carnival", "outnumber", "penitents",
          "the carnival wing simply outnumbers the penitents"),
-    edge("mortellaria", "tribunal", "watches", "academy",
+    edge("southern", "tribunal", "watches", "academy",
          "the tribunal keeps a list of what the academy teaches"),
-    edge("mortellaria", "academy", "shelters", "tribunal",
+    edge("southern", "academy", "shelters", "tribunal",
          "the academy hands the tribunal a scapegoat every few years"),
     edge("tergal", "white-shamans", "shun", "black-shaman",
          "the white shamans camp the dark one outside the ring"),
@@ -1322,13 +1382,13 @@ _UNDEAD = ("skeleton", "ghoul", "wight")                    # band 1-10
 _CASTERS = ("hexer", "pyromancer", "magus")                 # band 2-12
 
 CARDS = (
-    # -- Firascir: MANORIAL OPPRESSION & THE CROWN'S DEBTS ------------------ #
+    # -- the west: MANORIAL OPPRESSION & THE CROWN'S DEBTS ---------------- #
     # The famine CHAIN: the harvest fails, and the dear bread it leaves
     # behind is what the riot admits on a season later.
-    card("firascir/bad-harvest", "The harvest fails", "firascir",
+    card("western/bad-harvest", "The harvest fails", "western",
          wealth=("crisis", "normal"), without=("bread-dear",),
          days=(35, 50),
-         news="The harvest has failed in Firascir. Bread is short and the "
+         news="The harvest has failed here. Bread is short and the "
               "granaries are watched.",
          state={"while": ("harvest-failed",), "set": ("bread-dear",),
                 "wealth_while": "crisis"},
@@ -1344,7 +1404,7 @@ CARDS = (
                               "granary stands empty and the queue outside "
                               "it is longer every morning."),
              "pay": 1.25}),
-    card("firascir/bread-revolt", "The bread riot", "firascir",
+    card("western/bread-revolt", "The bread riot", "western",
          states=("bread-dear",), days=(10, 18),
          news="Bread went up again and the market went over with it. The "
               "stalls are wrecked, the sheriff has lost the square, and "
@@ -1362,7 +1422,7 @@ CARDS = (
              failure_epilogue="The warehouse doors went in. The grain was "
                               "carried off down every lane in the town."),
              "pay": 1.30}),
-    card("firascir/tolls", "The tolls are doubled", "firascir",
+    card("western/tolls", "The tolls are doubled", "western",
          wealth=("crisis", "normal"), days=(12, 20),
          news="The baron has doubled the road tolls. His toll-men hold the "
               "bridges, and nobody in town will say a word against them.",
@@ -1374,13 +1434,13 @@ CARDS = (
                               "bruiser": "Toll-Bruiser",
                               "soldier": "Toll-Sergeant"},
                     "chance": 0.50}),
-    card("firascir/war-debts", "The crown calls in its debts", "firascir",
+    card("western/war-debts", "The crown calls in its debts", "western",
          wealth=("crisis",), without=("harvest-failed",), days=(20, 30),
          news="The crown wants its war paid for. The tax men are out with "
               "the sheriff behind them.",
          state={"while": ("overtaxed",)},
          quest={"reprice": 0.85}),
-    card("firascir/monopoly", "The lord shuts the hand-mills", "firascir",
+    card("western/monopoly", "The lord shuts the hand-mills", "western",
          wealth=("crisis", "normal"), days=(20, 35),
          news="The lord has shut every hand-mill in the valley. Grind at "
               "his mill and pay his share, or answer to his bailiff for "
@@ -1401,7 +1461,7 @@ CARDS = (
              "pay": 1.10}),
     # The flavor anchor: not trouble, and the one week of the year the
     # shelves are cheap and the beds are not.
-    card("firascir/fair", "The great fair", "firascir",
+    card("western/fair", "The great fair", "western",
          wealth=("normal", "prosperous"), days=(8, 14),
          news="The great fair is open on the water-meadow. Every trader in "
               "the land is here, so is every cutpurse, and the fair court "
@@ -1421,9 +1481,9 @@ CARDS = (
                               "were robbed and the court hanged nobody."),
              "slots": 1}),
 
-    # -- Mortellaria: FINANCE & THE ABSOLUTIST STATE ------------------------ #
-    card("mortellaria/tax-farmer", "The tax farmer buys the province",
-         "mortellaria", wealth=("crisis",), without=("tax-farmed",),
+    # -- the south: FINANCE & THE ABSOLUTIST STATE ------------------------ #
+    card("southern/tax-farmer", "The tax farmer buys the province",
+         "southern", wealth=("crisis",), without=("tax-farmed",),
          days=(20, 35),
          news="The state has sold the right to squeeze this province. The "
               "tax farmer means to make his money back.",
@@ -1443,7 +1503,7 @@ CARDS = (
              "pay": 1.20}),
     # The forgery CHAIN: the bank fails, and the forgers who moved in
     # while nobody could tell one note from another are the next card.
-    card("mortellaria/bank-run", "The bank fails", "mortellaria",
+    card("southern/bank-run", "The bank fails", "southern",
          wealth=("crisis",), without=("bad-paper",), days=(15, 25),
          news="The bank has shut its doors. Paper money buys nothing now, and "
               "every strongbox in the city is watched.",
@@ -1459,7 +1519,7 @@ CARDS = (
              failure_epilogue="The strongbox never reached the vault. The "
                               "house has stopped paying anybody."),
              "pay": 1.35}),
-    card("mortellaria/counterfeit", "The forged notes", "mortellaria",
+    card("southern/counterfeit", "The forged notes", "southern",
          states=("bad-paper",), days=(15, 25),
          news="Half the notes in the market are forged and nobody can tell "
               "which half. The state has sent note-hunters, and they are "
@@ -1480,7 +1540,7 @@ CARDS = (
              "pay": 1.15}),
     # The one quest shape no other land can offer -- a pure REPRICE card:
     # it puts nothing on the board and changes what everything on it pays.
-    card("mortellaria/paid-in-paper", "Paid in paper", "mortellaria",
+    card("southern/paid-in-paper", "Paid in paper", "southern",
          wealth=("normal", "prosperous"), without=("paper-worthless",),
          days=(15, 25),
          news="The province is paying its hired swords in notes this "
@@ -1488,8 +1548,8 @@ CARDS = (
               "worth face value at a bank counter and nowhere else.",
          state={"while": ("paper-pay",)},
          quest={"reprice": 1.50}),
-    card("mortellaria/colony-fleet", "The colony fleet comes in",
-         "mortellaria", wealth=("normal", "prosperous"), days=(10, 18),
+    card("southern/colony-fleet", "The colony fleet comes in",
+         "southern", wealth=("normal", "prosperous"), days=(10, 18),
          news="The colony fleet is in. There is gold on the wharves, the "
               "taverns are full, and every purse in the city is fat.",
          state={"while": ("coin-flush",)},
@@ -1697,7 +1757,7 @@ CARDS = (
          weather=("storm",), days=(1, 3), sky="storm",
          state={"while": ("storm-bound",)}),
     card("weather/fords-out", "The ford is out",
-         ("firascir", "mortellaria"), track="weather",
+         ("western", "southern"), track="weather",
          wet=3, days=(6, 12),
          news="Three days of rain and the fords are gone. The bridges and "
               "the ferries are the only way over now, and the men who hold "
@@ -1741,9 +1801,9 @@ CARDS = (
                               "people still in them."),
              "pay": 1.20}),
     # THE TOWN SMOKE: the one sky a roof does not keep out (rpg.INDOOR_SKY).
-    # Firascir is the land of close-built northern towns, and a still winter
+    # The west is the land of close-built northern towns, and a still winter
     # week puts every hearth, forge and tannery back down in the street.
-    card("weather/smog", "The smoke settles", "firascir", track="weather",
+    card("weather/smog", "The smoke settles", "western", track="weather",
          weather=("cloud", "fog"), chance=0.20, days=(2, 5),
          news="The town's own smoke has nowhere to go and has settled in "
               "the streets. Everyone is coughing. The aldermen say it is "
@@ -1792,8 +1852,8 @@ CARDS = (
 # here, never duplicated.
 #
 # Every card names the TENSION that admits it, and that is also the gate on
-# the deck: a Firascir where the crown is fighting its lords never draws the
-# temple's cards at all. Firascir carries the deepest packet by the asymmetry
+# the deck: a land where the crown is fighting its lords never draws the
+# temple's cards at all. The west carries the deepest packet by the asymmetry
 # doctrine (it is the baseline land, and the ruler sheet's weights are already
 # its), and its manor tension is STANDING -- the econ packet's oppression axis
 # is not colour, it is what the land is.
@@ -1804,7 +1864,7 @@ CARDS = (
 # there the next time the card comes round, which is what makes him a face
 # instead of a pulse.
 
-_CROWNED = ("firascir", "mortellaria", "tergal")
+_CROWNED = ("western", "southern", "tergal", "norse")
 
 _BAN_HOOK = _authority_hook("banned-lord", "the banned lord", "lord")
 _FINDER_HOOK = _authority_hook("witch-finder", "the witch-finder", "finder")
@@ -1812,9 +1872,9 @@ _BANDIT_HOOK = _authority_hook("bandit-king", "the bandit king", "bandit")
 _PRETENDER_HOOK = _authority_hook("pretender", "the pretender", "claimant")
 
 POLITICS_CARDS = (
-    # == Firascir: CUSTOM AGAINST PREROGATIVE ============================== #
+    # == the west: CUSTOM AGAINST PREROGATIVE ============================= #
     # -- realm & crown ---------------------------------------------------- #
-    card("firascir/interdict", "The temple closes the land", "firascir",
+    card("western/interdict", "The temple closes the land", "western",
          tension=("temple-vs-crown",), days=(20, 35),
          news="The temple has closed the land. No weddings, no rites and "
               "no burials until the king gives way. The dead are waiting "
@@ -1834,9 +1894,9 @@ POLITICS_CARDS = (
                               "village still buries its dead in the woods "
                               "at night."),
              "pay": 1.15, "slots": -1}),
-    card("firascir/orders-law", "The order hangs a local man", "firascir",
+    card("western/orders-law", "The order hangs a local man", "western",
          tension=("temple-vs-crown",),
-         faction_edge=("firascir/militant-order-answers-temple",),
+         faction_edge=("western/militant-order-answers-temple",),
          days=(12, 20),
          news="The militant order tried a local man in its own court and "
               "hanged him on its own gallows. The county wants the body "
@@ -1854,7 +1914,7 @@ POLITICS_CARDS = (
              failure_epilogue="The order kept its gallows and its dead. "
                               "The county has stopped asking."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/royal-progress", "The royal progress arrives", "firascir",
+    card("western/royal-progress", "The royal progress arrives", "western",
          traits=("itinerant",), days=(8, 14),
          news="The king's court has arrived: a hundred mouths with "
               "precedence, quartered on whichever lord it is testing this "
@@ -1873,9 +1933,9 @@ POLITICS_CARDS = (
                               "The lord's name is a joke as far as the "
                               "capital."),
              "slots": 1}),
-    card("firascir/the-ban", "The crown declares a lord dead in law",
-         "firascir", tension=("crown-vs-lords",),
-         faction_edge=("firascir/great-lords-defy-crown",),
+    card("western/the-ban", "The crown declares a lord dead in law",
+         "western", tension=("crown-vs-lords",),
+         faction_edge=("western/great-lords-defy-crown",),
          days=(20, 35), hook=_BAN_HOOK,
          news="The crown has declared {lord} legally dead. His lands are "
               "forfeit, anyone may kill him without answering for it, and "
@@ -1901,7 +1961,7 @@ POLITICS_CARDS = (
                               "in it, and the men he hired are on the "
                               "roads."),
              "pay": 1.30, "slots": 1}),
-    card("firascir/settled-warband", "The border grant", "firascir",
+    card("western/settled-warband", "The border grant", "western",
          tension=("crown-vs-lords",), days=None,
          news="A march lord has granted border land to a Tergal warband in "
               "exchange for service. The neighbours are terrified. The "
@@ -1921,7 +1981,7 @@ POLITICS_CARDS = (
              failure_epilogue="The village is off its fields and the "
                               "grant runs to the river now."),
              "pay": 1.15, "reprice": 1.1}),
-    card("firascir/the-badge", "The badge-men take the courts", "firascir",
+    card("western/the-badge", "The badge-men take the courts", "western",
          tension=("crown-vs-lords", "old-vs-new"), days=(15, 25),
          news="A lord is paying armed men to wear his badge and lean on "
               "the courts. By the time the crown's inspectors come to "
@@ -1939,7 +1999,7 @@ POLITICS_CARDS = (
              failure_epilogue="The inspector never finished his count. The "
                               "badge-men hold the courthouse door now."),
              "pay": 1.20, "slots": -1}),
-    card("firascir/the-ward", "The wardship is auctioned", "firascir",
+    card("western/the-ward", "The wardship is auctioned", "western",
          tension=("crown-vs-lords", "old-vs-new"), days=(15, 25),
          news="A lord is dead and his heir is nine years old. The crown is "
               "auctioning the wardship: raise the child, drain the estate, "
@@ -1960,16 +2020,16 @@ POLITICS_CARDS = (
              "pay": 1.25, "reprice": 1.15}),
 
     # -- manor & village (the standing tension) --------------------------- #
-    card("firascir/custom-strike", "The village works to the letter",
-         "firascir", tension=("manor-vs-village",),
-         faction_edge=("firascir/village-slows-manor-lord",),
+    card("western/custom-strike", "The village works to the letter",
+         "western", tension=("manor-vs-village",),
+         faction_edge=("western/village-slows-manor-lord",),
          days=(12, 20),
          news="The bailiff demanded extra harvest days. The village cites "
               "the manor's ancient custom, arrives on time, and works at "
               "a crawl the lord cannot quite punish.",
          state={"while": ("custom-strike",)},
          quest={"reprice": 0.90}),
-    card("firascir/burning-rolls", "The court rolls burn", "firascir",
+    card("western/burning-rolls", "The court rolls burn", "western",
          tension=("manor-vs-village",), without=("rolls-burned",),
          days=None,
          news="The mob did not go for the lord. It went for the manor's "
@@ -1990,7 +2050,7 @@ POLITICS_CARDS = (
                               "confusion. Nobody in the valley can prove "
                               "anything about anybody."),
              "pay": 1.25, "slots": 1}),
-    card("firascir/year-and-a-day", "A year and a day", "firascir",
+    card("western/year-and-a-day", "A year and a day", "western",
          tension=("manor-vs-village", "crown-vs-guilds"), days=(10, 18),
          news="A skilled smith has run from the manor to the chartered "
               "town. Town air makes a man free after a year and a day, "
@@ -2010,9 +2070,9 @@ POLITICS_CARDS = (
                               "days short. He is back at the manor forge "
                               "with an iron collar on."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/lord-away", "While the lord is away", "firascir",
+    card("western/lord-away", "While the lord is away", "western",
          tension=("manor-vs-village",),
-         faction_edge=("firascir/manor-lord-squeezes-village",),
+         faction_edge=("western/manor-lord-squeezes-village",),
          days=(15, 25),
          news="The bailiff has invented fines -- bad ale, gathered "
               "deadwood -- and runs the manor court as his own purse. The "
@@ -2031,7 +2091,7 @@ POLITICS_CARDS = (
              failure_epilogue="The rider never reached the lord. The "
                               "fines have gone up again."),
              "pay": 1.15, "slots": -1}),
-    card("firascir/rent-strike", "The rent strike", "firascir",
+    card("western/rent-strike", "The rent strike", "western",
          tension=("manor-vs-village",), days=(12, 20),
          news="The village has hidden its coin and pleads a blight. The "
               "bailiff cannot evict everyone at once and knows it. Some "
@@ -2050,7 +2110,7 @@ POLITICS_CARDS = (
              failure_epilogue="Nobody walked the strips. The lord has "
                               "sent men who will not ask first."),
              "pay": 1.10, "reprice": 0.9}),
-    card("firascir/widows-holding", "The widow's holding", "firascir",
+    card("western/widows-holding", "The widow's holding", "western",
          tension=("manor-vs-village",), days=(15, 25),
          news="A rich widow pays the yearly fine to stay unmarried and "
               "keeps the best land in the valley out of every scheming "
@@ -2069,7 +2129,7 @@ POLITICS_CARDS = (
              failure_epilogue="The fine never reached the court. The land "
                               "is being surveyed for somebody's son."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/peasant-merger", "The strips are merged", "firascir",
+    card("western/peasant-merger", "The strips are merged", "western",
          tension=("manor-vs-village",), days=None,
          news="Two big village families have betrothed their strips "
               "together and now hold the best soil in the parish between "
@@ -2077,7 +2137,7 @@ POLITICS_CARDS = (
               "the lord will notice late.",
          state={"set": ("strips-merged",)},
          quest={"reprice": 1.10}),
-    card("firascir/jury-lies", "The jury swears it true", "firascir",
+    card("western/jury-lies", "The jury swears it true", "western",
          tension=("manor-vs-village",), days=(8, 14),
          news="The manor court's jury -- the accused's own neighbours -- "
               "has sworn a starving thief innocent in the law's teeth, "
@@ -2096,8 +2156,8 @@ POLITICS_CARDS = (
                               "hanged. Half the jury is paying the fine "
                               "and the other half has left."),
              "pay": 1.10, "reprice": 0.95}),
-    card("firascir/cry-ignored", "The hue and cry goes unanswered",
-         "firascir", tension=("manor-vs-village",), days=(10, 16),
+    card("western/cry-ignored", "The hue and cry goes unanswered",
+         "western", tension=("manor-vs-village",), days=(10, 16),
          news="The forester raised the hue and cry on a poacher the "
               "village likes, and the village went conveniently deaf. "
               "Failing the cry is a collective fine, and everyone is "
@@ -2116,7 +2176,7 @@ POLITICS_CARDS = (
                               "village fine has been levied on everybody "
                               "but him."),
              "pay": 1.10, "reprice": 0.95}),
-    card("firascir/forest-law", "The royal woods are closed", "firascir",
+    card("western/forest-law", "The royal woods are closed", "western",
          tension=("manor-vs-village", "crown-vs-lords"), days=(25, 40),
          news="The royal woods stand outside the common law again. The "
               "forage, the deadwood and the gleaning are fenced off year "
@@ -2136,7 +2196,7 @@ POLITICS_CARDS = (
                               "Both woods are closed now and the gleaning "
                               "with them."),
              "pay": 1.15, "slots": 1}),
-    card("firascir/silver-vein", "Silver on the lord's land", "firascir",
+    card("western/silver-vein", "Silver on the lord's land", "western",
          tension=("manor-vs-village", "old-vs-new"), days=None,
          news="A strike on the local lord's land has made him suddenly, "
               "dangerously rich. Armed men, bought judges, new walls, new "
@@ -2156,7 +2216,7 @@ POLITICS_CARDS = (
                               "claim is filed under the mountain, and the "
                               "mountain remembers."),
              "pay": 1.25, "slots": 1}),
-    card("firascir/trial-by-combat", "The loophole stands open", "firascir",
+    card("western/trial-by-combat", "The loophole stands open", "western",
          tension=("old-vs-new", "manor-vs-village"), days=(12, 20),
          news="Two wealthy houses are answering a lawsuit at swordpoint "
               "through hired champions. The court has agreed to it, which "
@@ -2177,9 +2237,9 @@ POLITICS_CARDS = (
              "pay": 1.30, "slots": 1}),
 
     # -- town ------------------------------------------------------------- #
-    card("firascir/charter-run", "The charter run", "firascir",
+    card("western/charter-run", "The charter run", "western",
          tension=("crown-vs-guilds",),
-         faction_edge=("firascir/guilds-buy-crown",), days=(10, 16),
+         faction_edge=("western/guilds-buy-crown",), days=(10, 16),
          news="The market town has pooled its silver in secret to buy a "
               "royal charter out from under its lord. The lord has "
               "blockaded the roads to stop the purse reaching the king.",
@@ -2197,9 +2257,9 @@ POLITICS_CARDS = (
                               "is the lord's for another generation and "
                               "knows who lost it."),
              "pay": 1.30, "reprice": 1.2}),
-    card("firascir/mayor-in-velvet", "The mayor in velvet", "firascir",
+    card("western/mayor-in-velvet", "The mayor in velvet", "western",
          tension=("old-vs-new",),
-         faction_edge=("firascir/new-men-outbid-great-lords",),
+         faction_edge=("western/new-men-outbid-great-lords",),
          days=(15, 25),
          news="A wool merchant has been elected mayor, dresses past his "
               "blood, rides a warhorse and demands to be addressed as an "
@@ -2222,7 +2282,7 @@ POLITICS_CARDS = (
              "pay": 1.20, "slots": -1}),
 
     # -- temple & parish --------------------------------------------------- #
-    card("firascir/tithe-war", "The tithe war", "firascir",
+    card("western/tithe-war", "The tithe war", "western",
          tension=("manor-vs-village", "temple-vs-crown"), days=(15, 25),
          news="The village tithes its sickliest lambs and its lightest "
               "sheaves, and has done for years. The priest's barn keeps "
@@ -2241,7 +2301,7 @@ POLITICS_CARDS = (
                               "tally in it. The priest is not asking "
                               "again."),
              "pay": 1.10, "reprice": 0.95}),
-    card("firascir/scandalous-priest", "The rectory scandal", "firascir",
+    card("western/scandalous-priest", "The rectory scandal", "western",
          tension=("manor-vs-village",), days=(15, 25),
          news="The priest keeps a woman at the rectory and buys land for "
               "his children out of the church box. The pious of the "
@@ -2260,7 +2320,7 @@ POLITICS_CARDS = (
                               "people who wanted it read. The bishop is "
                               "coming himself."),
              "pay": 1.15, "reprice": 1.05}),
-    card("firascir/witch-finder", "The witch-finder arrives", "firascir",
+    card("western/witch-finder", "The witch-finder arrives", "western",
          traits=("spell-fearing",), days=(10, 18), hook=_FINDER_HOOK,
          news="A man calling himself {finder} has arrived offering to "
               "root out the village's witch, for a fee. He has never yet "
@@ -2279,8 +2339,8 @@ POLITICS_CARDS = (
                               "moved on to the next village with a "
                               "reference."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/dancing-plague", "A street cannot stop dancing",
-         "firascir", tension=("manor-vs-village",), chance=0.35,
+    card("western/dancing-plague", "A street cannot stop dancing",
+         "western", tension=("manor-vs-village",), chance=0.35,
          days=(10, 18),
          news="A street of villagers has been dancing for three days and "
               "cannot stop. Flagellant columns are arriving behind the "
@@ -2301,7 +2361,7 @@ POLITICS_CARDS = (
                               "mill is still grinding. Two more houses "
                               "started this morning."),
              "pay": 1.20, "slots": -1}),
-    card("firascir/free-company", "The free company", "firascir",
+    card("western/free-company", "The free company", "western",
          tension=("crown-vs-lords",), days=(20, 35),
          news="The war wound down and the unpaid company did not. It is a "
               "small state on the roads now: it tolls the bridges, it "
@@ -2319,7 +2379,7 @@ POLITICS_CARDS = (
              failure_epilogue="The company holds the bridge and has "
                               "raised the toll to cover the trouble."),
              "pay": 1.30, "slots": -1}),
-    card("firascir/midnight-court", "The midnight court", "firascir",
+    card("western/midnight-court", "The midnight court", "western",
          tension=("old-vs-new", "crown-vs-guilds"), days=(15, 25),
          news="The lawful courts are bought, so a tribunal of masked "
               "freemen has started trying men by night and hanging them "
@@ -2339,10 +2399,10 @@ POLITICS_CARDS = (
                               "own neighbours. Nobody will say where."),
              "pay": 1.25, "reprice": 1.15}),
 
-    # == Mortellaria: ONE KING, ONE LAW, ONE FAITH ========================= #
-    card("mortellaria/revocation", "The old faith is outlawed",
-         "mortellaria", tension=("crown-vs-faith",),
-         faction_edge=("mortellaria/tribunal-hunts-hidden-faith",),
+    # == the south: ONE KING, ONE LAW, ONE FAITH ========================== #
+    card("southern/revocation", "The old faith is outlawed",
+         "southern", tension=("crown-vs-faith",),
+         faction_edge=("southern/tribunal-hunts-hidden-faith",),
          days=(25, 40),
          news="The tolerated faith was made illegal overnight. Dragoons "
               "are quartered in the houses of anyone who will not "
@@ -2362,9 +2422,9 @@ POLITICS_CARDS = (
                               "The tools were sold and the informer was "
                               "paid by the head."),
              "pay": 1.30, "slots": -1}),
-    card("mortellaria/dueling-edict", "The dueling edict", "mortellaria",
+    card("southern/dueling-edict", "The dueling edict", "southern",
          tension=("sword-vs-robe",),
-         faction_edge=("mortellaria/sword-snub-robe",), days=(15, 25),
+         faction_edge=("southern/sword-snub-robe",), days=(15, 25),
          news="Duelling is a capital crime now. Two grandees fought "
               "anyway. One is dead and the other is on the road with his "
               "estate in limbo, the dead man's family behind him, and "
@@ -2383,8 +2443,8 @@ POLITICS_CARDS = (
                               "family two days behind. It will be settled "
                               "in somebody else's country."),
              "pay": 1.25, "reprice": 1.1}),
-    card("mortellaria/sealed-warrant", "The warrants go on sale",
-         "mortellaria", tension=("sword-vs-robe", "court-vs-provinces"),
+    card("southern/sealed-warrant", "The warrants go on sale",
+         "southern", tension=("sword-vs-robe", "court-vs-provinces"),
          days=(20, 30),
          news="Blank royal arrest orders exist and can be bought. A name "
               "written in, a fortress door, and no charge and no trial "
@@ -2405,7 +2465,7 @@ POLITICS_CARDS = (
                               "warrant was read by the wrong clerk. The "
                               "merchant's own name is on a list now."),
              "pay": 1.30, "reprice": 1.15}),
-    card("mortellaria/tontine", "The tontine", "mortellaria",
+    card("southern/tontine", "The tontine", "southern",
          tension=("sword-vs-robe",), days=(15, 25),
          news="An elite investment pool pays out to the last survivor, "
               "and the survivors have begun dying in interesting ways. "
@@ -2429,8 +2489,8 @@ POLITICS_CARDS = (
              "pay": 1.30, "reprice": 1.2}),
     # The bubble CHAIN: the crown grants the monopoly, the shares go mad,
     # and the crash is the next card in the deck.
-    card("mortellaria/monopoly-bubble", "The monopoly is granted",
-         "mortellaria", tension=("court-vs-provinces", "sword-vs-robe"),
+    card("southern/monopoly-bubble", "The monopoly is granted",
+         "southern", tension=("court-vs-provinces", "sword-vs-robe"),
          without=("shares-mad", "quarter-ruined"), days=(12, 20),
          news="The crown has granted one company the whole colony trade. "
               "The shares have gone mad. Servants are buying, and so is "
@@ -2448,7 +2508,7 @@ POLITICS_CARDS = (
              failure_epilogue="The book never opened. The price doubled "
                               "anyway, on nothing at all."),
              "pay": 1.20, "slots": 1}),
-    card("mortellaria/the-crash", "The shares collapse", "mortellaria",
+    card("southern/the-crash", "The shares collapse", "southern",
          states=("shares-mad",), days=(15, 25),
          news="The colony shares are worth what the paper weighs. Half "
               "the merchant quarter is ruined by breakfast and the other "
@@ -2472,8 +2532,8 @@ POLITICS_CARDS = (
                               "of it worth the name and the broker is "
                               "somewhere in the crowd."),
              "pay": 1.25, "slots": -1}),
-    card("mortellaria/alchemists-wing", "The crown funds the alchemists",
-         "mortellaria", tension=("court-vs-provinces",), days=(25, 40),
+    card("southern/alchemists-wing", "The crown funds the alchemists",
+         "southern", tension=("court-vs-provinces",), days=(25, 40),
          news="The crown has put a wing of the palace and a great deal of "
               "money behind a stable of alchemists, on the understanding "
               "that they will transmute the war debt away. Nobody has "
@@ -2494,8 +2554,8 @@ POLITICS_CARDS = (
                               "gone quiet. The treasury is asking what "
                               "the money bought."),
              "pay": 1.20, "slots": 1}),
-    card("mortellaria/flour-war", "The bread price is let go",
-         "mortellaria", tension=("court-vs-provinces",),
+    card("southern/flour-war", "The bread price is let go",
+         "southern", tension=("court-vs-provinces",),
          wealth=("crisis", "normal"), without=("bread-riots",),
          days=(10, 18),
          news="The crown lifted the bread price controls in a lean year. "
@@ -2515,8 +2575,8 @@ POLITICS_CARDS = (
              failure_epilogue="The street went. There is no flour left in "
                               "it and no bakers either."),
              "pay": 1.25, "slots": -1}),
-    card("mortellaria/salt-revolt", "The salt country rises",
-         "mortellaria", tension=("court-vs-provinces",),
+    card("southern/salt-revolt", "The salt country rises",
+         "southern", tension=("court-vs-provinces",),
          states=("tax-farmed",), days=(15, 25),
          news="The salt tax went up once too often. A province has "
               "butchered its tax collectors, and the army has answered "
@@ -2542,8 +2602,8 @@ POLITICS_CARDS = (
                               "black and the province is worse than it "
                               "was."),
              "pay": 1.25, "slots": -1}),
-    card("mortellaria/auto-da-fe", "The tribunal stages its penance",
-         "mortellaria", tension=("crown-vs-faith",), days=(12, 20),
+    card("southern/auto-da-fe", "The tribunal stages its penance",
+         "southern", tension=("crown-vs-faith",), days=(12, 20),
          news="The tribunal has arrested a mountain village wholesale -- "
               "heresy, the old religion, harm by hidden means -- and "
               "means to stage the penance in the capital square as "
@@ -2565,7 +2625,7 @@ POLITICS_CARDS = (
                               "the square is being built for the "
                               "penance."),
              "pay": 1.30, "reprice": 1.15}),
-    card("mortellaria/bandit-king", "The bandit king", "mortellaria",
+    card("southern/bandit-king", "The bandit king", "southern",
          tension=("court-vs-provinces",), days=(25, 40),
          hook=_BANDIT_HOOK,
          news="{bandit} lost his land to enclosure and debt, and men follow "
@@ -2859,7 +2919,7 @@ POLITICS_CARDS = (
     # Each is a state one land HOLDS and an authored relation edge the other
     # derives off it -- and each has a card in it, which is the whole point
     # of writing an instrument down instead of narrating a peace.
-    card("firascir/marriage-pact", "The marriage pact", "firascir",
+    card("western/marriage-pact", "The marriage pact", "western",
          tension=("crown-vs-lords", "old-vs-new"),
          without=("marriage-pact", "betrothal-broken"), days=None,
          news="A marriage pact has been sealed with the southern crown. "
@@ -2880,8 +2940,8 @@ POLITICS_CARDS = (
                               "postponed. Both courts are blaming each "
                               "other in writing."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/broken-betrothal", "The betrothal is broken",
-         "firascir", states=("marriage-pact",), chance=0.30, days=(15, 25),
+    card("western/broken-betrothal", "The betrothal is broken",
+         "western", states=("marriage-pact",), chance=0.30, days=(15, 25),
          news="The betrothal has been broken at the church door. The "
               "insult is public, the dowry is not coming back, and there "
               "is now a reason for a war that only wanted one.",
@@ -2899,7 +2959,7 @@ POLITICS_CARDS = (
                               "home. The heralds are already talking "
                               "about borders."),
              "pay": 1.25, "reprice": 1.2}),
-    card("firascir/personal-union", "Two crowns, one head", "firascir",
+    card("western/personal-union", "Two crowns, one head", "western",
          succession=("heirless",), without=("personal-union",),
          chance=0.20, days=None,
          news="The crown here has no heir, and the nearest claim belongs "
@@ -2908,7 +2968,7 @@ POLITICS_CARDS = (
               "arrive at the same table.",
          state={"set": ("personal-union",)},
          quest={"reprice": 1.10}),
-    card("mortellaria/kin-claim", "Kin have claims", "mortellaria",
+    card("southern/kin-claim", "Kin have claims", "southern",
          states=("pact-kin",), days=(15, 25),
          news="The marriage pact made the two crowns kin, and kin have "
               "claims. A northern cousin has arrived at court with a "
@@ -2927,8 +2987,8 @@ POLITICS_CARDS = (
              failure_epilogue="Both registers are gone. The claim is now "
                               "whatever the cousin says it is."),
              "pay": 1.20, "reprice": 1.10}),
-    card("mortellaria/union-inherits", "The union inherits both",
-         "mortellaria", states=("union-crown",), days=(20, 30),
+    card("southern/union-inherits", "The union inherits both",
+         "southern", states=("union-crown",), days=(20, 30),
          news="The two crowns are one head now, and the northern realm's "
               "quarrels have followed the king south. His own lords are "
               "being asked to pay for them.",
@@ -2947,8 +3007,8 @@ POLITICS_CARDS = (
                               "The king has heard one side and made a "
                               "ruling on it."),
              "pay": 1.20, "reprice": 1.1}),
-    card("firascir/hostage-in-the-camp", "The heir in the Tergal camp",
-         "firascir", states=("hostage-given",), days=(20, 35),
+    card("western/hostage-in-the-camp", "The heir in the Tergal camp",
+         "western", states=("hostage-given",), days=(20, 35),
          news="The truce with the steppe was sealed with a child. He is "
               "growing up in the high chief's guard tent, he is safe "
               "while the truce holds, and half this court would break the "
@@ -2966,7 +3026,7 @@ POLITICS_CARDS = (
                               "a dead letter and the boy is under "
                               "guard."),
              "pay": 1.30, "reprice": 1.15}),
-    card("mortellaria/danegeld", "The danegeld is raised", "mortellaria",
+    card("southern/danegeld", "The danegeld is raised", "southern",
          states=("danegeld-paid",), days=(15, 25),
          news="The chiefs are being paid not to ride, and the province is "
               "paying. The collectors say it is cheaper than a war. The "
@@ -3004,7 +3064,7 @@ POLITICS_CARDS = (
 # the sin/penance wiring is deliberately not designed.
 #
 # The gate is the same one politics uses: most cards name a TENSION, so a
-# Firascir whose shrines are at war never draws the abbey's cards at all,
+# land whose shrines are at war never draws the abbey's cards at all,
 # and the packet stays a wide pool instead of a content budget. What is left
 # ungated is one card a land at most, kept rare by its own `chance`.
 
@@ -3012,12 +3072,12 @@ _HERMIT_HOOK = _authority_hook("hermit", "the walled-in hermit", "hermit")
 _TALENT_HOOK = _authority_hook("wild-talent", "the wild talent", "talent")
 
 RELIGION_CARDS = (
-    # == Firascir: THE PARISH IS THE SECOND STATE ========================== #
+    # == the west: THE PARISH IS THE SECOND STATE ========================= #
     # The relic CHAIN: a town steals a saint, and the synod that has to rule
     # on which of three skulls is his is the card a season later.
-    card("firascir/relic-theft", "The relic is stolen", "firascir",
+    card("western/relic-theft", "The relic is stolen", "western",
          tension=("shrine-vs-shrine",),
-         faction_edge=("firascir/shrines-steal-from-rival-shrines",),
+         faction_edge=("western/shrines-steal-from-rival-shrines",),
          without=("relic-hunt",), days=(15, 25),
          news="A shrine town has stolen its rival's relic in the night, and "
               "the doctrine is that the saint consented -- the theft could "
@@ -3038,7 +3098,7 @@ RELIGION_CARDS = (
                               "pilgrim road runs through the other town "
                               "now, and the old one is emptying."),
              "pay": 1.20}),
-    card("firascir/third-skull", "The third skull", "firascir",
+    card("western/third-skull", "The third skull", "western",
          states=("relic-hunt",), days=(12, 20),
          news="Three shrines own the same saint's skull. A synod has "
               "ordered authentication by miracle, and two of the three "
@@ -3059,7 +3119,7 @@ RELIGION_CARDS = (
                               "three shrines are selling badges as the "
                               "true one."),
              "pay": 1.15}),
-    card("firascir/holy-well", "The well starts healing", "firascir",
+    card("western/holy-well", "The well starts healing", "western",
          tension=("shrine-vs-shrine",), wealth=("normal", "prosperous"),
          days=(15, 25),
          news="A well outside the village has started healing people, and "
@@ -3080,7 +3140,7 @@ RELIGION_CARDS = (
              failure_epilogue="The well was filled in on a Tuesday night. "
                               "It started again on Thursday."),
              "slots": 1}),
-    card("firascir/feast-week", "The feast days stop the work", "firascir",
+    card("western/feast-week", "The feast days stop the work", "western",
          tension=("abbey-vs-village",), days=(8, 14),
          news="Feast days claim a third of the year here, and working them "
               "is an offence. The harvest is standing ripe under a week of "
@@ -3100,9 +3160,9 @@ RELIGION_CARDS = (
                               "stood another week. Half of it is on the "
                               "ground now."),
              "slots": -1, "pay": 1.15}),
-    card("firascir/the-oblate", "The abbey's boy wants out", "firascir",
+    card("western/the-oblate", "The abbey's boy wants out", "western",
          tension=("abbey-vs-village",),
-         faction_edge=("firascir/abbey-holds-village",), days=(15, 25),
+         faction_edge=("western/abbey-holds-village",), days=(15, 25),
          news="A boy given to the abbey at seven wants out at fifteen. The "
               "abbey holds his labour, his inheritance and the law, and "
               "his mother has started asking who in the county does not.",
@@ -3122,9 +3182,9 @@ RELIGION_CARDS = (
                               "next one who tries this will get the same "
                               "answer faster."),
              "pay": 1.20}),
-    card("firascir/the-hermit", "The hermit at the wall", "firascir",
+    card("western/the-hermit", "The hermit at the wall", "western",
          tension=("abbey-vs-village",),
-         faction_edge=("firascir/village-petitions-abbey",),
+         faction_edge=("western/village-petitions-abbey",),
          days=(20, 30), hook=_HERMIT_HOOK,
          news="{hermit} has been walled into the church with one window on "
               "the street for thirty years. The village brings her its "
@@ -3149,7 +3209,7 @@ RELIGION_CARDS = (
     # The one card that belongs to both human lands, because the argument
     # does: every joint synod ends one insult short of the split.
     card("communion/the-synod", "The joint synod",
-         ("firascir", "mortellaria"), states=("schism-near",), days=(10, 18),
+         ("western", "southern"), states=("schism-near",), days=(10, 18),
          news="The two rites have called a joint synod. The north says the "
               "southern death-face is creeping heresy; the south says a "
               "faith that refuses death its face is what makes death "
@@ -3171,10 +3231,10 @@ RELIGION_CARDS = (
                               "fifty years."),
              "pay": 1.25, "slots": -1}),
 
-    # == Mortellaria: WHICH FACE RULES ===================================== #
-    card("mortellaria/penance-season", "The penitential season",
-         "mortellaria", tension=("penitents-vs-carnival",),
-         faction_edge=("mortellaria/penitents-denounce-carnival",),
+    # == the south: WHICH FACE RULES ====================================== #
+    card("southern/penance-season", "The penitential season",
+         "southern", tension=("penitents-vs-carnival",),
+         faction_edge=("southern/penitents-denounce-carnival",),
          without=("carnival-on",), days=(15, 25),
          news="The hooded columns are out, the statues are veiled and the "
               "flagellants march the main street at dusk. Attendance is "
@@ -3194,9 +3254,9 @@ RELIGION_CARDS = (
                               "district. The season's sermons are about "
                               "nothing else now."),
              "reprice": 0.90}),
-    card("mortellaria/carnival", "Carnival", "mortellaria",
+    card("southern/carnival", "Carnival", "southern",
          tension=("penitents-vs-carnival",),
-         faction_edge=("mortellaria/carnival-outnumber-penitents",),
+         faction_edge=("southern/carnival-outnumber-penitents",),
          without=("penance-season",), days=(8, 14),
          news="Carnival is on: masks, licence and the world upside down. "
               "Sins confessed masked are absolved wholesale, the theology "
@@ -3217,7 +3277,7 @@ RELIGION_CARDS = (
                               "under carnival law nobody was anybody that "
                               "night."),
              "slots": 1, "pay": 1.15}),
-    card("mortellaria/day-of-the-dead", "The day of the dead", "mortellaria",
+    card("southern/day-of-the-dead", "The day of the dead", "southern",
          chance=0.30, days=(2, 3),
          news="Tonight the dead are guests. The tombs are picnicked in, "
               "plates are set at the family tables, and the graveyard is "
@@ -3238,8 +3298,8 @@ RELIGION_CARDS = (
                               "plates were on the floor. The family has "
                               "stopped setting them."),
              "pay": 1.20}),
-    card("mortellaria/two-hoods", "Two brotherhoods, one corpse",
-         "mortellaria", tension=("penitents-vs-carnival",), days=(8, 14),
+    card("southern/two-hoods", "Two brotherhoods, one corpse",
+         "southern", tension=("penitents-vs-carnival",), days=(8, 14),
          news="A notable died in the street and two hooded burial "
               "brotherhoods reached him at once. Both are anonymous by "
               "rule, both have the paperwork, and the standoff is being "
@@ -3258,7 +3318,7 @@ RELIGION_CARDS = (
              failure_epilogue="The body went to whichever brotherhood was "
                               "faster. The widow is not told which."),
              "pay": 1.15}),
-    card("mortellaria/debate-riot", "The disputation riot", "mortellaria",
+    card("southern/debate-riot", "The disputation riot", "southern",
          tension=("penitents-vs-carnival",), days=(8, 14),
          news="The public theology debate on the two faces was staged as "
               "entertainment and wagered on like a duel. It ended in "
@@ -3454,7 +3514,7 @@ MAGIC_CARDS = (
                               "the road collecting it."),
              "pay": 1.25}),
     card("magic/recruiters", "The scouts are out",
-         ("firascir", "mortellaria"), chance=0.25, days=(12, 20),
+         ("western", "southern"), chance=0.25, days=(12, 20),
          news="Talent born poor stays untrained, so the wizard "
               "organizations look for it: the scout at the fair, the "
               "family paid off, the tested orphan. Two of the scouts are "
@@ -3476,7 +3536,7 @@ MAGIC_CARDS = (
                               "The scout is writing a report, and the "
                               "villages are hiding their bright ones."),
              "pay": 1.15}),
-    card("magic/reagent-road", "The reagent road", "mortellaria",
+    card("magic/reagent-road", "The reagent road", "southern",
          chance=0.30, days=(12, 20),
          news="Great workings want rare and expensive reagents: crystal, "
               "specific animal parts, the wool of golden sheep. A "
@@ -3498,10 +3558,10 @@ MAGIC_CARDS = (
                               "fences enough."),
              "pay": 1.25}),
 
-    # -- Mortellaria: THE ACADEMY ----------------------------------------- #
-    card("mortellaria/basement-children", "The basement children",
-         "mortellaria", tension=("academy-vs-tribunal",),
-         faction_edge=("mortellaria/tribunal-watches-academy",),
+    # -- the south: THE ACADEMY ------------------------------------------- #
+    card("southern/basement-children", "The basement children",
+         "southern", tension=("academy-vs-tribunal",),
+         faction_edge=("southern/tribunal-watches-academy",),
          days=(15, 25),
          news="The academy's scouts run the recruiting at scale, and the "
               "children taken young for the gift are raised in the "
@@ -3524,8 +3584,8 @@ MAGIC_CARDS = (
              "pay": 1.20, "slots": -1}),
     # The necromancy CHAIN: the affinity keeps surfacing here, wins some
     # acceptance, and the next scandal buries it again.
-    card("mortellaria/necromancy-open", "Necromancy is tolerated again",
-         "mortellaria", tension=("academy-vs-tribunal",),
+    card("southern/necromancy-open", "Necromancy is tolerated again",
+         "southern", tension=("academy-vs-tribunal",),
          without=("necromancy-open", "necromancy-purged"), days=None,
          news="The death-face rite makes necromancy thinkable here, and the "
               "academy has a chair in it again this decade. The northern "
@@ -3547,8 +3607,8 @@ MAGIC_CARDS = (
                               "city saw. The chair will not last the "
                               "year."),
              "pay": 1.20}),
-    card("mortellaria/necromancy-purge", "The academy burns its chair",
-         "mortellaria", states=("necromancy-open",), days=(40, 60),
+    card("southern/necromancy-purge", "The academy burns its chair",
+         "southern", states=("necromancy-open",), days=(40, 60),
          news="The scandal came, as it always does. The chair is abolished, "
               "the notes are burning in the quadrangle, and everyone who "
               "held a place under it has been examined and sent away.",
@@ -3599,8 +3659,8 @@ MAGIC_CARDS = (
                               "for."),
              "slots": 1, "pay": 1.15}),
 
-    # -- Firascir: THE TOWERS --------------------------------------------- #
-    card("firascir/tower-door", "The tower door opens", "firascir",
+    # -- the west: THE TOWERS --------------------------------------------- #
+    card("western/tower-door", "The tower door opens", "western",
          traits=("spell-friendly", "gifted", "brilliant"), days=(15, 25),
          news="Barely an organization: grumpy old wizards in scattered "
               "towers, hoarding books and meeting mostly to feud. One of "
@@ -3638,44 +3698,50 @@ GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
                                                 # reaching the other lands'
                                                 # boards and shelves)
 
-RELATIONS = (
+# THE RELATIONS, authored by CULTURE and expanded to LANDS (2026-08-21, the
+# nine). A trade edge between two cultures is an edge between every land of
+# the one and every land of the other; the runtime asks about lands only, so
+# `_relations` is the authored table and `RELATIONS` is what it becomes. The
+# per-land re-authoring (~20 hand-placed edges, one Baltic grain road, one
+# Nile one, the crusade's own quarrels) is the norse packet session's.
+_RELATIONS = (
     # -- the economy floor (2026-08-09) ----------------------------------- #
-    # THE GRANARY: Firascir grows the bread the steppe does not, so a
-    # failed northern harvest is felt on a Tergal shelf.
-    relation("firascir", "tergal", "grain", when=GRAIN_FAILS,
-             then="grain-scarce", because="the Firascir grain"),
+    # THE GRANARY: the west grows the bread the steppe does not, so a failed
+    # western harvest is felt on a Tergal shelf.
+    relation("western", "tergal", "grain", when=GRAIN_FAILS,
+             then="grain-scarce", because="the western grain"),
     # A clan with no herd goes where the grain is.
-    relation("tergal", "firascir", "raid", when=("herd-loss", "raiding"),
-             then="raiders-out", because="the dying Tergal herds"),
+    relation("tergal", "western", "raid", when=("herd-loss", "raiding"),
+             then="raiders-out", because="the dying steppe herds"),
     # -- what each land SELLS the others (2026-08-15, the Europe closure) -- #
-    # rules.md's three-country economy in full: Firascir sells grain and
-    # TIMBER, Mortellaria sells COIN and the SOUTHERN TRADE (its luxury
-    # shelf and the road that carries it are one flow, so they are one
-    # edge), Tergal sells HORSES, LIVESTOCK and MILITARY SERVICE. Each edge
+    # The western culture sells grain and TIMBER, the southern one COIN and
+    # the SOUTHERN TRADE (its luxury shelf and the road that carries it are
+    # one flow, so they are one edge), Tergal HORSES, LIVESTOCK and
+    # MILITARY SERVICE. Each edge
     # is the same shape as the granary above: a state the seller is holding
     # that stops the goods, and the word the buyer wears while it does.
     # THE FOREST: the treeless steppe roofs itself with northern wood.
-    relation("firascir", "tergal", "timber",
+    relation("western", "tergal", "timber",
              when=("forest-law", "wildfire", "burned-over"),
-             then="timber-dear", because="the closed Firascir woods"),
+             then="timber-dear", because="the closed western woods"),
     # THE BANKS: the northern crowns borrow where the coin is.
-    relation("mortellaria", "firascir", "coin",
+    relation("southern", "western", "coin",
              when=("paper-worthless", "shares-mad"),
-             then="credit-dry", because="the shut Mortellarian banks"),
+             then="credit-dry", because="the shut southern banks"),
     # THE SOUTHERN ROAD: salt, silk and glass all ride the same wagons.
-    relation("mortellaria", "tergal", "trade",
+    relation("southern", "tergal", "trade",
              when=("salt-revolt", "quarter-ruined"),
              then="southern-goods-short",
              because="the broken southern trade"),
     # THE HERDS, sold twice: the remounts north, the hides and wool south.
-    relation("tergal", "firascir", "horses",
+    relation("tergal", "western", "horses",
              when=("herd-loss", "grass-gone"),
-             then="horses-dear", because="the dying Tergal herds"),
-    relation("tergal", "mortellaria", "livestock",
+             then="horses-dear", because="the dying steppe herds"),
+    relation("tergal", "southern", "livestock",
              when=("herd-loss", "grass-gone"),
-             then="hides-dear", because="the dying Tergal herds"),
+             then="hides-dear", because="the dying steppe herds"),
     # THE HIRED CLANS: a war at home is a company the south cannot buy.
-    relation("tergal", "mortellaria", "service",
+    relation("tergal", "southern", "service",
              when=("mourning-war", "raiding"),
              then="swords-gone", because="the clans' own war"),
     # -- politics (2026-08-10) -------------------------------------------- #
@@ -3683,30 +3749,42 @@ RELATIONS = (
     # state one land holds and a state the other derives off it, and each
     # has a card standing in it: the courtly hostage, the yearly tribute,
     # the marriage pact, the personal union.
-    relation("tergal", "firascir", "hostage", when=("hostage-guard",),
+    relation("tergal", "western", "hostage", when=("hostage-guard",),
              then="hostage-given",
              because="the hostage in the high chief's guard"),
-    relation("tergal", "mortellaria", "tribute", when=("tribute-taken",),
+    relation("tergal", "southern", "tribute", when=("tribute-taken",),
              then="danegeld-paid",
              because="the danegeld the chiefs are paid"),
-    relation("firascir", "mortellaria", "marriage",
+    relation("western", "southern", "marriage",
              when=("marriage-pact",), then="pact-kin",
              because="the marriage pact between the crowns"),
-    relation("firascir", "mortellaria", "union", when=("personal-union",),
+    relation("western", "southern", "union", when=("personal-union",),
              then="union-crown", because="the union of the two crowns"),
     # -- religion and magic (2026-08-11) ---------------------------------- #
     # THE SCHISM CLOCK: one church, two rites, and an argument that runs in
     # BOTH directions. Each land derives the same word off the other, and
     # the synod card sits in both decks reading it -- which is what makes a
     # quarrel between two lands a thing the party can be hired into.
-    relation("mortellaria", "firascir", "rite",
+    relation("southern", "western", "rite",
              when=("necromancy-open", "dead-abroad", "carnival-on"),
              then="schism-near", because="the southern rite's death-face"),
-    relation("firascir", "mortellaria", "rite",
+    relation("western", "southern", "rite",
              when=("interdict", "relic-hunt", "bones-tested"),
              then="schism-near",
              because="the northern rite's accusations"),
+    # -- Thule (2026-08-21, the nine) ------------------------------------- #
+    # THE RAIDING SEASON: the one edge the norse minimum owes. When the
+    # ships go out, the western coasts wear it.
+    relation("norse", "western", "raid", when=("raiding", "herd-loss"),
+             then="raiders-out", because="the northern ships"),
 )
+
+RELATIONS = tuple(
+    {**authored, "from": source, "to": target}
+    for authored in _RELATIONS
+    for source in _expand(authored["from"])
+    for target in _expand(authored["to"])
+    if source != target)
 
 
 # --------------------------------------------------------------------------- #
@@ -3724,50 +3802,50 @@ RELATIONS = (
 # three-trait sketch is what the criterion cut, and nothing here is one.
 
 FACTS = (
-    # -- Firascir: THE PARISH IS THE SECOND STATE ------------------------- #
-    fact("firascir", "parish-grid", "THE PARISH GRID",
+    # -- the west: THE PARISH IS THE SECOND STATE ------------------------- #
+    fact("western", "parish-grid", "THE PARISH GRID",
          "Every village its priest, every life its rites, baptism to "
          "burial. The manor reaches the body; the church reaches "
          "everything else, and it is the one institution that touches "
          "every hearth in the land."),
-    fact("firascir", "calendar", "THE CALENDAR RULES WORK",
+    fact("western", "calendar", "THE CALENDAR RULES WORK",
          "Feast days claim a third of the year and working them is an "
          "offence -- which is the real medieval count, and why a ripe "
          "harvest under a week of them is a card and not a joke."),
-    fact("firascir", "pilgrim-roads", "THE PILGRIM ROADS",
+    fact("western", "pilgrim-roads", "THE PILGRIM ROADS",
          "Shrine circuits, badges and the inns that live off them: "
          "standing escort work, a coin inflow nobody counted, and the "
          "reason two towns will steal a saint off each other."),
-    fact("firascir", "towers", "THE TOWERS",
-         "Firascir's magic is grumpy old wizards in scattered towers, "
+    fact("western", "towers", "THE TOWERS",
+         "Western magic is grumpy old wizards in scattered towers, "
          "hoarding books and meeting mostly to feud. No formal teaching "
          "track exists, which makes this the wild talent's home ground "
          "and the fraud witch-finder's best market."),
-    fact("firascir", "no-inquisition", "CONDUCT, NOT CREED",
+    fact("western", "no-inquisition", "CONDUCT, NOT CREED",
          "There is no holy office against casting as such, here or "
          "anywhere. What gets a caster hunted is what they DID: a "
          "murderer's treatment with a specialist's surcharge."),
 
-    # -- Mortellaria: WHICH FACE RULES ------------------------------------ #
-    fact("mortellaria", "two-faces", "THE PENDULUM CALENDAR",
+    # -- the south: WHICH FACE RULES -------------------------------------- #
+    fact("southern", "two-faces", "THE PENDULUM CALENDAR",
          "The sun dies every evening and is born every dawn: Death and the "
          "Feast are the god's two faces. The year swings between the "
          "penitential season and carnival, both extremes are arguably "
          "orthodox, and attendance at both is near universal."),
-    fact("mortellaria", "bone-architecture", "BONE ARCHITECTURE",
+    fact("southern", "bone-architecture", "BONE ARCHITECTURE",
          "Ossuary chapels walled in skulls, catacomb saints dressed in "
          "jewels and gold wire. Memento mori is the national art style -- "
          "and the crime layer's strangest marks."),
-    fact("mortellaria", "brotherhoods", "THE BURIAL BROTHERHOODS",
+    fact("southern", "brotherhoods", "THE BURIAL BROTHERHOODS",
          "Hooded lay confraternities bury the poor and the plague dead on "
          "dues and donations. Anonymous by rule, ubiquitous by custom, and "
          "the hood is perfect cover."),
-    fact("mortellaria", "academy", "THE ACADEMY",
+    fact("southern", "academy", "THE ACADEMY",
          "The archetypical wizarding university -- faculties, examinations, "
          "robes -- with the bureaucracy and class discrimination of the "
          "land it serves. The gifted commoner is admitted and made to feel "
          "the admission daily. The crown is patron and leash at once."),
-    fact("mortellaria", "necromantic-affinity", "THE NECROMANTIC AFFINITY",
+    fact("southern", "necromantic-affinity", "THE NECROMANTIC AFFINITY",
          "Necromancy keeps surfacing here: controversial, periodically "
          "half-accepted, and buried again by the next scandal. The "
          "death-face rite makes it thinkable; the northern rite cites it "
@@ -3808,39 +3886,56 @@ FACTS = (
     # back word for word from the catalog the contraction cut: it was human
     # mining folklore when it was written and it is human mining folklore
     # now. It is also the file's first ANY_LAND fact, because the belief
-    # follows the pits and all three countries have them.
+    # follows the pits and every country has them.
     fact(ANY_LAND, "knockers", "THE KNOCKERS",
          "The mine-spirits knock before a collapse and are paid for it: "
          "the last bite of every meal, left at the working face. "
          "Whistling underground is forbidden. Skeptics exist; they are "
          "assigned the unluckiest shifts."),
-    fact("firascir", "league-firascir", "THE MINERS' LEAGUE (FIRASCIR)",
-         "Six of the nine famous mines are here and the League was born "
-         "in them: Goslar is the oldest chapter, Kutna Hora, Banska "
-         "Stiavnica and Melle cut silver, and Luneburg and Wieliczka cut "
-         "salt. A free miner answers to his chapter master and to mining "
-         "law, not to the lord whose field he digs under -- which is why "
-         "the manors hate the League and the crown protects it."),
-    fact("mortellaria", "league-mortellaria", "THE MINERS' LEAGUE "
-         "(MORTELLARIA)",
-         "Two chapters, both strategic. Erzberg is the iron mountain and "
-         "sells to whoever forges; the League there argues with arms "
-         "buyers rather than with lords, and the price of a sword in this "
-         "country starts at that pithead. Novo Brdo's silver is the "
-         "mint's, and its chapter is half a garrison -- the crown reads "
-         "any dispute over that seam as a matter of state."),
-    fact("tergal", "league-tergal", "THE MINERS' LEAGUE (TERGAL)",
+    # Each League fact names ITS OWN land's mines and no others (2026-08-21:
+    # re-homed to the actual owners under the country overlay).
+    fact("teutonia", "league-teutonia", "THE MINERS' LEAGUE (TEUTONIA)",
+         "Four of the nine famous mines are here and the League was born "
+         "in them: Goslar is the oldest chapter, Kutna Hora cuts silver, "
+         "Luneburg cuts salt, and Erzberg is the iron mountain that sets "
+         "the price of a sword. A free miner answers to his chapter "
+         "master and to mining law, not to the lord whose field he digs "
+         "under -- which is why the lords hate the League and the emperor "
+         "protects it."),
+    fact("vellisclavia", "league-vellisclavia",
+         "THE MINERS' LEAGUE (VELLISCLAVIA)",
+         "Two chapters on the mountain road south: Banska Stiavnica cuts "
+         "silver and Wieliczka cuts salt out of a mine so old the "
+         "galleries are carved like a church. Both hold their charters "
+         "from the crown and neither answers to the local lord."),
+    fact("seraptania", "league-seraptania",
+         "THE MINERS' LEAGUE (SERAPTANIA)",
+         "One chapter, and a rich one: Melle's silver is the mint's, so "
+         "the crown reads any dispute over that seam as a matter of "
+         "state. The chapter master dines at court twice a year and "
+         "complains about it."),
+    fact("byzantium", "league-byzantium", "THE MINERS' LEAGUE (BYZANTIUM)",
+         "One chapter, half a garrison: Novo Brdo's silver pays the "
+         "soldiers, and the empire keeps a captain at the pithead who "
+         "outranks the chapter master and pretends not to."),
+    fact("thule", "league-thule", "THE MINERS' LEAGUE (THULE)",
          "One chapter, and the hardest of them: Falun's copper mountain "
          "is the northernmost pit in the world and no grain grows within "
          "a week's road of it, so it eats what the carts bring. The "
          "southern chapters send steward after steward to run it and none "
          "of them stays two winters."),
 
+    # -- Thule: the minimum the frame demands, ahead of the norse packet -- #
+    fact("thule", "the-grove", "THE GROVE",
+         "Every district has one: an old stand of trees nobody cuts, with "
+         "a spring at its foot and a stone table beside it. Nine of every "
+         "kind hang there at the great sacrifice -- horses, dogs, men -- "
+         "and the bones stay where they fall. The grove priest keeps the "
+         "count and nobody argues with it."),
 )
 
 FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
-    polity: tuple(f for f in FACTS
-                  if f["land"] in (polity, ANY_LAND))
+    polity: tuple(f for f in FACTS if in_land(f, polity))
     for polity in LAND_SPECS
 }
 
@@ -3853,7 +3948,7 @@ FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
 # the terms that move prices the game ALREADY charges; these are the things a
 # land sells that nothing else does, and the religion and magic packets are
 # where they finally arrive: the temple counter, the weather-worker's rain
-# stone, the charm trade, and the three lands where a wizard will teach.
+# stone, the charm trade, and the cultures where a wizard will teach.
 #
 # Every one of them does something the engine already knows how to do
 # (SERVICES: a blessing, a book, a day of weather). An option that needed new
@@ -3869,20 +3964,20 @@ FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
 
 OPTIONS = (
     # -- the Sun communion: one church, two rites, one counter ------------- #
-    option("sun/burial", "a burial by the rite", ("firascir", "mortellaria"),
+    option("sun/burial", "a burial by the rite", ("western", "southern"),
            does="bless", gold=25, term="healer", days=6, gives=1,
            line="the ground, the rite and the name written in the book"),
     option("sun/blessing", "a blessing at the dawn service",
-           ("firascir", "mortellaria"), does="bless", gold=18, term="healer",
+           ("western", "southern"), does="bless", gold=18, term="healer",
            days=4, gives=1,
            line="the dawn service, a hand on the head, a good week asked "
                 "for out loud"),
-    option("firascir/pilgrim-badge", "a pilgrim badge", "firascir",
+    option("western/pilgrim-badge", "a pilgrim badge", "western",
            does="bless", gold=12, term="goods", days=8, gives=1,
            line="the shrine circuit's badge -- every inn on the road knows "
                 "it and half of them charge less for it"),
-    option("mortellaria/brotherhood", "dues to a burial brotherhood",
-           "mortellaria", does="bless", gold=20, term="lodging", days=7,
+    option("southern/brotherhood", "dues to a burial brotherhood",
+           "southern", does="bless", gold=20, term="lodging", days=7,
            gives=1,
            line="a hooded burial brotherhood buries you whoever you turn "
                 "out to have been, and the hood is nobody's business"),
@@ -3892,13 +3987,13 @@ OPTIONS = (
            without=("rain-bought",),
            line="a shaman who moves weather can be hired: two days of rain "
                 "over this land, dropped where you ask for it"),
-    # -- Mortellaria: the formal version of the whole business ------------- #
-    option("mortellaria/academy-fee", "a term at the academy", "mortellaria",
+    # -- the south: the formal version of the whole business -------------- #
+    option("southern/academy-fee", "a term at the academy", "southern",
            does="book", gold=130, term="goods", kinds=("capital",),
            line="faculties, examinations, robes, and a commoner's fee "
                 "quoted twice as loudly as a noble's"),
-    # -- Firascir: no ladder, one door ------------------------------------- #
-    option("firascir/tower-fee", "the tower wizard's price", "firascir",
+    # -- the west: no ladder, one door ------------------------------------ #
+    option("western/tower-fee", "the tower wizard's price", "western",
            does="book", gold=150, term="goods", states=("tower-open",),
            line="gold might open the door; volunteering as the subject of "
                 "the experiment opens it faster and costs less"),
@@ -4149,7 +4244,7 @@ def held_states(world: dict, polity: str) -> list[dict]:
 
 def derived_states(world: dict, polity: str) -> list[dict]:
     """The states the RELATIONS put on this land, computed at read time and
-    never stored: a failed harvest in Firascir is grain-scarce in every land
+    never stored: a failed harvest in one land is grain-scarce in every land
     down its grain edges, for exactly as long as it lasts.
 
     ONE HOP ONLY -- an edge reads what its source land HOLDS, never what it
@@ -4229,7 +4324,8 @@ def live_edges(world: dict, polity: str) -> list[dict]:
     half-edge; it simply is not there this playthrough."""
     cast = set(factions_of(world, polity))
     return [e for e in FACTION_EDGES
-            if e["land"] == polity and e["from"] in cast and e["to"] in cast]
+            if polity in e["land"] and e["from"] in cast
+            and e["to"] in cast]
 
 
 def ruler_sheet(world: dict, polity: str) -> dict:
@@ -4815,11 +4911,17 @@ def state_line(entry: dict) -> str:
     return word + (f" (day {since})" if since is not None else "")
 
 
+MAP_WIDTH = 40      # the map page's column, the same one session.py prints
+                    # by; a long state list wraps with a hanging indent
+                    # rather than running off the phone
+
+
 def land_lines(world: dict, polity: str) -> list[str]:
     """The land's world state for the map page: the band, whatever it is
     living through, WHAT KIND OF PLACE IT IS, and the sky over it. Three
-    short lines at most -- this is a phone page, so the constitution shows
-    its name and keeps its sentence for `world`."""
+    things at most -- this is a phone page, so the constitution shows its
+    name and keeps its sentence for `world` -- each wrapped to the page's
+    own column (`places.detail_wrap`)."""
     layer = land_layer(world, polity)
     lines = [f"  [{layer['wealth'].upper()}]"]
     shown = held_states(world, polity) + derived_states(world, polity)
@@ -4829,7 +4931,7 @@ def land_lines(world: dict, polity: str) -> list[str]:
     sky = weather_line(world, polity)
     if sky:
         lines.append(f"  {sky}")
-    return lines
+    return detail_wrap(lines, MAP_WIDTH)
 
 
 def notable_lines(world: dict, npc: dict) -> list[str]:
@@ -5146,11 +5248,11 @@ def _validate_politics(drawn: dict) -> None:
     for word in admits_.get("succession", ()):
         if word not in rulers.SUCCESSIONS:
             raise ValueError(f"{key}: no such succession state: {word}")
-    live = {e["key"] for e in FACTION_EDGES}
+    live = {e["key"]: e for e in FACTION_EDGES}
     for word in admits_.get("edge", ()):
         if word not in live:
             raise ValueError(f"{key}: no such faction edge: {word}")
-        if word.split("/")[0] not in lands:
+        if not set(live[word]["land"]) & set(lands):
             raise ValueError(f"{key}: faction edge {word} is another "
                              f"land's")
     state = drawn["outlets"].get("state") or {}
@@ -5214,12 +5316,14 @@ def _validate_politics_tables() -> None:
         if live["key"] in seen_edges:
             raise ValueError(f"duplicate faction edge: {live['key']}")
         seen_edges.add(live["key"])
-        if live["land"] not in LAND_SPECS:
+        if not live["land"] or any(p not in LAND_SPECS
+                                   for p in live["land"]):
             raise ValueError(f"{live['key']}: no such land")
-        for side in ("from", "to"):
-            if live[side] not in cast_of[live["land"]]:
-                raise ValueError(f"{live['key']}: {live[side]} is not a "
-                                 f"bloc any {live['land']} tension names")
+        for polity in live["land"]:
+            for side in ("from", "to"):
+                if live[side] not in cast_of[polity]:
+                    raise ValueError(f"{live['key']}: {live[side]} is not a "
+                                     f"bloc any {polity} tension names")
     for face in FACTIONS.values():
         if face["face"] and face["face"] not in ("ruler", "sage",
                                                  "wildcard"):
@@ -5237,8 +5341,9 @@ def _validate_lore_tables() -> None:
     way a card is."""
     seen: set[str] = set()
     for entry in FACTS:
-        if entry["land"] not in LAND_SPECS and entry["land"] != ANY_LAND:
-            raise ValueError(f"fact {entry['key']}: no such land")
+        for polity in entry["land"]:
+            if polity != ANY_LAND and polity not in LAND_SPECS:
+                raise ValueError(f"fact {entry['key']}: no such land")
         if entry["key"] in seen:
             raise ValueError(f"duplicate fact: {entry['key']}")
         seen.add(entry["key"])
@@ -5361,17 +5466,21 @@ def _validate_state_tables() -> None:
                                  f"the game produces that state")
 
 
-def _validate_three_countries() -> None:
+def _validate_countries() -> None:
     """The world layer against the fixed Europe map (2026-08-15, Europe MVP
-    Closure). The contraction used to be enforced by FILTERING the catalog
-    at import, which meant a packet could go missing without anything
-    noticing. Nothing filters now, so this says out loud what every country
-    owes: its own deck on every track it can draw from, its own lore, and a
-    place in the relations table -- an isolated country is a country whose
-    neighbours' troubles never reach it."""
-    if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
-        raise ValueError("the world layer expects the three Europe "
-                         f"countries, got {tuple(LAND_SPECS)}")
+    Closure; over NINE countries since 2026-08-21). The contraction used to
+    be enforced by FILTERING the catalog at import, which meant a packet
+    could go missing without anything noticing. Nothing filters now, so this
+    says out loud what every country owes: its own deck on every track it
+    can draw from, its own lore, and a place in the relations table -- an
+    isolated country is a country whose neighbours' troubles never reach
+    it."""
+    if set(LAND_SPECS) != set(CULTURE_OF):
+        raise ValueError("the world layer reads its countries off the "
+                         f"catalog, got {tuple(LAND_SPECS)}")
+    for culture in set(CULTURE_OF.values()):
+        if culture not in CULTURES:
+            raise ValueError(f"{culture}: a culture with no lands")
     for polity in LAND_SPECS:
         for track in TRACKS:
             if not [c for c in CARDS
@@ -5453,7 +5562,7 @@ def validate_content() -> None:
     _validate_menu_tables()
     _validate_politics_tables()
     _validate_lore_tables()
-    _validate_three_countries()
+    _validate_countries()
     for state_id, entry in STATE_ENCOUNTERS.items():
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")

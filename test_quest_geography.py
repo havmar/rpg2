@@ -133,7 +133,7 @@ class TheBoardActivityRoll(unittest.TestCase):
         for seed in (3, 8, 21):
             world = _world(seed)
             capitals = [s for s in quests.settlements(world) if s["capital"]]
-            self.assertEqual(len(capitals), 3, seed)
+            self.assertEqual(len(capitals), len(places.COUNTRIES), seed)
             for capital in capitals:
                 self.assertTrue(capital["board_active"], capital["name"])
 
@@ -561,7 +561,8 @@ class TheTargetRadius(unittest.TestCase):
         quest's own rng picks from it: no dict or hash order anywhere."""
         world = _world(8)
         origin = world["areas"][world["start_area"]]
-        template = quests.TEMPLATES[origin["homeland"]][0]
+        template = quests.TEMPLATES[
+            places.CULTURE_OF[origin["homeland"]]][0]
         requirement = quests.quest_place_requirement(template)
         first = quests._select_quest_area(world, origin["key"], requirement,
                                           random.Random(5))

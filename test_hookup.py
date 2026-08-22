@@ -181,7 +181,7 @@ class TheReadSurface(unittest.TestCase):
     def test_a_quiet_tile_still_says_what_it_is_and_what_it_ate(self
                                                                 ) -> None:
         lines = places.tile_detail_lines(self.world, FENS, areas=False)
-        self.assertEqual(lines[0].split(" -- ")[1], "Firascir, marsh")
+        self.assertEqual(lines[0].split(" -- ")[1], "Phyrascia, marsh")
         self.assertEqual(lines[1], "  fenland")
         self.assertTrue(any("last harvest" in line for line in lines))
         self.assertFalse(any("mine:" in line or "goods:" in line
@@ -289,7 +289,7 @@ class TheDMsBrief(unittest.TestCase):
         lines = self._brief(GOSLAR)
         tile = self.world["tiles"][GOSLAR]
         self.assertTrue(lines[0].startswith("TILE "))
-        self.assertIn("Firascir", lines[0])
+        self.assertIn("Teutonia", lines[0])
         # the header: terrain / climate / cover
         self.assertEqual(lines[1], f"  {tile['terrain']} / {tile['climate']}"
                                    f" / {tile['cover']}")
@@ -417,7 +417,7 @@ class TheDMsBrief(unittest.TestCase):
 
     def test_the_frames_edge_has_fewer_than_four_neighbours(self) -> None:
         lines = places.tile_brief_lines(self.world, _tid(1, 1))
-        self.assertEqual(lines, ["TILE R01C01 -- Firascir", "  open sea"])
+        self.assertEqual(lines, ["TILE R01C01 -- Phyrascia", "  open sea"])
         corner = places.tile_brief_lines(self.world, _tid(18, 30))
         heads = [line for line in corner if re.match(r"^    [NWES] ", line)]
         self.assertEqual(len(heads), 2)
@@ -663,7 +663,7 @@ class TheMinersLeague(unittest.TestCase):
 
     def test_the_knockers_came_back_word_for_word(self) -> None:
         knockers = next(f for f in worldsim.FACTS if f["key"] == "knockers")
-        self.assertEqual(knockers["land"], worldsim.ANY_LAND)
+        self.assertEqual(knockers["land"], (worldsim.ANY_LAND,))
         self.assertEqual(
             knockers["line"],
             "The mine-spirits knock before a collapse and are paid for it: "
@@ -675,14 +675,22 @@ class TheMinersLeague(unittest.TestCase):
 
     def test_every_land_has_a_league_fact_naming_its_own_mines(self
                                                                ) -> None:
+        """Five of the nine hold pits, and each of those has a League
+        chapter fact naming ITS OWN mines and no others. A land with no
+        pits keeps no chapter."""
         mines: dict[str, list[str]] = {}
         world = places.create_geography(1)
         for (row, column), (name, _goods) in places.MINES.items():
             tile = world["tiles"][places.tile_id(row, column)]
             mines.setdefault(tile["country"], []).append(name)
+        self.assertEqual(len(mines), 5)
         for polity in places.COUNTRIES:
-            entry = next(f for f in worldsim.FACTS_BY_LAND[polity]
-                         if f["key"] == f"league-{polity}")
+            entry = next((f for f in worldsim.FACTS_BY_LAND[polity]
+                          if f["key"] == f"league-{polity}"), None)
+            if polity not in mines:
+                self.assertIsNone(entry, polity)
+                continue
+            self.assertIsNotNone(entry, polity)
             for name in mines[polity]:
                 self.assertIn(name, entry["line"], (polity, name))
             for other, names in mines.items():
@@ -716,6 +724,13 @@ class TheMinersLeague(unittest.TestCase):
             self.assertNotIn("deposit-found", held)
             worldsim.roll_land(world, polity, 40)   # the rush's clock runs out
             self.assertNotIn("rush-on", worldsim.state_ids(world, polity))
+            self.assertNotIn("claims-collide",
+                             worldsim.state_ids(world, polity))
+            # ...and the seam can be found again. Whatever else the land's
+            # own deck drew in those forty days is not this chain's
+            # business, so it is put back to quiet first.
+            _all_quiet(world, polity)
+            worldsim.set_wealth(world, polity, "normal", 41)
             self.assertTrue(worldsim.admits(world, polity, seam["admits"]))
 
     def test_the_bust_chain_runs_both_ways(self) -> None:
@@ -741,7 +756,7 @@ class TheMinersLeague(unittest.TestCase):
 
     def test_the_strike_wants_a_crisis_and_makes_steel_dear(self) -> None:
         world = quests.generate_world(8)
-        polity = "firascir"
+        polity = "phyrascia"
         _all_quiet(world, polity)
         strike = self._card("mining/strike")
         worldsim.set_wealth(world, polity, "normal", 1)

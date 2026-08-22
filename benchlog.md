@@ -2517,3 +2517,86 @@ ends).
 
 **Nothing was tuned.** No lever moved. The session added readers, a price
 factor of three static rows, and a recovered content packet.
+
+## 2026-08-21 (E) — The map of nine (medieval arc session 2): three new cities, and nothing else moved
+
+The country overlay replaced the geometric three-way split and three
+historical cities joined the answer key (Cordoba, Cairo, Jerusalem).
+Neither the census law, the harvest law nor the route law was touched, so
+this is a re-measurement of the same three sweeps over a map whose
+OWNERSHIP changed and whose authored city list grew by three.
+
+`python bench_worldgen.py --seeds 500` (90s). The column beside each
+number is session 4's own 500-world run (benchlog 2026-08-21 (D)).
+
+### The last harvest
+
+| measure | now | before |
+|---|---|---|
+| problem coverage (% of land) | 17.7% | 17.7% |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | **0** | 0 |
+| trouble within 5 days of the start | **87%** | 86% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 852 / 554 |
+
+Spoken words are identical to the tenth: legendary 3.5%, excellent 22.1%,
+ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%. The layer reads
+no country and no capital, so the only thing that could move is the
+nearby-trouble nudge, which reads `world["party_tile"]` — and the start
+draw moved because three tiles gained authored slots. It moved by one
+point.
+
+### The settlement census
+
+| measure | now | before |
+|---|---|---|
+| metropolis a world | **4.0** | 3.0 |
+| city | **18.7** | 17.7 |
+| town | **101.4** | 100.6 |
+| village | 401.9 | 401.7 |
+| hamlet | 91.5 | 91.6 |
+| total settlements | **617.5** | 614.5 |
+| slots filled a land tile | 1.97 | 1.96 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | **1,497,393** | 1,319,163 |
+| quiet rich country (% no town) | 38% | 37% |
+| free (chartered) settlements | 66.6 | 63.6 |
+| manors | 50.9 | 51.5 |
+
+Every moved line is the three new authored cities and nothing else: Cairo
+is the fourth metropolis (and ~178k of the soul total on its own, the
+scale doctrine's headcount for a hundred-thousand city), Cordoba is the
+extra city, Jerusalem the extra town, and each of the three carries a free
+charter by the authored rule, which is most of the charter line's +3.
+
+### The trade network
+
+| measure | now | before |
+|---|---|---|
+| routes after merging | **59.0** | 58.7 |
+| land tiles on a route (of 314) | **115.7** | 113.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | **31.7** | 33.6 |
+| unfed mines | **Falun, 500/500** | Falun, 500/500 |
+
+The trade column is the one place the OVERLAY itself is visible. Three of
+the nineteen goods route to `capital`, and there are nine capitals now
+instead of three: the same cargo travels shorter, better-spread legs, so
+the network covers two more land tiles while concentrating on two fewer
+crossroads. Falun is still the one mine no granary can reach, which is
+the authored fact that pins the food-caravan card.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none of them imports `places`, `quests` or `worldsim`, and
+no combat, pay, threat or refill constant changed in this session.
+`bench_abilities.py` and `bench_quests.py` were not compared and cannot be
+(both are still non-reproducible against themselves; develop.md's Files
+entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session re-drew ownership,
+split the catalog and authored content.

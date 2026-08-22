@@ -313,16 +313,16 @@ class TheReconciliation(unittest.TestCase):
         self.assertEqual(places.natural_character(fen), "marsh")
         self.assertEqual(
             self.world["areas"][fen["natural_area"]]["template"],
-            "natural/firascir/fen")
+            "natural/western/fen")
 
     def test_every_authored_natural_inventory_is_drawn_from(self) -> None:
         """Dead authored content is the disease this session cut out."""
         drawn = {self.world["areas"][t["natural_area"]]["template"]
                  for t in self.world["tiles"].values()}
-        for polity, land in places.LAND_SPECS.items():
-            for key in land["natural_sites"]:
-                self.assertIn(f"natural/{polity}/{key}", drawn,
-                              f"{polity}/{key}")
+        for culture, spec in places.CULTURE_SPECS.items():
+            for key in spec["natural_sites"]:
+                self.assertIn(f"natural/{culture}/{key}", drawn,
+                              f"{culture}/{key}")
 
     def test_a_settlement_can_be_fitted_by_character(self) -> None:
         """Position stopped being the only fit vocabulary: a hill town
@@ -332,15 +332,15 @@ class TheReconciliation(unittest.TestCase):
              "plains"}, set(places.TILE_FIT_TAGS))
         for retired in ("basic", "mountain", "sea"):
             self.assertNotIn(retired, places.TILE_FIT_TAGS)
-        fits = places.LAND_SPECS["mortellaria"]["settlement_templates"]
+        fits = places.CULTURE_SPECS["southern"]["settlement_templates"]
         self.assertEqual(fits["hill_town"]["fits"], ["hills"])
-        fen = places.LAND_SPECS["firascir"]["settlement_templates"][
+        fen = places.CULTURE_SPECS["western"]["settlement_templates"][
             "fen_village"]
         self.assertEqual(fen["fits"], ["marsh"])
         # The fen village is reachable: the Fens carry `marsh`, so the
         # template is in the draw there and nowhere else.
         village = {role: set(spec["fits"])
-                   for role, spec in places.LAND_SPECS["firascir"][
+                   for role, spec in places.CULTURE_SPECS["western"][
                        "settlement_templates"].items()
                    if spec["tier"] == "village"}
         fens = set(self.world["tiles"]["tile/r06/c06"]["tags"])
@@ -353,7 +353,7 @@ class TheReconciliation(unittest.TestCase):
         # keeps a template that asks for nothing.
         slot = {"seed": 0, "capital": False}
         template, _sites = places._settlement_template(
-            "firascir", "village", slot, paris)
+            "seraptania", "village", slot, paris)
         self.assertLessEqual(set(template["fits"]), paris)
 
 
@@ -401,40 +401,40 @@ class TheDayRollReadsTheGround(unittest.TestCase):
         """A party in the south can roll a summer heat the taiga could not
         have given it that same day."""
         south = self._stand("tile/r14/c14")             # Rome
-        self.assertEqual(south["country"], "mortellaria")
-        hot = worldsim.weather_weights(self.world, "mortellaria", 100)
+        self.assertEqual(south["country"], "byzantium")
+        hot = worldsim.weather_weights(self.world, "byzantium", 100)
         north = self._stand("tile/r03/c23")             # Stockholm
-        self.assertEqual(north["country"], "tergal")
-        cold = worldsim.weather_weights(self.world, "tergal", 100)
+        self.assertEqual(north["country"], "thule")
+        cold = worldsim.weather_weights(self.world, "thule", 100)
         self.assertGreater(hot["heat"], cold.get("heat", 0))
         self.assertGreater(cold["rain"], hot["rain"])
 
     def test_the_season_moves_the_same_ground(self) -> None:
         self._stand("tile/r09/c18")                     # Prague
-        spring = worldsim.weather_weights(self.world, "firascir", 10)
-        winter = worldsim.weather_weights(self.world, "firascir", 300)
+        spring = worldsim.weather_weights(self.world, "teutonia", 10)
+        winter = worldsim.weather_weights(self.world, "teutonia", 300)
         self.assertGreater(winter.get("snow", 0), spring.get("snow", 0))
         self.assertGreater(spring["rain"], winter["rain"])
 
     def test_a_land_the_party_is_not_in_reads_its_capital(self) -> None:
         self._stand("tile/r14/c14")                     # Rome
-        self.assertEqual(worldsim.sky_tile(self.world, "firascir")["id"],
-                         places.CAPITAL_TILES["firascir"])
-        self.assertEqual(worldsim.sky_tile(self.world, "mortellaria")["id"],
+        self.assertEqual(worldsim.sky_tile(self.world, "phyrascia")["id"],
+                         places.CAPITAL_TILES["phyrascia"])
+        self.assertEqual(worldsim.sky_tile(self.world, "byzantium")["id"],
                          "tile/r14/c14")
 
     def test_the_open_sea_reads_the_capital_too(self) -> None:
         sea = next(t for t in self.world["tiles"].values()
                    if t["biome"] == "sea"
-                   and t["country"] == "mortellaria")
+                   and t["country"] == "byzantium")
         self._stand(sea["id"])
-        self.assertEqual(worldsim.sky_tile(self.world, "mortellaria")["id"],
-                         places.CAPITAL_TILES["mortellaria"])
+        self.assertEqual(worldsim.sky_tile(self.world, "byzantium")["id"],
+                         places.CAPITAL_TILES["byzantium"])
 
     def test_the_roll_only_ever_says_a_legal_word(self) -> None:
         self._stand("tile/r17/c14")
         rng = random.Random(4)
-        words = {worldsim.roll_weather(self.world, "mortellaria", day, rng)
+        words = {worldsim.roll_weather(self.world, "umaia", day, rng)
                  for day in range(1, 400)}
         self.assertTrue(words <= set(worldsim.WEATHER_WORDS))
 
@@ -443,9 +443,9 @@ class TheDayRollReadsTheGround(unittest.TestCase):
         """A fortnight without rain is a disaster in the wet north and an
         ordinary Tuesday in the dry south."""
         self._stand("tile/r17/c14")                     # the southern shore
-        south = worldsim.drought_days(self.world, "mortellaria")
+        south = worldsim.drought_days(self.world, "umaia")
         self._stand("tile/r06/c05")                     # London
-        north = worldsim.drought_days(self.world, "firascir")
+        north = worldsim.drought_days(self.world, "phyrascia")
         self.assertGreater(south, north)
         self.assertEqual(north, places.CLIMATE_PROFILES[
             self.world["tiles"]["tile/r06/c05"]["climate"]]["drought_days"])
@@ -473,11 +473,12 @@ class TheLocalWords(unittest.TestCase):
         world = quests.generate_world(12)
         world["party_tile"] = "tile/r08/c11"            # the Low Countries
         worldsim.roll_world(world, 4)
-        worldsim.land_layer(world, "firascir")["weather"] = "fog"
-        self.assertIn("fen fog", worldsim.weather_line(world, "firascir"))
+        worldsim.land_layer(world, "teutonia")["weather"] = "fog"
+        self.assertIn("fen fog", worldsim.weather_line(world, "teutonia"))
         world["party_tile"] = "tile/r06/c05"            # London
+        worldsim.land_layer(world, "phyrascia")["weather"] = "fog"
         self.assertIn("fog on the ground",
-                      worldsim.weather_line(world, "firascir"))
+                      worldsim.weather_line(world, "phyrascia"))
 
 
 if __name__ == "__main__":

@@ -100,10 +100,10 @@ collected from real play; the left column is the failure:
       nothing out of the ordinary
       happens.
 
-    Avoid: Mortellaria arrives as vineyards
+    Avoid: Byzantium arrives as vineyards
       before it arrives as a city.
     Use:   You reach the forests of
-      Mortellaria, and then the city.
+      Byzantium, and then the city.
 
     Avoid: You come in with the rain
       going sideways.
@@ -233,12 +233,14 @@ immediate obstacle or affordance. Never repeat the parent as filler (“forest
 site,” “forest room”). Build a place the player can navigate, not a vista the
 narrator can admire.
 
-When improvising place names, follow the active country profile. Firascir and
-Mortellaria use the shared western-human name pool; Mortellaria's place names
-may lean southern and imperial. Tergal uses its own human steppe names and
-clan vocabulary. These are invented sounds, not claims of correct real-world
-language. Use ASCII only, and retain a plain English type noun when it makes
-the place immediately legible.
+When improvising place names, follow the COUNTRY the scene is in -- there are
+nine, and each keeps its own pool (2026-08-21). Phyrascia takes English
+sounds, Seraptania French, Teutonia German, Vellisclavia old Slavic, Thule
+old Norse, Andalusia Spanish, Umaia Arabic, Byzantium southern and imperial,
+and Tergal its own steppe and clan vocabulary; a Byzantine PERSON is named in
+Latin. These are invented sounds, not claims of correct real-world language.
+Use ASCII only, and retain a plain English type noun when it makes the place
+immediately legible.
 
 For a **person**, lead with role and immediate intent. Add one visible or
 behavioral marker that can recur. A COMPANION's generated traits are

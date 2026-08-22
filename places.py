@@ -45,6 +45,7 @@ with CATALOG_PATH.open(encoding="utf-8") as _catalog_file:
 
 CLIMATE_PATH = Path(__file__).with_name("resources") / "europe_climate.txt"
 TERRAIN_PATH = Path(__file__).with_name("resources") / "europe_terrain.txt"
+COUNTRY_PATH = Path(__file__).with_name("resources") / "europe_countries.txt"
 
 # The overlay letters are FILE FORMAT ONLY: a Tile stores the full word.
 CLIMATE_LETTERS = {
@@ -227,7 +228,16 @@ def derived_tags(economy: dict, climate: str, row: int,
 
 
 LAND_SPECS = _CATALOG["lands"]
+CULTURE_SPECS = _CATALOG["cultures"]
 COUNTRIES = tuple(LAND_SPECS)
+CULTURES = tuple(CULTURE_SPECS)
+# Which shared content a country wears. A COUNTRY owns identity -- tiles, a
+# capital, a tongue, name pools; a CULTURE owns the reusable content --
+# settlement templates, natural inventories, quest tables, card packets.
+CULTURE_OF = {country: spec["culture"] for country, spec in LAND_SPECS.items()}
+CULTURE_LANDS = {culture: tuple(c for c in COUNTRIES
+                                if CULTURE_OF[c] == culture)
+                 for culture in CULTURES}
 AREA_SPECS: dict[str, dict] = {}
 SETTLEMENT_SITE_SPECS: dict[str, list[dict]] = {}
 NATURAL_SITE_SPECS: dict[str, list[dict]] = {}
@@ -238,10 +248,51 @@ BIOME_GLYPHS = {".": "sea", "#": "basic", "^": "mountain",
                 "~": "river"}
 PINNED_BIOME_COUNTS = {"basic": 267, "mountain": 29, "river": 18,
                        "sea": 226}
+# THE COUNTRY OVERLAY (2026-08-21, the medieval world arc's session 2): the
+# fourth authored grid, one letter per LAND tile, `.` on the sea. It replaced
+# the geometric three-way split -- a row test and a column test -- that the
+# human contraction had left behind, and it is what makes the nine countries
+# a picture rather than an arithmetic. Letters are file format only; a Tile
+# stores the country key.
+COUNTRY_LETTERS = {
+    "p": "phyrascia", "s": "seraptania", "t": "teutonia", "h": "thule",
+    "v": "vellisclavia", "b": "byzantium", "a": "andalusia", "u": "umaia",
+    "g": "tergal",
+}
 PINNED_COUNTRY_BIOMES = {
-    "firascir": {"basic": 79, "mountain": 11, "river": 5},
-    "mortellaria": {"basic": 120, "mountain": 15, "river": 9},
-    "tergal": {"basic": 68, "mountain": 3, "river": 4},
+    "phyrascia": {"basic": 12, "mountain": 1, "river": 0},
+    "seraptania": {"basic": 21, "mountain": 0, "river": 2},
+    "teutonia": {"basic": 20, "mountain": 5, "river": 3},
+    "thule": {"basic": 30, "mountain": 7, "river": 0},
+    "vellisclavia": {"basic": 58, "mountain": 2, "river": 0},
+    "byzantium": {"basic": 37, "mountain": 5, "river": 9},
+    "andalusia": {"basic": 14, "mountain": 3, "river": 0},
+    "umaia": {"basic": 58, "mountain": 2, "river": 0},
+    "tergal": {"basic": 17, "mountain": 4, "river": 4},
+}
+# ...and what the census law makes of the same nine bundles. The BAND is
+# campaign-invariant (the score reads only the ground and the shoreline), so
+# a country's shape in the six bands is authored data the same way its biome
+# census is: it moves when the overlay is repainted and never otherwise.
+PINNED_COUNTRY_BANDS = {
+    "phyrascia": {"wilderness": 0, "thin": 2, "low": 0, "mid": 5,
+                  "high": 6, "dense": 0},
+    "seraptania": {"wilderness": 0, "thin": 0, "low": 2, "mid": 3,
+                   "high": 16, "dense": 2},
+    "teutonia": {"wilderness": 5, "thin": 0, "low": 7, "mid": 0,
+                 "high": 13, "dense": 3},
+    "thule": {"wilderness": 9, "thin": 24, "low": 0, "mid": 1,
+              "high": 3, "dense": 0},
+    "vellisclavia": {"wilderness": 18, "thin": 8, "low": 5, "mid": 15,
+                     "high": 14, "dense": 0},
+    "byzantium": {"wilderness": 1, "thin": 5, "low": 4, "mid": 21,
+                  "high": 10, "dense": 10},
+    "andalusia": {"wilderness": 1, "thin": 2, "low": 4, "mid": 6,
+                  "high": 4, "dense": 0},
+    "umaia": {"wilderness": 17, "thin": 3, "low": 0, "mid": 9,
+              "high": 27, "dense": 4},
+    "tergal": {"wilderness": 3, "thin": 3, "low": 8, "mid": 9,
+               "high": 2, "dense": 0},
 }
 PINNED_LAND_COMPONENTS = (300, 11, 2, 1)
 
@@ -267,22 +318,25 @@ PINNED_TAG_COUNTS = {"farmland": 128, "pasture": 116, "forest": 101,
 PINNED_COVER_COUNTS = {"open": 213, "wooded": 55, "deep forest": 46}
 
 HISTORICAL_CITIES = (
-    (5, 2, "Dublin", "firascir", "basic", False),
-    (6, 5, "London", "firascir", "basic", False),
-    (8, 11, "Amsterdam", "firascir", "river", False),
-    (9, 10, "Paris", "firascir", "basic", True),
-    (9, 18, "Prague", "firascir", "basic", False),
-    (3, 23, "Stockholm", "tergal", "basic", False),
-    (7, 28, "Moscow", "tergal", "basic", False),
-    (8, 22, "Warsaw", "tergal", "basic", False),
+    (5, 2, "Dublin", "phyrascia", "basic", False),
+    (6, 5, "London", "phyrascia", "basic", True),
+    (8, 11, "Amsterdam", "teutonia", "river", False),
+    (9, 10, "Paris", "seraptania", "basic", True),
+    (9, 18, "Prague", "teutonia", "basic", True),
+    (3, 23, "Stockholm", "thule", "basic", True),
+    (7, 28, "Moscow", "vellisclavia", "basic", True),
+    (8, 22, "Warsaw", "vellisclavia", "basic", False),
     (10, 27, "Kyiv", "tergal", "river", True),
-    (13, 3, "Lisbon", "mortellaria", "basic", False),
-    (13, 7, "Madrid", "mortellaria", "basic", False),
-    (12, 14, "Venice", "mortellaria", "basic", False),
-    (14, 14, "Rome", "mortellaria", "basic", True),
-    (14, 19, "Athens", "mortellaria", "basic", False),
-    (14, 27, "Constantinople", "mortellaria", "basic", False),
-    (17, 12, "Carthage", "mortellaria", "basic", False),
+    (13, 3, "Lisbon", "andalusia", "basic", False),
+    (13, 7, "Madrid", "andalusia", "basic", False),
+    (14, 4, "Cordoba", "andalusia", "basic", True),
+    (12, 14, "Venice", "byzantium", "basic", False),
+    (14, 14, "Rome", "byzantium", "basic", False),
+    (14, 19, "Athens", "byzantium", "basic", False),
+    (14, 27, "Constantinople", "byzantium", "basic", True),
+    (17, 12, "Carthage", "umaia", "basic", False),
+    (16, 27, "Jerusalem", "umaia", "basic", False),
+    (18, 24, "Cairo", "umaia", "basic", True),
 )
 HISTORICAL_BY_TILE = {(row, column): (name, country, biome, capital)
                       for row, column, name, country, biome, capital
@@ -463,12 +517,12 @@ SLOT_CAP = 4                # the 2x2 lattice: no tile seats a fifth place
 # villages while Stockholm stands nearly alone in thin country.
 HISTORICAL_TIERS = {
     "Paris": "metropolis", "Venice": "metropolis",
-    "Constantinople": "metropolis",
+    "Constantinople": "metropolis", "Cairo": "metropolis",
     "London": "city", "Amsterdam": "city", "Prague": "city",
     "Moscow": "city", "Kyiv": "city", "Lisbon": "city", "Rome": "city",
-    "Carthage": "city",
+    "Carthage": "city", "Cordoba": "city",
     "Dublin": "town", "Stockholm": "town", "Warsaw": "town",
-    "Madrid": "town", "Athens": "town",
+    "Madrid": "town", "Athens": "town", "Jerusalem": "town",
 }
 # THE MINES, authored, few and famous (round 4's table, landing here as data
 # for the SEATING it drives: a mine tile seats its mine town in slot 1, tier
@@ -735,14 +789,21 @@ BOARD_ACTIVE_CHANCE = {"capital": 1.00, "metropolis": 1.00,
 # a pool has to cover what one playthrough walks into rather than what the
 # census counts (~615 settlements a world). A tier that runs dry falls back
 # to a numbered name. Metropolis carries no pool on purpose: the census rolls
-# no generated one, and all three authored ones are named.
+# no generated one, and all four authored ones are named.
 #
 # The HAMLET pools take a humbler sound than the villages above them --
-# Firascir's small endings (-cot, -stead, -hay, -garth), Mortellaria's
+# Phyrascia's small endings (-cot, -stead, -hay, -garth), Byzantium's
 # diminutives, Tergal's short camp words. A hamlet is under a hundred souls
 # and its name should not sound like a market.
+#
+# ONE POOL PER COUNTRY, not per culture (2026-08-21, the nine): a name is
+# the most country-shaped thing in the game, and Seraptania and Teutonia
+# share a culture's card deck without sharing a syllable. Phyrascia keeps
+# the old Firascir pools whole and Byzantium the old Mortellarian ones; the
+# other six are authored here. These are invented sounds, not claims about
+# any real language (writing.md).
 SETTLEMENT_NAMES = {
-    "firascir": {
+    "phyrascia": {
         "city": ("Kingsmarch", "Highwater", "Greatbourne", "Stonegate",
                  "Crownford"),
         "town": ("Tomburgh", "Leehaven", "Walhaven", "Bradwhitchip",
@@ -757,7 +818,79 @@ SETTLEMENT_NAMES = {
                    "Oldstead", "Mickleshaw", "Redgarth", "Flurend",
                    "Blackhay", "Shepcot"),
     },
-    "mortellaria": {
+    "seraptania": {
+        "city": ("Charmont", "Beauregarde", "Valcourt", "Roquefaille"),
+        "town": ("Vaudrienne", "Montclaire", "Aubercy", "Fontenoy",
+                 "Rochelieu", "Marnaville"),
+        "village": ("Bercy", "Chalmont", "Doiselle", "Esquiac", "Fervais",
+                    "Gournay", "Hautbois", "Livernay", "Malbois", "Noiret",
+                    "Ourville", "Pierrefonds", "Quesnay", "Rouvres",
+                    "Sancourt", "Thevray"),
+        "hamlet": ("Petitbois", "Cormet", "Vaubry", "Loncet", "Marnet",
+                   "Ferrat", "Ollier", "Chanay", "Brenot", "Grisel"),
+    },
+    "teutonia": {
+        "city": ("Falkenau", "Steinbruck", "Hohenwald", "Reichenstadt"),
+        "town": ("Eberfeld", "Wolfheim", "Grunbach", "Altmark",
+                 "Rabenstein", "Lindenau"),
+        "village": ("Ammerbach", "Birkenau", "Dornhof", "Eichgrund",
+                    "Fuchsbach", "Gerstheim", "Hagenau", "Kirchdorf",
+                    "Lammfeld", "Mohlen", "Nussbach", "Ochsenfurt",
+                    "Rehberg", "Sandheim", "Tannwald", "Weidhof"),
+        "hamlet": ("Krahenhof", "Steinkot", "Kleinbach", "Ulmen", "Espen",
+                   "Rodung", "Winkel", "Halden", "Bruchen", "Sattel"),
+    },
+    "thule": {
+        "city": ("Seljavik", "Hrafnstad", "Ulfsness", "Bjarnholm"),
+        "town": ("Kvalfjord", "Eldvik", "Grimsstad", "Skarness",
+                 "Ravnholm", "Isafell"),
+        "village": ("Arnavik", "Birkdal", "Drangey", "Eyrarbakk",
+                    "Fjardstad", "Gullvik", "Haukdal", "Ingvarstad",
+                    "Jokulsa", "Kaldbak", "Langnes", "Myrdal", "Nordfjell",
+                    "Reyrvik", "Svartkel", "Thorness"),
+        "hamlet": ("Gardkot", "Naustby", "Selkot", "Vikby", "Hofstad",
+                   "Baekkir", "Uthlid", "Snasa", "Verndal", "Kolgrof"),
+    },
+    "vellisclavia": {
+        "city": ("Dubrov", "Mirogrod", "Zalesk", "Velibor"),
+        "town": ("Novgrad", "Chernov", "Radomir", "Bystrica", "Ostrolek",
+                 "Svetlograd"),
+        "village": ("Berezno", "Borovica", "Chudovo", "Dolina", "Gorodok",
+                    "Hrabno", "Ivanets", "Jelenka", "Kamenka", "Lipova",
+                    "Malin", "Nizhny", "Olshany", "Peschany", "Ruda",
+                    "Sosnovka", "Studna", "Toporov", "Uzhany", "Vishnya",
+                    "Yavorov", "Zborov", "Krasnik", "Luhany"),
+        "hamlet": ("Dubki", "Lipki", "Ruchey", "Zaton", "Kolno", "Mshany",
+                   "Osina", "Peski", "Verba", "Zhitno"),
+    },
+    "andalusia": {
+        "city": ("Torrelava", "Almazora", "Fuentebra", "Marvella"),
+        "town": ("Castelmar", "Alvenda", "Monteclaro", "Sierrablanca",
+                 "Puertoviejo", "Zafralba"),
+        "village": ("Aldeanueva", "Bellavista", "Cabrillas", "Dosaguas",
+                    "Encinar", "Foncalada", "Guadamar", "Higuera",
+                    "Jarales", "Lomabaja", "Milagros", "Navalonga",
+                    "Olivares", "Pinarejo", "Quintanar", "Retamosa"),
+        "hamlet": ("Casilla", "Fuentina", "Majada", "Olivilla", "Pozuelo",
+                   "Rincon", "Sotillo", "Ventorro", "Zarcita",
+                   "Corralejo"),
+    },
+    "umaia": {
+        "city": ("Al-Qasrin", "Al-Munya", "Madinat Sela", "Dar Nahir"),
+        "town": ("Bir Hakla", "Wadi Sef", "Ras Amir", "Qalat Jubar",
+                 "Ain Zafra", "Bab Ramla"),
+        "village": ("Al-Basira", "Ain Dara", "Bir Salim", "Dar Aziza",
+                    "El Qantar", "Ghadir Sef", "Hammam Nur", "Jebel Sidi",
+                    "Kaf Nasir", "Wadi Lahm", "Marj Adin", "Nakhla",
+                    "Ouled Barka", "Qasr Sabil", "Rashida", "Sidi Farhan",
+                    "Tell Amara", "Umm Rayhan", "Wadi Nasim", "Yabis",
+                    "Zawiya Halim", "Ain Tufayl", "Bir Khalaf",
+                    "Dar Mansur"),
+        "hamlet": ("Ain Kefr", "Bir Wahid", "Dar Sagir", "Kefr Zayd",
+                   "Marj Sagir", "Qubba", "Ras Tin", "Sabkha", "Tell Rih",
+                   "Zaytun"),
+    },
+    "byzantium": {
         "city": ("Aurelia", "Corvenza", "Palamare", "Serravalle",
                  "Tarenna"),
         "town": ("Castavera", "Portomera", "Belafonte", "Montaro"),
@@ -803,11 +936,11 @@ def tile_coordinate(row: int, column: int) -> str:
     return f"R{row:02d}C{column:02d}"
 
 
-def template_id(polity: str, role: str) -> str:
-    """The catalog key of one country's settlement role. Never a runtime ID:
+def template_id(culture: str, role: str) -> str:
+    """The catalog key of one CULTURE's settlement role. Never a runtime ID:
     a settlement Area is named by its SLOT and scoped under its Tile, so the
     template it was cut from has to live in a namespace of its own."""
-    return f"template/settlement/{polity}/{role}"
+    return f"template/settlement/{culture}/{role}"
 
 
 def stable_seed(world_seed: int | None, parent_id: str, purpose: str,
@@ -875,29 +1008,29 @@ def natural_character(tile: dict) -> str:
     return "fields"
 
 
-def natural_template(polity: str, character: str, row: int,
+def natural_template(culture: str, character: str, row: int,
                      column: int) -> str:
-    """The natural site inventory this ground draws from. A country may
-    author more than one per character -- Tergal's high ground is quarries
-    or summer pasture -- and the pick alternates by POSITION, not by seed:
-    the ground is the same in every campaign, and a checkerboard puts the
-    two kinds next to each other instead of clumping them."""
+    """The natural site inventory this ground draws from. A culture may
+    author more than one per character -- the steppe's high ground is
+    quarries or summer pasture -- and the pick alternates by POSITION, not by
+    seed: the ground is the same in every campaign, and a checkerboard puts
+    the two kinds next to each other instead of clumping them."""
     if character == "sea":
-        return f"natural/{polity}/sea"
-    keys = LAND_SPECS[polity]["natural"][character]
-    return f"natural/{polity}/{keys[(row + column) % len(keys)]}"
+        return f"natural/{culture}/sea"
+    keys = CULTURE_SPECS[culture]["natural"][character]
+    return f"natural/{culture}/{keys[(row + column) % len(keys)]}"
 
 
 def _build_definition_indexes() -> None:
-    for polity, land in LAND_SPECS.items():
+    for culture, land in CULTURE_SPECS.items():
         for keys in land["natural"].values():
             for key in keys:
-                NATURAL_SITE_SPECS[f"natural/{polity}/{key}"] = \
+                NATURAL_SITE_SPECS[f"natural/{culture}/{key}"] = \
                     land["natural_sites"][key]
-        NATURAL_SITE_SPECS[f"natural/{polity}/sea"] = [
+        NATURAL_SITE_SPECS[f"natural/{culture}/sea"] = [
             dict(spec) for spec in SEA_SITES]
         for role, spec in land["settlement_templates"].items():
-            key = template_id(polity, role)
+            key = template_id(culture, role)
             AREA_SPECS[key] = {
                 "id": key, "name": role, "kind": "settlement",
                 "subtype": "town" if spec["tier"] == "capital"
@@ -1218,15 +1351,14 @@ def _new_area_record(spec: dict, polity: str, tile: dict,
     is_settlement = spec["kind"] == "settlement"
     tags = list(spec["tags"])
     if is_settlement:
-        land = LAND_SPECS[polity]
-        tags.extend(("settlement", spec["subtype"], land["culture"],
+        tags.extend(("settlement", spec["subtype"], CULTURE_OF[polity],
                      polity))
     capital = bool(spec.get("capital"))
     return {
         "id": aid, "key": aid, "name": spec["name"],
         "land": polity, "tile": tile["id"], "kind": spec["kind"],
         "subtype": spec["subtype"], "capital": capital,
-        "culture": LAND_SPECS[polity]["culture"], "homeland": polity,
+        "culture": CULTURE_OF[polity], "homeland": polity,
         "role": spec["role"], "description": spec["description"],
         "source": source, "template": aid,
         "seed": stable_seed(world_seed, tile["id"], "area", index),
@@ -1462,10 +1594,48 @@ def load_overlay(path: Path, letters: dict[str, str]) -> tuple[str, ...]:
     return tuple(rows)
 
 
+_COUNTRY_GRID: tuple[str, ...] | None = None
+_SEA_COUNTRY: dict[tuple[int, int], str] = {}
+
+
+def europe_countries() -> tuple[str, ...]:
+    """The country overlay, loaded and cached like the map it sits on."""
+    global _COUNTRY_GRID
+    if _COUNTRY_GRID is None:
+        _COUNTRY_GRID = load_overlay(COUNTRY_PATH, COUNTRY_LETTERS)
+    return _COUNTRY_GRID
+
+
+def _derive_sea_countries() -> dict[tuple[int, int], str]:
+    """A sea Tile belongs to the country of its NEAREST LAND, by tile
+    distance, ties settled north-then-west the way the pathfinder settles
+    its equal-cost routes. Nothing about the sea is hand-painted: the
+    overlay carries land only, and the water falls out of it."""
+    rows = europe_countries()
+    land = [(row, column, COUNTRY_LETTERS[glyph])
+            for row, line in enumerate(rows, 1)
+            for column, glyph in enumerate(line, 1) if glyph != "."]
+    out = {}
+    for row, line in enumerate(rows, 1):
+        for column, glyph in enumerate(line, 1):
+            if glyph != ".":
+                continue
+            out[(row, column)] = min(
+                land,
+                key=lambda cell: (abs(cell[0] - row) + abs(cell[1] - column),
+                                  cell[0], cell[1]))[2]
+    return out
+
+
 def country_at(row: int, column: int) -> str:
-    if row >= 11:
-        return "mortellaria"
-    return "firascir" if column <= 21 else "tergal"
+    """Which of the nine this Tile belongs to. Land reads the overlay; sea
+    derives from the nearest land tile (`_derive_sea_countries`)."""
+    glyph = europe_countries()[row - 1][column - 1]
+    if glyph != ".":
+        return COUNTRY_LETTERS[glyph]
+    if not _SEA_COUNTRY:
+        _SEA_COUNTRY.update(_derive_sea_countries())
+    return _SEA_COUNTRY[(row, column)]
 
 
 def _land_components(rows: tuple[str, ...]) -> list[set[tuple[int, int]]]:
@@ -1516,8 +1686,13 @@ def _validate_fixed_data(rows: tuple[str, ...]) -> None:
                 f"{country}/{biome}, map has {actual_country}/{actual_biome}")
     capitals = {name for _r, _c, name, _p, _b, cap in HISTORICAL_CITIES
                 if cap}
-    if capitals != {"Paris", "Rome", "Kyiv"}:
+    if capitals != {"London", "Paris", "Prague", "Stockholm", "Moscow",
+                    "Constantinople", "Cordoba", "Cairo", "Kyiv"}:
         raise ValueError(f"historical capitals changed: {sorted(capitals)}")
+    seated = {country for _r, _c, _n, country, _b, cap in HISTORICAL_CITIES
+              if cap}
+    if seated != set(COUNTRIES):
+        raise ValueError(f"every country seats one capital; got {seated}")
 
 
 def _slot(slot_id: str, tier: str, seed: int, *, name: str | None = None,
@@ -2068,12 +2243,12 @@ def _settlement_template(country: str, tier: str, slot: dict,
     nothing, which is why every country keeps at least one of those per tier.
     The pick is `slot["seed"] % len(...)`, so it is the same every time this
     slot materializes and it survives the save."""
-    land = LAND_SPECS[country]
-    templates = land["settlement_templates"]
+    culture = CULTURE_OF[country]
+    templates = CULTURE_SPECS[culture]["settlement_templates"]
     if slot.get("capital"):
         role = next(r for r, spec in templates.items()
                     if spec["tier"] == "capital")
-        key = template_id(country, role)
+        key = template_id(culture, role)
         return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
     have = set(tile_tags)
     # A METROPOLIS draws the city role (2026-08-21, the census session):
@@ -2084,14 +2259,14 @@ def _settlement_template(country: str, tier: str, slot: dict,
     roles = [role for role, spec in templates.items()
              if spec["tier"] == wanted_tier]
     if not roles:
-        raise ValueError(f"{country}: no {tier} settlement template")
+        raise ValueError(f"{culture}: no {tier} settlement template")
     fitting = [role for role in roles
                if set(templates[role]["fits"]) <= have]
     wanted = [role for role in fitting if templates[role]["fits"]] \
         or [role for role in fitting] \
         or roles
     role = wanted[slot["seed"] % len(wanted)]
-    key = template_id(country, role)
+    key = template_id(culture, role)
     return dict(AREA_SPECS[key]), SETTLEMENT_SITE_SPECS[key]
 
 
@@ -2257,7 +2432,8 @@ def create_geography(seed: int | None) -> dict:
             tile["tags"].append("island")
         character = natural_character(tile)
         aid = f"{tid}/area/natural"
-        template = natural_template(tile["country"], character, row, column)
+        template = natural_template(CULTURE_OF[tile["country"]], character,
+                                    row, column)
         spec = {"id": aid,
                 "name": f"{tile['name']} {AREA_SUFFIXES[character]}",
                 "kind": "natural", "subtype": character,
@@ -2316,10 +2492,10 @@ def create_geography(seed: int | None) -> dict:
 CAPITAL_TOWNS = frozenset(name for *_r, name, _p, _b, capital
                           in HISTORICAL_CITIES if capital)
 # The Tile a land's own sky is read off when the party is somewhere else
-# (2026-08-21, the ground session). The day roll now takes its weights from
-# the ground the party is standing on, which leaves the other two lands
-# needing a reference: their CAPITAL is the concrete, pinned answer -- Paris
-# weather for Firascir, Rome's for Mortellaria, Kyiv's for Tergal -- and it
+# (2026-08-21, the ground session). The day roll takes its weights from the
+# ground the party is standing on, which leaves the other eight lands
+# needing a reference: their CAPITAL is the concrete, pinned answer -- London
+# weather for Phyrascia, Cairo's for Umaia, Stockholm's for Thule -- and it
 # is also what stands in for the party itself when it is out at sea, where
 # there is no ground to read.
 CAPITAL_TILES = {country: tile_id(row, column)
@@ -2389,6 +2565,49 @@ def _validate_ground(world: dict) -> None:
                          f"{dict(tag_counts)}")
 
 
+def _validate_countries(world: dict) -> None:
+    """The country overlay against the world built from it (2026-08-21, the
+    nine). Same shape of lint as `_validate_ground`: the picture is
+    authored, so nothing here computes where a border ought to run -- it
+    checks that every Tile wears the letter that was painted on it, that the
+    sea derives instead of being painted, that each of the nine seats one
+    capital, and that the two censuses are the ones the grid was signed off
+    with. The BAND census is in here rather than in the suite because the
+    band is campaign-invariant: it can only move when the overlay does."""
+    biomes = {country: {biome: 0 for biome in ("basic", "mountain", "river")}
+              for country in COUNTRIES}
+    bands = {country: {band: 0 for band in BAND_WORDS}
+             for country in COUNTRIES}
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        row, column = tile["row"], tile["column"]
+        where = tile_coordinate(row, column)
+        if tile["country"] != country_at(row, column):
+            raise ValueError(f"{where}: the overlay says "
+                             f"{country_at(row, column)}, the Tile says "
+                             f"{tile['country']}")
+        if tile["country"] not in tile["tags"]:
+            raise ValueError(f"{where}: a Tile carries its country as a tag")
+        if tile["biome"] == "sea":
+            if europe_countries()[row - 1][column - 1] != ".":
+                raise ValueError(f"{where}: the sea is derived, never "
+                                 f"painted")
+            continue
+        biomes[tile["country"]][tile["biome"]] += 1
+        bands[tile["country"]][population_band(world, tile)] += 1
+    if biomes != PINNED_COUNTRY_BIOMES:
+        raise ValueError(f"the per-country biome census changed: {biomes}")
+    if bands != PINNED_COUNTRY_BANDS:
+        raise ValueError(f"the per-country band census changed: {bands}")
+    if set(CAPITAL_TILES) != set(COUNTRIES):
+        raise ValueError(f"every country seats one capital; got "
+                         f"{sorted(CAPITAL_TILES)}")
+    for country, tid in CAPITAL_TILES.items():
+        if world["tiles"][tid]["country"] != country:
+            raise ValueError(f"{country}: its capital stands in "
+                             f"{world['tiles'][tid]['country']}")
+
+
 def validate_world(world: dict) -> None:
     """The fixed geography's own contract, checked once at world creation.
 
@@ -2409,6 +2628,7 @@ def validate_world(world: dict) -> None:
     if set(tiles) != set(expected):
         raise ValueError("the tile store and tile_order disagree")
     _validate_ground(world)
+    _validate_countries(world)
 
     capitals, slot_ids = set(), set()
     for tid in order:
@@ -3104,12 +3324,14 @@ def tile_terms(world: dict, tile: dict | str) -> dict[str, float]:
     return terms
 
 
-def _detail_wrap(lines: list[str], width: int) -> list[str]:
+def detail_wrap(lines: list[str], width: int) -> list[str]:
     """The page's own hard wrap, the same rule session.py prints by:
     continuation lines hang two spaces past the original indent. The driver
     wraps everything it prints anyway, so doing it here changes no output --
-    what it buys is that the Tile's file is the SAME list of lines whoever
-    asks for it, which is what a label test can read."""
+    what it buys is that a page is the SAME list of lines whoever asks for
+    it, which is what a label test can read. Public since 2026-08-21: the
+    world layer's own state diff wraps by this rule too, rather than
+    keeping a copy of it."""
     out: list[str] = []
     for line in lines:
         if len(line) <= width:
@@ -3166,7 +3388,7 @@ def tile_detail_lines(world: dict, tile: dict | str,
              if world["areas"][aid].get("known")]
     if areas and known:
         lines.append("  areas: " + ", ".join(area["name"] for area in known))
-    return _detail_wrap(lines, width)
+    return detail_wrap(lines, width)
 
 
 def _slot_line(world: dict, slot: dict) -> str:
@@ -3234,7 +3456,7 @@ def tile_brief_lines(world: dict, tile: dict | str,
     lines = [f"TILE {tile_label(tile)} -- {land}"]
     if tile["biome"] == "sea":
         lines.append("  open sea")
-        return _detail_wrap(lines, width)
+        return detail_wrap(lines, width)
     ground = [tile["terrain"], tile["climate"], tile["cover"]]
     if tile["biome"] != "basic":        # `basic` is a map GLYPH, not ground
         ground.append(tile["biome"])
@@ -3267,7 +3489,7 @@ def tile_brief_lines(world: dict, tile: dict | str,
             continue
         lines.append(f"    {direction[0].upper()} "
                      f"{_neighbour_line(world, world['tiles'][nid])}")
-    return _detail_wrap(lines, width)
+    return detail_wrap(lines, width)
 
 
 def land_homeland(world: dict, polity: str) -> str:
@@ -3323,93 +3545,140 @@ HOUSE_MAIN_ORDINARY = (
 HOUSE_PERSONAL = ("carved toy", "sewing basket", "smoking pipe", "whetstone",
                   "family token", "bundle of letters")
 HOUSE_FOOD = {
-    "firascir": ("brown bread", "onions", "hard cheese", "dried apples",
+    "western": ("brown bread", "onions", "hard cheese", "dried apples",
+                "smoked fish", "pot of stew"),
+    "southern": ("flatbread", "onions", "hard cheese", "olives",
                  "smoked fish", "pot of stew"),
-    "mortellaria": ("flatbread", "onions", "hard cheese", "olives",
-                    "smoked fish", "pot of stew"),
-    "tergal": ("flatbread", "onions", "hard cheese", "dried curds",
+    "steppe": ("flatbread", "onions", "hard cheese", "dried curds",
                "smoked fish", "pot of stew"),
+    "norse": ("flat barley bread", "onions", "hard cheese", "dried berries",
+              "salt fish", "pot of stew"),
 }
 HOUSE_HEAT = {
-    "firascir": ("stone hearth", "iron stove"),
-    "mortellaria": ("stone hearth", "iron stove", "tiled hearth"),
-    "tergal": ("stone hearth", "iron stove", "clay stove"),
+    "western": ("stone hearth", "iron stove"),
+    "southern": ("stone hearth", "iron stove", "tiled hearth"),
+    "steppe": ("stone hearth", "iron stove", "clay stove"),
+    "norse": ("long hearth", "stone hearth", "iron stove"),
 }
 HOUSE_LIVELIHOOD = {
-    "firascir": ("account book", "fishing net", "grain sack", "reed knife",
-                 "hand saw", "boat hook"),
-    "mortellaria": ("account book", "fishing net", "pruning knife",
-                    "olive basket", "grape basket", "sickle"),
-    "tergal": ("tack repair kit", "wool bundle", "cargo tally",
+    "western": ("account book", "fishing net", "grain sack", "reed knife",
+                "hand saw", "boat hook"),
+    "southern": ("account book", "fishing net", "pruning knife",
+                 "olive basket", "grape basket", "sickle"),
+    "steppe": ("tack repair kit", "wool bundle", "cargo tally",
                "wool shears", "salt scoop", "water skin"),
+    "norse": ("fishing net", "rope coil", "splitting axe", "net needle",
+              "tar pot", "wool shears"),
 }
+# The livelihood a particular ROLE keeps in its houses. Keyed by (culture,
+# template role), and a role with no row falls back to the culture's own
+# list above. The role names are the catalog's, so a re-authored template
+# takes its houses with it.
 HOUSE_LIVELIHOOD_BY_ROLE = {
-    ("firascir", "capital"):
+    ("western", "capital"):
         ("account book", "sealing wax", "guard belt", "folded cloth",
          "writing case"),
-    ("firascir", "northern_harbor_city"):
+    ("western", "walled_city"):
+        ("cargo tally", "merchant scales", "crate bar", "sealing wax",
+         "wooden measure"),
+    ("western", "harbor_town"):
         ("fishing net", "iron hooks", "cork floats", "sailcloth",
          "fish basket"),
-    ("firascir", "southern_harbor_city"):
+    ("western", "dock_town"):
         ("cargo tally", "rope coil", "tar pot", "crate bar",
          "merchant scales"),
-    ("firascir", "inland_market_town"):
+    ("western", "market_town"):
         ("sickle", "grain sack", "seed basket", "harness",
          "wooden measure"),
-    ("firascir", "riverside_town"):
+    ("western", "river_town"):
         ("reed knife", "eel basket", "ferry rope", "waterproof boots",
          "fish trap"),
-    ("firascir", "river_crossing_village"):
+    ("western", "ford_village"):
         ("plough blade", "grain sack", "ferry pole", "horse tack",
          "seed basket"),
-    ("firascir", "forest_edge_village"):
+    ("western", "forest_village"):
         ("hand saw", "splitting axe", "timber wedges", "charcoal basket",
          "leather apron"),
-    ("firascir", "pond_village"):
-        ("fishing line", "reed basket", "cork floats", "boat hook",
-         "salt sack"),
-    ("mortellaria", "capital"):
+    ("western", "shore_village"):
+        ("fishing line", "cork floats", "boat hook", "salt sack",
+         "net needle"),
+    ("western", "fen_village"):
+        ("reed knife", "eel basket", "peat spade", "duck decoy",
+         "reed basket"),
+    ("western", "field_village"):
+        ("plough blade", "grain sack", "seed basket", "sickle",
+         "flail"),
+    ("southern", "capital"):
         ("account book", "sealing wax", "folded cloth", "oil jar",
          "writing case"),
-    ("mortellaria", "harbor_city"):
+    ("southern", "walled_city"):
+        ("market scales", "cargo tally", "oil measure", "sealing wax",
+         "crate bar"),
+    ("southern", "harbor_town"):
         ("fishing net", "sailcloth", "cargo tally", "tar pot",
          "fish basket"),
-    ("mortellaria", "inland_market_town"):
+    ("southern", "market_town"):
         ("pruning knife", "olive basket", "oil measure", "pottery tools",
          "market scales"),
-    ("mortellaria", "hill_town"):
+    ("southern", "hill_town"):
         ("grape basket", "barrel hoops", "goat bell", "pruning hook",
          "wine tally"),
-    ("mortellaria", "vineyard_village"):
+    ("southern", "vineyard_village"):
         ("pruning knife", "grape basket", "picking net", "clay wine jug",
          "olive rake"),
-    ("mortellaria", "river_plain_village"):
+    ("southern", "river_village"):
         ("sickle", "grain sack", "sluice key", "reed basket",
          "wooden measure"),
-    ("mortellaria", "coast_road_village"):
+    ("southern", "coast_village"):
         ("fishing line", "cork floats", "salt sack", "boat hook",
          "net needle"),
-    ("tergal", "capital"):
+    ("steppe", "capital"):
         ("tack repair kit", "market tally", "wool bundle", "bow case",
          "seal box"),
-    ("tergal", "western_town"):
+    ("steppe", "walled_city"):
+        ("cargo tally", "market tally", "foreign coin weights", "harness",
+         "crate bar"),
+    ("steppe", "road_town"):
         ("cargo tally", "harness", "ferry rope", "foreign coin weights",
          "crate bar"),
-    ("tergal", "northern_town"):
+    ("steppe", "ridge_town"):
         ("wool shears", "saddle blanket", "shepherd's crook", "bow stave",
          "salt blocks"),
-    ("tergal", "southern_town"):
+    ("steppe", "well_town"):
         ("salt scoop", "water tally", "goat bell", "clay jar",
          "caravan rope"),
-    ("tergal", "herd_road_village"):
+    ("steppe", "herd_village"):
         ("horse brush", "rope halter", "feed basket", "leather needle",
          "wool shears"),
-    ("tergal", "tergal_river_village"):
+    ("steppe", "river_village"):
         ("fishing net", "ferry pole", "fish basket", "boat hook",
          "reed mat"),
-    ("tergal", "tergal_basin_village"):
+    ("steppe", "basin_village"):
         ("water skin", "salt scoop", "goat tack", "reed mat",
          "well rope"),
+    ("steppe", "wood_village"):
+        ("hand saw", "splitting axe", "charcoal basket", "fur bundle",
+         "pine tar pot"),
+    ("norse", "capital"):
+        ("oar blade", "sealing wax", "silver weights", "sail needle",
+         "rune stick"),
+    ("norse", "walled_city"):
+        ("cargo tally", "silver weights", "crate bar", "rope coil",
+         "sail needle"),
+    ("norse", "harbor_town"):
+        ("tar pot", "sailcloth", "rope coil", "oar blade", "fish basket"),
+    ("norse", "market_town"):
+        ("silver weights", "hide bundle", "wool bundle", "market tally",
+         "salt sack"),
+    ("norse", "shore_village"):
+        ("net needle", "cork floats", "salt sack", "boat hook",
+         "drying rack"),
+    ("norse", "wood_village"):
+        ("splitting axe", "timber wedges", "charcoal basket", "hand saw",
+         "pine tar pot"),
+    ("norse", "field_village"):
+        ("barley sack", "sickle", "seed basket", "byre fork",
+         "hay rope"),
 }
 HOUSE_OPTIONAL = {
     "sleeping-alcove": ("one narrow bed", "blanket chest", "wash basin",
@@ -3647,11 +3916,31 @@ TILE_FIT_TAGS = ("coast", "riverside", "mountain-foot", "border", "island",
 
 
 def validate_catalog() -> None:
-    if tuple(LAND_SPECS) != ("firascir", "mortellaria", "tergal"):
-        raise ValueError("place catalog must define the three Europe countries")
+    if _CATALOG.get("version") != 3:
+        raise ValueError("place catalog must be version 3: cultures and "
+                         "lands")
+    if len(LAND_SPECS) != 9:
+        raise ValueError(f"the map is nine countries, catalog has "
+                         f"{len(LAND_SPECS)}")
     if any(key in _CATALOG for key in OBSOLETE_CATALOG_KEYS):
         raise ValueError("place catalog still contains obsolete geography")
-    for polity, land in LAND_SPECS.items():
+    for country, spec in LAND_SPECS.items():
+        missing = [key for key in ("name", "culture", "tongue",
+                                   "description") if not spec.get(key)]
+        if missing:
+            raise ValueError(f"{country}: a land record is a name, a "
+                             f"culture, a tongue and a description; "
+                             f"missing {missing}")
+        if spec["culture"] not in CULTURE_SPECS:
+            raise ValueError(f"{country}: no such culture: "
+                             f"{spec['culture']}")
+        if country not in COUNTRY_LETTERS.values():
+            raise ValueError(f"{country}: no letter on the country overlay")
+    unworn = [culture for culture in CULTURE_SPECS
+              if not CULTURE_LANDS[culture]]
+    if unworn:
+        raise ValueError(f"a culture no country wears: {unworn}")
+    for polity, land in CULTURE_SPECS.items():
         stale = [key for key in OBSOLETE_LAND_KEYS if key in land]
         if stale:
             raise ValueError(f"{polity}: the fixed settlement census is "
@@ -3720,6 +4009,9 @@ def validate_catalog() -> None:
     for value in json.dumps(_CATALOG, ensure_ascii=False):
         if ord(value) > 127:
             raise ValueError("place catalog contains non-ASCII output")
+    if set(SETTLEMENT_NAMES) != set(COUNTRIES):
+        raise ValueError("every country keeps its own settlement name "
+                         f"pools; got {sorted(SETTLEMENT_NAMES)}")
     for country in COUNTRIES:
         # Every tier the census can roll GENERATED needs a name reserve;
         # metropolis carries none because it never rolls one.

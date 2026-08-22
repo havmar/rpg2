@@ -23,6 +23,7 @@ import random
 import re
 import unittest
 
+import conquest
 import karma
 import people
 import places
@@ -35,22 +36,25 @@ import worldsim
 
 EXPECTED_COUNTRY_BIOMES = places.PINNED_COUNTRY_BIOMES
 EXPECTED_HISTORICAL_CITIES = (
-    (5, 2, "Dublin", "firascir", "basic", False),
-    (6, 5, "London", "firascir", "basic", False),
-    (8, 11, "Amsterdam", "firascir", "river", False),
-    (9, 10, "Paris", "firascir", "basic", True),
-    (9, 18, "Prague", "firascir", "basic", False),
-    (3, 23, "Stockholm", "tergal", "basic", False),
-    (7, 28, "Moscow", "tergal", "basic", False),
-    (8, 22, "Warsaw", "tergal", "basic", False),
+    (5, 2, "Dublin", "phyrascia", "basic", False),
+    (6, 5, "London", "phyrascia", "basic", True),
+    (8, 11, "Amsterdam", "teutonia", "river", False),
+    (9, 10, "Paris", "seraptania", "basic", True),
+    (9, 18, "Prague", "teutonia", "basic", True),
+    (3, 23, "Stockholm", "thule", "basic", True),
+    (7, 28, "Moscow", "vellisclavia", "basic", True),
+    (8, 22, "Warsaw", "vellisclavia", "basic", False),
     (10, 27, "Kyiv", "tergal", "river", True),
-    (13, 3, "Lisbon", "mortellaria", "basic", False),
-    (13, 7, "Madrid", "mortellaria", "basic", False),
-    (12, 14, "Venice", "mortellaria", "basic", False),
-    (14, 14, "Rome", "mortellaria", "basic", True),
-    (14, 19, "Athens", "mortellaria", "basic", False),
-    (14, 27, "Constantinople", "mortellaria", "basic", False),
-    (17, 12, "Carthage", "mortellaria", "basic", False),
+    (13, 3, "Lisbon", "andalusia", "basic", False),
+    (13, 7, "Madrid", "andalusia", "basic", False),
+    (14, 4, "Cordoba", "andalusia", "basic", True),
+    (12, 14, "Venice", "byzantium", "basic", False),
+    (14, 14, "Rome", "byzantium", "basic", False),
+    (14, 19, "Athens", "byzantium", "basic", False),
+    (14, 27, "Constantinople", "byzantium", "basic", True),
+    (17, 12, "Carthage", "umaia", "basic", False),
+    (16, 27, "Jerusalem", "umaia", "basic", False),
+    (18, 24, "Cairo", "umaia", "basic", True),
 )
 
 
@@ -141,7 +145,9 @@ class PlaceGenerationTests(unittest.TestCase):
             self.assertTrue(town["known"])
             actual.append(town)
         self.assertEqual({a["name"] for a in actual if a["capital"]},
-                         {"Paris", "Rome", "Kyiv"})
+                         {"London", "Paris", "Prague", "Stockholm",
+                          "Moscow", "Constantinople", "Cordoba", "Cairo",
+                          "Kyiv"})
 
     def test_population_constraints(self) -> None:
         # The rolled census (2026-08-21): the sea is empty, the 2x2 lattice
@@ -247,10 +253,14 @@ class PlaceGenerationTests(unittest.TestCase):
         self.assertFalse({"links", "water_links"}.intersection(self.world))
         for country in self.world["lands"].values():
             self.assertFalse({"neighbors", "links"}.intersection(country))
-        for polity, land in places.LAND_SPECS.items():
-            self.assertFalse(set(places.OBSOLETE_LAND_KEYS).intersection(land),
-                             polity)
-            self.assertTrue(land["settlement_templates"], polity)
+        for culture, spec in places.CULTURE_SPECS.items():
+            self.assertFalse(
+                set(places.OBSOLETE_LAND_KEYS).intersection(spec), culture)
+            self.assertTrue(spec["settlement_templates"], culture)
+        for country, spec in places.LAND_SPECS.items():
+            self.assertEqual(set(spec),
+                             {"name", "culture", "tongue", "description"},
+                             country)
 
     def test_a_settlement_is_cut_from_a_template_its_tile_can_honor(self
                                                                     ) -> None:
@@ -258,7 +268,7 @@ class PlaceGenerationTests(unittest.TestCase):
         a mountain at its foot -- and a plain inland Tile still gets a
         settlement, from the templates that ask for nothing."""
         seen = set()
-        for seed in range(41, 45):
+        for seed in range(41, 53):
             world = places.create_geography(seed)
             for tid in [t for t in world["tile_order"]
                         if world["tiles"][t]["settlement_slots"]
@@ -268,15 +278,28 @@ class PlaceGenerationTests(unittest.TestCase):
                 if area["kind"] != "settlement":
                     continue
                 tile = world["tiles"][area["tile"]]
-                spec = (places.LAND_SPECS[tile["country"]]
+                culture = places.CULTURE_OF[tile["country"]]
+                spec = (places.CULTURE_SPECS[culture]
                         ["settlement_templates"])
                 fits = set(spec[area["role"]]["fits"])
                 self.assertLessEqual(fits, set(tile["tags"]),
                                      f"{area['name']} / {area['role']}")
-                seen.add((tile["country"], area["role"]))
-        for polity, land in places.LAND_SPECS.items():
-            for role in land["settlement_templates"]:
-                self.assertIn((polity, role), seen)
+                seen.add((culture, area["role"]))
+        # THE SAFETY ROLES (2026-08-21, the nine). `validate_catalog`
+        # makes every culture keep a role per tier that asks for no Tile
+        # tag, so no Tile can ever draw nothing -- and two of those can
+        # never actually be drawn on the shipped overlay: neither Tergal
+        # nor Thule holds a dense-band Tile, so no generated CITY rolls
+        # there, and every Thule Tile is coast or forest, so its plain
+        # village role is the guarantee and nothing else.
+        unreachable = {("steppe", "walled_city"), ("norse", "walled_city"),
+                       ("norse", "field_village")}
+        for culture, spec in places.CULTURE_SPECS.items():
+            for role in spec["settlement_templates"]:
+                if (culture, role) in unreachable:
+                    self.assertNotIn((culture, role), seen, (culture, role))
+                else:
+                    self.assertIn((culture, role), seen, (culture, role))
 
     def test_the_template_choice_is_stable_across_the_save(self) -> None:
         world = places.create_geography(42)
@@ -407,9 +430,9 @@ class PlaceGenerationTests(unittest.TestCase):
         within reach -- is `test_quest_geography.py`'s."""
         world = places.create_geography(15)
         n = 0
-        for homeland, templates in quests.TEMPLATES.items():
+        for culture, templates in quests.TEMPLATES.items():
             origin = next(s for s in quests.settlements(world)
-                          if s["homeland"] == homeland)
+                          if places.CULTURE_OF[s["homeland"]] == culture)
             for template in templates:
                 n += 1
                 level = quests.template_band(template)[0]
@@ -426,8 +449,8 @@ class PlaceGenerationTests(unittest.TestCase):
     def test_completed_public_site_can_be_reused(self) -> None:
         world = places.create_geography(17)
         origin = next(s for s in quests.settlements(world)
-                      if s["homeland"] == "firascir")
-        template = next(t for t in quests.TEMPLATES["firascir"]
+                      if s["homeland"] == "phyrascia")
+        template = next(t for t in quests.TEMPLATES["western"]
                         if t["title"] == "The Restless Crypt")
         first = quests.build_quest(
             world, "reuse-1", template, origin["id"], 3, random.Random(1))
@@ -496,11 +519,16 @@ class PlaceGenerationTests(unittest.TestCase):
                                 for line in wrapped.splitlines()))
 
 
-class TheThreeHumanCountries(unittest.TestCase):
-    """Everybody is human and the world has exactly three countries: the
-    model, not the contraction that produced it."""
+class TheNineCountries(unittest.TestCase):
+    """Everybody is human and the world is NINE countries over four
+    cultures (2026-08-21, the medieval world arc's session 2): the model,
+    not the contraction that produced it and not the arc that widened it.
+    A country owns identity -- tiles, a capital, a tongue, name pools; a
+    culture owns the reusable content."""
 
-    HOMELANDS = {"firascir", "mortellaria", "tergal"}
+    HOMELANDS = {"phyrascia", "seraptania", "teutonia", "vellisclavia",
+                 "thule", "byzantium", "andalusia", "umaia", "tergal"}
+    CULTURES = {"western", "southern", "steppe", "norse"}
     REMOVED = re.compile(
         r"\b(?:elf|elves|elven|dwarf|dwarves|dwarven|goblin|goblins|"
         r"orc|orcs|orcish|ensimaa|dvarvengrond|gibili|middenland)\b",
@@ -511,17 +539,56 @@ class TheThreeHumanCountries(unittest.TestCase):
         if isinstance(value, dict):
             for key, item in value.items():
                 yield key
-                yield from TheThreeHumanCountries._walk(item)
+                yield from TheNineCountries._walk(item)
         elif isinstance(value, (list, tuple, set)):
             for item in value:
-                yield from TheThreeHumanCountries._walk(item)
+                yield from TheNineCountries._walk(item)
         elif isinstance(value, str):
             yield value
 
-    def test_only_three_human_homelands_exist(self) -> None:
+    def test_the_homeland_set_is_closed_at_nine(self) -> None:
         self.assertEqual(set(places.LAND_SPECS), self.HOMELANDS)
         self.assertEqual(set(quests.HOMELANDS), self.HOMELANDS)
         self.assertEqual(set(people.NAMES), self.HOMELANDS)
+        self.assertEqual(set(places.COUNTRIES), self.HOMELANDS)
+        self.assertEqual(set(places.SETTLEMENT_NAMES), self.HOMELANDS)
+        self.assertEqual(set(quests.RULER_TITLES), self.HOMELANDS)
+        self.assertEqual(set(conquest.DEFENDER_ROLES), self.HOMELANDS)
+
+    def test_four_cultures_carry_the_shared_content(self) -> None:
+        """The other half of the split: nine countries wear four packets,
+        every country names a real culture, and no culture is unworn."""
+        self.assertEqual(set(places.CULTURE_SPECS), self.CULTURES)
+        self.assertEqual(set(places.CULTURES), self.CULTURES)
+        self.assertEqual(set(quests.TEMPLATES), self.CULTURES)
+        self.assertEqual(set(worldsim.CULTURES), self.CULTURES)
+        for country in self.HOMELANDS:
+            culture = places.CULTURE_OF[country]
+            self.assertIn(culture, self.CULTURES, country)
+            self.assertIn(country, places.CULTURE_LANDS[culture])
+        for culture in self.CULTURES:
+            self.assertTrue(places.CULTURE_LANDS[culture], culture)
+
+    def test_every_country_keeps_its_own_names_and_tongue(self) -> None:
+        """A name is the most country-shaped thing in the game: the pools
+        are per COUNTRY even where the card deck is shared."""
+        for country in self.HOMELANDS:
+            spec = places.LAND_SPECS[country]
+            self.assertTrue(spec["tongue"], country)
+            self.assertTrue(spec["description"], country)
+            pools = places.SETTLEMENT_NAMES[country]
+            self.assertEqual(set(pools),
+                             {"city", "town", "village", "hamlet"}, country)
+            for tier, names in pools.items():
+                self.assertTrue(names, (country, tier))
+                self.assertEqual(len(names), len(set(names)),
+                                 (country, tier))
+            for sex in ("m", "f"):
+                pool = people.NAMES[country][sex]
+                self.assertEqual(len(pool), 25, (country, sex))
+                self.assertEqual(len(set(pool)), 25, (country, sex))
+            for name in list(pools["city"]) + list(people.NAMES[country]["m"]):
+                self.assertTrue(name.isascii(), name)
 
     def test_runtime_records_use_homeland_and_never_race(self) -> None:
         for seed in range(8):
@@ -593,6 +660,9 @@ class TheThreeHumanCountries(unittest.TestCase):
             self.assertIsNone(self.REMOVED.search(text), name)
 
     def test_the_world_layer_owes_every_country_a_deck(self) -> None:
+        """A deck on every track, standing lore, a relation that reaches
+        it, and a capital Tile to read a sky off. An isolated country is a
+        country whose neighbours' troubles never reach it."""
         for polity in self.HOMELANDS:
             for track in worldsim.TRACKS:
                 self.assertTrue([c for c in worldsim.CARDS
@@ -602,6 +672,63 @@ class TheThreeHumanCountries(unittest.TestCase):
             self.assertTrue(worldsim.FACTS_BY_LAND[polity], polity)
             self.assertTrue([e for e in worldsim.RELATIONS
                              if polity in (e["from"], e["to"])], polity)
+            self.assertIn(polity, places.CAPITAL_TILES, polity)
+            self.assertTrue(worldsim.CONSTITUTIONS[polity], polity)
+            self.assertTrue(worldsim.TENSIONS[polity], polity)
+
+    def test_every_country_seats_its_capital_on_its_own_ground(self) -> None:
+        world = places.create_geography(3)
+        seats = {}
+        for row, column, name, country, _b, capital in \
+                places.HISTORICAL_CITIES:
+            if capital:
+                self.assertNotIn(country, seats, country)
+                seats[country] = name
+                self.assertEqual(places.country_at(row, column), country)
+        self.assertEqual(set(seats), self.HOMELANDS)
+        for country, tid in places.CAPITAL_TILES.items():
+            self.assertEqual(world["tiles"][tid]["country"], country)
+
+    def test_the_overlay_paints_the_land_and_derives_the_sea(self) -> None:
+        """The fourth authored grid: a letter on every land Tile, `.` on
+        the sea, and a sea Tile taking the country of its nearest land."""
+        rows = places.europe_countries()
+        base = places.load_europe_map()
+        painted = 0
+        for row in range(1, places.MAP_ROWS + 1):
+            for column in range(1, places.MAP_COLUMNS + 1):
+                glyph = rows[row - 1][column - 1]
+                land = base[row - 1][column - 1] != "."
+                self.assertEqual(glyph != ".", land, (row, column))
+                if land:
+                    painted += 1
+                    self.assertIn(places.COUNTRY_LETTERS[glyph],
+                                  self.HOMELANDS)
+        self.assertEqual(painted, 314)
+        # The sea derives: R01C01 is nearest to the northwest islands.
+        self.assertEqual(places.country_at(1, 1), "phyrascia")
+        self.assertEqual(places.country_at(18, 1), "umaia")
+
+    def test_the_two_country_censuses_are_pinned(self) -> None:
+        """Both are AUTHORED numbers -- the biome census off the overlay,
+        and the band census off it and the ground laws, which are
+        campaign-invariant. A repaint moves them on purpose."""
+        self.assertEqual(set(places.PINNED_COUNTRY_BIOMES), self.HOMELANDS)
+        self.assertEqual(set(places.PINNED_COUNTRY_BANDS), self.HOMELANDS)
+        self.assertEqual(
+            sum(sum(row.values())
+                for row in places.PINNED_COUNTRY_BIOMES.values()), 314)
+        self.assertEqual(
+            sum(sum(row.values())
+                for row in places.PINNED_COUNTRY_BANDS.values()), 314)
+        for country in self.HOMELANDS:
+            self.assertEqual(
+                sum(places.PINNED_COUNTRY_BIOMES[country].values()),
+                sum(places.PINNED_COUNTRY_BANDS[country].values()),
+                country)
+        # ...and a built world is measured against them at every worldgen.
+        world = places.create_geography(4)
+        places._validate_countries(world)
 
 
 if __name__ == "__main__":

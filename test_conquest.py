@@ -59,7 +59,7 @@ class GarrisonLevels(unittest.TestCase):
         subtypes = {s["subtype"] for s in quests.settlements(world)}
         self.assertTrue(subtypes <= set(places.TIERS), subtypes)
         self.assertEqual(sum(s["capital"] for s in quests.settlements(world)),
-                         3)
+                         len(places.COUNTRIES))
         for table in (conquest.GARRISON_BANDS, conquest.CONQUEST_ENCOUNTERS,
                       conquest.TRIBUTE_PER_DAY, conquest.GARRISON_CAP,
                       conquest.RAID_STRENGTH, quests.SETTLEMENT_KINDS):

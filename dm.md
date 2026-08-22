@@ -372,6 +372,40 @@ to another area -- is the player's core decision:
   around the fights is yours to invent** (deliberately so: the system
   provides the combat; the DM provides the quest's telling).
 
+### The nine countries (2026-08-21)
+
+The world is nine countries wearing four cultures. What you need at the
+table:
+
+| country | where | tongue | what to lean on |
+|---|---|---|---|
+| Phyrascia | the northwest islands | Phyrascian | wool, wet green country, ships in the narrow sea |
+| Seraptania | France | Seraptanian | wheat plains, vineyards, a strong crown |
+| Teutonia | Germany and the Low Countries | Teutonic | forests, mines, free cities, an emperor in name |
+| Vellisclavia | Poland and the Rus | Vellisclav | forest and marsh, long roads, the steppe at its back |
+| Thule | Scandinavia | Norse | fjords, pine, longships, the old gods, the assembly stone |
+| Byzantium | Italy, the Balkans, Anatolia | Latin | cities, olives, the old empire's roads |
+| Andalusia | Iberia | Andalusian | dry hills, watered valleys, silver counted twice |
+| Umaia | Africa and the Levant | Umaian | desert behind, a green shore, the great river's granary |
+| Tergal | the Pontic steppe | Tergal | herd roads, clans, one high chief |
+
+- **A country is names and identity; a CULTURE is content.** Phyrascia and
+  Teutonia draw the same world cards and the same settlement shapes, and
+  share nothing else — not a name, not a crown's title, not a tongue. When
+  you improvise a place or a person, take the sound from the COUNTRY the
+  party is standing in (`writing.md`).
+- **The crown has a different name in each**: king in Phyrascia and
+  Seraptania, emperor in Teutonia and Byzantium, grand prince in
+  Vellisclavia, sea-king in Thule, prince in Andalusia, sultan in Umaia,
+  high chief in Tergal. The script prints it; use it.
+- **Nine capitals**: London, Paris, Prague, Stockholm, Moscow,
+  Constantinople, Cordoba, Cairo, Kyiv. The four great cities of the age
+  are Paris, Venice, Constantinople and Cairo.
+- **Thule is thin on purpose right now.** Its lore page has three facts
+  (THE KNOCKERS, its League chapter, THE GROVE) and its deck is the shared
+  cards plus the mines. Play it off the grove, the ships and the law at
+  the stone; a fuller packet is coming.
+
 ### The land itself (2026-08-07, the world layer)
 
 Every land carries a wealth band and states that change on their own. The
@@ -388,7 +422,7 @@ it.
   expensive and people hungry in that land's scenes -- read it before
   framing a scene in a land the party has been away from.
 - **A derived state names its cause**:
-  `grain is scarce (the Firascir grain)`. That means another land's trouble
+  `grain is scarce (the western grain)`. That means another land's trouble
   is affecting this one. Good rumor material, and the honest answer when a
   player asks why prices are high.
 - **`world`** is YOUR readout (like `board all`): every land's band,
@@ -463,7 +497,7 @@ somebody in the world say it, once, and move on.
   number ("the lord took the mills; everything with flour in it costs
   more").
 - **A derived state is another land's trouble showing up in local prices.**
-  `grain is scarce (the Firascir grain)` is the honest answer to "why are
+  `grain is scarce (the western grain)` is the honest answer to "why are
   the beds so expensive here", and it is a rumor hook pointing at another
   land.
 - **Travel can cost money as well as days** -- a doubled toll at the
@@ -519,9 +553,10 @@ Two commands, both free and neither costing a day. `lore` is your readout;
   religion on the spot and contradict it in three sessions.
 - **`service` is the shop for local religious and magical services.** Each
   land sells one or two things nothing else does: a burial or a blessing at
-  the temple and a pilgrim badge in Firascir, a hooded burial brotherhood
-  in Mortellaria, the rain stone in Tergal, and wizard teaching where a
-  surviving school offers it. Prices move with
+  the temple everywhere the Sun is worshipped, a pilgrim badge in the
+  western kingdoms, a hooded burial brotherhood in the southern ones, the
+  rain stone in Tergal, and wizard teaching where a school offers it.
+  Prices move with
   the land like everything else. Don't advertise the list; let a priest or
   a hawker offer the one that fits the scene, and point at `service` when
   the player is interested.
@@ -591,7 +626,7 @@ them. `tile` is yours; the Tile's block on `ui/map.txt` is the player's.
   expensive beds. It stacks with whatever the land is doing and `prices`
   names both hands separately. Play it as a fact of the place: "a bed here
   is half what it was in the hills" is the granary talking.
-- **The Miners' League is a live packet** in all three lands. When a
+- **The Miners' League is a live packet** in every land. When a
   mining card fires, the fiction is chapter masters, claim-keepers, the
   company shop and the winding gear -- a cross-border brotherhood of free
   miners, not a guild of anybody's craftsmen. THE KNOCKERS is standing lore
@@ -1712,7 +1747,7 @@ than the fights WITHOUT pages of narration:
   scavenged off a WON field (the log prints the recovery), left behind on a
   fled one. `buy HERO arrows` restocks; quality reach is the longbow (range
   3, 60g), blunderbuss (one brutal doorway blast, 90g + 5g a shell), and
-  the revolver (250g). All three countries use the same calibrated ranged
+  the revolver (250g). All nine countries use the same calibrated ranged
   rows; narrate the local unit and equipment, not a biological restriction.
 - **Weapon breaks are story beats.** On a parry or clash the flimsier
   weapon can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2

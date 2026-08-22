@@ -398,7 +398,7 @@ class TheOpeningGround(unittest.TestCase):
 class TheTraitRollback(unittest.TestCase):
     def test_a_cast_npc_carries_no_sketch(self):
         rng = random.Random(2)
-        npc = people.make_npc(rng, "firascir", "chief constable")
+        npc = people.make_npc(rng, "phyrascia", "chief constable")
         self.assertNotIn("traits", npc)
         self.assertEqual(set(npc),
                          {"name", "homeland", "sex", "age", "role"})
@@ -410,9 +410,9 @@ class TheTraitRollback(unittest.TestCase):
         self.assertNotIn("level", people.make_npc(rng, "tergal", "boss"))
 
     def test_the_npc_line_is_name_role_homeland_sex_age(self):
-        npc = people.make_npc(random.Random(5), "mortellaria", "sage")
+        npc = people.make_npc(random.Random(5), "byzantium", "sage")
         line = people.npc_line(npc)
-        self.assertEqual(line, f"{npc['name']} (sage) -- mortellaria "
+        self.assertEqual(line, f"{npc['name']} (sage) -- byzantium "
                                f"{npc['sex']}, "
                                f"age {npc['age']}")
 
@@ -438,7 +438,7 @@ class TheTraitRollback(unittest.TestCase):
         (kinds, skins, leader, label)."""
         rng = random.Random(6)
         for build in (karma.build_posse, karma.build_hell_posse):
-            _kinds, _skins, leader, _label = build(5, "firascir", rng)
+            _kinds, _skins, leader, _label = build(5, "phyrascia", rng)
             self.assertNotIn("traits", leader)
             self.assertEqual(leader["level"], 5)
 
