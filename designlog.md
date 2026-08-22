@@ -6549,3 +6549,140 @@ deck, lore, a relation, a constitution, a tension and a capital, and
 every capital standing on its own ground. The removed-peoples sweep is
 unchanged and still passes. The border-seam test moved off column 21 to
 the drawn Seraptania/Teutonia seam at (9,11)-(9,12).
+
+## 2026-08-22 (M) — Session 3 of the medieval world arc: the towns & the tongues
+
+**What shipped.** plan.md's Session 3 whole, and it is two small features
+that share nothing but a date. The map's towns have REAL NAMES: 164
+authored historical towns, one for every tile that can ever seat a town
+and that no historical city and no mine already names, taken by the tile's
+chief settlement when the census gives it town tier or better. And the
+nine countries have TONGUES on the sheet: everyone speaks Latin plus their
+homeland's, a Byzantine speaks Latin plus one other, and the party board
+prints a SPEAKS row. No law moved, no number moved, and
+`bench_worldgen.py --seeds 500` came back byte-identical to session 2's
+run (benchlog 2026-08-22).
+
+**The town-name table.** `places.TILE_TOWN_NAMES` is the map's third
+authored answer key, under `HISTORICAL_CITIES` and `MINES`. The tiles a
+town or a city can ever be rolled on are exactly the mid, high and dense
+band tiles — **183 of 314**, campaign-invariant, because the population
+score reads only the ground and the shoreline. Nineteen carry a historical
+city or a mine town already (sixteen of the nineteen cities are in a
+town-capable band; Prague, Stockholm and Cordoba are not, and only three
+of the nine mines are — Luneburg, Kutna Hora and Novo Brdo). The other
+**164 are the table**, and its per-country census is Phyrascia 9,
+Seraptania 20, Teutonia 13, Thule 4, Vellisclavia 27, Byzantium 36,
+Andalusia 8, Umaia 37, Tergal 10.
+
+The rule is one line in `materialize_slot`: a slot with no authored name
+asks `tile_town_name(tile, slot)` before falling through to the generic
+pool, and that reader answers only for the CHIEF slot (index 1) and only
+at `TOWN_GRADE` — town, city or metropolis. A second town on the same
+tile and everything from village down draws the country pool as before.
+That makes "a tile's town name is used at most once" STRUCTURAL rather
+than bookkept: one slot per tile can claim it and a slot materializes
+once, so the session added no stored state and nothing new rides the save.
+`_validate_town_names` is the lint (the table covers exactly the tiles
+owed a name, names nothing else, and no name is authored twice across the
+three tables); it runs inside `_validate_countries`' existing sweep, which
+already computes every tile's band, rather than walking the world again.
+
+**The tongues.** `people.LANGUAGES` maps country to tongue but does not
+own the words — it READS `places.LAND_SPECS`, because a country's tongue
+is already in the catalog beside its name and its culture, and a second
+copy would drift. `LATIN` is Byzantium's, and it is also the church's, the
+schools' and the chanceries' language everywhere in the west, which is why
+everyone has it: the party can always talk to a priest, a scholar or a
+clerk, and cannot necessarily talk to a farmer. `roll_tongues` is called
+from `make_character`, so the PC, the long-time companion, every recruit
+and every half of a pair carry the list; `rpg.Entity.tongues` rides
+`dataclasses.asdict` into the save like every other field. Dict NPCs carry
+no key at all. Nothing in the engine gates on a tongue — dm.md's "The
+tongues at the table" is the whole of the rule in play, and plan.md's
+"Languages with mechanics" is where an engine reader would be designed.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **164 names, not the contract's ~160, and the per-country counts are
+   the MEASURED ones.** Session 2's build record already corrected the
+   contract's 185 town-capable tiles to 183 (Byzantium 41, Tergal 11);
+   the rest of the contract's per-country row was drafted against the
+   same stale census and is off almost everywhere. The shipped counts are
+   what `population_band` returns over a built world and are pinned in
+   `test_towns.TOWNS_PER_COUNTRY` and in `places._validate_town_names`'s
+   coverage clause, which is stricter: it names the tiles, not the totals.
+2. **Uppsala could not be placed, and that is the overlay's answer, not
+   an omission.** The contract lists it among the wanted names. Sweden's
+   tiles on the country overlay — rows 2-3, columns 21-26 — are entirely
+   in the THIN band, so no tile there can ever seat a town; Stockholm and
+   Falun are the only named places in that half of Thule and both are
+   authored elsewhere. Thule's four town-capable tiles are one on the
+   northern Norwegian coast and three on the Danish approaches, and they
+   took Trondheim, Roskilde, Lund and Ribe. Every other name the contract
+   listed is on the map.
+3. **Placement is by plausibility, never by projection.** The drawn map
+   is a squashed Europe (the scale doctrine: ~160 km a column against
+   ~220 km a row) and its east is compressed hard — Athens and
+   Constantinople sit eight columns apart. So each name was placed for
+   the COUNTRY that owns its tile under the overlay, the coast/river/hill
+   ground the overlays actually put there, and the right order relative
+   to its neighbours; nothing was fitted to a real coordinate. Three
+   consequences worth writing down: the Danube corridor (row 11, columns
+   16-23) is Byzantium's under the overlay, so Vienna, Pressburg and Buda
+   are Byzantine towns; Bruges is Seraptanian, because the overlay draws
+   the Flanders tile into France and only Amsterdam and the Low Countries
+   proper into Teutonia; and Sarai sits on Tergal's far south-eastern
+   tile because that is the horde's farthest ground on this map.
+4. **A real name beat a shipped invented one.** Tergal's hamlet pool
+   contained `Sarai` — an invented steppe word that happens to be the
+   Golden Horde's capital. The town took it and the pool entry became
+   `Saruk` (same sound, same length). It is the only shipped name this
+   session changed, and the suite now pins that no authored town name
+   collides with any generic pool.
+5. **A chief VILLAGE leaves its tile's town name unspent.** The rule
+   keys on the chief slot's tier, not on the tile's band, so a
+   high-band tile that rolled `VVV` simply does not use its name that
+   campaign. The alternative — hand the name to the first town wherever
+   it sits on the tile — was declined: it would put York in the shadow
+   of the village that leads the tile, and the chief slot is what the
+   census means by "the place this tile is".
+6. **The SPEAKS row is lowercase on the page.** plan.md capitalises
+   "SPEAKS" the way it capitalises every concept; the party board's
+   neighbours are `abilities:`, `alchemy`, `satisfaction`, so the row
+   renders as `speaks: Latin, Phyrascian`. It is printed both by
+   `people.character_sheet` (the pre-hiring sheet) and by
+   `session.hero_block_lines` (the party board and `status`), so a
+   candidate and a hired companion read the same.
+7. **`LANGUAGES` reads the catalog rather than owning a copy.** The
+   contract says people.py owns it. It owns the mapping and the roll; the
+   WORDS stay in `place_catalog.json`'s land records, where session 2 put
+   them. A duplicated table of nine strings is exactly the kind of reader
+   the no-backwards-compatibility rule warns about — it cannot be wrong
+   loudly, only quietly.
+8. **Two stale lines in rules.md were corrected in passing.** The census
+   section still said "Paris, Venice and Constantinople are the three
+   metropolises" and "`capital` remains an explicit FLAG on Paris, Rome
+   and Kyiv" — both true before session 2 added Cairo, Cordoba and
+   Jerusalem and nine capitals. The measured census line beside them
+   (615 settlements, 1.3M souls) was refreshed to the shipped 618 and
+   1.5M at the same time.
+
+**Measured** (benchlog 2026-08-22): `bench_worldgen.py --seeds 500` is
+identical to session 2's run line for line, including the spoken harvest
+words. That is the predicted result — the names are read at
+materialization, which no bench performs, and the tongue roll is inside
+`people.make_character`, which no bench imports. Nothing was tuned.
+
+**The suite.** 944 tests before, **976 after, OK.** The new
+`test_towns.py` is the session's contract suite in four parts: the town-name
+table (the 183/19/164 split, the per-country census, no name authored
+twice or colliding with a pool, ASCII and inside the page, the
+town-capable set identical across seeds, and four broken worlds), the
+naming rule (the chief town, the chief village that leaves it unspent, the
+second town, the authored slot, no name spent twice in a whole revealed
+world, no village wearing a real one, the save and the seed), the tongues
+(the nine off the catalog, both branches of the roll, the sweep that
+reaches all eight of a Byzantine's possible seconds, and the NPC and the
+sim body that carry none) and the SPEAKS line (both sheets, the absent
+row, the save round-trip, and a real `new --seed 5 --level 1`).

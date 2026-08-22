@@ -2600,3 +2600,61 @@ entries carry the warning).
 
 **Nothing was tuned.** No lever moved. The session re-drew ownership,
 split the catalog and authored content.
+
+## 2026-08-22 — The towns & the tongues (medieval arc session 3): a sanity run that moved nothing
+
+The session authored 164 town names and rolled a two-entry language list
+onto every generated person. Neither touches a law: the town name is read
+when a settlement slot MATERIALIZES, and worldgen materializes nothing but
+the start; the tongue roll lives inside `people.make_character`, which no
+bench and no sim imports (its throwaway duos come from `rpg.make_party`).
+So this is a sanity run, recorded because every measurement is.
+
+`python bench_worldgen.py --seeds 500` (89s). The column beside each
+number is session 2's own 500-world run (benchlog 2026-08-21 (E)).
+
+| measure | now | before |
+|---|---|---|
+| problem coverage (% of land) | 17.7% | 17.7% |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis a world | 4.0 | 4.0 |
+| city | 18.7 | 18.7 |
+| town | 101.4 | 101.4 |
+| village | 401.9 | 401.9 |
+| hamlet | 91.5 | 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+Every line identical, including the spoken harvest words (legendary 3.5%,
+excellent 22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic
+0.4%). One name in a shipped pool changed — Tergal's hamlet `Sarai`
+became `Saruk`, because the real Horde capital took the word — which the
+bench cannot see: it counts settlements and never asks their names.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none of them imports `places`, `people`, `quests` or
+`worldsim`, and no combat, pay, threat or refill constant changed.
+`bench_abilities.py` and `bench_quests.py` were not compared and cannot be
+(both are still non-reproducible against themselves; develop.md's Files
+entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session authored content and
+added one naming rule and one roll.

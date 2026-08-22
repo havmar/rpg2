@@ -539,6 +539,111 @@ MINES = {
     (8, 16): ("Luneburg", ("salt",)),
     (10, 21): ("Wieliczka", ("salt",)),
 }
+
+# --------------------------------------------------------------------------- #
+# THE TOWN NAMES (2026-08-22, the medieval world arc's session 3)
+# --------------------------------------------------------------------------- #
+# The map's third authored answer key, under HISTORICAL_CITIES and MINES: one
+# REAL historical town per tile that can ever seat one. A tile can only roll a
+# town or a city in the mid, high and dense bands -- 183 of the 314 land tiles,
+# campaign-invariant because the band reads only the ground and the shoreline
+# -- and 19 of those are already named by a historical city or a mine. The
+# other 164 are named here.
+#
+# THE RULE (`tile_town_name` / `materialize_slot`): when a tile's CHIEF slot
+# comes out at town tier or better and carries no authored name, it takes the
+# tile's town name. A second town on the same tile, and everything from village
+# down, draws from the country's generic pool as before, so a tile's town name
+# is spent at most once and villages never wear a real one. The real map at
+# village grain would be a research project, and the generic pools are the
+# texture anyway.
+#
+# The placement is by PLAUSIBILITY, not by projection: this is a squashed
+# Europe (the scale doctrine above), so a name is placed on a tile of the
+# country that owns it, with the coast, river and hill country the name is
+# known for where the overlays put them, and in the right order relative to
+# its neighbours. Nothing here is a claim about a real coordinate.
+TILE_TOWN_NAMES = {
+    # Phyrascia -- Britannia and Ireland
+    (4, 4): "Glasgow", (4, 5): "Edinburgh",
+    (5, 4): "Chester", (5, 5): "York",
+    (6, 2): "Cork",
+    (7, 4): "Exeter", (7, 5): "Bristol", (7, 6): "Winchester",
+    (7, 7): "Canterbury",
+    # Seraptania -- France, the channel coast down to Gascony
+    (8, 9): "Calais", (8, 10): "Bruges",
+    (9, 4): "Brest", (9, 5): "Rennes", (9, 6): "Caen", (9, 7): "Rouen",
+    (9, 8): "Amiens", (9, 9): "Chartres", (9, 11): "Dijon",
+    (10, 5): "Nantes", (10, 6): "Tours", (10, 7): "Orleans",
+    (10, 10): "Troyes", (10, 11): "Lyon",
+    (11, 6): "La Rochelle", (11, 7): "Poitiers", (11, 8): "Bourges",
+    (11, 9): "Clermont",
+    (12, 6): "Bordeaux", (12, 7): "Toulouse",
+    # Teutonia -- the Rhine, the northern sea coast and the south
+    (8, 12): "Cologne", (8, 13): "Bremen", (8, 14): "Lubeck",
+    (8, 15): "Rostock", (8, 17): "Hamburg", (8, 18): "Danzig",
+    (8, 19): "Marienburg",
+    (9, 15): "Brunswick", (9, 16): "Leipzig", (9, 17): "Magdeburg",
+    (10, 15): "Frankfurt", (10, 16): "Nuremberg", (10, 17): "Regensburg",
+    # Thule -- the four tiles the north can seat a town on
+    (3, 14): "Trondheim",
+    (6, 14): "Roskilde", (6, 15): "Lund",
+    (7, 12): "Ribe",
+    # Vellisclavia -- Poland, the Baltic shore and Rus
+    (6, 22): "Reval", (6, 23): "Dorpat", (6, 24): "Pskov",
+    (6, 25): "Novgorod", (6, 26): "Tver", (6, 27): "Yaroslavl",
+    (6, 28): "Rostov", (6, 29): "Suzdal", (6, 30): "Kostroma",
+    (7, 19): "Konigsberg", (7, 20): "Memel", (7, 21): "Riga",
+    (7, 22): "Vilnius", (7, 23): "Polotsk", (7, 26): "Smolensk",
+    (7, 27): "Kaluga", (7, 29): "Vladimir", (7, 30): "Kazan",
+    (8, 20): "Poznan", (8, 21): "Gniezno", (8, 23): "Lublin",
+    (8, 26): "Bryansk", (8, 27): "Tula", (8, 28): "Ryazan",
+    (8, 29): "Murom",
+    (9, 20): "Breslau", (9, 21): "Krakow",
+    # Byzantium -- Provence, Italy, the Danube, Greece and Anatolia
+    (11, 10): "Avignon",
+    (11, 15): "Trieste", (11, 16): "Vienna", (11, 17): "Pressburg",
+    (11, 18): "Buda", (11, 19): "Szeged", (11, 20): "Belgrade",
+    (11, 21): "Vidin", (11, 22): "Nicopolis", (11, 23): "Silistra",
+    (12, 10): "Marseille", (12, 11): "Genoa", (12, 12): "Turin",
+    (12, 13): "Milan", (12, 16): "Zara", (12, 21): "Tirnovo",
+    (12, 22): "Varna",
+    (13, 13): "Pisa", (13, 14): "Florence", (13, 19): "Skopje",
+    (13, 20): "Thessalonica",
+    (14, 10): "Cagliari", (14, 18): "Corinth", (14, 22): "Philippopolis",
+    (14, 23): "Adrianople", (14, 24): "Gallipoli", (14, 28): "Nicaea",
+    (14, 29): "Trebizond",
+    (15, 12): "Palermo", (15, 13): "Salerno", (15, 14): "Naples",
+    (15, 23): "Smyrna", (15, 24): "Rhodes", (15, 25): "Attalia",
+    (15, 26): "Tarsus", (15, 27): "Iconium",
+    # Andalusia -- Iberia
+    (13, 2): "Porto", (13, 4): "Toledo", (13, 8): "Barcelona",
+    (14, 2): "Sevilla", (14, 6): "Valencia",
+    (15, 3): "Cadiz", (15, 4): "Malaga", (15, 5): "Granada",
+    # Umaia -- the Levant, the Maghreb and the Nile
+    (15, 28): "Aleppo", (15, 29): "Damascus", (15, 30): "Palmyra",
+    (16, 7): "Tangier", (16, 8): "Fez", (16, 9): "Oran",
+    (17, 2): "Rabat", (17, 3): "Marrakesh", (17, 6): "Tlemcen",
+    (17, 7): "Algiers", (17, 8): "Bejaia", (17, 9): "Constantine",
+    (17, 10): "Annaba", (17, 11): "Tunis", (17, 13): "Sousse",
+    (17, 14): "Sfax", (17, 15): "Tripoli", (17, 19): "Benghazi",
+    (17, 20): "Derna",
+    (18, 1): "Agadir",
+    (18, 10): "Sijilmasa", (18, 11): "Biskra", (18, 12): "Kairouan",
+    (18, 13): "Gafsa", (18, 14): "Ghadames", (18, 15): "Murzuk",
+    (18, 16): "Sirte", (18, 17): "Tobruk", (18, 18): "Siwa",
+    (18, 19): "Bahariya", (18, 20): "Fayum", (18, 21): "Giza",
+    (18, 22): "Rosetta", (18, 23): "Alexandria",
+    (18, 25): "Damietta", (18, 26): "Asyut", (18, 27): "Aswan",
+    # Tergal -- the Pontic steppe and the Black Sea
+    (9, 22): "Halych", (9, 25): "Lutsk", (9, 27): "Chernigov",
+    (10, 22): "Lviv", (10, 23): "Kamenets", (10, 24): "Kaniv",
+    (10, 25): "Bilhorod",
+    (11, 26): "Kaffa", (12, 29): "Tana", (13, 30): "Sarai",
+}
+TOWN_BANDS = ("mid", "high", "dense")   # the bands a town can be rolled in
+TOWN_GRADE = CITY_GRADE + ("town",)     # "town tier or better"
+
 # THE CHARTER AND THE MANOR, one stored word each, rolled with the census and
 # read by NOTHING yet -- the politics arc owns what freedom is worth.
 # Historically the distinction is law, not size: market towns held charters,
@@ -913,7 +1018,7 @@ SETTLEMENT_NAMES = {
                     "Sargul", "Teguren", "Tumengal", "Urkhal", "Zamutar",
                     "Batugan", "Chulun", "Erkhet", "Naranbal", "Sukhal",
                     "Tovkhar"),
-        "hamlet": ("Ukhta", "Baruk", "Sarai", "Nogai", "Chagan", "Tolui",
+        "hamlet": ("Ukhta", "Baruk", "Saruk", "Nogai", "Chagan", "Tolui",
                    "Kubai", "Ergen", "Zamut", "Khaya"),
     },
 }
@@ -2232,6 +2337,19 @@ def _next_settlement_name(world: dict, country: str, tier: str) -> str:
             f"{world['name_counters'][country][tier]}")
 
 
+def tile_town_name(tile: dict, slot: dict) -> str | None:
+    """The REAL town name this slot is owed, or None (2026-08-22, the towns
+    session). Exactly one slot on a tile can ever claim it -- the CHIEF slot,
+    and only when the census gave it town tier or better -- so a tile's town
+    name is spent at most once and a village never wears one. An authored
+    slot (a historical city, a mine town) is already named and never asks."""
+    if slot["name"] is not None or slot["index"] != 1:
+        return None
+    if slot["tier"] not in TOWN_GRADE:
+        return None
+    return TILE_TOWN_NAMES.get((tile["row"], tile["column"]))
+
+
 def _settlement_template(country: str, tier: str, slot: dict,
                          tile_tags: Iterable[str] = ()
                          ) -> tuple[dict, list[dict]]:
@@ -2289,7 +2407,9 @@ def materialize_slot(world: dict, slot: dict | str, *,
     tile = world["tiles"][slot["tile"]]
     country = tile["country"]
     if slot["name"] is None:
-        slot["name"] = _next_settlement_name(world, country, slot["tier"])
+        slot["name"] = (tile_town_name(tile, slot)
+                        or _next_settlement_name(world, country,
+                                                 slot["tier"]))
     template, site_specs = _settlement_template(country, slot["tier"], slot,
                                                 tile["tags"])
     aid = f"{tile['id']}/area/settlement/{slot['index']:02d}"
@@ -2565,6 +2685,33 @@ def _validate_ground(world: dict) -> None:
                          f"{dict(tag_counts)}")
 
 
+def _validate_town_names(town_tiles: set[tuple[int, int]]) -> None:
+    """The town-name table against the tiles that can seat a town (2026-08-22).
+
+    Three clauses, all of them about AUTHORED data: the table covers every
+    town-capable tile that no historical city and no mine already names, it
+    names nothing else, and no name is used twice anywhere in the three
+    tables. Every name is spent on exactly one tile, so a duplicate would
+    quietly put two Yorks on the map."""
+    already = {tile for tile in town_tiles
+               if tile in HISTORICAL_BY_TILE or tile in MINES}
+    owed = town_tiles - already
+    missing = sorted(owed - set(TILE_TOWN_NAMES))
+    if missing:
+        raise ValueError(f"town-capable tiles with no town name: "
+                         f"{[tile_coordinate(*t) for t in missing]}")
+    stray = sorted(set(TILE_TOWN_NAMES) - owed)
+    if stray:
+        raise ValueError(f"town names on tiles that can never seat a town: "
+                         f"{[tile_coordinate(*t) for t in stray]}")
+    names = list(TILE_TOWN_NAMES.values())
+    names += [name for _r, _c, name, *_rest in HISTORICAL_CITIES]
+    names += [name for name, _goods in MINES.values()]
+    twice = sorted({name for name in names if names.count(name) > 1})
+    if twice:
+        raise ValueError(f"a settlement name is authored twice: {twice}")
+
+
 def _validate_countries(world: dict) -> None:
     """The country overlay against the world built from it (2026-08-21, the
     nine). Same shape of lint as `_validate_ground`: the picture is
@@ -2573,11 +2720,15 @@ def _validate_countries(world: dict) -> None:
     sea derives instead of being painted, that each of the nine seats one
     capital, and that the two censuses are the ones the grid was signed off
     with. The BAND census is in here rather than in the suite because the
-    band is campaign-invariant: it can only move when the overlay does."""
+    band is campaign-invariant: it can only move when the overlay does. The
+    TOWN NAMES ride along in the same sweep for the same reason and to spare
+    the world a second walk: which tiles can ever seat a town is a fact about
+    the ground, so the authored table has to cover exactly those."""
     biomes = {country: {biome: 0 for biome in ("basic", "mountain", "river")}
               for country in COUNTRIES}
     bands = {country: {band: 0 for band in BAND_WORDS}
              for country in COUNTRIES}
+    town_tiles: set[tuple[int, int]] = set()
     for tid in world["tile_order"]:
         tile = world["tiles"][tid]
         row, column = tile["row"], tile["column"]
@@ -2594,11 +2745,15 @@ def _validate_countries(world: dict) -> None:
                                  f"painted")
             continue
         biomes[tile["country"]][tile["biome"]] += 1
-        bands[tile["country"]][population_band(world, tile)] += 1
+        band = population_band(world, tile)
+        bands[tile["country"]][band] += 1
+        if band in TOWN_BANDS:
+            town_tiles.add((row, column))
     if biomes != PINNED_COUNTRY_BIOMES:
         raise ValueError(f"the per-country biome census changed: {biomes}")
     if bands != PINNED_COUNTRY_BANDS:
         raise ValueError(f"the per-country band census changed: {bands}")
+    _validate_town_names(town_tiles)
     if set(CAPITAL_TILES) != set(COUNTRIES):
         raise ValueError(f"every country seats one capital; got "
                          f"{sorted(CAPITAL_TILES)}")

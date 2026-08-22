@@ -405,6 +405,36 @@ table:
   (THE KNOCKERS, its League chapter, THE GROVE) and its deck is the shared
   cards plus the mines. Play it off the grove, the ships and the law at
   the stone; a fuller packet is coming.
+- **The towns are real places.** Every tile that can seat a town or a city
+  carries an authored name, and a tile's chief settlement wears it when
+  the census gives it town tier or better: York, Rouen, Cologne, Krakow,
+  Novgorod, Milan, Naples, Thessalonica, Granada, Alexandria, Damascus,
+  Fez, Sarai, Kaffa and 150 more. Villages and hamlets keep the invented
+  country pools. So when the party walks into a named town, the name is
+  doing real work — lean on what that town is known for, and do NOT treat
+  its position as a claim about the real map.
+
+### The tongues at the table (2026-08-22)
+
+Nine languages, one per country, each named by its country ("the
+Seraptanian tongue") except Byzantium's, which is **Latin** — and Latin is
+also the church's, the schools' and the chanceries' language everywhere.
+The party sheet's SPEAKS row says who speaks what.
+
+- **The roll**: everyone speaks Latin plus their homeland's tongue. A
+  Byzantine speaks Latin plus one other, rolled with them.
+- **NPCs carry no list.** Assume a local speaks the local tongue, and that
+  clergy, scholars and officials speak Latin too, wherever they are.
+- **There is no engine gate.** Nothing checks a tongue; this is a table
+  rule, and it is yours to apply.
+- **When nobody in the party shares a tongue with the speaker**, the scene
+  is gestures, coins, and an interpreter if one can be found. Play it as a
+  real obstacle once and then let the party solve it; do not make every
+  border crossing a language puzzle.
+- **In Umaia, Latin reaches port traders and officials, not villagers.**
+  The empire's tongue stops at the harbor wall.
+- Keep it brief. One line that the innkeeper does not understand a word is
+  the whole beat; the mechanics are unchanged.
 
 ### The land itself (2026-08-07, the world layer)
 

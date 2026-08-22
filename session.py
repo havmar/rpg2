@@ -152,7 +152,8 @@ import conquest
 import worldsim                 # the world layer (2026-08-07, the frame)
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
-                    npc_line, downtime_match, joining_gold, PAIR_CHANCE)
+                    npc_line, downtime_match, joining_gold, tongue_line,
+                    PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
                     quest_gold_posted,
@@ -526,6 +527,8 @@ def hero_block_lines(party: list, h) -> list[str]:
                         if r and (h.weapon is None or n != h.weapon.name))
     if dormant:
         lines.append(f"  drilled, not in hand: {dormant}")
+    if h.tongues:
+        lines.append("  " + tongue_line(h))
     if h.satisfaction is not None:
         lines.append(f"  satisfaction {h.satisfaction}/{SATISFACTION_MAX}")
     if h.homeland:

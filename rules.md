@@ -2983,7 +2983,8 @@ whole of what a country is now:
 | Tergal | the Pontic steppe | Tergal | steppe | Kyiv |
 
 - **A COUNTRY owns identity**: its tiles on the authored overlay, its
-  capital, its tongue, its settlement and person name pools, its ruler's
+  capital, its tongue, its settlement and person name pools, the real
+  town names on its ground, its ruler's
   title, its garrison commander's title, the standing facts that are its
   own, and its place in the relations table.
 - **A CULTURE owns the reusable content**: settlement templates, natural
@@ -3151,17 +3152,36 @@ materialize lazily.
   revisiting cannot move it or change its name. Country-and-tier name
   reserves are shuffled once per seed; deterministic numbered names
   continue after a reserve is exhausted.
-  Measured over 500 seeds: about 615 settlements a world — 3 metropolis,
-  ~18 city, ~101 town, ~402 village, ~92 hamlet — 1.96 slots per land
-  Tile, and roughly 1.3M souls at the tier anchors below.
+  Measured over 500 seeds: about 618 settlements a world — 4 metropolis,
+  ~19 city, ~101 town, ~402 village, ~92 hamlet — 1.97 slots per land
+  Tile, and roughly 1.5M souls at the tier anchors below.
+- **The towns have REAL names** (2026-08-22, the medieval world arc's
+  third build session). A Tile can only ever seat a town or a city in the
+  mid, high and dense bands — **183 of the 314** land Tiles, and
+  campaign-invariant, because the band reads only the ground and the
+  shoreline. Nineteen of those are already named by a historical city or
+  a mine; the other **164 carry an authored town name**
+  (`places.TILE_TOWN_NAMES`), a real historical town placed on a
+  plausible Tile of the country that holds it — York, Rouen, Cologne,
+  Krakow, Novgorod, Milan, Naples, Thessalonica, Trebizond, Granada,
+  Alexandria, Damascus, Fez, Sarai, Kaffa and their kin. **The rule**:
+  when a Tile's CHIEF slot materializes at town tier or better and
+  carries no authored name, it takes the Tile's town name. A second town
+  on the same Tile, and everything from village down, draws the country's
+  generic pool as before — so a Tile's town name is spent at most once,
+  and a village never wears a real one. The real map at village grain
+  would be a research project, and the generic pools are the texture
+  anyway. The placement is by PLAUSIBILITY, never by projection: this is
+  a squashed Europe, and a coordinate here is not a claim about a real
+  one.
 - **The five tiers, and what their words mean.** `hamlet` is under a
   hundred souls, `village` hundreds, `town` thousands, `city` tens of
   thousands, `metropolis` a hundred thousand and more. The headcounts are
   fiction anchors for the DM and are never stored numbers; the words are.
-  Paris, Venice and Constantinople are the three metropolises; the other
-  thirteen historical cities are authored city or town. `capital` remains
-  an explicit FLAG on Paris, Rome and Kyiv rather than a tier, so a
-  capital also has a tier of its own.
+  Paris, Venice, Constantinople and Cairo are the four metropolises; the
+  other fifteen historical cities are authored city or town. `capital`
+  remains an explicit FLAG — on the nine seats of the nine countries —
+  rather than a tier, so a capital also has a tier of its own.
   Everything the game keys on a settlement tier carries all five words —
   the board's slots and level bands, the conquest garrison, tribute,
   levy cap and raid tables, the healer's reach and the crime market.
@@ -3727,9 +3747,23 @@ doorstep, not a railroad.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Homeland**: one of the nine countries. It selects a human name pool
+- **Homeland**: one of the nine countries. It selects a human name pool,
+  the tongues the person speaks (below)
   and supplies cultural context only; every homeland uses the same fixed stat
   floors, ceilings and trait tables.
+- **Tongues (2026-08-22)**: the first mechanic that reads `homeland`.
+  There are nine languages, one per country, named in fiction by the
+  country that speaks it — "the Seraptanian tongue" — except Byzantium's,
+  which is **Latin**, and Latin is also the language of the church, the
+  schools and the chanceries everywhere in the west. **Everyone speaks
+  Latin plus their homeland's tongue**; a Byzantine's homeland tongue IS
+  Latin, so he speaks Latin plus one other tongue, rolled at creation.
+  The PC and every companion carry the list and the sheet prints it as a
+  SPEAKS row; **NPCs carry no list at all** — a local speaks the local
+  tongue, and clergy, scholars and officials speak Latin too, wherever
+  they are. There is **no engine gate**: nothing checks a tongue before a
+  conversation. What a missing tongue costs is a table rule and lives in
+  dm.md ("The tongues at the table").
 - **Sex**: random m/f (names come from homeland pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.

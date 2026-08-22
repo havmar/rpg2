@@ -183,9 +183,10 @@ a pointer: what the file is, how it's run, where its docs are.
   the hookup — designlog (F) through (I); the five design rounds behind
   them are 2026-08-20 through 2026-08-21 (E)). It carries one ACTIVE
   contract: **THE MEDIEVAL WORLD ARC, Part 1** (designed 2026-08-21,
-  designlog (J)), whose sessions 1 (the fallen banner, designlog (K)) and
-  2 (the map of nine, designlog (L)) have shipped and are gone from it;
-  sessions 3-5 — the town names and the tongues, the norse packet and the
+  designlog (J)), whose sessions 1 (the fallen banner, designlog (K)),
+  2 (the map of nine, designlog (L)) and 3 (the towns & the tongues,
+  designlog (M), 2026-08-22) have shipped and are gone from it;
+  sessions 4-5 — the norse packet and the
   nine-land relations, the rolled wars and the campaign sim — are the next
   builds. Below the contract is the roadmap BEYOND the arc: the spring
   snapshot and trouble, politics and
@@ -428,6 +429,23 @@ a pointer: what the file is, how it's run, where its docs are.
   most country-shaped thing in the game. `_detail_wrap` became public
   `detail_wrap` so the world layer's state diff can wrap by the page's own
   rule instead of keeping a copy of it.
+  **THE TOWN NAMES** (2026-08-22, the medieval world arc's session 3) is
+  the map's third authored answer key, sitting under `HISTORICAL_CITIES`
+  and `MINES` in its own section: `TILE_TOWN_NAMES` (164 real historical
+  towns, one per town-capable tile the first two tables do not name),
+  `TOWN_BANDS` (mid/high/dense — the bands that can ever roll a town) and
+  `TOWN_GRADE` (`CITY_GRADE` plus town — "town tier or better"), read by
+  the new `tile_town_name(tile, slot)` and applied in `materialize_slot`,
+  which now asks it before falling through to `_next_settlement_name`.
+  The reader is what makes the "at most once" claim structural rather
+  than bookkept: only the CHIEF slot can claim the name and only at town
+  grade, and a chief slot materializes once, so NOTHING new is stored and
+  nothing new rides the save. `_validate_town_names` is the new lint
+  (coverage, no stray tile, no name authored twice across the three
+  tables); it is called from inside `_validate_countries`' existing
+  sweep, which already computes every tile's band, rather than walking
+  the world a second time. Tergal's hamlet pool lost `Sarai` (it became
+  `Saruk`): the real Horde capital took the word.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
   2026-08-21** (the medieval world arc's session 2), and the version
@@ -607,6 +625,30 @@ a pointer: what the file is, how it's run, where its docs are.
   of a shipped constant and no simulation of its own, and every render
   mode drawing a built world.
   `python -m unittest -v test_hookup.py`.
+- `test_towns.py` — **the towns & the tongues contract suite**
+  (2026-08-22, the medieval world arc's session 3), four parts. *The
+  town-name table*: the measured 183 town-capable tiles and the 19 the
+  first two answer keys already name, the table covering exactly the 164
+  left over and nothing else, every named tile land and inside the frame,
+  the per-country census pinned (9/20/13/4/27/36/8/37/10), no name
+  authored twice across the three tables and none colliding with a
+  generic pool, ASCII and inside the page, the town-capable SET identical
+  across seeds, and four broken worlds — one per clause the session added
+  to `validate_world`. *The naming rule*: a chief town wearing the tile's
+  real name (30+ of them in one world), a chief village leaving it
+  unspent and drawing the pool, a second town on the tile drawing the
+  pool, an authored slot keeping its own name, no settlement name spent
+  twice in a whole revealed world, no village anywhere wearing a real
+  one, the reader's two refusals (a named slot, a second seat), the names
+  riding the save, and the same seed seating the same towns. *The
+  tongues*: nine off the catalog, Latin as Byzantium's, the roll both
+  ways (a 120-draw sweep reaching all eight of a Byzantine's possible
+  seconds), the seeded roll, a generated character/PC/pair carrying the
+  list, and the NPC and the sim body carrying none. *The SPEAKS line*: on
+  the candidate sheet and the party board, absent for a body with no
+  list, riding `_entity_to_dict`, and a real `new --seed 5 --level 1`
+  whose party speaks and whose rows fit 40 columns.
+  `python -m unittest -v test_towns.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
   symmetric cost rule (east/west, north/south, a mountain at either end and
@@ -1355,7 +1397,19 @@ a pointer: what the file is, how it's run, where its docs are.
   pool. `python -m unittest -v test_weapon_gen.py`.
 - `people.py` — **the character layer** (2026-07-11, rules.md's Party,
   Charisma & Satisfaction add-on): nine human homeland name pools with no
-  homeland stat or trait modifiers, plus the trait
+  homeland stat or trait modifiers, **the TONGUES** (2026-08-22, the
+  medieval world arc's session 3 — rules.md's "Tongues", dm.md's "The
+  tongues at the table"): `LANGUAGES` (country -> tongue, READ off
+  `places.LAND_SPECS` so the catalog stays the one authority for a
+  country's own words), `LATIN` (Byzantium's, and the west's second),
+  `roll_tongues` (Latin plus the homeland's; a Byzantine draws his second
+  from the other eight) called by `make_character`, and `tongue_line` —
+  the sheet's SPEAKS row, printed by `character_sheet` and by
+  `session.hero_block_lines`. `rpg.Entity` grew `tongues: list[str]`,
+  which rides `dataclasses.asdict` into the save like every other field;
+  an empty list means never rolled (foes, `rpg.make_party` sim bodies),
+  and dict NPCs carry no key at all. Nothing in the engine gates on a
+  tongue. Plus the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
   2026-07-13) — **COMPANIONS only since 2026-08-05**: `with_traits=False`
@@ -2242,6 +2296,22 @@ mechanic *does* and *why* is rules.md's job.
   homeland-keyed table, decide which half it belongs to first**: content
   the game reuses goes by culture, anything a player would call this
   country's own goes by country.
+- **The towns & the tongues** (2026-08-22, the medieval world arc's
+  session 3 — rules.md's "The towns have REAL names" and "Tongues",
+  dm.md's "The tongues at the table", writing.md's "The nine name
+  sounds"). Two small features, one on each side of the country/culture
+  split above, both of them CONTENT plus one rule. The TOWNS:
+  `places.TILE_TOWN_NAMES` (164 real historical towns) + `TOWN_BANDS` /
+  `TOWN_GRADE` + `places.tile_town_name`, consulted by
+  `materialize_slot` before `_next_settlement_name`, linted by
+  `_validate_town_names` inside `_validate_countries`. Nothing is stored
+  and nothing rolls: the chief slot of a town-capable tile simply reads
+  the table. The TONGUES: `people.LANGUAGES` / `LATIN` /
+  `roll_tongues` / `tongue_line`, `rpg.Entity.tongues`, and the SPEAKS
+  row in `people.character_sheet` and `session.hero_block_lines`. **No
+  engine reader gates on a tongue** — that is deliberately a table rule
+  in dm.md, and plan.md's "Languages with mechanics" is where an engine
+  reader would be designed.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -2593,6 +2663,13 @@ defeat mercy. Session C's alchemy layer and
 sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
+
+**The towns & the tongues moved NOTHING (2026-08-22, the medieval world
+arc's session 3; benchlog 2026-08-22).** `bench_worldgen.py --seeds 500`
+came back byte-identical to session 2's run, line for line, which is the
+result the change predicts: the town names are read at MATERIALIZATION,
+which no bench performs, and the tongue roll happens inside
+`people.make_character`, which no bench or sim imports. Nothing was tuned.
 
 **The map of nine moved three worldgen numbers and nothing else
 (2026-08-21, the medieval world arc's session 2; benchlog 2026-08-21 (E)

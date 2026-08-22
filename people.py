@@ -11,8 +11,9 @@ bench number.
 The design (2026-07-11, designer-vetted):
 
 - **Everybody is human.** A person's `homeland` is one of the nine
-  countries. It selects a name pool and cultural routing only; it never
-  changes stats, traits or combat capability.
+  countries. It selects a name pool, cultural routing and -- since
+  2026-08-22 -- the TONGUES they speak; it never changes stats, traits or
+  combat capability.
 - **Traits are a sketch, not a census**: ONE behavioral category (of five)
   and TWO presentation categories (of four), one trait each. What isn't
   described is average for the archetype; the DM edits any generated
@@ -43,6 +44,7 @@ import random
 
 import rpg
 from rpg import Entity, MEDS_INTERVAL_DAYS, MEDS_PRICE
+from places import LAND_SPECS
 from quests import HOMELANDS
 
 # --------------------------------------------------------------------------- #
@@ -57,6 +59,47 @@ def roll_age(rng: random.Random) -> int:
     return rng.randint(1, 20) + rng.randint(1, 20) + 10
 
 
+# --------------------------------------------------------------------------- #
+# The tongues (2026-08-22, the medieval world arc's session 3)
+# --------------------------------------------------------------------------- #
+# Nine languages, one per country, named in fiction by the country that speaks
+# it -- "the Seraptanian tongue" -- except Byzantium's, which is LATIN: the
+# empire's own speech and, at the same time, the language of the church, the
+# schools and the chanceries everywhere. So everyone in the party can talk to
+# a priest, a scholar or a clerk, and nobody can necessarily talk to a farmer.
+#
+# The word itself is the catalog's (`place_catalog.json`'s `lands` records own
+# `tongue`), so the table here is a READER, not a second copy: a country's
+# tongue is part of its identity and lives with the rest of it.
+#
+# THE ROLL: everyone speaks Latin plus their homeland's tongue. A Byzantine's
+# homeland tongue IS Latin, so he speaks Latin plus one other tongue, rolled
+# -- an empire's man has been somewhere. NPCs carry no list at all: a local
+# speaks the local tongue, and clergy, scholars and officials speak Latin too,
+# everywhere. There is no engine gate yet; dm.md's "The tongues at the table"
+# is the whole of the rule in play.
+LANGUAGES = {country: LAND_SPECS[country]["tongue"] for country in HOMELANDS}
+LATIN = LANGUAGES["byzantium"]
+
+
+def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
+    """What this person speaks: Latin first, then their homeland's tongue --
+    or, for a Byzantine, one other tongue drawn from the eight."""
+    home = LANGUAGES[homeland]
+    if home == LATIN:
+        home = rng.choice([LANGUAGES[c] for c in HOMELANDS
+                           if LANGUAGES[c] != LATIN])
+    return [LATIN, home]
+
+
+def tongue_line(e: Entity) -> str:
+    """The sheet's SPEAKS row for a person who has a list."""
+    return "speaks: " + ", ".join(e.tongues)
+
+
+# --------------------------------------------------------------------------- #
+# Names
+# --------------------------------------------------------------------------- #
 # 25 male + 25 female names per pool, one pool per COUNTRY (2026-08-21, the
 # nine). A name is the most country-shaped thing in the game: Seraptania and
 # Teutonia share the western culture's card deck without sharing a syllable.
@@ -329,7 +372,8 @@ def make_character(rng: random.Random, level: int = 1,
                    used_names: set[str] | None = None,
                    with_traits: bool = True,
                    wizard: bool = False) -> Entity:
-    """One person, any level: homeland/sex/name/age, the three-trait sketch,
+    """One person, any level: homeland/sex/name/age, the tongues they speak,
+    the three-trait sketch,
     stats budgeted with trait floor/ceiling shifts, then grown
     to `level` by the reference progression doctrine (rpg.develop_hero --
     points mostly pre-spent, quality steel from L4). Works for recruits and,
@@ -365,6 +409,7 @@ def make_character(rng: random.Random, level: int = 1,
         h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
     h.homeland, h.sex, h.age, h.traits = (
         homeland, sex, roll_age(rng), traits)
+    h.tongues = roll_tongues(rng, homeland)
     if "armored" in traits.values():
         h.def_bonus = ARMORED_DEF_BONUS
     rpg.develop_hero(h, level, rng)
@@ -493,6 +538,8 @@ def character_sheet(e: Entity) -> list[str]:
         return bool(trait_note(value)) and value not in TRAIT_GOLD
 
     lines = [person_line(e), "  " + rpg.stat_line(e)]
+    if e.tongues:
+        lines.append("  " + tongue_line(e))
     notes = [f"{e.traits[cat]}{trait_note(e.traits[cat])}"
              for cat in sorted(e.traits)
              if wanted(e.traits[cat])]

@@ -20,10 +20,11 @@ ground under the party", develop.md's Files and dev map, and benchlog's
 
 This file now carries one ACTIVE build contract again: **THE MEDIEVAL
 WORLD ARC, Part 1** (designed 2026-08-21, designlog (J)) — nine countries,
-names and tongues, the Thule packet, and the rolled wars. Its session 1
-(the fallen banner) shipped on 2026-08-21 (designlog (K)) and so did
-session 2 (the map of nine, designlog (L)); sessions 3 through 5 are the
-next builds. Below the contract is the roadmap BEYOND
+names and tongues, the Thule packet, and the rolled wars. Its sessions 1
+(the fallen banner, designlog (K)) and 2 (the map of nine, designlog (L))
+shipped on 2026-08-21, and session 3 (the towns & the tongues, designlog
+(M)) on 2026-08-22; sessions 4 and 5 are the next builds. Below the
+contract is the roadmap BEYOND
 it: main points only, each a future design conversation, none scheduled.
 Two habits from the earlier arcs continue to apply everywhere — **hidden
 numbers, visible words** (a per-tile quantity is a worldgen intermediate;
@@ -45,8 +46,12 @@ rules.md's Story Layer add-on carries the note). **Session 2 — the map of
 nine** shipped the same day and is gone too: the country overlay, the
 catalog's culture/land split, the name pools, the norse culture and the
 mechanically re-keyed worldsim (designlog (L); rules.md's World &
-Navigation add-on, "Nine countries over four cultures"). Sessions 3-5
-follow.
+Navigation add-on, "Nine countries over four cultures"). **Session 3 —
+the towns & the tongues** shipped on 2026-08-22 and is gone as well: the
+164 authored town names and the chief-slot naming rule, and the nine
+tongues on the sheet (designlog (M); rules.md's "The towns have REAL
+names" and "Tongues", dm.md's "The tongues at the table", writing.md's
+"The nine name sounds"). Sessions 4 and 5 follow.
 
 ## The frame
 
@@ -116,43 +121,6 @@ Settled calls, so they stay settled:
   `world["lands"]["andalusia"]["liege"]` (a polity key or None), read
   by `politics_lines`, the map legend and the Reconquista template. No
   other mechanical effect in this arc.
-
-## Session 3 — the towns & the tongues
-
-**The town-name table.** The check the design asked for, run against
-the overlay: a world seats ~615 settlements (~18 cities, ~101 towns,
-~402 villages, ~92 hamlets, plus the four authored metropolises), and
-the tiles that can EVER roll a town or city are exactly the mid, high
-and dense band tiles — **185 of 314**, campaign-invariant. Per country:
-Phyrascia 11, Seraptania 21, Teutonia 16, Thule 4, Vellisclavia 29,
-Byzantium 42, Andalusia 10, Umaia 40, Tergal 12. So: one authored table,
-`TILE_TOWN_NAMES: {(row, column): name}`, covering every mid/high/dense
-tile not already named by `HISTORICAL_CITIES` or `MINES` (~160 new
-names), each a REAL historical town placed on its plausible tile —
-York, Bristol, Rouen, Bordeaux, Cologne, Nuremberg, Bruges, Uppsala,
-Krakow, Novgorod, Milan, Naples, Thessalonica, Trebizond, Granada,
-Sevilla, Toledo, Alexandria, Damascus, Fez, Tunis, Sarai, Kaffa and
-their kin. The rule: when a tile's CHIEF slot materializes at town tier
-or better and carries no authored name, it takes the tile's town name;
-second towns on the same tile and everything village-down draw from the
-generic pools. A tile's town name is used at most once. (Villages never
-take real names — the real map at village grain would be a research
-project, and the generic pools are the texture anyway.)
-
-**The tongues.** The first mechanic on `homeland`. Nine languages, named
-in fiction by their country ("the Seraptanian tongue"), except
-Byzantium's, which is Latin — also the church-and-scholars tongue of
-the whole west. `people.py` owns `LANGUAGES` (country -> tongue) and
-rolls a character's tongues at creation: **everyone speaks Latin plus
-their homeland's tongue; a Byzantine speaks Latin plus one random other
-tongue.** The sheet gains a SPEAKS line; companions and the PC both.
-NPCs carry no list — a local speaks the local tongue, and clergy,
-scholars and officials speak Latin too, everywhere. No engine gate in
-this arc: dm.md gets the table rule (if nobody in the party shares a
-tongue with the speaker, the scene is gestures, coins and an
-interpreter if one can be found; in Umaia, Latin reaches port traders
-and officials, not villagers), and writing.md gets the name-sound table
-of session 2 written down as the standing brief.
 
 ## Session 4 — the norse packet & the nine-land relations
 
@@ -336,9 +304,11 @@ wars moved up into the arc contract above. Still parked here:
   advances and a border redraws — once tiles are worth taking. The
   arc's campaign sim deliberately stops short of this; its war records
   and occupation states are the ground it would build on.
-- **Languages with mechanics.** The arc records who speaks what and
-  gives dm.md the table rule; an engine reader (rumor radius, quest
-  gating, an interpreter hire) is a later sitting.
+- **Languages with mechanics.** Session 3 SHIPPED who speaks what (the
+  SPEAKS line) and dm.md's table rule; an engine reader — a rumor radius
+  that stops at a language border, a quest gated on a tongue, an
+  interpreter hired for a fee — is a later sitting. Nothing in the
+  engine checks a tongue today.
 - **Vassalage with teeth.** Andalusia's liege is rolled and printed;
   tribute, a pulled-in war, a court above the court are undesigned.
 
