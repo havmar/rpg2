@@ -103,20 +103,23 @@ def tongue_line(e: Entity) -> str:
 # 25 male + 25 female names per pool, one pool per COUNTRY (2026-08-21, the
 # nine). A name is the most country-shaped thing in the game: Seraptania and
 # Teutonia share the western culture's card deck without sharing a syllable.
-# Phyrascia keeps the old Firascir pool whole and Tergal its steppe one; the
-# other seven are authored here. These are invented sounds, not claims about
-# any real language (writing.md). No epithets: "Inga", never "Inga the
-# precise".
+# Tergal keeps its steppe pool whole; the other eight are authored here --
+# Phyrascia's re-authored English/Anglo-Saxon in the 2026-08-22 naming pass,
+# which retired the last of the old Firascir sounds. These are invented
+# rosters in each country's register, not claims about any real language
+# (writing.md). No epithets: "Inga", never "Inga the precise".
 NAMES: dict[str, dict[str, tuple[str, ...]]] = {
     "phyrascia": {
-        "m": ("Brand", "Corvin", "Doran", "Kael", "Tomas", "Veld", "Aldric",
-              "Berrick", "Cole", "Dunstan", "Edwin", "Garrick", "Hale",
-              "Jorik", "Lambert", "Martel", "Osric", "Perrin", "Quentin",
-              "Rowan", "Simon", "Theobald", "Ulric", "Walt", "Yorick"),
-        "f": ("Sela", "Mira", "Yssa", "Rhea", "Inga", "Nessa", "Anneth",
-              "Bess", "Cateline", "Dara", "Elsbeth", "Ferra", "Gwen",
-              "Hilde", "Isolde", "Jenna", "Lysse", "Maud", "Nel", "Odile",
-              "Petra", "Rosamund", "Sabine", "Tilda", "Wynne"),
+        "m": ("Alfred", "Aldred", "Alwin", "Cedric", "Cuthbert", "Dunstan",
+              "Eadric", "Edgar", "Edmund", "Edwin", "Godwin", "Harold",
+              "Hereward", "Leofric", "Aelfric", "Ordgar", "Osbert",
+              "Oswald", "Osric", "Swithun", "Uhtred", "Wilfrid", "Wulfric",
+              "Wulfstan", "Wystan"),
+        "f": ("Edith", "Hilda", "Mildred", "Audrey", "Winifred", "Elfrida",
+              "Godiva", "Wulfrun", "Aldith", "Elgiva", "Ethelinda",
+              "Leofwyn", "Milburga", "Werburga", "Hereswith", "Osgyth",
+              "Wynflaed", "Ethelflaed", "Rowena", "Ermenilda", "Sunniva",
+              "Alfleda", "Edgiva", "Eanfled", "Quenburga"),
     },
     "seraptania": {
         "m": ("Thierry", "Gaspard", "Amaury", "Bertrand", "Clovis",

@@ -11,8 +11,8 @@
 .....ssssbbtttbbbbbbbbbb.g.ggg
 .....ssaabbbbb.bbbbbbb......gg
 .aaaaaaa....bb...bbb.........g
-.aaaaa...b..bb...bb..bbbbbbbbb
-..aaa......bbb........bbbbbuuu
+.uuuuu...b..bb...bb..bbbbbbbbb
+..uuu......bbb........bbbbbuuu
 ......uuu.................uuuu
 .uuuuuuuuuuuuuu...uu......uuuu
 uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu

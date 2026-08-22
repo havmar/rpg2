@@ -32,8 +32,8 @@ CONTRACT_KEYS = {"crusade", "hundred-years", "horde", "vikings",
 
 # Every land a template can ever put in the field, attacker or defender.
 # The theater is checked against THIS rather than against one roll's lists:
-# the Reconquista's ground is south Iberia and the Maghreb whichever way
-# Andalusia's vassalage falls.
+# the Reconquista's ground is Umaia's al-Andalus and the strait's far
+# shore whichever way Andalusia's vassalage falls.
 BELLIGERENT_UNIVERSE = {
     "crusade": {"byzantium", "seraptania", "teutonia", "phyrascia", "umaia"},
     "hundred-years": {"phyrascia", "seraptania"},
@@ -146,8 +146,7 @@ class TheSixTemplates(unittest.TestCase):
 
     def test_the_authored_copy_is_ascii_and_says_something(self):
         for spec in worldsim.WAR_TEMPLATES:
-            for text in (spec["name"], spec["herald"],
-                         spec.get("vassal_herald", spec["herald"])):
+            for text in (spec["name"], spec["herald"]):
                 self.assertTrue(text.isascii(), spec["key"])
                 self.assertGreater(len(text), 10, spec["key"])
             self.assertEqual(spec["name"], spec["name"].upper())
@@ -265,40 +264,37 @@ class TheWarRoll(unittest.TestCase):
                 sizes.add(len(war["attackers"]))
         self.assertTrue(sizes <= {1, 2, 3} and sizes)
 
-    def test_the_vassalage_is_a_d3_and_only_andalusia_has_a_liege(self):
+    def test_the_vassalage_is_a_d2_and_only_andalusia_has_a_liege(self):
+        """Byzantium's vassal or independent -- never Umaia's man since the
+        Iberia split (2026-08-22)."""
         seen = set()
         for built in self.worlds.values():
             liege = built["lands"]["andalusia"]["liege"]
             self.assertIn(liege, worldsim.VASSALAGE)
+            self.assertNotEqual(liege, "umaia")
             seen.add(liege)
             for polity, land in built["lands"].items():
                 if polity != "andalusia":
                     self.assertIsNone(land["liege"], polity)
         self.assertEqual(seen, set(worldsim.VASSALAGE))
 
-    def test_the_reconquista_reads_the_vassalage(self):
-        """The one place the liege has mechanical teeth in this arc: a
-        vassal fights for its liege, so Umaia's vassal makes Byzantium come
-        alone and stands with Umaia itself."""
+    def test_the_reconquista_marches_whatever_the_vassalage_said(self):
+        """The Iberia split (2026-08-22) took the liege's teeth out of the
+        template: Andalusia attacks Umaia's south with Byzantium behind it
+        as liege or as ally, on every roll."""
         seen = set()
         for built in self.worlds.values():
             war = next((w for w in built["wars"]
                         if w["key"] == "reconquista"), None)
             if war is None:
                 continue
-            liege = built["lands"]["andalusia"]["liege"]
-            seen.add(liege)
+            seen.add(built["lands"]["andalusia"]["liege"])
             spec = worldsim.WAR_TEMPLATES_BY_KEY["reconquista"]
-            if liege == "umaia":
-                self.assertEqual(war["attackers"], ["byzantium"])
-                self.assertIn("andalusia", war["defenders"])
-                self.assertEqual(war["herald"], spec["vassal_herald"])
-            else:
-                self.assertEqual(war["attackers"], ["andalusia", "byzantium"])
-                self.assertEqual(war["defenders"], ["umaia"])
-                self.assertEqual(war["herald"], spec["herald"])
-        self.assertIn("umaia", seen)        # both branches reached over
-        self.assertTrue(seen - {"umaia"})   # the sweep
+            self.assertEqual(war["attackers"], ["andalusia", "byzantium"])
+            self.assertEqual(war["defenders"], ["umaia"])
+            self.assertEqual(war["herald"], spec["herald"])
+        self.assertEqual(seen, set(worldsim.VASSALAGE))    # the sweep
+                                                           # reached both
 
     def test_the_roll_moves_no_other_layer(self):
         """The wars run on their own derived stream (`wars:{seed}`), so a

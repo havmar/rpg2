@@ -1,9 +1,9 @@
 """The towns & the tongues contract suite (2026-08-22, the medieval world
 arc's session 3).
 
-Four parts. *The town-name table*: 183 tiles can ever seat a town, 19 of
+Four parts. *The town-name table*: 183 tiles can ever seat a town, 20 of
 them are already named by a historical city or a mine, and the authored
-table names the other 164 -- every one of them on a mid/high/dense tile of
+table names the other 163 -- every one of them on a mid/high/dense tile of
 the country whose name it wears, no name used twice anywhere in the three
 authored tables, ASCII and inside the page's width, and three broken worlds,
 one per clause the session added to `validate_world`. *The naming rule*: a
@@ -40,11 +40,11 @@ import session
 TOWN_CAPABLE = 183          # mid/high/dense land tiles -- the tiles a town or
                             # a city can ever be rolled on. Campaign-invariant:
                             # the band reads only the ground and the shoreline.
-AUTHORED_ALREADY = 19       # ...of which a historical city or a mine names
-AUTHORED_TOWNS = 164        # ...leaving this many for TILE_TOWN_NAMES
+AUTHORED_ALREADY = 20       # ...of which a historical city or a mine names
+AUTHORED_TOWNS = 163        # ...leaving this many for TILE_TOWN_NAMES
 TOWNS_PER_COUNTRY = {"phyrascia": 9, "seraptania": 20, "teutonia": 13,
                      "thule": 4, "vellisclavia": 27, "byzantium": 36,
-                     "andalusia": 8, "umaia": 37, "tergal": 10}
+                     "andalusia": 2, "umaia": 42, "tergal": 10}
 
 
 def _world(seed: int = 5) -> dict:

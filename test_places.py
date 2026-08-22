@@ -42,12 +42,14 @@ EXPECTED_HISTORICAL_CITIES = (
     (9, 10, "Paris", "seraptania", "basic", True),
     (9, 18, "Prague", "teutonia", "basic", True),
     (3, 23, "Stockholm", "thule", "basic", True),
+    (2, 23, "Uppsala", "thule", "basic", False),
     (7, 28, "Moscow", "vellisclavia", "basic", True),
     (8, 22, "Warsaw", "vellisclavia", "basic", False),
     (10, 27, "Kyiv", "tergal", "river", True),
     (13, 3, "Lisbon", "andalusia", "basic", False),
+    (13, 4, "Toledo", "andalusia", "basic", True),
     (13, 7, "Madrid", "andalusia", "basic", False),
-    (14, 4, "Cordoba", "andalusia", "basic", True),
+    (14, 4, "Qurtuba", "umaia", "basic", False),
     (12, 14, "Venice", "byzantium", "basic", False),
     (14, 14, "Rome", "byzantium", "basic", False),
     (14, 19, "Athens", "byzantium", "basic", False),
@@ -146,7 +148,7 @@ class PlaceGenerationTests(unittest.TestCase):
             actual.append(town)
         self.assertEqual({a["name"] for a in actual if a["capital"]},
                          {"London", "Paris", "Prague", "Stockholm",
-                          "Moscow", "Constantinople", "Cordoba", "Cairo",
+                          "Moscow", "Constantinople", "Toledo", "Cairo",
                           "Kyiv"})
 
     def test_population_constraints(self) -> None:

@@ -429,8 +429,9 @@ a pointer: what the file is, how it's run, where its docs are.
   rule instead of keeping a copy of it.
   **THE TOWN NAMES** (2026-08-22, the medieval world arc's session 3) is
   the map's third authored answer key, sitting under `HISTORICAL_CITIES`
-  and `MINES` in its own section: `TILE_TOWN_NAMES` (164 real historical
-  towns, one per town-capable tile the first two tables do not name),
+  and `MINES` in its own section: `TILE_TOWN_NAMES` (real historical
+  towns, one per town-capable tile the first two tables do not name —
+  164 at ship, 163 since the 2026-08-22 naming-and-Iberia pass below),
   `TOWN_BANDS` (mid/high/dense — the bands that can ever roll a town) and
   `TOWN_GRADE` (`CITY_GRADE` plus town — "town tier or better"), read by
   the new `tile_town_name(tile, slot)` and applied in `materialize_slot`,
@@ -444,6 +445,18 @@ a pointer: what the file is, how it's run, where its docs are.
   sweep, which already computes every tile's band, rather than walking
   the world a second time. Tergal's hamlet pool lost `Sarai` (it became
   `Saruk`): the real Horde capital took the word.
+  **THE NAMING-AND-IBERIA PASS** (2026-08-22, post-arc): Uppsala joined
+  `HISTORICAL_CITIES` at (2,23) — a Thule town in the tundra north of
+  Stockholm, the grove's own old seat; the country overlay's rows 14-15
+  moved the peninsula's southern eight tiles from Andalusia to Umaia
+  (`PINNED_COUNTRY_BIOMES` / `PINNED_COUNTRY_BANDS` re-pinned), Toledo
+  was promoted out of `TILE_TOWN_NAMES` to Andalusia's capital, Cordoba
+  became Umaia's `Qurtuba` (city, no flag), and the five moved town
+  tiles wear Umaian names (Ishbiliya, Balansiya, Qadis, Malaqa,
+  Gharnata). `SETTLEMENT_NAMES` re-authored two pools: Phyrascia in
+  plain English/Anglo-Saxon compounds and Byzantium in Latin (its own
+  catalog tongue), retiring the last Firascir/Mortellarian sounds;
+  `people.NAMES["phyrascia"]` went Anglo-Saxon in the same pass.
   **THE WAR STATES** (2026-08-22, the medieval world arc's session 5) are
   this file's smallest new section and its only new stored fields. A TILE
   and a census SLOT each grew `"states": []`, so the two things a war
@@ -639,10 +652,10 @@ a pointer: what the file is, how it's run, where its docs are.
   `python -m unittest -v test_hookup.py`.
 - `test_towns.py` — **the towns & the tongues contract suite**
   (2026-08-22, the medieval world arc's session 3), four parts. *The
-  town-name table*: the measured 183 town-capable tiles and the 19 the
-  first two answer keys already name, the table covering exactly the 164
+  town-name table*: the measured 183 town-capable tiles and the 20 the
+  first two answer keys already name, the table covering exactly the 163
   left over and nothing else, every named tile land and inside the frame,
-  the per-country census pinned (9/20/13/4/27/36/8/37/10), no name
+  the per-country census pinned (9/20/13/4/27/36/2/42/10), no name
   authored twice across the three tables and none colliding with a
   generic pool, ASCII and inside the page, the town-capable SET identical
   across seeds, and four broken worlds — one per clause the session added
@@ -675,8 +688,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `at-war` and nobody else, every herald posted to every belligerent at day
   0, every rolled theater its own belligerents' ground, the same seed
   rolling the same wars while the sweep rolls many, the crusade's crown
-  count, the d3 with only Andalusia carrying a liege, the Reconquista
-  reading it both ways, and the proof that the war stream moved no other
+  count, the d2 with only Andalusia carrying a liege (a d3 until the
+  2026-08-22 Iberia split), the Reconquista marching the same sides on
+  either roll, and the proof that the war stream moved no other
   layer. *The campaign sim*: catching up equalling living through it, the
   idempotent re-roll, the save round-trip, the watermark, marks only on
   pulse days, both caps at 200/800/2000 days, a world left alone staying
@@ -954,11 +968,13 @@ a pointer: what the file is, how it's run, where its docs are.
   (THE WOOL, THE KING'S TOUCH, THE ELECTORS, THE FROZEN ROAD, THE WATER
   COURT, THE FLOOD MARK).
   **THE ROLLED WARS closed the arc** (2026-08-22, session 5; rules.md's
-  The Rolled Wars add-on): `WARS_ROLLED` (3), `VASSALAGE` (Andalusia's d3),
+  The Rolled Wars add-on): `WARS_ROLLED` (3), `VASSALAGE` (Andalusia's
+  roll — a d3 at ship, a d2 since the 2026-08-22 Iberia split retired
+  Umaia as a possible liege and the Reconquista's vassal branch with it),
   `CRUSADERS`, the six authored `WAR_TEMPLATES` (`WAR_TEMPLATES_BY_KEY`
   beside them) with their belligerents, postures, authored heralds and
   hand-drawn `theater` tuples of (row, column) map cells, and the roll
-  itself -- `_belligerents` / `war_herald` / `new_war` / `roll_wars`, which
+  itself -- `_belligerents` / `new_war` / `roll_wars`, which
   `open_world` calls LAST as its world-level pass, on a stream of its own
   (`random.Random(f"wars:{seed}")`) so no other layer moved. Readers:
   `wars_of` / `war_side` / `land_names` / `war_lines` (the block
@@ -2436,7 +2452,7 @@ mechanic *does* and *why* is rules.md's job.
   dm.md's "The tongues at the table", writing.md's "The nine name
   sounds"). Two small features, one on each side of the country/culture
   split above, both of them CONTENT plus one rule. The TOWNS:
-  `places.TILE_TOWN_NAMES` (164 real historical towns) + `TOWN_BANDS` /
+  `places.TILE_TOWN_NAMES` (real historical towns) + `TOWN_BANDS` /
   `TOWN_GRADE` + `places.tile_town_name`, consulted by
   `materialize_slot` before `_next_settlement_name`, linted by
   `_validate_town_names` inside `_validate_countries`. Nothing is stored

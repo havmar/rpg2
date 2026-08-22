@@ -7058,3 +7058,71 @@ the interim warless world, and this is the session that was coming.
 
 **Part 1 is complete.** Five sessions, 2026-08-21 to 2026-08-22, designlog
 (K) through (O). plan.md keeps the roadmap beyond it and nothing else.
+
+## 2026-08-22 (P) — The naming pass & the Iberia split: Uppsala, Latin Byzantium, English Phyrascia, and the Reconquista come true
+
+A post-arc content-and-correction session off five designer directions.
+Four shipped as changes; one was a question the codebase already answered
+right.
+
+**Uppsala placed.** The designer asked for an Uppsala. All four of Thule's
+town-capable tiles already carry their names (Trondheim, Roskilde, Lund,
+Ribe), so it landed the way Stockholm did: a HISTORICAL town, at (2,23) in
+the tundra band directly north of the capital — the last town before the
+winter wastes, and (deliberately, for pagan Thule) the old temple seat: the
+grove's own town. `HISTORICAL_CITIES` is twenty-one entries now and the
+town-name arithmetic moved from 183/19/164 to 183/20/163 (Toledo's
+promotion below is the other half of that).
+
+**Byzantium names in Latin, Phyrascia's in English.** Both countries had
+kept their pre-Europe pools whole — Byzantium wearing the old Mortellarian
+Romance sounds (Castavera, Fontela) and Phyrascia the old Firascir
+syllables (Sturford, Ackham, Bradwhitchip). The catalog already says
+Byzantium's tongue IS Latin, so its settlements now speak it: -um and -ia
+for the great seats, -anum estates and -etum orchards for the villages,
+true diminutives (Viculus, Casulae) for the hamlets. Phyrascia's pools are
+now plain English/Anglo-Saxon compounds off real roots (Ashenden, Cranmere,
+Osbridge, Hazelcot), full-size at every tier, and its PERSON pool went
+Anglo-Saxon in the same pass (Alfred, Godwin, Edith, Mildred — out went
+Kael, Veld, Yssa). writing.md's nine-sounds table re-rowed for both.
+
+**The Thule religion check (no change).** Asked whether any religion card
+puts Thule into the schism with Byzantium: no. The schism clock runs
+between exactly Byzantium and Seraptania (the two rite relations and the
+joint-synod card name those two crowns and nobody else), the Sun
+communion's options are scoped `("western", "southern")` — Thule is
+`norse` and gets neither — and Thule's own facts are all pagan (the grove,
+the ship burial, the thread, the land-spirits, the drowned, the law at the
+stone). The premise "Thule has never had the other lands' religion" is
+already structural.
+
+**The Iberia split — Andalusia is its own pseudo-Christian crown.** The
+designer overruled the arc's "can be Umaia's vassal" frame: Andalusia is
+never Umaia's man. The peninsula split instead — its southern eight tiles
+(rows 14-15) are Umaia's al-Andalus now, the north is Andalusia, Byzantium's
+vassal or free ally. The calls that had to be made:
+
+- **Toledo is Andalusia's capital**, promoted out of `TILE_TOWN_NAMES` to a
+  historical city: the old Visigothic seat, the reconquest's own symbol,
+  and it stands at (13,4) in the middle of the northern half.
+- **Cordoba became Qurtuba** — Umaia's city (the historical Umayyad seat in
+  Iberia, so the analog names itself), capital flag off. The five moved
+  town tiles wear Umaian names too: Ishbiliya, Balansiya, Qadis, Malaqa,
+  Gharnata. The south now DRAWS Umaia's generic pools for its villages,
+  which is right: walk south over the sierra and the names change tongue.
+- **The vassalage is a d2** (Byzantium's vassal / independent), and an
+  independent Andalusia is still Byzantium's ally — the roll decides the
+  map legend's paperwork, never the war's sides.
+- **The Reconquista is finally its own name**: Andalusia attacking Umaia's
+  al-Andalus with Byzantine ships closing the strait, theater on the moved
+  eight cells plus the strait's far shore (16,7)/(16,8). The vassal-defender
+  branch, `vassal_herald` and `war_herald` are gone; `_belligerents` reads
+  no world state now.
+
+**What re-pinned.** `PINNED_COUNTRY_BIOMES` / `PINNED_COUNTRY_BANDS`
+(Andalusia 9 tiles, Umaia 68), the capitals set (Toledo for Cordoba), the
+town-name census (andalusia 2, umaia 42), and the rumor-radius suite's
+seeds (21 → 222 for the Dublin/London pair, 18 → 5 for the one-day group):
+Uppsala's slots and the start draw sit on the same derived stream, so the
+uniform start moved — the third re-pin of that class, and the docstring
+keeps the lineage. benchlog carries the fresh worldgen sweep.

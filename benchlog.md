@@ -2810,3 +2810,41 @@ warning).
 out of tables this session authored (`WAR_PULSE`, `OCCUPIED_CAP`,
 `SCAR_CAP`, `EVENT_WEIGHTS`, `SCAR_DAYS`, `SIEGE_STRENGTH`), and they are
 hand-set and unverified at the table like every other conquest knob.
+
+## 2026-08-22 (D) — The naming pass & the Iberia split: the vassalage re-measured, the census a hair richer
+
+`python bench_worldgen.py --seeds 500`, run after designlog (P): Uppsala
+seated as a Thule historical town, the peninsula's southern eight tiles
+repainted from Andalusia to Umaia, Toledo promoted to Andalusia's capital,
+and `VASSALAGE` cut from a d3 to a d2 (Byzantium's vassal / independent —
+Umaia's face is gone).
+
+### What moved, and why
+
+```
+  Andalusia: independent 54%, byzantium 46%     (was 36 / 34 umaia / 30)
+  rolled: hundred-years 54%, horde 54%, vikings 52%,
+          eastern-war 49%, reconquista 47%, crusade 44%
+  countries at war (of 9)            mean 5.9 (min 3.0, max 8.0)
+  standing war marks a world         mean 20.0 (min 11.0, max 24.0)
+  settlements occupied a world       mean 5.81
+  a siege takes the town: village 50%, town 50%, city 45%
+```
+
+The vassalage is the intended change: two faces now, near-even. The
+template shares moved only by the roll's consumption order (same 3-of-6
+draw); every downstream campaign number is inside noise of entry (C).
+
+The census: total settlements **618.4** (was 617.5) — Uppsala's authored
+town is the one new seat — and the city mean is **19.6** (was 18.7):
+Toledo is an authored CITY now where the mid-band tile it stands on could
+roll at most a town, which is a promotion, not a new place. Souls mean
+1,523,779; slots per tile 1.97; empty tiles 49 — unmoved. The harvest sweep
+is identical save the start-relative line: **trouble within 5 days of the
+start 86%** (was 87%), because Uppsala's slots joined the uniform start
+draw and moved which settlement some seeds open at. Trade: routes 59, ports
+27, sea lanes 26, Falun unfed in 500/500 — the network never read the
+country overlay; crossroads 32.7 (was 31.7) moved with the census roll's
+consumption, not with any law.
+
+Nothing was tuned; the numbers are the record of the content change.

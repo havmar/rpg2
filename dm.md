@@ -385,8 +385,8 @@ table:
 | Vellisclavia | Poland and the Rus | Vellisclav | forest and marsh, long roads, the steppe at its back |
 | Thule | Scandinavia | Norse | fjords, pine, longships, the old gods, the assembly stone, the feud |
 | Byzantium | Italy, the Balkans, Anatolia | Latin | cities, olives, the old empire's roads |
-| Andalusia | Iberia | Andalusian | dry hills, watered valleys, silver counted twice |
-| Umaia | Africa and the Levant | Umaian | desert behind, a green shore, the great river's granary |
+| Andalusia | northern Iberia | Andalusian | dry hills, walled cities, the old rite, the lost south |
+| Umaia | Africa, the Levant and southern Iberia | Umaian | desert behind, a green shore, the great river's granary |
 | Tergal | the Pontic steppe | Tergal | herd roads, clans, one high chief |
 
 - **A country is names and identity; a CULTURE is content.** Phyrascia and
@@ -399,7 +399,7 @@ table:
   Vellisclavia, sea-king in Thule, prince in Andalusia, sultan in Umaia,
   high chief in Tergal. The script prints it; use it.
 - **Nine capitals**: London, Paris, Prague, Stockholm, Moscow,
-  Constantinople, Cordoba, Cairo, Kyiv. The four great cities of the age
+  Constantinople, Toledo, Cairo, Kyiv. The four great cities of the age
   are Paris, Venice, Constantinople and Cairo.
 - **Thule has its own packet now** (2026-08-22). Play it off three
   things: the SEA is the economy (the ships going out in spring, the
@@ -428,7 +428,7 @@ table:
 - **The towns are real places.** Every tile that can seat a town or a city
   carries an authored name, and a tile's chief settlement wears it when
   the census gives it town tier or better: York, Rouen, Cologne, Krakow,
-  Novgorod, Milan, Naples, Thessalonica, Granada, Alexandria, Damascus,
+  Novgorod, Milan, Naples, Thessalonica, Gharnata, Alexandria, Damascus,
   Fez, Sarai, Kaffa and 150 more. Villages and hamlets keep the invented
   country pools. So when the party walks into a named town, the name is
   doing real work — lean on what that town is known for, and do NOT treat
@@ -1574,7 +1574,7 @@ than the fights WITHOUT pages of narration:
   metropolis (a hundred thousand and more -- Cairo, Paris, Venice,
   Constantinople). Capital is a separate FLAG, and there are NINE of them
   (2026-08-21): London, Paris, Prague, Stockholm, Moscow, Constantinople,
-  Cordoba, Cairo, Kyiv. A
+  Toledo, Cairo, Kyiv. A
   **hamlet has no smith**: it is a well, a shrine, a cot and a store, its
   board is live one time in twenty, it hires one face a day, and it is not
   drawn on the map. Play it as a place to pass through -- steel, a real
