@@ -1557,8 +1557,9 @@ class TheEncounterOutlet(unittest.TestCase):
         world = _world()
         _all_quiet(world)
         worldsim.set_state(world, "tergal", "raiding", 5)
-        self.assertIn("raiders-out", worldsim.state_ids(world, "phyrascia"))
-        road = worldsim.encounter_entries(world, "phyrascia", "road")
+        self.assertIn("raiders-out",
+                      worldsim.state_ids(world, "vellisclavia"))
+        road = worldsim.encounter_entries(world, "vellisclavia", "road")
         self.assertEqual([e["as"] for e in road],
                          [worldsim.STATE_ENCOUNTERS["raiders-out"]["as"]])
 
@@ -1728,32 +1729,80 @@ class TheEconomyFloorContent(unittest.TestCase):
             self.assertIn(edge["to"], places.LAND_SPECS)
 
     def test_every_land_sells_what_the_rules_say_it_sells(self) -> None:
-        """rules.md's three-country economy, edge by edge. A bare COUNT of
+        """rules.md's economy, edge by edge, over the LAND-TO-LAND table
+        the norse packet session authored (2026-08-22). A bare COUNT of
         the table said nothing about whether the goods were there -- the
         Europe closure shipped with only the granary built and the count
         green (2026-08-15)."""
-        sells = {"phyrascia": {"grain", "timber"},
-                 "byzantium": {"coin", "trade"},
-                 "tergal": {"horses", "livestock", "service"}}
+        sells = {"vellisclavia": {"grain"},
+                 "umaia": {"grain", "trade"},
+                 "thule": {"raid", "timber", "tribute"},
+                 "byzantium": {"coin", "trade", "rite"},
+                 "phyrascia": {"wool", "union"},
+                 "andalusia": {"horses"},
+                 "tergal": {"horses", "livestock", "service", "raid",
+                            "hostage"}}
         for polity, goods in sells.items():
             sold = {e["kind"] for e in worldsim.RELATIONS
                     if e["from"] == polity}
-            self.assertTrue(goods <= sold, f"{polity} does not sell {goods - sold}")
+            self.assertTrue(goods <= sold,
+                            f"{polity} does not sell {goods - sold}")
         # ...and every export is FELT: a derived word with a price on it.
+        traded = {"grain", "timber", "coin", "trade", "horses", "livestock",
+                  "service", "wool"}
         for edge in worldsim.RELATIONS:
-            if edge["kind"] not in {g for gs in sells.values() for g in gs}:
+            if edge["kind"] not in traded:
                 continue
             self.assertIn(edge["then"], worldsim.STATE_WORDS)
             self.assertTrue(worldsim.STATE_MENU.get(edge["then"]),
                             f"{edge['then']} reaches no shelf")
         # ...and the drought stands beside the failed harvest at the head
-        # of the grain edges (plan.md's own instruction to this session).
-        grain = [e for e in worldsim.RELATIONS
-                 if e["from"] == "phyrascia" and e["then"] == "grain-scarce"]
-        self.assertTrue(grain)
+        # of BOTH grain roads (plan.md's instruction to the floor session).
+        grain = [e for e in worldsim.RELATIONS if e["kind"] == "grain"]
+        self.assertEqual(len(grain), 2)
         for edge in grain:
+            self.assertEqual(edge["then"], "grain-scarce")
             self.assertIn("drought", edge["when"])
             self.assertIn("harvest-failed", edge["when"])
+
+    def test_the_relations_table_is_authored_land_to_land(self) -> None:
+        """The re-authored table (2026-08-22): twenty hand-placed edges
+        between named countries, every land reached, no edge naming a
+        culture any more, and every `when` a state some card of the SOURCE
+        land can actually hold."""
+        self.assertEqual(len(worldsim.RELATIONS), 20)
+        self.assertEqual(len(worldsim._RELATIONS), len(worldsim.RELATIONS))
+        reached = {p for e in worldsim.RELATIONS
+                   for p in (e["from"], e["to"])}
+        self.assertEqual(reached, set(places.LAND_SPECS))
+        for edge in worldsim.RELATIONS:
+            for side in ("from", "to"):
+                self.assertNotIn(edge[side], places.CULTURE_LANDS)
+            settable = {s for c in worldsim.CARDS
+                        if worldsim.in_land(c, edge["from"])
+                        for group in ("set", "while")
+                        for s in (c["outlets"].get("state")
+                                  or {}).get(group, ())}
+            self.assertTrue(set(edge["when"]) & settable, edge["kind"])
+
+    def test_the_wool_axis_is_wired_all_the_way_to_a_shelf(self) -> None:
+        """The era anchor's own trade, as data: Phyrascia grows it,
+        Teutonia weaves it, and the derived word has a STATE_MENU row so
+        the party can feel the stopped clip at a counter."""
+        wool = [e for e in worldsim.RELATIONS if e["kind"] == "wool"]
+        self.assertEqual(len(wool), 1)
+        self.assertEqual((wool[0]["from"], wool[0]["to"]),
+                         ("phyrascia", "teutonia"))
+        self.assertEqual(wool[0]["then"], "wool-short")
+        self.assertIn("wool-short", worldsim.STATE_WORDS)
+        self.assertTrue(worldsim.STATE_MENU["wool-short"])
+        world = _world()
+        _all_quiet(world)
+        worldsim.set_state(world, "phyrascia", wool[0]["when"][0], 4)
+        self.assertIn("wool-short",
+                      worldsim.state_ids(world, "teutonia"))
+        self.assertNotIn("wool-short",
+                         worldsim.state_ids(world, "vellisclavia"))
 
     def test_every_posted_job_is_a_legal_quest_template(self) -> None:
         for spec in worldsim.CARDS:
@@ -2373,15 +2422,18 @@ class ThePoliticsContent(unittest.TestCase):
     def test_each_land_s_troubles_come_from_its_own_axis(self) -> None:
         """The overlap guard, over cultures since the nine: a card belongs
         to at most one CULTURE unless it is a crown-wide succession card,
-        which every crowned land shares by construction."""
+        which every crowned land shares by construction. Since the card
+        audit (2026-08-22) a card may also be ONE LAND's -- that is what
+        narrowing means -- but never a subset of a culture larger than
+        one, which would be a packet nobody can name."""
         for spec in _politics_cards():
             if spec["admits"]["succession"]:
                 continue
             cultures = {places.CULTURE_OF[p] for p in spec["land"]}
             self.assertEqual(len(cultures), 1, spec["key"])
-            self.assertEqual(set(spec["land"]),
-                             set(places.CULTURE_LANDS[cultures.pop()]),
-                             spec["key"])
+            whole = set(places.CULTURE_LANDS[cultures.pop()])
+            self.assertIn(set(spec["land"]),
+                          [whole] + [{p} for p in whole], spec["key"])
 
     def test_every_instrument_is_an_edge_with_a_card_in_it(self) -> None:
         """The four diplomatic instruments: each is a state one land holds,
@@ -2550,13 +2602,61 @@ class TheLastTwoRecordKinds(unittest.TestCase):
             self.assertNotIn(entry["key"], machinery, entry["key"])
 
     def test_every_land_carries_facts_of_its_own(self) -> None:
-        """Every land, and the eight that wear a finished packet keep the
-        old floor of five. Thule owes three until the norse packet lands
-        (2026-08-21: THE KNOCKERS, its League chapter and THE GROVE)."""
+        """Every land carries lore, and since 2026-08-22 every land carries
+        at least one fact that is ITS OWN rather than its culture's -- the
+        signature fact. The floor of four is what a country with no packet
+        of its own now wears (Andalusia: the two southern facts, THE
+        KNOCKERS and THE WATER COURT); Thule's packet took it to eight."""
         for polity in places.LAND_SPECS:
-            floor = 3 if polity == "thule" else 5
-            self.assertGreaterEqual(len(worldsim.facts_of(polity)), floor,
+            self.assertGreaterEqual(len(worldsim.facts_of(polity)), 4,
                                     polity)
+            own = [f for f in worldsim.facts_of(polity)
+                   if f["land"] == (polity,)]
+            self.assertTrue(own, polity)
+
+    def test_the_norse_packet_is_scoped_like_the_steppe_s(self) -> None:
+        """The norse packet (2026-08-22), against the scope Tergal set:
+        its own crisis deck, four tensions, six faction edges, seven
+        facts, one option and four constitutions."""
+        own = [c for c in worldsim.CARDS
+               if c["land"] == ("thule",) and c["track"] == "crisis"]
+        self.assertGreaterEqual(len(own), 16)
+        weather = [c for c in worldsim.CARDS
+                   if c["land"] == ("thule",) and c["track"] == "weather"]
+        self.assertEqual([c["key"] for c in weather], ["norse/white-storm"])
+        self.assertEqual(len(worldsim.TENSIONS["thule"]), 4)
+        edges = [e for e in worldsim.FACTION_EDGES
+                 if e["land"] == ("thule",)]
+        self.assertEqual(len(edges), 6)
+        self.assertEqual(len([f for f in worldsim.FACTS
+                              if f["land"] == ("thule",)]), 7)
+        self.assertEqual([o["key"] for o in worldsim.options_of("thule")],
+                         ["norse/weather-witch"])
+        self.assertEqual(len(worldsim.CONSTITUTIONS["thule"]), 4)
+        # ...and every one of the four tensions can actually be rolled and
+        # gates cards of its own.
+        for spec in worldsim.TENSIONS["thule"]:
+            self.assertNotIn(spec["key"],
+                             worldsim.STANDING_TENSIONS.get("thule", ()))
+            gated = [c for c in worldsim.CARDS
+                     if worldsim.in_land(c, "thule")
+                     and spec["key"] in c["admits"]["tension"]]
+            self.assertTrue(gated, spec["key"])
+            for name in spec["factions"]:
+                self.assertIn(name, worldsim.FACTIONS)
+
+    def test_the_norse_deck_is_reachable_end_to_end(self) -> None:
+        """Every crisis card of Thule's own enters a rolled deck under
+        some tension the land can hold -- the packet is a POOL, not a
+        description, and a card no tension admits is dead data."""
+        world = _world(88)
+        keys = {c["key"] for c in worldsim.CARDS
+                if c["land"] == ("thule",) and c["track"] == "crisis"}
+        reached: set[str] = set()
+        for spec in worldsim.TENSIONS["thule"]:
+            reached |= set(worldsim._deck(world, "thule", "crisis",
+                                          (spec["key"],)))
+        self.assertFalse(keys - reached)
 
     def test_an_option_only_does_what_the_engine_already_does(self) -> None:
         """The closed verb set. An option that needed new machinery would
@@ -2681,10 +2781,31 @@ class TheServicesCounter(unittest.TestCase):
             worldsim.roll_world(world, day)
             self.assertEqual(worldsim.weather_of(world, "tergal"), "rain",
                              f"day {day} was paid for")
-        self.assertIn("rain-bought", worldsim.state_ids(world, "tergal"))
+        self.assertIn("sky-bought", worldsim.state_ids(world, "tergal"))
         worldsim.roll_world(world, 6 + spec["holds"])
-        self.assertNotIn("rain-bought", worldsim.state_ids(world, "tergal"))
+        self.assertNotIn("sky-bought", worldsim.state_ids(world, "tergal"))
         self.assertIsNone(_layer(world, "tergal")["bought_sky"])
+
+    def test_the_weather_witch_sells_the_other_sky(self) -> None:
+        """The rain stone's northern cousin (2026-08-22): the same verb,
+        the same one marker, a different word. Two weather-workers in one
+        game share `sky-bought`, so no land can hold two bought skies."""
+        world = _world(1)               # a seed whose Thule is not
+        state = self._state(world, "thule", day=5)      # already under
+        self._run(state, "weather-witch")               # the white storm
+        spec = worldsim.OPTIONS_BY_KEY["norse/weather-witch"]
+        self.assertEqual(spec["word"], "wind")
+        # A card that IS the weather still outranks a bought sky -- the
+        # rule the storm has always run under, and the reason the witch
+        # will not sell into a standing white storm at all.
+        _layer(world, "thule")["weather_live"] = None
+        for day in range(6, 6 + spec["holds"]):
+            worldsim.roll_world(world, day)
+            self.assertEqual(worldsim.weather_of(world, "thule"), "wind",
+                             f"day {day} was paid for")
+        self.assertIn("sky-bought", worldsim.state_ids(world, "thule"))
+        self.assertIn("not sold", self._run(
+            self._state(world, "phyrascia"), "weather-witch"))
 
     def test_a_bought_sky_still_runs_the_spells(self) -> None:
         world = _world()
@@ -2740,13 +2861,12 @@ class TheReligionAndMagicContent(unittest.TestCase):
     """What the session was asked to author, asserted as data."""
 
     def test_the_magic_packets_reach_every_land_too(self) -> None:
-        """Three magic cards a land, and two in Thule until the norse
-        packet lands (2026-08-21)."""
+        """Three magic cards a land -- Thule included since the norse
+        packet landed (2026-08-22: the seer and the oath)."""
         for polity in places.LAND_SPECS:
             own = [c for c in worldsim.MAGIC_CARDS
                    if worldsim.in_land(c, polity)]
-            self.assertGreaterEqual(own and len(own), 2 if polity == "thule"
-                                    else 3, polity)
+            self.assertGreaterEqual(len(own), 3, polity)
 
     def test_almost_nothing_in_the_rung_is_ungated(self) -> None:
         """The gate is what keeps a packet a wide POOL instead of a content
@@ -2800,19 +2920,28 @@ class TheReligionAndMagicContent(unittest.TestCase):
 
     def test_the_schism_clock_runs_both_ways(self) -> None:
         """One church, two rites, and cards on the edge fire in BOTH
-        lands (worldsim.md's Sun communion)."""
+        lands (worldsim.md's Sun communion). Since the card audit
+        (2026-08-22) the clock runs between exactly two CROWNS: Byzantium,
+        which keeps the death-face, and Seraptania, the western church's
+        eldest daughter."""
         world = _flat_world()
         synod = worldsim.CARDS_BY_KEY["communion/the-synod"]
-        self.assertEqual(set(synod["land"]), set(_SUN_LANDS))
+        self.assertEqual(set(synod["land"]), {"byzantium", "seraptania"})
         worldsim.set_state(world, "byzantium", "dead-abroad", 3)
-        self.assertIn("schism-near", worldsim.state_ids(world, "phyrascia"))
-        self.assertTrue(worldsim.admits(world, "phyrascia", synod["admits"]))
+        self.assertIn("schism-near",
+                      worldsim.state_ids(world, "seraptania"))
+        self.assertTrue(worldsim.admits(world, "seraptania",
+                                        synod["admits"]))
         worldsim.drop_state(world, "byzantium", "dead-abroad", 4)
-        worldsim.set_state(world, "phyrascia", "interdict", 5)
+        worldsim.set_state(world, "seraptania", "interdict", 5)
         self.assertIn("schism-near",
                       worldsim.state_ids(world, "byzantium"))
         self.assertTrue(worldsim.admits(world, "byzantium",
                                         synod["admits"]))
+        # ...and nobody else is in the argument at all.
+        for polity in ("phyrascia", "teutonia", "umaia", "andalusia"):
+            self.assertNotIn("schism-near",
+                             worldsim.state_ids(world, polity), polity)
 
     def test_the_temple_sells_a_burial_and_a_blessing_and_no_penance(self
                                                                     ) -> None:
@@ -2892,6 +3021,108 @@ class TheReligionAndMagicContent(unittest.TestCase):
             for line in spec["outlets"].values():
                 if isinstance(line, str):
                     self.assertTrue(line.isascii(), spec["key"])
+
+
+class TheCardAudit(unittest.TestCase):
+    """The re-keyed western and southern packets, read once against their
+    new scope (2026-08-22). Culture-wide by DEFAULT; land-specific content
+    narrows to exactly one land, and every narrowing below is a call the
+    audit settled and the designlog records."""
+
+    NARROWED = {
+        # the death-face cluster and the schism, to the southern heir
+        "byzantium/penance-season": "byzantium",
+        "byzantium/carnival": "byzantium",
+        "byzantium/day-of-the-dead": "byzantium",
+        "byzantium/two-hoods": "byzantium",
+        "byzantium/debate-riot": "byzantium",
+        "byzantium/necromancy-open": "byzantium",
+        "byzantium/necromancy-purge": "byzantium",
+        # the close-built northern town's own sky
+        "weather/smog": "teutonia",
+        # the cards that name another country, or read an edge that now
+        # points at exactly one land
+        "vellisclavia/settled-warband": "vellisclavia",
+        "vellisclavia/hostage-in-the-camp": "vellisclavia",
+        "phyrascia/kin-claim": "phyrascia",
+        "phyrascia/danegeld": "phyrascia",
+        "seraptania/union-inherits": "seraptania",
+    }
+
+    def test_every_narrowed_card_sits_in_exactly_one_land(self) -> None:
+        for key, polity in self.NARROWED.items():
+            spec = worldsim.CARDS_BY_KEY[key]
+            self.assertEqual(spec["land"], (polity,), key)
+
+    def test_the_rest_of_the_two_packets_is_still_culture_wide(self) -> None:
+        """The default did not move: a card that was not narrowed still
+        covers its whole culture, so two kingdoms of one culture still
+        draw the same deck."""
+        for spec in worldsim.CARDS:
+            if spec["key"] in self.NARROWED or len(spec["land"]) == 1:
+                continue
+            if worldsim.ANY_LAND in spec["land"]:
+                continue
+            if spec["key"] == "communion/the-synod":
+                continue        # the schism's own card, and the schism
+            #                     runs between two CROWNS of two cultures
+            cultures = {places.CULTURE_OF[p] for p in spec["land"]}
+            covered = {p for c in cultures
+                       for p in places.CULTURE_LANDS[c]}
+            self.assertEqual(set(spec["land"]), covered, spec["key"])
+
+    def test_a_narrowed_card_id_names_its_land(self) -> None:
+        """The id namespace follows the scope: a card only one country
+        draws is keyed by that country, not by a culture it no longer
+        covers. The track namespaces (`weather/`, `crown/`, `mining/`,
+        `communion/`) are exempt -- they name a track or an argument, not
+        a packet."""
+        tracks = ("weather/", "crown/", "mining/", "communion/", "magic/",
+                  "sun/")
+        for key, polity in self.NARROWED.items():
+            if key.startswith(tracks):
+                continue
+            self.assertTrue(key.startswith(polity + "/"), key)
+
+    def test_the_pendulum_calendar_is_the_heirs_alone(self) -> None:
+        """Byzantium keeps the death-face: its own tension, its own two
+        faction edges and its own three facts. Andalusia and Umaia wear
+        the culture-generic south and none of it."""
+        keys = {t["key"] for t in worldsim.TENSIONS["byzantium"]}
+        self.assertIn("penitents-vs-carnival", keys)
+        for polity in ("andalusia", "umaia"):
+            self.assertNotIn("penitents-vs-carnival",
+                             {t["key"] for t in worldsim.TENSIONS[polity]})
+        for entry in worldsim.FACTION_EDGES:
+            if entry["from"] in ("penitents", "carnival"):
+                self.assertEqual(entry["land"], ("byzantium",),
+                                 entry["key"])
+        for key in ("two-faces", "bone-architecture",
+                    "necromantic-affinity"):
+            spec = next(f for f in worldsim.FACTS if f["key"] == key)
+            self.assertEqual(spec["land"], ("byzantium",), key)
+
+    def test_a_land_row_is_its_cultures_plus_its_own(self) -> None:
+        """`_by_land` is ADDITIVE since the audit, which is the mechanism
+        the narrowing needed: a land carries its culture's table and its
+        own beside it, never instead of it."""
+        southern = {t["key"] for t in worldsim._TENSIONS["southern"]}
+        self.assertTrue(
+            southern <= {t["key"] for t in worldsim.TENSIONS["byzantium"]})
+        self.assertEqual(len(worldsim.TENSIONS["byzantium"]),
+                         len(southern) + 1)
+
+    def test_no_card_names_a_country_that_does_not_hold_it(self) -> None:
+        """The audit's plain reading: a card whose text names another
+        country is that BORDER's card. Only Vellisclavia touches the
+        steppe, so only Vellisclavia says Tergal."""
+        for spec in worldsim.CARDS:
+            text = (spec["name"] + " "
+                    + (spec["outlets"].get("news") or "")).lower()
+            if "tergal" not in text:
+                continue
+            self.assertEqual(set(spec["land"]), {"vellisclavia"},
+                             spec["key"])
 
 
 if __name__ == "__main__":

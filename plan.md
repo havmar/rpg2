@@ -22,8 +22,9 @@ This file now carries one ACTIVE build contract again: **THE MEDIEVAL
 WORLD ARC, Part 1** (designed 2026-08-21, designlog (J)) — nine countries,
 names and tongues, the Thule packet, and the rolled wars. Its sessions 1
 (the fallen banner, designlog (K)) and 2 (the map of nine, designlog (L))
-shipped on 2026-08-21, and session 3 (the towns & the tongues, designlog
-(M)) on 2026-08-22; sessions 4 and 5 are the next builds. Below the
+shipped on 2026-08-21, and sessions 3 (the towns & the tongues, designlog
+(M)) and 4 (the norse packet & the nine-land relations, designlog (N)) on
+2026-08-22; session 5 is the last build. Below the
 contract is the roadmap BEYOND
 it: main points only, each a future design conversation, none scheduled.
 Two habits from the earlier arcs continue to apply everywhere — **hidden
@@ -51,7 +52,13 @@ the towns & the tongues** shipped on 2026-08-22 and is gone as well: the
 164 authored town names and the chief-slot naming rule, and the nine
 tongues on the sheet (designlog (M); rules.md's "The towns have REAL
 names" and "Tongues", dm.md's "The tongues at the table", writing.md's
-"The nine name sounds"). Sessions 4 and 5 follow.
+"The nine name sounds"). **Session 4 — the norse packet & the
+nine-land relations** shipped on 2026-08-22 and is gone as well: Thule's
+full card packet, the audit that read every re-keyed western and southern
+card against its new scope, the twenty authored land-to-land relation
+edges that replaced the culture cross product, and a signature fact for
+every country (designlog (N); rules.md's "Relations" and "Thule keeps the
+old gods", dm.md's Thule row). Session 5 follows.
 
 ## The frame
 
@@ -121,70 +128,6 @@ Settled calls, so they stay settled:
   `world["lands"]["andalusia"]["liege"]` (a polity key or None), read
   by `politics_lines`, the map legend and the Reconquista template. No
   other mechanical effect in this arc.
-
-## Session 4 — the norse packet & the nine-land relations
-
-**The Thule deck**, scoped like Tergal's (Tergal: 18 own crisis cards +
-1 weather + the shared crown cluster, 4 tensions, 6 faction edges, 8
-facts, 1 option, 4 constitutions). Pagan vikings; the sea is the
-economy and the law is the thing. Authored (final copy per writing.md
-at build):
-
-- Crisis cards (~16-18): `norse/raid-season` (the ships go out; sets
-  `raiding`), `norse/kings-share` (the sea-king claims a share of every
-  catch), `norse/blood-feud`, `norse/weregild` (a man's price, haggled),
-  `norse/the-thing` (the assembly at the stone), `norse/outlawed`
-  (three years an outlaw; he takes to the hills), `norse/berserk-oath`,
-  `norse/ring-giver-poor` (the chief's silver runs out; his men look
-  elsewhere), `norse/land-taking` (a younger son stakes ground with
-  hazel poles), `norse/grove-sacrifice` (nine of every kind hang at the
-  grove), `norse/seer-speaks` (the seer names next winter's dead),
-  `norse/curse-pole` (a carved pole with a neighbor's name on it),
-  `norse/drowned-crew` (a ship did not come home), `norse/whale-ashore`
-  (meat, and a brawl over shares), `norse/herring-run` (every boat
-  out), `norse/ice-locked` (the harbors freeze shut), `norse/wolf-winter`
-  (fodder gone, wolves at the byres), `norse/danegeld` (a foreign crown
-  pays the fleet to stay home; sets `tribute-taken`). Plus the crown
-  cluster where it fits and one weather card, `norse/white-storm`.
-- Tensions (4): `jarls-vs-thing` (jarls / freeholders), `old-vs-new-gods`
-  (grove priests / missionaries), `sea-vs-land` (sea-kings /
-  land-chiefs), `feud` (two feuding houses). Faction edges: 6 over
-  those blocs.
-- Facts (7): THE GROVE (from session 2), ship-burial, the seer and the
-  thread of fates, the land-spirits, the drowned belong to the sea, the
-  thing's law and outlawry, and Thule's League fact naming Falun.
-- Option (1): `norse/weather-witch` — bought wind (`does="sky"`), the
-  rain stone's northern cousin.
-- Constitutions (4, default-heavy): THE SEA-KINGS, THE ALLTHING, THE
-  HIGH KING, THE SCATTERED JARLS.
-
-**The card audit.** Every re-keyed western and southern card is read
-once against its new scope: culture-wide by default; land-specific
-content narrows to one land (the necromancy/death-rite/carnival cluster
-and the schism material to Byzantium; `weather/smog` to Teutonia, the
-close-built northern towns' own; anything naming a river, coast or city
-to the land that holds it now). The calls the audit settles go in the
-designlog, per the standing rule.
-
-**The relations table**, re-authored whole for nine lands (~20 edges,
-every land reached; same record, same one-hop derivation): Baltic grain
-vellisclavia->thule and Nile grain umaia->byzantium (`grain-scarce`);
-steppe raids tergal->vellisclavia and sea raids thule->phyrascia,
-thule->seraptania (`raiders-out`); timber thule->seraptania
-(`timber-dear`); Lombard coin byzantium->seraptania (`credit-dry`); the
-southern road byzantium->teutonia (`southern-goods-short`); horses
-tergal->vellisclavia and andalusia->seraptania (`horses-dear`);
-livestock tergal->byzantium (`hides-dear`); hired swords
-tergal->byzantium (`swords-gone`); wool phyrascia->teutonia (new word
-`wool-short`, one `STATE_MENU` row); gold caravans umaia->andalusia
-(`southern-goods-short`); the diplomatic instruments re-homed — hostage
-tergal->vellisclavia, danegeld thule->phyrascia, marriage
-seraptania->phyrascia, union phyrascia->seraptania (the claim to the
-French crown); and the schism clock byzantium<->seraptania (the old
-rite and the western church, both directions). Each land also owes at
-least one standing fact of its own by the end of this session
-(Seraptania, Teutonia, Vellisclavia, Andalusia, Umaia and Phyrascia
-each get one signature fact beside their culture's shared lore).
 
 ## Session 5 — the rolled wars & the campaign sim
 

@@ -6686,3 +6686,193 @@ world, no village wearing a real one, the save and the seed), the tongues
 reaches all eight of a Byzantine's possible seconds, and the NPC and the
 sim body that carry none) and the SPEAKS line (both sheets, the absent
 row, the save round-trip, and a real `new --seed 5 --level 1`).
+
+## 2026-08-22 (N) — Session 4 of the medieval world arc: the norse packet & the nine-land relations
+
+**What shipped.** plan.md's Session 4 whole, and it is three pieces of one
+job: Thule stopped being a stub, the two big re-keyed packets were read
+once against their new scope, and the relations table was re-authored land
+to land. Nothing about the ground, the census, the harvest or the routes
+moved: `bench_worldgen.py --seeds 500` came back identical to session 3's
+run (benchlog 2026-08-22 (B)).
+
+**The Thule deck**, scoped exactly like Tergal's. Eighteen crisis cards of
+its own, spread over the four content tuples the way the steppe's are: the
+sea and the year in the base deck (`norse/raid-season`, `herring-run`,
+`whale-ashore`, `ice-locked`, `wolf-winter`, `danegeld`), the law and the
+hall in politics (`kings-share`, `ring-giver-poor`, `the-thing`,
+`outlawed`, `land-taking`, `blood-feud`, `weregild`), the grove and the
+sea's own dead in religion (`grove-sacrifice`, `curse-pole`,
+`drowned-crew`) and the seer and the oath in magic (`seer-speaks`,
+`berserk-oath`). Plus the crown cluster, which already named `norse` in
+`_CROWNED`, and one weather card, `norse/white-storm`. Four tensions —
+the jarls against the assembly, the sea-kings against the land-chiefs, the
+old gods against the missionaries, and two houses counting their dead —
+over eight blocs, with six faction edges, at least one on every axis.
+Seven facts: THE GROVE and the Falun League chapter from session 2, plus
+THE SHIP BURIAL, THE THREAD OF FATES, THE LAND-SPIRITS, THE DROWNED BELONG
+TO THE SEA and THE LAW AT THE STONE. One option, `norse/weather-witch` —
+wind out of a knotted cord, `does="sky"`, the rain stone's cousin. Four
+constitutions, default-heavy 6/2/1/1: THE SEA-KINGS, THE ALLTHING, THE
+HIGH KING, THE SCATTERED JARLS.
+
+**The card audit, and every call it settled.** Every re-keyed `western/*`
+and `southern/*` card was read once. The DEFAULT held for the large
+majority — 71 cards read, 13 narrowed:
+
+- **To BYZANTIUM, the southern heir** (the call was already made at design
+  time, designlog (J); the audit is where it became data): the whole
+  death-face cluster. `southern/day-of-the-dead`, `southern/carnival`,
+  `southern/penance-season`, `southern/two-hoods`, `southern/debate-riot`,
+  `southern/necromancy-open` and `southern/necromancy-purge` re-keyed to
+  `byzantium/*`; the `penitents-vs-carnival` TENSION and its two faction
+  edges went with them, and so did three facts — THE PENDULUM CALENDAR,
+  BONE ARCHITECTURE and THE NECROMANTIC AFFINITY. Andalusia and Umaia
+  keep the culture-generic south (THE BURIAL BROTHERHOODS, THE ACADEMY)
+  and none of the death-face.
+- **`southern/basement-children` and `southern/brotherhoods` did NOT
+  narrow.** The contract names "the academy necromancers", not the
+  academy: a wizarding university per southern kingdom is culture
+  content, and only its necromancy chair is Byzantium's. The burial
+  brotherhoods stayed for the same reason and because a southern option
+  (`southern/brotherhood`) prices them.
+- **`communion/the-synod` to Byzantium AND Seraptania.** The schism clock
+  is now a two-crown argument, so the card that stands in it sits in
+  exactly those two decks. It is the one card in the game that names two
+  lands of two different cultures, and the suite exempts it by name.
+- **`weather/smog` to TEUTONIA**, per the contract: the close-built
+  northern town with a forge in every second yard is the free cities'
+  shape.
+- **Four cards moved to the land their re-aimed edge points at**, because
+  a card that reads a derived word has to sit where the word lands:
+  `western/settled-warband` -> `vellisclavia/settled-warband` (the only
+  western kingdom with the steppe at its back, and the only card whose
+  text says "Tergal"), `western/hostage-in-the-camp` ->
+  `vellisclavia/*`, `southern/kin-claim` -> `phyrascia/kin-claim` (the
+  marriage runs Seraptania -> Phyrascia now), `southern/union-inherits`
+  -> `seraptania/*` and `southern/danegeld` -> `phyrascia/danegeld`,
+  re-written from a province paying steppe chiefs to a kingdom paying the
+  northern fleet.
+- **Three cards had text neutralised rather than scope narrowed.**
+  `western/marriage-pact` said "sealed with the southern crown" and
+  `western/broken-betrothal` had a "southern envoy" and a "southern road";
+  both are drawn by four western kingdoms whose partners differ, so the
+  prose lost the direction instead of the card losing three lands.
+- **Nothing else in either packet names a river, a coast or a city.** The
+  audit looked: the western manor cards, the shrine cards and the
+  southern finance cards are all written to a generic parish, square or
+  quarter, which is why they survived the country split without a word
+  changing.
+
+**The relations table, re-authored whole.** Twenty hand-placed LAND-TO-LAND
+edges replace session 2's 14-authored / 96-expanded culture cross product,
+and every one of the nine countries is reached. Two grain roads (the
+Baltic one Vellisclavia -> Thule, the Nile one Umaia -> Byzantium), three
+raiding edges (the horde at Vellisclavia, the ships at Phyrascia and
+Seraptania), Thule's timber to Seraptania, Lombard coin to Seraptania, the
+southern road to Teutonia, the gold caravans to Andalusia, horses twice
+(Tergal -> Vellisclavia, Andalusia -> Seraptania), livestock and hired
+swords to Byzantium, the wool axis Phyrascia -> Teutonia, the four
+diplomatic instruments re-aimed, and the schism clock both ways between
+Byzantium and Seraptania. `RELATIONS` is still `_RELATIONS` expanded and
+is now a 1:1 expansion, which keeps the door open for a future culture
+edge without pretending one exists.
+
+**Signature facts.** Six new, one per country that had only its culture's
+lore: THE WOOL (Phyrascia), THE KING'S TOUCH (Seraptania), THE ELECTORS
+(Teutonia), THE FROZEN ROAD (Vellisclavia), THE WATER COURT (Andalusia),
+THE FLOOD MARK (Umaia). The floor the suite now pins is not a count but a
+shape: every land has at least one fact whose `land` is exactly itself.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **`_by_land` became ADDITIVE.** A land-specific TENSION was the one
+   thing the narrowing needed that the mechanism could not do: the old
+   `_by_land` REPLACED a culture's row with a land's, so Byzantium would
+   have had to repeat the whole southern list to add one line. It now
+   concatenates — a land's row is its culture's entries followed by its
+   own. Constitutions run through the same function and no land adds one,
+   so that half is unchanged.
+2. **A narrowed card's id is re-keyed to its LAND.** `southern/carnival`
+   became `byzantium/carnival`, because an id in a culture's namespace
+   that only one country draws is a lie the next reader has to unpick.
+   The TRACK namespaces are exempt and stay as they are — `weather/`,
+   `crown/`, `mining/`, `communion/`, `magic/`, `sun/` name a track or an
+   argument, not a packet, and `weather/dust-storm` has been a
+   Tergal-only card under a track namespace since the weather session.
+3. **`rain-bought` became `sky-bought`.** Two weather-workers in one game
+   cannot share a state word named after one of their skies, and
+   `hire_weather` hardcoded it. One rename, one marker, and the invariant
+   the suite now pins is that no land can hold two bought skies.
+4. **A live weather card still outranks a bought sky, and the witch will
+   not sell into a standing storm.** `_roll_sky` has always let a card
+   that IS the weather hold the day over a paid one — the alternative is
+   a state readout saying "the white storm has shut the coast" over a
+   sunny wind. Since the norse card sets its sky far more often than the
+   steppe's dust storm does, the option gained
+   `without=("sky-bought", "white-storm")`: you cannot hire wind while
+   the storm stands. A storm arriving DURING a paid window still takes
+   the days, and that is the rule, not a bug.
+5. **`norse/white-storm` does not admit on `wind`.** It was drafted
+   `("snow", "storm", "wind")`, which meant paying the witch for wind was
+   the best way to invite the card that cancels it. A white storm sets in
+   out of snow or a storm; the wind row came out.
+6. **Two state words are shared with the steppe and were re-worded for
+   both.** The contract has `norse/raid-season` set `raiding` and
+   `norse/danegeld` set `tribute-taken`, both of which already existed
+   with Tergal wording ("the clans are riding", "a chief is paid to keep
+   the peace"). Adding norse twins would have doubled two words for no
+   mechanical gain and broken the two relation edges that read them, so
+   the READOUT went neutral ("the raiding season is on", "a war-leader is
+   paid to stay home") and the card's news line carries whether it was
+   horses or ships.
+7. **The nithing pole and the shaming pole both stand.** Tergal already
+   had `shaming-pole` and the contract asks for `norse/curse-pole`. They
+   are the same custom in two cultures and both were kept: the cards
+   never meet, the state words differ, and cutting one would have thinned
+   a packet to avoid a coincidence the player cannot see.
+8. **`thing-sitting`, not `the-thing`, is the state word.** The card is
+   `norse/the-thing` per the contract; the state it holds had to say what
+   is happening rather than name an institution, or the readout line
+   ("the assembly is sitting at the stone") would have read as a noun.
+9. **Thule's `feud` tension carries a faction edge and its own two-card
+   chain.** The contract gives six edges over four tensions without
+   saying how to spread them; two axes could have taken three each. One
+   edge per axis with the two contested ones taking two keeps every
+   rolled tension a live quarrel — a tension that gates cards but has no
+   edge in it is a name, not an axis.
+10. **The era anchor and the colony cards are a KNOWN clash, deliberately
+    left.** `southern/colony-fleet`, `southern/monopoly-bubble` and
+    `southern/the-crash` are three cards about colonial trade and colony
+    shares, and the arc's era anchor is "about 1500 WITHOUT the age of
+    exploration". The audit surfaced it and did not act: the audit's axis
+    is SCOPE (which land draws a card), the era is a different axis, and
+    re-writing three cards' fiction is a sitting of its own. Written down
+    here so the next content session can take it.
+
+**Measured** (benchlog 2026-08-22 (B)): `bench_worldgen.py --seeds 500`
+line for line identical to session 3's. Predicted and confirmed — the
+bench imports `places` and nothing else, and this session touched only
+`worldsim.py`. Nothing was tuned; no lever moved.
+
+**The suite.** 976 tests before, **988 after, OK.** The new
+`TheCardAudit` class is the audit's own contract (the thirteen narrowed
+cards by name and land, the default still culture-wide everywhere else,
+the id namespace rule, Byzantium's exclusive pendulum calendar, the
+additive `_by_land`, and the rule that no card names a country that does
+not hold it). `TheLastTwoRecordKinds` gained the norse packet's shape
+(deck floor, four rollable tensions each gating cards, six edges, seven
+facts, one option, four constitutions) and the every-land-owes-its-own
+fact rule; `TheEconomyFloorContent` gained the land-to-land table's own
+three tests (who sells what over nine countries, the twenty edges with
+every land reached and every `when` producible by the source, and the
+wool axis wired through to a shelf); `TheServicesCounter` gained the
+weather-witch. Five existing tests moved with the content: the derived
+raider road is Vellisclavia's now, the schism runs Byzantium <->
+Seraptania, the magic floor is three everywhere including Thule, a
+politics card may be one land's, and the bought-sky marker is
+`sky-bought`. `test_places.TheNineCountries` grew the other half of the
+same contract: every country owes a fact whose scope is exactly itself,
+and a country's relations are its own rather than its culture's (the
+proof is that two lands of one culture no longer share an edge set --
+under the cross product they always did).

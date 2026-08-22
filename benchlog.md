@@ -2658,3 +2658,54 @@ entries carry the warning).
 
 **Nothing was tuned.** No lever moved. The session authored content and
 added one naming rule and one roll.
+
+## 2026-08-22 (B) — The norse packet & the nine-land relations (medieval arc session 4): a sanity run that moved nothing
+
+`python bench_worldgen.py --seeds 500`, run after the session, against the
+same command run for session 3 (the entry above). **Every line identical.**
+
+| line | before | after |
+|---|---|---|
+| problem coverage (% of land) | 17.7 | 17.7 |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis / city / town / village / hamlet | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+The spoken harvest words are identical too (legendary 3.5%, excellent
+22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%).
+
+This is the predicted result and the reason the run is recorded rather
+than skipped: `bench_worldgen.py` imports `places` and nothing else, and
+the session touched only `worldsim.py` — a card packet, a relations table,
+a fact list and one state rename. The world layer is rolled on a DERIVED
+rng (`open_world`, since the world-frame build), so even the tension roll
+changing under Byzantium's new land-specific entry cannot reach a
+worldgen stream the bench reads.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none imports `worldsim`, and no combat, pay, threat or
+refill constant changed. `bench_abilities.py` and `bench_quests.py` were
+not compared and cannot be (both remain non-reproducible against
+themselves; develop.md's Files entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session authored content and
+re-scoped what was already there.

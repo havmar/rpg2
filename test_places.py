@@ -675,6 +675,31 @@ class TheNineCountries(unittest.TestCase):
             self.assertIn(polity, places.CAPITAL_TILES, polity)
             self.assertTrue(worldsim.CONSTITUTIONS[polity], polity)
             self.assertTrue(worldsim.TENSIONS[polity], polity)
+            # ...and since 2026-08-22, one standing fact that is ITS OWN
+            # rather than its culture's, so a lore page reads as this
+            # country and not as its neighbour.
+            self.assertTrue([f for f in worldsim.FACTS_BY_LAND[polity]
+                             if f["land"] == (polity,)], polity)
+
+    def test_a_country_s_relations_are_its_own_not_its_culture_s(self
+                                                                ) -> None:
+        """The table is authored LAND TO LAND since 2026-08-22: a country
+        wears a neighbour's trouble because an edge NAMES it, never
+        because it shares a culture with somebody an edge names. The
+        proof is that two lands of one culture no longer have the same
+        edges -- under the old cross product they always did."""
+        for culture, lands in places.CULTURE_LANDS.items():
+            if len(lands) < 2:
+                continue
+            shapes = {tuple(sorted(
+                (e["kind"], e["from"], e["to"]) for e in worldsim.RELATIONS
+                if polity in (e["from"], e["to"]))) for polity in lands}
+            self.assertEqual(len(shapes), len(lands), culture)
+        for edge in worldsim.RELATIONS:
+            self.assertNotEqual(edge["from"], edge["to"])
+            for side in ("from", "to"):
+                self.assertIn(edge[side], self.HOMELANDS)
+                self.assertNotIn(edge[side], places.CULTURE_LANDS)
 
     def test_every_country_seats_its_capital_on_its_own_ground(self) -> None:
         world = places.create_geography(3)

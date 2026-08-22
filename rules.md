@@ -2998,6 +2998,40 @@ whole of what a country is now:
   from the east, spice through the southern entrepot, gold caravans from
   beyond the desert, the wool-cloth axis in the west. Higher technology is
   heaven, hell and magic, never a gunpowder tech line.
+- **Every country owes at least one standing fact of its own** (2026-08-22).
+  The culture supplies the shared lore; the signature fact is what makes
+  the lore page read as this country and not its neighbour — THE WOOL
+  (Phyrascia), THE KING'S TOUCH (Seraptania), THE ELECTORS (Teutonia), THE
+  FROZEN ROAD (Vellisclavia), THE WATER COURT (Andalusia) and THE FLOOD
+  MARK (Umaia), beside Byzantium's death-face, Tergal's practice and
+  Thule's grove.
+
+### Thule keeps the old gods (2026-08-22, the norse packet)
+
+The fourth culture is worn by one country and its packet is scoped like
+Tergal's: eighteen crisis cards of its own, one weather card, four
+tensions, six faction edges, seven standing facts, one option and four
+constitutions.
+
+- **The sea is the economy and the law is the assembly.** The year is the
+  ships going out, the herring running, a whale ashore, the harbors
+  freezing shut, the wolves coming down and a foreign crown paying the
+  fleet to stay home. There is no king's court: free men meet at the
+  stone, the law-speaker says the law aloud from memory, and the
+  assembly's only real sentence is OUTLAWRY.
+- **Its four tensions** are the jarls against the assembly, the sea-kings
+  against the land-chiefs, the old gods against the missionaries, and two
+  houses counting their dead. Its constitution slot opens THE SEA-KINGS.
+- **Its lore** is THE GROVE, THE SHIP BURIAL, THE THREAD OF FATES, THE
+  LAND-SPIRITS, THE DROWNED BELONG TO THE SEA, THE LAW AT THE STONE and
+  its Miners' League chapter at Falun.
+- **It sells one service**: the weather-witch's cord, two days of bought
+  WIND — the rain stone's northern cousin, on the same verb and the same
+  single `sky-bought` marker, so no land ever holds two bought skies.
+- **Two words are shared with the steppe on purpose**: `raiding` and
+  `tribute-taken`. The readout says what happened ("the raiding season is
+  on", "a war-leader is paid to stay home") and the card's news line says
+  whether it was horses or ships.
 
 ## The hierarchy
 
@@ -4797,30 +4831,49 @@ are `worldsim.md`'s.
 Authored **directed edges** — who eats whose grain, who trades with whom,
 whose mercenaries come when called. They are lookups, never traded
 quantities, and the states they cause are **derived at read time and never
-stored**. Since 2026-08-21 an edge is authored between two CULTURES and
-expands to every land-to-land pair between them, so trouble in one western
-kingdom reaches the whole steppe; cards admit on their derived states like
+stored**. Since 2026-08-22 every edge is authored LAND TO LAND: twenty
+hand-placed edges between named countries, drawn on the map the country
+overlay actually paints. (Session 2 authored them by culture and took the
+cross product, which reached every land cheaply and was deliberately
+crude; the twenty replace it.) Cards admit on their derived states like
 any other. Only ONE HOP: an edge reads what its source land HOLDS, never
 what it derives.
 
-**What each culture sells** — every line is one authored edge: a state the
-SELLER is holding that stops the goods, and the priced word the BUYER wears
-while it does.
+**The twenty edges** — every line is one authored edge: a state the SOURCE
+is holding that stops the goods (or starts the trouble), and the word the
+TARGET wears while it does.
 
-| Seller | Sells | Buyer | When the seller holds | The buyer wears |
+| From | What | To | When the source holds | The target wears |
 |---|---|---|---|---|
-| the west | grain | Tergal | a failed harvest, drought | grain is scarce |
-| the west | timber | Tergal | forest law, wildfire, burn | no northern timber |
-| the south | coin | the west | worthless paper, mad shares | the banks stop lending |
-| the south | southern trade | Tergal | salt revolt, a ruined quarter | the road brings nothing |
-| Tergal | horses | the west | herd loss, the grass gone | remounts are dear |
-| Tergal | livestock | the south | herd loss, the grass gone | hides and wool are short |
-| Tergal | military service | the south | a mourning war, raiding | the hired clans go home |
-| Thule | raiding | the west | raiding, herd loss | the raiders are out |
+| Vellisclavia | Baltic grain | Thule | a failed harvest, drought | grain is scarce |
+| Umaia | the river's grain | Byzantium | a failed harvest, drought | grain is scarce |
+| Tergal | raids | Vellisclavia | herd loss, raiding, a mourning war | raiders on the border |
+| Thule | sea raids | Phyrascia | the raiding season | raiders on the border |
+| Thule | sea raids | Seraptania | the raiding season | raiders on the border |
+| Thule | timber | Seraptania | the harbors ice-locked, wildfire, burn | no northern timber |
+| Byzantium | Lombard coin | Seraptania | worthless paper, mad shares | the banks stop lending |
+| Byzantium | the southern road | Teutonia | salt revolt, a ruined quarter | the road brings nothing |
+| Umaia | the gold caravans | Andalusia | a bandit king, salt revolt | the road brings nothing |
+| Tergal | horses | Vellisclavia | herd loss, the grass gone | remounts are dear |
+| Andalusia | horses | Seraptania | a bandit king, the faith outlawed | remounts are dear |
+| Tergal | livestock | Byzantium | herd loss, the grass gone | hides and wool are short |
+| Tergal | hired swords | Byzantium | a mourning war, raiding | the hired clans go home |
+| Phyrascia | wool | Teutonia | a free company, the custom strike | no wool for the looms |
+| Tergal | a hostage | Vellisclavia | the hostage guard | an heir is a hostage abroad |
+| Thule | the danegeld | Phyrascia | a war-leader paid to stay home | the danegeld is raised here |
+| Seraptania | a marriage | Phyrascia | the marriage pact | the pact makes them kin |
+| Phyrascia | a union | Seraptania | the personal union | two crowns, one head |
+| Byzantium | the rite | Seraptania | necromancy open, the dead abroad, carnival | one insult apart |
+| Seraptania | the rite | Byzantium | the interdict, a relic hunt, bones tested | one insult apart |
 
-The southern luxury shelf and the southern road are one flow and one edge.
-The per-LAND re-authoring of this table — a Baltic grain road, a Nile one,
-the crusade's own quarrels — is the norse packet session's.
+Two things the table is saying out loud. The **wool-cloth axis** is the era
+anchor's own trade and the one edge authored new for it: Phyrascia grows
+the fleece, Teutonia's towns weave it, and `wool-short` is the word a
+stopped clip puts on a Teutonic shelf. The **schism clock** runs between
+exactly two crowns — the empire that keeps the death-face and the western
+church's eldest daughter — in both directions, and the joint synod card
+sits in both decks reading it.
+
 Every derived word above reaches a **price** (`worldsim.STATE_MENU`) — an
 edge the party cannot feel on a shelf is not worth authoring.
 
@@ -5150,7 +5203,8 @@ ticks, nothing accumulates, and no political value is ever a quantity.
   are the colour, so the same country comes up differently across runs.
 - The western culture opens DECENTRALIZED FEUDALISM, the southern one
   ABSOLUTISM, Tergal THE CLAN CONFEDERACY and Thule THE SEA-KINGS. Each
-  carries its authored variants. The slot is per LAND, the table per
+  carries its authored variants — Thule's are THE ALLTHING, THE HIGH KING
+  and THE SCATTERED JARLS. The slot is per LAND, the table per
   culture: two western kingdoms roll their constitutions separately off the
   same die.
 - **Cards never flip it.** The two that do say so on their face (the junta
@@ -5323,15 +5377,22 @@ Priced, not penitential — the deliberate limit of this rung:
 ## What the packets became
 
 - **The Sun communion is one church and two rites.** The western and
-  southern lands worship the same god; each **derives `schism-near` off the
-  other rite** through a relation edge that runs both ways, and the joint
-  synod is one card sitting in *both* their decks. Every synod ends one
-  insult short of the split. (Thule keeps the old gods and is outside the
-  communion entirely.)
+  southern lands worship the same god; since 2026-08-22 the ARGUMENT is
+  between exactly two crowns — Byzantium, which keeps the death-face, and
+  Seraptania, the western church's eldest daughter. Each **derives
+  `schism-near` off the other rite** through a relation edge that runs both
+  ways, and the joint synod is one card sitting in *both* their decks.
+  Every synod ends one insult short of the split. (Thule keeps the old gods
+  and is outside the communion entirely.)
 - **Each culture keeps a religion axis and a tension to hang it on**: two
   shrines and one saint, and the abbey against the families (the west);
-  which face of the god rules the year (the south); the white shamans
-  against the dark one (Tergal). The tension is the deck gate, exactly as in politics — a
+  the white shamans against the dark one (Tergal); the old gods against
+  the missionaries (Thule). The south's own axis, **which face of the god
+  rules the year**, is BYZANTIUM's alone — the death rite, the carnival,
+  the penitents and the academy's necromancy chair are the southern heir's
+  identity, not the whole culture's, so Andalusia and Umaia wear the
+  culture-generic south and none of the death-face. The tension is the
+  deck gate, exactly as in politics — a
   land whose shrines are at war never draws the abbey's cards at all.
 - **Two named pools were added and no creature row**: the undead
   (skeleton/ghoul/wight) and the casters (hexer/pyromancer/magus), both off

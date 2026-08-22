@@ -184,11 +184,10 @@ a pointer: what the file is, how it's run, where its docs are.
   them are 2026-08-20 through 2026-08-21 (E)). It carries one ACTIVE
   contract: **THE MEDIEVAL WORLD ARC, Part 1** (designed 2026-08-21,
   designlog (J)), whose sessions 1 (the fallen banner, designlog (K)),
-  2 (the map of nine, designlog (L)) and 3 (the towns & the tongues,
-  designlog (M), 2026-08-22) have shipped and are gone from it;
-  sessions 4-5 — the norse packet and the
-  nine-land relations, the rolled wars and the campaign sim — are the next
-  builds. Below the contract is the roadmap BEYOND the arc: the spring
+  2 (the map of nine, designlog (L)), 3 (the towns & the tongues,
+  designlog (M), 2026-08-22) and 4 (the norse packet & the nine-land
+  relations, designlog (N), 2026-08-22) have shipped and are gone from it;
+  session 5 — the rolled wars and the campaign sim — is the last build. Below the contract is the roadmap BEYOND the arc: the spring
   snapshot and trouble, politics and
   war, fantasy and magic, settlements revisited, and the
   small deferred leftovers. **Nothing implemented lives there**: when a
@@ -860,21 +859,56 @@ a pointer: what the file is, how it's run, where its docs are.
   a LAND key. `_by_land` does the same for the tables a reader indexes by
   land: `_CONSTITUTIONS` / `_TENSIONS` / `_STANDING_TENSIONS` are the
   authored culture-keyed tables and `CONSTITUTIONS` / `TENSIONS` /
-  `STANDING_TENSIONS` are their land-keyed expansions. `_RELATIONS` is the
-  authored edge list and `RELATIONS` its land-by-land cross product (14
-  authored, 96 expanded; the per-land re-authoring is session 4's). Card,
+  `STANDING_TENSIONS` are their land-keyed expansions (`_by_land` is
+  ADDITIVE since 2026-08-22 — a land's row is its culture's plus its
+  own). `_RELATIONS` is the authored edge list and `RELATIONS` its
+  expansion; it was a 14-authored / 96-expanded culture cross product
+  until session 4 re-authored it land to land (20 edges, 1:1). Card,
   option, fact and faction-edge ids went `firascir/*` -> `western/*` and
   `mortellaria/*` -> `southern/*`; the `tergal/*` ids did not move,
   because Tergal is still a country and its culture is exactly itself.
   `_validate_three_countries` became **`_validate_countries`** over nine.
-  Thule got the MINIMUM the frame demands as real content — THE GROVE,
-  its League chapter fact, one relation edge, two constitutions and two
-  tensions over four blocs — and its full packet plus the per-card scope
-  audit are session 4's. The Miners' League land facts re-homed to the
+  The Miners' League land facts re-homed to the
   actual mine owners under the overlay (Teutonia, Vellisclavia,
   Seraptania, Byzantium, Thule); the four countries with no pits keep no
   chapter. `land_lines` gained `MAP_WIDTH` and wraps through
   `places.detail_wrap`.
+  **THE NORSE PACKET filled the fourth culture and the audit re-scoped
+  the other two** (2026-08-22, the medieval world arc's session 4).
+  Thule's packet is scoped like Tergal's: 18 crisis cards of its own
+  (`norse/raid-season` through `norse/danegeld`, spread over the base,
+  politics, religion and magic tuples the way the steppe's are), one
+  weather card `norse/white-storm`, four tensions (`jarls-vs-thing`,
+  `sea-vs-land`, `old-vs-new-gods`, `feud`) over eight blocs, six faction
+  edges, seven facts, one option (`norse/weather-witch`, `does="sky"`,
+  the rain stone's cousin) and four constitutions. Two state words are
+  shared with the steppe and re-worded for both (`raiding`,
+  `tribute-taken`); `rain-bought` became **`sky-bought`** so two
+  weather-workers share one marker, and `hire_weather` sets it.
+  **The card audit** read every re-keyed western and southern card once
+  against its new scope and narrowed thirteen: the death-face cluster
+  (`byzantium/penance-season`, `carnival`, `day-of-the-dead`,
+  `two-hoods`, `debate-riot`, `necromancy-open`, `necromancy-purge`) and
+  the `penitents-vs-carnival` tension, its two faction edges and its
+  three facts to BYZANTIUM; `weather/smog` to TEUTONIA;
+  `communion/the-synod` to Byzantium and Seraptania; and the four cards
+  that read a re-aimed relation edge to the land wearing it
+  (`vellisclavia/settled-warband`, `vellisclavia/hostage-in-the-camp`,
+  `phyrascia/kin-claim`, `phyrascia/danegeld`,
+  `seraptania/union-inherits`). A narrowed card's id is re-keyed to its
+  LAND; the track namespaces (`weather/`, `crown/`, `mining/`,
+  `communion/`, `magic/`, `sun/`) are exempt. **`_by_land` became
+  ADDITIVE** — a land's row is its culture's entries plus its own — which
+  is the mechanism a land-specific tension needed.
+  **`_RELATIONS` was re-authored whole**: twenty hand-placed LAND-TO-LAND
+  edges replacing session 2's 14-authored/96-expanded culture cross
+  product. `RELATIONS` is still its expansion and is now 1:1. New derived
+  word `wool-short` with one `STATE_MENU` row (the wool-cloth axis,
+  Phyrascia -> Teutonia); `ice-locked` and `white-storm` got
+  `STATE_MENU` rows and `wolf-winter` and `outlawed` `STATE_ENCOUNTERS`
+  rows. Every country now owes at least one SIGNATURE fact of its own
+  (THE WOOL, THE KING'S TOUCH, THE ELECTORS, THE FROZEN ROAD, THE WATER
+  COURT, THE FLOOD MARK).
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -977,6 +1011,21 @@ a pointer: what the file is, how it's run, where its docs are.
   the repost; a taken one still holds the card's place), any raised toll
   term reaching the road, the rain stone delivering every paid day, and
   a news line posted late on a told day surviving to the next telling.
+  *The norse packet and the card audit* (2026-08-22, medieval arc session
+  4): `TheCardAudit` is the audit's own contract — the thirteen narrowed
+  cards by name and land, the default still culture-wide everywhere else,
+  the id namespace rule (a one-land card is keyed by its land; the track
+  namespaces are exempt), Byzantium's exclusive pendulum calendar (tension,
+  two edges, three facts), the additive `_by_land`, and the rule that no
+  card names a country that does not hold it. Beside it: the norse
+  packet's shape (deck floor, four rollable tensions each gating cards of
+  its own, six edges, seven facts, one option, four constitutions) and
+  every crisis card of Thule's reachable through some tension it can hold;
+  the land-to-land relations table (20 edges, every land reached, no
+  culture key left, every `when` producible by its SOURCE land, and the
+  wool axis wired through to a Teutonic shelf); every land owing a fact
+  whose scope is exactly itself; and the weather-witch beside the rain
+  stone on one `sky-bought` marker.
   `python -m unittest -v test_worldsim.py`.
 - `resources/europe_map.txt` — **the canonical fixed world map**
   (2026-08-15; redrawn 2026-08-21 — Denmark added, Scandinavia adjusted,
@@ -3272,5 +3321,7 @@ creature geography, tolls walking the routes — is plan.md's roadmap
 beyond it. **THE MEDIEVAL WORLD ARC is building on top of it**: the
 scripted conquest questline is gone (session 1, designlog (K)) and the
 world is NINE countries over four cultures (session 2, designlog (L)),
-with the town-name table and the tongues, the norse packet and the
-nine-land relations, and the rolled wars still to come.
+with the town-name table and the tongues (session 3, designlog (M)) and
+the norse packet, the card audit and the twenty land-to-land relations
+(session 4, designlog (N)) on top of it; the rolled wars are still to
+come.

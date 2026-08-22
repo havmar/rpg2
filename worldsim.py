@@ -292,13 +292,34 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "note-hunt": "the note-hunters are out",
     "paper-pay": "wages are paid in paper",
     "coin-flush": "the colony fleet is in",
-    # Tergal
+    # Tergal. The two words a Tergal card and a Thule card both set --
+    # `raiding` and `tribute-taken` -- are worded for BOTH since the norse
+    # packet (2026-08-22): the readout says what happened, the card's own
+    # news line says whether it was horses or ships.
     "herd-loss": "the herds are dying",
     "grass-gone": "the grass has not come back",
-    "raiding": "the clans are riding",
-    "tribute-taken": "a chief is paid to keep the peace",
+    "raiding": "the raiding season is on",
+    "tribute-taken": "a war-leader is paid to stay home",
     "herd-drive": "the great drive is on",
     "mercenary-home": "a war-rich mercenary is home",
+    # Thule (2026-08-22, the norse packet)
+    "kings-share": "the sea-king takes his share",
+    "blood-feud": "two houses are in blood feud",
+    "weregild": "a man's price is being haggled",
+    "thing-sitting": "the assembly is sitting at the stone",
+    "outlawed": "a man is outlawed for three years",
+    "berserks": "the oath-drinkers are sworn",
+    "ring-giver-poor": "the chief's silver has run out",
+    "land-taking": "hazel poles mark a new claim",
+    "grove-sacrifice": "the nine of every kind hang",
+    "seer-spoke": "the seer has named the winter's dead",
+    "curse-pole": "a curse-pole is up with a name on it",
+    "drowned-crew": "a ship did not come home",
+    "whale-ashore": "a whale is ashore and being cut up",
+    "herring-run": "the herring run is on",
+    "ice-locked": "the harbors are frozen shut",
+    "wolf-winter": "wolves are at the byres",
+    "white-storm": "the white storm has shut the coast",
     # Weather (2026-08-08, land-agnostic -- the sky's own states)
     "storm-bound": "the storm has closed the roads",
     "fords-out": "the fords are out",
@@ -385,7 +406,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "necromancy-open": "the necromancers are working openly",
     "necromancy-purged": "the academy burned its necromancy",
     "tower-open": "a tower wizard is taking volunteers",
-    "rain-bought": "a shaman has been paid for rain",
+    "sky-bought": "a weather-worker has been paid",
     # The diplomatic instruments (held on the source land)
     "marriage-pact": "a marriage pact binds two crowns",
     "betrothal-broken": "the betrothal is broken",
@@ -400,6 +421,7 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "horses-dear": "remounts are scarce and dear",
     "hides-dear": "hides and wool are short",
     "swords-gone": "the hired clans have gone home",
+    "wool-short": "there is no wool for the looms",
     # ...the religion and magic rung's own edges (2026-08-11)
     "schism-near": "the two rites are one insult apart",
     "hostage-given": "an heir of this land is a hostage abroad",
@@ -454,6 +476,7 @@ STATE_MENU = {
     "horses-dear": {"goods": 1.15, "steel": 1.10},
     "hides-dear": {"goods": 1.25},
     "swords-gone": {"steel": 1.20, "goods": 1.10},
+    "wool-short": {"goods": 1.25},
     # held (the states a card leaves standing after its own terms lapse)
     "harvest-failed": {"lodging": 1.60, "goods": 1.20},
     "bread-dear": {"lodging": 1.25},
@@ -495,6 +518,11 @@ STATE_MENU = {
     "deposit-drying": {"steel": 1.20},
     "deposit-found": {"steel": 0.85},
     "strike": {"steel": 1.35},
+    # Thule (2026-08-22, the norse packet) -- the two states that shut the
+    # sea. Every counter in a land whose harbors are frozen or whose coast
+    # is under the white storm is buying from a cart instead of a hull.
+    "ice-locked": {"goods": 1.30, "lodging": 1.15},
+    "white-storm": {"lodging": 1.35},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -542,6 +570,18 @@ STATE_ENCOUNTERS = {
                 "skins": {"cutthroat": "Witchhunter",
                           "archer": "Hunt Bow", "hunter": "Finder"},
                 "chance": 0.35},
+    # Thule (2026-08-22, the norse packet)
+    "wolf-winter": {"kinds": ("wolf", "dire wolf"), "where": "wilds",
+                    "as": "the pack working down from the fells",
+                    "skins": {"wolf": "Byre-Wolf",
+                              "dire wolf": "Winter-Wolf"},
+                    "chance": 0.45},
+    "outlawed": {"kinds": ("cutthroat", "archer", "bruiser"),
+                 "where": "road", "as": "the outlaw's people on the road",
+                 "skins": {"cutthroat": "Wood-Man",
+                           "archer": "Outlaw Bow",
+                           "bruiser": "Forest-Goer"},
+                 "chance": 0.35},
     "foreign-graves": {"kinds": ("skeleton", "ghoul"), "where": "wilds",
                        "as": "what the buried dead sent up",
                        "skins": {"skeleton": "Grave-Made",
@@ -608,11 +648,17 @@ def _expand(land: str | tuple[str, ...]) -> tuple[str, ...]:
 
 def _by_land(table: dict) -> dict:
     """One authored table keyed by culture or by land, re-keyed by LAND --
-    which is what every reader of it asks with."""
+    which is what every reader of it asks with.
+
+    ADDITIVE since 2026-08-22 (the norse packet's card audit): a land's row
+    is its culture's entries followed by its own. That is what lets a
+    single land carry a tension its culture does not -- Byzantium's
+    penitents-against-carnival is the southern heir's alone -- without a
+    land having to repeat its whole culture's list to add one line."""
     out: dict = {}
     for key, value in table.items():
         for polity in _expand(key):
-            out[polity] = value
+            out[polity] = out.get(polity, ()) + tuple(value)
     return out
 
 
@@ -876,8 +922,8 @@ _CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "no high chief, and the feuds run with nobody to "
                      "settle them"),
     ),
-    # The NORSE minimum (2026-08-21, the nine). Two entries so the slot
-    # rolls at all; the packet's other two and its cards are session 4's.
+    # The NORSE slot (2026-08-22, the norse packet; the first two shipped
+    # with the nine as the minimum the frame demands).
     "norse": (
         constitution("sea-kings", "THE SEA-KINGS", 6,
                      "a dozen harbor lords with ships, and a first among "
@@ -885,6 +931,12 @@ _CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
         constitution("allthing", "THE ALLTHING", 2,
                      "the free men meet at the stone every summer, speak "
                      "the law aloud, and go home again"),
+        constitution("high-king", "THE HIGH KING", 1,
+                     "one king over all the harbors, a foreign crown's "
+                     "priest at his elbow, and taxes nobody used to pay"),
+        constitution("scattered-jarls", "THE SCATTERED JARLS", 1,
+                     "no first among them at all: every fjord its own "
+                     "jarl, and the law stops at the next headland"),
     ),
 }
 
@@ -923,11 +975,16 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("academy", "the wizards' academy", face="sage"),
     faction("white-shamans", "the white shamans", face="sage"),
     faction("black-shaman", "the black shaman"),
-    # -- Thule (2026-08-21, the nine): the two blocs its minimum names.
+    # -- Thule (2026-08-21, the nine; completed 2026-08-22 by the norse
+    # packet's other two tensions).
     faction("jarls", "the jarls", face="ruler"),
     faction("freeholders", "the freeholders"),
     faction("sea-kings", "the sea-kings"),
     faction("land-chiefs", "the land-chiefs"),
+    faction("grove-priests", "the grove priests", face="sage"),
+    faction("missionaries", "the missionaries", face="wildcard"),
+    faction("feud-house", "the house that struck first"),
+    faction("rival-house", "the house that struck back"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
@@ -960,9 +1017,6 @@ _TENSIONS: dict[str, tuple[dict, ...]] = {
         tension("court-vs-provinces",
                 "the court against the provinces",
                 factions=("commissioners", "provinces")),
-        tension("penitents-vs-carnival",
-                "which face of the god rules the year",
-                factions=("penitents", "carnival")),
         tension("academy-vs-tribunal",
                 "the academy against the tribunal",
                 factions=("academy", "tribunal")),
@@ -985,6 +1039,21 @@ _TENSIONS: dict[str, tuple[dict, ...]] = {
                 factions=("jarls", "freeholders")),
         tension("sea-vs-land", "the sea-kings against the land-chiefs",
                 factions=("sea-kings", "land-chiefs")),
+        tension("old-vs-new-gods",
+                "the old gods against the missionaries",
+                factions=("grove-priests", "missionaries")),
+        tension("feud", "two houses are counting their dead",
+                factions=("feud-house", "rival-house")),
+    ),
+    # The land-specific rows (2026-08-22, the card audit). `_by_land` is
+    # additive, so these stand BESIDE the culture's own list. The pendulum
+    # calendar is the southern HEIR's, not the whole south's: Byzantium
+    # keeps the death-face, the carnival and the penitents, and Andalusia
+    # and Umaia share only the culture-generic south.
+    "byzantium": (
+        tension("penitents-vs-carnival",
+                "which face of the god rules the year",
+                factions=("penitents", "carnival")),
     ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
@@ -1050,9 +1119,9 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the abbey holds the village's children, land and law"),
     edge("western", "village", "petitions", "abbey",
          "the village petitions the abbey and is answered in writing"),
-    edge("southern", "penitents", "denounce", "carnival",
+    edge("byzantium", "penitents", "denounce", "carnival",
          "the penitent wing preaches against the carnival wing"),
-    edge("southern", "carnival", "outnumber", "penitents",
+    edge("byzantium", "carnival", "outnumber", "penitents",
          "the carnival wing simply outnumbers the penitents"),
     edge("southern", "tribunal", "watches", "academy",
          "the tribunal keeps a list of what the academy teaches"),
@@ -1062,6 +1131,21 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the white shamans camp the dark one outside the ring"),
     edge("tergal", "black-shaman", "serves", "white-shamans",
          "the dark one does the work the white shamans will not"),
+    # -- Thule (2026-08-22, the norse packet): six edges over its four
+    # tensions, so every axis the land can roll has a quarrel with a verb
+    # in it and a card standing in the quarrel.
+    edge("norse", "jarls", "pack", "freeholders",
+         "the jarls bring their crews to the assembly and vote them"),
+    edge("norse", "freeholders", "outlaw", "jarls",
+         "the assembly has outlawed a jarl and means it"),
+    edge("norse", "sea-kings", "tax", "land-chiefs",
+         "the sea-kings take a share of every catch and cargo"),
+    edge("norse", "land-chiefs", "withhold", "sea-kings",
+         "the land-chiefs keep their crews ashore for the harvest"),
+    edge("norse", "grove-priests", "curse", "missionaries",
+         "the grove priests have a pole up with a priest's name on it"),
+    edge("norse", "feud-house", "kill", "rival-house",
+         "the two houses are six men in and still counting"),
 )
 
 
@@ -1631,6 +1715,125 @@ CARDS = (
                               "rustlers are still working."),
              "slots": 1}),
 
+    # -- Thule: THE SEA IS THE ECONOMY -------------------------------------- #
+    # (2026-08-22, the norse packet.) Six cards on what the year is here:
+    # the ships go out, the fish come in, the whale comes ashore, the ice
+    # shuts the door, the wolves come down, and a foreign crown pays for
+    # quiet. The politics, the grove and the seer are in the other packets.
+    card("norse/raid-season", "The ships go out", "norse",
+         wealth=("crisis", "normal"), without=("ice-locked",),
+         days=(25, 40),
+         news="The ships have gone out. Half the young men of every fjord "
+              "are aboard them, the fields are being worked by whoever is "
+              "left, and nobody here calls it robbery.",
+         state={"while": ("raiding",)},
+         menu={"steel": 0.90},
+         quest={"post": job(
+             "Short A Crew",
+             "A shipmaster is four oars short and sails on the tide. The "
+             "men he was promised took another ship's silver, and he "
+             "wants them off that deck before it leaves.",
+             pool=_TOUGHS, sites=("the boat strand",),
+             giver="the shipmaster",
+             epilogue="The four are back on the right deck and the ship "
+                      "went out on the tide. The shipmaster pays in "
+                      "hacksilver, weighed in front of you.",
+             failure_epilogue="The ship went out four oars short. The "
+                              "shipmaster said what he thought of that "
+                              "on the strand, in front of the whole "
+                              "harbor."),
+             "pay": 1.20}),
+    card("norse/herring-run", "The herring run", "norse",
+         wealth=("normal", "prosperous"), days=(10, 18),
+         news="The herring are running in the sound. Every boat that "
+              "floats is out, the salt is going up, and the barrels are "
+              "being nailed together on the beach.",
+         state={"while": ("herring-run",)},
+         menu={"goods": 0.90, "lodging": 1.15},
+         quest={"post": job(
+             "The Salt Boat",
+             "The salt boat is three days late and the catch is on the "
+             "beach going bad. It is beached in the next fjord and the "
+             "men who beached it want paying twice.",
+             pool=_TOUGHS, sites=("the next fjord",),
+             giver="the curing-house woman",
+             epilogue="The salt came round the headland in time and the "
+                      "catch is in the barrels. The curing-house pays "
+                      "and throws in as much fish as you can carry.",
+             failure_epilogue="The catch went bad on the beach. A "
+                              "season's fish is being carted onto the "
+                              "fields as manure."),
+             "slots": 1}),
+    card("norse/whale-ashore", "A whale is ashore", "norse",
+         days=(8, 14),
+         news="A whale has come ashore below the headland. That is a "
+              "winter's meat and oil, and three districts are already "
+              "arguing about whose beach it died on.",
+         state={"while": ("whale-ashore",)},
+         menu={"goods": 0.85},
+         quest={"post": job(
+             "Whose Beach It Died On",
+             "One district has started cutting and another is walking "
+             "over the headland to stop it. The law-speaker wants the "
+             "cutting finished and nobody killed over it.",
+             pool=_TOUGHS, sites=("the whale beach",),
+             giver="the district's law-speaker",
+             epilogue="The whale is cut up and the shares are counted "
+                      "out. Two men have broken hands and nobody is "
+                      "dead, which the law-speaker calls a good day.",
+             failure_epilogue="Two men are dead on the beach over a "
+                              "whale, and the districts have started "
+                              "counting that instead."),
+             "pay": 1.15}),
+    card("norse/ice-locked", "The harbors freeze shut", "norse",
+         wealth=("crisis", "normal"), without=("raiding",), days=(30, 50),
+         news="The harbors have frozen shut. Nothing comes in and nothing "
+              "goes out until the thaw, and every household is counting "
+              "what is in the store-loft against the weeks left.",
+         state={"while": ("ice-locked",)}),
+    card("norse/wolf-winter", "The wolf winter", "norse",
+         wealth=("crisis",), days=(25, 40),
+         news="The fodder is gone before the winter is. The byres are "
+              "half empty of cattle and the wolves have worked out which "
+              "farms cannot keep a watch all night.",
+         state={"while": ("wolf-winter",)},
+         menu={"goods": 1.20},
+         quest={"post": job(
+             "The Watch At The Byre",
+             "A farm has lost six beasts in four nights and has nobody "
+             "left to sit up with the rest. The pack comes down the same "
+             "gully every time.",
+             pool=_BEASTS, sites=("the byre gully",),
+             giver="the farm's widow",
+             epilogue="The pack is broken and the rest of the cattle are "
+                      "alive. The widow pays in hides and winter food.",
+             failure_epilogue="The byre is empty. The farm's people have "
+                              "gone down to the harbor to be fed by "
+                              "somebody else."),
+             "pay": 1.25}),
+    card("norse/danegeld", "The danegeld", "norse",
+         wealth=("crisis", "normal"), days=(25, 40),
+         news="A foreign crown is paying the fleet to stay home this "
+              "year. The silver is landed and weighed, the sea-king is "
+              "spending it on men, and the men have to be used on "
+              "somebody.",
+         state={"while": ("tribute-taken",)},
+         menu={"goods": 1.15},
+         quest={"post": job(
+             "The Weighed Silver",
+             "A share of the paid silver has to go up the fjord to the "
+             "jarl who was promised it, and the crews that were promised "
+             "a raid instead know which day it travels.",
+             pool=_TOUGHS, sites=("the fjord road",),
+             giver="the sea-king's steward",
+             epilogue="The silver reached the jarl's hall and was "
+                      "weighed in front of witnesses. The steward pays "
+                      "out of the same chest.",
+             failure_epilogue="The silver never reached the hall. The "
+                              "jarl has told the strand he was cheated, "
+                              "and half the coast believes him."),
+             "pay": 1.20}),
+
     # -- THE MINERS' LEAGUE: EXTRACTION & THE CLAIMS ------------------------ #
     # (2026-08-21, the tile economy arc's session 4.) Recovered from the
     # catalog the human contraction cut and re-homed onto ANY_LAND: the
@@ -1801,9 +2004,11 @@ CARDS = (
                               "people still in them."),
              "pay": 1.20}),
     # THE TOWN SMOKE: the one sky a roof does not keep out (rpg.INDOOR_SKY).
-    # The west is the land of close-built northern towns, and a still winter
-    # week puts every hearth, forge and tannery back down in the street.
-    card("weather/smog", "The smoke settles", "western", track="weather",
+    # TEUTONIA's, since the card audit (2026-08-22): the close-built
+    # northern town with a forge in every second yard is the free cities'
+    # own shape, and a still winter week puts every hearth, forge and
+    # tannery back down in the street.
+    card("weather/smog", "The smoke settles", "teutonia", track="weather",
          weather=("cloud", "fog"), chance=0.20, days=(2, 5),
          news="The town's own smoke has nowhere to go and has settled in "
               "the streets. Everyone is coughing. The aldermen say it is "
@@ -1829,6 +2034,17 @@ CARDS = (
              failure_epilogue="The herd is gone into other clans' hands "
                               "and there is no arguing it back."),
              "pay": 1.15}),
+    # THE WHITE STORM: Thule's own sky (2026-08-22, the norse packet). The
+    # blizzard off the water that shuts a coast for two days -- the norse
+    # counterpart of the steppe's dust storm, and like it, it IS the
+    # weather rather than a consequence of it.
+    card("norse/white-storm", "The white storm", "norse", track="weather",
+         weather=("snow", "storm"), chance=0.35, days=(2, 4),
+         sky="snow",
+         news="Snow is coming in off the water sideways and the coast "
+              "road is gone under it. Nothing is putting out, and the "
+              "farms up the valley will not be heard from for two days.",
+         state={"while": ("white-storm",)}),
     # -- THE SEASON TRACK: the slow states the day roll reads ---------------- #
     card("weather/drought", "The rains do not come", ANY_LAND,
          track="season", dry=PROFILE_SPELL, chance=0.25, days=(45, 80),
@@ -1961,7 +2177,11 @@ POLITICS_CARDS = (
                               "in it, and the men he hired are on the "
                               "roads."),
              "pay": 1.30, "slots": 1}),
-    card("western/settled-warband", "The border grant", "western",
+    # VELLISCLAVIA's alone since the card audit (2026-08-22): it is the one
+    # western kingdom with the steppe at its back, so it is the only one
+    # that can grant border land to a horde in exchange for service.
+    card("vellisclavia/settled-warband", "The border grant",
+         "vellisclavia",
          tension=("crown-vs-lords",), days=None,
          news="A march lord has granted border land to a Tergal warband in "
               "exchange for service. The neighbours are terrified. The "
@@ -2787,6 +3007,153 @@ POLITICS_CARDS = (
                               "his tents south."),
              "pay": 1.25, "slots": -1}),
 
+    # == Thule: THE LAW IS THE THING ======================================= #
+    # (2026-08-22, the norse packet.) Authority here is a man with ships
+    # and a hall full of men he has to keep paying, and the only thing over
+    # him is an assembly of free men who can outlaw him. Seven cards over
+    # the four tensions.
+    card("norse/kings-share", "The sea-king takes his share", "norse",
+         tension=("sea-vs-land",),
+         faction_edge=("norse/sea-kings-tax-land-chiefs",), days=(15, 25),
+         news="The sea-king has sent his men round the fjord for his "
+              "share of every catch and every cargo. He calls it the "
+              "price of a quiet coast. The land-chiefs call it a tax and "
+              "are saying so in public.",
+         state={"while": ("kings-share",)},
+         menu={"goods": 1.15},
+         quest={"post": job(
+             "The Share Boat",
+             "The share boat is going round the fjord with two men in "
+             "it. One farm has decided this is the year it does not pay, "
+             "and both sides want somebody standing on the jetty who is "
+             "not from here.",
+             pool=_TOUGHS, sites=("the fjord jetty",),
+             giver="the sea-king's share-man",
+             epilogue="The share was taken and nobody was killed for it. "
+                      "The farm paid under protest and everyone heard "
+                      "the protest.",
+             failure_epilogue="The share boat came back empty and with a "
+                              "dead man in it. The sea-king is coming "
+                              "round himself next time."),
+             "pay": 1.15}),
+    card("norse/ring-giver-poor", "The chief's silver runs out", "norse",
+         tension=("sea-vs-land", "jarls-vs-thing"), wealth=("crisis",),
+         days=(20, 30),
+         news="The chief has run out of silver to give. A hall full of "
+              "men who are paid in arm-rings and are not being paid is a "
+              "hall full of men looking at other halls.",
+         state={"while": ("ring-giver-poor",)},
+         quest={"post": job(
+             "The Arm-Rings",
+             "The chief wants his hall kept full for one more month and "
+             "has nothing to fill it with. A neighbour is buying his men "
+             "away one at a time, in the same drinking hall.",
+             pool=_TOUGHS, sites=("the mead hall",),
+             giver="the chief's oath-man",
+             epilogue="The hall is still full and the neighbour's silver "
+                      "went home in his own purse. The chief pays you in "
+                      "the last of his.",
+             failure_epilogue="Half the hall has gone over. The chief is "
+                              "a landowner now and not much else."),
+             "pay": 1.25, "slots": 1}),
+    card("norse/the-thing", "The assembly at the stone", "norse",
+         tension=("jarls-vs-thing",), days=(10, 16),
+         news="The assembly is sitting at the stone. Every free man with "
+              "a case is here, the law is being spoken aloud from "
+              "memory, and nobody may be taken for anything while it "
+              "sits.",
+         state={"while": ("thing-sitting",)},
+         menu={"lodging": 1.40, "goods": 1.15},
+         quest={"post": job(
+             "Brought To The Stone",
+             "A man with a case at the assembly has to reach the stone "
+             "alive, and the men he is bringing the case against know "
+             "the road he has to walk.",
+             pool=_TOUGHS, sites=("the assembly road", "the law stone"),
+             giver="the man with the case", places=2,
+             epilogue="He reached the stone and spoke. The case went "
+                      "against him, which he says was worth it.",
+             failure_epilogue="He never reached the stone. The case was "
+                              "not heard, and the men who stopped him "
+                              "sat through the whole assembly."),
+             "pay": 1.20}),
+    card("norse/outlawed", "Three years an outlaw", "norse",
+         tension=("jarls-vs-thing",),
+         faction_edge=("norse/freeholders-outlaw-jarls",), days=(20, 35),
+         news="The assembly has made a man an outlaw for three years. He "
+              "may not be fed, housed or ferried, and anyone may kill "
+              "him. He has gone up into the hills with the men who owe "
+              "him.",
+         state={"while": ("outlawed",)},
+         quest={"post": job(
+             "Fed, Housed Or Ferried",
+             "The outlaw's sister has been feeding him and the assembly "
+             "has found out. One side wants him over the water before "
+             "the hunt starts; the other wants the hunt.",
+             pool=_TOUGHS, sites=("the hill camp", "the ferry strand"),
+             giver="the outlaw's sister", places=2,
+             epilogue="He is over the water and out of the law's reach. "
+                      "His sister sold a farm to pay for it and says so "
+                      "cheerfully.",
+             failure_epilogue="The hunt found him in the hills. The men "
+                              "who were with him are outlaws now too."),
+             "pay": 1.25, "slots": -1}),
+    card("norse/land-taking", "The hazel poles go in", "norse",
+         tension=("jarls-vs-thing",), wealth=("normal", "prosperous"),
+         days=(15, 25),
+         news="A younger son has walked a boundary and put hazel poles "
+              "in at the corners: unclaimed ground, taken and declared. "
+              "The nearest jarl says it is not unclaimed and never was.",
+         state={"while": ("land-taking",)},
+         quest={"post": job(
+             "The Corner Poles",
+             "The poles have to stand until the assembly meets. The "
+             "jarl's men pull one out every night and the son cannot "
+             "watch four corners alone.",
+             pool=_TOUGHS, sites=("the staked ground",),
+             giver="the younger son",
+             epilogue="The poles were standing when the assembly met, "
+                      "and the claim held. The son pays in the first "
+                      "year of the land.",
+             failure_epilogue="The poles were down and the claim died "
+                              "with them. The son has taken ship, which "
+                              "is what the jarl wanted."),
+             "slots": 1, "pay": 1.15}),
+    card("norse/blood-feud", "The blood feud", "norse",
+         tension=("feud",), faction_edge=("norse/feud-house-kill-rival-house",),
+         without=("blood-feud",), days=(20, 35),
+         news="Two houses are in feud. Six men are dead between them, "
+              "each one a debt on the other side's books, and every "
+              "household on this coast is related to one of them.",
+         state={"set": ("blood-feud",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "soldier"),
+                    "where": "road", "as": "one house's men on the road",
+                    "skins": {"cutthroat": "Feud-Man",
+                              "bruiser": "Axe-Bearer",
+                              "soldier": "House-Sworn"},
+                    "chance": 0.40}),
+    card("norse/weregild", "A man's price", "norse",
+         states=("blood-feud",), days=(12, 20),
+         news="The law-speaker has put a price on the dead: so many "
+              "marks a man, counted by rank, paid in silver or cattle. "
+              "Both houses are haggling and neither will be first to "
+              "call it settled.",
+         state={"clear": ("blood-feud",), "while": ("weregild",)},
+         quest={"post": job(
+             "Counted By Rank",
+             "The silver has to be carried to the paying and counted in "
+             "front of both houses. Somebody on one side would rather "
+             "the count never happened.",
+             pool=_TOUGHS, sites=("the paying ground",),
+             giver="the law-speaker",
+             epilogue="The price was counted out and taken. The feud is "
+                      "off the books, and both houses left by different "
+                      "roads.",
+             failure_epilogue="The silver never reached the ground. Both "
+                              "houses read that as an answer and the "
+                              "killing has started again."),
+             "pay": 1.25}),
+
     # == THE WAR LAYER'S FEED ============================================== #
     # The succession cluster: the cards that admit on the crown's
     # circumstance, and move it. They are land-wide over the CROWNED lands,
@@ -2922,16 +3289,16 @@ POLITICS_CARDS = (
     card("western/marriage-pact", "The marriage pact", "western",
          tension=("crown-vs-lords", "old-vs-new"),
          without=("marriage-pact", "betrothal-broken"), days=None,
-         news="A marriage pact has been sealed with the southern crown. "
-              "It ends one war and, if it is ever broken at the church "
-              "door, it starts the next one.",
+         news="A marriage pact has been sealed with a neighbouring "
+              "crown. It ends one war and, if it is ever broken at the "
+              "church door, it starts the next one.",
          state={"set": ("marriage-pact",)},
          quest={"post": job(
              "The Bride's Road",
              "The betrothed and half a household have to cross two "
              "provinces to a wedding that several people would like "
              "cancelled.",
-             pool=_TOUGHS, sites=("the southern road", "the border "
+             pool=_TOUGHS, sites=("the wedding road", "the border "
                                   "chapel"),
              giver="the crown's herald", places=2,
              epilogue="The party reached the chapel and the pact is "
@@ -2948,12 +3315,12 @@ POLITICS_CARDS = (
          state={"clear": ("marriage-pact",), "while": ("betrothal-broken",)},
          quest={"post": job(
              "The Dowry Back",
-             "The southern envoy wants the dowry recovered before it is "
-             "spent, and would rather it did not travel by the main road "
-             "with a herald in front of it.",
+             "The jilted crown's envoy wants the dowry recovered before "
+             "it is spent, and would rather it did not travel by the "
+             "main road with a herald in front of it.",
              pool=_TOUGHS, sites=("the treasury road",),
-             giver="the southern envoy",
-             epilogue="The dowry went south. The insult stands and the "
+             giver="the jilted crown's envoy",
+             epilogue="The dowry went home. The insult stands and the "
                       "accounting does not.",
              failure_epilogue="The dowry is spent and the envoy has gone "
                               "home. The heralds are already talking "
@@ -2968,11 +3335,17 @@ POLITICS_CARDS = (
               "arrive at the same table.",
          state={"set": ("personal-union",)},
          quest={"reprice": 1.10}),
-    card("southern/kin-claim", "Kin have claims", "southern",
+    # The three READER cards each moved to the land the re-authored edge
+    # actually points at (2026-08-22, the card audit): the marriage runs
+    # Seraptania -> Phyrascia, the union Phyrascia -> Seraptania, the
+    # hostage Tergal -> Vellisclavia and the danegeld Thule -> Phyrascia,
+    # so the card that reads each derived word sits in the land wearing it.
+    card("phyrascia/kin-claim", "Kin have claims", "phyrascia",
          states=("pact-kin",), days=(15, 25),
          news="The marriage pact made the two crowns kin, and kin have "
-              "claims. A northern cousin has arrived at court with a "
-              "genealogy, a lawyer, and no intention of going home.",
+              "claims. A cousin from over the water has arrived at court "
+              "with a genealogy, a lawyer, and no intention of going "
+              "home.",
          quest={"post": job(
              "The Genealogy",
              "The cousin's genealogy has to be checked against the parish "
@@ -2987,28 +3360,28 @@ POLITICS_CARDS = (
              failure_epilogue="Both registers are gone. The claim is now "
                               "whatever the cousin says it is."),
              "pay": 1.20, "reprice": 1.10}),
-    card("southern/union-inherits", "The union inherits both",
-         "southern", states=("union-crown",), days=(20, 30),
+    card("seraptania/union-inherits", "The union inherits both",
+         "seraptania", states=("union-crown",), days=(20, 30),
          news="The two crowns are one head now, and the northern realm's "
               "quarrels have followed the king south. His own lords are "
               "being asked to pay for them.",
          state={"while": ("warrants-sold",)},
          quest={"post": job(
              "Somebody Else's Quarrel",
-             "A northern faction has followed the king to the southern "
-             "court and wants a hearing. The southern lords want them off "
+             "A northern faction has followed the king south to the "
+             "court and wants a hearing. The lords here want them off "
              "the road before they get one.",
              pool=_TOUGHS, sites=("the court road",),
              giver="the northern faction's agent",
-             epilogue="The northerners got their hearing. Nobody in the "
-                      "southern court is pleased and the king heard both "
+             epilogue="The northerners got their hearing. Nobody at "
+                      "court is pleased and the king heard both "
                       "sides.",
              failure_epilogue="The northerners never reached the court. "
                               "The king has heard one side and made a "
                               "ruling on it."),
              "pay": 1.20, "reprice": 1.1}),
-    card("western/hostage-in-the-camp", "The heir in the Tergal camp",
-         "western", states=("hostage-given",), days=(20, 35),
+    card("vellisclavia/hostage-in-the-camp", "The heir in the Tergal camp",
+         "vellisclavia", states=("hostage-given",), days=(20, 35),
          news="The truce with the steppe was sealed with a child. He is "
               "growing up in the high chief's guard tent, he is safe "
               "while the truce holds, and half this court would break the "
@@ -3026,23 +3399,23 @@ POLITICS_CARDS = (
                               "a dead letter and the boy is under "
                               "guard."),
              "pay": 1.30, "reprice": 1.15}),
-    card("southern/danegeld", "The danegeld is raised", "southern",
+    card("phyrascia/danegeld", "The danegeld is raised", "phyrascia",
          states=("danegeld-paid",), days=(15, 25),
-         news="The chiefs are being paid not to ride, and the province is "
-              "paying. The collectors say it is cheaper than a war. The "
-              "province has done the arithmetic and disagrees.",
+         news="The northern fleet is being paid not to land, and this "
+              "kingdom is paying. The collectors say it is cheaper than "
+              "a war. The shires have done the arithmetic and disagree.",
          quest={"post": job(
              "Cheaper Than A War",
-             "The tribute chest goes north on Thursday with a small "
-             "escort, because a large one looks like an army. Three "
-             "villages on the route have decided it is not going.",
-             pool=_TOUGHS, sites=("the northern road",),
-             giver="the province's collector",
-             epilogue="The chest went north and the chiefs did not ride "
-                      "this season. The province paid twice: once in "
-                      "silver and once in temper.",
-             failure_epilogue="The chest never reached the border. The "
-                              "chiefs have taken that as an answer."),
+             "The tribute chest goes to the coast on Thursday with a "
+             "small escort, because a large one looks like an army. "
+             "Three villages on the route have decided it is not going.",
+             pool=_TOUGHS, sites=("the coast road",),
+             giver="the shire's collector",
+             epilogue="The chest reached the strand and the ships did "
+                      "not land this season. The kingdom paid twice: "
+                      "once in silver and once in temper.",
+             failure_epilogue="The chest never reached the coast. The "
+                              "sea-kings have taken that as an answer."),
              "pay": 1.25, "slots": -1}),
 )
 
@@ -3206,10 +3579,15 @@ RELIGION_CARDS = (
                               "that either."),
              "slots": 1, "pay": 1.10}),
     # == The Sun communion: ONE CHURCH, TWO RITES ========================== #
-    # The one card that belongs to both human lands, because the argument
-    # does: every joint synod ends one insult short of the split.
+    # The one card that belongs to two lands, because the argument does:
+    # every joint synod ends one insult short of the split. Narrowed by the
+    # card audit (2026-08-22) to the two CROWNS that hold the quarrel --
+    # Byzantium, the southern heir and the death-face's home, and
+    # Seraptania, the western church's eldest daughter. It is the schism
+    # clock's own card and the clock runs between exactly those two.
     card("communion/the-synod", "The joint synod",
-         ("western", "southern"), states=("schism-near",), days=(10, 18),
+         ("byzantium", "seraptania"), states=("schism-near",),
+         days=(10, 18),
          news="The two rites have called a joint synod. The north says the "
               "southern death-face is creeping heresy; the south says a "
               "faith that refuses death its face is what makes death "
@@ -3231,10 +3609,16 @@ RELIGION_CARDS = (
                               "fifty years."),
              "pay": 1.25, "slots": -1}),
 
-    # == the south: WHICH FACE RULES ====================================== #
-    card("southern/penance-season", "The penitential season",
-         "southern", tension=("penitents-vs-carnival",),
-         faction_edge=("southern/penitents-denounce-carnival",),
+    # == BYZANTIUM: WHICH FACE RULES ====================================== #
+    # The pendulum calendar, the death-rite and the carnival are the
+    # southern HEIR's, not the whole southern culture's (2026-08-22, the
+    # card audit; the call was settled at design time in designlog (J)).
+    # Andalusia and Umaia wear the culture-generic south and nothing of
+    # the death-face; Byzantium carries this cluster, its own tension and
+    # its own two faction edges.
+    card("byzantium/penance-season", "The penitential season",
+         "byzantium", tension=("penitents-vs-carnival",),
+         faction_edge=("byzantium/penitents-denounce-carnival",),
          without=("carnival-on",), days=(15, 25),
          news="The hooded columns are out, the statues are veiled and the "
               "flagellants march the main street at dusk. Attendance is "
@@ -3254,9 +3638,9 @@ RELIGION_CARDS = (
                               "district. The season's sermons are about "
                               "nothing else now."),
              "reprice": 0.90}),
-    card("southern/carnival", "Carnival", "southern",
+    card("byzantium/carnival", "Carnival", "byzantium",
          tension=("penitents-vs-carnival",),
-         faction_edge=("southern/carnival-outnumber-penitents",),
+         faction_edge=("byzantium/carnival-outnumber-penitents",),
          without=("penance-season",), days=(8, 14),
          news="Carnival is on: masks, licence and the world upside down. "
               "Sins confessed masked are absolved wholesale, the theology "
@@ -3277,7 +3661,7 @@ RELIGION_CARDS = (
                               "under carnival law nobody was anybody that "
                               "night."),
              "slots": 1, "pay": 1.15}),
-    card("southern/day-of-the-dead", "The day of the dead", "southern",
+    card("byzantium/day-of-the-dead", "The day of the dead", "byzantium",
          chance=0.30, days=(2, 3),
          news="Tonight the dead are guests. The tombs are picnicked in, "
               "plates are set at the family tables, and the graveyard is "
@@ -3298,8 +3682,8 @@ RELIGION_CARDS = (
                               "plates were on the floor. The family has "
                               "stopped setting them."),
              "pay": 1.20}),
-    card("southern/two-hoods", "Two brotherhoods, one corpse",
-         "southern", tension=("penitents-vs-carnival",), days=(8, 14),
+    card("byzantium/two-hoods", "Two brotherhoods, one corpse",
+         "byzantium", tension=("penitents-vs-carnival",), days=(8, 14),
          news="A notable died in the street and two hooded burial "
               "brotherhoods reached him at once. Both are anonymous by "
               "rule, both have the paperwork, and the standoff is being "
@@ -3318,7 +3702,7 @@ RELIGION_CARDS = (
              failure_epilogue="The body went to whichever brotherhood was "
                               "faster. The widow is not told which."),
              "pay": 1.15}),
-    card("southern/debate-riot", "The disputation riot", "southern",
+    card("byzantium/debate-riot", "The disputation riot", "byzantium",
          tension=("penitents-vs-carnival",), days=(8, 14),
          news="The public theology debate on the two faces was staged as "
               "entertainment and wagered on like a duel. It ended in "
@@ -3338,6 +3722,81 @@ RELIGION_CARDS = (
                               "magistrate has banned public theology for "
                               "a year. Everyone is doing it in cellars."),
              "slots": -1, "pay": 1.20}),
+
+    # == Thule: THE GROVE, THE SEA AND THE POLE ============================ #
+    # (2026-08-22, the norse packet.) Worship here is a place and a count,
+    # not a creed: an old stand of trees, nine of every kind, and a priest
+    # who keeps the tally. The new faith arrives by ship with a foreign
+    # king's silver behind it, which is why it is a POLITICAL quarrel and
+    # sits on its own tension.
+    card("norse/grove-sacrifice", "The great sacrifice", "norse",
+         tension=("old-vs-new-gods",), days=(10, 16),
+         news="The great sacrifice is at the grove: nine of every kind, "
+              "horses and dogs and men, and the bones stay where they "
+              "fall. Every district is expected and the priest keeps the "
+              "count of who came.",
+         state={"while": ("grove-sacrifice",)},
+         menu={"goods": 1.15},
+         quest={"post": job(
+             "Nine Of Every Kind",
+             "The grove is short of its ninth man and the priest has "
+             "started looking at strangers. A district that will not "
+             "send one this year wants the count made up some other way, "
+             "and is paying for the argument.",
+             pool=_TOUGHS, sites=("the grove path",),
+             giver="the district's speaker",
+             epilogue="The count was made up without anyone from that "
+                      "district in it. The priest wrote the year down "
+                      "as complete and said nothing else.",
+             failure_epilogue="The count was made up out of that "
+                              "district after all. Two families have "
+                              "left the coast entirely."),
+             "pay": 1.25}),
+    card("norse/curse-pole", "The pole with a name on it", "norse",
+         tension=("old-vs-new-gods",),
+         faction_edge=("norse/grove-priests-curse-missionaries",),
+         days=(12, 20),
+         news="A carved pole is up on the headland with a horse's head "
+              "on top of it and a name cut into the shaft. The name "
+              "belongs to the missionary who has been buying converts, "
+              "and the land-spirits are being asked to turn on him.",
+         state={"while": ("curse-pole",)},
+         quest={"post": job(
+             "The Head On The Pole",
+             "The missionary wants the pole down and the name unsaid "
+             "before the tide turns. The grove priest has men sitting on "
+             "the headland in shifts.",
+             pool=_TOUGHS, sites=("the headland",),
+             giver="the missionary",
+             epilogue="The pole is down and the name was unsaid out "
+                      "loud. The grove priest walked away without "
+                      "arguing, which nobody here finds comforting.",
+             failure_epilogue="The pole is still up and a second name "
+                              "has been cut under the first. The "
+                              "missionary has taken ship."),
+             "pay": 1.20}),
+    card("norse/drowned-crew", "A ship did not come home", "norse",
+         chance=0.35, days=(10, 18),
+         news="A ship went out and did not come back. The drowned belong "
+              "to the sea and are not looked for, so the families are "
+              "holding the ale-feast without bodies -- and one of the "
+              "crew has been seen on the strand since.",
+         state={"while": ("drowned-crew",)},
+         quest={"post": job(
+             "The Ale-Feast Without Bodies",
+             "Somebody who was on that ship has been walking up from the "
+             "water at night and going to his own house. His widow wants "
+             "him put back where the sea keeps its own.",
+             pool=_UNDEAD, sites=("the night strand", "the drowned "
+                                  "man's house"),
+             giver="the drowned man's widow", places=2,
+             epilogue="He is back in the water with a stone on him and "
+                      "the house has been slept in since. The widow "
+                      "pays out of the ale-feast money.",
+             failure_epilogue="He is still coming up at night, and two "
+                              "more of the crew have started as well. "
+                              "The house is empty now."),
+             "pay": 1.30}),
 
     # == Tergal: THE PRACTICE, NOT THE CREED =============================== #
     card("tergal/called-child", "The called child", "tergal",
@@ -3583,9 +4042,11 @@ MAGIC_CARDS = (
                               "basement door has a new lock."),
              "pay": 1.20, "slots": -1}),
     # The necromancy CHAIN: the affinity keeps surfacing here, wins some
-    # acceptance, and the next scandal buries it again.
-    card("southern/necromancy-open", "Necromancy is tolerated again",
-         "southern", tension=("academy-vs-tribunal",),
+    # acceptance, and the next scandal buries it again. BYZANTIUM's alone
+    # since the card audit (2026-08-22): the affinity stands on the
+    # death-face rite, and the death-face rite is the southern heir's.
+    card("byzantium/necromancy-open", "Necromancy is tolerated again",
+         "byzantium", tension=("academy-vs-tribunal",),
          without=("necromancy-open", "necromancy-purged"), days=None,
          news="The death-face rite makes necromancy thinkable here, and the "
               "academy has a chair in it again this decade. The northern "
@@ -3607,8 +4068,8 @@ MAGIC_CARDS = (
                               "city saw. The chair will not last the "
                               "year."),
              "pay": 1.20}),
-    card("southern/necromancy-purge", "The academy burns its chair",
-         "southern", states=("necromancy-open",), days=(40, 60),
+    card("byzantium/necromancy-purge", "The academy burns its chair",
+         "byzantium", states=("necromancy-open",), days=(40, 60),
          news="The scandal came, as it always does. The chair is abolished, "
               "the notes are burning in the quadrangle, and everyone who "
               "held a place under it has been examined and sent away.",
@@ -3659,6 +4120,54 @@ MAGIC_CARDS = (
                               "for."),
              "slots": 1, "pay": 1.15}),
 
+    # -- Thule: THE SEER AND THE OATH ------------------------------------- #
+    # (2026-08-22, the norse packet.) Two cards, the same shape as the
+    # steppe's one: what magic ADDS here is a woman who is asked what is
+    # already fixed, and a dozen men who make themselves into a weapon for
+    # one morning. The bought wind is the packet's option, at the bottom.
+    card("norse/seer-speaks", "The seer speaks", "norse",
+         chance=0.30, days=(15, 25),
+         news="The seer was set on the high seat, sung to, and asked. She "
+              "named the men who will not see the spring and one of them "
+              "was in the room. Nobody here argues with the thread once "
+              "it is spoken.",
+         state={"while": ("seer-spoke",)},
+         quest={"post": job(
+             "One Of Them Was In The Room",
+             "A named man means to be somewhere else by spring and wants "
+             "an escort over the fells. His own household has stopped "
+             "feeding him, on the grounds that it would be wasted.",
+             pool=_BEASTS, sites=("the fell crossing",),
+             giver="the named man",
+             epilogue="He is over the fells and out of the district. "
+                      "Whether that counts against the thread is what "
+                      "the whole coast is arguing about.",
+             failure_epilogue="He did not get over the fells. The seer's "
+                              "price has gone up and the queue at her "
+                              "door is longer."),
+             "pay": 1.25}),
+    card("norse/berserk-oath", "The oath is drunk", "norse",
+         tension=("sea-vs-land", "feud"), chance=0.40, days=(10, 18),
+         news="A dozen men have drunk the oath and gone bear-shirt: no "
+              "mail, no shield and no stopping until it is finished. "
+              "They are worth twenty men for one morning and nothing at "
+              "all afterwards, and somebody has paid for the morning.",
+         state={"while": ("berserks",)},
+         quest={"post": job(
+             "Worth Twenty Men For One Morning",
+             "The oath-drinkers are walking up the shore path to a farm "
+             "they have been pointed at, and the man who bought the oath "
+             "has changed his mind about it since.",
+             pool=_TOUGHS, sites=("the shore path",),
+             giver="the man who bought the oath",
+             epilogue="They were stopped on the path. Two of them will "
+                      "not get up again and none of them remembers what "
+                      "the morning was about.",
+             failure_epilogue="They reached the farm. The district is "
+                              "counting what is left of it, and the man "
+                              "who paid is denying that he paid."),
+             "pay": 1.30}),
+
     # -- the west: THE TOWERS --------------------------------------------- #
     card("western/tower-door", "The tower door opens", "western",
          traits=("spell-friendly", "gifted", "brilliant"), days=(15, 25),
@@ -3698,85 +4207,111 @@ GRAIN_FAILS = ("harvest-failed", "drought")     # what stops a granary: the
                                                 # reaching the other lands'
                                                 # boards and shelves)
 
-# THE RELATIONS, authored by CULTURE and expanded to LANDS (2026-08-21, the
-# nine). A trade edge between two cultures is an edge between every land of
-# the one and every land of the other; the runtime asks about lands only, so
-# `_relations` is the authored table and `RELATIONS` is what it becomes. The
-# per-land re-authoring (~20 hand-placed edges, one Baltic grain road, one
-# Nile one, the crusade's own quarrels) is the norse packet session's.
+# THE RELATIONS, authored LAND TO LAND (2026-08-22, the norse packet's own
+# session). Session 2 authored them by CULTURE and took the cross product,
+# which reached every land cheaply and was deliberately crude -- Phyrascia
+# derived `pact-kin` off Umaia's marriage pact, and every western kingdom
+# ate every other one's grain. This table replaces it: twenty hand-placed
+# edges between named countries, drawn on the map the overlay actually
+# paints. The record and the one-hop derivation are unchanged, and
+# `RELATIONS` is still the expansion of `_RELATIONS` -- it is simply a 1:1
+# expansion now, because every `from` and `to` below is a land.
 _RELATIONS = (
-    # -- the economy floor (2026-08-09) ----------------------------------- #
-    # THE GRANARY: the west grows the bread the steppe does not, so a failed
-    # western harvest is felt on a Tergal shelf.
-    relation("western", "tergal", "grain", when=GRAIN_FAILS,
-             then="grain-scarce", because="the western grain"),
-    # A clan with no herd goes where the grain is.
-    relation("tergal", "western", "raid", when=("herd-loss", "raiding"),
+    # -- THE TWO GRAIN ROADS ---------------------------------------------- #
+    # The Baltic one and the Nile one. Thule grows barley and not much of
+    # it, so its bread comes up the Baltic out of the Vellisclav plains;
+    # Byzantium's comes off the great river, which is what Umaia's delta
+    # is for. Both stop for the same two reasons the granary always did.
+    relation("vellisclavia", "thule", "grain", when=GRAIN_FAILS,
+             then="grain-scarce", because="the Baltic grain ships"),
+    relation("umaia", "byzantium", "grain", when=GRAIN_FAILS,
+             then="grain-scarce", because="the great river's grain"),
+    # -- THE RAIDERS ------------------------------------------------------ #
+    # Two raiding frontiers and one word: the horde comes overland at
+    # Vellisclavia, the ships come at the two coasts they can reach.
+    relation("tergal", "vellisclavia", "raid",
+             when=("herd-loss", "raiding", "mourning-war"),
              then="raiders-out", because="the dying steppe herds"),
-    # -- what each land SELLS the others (2026-08-15, the Europe closure) -- #
-    # The western culture sells grain and TIMBER, the southern one COIN and
-    # the SOUTHERN TRADE (its luxury shelf and the road that carries it are
-    # one flow, so they are one edge), Tergal HORSES, LIVESTOCK and
-    # MILITARY SERVICE. Each edge
-    # is the same shape as the granary above: a state the seller is holding
-    # that stops the goods, and the word the buyer wears while it does.
-    # THE FOREST: the treeless steppe roofs itself with northern wood.
-    relation("western", "tergal", "timber",
-             when=("forest-law", "wildfire", "burned-over"),
-             then="timber-dear", because="the closed western woods"),
-    # THE BANKS: the northern crowns borrow where the coin is.
-    relation("southern", "western", "coin",
+    relation("thule", "phyrascia", "raid", when=("raiding",),
+             then="raiders-out", because="the northern ships"),
+    relation("thule", "seraptania", "raid", when=("raiding",),
+             then="raiders-out", because="the northern ships"),
+    # -- WHAT EACH COUNTRY SELLS ------------------------------------------ #
+    # Each edge is the granary's shape: a state the SELLER holds that stops
+    # the goods, and the priced word the BUYER wears while it does.
+    # THE NORTHERN WOOD: Seraptania builds ships and roofs out of Thule's
+    # timber, and a frozen harbor stops it as surely as a fire does.
+    relation("thule", "seraptania", "timber",
+             when=("ice-locked", "wildfire", "burned-over"),
+             then="timber-dear", because="the frozen northern harbors"),
+    # THE LOMBARD COIN: the western crowns borrow where the banks are.
+    relation("byzantium", "seraptania", "coin",
              when=("paper-worthless", "shares-mad"),
-             then="credit-dry", because="the shut southern banks"),
-    # THE SOUTHERN ROAD: salt, silk and glass all ride the same wagons.
-    relation("southern", "tergal", "trade",
+             then="credit-dry", because="the shut Lombard banks"),
+    # THE SOUTHERN ROAD: silk, spice and glass ride the same wagons over
+    # the passes into the empire's northern neighbour.
+    relation("byzantium", "teutonia", "trade",
              when=("salt-revolt", "quarter-ruined"),
              then="southern-goods-short",
-             because="the broken southern trade"),
-    # THE HERDS, sold twice: the remounts north, the hides and wool south.
-    relation("tergal", "western", "horses",
+             because="the broken southern road"),
+    # THE GOLD CARAVANS: what comes up out of the deep south and crosses
+    # to Iberia, and the same word for it on the shelf.
+    relation("umaia", "andalusia", "trade",
+             when=("bandit-king", "salt-revolt"),
+             then="southern-goods-short",
+             because="the stopped gold caravans"),
+    # THE HORSES, sold twice: the steppe's remounts east, the Andalusian
+    # stud west.
+    relation("tergal", "vellisclavia", "horses",
              when=("herd-loss", "grass-gone"),
              then="horses-dear", because="the dying steppe herds"),
-    relation("tergal", "southern", "livestock",
+    relation("andalusia", "seraptania", "horses",
+             when=("bandit-king", "faith-banned"),
+             then="horses-dear", because="the closed Andalusian roads"),
+    # THE HERDS AND THE HIRED CLANS: both go to the empire, which is the
+    # buyer with the money.
+    relation("tergal", "byzantium", "livestock",
              when=("herd-loss", "grass-gone"),
              then="hides-dear", because="the dying steppe herds"),
-    # THE HIRED CLANS: a war at home is a company the south cannot buy.
-    relation("tergal", "southern", "service",
+    relation("tergal", "byzantium", "service",
              when=("mourning-war", "raiding"),
              then="swords-gone", because="the clans' own war"),
-    # -- politics (2026-08-10) -------------------------------------------- #
-    # THE DIPLOMATIC INSTRUMENTS -- how wars end and stay ended. Each is a
-    # state one land holds and a state the other derives off it, and each
-    # has a card standing in it: the courtly hostage, the yearly tribute,
-    # the marriage pact, the personal union.
-    relation("tergal", "western", "hostage", when=("hostage-guard",),
+    # THE WOOL-CLOTH AXIS: the era anchor's own trade. Phyrascia grows the
+    # fleece, Teutonia's towns weave it, and a road nobody can walk stops
+    # the clip where it stands.
+    relation("phyrascia", "teutonia", "wool",
+             when=("free-company", "custom-strike"),
+             then="wool-short", because="the halted Phyrascian clip"),
+    # -- THE DIPLOMATIC INSTRUMENTS --------------------------------------- #
+    # How wars end and stay ended. Each is a state one land holds, a state
+    # the other derives off it, and a card standing in the derived word:
+    # the hostage in the horde's guard tent, the danegeld paid to the
+    # fleet, the marriage across the channel and the union it argues into.
+    relation("tergal", "vellisclavia", "hostage", when=("hostage-guard",),
              then="hostage-given",
              because="the hostage in the high chief's guard"),
-    relation("tergal", "southern", "tribute", when=("tribute-taken",),
+    relation("thule", "phyrascia", "tribute", when=("tribute-taken",),
              then="danegeld-paid",
-             because="the danegeld the chiefs are paid"),
-    relation("western", "southern", "marriage",
+             because="the danegeld the fleet is paid"),
+    relation("seraptania", "phyrascia", "marriage",
              when=("marriage-pact",), then="pact-kin",
              because="the marriage pact between the crowns"),
-    relation("western", "southern", "union", when=("personal-union",),
-             then="union-crown", because="the union of the two crowns"),
-    # -- religion and magic (2026-08-11) ---------------------------------- #
-    # THE SCHISM CLOCK: one church, two rites, and an argument that runs in
-    # BOTH directions. Each land derives the same word off the other, and
-    # the synod card sits in both decks reading it -- which is what makes a
-    # quarrel between two lands a thing the party can be hired into.
-    relation("southern", "western", "rite",
+    relation("phyrascia", "seraptania", "union",
+             when=("personal-union",), then="union-crown",
+             because="the claim on the other crown"),
+    # -- THE SCHISM CLOCK ------------------------------------------------- #
+    # One church, two rites, and an argument that runs in BOTH directions
+    # between exactly two crowns: the empire that keeps the death-face and
+    # the western church's eldest daughter. The synod card sits in both
+    # decks reading it, which is what makes a quarrel between two lands a
+    # thing the party can be hired into.
+    relation("byzantium", "seraptania", "rite",
              when=("necromancy-open", "dead-abroad", "carnival-on"),
-             then="schism-near", because="the southern rite's death-face"),
-    relation("western", "southern", "rite",
+             then="schism-near", because="the old rite's death-face"),
+    relation("seraptania", "byzantium", "rite",
              when=("interdict", "relic-hunt", "bones-tested"),
              then="schism-near",
-             because="the northern rite's accusations"),
-    # -- Thule (2026-08-21, the nine) ------------------------------------- #
-    # THE RAIDING SEASON: the one edge the norse minimum owes. When the
-    # ships go out, the western coasts wear it.
-    relation("norse", "western", "raid", when=("raiding", "herd-loss"),
-             then="raiders-out", because="the northern ships"),
+             because="the western church's accusations"),
 )
 
 RELATIONS = tuple(
@@ -3826,16 +4361,7 @@ FACTS = (
          "anywhere. What gets a caster hunted is what they DID: a "
          "murderer's treatment with a specialist's surcharge."),
 
-    # -- the south: WHICH FACE RULES -------------------------------------- #
-    fact("southern", "two-faces", "THE PENDULUM CALENDAR",
-         "The sun dies every evening and is born every dawn: Death and the "
-         "Feast are the god's two faces. The year swings between the "
-         "penitential season and carnival, both extremes are arguably "
-         "orthodox, and attendance at both is near universal."),
-    fact("southern", "bone-architecture", "BONE ARCHITECTURE",
-         "Ossuary chapels walled in skulls, catacomb saints dressed in "
-         "jewels and gold wire. Memento mori is the national art style -- "
-         "and the crime layer's strangest marks."),
+    # -- the south: WHAT THE WHOLE CULTURE KEEPS -------------------------- #
     fact("southern", "brotherhoods", "THE BURIAL BROTHERHOODS",
          "Hooded lay confraternities bury the poor and the plague dead on "
          "dues and donations. Anonymous by rule, ubiquitous by custom, and "
@@ -3845,7 +4371,21 @@ FACTS = (
          "robes -- with the bureaucracy and class discrimination of the "
          "land it serves. The gifted commoner is admitted and made to feel "
          "the admission daily. The crown is patron and leash at once."),
-    fact("southern", "necromantic-affinity", "THE NECROMANTIC AFFINITY",
+
+    # -- BYZANTIUM: WHICH FACE RULES -------------------------------------- #
+    # The death-face cluster is the southern HEIR's, not the culture's
+    # (2026-08-22, the card audit): these three stand behind cards that
+    # narrowed to Byzantium in the same pass.
+    fact("byzantium", "two-faces", "THE PENDULUM CALENDAR",
+         "The sun dies every evening and is born every dawn: Death and the "
+         "Feast are the god's two faces. The year swings between the "
+         "penitential season and carnival, both extremes are arguably "
+         "orthodox, and attendance at both is near universal."),
+    fact("byzantium", "bone-architecture", "BONE ARCHITECTURE",
+         "Ossuary chapels walled in skulls, catacomb saints dressed in "
+         "jewels and gold wire. Memento mori is the national art style -- "
+         "and the crime layer's strangest marks."),
+    fact("byzantium", "necromantic-affinity", "THE NECROMANTIC AFFINITY",
          "Necromancy keeps surfacing here: controversial, periodically "
          "half-accepted, and buried again by the next scandal. The "
          "death-face rite makes it thinkable; the northern rite cites it "
@@ -3925,13 +4465,84 @@ FACTS = (
          "southern chapters send steward after steward to run it and none "
          "of them stays two winters."),
 
-    # -- Thule: the minimum the frame demands, ahead of the norse packet -- #
+    # -- Thule: THE GROVE, THE SEA AND THE STONE (2026-08-22) ------------- #
+    # Seven facts including the League chapter above, which is the scope
+    # Tergal's packet set. THE GROVE shipped with the nine as the minimum
+    # the frame demands; the other five are the norse packet's.
     fact("thule", "the-grove", "THE GROVE",
          "Every district has one: an old stand of trees nobody cuts, with "
          "a spring at its foot and a stone table beside it. Nine of every "
          "kind hang there at the great sacrifice -- horses, dogs, men -- "
          "and the bones stay where they fall. The grove priest keeps the "
          "count and nobody argues with it."),
+    fact("thule", "ship-burial", "THE SHIP BURIAL",
+         "A man of any standing is buried in a boat, or in a stone "
+         "setting shaped like one, with his gear and whatever was killed "
+         "for him. The mound is on the headland where his ships can be "
+         "seen from it, it belongs to his family for ever, and opening "
+         "one is the worst crime the law has a word for."),
+    fact("thule", "the-thread", "THE THREAD OF FATES",
+         "Three women spin, measure and cut, and a man's length is "
+         "already cut before he hears it. The seer is set on the high "
+         "seat, sung to, and asked -- and she tells the room who will "
+         "not see the spring. Nobody argues with the thread; they argue "
+         "about whether she read it right."),
+    fact("thule", "land-spirits", "THE LAND-SPIRITS",
+         "Every farm, rock and headland has one living in it, and it is "
+         "fed at the door before anyone else eats. A ship coming home "
+         "takes the carved head off the prow before it rounds the "
+         "headland, so as not to frighten them off the land."),
+    fact("thule", "the-drowned", "THE DROWNED BELONG TO THE SEA",
+         "A man lost overboard is not looked for and not brought back. "
+         "His family holds the ale-feast without a body and his seat is "
+         "given away that night. When a drowned man does come back up "
+         "the strand, he walks to his own house, and dealing with that "
+         "is somebody's paid work."),
+    fact("thule", "thing-law", "THE LAW AT THE STONE",
+         "There is no king's court here. Free men meet at the stone, the "
+         "law-speaker says the law aloud from memory, and the assembly "
+         "decides. Its only real sentence is OUTLAWRY -- three years in "
+         "which no one may feed, house or ferry you and anyone may kill "
+         "you -- and the law does not carry it out. Somebody has to."),
+
+    # -- THE SIGNATURE FACTS (2026-08-22, the norse packet's session) ----- #
+    # One standing fact of its own for every country that had only its
+    # culture's shared lore. A country with nothing but its culture's
+    # facts on the lore page reads as a copy of its neighbour, which is
+    # exactly what the country/culture split was supposed to prevent.
+    fact("phyrascia", "the-wool", "THE WOOL",
+         "The kingdom's money is on four legs. The great flocks are the "
+         "abbeys' and the crown taxes every sack that leaves, so the "
+         "wool merchants lend the crown against next year's clip and the "
+         "crown listens to them for exactly as long as it owes them."),
+    fact("seraptania", "the-kings-touch", "THE KING'S TOUCH",
+         "The crowned king heals by laying hands on the sick -- the "
+         "swollen neck, mostly -- and does it in public on the great "
+         "feast days. The queue starts two days early. Whether it works "
+         "is not the interesting question here; that he is the only man "
+         "who may try it is."),
+    fact("teutonia", "the-electors", "THE ELECTORS",
+         "The emperor is ELECTED, by seven great men who are bribed to "
+         "do it and know their own worth to the coin. Between the "
+         "election and the crowning nobody is quite in charge, and the "
+         "free cities time their charters and their lawsuits for exactly "
+         "that gap."),
+    fact("vellisclavia", "the-frozen-road", "THE FROZEN ROAD",
+         "The rivers are the roads, and in winter they harden. A sledge "
+         "carries three times what a cart does over ground that is mud "
+         "eight months a year, so the trading season here is the cold "
+         "one and the fairs are held on the ice."),
+    fact("andalusia", "the-water-court", "THE WATER COURT",
+         "The irrigation channels have a court of their own. It sits "
+         "outside the cathedral door once a week, hears water theft, "
+         "gives judgement the same hour, and writes nothing down. Its "
+         "verdicts are obeyed by people who ignore every other court in "
+         "the country."),
+    fact("umaia", "the-flood-mark", "THE FLOOD MARK",
+         "The great river's flood is measured on a marked pillar every "
+         "summer and the year's tax is set off the number. A low mark is "
+         "a hungry year, everybody in the country knows the figure by "
+         "nightfall, and the men who read it are guarded."),
 )
 
 FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
@@ -3984,9 +4595,19 @@ OPTIONS = (
     # -- Tergal: the priced thumb on the weather's scale ------------------- #
     option("tergal/rain-stone", "the rain stone", "tergal", does="sky",
            gold=60, term="goods", word="rain", holds=2,
-           without=("rain-bought",),
+           without=("sky-bought",),
            line="a shaman who moves weather can be hired: two days of rain "
                 "over this land, dropped where you ask for it"),
+    # -- Thule: the rain stone's northern cousin --------------------------- #
+    # (2026-08-22, the norse packet.) The same verb and the same shape as
+    # the steppe's, sold by a different trade for a different sky: what a
+    # ship wants bought is WIND, and it is sold out of a cord with knots
+    # in it, one knot a day.
+    option("norse/weather-witch", "the weather-witch's cord", "norse",
+           does="sky", gold=55, term="goods", word="wind", holds=2,
+           without=("sky-bought", "white-storm"),
+           line="a woman who sells wind out of a knotted cord: two days "
+                "of it over this land, from the quarter you ask for"),
     # -- the south: the formal version of the whole business -------------- #
     option("southern/academy-fee", "a term at the academy", "southern",
            does="book", gold=130, term="goods", kinds=("capital",),
@@ -4574,7 +5195,7 @@ def _roll_sky(world: dict, polity: str, day: int,
             forced = forced or bought["word"]
         else:
             layer["bought_sky"] = None
-            drop_state(world, polity, "rain-bought", day)
+            drop_state(world, polity, "sky-bought", day)
     word = forced or roll_weather(world, polity, day, rng)
     if word in WET_WEATHER:
         layer["wet"], layer["dry"] = layer.get("wet", 0) + 1, 0
@@ -4896,7 +5517,7 @@ def hire_weather(world: dict, polity: str, day: int, word: str,
     # sold (the session rolls the world before every command), so the paid
     # window is the NEXT `holds` days -- hence the +1.
     layer["bought_sky"] = {"word": word, "until": day + holds + 1}
-    set_state(world, polity, "rain-bought", day)
+    set_state(world, polity, "sky-bought", day)
 
 
 # --------------------------------------------------------------------------- #
@@ -5413,7 +6034,7 @@ def _validate_lore_tables() -> None:
                     raise ValueError(f"STATE_MARKS/{state_id}: not ASCII")
 
 
-EXTERNAL_STATES = ("rain-bought",)   # set by a verb, not by any card
+EXTERNAL_STATES = ("sky-bought",)   # set by a verb, not by any card
 
 
 def _validate_reachability(cards) -> None:

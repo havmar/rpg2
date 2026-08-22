@@ -383,7 +383,7 @@ table:
 | Seraptania | France | Seraptanian | wheat plains, vineyards, a strong crown |
 | Teutonia | Germany and the Low Countries | Teutonic | forests, mines, free cities, an emperor in name |
 | Vellisclavia | Poland and the Rus | Vellisclav | forest and marsh, long roads, the steppe at its back |
-| Thule | Scandinavia | Norse | fjords, pine, longships, the old gods, the assembly stone |
+| Thule | Scandinavia | Norse | fjords, pine, longships, the old gods, the assembly stone, the feud |
 | Byzantium | Italy, the Balkans, Anatolia | Latin | cities, olives, the old empire's roads |
 | Andalusia | Iberia | Andalusian | dry hills, watered valleys, silver counted twice |
 | Umaia | Africa and the Levant | Umaian | desert behind, a green shore, the great river's granary |
@@ -401,10 +401,30 @@ table:
 - **Nine capitals**: London, Paris, Prague, Stockholm, Moscow,
   Constantinople, Cordoba, Cairo, Kyiv. The four great cities of the age
   are Paris, Venice, Constantinople and Cairo.
-- **Thule is thin on purpose right now.** Its lore page has three facts
-  (THE KNOCKERS, its League chapter, THE GROVE) and its deck is the shared
-  cards plus the mines. Play it off the grove, the ships and the law at
-  the stone; a fuller packet is coming.
+- **Thule has its own packet now** (2026-08-22). Play it off three
+  things: the SEA is the economy (the ships going out in spring, the
+  herring run, a whale ashore, the harbors frozen shut), the LAW is the
+  assembly at the stone (no king's court; the law is spoken aloud from
+  memory and the sentence that matters is three years' outlawry), and the
+  GODS are old (the grove, nine of every kind, a curse-pole with a
+  missionary's name on it, the seer who names the winter's dead). Its
+  lore page has eight facts. It sells one thing nobody else does: the
+  weather-witch's cord, two days of bought wind.
+- **Every country has a signature fact.** When a player asks what makes
+  this place itself, that is the line to reach for: Phyrascia's wool
+  money, Seraptania's king who heals by touch, Teutonia's seven electors,
+  Vellisclavia's frozen rivers that are the winter roads, Andalusia's
+  water court outside the cathedral door, Umaia's flood mark that sets
+  the tax, Byzantium's two faces of the god, Tergal's shamans, Thule's
+  grove.
+- **The trouble that crosses a border is drawn on the map.** Twenty
+  authored edges, and each one names two countries, not two cultures:
+  Vellisclav grain feeds Thule and the Nile feeds Byzantium; the horde
+  raids Vellisclavia and the ships raid Phyrascia and Seraptania;
+  Phyrascia's wool goes to Teutonia's looms; the danegeld runs Thule to
+  Phyrascia; and the schism argument is Byzantium against Seraptania and
+  nobody else. If a state readout says a country is wearing another
+  country's trouble, that edge is why.
 - **The towns are real places.** Every tile that can seat a town or a city
   carries an authored name, and a tile's chief settlement wears it when
   the census gives it town tier or better: York, Rouen, Cologne, Krakow,
