@@ -1,41 +1,62 @@
-## turn 7 (day 7)
+## turn 8 (day 7)
 
-> camp until we're healed up
+> go to nearest tavern and get two new companions instead of him
 
-You sleep six nights against the well wall on the village's charity. The deep wounds close one at a time. Your leg sets. The fingers do not come back.
-
-On the second morning Gell says he is finished.
+The Herd Inn is one long room behind the corrals. You settle with Gell there. There is nothing to split -- the purse is empty -- so he takes the longsword he sharpened and the armor he has been mending for six days, and he goes out past the well and south, on foot, without saying anything you have not already heard.
 
 ```
-Gell: satisfaction 6 -> -2/10
-(carrying untended wounds)
-*** Gell has had enough --
-they will leave at the next
-settlement. ***
+Gell is let go at Sargul -- taking
+  their share of the purse (0s) and
+  their gear.
 ```
 
-He has not gone yet. He draws water, he eats, he sits with his back to you sharpening a dead man's longsword, and he says nothing about it again. Eight cuts are still open on him and nobody in Sargul will stitch a man for free twice.
+The innkeeper knows who is looking for work. Two faces come by before dark. The first is a married couple: Ownka, who is thirty-seven, carries a schweizersäbel and has been drilled on it, and talks a great deal; and Grushka, who is thirty, speaks barely above a whisper, and throws fire at the third rank. They hire together or not at all. The second is Bolg, a trader turned caster, who wanted the seat alone.
+
+You take the couple.
 
 ```
-  day 7. purse 0s.
-  Gruk: HP 13/16, ceiling 13.
-    3 wound load.
-  Gell: HP 9/17, ceiling 9.
-    8 wound load. satisfaction -3.
-    [QUITTING at the next
-    settlement]
-  the warband job: 1 fight left.
-    LATE -- 2 days of grace, then
-    it is lost. late pay x0.6.
+Ownka -- tergal f, age 37; temperament:
+  cowardly; speech: verbose; looks:
+  beautiful
+  Ownka (L14, training 3): DEX 4  STR
+    4  MIND 3  STA 13/13  HP 16/16
+    Power 12/12  CHA 5  (bulwark;
+    moves: feint, pommel, thrust;
+    schweizersabel, prof 3)
+  notes: cowardly [satisfaction losses
+    from blood and fear cut twice as
+    deep]
+Grushka -- tergal f, age 30; quirk:
+  patriotic; voice: whispering; looks:
+  pockmarked
+  Grushka (L14, training 3): DEX 4
+    STR 3  MIND 6  STA 11/11  HP 16/16
+    Power 12/12  CHA 6  (spells: fire
+    3; wooden staff)
+  notes: patriotic [downtime in their
+    homeland suits them]
+  4 skill point(s) unspent
+  bound to Ownka (a married couple)
 ```
 
-Anything that lifts him above the line before he walks saves him: a day of `downtime` here is +1, a tavern night is +1 and costs 1s a head, a job paid out is +1. Kyiv is a day east and it is a capital, with temples in it, which is worth double to him -- but arriving anywhere is arriving at a settlement, and that is where he goes.
+Ownka wants to know what happened to your hand, and then what happened to the last one, and does not stop asking until Grushka puts a hand on her arm.
 
 ```
-  options: downtime here (a day,
-    +1), hunt for silver, the last
-    fight at the trail (late, 2
-    days of grace), find Varg
+  day 7. purse 0s. party 3/3.
+  Gruk: HP 13/13 of 16. 4 points
+    unspent.
+  Ownka: HP 16/16.
+  Grushka: HP 16/16. 4 points
+    unspent.
+  the warband job: 1 fight left --
+    one swordmaster, untouched.
+    LATE, 2 days of grace.
+```
+
+```
+  options: back to the trail for the
+    swordmaster, spend the skill
+    points, hunt for silver, travel
 ```
 
 Where to?

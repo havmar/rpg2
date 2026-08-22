@@ -1,14 +1,14 @@
 RPG2 PARTY SHEET -- day 7, at Tergal >
-  R10C26 > Sargul
+  R10C26 > Sargul > HERD INN
 purse: 0s
-party: 1/2 companion slot(s) filled (CHA
+party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
   L14  training 3  XP 211/1400  points 4
   DEX 3  STR 3  MIND 6  CHA 5
   HP 13/13 of 16  STA 12/12  Power 10/10
-  longsword | staminax1
+  longsword | healingx1, staminax1
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
@@ -18,30 +18,31 @@ party: 1/2 companion slot(s) filled (CHA
   - a gash above the knee (sev 1)
   wound load 3 -> HP ceiling 13/16
 
-(companion) Gell -- tergal m, age 35
-  [QUITTING at the next settlement]
-  L14  training 3  XP 211/1400  points 0
-  DEX 1  STR 4  MIND 3  CHA 4
-  HP 9/9 of 17  STA 10/10  Power 12/12
-  longsword | healingx1, staminax1
+(companion) Ownka -- tergal f, age 37
+  L14  training 3  XP 0/1400  points 0
+  DEX 4  STR 4  MIND 3  CHA 5
+  HP 16/16  STA 13/13  Power 12/12
+  schweizersäbel, prof 3 | healingx1,
+    staminax1
   abilities: bulwark
-  moves: feint, pommel, sweep
+  moves: feint, pommel, thrust
   pools bought: hp +6, power +6, sta +6
-  drilled, not in hand: zweihander 3
   speaks: Latin, Tergal
-  satisfaction -3/10
-  quirk: religious; voice: melodious;
-    dress: armored
-  - badly beaten (sev 1)
-  - a cut across the left forearm (sev
-    1)
-  - a cracked rib (sev 1)
-  - a cut brow, blood in the eye (sev 1)
-  - a shallow cut along the ribs (sev 1)
-  - a shallow belly wound (sev 1)
-  - a split knuckle (sev 1)
-  - a gash above the knee (sev 1)
-  wound load 8 -> HP ceiling 9/17
+  satisfaction 7/10
+  temperament: cowardly; speech:
+    verbose; looks: beautiful
+
+(companion) Grushka -- tergal f, age 30
+  L14  training 3  XP 0/1400  points 4
+  DEX 4  STR 3  MIND 6  CHA 6
+  HP 16/16  STA 11/11  Power 12/12
+  wooden staff | staminax1
+  spells: fire 3
+  pools bought: hp +6, power +6, sta +6
+  speaks: Latin, Tergal
+  satisfaction 7/10
+  quirk: patriotic; voice: whispering;
+    looks: pockmarked
 
 active quest: [q01] L14 Rival Warband --
   next: the raided trail (L14), room 2/2
