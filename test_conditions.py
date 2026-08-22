@@ -167,7 +167,7 @@ class FightEndAndTreatment(unittest.TestCase):
     def test_a_won_fight_stabilizes_the_survivors(self):
         hero = _dummy("Inga", hp=60)
         hero.dex, hero.str_ = 20, 20
-        hero.weapon = rpg.WEAPONS["katana"]
+        hero.weapon = rpg.WEAPONS["schweizersäbel"]
         foe = _dummy("Mook 1", hp=1)
         foe.dex, foe.str_ = 0, 0
         rpg.apply_condition(hero, "bleed")

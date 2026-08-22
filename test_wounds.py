@@ -305,7 +305,7 @@ class TheTreatmentLadder(unittest.TestCase):
             for loc in ("flesh", "arm", "leg", "hand"):
                 rpg.add_wound(h, loc, 3)
             load = h.wound_load
-            purse = rpg.Purse(gold=10_000)
+            purse = rpg.Purse(silver=10_000)
             closed, _ = rpg.healer_service([h], purse, subtype, [])
             if cap is None:
                 self.assertEqual(h.wound_load, 0, subtype)
@@ -316,14 +316,14 @@ class TheTreatmentLadder(unittest.TestCase):
     def test_the_healer_charges_a_flat_fee_per_severity(self):
         h = _hero()
         rpg.add_wound(h, "flesh", 2)
-        purse = rpg.Purse(gold=1000)
+        purse = rpg.Purse(silver=1000)
         closed, spent = rpg.healer_service([h], purse, "town", [])
         self.assertEqual(spent, rpg.HEALER_FEE * closed)
 
     def test_an_empty_purse_buys_no_treatment(self):
         h = _hero()
         rpg.add_wound(h, "flesh", 2)
-        purse = rpg.Purse(gold=rpg.HEALER_FEE - 1)
+        purse = rpg.Purse(silver=rpg.HEALER_FEE - 1)
         closed, spent = rpg.healer_service([h], purse, "capital", [])
         self.assertEqual((closed, spent), (0, 0))
         self.assertEqual(h.wound_load, 2)
@@ -331,15 +331,15 @@ class TheTreatmentLadder(unittest.TestCase):
     def test_the_healer_never_reaches_a_maiming(self):
         h = _hero()
         rpg.add_wound(h, "hand", 3, permanent=True)
-        purse = rpg.Purse(gold=1000)
+        purse = rpg.Purse(silver=1000)
         closed, spent = rpg.healer_service([h], purse, "capital", [])
         self.assertEqual((closed, spent), (0, 0))
-        self.assertEqual(purse.gold, 1000)
+        self.assertEqual(purse.silver, 1000)
 
     def test_treatment_dresses_what_it_cannot_close(self):
         h = _hero(hp=30)
         rpg.add_wound(h, "gut", 3)
-        rpg.healer_service([h], rpg.Purse(gold=1000), "village", [])
+        rpg.healer_service([h], rpg.Purse(silver=1000), "village", [])
         self.assertTrue(h.wounds[0].treated)
         self.assertEqual(rpg.untreated_wounds(h), 0)
 
@@ -349,7 +349,7 @@ class TheTreatmentLadder(unittest.TestCase):
         h = _hero(hp=30)
         rpg.add_wound(h, "gut", 3)
         rpg.add_wound(h, "hand", 2)
-        rpg.healer_service([h], rpg.Purse(gold=1000), "village", [])
+        rpg.healer_service([h], rpg.Purse(silver=1000), "village", [])
         hand = next(w for w in h.wounds if w.location == "hand")
         self.assertFalse(hand.treated)
         self.assertGreater(rpg.untreated_wounds(h), 0)

@@ -59,7 +59,7 @@ def _world(seed: int = 27) -> dict:
 def _hero(name: str = "PC", level: int = 3) -> rpg.Entity:
     return rpg.Entity(name=name, dex=5, str_=5, sta=6, mind=5, max_hp=12,
                       power=4, pain=rpg.HERO_PAIN, records_wounds=True,
-                      weapon=rpg.WEAPONS["katana"], level=level)
+                      weapon=rpg.WEAPONS["schweizersäbel"], level=level)
 
 
 def _state(world: dict, at: dict, *, day: int = 5) -> dict:
@@ -67,7 +67,7 @@ def _state(world: dict, at: dict, *, day: int = 5) -> dict:
     party[0].protagonist = True
     return {
         "world": world, "party": party, "clock": rpg.Clock(day=day),
-        "purse": rpg.Purse(gold=0), "rng": random.Random(4),
+        "purse": rpg.Purse(silver=0), "rng": random.Random(4),
         "karma": karma.new_karma(), "history": [],
         "position": session._area_position(at),
         "accepted": [], "active_quest": None, "loose_ends": [],
@@ -712,8 +712,8 @@ class TheDeliveryPrice(unittest.TestCase):
         for quest in world["quests"].values():
             if quest.get("kind") != "delivery":
                 continue
-            self.assertEqual(quest["gold"],
-                             quests.DELIVERY_GOLD_PER_DAY * quest["days"])
+            self.assertEqual(quest["silver"],
+                             quests.DELIVERY_SILVER_PER_DAY * quest["days"])
             self.assertEqual(quest["xp"],
                              quests.DELIVERY_XP_PER_DAY * quest["days"])
 

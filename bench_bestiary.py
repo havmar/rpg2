@@ -19,7 +19,7 @@ the new currency, so every pre-economy number stays comparable):
     levels, 3 points a step -- rpg.grow_pools as the doctrine helper);
   - then training to 3 (rank n costs 2n now), then proficiency/school
     (rank n costs n), then training to the cap -- monotone;
-  - quality steel from level 4 (katana -- the reliable all-rounder).
+  - quality steel from level 4 (schweizersäbel -- the reliable all-rounder).
 
 Run:  python bench_bestiary.py [--trials N] [--kind wolf]
 """
@@ -59,9 +59,9 @@ def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
 
     buy_training(3)
     if level >= 4:
-        h.weapon = rpg.WEAPONS["katana"]
+        h.weapon = rpg.WEAPONS["schweizersäbel"]
     # A rolled wizard trains the SCHOOL SPELL (their real offense), like
-    # develop_hero: katana ranks would be dead points on a caster.
+    # develop_hero: schweizersäbel ranks would be dead points on a caster.
     if h.school:
         rank = h.spells.get(h.school, 1)
         while rank < rpg.SPELLS[h.school].max_rank and points >= rank + 1:

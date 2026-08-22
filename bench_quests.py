@@ -23,7 +23,7 @@ THREAT_BASE, ROOM_SHARES, BOSS_ALLOWANCE are tuned against this file):
    level cap or the grave -- take the best reachable quest (highest level
    <= party level + 1, else the lowest posted), fight its encounters,
    camp up between them, collect the QUEST's turn-in lump when the last
-   place falls, buy potions and quality steel when the gold is
+   place falls, buy potions and quality steel when the silver is
    there, spend points on doctrine v2 (rpg.autospend_points -- the sims'
    usual understatement of a
    real player). Reports how many careers reach the cap, die, or run out of
@@ -209,8 +209,8 @@ def _shop_and_rest(party, clock, purse, rng, log) -> None:
     """The between-QUESTS policy: this is the town step, so it camps in a BED
     (the treatment ladder's free rung -- one wound severity a night), pays the
     town healer when the party is carrying real damage and the purse can
-    stand it, and then spends gold -- one potion of each kind per hero, then
-    quality steel (the katana, the benches' pick), then potion stockpiles.
+    stand it, and then spends silver -- one potion of each kind per hero, then
+    quality steel (the schweizersäbel, the benches' pick), then potion stockpiles.
     Crude on purpose: the sims understate the player."""
     nights = 0
     living = [h for h in party if not h.dead]
@@ -225,22 +225,22 @@ def _shop_and_rest(party, clock, purse, rng, log) -> None:
     # shipped game -- the ladder exists and a player uses it. One town visit
     # (a day, HEALER_FEE per severity) whenever the load is worth the trip.
     if (sum(h.wound_load for h in living) >= CAREER_HEALER_LOAD
-            and purse.gold >= rpg.HEALER_FEE * CAREER_HEALER_LOAD):
+            and purse.silver >= rpg.HEALER_FEE * CAREER_HEALER_LOAD):
         rpg.healer_service(party, purse, "town", log)
         clock.day += rpg.HEALER_DAYS
-    katana = rpg.WEAPONS["katana"]
+    schweizersäbel = rpg.WEAPONS["schweizersäbel"]
     for stock in (1, POTION_STOCK):
         for h in living:
             for kind in rpg.STOCKED_POTION_KINDS:
                 while (h.items.get(kind, 0) < stock
-                       and purse.gold >= rpg.POTION_PRICE):
+                       and purse.silver >= rpg.POTION_PRICE):
                     rpg.buy_potion(h, purse, kind, log)
         if stock == 1:      # steel outranks the second potion of a kind
             for h in living:
                 needs_steel = (h.weapon is None or h.weapon_broken
                                or (not h.weapon.quality))
-                if needs_steel and purse.gold >= katana.value:
-                    rpg.buy_weapon(h, purse, "katana", log)
+                if needs_steel and purse.silver >= schweizersäbel.value:
+                    rpg.buy_weapon(h, purse, "schweizersäbel", log)
     _allocate_points(party, log)
 
 
@@ -435,24 +435,24 @@ def run_career(seed: int) -> dict:
             _shop_and_rest(party, clock, purse, rng, log)
         if cleared_all and quest["sites"]:
             # Work-done and turn-in in one breath: the career teleports, so
-            # the FIELD tranche (unbanded) and the TURN-IN tranche + gold
+            # the FIELD tranche (unbanded) and the TURN-IN tranche + silver
             # (banded by the day, slice 2) land together -- the same total
             # session play splits across the return leg (2026-08-08). A job
             # carried past the grace keeps its field tranche: only the
-            # turn-in tranche and the gold ever expire.
+            # turn-in tranche and the silver ever expire.
             band = quest_band(quest, clock.day)
             mult = QUEST_PAY_BANDS[band]
             bands[band] += 1
             if mult:
                 rpg.award_quest(party, purse,
-                                round(rpg.quest_gold(level, enc) * mult),
+                                round(rpg.quest_silver(level, enc) * mult),
                                 rpg.quest_clear_xp(level, enc)
                                 + round(rpg.quest_turnin_xp(level, enc)
                                         * mult),
                                 log, quest["name"])
             else:
                 # Done, never paid: the field tranche stays banked -- only
-                # the turn-in tranche and the gold expire with the window.
+                # the turn-in tranche and the silver expire with the window.
                 rpg.award_xp(party, rpg.quest_clear_xp(level, enc), log,
                              "the work done")
             quest["status"] = "done" if mult else "lost"

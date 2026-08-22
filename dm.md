@@ -72,10 +72,10 @@ and is not needed for play.
   the turn protocol); `ui/fight-detailed.txt` is shared on request, when
   the full mechanics record matters.
 - **Editing `save.json` by hand is the DM's override.** When the story
-  needs something no command provides -- grant gold, mend a wound, hand out
+  needs something no command provides -- grant silver, mend a wound, hand out
   a potion, resurrect a companion the fiction says survived -- edit the
   file between commands; every command reloads it fresh. Weapons are stored
-  by catalog name (`"weapon": "katana"`); leave the `"rng"` blob alone. Use
+  by catalog name (`"weapon": "schweizersäbel"`); leave the `"rng"` blob alone. Use
   it for story reasons, not for convenience: the game is played on the
   engine's numbers, so do not edit away an outcome you merely dislike.
 
@@ -265,7 +265,7 @@ to another area -- is the player's core decision:
 - **The job ends in TWO beats now (2026-08-08): the field, then the
   giver.** Clearing the last place prints **THE JOB IS DONE** and names the
   giver, the area and the deadline; the field XP lands there and then, and
-  the gold does not. Play that beat as the fight's aftermath, standing over
+  the silver does not. Play that beat as the fight's aftermath, standing over
   the bodies -- the deed is done, the road home is not walked yet. Then the
   party travels back and `turnin QID` is run AT the giver's settlement,
   where the pay, the epilogue and the QUEST COMPLETE banner all land. Two
@@ -355,10 +355,10 @@ to another area -- is the player's core decision:
   `travel`, then frame the arrival.
 - **Pay is per QUEST, not per site, and it lands in three places.** Each
   fight pays its flat encounter share as it is won (40%); the FIELD tranche
-  (40%) lands when the last place falls, unbanded; the gold and the last
+  (40%) lands when the last place falls, unbanded; the silver and the last
   20% land at the giver, banded by the turn-in day. An intermediate place
   clears with a SITE CLEARED banner and no purse. The persistent
-  geographical site itself does not intrinsically pay. `award GOLD XP NAME`
+  geographical site itself does not intrinsically pay. `award SILVER XP NAME`
   remains for off-script scenes only. (Deliveries, conquest
   garrisons and hell/dark work skip the turn-in stage and pay whole in the
   field -- the script knows which; you never have to decide.)
@@ -542,7 +542,7 @@ somebody in the world say it, once, and move on.
   about.
 - **`prices` prints the current price list.** It prints what this land
   charges TODAY over the catalog sheet, and every `buy`, bed, healer's day
-  and commission pays it. When a player asks why a potion is fourteen gold,
+  and commission pays it. When a player asks why a potion is fourteen silver,
   the answer is in the state line above the sheet: say the reason, not the
   number ("the lord took the mills; everything with flour in it costs
   more").
@@ -552,7 +552,7 @@ somebody in the world say it, once, and move on.
   land.
 - **Travel can cost money as well as days** -- a doubled toll at the
   bridge, a ferryman where the fords are washed out. The script prints the
-  line and takes the gold. Play the toll collector as a person; don't
+  line and takes the silver. Play the toll collector as a person; don't
   apologize for him. A party that cannot pay is let across anyway.
 - **The world puts its own people on the road.** When a travel or wilds
   encounter names them -- the baron's toll-men, loggers holding their camp,
@@ -813,7 +813,7 @@ direct mechanical effects.
   at-or-below the party's level (their chosen prey), paying wild rates
   (below board work on purpose) plus normal loot rolls. It is refused on
   open water. When the player
-  wants gold or XP between quests, this is the sanctioned loop -- no day
+  wants silver or XP between quests, this is the sanctioned loop -- no day
   cost, but no free recovery either. NOTE: what roams a country comes from
   its country/culture template pools -- in some lands the cheapest prey
   is a level-3 dire wolf, and a fresh duo should hear about that before
@@ -828,7 +828,7 @@ direct mechanical effects.
   after the night's recovery, so the party at least wakes fresh); behind
   settlement walls `camp` is safe and free -- and a night behind walls is
   the only kind that KNITS A WOUND (one severity a night; the wilds knit
-  none). `tavern` (settlements only, 1g per living member) buys the same
+  none). `tavern` (settlements only, 1s per living member) buys the same
   night PLUS a one-day OVERCHARGE: everyone wakes with HP and STA ~10% of
   max (min +1) ABOVE their caps ("13/12 HP"). The excess can't be topped
   back up once spent and fades at the next night's rest -- it is a buffer
@@ -918,7 +918,7 @@ direct mechanical effects.
 - **At 0 they quit at the next settlement** (loyal: at -3), taking an equal
   head-split of the purse and their gear; bond partners walk together; the
   dead are laid to rest at the walls. Play departures with weight -- a
-  companion walking out with a quarter of the party's gold IS a story beat.
+  companion walking out with a quarter of the party's silver IS a story beat.
   Anything that lifts them above the line before the walls (a quest lump, a
   tavern bed) genuinely saves them -- say so when it's close.
 - **Deaths in the party are NORMAL attrition -- downplay them.** The
@@ -940,10 +940,10 @@ direct mechanical effects.
   tavern is dismiss + hire, and the severance pay makes it a move with a
   real cost, not free swapping. Play a dismissal as a scene; the traits say
   how they take it.
-- **Meds**: a "needs meds" companion needs a 20g dose in a CAPITAL every 10
+- **Meds**: a "needs meds" companion needs a 20s dose in a CAPITAL every 10
   days (`buy HERO meds`). Track it out loud when the party plans a long
   stretch in the wilds.
-- **CHA also talks pay up** (+10%/point above 3, max +30%, gold only) --
+- **CHA also talks pay up** (+10%/point above 3, max +30%, silver only) --
   the script prints the negotiation line; give it a sentence of fiction
   when it fires.
 
@@ -996,7 +996,7 @@ visits scene-sized.
   (party level +0..+2, potentially brutal), and then hell WRITES THE JOB
   OFF whatever happened and waits for the next pin. Play the write-off as
   dry office procedure: hell records it, and nobody comes back. `bribe`
-  buys quiet (30g x level, 10 days) and resets Past Due; `task` is the
+  buys quiet (30s x level, 10 days) and resets Past Due; `task` is the
   ledger. Relay the whole bargain straight -- the choice only works if the
   player knows the terms.
 - **A refusal is a supported campaign.** The whole point of the one-visit
@@ -1016,7 +1016,7 @@ visits scene-sized.
 - **There is no shadow board.** Freelance wickedness is not a posting to be
   read: the PC does the thing because they want to, and that is now a real
   subsystem -- `case` and `crime` (the next section). Dark jobs pay 1.5x
-  the honest gold rate; every XP a dark job pays is SIN, and the meter
+  the honest silver rate; every XP a dark job pays is SIN, and the meter
   prints itself (the tally, `sin`). What the crime layer does not cover,
   improvise as before: narration plus `forge --dark` for anything that has
   to be fought and `sin dark N` for what the scene earned.
@@ -1113,7 +1113,7 @@ rules.md's Crime add-on has the numbers.
 - **Repetition is hell being bored, not the world reacting.** When the
   multiplier note prints ("hell is bored: x0.5"), say it in hell's voice --
   a memo, a sigh from below, a note in the file -- never as the town
-  learning to defend itself. The gold is unchanged on purpose: only the
+  learning to defend itself. The silver is unchanged on purpose: only the
   sin and the XP shrink. Alternating two crimes does not help; a wider
   mix of crimes or a few honest days does, and it is fair to say so once.
 - **A big score is NEWS.** When the news line prints, the town talks for
@@ -1342,7 +1342,7 @@ than the fights WITHOUT pages of narration:
   skill points** (`train HERO combat|weapon|hp|sta|power|SPELL` and
   `learn HERO ABILITY` -- the PC's points bank on level-up; companions
   spend their own, see below), **buying spellbooks**
-  (`buy HERO book SPELL`, 120g, capitals -- a wizard's breadth is a purse
+  (`buy HERO book SPELL`, 120s, capitals -- a wizard's breadth is a purse
   decision), **the utility casts** (`cast HERO scry`,
   `cast HERO teleport DEST` -- Power spent between fights is Power not
   carried into one), where to `travel` and which site to run, whether to
@@ -1402,7 +1402,7 @@ than the fights WITHOUT pages of narration:
   most of it is trash and one clause is enough ("a shortsword among the
   bodies, better than your club if you want it"); a quality blade is a real
   find and deserves a beat. `give HERO WEAPON` hands one over.
-- **DM decisions:** off-script bonuses (`award GOLD XP NAME` -- board
+- **DM decisions:** off-script bonuses (`award SILVER XP NAME` -- board
   quests pay themselves), granting found/looted weapons (`give HERO WEAPON`
   -- e.g. the fallen bruiser's longsword; commons are trivial loot, quality
   steel is a real find, magic steel is a story event: a famous armory piece
@@ -1511,10 +1511,10 @@ than the fights WITHOUT pages of narration:
   register as the engine's output, not in sentences:
 
       job: Ash-Callers' Circle -- L2
-      foes: fire casters. pay: 30g
+      foes: fire casters. pay: 30s
 
       Torbera: HP 2/10
-      options: camp, tavern (1g/head),
+      options: camp, tavern (1s/head),
         press in
 
   One consistent shape keeps these scannable. **Keep composed blocks (and
@@ -1663,7 +1663,7 @@ than the fights WITHOUT pages of narration:
   trail's staged reunion, on your call.
 - **A job pays in three places:** each fight's share as it is won, the
   FIELD tranche when the last place falls (**THE JOB IS DONE** -- unbanded,
-  and the world changes here), and ALL the gold plus the last 20% at the
+  and the world changes here), and ALL the silver plus the last 20% at the
   giver via `turnin QID`, banded by the day it lands. `--here` pays it
   anywhere when the fiction demands. Miss the window on the road home and
   the job is DONE, NEVER PAID: the 80% stays, no rumor fires. BOUNTIES
@@ -1716,7 +1716,7 @@ than the fights WITHOUT pages of narration:
   window (the quest clock) -- see the turn protocol. In the WILDS the
   night's visitor is now rolled BEFORE the recovery: a camp that draws a
   fight heals nobody, and the party meets it as tired as the day left them.
-  A `tavern` night (settlements, 1g/head) is a long rest plus a one-day
+  A `tavern` night (settlements, 1s/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
 - **WOUNDS -- the slow injury channel.** A landed blow above a graze leaves
@@ -1770,13 +1770,13 @@ than the fights WITHOUT pages of narration:
   endurance war you can lose by simply running dry.
 - Bandits are living fighters under exactly the party's rules (they tire
   and go Spent too) -- hideout logs read with no special cases.
-- **CHA & the party**: capacity = PC's CHA - 3 (hard cap, 0..3); quest gold
+- **CHA & the party**: capacity = PC's CHA - 3 (hard cap, 0..3); quest silver
   +10%/CHA point above 3 (max +30%, never XP). Companion satisfaction 0-10:
   +1 job lumps / tavern nights / downtime days (+2 when the place suits a
   trait), -1 fled or bloodied, -2 Down or a death witnessed (cowardly x2,
   brave x1/2), quits at 0 (loyal -3) at the next settlement with a
   head-split of the purse. Pairs (25% of recruit options) count two heads
-  and leave together. "Needs meds": 20g/dose, capitals, every 10 days, else
+  and leave together. "Needs meds": 20s/dose, capitals, every 10 days, else
   -1/night.
 - **The press:** at most 2 attackers can press one man-sized target in a
   round; anyone crowded out "circles" (free -- no swing, no STA). It cuts
@@ -1807,7 +1807,7 @@ than the fights WITHOUT pages of narration:
   companion lives (see The player character above).
 - **Weapons:** everyone wields exactly one (no inventory; swaps are
   narrative or `give`/`buy`). The quality four: rapier (+2 attack, -1
-  severity, always draws blood on a landed hit), katana (+1/+1, the
+  severity, always draws blood on a landed hit), schweizersäbel (+1/+1, the
   all-rounder), zweihander (+1/+3 but -1 on defense -- the crowd-breaker),
   wooden staff (+1 parry, +1 max Power while wielded, weak steel -- the
   caster's focus). Commons are named trash (club/dagger... -1 severity;
@@ -1816,7 +1816,7 @@ than the fights WITHOUT pages of narration:
   barrow. **The weapon ladder:** a new game STARTS on trash arms (the first
   looted shortsword is a felt upgrade); MASTERWORK (+1 attack, doesn't
   break easily) is shoppable in capitals at 5x the plain price
-  (`buy HERO masterwork katana`); the MAGIC tiers are never on a shelf --
+  (`buy HERO masterwork schweizersäbel`); the MAGIC tiers are never on a shelf --
   quest rewards (`claim HERO` at the turn-in when a board row says "pays a
   ..."), the world's famous named weapons (`armory` -- ten per world, all
   known as rumor; their owners WIELD them, so taking one is a robbery or a
@@ -1824,12 +1824,12 @@ than the fights WITHOUT pages of narration:
   (`commission SMITH HERO` at the smith's seat -- expensive, days at the
   forge, and the smith refuses work below their own tier out of pride).
   Magic pieces can carry stat bonuses, condition riders (a blade whose cuts
-  poison or burn), a first-blow lunge, or a gold/karma-per-kill quirk --
+  poison or burn), a first-blow lunge, or a silver/karma-per-kill quirk --
   the piece's description says what it does in plain words; narrate it,
   never invent numbers for it.
 - **Prices: `python session.py prices` is the price sheet** -- every
-  shoppable weapon, potions (10g), spellbooks (120g, capitals), meds (20g,
-  capitals), the tavern (1g a head), and ammo by the lot, read from the
+  shoppable weapon, potions (10s), spellbooks (120s, capitals), meds (20s,
+  capitals), the tavern (1s a head), and ammo by the lot, read from the
   live constants. Answer "what does X cost" from that readout, never from
   memory and never by searching the code. Since 2026-08-11 it ends with
   THIS LAND'S own counter (`service`) -- the burial, the blessing, the
@@ -1850,8 +1850,8 @@ than the fights WITHOUT pages of narration:
   (arrows/bolts/shells/knives; sling stones free): spent hit or miss,
   scavenged off a WON field (the log prints the recovery), left behind on a
   fled one. `buy HERO arrows` restocks; quality reach is the longbow (range
-  3, 60g), blunderbuss (one brutal doorway blast, 90g + 5g a shell), and
-  the revolver (250g). All nine countries use the same calibrated ranged
+  3, 60s), blunderbuss (one brutal doorway blast, 90s + 5s a shell), and
+  the revolver (250s). All nine countries use the same calibrated ranged
   rows; narrate the local unit and equipment, not a biological restriction.
 - **Weapon breaks are story beats.** On a parry or clash the flimsier
   weapon can SHATTER (`*** CRACK ***` in the log): the fighter drops to -2
@@ -1892,7 +1892,7 @@ than the fights WITHOUT pages of narration:
   healing/stamina (r1), strength potion (r2, +1 STR till camp), firebomb
   (r3), dexterity potion + smoke vial (r4), the +6/3-target bomb (r5).
   Brewed stock is capped at rank+2 (freshness) and can't be sold (alchemy
-  pays in kit, never gold). In a fight the **firebomb** throws itself like
+  pays in kit, never silver). In a fight the **firebomb** throws itself like
   a spell (an alchemist with bombs and 2+ foes in reach hurls one -- flat
   +4 severity, two foes; NARRATE the blast), and at a retreat the **smoke
   vial** (`retreat --smoke HERO`) waives the parting blows (the chase still
@@ -1907,7 +1907,7 @@ than the fights WITHOUT pages of narration:
   later can grant it, while every warrior sink stays open to a wizard).
   POWER is the fuel; it never comes from MIND. Spells rank 1-3:
   `train HERO SPELL` buys ranks (rank n = n points; ANYONE can deepen a
-  spell they know -- books stay wizard-only), `buy HERO book SPELL` (120g,
+  spell they know -- books stay wizard-only), `buy HERO book SPELL` (120s,
   capitals) teaches new spells; rank 3 is an attack spell's signature
   technique and usually a utility spell's roleplay tier. Ten spells: fire
   (bolts -> FIREBALL), ice (rime bolts -> FLASH-FREEZE), telekinesis
@@ -1952,11 +1952,11 @@ than the fights WITHOUT pages of narration:
 - **Quest levels are exact:** boards, rumors, `show`, and `take` all print
   the true level. MIND does not alter quest readouts.
 - **Pay scales with level, and it is quoted per JOB**: a level-L quest of
-  `enc` fights pays `44*(L+1)*MULT` XP and `18*L*MULT` gold, where MULT is
+  `enc` fights pays `44*(L+1)*MULT` XP and `18*L*MULT` silver, where MULT is
   1.0 / 1.6 / 2.2 for 1 / 2 / 3 encounters -- the trip, the giver, and the
   turn-in cost the same however many fights the job is, so pay rises
   SUB-linearly with length. 40% of the XP falls as the fights do, flat; the
-  other 60% plus ALL of the gold lands at the turn-in. Punching up pays
+  other 60% plus ALL of the silver lands at the turn-in. Punching up pays
   above your weight class by construction, easy work pays less. **The
   momentum streak is gone** -- there is no push-on multiplier to name any
   more, and nothing forces marathoning a job in one day. A two-place job's
@@ -1971,7 +1971,7 @@ than the fights WITHOUT pages of narration:
   destination -- the leg that arrives is ALWAYS intercepted once (a
   road-table event, so it can be a sighting to slip or an ambush; it pays
   wild XP and cannot un-deliver). Arriving completes the quest on the spot:
-  pay (20g + 25 XP per road day; CHA talks it up), recipient prompt,
+  pay (20s + 25 XP per road day; CHA talks it up), recipient prompt,
   epilogue. Frame the cargo as the fiction demands -- the templates say
   what it is. A courier job carries a window like any job, with the round
   trip's road days added on top, and the hand-off is banded the same way --
@@ -1989,7 +1989,7 @@ than the fights WITHOUT pages of narration:
   demon-slaying is neither crime nor penance), and then the job is WRITTEN
   OFF however that visit ended. Hell work is never LOST off the clock: late
   pays x0.6 then x0, but only done, written off, or bribed ends it. `bribe`
-  = 30g x level for 10 quiet days and a fresh Past Due clock. Deeds: PC
+  = 30s x level for 10 quiet days and a fresh Past Due clock. Deeds: PC
   2d6+stat vs DC (usually 10-11); a botch adds +15 sin and starts the
   fight. `settle` takes a twist's terms at x0.5 of the site lump. Losing to
   any posse is the special mercy (left for dead / the lesson) when the PC
@@ -2003,9 +2003,9 @@ than the fights WITHOUT pages of narration:
   vault 16-20 in a capital; the wilds hold the bands that travel. The lump
   = 50 x mark level x the category's multiplier (half an at-level quest),
   coin = 20 x mark level x the same, goods fenced at x0.5; petty is flat
-  (10-15 sin, 1-5g) and never scales. Deed DCs sit 9-11; a botch adds +15
+  (10-15 sin, 1-5s) and never scales. Deed DCs sit 9-11; a botch adds +15
   sin and starts the fight, and winning it still pays. A category repeated
-  inside 10 days pays x1 / x1 / x0.5 / x0.25 of its SIN and XP (gold never
+  inside 10 days pays x1 / x1 / x0.5 / x0.25 of its SIN and XP (silver never
   depreciates), and a first-ever category pays x1.5. A single sin gain at
   or above the heat step floors heat at 1 for 6 days, penance or no. Hell
   suggests one category on the first completed assignment and one more per
@@ -2041,8 +2041,8 @@ than the fights WITHOUT pages of narration:
   clamped to x0.5-x4.0; across a 60-day sweep some price is moved on about
   two land-days in three, a card is posting work on about one in five, and
   somebody the world put there is on the roads on about one in ten. The
-  road's own charges are small (a toll is ~12g doubled, a ferry ~12g): the
-  fords cost a DAY, and days cost the party more than gold does.
+  road's own charges are small (a toll is ~12s doubled, a ferry ~12s): the
+  fords cost a DAY, and days cost the party more than silver does.
 - **Politics in numbers:** every land rolls one constitution off a
   default-heavy die (the stereotype holds about three worlds in five) and
   ONE standing tension, two if it opened in CRISIS -- and only cards whose

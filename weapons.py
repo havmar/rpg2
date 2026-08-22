@@ -1,7 +1,7 @@
 """The weapon generation system (2026-07-28) -- the sp currency and its uses.
 
 The design currency is the SEVERITY-POINT (sp): the exchange rate the
-shipped quality four already encode (set rapier = katana = zweihander and
+shipped quality four already encode (set rapier = schweizersäbel = zweihander and
 solve -- +1 attack pressure = 2 sp, +1 defense pressure = 2 sp, +1 severity
 = 1 sp; all four chassis land at exactly 3 sp, which bench_weapons verified
 as "suited, not ranked" long before it had a name). This module owns:
@@ -40,9 +40,9 @@ from rpg import (WEAPONS, Weapon, MASTERWORK_PRICE_MULT, masterwork_of,
 # The sp price table (rules.md, "The weapon ladder")
 # --------------------------------------------------------------------------- #
 
-SP_ATK = 2          # +1 attack pressure (proven by rapier = katana)
+SP_ATK = 2          # +1 attack pressure (proven by rapier = schweizersäbel)
 SP_SEV = 1          # +1 severity (the base unit)
-SP_DEF = 2          # +1 defense pressure (proven by katana = zweihander)
+SP_DEF = 2          # +1 defense pressure (proven by schweizersäbel = zweihander)
 SP_POWER = 2        # +1 max Power while wielded (the staff's focus rate)
 SP_STA = 1          # +1 max STA while wielded (the cheap pool axis)
 SP_HP = 1           # +2 max HP while wielded (bought in pairs)
@@ -65,10 +65,10 @@ MYTHIC_SP = 10      # the cap: +3 signature-stat equivalents -- half of the
                     # doctrine's stat-doubling comes from the weapon, never
                     # more. There is deliberately NO all-stats artifact.
 
-# The gold curve is superlinear in sp (doubling per point above quality):
-# career gold is ~thousands, and a linear price would sell mythic steel for
-# lunch money -- and let gold buy DEX-axis power at HP-axis rates.
-GOLD_AT_QUALITY = 60
+# The silver curve is superlinear in sp (doubling per point above quality):
+# career silver is ~thousands, and a linear price would sell mythic steel for
+# lunch money -- and let silver buy DEX-axis power at HP-axis rates.
+SILVER_AT_QUALITY = 60
 
 
 def tier_for_sp(sp: int) -> str:
@@ -84,8 +84,8 @@ def tier_for_sp(sp: int) -> str:
 
 
 def value_for_sp(sp: int) -> int:
-    """Gold value on the superlinear curve, rounded to tens."""
-    v = GOLD_AT_QUALITY * (2 ** max(0, sp - QUALITY_SP))
+    """Silver value on the superlinear curve, rounded to tens."""
+    v = SILVER_AT_QUALITY * (2 ** max(0, sp - QUALITY_SP))
     return int(round(v / 10.0) * 10)
 
 
@@ -117,7 +117,7 @@ def weapon_sp(w: Weapon) -> int:
 # yardstick that defines the budget (and, by designer call 2026-07-28, is
 # NOT in the world -- no McGuffin).
 
-CHASSIS = ("rapier", "katana", "zweihander", "wooden staff")
+CHASSIS = ("rapier", "schweizersäbel", "zweihander", "wooden staff")
 CHASSIS_WEIGHTS = (5, 5, 5, 2)      # the staff's magic tier is rarer: its
                                     # buyers are casters, a narrower band
 CHASSIS_NOUN = {"wooden staff": "staff"}    # display noun for names
@@ -132,11 +132,11 @@ CAP_DEF = 1         # one point of guard is a niche, two is a wall
 
 RIDER_CHANCE = 0.6
 QUIRK_CHANCE = 0.3
-MIDAS_GOLD = 2      # gold per felled foe (capped per fight in the engine)
+MIDAS_SILVER = 2      # silver per felled foe (capped per fight in the engine)
 DARK_KARMA = 2      # sin per felled foe
 
 # Name pools (writing.md: a readable base noun plus one meaningful
-# modifier). The generated form is "MODIFIER CHASSIS" -- "ember katana",
+# modifier). The generated form is "MODIFIER CHASSIS" -- "ember schweizersäbel",
 # "frost rapier"; famous armory pieces take proper names instead.
 RIDER_MODIFIERS = {
     "burn": ("ember", "brand", "cinder"),
@@ -156,7 +156,7 @@ QUIRK_MODIFIERS = {"midas": ("gilded",), "dark": ("black",)}
 
 
 def _signature_axis(chassis: str) -> str:
-    return {"rapier": "dex", "katana": "dex",
+    return {"rapier": "dex", "schweizersäbel": "dex",
             "zweihander": "str", "wooden staff": "power"}[chassis]
 
 
@@ -282,7 +282,7 @@ def generate_weapon(rng: random.Random, sp: int,
     if quirk == "lunge":
         parts.append("its first blow lunges a bound out")
     elif quirk == "midas":
-        parts.append(f"each kill pays {MIDAS_GOLD}g")
+        parts.append(f"each kill pays {MIDAS_SILVER}s")
     elif quirk == "dark":
         parts.append(f"each kill is {DARK_KARMA} sin")
     desc = (f"A {tier} {chassis}, over the plain steel: "
@@ -301,7 +301,7 @@ def generate_weapon(rng: random.Random, sp: int,
         rider=rider, rider_power=1,
         rider_rounds=RIDER_ROUNDS.get(rider) if rider else None,
         lunge=quirk == "lunge",
-        gold_on_kill=MIDAS_GOLD if quirk == "midas" else 0,
+        silver_on_kill=MIDAS_SILVER if quirk == "midas" else 0,
         karma_on_kill=DARK_KARMA if quirk == "dark" else 0,
         value=value_for_sp(sp),
         description=desc)
@@ -310,12 +310,12 @@ def generate_weapon(rng: random.Random, sp: int,
 # --------------------------------------------------------------------------- #
 # The quest-reward ladder (the pay-band mode; quests.py calls this)
 # --------------------------------------------------------------------------- #
-# A weapon reward REPLACES the turn-in gold lump (never the XP, never the
+# A weapon reward REPLACES the turn-in silver lump (never the XP, never the
 # per-encounter shares): the level is the pay grade here as everywhere.
 
 def reward_weapon_for_level(level: int, rng: random.Random,
                             chassis: str | None = None) -> Weapon:
-    """The weapon a level-L job may post instead of its gold lump.
+    """The weapon a level-L job may post instead of its silver lump.
 
     `chassis` fixes what the piece is BUILT ON instead of rolling it (the
     quest board never passes one -- it wants the whole table). session's
@@ -394,8 +394,8 @@ SMITH_CAPS = (7, 8, 9)          # one smith per cap; the pride floor is
 SMITH_PRIDE_FLOOR = 1           # cap - this: they refuse lesser work
 SMITH_STYLES = (                # what each will forge (style is identity)
     ("any steel", CHASSIS),
-    ("blades only", ("rapier", "katana")),
-    ("war steel", ("zweihander", "katana")),
+    ("blades only", ("rapier", "schweizersäbel")),
+    ("war steel", ("zweihander", "schweizersäbel")),
 )
 COMMISSION_MULT = 1.5           # the pride premium over the open value
 COMMISSION_DAYS_PER_SP = 1      # forging days: sp - QUALITY_SP days
@@ -405,7 +405,7 @@ def roll_smiths(world: dict, rng: random.Random) -> list[dict]:
     """The world's legendary smiths: three, seated in distinct capitals,
     each with a CAP (the best sp they can forge) and the pride floor
     (cap - 1) below which they will not work. Commissions are the one way
-    gold buys magic steel -- new steel, never the famous names."""
+    silver buys magic steel -- new steel, never the famous names."""
     from people import make_npc     # runtime: people imports quests
     capitals = [a for a in world["areas"].values() if a.get("capital")]
     rng.shuffle(capitals)
@@ -424,7 +424,7 @@ def roll_smiths(world: dict, rng: random.Random) -> list[dict]:
 
 
 def commission_price(sp: int) -> int:
-    """A commission's gold price: the open value plus the pride premium,
+    """A commission's silver price: the open value plus the pride premium,
     rounded to tens."""
     return int(round(value_for_sp(sp) * COMMISSION_MULT / 10.0) * 10)
 
@@ -484,7 +484,11 @@ def _fit_indented(text: str, indent: str = "  ") -> list[str]:
 def weapon_lines(w: Weapon) -> list[str]:
     """One weapon's display block, fitted to the 40-column screen."""
     head = w.name.upper() if w.tier in ("legendary", "mythic") else w.name
-    lines = [f"{head} ({w.tier} {w.base or w.name})"]
+    base = w.base or w.name
+    # The generated form is "MODIFIER CHASSIS" -- repeating the chassis in
+    # the parenthetical only spends columns the schweizersäbel doesn't have.
+    tag = w.tier if w.name.endswith(base) else f"{w.tier} {base}"
+    lines = [f"{head} ({tag})"]
     lines += fit_lines(_fragments(w.description))
     return lines
 
@@ -493,8 +497,12 @@ def armory_lines(armory: list[dict]) -> list[str]:
     lines = ["THE FAMOUS WEAPONS (all known):"]
     for entry in armory:
         w = entry["weapon"]
-        lines.append(f"- {entry['name']} -- {entry['tier']} "
-                     f"{w['base']}")
+        line = f"- {entry['name']} -- {entry['tier']} {w['base']}"
+        if len(line) <= 40:
+            lines.append(line)
+        else:
+            lines.append(f"- {entry['name']} --")
+            lines.append(f"  {entry['tier']} {w['base']}")
         lines += _fit_indented(entry["where"])
     return lines
 
@@ -505,8 +513,8 @@ def smith_lines(smiths: list[dict]) -> list[str]:
         lines.append(f"- {s['name']} of {s['seat_name']} "
                      f"({s['style']})")
         lines.append(f"  forges sp {s['floor']}-{s['cap']}; "
-                     f"{commission_price(s['floor'])}g-"
-                     f"{commission_price(s['cap'])}g")
+                     f"{commission_price(s['floor'])}s-"
+                     f"{commission_price(s['cap'])}s")
     return lines
 
 
@@ -524,7 +532,7 @@ def main() -> None:
     print("sample commissions:")
     for smith in world["smiths"]:
         w, price, days = commission_weapon(smith, rng)
-        print(f"  {smith['name']}: {price}g, {days} days --")
+        print(f"  {smith['name']}: {price}s, {days} days --")
         for ln in weapon_lines(w):
             print("    " + ln)
 

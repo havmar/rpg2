@@ -33,7 +33,7 @@ Rosa the well-keeper stops you there. The rope is cut, the bucket is gone, and s
 ```
   job: The Thing in the Well -- L1
   giver: Rosa, well-keeper
-  pay: 18g. due day 6.
+  pay: 18s. due day 6.
 ```
 
 A letter finds you at the fountain. Black wax, no courier in sight. Work from below.
@@ -81,10 +81,10 @@ Isolde +35 XP (encounter) [35/100]
 
 *** QUEST COMPLETE:
 The Thing in the Well.
-Reward: 18 gold. ***
+Reward: 18 silver. ***
 Corvin talks the pay up:
-+2g (20g in all).
-The party purse holds 20 gold.
++2s (20s in all).
+The party purse holds 20 silver.
 Corvin +53 XP (quest) [88/100]
 Isolde +53 XP (quest) [88/100]
 Isolde: satisfaction 7 -> 8/10
@@ -96,7 +96,7 @@ Corvin: Unhurt STA 4/6 Power 5/5
 Isolde: Scratched STA 4/6 Power 5/5
  - a bitten forearm, torn (sev 1)
  (HP ceiling 7/8 until it mends)
-Purse 20g; day 1.
+Purse 20s; day 1.
 ```
 
 Rosa counts the coin out at the well head. "Cheap at twice that," she says, and looks down the shaft once before she pays. By evening the winch has a new rope and the well is back in use.
@@ -106,7 +106,7 @@ Isolde binds her arm herself. "An ordinary rat," she says. "Disappointing."
 ```
   options: the board (1 more job),
     the letter from below, tavern
-    (1g/head), camp, travel
+    (1s/head), camp, travel
 ```
 
 Where to?

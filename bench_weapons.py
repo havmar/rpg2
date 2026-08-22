@@ -37,7 +37,7 @@ FRAMES = {
 }
 HP = 10
 
-WEAPON_LIST = ["shortsword", "rapier", "katana", "zweihander", "wooden staff"]
+WEAPON_LIST = ["shortsword", "rapier", "schweizersäbel", "zweihander", "wooden staff"]
 
 REFERENCE = dict(dex=4, str_=4, sta=7)      # the sparring partner: middling
 REFERENCE_WEAPON = "shortsword"             # everything, baseline steel

@@ -14,7 +14,7 @@ The two sites, by design:
   go Winded, and are SPENT at 0 like anyone alive -- its logs teach the
   system with no special cases. A level-1 site: a full clear (3 encounters +
   quest) is exactly the level-1 -> 2 XP cost.
-- The skeleton BARROW is the TOUGH site (level 3 -- double XP, triple gold,
+- The skeleton BARROW is the TOUGH site (level 3 -- double XP, triple silver,
   by the level formulas like every site). Skeletons are the exception
   enemies: undead and tireless (never spend STA, never Winded/Spent), so
   the threat is numbers outlasting a party whose stamina is a death-track.
@@ -38,7 +38,7 @@ from rpg import (Entity, Weapon, Clock, Purse, RUSTED_BLADE, CROWD_CAP,
                  award_xp, award_quest, roll_loot, auto_use_potions_on_rest,
                  autospend_points, auto_brew, random_common_weapon,
                  sim_fight, refresh_foes_after_retreat,
-                 site_encounter_xp, site_clear_xp, site_gold,
+                 site_encounter_xp, site_clear_xp, site_silver,
                  SIM_MAX_ROOM_ATTEMPTS, AMMO_CAPS, FOE_AMMO, ROOM_FIELD,
                  fit_lines, CONDITION_ON_HIT_TAG, condition_tags,
                  FEROCITY_TAKES_SPOILS, FEROCITY_BREAKS,
@@ -156,7 +156,7 @@ BARROW_BLADE = Weapon("barrow blade", 0, 1, 1, durability=2, tags=("ancient",),
 
 # The gunner's COMMON gun (ranged combat, 2026-07-16): the quality
 # blunderbuss's poor cousin, so a mid-band foe row can shoot powder
-# without dropping 90g of quality brass into every fight (the same economy
+# without dropping 90s of quality brass into every fight (the same economy
 # rule that keeps quality blades off low mooks). Crude iron, same doctrine:
 # flat aim, one bound of reach, a hard hit, a clubbing stock.
 HAND_BOMBARD = Weapon("hand bombard", 0, 6, 1, durability=2, bulk=3,
@@ -235,7 +235,7 @@ FOES = {
                            weapon=WEAPONS["longsword"]),
     "blademaster": FoeSpec("Blademaster", level=15, dex=8, str_=6, sta=8,
                            hp=16, ref_pack=2, training=2, pain=2,
-                           weapon=WEAPONS["katana"]),
+                           weapon=WEAPONS["schweizersäbel"]),
     "warlord":     FoeSpec("Warlord",     level=19, dex=8, str_=8, sta=9,
                            hp=20, ref_pack=2, training=2, pain=2,
                            weapon=WEAPONS["zweihander"]),
@@ -508,7 +508,7 @@ class Site:
     DM runs them room-by-room (session.py `hideout ROOM` / `barrow ROOM`);
     `fight N` is the off-script escape hatch for improvised scenes only.
     Pay derives from `level` (rpg.site_encounter_xp / site_clear_xp /
-    site_gold): the level IS the pay grade, for these two exactly as for
+    site_silver): the level IS the pay grade, for these two exactly as for
     every generated site (quests.py)."""
     key: str                # save-file / CLI identity ("hideout", "barrow")
     level: int              # the site's difficulty/pay level
@@ -530,8 +530,8 @@ class Site:
         return site_clear_xp(self.level, len(self.rooms))
 
     @property
-    def quest_gold(self) -> int:
-        return site_gold(self.level)
+    def quest_silver(self) -> int:
+        return site_silver(self.level)
 
 
 # The set room layouts -- the first difficulty lever (develop.md "Balance /
@@ -577,7 +577,7 @@ SITES = {
 
 # Every fixed Weapon instance by name -- the save file (session.py) stores a
 # hero's or foe's armament as a name reference into this index, so save.json
-# stays hand-editable ("weapon": "katana"). Rolled/authored one-off weapons
+# stays hand-editable ("weapon": "schweizersäbel"). Rolled/authored one-off weapons
 # would serialize in full; nothing creates those yet.
 WEAPON_INDEX: dict[str, Weapon] = {
     **WEAPONS, **NATURAL_WEAPONS,
@@ -680,7 +680,7 @@ def run_site(site: Site, party: list[Entity], clock: Clock, purse: Purse,
         room_i += 1
 
     if cleared_all and any(not h.dead for h in party):
-        award_quest(party, purse, site.quest_gold, site.quest_xp,
+        award_quest(party, purse, site.quest_silver, site.quest_xp,
                     log, site.quest_line)
         if auto_train:
             for h in party:
@@ -721,7 +721,7 @@ def main() -> None:
     dead = [h for h in party if h.dead]
     alive = [h for h in party if not h.dead]
     log.append(f"OUTCOME: {outcome(party)} of the party died. "
-               f"Purse: {purse.gold} gold.")
+               f"Purse: {purse.silver} silver.")
     if dead:
         log.append("  Fallen:   " + ", ".join(h.name for h in dead))
     if alive:

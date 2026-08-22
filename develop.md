@@ -1353,7 +1353,7 @@ a pointer: what the file is, how it's run, where its docs are.
   economy floor) it imports `worldsim` at module level and the BOARD READS
   THE WORLD: `board_slots(world, settlement)` takes the band's shift over
   the tier's own count, `_world_pay` stamps the band's and the live cards'
-  pay multiplier into every posting's `gold_total` at posting time, and
+  pay multiplier into every posting's `silver_total` at posting time, and
   `refresh_settlement_board` puts the standing cards' OWN jobs up first
   and outside the refill rule (`_post_card_quest`, keyed by `world_card`
   so one board never carries two copies). `generate_world` therefore calls
@@ -1420,8 +1420,8 @@ a pointer: what the file is, how it's run, where its docs are.
   `day` on `heat` / `record_karma` / `karma_line` that a big single sin
   stamps and a heat floor of 1 reads. All
   other knobs at the top (`KARMA_HEAT_STEP`,
-  `HEAT_CAP`, `PUNISH_*`; the dark gold premium
-  `DARK_GOLD_MULT` sits in quests.py with the pay knobs). The sims
+  `HEAT_CAP`, `PUNISH_*`; the dark silver premium
+  `DARK_SILVER_MULT` sits in quests.py with the pay knobs). The sims
   never import it. `python karma.py [--seed N]` prints a shuffled deck,
   sample assignments and posses (the eyeball check).
 - `conquest.py` — **the domain layer: player conquest** (2026-07-27,
@@ -1480,11 +1480,11 @@ a pointer: what the file is, how it's run, where its docs are.
   protection), the seeded mark roll (`roll_mark` / `npc_mark` /
   `build_mark` off `places.stable_seed` — casing is free AND honest
   because `case` and `crime` share the stream), the take formulas
-  (`take_of` — `CRIME_XP_PER_LEVEL` 50, `CRIME_GOLD_PER_LEVEL` 20,
-  `FENCE_RATE` 0.5, flat `PETTY_SIN`/`PETTY_GOLD`), the monotony window
+  (`take_of` — `CRIME_XP_PER_LEVEL` 50, `CRIME_SILVER_PER_LEVEL` 20,
+  `FENCE_RATE` 0.5, flat `PETTY_SIN`/`PETTY_SILVER`), the monotony window
   and first-time bonus (`sin_mult` / `monotony_mult` / `stamp` /
   `recent_days` — temporary by construction, sin and XP only, never
-  gold), and the unlock ledger (`new_crimes` / `record_for` / `peek` /
+  silver), and the unlock ledger (`new_crimes` / `record_for` / `peek` /
   `refresh_unlocks` / `suggestions` — optionally SHUFFLED off a passed
   rng since session C — / `tally_rows` / `total_crimes` — suggestions,
   never permission; the tally reads the record's own `last` day, never
@@ -1707,7 +1707,7 @@ a pointer: what the file is, how it's run, where its docs are.
   weapon-reward turn-in, `pending_reward` in the save), `armory` (the DM
   inventory of famous weapons + smiths), `commission SMITH HERO
   [CHASSIS] [--sp N]`,
-  and `collect_weapon_quirks` (fight-end and retreat paths: Midas gold
+  and `collect_weapon_quirks` (fight-end and retreat paths: Midas silver
   to the purse, dark kills to the karma ledger). Since 2026-08-04 the
   CRIME surface (THE DARK REWORK's session B): `case [KEY]` (the free,
   honest casing report and the local catalogue) and `crime KEY` (the
@@ -1782,7 +1782,7 @@ a pointer: what the file is, how it's run, where its docs are.
   lethal).
 - `bench_ranged.py` — the ranged matchup matrix (2026-07-16): each ranged
   card on its suited frame vs the melee reference at fields 0/2/3, plus
-  the played escort shape (shooter + katana line vs a wolf pack). The doc
+  the played escort shape (shooter + schweizersäbel line vs a wolf pack). The doc
   of record for reach-is-an-edge-not-a-win-button, and for WHY the
   severity flats run higher than melee mods (a shot's flat replaces STR)
   and why chargers commit before skirmishers in the movement phase.
@@ -1802,7 +1802,7 @@ a pointer: what the file is, how it's run, where its docs are.
   soldiery-ladder duel; acceptance band +-10 of the row median, flags
   printed. Utility abilities get an exact-odds table on their own axis.
   **Session B added** the warrior-moves matchup block (a doctrine duo with
-  a GRANTED katana repertoire vs one without, on the room/duel rows — what
+  a GRANTED schweizersäbel repertoire vs one without, on the room/duel rows — what
   the repertoire buys) and the disarm-move-vs-telekinesis-rank-1 price
   check. **Session C added** the alchemist career column
   (`alchemist_matchup`: the L15 alchemist read three ways — the mixed
@@ -1957,15 +1957,15 @@ mechanic *does* and *why* is rules.md's job.
   TWO level-pay ladders, deliberately separate since 2026-07-26 and
   commented so nobody unifies them: the QUEST ladder `quest_xp_total` /
   `quest_encounter_xp` / `quest_clear_xp` / `quest_turnin_xp` /
-  `quest_gold` with
-  `QUEST_XP_PER_LEVEL` / `QUEST_GOLD_PER_LEVEL` / `ENCOUNTER_MULT` /
+  `quest_silver` with
+  `QUEST_XP_PER_LEVEL` / `QUEST_SILVER_PER_LEVEL` / `ENCOUNTER_MULT` /
   `QUEST_ENCOUNTER_SHARE` / `QUEST_TURNIN_SHARE` — this is the GAME's pay,
   split three ways since 2026-08-08 (encounters / field / turn-in), and
   `quest_clear_xp` is the REMAINDER so the three always sum to
   `quest_xp_total` exactly — and the site-FIXTURE
   ladder `site_xp_total` / `site_encounter_xp` /
-  `site_clear_xp` / `site_gold` with their `SITE_XP_PER_LEVEL` /
-  `ENCOUNTER_XP_SHARE` / `GOLD_PER_SITE_LEVEL` knobs, which now serves only
+  `site_clear_xp` / `site_silver` with their `SITE_XP_PER_LEVEL` /
+  `ENCOUNTER_XP_SHARE` / `SILVER_PER_SITE_LEVEL` knobs, which now serves only
   sites.py's two hand-built calibration fixtures), weapons (the
   `WEAPONS` catalog, `BREAK_CHANCE_PER_GAP_SQ`, starting-weapon chances;
   since 2026-07-28 also the weapon-ladder block — `MASTERWORK_*`,
@@ -1986,19 +1986,19 @@ mechanic *does* and *why* is rules.md's job.
   `AMBUSH_MARGIN`, the opener costs, `SPELLBOOK_PRICE`,
   `ICE_DEX_DEBUFF` / `FREEZE_DEX_DEBUFF`, `WIZARD_STAFF_CHANCE`; the
   delivery pay knobs
-  `DELIVERY_GOLD_PER_DAY` / `DELIVERY_XP_PER_DAY` /
+  `DELIVERY_SILVER_PER_DAY` / `DELIVERY_XP_PER_DAY` /
   `DELIVERIES_PER_WORLD` sit at the top of quests.py), the tavern night
   (`TAVERN_COST_PER_HERO`, `TAVERN_OVERCHARGE` — the one-day above-max
   HP/STA edge; `recover()` is the clamp that makes the excess spent-only),
   and the party-size counterweights
   (`CROWD_CAP` — the press; `XP_PARTY_BASELINE` — awards quoted at the
   duo, paid `x 2 / party size`), the CHA layer (`HERO_CHA_RANGE`,
-  `party_capacity` = CHA−3 clamped 0..3, `CHA_GOLD_BONUS_PER_POINT` /
-  `_CAP` — gold only, never XP), and companion satisfaction (the
+  `party_capacity` = CHA−3 clamped 0..3, `CHA_SILVER_BONUS_PER_POINT` /
+  `_CAP` — silver only, never XP), and companion satisfaction (the
   `SATISFACTION_*` bounds and `SAT_*` event deltas, plus
   `MEDS_INTERVAL_DAYS` / `MEDS_PRICE`). The character layer's content
   knobs (racial `RACE_MODS`, `PAIR_CHANCE`, `ARMORED_DEF_BONUS`,
-  `TRAIT_GOLD`, `INTEREST_PLACES`) sit at the top of `people.py`. The
+  `TRAIT_SILVER`, `INTEREST_PLACES`) sit at the top of `people.py`. The
   quest generator's own knobs sit at the top of `quests.py` (`THREAT_BASE`, `ROOM_SHARES`, `DUP_COST`,
   `PACK_CAP`, `BOSS_ALLOWANCE`, the quest-clock block `QUEST_WINDOW_DAYS` /
   `QUEST_QUICK_SHARE` / `QUEST_GRACE_DAYS` / `QUEST_PAY_BANDS` /
@@ -2067,7 +2067,7 @@ mechanic *does* and *why* is rules.md's job.
   a second rout re-arms it), the `pursuit` key threaded through
   `resolve_encounter` / `finish_encounter` / the `pending` serializers, and
   the `loose_ends` save key. `bench_rout.py` is the acceptance bench.
-- **The quartermaster pass** (2026-07-26 — rules.md's Gold and the potion
+- **The quartermaster pass** (2026-07-26 — rules.md's Silver and the potion
   economy, "The quartermaster pass") — `rpg.py`: `AUTO_POTION_KINDS` (in
   the potion-economy constants block), `wants_potion` (the badly-hurt /
   Winded lines, now shared with `auto_use_potions_on_rest` — the sim
@@ -2108,7 +2108,7 @@ mechanic *does* and *why* is rules.md's job.
   healing spell, 2026-07-17 — `use_heal` is gone), `buy_potion` /
   `buy_weapon` (the `Purse`), `equip_weapon` (keeps the staff's
   `power_bonus` books), `award_xp` / `award_quest` / `roll_loot`
-  (`award_quest` also applies the PC's `cha_gold_bonus` and the +1
+  (`award_quest` also applies the PC's `cha_silver_bonus` and the +1
   satisfaction lump), `train_combat_once` / `train_proficiency` /
   `train_spell` / `buy_pool` / `learn_ability` (session play banks
   points; the sims and companions auto-spend via `autospend_points`,
@@ -2534,8 +2534,8 @@ mechanic *does* and *why* is rules.md's job.
   rung — rules.md's The Economy Floor add-on) — `worldsim.py`: the three
   outlet readers and the content bill (see Files); the knobs are
   `BAND_SLOTS` / `BAND_PAY` / `BOARD_SLOTS_FLOOR`, `BAND_MENU` /
-  `STATE_MENU` / `MENU_FLOOR` / `MENU_CEILING`, `ROAD_TOLL_GOLD` /
-  `ROAD_FERRY_GOLD`, `ENCOUNTER_CHANCE` / `STATE_ENCOUNTERS`, and each
+  `STATE_MENU` / `MENU_FLOOR` / `MENU_CEILING`, `ROAD_TOLL_SILVER` /
+  `ROAD_FERRY_SILVER`, `ENCOUNTER_CHANCE` / `STATE_ENCOUNTERS`, and each
   card's own `quest` / `menu` / `encounter` payload. `quests.py`:
   `board_slots(world, settlement)`, `_world_pay` stamping the pay
   multiplier into every posting, `_post_card_quest` +
@@ -2576,7 +2576,7 @@ mechanic *does* and *why* is rules.md's job.
   record kinds (`fact` / `option`), their tables and readers, `STATE_MARKS`
   / `mark_roles`, `hire_weather` + the `bought_sky` branch in `_roll_sky`,
   the two new foe pools, and the whole authored bill (see Files); the knobs
-  are each option's `gold` / `term` / `days` / `gives` / `holds`, each new
+  are each option's `silver` / `term` / `days` / `gives` / `holds`, each new
   card's own `chance`, and the STATE_MENU / STATE_ENCOUNTERS rows the rung
   added. `crime.py`: `roll_mark(..., roles=())` — the ONLY change, and it is
   a default-empty argument, so a call that does not pass it rolls exactly
@@ -2589,8 +2589,8 @@ mechanic *does* and *why* is rules.md's job.
 - **Karma & heat** (2026-07-19, the villain layer — rules.md's Karma &
   Heat add-on) — `karma.py`: everything (see Files). `quests.py`: the
   `align` field on quest dicts (build_quest/forge_quest/deliveries),
-  `DARK_GOLD_MULT` + the dark branch in `quest_gold_total` /
-  `site_gold_for`, the DARK tag in `quest_line`. `session.py`:
+  `DARK_SILVER_MULT` + the dark branch in `quest_silver_total` /
+  `site_silver_for`, the DARK tag in `quest_line`. `session.py`:
   `party_level` / `record_karma` (the bucketing shim, called in
   `finish_encounter`, `advance_quest`, `deliver_if_arrived`, `cmd_award`),
   the `align` thread through `resolve_encounter`/`pending`/resume/retreat
@@ -2881,7 +2881,7 @@ fixtures were diffed byte-identical across the change, and worldgen's
 armory/smith/reward rolls ride DERIVED rngs so the posting streams the
 career sim consumes are unchanged. The one real effect: ~15% of postings
 now pay their turn-in lump as a weapon (`WEAPON_REWARD_CHANCE`), which the
-sim party cannot claim — career gold runs a shade leaner. A 30-career
+sim party cannot claim — career silver runs a shade leaner. A 30-career
 sanity run matched the slice-4 acceptance shape (L5 93% / L8 80% / L11
 33%; median death L9; capped 93 days / 38 quests — small-sample noise
 around the 500-career baseline). Owed before trusting the sp prices for
@@ -2924,7 +2924,7 @@ it is now located, named, and does not heal overnight.
   pyromancer 87.7 → **85.0**, giant 98.8 → **98.9**. Nothing moved more than
   ~3 points and the moves go both ways. No annotation touched.
 - **Controls: also within noise** — `bench_weapons` keeps its column order
-  exactly (zweihander tops every swarm, katana/zweihander split the duels);
+  exactly (zweihander tops every swarm, schweizersäbel/zweihander split the duels);
   `bench_ranged` longbow **46.9 / 47.2 / 67.8** by field against 46.4 / 48.8 /
   66.7. Both harnesses now build wound-recording fighters (they are heroes),
   so these are live numbers, not frozen ones.
@@ -3061,7 +3061,7 @@ the game getting harder:
   template now, never rolled.
 - **Pay:** per QUEST, not per site. `QUEST_XP_PER_LEVEL` = **44** (fitted:
   60/48/44/40 gave 28/34/38/42 quests to the cap; 38 was the target),
-  `QUEST_GOLD_PER_LEVEL` = **18** (career gold deliberately unchanged).
+  `QUEST_SILVER_PER_LEVEL` = **18** (career silver deliberately unchanged).
 - **Hideout** (rank 0): clear **50.8** / wipe **15.6**; reckless wipe
   **86.5** (was 57.2 / 12.5 / 75.9). **Barrow** `[3,3,4]`: clear **30.2** /
   wipe **48.3**; reckless **99.8** (was 38.1 / 40.6 / 98.3).
@@ -3079,8 +3079,8 @@ the game getting harder:
   because a job is no longer four fights deep.
 - **Careers** (500): reach **L5 85% / L8 70% / L11 40% / L14 17% / L20
   6.4%**, median death **L9**, capped median **81 days / 37 quests**.
-- **The flag that was: days to cap fell 158 -> 81** (gold per quest
-  unchanged, so gold per DAY roughly doubled). **Settled 2026-07-26 by the
+- **The flag that was: days to cap fell 158 -> 81** (silver per quest
+  unchanged, so silver per DAY roughly doubled). **Settled 2026-07-26 by the
   designer: the shorter calendar stands.** Slice 2 was therefore built to
   HOLD ~80 days, not to restore 158, and it does (78). The hideout fixture
   also fell out of its 55-65 band (50.8) — the
@@ -3119,7 +3119,7 @@ above.**
   gap widened, which is the intent.
 - **Weapons (melee) and ranged**: **unchanged to the cell** — both build
   bare stat frames and resolve SINGLE fights (no `long_rest`), so neither
-  the kit shrink nor the alchemy layer reaches them. Zweihander/katana/
+  the kit shrink nor the alchemy layer reaches them. Zweihander/schweizersäbel/
   staff and the ranged cards order exactly as before.
 - **The equal-cost matrix** (`bench_abilities.py`, 250/cell, L8): the six
   columns tell the same story — **all-in pools a trap** (site 4.8 vs
@@ -3160,7 +3160,7 @@ above.**
   rolls them lazily per settlement day), the engine is untouched, and no
   sim imports karma.py — verified by a sanity `bench_quests` run (within
   noise) after the slice landed. Its knobs (`KARMA_HEAT_STEP` 100,
-  `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_GOLD_MULT` 1.5) are
+  `HEAT_CAP` 3, cooldown 2d / chance 0.6, `DARK_SILVER_MULT` 1.5) are
   hand-set and SIM-UNVERIFIED — tune them at the table; a karma-playing
   career sim is parked in plan.md.
 - **The conquest layer is bench-invisible too (2026-07-27).** Same
@@ -3184,7 +3184,7 @@ above.**
 - **The procedural-place MVP is routing-only for balance (2026-07-25).**
   A small `bench_quests` integration run confirmed the generated Room/Site
   and career shapes remain plausible after quests began selecting tagged
-  persistent geography. Encounter budgets, foe pools, XP, and gold formulas
+  persistent geography. Encounter budgets, foe pools, XP, and silver formulas
   are unchanged; this was not a rebaseline. See the 2026-07-25 benchlog entry.
 - **The world layer is bench-invisible (2026-08-07, the worldsim build's
   frame).** Same construction as karma and conquest: play-surface only,
@@ -3231,7 +3231,7 @@ above.**
   were bench-invisible by construction; this one cannot be — "the board
   reacts to world state" is the invariant it exists to land, and
   `bench_quests`' career sim plays that board. What it moves is exactly
-  one field, `gold_total`, stamped at posting time from the land's wealth
+  one field, `silver_total`, stamped at posting time from the land's wealth
   band (pinned by `test_worldsim`'s two paired tests: everything ELSE is
   still byte-identical with the layer stubbed out). Measured against a
   neutralized-band control in the same process, 120 careers each: reach
@@ -3243,7 +3243,7 @@ above.**
   SIM-UNVERIFIED: `BAND_SLOTS` (−1/0/+1 postings) and `BAND_PAY`
   (0.85/1.00/1.15) with `BOARD_SLOTS_FLOOR` 1; `BAND_MENU` and
   `STATE_MENU` clamped to `MENU_FLOOR` 0.5 / `MENU_CEILING` 4.0;
-  `ROAD_TOLL_GOLD` 6 and `ROAD_FERRY_GOLD` 4 (deliberately small — the
+  `ROAD_TOLL_SILVER` 6 and `ROAD_FERRY_SILVER` 4 (deliberately small — the
   fords cost a DAY, and days are the expensive currency);
   `ENCOUNTER_CHANCE` 0.5 with per-entry overrides; and each card's own
   `pay` (1.10–1.35), `slots` and `reprice`. **The dial if the world's
@@ -3252,7 +3252,7 @@ above.**
 - **Politics rides the economy floor's one visible field and adds no
   second one (2026-08-10).** The rung's cards are ordinary cards, so the
   only bench-visible thing they can do is what an econ card already did:
-  move `board_slots` and `gold_total` through `slots` / `reprice` while
+  move `board_slots` and `silver_total` through `slots` / `reprice` while
   one stands. Nothing else in the sim's path changed — `rulers.py` is
   imported by `worldsim.py` and by nothing else, and no bench imports
   either. What DID move is the deck a land holds: the tension gate cuts
@@ -3270,7 +3270,7 @@ above.**
   crowds the economy off a land's board is `TENSION_ROLLS`**, which is
   the size of the gate rather than a chance anywhere.
 - **Religion & magic rides the same one field, and adds one PLAYER-side
-  gold sink (2026-08-11).** Its cards are ordinary cards, so bench-visibly
+  silver sink (2026-08-11).** Its cards are ordinary cards, so bench-visibly
   they do what an econ card does and nothing more: `slots` / `reprice` on a
   board while one stands. Two things are genuinely new and neither is in a
   sim's path. The OPTIONS are a **player-initiated** purchase, so no bench
@@ -3280,7 +3280,7 @@ above.**
   after the rung read in family with the same run before it (L5 75 vs 83,
   L8 58 vs 58, L11 25 vs 33, median death 8 vs 10 — n=12 is noise at that
   width, and nothing was retuned). Its knobs are hand-set and
-  SIM-UNVERIFIED: each option's `gold` (8–220) / `term` / `days` cooldown /
+  SIM-UNVERIFIED: each option's `silver` (8–220) / `term` / `days` cooldown /
   `gives`, the rain stone's `holds` 2, the new cards' own `chance` (the
   wild talent 0.10 is the rare end), and the
   STATE_MENU rows the rung added. **The dial if the counter reads like a
@@ -3291,7 +3291,7 @@ above.**
   competes with the land's other three or four for one roll.
 - **The dark layer's balance is deliberately unmanaged (designer
   directive, 2026-07-19, the dark-quests session).** "Game balance of
-  xp gold and similar should be abandoned for now — a good variety of
+  xp silver and similar should be abandoned for now — a good variety of
   quests will do more good for the game": the hell pact, the capers,
   the mercy, and the 17-template content pass ship with hand-set
   numbers (`TASK_*`, `ENFORCE_*`, `BRIBE_*`, `DEED_FAIL_KARMA`, deed
@@ -3325,7 +3325,7 @@ rank-0 starter-site clear rate. The alchemy layer's own knobs
 (`ALCHEMY_*`, `BOMB_*`, `POTION_OVERCHARGE`, the stat-brew magnitudes)
 sit with it at the top of `rpg.py`. The karma layer's knobs
 (`karma.KARMA_HEAT_STEP` / `HEAT_CAP` / `PUNISH_COOLDOWN_DAYS` /
-`PUNISH_CHANCE`, `quests.DARK_GOLD_MULT`) are PLAY-ONLY dials — no
+`PUNISH_CHANCE`, `quests.DARK_SILVER_MULT`) are PLAY-ONLY dials — no
 bench measures them; the felt game is their only meter for now.
 **The punishment budget is the exception** (2026-08-04): both
 punishment layers are counted, not felt, against the levelling budget of
@@ -3382,7 +3382,7 @@ annotations, the equal-cost matrix, and the career curve.
 
 ## Not yet built (the point of the design)
 
-The between-fights layer is now substantially player choice: gold/XP flow,
+The between-fights layer is now substantially player choice: silver/XP flow,
 skill points are a real allocation across the WHOLE menu (2026-07-17:
 pools vs training vs proficiency vs spell ranks vs the ability catalog —
 nothing auto-spends in session play and nothing grows automatically),

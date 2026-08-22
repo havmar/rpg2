@@ -15,9 +15,9 @@ THE SAVE IS A PLAIN JSON FILE (save.json, beside this script) on purpose:
   - it survives sessions and machines -- commit it and the playthrough
     travels with the repo;
   - it is the DM's OVERRIDE SURFACE: when the story needs what no command
-    provides (grant gold, mend a wound, invent a foe's aftermath), edit the
+    provides (grant silver, mend a wound, invent a foe's aftermath), edit the
     file directly between commands -- every command reloads it fresh.
-    Weapons are stored by catalog name ("weapon": "katana"); everything
+    Weapons are stored by catalog name ("weapon": "schweizersäbel"); everything
     else is the literal field. The "rng" blob is the one part not meant
     for hands.
 
@@ -111,7 +111,7 @@ from rpg import (
     stat_line, fallen_weapons_line, weapon_tag, prof_name,
     random_trash_weapon, MASTERWORK_PRICE_MULT,
     xp_to_next, quest_encounter_xp, quest_clear_xp, quest_turnin_xp,
-    quest_gold,
+    quest_silver,
     track_contest,
     open_fight, group_combat, party_wiped, party_defeated,
     apply_defeat_mercy, mercy_available,
@@ -152,11 +152,11 @@ import conquest
 import worldsim                 # the world layer (2026-08-07, the frame)
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
-                    npc_line, downtime_match, joining_gold, tongue_line,
+                    npc_line, downtime_match, joining_silver, tongue_line,
                     PAIR_CHANCE)
 from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
 from quests import (generate_world, forge_quest, board_lines,
-                    quest_gold_posted,
+                    quest_silver_posted,
                     quest_detail_lines, quest_line, roster_kinds_line,
                     level_grade,
                     all_areas, settlements, settlements_by_land,
@@ -555,7 +555,7 @@ def party_sheet_lines(state: dict) -> list[str]:
     party, clock, purse = state["party"], state["clock"], state["purse"]
     loc = location_line(state) if state.get("position") else "nowhere yet"
     lines = [f"RPG2 PARTY SHEET -- day {clock.day}, at {loc}",
-             f"purse: {purse.gold}g"]
+             f"purse: {purse.silver}s"]
     if not party:
         lines.append("(no party yet -- `pick` a character)")
         return lines
@@ -1010,7 +1010,7 @@ def save(state: dict) -> None:
     doc = {
         "party": [_entity_to_dict(h) for h in party],
         "clock": {"day": state["clock"].day},
-        "purse": {"gold": state["purse"].gold},
+        "purse": {"silver": state["purse"].silver},
         "foe_count": state["foe_count"],
         "active_quest": state.get("active_quest"),
         "accepted": state.get("accepted", []),
@@ -1222,7 +1222,7 @@ def tally_lines(state: dict) -> list[str]:
             lines.append(f"  (HP ceiling {h.hp_ceiling}/{h.max_hp} "
                          f"until they mend)")
         lines.append(f"  ({kit or 'no kit'})")
-    lines.append(f"Purse {purse.gold}g; day {clock.day}.")
+    lines.append(f"Purse {purse.silver}s; day {clock.day}.")
     k = state.get("karma")
     if k and k.get("sin_total"):
         meter = karma.karma_line(k, party_level(state), state["clock"].day)
@@ -1235,7 +1235,7 @@ def tally_lines(state: dict) -> list[str]:
         # the player budgets against is what the job pays if it is handed
         # over now, not what the board advertised on the day it posted.
         # Since the turn-in stage (2026-08-08) only the TURN-IN tranche and
-        # the gold band -- the field lump at work-done is quoted straight.
+        # the silver band -- the field lump at work-done is quoted straight.
         band = quest_band(q, clock.day) if q else "on time"
         mult = QUEST_PAY_BANDS[band]
         if q and q.get("proof_pending"):
@@ -1254,9 +1254,9 @@ def tally_lines(state: dict) -> list[str]:
             enc = q.get("encounters", 1)
             field_xp = quest_clear_xp(q["level"], enc)
             lump = round(quest_turnin_xp(q["level"], enc) * mult)
-            gold = round(quest_gold_posted(q) * mult)
+            silver = round(quest_silver_posted(q) * mult)
             lines.append(f"{ahead}; the work done pays {field_xp} XP in "
-                         f"the field, and the turn-in pays {gold}g, "
+                         f"the field, and the turn-in pays {silver}s, "
                          f"{lump} XP at the giver.")
             note = deadline_note(q, clock.day)
             if note:
@@ -1267,11 +1267,11 @@ def tally_lines(state: dict) -> list[str]:
             origin = world["areas"].get(q.get("origin"), {})
             enc = q.get("encounters", 1)
             lump = round(quest_turnin_xp(q["level"], enc) * mult)
-            gold = round(quest_gold_posted(q) * mult)
+            silver = round(quest_silver_posted(q) * mult)
             lines.append(f"The work is done: return to "
                          f"{g['name'] if g else 'the giver'} at "
                          f"{origin.get('name', q.get('origin'))} -- the "
-                         f"turn-in pays {gold}g, {lump} XP "
+                         f"turn-in pays {silver}s, {lump} XP "
                          f"(`turnin {qid}`).")
             note = deadline_note(q, clock.day)
             if note:
@@ -1328,7 +1328,7 @@ START_LEVEL_ROLL_MAX = 18   # the default roll is 1..this. LEVEL_CAP is 20;
                             # diorama, not a playthrough.
 START_QUESTS_PER_LEVEL = 2  # the career sim's measured pace (develop.md) --
                             # what the purse below is reckoned against
-START_PURSE_SHARE = 0.20    # of the gold those jobs paid on the way up. A
+START_PURSE_SHARE = 0.20    # of the silver those jobs paid on the way up. A
                             # played party has SPENT most of what it earned
                             # (potions, beds, books, the healer), so this is
                             # deliberately a fifth: testing convenience, not
@@ -1338,7 +1338,7 @@ START_SPELL_LEVELS = 5      # one career SPELLBOOK per this many levels. The
                             # wizard who knows exactly one spell is not what
                             # that band looks like from the inside -- by 18
                             # he has bought three books (SPELLBOOK_PRICE is
-                            # 120g against thousands earned).
+                            # 120s against thousands earned).
 
 
 def start_level(args: argparse.Namespace, rng: random.Random) -> int:
@@ -1352,9 +1352,9 @@ def start_level(args: argparse.Namespace, rng: random.Random) -> int:
 
 def career_purse(level: int) -> int:
     """What a party STARTING at `level` carries: a share of what the jobs
-    on the way up would have paid (rpg.quest_gold at the career pace), most
+    on the way up would have paid (rpg.quest_silver at the career pace), most
     of it already spent. 0 at level 1 -- the ordinary game starts broke."""
-    earned = sum(START_QUESTS_PER_LEVEL * quest_gold(l, 2)
+    earned = sum(START_QUESTS_PER_LEVEL * quest_silver(l, 2)
                  for l in range(1, level))
     return round(START_PURSE_SHARE * earned)
 
@@ -1558,7 +1558,7 @@ def cmd_new(args: argparse.Namespace) -> None:
              "visited": [start["key"]]}
     if has_trait(ally, "needs meds"):
         ally.last_dose_day = state["clock"].day
-    state["purse"].gold += career_purse(level) + joining_gold(ally)
+    state["purse"].silver += career_purse(level) + joining_silver(ally)
     kit_log: list[str] = []
     auto_potions(state["party"], kit_log)    # the opening kit, shared out
     save(state)
@@ -1581,8 +1581,8 @@ def cmd_new(args: argparse.Namespace) -> None:
         print("  " + ally_career)
     for line in career_log:
         print(line.strip())
-    if state["purse"].gold:
-        print(f"The party purse holds {state['purse'].gold}g.")
+    if state["purse"].silver:
+        print(f"The party purse holds {state['purse'].silver}s.")
     for line in kit_log:
         print(line.strip())
     print(f"The party stands at {location_line(state)} -- the local jobs "
@@ -1753,11 +1753,11 @@ def cmd_hire(args: argparse.Namespace) -> None:
         m.satisfaction = SATISFACTION_START
         if has_trait(m, "needs meds"):
             m.last_dose_day = clock.day
-        gold = joining_gold(m)
-        if gold:
-            purse.gold += gold
-            log.append(f"    {m.name} adds {gold}g to the party purse "
-                       f"({purse.gold}g).")
+        silver = joining_silver(m)
+        if silver:
+            purse.silver += silver
+            log.append(f"    {m.name} adds {silver}s to the party purse "
+                       f"({purse.silver}s).")
         party.append(m)
         bond = f" -- with {m.bond} ({m.bond_kind})" if m.bond else ""
         log.append(f"  {m.name} joins the party{bond}.")
@@ -1805,16 +1805,16 @@ def cmd_dismiss(args: argparse.Namespace) -> None:
         leavers.append(partner)
     place = current_area(state)["name"]
     living = [h for h in party if not h.dead]
-    share = purse.gold // len(living) if living else 0
+    share = purse.silver // len(living) if living else 0
     log: list[str] = []
     for h in leavers:
-        purse.gold -= share
+        purse.silver -= share
         party.remove(h)
         why = (f"leaves with {h.name if h is hero else hero.name}"
                f" ({h.bond_kind})" if h is not hero else "is let go")
         log.append(f"  {h.name} {why} at {place} -- taking their share "
-                   f"of the purse ({share}g) and their gear.")
-    log.append(f"    The purse holds {purse.gold}g.")
+                   f"of the purse ({share}s) and their gear.")
+    log.append(f"    The purse holds {purse.silver}s.")
     auto_potions(party, log)    # their potions walked out with them
     print("\n".join(log))
     save(state)
@@ -1885,15 +1885,15 @@ def process_departures(state: dict, log: list[str]) -> None:
     if not leavers:
         return
     living = [h for h in party if not h.dead]
-    share = purse.gold // len(living) if living else 0
+    share = purse.silver // len(living) if living else 0
     for h in leavers + pulled:
-        purse.gold -= share
+        purse.silver -= share
         party.remove(h)
         why = (f"leaves with {h.bond} ({h.bond_kind})" if h in pulled
                else "has had enough and quits the party")
         log.append(f"  *** {h.name} {why} at {place} -- taking their share "
-                   f"of the purse ({share}g) and their gear. ***")
-    log.append(f"    The purse holds {purse.gold}g.")
+                   f"of the purse ({share}s) and their gear. ***")
+    log.append(f"    The purse holds {purse.silver}s.")
     # A quitter walks off with the potions in their pack: what is left is
     # shared out among the ones who stayed (the quartermaster pass).
     auto_potions(party, log)
@@ -1902,7 +1902,7 @@ def process_departures(state: dict, log: list[str]) -> None:
 def cmd_status(args: argparse.Namespace) -> None:
     state = load()
     party, clock, purse = state["party"], state["clock"], state["purse"]
-    print(f"Day {clock.day}. Purse: {purse.gold}g. "
+    print(f"Day {clock.day}. Purse: {purse.silver}s. "
           f"At: {location_line(state)}.")
     pc = party[0] if party else None
     if pc is not None and pc.cha:
@@ -1943,7 +1943,7 @@ def cmd_status(args: argparse.Namespace) -> None:
             print(f"  Active quest [{qid}] {q['name']}: THE WORK IS DONE "
                   f"-- return to {g['name'] if g else 'the giver'} at "
                   f"{origin.get('name', q.get('origin'))} and "
-                  f"`turnin {qid}` for the gold and the lump.")
+                  f"`turnin {qid}` for the silver and the lump.")
         elif q.get("kind") == "delivery":
             print(f"  Active quest: [{qid}] DELIVERY {q['name']} -- carry "
                   f"{q['cargo']} to {q['dest_name']} "
@@ -1976,7 +1976,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         due = conquest.tribute_pending(world, holdings, clock.day)
         floor = min(karma.HEAT_CAP, conquest.heat_floor(len(holdings)))
         print(f"  Holdings: {len(holdings)} under the flag -- heat floor "
-              f"{floor}" + (f", {due}g tribute waiting" if due else "")
+              f"{floor}" + (f", {due}s tribute waiting" if due else "")
               + " (see `holdings`).")
     for line in pact_lines(state):
         print("  " + line)
@@ -2165,7 +2165,7 @@ def print_levelup_menu(heroes: list) -> None:
                         f"next: {spell.ranks[rank]}")
             if h.is_wizard:
                 print(f"  (new spells: a spellbook teaches one --"
-                      f" {SPELLBOOK_PRICE}g in a capital, buy {first} "
+                      f" {SPELLBOOK_PRICE}s in a capital, buy {first} "
                       f"book SPELL)")
         # Sink 3: proficiency with the WIELDED weapon.
         print(f"WEAPON -- train {first} weapon")
@@ -2330,7 +2330,7 @@ def record_karma(state: dict, xp: int, align: str, log: list) -> None:
 
 def collect_weapon_quirks(state: dict, log: list[str]) -> None:
     """Drain what the on-kill weapon quirks accrued this fight (the engine
-    only counts -- rpg.py's quirk_gold/quirk_karma): Midas gold lands in
+    only counts -- rpg.py's quirk_silver/quirk_karma): Midas silver lands in
     the purse, dark-pact kills land on the karma ledger. Idempotent (the
     counters zero on collection), so the fight-end and retreat paths can
     both call it."""
@@ -2338,11 +2338,11 @@ def collect_weapon_quirks(state: dict, log: list[str]) -> None:
     day = state["clock"].day
     for h in state["party"]:
         wname = h.weapon.name if h.weapon is not None else "weapon"
-        if h.quirk_gold:
-            purse.gold += h.quirk_gold
+        if h.quirk_silver:
+            purse.silver += h.quirk_silver
             log.append(f"    The {wname} pays out its kills: "
-                       f"+{h.quirk_gold}g (purse {purse.gold}g).")
-            h.quirk_gold = 0
+                       f"+{h.quirk_silver}s (purse {purse.silver}s).")
+            h.quirk_silver = 0
         if h.quirk_karma:
             k = state["karma"]
             k["sin"] += h.quirk_karma
@@ -2375,7 +2375,7 @@ def take_failure_rumors(settlement: dict) -> list[dict]:
 def _lose_paid_window(state: dict, quest: dict) -> list[str]:
     """The lost-after-work-done path (2026-08-08, the turn-in stage): the
     window closed before the party returned. The turn-in tranche and the
-    gold are gone, the banked 80% stays, NO failure rumor fires (the
+    silver are gone, the banked 80% stays, NO failure rumor fires (the
     monsters are dead -- the world changed), place states stay completed,
     and the record reads done, never paid. The giver's grievance is story
     material, not a penalty."""
@@ -2400,7 +2400,7 @@ def _lose_paid_window(state: dict, quest: dict) -> list[str]:
         f"  The window closed on day "
         f"{quest['deadline_day'] + QUEST_GRACE_DAYS} with the work done "
         f"and the pay uncollected. What the fighting and the field "
-        f"already paid is kept; the gold and the turn-in lump are gone.",
+        f"already paid is kept; the silver and the turn-in lump are gone.",
     ]
 
 
@@ -2547,7 +2547,7 @@ def _close_site(state: dict, log: list[str], qid: str,
     rework): the banner says the job is done and names the giver, the world
     changes now (complete_quest_place_state -- the pass reopens when the
     deed is done, not when it is paid), and the FIELD tranche of the XP
-    lands, unbanded. The gold, the turn-in tranche, the CHA negotiation,
+    lands, unbanded. The silver, the turn-in tranche, the CHA negotiation,
     the reward weapon and the epilogue wait where the giver stands
     (`turnin QID`). advance_quest's tail, split out (2026-07-19) so a deed
     done clean and a settled twist can close a place without walking its
@@ -2599,14 +2599,14 @@ def _close_site(state: dict, log: list[str], qid: str,
         clear_xp = round((quest_clear_xp(quest["level"], enc)
                           + quest_turnin_xp(quest["level"], enc))
                          * pay_mult)
-        gold = round(quest_gold_posted(quest) * pay_mult)
-        award_quest(party, purse, gold, clear_xp, log,
+        silver = round(quest_silver_posted(quest) * pay_mult)
+        award_quest(party, purse, silver, clear_xp, log,
                     f"{quest['name']} -- {site['name']}{pos}", banner=banner)
         record_karma(state, clear_xp, quest.get("align", "good"), log)
         rw = quest.get("reward_weapon")
         if rw:
             # The weapon-reward mode (2026-07-28): the turn-in lump IS the
-            # weapon (the posting carried gold_total 0). It waits with the
+            # weapon (the posting carried silver_total 0). It waits with the
             # giver until a hand takes it up.
             state["pending_reward"] = dict(rw)
             log_banner(log,
@@ -2625,7 +2625,7 @@ def _close_site(state: dict, log: list[str], qid: str,
     elif last_site:
         # The work-done stage: the deed is done in the field; the pay
         # waits with the giver. The FIELD tranche lands now, unbanded --
-        # only the turn-in tranche and the gold are ever banded or lost.
+        # only the turn-in tranche and the silver are ever banded or lost.
         banner = "THE JOB IS DONE" + tag
         origin = state["world"]["areas"].get(quest["origin"])
         g = quest.get("giver")
@@ -2688,7 +2688,7 @@ def _close_site(state: dict, log: list[str], qid: str,
         ckey = quest.get("conquest")
         if ckey:
             # The garrison is broken: the tag flips (conquest.py). The
-            # strongbox was the quest's gold; tribute starts today.
+            # strongbox was the quest's silver; tribute starts today.
             holdings = state.setdefault("holdings", {})
             remember(state, f"CONQUEST: "
                             f"{state['world']['areas'][ckey]['name']} "
@@ -2751,7 +2751,7 @@ def deliver_if_arrived(state: dict, log: list[str]) -> bool:
     day = state["clock"].day
     band = quest_band(q, day)
     mult = QUEST_PAY_BANDS[band]
-    award_quest(state["party"], state["purse"], round(q["gold"] * mult),
+    award_quest(state["party"], state["purse"], round(q["silver"] * mult),
                 round(q["xp"] * mult), log,
                 q["name"], banner="DELIVERY COMPLETE")
     record_karma(state, round(q["xp"] * mult), q.get("align", "good"), log)
@@ -2833,10 +2833,10 @@ def conquest_news(state: dict) -> None:
         remember(state, f"HOLDING LOST: {area.get('name', key)} is out "
                         f"of the party's hands.")
     if here_key is not None and here_key in holdings:
-        gold = conquest.collect_tribute(world, holdings, day)
-        if gold:
-            state["purse"].gold += gold
-            lines.append(f"TRIBUTE: {gold}g collected -- the stewards "
+        silver = conquest.collect_tribute(world, holdings, day)
+        if silver:
+            state["purse"].silver += silver
+            lines.append(f"TRIBUTE: {silver}s collected -- the stewards "
                          f"bring every holding's chest to the flag.")
     if lines:
         print("\n".join(lines))
@@ -3196,7 +3196,7 @@ def maybe_assign_task(state: dict) -> bool:
           f"it -- taking it sets the completion clock and hell waits on "
           f"the road. Left untaken past the grace it goes PAST DUE: one "
           f"warning, then one collections visit, and then hell writes the "
-          f"job off. `bribe` (~{karma.BRIBE_GOLD_PER_LEVEL} g x level) "
+          f"job off. `bribe` (~{karma.BRIBE_SILVER_PER_LEVEL} g x level) "
           f"buys {karma.BRIBE_DAYS} days of quiet; `task` shows the "
           f"ledger.")
     return True
@@ -3268,7 +3268,7 @@ def maybe_enforce(state: dict) -> bool:
               f"{day + karma.ENFORCE_COOLDOWN_DAYS} collections come "
               f"armed, ONCE -- and whatever that visit costs, hell then "
               f"writes the job off. `take {q['id']}` / finishing the job "
-              f"or `bribe` (~{karma.BRIBE_GOLD_PER_LEVEL} g x level) are "
+              f"or `bribe` (~{karma.BRIBE_SILVER_PER_LEVEL} g x level) are "
               f"the ways out)")
         save(state)     # the fight branches persist via resolve_encounter;
         return True     # the warning must persist itself
@@ -3408,8 +3408,8 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
     pc.hp = min(1, pc.hp_ceiling)
     lost = [h.name for h in party[1:]]
     state["party"] = [pc]
-    fine = state["purse"].gold
-    state["purse"].gold = 0
+    fine = state["purse"].silver
+    state["purse"].silver = 0
     state["pending"] = None
 
     def emit(parts: list[str]) -> None:
@@ -3432,7 +3432,7 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
         emit([f"{pc.name} wakes in a ditch at 1 HP.",
               "Everyone in hell is laughing."])
         remember(state, f"LEFT FOR DEAD by the law at L{pc.level}: "
-                        f"{fine}g and {len(lost)} companion(s) gone, "
+                        f"{fine}s and {len(lost)} companion(s) gone, "
                         f"{burned} sin cleared.")
     else:
         # Hell's mercy IS the account closing (2026-08-04): the fine, the
@@ -3451,7 +3451,7 @@ def apply_mercy(state: dict, foes: list, mercy: str | None, log: list,
         emit([f"{pc.name} wakes at 1 HP.",
               "The sin remains."])
         remember(state, f"THE LESSON at L{pc.level}: hell's collectors "
-                        f"took {fine}g and {len(lost)} companion(s). "
+                        f"took {fine}s and {len(lost)} companion(s). "
                         f"The sin remains.")
     return True
 
@@ -3487,7 +3487,7 @@ def cmd_task(args: argparse.Namespace) -> None:
 
 
 def cmd_bribe(args: argparse.Namespace) -> None:
-    """Grease hell's local hand: BRIBE_GOLD_PER_LEVEL x party level buys
+    """Grease hell's local hand: BRIBE_SILVER_PER_LEVEL x party level buys
     BRIBE_DAYS of no new assignments and no enforcement. An open
     assignment isn't cancelled -- its clock restarts when the coin runs
     out (the grace runs fresh from the bribe's end)."""
@@ -3499,13 +3499,13 @@ def cmd_bribe(args: argparse.Namespace) -> None:
         print("No pact rides this save -- nobody below to bribe.")
         return
     purse, day = state["purse"], state["clock"].day
-    cost = karma.BRIBE_GOLD_PER_LEVEL * party_level(state)
-    if purse.gold < cost:
+    cost = karma.BRIBE_SILVER_PER_LEVEL * party_level(state)
+    if purse.silver < cost:
         print(f"Hell's ease costs {cost} g (30 x party level); the purse "
-              f"holds {purse.gold} g. No discount. There is never a "
+              f"holds {purse.silver} g. No discount. There is never a "
               f"discount.")
         return
-    purse.gold -= cost
+    purse.silver -= cost
     until = max(day, pact.get("bribed_until", day)) + karma.BRIBE_DAYS
     pact["bribed_until"] = until
     if pact.get("task"):
@@ -3530,7 +3530,7 @@ def cmd_bribe(args: argparse.Namespace) -> None:
           f"EASED until day {until}: no new assignments, no enforcers."
           + (f" The open assignment waits -- its grace runs fresh from "
              f"day {until}." if pact.get("task") else ""))
-    print(f"The party purse holds {purse.gold} g.")
+    print(f"The party purse holds {purse.silver} g.")
 
 
 # --------------------------------------------------------------------------- #
@@ -3635,7 +3635,7 @@ def case_lines(state: dict, cat: dict, mark: dict) -> list[str]:
              f"  the shape: {cat['shape']}",
              f"  {cat['line']}",
              f"  the mark: {mark['role']} (L{mark['level']})",
-             f"  the take: {mark['gold']}g, "
+             f"  the take: {mark['silver']}s, "
              f"{round(mark['xp'] * mult)} XP (all of it sin)",
              f"  the check: {crime.check_line(cat)}",
              f"  protection: {crime.roster_hint(mark)}",
@@ -3646,7 +3646,7 @@ def case_lines(state: dict, cat: dict, mark: dict) -> list[str]:
 
 
 def mult_note(rec: dict, mult: float, day: int) -> str:
-    """Why the sin is not face value. Gold NEVER carries these -- the loot
+    """Why the sin is not face value. Silver NEVER carries these -- the loot
     is the loot; it is hell that gets bored."""
     if rec.get("count", 0) == 0:
         return (f"first time: x{mult:g} on the sin and XP (the coin is "
@@ -3717,7 +3717,7 @@ def take_span(cat: dict, place_kind: str, mult: float) -> str:
     span."""
     if cat["shape"] == "petty":
         coin = ("no coin" if cat["pay"] is None
-                else f"{crime.PETTY_GOLD[0]}-{crime.PETTY_GOLD[1]}g")
+                else f"{crime.PETTY_SILVER[0]}-{crime.PETTY_SILVER[1]}s")
         lo, hi = crime.PETTY_SIN
         return (f"flat: {coin}, {round(lo * mult)}-{round(hi * mult)} "
                 f"sin/XP" + (f" (x{mult:g})" if mult != 1.0 else ""))
@@ -3727,8 +3727,8 @@ def take_span(cat: dict, place_kind: str, mult: float) -> str:
     g_lo, x_lo = crime.take_of(cat, lo, random.Random(0))
     g_hi, x_hi = crime.take_of(cat, hi, random.Random(0))
     span = f"L{lo}" if lo == hi else f"L{lo}-{hi}"
-    coin = "no coin" if not g_hi else (f"{g_lo}g" if g_lo == g_hi
-                                       else f"{g_lo}-{g_hi}g")
+    coin = "no coin" if not g_hi else (f"{g_lo}s" if g_lo == g_hi
+                                       else f"{g_lo}-{g_hi}s")
     xp = (f"{round(x_lo * mult)}" if x_lo == x_hi
           else f"{round(x_lo * mult)}-{round(x_hi * mult)}")
     return (f"marks {span}: {coin}, {xp} sin/XP"
@@ -3795,16 +3795,16 @@ def crime_record(state: dict, cat: dict, mark: dict) -> dict:
     note = mult_note(rec, mult, day) if mult != 1.0 else ""
     crime.stamp(crimes, cat["key"], day)
     return {"key": cat["key"], "name": cat["name"], "role": mark["role"],
-            "level": mark["level"], "gold": mark["gold"],
+            "level": mark["level"], "silver": mark["silver"],
             "xp": round(mark["xp"] * mult), "note": note}
 
 
 def pay_crime(state: dict, log: list, rec: dict) -> None:
-    """The take lands: gold to the purse, the lump as XP -- and every
+    """The take lands: silver to the purse, the lump as XP -- and every
     point of it sin, because a crime is dark work by construction."""
     if rec.get("note"):
         log.append(f"    ({rec['note']})")
-    award_quest(state["party"], state["purse"], rec["gold"], rec["xp"],
+    award_quest(state["party"], state["purse"], rec["silver"], rec["xp"],
                 log, f"{rec['name']} -- {rec['role']}", banner="THE TAKE",
                 reason="crime")
     record_karma(state, rec["xp"], "dark", log)
@@ -3979,7 +3979,7 @@ def pay_set_site_clear(state: dict, log: list[str], site_key: str,
                        room: int) -> None:
     """A SET site (hideout/barrow) has no quest cursor, so track its cleared
     rooms here and pay the site-clear lump the first time every room is down --
-    the same gold + XP lump board quests pay via advance_quest, and the sims
+    the same silver + XP lump board quests pay via advance_quest, and the sims
     pay via sites.run_site (dm.md: 'both set sites pay themselves now'). The
     play driver was the one path that skipped it. Order-independent (rooms may
     be run in any order) and paid once per site."""
@@ -3993,7 +3993,7 @@ def pay_set_site_clear(state: dict, log: list[str], site_key: str,
     if rec["paid"] or len(rec["rooms"]) < len(site.rooms):
         return
     rec["paid"] = True
-    award_quest(state["party"], state["purse"], site.quest_gold,
+    award_quest(state["party"], state["purse"], site.quest_silver,
                 site.quest_xp, log, site.quest_line, banner="SITE CLEARED")
 
 
@@ -4248,7 +4248,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
             # written off. A LOST one closed the same account through
             # apply_mercy above (that path returns early).
             close_hell_account(state, log)
-        # The on-kill weapon quirks pay out (2026-07-28): Midas gold,
+        # The on-kill weapon quirks pay out (2026-07-28): Midas silver,
         # dark karma -- whatever the engine counted during the melee.
         collect_weapon_quirks(state, log)
         # Companions manage their own skill points (2026-07-13): any
@@ -4612,7 +4612,7 @@ def cmd_turnin(args: argparse.Namespace) -> None:
     """Hand the finished job back to its giver (2026-08-08, the turn-in
     stage): gated on the party standing in the giver's settlement area, run
     by the DM as part of the return scene and narrated as that scene
-    (dm.md). ALL the gold and the TURN-IN tranche of the XP land here,
+    (dm.md). ALL the silver and the TURN-IN tranche of the XP land here,
     banded by the turn-in day -- the road home is finally inside the
     clock -- plus the CHA negotiation, the reward weapon, the companion
     morale bump, and the epilogue. `--here` is the DM's valve for edge
@@ -4661,13 +4661,13 @@ def cmd_turnin(args: argparse.Namespace) -> None:
     mult = QUEST_PAY_BANDS[band]
     enc = quest.get("encounters", 1)
     xp = round(quest_turnin_xp(quest["level"], enc) * mult)
-    gold = round(quest_gold_posted(quest) * mult)
+    silver = round(quest_silver_posted(quest) * mult)
     g = quest.get("giver")
     log: list[str] = []
     if g:
         log.append(f"The job is handed back to its giver -- narrate the "
                    f"scene (dm.md): {npc_line(g)}")
-    award_quest(party, purse, gold, xp, log,
+    award_quest(party, purse, silver, xp, log,
                 f"{quest['name']} -- paid in full",
                 banner="QUEST COMPLETE")
     record_karma(state, xp, quest.get("align", "good"), log)
@@ -5133,7 +5133,7 @@ def travel_target(state: dict, want: str) -> tuple[dict, dict] | None:
 
 def _road_costs(state: dict, origin: dict, dest: dict) -> int:
     """What the weather and the toll-men take off ONE edge, before it is
-    walked. Returns the extra days; the gold is charged here. A purse that
+    walked. Returns the extra days; the silver is charged here. A purse that
     cannot cover a toll crosses anyway -- the bridge is not a wall."""
     world = state["world"]
     legs = [origin["country"], dest["country"]]
@@ -5142,16 +5142,16 @@ def _road_costs(state: dict, origin: dict, dest: dict) -> int:
         print(line)
     take, tolls = worldsim.road_charges(world, legs)
     if take:
-        paid = min(take, state["purse"].gold)
-        state["purse"].gold -= paid
+        paid = min(take, state["purse"].silver)
+        state["purse"].silver -= paid
         for line in tolls:
             print(line)
         if paid == take:
-            print(f"  The road takes {paid}g (purse: "
-                  f"{state['purse'].gold}g).")
+            print(f"  The road takes {paid}s (purse: "
+                  f"{state['purse'].silver}s).")
         elif paid:
-            print(f"  The road takes what the purse has -- {paid}g of "
-                  f"{take}g, and the rest is argued down.")
+            print(f"  The road takes what the purse has -- {paid}s of "
+                  f"{take}s, and the rest is argued down.")
         else:
             print(f"  The purse is empty and the toll-men can see it. "
                   f"The party is waved through, owing nothing but the "
@@ -6201,7 +6201,7 @@ def heal_the_sick(party, purse, subtype: str, log,
     for h in party:
         if h.dead or not h.sick:
             continue
-        if purse.gold < fee:
+        if purse.silver < fee:
             break
         carrying = next(c.kind for c in h.conditions
                         if c.kind in DISEASE_KINDS)
@@ -6211,10 +6211,10 @@ def heal_the_sick(party, purse, subtype: str, log,
                        f"{CONDITION_TAG[carrying]} -- that wants a bigger "
                        f"town.")
             continue
-        purse.gold -= fee
+        purse.silver -= fee
         broken += 1
         log.append(f"    {h.name} is treated for {CONDITION_TAG[got]} "
-                   f"({fee}g -- HP ceiling {h.hp_ceiling}/"
+                   f"({fee}s -- HP ceiling {h.hp_ceiling}/"
                    f"{h.max_hp}).")
     return broken
 
@@ -6320,7 +6320,7 @@ def cmd_award(args: argparse.Namespace) -> None:
     pc = party[0]
     pc_level_before = pc.level
     log: list[str] = []
-    award_quest(party, purse, args.gold, args.xp, log, args.name)
+    award_quest(party, purse, args.silver, args.xp, log, args.name)
     if args.dark:
         record_karma(state, args.xp, "dark", log)
     elif args.good:
@@ -6424,7 +6424,7 @@ def cmd_conquer(args: argparse.Namespace) -> None:
 
 
 def cmd_garrison(args: argparse.Namespace) -> None:
-    """Raise levies at the holding the party stands in: gold in, garrison
+    """Raise levies at the holding the party stands in: silver in, garrison
     heads out. The garrison is an ARMY number, never party members -- it
     absorbs the crown's raids while the party is elsewhere (conquest.py);
     an unguarded holding falls to the first raid."""
@@ -6441,7 +6441,7 @@ def cmd_garrison(args: argparse.Namespace) -> None:
     cap = conquest.GARRISON_CAP[settlement_tier(here)]
     if not args.heads:
         print(f"{here['name']}: garrison {rec['garrison']}/{cap} "
-              f"({conquest.GARRISON_HIRE_COST}g a head -- `garrison N` "
+              f"({conquest.GARRISON_HIRE_COST}s a head -- `garrison N` "
               f"hires).")
         return
     n = min(args.heads, cap - rec["garrison"])
@@ -6451,14 +6451,14 @@ def cmd_garrison(args: argparse.Namespace) -> None:
         return
     cost = n * conquest.GARRISON_HIRE_COST
     purse = state["purse"]
-    if purse.gold < cost:
-        print(f"{n} head(s) cost {cost}g -- the purse holds "
-              f"{purse.gold}g.")
+    if purse.silver < cost:
+        print(f"{n} head(s) cost {cost}s -- the purse holds "
+              f"{purse.silver}s.")
         return
-    purse.gold -= cost
+    purse.silver -= cost
     rec["garrison"] += n
     save(state)
-    print(f"{n} levies take the wall at {here['name']} (-{cost}g): "
+    print(f"{n} levies take the wall at {here['name']} (-{cost}s): "
           f"garrison {rec['garrison']}/{cap}.")
 
 
@@ -6539,7 +6539,7 @@ def cmd_buy(args: argparse.Namespace) -> None:
         _buy_weapon(hero, purse, thing, log,
                     markup=local_term(state, "steel"))
     elif thing.startswith("book"):
-        # `buy HERO book SPELL` -- the spellbook, the gold gate on a
+        # `buy HERO book SPELL` -- the spellbook, the silver gate on a
         # wizard's breadth (Magic & Mind). Sold where scholarship lives:
         # capitals only, like meds.
         spell_name = thing[4:].strip()
@@ -6566,15 +6566,15 @@ def cmd_buy(args: argparse.Namespace) -> None:
                   f"at {location_line(state)}.")
             return
         dose = marked_up(MEDS_PRICE, local_term(state, "goods"))
-        if purse.gold < dose:
-            print(f"Not enough gold for a dose ({purse.gold}g / "
-                  f"{dose}g).")
+        if purse.silver < dose:
+            print(f"Not enough silver for a dose ({purse.silver}s / "
+                  f"{dose}s).")
             return
-        purse.gold -= dose
+        purse.silver -= dose
         hero.last_dose_day = state["clock"].day
         log.append(f"    {hero.name} buys a dose of their medicine for "
-                   f"{dose}g (good for {MEDS_INTERVAL_DAYS} days; "
-                   f"purse: {purse.gold}g).")
+                   f"{dose}s (good for {MEDS_INTERVAL_DAYS} days; "
+                   f"purse: {purse.silver}s).")
         adjust_satisfaction(hero, 1, log, "the shakes ease")
     else:
         print(f"Unknown purchase: {thing!r}. Potions: {', '.join(POTION_KINDS)}. "
@@ -6653,7 +6653,7 @@ def cmd_armory(args: argparse.Namespace) -> None:
 def cmd_commission(args: argparse.Namespace) -> None:
     """Commission a legendary smith (2026-07-28): magic steel at the
     smith's own tier -- never below the pride floor (cap - 1). The one
-    way gold buys magic; the profile is the smith's art, not a menu."""
+    way silver buys magic; the profile is the smith's art, not a menu."""
     state = load()
     if not require_no_pending(state):
         return
@@ -6682,14 +6682,14 @@ def cmd_commission(args: argparse.Namespace) -> None:
         print(str(e))
         return
     price = marked_up(price, local_term(state, "steel"))
-    if purse.gold < price:
-        print(f"Not enough gold for the commission ({purse.gold}g / "
-              f"{price}g).")
+    if purse.silver < price:
+        print(f"Not enough silver for the commission ({purse.silver}s / "
+              f"{price}s).")
         return
-    purse.gold -= price
+    purse.silver -= price
     log: list[str] = []
-    log.append(f"  {smith['name']} takes the commission: {price}g "
-               f"(purse {purse.gold}g), {days} day(s) at the forge.")
+    log.append(f"  {smith['name']} takes the commission: {price}s "
+               f"(purse {purse.silver}s), {days} day(s) at the forge.")
     log.append("  (narrate the wait -- camp or downtime advance the "
                "clock; the piece below is what comes off the anvil)")
     for ln in weaponlib.weapon_lines(w):
@@ -6781,7 +6781,7 @@ def tile_price_lines(state: dict) -> list[str]:
 
 def cmd_prices(args: argparse.Namespace) -> None:
     """The DM's price sheet (2026-07-19), read from the live constants --
-    'what does a katana cost' should never mean searching the code (dm.md
+    'what does a schweizersäbel cost' should never mean searching the code (dm.md
     points here). A pure readout: no save is written, and it is callable
     before there is one.
 
@@ -6805,11 +6805,11 @@ def cmd_prices(args: argparse.Namespace) -> None:
         for line in tile_price_lines(state):
             print(line)
         print("  (the sheet below is what that comes to at the counter)")
-    print("-- SHOP PRICES (gold) --")
-    print(f"potion (healing or stamina): {marked_up(POTION_PRICE, goods)}g")
+    print("-- SHOP PRICES (silver) --")
+    print(f"potion (healing or stamina): {marked_up(POTION_PRICE, goods)}s")
     print(f"surgeon's salve (closes one wound): "
-          f"{marked_up(SALVE_PRICE, goods)}g")
-    print(f"healer's day: {marked_up(HEALER_FEE, fee)}g per severity, "
+          f"{marked_up(SALVE_PRICE, goods)}s")
+    print(f"healer's day: {marked_up(HEALER_FEE, fee)}s per severity, "
           f"{HEALER_DAYS} day -- reach by settlement:")
     reaches: dict[str, list[str]] = {}
     for sub, cap in HEALER_TIER_CAP.items():
@@ -6821,13 +6821,13 @@ def cmd_prices(args: argparse.Namespace) -> None:
     print("  (a maiming wants the rank-3 healing spell or an authored "
           "elixir; a bed knits "
           f"{BED_SEVERITY_PER_NIGHT} severity a night for free)")
-    print(f"spellbook (capitals only): {marked_up(SPELLBOOK_PRICE, goods)}g")
+    print(f"spellbook (capitals only): {marked_up(SPELLBOOK_PRICE, goods)}s")
     print(f"meds dose (capitals only, one per {MEDS_INTERVAL_DAYS} days): "
-          f"{marked_up(MEDS_PRICE, goods)}g")
-    print(f"tavern night: {marked_up(TAVERN_COST_PER_HERO, bed)}g a head")
+          f"{marked_up(MEDS_PRICE, goods)}s")
+    print(f"tavern night: {marked_up(TAVERN_COST_PER_HERO, bed)}s a head")
     print("ammo, by the lot (to the carry cap):")
     for kind, (lot, price) in AMMO_LOTS.items():
-        print(f"  {kind}: {lot} for {marked_up(price, goods)}g "
+        print(f"  {kind}: {lot} for {marked_up(price, goods)}s "
               f"(cap {AMMO_CAPS[kind]})")
     print("  sling stones: free (the ground is full of them)")
     common = [(n, w) for n, w in WEAPONS.items()
@@ -6836,15 +6836,15 @@ def cmd_prices(args: argparse.Namespace) -> None:
                if w.tier == "plain" and w.quality]
     print("common weapons:")
     for name, w in sorted(common, key=lambda kv: (kv[1].value, kv[0])):
-        print(f"  {name}: {marked_up(w.value, steel)}g")
+        print(f"  {name}: {marked_up(w.value, steel)}s")
     print("quality weapons:")
     for name, w in sorted(quality, key=lambda kv: (kv[1].value, kv[0])):
-        print(f"  {name}: {marked_up(w.value, steel)}g")
+        print(f"  {name}: {marked_up(w.value, steel)}s")
     print("masterwork weapons (capitals only; +1 attack, durability 5):")
     for name, w in sorted(quality, key=lambda kv: (kv[1].value, kv[0])):
         if not w.range or name == "longbow":
             print(f"  masterwork {name}: "
-                  f"{marked_up(w.value * MASTERWORK_PRICE_MULT, steel)}g")
+                  f"{marked_up(w.value * MASTERWORK_PRICE_MULT, steel)}s")
     print("(MAGIC steel is never on a shelf -- quested, robbed, or "
           "COMMISSIONED from a "
           "legendary smith (`armory` lists them; the famous named blades "
@@ -6909,8 +6909,8 @@ def cmd_service(args: argparse.Namespace) -> None:
         return
     price = worldsim.option_price(world, polity, spec)
     purse = state["purse"]
-    if purse.gold < price:
-        print(f"That costs {price}g and the purse holds {purse.gold}g.")
+    if purse.silver < price:
+        print(f"That costs {price}s and the purse holds {purse.silver}s.")
         return
     log: list[str] = []
     if not _pay_service(state, spec, price, args.what[1:], log):
@@ -6936,9 +6936,9 @@ def _pay_service(state: dict, spec: dict, price: int, rest: list,
                        f"{last} -- it is good for {spec['days']} days, and "
                        f"buying it twice is not how it works.")
             return False
-        purse.gold -= price
+        purse.silver -= price
         seen[spec["key"]] = day
-        log.append(f"    The party pays {price}g: {spec['line']}.")
+        log.append(f"    The party pays {price}s: {spec['line']}.")
         blessed = 0
         for h in state["party"][1:]:
             if h.dead or not satisfaction_tracked(h):
@@ -6951,14 +6951,14 @@ def _pay_service(state: dict, spec: dict, price: int, rest: list,
         if not blessed:
             log.append("    Nobody in the party is here to be comforted by "
                        "it. The rite is performed anyway.")
-        log.append(f"    The purse holds {purse.gold}g.")
+        log.append(f"    The purse holds {purse.silver}s.")
         return True
     if spec["does"] == "book":
         if len(rest) < 2:
             log.append(f"{spec['name'].capitalize()} teaches a named "
                        f"spell to a named caster: `service "
                        f"{worldsim.option_word(spec)} HERO SPELL` "
-                       f"({price}g). Spells: {', '.join(sorted(SPELLS))}.")
+                       f"({price}s). Spells: {', '.join(sorted(SPELLS))}.")
             return False
         hero = find_hero(state["party"], rest[0])
         if hero is None:
@@ -6975,12 +6975,12 @@ def _pay_service(state: dict, spec: dict, price: int, rest: list,
         return _buy_spellbook(hero, purse, spell, log,
                               markup=price / SPELLBOOK_PRICE)
     # "sky": the weather-worker, paid.
-    purse.gold -= price
+    purse.silver -= price
     worldsim.hire_weather(world, polity, day, spec["word"], spec["holds"])
-    log.append(f"    The party pays {price}g: {spec['line']}.")
+    log.append(f"    The party pays {price}s: {spec['line']}.")
     log.append(f"    The sky over {world['lands'][polity]['name']} is "
                f"bought for {spec['holds']} day(s). The purse holds "
-               f"{purse.gold}g.")
+               f"{purse.silver}s.")
     return True
 
 
@@ -7345,7 +7345,7 @@ def build_parser() -> argparse.ArgumentParser:
         "hire",
         help="sign a candidate on (a pair signs together). Hard-capped by "
              "the PC's CHA (capacity = CHA - 3, up to 3); a fresh hire "
-             "starts at satisfaction 7/10 and any joining gold (wealthy/"
+             "starts at satisfaction 7/10 and any joining silver (wealthy/"
              "luxurious) goes to the purse.")
     p.add_argument("name", nargs="+", help="candidate name (substring)")
     p.set_defaults(func=cmd_hire)
@@ -7464,7 +7464,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "tavern",
         help=f"a paid night at the inn (settlements only, "
-             f"{TAVERN_COST_PER_HERO}g per living member): a full long rest "
+             f"{TAVERN_COST_PER_HERO}s per living member): a full long rest "
              f"plus a ONE-DAY OVERCHARGE -- everyone wakes with HP and STA "
              f"+{int(TAVERN_OVERCHARGE * 100)}%% of max (min 1) ABOVE their "
              f"caps; the excess can't be healed back and fades at the next "
@@ -7488,7 +7488,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "healer",
         help=f"a day with the settlement's healer (the wound system's "
-             f"ACCESS rung): {HEALER_FEE}g per severity closed, worst wound "
+             f"ACCESS rung): {HEALER_FEE}s per severity closed, worst wound "
              f"first across the whole party, and it costs the day like any "
              f"other night. How far the art reaches is set by the "
              f"SETTLEMENT, not the purse -- hamlet and village "
@@ -7675,7 +7675,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="hand a WORK-DONE job back to its giver (2026-08-08: a quest "
              "is paid where the giver stands, not where the last body "
              "falls). Gated on standing in the giver's settlement area; "
-             "run it as the return scene (dm.md). Pays ALL the gold and "
+             "run it as the return scene (dm.md). Pays ALL the silver and "
              "the turn-in XP tranche, banded by TODAY -- the road home is "
              "inside the clock -- plus the CHA talk-up, the reward "
              "weapon, +1 companion satisfaction, and the epilogue. "
@@ -7691,7 +7691,7 @@ def build_parser() -> argparse.ArgumentParser:
         "room",
         help="resolve the ACTIVE quest's next encounter at its current site "
              "(enter it with `go SITE` first). Clearing the last site is "
-             "WORK DONE: the field XP lands and the gold waits at the "
+             "WORK DONE: the field XP lands and the silver waits at the "
              "giver (`turnin`). A fled room is "
              "re-fought against its recorded survivors. CAPER quests "
              "(dark work, 2026-07-19): a DEED site first rolls the PC's "
@@ -7727,7 +7727,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "bribe",
-        help=f"grease hell's local hand: {karma.BRIBE_GOLD_PER_LEVEL} g "
+        help=f"grease hell's local hand: {karma.BRIBE_SILVER_PER_LEVEL} g "
              f"x party level buys {karma.BRIBE_DAYS} days of NO new "
              f"assignments and NO enforcement. An open assignment isn't "
              f"cancelled -- its grace runs fresh from the bribe's end.")
@@ -7752,7 +7752,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="where its sites belong (default: current area)")
     p.add_argument("--dark", action="store_true",
                    help="forge a SHADOW job (karma & heat): bad-karma "
-                        "XP, the dark gold premium")
+                        "XP, the dark silver premium")
     p.add_argument("--days", type=int, default=0,
                    help="give the job a WINDOW this many days out (the "
                         "board's clock, quests.py). Omit for a timeless "
@@ -7768,11 +7768,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "award",
-        help="off-script bonus: award gold + an XP lump by hand (board "
+        help="off-script bonus: award silver + an XP lump by hand (board "
              "quests pay themselves -- this is for improvised scenes). "
              "--dark buckets the XP as SIN, --good as penance "
              "(karma & heat); plain awards touch neither.")
-    p.add_argument("gold", type=int)
+    p.add_argument("silver", type=int)
     p.add_argument("xp", type=int)
     p.add_argument("name")
     p.add_argument("--dark", action="store_true",
@@ -7850,7 +7850,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="the CRIME SHEET (2026-08-04, session C -- the `prices` "
              "pattern for the dark side): the whole catalogue available "
              "where the party stands, each row quoting what its mark "
-             "BAND is worth (gold, sin/XP with the current multiplier), "
+             "BAND is worth (silver, sin/XP with the current multiplier), "
              "the check it asks for and the protection it wears -- then "
              "the party's tally of sin and hell's current suggestions. "
              "`case KEY` reads TODAY'S rolled mark exactly; this reads "
@@ -7873,7 +7873,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "garrison",
         help=f"raise levies at the holding the party stands in: "
-             f"{conquest.GARRISON_HIRE_COST}g a head, capped by the "
+             f"{conquest.GARRISON_HIRE_COST}s a head, capped by the "
              f"settlement (village {conquest.GARRISON_CAP['village']} / "
              f"town {conquest.GARRISON_CAP['town']} / capital "
              f"{conquest.GARRISON_CAP['capital']}). The garrison is an "
@@ -7894,9 +7894,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "buy",
-        help="spend gold on a potion, a weapon, or (in a capital) a dose "
+        help="spend silver on a potion, a weapon, or (in a capital) a dose "
              "of meds or a SPELLBOOK -- `buy HERO book SPELL`, "
-             f"{SPELLBOOK_PRICE}g, teaches a wizard a new spell at rank 1 "
+             f"{SPELLBOOK_PRICE}s, teaches a wizard a new spell at rank 1 "
              "-- for one hero (weapons are equipped on the spot; plain "
              "tier only -- masterwork/legendary are never shopped). Note "
              f"the kit restocks itself: every long rest tops each hero "
@@ -7972,7 +7972,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "claim",
         help="take up a quest's WEAPON reward (the pay-band mode: some "
-             "jobs pay their turn-in lump as steel instead of gold -- the "
+             "jobs pay their turn-in lump as steel instead of silver -- the "
              "board row says so). The piece waits with the giver until "
              "claimed; claiming equips it on the spot.")
     p.add_argument("hero")
@@ -7990,7 +7990,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser(
         "commission",
         help="commission a legendary smith for a MAGIC weapon -- the one "
-             "way gold buys magic steel. Party must stand at the smith's "
+             "way silver buys magic steel. Party must stand at the smith's "
              "seat; the smith works only at their own tier (the pride "
              "floor: nothing below cap-1). The profile that comes off "
              "the anvil is the smith's art, not a menu.")
@@ -7998,7 +7998,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("hero", help="who the piece is fitted for (equips on "
                                 "the spot; narrate the forging days)")
     p.add_argument("chassis", nargs="*",
-                   help="optional chassis (e.g. katana) -- must fit the "
+                   help="optional chassis (e.g. schweizersäbel) -- must fit the "
                         "smith's style")
     p.add_argument("--sp", type=int, default=None,
                    help="commission tier in severity-points (default: the "

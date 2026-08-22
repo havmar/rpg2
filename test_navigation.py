@@ -69,7 +69,7 @@ def _party(n: int = 2, level: int = 3) -> list:
 
 def _state(world: dict, area: dict, day: int = 3) -> dict:
     return {"world": world, "party": _party(), "clock": rpg.Clock(day=day),
-            "purse": rpg.Purse(gold=500), "rng": random.Random(4),
+            "purse": rpg.Purse(silver=500), "rng": random.Random(4),
             "karma": karma.new_karma(), "crimes": crime.new_crimes(),
             "history": [], "position": session._area_position(area),
             "accepted": [], "active_quest": None, "loose_ends": [],
@@ -438,7 +438,7 @@ class TheSeaPassage(unittest.TestCase):
         """Both halves of the road's price are land. A ship does not queue
         at a bridge, so a sea leg asks `_road_costs` for nothing."""
         day = self.state["clock"].day
-        gold = self.state["purse"].gold
+        silver = self.state["purse"].silver
         charged: list = []
         out = io.StringIO()
         with _save_sandbox(), \
@@ -452,7 +452,7 @@ class TheSeaPassage(unittest.TestCase):
                 redirect_stdout(out):
             session.cmd_travel(argparse.Namespace(dest=[self.sea]))
         self.assertEqual(charged, [])           # neither half was consulted
-        self.assertEqual(self.state["purse"].gold, gold)
+        self.assertEqual(self.state["purse"].silver, silver)
         self.assertEqual(self.state["clock"].day,
                          day + places.edge_days(self.coast, self.sea))
 

@@ -468,7 +468,7 @@ class TheWealthRoll(unittest.TestCase):
         and it is the point of that session: what a posting QUOTES reads the
         land's wealth band. The stream is still untouched -- same
         geography, same cast, same templates, same levels, same clocks --
-        so `gold_total` is what this comparison lifts out, and the test
+        so `silver_total` is what this comparison lifts out, and the test
         below is what pins it instead.
 
         The control is a world whose layer is rolled and then QUIETED, not
@@ -481,7 +481,7 @@ class TheWealthRoll(unittest.TestCase):
                 land.pop("world", None)
                 land["states"] = []
             for quest in world["quests"].values():
-                quest.pop("gold_total", None)
+                quest.pop("silver_total", None)
             world["events"] = [e for e in world["events"]
                                if e["action"] != "add_state"]
             return json.dumps(world, sort_keys=True)
@@ -489,13 +489,13 @@ class TheWealthRoll(unittest.TestCase):
         self.assertEqual(stripped(_flat_world(2026)),
                          stripped(_world(2026)))
 
-    def test_the_quoted_gold_is_the_one_thing_the_layer_moves(self) -> None:
+    def test_the_quoted_silver_is_the_one_thing_the_layer_moves(self) -> None:
         """...and it moves it by exactly `board_pay` -- the band's own
         multiplier times whatever card was standing over the land when the
         posting went up. A land that opened in crisis is already living
         through its first card at worldgen, so the band alone is the right
         answer only where nothing stands (asserted separately below)."""
-        quiet = {q["id"]: q["gold_total"]
+        quiet = {q["id"]: q["silver_total"]
                  for q in _flat_world(2026)["quests"].values()
                  if q.get("kind") != "delivery"}
         world = _world(2026)
@@ -504,9 +504,9 @@ class TheWealthRoll(unittest.TestCase):
             if quest.get("kind") == "delivery":
                 continue        # the road pays by the day, not by the land
             if quest.get("reward_weapon"):
-                continue        # ...and a job paying in steel quotes no gold
+                continue        # ...and a job paying in steel quotes no silver
             polity = world["areas"][quest["origin"]]["land"]
-            self.assertEqual(quest["gold_total"],
+            self.assertEqual(quest["silver_total"],
                              max(1, round(quiet[quest["id"]]
                                           * worldsim.board_pay(world,
                                                                polity))),
@@ -514,7 +514,7 @@ class TheWealthRoll(unittest.TestCase):
             if not worldsim.live_cards(world, polity):
                 seen_bare = True
                 self.assertEqual(
-                    quest["gold_total"],
+                    quest["silver_total"],
                     max(1, round(quiet[quest["id"]] * worldsim.BAND_PAY[
                         worldsim.wealth_of(world, polity)])), quest["id"])
         self.assertTrue(seen_bare, "no quiet land in this world")
@@ -793,7 +793,7 @@ class TheSessionWiring(unittest.TestCase):
         import rpg
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(3), "party": [], "accepted": [],
-                "active_quest": None, "purse": rpg.Purse(gold=0),
+                "active_quest": None, "purse": rpg.Purse(silver=0),
                 "position": session._area_position(
                     quests.settlements_by_land(world)["phyrascia"][0])}
 
@@ -1248,7 +1248,7 @@ class TheWeatherSessionWiring(unittest.TestCase):
         import rpg
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(3), "party": [], "accepted": [],
-                "active_quest": None, "purse": rpg.Purse(gold=0),
+                "active_quest": None, "purse": rpg.Purse(silver=0),
                 "position": session._area_position(
                     quests.settlements_by_land(world)["phyrascia"][0])}
 
@@ -1466,7 +1466,7 @@ class TheBoardOutlet(unittest.TestCase):
 
     def test_a_card_job_never_pays_in_steel_instead(self) -> None:
         # The weapon-reward mode is a flat share of the ORDINARY board; a
-        # card that pays a gold premium must not silently pay it in a blade.
+        # card that pays a silver premium must not silently pay it in a blade.
         world = _world()
         _all_quiet(world)
         posted = []
@@ -1499,26 +1499,26 @@ class TheMenuOutlet(unittest.TestCase):
     def test_the_engine_takes_the_number_and_asks_nothing(self) -> None:
         # rpg.py never imports worldsim: the markup arrives as a float and
         # the default is the catalog price the benches have always paid.
-        purse = rpg.Purse(gold=500)
+        purse = rpg.Purse(silver=500)
         hero = _party(1)[0]
         log: list[str] = []
         rpg.buy_potion(hero, purse, "healing", log)
-        plain = 500 - purse.gold
+        plain = 500 - purse.silver
         rpg.buy_potion(hero, purse, "healing", log, markup=2.0)
-        self.assertEqual(500 - purse.gold, plain + plain * 2)
+        self.assertEqual(500 - purse.silver, plain + plain * 2)
 
     def test_the_road_takes_its_toll(self) -> None:
         world = _world()
         _all_quiet(world)
         self.assertEqual(worldsim.road_charges(world, ["phyrascia"])[0], 0)
         _fire(world, "phyrascia", "western/tolls", 3)
-        gold, lines = worldsim.road_charges(world,
+        silver, lines = worldsim.road_charges(world,
                                             ["phyrascia", "byzantium"])
-        self.assertGreater(gold, 0)
+        self.assertGreater(silver, 0)
         self.assertTrue(any("toll" in line for line in lines))
         # ...and a land is charged once however often the leg names it.
         twice = worldsim.road_charges(world, ["phyrascia", "phyrascia"])[0]
-        self.assertEqual(twice, gold)
+        self.assertEqual(twice, silver)
 
     def test_the_price_sheet_says_what_the_world_did(self) -> None:
         world = _world()
@@ -1843,7 +1843,7 @@ class TheEconomyFloorWiring(unittest.TestCase):
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(3), "party": _party(),
                 "accepted": [], "active_quest": None,
-                "purse": rpg.Purse(gold=200), "foe_count": 0,
+                "purse": rpg.Purse(silver=200), "foe_count": 0,
                 "position": session._area_position(
                     quests.settlements_by_land(world)[polity][0])}
 
@@ -1973,7 +1973,7 @@ class TheRoadCharges(unittest.TestCase):
     @staticmethod
     def _priced_road() -> tuple[dict, dict, dict]:
         """A world whose Phyrascia charges for its roads both ways -- a
-        doubled toll (gold) and fords that are out (gold AND a day)."""
+        doubled toll (silver) and fords that are out (silver AND a day)."""
         world = _world(27)
         _fire(world, "phyrascia", "western/tolls", 3)
         worldsim.set_state(world, "phyrascia", "fords-out", day=3)
@@ -1985,7 +1985,7 @@ class TheRoadCharges(unittest.TestCase):
         import karma
         import session
         return {"world": world, "party": _party(), "clock": rpg.Clock(day=day),
-                "purse": rpg.Purse(gold=500), "rng": random.Random(4),
+                "purse": rpg.Purse(silver=500), "rng": random.Random(4),
                 "karma": karma.new_karma(), "crimes": crime.new_crimes(),
                 "history": [], "position": session._area_position(here),
                 "accepted": [], "active_quest": None, "loose_ends": [],
@@ -2024,7 +2024,7 @@ class TheRoadCharges(unittest.TestCase):
         direction, nid = self._open_road(world, tile)
         with _save_sandbox():
             self._travel(state, direction, interrupted=False)
-        self.assertGreater(500 - state["purse"].gold, 0)   # the road took it
+        self.assertGreater(500 - state["purse"].silver, 0)   # the road took it
         self.assertEqual(state["clock"].day,
                          3 + places.edge_days(tile, nid) + 1)  # + detour
         self.assertEqual(state["position"]["tile"], nid)
@@ -2705,7 +2705,7 @@ class TheServicesCounter(unittest.TestCase):
         here = quests.settlements_by_land(world)[polity][0]
         return {"world": world, "clock": rpg.Clock(day=day),
                 "rng": random.Random(9), "party": _party(),
-                "purse": rpg.Purse(gold=900), "services": {},
+                "purse": rpg.Purse(silver=900), "services": {},
                 "accepted": [], "active_quest": None, "visited": [],
                 "position": session._area_position(here)}
 
@@ -2735,9 +2735,9 @@ class TheServicesCounter(unittest.TestCase):
                    if rpg.satisfaction_tracked(h)]
         self.assertTrue(tracked, "the fixture party tracks satisfaction")
         before = [h.satisfaction for h in tracked]
-        gold = state["purse"].gold
+        silver = state["purse"].silver
         self._run(state, "blessing")
-        self.assertLess(state["purse"].gold, gold)
+        self.assertLess(state["purse"].silver, silver)
         self.assertTrue(all(h.satisfaction > b
                             for h, b in zip(tracked, before)))
 
@@ -2746,17 +2746,17 @@ class TheServicesCounter(unittest.TestCase):
         world = _world()
         state = self._state(world, "phyrascia")
         self._run(state, "blessing")
-        gold = state["purse"].gold
+        silver = state["purse"].silver
         text = self._run(state, "blessing")
-        self.assertEqual(state["purse"].gold, gold)
+        self.assertEqual(state["purse"].silver, silver)
         self.assertIn("twice", text)
 
     def test_a_shut_option_is_refused_and_never_charged(self) -> None:
         world = _world()
         state = self._state(world, "phyrascia")
-        gold = state["purse"].gold
+        silver = state["purse"].silver
         text = self._run(state, "tower-fee")   # wants tower-open
-        self.assertEqual(state["purse"].gold, gold)
+        self.assertEqual(state["purse"].silver, silver)
         self.assertIn("not on offer", text)
         worldsim.set_state(world, "phyrascia", "tower-open", 4)
         self.assertIn("tower", self._run(state))

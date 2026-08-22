@@ -185,7 +185,7 @@ class ThePlayerCharacter(unittest.TestCase):
         wiz = people.make_character(random.Random(3), 6, with_traits=False,
                                     wizard=True)
         wiz.skill_points = 20
-        wiz.weapon = rpg.WEAPONS["katana"]
+        wiz.weapon = rpg.WEAPONS["schweizersäbel"]
         self.assertTrue(rpg.train_combat_once(wiz, log))
         self.assertTrue(rpg.train_proficiency(wiz, log))
         self.assertTrue(rpg.learn_move(wiz, "thrust", log))
@@ -245,7 +245,7 @@ class TheCareerStart(unittest.TestCase):
         state, _ = run_new("--seed", "6", "--level", "1")
         pc, ally = state["party"]
         self.assertEqual(session.career_purse(1), 0)
-        self.assertEqual(state["purse"].gold, people.joining_gold(ally))
+        self.assertEqual(state["purse"].silver, people.joining_silver(ally))
         for h in (pc, ally):
             self.assertTrue(h.weapon.name in rpg.TRASH_WEAPONS
                             or h.weapon.name == "wooden staff", h.weapon.name)
@@ -293,16 +293,16 @@ class TheCareerStart(unittest.TestCase):
             purse = session.career_purse(level)
             self.assertGreater(purse, last, level)
             last = purse
-        earned = sum(session.START_QUESTS_PER_LEVEL * rpg.quest_gold(l, 2)
+        earned = sum(session.START_QUESTS_PER_LEVEL * rpg.quest_silver(l, 2)
                      for l in range(1, 11))
         self.assertEqual(session.career_purse(11),
                          round(session.START_PURSE_SHARE * earned))
 
     def test_the_purse_on_the_save_is_that_purse(self):
         state, _ = run_new("--seed", "5", "--level", "8")
-        self.assertEqual(state["purse"].gold,
+        self.assertEqual(state["purse"].silver,
                          session.career_purse(8)
-                         + people.joining_gold(state["party"][1]))
+                         + people.joining_silver(state["party"][1]))
 
     def test_both_heroes_spent_the_doctrine_points(self):
         """develop_hero + autospend: the pools of the level are bought, so
@@ -483,8 +483,8 @@ class TheTraitRollback(unittest.TestCase):
             if rpg.has_trait(e, "armored"):
                 self.assertEqual(e.def_bonus, people.ARMORED_DEF_BONUS)
             if rpg.has_trait(e, "wealthy"):
-                self.assertEqual(people.joining_gold(e),
-                                 people.TRAIT_GOLD["wealthy"])
+                self.assertEqual(people.joining_silver(e),
+                                 people.TRAIT_SILVER["wealthy"])
 
     def test_a_trait_less_roll_takes_no_trait_shifts(self):
         rng = random.Random(1)
@@ -492,7 +492,7 @@ class TheTraitRollback(unittest.TestCase):
             e = people.make_character(rng, 1, with_traits=False)
             self.assertEqual(e.traits, {})
             self.assertEqual(e.def_bonus, 0)
-            self.assertEqual(people.joining_gold(e), 0)
+            self.assertEqual(people.joining_silver(e), 0)
 
     def test_the_reward_ladder_can_be_asked_for_one_chassis(self):
         """The career start's hook into weapons.py (a caster's staff)."""

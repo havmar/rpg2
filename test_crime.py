@@ -194,17 +194,17 @@ class TheTake(unittest.TestCase):
 
     def test_a_coin_crime_pays_the_formula(self):
         cat = crime.BY_KEY["heist"]        # coin, mult 1.25
-        gold, xp = crime.take_of(cat, 8, random.Random(1))
-        self.assertEqual(gold, round(crime.CRIME_GOLD_PER_LEVEL * 8 * 1.25))
+        silver, xp = crime.take_of(cat, 8, random.Random(1))
+        self.assertEqual(silver, round(crime.CRIME_SILVER_PER_LEVEL * 8 * 1.25))
         self.assertEqual(xp, round(crime.CRIME_XP_PER_LEVEL * 8 * 1.25))
 
     def test_goods_are_fenced(self):
         goods = crime.BY_KEY["burglary"]     # goods, mult 1.0
         self.assertEqual(goods["pay"], "goods")
-        g_gold, g_xp = crime.take_of(goods, 6, random.Random(1))
+        g_silver, g_xp = crime.take_of(goods, 6, random.Random(1))
         self.assertEqual(
-            g_gold,
-            round(crime.CRIME_GOLD_PER_LEVEL * 6 * goods["mult"]
+            g_silver,
+            round(crime.CRIME_SILVER_PER_LEVEL * 6 * goods["mult"]
                   * crime.FENCE_RATE))
         # The FENCE takes its half out of the coin only -- the sin is
         # what the deed was, not what the fence paid for it.
@@ -224,15 +224,15 @@ class TheTake(unittest.TestCase):
     def test_petty_is_flat_and_never_scales_with_the_mark(self):
         cat = crime.BY_KEY["pickpocket"]
         for level in (1, 2, 4):
-            gold, xp = crime.take_of(cat, level, random.Random(3))
+            silver, xp = crime.take_of(cat, level, random.Random(3))
             self.assertTrue(crime.PETTY_SIN[0] <= xp <= crime.PETTY_SIN[1])
-            self.assertTrue(crime.PETTY_GOLD[0] <= gold
-                            <= crime.PETTY_GOLD[1])
+            self.assertTrue(crime.PETTY_SILVER[0] <= silver
+                            <= crime.PETTY_SILVER[1])
 
     def test_a_no_pay_crime_pays_no_coin(self):
         for key in ("puppy", "vandalism"):
-            gold, xp = crime.take_of(crime.BY_KEY[key], 2, random.Random(4))
-            self.assertEqual(gold, 0, key)
+            silver, xp = crime.take_of(crime.BY_KEY[key], 2, random.Random(4))
+            self.assertEqual(silver, 0, key)
             self.assertGreater(xp, 0, key)      # ...but it is still sin
 
     def test_farming_down_is_self_defeating(self):
@@ -465,7 +465,7 @@ class SessionWiring(unittest.TestCase):
     def test_the_take_rides_the_pending_fight(self):
         import session
         rec = {"key": "arson", "name": "Arson", "role": "a miller",
-               "level": 3, "gold": 60, "xp": 150, "note": ""}
+               "level": 3, "silver": 60, "xp": 150, "note": ""}
         pending = {"foes": [], "fired": set(), "round": 2, "crossings": [],
                    "xp": 10, "site": None, "room": None, "quest": None,
                    "crime": rec, "dead_before": [], "field": 0,

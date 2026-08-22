@@ -4,7 +4,7 @@ Runs both sites at rank 0 with parties of 1-4 rolled heroes and prints
 wipe/down/clear rates per size. This is the measurement behind rules.md's
 "Balanced for two": in-fight, numbers dominate every other progression axis
 (hideout ~15/64/93/99% clear for sizes 1-4), and the counterweights that
-drag on that are mostly OUTSIDE this sweep -- XP x 2/N and flat gold
+drag on that are mostly OUTSIDE this sweep -- XP x 2/N and flat silver
 compound across a campaign, not within one run. Re-run after touching the
 press (CROWD_CAP / crowd_cap), sweeps, or anything in the melee loop.
 

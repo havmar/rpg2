@@ -28,7 +28,7 @@ survivalist, field medic) are measured on their own axis: the exact-odds
 table at the bottom (they buy nights and lives, not clear rate).
 
 Session B grew this file with the warrior-moves matchup block (a doctrine
-duo with a granted katana repertoire vs one without) and the disarm-move-
+duo with a granted schweizersäbel repertoire vs one without) and the disarm-move-
 vs-telekinesis-rank-1 pricing check; session C adds the alchemist career
 column.
 
@@ -54,7 +54,7 @@ _NO_LOG: list[str] = []
 def _base_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
     """A frame hero with the GIFTS ZEROED (no rolled archetype seed, no
     wizardhood) so the columns measure only what the points bought, and
-    quality steel (the katana, the benches' pick) in hand."""
+    quality steel (the schweizersäbel, the benches' pick) in hand."""
     h = rpg.make_human(rng, name)
     h.school = ""
     h.spells = {}
@@ -64,7 +64,7 @@ def _base_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
     if h.weapon is not None and h.weapon.power_bonus:
         h.power -= h.weapon.power_bonus         # the staff goes back
         h.cur_power = min(h.cur_power, h.power)
-    h.weapon = rpg.WEAPONS["katana"]
+    h.weapon = rpg.WEAPONS["schweizersäbel"]
     h.level = level
     h.skill_points = (level - 1) * rpg.SKILL_POINTS_PER_LEVEL
     return h
@@ -202,7 +202,7 @@ def bench_frame(level: int, trials: int) -> None:
 
 
 def _grant_repertoire(h: rpg.Entity) -> None:
-    """Grant a katana fighter a full suited repertoire FOR FREE (points set
+    """Grant a schweizersäbel fighter a full suited repertoire FOR FREE (points set
     aside), so the block measures what the moves BUY in the fight, isolated
     from their point cost -- the ceiling, priced separately below."""
     keep = h.skill_points
@@ -241,7 +241,7 @@ def _run_duel(duo: list, level: int, rng: random.Random) -> bool:
 
 def moves_matchup(trials: int) -> None:
     """The warrior-moves matchup block (session B): the reference doctrine duo
-    with a full katana repertoire GRANTED vs the same duo without one, on the
+    with a full schweizersäbel repertoire GRANTED vs the same duo without one, on the
     room and duel rows. The gap is what the repertoire buys in the fight (the
     riders + the flow refund); the moves cost points too (leftover on the
     doctrine, or a pool shaved), so this is the value CEILING, not a free win.
@@ -260,7 +260,7 @@ def moves_matchup(trials: int) -> None:
                 wins = sum(rowfn(_moves_duo(level, rng, wm), level, rng)
                            for _ in range(trials))
                 rates[(tag, wm)] = 100 * wins / trials
-        # a sample repertoire (deterministic: what a katana fighter learns)
+        # a sample repertoire (deterministic: what a schweizersäbel fighter learns)
         sample = _base_hero(random.Random(1), "x", level)
         _doctrine(sample)
         _grant_repertoire(sample)
@@ -268,7 +268,7 @@ def moves_matchup(trials: int) -> None:
         print(f"L{level:<7}{rates[('room', False)]:>10.1f}%"
               f"{rates[('room', True)]:>12.1f}%{rates[('duel', False)]:>10.1f}%"
               f"{rates[('duel', True)]:>12.1f}%   {rep}")
-    print("  (repertoire = the suited katana moves the fighter is granted at "
+    print("  (repertoire = the suited schweizersäbel moves the fighter is granted at "
           "that frame)")
 
 

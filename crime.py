@@ -46,7 +46,7 @@ new one.
 
 **Monotony is per-category and TEMPORARY.** Every commission day-stamps
 its category; stamps inside MONOTONY_WINDOW count against the next one's
-SIN and XP (MONOTONY_MULTS, floor MONOTONY_FLOOR). Gold never
+SIN and XP (MONOTONY_MULTS, floor MONOTONY_FLOOR). Silver never
 depreciates -- the loot is the loot; it is hell that gets bored.
 Alternating two categories does NOT reset either: each window is its
 own. A two-crime loop is supposed to stale; a portfolio, or honest days
@@ -88,7 +88,7 @@ CRIME_XP_PER_LEVEL = 50     # the crime LUMP: this x the mark's level x the
                             # ~100L, so a crime is half a job -- because a
                             # crime is ONE SCENE, not an expedition. All of
                             # it is sin (it is dark work by construction)
-CRIME_GOLD_PER_LEVEL = 20   # the coin take: this x mark level x the same
+CRIME_SILVER_PER_LEVEL = 20   # the coin take: this x mark level x the same
                             # category multiplier. A quest pays 15L a site
                             # plus the dark premium, so a crime lands in
                             # family with one site's honest pay
@@ -100,7 +100,7 @@ PETTY_SIN = (10, 15)        # petty crime's flat sin/XP, rolled -- small,
                             # and all of it sin (designer call: petty crime
                             # pays XP). Never scaled by the mark: a kicked
                             # puppy is a kicked puppy
-PETTY_GOLD = (1, 5)         # ...and its coin, in pennies
+PETTY_SILVER = (1, 5)         # ...and its coin, in pennies
 
 MONOTONY_WINDOW = 10        # days a commission stays on its category's
                             # record for monotony purposes
@@ -682,34 +682,34 @@ def build_mark(cat: dict, band_key: str | None, role: str, level: int,
     stands in front of it. `band_key` is None for a DM-assigned NPC mark
     (`crime X --npc NAME --level N`) -- the band table is the roller's
     tool, not a fence."""
-    gold, xp = take_of(cat, level, rng)
+    silver, xp = take_of(cat, level, rng)
     pool, skins = protection_dress(cat)
     kinds = ([] if cat["shape"] == "petty"
              else build_room(room_budget(level, 1.0), pool, rng,
                              final=True))
     return {"category": cat["key"], "band": band_key, "role": role,
-            "level": level, "gold": gold, "xp": xp,
+            "level": level, "silver": silver, "xp": xp,
             "kinds": kinds, "skins": skins}
 
 
 def take_of(cat: dict, level: int, rng: random.Random) -> tuple[int, int]:
-    """(gold, quoted XP) for one commission at a mark of `level`, before
+    """(silver, quoted XP) for one commission at a mark of `level`, before
     the sin/XP multipliers. Petty crime is FLAT -- the mark's level buys
-    it nothing, which is exactly why petty crime is a dead end. Gold
+    it nothing, which is exactly why petty crime is a dead end. Silver
     never carries the multipliers: the loot is the loot."""
     if cat["shape"] == "petty":
         xp = rng.randint(*PETTY_SIN)
         if cat["pay"] is None:
             return 0, xp
-        return rng.randint(*PETTY_GOLD), xp
+        return rng.randint(*PETTY_SILVER), xp
     xp = round(CRIME_XP_PER_LEVEL * level * cat["mult"])
     if cat["pay"] is None:
-        gold = 0
+        silver = 0
     else:
-        gold = round(CRIME_GOLD_PER_LEVEL * level * cat["mult"])
+        silver = round(CRIME_SILVER_PER_LEVEL * level * cat["mult"])
         if cat["pay"] == "goods":
-            gold = round(gold * FENCE_RATE)
-    return gold, xp
+            silver = round(silver * FENCE_RATE)
+    return silver, xp
 
 
 def check_line(cat: dict) -> str:
@@ -751,7 +751,7 @@ def main() -> None:
             if mark is None:
                 continue
             print(f"  {cat['name']} [{cat['shape']}]: {mark['role']} "
-                  f"(L{mark['level']}) -- {mark['gold']}g, "
+                  f"(L{mark['level']}) -- {mark['silver']}s, "
                   f"{mark['xp']} XP/sin; {check_line(cat)}")
             print(f"      protection: {roster_hint(mark)}")
         print()

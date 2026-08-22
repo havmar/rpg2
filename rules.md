@@ -78,17 +78,17 @@ the fight or around it?* During → lean simulation. Around → lean game.
 | Currency | Source | Buys | Never buys |
 |----------|--------|------|------------|
 | **XP / Levels** | Winning encounters | Permanent ability: skills, weapon proficiencies (free allocation) | Stats |
-| **Gold** | Loot, quests, selling trash | Staying power: consumables, ammo, trash gear, rest/services | Named weapons |
+| **Silver** | Loot, quests, selling trash | Staying power: consumables, ammo, trash gear, rest/services | Named weapons |
 | **Loot & Quests** | Authored rewards | Power spikes: the cool/Named weapons, stat-transcending items | (n/a) |
 
-The rule that keeps the economy from going flat: **gold buys staying power,
+The rule that keeps the economy from going flat: **silver buys staying power,
 not power** — softened by decision (2026-07) to a guideline: the real intent
-is that XP and gold shouldn't feel like the same currency. Plain-tier quality
-weapons may be shopped for gold; since 2026-07-28 masterwork is shoppable
+is that XP and silver shouldn't feel like the same currency. Plain-tier quality
+weapons may be shopped for silver; since 2026-07-28 masterwork is shoppable
 too (capitals, 5× price) and a legendary smith sells *commissions* at the
-superlinear gold curve — the L15+ "what is gold for" answer. The line that
+superlinear silver curve — the L15+ "what is silver for" answer. The line that
 never softens: **the famous named weapons are not for sale at any price** —
-gold can commission new steel, it can never buy a story.
+silver can commission new steel, it can never buy a story.
 
 **Stats are the simulated body, fixed at creation** — never raised by
 levelling. A genetic cap defines each stat's ceiling; only magic and rare
@@ -133,7 +133,7 @@ hideout clears
 ~17% solo, ~74% duo, ~97% trio, ~99% four-up). Three quiet counterweights
 drag on numbers instead of any per-size tuning:
 
-1. **Income is flat.** The purse is shared and quests pay fixed gold (four
+1. **Income is flat.** The purse is shared and quests pay fixed silver (four
    heroes buy four swords from the same reward), and **XP pays the job, not
    the head**: each member earns `award x 2 / party size`. A duo gets the
    listed numbers; four swords split the wages and level at half speed; a
@@ -338,14 +338,14 @@ by low common enemies; plain ones are shoppable at 60 g.
 | Weapon | Atk | Sev | Def | Special | Identity |
 |--------|-----|-----|-----|---------|----------|
 | **Rapier** | +2 | −1 | — | **Graze floor**: a landed thrust is never fully deflected (min. 1 HP) — stricter than the universal margin-3 floor: *any* hit counts | The duelist. Lands constantly, always draws blood, wins by the spiral. Laughs at heavy soak. |
-| **Katana** | +1 | +1 | — | — | The all-rounder: consistently near-best everywhere, best almost nowhere. |
+| **Schweizersäbel** | +1 | +1 | — | — | The all-rounder: consistently near-best everywhere, best almost nowhere. |
 | **Zweihander** | +1 | +3 | **−1** | — | The crowd-breaker: mooks die in one blow, but there's no parrying a girder. Wants STR/soak behind it. |
 | **Wooden staff** | 0 | −1 | **+1** | **+1 max Power while wielded** (2026-07-17: the focus — fuel, not surgery) | The caster's weapon — deliberately poor steel, priced in support. |
 
 Benchmark (`bench_weapons.py`, duel vs swarm win rates per stat frame):
 **suited, not ranked** — the rapier is the best duelist on three of four
 frames (on the precise frame it's a coin flip with the zweihander), the
-zweihander sweeps every swarm column, the katana is the reliable second
+zweihander sweeps every swarm column, the schweizersäbel is the reliable second
 everywhere, and the staff trails everywhere on purpose. No weapon tops every
 cell.
 
@@ -384,7 +384,7 @@ Ladder & Generation add-on** below. The short version:
 - **Masterwork** (+1 attack pressure on a quality chassis, durability 5) is
   the master smiths' nonmagical best — **shoppable in capitals** since
   2026-07-28 at five times the plain price (the deliberate second softening
-  of "gold never buys power"; the first was plain quality steel).
+  of "silver never buys power"; the first was plain quality steel).
 - **The magic tiers** (magic / legendary / mythic) are generated on a
   budget, carry the stat-transcending bonuses, and are **never on a
   shelf** — found, quested, robbed from their famous owners, or
@@ -413,7 +413,7 @@ breakage is a steel-on-steel event, so a claw neither shatters nor shatters
 the blade that parries it.
 
 Calibrated per-fight rates (measured): a club against legendary steel snaps
-in ~24% of fights; against a quality katana ~10%; quality steel against one
+in ~24% of fights; against a quality schweizersäbel ~10%; quality steel against one
 step better ~1%. Against a quality-armed party, a skeleton's rusted blade
 snaps in ~10% of rooms — the barrow *visibly* easing as the party's gear
 improves, which is the point: the asymmetry favors the player without
@@ -429,7 +429,7 @@ beat.
 
 `bulk` (carry weight — no encumbrance in the heroic tone; STR's future
 secondary role if that changes), `tags` (`cheap` / `military` / `ancient`,
-later `steppe`... — generation flavor), `value` (gold), and `description`
+later `steppe`... — generation flavor), `value` (silver), and `description`
 (the mechanical role in plain words, so nobody has to math out what a weapon
 is for).
 
@@ -806,7 +806,7 @@ These are the only edits to the existing rules:
 | **Wounds** | Carry indefinitely — a night does nothing for them | Only the **treatment ladder**: a settlement bed (1 severity a night), the healer (tier-capped), a salve, or high magic for a maiming | The SLOW channel (2026-07-26, slice 3b): named located records that dock the HP ceiling and carry stat penalties. See the Wounds & Recovery add-on. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
-| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it, and at a fight's OPENING (2026-08-05) drinks for everyone who has no better answer (see "Gold and the potion economy"). |
+| **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it, and at a fight's OPENING (2026-08-05) drinks for everyone who has no better answer (see "Silver and the potion economy"). |
 
 Give each character their **own** Power and item stock, not a shared pool — it
 keeps build identity alive and makes "who am I about to lose" specific. (The
@@ -1233,7 +1233,7 @@ buying it tick down. "Running out" becomes dread, not bookkeeping.
 
 ## The day / run economy
 
-Power, potions, and stamina are the spendable survival layer; gold buys potions
+Power, potions, and stamina are the spendable survival layer; silver buys potions
 and the world drops them, so exploration feeds survivability. A hard run of
 fights *visibly* draws the stockpile down. The **day** is the natural unit of
 attrition: the grind-down expressed as depletion of *kit and Power* rather than
@@ -1278,7 +1278,7 @@ before dark.
     excess is spent-only: no rest, potion, or Heal tops a pool past its
     max (they only fill *toward* it), and whatever excess survives the day
     is clamped away by the next long rest. Mechanically it is a small
-    pre-bought buffer for tomorrow's door — and it gives gold a drip-feed
+    pre-bought buffer for tomorrow's door — and it gives silver a drip-feed
     survival use and settlements a comfort identity. (Overcharged HP never
     grants a *negative* wound penalty; the spiral floors at 0.)
 
@@ -1385,9 +1385,9 @@ On top of the existing build/allocation choices:
 
 The between-fights progression layer: XP and levels feeding the **point
 economy** (2026-07-17 — pools, skills, spells, and the ability catalog all
-bought from the same banked points), and a gold economy that keeps the
+bought from the same banked points), and a silver economy that keeps the
 potion stock a real decision. Follows the design spine: **XP buys
-permanent ability, gold buys staying power** — never the reverse.
+permanent ability, silver buys staying power** — never the reverse.
 
 ## XP and levels
 
@@ -1407,7 +1407,7 @@ permanent ability, gold buys staying power** — never the reverse.
   - **The quest ladder — the game.** A generated quest is 1-3 encounters
     (below); its whole pay is
     `quest_xp_total(L, enc) = 44 × (L + 1) × ENCOUNTER_MULT[enc]` XP and
-    `quest_gold(L, enc) = 18 × L × ENCOUNTER_MULT[enc]` gold, with
+    `quest_silver(L, enc) = 18 × L × ENCOUNTER_MULT[enc]` silver, with
     `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2}`. The multiplier rises
     **sub-linearly** on purpose: the fixed overhead of a job — the trip out,
     the giver, the turn-in — is paid once whether you fight once or three
@@ -1416,12 +1416,12 @@ permanent ability, gold buys staying power** — never the reverse.
     stage): **40%** falls as the encounters do (flat: every fight on the job
     pays the same, wherever it stands), **40%** is the FIELD tranche paid
     unbanded when the last place closes, and **20%** plus **all** of the
-    gold is the TURN-IN, paid where the giver stands and banded by the day
+    silver is the TURN-IN, paid where the giver stands and banded by the day
     it lands. An intermediate place of a two-place job clears with a banner
     and no purse.
   - **The site ladder — the fixtures.** `site_xp_total(L) = 50 × (L + 1)`,
     45% split flat across the rooms, the rest as the clear lump, plus
-    `15 × L` gold. This ladder now serves ONLY the two hand-built sites in
+    `15 × L` silver. This ladder now serves ONLY the two hand-built sites in
     `sites.py` (the bandit hideout at level 1, the skeleton barrow at level
     3), which are dev/test calibration fixtures that `tune.py`,
     `bench_training.py`, and `run_site` are fitted to — not played content.
@@ -1501,7 +1501,7 @@ pause — what stopped being universal is the *trained* answers:
 | **Berserk** | 1 | 2 HP -> +4 STA — now known, not universal |
 | **Rage** | 2 | after slaying a foe: +2 to the next exchange; if that exchange fails to slay, the hero spends the following round exhausted (no attack). Mork Borg import; swingy on purpose |
 | **Field Medic** | 3 | once per day, when a companion would truly DIE nearby: DEX check DC 9 — success commutes it to a Down (rapid surgery, takes the medic's next round). Fate's bargain's price can NOT be medic'd (fate is owed, not bleeding) |
-| **Storyteller** | 2 | at a long rest: CHA check DC 9 (+1 per listener beyond the second) — success gives every party member +1 Power ABOVE max (overcharge rules). CHA's first in-mechanics job beyond capacity/gold |
+| **Storyteller** | 2 | at a long rest: CHA check DC 9 (+1 per listener beyond the second) — success gives every party member +1 Power ABOVE max (overcharge rules). CHA's first in-mechanics job beyond capacity/silver |
 | **Survivalist** | 2 | at a wilds camp: MIND check DC 9 — the camp counts as a tavern night (the overcharge) and the night-visitor chance is halved |
 | **Arrow-Parry** | 2 / +3 for rank 2 | melee grip only: +2 defense pressure against missiles (arrows/bolts/stones/knives); rank 2 extends to bullets and rises to +3 |
 | **Point-Blank Mastery** | 3 | the ranged card shoots at gap 0 — contact never forces the switch round |
@@ -1579,16 +1579,16 @@ bench_bestiary's reference duo), so tune/bench numbers stay comparable
 across the economy change; `bench_abilities.py` is where the OTHER ways
 of spending get measured.
 
-## Gold and the potion economy
+## Silver and the potion economy
 
 - **The purse is shared** (party-level); potions are per-hero — but since
   2026-07-26 the party *manages* them as a shared stock (the quartermaster
   pass, below).
 - **Income:**
-  - **Quests:** a level-L quest pays **18 × L × ENCOUNTER_MULT** gold, all
+  - **Quests:** a level-L quest pays **18 × L × ENCOUNTER_MULT** silver, all
     of it at the turn-in (2026-07-26) — ~25 × L at the measured encounter
     mix, which is what the old per-site ladder paid over its ~1.6 sites.
-    Career gold is deliberately unchanged by the rework: gold is the one
+    Career silver is deliberately unchanged by the rework: silver is the one
     quantity that inflates across a 1–20 career, which is exactly why
     recovery is never priced in it. The two hand-built site fixtures keep
     the old **15 × L** on the clear (the hideout's 15 g and the barrow's
@@ -1596,20 +1596,20 @@ of spending get measured.
   - **Drops**, per encounter won: **20%** chance of loose coin (**5 g**, half a
     potion) and **10%** chance of a stray potion (random kind, to a random
     hero). Trash-tier on purpose — drops season the run, quests fund it.
-- **Sink:** any potion costs **10 g** — but since 2026-07-11 gold only buys
+- **Sink:** any potion costs **10 g** — but since 2026-07-11 silver only buys
   potions **above the self-restocking kit line** (every long rest tops each
   hero back up to 1 healing + 1 stamina free — see "The two-buffer split").
   `buy_potion` remains the deliberate, DM-called purchase for stocking a
-  planned push; the routine baseline restock is no longer a gold sink (the
+  planned push; the routine baseline restock is no longer a silver sink (the
   designer's call: it was friction, not a choice). Weapons and meds carry
   the economy's sink weight now.
 - **Weapons are the second sink** (`buy_weapon`, same DM-called shape): plain
   quality weapons cost **60 g** — a real saving goal (roughly four hideout
-  clears of quest gold + drops); commons are shop-trivial (1–15 g).
+  clears of quest silver + drops); commons are shop-trivial (1–15 g).
   Masterwork/legendary are **never** for sale. This deliberately softens the
-  old "gold never buys power" rule (see the design spine): a plain rapier is
+  old "silver never buys power" rule (see the design spine): a plain rapier is
   modest
-  permanent power, and worth it — sim-measured (2026-07-06), a katana
+  permanent power, and worth it — sim-measured (2026-07-06), a schweizersäbel
   + zweihander loadout lifts a fresh party's barrow clear rate from ~3.5% to
   ~13% (though the barrow stays suicide until trained: the real
   unlock is the combination — training 2 + steel ~70%). The intended arc:
@@ -1733,7 +1733,7 @@ Each weapon carries `move_tags` (**pierce / blade / blunt / heavy** for
 steel, **ranged** for the missile cards). A move is eligible only if the
 wielded weapon carries one of its tags — so "some moves don't fit the
 rapier" (pierce+blade, no butcher's heft) falls out of the tags, no per-move
-exception lists. Three special gates: **iaido** is the katana's alone; the
+exception lists. Three special gates: **iaido** is the schweizersäbel's alone; the
 **finisher** needs a killing arc (a blade, or a heavy blunt — a pure spear
 has none); and the **wooden staff** joins **riposte** and **disarm** past
 its blunt tag (2026-07-19, quarterstaff play: the +1-parry weapon answers
@@ -1763,7 +1763,7 @@ a move onto any hero with the points banked.
 | **Kick** | 1 | any melee | foe at contact | on a hit: the foe defends at −2 next round |
 | **Trip** | 1 | any melee | round 2+ | on a decisive hit (margin ≥ 3): the foe skips its next attack AND defends −2 (prone) |
 | **Riposte** | 1 | blade/pierce (+ the staff) | parried a blow last round | +2 attack pressure this exchange |
-| **Iaido** | 2 | katana only | round 1 | +2 attack, +3 severity — then a round stanced (no attack). The katana's signature |
+| **Iaido** | 2 | schweizersäbel only | round 1 | +2 attack, +3 severity — then a round stanced (no attack). The schweizersäbel's signature |
 | **Finisher** (Decapitate / Split Skull) | 2 | blade / heavy+blunt | foe below 1/3 max HP | +3 severity — stretches the almost-kill into the kill; the log names it |
 | **Skirmisher's Step** | 1 | ranged | a charger reaches contact | give ground to reopen the gap by a step (once per fight — kiting, ability-framed so it can't become the default dance) |
 
@@ -1788,7 +1788,7 @@ The third and last slice of the levelling framework. Two threads: a
 **difficulty lever** (the kit shrinks — the free potion faucet closes) and a
 **new career** (the alchemist brews the kit the party now has to work for,
 plus bombs, stat brews, and the overcharge). The design spine holds: alchemy
-pays in **kit**, never gold (brewed potions are unsellable), so the economy
+pays in **kit**, never silver (brewed potions are unsellable), so the economy
 faucet stays shut; and the whole layer follows the autocombat doctrine —
 the firebomb fires on its own like a spell, never a new mid-fight decision.
 
@@ -1840,7 +1840,7 @@ keeps a week or two"; per-potion spoil timestamps are exactly the inventory
 bookkeeping the heroic tone forbids, and the cap fences the same degenerate
 case). The brew clamps to the cap; using a brewed item reopens the room.
 Brewed potions are **unsellable** (no guild seal — rotgut to a shopkeep):
-alchemy pays in kit, never gold.
+alchemy pays in kit, never silver.
 
 ## The overcharge doctrine (drinking in advance)
 
@@ -1949,7 +1949,7 @@ below).
 - **Spellbooks gate BREADTH**: the first spell is rolled at creation;
   every further spell needs its book — **`SPELLBOOK_PRICE` (120 g),
   capitals only** (`buy HERO book SPELL`), teaching the spell at rank 1.
-  Books are shoppable by designer call (the "gold never buys power" rule
+  Books are shoppable by designer call (the "silver never buys power" rule
   was already softened to a guideline); masterwork-style *found* tomes
   can gate a future rank 4 when the 14-20 band gets its content pass.
 - **Power costs gate the BURST** — the designer's core intent: a low-level
@@ -2196,11 +2196,11 @@ buys by the lot; a bought or granted ranged weapon comes with a starter
 load.
 
 - Caps: 20 arrows / 20 bolts / 10 shells / 6 knives. Lots: 10 arrows or
-  bolts for 5g; 2 shells for 10g; 2 knives for 4g.
+  bolts for 5s; 2 shells for 10s; 2 knives for 4s.
 - **A won field is scavenged**: each spent missile recovers at 70% if it
   hit (stuck in a body) or 40% if it missed (lost in the grass) — knives
   90/60. A *fled* field is left, arrows and all. Shells burn. Net effect:
-  arrow upkeep is deliberately trivial (the bow's costs are the 60g and
+  arrow upkeep is deliberately trivial (the bow's costs are the 60s and
   the stat demands) while **the blunderbuss shell is the ammo sink with
   teeth** — the weapon needs no stats, so the ammo carries the price, by
   design.
@@ -2213,21 +2213,21 @@ Quality three (shoppable at plain tier like the melee four):
 
 | Card | Range | Cadence | AIM | Atk | Sev flat | Melee grip | Ammo | Value |
 |------|-------|---------|-----|-----|----------|------------|------|-------|
-| **Longbow** | 3 | every 2nd | (DEX+STR)/2 | +1 | +5 | −2/−2 | arrows | 60g |
-| **Blunderbuss** | 1 | every 2nd | flat 4 | 0 | +7 | 0/0 | shells (5g a shot) | 90g |
-| **Revolver** | 2 | **every round** | DEX | −1 | +5 | −2/−2 | **1 Power/shot** | 250g |
+| **Longbow** | 3 | every 2nd | (DEX+STR)/2 | +1 | +5 | −2/−2 | arrows | 60s |
+| **Blunderbuss** | 1 | every 2nd | flat 4 | 0 | +7 | 0/0 | shells (5s a shot) | 90s |
+| **Revolver** | 2 | **every round** | DEX | −1 | +5 | −2/−2 | **1 Power/shot** | 250s |
 
 Commons:
 
 | Card | Range | Cadence | AIM | Atk | Sev flat | Melee grip | Ammo | Value |
 |------|-------|---------|-----|-----|----------|------------|------|-------|
-| **Shortbow** | 2 | every 2nd | (DEX+STR)/2 | 0 | +4 | −2/−2 | arrows | 8g |
-| **Crossbow** | 2 | every 2nd (3rd if STR<4) | DEX | −1 | +6 | −2/−2 | bolts | 15g |
-| **Throwing knives** | 1 | every round | DEX | 0 | +3 | **0/−1** (it's a knife) | themselves (90/60 recovery) | 8g |
-| **Sling** | 2 | every 2nd | DEX | −1 | +3 | −2/−2 | stones, free | 2g |
+| **Shortbow** | 2 | every 2nd | (DEX+STR)/2 | 0 | +4 | −2/−2 | arrows | 8s |
+| **Crossbow** | 2 | every 2nd (3rd if STR<4) | DEX | −1 | +6 | −2/−2 | bolts | 15s |
+| **Throwing knives** | 1 | every round | DEX | 0 | +3 | **0/−1** (it's a knife) | themselves (90/60 recovery) | 8s |
+| **Sling** | 2 | every 2nd | DEX | −1 | +3 | −2/−2 | stones, free | 2s |
 
-*(The hand bombard — range 1, flat aim, +6, 15g — is the gunner row's
-common gun, so mid-band gunner foes shoot powder without dropping 90g of
+*(The hand bombard — range 1, flat aim, +6, 15s — is the gunner row's
+common gun, so mid-band gunner foes shoot powder without dropping 90s of
 quality brass into every fight: the same economy rule that keeps quality
 blades off low mooks.)*
 
@@ -2242,7 +2242,7 @@ the **sling** is the peasant's reach — weak, slow, free to feed.
 
 Sim-measured shape (`bench_ranged.py`, the doc of record): reach is an
 EDGE that grows with the field and dies at the door — no ranged card
-approaches the katana in a 1v1 at contact, all of them hold their own in
+approaches the schweizersäbel in a 1v1 at contact, all of them hold their own in
 the played party shape (shooter + line), and a solo shooter who lets the
 enemy walk in has already made a build mistake. Melee beats ranged at
 contact; ranged beats the slow approach; cramped ground and ambush beat
@@ -2442,7 +2442,7 @@ the top of `rpg.py`.
 
 With quests down to one encounter (slice 1) there was nothing left inside a
 job to attrit: the party won, camped to full, and HP never mattered. Every
-obvious fix is a gold price — and gold is the one quantity that inflates
+obvious fix is a silver price — and silver is the one quantity that inflates
 (income runs ~4 g/day at level 1 and ~75 g/day at level 20 while HP pools
 barely double). So:
 
@@ -2564,8 +2564,8 @@ forever.
 | field stabilize | bleed | free, automatic at fight end |
 | **a bed in a settlement** | 1 severity per night | **time** (the wilds knit none) |
 | **the healer** (`healer`) | several severity, a day + a flat fee | **settlement tier** |
-| basic potion | HP / blood loss, to the ceiling | gold (price unchanged) |
-| **surgeon's salve** | one non-permanent wound outright | gold, or alchemy rank 3 (stock-capped) |
+| basic potion | HP / blood loss, to the ceiling | silver (price unchanged) |
+| **surgeon's salve** | one non-permanent wound outright | silver, or alchemy rank 3 (stock-capped) |
 | **elixir of mending / rank-3 healing spell** | permanents and maimings | scarce, authored |
 
 **Healer tier caps: hamlet and village 2 severity a visit, town 4, a city
@@ -2654,7 +2654,7 @@ anchors the formulas were fitted to.
     two-place job is 1 then 2.
   - **Pay is per QUEST**, not per site (see *XP and levels*): the encounter
     shares fall as the fights do, the FIELD tranche lands when the LAST
-    place closes, and the gold plus the turn-in tranche are handed over at
+    place closes, and the silver plus the turn-in tranche are handed over at
     the giver (2026-08-08). An intermediate place clears with a banner and
     no purse.
   - A **caper** (the dark templates' authored shapes — see the Karma & Heat
@@ -2729,7 +2729,7 @@ against 34/50/12/3 — benchlog 2026-08-08).
 | late | within `QUEST_GRACE_DAYS` = 3 days past it | ×0.60 |
 | expired | past the grace | nothing — the job is lost |
 
-Only the **turn-in tranche and the gold** are banded. The per-encounter
+Only the **turn-in tranche and the silver** are banded. The per-encounter
 shares and the field tranche were paid as they were earned and are never
 clawed back: a failed job still leaves the party with what the fighting
 paid — **80% of the XP**, since the split (above). The premium is small on
@@ -2738,7 +2738,7 @@ purpose — the clock is a pressure, not a second economy.
 ### The lifecycle: taken → work done → turned in (2026-08-08)
 
 **A quest is paid where the giver stands, not where the last body falls.**
-The old banner paid the lump and all the gold the instant the last field
+The old banner paid the lump and all the silver the instant the last field
 cleared, wherever the party happened to be, and the giver scene the DM
 narrated over it was fiction with nothing under it. Now the job has a stage
 for it.
@@ -2754,7 +2754,7 @@ wants it:
 
 **At turn-in** — `turnin QID`, gated on standing in the giver's settlement
 area, run by the DM as part of the return scene and narrated as that scene:
-**all** the gold and the **turn-in tranche**, both banded by the TURN-IN
+**all** the silver and the **turn-in tranche**, both banded by the TURN-IN
 day; the CHA negotiation; the reward weapon (`claim` finally waits where the
 giver does); **+1 companion satisfaction** — which now lands in town by
 construction, exactly where a quitting companion can be talked round; and
@@ -2762,7 +2762,7 @@ the epilogue with the history record. `--here` is the DM's valve for edge
 fiction: a dead giver, an occupied town — pay where the story says.
 
 **Lost after work-done** — the deadline and its grace pass before the party
-returns: the turn-in tranche and the gold are gone, the banked 80% **stays**,
+returns: the turn-in tranche and the silver are gone, the banked 80% **stays**,
 **no failure rumour fires** (the monsters are dead — the world changed), the
 place states stay completed, and the record reads *done, never paid*. The
 giver's grievance is story material, not a penalty.
@@ -2926,9 +2926,9 @@ road is the content:
   day. Since the grid shipped (2026-08-15) that is the real distance across
   Europe rather than a flat two-day constant, so a courier run to the far
   side of the map is a 15–40 day commitment paying 300–800 g — a genuine
-  career choice, not a chore. Gold-rich for the effort — the courier
+  career choice, not a chore. Silver-rich for the effort — the courier
   premium — and XP-light next to site work: walking isn't fighting. The CHA
-  negotiation bonus applies like any quest gold.
+  negotiation bonus applies like any quest silver.
 - **One guaranteed interception** on the travel leg that reaches the
   destination: a road-table event at chance 1 — the road's own
   party-independent level table, spotted/ambush valves included, paying
@@ -2995,7 +2995,7 @@ whole of what a country is now:
   routing; it never changes a statistic. All nine use one calibrated
   combat ladder.
 - The era anchor is **about 1500 without the age of exploration**: silk in
-  from the east, spice through the southern entrepot, gold caravans from
+  from the east, spice through the southern entrepot, silver caravans from
   beyond the desert, the wool-cloth axis in the west. Higher technology is
   heaven, hell and magic, never a gunpowder tech line.
 - **Every country owes at least one standing fact of its own** (2026-08-22).
@@ -3678,10 +3678,10 @@ budget since 2026-07-13) and
   Capacity is checked **per head**: a bonded pair needs two free slots.
   The counterweight is already in the engine: more companions = XP ×2/N —
   capacity buys safety at leveling speed.
-- **Negotiation** (the PC's CHA only): quest/site gold lumps pay
-  **+10% per CHA point above 3, capped at +30%** (`cha_gold_bonus`, applied
-  in `award_quest`). **Gold only, never XP** — a compounding XP bonus would
-  make CHA the best stat in the game; as gold it's an economy stat.
+- **Negotiation** (the PC's CHA only): quest/site silver lumps pay
+  **+10% per CHA point above 3, capped at +30%** (`cha_silver_bonus`, applied
+  in `award_quest`). **Silver only, never XP** — a compounding XP bonus would
+  make CHA the best stat in the game; as silver it's an economy stat.
 
 Companions roll CHA too (it shows on their sheet) but it does nothing yet
 — hooks for later.
@@ -3719,7 +3719,7 @@ guarantees replace the pick's safety valves:
 random companion at the PC's own level is generated WITH the PC and
 presented as having been **at his side for years** — nobody "joins" in
 the first scene. Hire's normal terms otherwise (satisfaction 7, joining
-gold to the purse, bond-linked to the PC, **traits included** — his is
+silver to the purse, bond-linked to the PC, **traits included** — his is
 the layer traits are for). The game starts PLAYABLE — a duo walks
 straight out the gate — while recruiting still fills the remaining slots.
 
@@ -3755,7 +3755,7 @@ autogenerated history, not a bonus:
   those on the school). A level-18 wizard who knows exactly one spell is
   not what that band looks like from the inside.
 - **The purse**: a fifth of what the jobs on the way up would have paid
-  (`quest_gold` at the career pace of ~2 quests a level). A played party
+  (`quest_silver` at the career pace of ~2 quests a level). A played party
   has spent most of what it earned; this is testing convenience, not
   economy fidelity.
 - **Hell's ledger** is stamped as though it had been collecting all
@@ -3828,9 +3828,9 @@ doorstep, not a railroad.
   - **armored** (dress) — +1 defense pressure (`Entity.def_bonus`).
     Deliberately minor: armor-the-system stays a roadmap item, and the
     designer wants armor unimportant enough that looks stay varied.
-  - **wealthy** (+25g) / **luxurious** (+10g) — joining gift to the purse.
+  - **wealthy** (+25s) / **luxurious** (+10s) — joining gift to the purse.
   - **big** / **short** — +1 STR floor / −1 STR ceiling at creation.
-  - **needs meds** — a dose every 10 days (20g, **capitals only**, `buy
+  - **needs meds** — a dose every 10 days (20s, **capitals only**, `buy
     HERO meds`) or satisfaction drains 1/night until dosed.
   - **patriotic / religious / interests** — downtime targeting (below).
   - **has a child / has an enemy** (quirks) — generated inline as a name
@@ -3840,7 +3840,7 @@ doorstep, not a railroad.
   (`rpg.develop_hero`, the same curve `bench_bestiary`'s duo calibrates
   with): points spent monotonically (pools to the old curve → training 3
   → proficiency → training cap), quality steel from L4 **suited to the
-  frame** (STR→zweihander, DEX→rapier, balanced→katana, casters keep the
+  frame** (STR→zweihander, DEX→rapier, balanced→schweizersäbel, casters keep the
   staff). Points arrive mostly **pre-spent** — choosing between candidates
   IS the customization — with a few banked for the player to allocate.
 
@@ -4023,7 +4023,7 @@ moment of taking a job, and it lives entirely in the play surface
 **2. Heat is the difficulty throttle the player pumps.** The standing
 problem it answers: "part of the game would be trying to gain power to
 do quests above your level." Instead of reading a board for a bigger
-number, the player *runs hot*: dark work pays a gold premium and bad
+number, the player *runs hot*: dark work pays a silver premium and bad
 karma; sin sets HEAT; heat sends retribution **at party level +
 heat**. Difficulty selection by consequence.
 
@@ -4090,8 +4090,8 @@ stays flat and concrete.
   the quest system with the board; they survive in `karma.CRIME_FODDER`
   as authored scene material for those actions, and nothing rolls from
   them.
-- **Crime pays, in gold**: a dark quest's gold is ×`DARK_GOLD_MULT`
-  (1.5). This is a **deliberate small breach of the "gold buys staying
+- **Crime pays, in silver**: a dark quest's silver is ×`DARK_SILVER_MULT`
+  (1.5). This is a **deliberate small breach of the "silver buys staying
   power" spine**: the premium is the temptation, and the XP-as-liability
   is the price tag. (The full greed economy — luxury display as a karma
   engine — is roadmap.)
@@ -4183,7 +4183,7 @@ hell is a fully supported campaign — the mechanics below only price it.
   to 10 × 3 ≈ 1.6/level, a third of a campaign spent on a layer the
   player opted out of. Hell quests are a HOOK into dark play, not the
   game.
-- **Bribes.** `bribe` pays `BRIBE_GOLD_PER_LEVEL` (30) × party level
+- **Bribes.** `bribe` pays `BRIBE_SILVER_PER_LEVEL` (30) × party level
   for `BRIBE_DAYS` (10) of no new assignments and no enforcement. An
   open assignment survives the bribe; its grace runs fresh from the
   bribe's end, Past Due resets (warning and all), and a taken job's
@@ -4228,7 +4228,7 @@ fire identically however a site ends.
 
 ### Balance stance (designer directive, 2026-07-19)
 
-**XP/gold balance is deliberately abandoned for the dark layer for
+**XP/silver balance is deliberately abandoned for the dark layer for
 now** — a good variety of quests does the game more good than tuned
 numbers. Every pact constant is hand-set and sim-unverified (no sim
 sees the pact, the capers, or the mercy — all play-surface); the
@@ -4340,7 +4340,7 @@ decision is the game.
 ## Three shapes
 
 - **Petty** — a trivial check or none at all, and **never a fight**. Flat
-  sin (`PETTY_SIN`, 10–15) quoted as XP, coin in pennies (`PETTY_GOLD`);
+  sin (`PETTY_SIN`, 10–15) quoted as XP, coin in pennies (`PETTY_SILVER`);
   the mark's level buys it nothing, which is exactly why petty crime is a
   dead end. A miss is simply a miss: no take, no sin, no ledger stamp.
   The token roster the fiction may want — the pup's mother, the indignant
@@ -4371,7 +4371,7 @@ lost fight pays nothing, and so does a retreat.
 - The crime **lump** is `CRIME_XP_PER_LEVEL` (50) × the mark's level ×
   the category's multiplier — about **half an at-level quest**, because a
   crime is one scene and not an expedition. Every point of it is sin.
-- **Coin** crimes pay `CRIME_GOLD_PER_LEVEL` (20) × mark level × the same
+- **Coin** crimes pay `CRIME_SILVER_PER_LEVEL` (20) × mark level × the same
   multiplier. **Goods** crimes (jewels, relics, cattle, a wagon's
   freight) pay what the FENCE gives, `FENCE_RATE` 0.5 — the gap between
   the two is the reason coin crimes exist. The fence takes its half out
@@ -4385,7 +4385,7 @@ Every commission day-stamps its category. Stamps still inside
 `MONOTONY_MULTS` — (1.0, 1.0, 0.5, 0.25) by how many are already in the
 window, floor 0.25.
 
-- **Gold never depreciates.** The loot is the loot; it is hell that gets
+- **Silver never depreciates.** The loot is the loot; it is hell that gets
   bored.
 - **It is temporary by construction.** The stamps age out — nothing has
   to be reset, and nothing is remembered forever.
@@ -4437,8 +4437,8 @@ brutalized ones.
 
 ## The knobs, and what to watch
 
-All hand-set (`crime.py`): `CRIME_XP_PER_LEVEL` 50, `CRIME_GOLD_PER_LEVEL`
-20, `FENCE_RATE` 0.5, `PETTY_SIN` (10, 15), `PETTY_GOLD` (1, 5),
+All hand-set (`crime.py`): `CRIME_XP_PER_LEVEL` 50, `CRIME_SILVER_PER_LEVEL`
+20, `FENCE_RATE` 0.5, `PETTY_SIN` (10, 15), `PETTY_SILVER` (1, 5),
 `MONOTONY_WINDOW` 10, `MONOTONY_MULTS` (1.0, 1.0, 0.5, 0.25),
 `FIRST_TIME_MULT` 1.5, `CRIME_UNLOCK_STEP` 200, `WITNESS_SIN` 15; plus
 `karma.NEWS_DAYS` 6.
@@ -4461,7 +4461,7 @@ Two things to judge from play:
 The dark side's `prices` page, and the player's whole crime surface in
 one screen. It reads the **band**, not one rolled mark: every category
 available where the party stands, grouped by shape, each row quoting
-what its mark band is worth (gold, sin/XP with the current multiplier
+what its mark band is worth (silver, sin/XP with the current multiplier
 already applied), the check it asks for, and its authored
 what-stands-in-the-way line. Then the party's tally of sin, the meter,
 and hell's current suggestions.
@@ -4469,7 +4469,7 @@ and hell's current suggestions.
 `case KEY` stays the exact read (today's rolled mark, its level and its
 roster); `crimes` answers "what is worth doing here" without
 twenty-seven casings. A pure readout — no save touched, every number off
-`crime.py`'s live knobs. Petty rows quote `PETTY_GOLD` / `PETTY_SIN`
+`crime.py`'s live knobs. Petty rows quote `PETTY_SILVER` / `PETTY_SIN`
 straight, because petty is flat by construction; everything else is a
 clean function of the mark's level, so the band's ends ARE the span.
 
@@ -4567,8 +4567,8 @@ not a holding, pays the party nothing, and takes nothing from it.
   garrison in person; armies are NUMBERS around that fight, never rosters
   in it. The engine only ever simulates the party's own melee.
 - **Holding costs levies, not heroes.** Recruits are freely rehired, so a
-  garrison is an army resource: one integer per holding, bought with gold.
-  This is gold's first standing job before L15.
+  garrison is an army resource: one integer per holding, bought with silver.
+  This is silver's first standing job before L15.
 - **Conquest is dark work, priced by the machinery that exists.** Its XP
   is sin, and the flag itself keeps a HEAT FLOOR up — holding land
   is standing wickedness. The strategy opponent is the heat layer the
@@ -4589,7 +4589,7 @@ board** — it exists because the player declared it, and is taken by id
 (`take QID`, at the settlement).
 
 Winning the last room flips the tag: `*** NAME IS YOURS ***`. The quest's
-gold is the keep's strongbox (10 days of the settlement's tribute, with
+silver is the keep's strongbox (10 days of the settlement's tribute, with
 the dark premium on the turn-in); its XP is all sin.
 
 ## Holding
@@ -4597,13 +4597,13 @@ the dark premium on the turn-in); its XP is all sin.
 Each holding is a record in the save (`holdings`): garrison heads, the
 tribute meter, the raid clock.
 
-- **Tribute** accrues per held day (hamlet 1g / village 3g / town 8g /
-  city-grade 20g — the hamlet's is the village's HALVED, because a hundred
+- **Tribute** accrues per held day (hamlet 1s / village 3s / town 8s /
+  city-grade 20s — the hamlet's is the village's HALVED, because a hundred
   souls are barely worth holding)
   and is collected automatically when the party stands in ANY holding —
   the stewards bring every chest to the flag. A holding that falls loses
   its uncollected tribute.
-- **Levies**: `garrison N`, at the holding, buys N heads at 5g each,
+- **Levies**: `garrison N`, at the holding, buys N heads at 5s each,
   capped by the settlement (hamlet and village 12 / town 24 / city-grade
   48). A FULL garrison always repels the worst raid its tier rolls.
 - **Raids**: the crown's counterstroke, rolled lazily over elapsed days at
@@ -4660,7 +4660,7 @@ the pre-weapons-layer world).
 ## The severity-point (sp) — the design currency
 
 The shipped quality four already encoded the exchange rate: they are
-bench-verified equal ("suited, not ranked"), and setting rapier = katana =
+bench-verified equal ("suited, not ranked"), and setting rapier = schweizersäbel =
 zweihander solves to **+1 attack pressure = 2 sp, +1 defense pressure =
 2 sp, +1 severity = 1 sp** — all four chassis land at exactly **3 sp** (the
 staff closes with its focus at 2 sp per +1 max Power). The full table
@@ -4669,8 +4669,8 @@ staff closes with its focus at 2 sp per +1 max Power). The full table
 | Advantage | sp | Note |
 |-----------|----|------|
 | +1 severity | 1 | the base unit |
-| +1 attack pressure | 2 | proven by rapier = katana |
-| +1 defense pressure | 2 | proven by katana = zweihander |
+| +1 attack pressure | 2 | proven by rapier = schweizersäbel |
+| +1 defense pressure | 2 | proven by schweizersäbel = zweihander |
 | +1 max Power | 2 | the staff's focus rate |
 | +1 max STA | 1 | the cheap pool axis |
 | +2 max HP | 1 | bought in pairs |
@@ -4679,14 +4679,14 @@ staff closes with its focus at 2 sp per +1 max Power). The full table
 | rider: burn / bleed | 1 | priced off the pyromancer's measured shift |
 | rider: poison / rime | 2 | untimed venom follows you out; enemy-DEX is dear |
 | the lunge quirk | 1 | once per fight |
-| gold / karma on kill | 0 | economy and story, never combat power |
+| silver / karma on kill | 0 | economy and story, never combat power |
 
 Melee steel only: a ranged card's severity flat replaces STR entirely
 (the Ranged Combat add-on), so the cards sit off this scale on purpose.
 
 ## The ladder (about ten rungs, not twenty)
 
-| Rung | Tier | sp | Acquired | Gold |
+| Rung | Tier | sp | Acquired | Silver |
 |------|------|----|----------|------|
 | 1 | Trash (club, knife, sling) | −1 | **chargen** (the 2026-07-28 deal) | 1–2 g |
 | 2 | Soldier's arms | 0 | looted from humanoids | 5–8 g |
@@ -4700,16 +4700,16 @@ Melee steel only: a ranged card's severity flat replaces STR entirely
 **The mythic cap is the transcendence doctrine's half:** the player can by
 design double a stat (natural 6 → heroic 12), and HALF of that may come
 from the weapon — +3 effective points on its signature axis, never more.
-The gold curve is **superlinear** (roughly doubling per sp above quality,
-`value_for_sp`): career gold is ~thousands, and a linear price would sell
-mythic steel for lunch money — and let gold buy DEX-axis power at HP-axis
+The silver curve is **superlinear** (roughly doubling per sp above quality,
+`value_for_sp`): career silver is ~thousands, and a linear price would sell
+mythic steel for lunch money — and let silver buy DEX-axis power at HP-axis
 rates. **There is no all-stats artifact** (designer call, 2026-07-28): the
 maximal weapon exists only as the yardstick that defines the budget.
 
 ## The profile rule (how generated weapons stay legible)
 
 A generated weapon is a quality CHASSIS plus a budget: **at least
-two-thirds of the budget on the chassis's signature axis** (rapier/katana →
+two-thirds of the budget on the chassis's signature axis** (rapier/schweizersäbel →
 the DEX axis, zweihander → the STR axis, staff → the Power axis), **at most
 one condition rider, at most one quirk**, per-axis caps (+3 DEX/STR at the
 very top). It reads as "a rapier, but more so, with one twist" — never a
@@ -4726,7 +4726,7 @@ generated weapon re-prices to exactly its tier's sp.
   reaches gap 1 — the flying lunge closes the distance and strikes in one
   motion (it also holds ground in the movement phase, like any threat).
   Once per fight; cleared with the per-fight states.
-- **On-kill quirks** (`gold_on_kill` / `karma_on_kill`): the engine only
+- **On-kill quirks** (`silver_on_kill` / `karma_on_kill`): the engine only
   counts (capped at `MIDAS_FIGHT_CAP` kills a fight — a swarm room is not
   a mint); the session drains the counters at the fight's end into the
   purse and the karma ledger.
@@ -4734,7 +4734,7 @@ generated weapon re-prices to exactly its tier's sp.
   steel: applied and removed by `equip_weapon`, symmetric by contract, and
   an unequip never kills (the HP floor is 1).
 - **Proficiency follows the chassis** (`prof_name`: `Weapon.base`): a
-  masterwork or named magic katana counts as a katana in a drilled hand —
+  masterwork or named magic schweizersäbel counts as a schweizersäbel in a drilled hand —
   the reward never costs the ranks — and draws the chassis's special moves
   (iaido). A bare `give --as` reskin has no base: the old
   proficiency-follows-the-name doctrine still holds for costumes.
@@ -4757,9 +4757,9 @@ generated weapon re-prices to exactly its tier's sp.
   refuse to work**. A commission (`commission SMITH HERO [CHASSIS]`) costs
   the open value plus a pride premium (`COMMISSION_MULT` 1.5) and takes
   sp − 3 forging days (narrated; the profile that comes off the anvil is
-  the smith's art, not a menu). This is the one way gold buys magic steel.
+  the smith's art, not a menu). This is the one way silver buys magic steel.
 - **Weapon-reward quests** (`quests.WEAPON_REWARD_CHANCE`, 15% of
-  postings): the job's turn-in **gold lump is replaced by a weapon** of
+  postings): the job's turn-in **silver lump is replaced by a weapon** of
   the level's grade (quality ≤L4, masterwork L5–9, magic L10–16, legendary
   L17+) — XP and the per-encounter shares untouched, the board row says
   `pays a masterwork rapier`, and the turn-in banks it for `claim HERO`.
@@ -4863,7 +4863,7 @@ TARGET wears while it does.
 | Thule | timber | Seraptania | the harbors ice-locked, wildfire, burn | no northern timber |
 | Byzantium | Lombard coin | Seraptania | worthless paper, mad shares | the banks stop lending |
 | Byzantium | the southern road | Teutonia | salt revolt, a ruined quarter | the road brings nothing |
-| Umaia | the gold caravans | Andalusia | a bandit king, salt revolt | the road brings nothing |
+| Umaia | the silver caravans | Andalusia | a bandit king, salt revolt | the road brings nothing |
 | Tergal | horses | Vellisclavia | herd loss, the grass gone | remounts are dear |
 | Andalusia | horses | Seraptania | a bandit king, the faith outlawed | remounts are dear |
 | Tergal | livestock | Byzantium | herd loss, the grass gone | hides and wool are short |
@@ -5138,7 +5138,7 @@ expensive, never absurd, and a price never goes to nothing:
 
 **The road takes its own.** A leg through a land whose terms put the toll
 UP — whatever raised it: the toll squeeze, the tax farmer, a free company
-on the bridges — or through a washed-out ford is charged in gold before it
+on the bridges — or through a washed-out ford is charged in silver before it
 is walked (small on purpose — the fords cost a *day*, and days are the
 expensive currency). A purse that cannot pay walks anyway and owes
 nothing: the bridge is not a wall.
