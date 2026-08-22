@@ -331,13 +331,14 @@ class TheForcedFamilies(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 
 class TheRumorRadius(unittest.TestCase):
-    """Seed 21 opens at Aston, with Dublin two days off carrying nothing
-    and London three off carrying work: one populated group and one empty
-    one, which is the pair the readout has to tell apart. (Re-pinned
-    2026-08-21 from seed 19 -- the rolled census moved the board.)"""
+    """Seed 222 opens at Bramwell, with Dublin two days off carrying
+    nothing and London three off carrying work: one populated group and one
+    empty one, which is the pair the readout has to tell apart. (Re-pinned
+    2026-08-22 from seed 21 -- Uppsala and the Iberia split moved the
+    start draw; before that from seed 19.)"""
 
     def setUp(self) -> None:
-        self.world = _world(21)
+        self.world = _world(222)
         self.here = self.world["areas"][self.world["start_area"]]
 
     def test_the_seed_stands_where_this_class_thinks_it_does(self) -> None:
@@ -429,7 +430,7 @@ class TheRumorRadius(unittest.TestCase):
         self.assertNotIn("HERE", text)
 
     def test_the_single_day_group_says_day_not_days(self) -> None:
-        world = _world(18)      # Tomton, with Prague one day's road off
+        world = _world(5)       # Weidhof, with Prague one day's road off
         here = world["areas"][world["start_area"]]
         lines = quests.rumor_lines(
             world, quests.nearby_settlements(world, here["tile"]), 2)

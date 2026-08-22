@@ -229,7 +229,7 @@ class TheCensus(unittest.TestCase):
                     if slot["capital"]}
         self.assertEqual(capitals,
                          {"London", "Paris", "Prague", "Stockholm",
-                          "Moscow", "Constantinople", "Cordoba", "Cairo",
+                          "Moscow", "Constantinople", "Toledo", "Cairo",
                           "Kyiv"})
 
     def test_the_mine_towns_are_seated_by_name(self) -> None:

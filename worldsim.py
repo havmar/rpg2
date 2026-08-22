@@ -4743,11 +4743,13 @@ WARS_ROLLED = 3                 # how many of the six a world gets. No
                                 # exclusion rules: any three coexist, which
                                 # is what the age actually looked like.
 
-# Andalusia's vassalage, a d3 at worldgen (the arc's frame): 1 Byzantium's
-# vassal, 2 Umaia's, 3 independent. It is read by `politics_lines`, by
-# `places.land_label` on the map legend, and by the Reconquista template --
-# a vassal does not make war on its own liege.
-VASSALAGE = ("byzantium", "umaia", None)
+# Andalusia's vassalage, a d2 at worldgen (re-cut 2026-08-22: the
+# peninsula's north is its own crown of the Sun rite and never Umaia's
+# man): 1 Byzantium's vassal, 2 independent. An independent Andalusia is
+# Byzantium's ALLY still -- the Reconquista marches either way, and the
+# roll only decides whether the map legend prints a liege. Read by
+# `politics_lines` and by `places.land_label`.
+VASSALAGE = ("byzantium", None)
 
 CRUSADERS = ("byzantium", "seraptania", "teutonia", "phyrascia")
 
@@ -4792,18 +4794,17 @@ WAR_TEMPLATES = (
     },
     {
         "key": "reconquista", "name": "THE RECONQUISTA", "posture": "invasion",
+        # The march to retake the peninsula's south, which Umaia holds
+        # (2026-08-22, the Iberia split): Andalusia rides -- Byzantium's
+        # vassal or its ally, the d2 decides only the paperwork -- and
+        # Byzantine ships close the strait behind it.
         "attackers": ("andalusia", "byzantium"), "defenders": ("umaia",),
-        "herald": "Andalusia has called the march. Its knights are "
-                  "crossing to the Umaian coast, and Byzantine ships are "
-                  "behind them.",
-        # ...unless Andalusia is Umaia's vassal, in which case it fights
-        # for its liege and Byzantium comes alone.
-        "vassal_herald": "Byzantium has called the march on the Umaian "
-                         "coast. Andalusia rides for its liege, against "
-                         "the fleet.",
-        # south Iberia and the west Maghreb coast
-        "theater": ((14, 5), (15, 3), (15, 4), (15, 5), (16, 7), (16, 8),
-                    (16, 9), (17, 6), (17, 7), (17, 8)),
+        "herald": "Andalusia has called the march on the lost south. Its "
+                  "knights are riding for Qurtuba, and Byzantine ships "
+                  "are closing the strait behind them.",
+        # Umaia's al-Andalus, and the strait's far shore
+        "theater": ((14, 2), (14, 3), (14, 4), (14, 5), (14, 6), (15, 3),
+                    (15, 4), (15, 5), (16, 7), (16, 8)),
     },
     {
         "key": "eastern-war", "name": "THE EASTERN WAR", "posture": "invasion",
@@ -4818,38 +4819,28 @@ WAR_TEMPLATES = (
 WAR_TEMPLATES_BY_KEY = {spec["key"]: spec for spec in WAR_TEMPLATES}
 
 
-def _belligerents(spec: dict, world: dict,
+def _belligerents(spec: dict,
                   rng: random.Random) -> tuple[tuple[str, ...],
                                                tuple[str, ...]]:
-    """Who is actually in this war, this campaign. Two templates are not
+    """Who is actually in this war, this campaign. One template is not
     fixed: the CRUSADE draws 1-3 of the four crowns that could take the
-    cross, and the RECONQUISTA reads Andalusia's rolled liege -- a vassal
-    fights on its liege's side, so Umaia's vassal makes Byzantium come
-    alone and stands with Umaia itself."""
+    cross. (The Reconquista stopped reading the vassalage when the Iberia
+    split retired Umaia as a possible liege, 2026-08-22: Andalusia rides
+    with Byzantium behind it whatever the d2 said.)"""
     attackers, defenders = spec["attackers"], spec["defenders"]
     draw = spec.get("attacker_draw")
     if draw is not None:
         n = rng.randint(*draw)
         attackers = tuple(sorted(rng.sample(list(attackers), n),
                                  key=attackers.index))
-    if spec["key"] == "reconquista":
-        if world["lands"]["andalusia"]["liege"] == "umaia":
-            attackers, defenders = ("byzantium",), ("umaia", "andalusia")
     return tuple(attackers), tuple(defenders)
 
 
-def war_herald(spec: dict, attackers: tuple[str, ...]) -> str:
-    """The template's authored herald, in the version this roll produced."""
-    if spec["key"] == "reconquista" and "andalusia" not in attackers:
-        return spec["vassal_herald"]
-    return spec["herald"]
-
-
-def new_war(spec: dict, world: dict, rng: random.Random, day: int) -> dict:
+def new_war(spec: dict, rng: random.Random, day: int) -> dict:
     """One rolled war's record. `occupied` and `scars` are the campaign
     sim's ledgers (conquest.py) and open empty; `rolled_day` is its
     watermark, so catching a war up is living through it."""
-    attackers, defenders = _belligerents(spec, world, rng)
+    attackers, defenders = _belligerents(spec, rng)
     return {
         "key": spec["key"],
         "name": spec["name"],
@@ -4857,7 +4848,7 @@ def new_war(spec: dict, world: dict, rng: random.Random, day: int) -> dict:
         "defenders": list(defenders),
         "theater": [tile_id(row, column) for row, column in spec["theater"]],
         "posture": spec["posture"],
-        "herald": war_herald(spec, attackers),
+        "herald": spec["herald"],
         "rolled_day": day,
         "occupied": [],
         "scars": [],
@@ -4877,7 +4868,7 @@ def roll_wars(world: dict, day: int = 0) -> list[dict]:
         land["liege"] = None
     liege = VASSALAGE[rng.randint(1, len(VASSALAGE)) - 1]
     world["lands"]["andalusia"]["liege"] = liege
-    wars = [new_war(spec, world, rng, day)
+    wars = [new_war(spec, rng, day)
             for spec in rng.sample(list(WAR_TEMPLATES), WARS_ROLLED)]
     world["wars"] = wars
     for war in wars:

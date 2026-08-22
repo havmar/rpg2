@@ -266,8 +266,8 @@ PINNED_COUNTRY_BIOMES = {
     "thule": {"basic": 30, "mountain": 7, "river": 0},
     "vellisclavia": {"basic": 58, "mountain": 2, "river": 0},
     "byzantium": {"basic": 37, "mountain": 5, "river": 9},
-    "andalusia": {"basic": 14, "mountain": 3, "river": 0},
-    "umaia": {"basic": 58, "mountain": 2, "river": 0},
+    "andalusia": {"basic": 6, "mountain": 3, "river": 0},
+    "umaia": {"basic": 66, "mountain": 2, "river": 0},
     "tergal": {"basic": 17, "mountain": 4, "river": 4},
 }
 # ...and what the census law makes of the same nine bundles. The BAND is
@@ -287,10 +287,10 @@ PINNED_COUNTRY_BANDS = {
                      "high": 14, "dense": 0},
     "byzantium": {"wilderness": 1, "thin": 5, "low": 4, "mid": 21,
                   "high": 10, "dense": 10},
-    "andalusia": {"wilderness": 1, "thin": 2, "low": 4, "mid": 6,
-                  "high": 4, "dense": 0},
-    "umaia": {"wilderness": 17, "thin": 3, "low": 0, "mid": 9,
-              "high": 27, "dense": 4},
+    "andalusia": {"wilderness": 1, "thin": 2, "low": 1, "mid": 3,
+                  "high": 2, "dense": 0},
+    "umaia": {"wilderness": 17, "thin": 3, "low": 3, "mid": 12,
+              "high": 29, "dense": 4},
     "tergal": {"wilderness": 3, "thin": 3, "low": 8, "mid": 9,
                "high": 2, "dense": 0},
 }
@@ -324,12 +324,14 @@ HISTORICAL_CITIES = (
     (9, 10, "Paris", "seraptania", "basic", True),
     (9, 18, "Prague", "teutonia", "basic", True),
     (3, 23, "Stockholm", "thule", "basic", True),
+    (2, 23, "Uppsala", "thule", "basic", False),
     (7, 28, "Moscow", "vellisclavia", "basic", True),
     (8, 22, "Warsaw", "vellisclavia", "basic", False),
     (10, 27, "Kyiv", "tergal", "river", True),
     (13, 3, "Lisbon", "andalusia", "basic", False),
+    (13, 4, "Toledo", "andalusia", "basic", True),
     (13, 7, "Madrid", "andalusia", "basic", False),
-    (14, 4, "Cordoba", "andalusia", "basic", True),
+    (14, 4, "Qurtuba", "umaia", "basic", False),
     (12, 14, "Venice", "byzantium", "basic", False),
     (14, 14, "Rome", "byzantium", "basic", False),
     (14, 19, "Athens", "byzantium", "basic", False),
@@ -520,8 +522,9 @@ HISTORICAL_TIERS = {
     "Constantinople": "metropolis", "Cairo": "metropolis",
     "London": "city", "Amsterdam": "city", "Prague": "city",
     "Moscow": "city", "Kyiv": "city", "Lisbon": "city", "Rome": "city",
-    "Carthage": "city", "Cordoba": "city",
-    "Dublin": "town", "Stockholm": "town", "Warsaw": "town",
+    "Carthage": "city", "Qurtuba": "city", "Toledo": "city",
+    "Dublin": "town", "Stockholm": "town", "Uppsala": "town",
+    "Warsaw": "town",
     "Madrid": "town", "Athens": "town", "Jerusalem": "town",
 }
 # THE MINES, authored, few and famous (round 4's table, landing here as data
@@ -616,11 +619,13 @@ TILE_TOWN_NAMES = {
     (15, 12): "Palermo", (15, 13): "Salerno", (15, 14): "Naples",
     (15, 23): "Smyrna", (15, 24): "Rhodes", (15, 25): "Attalia",
     (15, 26): "Tarsus", (15, 27): "Iconium",
-    # Andalusia -- Iberia
-    (13, 2): "Porto", (13, 4): "Toledo", (13, 8): "Barcelona",
-    (14, 2): "Sevilla", (14, 6): "Valencia",
-    (15, 3): "Cadiz", (15, 4): "Malaga", (15, 5): "Granada",
-    # Umaia -- the Levant, the Maghreb and the Nile
+    # Andalusia -- northern Iberia (Toledo, its seat, is a historical
+    # city; the peninsula's south is Umaia's al-Andalus since 2026-08-22)
+    (13, 2): "Porto", (13, 8): "Barcelona",
+    # Umaia -- al-Andalus (the peninsula's south, wearing its Umaian
+    # names), the Levant, the Maghreb and the Nile
+    (14, 2): "Ishbiliya", (14, 6): "Balansiya",
+    (15, 3): "Qadis", (15, 4): "Malaqa", (15, 5): "Gharnata",
     (15, 28): "Aleppo", (15, 29): "Damascus", (15, 30): "Palmyra",
     (16, 7): "Tangier", (16, 8): "Fez", (16, 9): "Oran",
     (17, 2): "Rabat", (17, 3): "Marrakesh", (17, 6): "Tlemcen",
@@ -897,31 +902,36 @@ BOARD_ACTIVE_CHANCE = {"capital": 1.00, "metropolis": 1.00,
 # no generated one, and all four authored ones are named.
 #
 # The HAMLET pools take a humbler sound than the villages above them --
-# Phyrascia's small endings (-cot, -stead, -hay, -garth), Byzantium's
-# diminutives, Tergal's short camp words. A hamlet is under a hundred souls
+# Phyrascia's small endings (-cot, -stead, -hay, -croft), Byzantium's
+# Latin diminutives, Tergal's short camp words. A hamlet is under a hundred souls
 # and its name should not sound like a market.
 #
 # ONE POOL PER COUNTRY, not per culture (2026-08-21, the nine): a name is
 # the most country-shaped thing in the game, and Seraptania and Teutonia
-# share a culture's card deck without sharing a syllable. Phyrascia keeps
-# the old Firascir pools whole and Byzantium the old Mortellarian ones; the
-# other six are authored here. These are invented sounds, not claims about
-# any real language (writing.md).
+# share a culture's card deck without sharing a syllable. The nine pools
+# are all authored here: the 2026-08-22 naming pass re-authored Phyrascia
+# in plain English/Anglo-Saxon compounds and Byzantium in Latin -- its own
+# tongue -- replacing the old Firascir and Mortellarian hand-me-downs the
+# 2026-08-21 session had kept. These are invented sounds in each country's
+# register, not claims about any real place (writing.md).
 SETTLEMENT_NAMES = {
+    # Phyrascia's pools are plain English -- Anglo-Saxon compounds built
+    # from real roots (ash, thorn, mere, worth, den, hurst), not the old
+    # Firascir syllables (Stur-, Ack-, Flur-).
     "phyrascia": {
-        "city": ("Kingsmarch", "Highwater", "Greatbourne", "Stonegate",
-                 "Crownford"),
-        "town": ("Tomburgh", "Leehaven", "Walhaven", "Bradwhitchip",
-                 "Redflurton"),
-        "village": ("Sturford", "Ackham", "Flurham", "Sturham",
-                    "Sturworth", "Newton", "Midton", "Aston", "Tomton",
-                    "Walham", "Coldcot", "Thornley", "Blackton",
-                    "Astmoor", "Ackbridge", "Ackton", "Mickleham",
-                    "Shepham", "Coldbridge", "Thornham", "Bradmoor",
-                    "Leeworth", "Shepton", "Blackford"),
-        "hamlet": ("Ackcot", "Sturend", "Thornhay", "Walcroft",
-                   "Oldstead", "Mickleshaw", "Redgarth", "Flurend",
-                   "Blackhay", "Shepcot"),
+        "city": ("Kingsmarch", "Aldminster", "Stanbury", "Whitchester",
+                 "Hartminster"),
+        "town": ("Osbridge", "Wulford", "Redmarket", "Thornwick",
+                 "Ashburgh", "Maplebourne"),
+        "village": ("Ashenden", "Bramwell", "Cranmere", "Dunholt",
+                    "Elderwick", "Foxcombe", "Grimsworth", "Harrowfield",
+                    "Ivybourne", "Kettleworth", "Longmead", "Merefield",
+                    "Netherstow", "Oxmead", "Puddleworth", "Quernden",
+                    "Rushbrook", "Swanfield", "Thistleworth", "Upfield",
+                    "Wolfenden", "Yarrowham", "Birchden", "Coldharrow"),
+        "hamlet": ("Aldercot", "Brackenhay", "Cowstead", "Duncroft",
+                   "Elmsend", "Gorsecroft", "Hazelcot", "Millstead",
+                   "Thornend", "Wychhay"),
     },
     "seraptania": {
         "city": ("Charmont", "Beauregarde", "Valcourt", "Roquefaille"),
@@ -995,19 +1005,24 @@ SETTLEMENT_NAMES = {
                    "Marj Sagir", "Qubba", "Ras Tin", "Sabkha", "Tell Rih",
                    "Zaytun"),
     },
+    # Byzantium speaks Latin (the catalog's own word), so its settlements
+    # are named in it: -um and -ia for the great seats, -anum and -etum
+    # for the estate and orchard villages, and true Latin diminutives for
+    # the hamlets.
     "byzantium": {
-        "city": ("Aurelia", "Corvenza", "Palamare", "Serravalle",
-                 "Tarenna"),
-        "town": ("Castavera", "Portomera", "Belafonte", "Montaro"),
-        "village": ("Alavera", "Beloro", "Calavento", "Doramonte",
-                    "Fontela", "Lunaro", "Maravento", "Oliveta",
-                    "Rosavera", "Sanoro", "Solavela", "Toralba",
-                    "Valesero", "Ventoro", "Vilaro", "Aldovera",
-                    "Cantoro", "Meravela", "Pontela", "Serovento",
-                    "Valoro"),
-        "hamlet": ("Casella", "Pozzino", "Fontina", "Solino", "Vallino",
-                   "Roqueta", "Olivella", "Beloreta", "Sanino",
-                   "Ventina"),
+        "city": ("Aurelianum", "Severiana", "Marcellium", "Aquilium",
+                 "Petrapolis"),
+        "town": ("Castranova", "Portus Albus", "Turris Aurea", "Fontanum",
+                 "Salinum", "Vicus Magnus"),
+        "village": ("Cassianum", "Fabianum", "Petranum", "Valerianum",
+                    "Gordianum", "Olivetum", "Pinetum", "Quercetum",
+                    "Salicetum", "Vinetum", "Fontanetum", "Lauretum",
+                    "Cerasetum", "Nucetum", "Aquaviva", "Altaripa",
+                    "Ripalonga", "Silvanum", "Marmoreta", "Calcaria",
+                    "Figlinae", "Pratanum", "Vadanum", "Insulanum"),
+        "hamlet": ("Viculus", "Casulae", "Fonticulum", "Hortulus",
+                   "Pratulum", "Turricula", "Silvula", "Fornacula",
+                   "Pontulus", "Salinula"),
     },
     "tergal": {
         "city": ("Altan-Ordu", "Sarugan", "Khorgat", "Bayan-Tal",
@@ -1796,7 +1811,7 @@ def _validate_fixed_data(rows: tuple[str, ...]) -> None:
     capitals = {name for _r, _c, name, _p, _b, cap in HISTORICAL_CITIES
                 if cap}
     if capitals != {"London", "Paris", "Prague", "Stockholm", "Moscow",
-                    "Constantinople", "Cordoba", "Cairo", "Kyiv"}:
+                    "Constantinople", "Toledo", "Cairo", "Kyiv"}:
         raise ValueError(f"historical capitals changed: {sorted(capitals)}")
     seated = {country for _r, _c, _n, country, _b, cap in HISTORICAL_CITIES
               if cap}

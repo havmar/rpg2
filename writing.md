@@ -273,12 +273,12 @@ invented sounds, not claims about any real language.** ASCII only.
 
 | country | place sound | example places | person sound | example people |
 |---|---|---|---|---|
-| Phyrascia | English compounds: -ham, -ton, -ford, -burgh, -haven; hamlets take -cot, -stead, -hay, -garth | Sturford, Ackham, Leehaven, Thornhay | short plain English-fantasy | Brand, Corvin, Mira, Inga |
+| Phyrascia | English/Anglo-Saxon compounds off real roots: -ham, -ford, -worth, -den, -mere, -minster; hamlets take -cot, -stead, -hay, -croft | Ashenden, Cranmere, Osbridge, Hazelcot | Anglo-Saxon and medieval English | Alfred, Godwin, Edith, Mildred |
 | Seraptania | French: Mont-, Val-, -ville, -court, -nay, -bois | Montclaire, Fontenoy, Gournay, Petitbois | French | Thierry, Amaury, Alienor, Blanche |
 | Teutonia | German compounds: -bach, -feld, -heim, -hof, -stein, -wald | Eberfeld, Grunbach, Dornhof, Steinkot | German | Konrad, Dietrich, Adelheid, Greta |
 | Vellisclavia | old Slavic: -grad, -ov, -ka, -no, Bere-, Dubr- | Novgrad, Chernov, Berezno, Dubki | old Slavic and Rus | Bogdan, Vsevolod, Ludmila, Milena |
 | Thule | old Norse: -vik, -fjord, -stad, -ness, -holm, -dal, -by | Eldvik, Kvalfjord, Arnavik, Naustby | old Norse | Orm, Ketil, Astrid, Sigrun |
-| Byzantium | southern and imperial: -era, -aro, -onte, -ella, -ino | Castavera, Montaro, Fontela, Casella | LATIN: the empire names its people in the church's tongue | Cassius, Aurelius, Livia, Claudia |
+| Byzantium | Latin, the empire's own tongue: -um, -ia, -anum for estates, -etum for orchards; hamlets take true diminutives -ulus, -ula | Castranova, Fontanum, Olivetum, Viculus | LATIN: the empire names its people in the church's tongue | Cassius, Aurelius, Livia, Claudia |
 | Andalusia | Spanish: Castel-, Monte-, Fuente-, -ares, -uelo | Castelmar, Monteclaro, Olivares, Pozuelo | Spanish | Alvaro, Rodrigo, Beatriz, Ines |
 | Umaia | Arabic construct pairs: Bir-, Wadi-, Ras-, Ain-, Dar-, Kefr-, Al- | Bir Hakla, Ain Zafra, Dar Aziza | Arabic | Harun, Yusuf, Zaynab, Layla |
 | Tergal | steppe and clan words, often hyphenated: -gal, -khar, -run, -tai | Ulus-Gal, Kharuk, Aradun, Ukhta | short, hard, guttural | Gruk, Marok, Baggi, Kansif |
@@ -287,7 +287,7 @@ Two things the table does not cover:
 
 - **The towns already have real names** (2026-08-22). Every tile that can
   seat a town or a city carries an authored one -- York, Rouen, Cologne,
-  Krakow, Novgorod, Milan, Naples, Thessalonica, Granada, Alexandria,
+  Krakow, Novgorod, Milan, Naples, Thessalonica, Gharnata, Alexandria,
   Damascus, Fez, Sarai, Kaffa and 150 more -- and the script prints it. The
   table is for what you invent BELOW that: villages, hamlets, farms, mills,
   inns, ruins and the people in them. Never rename a town the script named,

@@ -7007,13 +7007,13 @@
    "name": "Andalusia",
    "culture": "southern",
    "tongue": "Andalusian",
-   "description": "The southern peninsula: dry hills, watered valleys and walled cities. Its crown counts its silver twice and watches two larger neighbours."
+   "description": "The peninsula's north: dry hills, watered valleys and walled cities under the old rite. Its crown calls itself heir to the whole peninsula, leans on Byzantium, and looks south at the half Umaia holds."
   },
   "umaia": {
    "name": "Umaia",
    "culture": "southern",
    "tongue": "Umaian",
-   "description": "The southern and eastern shore: desert behind, a green stripe along the sea, and the great river's granary. Caravans come north out of it carrying gold and salt."
+   "description": "The southern and eastern shore, and the peninsula's south across the strait: desert behind, a green stripe along the sea, and the great river's granary. Caravans come north out of it carrying gold and salt."
   },
   "tergal": {
    "name": "Tergal",

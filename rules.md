@@ -2978,8 +2978,8 @@ whole of what a country is now:
 | Vellisclavia | Poland and the Rus | Vellisclav | western | Moscow |
 | Thule | Scandinavia | Norse | norse | Stockholm |
 | Byzantium | Italy, the Balkans, Anatolia | Latin | southern | Constantinople |
-| Andalusia | Iberia | Andalusian | southern | Cordoba |
-| Umaia | Africa and the Levant | Umaian | southern | Cairo |
+| Andalusia | northern Iberia | Andalusian | southern | Toledo |
+| Umaia | Africa, the Levant and southern Iberia | Umaian | southern | Cairo |
 | Tergal | the Pontic steppe | Tergal | steppe | Kyiv |
 
 - **A COUNTRY owns identity**: its tiles on the authored overlay, its
@@ -3145,7 +3145,9 @@ materialize lazily.
   AUTHORED, on the fourth overlay (`resources/europe_countries.txt`, one
   letter per land Tile). Their non-sea censuses are fixed at Phyrascia 13,
   Seraptania 23, Teutonia 28, Thule 37, Vellisclavia 60, Byzantium 51,
-  Andalusia 17, Umaia 60 and Tergal 25 Tiles. A SEA Tile takes the country
+  Andalusia 9, Umaia 68 and Tergal 25 Tiles (the Iberia split of
+  2026-08-22 moved the peninsula's southern eight from Andalusia to
+  Umaia). A SEA Tile takes the country
   of the nearest land Tile, ties settled north-then-west; nothing about
   the water is painted. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
@@ -3187,18 +3189,20 @@ materialize lazily.
   reserves are shuffled once per seed; deterministic numbered names
   continue after a reserve is exhausted.
   Measured over 500 seeds: about 618 settlements a world — 4 metropolis,
-  ~19 city, ~101 town, ~402 village, ~92 hamlet — 1.97 slots per land
+  ~20 city, ~102 town, ~402 village, ~91 hamlet — 1.97 slots per land
   Tile, and roughly 1.5M souls at the tier anchors below.
 - **The towns have REAL names** (2026-08-22, the medieval world arc's
   third build session). A Tile can only ever seat a town or a city in the
   mid, high and dense bands — **183 of the 314** land Tiles, and
   campaign-invariant, because the band reads only the ground and the
-  shoreline. Nineteen of those are already named by a historical city or
-  a mine; the other **164 carry an authored town name**
+  shoreline. Twenty of those are already named by a historical city or
+  a mine; the other **163 carry an authored town name**
   (`places.TILE_TOWN_NAMES`), a real historical town placed on a
   plausible Tile of the country that holds it — York, Rouen, Cologne,
-  Krakow, Novgorod, Milan, Naples, Thessalonica, Trebizond, Granada,
-  Alexandria, Damascus, Fez, Sarai, Kaffa and their kin. **The rule**:
+  Krakow, Novgorod, Milan, Naples, Thessalonica, Trebizond, Gharnata,
+  Alexandria, Damascus, Fez, Sarai, Kaffa and their kin. Umaia's
+  al-Andalus wears its own tongue's town names (Ishbiliya, Qadis,
+  Malaqa, Gharnata, Balansiya), not the reconquerors'. **The rule**:
   when a Tile's CHIEF slot materializes at town tier or better and
   carries no authored name, it takes the Tile's town name. A second town
   on the same Tile, and everything from village down, draws the country's
@@ -3213,7 +3217,7 @@ materialize lazily.
   thousands, `metropolis` a hundred thousand and more. The headcounts are
   fiction anchors for the DM and are never stored numbers; the words are.
   Paris, Venice, Constantinople and Cairo are the four metropolises; the
-  other fifteen historical cities are authored city or town. `capital`
+  other seventeen historical cities are authored city or town. `capital`
   remains an explicit FLAG — on the nine seats of the nine countries —
   rather than a tier, so a capital also has a tier of its own.
   Everything the game keys on a settlement tier carries all five words —
@@ -3445,13 +3449,14 @@ materialize lazily.
   legal word, every land Tile's harvest landing on the spoken scale, and
   every cause carrying its fiction name. An illegal
   world raises at creation rather than surfacing later inside a display.
-- **Historical cities.** Nineteen of them (2026-08-21): Dublin and London
-  in Phyrascia; Paris in Seraptania; Amsterdam and Prague in Teutonia;
-  Stockholm in Thule; Moscow and Warsaw in Vellisclavia; Kyiv in Tergal;
-  Venice, Rome, Athens and Constantinople in Byzantium; Lisbon, Madrid and
-  Cordoba in Andalusia; Carthage, Jerusalem and Cairo in Umaia. NINE carry
+- **Historical cities.** Twenty-one of them (2026-08-22): Dublin and
+  London in Phyrascia; Paris in Seraptania; Amsterdam and Prague in
+  Teutonia; Stockholm and Uppsala in Thule; Moscow and Warsaw in
+  Vellisclavia; Kyiv in Tergal; Venice, Rome, Athens and Constantinople in
+  Byzantium; Lisbon, Toledo and Madrid in Andalusia; Qurtuba, Carthage,
+  Jerusalem and Cairo in Umaia. NINE carry
   `capital: true` — one a country: London, Paris, Prague, Stockholm,
-  Moscow, Constantinople, Cordoba, Cairo and Kyiv. Capital is an explicit
+  Moscow, Constantinople, Toledo, Cairo and Kyiv. Capital is an explicit
   flag, not a settlement tier: each also carries its authored tier, so
   Paris is a capital AND a metropolis while Kyiv is a capital and a city.
   The four metropolises are Paris, Venice, Constantinople and Cairo.
@@ -5588,12 +5593,14 @@ deserters.
 At worldgen, after every land's world layer exists, on a stream of its own
 (so no other layer's numbers move):
 
-- **Andalusia's vassalage, on a d3**: Byzantium's vassal, Umaia's vassal,
-  or independent. It is stored as the land's `liege` (every other country
-  carries None) and it is read in three places — the DM's `world` page,
-  the map legend, and the Reconquista template. It has no other mechanical
-  effect: tribute, a pulled-in war and a court above the court are
-  undesigned.
+- **Andalusia's vassalage, on a d2** (re-cut 2026-08-22 with the Iberia
+  split; the old d3's "Umaia's vassal" face is gone — the crown of the
+  peninsula's north keeps the Sun rite and is never Umaia's man):
+  Byzantium's vassal, or independent — and an independent Andalusia is
+  still Byzantium's ally. It is stored as the land's `liege` (every other
+  country carries None) and it is read in two places — the DM's `world`
+  page and the map legend. It has no other mechanical effect: tribute, a
+  pulled-in war and a court above the court are undesigned.
 - **Three distinct templates of the six**, with no exclusion rules. Any
   three coexist, which is what the age actually looked like.
 
@@ -5611,7 +5618,7 @@ the world. A new game names the three wars in its opening print.
 | THE LONG WAR | Phyrascia -> Seraptania | Seraptania's north and west coast and Aquitaine | invasion |
 | THE HORDE RIDES WEST | Tergal -> Vellisclavia | the steppe frontier | invasion |
 | THE RAIDING SEASON | Thule -> Phyrascia and Seraptania | both coasts, the channel and the west | raiding |
-| THE RECONQUISTA | Andalusia backed by Byzantium -> Umaia | south Iberia and the west Maghreb coast | invasion |
+| THE RECONQUISTA | Andalusia backed by Byzantium -> Umaia | Umaia's al-Andalus and the strait's far shore | invasion |
 | THE EASTERN WAR | Umaia -> Byzantium | east Anatolia and the Levant border strip | invasion |
 
 A **theater** is an authored list of map cells, drawn by hand against the
@@ -5619,11 +5626,12 @@ four overlays, and every cell in it belongs to one of that war's own
 belligerents. No theater stands on a capital: a war marks the country, not
 the crown's seat.
 
-**The Reconquista reads the vassalage**, and it is the only place in this
-arc where the liege has teeth. Andalusia normally rides, with Byzantine
-ships behind it. If Andalusia is UMAIA's vassal it fights for its liege
-instead: Byzantium comes alone, Andalusia stands with Umaia, and the war
-opens on the template's other authored herald.
+**The Reconquista is the march to retake the peninsula's south**, which
+Umaia holds since the Iberia split (2026-08-22): Andalusia rides for
+Qurtuba with Byzantine ships closing the strait behind it, as Byzantium's
+vassal or as its ally — the d2 decides only the paperwork, never the
+sides. (The old rule where an Umaia-vassal Andalusia defended its liege
+went out with the d3.)
 
 ## The campaign sim
 

@@ -97,10 +97,10 @@ parked here:
   that stops at a language border, a quest gated on a tongue, an
   interpreter hired for a fee — is a later sitting. Nothing in the
   engine checks a tongue today.
-- **Vassalage with teeth.** Andalusia's liege is rolled, printed on
-  `world` and on the map legend, and read by the Reconquista template —
-  which is the whole of it. Tribute, a pulled-in war and a court above
-  the court are undesigned.
+- **Vassalage with teeth.** Andalusia's liege is rolled (a d2 since the
+  2026-08-22 Iberia split: Byzantium's vassal or its free ally) and
+  printed on `world` and on the map legend — which is the whole of it.
+  Tribute, a pulled-in war and a court above the court are undesigned.
 - **The era anchor against the colony cards.** `southern/colony-fleet`,
   `southern/monopoly-bubble` and `southern/the-crash` are about colonial
   trade in a world anchored at "about 1500 WITHOUT the age of
