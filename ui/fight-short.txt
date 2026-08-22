@@ -1,131 +1,21 @@
 === Rival Warband ===
 the raided trail (L14),
-room 1/2: outer watch
-Warband Veteran 1 -- longsword
-DEX 6  STR 5  STA 7  HP 13/13
-takes spoils, leaves the fallen
-2x War Chief -- longsword
-DEX 7  STR 6  STA 8  HP 17/17
+room 2/2: campfire
+Camp Swordmaster 4 -- schweizersäbel
+DEX 8  STR 6  STA 8  HP 16/16
 drilled +2,
 takes spoils, leaves the fallen
-Round 1:
-The lines meet -- steel range.
-Gruk's flash-freeze
-overwhelms Warband Veteran 1,
-deals 4 dmg!! [8 Power left]
-Warband Veteran 1 is rimed with frost.
-Warband Veteran 1 is frozen fast --
-they lose their next action!
-Warband Veteran 1 struggles up -- no action.
+Round 1: nothing lands.
 Round 2:
-Gruk's flash-freeze
-overwhelms Warband Veteran 1,
-deals 6 dmg!!! [4 Power left]
-Warband Veteran 1 is rimed with frost.
-Warband Veteran 1 is frozen fast --
-they lose their next action!
-Gell: Sweep -- Warband Veteran 1,
-War Chief 3 both caught!
-Gell overwhelms Warband Veteran 1,
-deals 6 dmg!!! SLAIN.
-Gell overwhelms War Chief 3,
-deals 6 dmg!!!
-Warband Veteran 1 struggles up -- no action.
-War Chief 2 overwhelms Gell,
-deals 4 dmg!!
-Gell takes a wound: three ribs broken.
-War Chief 3 (11/17) outmaneuvers Gell,
-deals 2 dmg!
-Gell takes a wound:
-a shallow belly wound.
-Round 3:
-Gruk's flash-freeze
-outmaneuvers War Chief 3, deals 2 dmg!
-[0 Power left]
-War Chief 3 is rimed with frost.
-War Chief 3 is frozen fast --
-they lose their next action!
+Gruk (14/16)
+attacks Camp Swordmaster 4, parried.
 Gell: Feint --
-War Chief 3's guard opens.
-Gell (11/17) overwhelms War Chief 3,
-deals 6 dmg!!!
-War Chief 2 outmaneuvers Gell,
-deals 4 dmg!!
+Camp Swordmaster 4's guard opens.
+Gell (9/17)
+attacks Camp Swordmaster 4, parried.
+Camp Swordmaster 4 overwhelms Gell,
+but Bulwark blunts it: deals 4 dmg!!
 Gell takes a wound:
-a deep gash across the back.
-War Chief 3 struggles up -- no action.
+a deep wound in the thigh.
+Bleeding: Gell -1.
 == Gell is badly cut up ==
-Round 4:
-Gell downs a healing potion (0 left).
-War Chief 2 edges past Gruk,
-deals 2 dmg!
-Gruk takes a wound:
-a gash above the knee.
-War Chief 3 (3/17)
-attacks Gell, parried.
-Round 5:
-Gruk and War Chief 3: Clash!
-Gell (12/17) overwhelms War Chief 3,
-deals 6 dmg!!! SLAIN.
-War Chief 3 strikes as they fall:
-Gruk parries.
-War Chief 2 attacks Gruk, parried.
-Round 6:
-Gruk (14/16)
-attacks War Chief 2, parried.
-Gell: Pommel Strike at War Chief 2!
-Gell (12/17)
-attacks War Chief 2, parried.
-!! War Chief 2 is Winded.
-War Chief 2 outmaneuvers Gell,
-deals 4 dmg!!
-Gell takes a wound:
-a cut through the palm.
-Round 7:
-Gruk (14/16)
-attacks War Chief 2, deflected.
-Gell (8/17) edges past War Chief 2,
-deals 4 dmg!!
-War Chief 2 (13/17)
-attacks Gruk, parried.
-Round 8:
-Gruk (14/16) overwhelms War Chief 2,
-deals 4 dmg!!
-War Chief 2 is bleeding (-1 HP/round).
-Gell (8/17) edges past War Chief 2,
-deals 4 dmg!!
-War Chief 2 (5/17)
-attacks Gruk, parried.
-Bleeding: War Chief 2 -1.
-The beaten foes break and run!
-Gruk's parting blow at
-War Chief 2 -- deflected.
-Gell (8/17) overwhelms War Chief 2,
-deals 4 dmg!! It falls.
-The party catches its breath (+1 STA)
-Gruk +211 XP (encounter) [211/1400]
-Gell +211 XP (encounter) [211/1400]
-Left among the dead:
-3x longsword (+0 atk/+1 sev, 15s).
-Gell: satisfaction 7 -> 6/10
-(badly bloodied)
-The party shares out its potions:
-Gruk: 1 healing, 1 stamina;
-Gell: 1 healing.
-
--- the party --
-Gruk: Scratched STA 6/12 Power 0/12
-  - a gash above the knee (sev 1)
-  (HP ceiling 15/16 until they mend)
-  (healing x1, stamina x1)
-Gell: Scratched STA 8/10 Power 12/12
-  (hurt -3 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  - a cut through the palm (sev 2)
-  - a shallow belly wound (sev 1)
-  (HP ceiling 10/17 until they mend)
-  (healing x1)
-Purse 1048s; day 1.
-Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
-  (due day 6 -- 5 days left; quick pay, x1.15)
