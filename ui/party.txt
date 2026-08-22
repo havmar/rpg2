@@ -1,4 +1,4 @@
-RPG2 PARTY SHEET -- day 1, at Tergal >
+RPG2 PARTY SHEET -- day 7, at Tergal >
   R10C26 > Sargul
 purse: 0s
 party: 1/2 companion slot(s) filled (CHA
@@ -7,45 +7,44 @@ party: 1/2 companion slot(s) filled (CHA
 (YOU) Gruk -- tergal m, age 32
   L14  training 3  XP 211/1400  points 4
   DEX 3  STR 3  MIND 6  CHA 5
-  HP 1/8 of 16  STA 5/12  Power 0/10
-  longsword | no kit
+  HP 13/13 of 16  STA 12/12  Power 10/10
+  longsword | staminax1
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  - two fingers gone (sev 3)
-  - a broken leg, set crooked (sev 3)
-  - a deep wound in the right arm (sev
-    2)
-  - badly beaten (sev 1)
-  wound load 9 -> HP ceiling 8/16
+  - a cut across the left forearm (sev
+    1)
+  - a split knuckle (sev 1)
+  - a gash above the knee (sev 1)
+  wound load 3 -> HP ceiling 13/16
 
 (companion) Gell -- tergal m, age 35
+  [QUITTING at the next settlement]
   L14  training 3  XP 211/1400  points 0
   DEX 1  STR 4  MIND 3  CHA 4
-  HP 1/8 of 17  STA 6/10  Power 6/12
-  longsword | no kit
+  HP 9/9 of 17  STA 10/10  Power 12/12
+  longsword | healingx1, staminax1
   abilities: bulwark
   moves: feint, pommel, sweep
   pools bought: hp +6, power +6, sta +6
   drilled, not in hand: zweihander 3
   speaks: Latin, Tergal
-  satisfaction 6/10
+  satisfaction -3/10
   quirk: religious; voice: melodious;
     dress: armored
-  [bleeding -1 HP/round]
-  - a deep wound in the right arm (sev
-    2)
-  - three ribs broken (sev 2)
-  - a torn eyelid (sev 2)
-  - a deep gash across the back (sev 2)
-  - a cut through the palm (sev 2)
-  - a deep wound in the thigh (sev 2)
   - badly beaten (sev 1)
+  - a cut across the left forearm (sev
+    1)
+  - a cracked rib (sev 1)
+  - a cut brow, blood in the eye (sev 1)
+  - a shallow cut along the ribs (sev 1)
   - a shallow belly wound (sev 1)
-  wound load 14 -> HP ceiling 8/17
+  - a split knuckle (sev 1)
+  - a gash above the knee (sev 1)
+  wound load 8 -> HP ceiling 9/17
 
 active quest: [q01] L14 Rival Warband --
   next: the raided trail (L14), room 2/2
-  due day 6 -- 5 days left
+  due day 6 -- LATE (2 day(s) of grace)
 THE PACT: no current assignment (the
   next is pinned to PC level 15).

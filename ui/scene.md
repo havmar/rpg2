@@ -1,32 +1,41 @@
-## turn 6 (day 1)
+## turn 7 (day 7)
 
-> take swords, back to sargul
+> camp until we're healed up
 
-You take a longsword off one of the dead men and hand another down to Gell. They are ordinary steel, worth fifteen silver apiece.
+You sleep six nights against the well wall on the village's charity. The deep wounds close one at a time. Your leg sets. The fingers do not come back.
 
-```
-Gruk takes up the longsword.
-Gell takes up the longsword.
-```
-
-The hour back is slow with your leg the way it is. Sargul is at afternoon work when you come in: two women drawing water, boys on the corral rail, a dog that follows you as far as the well. Nobody asks yet. Varg is somewhere in the village and will hear inside the hour.
-
-Gell sits down against the well wall and starts picking at his armor, which is cut through in four places and stiff with his own blood. "It was good work," he says of the armor. He is not talking about the fight.
+On the second morning Gell says he is finished.
 
 ```
-  Gruk: HP 1/8 of 16. STA 5/12.
-  Gell: HP 1/8 of 17.
-  purse 0s. day 1.
-  the warband job: 1 fight left,
-    wanted by day 6.
+Gell: satisfaction 6 -> -2/10
+(carrying untended wounds)
+*** Gell has had enough --
+they will leave at the next
+settlement. ***
 ```
 
+He has not gone yet. He draws water, he eats, he sits with his back to you sharpening a dead man's longsword, and he says nothing about it again. Eight cuts are still open on him and nobody in Sargul will stitch a man for free twice.
+
 ```
-  options: camp behind the wall
-    (free, safe, knits one wound a
-    night), hunt for silver and XP,
-    Ront's hunt job (L2, 58s),
-    find Varg
+  day 7. purse 0s.
+  Gruk: HP 13/16, ceiling 13.
+    3 wound load.
+  Gell: HP 9/17, ceiling 9.
+    8 wound load. satisfaction -3.
+    [QUITTING at the next
+    settlement]
+  the warband job: 1 fight left.
+    LATE -- 2 days of grace, then
+    it is lost. late pay x0.6.
+```
+
+Anything that lifts him above the line before he walks saves him: a day of `downtime` here is +1, a tavern night is +1 and costs 1s a head, a job paid out is +1. Kyiv is a day east and it is a capital, with temples in it, which is worth double to him -- but arriving anywhere is arriving at a settlement, and that is where he goes.
+
+```
+  options: downtime here (a day,
+    +1), hunt for silver, the last
+    fight at the trail (late, 2
+    days of grace), find Varg
 ```
 
 Where to?

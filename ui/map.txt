@@ -1,4 +1,4 @@
-RPG2 MAP -- day 1
+RPG2 MAP -- day 7
 the party is at Tergal > R10C26 > Sargul
 
             111111111122222222223
@@ -32,14 +32,15 @@ HERE: R10C26 -- Tergal, plains
   last harvest: ordinary
   goods: horses
   R10C26 Countryside (fields)
-  Sargul (village)  <- the party, 2
+  Sargul (village)  <- the party, 1
     job(s)
   Ukhta (hamlet)  0 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: clear skies.
+  WEATHER: clear skies -- 7 days without
+    rain.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London
