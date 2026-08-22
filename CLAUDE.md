@@ -76,7 +76,8 @@ the checked-out copy already contains the latest UI or rules changes.
 > feature is written up" has the full rule.
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `places.py`,
-`worldsim.py`, `karma.py`, `conquest.py`, `session.py`, `tune.py`, the
+`worldsim.py`, `rulers.py`, `karma.py`, `crime.py`, `conquest.py`,
+`weapons.py`, `econmap.py`, `session.py`, `tune.py`, the
 `bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 

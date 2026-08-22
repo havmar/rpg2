@@ -236,7 +236,7 @@ narrator can admire.
 When improvising a place name, follow the COUNTRY the scene is in -- there
 are nine and each keeps its own sound. "The nine name sounds" below is the
 standing table. Retain a plain English type noun when it makes the place
-immediately legible: the mill at Sturford, the Dubki crossing, Ain Zafra's
+immediately legible: the mill at Ashenden, the Dubki crossing, Ain Zafra's
 well.
 
 For a **person**, lead with role and immediate intent. Add one visible or

@@ -2848,3 +2848,33 @@ country overlay; crossroads 32.7 (was 31.7) moved with the census roll's
 consumption, not with any law.
 
 Nothing was tuned; the numbers are the record of the content change.
+
+## 2026-08-22 (E) — The post-arc review: the shared-ground war fix re-measured
+
+`python bench_worldgen.py --seeds 500 --only wars`, run after the post-arc
+review fixed the campaign sim's shared-ground clears (designlog (Q)):
+`_drop_scar` now takes a mark off the map only once no war's ledger still
+books it, and `roll_campaigns` catches the wars up together, one day at a
+time, instead of one war across the whole span against another's finished
+ledger.
+
+### What moved, and why
+
+```
+  standing war marks a world         mean 20.2 (was 20.0; min 11, max 24)
+  marks: war-raided 7.03 (was 6.86) -- the rest unmoved:
+         occupied 5.80, battlefield 3.46, sacked 2.43,
+         war-camp 0.99, under-siege 0.50
+  scars a war                        mean 4.83  (unmoved)
+  settlements occupied a world       mean 5.81  (unmoved)
+```
+
+The delta IS the bug's size: where two wars' theaters overlap (the Long
+War and the raiding season share four coast tiles), one war's expiry or
+cap eviction used to clear the other war's still-fresh mark off the map --
+about a sixth of a standing `war-raided` mark per world, 63 early clears
+over 4000 days on seed 1. The roll, the sieges, the occupations and every
+other sweep are untouched: the fix changes when a shared mark is CLEARED,
+never what a war rolls. (The "was" column is the same bench re-run at the
+pre-fix tree, not entry (D): (D) predates the rename commit and prints no
+mark mix.)

@@ -6743,7 +6743,7 @@ majority — 71 cards read, 13 narrowed:
 - **`weather/smog` to TEUTONIA**, per the contract: the close-built
   northern town with a forge in every second yard is the free cities'
   shape.
-- **Four cards moved to the land their re-aimed edge points at**, because
+- **Five cards moved to the land their re-aimed edge points at**, because
   a card that reads a derived word has to sit where the word lands:
   `western/settled-warband` -> `vellisclavia/settled-warband` (the only
   western kingdom with the steppe at its back, and the only card whose
@@ -7126,3 +7126,75 @@ seeds (21 → 222 for the Dublin/London pair, 18 → 5 for the one-day group):
 Uppsala's slots and the start draw sit on the same derived stream, so the
 uniform start moved — the third re-pin of that class, and the docstring
 keeps the lineage. benchlog carries the fresh worldgen sweep.
+
+## 2026-08-22 (Q) — The post-arc review: two shared-ground war bugs, the doc sweep, silver, and the schweizersäbel
+
+A review session over the whole medieval world arc (sessions 1-5 plus the
+(P) naming pass), plus two designer renames. The review's verdict first:
+**the arc's Part 1 contract is fully implemented** — every item of the (J)
+design either shipped or is explicitly parked in plan.md's "Politics &
+war"; nothing was silently dropped, and the 1043-test suite is green.
+
+**Two real bugs in the campaign sim, both on shared ground.** Theaters
+overlap (the Long War and the raiding season share four coast tiles) while
+the map keeps ONE state record per place and word, and session 5's sim
+missed both consequences:
+
+- **One war's cleanup clipped another war's mark.** `_clear_expired` and
+  the `SCAR_CAP` eviction cleared the map record whenever their own ledger
+  entry expired — including a mark another war had re-laid since (63 early
+  clears in 4000 days on seed 1). The fix is `_drop_scar`: a mark leaves
+  the map only once NO war's ledger still books it. A date-match guard was
+  tried first and rejected: both wars pulse on the same three-day grid, so
+  same-day layings tie and the tie is undecidable by dates.
+- **Catch-up ran the wars one at a time across the whole span.**
+  `roll_campaigns` rolled war 1 to `day`, then war 2, then war 3 — so a
+  catch-up laid and cleared shared marks against another war's FINISHED
+  ledger, out of time order, and "catching up is living through it" broke
+  exactly where fronts touch. The wars now advance together, one day at a
+  time; per-war rng is seeded per war per day, so nothing else moves.
+
+Benchlog (E) has the re-measure: the fix is worth +0.17 standing
+`war-raided` a world and nothing else. In the same pass the four
+`world.get("wars")` readers became strict `world["wars"]` — worldgen
+always rolls the wars, so the soft reader was exactly the masked-bug
+pattern develop.md's no-compatibility rule names.
+
+**The doc sweep** (all found by review, none behavioral): writing.md's and
+dm.md's worked examples still used retired pre-(P) Phyrascian names
+(Sturford → Ashenden, Ackham → Bramwell); the (N) card-move list said
+"four cards" over a five-card list in both designlog and develop.md;
+develop.md's map-of-nine paragraph still said nineteen `HISTORICAL_TIERS`
+(twenty-one since (P)), its worldsim entry still said `_CROWNED` is three
+lands (four since (N)), its balance summary still carried the pre-Uppsala
+617, its tile-economy closure still had the medieval arc "building" with a
+three-item parked list (four with the colony-cards item), and dm.md's
+"eight facts" for Thule now says what it counts (seven own plus the shared
+Knockers) so it no longer reads against rules.md's seven. CLAUDE.md's
+code-file list finally names crime.py, weapons.py, rulers.py and
+econmap.py.
+
+**The two renames** (designer directive, name-only):
+
+- **The coin is SILVER.** The mechanical currency the player buys with was
+  "gold" since the first prototype; the designer called it less
+  fantastical as silver — and it is also simply the medieval coin.
+  `Purse.silver`, every constant, the save keys, the priced-service
+  catalog key and the `0s` money suffix follow; docs follow. Gold the
+  METAL keeps its name everywhere it is fiction about the metal (the gold
+  caravans, the gold wire, the gold relic, the gold-rush card,
+  Goldentooth) — the currency changed name, the world's treasure did not.
+- **The katana is the SCHWEIZERSÄBEL** (lowercase in the catalog, like the
+  zweihander). Same profile, same iaido gate, same benches. The longer
+  name broke the 40-column rule in two places, which is the session's one
+  display change: a generated weapon's header prints just the tier when
+  its own name already ends with the chassis, and an armory line wraps to
+  a second line when it must. Open call for a later sitting: the move is
+  still named IAIDO, which reads Japanese over a Swiss saber — renaming it
+  is a design choice this session did not make.
+
+Historical files (designlog's own earlier entries, benchlog, the archive,
+the spec companions) keep their original wording throughout, per the
+project's own convention — with one exception: the (N) entry's "Four
+cards" miscount was corrected in place, a wrong count in the record rather
+than a superseded fact.

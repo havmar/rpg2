@@ -376,15 +376,28 @@ def _scar_place(world: dict, scar: dict) -> dict:
             else world["settlement_slots"][scar["place"]])
 
 
+def _drop_scar(world: dict, war: dict, scar: dict, day: int) -> None:
+    """Take one mark out of a war's ledger, and off the map ONLY once no
+    war's ledger books it any more. Theaters overlap (the Long War and the
+    raiding season share four coast tiles) and both wars pulse on the same
+    three-day grid, while the map keeps ONE state record per place and
+    word: as long as any war still books the mark -- laid earlier, later,
+    or on the very same day -- clearing the shared record would cut that
+    war's mark short."""
+    war["scars"].remove(scar)
+    if any(s["place"] == scar["place"] and s["state"] == scar["state"]
+           for w in world["wars"] for s in w["scars"]):
+        return
+    places.clear_state(world, _scar_place(world, scar), scar["state"],
+                       day=day)
+
+
 def _clear_expired(world: dict, war: dict, day: int) -> None:
     """The sim cleans up after itself: every mark whose days are spent goes
     off the map when the war next rolls."""
     for scar in list(war["scars"]):
-        if day < scar["until"]:
-            continue
-        places.clear_state(world, _scar_place(world, scar), scar["state"],
-                           day=day)
-        war["scars"].remove(scar)
+        if day >= scar["until"]:
+            _drop_scar(world, war, scar, day)
 
 
 def _stamp(world: dict, war: dict, kind: str, place: dict, state_id: str,
@@ -403,9 +416,7 @@ def _stamp(world: dict, war: dict, kind: str, place: dict, state_id: str,
     war["scars"].append({"kind": kind, "place": place["id"],
                          "state": state_id, "until": day + SCAR_DAYS[state_id]})
     while len(war["scars"]) > SCAR_CAP:
-        oldest = war["scars"].pop(0)
-        places.clear_state(world, _scar_place(world, oldest), oldest["state"],
-                           day=day)
+        _drop_scar(world, war, war["scars"][0], day)
     return state
 
 
@@ -504,13 +515,21 @@ def roll_campaigns(world: dict, day: int) -> None:
     the front that rolling them live would have -- the world layer's own
     contract, applied to the war.
 
-    Driven from the same day-settling seam as `conquest_news`."""
-    for war in world.get("wars") or ():
-        while war["rolled_day"] < day:
-            today = war["rolled_day"] + 1
-            if today % WAR_PULSE == 0:
-                _pulse(world, war, today)
-            war["rolled_day"] = today
+    Driven from the same day-settling seam as `conquest_news`. The wars
+    advance TOGETHER, one day at a time -- never one war across the whole
+    span while the others stand still -- because theaters overlap and the
+    map keeps one state record per place and word: a war catching up
+    against another war's finished ledger would lay and clear shared marks
+    out of time order, and catching up would stop equalling living
+    through it exactly where the fronts touch."""
+    wars = world["wars"]
+    while any(war["rolled_day"] < day for war in wars):
+        for war in wars:
+            if war["rolled_day"] < day:
+                today = war["rolled_day"] + 1
+                if today % WAR_PULSE == 0:
+                    _pulse(world, war, today)
+                war["rolled_day"] = today
 
 
 # --------------------------------------------------------------------------- #

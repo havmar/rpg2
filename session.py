@@ -1432,7 +1432,7 @@ def war_start_lines(world: dict) -> list[str]:
     "the story layer is armed" line used to sit, and it says something
     different: nothing here is the party's job. These are the wars the world
     is already fighting, and the party will walk into their marks."""
-    wars = world.get("wars") or []
+    wars = world["wars"]
     if not wars:
         return []
     # The count is spelled, and it is read off the roll rather than typed:

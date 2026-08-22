@@ -188,7 +188,8 @@ a pointer: what the file is, how it's run, where its docs are.
   packet & the nine-land relations (N), and the rolled wars & the campaign
   sim (O). What is left in the file is the roadmap BEYOND all three: the
   spring snapshot and trouble, politics and war (dynamic borders, languages
-  with mechanics, vassalage with teeth), fantasy and magic, settlements
+  with mechanics, vassalage with teeth, the colony cards' fiction against
+  the era anchor), fantasy and magic, settlements
   revisited, and the small deferred leftovers. **Nothing implemented lives
   there**: when a session ships, delete its completed contract and write
   the result in the permanent docs and designlog as described above.
@@ -413,7 +414,9 @@ a pointer: what the file is, how it's run, where its docs are.
   the nearest land tile's country, ties north-then-west), the re-owned and
   three-longer `HISTORICAL_CITIES` (Cordoba, Cairo and Jerusalem are new;
   `CAPITAL_TILES` and `CAPITAL_TOWNS` derive nine from it),
-  `HISTORICAL_TIERS` grown to nineteen, `PINNED_COUNTRY_BIOMES` re-pinned
+  `HISTORICAL_TIERS` grown to nineteen (twenty-one since the 2026-08-22
+  naming-and-Iberia pass below: Uppsala and Toledo joined),
+  `PINNED_COUNTRY_BIOMES` re-pinned
   and `PINNED_COUNTRY_BANDS` added beside it, and `_validate_countries` —
   the new `validate_world` clause that lints both censuses, the tag, the
   unpainted sea and every capital standing on its own ground. The CULTURE
@@ -877,7 +880,8 @@ a pointer: what the file is, how it's run, where its docs are.
   hearth and forge smoke — it is the SOLE producer of the one sky a roof
   does not keep out (`rpg.INDOOR_SKY`). `firascir/franchise` is deleted
   (its producer was a Gibili relation, so it had been unreachable since
-  the contraction) and `_CROWNED` is now all three lands. `STATE_SLOTS` is
+  the contraction) and `_CROWNED` is now all three lands (four since the
+  medieval world arc's session 4: the norse crown cluster joined). `STATE_SLOTS` is
   EMPTY — both authored slots belonged wholly to deleted countries and
   neither survived re-homing — but the frame, `card()`'s slot validation
   and `set_state`'s slot discipline stay, so the next country packet plugs
@@ -949,7 +953,7 @@ a pointer: what the file is, how it's run, where its docs are.
   `two-hoods`, `debate-riot`, `necromancy-open`, `necromancy-purge`) and
   the `penitents-vs-carnival` tension, its two faction edges and its
   three facts to BYZANTIUM; `weather/smog` to TEUTONIA;
-  `communion/the-synod` to Byzantium and Seraptania; and the four cards
+  `communion/the-synod` to Byzantium and Seraptania; and the five cards
   that read a re-aimed relation edge to the land wearing it
   (`vellisclavia/settled-warband`, `vellisclavia/hostage-in-the-camp`,
   `phyrascia/kin-claim`, `phyrascia/danegeld`,
@@ -1442,8 +1446,15 @@ a pointer: what the file is, how it's run, where its docs are.
   "campaign", day)`) -- plus the knobs `WAR_PULSE` (3), `OCCUPIED_CAP` (2),
   `SCAR_CAP` (6), `EVENT_WEIGHTS` (the two postures' tables),
   `EVENT_STATES`, `SCAR_DAYS` and `SIEGE_STRENGTH`, and the parts
-  `_pulse` / `_event` / `_mark` / `_siege` / `_stamp` / `_clear_expired` /
-  `_news`. `slot_garrison_level(world, slot)` is the one new reader of the
+  `_pulse` / `_event` / `_mark` / `_siege` / `_stamp` / `_drop_scar` /
+  `_clear_expired` / `_news`. Two shared-ground rules added by the
+  2026-08-22 post-arc review (theaters overlap -- the Long War and the
+  raiding season share four coast tiles -- while the map keeps ONE state
+  record per place and word): the wars catch up TOGETHER, one day at a
+  time, never one war across the whole span against another's finished
+  ledger; and `_drop_scar` takes a mark off the map only once no war's
+  ledger still books it, so one war's expiry or cap eviction never cuts
+  another war's mark short. `slot_garrison_level(world, slot)` is the one new reader of the
   garrison authority: it asks `garrison_level` under the Area id the census
   slot WILL wear (`places.slot_area_id`), so a town besieged before anybody
   has walked into it fields the same garrison it will field on the day they
@@ -2994,8 +3005,9 @@ all read exactly as the slice-1 block below. What moved is the CAREER:
   designer's call: the 158-day calendar is not coming back, and 80 is fine).
 - **The board never runs dry:** 0/500 careers exhausted it, ~660 postings
   expire unfinished per career, ~129 live jobs standing at the end. (The
-  rolled census tripled the world on 2026-08-21 — 617 settlements and 184
-  active boards against 192 and 64 — which moved the world-wide posting
+  rolled census tripled the world on 2026-08-21 — 618.4 settlements and
+  ~184 active boards against 192 and 64 (benchlog 2026-08-22: Uppsala's
+  authored town nudged 617.5 to 618.4) — which moved the world-wide posting
   inventory 43% and the career's own numbers barely at all; benchlog's
   2026-08-21 (B) entry has the table.) The
   up-front XP-coverage assert is deleted and nothing replaced it but the
@@ -3446,7 +3458,7 @@ through (I) entries are the build record; rules.md, dm.md and this file
 hold what it built and benchlog its numbers. What the arc deliberately
 did NOT do — the spring snapshot, trouble, cards with tile addresses,
 creature geography, tolls walking the routes — is plan.md's roadmap
-beyond it. **THE MEDIEVAL WORLD ARC is building on top of it**: the
+beyond it. **THE MEDIEVAL WORLD ARC was built on top of it**: the
 scripted conquest questline is gone (session 1, designlog (K)) and the
 world is NINE countries over four cultures (session 2, designlog (L)),
 with the town-name table and the tongues (session 3, designlog (M)), the
@@ -3454,4 +3466,6 @@ norse packet, the card audit and the twenty land-to-land relations
 (session 4, designlog (N)) and finally THE ROLLED WARS and their campaign
 sim (session 5, designlog (O), 2026-08-22) on top of it. **The arc's Part 1
 contract is complete** and is gone from plan.md; what it left parked there
-is dynamic borders, languages with mechanics and vassalage with teeth.
+is dynamic borders, languages with mechanics, vassalage with teeth, and
+the colony cards' fiction against the era anchor (the (N) card audit's
+find).

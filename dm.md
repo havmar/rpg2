@@ -226,7 +226,7 @@ to another area -- is the player's core decision:
   fill the scene and do NOT apologise for the world: play the place as a
   place -- nobody here needs anything from armed strangers -- and let the
   rumor groups do their work. "No work here; a carter mentions they are
-  short-handed at Ackham, a day west" is the scene, and the decision to walk
+  short-handed at Bramwell, a day west" is the scene, and the decision to walk
   there is the player's. `HERE` covers the whole TILE, so a sibling village
   in the same cell is a free step away, not a day's travel.
 - **Every job has a DEADLINE.** A posting is wanted within 3-7 days of the
@@ -408,7 +408,8 @@ table:
   memory and the sentence that matters is three years' outlawry), and the
   GODS are old (the grove, nine of every kind, a curse-pole with a
   missionary's name on it, the seer who names the winter's dead). Its
-  lore page has eight facts. It sells one thing nobody else does: the
+  lore page has eight facts (seven of its own plus the shared Knockers).
+  It sells one thing nobody else does: the
   weather-witch's cord, two days of bought wind.
 - **Every country has a signature fact.** When a player asks what makes
   this place itself, that is the line to reach for: Phyrascia's wool

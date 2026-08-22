@@ -4880,7 +4880,7 @@ def roll_wars(world: dict, day: int = 0) -> list[dict]:
 
 def wars_of(world: dict, polity: str) -> list[dict]:
     """The wars this land is in, attacker or defender."""
-    return [war for war in world.get("wars", ())
+    return [war for war in world["wars"]
             if polity in war["attackers"] or polity in war["defenders"]]
 
 
@@ -4897,7 +4897,7 @@ def war_lines(world: dict) -> list[str]:
     the herald it opened with, how far its campaign has been rolled, and
     what it is holding. Vassalage rides here too -- it is the other thing
     the war roll settled."""
-    wars = world.get("wars") or []
+    wars = world["wars"]
     lines = ["-- the wars --"]
     for war in wars:
         lines.append(f"{war['name']} [{war['posture']}] "
