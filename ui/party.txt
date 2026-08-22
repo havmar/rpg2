@@ -1,6 +1,5 @@
 RPG2 PARTY SHEET -- day 1, at Tergal >
-  R10C26 > Sargul > the raided trail >
-  campfire
+  R10C26 > Sargul
 purse: 0s
 party: 1/2 companion slot(s) filled (CHA
   5)
@@ -9,7 +8,7 @@ party: 1/2 companion slot(s) filled (CHA
   L14  training 3  XP 211/1400  points 4
   DEX 3  STR 3  MIND 6  CHA 5
   HP 1/8 of 16  STA 5/12  Power 0/10
-  unarmed | no kit
+  longsword | no kit
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
@@ -24,7 +23,7 @@ party: 1/2 companion slot(s) filled (CHA
   L14  training 3  XP 211/1400  points 0
   DEX 1  STR 4  MIND 3  CHA 4
   HP 1/8 of 17  STA 6/10  Power 6/12
-  unarmed | no kit
+  longsword | no kit
   abilities: bulwark
   moves: feint, pommel, sweep
   pools bought: hp +6, power +6, sta +6
