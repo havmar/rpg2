@@ -1,0 +1,58 @@
+=== Rival Warband -- the raided trail (L14), room 1/2: outer watch ===
+  Warband Veteran 1 -- longsword
+  DEX 6  STR 5  STA 7  HP 13/13
+  takes spoils, leaves the fallen
+  2x War Chief -- longsword
+  DEX 7  STR 6  STA 8  HP 17/17
+  drilled +2,
+  takes spoils, leaves the fallen
+  Round 1:
+    Gell, Warband Veteran 1, War Chief 2, War Chief 3 close the distance -- the lines meet!
+    Gruk's flash-freeze overwhelms Warband Veteran 1 -- a grievous injury! [Warband Veteran 1: 9/13 HP, -2 to rolls]
+        pressure: Gruk: 19 (2d6=7, +6 AIM, +3 training, +3 proficiency) vs Warband Veteran 1: 14 (2d6=8, +6 DEX) [flash-freeze: -4 Power, 8 left]
+        severity: 5 = margin 5 +2 flash-freeze +3 spell rank -5 soak -> grievous (-4 HP)
+    Warband Veteran 1 is rimed with frost (-2 DEX for this fight)
+    Warband Veteran 1 is frozen fast -- they lose their next action!
+    Warband Veteran 1 struggles back to their footing -- no action this round.
+    stamina: Gruk 11/12, Gell 12/12 | Warband Veteran 1 7/7, War Chief 2 8/8, War Chief 3 8/8
+  Round 2:
+    Gruk's flash-freeze overwhelms Warband Veteran 1 -- a crippling blow! [Warband Veteran 1: 3/13 HP, -5 to rolls]
+        pressure: Gruk: 16 (2d6=4, +6 AIM, +3 training, +3 proficiency) vs Warband Veteran 1: 9 (2d6=7, +6 DEX, -2 chilled, -2 wounds) [flash-freeze: -4 Power, 4 left]
+        severity: 7 = margin 7 +2 flash-freeze +3 spell rank -5 soak -> crippling blow (-6 HP)
+    Warband Veteran 1 is rimed with frost (-4 DEX for this fight)
+    Warband Veteran 1 is frozen fast -- they lose their next action!
+    Gell sweeps the blade in a wide arc -- Warband Veteran 1, War Chief 3 are both caught! (+1 STA)
+    Gell overwhelms Warband Veteran 1 -- a crippling blow! [Warband Veteran 1: 0/13 HP, -6 to rolls]
+        pressure: Gell: 22 (2d6=12, +3 DEX, +3 training, +1 zweihander, +3 proficiency) vs Warband Veteran 1: 2 (2d6=5, +6 DEX, -4 chilled, -5 wounds)
+        severity: 27 = margin 20 +6 STR +3 zweihander +3 proficiency -5 soak -> crippling blow (-6 HP)
+    *** Warband Veteran 1 is SLAIN. ***
+    Gell overwhelms War Chief 3 -- a crippling blow! [War Chief 3: 11/17 HP, -3 to rolls]
+        pressure: Gell: 22 (2d6=12, +3 DEX, +3 training, +1 zweihander, +3 proficiency) vs War Chief 3: 17 (2d6=8, +7 DEX, +2 training)
+        severity: 11 = margin 5 +6 STR +3 zweihander +3 proficiency -6 soak -> crippling blow (-6 HP)
+    Warband Veteran 1 struggles back to their footing -- no action this round.
+    War Chief 2 overwhelms Gell -- a grievous injury! [Gell: 13/17 HP, -1 to rolls]
+        pressure: War Chief 2: 18 (2d6=9, +7 DEX, +2 training) vs Gell: 13 (2d6=7, +3 DEX, +3 training, -1 zweihander, +1 armor)
+        severity: 6 = margin 5 +6 STR +1 longsword -6 soak -> grievous (-4 HP)
+    Gell takes a wound: three ribs broken (severity 2; HP ceiling 15/17)
+    War Chief 3 outmaneuvers Gell -- a solid wound! [Gell: 11/17 HP, -2 to rolls]
+        pressure: War Chief 3: 12 (2d6=6, +7 DEX, +2 training, -3 wounds) vs Gell: 9 (2d6=4, +3 DEX, +3 training, -1 zweihander, +1 armor, -1 wounds)
+        severity: 4 = margin 3 +6 STR +1 longsword -6 soak -> wound (-2 HP)
+    Gell takes a wound: a shallow belly wound (severity 1; HP ceiling 14/17)
+    stamina: Gruk 10/12, Gell 10/10 | War Chief 2 7/8, War Chief 3 7/8
+  Round 3:
+    Gruk's flash-freeze outmaneuvers War Chief 3 -- a solid wound! [War Chief 3: 9/17 HP, -4 to rolls]
+        pressure: Gruk: 19 (2d6=7, +6 AIM, +3 training, +3 proficiency) vs War Chief 3: 15 (2d6=9, +7 DEX, +2 training, -3 wounds) [flash-freeze: -4 Power, 0 left]
+        severity: 3 = margin 4 +2 flash-freeze +3 spell rank -6 soak -> wound (-2 HP)
+    War Chief 3 is rimed with frost (-2 DEX for this fight)
+    War Chief 3 is frozen fast -- they lose their next action!
+    Gell feints -- War Chief 3's guard opens for the next pass. (+1 STA)
+    Gell overwhelms War Chief 3 -- a crippling blow! [War Chief 3: 3/17 HP, -7 to rolls]
+        pressure: Gell: 15 (2d6=7, +3 DEX, +3 training, +1 zweihander, +3 proficiency, -2 wounds) vs War Chief 3: 6 (2d6=3, +7 DEX, -2 chilled, +2 training, -4 wounds)
+        severity: 14 = margin 9 +5 STR +3 zweihander +3 proficiency -6 soak -> crippling blow (-6 HP)
+    War Chief 2 outmaneuvers Gell -- a grievous injury! [Gell: 7/17 HP, -3 to rolls]
+        pressure: War Chief 2: 16 (2d6=7, +7 DEX, +2 training) vs Gell: 12 (2d6=8, +3 DEX, +3 training, -1 zweihander, +1 armor, -2 wounds)
+        severity: 6 = margin 4 +6 STR +1 longsword -5 soak -> grievous (-4 HP)
+    Gell takes a wound: a deep gash across the back (severity 2; HP ceiling 12/17)
+    War Chief 3 struggles back to their footing -- no action this round.
+    stamina: Gruk 9/12, Gell 10/10 | War Chief 2 6/8, War Chief 3 7/8
+    == Gell is badly cut up (HP 7/17) -- the fight hangs for a heartbeat. ==

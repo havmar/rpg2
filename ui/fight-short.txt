@@ -1,0 +1,57 @@
+=== Rival Warband ===
+the raided trail (L14),
+room 1/2: outer watch
+Warband Veteran 1 -- longsword
+DEX 6  STR 5  STA 7  HP 13/13
+takes spoils, leaves the fallen
+2x War Chief -- longsword
+DEX 7  STR 6  STA 8  HP 17/17
+drilled +2,
+takes spoils, leaves the fallen
+Round 1:
+The lines meet -- steel range.
+Gruk's flash-freeze
+overwhelms Warband Veteran 1,
+deals 4 dmg!! [8 Power left]
+Warband Veteran 1 is rimed with frost.
+Warband Veteran 1 is frozen fast --
+they lose their next action!
+Warband Veteran 1 struggles up -- no action.
+Round 2:
+Gruk's flash-freeze
+overwhelms Warband Veteran 1,
+deals 6 dmg!!! [4 Power left]
+Warband Veteran 1 is rimed with frost.
+Warband Veteran 1 is frozen fast --
+they lose their next action!
+Gell: Sweep -- Warband Veteran 1,
+War Chief 3 both caught!
+Gell overwhelms Warband Veteran 1,
+deals 6 dmg!!! SLAIN.
+Gell overwhelms War Chief 3,
+deals 6 dmg!!!
+Warband Veteran 1 struggles up -- no action.
+War Chief 2 overwhelms Gell,
+deals 4 dmg!!
+Gell takes a wound: three ribs broken.
+War Chief 3 (11/17) outmaneuvers Gell,
+deals 2 dmg!
+Gell takes a wound:
+a shallow belly wound.
+Round 3:
+Gruk's flash-freeze
+outmaneuvers War Chief 3, deals 2 dmg!
+[0 Power left]
+War Chief 3 is rimed with frost.
+War Chief 3 is frozen fast --
+they lose their next action!
+Gell: Feint --
+War Chief 3's guard opens.
+Gell (11/17) overwhelms War Chief 3,
+deals 6 dmg!!!
+War Chief 2 outmaneuvers Gell,
+deals 4 dmg!!
+Gell takes a wound:
+a deep gash across the back.
+War Chief 3 struggles up -- no action.
+== Gell is badly cut up ==

@@ -1,5 +1,6 @@
 RPG2 MAP -- day 1
 the party is at Tergal > R10C26 > Sargul
+  > the raided trail > outer watch
 
             111111111122222222223
    123456789012345678901234567890
@@ -63,3 +64,10 @@ Umaia cities: Qurtuba R14C04, Jerusalem
 Tergal cities: Kyiv R10C27*
 Tergal known: Sargul R10C26, Ukhta
     R10C26
+
+-- quests in hand (where they lead) --
+
+[q01] Rival Warband (L14) @ Sargul
+  - the raided trail (L14): here, room
+    1/2
+  - R10C26: here
