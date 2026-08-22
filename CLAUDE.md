@@ -53,9 +53,9 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the sole active roadmap and build contract. Shipped work is
-  removed from it: since 2026-08-21 it carries only the roadmap BEYOND the
-  fixed-Europe and tile-economy arcs (the spring snapshot and trouble,
+- `plan.md` — the sole active roadmap. Shipped work is removed from it:
+  since 2026-08-22 it carries only the roadmap BEYOND the fixed-Europe,
+  tile-economy and medieval-world arcs (the spring snapshot and trouble,
   politics and war, fantasy and magic, settlements revisited, the deferred
   leftovers). Each item is a future design conversation; none is scheduled.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
@@ -75,8 +75,9 @@ the checked-out copy already contains the latest UI or rules changes.
 > plan.md marked SHIPPED or COMPLETE. develop.md's "Where a finished
 > feature is written up" has the full rule.
 
-The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `story.py`,
-`karma.py`, `conquest.py`, `session.py`, `tune.py`, the `bench_*.py` suite) are indexed in develop.md's
+The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `places.py`,
+`worldsim.py`, `karma.py`, `conquest.py`, `session.py`, `tune.py`, the
+`bench_*.py` suite) are indexed in develop.md's
 **Files** section — register any new file there.
 
 > Keep THIS file short and register-neutral: it is auto-injected into every

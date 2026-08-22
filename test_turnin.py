@@ -15,8 +15,8 @@ What is pinned here, in the cluster's build order:
   E. **The turn-in stage** -- the three-way XP split, `taken -> work_done
      -> turned_in | lost`, banding by the TURN-IN day, the return leg
      inside the window, lost-after-done keeping the banked 80% and firing
-     no failure rumor, and the exemption set (deliveries, war waves,
-     conquest, hell, dark).
+     no failure rumor, and the exemption set (deliveries, conquest,
+     hell, dark).
 
     python -m unittest -v test_turnin.py
 """
@@ -97,7 +97,6 @@ def _state(world: dict, *, day: int = 5, party=None, at=None) -> dict:
         "rooms": {},
         "site_clears": {},
         "holdings": {},
-        "story": None,
         "pact": None,
         "services": {},
         "visited": [here["key"]],
@@ -1035,11 +1034,6 @@ class TheExemptions(unittest.TestCase):
         log: list[str] = []
         session.advance_quest(self.state, log, quest["id"])
         return quest, log
-
-    def test_a_war_wave_pays_at_work_done(self):
-        quest, log = self._close(story_wave=0, deadline_day=None)
-        self.assertEqual(quest["status"], "done")
-        self.assertGreater(self.state["purse"].gold, 0)
 
     def test_a_conquest_garrison_job_pays_at_work_done(self):
         area = quests.settlements(self.world)[1]

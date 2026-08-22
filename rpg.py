@@ -2628,7 +2628,13 @@ class Entity:
     def_bonus: int = 0                  # flat DEFENSE pressure (the "armored"
                                         # dress trait; armor-the-system is a
                                         # separate roadmap item)
-    homeland: str = ""                  # firascir / mortellaria / tergal
+    homeland: str = ""                  # one of the nine countries
+    tongues: list[str] = field(default_factory=list)   # the languages this
+                                        # person speaks (people.roll_tongues:
+                                        # Latin plus the homeland's tongue).
+                                        # Empty = never rolled -- foes, sim
+                                        # bodies and dict NPCs, who carry no
+                                        # list at all (rules.md's Tongues)
     sex: str = ""                       # "m" / "f" (flavor)
     age: int = 0                        # 2d20+10 at creation (flavor)
     nickname: str = ""                  # schema slot only -- no nickname

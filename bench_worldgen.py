@@ -6,9 +6,11 @@ commands (2026-08-21, session 4).  The difference is the whole point: the
 tool used to sweep a private simulation with a plain seeded rng and no
 start tile, so its numbers were *like* the game's.  Every world here comes
 out of `places.create_geography`, so the numbers ARE the game's -- derived
-seeds, the nearby-trouble nudge, the authored answer keys and all.
+seeds, the nearby-trouble nudge, the authored answer keys and all.  The wars
+sweep opens the world layer on top of that (`worldsim.open_world`), because
+that is where they are rolled.
 
-Three sweeps, in the order the arc built them:
+Four sweeps, in the order the arcs built them:
 
   HARVEST   problem coverage, region count and size, the cause mix, the
             drought guarantee, and how often the campaign opens within
@@ -18,8 +20,12 @@ Three sweeps, in the order the arc built them:
             fiction-anchored soul totals, and the quiet-rich share.
   TRADE     routes after merging, land tiles on a road, ports, sea-lane
             tiles, crossroads, and the unfed mines.
+  WARS      (2026-08-22, the medieval world arc's session 5) which of the
+            six templates the roll deals, how many crowns take the cross,
+            where Andalusia's vassalage falls, how many countries end up at
+            war, and what a campaign year leaves standing on the map.
 
-Run:  python bench_worldgen.py [--seeds N] [--only harvest|census|trade]
+Run:  python bench_worldgen.py [--seeds N] [--only harvest|census|trade|wars]
 
 100 seeds is the default and takes about twenty seconds.  The arc's PINS
 were measured at 500; re-measure with `--seeds 500` after touching any
@@ -32,7 +38,9 @@ import argparse
 import time
 from collections import Counter
 
+import conquest
 import places
+import worldsim
 
 
 def worlds(seeds: int):
@@ -167,8 +175,79 @@ def sweep_trade(seeds: int) -> None:
                                or "none"))
 
 
+def _siege_odds(tier: str) -> float:
+    """The exact chance a siege takes a settlement of this tier -- both
+    rolls are uniform, so it is counted rather than sampled: the besieging
+    column's strength band against the garrison band `garrison_level`
+    rolls on."""
+    lo, hi = conquest.SIEGE_STRENGTH[tier]
+    glo, ghi = conquest.GARRISON_BANDS[tier]
+    wins = sum(1 for strength in range(lo, hi + 1)
+               for garrison in range(glo, ghi + 1) if strength >= garrison)
+    return wins / ((hi - lo + 1) * (ghi - glo + 1))
+
+
+def sweep_wars(seeds: int) -> None:
+    """THE ROLLED WARS AND THE CAMPAIGN SIM (2026-08-22, the medieval world
+    arc's session 5). What the roll deals -- how often each template comes
+    up, how many crowns take the cross, where the vassalage falls, how many
+    countries are at war -- and what a year of the campaign leaves on the
+    map, which is the sweep that says the caps hold."""
+    print(f"\n--- THE ROLLED WARS ({seeds} worlds, campaign to day "
+          f"{WAR_DAYS}) ---")
+    templates: Counter = Counter()
+    liege: Counter = Counter()
+    events: Counter = Counter()
+    crowns, fighting, marks, occupied, scars = [], [], [], [], []
+    for _seed, world in worlds(seeds):
+        worldsim.open_world(world)
+        wars = world["wars"]
+        templates.update(war["key"] for war in wars)
+        liege[world["lands"]["andalusia"]["liege"] or "independent"] += 1
+        crowns += [len(war["attackers"]) for war in wars
+                   if war["key"] == "crusade"]
+        fighting.append(len({polity for war in wars
+                             for polity in war["attackers"]
+                             + war["defenders"]}))
+        conquest.roll_campaigns(world, WAR_DAYS)
+        standing = [state for store in (world["tiles"],
+                                        world["settlement_slots"])
+                    for place in store.values()
+                    for state in place["states"] if state.get("active")]
+        events.update(state["id"] for state in standing)
+        marks.append(len(standing))
+        occupied.append(sum(len(war["occupied"]) for war in wars))
+        scars += [len(war["scars"]) for war in wars]
+    total = sum(templates.values())
+    print("  rolled: " + ", ".join(
+        f"{key} {100 * templates.get(key, 0) / seeds:.0f}%"
+        for key, _n in templates.most_common()))
+    print(f"  {'crowns taking the cross':<34} mean "
+          f"{sum(crowns) / max(1, len(crowns)):.2f}")
+    print("  Andalusia: " + ", ".join(f"{who} {100 * n / seeds:.0f}%"
+                                      for who, n in liege.most_common()))
+    _stat("countries at war (of 9)", fighting, ".1f")
+    _stat("standing war marks a world", marks, ".1f")
+    _stat("scars a war", scars, ".2f")
+    _stat("settlements occupied a world", occupied, ".2f")
+    print(f"  (the caps: {conquest.SCAR_CAP} scars a war, "
+          f"{conquest.OCCUPIED_CAP} occupations a war, so "
+          f"{worldsim.WARS_ROLLED * (conquest.SCAR_CAP + conquest.OCCUPIED_CAP)}"
+          f" marks a world is the ceiling)")
+    print("  marks: " + ", ".join(f"{state} {n / seeds:.2f}"
+                                  for state, n in events.most_common()))
+    print("  a siege takes the town: " + ", ".join(
+        f"{tier} {100 * _siege_odds(tier):.0f}%"
+        for tier in ("village", "town", "city")))
+    print(f"  ({total // seeds} wars a world, "
+          f"{len(templates)} of 6 templates reached)")
+
+
+WAR_DAYS = 365      # a campaign year: long enough for every scar to have
+                    # been laid and expired several times over
+
 SWEEPS = {"harvest": sweep_harvest, "census": sweep_census,
-          "trade": sweep_trade}
+          "trade": sweep_trade, "wars": sweep_wars}
 
 
 def main() -> None:
@@ -181,7 +260,8 @@ def main() -> None:
         ap.error(           # should say so rather than being a
             "--seeds wants at least one world")   # ZeroDivisionError three
                                                   # frames down
-    chosen = [args.only] if args.only else ["harvest", "census", "trade"]
+    chosen = ([args.only] if args.only
+              else ["harvest", "census", "trade", "wars"])
     started = time.time()
     for name in chosen:
         SWEEPS[name](args.seeds)

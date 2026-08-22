@@ -10,9 +10,10 @@ bench number.
 
 The design (2026-07-11, designer-vetted):
 
-- **Everybody is human.** A person's `homeland` is Firascir, Mortellaria or
-  Tergal. It selects a name pool and cultural routing only; it never changes
-  stats, traits or combat capability.
+- **Everybody is human.** A person's `homeland` is one of the nine
+  countries. It selects a name pool, cultural routing and -- since
+  2026-08-22 -- the TONGUES they speak; it never changes stats, traits or
+  combat capability.
 - **Traits are a sketch, not a census**: ONE behavioral category (of five)
   and TWO presentation categories (of four), one trait each. What isn't
   described is average for the archetype; the DM edits any generated
@@ -43,10 +44,11 @@ import random
 
 import rpg
 from rpg import Entity, MEDS_INTERVAL_DAYS, MEDS_PRICE
+from places import LAND_SPECS
 from quests import HOMELANDS
 
 # --------------------------------------------------------------------------- #
-# Homelands (the three countries; quests.HOMELANDS is the source of truth)
+# Homelands (the nine countries; quests.HOMELANDS is the source of truth)
 # --------------------------------------------------------------------------- #
 SEXES = ("m", "f")
 
@@ -57,11 +59,56 @@ def roll_age(rng: random.Random) -> int:
     return rng.randint(1, 20) + rng.randint(1, 20) + 10
 
 
-# 25 male + 25 female names per pool. Firascir and Mortellaria share the
-# western human pool. Tergal keeps its established steppe names, now names
-# of humans from Tergal. No epithets: "Inga", never "Inga the precise".
+# --------------------------------------------------------------------------- #
+# The tongues (2026-08-22, the medieval world arc's session 3)
+# --------------------------------------------------------------------------- #
+# Nine languages, one per country, named in fiction by the country that speaks
+# it -- "the Seraptanian tongue" -- except Byzantium's, which is LATIN: the
+# empire's own speech and, at the same time, the language of the church, the
+# schools and the chanceries everywhere. So everyone in the party can talk to
+# a priest, a scholar or a clerk, and nobody can necessarily talk to a farmer.
+#
+# The word itself is the catalog's (`place_catalog.json`'s `lands` records own
+# `tongue`), so the table here is a READER, not a second copy: a country's
+# tongue is part of its identity and lives with the rest of it.
+#
+# THE ROLL: everyone speaks Latin plus their homeland's tongue. A Byzantine's
+# homeland tongue IS Latin, so he speaks Latin plus one other tongue, rolled
+# -- an empire's man has been somewhere. NPCs carry no list at all: a local
+# speaks the local tongue, and clergy, scholars and officials speak Latin too,
+# everywhere. There is no engine gate yet; dm.md's "The tongues at the table"
+# is the whole of the rule in play.
+LANGUAGES = {country: LAND_SPECS[country]["tongue"] for country in HOMELANDS}
+LATIN = LANGUAGES["byzantium"]
+
+
+def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
+    """What this person speaks: Latin first, then their homeland's tongue --
+    or, for a Byzantine, one other tongue drawn from the eight."""
+    home = LANGUAGES[homeland]
+    if home == LATIN:
+        home = rng.choice([LANGUAGES[c] for c in HOMELANDS
+                           if LANGUAGES[c] != LATIN])
+    return [LATIN, home]
+
+
+def tongue_line(e: Entity) -> str:
+    """The sheet's SPEAKS row for a person who has a list."""
+    return "speaks: " + ", ".join(e.tongues)
+
+
+# --------------------------------------------------------------------------- #
+# Names
+# --------------------------------------------------------------------------- #
+# 25 male + 25 female names per pool, one pool per COUNTRY (2026-08-21, the
+# nine). A name is the most country-shaped thing in the game: Seraptania and
+# Teutonia share the western culture's card deck without sharing a syllable.
+# Phyrascia keeps the old Firascir pool whole and Tergal its steppe one; the
+# other seven are authored here. These are invented sounds, not claims about
+# any real language (writing.md). No epithets: "Inga", never "Inga the
+# precise".
 NAMES: dict[str, dict[str, tuple[str, ...]]] = {
-    "firascir": {
+    "phyrascia": {
         "m": ("Brand", "Corvin", "Doran", "Kael", "Tomas", "Veld", "Aldric",
               "Berrick", "Cole", "Dunstan", "Edwin", "Garrick", "Hale",
               "Jorik", "Lambert", "Martel", "Osric", "Perrin", "Quentin",
@@ -70,6 +117,89 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
               "Bess", "Cateline", "Dara", "Elsbeth", "Ferra", "Gwen",
               "Hilde", "Isolde", "Jenna", "Lysse", "Maud", "Nel", "Odile",
               "Petra", "Rosamund", "Sabine", "Tilda", "Wynne"),
+    },
+    "seraptania": {
+        "m": ("Thierry", "Gaspard", "Amaury", "Bertrand", "Clovis",
+              "Didier", "Etienne", "Fulbert", "Gilles", "Hugues",
+              "Jourdain", "Lancelin", "Mathis", "Nicolet", "Olivier",
+              "Perceval", "Raoul", "Sevrin", "Thibaut", "Urbain",
+              "Vachel", "Yvain", "Benoit", "Corentin", "Guiscard"),
+        "f": ("Alienor", "Margot", "Blanche", "Clemence", "Delphine",
+              "Emeline", "Fleurine", "Gisele", "Heloise", "Isabeau",
+              "Jehanne", "Lisette", "Mahaut", "Nicolette", "Ombline",
+              "Perrine", "Roselle", "Sidonie", "Thomasse", "Violaine",
+              "Ysabel", "Aude", "Berthe", "Colette", "Eglantine"),
+    },
+    "teutonia": {
+        "m": ("Konrad", "Dietrich", "Albrecht", "Berthold", "Eckhart",
+              "Friedhelm", "Gunther", "Hartmut", "Ingram", "Joachim",
+              "Kunibert", "Lothar", "Manfred", "Norbert", "Otmar",
+              "Reinhold", "Siegbert", "Traugott", "Ulfried", "Volkmar",
+              "Wendel", "Adalbert", "Burkhard", "Gerlach", "Heinrich"),
+        "f": ("Adelheid", "Greta", "Brunhild", "Cordula", "Dorothea",
+              "Elfriede", "Frieda", "Gerlinde", "Hedwig", "Irmgard",
+              "Jutta", "Klothilde", "Liesel", "Mechthild", "Nortrud",
+              "Ottilie", "Roswitha", "Sieglinde", "Traudel", "Ursel",
+              "Waltraud", "Agnes", "Berta", "Kunigunde", "Hildegard"),
+    },
+    "thule": {
+        "m": ("Orm", "Ketil", "Bjarni", "Egil", "Grim", "Hakon", "Ivar",
+              "Jorund", "Knut", "Leif", "Mord", "Njal", "Ottar",
+              "Ragnvald", "Sigurd", "Thorstein", "Ulf", "Vali", "Yngvar",
+              "Arnkel", "Bersi", "Gunnar", "Hrafn", "Steinar", "Torgeir"),
+        "f": ("Astrid", "Sigrun", "Bergljot", "Dagny", "Eirny", "Freydis",
+              "Gudrun", "Halla", "Ingunn", "Jorunn", "Katla", "Liv",
+              "Groa", "Ragnhild", "Solveig", "Thora", "Unn", "Valdis",
+              "Yrsa", "Asa", "Bodil", "Gyda", "Herdis", "Sigrid",
+              "Torhild"),
+    },
+    "vellisclavia": {
+        "m": ("Bogdan", "Vsevolod", "Boleslav", "Dobrynia", "Gleb",
+              "Iziaslav", "Kazimir", "Lubomir", "Mstislav", "Nemanja",
+              "Ostromir", "Predrag", "Radzim", "Stanislav", "Tihomir",
+              "Vratislav", "Yaropolk", "Zbigniew", "Branko", "Danilo",
+              "Jarek", "Kuzma", "Miroslav", "Sviatopolk", "Vukan"),
+        "f": ("Ludmila", "Milena", "Bogumila", "Dobrava", "Jaromira",
+              "Krasimira", "Lubica", "Marzena", "Nedelka", "Olesia",
+              "Predslava", "Radoslava", "Svetlana", "Vesna", "Zlata",
+              "Bozena", "Danica", "Gorislava", "Jadwiga", "Kalina",
+              "Nevena", "Slavena", "Wanda", "Yarina", "Zorka"),
+    },
+    "byzantium": {
+        "m": ("Cassius", "Petronius", "Aurelius", "Marcellus", "Valerius",
+              "Severus", "Gaius", "Lucius", "Tiberius", "Flavius",
+              "Julianus", "Constans", "Decimus", "Fabius", "Hortensius",
+              "Justus", "Laelius", "Maximus", "Nerva", "Octavius",
+              "Quintus", "Rufinus", "Silvanus", "Titus", "Varro"),
+        "f": ("Livia", "Marcella", "Aurelia", "Claudia", "Drusilla",
+              "Fabiola", "Helena", "Junia", "Lavinia", "Octavia",
+              "Paulina", "Quintilla", "Rufina", "Serena", "Tullia",
+              "Valeria", "Verina", "Aemilia", "Cornelia", "Domitilla",
+              "Faustina", "Julia", "Lucilla", "Priscilla", "Vibia"),
+    },
+    "andalusia": {
+        "m": ("Alvaro", "Rodrigo", "Bermudo", "Diego", "Esteban",
+              "Fadrique", "Gonzalo", "Hernan", "Inigo", "Jaime", "Lope",
+              "Martin", "Nuno", "Ordono", "Pelayo", "Ramiro", "Sancho",
+              "Tello", "Vela", "Ximeno", "Alfonso", "Bernal", "Garcia",
+              "Munio", "Suero"),
+        "f": ("Beatriz", "Ines", "Aldonza", "Berenguela", "Constanza",
+              "Dulce", "Elvira", "Fronilde", "Guiomar", "Hermesinda",
+              "Jimena", "Leonor", "Mayor", "Nunila", "Oria", "Ramona",
+              "Sancha", "Teresa", "Urraca", "Violante", "Aurembiaix",
+              "Brianda", "Estefania", "Isabel", "Mencia"),
+    },
+    "umaia": {
+        "m": ("Harun", "Yusuf", "Amir", "Bilal", "Faisal", "Ghassan",
+              "Hakim", "Idris", "Jamil", "Kamal", "Latif", "Mansur",
+              "Nadir", "Omar", "Qasim", "Rashid", "Salim", "Tariq",
+              "Umar", "Wahid", "Zahir", "Anwar", "Bashir", "Nasir",
+              "Sufyan"),
+        "f": ("Zaynab", "Layla", "Amina", "Basma", "Dalila", "Farida",
+              "Ghada", "Habiba", "Iman", "Jamila", "Karima", "Latifa",
+              "Maryam", "Nadia", "Rabia", "Safiya", "Thurayya", "Wafa",
+              "Yasmin", "Zahra", "Aisha", "Halima", "Nusayba", "Rania",
+              "Salma"),
     },
     "tergal": {
         "m": ("Gruk", "Marok", "Thokk", "Drog", "Urzag", "Karg", "Snagg",
@@ -83,10 +213,12 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
     },
 }
 
-# Firascir and Mortellaria deliberately draw from the same pool. Copy the
-# mapping so callers cannot accidentally mutate one country's table through
-# the other name.
-NAMES["mortellaria"] = dict(NAMES["firascir"])
+if set(NAMES) != set(HOMELANDS):
+    raise ValueError(f"every country needs a name pool; got {sorted(NAMES)}")
+for _country, _pools in NAMES.items():
+    for _sex, _pool in _pools.items():
+        if len(_pool) != 25 or len(set(_pool)) != 25:
+            raise ValueError(f"{_country}/{_sex}: 25 distinct names")
 
 
 def pick_name(rng: random.Random, homeland: str, sex: str,
@@ -240,7 +372,8 @@ def make_character(rng: random.Random, level: int = 1,
                    used_names: set[str] | None = None,
                    with_traits: bool = True,
                    wizard: bool = False) -> Entity:
-    """One person, any level: homeland/sex/name/age, the three-trait sketch,
+    """One person, any level: homeland/sex/name/age, the tongues they speak,
+    the three-trait sketch,
     stats budgeted with trait floor/ceiling shifts, then grown
     to `level` by the reference progression doctrine (rpg.develop_hero --
     points mostly pre-spent, quality steel from L4). Works for recruits and,
@@ -276,6 +409,7 @@ def make_character(rng: random.Random, level: int = 1,
         h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
     h.homeland, h.sex, h.age, h.traits = (
         homeland, sex, roll_age(rng), traits)
+    h.tongues = roll_tongues(rng, homeland)
     if "armored" in traits.values():
         h.def_bonus = ARMORED_DEF_BONUS
     rpg.develop_hero(h, level, rng)
@@ -404,6 +538,8 @@ def character_sheet(e: Entity) -> list[str]:
         return bool(trait_note(value)) and value not in TRAIT_GOLD
 
     lines = [person_line(e), "  " + rpg.stat_line(e)]
+    if e.tongues:
+        lines.append("  " + tongue_line(e))
     notes = [f"{e.traits[cat]}{trait_note(e.traits[cat])}"
              for cat in sorted(e.traits)
              if wanted(e.traits[cat])]
@@ -471,7 +607,7 @@ def main() -> None:
         print(line)
     print()
     print("--- two cast NPCs (targeted: the DM fixes homeland/role) ---")
-    print(npc_line(make_npc(rng, "firascir", "chief constable",
+    print(npc_line(make_npc(rng, "phyrascia", "chief constable",
                             used_names=used)))
     print(npc_line(make_npc(rng, "tergal", "caravan-master",
                             used_names=used)))

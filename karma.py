@@ -143,8 +143,7 @@ NEWS_DAYS = 6           # THE NEWS CYCLE (2026-08-04, the dark rework's
 # numbers later (develop.md, Balance / tuning).
 TASK_PIN_LEVELS = (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)
                         # hell's work is PINNED to the PC's odd levels --
-                        # ten milestone jobs across a career, the war
-                        # waves' proven shape (story.WAVE_LEVELS). The
+                        # ten milestone jobs across a career. The
                         # interval clock died with the 2026-08-04 rework;
                         # pin 1 fires at level 1 and IS the tutorial job
 TASK_GRACE_DAYS = 10    # an assignment may sit UNTAKEN this long -- the

@@ -9,8 +9,8 @@ order:
      flag surviving materialization and the save, and what an inactive
      board actually does: no ordinary capacity, no ordinary refill, nothing
      posted at worldgen.
-  B. **The forced families** -- a world card's job, a courier run, a story
-     wave, hell's assignment and the DM's forged work all reach an inactive
+  B. **The forced families** -- a world card's job, a courier run,
+     hell's assignment and the DM's forged work all reach an inactive
      settlement, none of them consumes ordinary capacity, and none of them
      turns the board active.
   C. **The three-day rumor radius** -- who is in earshot (known,
@@ -45,7 +45,6 @@ import places
 import quests
 import rpg
 import session
-import story
 import worldsim
 
 
@@ -73,7 +72,7 @@ def _state(world: dict, at: dict, *, day: int = 5) -> dict:
         "position": session._area_position(at),
         "accepted": [], "active_quest": None, "loose_ends": [],
         "foe_count": 0, "pending": None, "rooms": {}, "site_clears": {},
-        "holdings": {}, "story": None, "pact": None, "services": {},
+        "holdings": {}, "pact": None, "services": {},
         "visited": [at["key"]],
     }
 
@@ -91,8 +90,8 @@ def _board_output(state: dict, settlement: str | None = None) -> str:
 def _inactive(world: dict) -> dict:
     """A materialized settlement whose ordinary board is shut AND which the
     forced families have not already posted to: the tests below measure a
-    forecast from zero, and a story wave standing at the first shut board is
-    a legal world, not a broken one."""
+    forecast from zero, and a courier run standing at the first shut board
+    is a legal world, not a broken one."""
     return next(s for s in quests.settlements(world)
                 if not s["board_active"] and not s["quests"])
 
@@ -134,7 +133,7 @@ class TheBoardActivityRoll(unittest.TestCase):
         for seed in (3, 8, 21):
             world = _world(seed)
             capitals = [s for s in quests.settlements(world) if s["capital"]]
-            self.assertEqual(len(capitals), 3, seed)
+            self.assertEqual(len(capitals), len(places.COUNTRIES), seed)
             for capital in capitals:
                 self.assertTrue(capital["board_active"], capital["name"])
 
@@ -231,8 +230,7 @@ class TheForcedFamilies(unittest.TestCase):
     def test_the_ordinary_reading_of_each_flag(self) -> None:
         self.assertTrue(quests.is_ordinary_posting({"id": "q1"}))
         for forced in ({"kind": "delivery"}, {"world_card": "x/y"},
-                       {"story_wave": 0}, {"hell_task": True},
-                       {"forced": True}):
+                       {"hell_task": True}, {"forced": True}):
             self.assertFalse(quests.is_ordinary_posting(forced), forced)
 
     def test_a_world_cards_job_reaches_a_shut_board(self) -> None:
@@ -306,17 +304,6 @@ class TheForcedFamilies(unittest.TestCase):
         ordinary = [q for q in quests.open_quests(world, town)
                     if quests.is_ordinary_posting(q)]
         self.assertEqual(len(ordinary), slots)
-
-    def test_a_story_wave_reaches_its_settlement_whatever_its_board(self) -> None:
-        world = _world(27)
-        rng = random.Random(3)
-        tale = story.init_story(world, rng, pc_homeland="firascir")
-        tale["wave_posted"] = 0
-        quest, lines = story.post_wave(world, tale, rng, day=4)
-        origin = world["areas"][quest["origin"]]
-        self.assertIn(quest["id"], origin["quests"])
-        self.assertFalse(quests.is_ordinary_posting(quest))
-        self.assertTrue(lines)
 
     def test_forced_work_does_not_eat_the_ordinary_capacity(self) -> None:
         """An active board keeps its own slot count of generated work even
@@ -574,7 +561,8 @@ class TheTargetRadius(unittest.TestCase):
         quest's own rng picks from it: no dict or hash order anywhere."""
         world = _world(8)
         origin = world["areas"][world["start_area"]]
-        template = quests.TEMPLATES[origin["homeland"]][0]
+        template = quests.TEMPLATES[
+            places.CULTURE_OF[origin["homeland"]]][0]
         requirement = quests.quest_place_requirement(template)
         first = quests._select_quest_area(world, origin["key"], requirement,
                                           random.Random(5))

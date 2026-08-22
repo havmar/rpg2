@@ -2517,3 +2517,296 @@ ends).
 
 **Nothing was tuned.** No lever moved. The session added readers, a price
 factor of three static rows, and a recovered content packet.
+
+## 2026-08-21 (E) — The map of nine (medieval arc session 2): three new cities, and nothing else moved
+
+The country overlay replaced the geometric three-way split and three
+historical cities joined the answer key (Cordoba, Cairo, Jerusalem).
+Neither the census law, the harvest law nor the route law was touched, so
+this is a re-measurement of the same three sweeps over a map whose
+OWNERSHIP changed and whose authored city list grew by three.
+
+`python bench_worldgen.py --seeds 500` (90s). The column beside each
+number is session 4's own 500-world run (benchlog 2026-08-21 (D)).
+
+### The last harvest
+
+| measure | now | before |
+|---|---|---|
+| problem coverage (% of land) | 17.7% | 17.7% |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | **0** | 0 |
+| trouble within 5 days of the start | **87%** | 86% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 852 / 554 |
+
+Spoken words are identical to the tenth: legendary 3.5%, excellent 22.1%,
+ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%. The layer reads
+no country and no capital, so the only thing that could move is the
+nearby-trouble nudge, which reads `world["party_tile"]` — and the start
+draw moved because three tiles gained authored slots. It moved by one
+point.
+
+### The settlement census
+
+| measure | now | before |
+|---|---|---|
+| metropolis a world | **4.0** | 3.0 |
+| city | **18.7** | 17.7 |
+| town | **101.4** | 100.6 |
+| village | 401.9 | 401.7 |
+| hamlet | 91.5 | 91.6 |
+| total settlements | **617.5** | 614.5 |
+| slots filled a land tile | 1.97 | 1.96 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | **1,497,393** | 1,319,163 |
+| quiet rich country (% no town) | 38% | 37% |
+| free (chartered) settlements | 66.6 | 63.6 |
+| manors | 50.9 | 51.5 |
+
+Every moved line is the three new authored cities and nothing else: Cairo
+is the fourth metropolis (and ~178k of the soul total on its own, the
+scale doctrine's headcount for a hundred-thousand city), Cordoba is the
+extra city, Jerusalem the extra town, and each of the three carries a free
+charter by the authored rule, which is most of the charter line's +3.
+
+### The trade network
+
+| measure | now | before |
+|---|---|---|
+| routes after merging | **59.0** | 58.7 |
+| land tiles on a route (of 314) | **115.7** | 113.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | **31.7** | 33.6 |
+| unfed mines | **Falun, 500/500** | Falun, 500/500 |
+
+The trade column is the one place the OVERLAY itself is visible. Three of
+the nineteen goods route to `capital`, and there are nine capitals now
+instead of three: the same cargo travels shorter, better-spread legs, so
+the network covers two more land tiles while concentrating on two fewer
+crossroads. Falun is still the one mine no granary can reach, which is
+the authored fact that pins the food-caravan card.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none of them imports `places`, `quests` or `worldsim`, and
+no combat, pay, threat or refill constant changed in this session.
+`bench_abilities.py` and `bench_quests.py` were not compared and cannot be
+(both are still non-reproducible against themselves; develop.md's Files
+entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session re-drew ownership,
+split the catalog and authored content.
+
+## 2026-08-22 — The towns & the tongues (medieval arc session 3): a sanity run that moved nothing
+
+The session authored 164 town names and rolled a two-entry language list
+onto every generated person. Neither touches a law: the town name is read
+when a settlement slot MATERIALIZES, and worldgen materializes nothing but
+the start; the tongue roll lives inside `people.make_character`, which no
+bench and no sim imports (its throwaway duos come from `rpg.make_party`).
+So this is a sanity run, recorded because every measurement is.
+
+`python bench_worldgen.py --seeds 500` (89s). The column beside each
+number is session 2's own 500-world run (benchlog 2026-08-21 (E)).
+
+| measure | now | before |
+|---|---|---|
+| problem coverage (% of land) | 17.7% | 17.7% |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis a world | 4.0 | 4.0 |
+| city | 18.7 | 18.7 |
+| town | 101.4 | 101.4 |
+| village | 401.9 | 401.9 |
+| hamlet | 91.5 | 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+Every line identical, including the spoken harvest words (legendary 3.5%,
+excellent 22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic
+0.4%). One name in a shipped pool changed — Tergal's hamlet `Sarai`
+became `Saruk`, because the real Horde capital took the word — which the
+bench cannot see: it counts settlements and never asks their names.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none of them imports `places`, `people`, `quests` or
+`worldsim`, and no combat, pay, threat or refill constant changed.
+`bench_abilities.py` and `bench_quests.py` were not compared and cannot be
+(both are still non-reproducible against themselves; develop.md's Files
+entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session authored content and
+added one naming rule and one roll.
+
+## 2026-08-22 (B) — The norse packet & the nine-land relations (medieval arc session 4): a sanity run that moved nothing
+
+`python bench_worldgen.py --seeds 500`, run after the session, against the
+same command run for session 3 (the entry above). **Every line identical.**
+
+| line | before | after |
+|---|---|---|
+| problem coverage (% of land) | 17.7 | 17.7 |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis / city / town / village / hamlet | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+The spoken harvest words are identical too (legendary 3.5%, excellent
+22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%).
+
+This is the predicted result and the reason the run is recorded rather
+than skipped: `bench_worldgen.py` imports `places` and nothing else, and
+the session touched only `worldsim.py` — a card packet, a relations table,
+a fact list and one state rename. The world layer is rolled on a DERIVED
+rng (`open_world`, since the world-frame build), so even the tension roll
+changing under Byzantium's new land-specific entry cannot reach a
+worldgen stream the bench reads.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none imports `worldsim`, and no combat, pay, threat or
+refill constant changed. `bench_abilities.py` and `bench_quests.py` were
+not compared and cannot be (both remain non-reproducible against
+themselves; develop.md's Files entries carry the warning).
+
+**Nothing was tuned.** No lever moved. The session authored content and
+re-scoped what was already there.
+
+## 2026-08-22 (C) — The rolled wars & the campaign sim (medieval arc session 5): three sweeps unmoved, one sweep new
+
+`python bench_worldgen.py --seeds 500`, run after the session. The bench
+grew a FOURTH sweep, `wars`, and it is the only one that opens the world
+layer (`worldsim.open_world`) on top of `create_geography` — that is where
+the wars are rolled — and then rolls each world's campaign to `WAR_DAYS`
+(365).
+
+### The three older sweeps: identical to session 4's run
+
+| line | before | after |
+|---|---|---|
+| problem coverage (% of land) | 17.7 | 17.7 |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis / city / town / village / hamlet | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+The spoken harvest words are identical too (legendary 3.5%, excellent
+22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%). This is
+the predicted result: the war roll runs on a stream of its own
+(`random.Random(f"wars:{seed}")`) inside `open_world`, which those three
+sweeps never call at all, and the campaign sim writes only its own states.
+
+### THE ROLLED WARS — the new sweep, 500 worlds, campaign to day 365
+
+```
+  rolled: horde 54%, hundred-years 53%, vikings 52%,
+          eastern-war 49%, crusade 47%, reconquista 46%
+  crowns taking the cross            mean 2.01
+  Andalusia: independent 36%, umaia 34%, byzantium 30%
+  countries at war (of 9)            mean 5.9 (min 3.0, max 8.0)
+  standing war marks a world         mean 20.0 (min 12.0, max 24.0)
+  scars a war                        mean 4.81 (min 1.00, max 6.00)
+  settlements occupied a world       mean 5.80 (min 3.00, max 6.00)
+  marks: war-raided 6.81, occupied 5.79, battlefield 3.48,
+         sacked 2.43, war-camp 0.99, under-siege 0.49
+  a siege takes the town: village 50%, town 50%, city 45%
+  (3 wars a world, 6 of 6 templates reached)
+```
+
+What the numbers say, read against the design:
+
+- **The deal is flat.** Three of six with no exclusion rules gives each
+  template 50% and the measured spread is 46-54% over 500 worlds, which is
+  sampling noise at this count. The crusade fields 2.01 crowns on a 1-3
+  draw, dead centre. The d3 is 36/34/30.
+- **Two thirds of the world is at war** — 5.9 countries of 9, and never
+  fewer than 3 or more than 8. Nine countries and three wars, one of which
+  (the Raiding Season) has two defenders and one of which (the Crusade)
+  can field four attackers, so the map is rarely quiet and never entirely
+  loud. That is the intended shape.
+- **The caps bind, and they bind early.** 20.0 standing marks a world
+  against a 24 ceiling, 4.81 scars a war against a cap of 6, and 5.80
+  occupations against a hard 6. A campaign year is long enough for nearly
+  every war to reach both caps, which means the map's war texture is
+  effectively a CONSTANT after the first months rather than a growing
+  scar — exactly what was wanted from "static wars", and the reason the
+  caps are the design and the event weights only decide which marks fill
+  them.
+- **The mark mix is raids and occupations.** `war-raided` (30 days) is the
+  commonest standing mark at 6.81 and `occupied` (permanent) is second at
+  5.79 for the obvious reason. `under-siege` at 0.49 is the rarest because
+  it stands only 12 days AND only when the siege fails; a successful one
+  becomes `sacked` (2.43, at 90 days).
+- **A siege is a coin-flip below city grade.** The odds are exact rather
+  than sampled (both rolls are uniform): 50% for a hamlet or village, 50%
+  for a town, 45% for a city, a metropolis or a capital. The band table
+  was authored to straddle `GARRISON_BANDS`, and this is the check that it
+  does.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none imports `worldsim`, `conquest` or `places`, and no
+combat, pay, threat or refill constant changed. `bench_abilities.py` and
+`bench_quests.py` were not compared and cannot be (both remain
+non-reproducible against themselves; develop.md's Files entries carry the
+warning).
+
+**Nothing was tuned.** No existing lever moved. Every number above comes
+out of tables this session authored (`WAR_PULSE`, `OCCUPIED_CAP`,
+`SCAR_CAP`, `EVENT_WEIGHTS`, `SCAR_DAYS`, `SIEGE_STRENGTH`), and they are
+hand-set and unverified at the table like every other conquest knob.

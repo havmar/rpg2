@@ -39,7 +39,6 @@ import places
 import quests
 import rpg
 import session
-import story
 import weapons
 
 
@@ -380,11 +379,22 @@ class TheOpeningGround(unittest.TestCase):
         _, out = run_new("--seed", "3", "--level", "10")
         self.assertIn("OPENING HOOK", out)
 
-    def test_the_war_line_stops_promising_level_two_to_a_career_party(self):
-        _, low = run_new("--seed", "3", "--level", "1")
-        self.assertIn(f"level-{story.WAVE_LEVELS[0]} party", low)
-        _, high = run_new("--seed", "3", "--level", "12")
-        self.assertIn("already due", high)
+    def test_a_new_game_names_the_three_standing_wars(self):
+        """The scripted questline is gone (2026-08-21) and the ROLLED wars
+        took its place in the print (2026-08-22, the medieval world arc's
+        session 5). What the line says is different in kind: these are not
+        the party's job, they are the wars the world is already fighting.
+        The old wave layer stays gone at any start level."""
+        for level in ("1", "12"):
+            state, out = run_new("--seed", "3", "--level", level)
+            self.assertIn("Three wars are standing", out)
+            wars = state["world"]["wars"]
+            self.assertEqual(len(wars), 3)
+            for war in wars:
+                self.assertIn(war["name"], out)
+            for word in ("story layer is armed", "a war is seeded",
+                         "war wave"):
+                self.assertNotIn(word, out.lower())
 
 
 # --------------------------------------------------------------------------- #
@@ -395,7 +405,7 @@ class TheOpeningGround(unittest.TestCase):
 class TheTraitRollback(unittest.TestCase):
     def test_a_cast_npc_carries_no_sketch(self):
         rng = random.Random(2)
-        npc = people.make_npc(rng, "firascir", "chief constable")
+        npc = people.make_npc(rng, "phyrascia", "chief constable")
         self.assertNotIn("traits", npc)
         self.assertEqual(set(npc),
                          {"name", "homeland", "sex", "age", "role"})
@@ -407,9 +417,9 @@ class TheTraitRollback(unittest.TestCase):
         self.assertNotIn("level", people.make_npc(rng, "tergal", "boss"))
 
     def test_the_npc_line_is_name_role_homeland_sex_age(self):
-        npc = people.make_npc(random.Random(5), "mortellaria", "sage")
+        npc = people.make_npc(random.Random(5), "byzantium", "sage")
         line = people.npc_line(npc)
-        self.assertEqual(line, f"{npc['name']} (sage) -- mortellaria "
+        self.assertEqual(line, f"{npc['name']} (sage) -- byzantium "
                                f"{npc['sex']}, "
                                f"age {npc['age']}")
 
@@ -435,7 +445,7 @@ class TheTraitRollback(unittest.TestCase):
         (kinds, skins, leader, label)."""
         rng = random.Random(6)
         for build in (karma.build_posse, karma.build_hell_posse):
-            _kinds, _skins, leader, _label = build(5, "firascir", rng)
+            _kinds, _skins, leader, _label = build(5, "phyrascia", rng)
             self.assertNotIn("traits", leader)
             self.assertEqual(leader["level"], 5)
 

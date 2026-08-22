@@ -2279,7 +2279,7 @@ inputs (the notice contest):
 
 ## Ranged arms in the human world (2026-08-15)
 
-All three countries use the same calibrated combat ladder. Bows, slings and
+All nine countries use the same calibrated combat ladder. Bows, slings and
 powder weapons are equipment and role choices, not biological entitlements;
 guns and revolvers can be bought wherever the corresponding shop stock is
 available. Country-authored war-machine reskins remain display names over
@@ -2773,7 +2773,6 @@ with a giver to return to:
 | kind | why |
 |---|---|
 | **deliveries** | the hand-off at the destination already IS the turn-in |
-| **war waves** | no clock, the giver is a ruler mid-war, and wave 3's scripted fall makes the return scene impossible by design |
 | **conquest garrisons** | no giver — the town is the pay |
 | **hell assignments, dark work** | hell verifies its own work and the purse arrives by infernal delivery (narrate the receipt); a settled twist is a hand-off on the spot by definition |
 
@@ -2855,11 +2854,10 @@ lie within a week. What replaces the guarantee is measured, not asserted: the
 career sim runs a full 1–20 career with the board never running dry
 (benchlog).
 
-One kind of job deliberately carries **no clock**: the war waves (an authored
-questline does not lapse). Hell's assignments carry their own pair of clocks
-instead — the grace to take one, then the completion window — and never lapse
-off the board (the Karma & Heat add-on). The DM's `forge` is timeless unless
-given `--days N`.
+Hell's assignments carry their own pair of clocks — the grace to take one,
+then the completion window — and never lapse off the board (the Karma & Heat
+add-on). The conquest garrison job carries none (a keep does not lapse), and
+the DM's `forge` is timeless unless given `--days N`.
 - **Five races, one catalog: reskinning.** Display name is fiction, the stat
   row is mechanics — a "Scrap-Hound" is the wolf row, a named gunner
   "Hold-Lord" the wight. Balance never forks on a skin.
@@ -2940,8 +2938,7 @@ road is the content:
   the hand-off fires whenever the party stands at the destination with
   the quest active — at travel arrivals, or when a fight there settles.
   Every delivery carries a giver face at the origin AND a **recipient**
-  face at the destination (the turn-in scene), plus an epilogue. An
-  occupied destination cannot pay — the delivery waits on the war.
+  face at the destination (the turn-in scene), plus an epilogue.
 - **A couple live at a time** (2): worldgen posts them and the board's
   refill tops them back up as they are run or lapse. On the board a
   delivery shows **DELIVERY** where a level would go: the road's danger
@@ -2968,17 +2965,86 @@ materialization, knowledge, contents, mutation, the edge cost, the
 pathfinder and the map render. `quests.py` owns encounter placement and the
 road's tables; `session.py` owns position, the walk itself, and displays.
 
+## Nine countries over four cultures (2026-08-21)
+
+The world is **nine countries** wearing **four cultures**. The split is the
+whole of what a country is now:
+
+| country | seat of | tongue | culture | capital |
+|---|---|---|---|---|
+| Phyrascia | Britannia | Phyrascian | western | London |
+| Seraptania | France | Seraptanian | western | Paris |
+| Teutonia | Germany and the Low Countries | Teutonic | western | Prague |
+| Vellisclavia | Poland and the Rus | Vellisclav | western | Moscow |
+| Thule | Scandinavia | Norse | norse | Stockholm |
+| Byzantium | Italy, the Balkans, Anatolia | Latin | southern | Constantinople |
+| Andalusia | Iberia | Andalusian | southern | Cordoba |
+| Umaia | Africa and the Levant | Umaian | southern | Cairo |
+| Tergal | the Pontic steppe | Tergal | steppe | Kyiv |
+
+- **A COUNTRY owns identity**: its tiles on the authored overlay, its
+  capital, its tongue, its settlement and person name pools, the real
+  town names on its ground, its ruler's
+  title, its garrison commander's title, the standing facts that are its
+  own, and its place in the relations table.
+- **A CULTURE owns the reusable content**: settlement templates, natural
+  Site inventories, quest tables, and the world layer's card packet with
+  its constitutions, tensions, faction edges and options. Two western
+  kingdoms draw the same cards and share not one syllable of a name.
+- **Nothing forks on either.** A homeland selects names and content
+  routing; it never changes a statistic. All nine use one calibrated
+  combat ladder.
+- The era anchor is **about 1500 without the age of exploration**: silk in
+  from the east, spice through the southern entrepot, gold caravans from
+  beyond the desert, the wool-cloth axis in the west. Higher technology is
+  heaven, hell and magic, never a gunpowder tech line.
+- **Every country owes at least one standing fact of its own** (2026-08-22).
+  The culture supplies the shared lore; the signature fact is what makes
+  the lore page read as this country and not its neighbour — THE WOOL
+  (Phyrascia), THE KING'S TOUCH (Seraptania), THE ELECTORS (Teutonia), THE
+  FROZEN ROAD (Vellisclavia), THE WATER COURT (Andalusia) and THE FLOOD
+  MARK (Umaia), beside Byzantium's death-face, Tergal's practice and
+  Thule's grove.
+
+### Thule keeps the old gods (2026-08-22, the norse packet)
+
+The fourth culture is worn by one country and its packet is scoped like
+Tergal's: eighteen crisis cards of its own, one weather card, four
+tensions, six faction edges, seven standing facts, one option and four
+constitutions.
+
+- **The sea is the economy and the law is the assembly.** The year is the
+  ships going out, the herring running, a whale ashore, the harbors
+  freezing shut, the wolves coming down and a foreign crown paying the
+  fleet to stay home. There is no king's court: free men meet at the
+  stone, the law-speaker says the law aloud from memory, and the
+  assembly's only real sentence is OUTLAWRY.
+- **Its four tensions** are the jarls against the assembly, the sea-kings
+  against the land-chiefs, the old gods against the missionaries, and two
+  houses counting their dead. Its constitution slot opens THE SEA-KINGS.
+- **Its lore** is THE GROVE, THE SHIP BURIAL, THE THREAD OF FATES, THE
+  LAND-SPIRITS, THE DROWNED BELONG TO THE SEA, THE LAW AT THE STONE and
+  its Miners' League chapter at Falun.
+- **It sells one service**: the weather-witch's cord, two days of bought
+  WIND — the rain stone's northern cousin, on the same verb and the same
+  single `sky-bought` marker, so no land ever holds two bought skies.
+- **Two words are shared with the steppe on purpose**: `raiding` and
+  `tribute-taken`. The readout says what happened ("the raiding season is
+  on", "a war-leader is paid to stay home") and the card's news line says
+  whether it was horses or ships.
+
 ## The hierarchy
 
 The canonical spatial vocabulary is **Country -> Tile -> Area -> Site -> Room**:
 
-- **Country** is the macro territory: identity, owner, culture, war
-  state, wilderness encounter profile, and cross-land links. Firascir,
-  Mortellaria and Tergal are distinct human realms with different
-  cultures, and each spans several climates — since 2026-08-21 the
-  weather and the ground belong to the TILE, not to the country, and
-  conquest may change `owner` without changing geography. `homeland`
-  routes names and culture; it never modifies statistics.
+- **Country** is the macro territory: identity, owner, culture, tongue,
+  and the name pools its people and places are drawn from. There are
+  NINE of them (2026-08-21) — Phyrascia, Seraptania, Teutonia,
+  Vellisclavia, Thule, Byzantium, Andalusia, Umaia and Tergal — and each
+  spans several climates; since 2026-08-21 the weather and the ground
+  belong to the TILE, not to the country, and conquest may change `owner`
+  without changing geography. `homeland` routes names and culture; it
+  never modifies statistics.
 - **Tile** is the day-scale map cell, with fixed coordinates, biome, country,
   climate, terrain, cover, ground tags, cardinal neighbors, settlement slots
   and child Area IDs.
@@ -3075,9 +3141,13 @@ materialize lazily.
   Winter severity and the harvest day are the SNAPSHOT arc's inputs,
   shipped now as data so that arc starts from an authority; the sky and
   the terrain laws are what read the table today.
-- **Countries and Tiles.** Firascir owns the northwest/west, Tergal the
-  northeast/east and Mortellaria the south. Their non-sea census is fixed at
-  97, 75 and 144 Tiles respectively. Coordinates and cardinal neighbors
+- **Countries and Tiles.** Which of the nine a Tile belongs to is
+  AUTHORED, on the fourth overlay (`resources/europe_countries.txt`, one
+  letter per land Tile). Their non-sea censuses are fixed at Phyrascia 13,
+  Seraptania 23, Teutonia 28, Thule 37, Vellisclavia 60, Byzantium 51,
+  Andalusia 17, Umaia 60 and Tergal 25 Tiles. A SEA Tile takes the country
+  of the nearest land Tile, ties settled north-then-west; nothing about
+  the water is painted. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
   catalog supplies reusable Site content, not a second geography: since
   2026-08-15 it holds no settlement census, no positions and no named
@@ -3116,17 +3186,36 @@ materialize lazily.
   revisiting cannot move it or change its name. Country-and-tier name
   reserves are shuffled once per seed; deterministic numbered names
   continue after a reserve is exhausted.
-  Measured over 500 seeds: about 615 settlements a world — 3 metropolis,
-  ~18 city, ~101 town, ~402 village, ~92 hamlet — 1.96 slots per land
-  Tile, and roughly 1.3M souls at the tier anchors below.
+  Measured over 500 seeds: about 618 settlements a world — 4 metropolis,
+  ~19 city, ~101 town, ~402 village, ~92 hamlet — 1.97 slots per land
+  Tile, and roughly 1.5M souls at the tier anchors below.
+- **The towns have REAL names** (2026-08-22, the medieval world arc's
+  third build session). A Tile can only ever seat a town or a city in the
+  mid, high and dense bands — **183 of the 314** land Tiles, and
+  campaign-invariant, because the band reads only the ground and the
+  shoreline. Nineteen of those are already named by a historical city or
+  a mine; the other **164 carry an authored town name**
+  (`places.TILE_TOWN_NAMES`), a real historical town placed on a
+  plausible Tile of the country that holds it — York, Rouen, Cologne,
+  Krakow, Novgorod, Milan, Naples, Thessalonica, Trebizond, Granada,
+  Alexandria, Damascus, Fez, Sarai, Kaffa and their kin. **The rule**:
+  when a Tile's CHIEF slot materializes at town tier or better and
+  carries no authored name, it takes the Tile's town name. A second town
+  on the same Tile, and everything from village down, draws the country's
+  generic pool as before — so a Tile's town name is spent at most once,
+  and a village never wears a real one. The real map at village grain
+  would be a research project, and the generic pools are the texture
+  anyway. The placement is by PLAUSIBILITY, never by projection: this is
+  a squashed Europe, and a coordinate here is not a claim about a real
+  one.
 - **The five tiers, and what their words mean.** `hamlet` is under a
   hundred souls, `village` hundreds, `town` thousands, `city` tens of
   thousands, `metropolis` a hundred thousand and more. The headcounts are
   fiction anchors for the DM and are never stored numbers; the words are.
-  Paris, Venice and Constantinople are the three metropolises; the other
-  thirteen historical cities are authored city or town. `capital` remains
-  an explicit FLAG on Paris, Rome and Kyiv rather than a tier, so a
-  capital also has a tier of its own.
+  Paris, Venice, Constantinople and Cairo are the four metropolises; the
+  other fifteen historical cities are authored city or town. `capital`
+  remains an explicit FLAG — on the nine seats of the nine countries —
+  rather than a tier, so a capital also has a tier of its own.
   Everything the game keys on a settlement tier carries all five words —
   the board's slots and level bands, the conquest garrison, tribute,
   levy cap and raid tables, the healer's reach and the crime market.
@@ -3356,12 +3445,16 @@ materialize lazily.
   legal word, every land Tile's harvest landing on the spoken scale, and
   every cause carrying its fiction name. An illegal
   world raises at creation rather than surfacing later inside a display.
-- **Historical cities.** Dublin, London, Amsterdam, Paris and Prague stand
-  in Firascir; Stockholm, Moscow, Warsaw and Kyiv in Tergal; Lisbon, Madrid,
-  Venice, Rome, Athens, Constantinople and Carthage in Mortellaria. Paris,
-  Kyiv and Rome carry `capital: true`. Capital is an explicit flag, not a
-  settlement tier: each also carries its authored tier, so Paris is a
-  capital AND a metropolis while Kyiv is a capital and a city.
+- **Historical cities.** Nineteen of them (2026-08-21): Dublin and London
+  in Phyrascia; Paris in Seraptania; Amsterdam and Prague in Teutonia;
+  Stockholm in Thule; Moscow and Warsaw in Vellisclavia; Kyiv in Tergal;
+  Venice, Rome, Athens and Constantinople in Byzantium; Lisbon, Madrid and
+  Cordoba in Andalusia; Carthage, Jerusalem and Cairo in Umaia. NINE carry
+  `capital: true` — one a country: London, Paris, Prague, Stockholm,
+  Moscow, Constantinople, Cordoba, Cairo and Kyiv. Capital is an explicit
+  flag, not a settlement tier: each also carries its authored tier, so
+  Paris is a capital AND a metropolis while Kyiv is a capital and a city.
+  The four metropolises are Paris, Venice, Constantinople and Cairo.
 - **Knowledge.** All 540 Tiles, their terrain and countries are public from
   world creation; the base map is never fogged. Natural Areas become known
   on reveal, historical towns are known from day zero, and ordinary
@@ -3674,9 +3767,7 @@ level**, and `new` prints that job as the **OPENING HOOK** — the game
 opens at a combat quest's doorstep (giver mid-pitch), not in a tavern. At
 level 1 closest-to-level IS the world's lowest posting, so the ordinary
 opening is unchanged. Taking it stays the player's call; the hook is a
-doorstep, not a railroad. The story layer's war waves gate on party level,
-so a career start finds the war's first word already due at the next
-settlement stop.
+doorstep, not a railroad.
 
 ## Character generation (recruits, and NPCs with DM edits)
 
@@ -3690,9 +3781,23 @@ settlement stop.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Homeland**: Firascir, Mortellaria or Tergal. It selects a human name pool
+- **Homeland**: one of the nine countries. It selects a human name pool,
+  the tongues the person speaks (below)
   and supplies cultural context only; every homeland uses the same fixed stat
   floors, ceilings and trait tables.
+- **Tongues (2026-08-22)**: the first mechanic that reads `homeland`.
+  There are nine languages, one per country, named in fiction by the
+  country that speaks it — "the Seraptanian tongue" — except Byzantium's,
+  which is **Latin**, and Latin is also the language of the church, the
+  schools and the chanceries everywhere in the west. **Everyone speaks
+  Latin plus their homeland's tongue**; a Byzantine's homeland tongue IS
+  Latin, so he speaks Latin plus one other tongue, rolled at creation.
+  The PC and every companion carry the list and the sheet prints it as a
+  SPEAKS row; **NPCs carry no list at all** — a local speaks the local
+  tongue, and clergy, scholars and officials speak Latin too, wherever
+  they are. There is **no engine gate**: nothing checks a tongue before a
+  conversation. What a missing tongue costs is a table rule and lives in
+  dm.md ("The tongues at the table").
 - **Sex**: random m/f (names come from homeland pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.
@@ -3813,13 +3918,19 @@ real move (dismiss, then hire into the freed capacity) with a real price.
 
 ---
 
-# The Story Layer & the Conquest — Add-on (2026-07-12)
+# The Story Layer — Add-on (2026-07-12; questline cut 2026-08-21)
 
-The quest system gave the game its work; this layer gives the work faces,
-aftermath, and a spine. Design stance: **story is people and consequences,
+The quest system gave the game its work; this layer gives the work faces
+and aftermath. Design stance: **story is people and consequences,
 not new combat mechanics** — everything here rides the existing quest
 schema, threat math, and pay formulas. The engine (`rpg.py`) is untouched;
 the sims never see any of it.
+
+The layer's other half — the scripted conquest questline (one aggressor
+country, war waves at levels 2/5/8/10, the occupation) — was **removed
+whole on 2026-08-21**: it was three-country content at its core, and the
+rolled wars of the medieval world arc replace its job. What follows is
+what the layer is now.
 
 ## Quest givers & the funnel (there is no board)
 
@@ -3865,8 +3976,8 @@ the age roll for anyone with a job title.
 ## The central cast
 
 Each land gets three persistent figures at worldgen, in the save for the
-whole playthrough: a **ruler** (country-titled — the war-wave
-questgiver), a **sage** (loremaster, court wizard... — the exposition and
+whole playthrough: a **ruler** (country-titled), a **sage**
+(loremaster, court wizard... — the exposition and
 foreshadowing voice), and a **wildcard** from a small role table
 (spymaster, mercenary captain, master smith, high priest, war profiteer,
 guild factor). The design rule for giving them life: **attach each to a
@@ -3882,69 +3993,6 @@ with — a trait, plus their satisfaction state when it's loud (sullen at
 <= 3, one boot out the door when quitting). Deliberately **unseeded and
 stateless**: flavor must never perturb the game's dice, so `chatter`
 draws from a throwaway rng and saves nothing.
-
-## The conquest — the first questline (levels 2-10)
-
-One aggressor country per playthrough rolls at worldgen and starts a war —
-**never the PC's own homeland** (2026-07-13: the player fighting his own
-people's war of conquest read wrong; the roll excludes it). Four
-**waves**, each an ordinary multi-site quest pinned at levels
-**2 / 5 / 8 / 10** (sites escalate within each wave, so the first doors
-are always the easier ones). The variants:
-
-- **Firascir — the Golden Empire.** Imperial war machines and a creed
-  that weak neighbors should be ruled.
-- **Mortellaria — the Undead Kingdom.** A king corrupted by a hungry god;
-  necromancy as conscription that does not end at death (the undead pool
-  plus living cultist soldiery).
-- **Tergal — the Iron Horde.** A warlord unites the clans: might is
-  right, war is glorious, and every neighboring country is a prize.
-
-The pairing is fixed, and it is not arbitrary (corrected 2026-08-15,
-Europe MVP Closure — the code had the first two the wrong way round).
-Mortellaria owns the death rite, the tomb cults and the academy's
-necromancers in the world layer; Firascir's own religion cards are the
-ACCUSATIONS made against that rite, so a deathless Firascir would
-contradict its own deck.
-
-The mechanics, all of them reuses:
-
-- **Rosters are reskins.** Every war body is an existing bench-calibrated
-  row wearing a themed display name (`make_foe(display=...)`); v1 adds
-  zero stat blocks. The **named villains** — the conqueror and two
-  lieutenants, generated faces with titles — cap waves 2/3/4 as a display
-  name on the strongest slot the threat math put in the final room:
-  the boss fight is exactly as hard as an honest room of that level.
-- **Wave gating**: wave N+1 posts when wave N's quest is DONE, the
-  party has reached the wave's level, **and the party is at a
-  settlement** (2026-07-13: the messenger no longer finds them mid-quest
-  in the middle of nowhere — a level-up in the field keeps until the next
-  town) — checked at boards, arrivals, and settlement nights, delivered
-  as a day-stamped messenger scene (herald line + the ruler raising the
-  call). The war can neither outrun the party nor lag it; a fresh party
-  hears nothing until its first level-up.
-- **Targets**: waves 1-2 press one victim land (skirmishes, then an
-  invasion beaten back); wave 3 takes a second land — chosen never to be
-  the capital's; wave 4 is raised from the capital against the
-  conqueror's own seat.
-- **Wave 3 is scripted loss.** The land falls regardless of the quest's
-  outcome — success buys the evacuation (the epilogue), full quest pay,
-  and the lieutenant's head, never the walls. The design point: the
-  player must get something REAL out of a won quest inside a lost battle,
-  or the script reads as a cheat.
-- **Occupation** is light but mechanical: the fallen land's settlements
-  refuse `board`/`take`/`tavern`/`downtime` (and with the tavern, all
-  hiring) with one line; travel through is allowed; the map marks the
-  land `[UNDER THE YOKE]`. Wave 4's victory lifts it.
-- **Pay is the standard formulas** at the pinned levels — war work is
-  rich because punching at your own level in 2-3-site quests is rich
-  (~250/750/1200/1500 quoted XP across the four waves; the whole war
-  roughly levels a party from 2 to ~10-11 on its own if pressed).
-
-Story state (aggressor, faces, targets, wave cursors, day-stamped event
-log, occupation) lives in the save under `story`. The **apocalypse
-questline** — the L12-20 second spine — stays parked on the magic tier
-(plan.md).
 
 ---
 
@@ -4067,8 +4115,8 @@ hell is a fully supported campaign — the mechanics below only price it.
 
 - **Assignments — the pinned ladder (2026-08-04, was an interval
   clock).** Hell's work is **pinned to the PC's odd levels**:
-  `TASK_PIN_LEVELS` = 1, 3, 5 … 19, ten milestone jobs across a career,
-  on the war waves' proven shape (`story.WAVE_LEVELS`). Crossing an
+  `TASK_PIN_LEVELS` = 1, 3, 5 … 19, ten milestone jobs across a career.
+  Crossing an
   unserved pin makes an assignment due; it lands at the next settlement
   stop, printed as a WORD FROM BELOW block (delivery flavor rolled from
   `HELL_MAIL`: unseen job boards — searched for by paladins —
@@ -4170,7 +4218,7 @@ optional authored fields on a template, riding the site dicts through
   lump. `room` refuses them and fights for the full pay.
 
 Both paths close sites through `_close_site` (advance_quest's tail,
-split out), so lumps, epilogues, the war hook, and the pact ledger all
+split out), so lumps, epilogues and the pact ledger all
 fire identically however a site ends.
 
 ### Balance stance (designer directive, 2026-07-19)
@@ -4446,8 +4494,7 @@ vanishing), 40-column wrapped like every other page:
   that closed it. Dark work is tagged `[DARK]`. A job LOST to its window
   is recorded here too, with the giver's failure line: the section is
   the campaign's job record, not a trophy case.
-- **REMARKABLE** — the war's waves broken (and the scripted fall, and
-  the war's end), conquests taken and holdings lost, hell's assignments
+- **REMARKABLE** — conquests taken and holdings lost, hell's assignments
   served and its write-offs, defeats survived (the level's one mercy,
   LEFT FOR DEAD, THE LESSON), maimings, named kills, and the DM's own
   named off-script sins.
@@ -4475,7 +4522,7 @@ write-offs and the maimings off the page.
 **Named kills** are detected by shape, not by a flag: ordinary rows are
 numbered off the catalog ("Cutthroat 2"), so a dead foe whose name has no
 trailing number is somebody the fiction cast — a quest boss, a conquest
-defender, a posse leader, one of the war's lieutenants.
+defender, a posse leader.
 
 The **tally's `last` day** is stored separately from the monotony
 window's day stamps (`crime.stamp`). The window prunes itself as it is
@@ -4494,11 +4541,16 @@ the play surface in `session.py` (`conquer` / `garrison` / `holdings`).
 The sims never import it: like karma, the layer is play-surface only, its
 knobs hand-set and table-tuned.
 
+Since 2026-08-22 the file carries a second, unrelated layer on the same
+terms — the CROWNS' own wars (The Rolled Wars add-on). The two share the
+garrison authority below and nothing else: a town the Horde occupies is
+not a holding, pays the party nothing, and takes nothing from it.
+
 ## Design spine
 
 - **The settlement is the unit of ownership.** No provinces, no tiles: the
-  map stays a list and ownership is a tag (`[YOURS]`), exactly the shape
-  the war's occupation layer prints. One object to point a quest at.
+  map stays a list and ownership is a tag (`[YOURS]`). One object to
+  point a quest at.
 - **Garrison levels are geography, not gates.** Each settlement rolls its
   garrison level ONCE (stable-seeded): hamlet and village 3–5, town 6–10,
   city, metropolis and capital
@@ -4523,19 +4575,17 @@ knobs hand-set and table-tuned.
 an ordinary dark quest underneath (same schema, threat math and pay
 ladder), one place — "the garrison keep" — at the settlement's garrison
 level, with the land's cultural ladder pool. Hamlet and village 1
-encounter, town 2, city-grade 3 (the war waves' maximum). The last room is capped by a **named
+encounter, town 2, city-grade 3. The last room is capped by a **named
 defender** (a generated face, country role: castellan, warden of the
 walls, gate warden, wall-crew boss, war-chief of the garrison) worn as a
 display name over the budget-honest strongest slot. The job has **no
 clock** (a keep does not lapse), **no giver**, and is **not posted on the
-board** — it exists because the player declared it, and is taken like a
-war wave (`take QID`, at the settlement).
+board** — it exists because the player declared it, and is taken by id
+(`take QID`, at the settlement).
 
 Winning the last room flips the tag: `*** NAME IS YOURS ***`. The quest's
 gold is the keep's strongbox (10 days of the settlement's tribute, with
-the dark premium on the turn-in); its XP is all sin. An
-aggressor-occupied settlement cannot be conquered — the yoke holds it,
-and the war decides.
+the dark premium on the turn-in); its XP is all sin.
 
 ## Holding
 
@@ -4564,9 +4614,6 @@ tribute meter, the raid clock.
 - **The board goes dark.** A held settlement posts no honest work for
   its conqueror; crime and the pact serve instead. The tavern, the shops,
   recruiting and downtime keep the party's custom — it is their town now.
-- **The yoke outranks the flag.** When the war's wave 3 fells a land, the
-  aggressor seizes the party's holdings there; retaking one after the war
-  turns is a fresh conquest.
 
 ## Display
 
@@ -4789,24 +4836,49 @@ are `worldsim.md`'s.
 Authored **directed edges** — who eats whose grain, who trades with whom,
 whose mercenaries come when called. They are lookups, never traded
 quantities, and the states they cause are **derived at read time and never
-stored**. Only edges whose two ends are Firascir, Mortellaria or Tergal are
-active; cards admit on their derived states like any other.
+stored**. Since 2026-08-22 every edge is authored LAND TO LAND: twenty
+hand-placed edges between named countries, drawn on the map the country
+overlay actually paints. (Session 2 authored them by culture and took the
+cross product, which reached every land cheaply and was deliberately
+crude; the twenty replace it.) Cards admit on their derived states like
+any other. Only ONE HOP: an edge reads what its source land HOLDS, never
+what it derives.
 
-**What each land sells** (2026-08-15) — the three-country economy in full.
-Every line is one edge: a state the SELLER is holding that stops the goods,
-and the priced word the BUYER wears while it does.
+**The twenty edges** — every line is one authored edge: a state the SOURCE
+is holding that stops the goods (or starts the trouble), and the word the
+TARGET wears while it does.
 
-| Seller | Sells | Buyer | When the seller holds | The buyer wears |
+| From | What | To | When the source holds | The target wears |
 |---|---|---|---|---|
-| Firascir | grain | Tergal | a failed harvest, drought | grain is scarce |
-| Firascir | timber | Tergal | forest law, wildfire, burn | no northern timber |
-| Mortellaria | coin | Firascir | worthless paper, mad shares | the banks stop lending |
-| Mortellaria | southern trade | Tergal | salt revolt, a ruined quarter | the road brings nothing |
-| Tergal | horses | Firascir | herd loss, the grass gone | remounts are dear |
-| Tergal | livestock | Mortellaria | herd loss, the grass gone | hides and wool are short |
-| Tergal | military service | Mortellaria | a mourning war, raiding | the hired clans go home |
+| Vellisclavia | Baltic grain | Thule | a failed harvest, drought | grain is scarce |
+| Umaia | the river's grain | Byzantium | a failed harvest, drought | grain is scarce |
+| Tergal | raids | Vellisclavia | herd loss, raiding, a mourning war | raiders on the border |
+| Thule | sea raids | Phyrascia | the raiding season | raiders on the border |
+| Thule | sea raids | Seraptania | the raiding season | raiders on the border |
+| Thule | timber | Seraptania | the harbors ice-locked, wildfire, burn | no northern timber |
+| Byzantium | Lombard coin | Seraptania | worthless paper, mad shares | the banks stop lending |
+| Byzantium | the southern road | Teutonia | salt revolt, a ruined quarter | the road brings nothing |
+| Umaia | the gold caravans | Andalusia | a bandit king, salt revolt | the road brings nothing |
+| Tergal | horses | Vellisclavia | herd loss, the grass gone | remounts are dear |
+| Andalusia | horses | Seraptania | a bandit king, the faith outlawed | remounts are dear |
+| Tergal | livestock | Byzantium | herd loss, the grass gone | hides and wool are short |
+| Tergal | hired swords | Byzantium | a mourning war, raiding | the hired clans go home |
+| Phyrascia | wool | Teutonia | a free company, the custom strike | no wool for the looms |
+| Tergal | a hostage | Vellisclavia | the hostage guard | an heir is a hostage abroad |
+| Thule | the danegeld | Phyrascia | a war-leader paid to stay home | the danegeld is raised here |
+| Seraptania | a marriage | Phyrascia | the marriage pact | the pact makes them kin |
+| Phyrascia | a union | Seraptania | the personal union | two crowns, one head |
+| Byzantium | the rite | Seraptania | necromancy open, the dead abroad, carnival | one insult apart |
+| Seraptania | the rite | Byzantium | the interdict, a relic hunt, bones tested | one insult apart |
 
-Mortellaria's luxury shelf and the southern road are one flow and one edge.
+Two things the table is saying out loud. The **wool-cloth axis** is the era
+anchor's own trade and the one edge authored new for it: Phyrascia grows
+the fleece, Teutonia's towns weave it, and `wool-short` is the word a
+stopped clip puts on a Teutonic shelf. The **schism clock** runs between
+exactly two crowns — the empire that keeps the death-face and the western
+church's eldest daughter — in both directions, and the joint synod card
+sits in both decks reading it.
+
 Every derived word above reaches a **price** (`worldsim.STATE_MENU`) — an
 edge the party cannot feel on a shelf is not worth authoring.
 
@@ -4899,7 +4971,7 @@ two days is a storm on both of them.
 - **THE STORM SETS IN** — any land, on a storm day, 1–3 days. Its state is
   `the storm has closed the roads`, and it is what the field penalties and the
   cabin table hang on.
-- **THE FORD IS OUT** — Firascir and Mortellaria, after three wet days. Fords
+- **THE FORD IS OUT** — the western and southern lands, after three wet days. Fords
   uncrossable, bridges and ferries tolled by men who know it: the road
   costs **a day** while it stands, and the toll racket is the vigilante
   invitation. (The ferrymen's own rates are authored on the card and wait
@@ -5096,10 +5168,10 @@ and clears it as it fires.** No new machinery — the frame's admitting
 conditions already read what the last card left behind. Three surviving
 country chains ship:
 
-| land | first card | the link it leaves | second card |
+| culture | first card | the link it leaves | second card |
 |---|---|---|---|
-| Firascir | the harvest fails | bread is expensive | the bread riot |
-| Mortellaria | the bank fails | forged notes are about | the note-hunters |
+| the west | the harvest fails | bread is expensive | the bread riot |
+| the south | the bank fails | forged notes are about | the note-hunters |
 | Tergal | the herds die | the grass has not come back | the clans ride |
 
 ## Where the player meets it
@@ -5124,7 +5196,7 @@ country chains ship:
 The land stopped being an economy with a sky over it and became a **polity**:
 who holds it, what it is fighting about, who is pulling at whom, and what
 kind of person sits at the top of it. `worldsim.py` owns the frame and the
-cards; `rulers.py` owns the person; `story.py` gained the war's reason.
+cards; `rulers.py` owns the person.
 
 Everything here is a **gate on content**, not a system of its own. Nothing
 ticks, nothing accumulates, and no political value is ever a quantity.
@@ -5134,8 +5206,12 @@ ticks, nothing accumulates, and no political value is ever a quantity.
 - **Rolled once at worldgen on a default-heavy die** — the wealth-band
   pattern. The country's political history is the constant and the variants
   are the colour, so the same country comes up differently across runs.
-- Firascir opens DECENTRALIZED FEUDALISM, Mortellaria ABSOLUTISM and Tergal
-  THE CLAN CONFEDERACY. Each carries its surviving authored variants.
+- The western culture opens DECENTRALIZED FEUDALISM, the southern one
+  ABSOLUTISM, Tergal THE CLAN CONFEDERACY and Thule THE SEA-KINGS. Each
+  carries its authored variants — Thule's are THE ALLTHING, THE HIGH KING
+  and THE SCATTERED JARLS. The slot is per LAND, the table per
+  culture: two western kingdoms roll their constitutions separately off the
+  same die.
 - **Cards never flip it.** The two that do say so on their face (the junta
   takes the parliament; the commune keeps the barricade), and a card that
   would only re-assert the constitution a land already holds never fires.
@@ -5146,11 +5222,11 @@ ticks, nothing accumulates, and no political value is ever a quantity.
 - Each land's packet lists **standing tensions — two named blocs and what
   they fight over**. A land **rolls ONE at worldgen, and TWO if it opened in
   CRISIS**; a tension marked STANDING is held on top of the roll and never
-  rolled (Firascir's manor against its village is the econ packet's
-  oppression axis, so it is simply what the land is).
+  rolled (the western manor against its village is the econ packet's
+  oppression axis, so it is simply what those lands are).
 - **Only cards whose tension holds enter the land's crisis deck** — the same
   deck as the econ cards, no second pile. This is the whole economy of the
-  rung: a Firascir where the crown is fighting its lords never draws the
+  rung: a land where the crown is fighting its lords never draws the
   temple's cards at all, so the packet stays a wide pool and each rolled
   world stays specific.
 - A card that names no tension is land-wide and always passes: every economy
@@ -5220,27 +5296,21 @@ A card that has to **name somebody** names him once and the land keeps him
 witch-finder, the bandit king, the pretender each roll a two-word crown-less
 sheet, and the same man is still there the next time the card comes round.
 
-## The war layer's feed
+## The war material
 
-- **The casus belli.** The war had waves and no reason; now it has one,
-  rolled beside story.py's aggressor off a **derived seed** (so every
-  existing world's aggressor, faces and targets are untouched). It is said
-  ONCE, at the first herald, and left on the land's news for whoever arrives
-  later. Tergal needs no roll: the Sky's mandate says the neighbours are
-  rebels who have not yet submitted.
 - **The diplomatic instruments** — how wars end and stay ended — are
   **authored relation edges with cards standing in them**: the courtly
   hostage (a child of one hall grows up in the other), the yearly tribute,
-  the marriage pact whose breaking is its own casus belli, and the personal
+  the marriage pact whose breaking is its own grievance, and the personal
   union that puts two crowns on one head and both realms' quarrels at one
   table.
 - **The succession cluster** admits on the crown's circumstance and moves
   it: the infant heir and its regency council, three branches and three
   readings of the law, the dead king who comes back (or the man wearing his
   face), and the bought recognition that is void the day the king dies.
-  Per-country shapes ride the packets — Tergal's tanistry makes every
-  succession a scramble, while Firascir and Mortellaria keep their own
-  crown disputes.
+  Per-culture shapes ride the packets — Tergal's tanistry makes every
+  succession a scramble, while the western and southern crowns keep their
+  own disputes.
 
 ## Where the player meets it
 
@@ -5299,29 +5369,36 @@ machinery would be a feature request wearing a content hat.
 
 Priced, not penitential — the deliberate limit of this rung:
 
-- **Healing is the `healer` term itself.** In Firascir and Mortellaria the temple
-  *is* the healer, so no new counter exists: the interdict already puts the
-  fee up 30%, the unlicensed holy well already undercuts it by a quarter.
-- **Burial and blessing are options**, sold in both Sun-communion lands off
-  the same term. Beside them remain Firascir's pilgrim badge and
-  Mortellaria's hooded burial brotherhood.
+- **Healing is the `healer` term itself.** In the Sun-communion lands the
+  temple *is* the healer, so no new counter exists: the interdict already
+  puts the fee up 30%, the unlicensed holy well already undercuts it by a
+  quarter.
+- **Burial and blessing are options**, sold in every Sun-communion land off
+  the same term. Beside them remain the west's pilgrim badge and the
+  south's hooded burial brotherhood.
 - **The sin/penance wiring is not designed and is not here.** No option
   touches sin, heat or the karma layer at all.
 
 ## What the packets became
 
-- **The Sun communion is one church and two rites.** Firascir and
-  Mortellaria worship the same god; each land **derives `schism-near` off
-  the other's rites** through a relation edge that runs both ways, and the
-  joint synod is one card sitting in *both* their decks. Every synod ends
-  one insult short of the split.
-- **Each country keeps a religion axis and a tension to hang it on**: two
-  shrines and one saint, and the abbey against the families (Firascir);
-  which face of the god rules the year (Mortellaria); the white shamans
-  against the dark one (Tergal). The tension is the deck gate, exactly as in politics — a
+- **The Sun communion is one church and two rites.** The western and
+  southern lands worship the same god; since 2026-08-22 the ARGUMENT is
+  between exactly two crowns — Byzantium, which keeps the death-face, and
+  Seraptania, the western church's eldest daughter. Each **derives
+  `schism-near` off the other rite** through a relation edge that runs both
+  ways, and the joint synod is one card sitting in *both* their decks.
+  Every synod ends one insult short of the split. (Thule keeps the old gods
+  and is outside the communion entirely.)
+- **Each culture keeps a religion axis and a tension to hang it on**: two
+  shrines and one saint, and the abbey against the families (the west);
+  the white shamans against the dark one (Tergal); the old gods against
+  the missionaries (Thule). The south's own axis, **which face of the god
+  rules the year**, is BYZANTIUM's alone — the death rite, the carnival,
+  the penitents and the academy's necromancy chair are the southern heir's
+  identity, not the whole culture's, so Andalusia and Umaia wear the
+  culture-generic south and none of the death-face. The tension is the
+  deck gate, exactly as in politics — a
   land whose shrines are at war never draws the abbey's cards at all.
-- Surviving religion relations cross only the three-country border graph;
-  edges depending on deleted packets are absent.
 - **Two named pools were added and no creature row**: the undead
   (skeleton/ghoul/wight) and the casters (hexer/pyromancer/magus), both off
   the catalog the game already had. The draugr and Tergal's grave-made
@@ -5380,8 +5457,8 @@ with them — and the casing prints whichever came up like any other face.
 
 The world layer's extraction story, recovered and re-homed. It was written
 for a dwarf realm the human contraction deleted in 2026-08-15, and it came
-back because the trade session put nine famous mines on the map and every
-one of the three countries holds some. What was scrubbed was four words,
+back because the trade session put nine famous mines on the map. What was
+scrubbed was four words,
 not a design: the clans became the **Miners' League** and its chapter
 masters, the under-thane the League steward, the clan books the League's
 books, and the dwarf who found a way an old engineer. The claim-keeper, the
@@ -5390,10 +5467,12 @@ human mining language all along.
 
 - **The League is a brotherhood with chapters at every mine**, and its writ
   is mining law: a free miner answers to his chapter master and not to the
-  lord whose field he digs under. Six of the nine mines are Firascir's
-  (Goslar, Kutna Hora, Banska Stiavnica, Melle, Luneburg, Wieliczka), two
-  Mortellaria's (Erzberg, Novo Brdo) and one Tergal's (Falun). Each land's
-  `lore` page names its own chapters; **THE KNOCKERS** — the mine-spirits
+  lord whose field he digs under. Under the country overlay (2026-08-21)
+  four of the nine mines are Teutonia's (Goslar, Kutna Hora, Luneburg,
+  Erzberg), two Vellisclavia's (Banska Stiavnica, Wieliczka), one
+  Seraptania's (Melle), one Byzantium's (Novo Brdo) and one Thule's
+  (Falun); the four countries with no pits keep no chapter. Each mining
+  land's `lore` page names its own chapters; **THE KNOCKERS** — the mine-spirits
   who knock before a collapse and are paid the last bite of every meal — is
   the first fact in the game that belongs to every land at once, because
   the belief follows the pits and not the crown.
@@ -5489,3 +5568,121 @@ every campaign. The four-character vocabulary stays deliberately plain
 because the *overlay* is what carries the campaign; the rejected algorithms
 and their original assumptions are preserved in `archive/` and in the dated
 designlog entries.
+
+
+# The Rolled Wars — Add-on (2026-08-22, the medieval world arc's fifth and last build session)
+
+The world is at war when the party arrives, and it stays at war. **Three
+wars are rolled once at worldgen** out of six authored templates, exactly
+the way the last harvest is rolled: they stand for the whole campaign,
+they smoulder rather than resolve, and nothing the party does ends one.
+The design reason is the era anchor — the game is static in time, so its
+wars are static too, and a war that could be won would need a whole
+strategic layer nobody asked for. What the wars ARE for is texture the
+player walks into: a burned countryside, an army camped across the road, a
+town that was sacked last spring, a country whose roads carry levies and
+deserters.
+
+## The roll
+
+At worldgen, after every land's world layer exists, on a stream of its own
+(so no other layer's numbers move):
+
+- **Andalusia's vassalage, on a d3**: Byzantium's vassal, Umaia's vassal,
+  or independent. It is stored as the land's `liege` (every other country
+  carries None) and it is read in three places — the DM's `world` page,
+  the map legend, and the Reconquista template. It has no other mechanical
+  effect: tribute, a pulled-in war and a court above the court are
+  undesigned.
+- **Three distinct templates of the six**, with no exclusion rules. Any
+  three coexist, which is what the age actually looked like.
+
+Each rolled war stamps **`at-war`** on every belligerent country — a state
+like any other, with its own line on the map page and its own row in the
+local encounter table (soldiery, deserters and stragglers on the roads) —
+posts its authored **herald** to every belligerent's news, and is stored on
+the world. A new game names the three wars in its opening print.
+
+## The six templates
+
+| war | who | ground | posture |
+|---|---|---|---|
+| THE CRUSADE | 1-3 of Byzantium, Seraptania, Teutonia, Phyrascia -> Umaia | the Levant around Jerusalem | invasion |
+| THE LONG WAR | Phyrascia -> Seraptania | Seraptania's north and west coast and Aquitaine | invasion |
+| THE HORDE RIDES WEST | Tergal -> Vellisclavia | the steppe frontier | invasion |
+| THE RAIDING SEASON | Thule -> Phyrascia and Seraptania | both coasts, the channel and the west | raiding |
+| THE RECONQUISTA | Andalusia backed by Byzantium -> Umaia | south Iberia and the west Maghreb coast | invasion |
+| THE EASTERN WAR | Umaia -> Byzantium | east Anatolia and the Levant border strip | invasion |
+
+A **theater** is an authored list of map cells, drawn by hand against the
+four overlays, and every cell in it belongs to one of that war's own
+belligerents. No theater stands on a capital: a war marks the country, not
+the crown's seat.
+
+**The Reconquista reads the vassalage**, and it is the only place in this
+arc where the liege has teeth. Andalusia normally rides, with Byzantine
+ships behind it. If Andalusia is UMAIA's vassal it fights for its liege
+instead: Byzantium comes alone, Andalusia stands with Umaia, and the war
+opens on the template's other authored herald.
+
+## The campaign sim
+
+Every three days each standing war rolls **one event**, on weights its
+posture picks:
+
+- **invasion** — lull 45, a raid 25, an army 10, a battle 10, a siege 10.
+- **raiding** — lull 55, a raid 40, a siege 5.
+
+A lull is the ordinary answer and says nothing at all: a smouldering front
+is quiet most of the time. Everything else writes an ordinary day-stamped
+STATE onto a theater Tile or onto one of the settlements standing on it —
+the same record shape a land and a place already share — and posts one news
+line to both sides of that war:
+
+| mark | where | stands |
+|---|---|---|
+| the war has burned the country here | a theater Tile | 30 days |
+| an army is camped here | a theater Tile | 10 days |
+| a battle was fought here | a theater Tile | 60 days |
+| under siege | a theater settlement | 12 days |
+| sacked, and still burnt out | a theater settlement | 90 days |
+| held by NAME | a theater settlement | permanent |
+
+**A siege is decided by the garrison authority** — the same fixed,
+stable-seeded garrison level the player's own conquest jobs are priced
+against (village 3-5, town 6-10, city and capital 11-15). The besieging
+column rolls its strength on the prize's own tier band. Under the garrison,
+the siege stands its twelve days and lifts. At or over it, the walls go and
+the town is **sacked**, and — while that war holds fewer than **two**
+settlements — **occupied**, with the occupier named. A war may lay siege to
+a town nobody has ever walked into: the census slot is the unit, and the
+garrison it fields is the same number the settlement will field the day the
+party arrives.
+
+**Two hard caps keep the map readable**: at most six standing temporary
+marks per war, the oldest cleared to make room, and at most two occupations
+per war. A world left alone for years therefore carries at most 24 war
+marks in all.
+
+The sim is **lazy and day-stepped**, watermarked on each war record, and
+seeded per war per day. Catching a war up thirty days at an arrival gives
+exactly the front that living through them would have — the world layer's
+own contract, applied to the war. It settles wherever news lands: travel
+arrivals, the board, and every settlement night.
+
+## What it deliberately does not do
+
+- It never changes a Tile's country. **Borders do not move** — real
+  dynamic conquest waits for the day tiles are worth taking.
+- It never touches a board, a quest, the party's holdings or a recruit
+  pool. **Occupation gates nothing**: an occupied town keeps its owner, its
+  work, its inn and its smith. The banner is a line on the page.
+- It never ends a war, and never adds one.
+
+## Where the player meets it
+
+The `at-war` state on the map page and the news at every arrival; the war
+marks on a Tile's own page and on the DM's tile brief; the war's own people
+on the roads of a country at war. The DM's `world` page opens with the
+three wars — who is fighting, the heralds, what each holds, and where
+Andalusia's vassalage fell.

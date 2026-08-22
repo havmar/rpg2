@@ -100,10 +100,10 @@ collected from real play; the left column is the failure:
       nothing out of the ordinary
       happens.
 
-    Avoid: Mortellaria arrives as vineyards
+    Avoid: Byzantium arrives as vineyards
       before it arrives as a city.
     Use:   You reach the forests of
-      Mortellaria, and then the city.
+      Byzantium, and then the city.
 
     Avoid: You come in with the rain
       going sideways.
@@ -233,12 +233,11 @@ immediate obstacle or affordance. Never repeat the parent as filler (“forest
 site,” “forest room”). Build a place the player can navigate, not a vista the
 narrator can admire.
 
-When improvising place names, follow the active country profile. Firascir and
-Mortellaria use the shared western-human name pool; Mortellaria's place names
-may lean southern and imperial. Tergal uses its own human steppe names and
-clan vocabulary. These are invented sounds, not claims of correct real-world
-language. Use ASCII only, and retain a plain English type noun when it makes
-the place immediately legible.
+When improvising a place name, follow the COUNTRY the scene is in -- there
+are nine and each keeps its own sound. "The nine name sounds" below is the
+standing table. Retain a plain English type noun when it makes the place
+immediately legible: the mill at Sturford, the Dubki crossing, Ain Zafra's
+well.
 
 For a **person**, lead with role and immediate intent. Add one visible or
 behavioral marker that can recur. A COMPANION's generated traits are
@@ -263,6 +262,38 @@ display. A **maiming** loses the clinical detail and becomes a plain fact about
 the body: "a blind eye", "a withered arm". Severity 1 is a cut, severity 3 is a
 thing the character now lives with; say which without reaching for intensity
 words.
+
+## The nine name sounds (the standing brief, 2026-08-22)
+
+Each of the nine countries keeps its own name pools, for settlements and for
+people both -- a name is the most country-shaped thing in the game, and two
+countries can share a card deck without sharing a syllable. When you invent
+one, match the row of the country the party is standing in. **These are
+invented sounds, not claims about any real language.** ASCII only.
+
+| country | place sound | example places | person sound | example people |
+|---|---|---|---|---|
+| Phyrascia | English compounds: -ham, -ton, -ford, -burgh, -haven; hamlets take -cot, -stead, -hay, -garth | Sturford, Ackham, Leehaven, Thornhay | short plain English-fantasy | Brand, Corvin, Mira, Inga |
+| Seraptania | French: Mont-, Val-, -ville, -court, -nay, -bois | Montclaire, Fontenoy, Gournay, Petitbois | French | Thierry, Amaury, Alienor, Blanche |
+| Teutonia | German compounds: -bach, -feld, -heim, -hof, -stein, -wald | Eberfeld, Grunbach, Dornhof, Steinkot | German | Konrad, Dietrich, Adelheid, Greta |
+| Vellisclavia | old Slavic: -grad, -ov, -ka, -no, Bere-, Dubr- | Novgrad, Chernov, Berezno, Dubki | old Slavic and Rus | Bogdan, Vsevolod, Ludmila, Milena |
+| Thule | old Norse: -vik, -fjord, -stad, -ness, -holm, -dal, -by | Eldvik, Kvalfjord, Arnavik, Naustby | old Norse | Orm, Ketil, Astrid, Sigrun |
+| Byzantium | southern and imperial: -era, -aro, -onte, -ella, -ino | Castavera, Montaro, Fontela, Casella | LATIN: the empire names its people in the church's tongue | Cassius, Aurelius, Livia, Claudia |
+| Andalusia | Spanish: Castel-, Monte-, Fuente-, -ares, -uelo | Castelmar, Monteclaro, Olivares, Pozuelo | Spanish | Alvaro, Rodrigo, Beatriz, Ines |
+| Umaia | Arabic construct pairs: Bir-, Wadi-, Ras-, Ain-, Dar-, Kefr-, Al- | Bir Hakla, Ain Zafra, Dar Aziza | Arabic | Harun, Yusuf, Zaynab, Layla |
+| Tergal | steppe and clan words, often hyphenated: -gal, -khar, -run, -tai | Ulus-Gal, Kharuk, Aradun, Ukhta | short, hard, guttural | Gruk, Marok, Baggi, Kansif |
+
+Two things the table does not cover:
+
+- **The towns already have real names** (2026-08-22). Every tile that can
+  seat a town or a city carries an authored one -- York, Rouen, Cologne,
+  Krakow, Novgorod, Milan, Naples, Thessalonica, Granada, Alexandria,
+  Damascus, Fez, Sarai, Kaffa and 150 more -- and the script prints it. The
+  table is for what you invent BELOW that: villages, hamlets, farms, mills,
+  inns, ruins and the people in them. Never rename a town the script named,
+  and do not read a town's position as a claim about the real map.
+- **The tongues are not the name pools.** Who can talk to whom is a separate
+  rule and lives in `dm.md` ("The tongues at the table").
 
 ## Tone and comedy
 

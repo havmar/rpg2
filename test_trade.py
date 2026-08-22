@@ -350,7 +350,7 @@ class TheLabel(unittest.TestCase):
     def test_an_ordinary_route_names_its_endpoints_and_cargo(self) -> None:
         goslar = places.tile_id(9, 14)
         lines = places.tile_detail_lines(self.world, goslar)
-        self.assertIn("  Goslar - Paris: silver", lines)
+        self.assertIn("  Goslar - Prague: silver", lines)
 
     def test_a_legendary_road_leads_with_its_own_name(self) -> None:
         gate = places.tile_id(11, 30)
