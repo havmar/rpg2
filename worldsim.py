@@ -143,7 +143,8 @@ import rulers                    # the politics rung's person half: the
                                  # weighted trait pool a crown is rolled off
 from places import (CAPITAL_TILES, CLIMATE_PROFILES, CULTURE_LANDS,
                     CULTURE_OF, LAND_SPECS, add_state, clear_state,
-                    detail_wrap, land_id, stable_seed)
+                    detail_wrap, land_id, stable_seed, tile_coordinate,
+                    tile_id, tile_label)
 from sites import FOES           # the encounter outlet's vocabulary: a card
                                  # that puts foes on a road names catalog rows
                                  # like every other roster in the game
@@ -436,6 +437,10 @@ STATE_WORDS = {                 # state id -> the readout's short phrase
     "rush-on": "the rush is on",
     "strike": "the pits stand idle",
     "caravan-due": "the food caravan is coming up",
+    # THE ROLLED WARS (2026-08-22, the medieval world arc's session 5). One
+    # word, held by every belligerent land from day 0 to the end of the
+    # campaign: the wars are rolled once and never end (rules.md).
+    "at-war": "the country is at war",
 }
 
 # The CARD-DECLARABLE exclusive slots. Both authored slots went out with the
@@ -587,6 +592,16 @@ STATE_ENCOUNTERS = {
                        "skins": {"skeleton": "Grave-Made",
                                  "ghoul": "Earth-Eater"},
                        "chance": 0.45},
+    # The rolled wars (2026-08-22, session 5). A country at war puts one
+    # thing on its roads that peace does not: men moving with the war and
+    # men running from it. Who, never how hard -- the danger curve is the
+    # road's own.
+    "at-war": {"kinds": ("soldier", "cutthroat", "bruiser"),
+               "where": "road",
+               "as": "soldiery, deserters and people off the war road",
+               "skins": {"soldier": "Levy", "cutthroat": "Deserter",
+                         "bruiser": "Straggler"},
+               "chance": 0.35},
 }
 
 # WHAT A STATE PUTS IN THE CRIME LAYER'S MARK TABLE (2026-08-11, the
@@ -4711,6 +4726,211 @@ def lore_lines(world: dict, polity: str) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
+# THE ROLLED WARS (2026-08-22, the medieval world arc's session 5)
+# --------------------------------------------------------------------------- #
+# The game is static in time, so its wars are static too: three of the six
+# templates below are drawn once at worldgen, stand for the whole campaign,
+# and smoulder rather than resolve (rules.md's The Rolled Wars add-on).
+# `conquest.roll_campaigns` is what makes a front LOOK alive; this file rolls
+# the wars, stamps `at-war` on every belligerent and posts each herald.
+#
+# A THEATER is an authored tuple of (row, column) map cells, drawn against
+# the four overlays in `resources/`, and every cell in it belongs to one of
+# the template's own belligerents -- the ground a war is fought over is the
+# ground somebody in it holds.
+
+WARS_ROLLED = 3                 # how many of the six a world gets. No
+                                # exclusion rules: any three coexist, which
+                                # is what the age actually looked like.
+
+# Andalusia's vassalage, a d3 at worldgen (the arc's frame): 1 Byzantium's
+# vassal, 2 Umaia's, 3 independent. It is read by `politics_lines`, by
+# `places.land_label` on the map legend, and by the Reconquista template --
+# a vassal does not make war on its own liege.
+VASSALAGE = ("byzantium", "umaia", None)
+
+CRUSADERS = ("byzantium", "seraptania", "teutonia", "phyrascia")
+
+WAR_TEMPLATES = (
+    {
+        "key": "crusade", "name": "THE CRUSADE", "posture": "invasion",
+        # 1-3 of the four crowns take the cross; Umaia's east is the prize.
+        "attackers": CRUSADERS, "attacker_draw": (1, 3),
+        "defenders": ("umaia",),
+        "herald": "The cross is preached in every square. An army is "
+                  "marching on Jerusalem.",
+        # the Levant, around Jerusalem
+        "theater": ((15, 28), (15, 29), (15, 30), (16, 27), (16, 28),
+                    (16, 29), (16, 30), (17, 28), (17, 29), (17, 30)),
+    },
+    {
+        "key": "hundred-years", "name": "THE LONG WAR", "posture": "invasion",
+        "attackers": ("phyrascia",), "defenders": ("seraptania",),
+        "herald": "The king across the water claims the crown of "
+                  "Seraptania. His army has landed.",
+        # Seraptania's north and west coast, and Aquitaine
+        "theater": ((8, 9), (8, 10), (9, 4), (9, 5), (10, 5), (10, 6),
+                    (11, 6), (11, 7), (12, 6), (12, 7)),
+    },
+    {
+        "key": "horde", "name": "THE HORDE RIDES WEST", "posture": "invasion",
+        "attackers": ("tergal",), "defenders": ("vellisclavia",),
+        "herald": "The horde has crossed the river. The border towns are "
+                  "burning.",
+        # the steppe frontier: row 8's south edge, and the western salient
+        "theater": ((8, 22), (8, 23), (8, 24), (8, 25), (8, 26), (8, 27),
+                    (8, 28), (8, 29), (9, 20), (9, 21), (10, 20), (10, 21)),
+    },
+    {
+        "key": "vikings", "name": "THE RAIDING SEASON", "posture": "raiding",
+        "attackers": ("thule",), "defenders": ("phyrascia", "seraptania"),
+        "herald": "The ships are out of the north again. The raiding "
+                  "season has opened on both coasts.",
+        # both coasts: Britain, the channel and the west
+        "theater": ((4, 4), (4, 5), (5, 2), (6, 2), (7, 4), (7, 7),
+                    (8, 9), (9, 4), (9, 5), (10, 5)),
+    },
+    {
+        "key": "reconquista", "name": "THE RECONQUISTA", "posture": "invasion",
+        "attackers": ("andalusia", "byzantium"), "defenders": ("umaia",),
+        "herald": "Andalusia has called the march. Its knights are "
+                  "crossing to the Umaian coast, and Byzantine ships are "
+                  "behind them.",
+        # ...unless Andalusia is Umaia's vassal, in which case it fights
+        # for its liege and Byzantium comes alone.
+        "vassal_herald": "Byzantium has called the march on the Umaian "
+                         "coast. Andalusia rides for its liege, against "
+                         "the fleet.",
+        # south Iberia and the west Maghreb coast
+        "theater": ((14, 5), (15, 3), (15, 4), (15, 5), (16, 7), (16, 8),
+                    (16, 9), (17, 6), (17, 7), (17, 8)),
+    },
+    {
+        "key": "eastern-war", "name": "THE EASTERN WAR", "posture": "invasion",
+        "attackers": ("umaia",), "defenders": ("byzantium",),
+        "herald": "Umaia's army is over the border. Byzantium is calling "
+                  "up every man in the east.",
+        # east Anatolia and the Levant border strip
+        "theater": ((14, 28), (14, 29), (14, 30), (15, 23), (15, 24),
+                    (15, 25), (15, 26), (15, 27)),
+    },
+)
+WAR_TEMPLATES_BY_KEY = {spec["key"]: spec for spec in WAR_TEMPLATES}
+
+
+def _belligerents(spec: dict, world: dict,
+                  rng: random.Random) -> tuple[tuple[str, ...],
+                                               tuple[str, ...]]:
+    """Who is actually in this war, this campaign. Two templates are not
+    fixed: the CRUSADE draws 1-3 of the four crowns that could take the
+    cross, and the RECONQUISTA reads Andalusia's rolled liege -- a vassal
+    fights on its liege's side, so Umaia's vassal makes Byzantium come
+    alone and stands with Umaia itself."""
+    attackers, defenders = spec["attackers"], spec["defenders"]
+    draw = spec.get("attacker_draw")
+    if draw is not None:
+        n = rng.randint(*draw)
+        attackers = tuple(sorted(rng.sample(list(attackers), n),
+                                 key=attackers.index))
+    if spec["key"] == "reconquista":
+        if world["lands"]["andalusia"]["liege"] == "umaia":
+            attackers, defenders = ("byzantium",), ("umaia", "andalusia")
+    return tuple(attackers), tuple(defenders)
+
+
+def war_herald(spec: dict, attackers: tuple[str, ...]) -> str:
+    """The template's authored herald, in the version this roll produced."""
+    if spec["key"] == "reconquista" and "andalusia" not in attackers:
+        return spec["vassal_herald"]
+    return spec["herald"]
+
+
+def new_war(spec: dict, world: dict, rng: random.Random, day: int) -> dict:
+    """One rolled war's record. `occupied` and `scars` are the campaign
+    sim's ledgers (conquest.py) and open empty; `rolled_day` is its
+    watermark, so catching a war up is living through it."""
+    attackers, defenders = _belligerents(spec, world, rng)
+    return {
+        "key": spec["key"],
+        "name": spec["name"],
+        "attackers": list(attackers),
+        "defenders": list(defenders),
+        "theater": [tile_id(row, column) for row, column in spec["theater"]],
+        "posture": spec["posture"],
+        "herald": war_herald(spec, attackers),
+        "rolled_day": day,
+        "occupied": [],
+        "scars": [],
+    }
+
+
+def roll_wars(world: dict, day: int = 0) -> list[dict]:
+    """THE WAR ROLL, once at worldgen, on its own derived stream so no
+    other layer's numbers move: first Andalusia's vassalage, then three
+    distinct templates. Every belligerent takes the `at-war` state and
+    hears the herald.
+
+    The world-level pass runs AFTER every land's layer exists, because
+    setting a state and posting news both read the layer."""
+    rng = random.Random(f"wars:{world.get('seed')}")
+    for land in world["lands"].values():
+        land["liege"] = None
+    liege = VASSALAGE[rng.randint(1, len(VASSALAGE)) - 1]
+    world["lands"]["andalusia"]["liege"] = liege
+    wars = [new_war(spec, world, rng, day)
+            for spec in rng.sample(list(WAR_TEMPLATES), WARS_ROLLED)]
+    world["wars"] = wars
+    for war in wars:
+        for polity in war["attackers"] + war["defenders"]:
+            set_state(world, polity, "at-war", day)
+            post_news(world, polity, day, f"{war['name']}: {war['herald']}")
+    return wars
+
+
+def wars_of(world: dict, polity: str) -> list[dict]:
+    """The wars this land is in, attacker or defender."""
+    return [war for war in world.get("wars", ())
+            if polity in war["attackers"] or polity in war["defenders"]]
+
+
+def war_side(war: dict, polity: str) -> str:
+    return "attacking" if polity in war["attackers"] else "defending"
+
+
+def land_names(world: dict, keys) -> str:
+    return ", ".join(world["lands"][key]["name"] for key in keys)
+
+
+def war_lines(world: dict) -> list[str]:
+    """The DM's inventory of the standing wars (`world`): who is in each,
+    the herald it opened with, how far its campaign has been rolled, and
+    what it is holding. Vassalage rides here too -- it is the other thing
+    the war roll settled."""
+    wars = world.get("wars") or []
+    lines = ["-- the wars --"]
+    for war in wars:
+        lines.append(f"{war['name']} [{war['posture']}] "
+                     f"(rolled to day {war['rolled_day']})")
+        lines.append(f"  {land_names(world, war['attackers'])} -> "
+                     f"{land_names(world, war['defenders'])}")
+        lines.append(f"  {war['herald']}")
+        for sid in war["occupied"]:
+            slot = world["settlement_slots"][sid]
+            area = world["areas"].get(slot["area"]) if slot["area"] else None
+            tile = world["tiles"][slot["tile"]]
+            lines.append(f"  occupied: {area['name']} "
+                         f"({tile_coordinate(tile['row'], tile['column'])})"
+                         if area is not None else
+                         f"  occupied: a {slot['tier']} at "
+                         f"{tile_label(tile)}")
+    for polity, land in world["lands"].items():
+        if land["liege"]:
+            lines.append(f"{land['name']} is "
+                         f"{world['lands'][land['liege']]['name']}'s vassal.")
+    return detail_wrap(lines, MAP_WIDTH)
+
+
+# --------------------------------------------------------------------------- #
 # The save layer: what a land carries
 # --------------------------------------------------------------------------- #
 
@@ -4832,6 +5052,10 @@ def open_world(world: dict) -> dict:
             drawn = _draw(world, polity, rng)
             if drawn is not None:
                 _fire(world, polity, drawn, OPENING_DAY, rng)
+    # THE WORLD-LEVEL PASS (2026-08-22, session 5), last and after every
+    # land's layer exists: Andalusia's vassalage and the three rolled wars,
+    # each stamping `at-war` on its belligerents and posting its herald.
+    roll_wars(world)
     return world
 
 
@@ -5583,6 +5807,11 @@ def politics_lines(world: dict, polity: str) -> list[str]:
     named beside it."""
     spec = constitution_spec(world, polity)
     lines = [f"  {spec['name']}: {spec['line']}"]
+    liege = world["lands"][polity]["liege"]
+    if liege:
+        lines.append(f"  vassal of {world['lands'][liege]['name']}")
+    for war in wars_of(world, polity):
+        lines.append(f"  {war['name']}: {war_side(war, polity)}")
     for key in tensions_of(world, polity):
         standing = (" [standing]"
                     if key in STANDING_TENSIONS.get(polity, ()) else "")
@@ -5602,7 +5831,9 @@ def world_lines(world: dict) -> list[str]:
     what it holds, what it derives, the sky and the spell behind it, the
     cards standing over it on all three tracks, and how deep its decks
     still are."""
-    lines = ["-- the world --"]
+    lines = list(war_lines(world))
+    lines.append("")
+    lines.append("-- the world --")
     for polity, land in world["lands"].items():
         layer = land["world"]
         lines.append("")
@@ -6034,7 +6265,8 @@ def _validate_lore_tables() -> None:
                     raise ValueError(f"STATE_MARKS/{state_id}: not ASCII")
 
 
-EXTERNAL_STATES = ("sky-bought",)   # set by a verb, not by any card
+EXTERNAL_STATES = ("sky-bought",    # set by a verb, not by any card
+                   "at-war")        # ...and by the war roll at worldgen
 
 
 def _validate_reachability(cards) -> None:
@@ -6242,6 +6474,11 @@ def main() -> None:
     args = ap.parse_args()
     world = generate_world(seed=args.seed)
     roll_world(world, args.days)
+    # The wars settle beside the lands (2026-08-22): the eyeball dump is a
+    # day-settling seam like any other, and a front rolled to day 0 under a
+    # world rolled to day 200 would be the one lie on the page.
+    import conquest                     # runtime: conquest imports quests,
+    conquest.roll_campaigns(world, args.days)   # which imports this file
     for line in world_lines(world):
         print(line)
     print("")

@@ -682,6 +682,46 @@ them. `tile` is yours; the Tile's block on `ui/map.txt` is the player's.
   miners, not a guild of anybody's craftsmen. THE KNOCKERS is standing lore
   everywhere: nobody whistles underground.
 
+### The wars (2026-08-22, the medieval world arc)
+
+**Three wars are standing when the game opens, and they never end.** The
+new-game print names them; `world` carries the heralds and the belligerents.
+They are not the party's job and nothing the party does resolves one -- the
+game is static in time. What they are is a country the party walks across
+while other people are fighting over it.
+
+- **Read `world` once at the start of a campaign.** Who is at war with
+  whom is the single most useful piece of background you have: it decides
+  which borders are ugly, which roads carry soldiers, who is hiring, and
+  what two strangers in a taproom are arguing about. Andalusia's
+  vassalage is on the same page and the map legend prints it beside the
+  name -- a vassal's people talk about their liege.
+- **`at-war` shows on the map page like any other state** and puts levies,
+  deserters and stragglers on that country's roads. When one of those
+  encounters comes up, it is the war's people: a levy column that wants
+  food, a deserter who wants the party's silence, a family walking the
+  other way. The fight, if there is one, is an ordinary fight.
+- **The war marks are on the TILE, and they are your scene.** `tile` and
+  the Tile block on the map page print them: *the war has burned the
+  country here*, *an army is camped here*, *a battle was fought here*,
+  *under siege*, *sacked, and still burnt out*, *held by Tergal*. Each
+  carries the day it started, so you can say how old it is. Lead the
+  arrival with the mark and then get on with the scene: burnt sills and no
+  dogs; a picket on the road who waves the party past; furrows a plough
+  will not go through this year.
+- **A siege or a sack is news, not a fight.** The engine never puts the
+  party in a battle line. If the player wants to walk into a besieged
+  town, that is your improvisation to run -- and an occupied town still has
+  its inn, its smith, its board and its own people. **Occupation gates
+  nothing.** Do not invent a gate the engine does not have.
+- **The war news lands with the rest.** Lines arrive at arrivals, the
+  board and settlement nights, prefixed with the war's name, and only in
+  the countries fighting that war. Word travels within a land: what
+  happened on the Levant front is not taproom talk in Prague.
+- **Never let a war become the campaign.** It is background at the volume
+  of the weather -- one line when the party crosses a mark, and silence
+  otherwise.
+
 ### The sky (2026-08-08, the weather)
 
 Every land rolls a sky every day. Unlike the wealth band, the weather has
@@ -1146,6 +1186,11 @@ Holdings add-on); your job is the scenes.
 - **The flag keeps the heat floor up**: posses come even at clean karma --
   narrate them as the crown's answer to a usurper, not as bounty hunters
   after a criminal (the banner prints the difference).
+- **The crowns' OWN wars are a different layer entirely** (2026-08-22, "The
+  wars" above). They use the same garrison numbers to decide a siege, and
+  nothing else: a town the Horde occupies is not a holding, gives the party
+  nothing, and takes nothing from it. Never let the two ledgers touch in
+  the fiction either -- the party's flag is its own crime.
 ## Flavor beats -- two per session rhythm, always brief
 
 The game is combat-centered; these two beats are how the world stays bigger
@@ -1526,8 +1571,10 @@ than the fights WITHOUT pages of narration:
 
 - **The five settlement tiers** (2026-08-21): hamlet (under a hundred
   souls), village (hundreds), town (thousands), city (tens of thousands),
-  metropolis (a hundred thousand and more -- Paris, Venice,
-  Constantinople). Capital is a separate FLAG on Paris, Rome and Kyiv. A
+  metropolis (a hundred thousand and more -- Cairo, Paris, Venice,
+  Constantinople). Capital is a separate FLAG, and there are NINE of them
+  (2026-08-21): London, Paris, Prague, Stockholm, Moscow, Constantinople,
+  Cordoba, Cairo, Kyiv. A
   **hamlet has no smith**: it is a well, a shrine, a cot and a store, its
   board is live one time in twenty, it hires one face a day, and it is not
   drawn on the map. Play it as a place to pass through -- steel, a real
@@ -1573,6 +1620,13 @@ than the fights WITHOUT pages of narration:
   crossroads. Tolls, ferries, boards and encounters still do NOT read
   routes, so do not charge a toll or roll a bandit off a road the engine
   has not armed.
+- **Three wars are standing and they never end** (2026-08-22). `world`
+  names them; `at-war` shows on the map page for every country in one and
+  puts levies, deserters and stragglers on its roads; and the war marks --
+  burned country, an army camped, a battlefield, a siege, a sack, an
+  occupation -- print on the Tiles they were fought over, each with the
+  day it started. Nothing the party does ends a war and **occupation gates
+  nothing**. See "The wars".
 
 - Attacks cost 1 STA per swing (the pool is a swing budget); defense is
   free. Winded at STA <= 3: -2 to all rolls. **At 0 STA a fighter is SPENT:

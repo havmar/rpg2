@@ -174,25 +174,24 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the sole active roadmap and build contract**. Two whole
-  arcs have now shipped out of it: the fixed Europe-map rework across five
-  sessions ending 2026-08-15 (Human World Contraction, Fixed Europe
-  Geography, Grid Navigation and Map UI, Local Quest Geography, Europe MVP
-  Closure), and THE TILE ECONOMY ARC across four numbered sessions on
-  2026-08-21 (the ground and the sky, the rolled world, the trade network,
-  the hookup — designlog (F) through (I); the five design rounds behind
-  them are 2026-08-20 through 2026-08-21 (E)). It carries one ACTIVE
-  contract: **THE MEDIEVAL WORLD ARC, Part 1** (designed 2026-08-21,
-  designlog (J)), whose sessions 1 (the fallen banner, designlog (K)),
-  2 (the map of nine, designlog (L)), 3 (the towns & the tongues,
-  designlog (M), 2026-08-22) and 4 (the norse packet & the nine-land
-  relations, designlog (N), 2026-08-22) have shipped and are gone from it;
-  session 5 — the rolled wars and the campaign sim — is the last build. Below the contract is the roadmap BEYOND the arc: the spring
-  snapshot and trouble, politics and
-  war, fantasy and magic, settlements revisited, and the
-  small deferred leftovers. **Nothing implemented lives there**: when a
-  session ships, delete its completed contract and write the result in the
-  permanent docs and designlog as described above.
+- `plan.md` — **the sole active roadmap**, and since 2026-08-22 it carries
+  NO build contract at all. Three whole arcs have shipped out of it: the
+  fixed Europe-map rework across five sessions ending 2026-08-15 (Human
+  World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
+  Local Quest Geography, Europe MVP Closure); THE TILE ECONOMY ARC across
+  four numbered sessions on 2026-08-21 (the ground and the sky, the rolled
+  world, the trade network, the hookup — designlog (F) through (I); the
+  five design rounds behind them are 2026-08-20 through 2026-08-21 (E));
+  and **THE MEDIEVAL WORLD ARC, Part 1** (designed 2026-08-21, designlog
+  (J)) across five sessions on 2026-08-21 and 2026-08-22 — the fallen
+  banner (K), the map of nine (L), the towns & the tongues (M), the norse
+  packet & the nine-land relations (N), and the rolled wars & the campaign
+  sim (O). What is left in the file is the roadmap BEYOND all three: the
+  spring snapshot and trouble, politics and war (dynamic borders, languages
+  with mechanics, vassalage with teeth), fantasy and magic, settlements
+  revisited, and the small deferred leftovers. **Nothing implemented lives
+  there**: when a session ships, delete its completed contract and write
+  the result in the permanent docs and designlog as described above.
 - `archive/plan-pre-europe-2026-08-15.md` — **historical, not authority**:
   the complete roadmap displaced by the Europe-map reset, including its
   unfinished and parked ideas. Nothing in it is scheduled unless a later
@@ -445,6 +444,20 @@ a pointer: what the file is, how it's run, where its docs are.
   sweep, which already computes every tile's band, rather than walking
   the world a second time. Tergal's hamlet pool lost `Sarai` (it became
   `Saruk`): the real Horde capital took the word.
+  **THE WAR STATES** (2026-08-22, the medieval world arc's session 5) are
+  this file's smallest new section and its only new stored fields. A TILE
+  and a census SLOT each grew `"states": []`, so the two things a war
+  happens to now carry the record shape a land and an Area always did;
+  a land record grew `"liege"` (None everywhere but Andalusia, and only
+  `worldsim.roll_wars` ever writes it). The words are `WAR_STATE_WORDS`
+  plus `WAR_STATE_NAMED` (how `occupied` reads once the state carries a
+  `who`), behind `place_state_line` and `war_state_lines`; `land_label`
+  is the name-with-its-liege the map legend prints. `tile_detail_lines`
+  and `tile_brief_lines` print the marks -- the brief hangs a settlement's
+  on its census row, through `_slot_line`. `slot_area_id` (the Area id a
+  slot WILL wear, factored out of `materialize_slot`) and `slot_tier` are
+  the two readers `conquest.slot_garrison_level` needed: a siege is laid
+  on a slot, not on an Area that may never have been built.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
   2026-08-21** (the medieval world arc's session 2), and the version
@@ -648,6 +661,37 @@ a pointer: what the file is, how it's run, where its docs are.
   list, riding `_entity_to_dict`, and a real `new --seed 5 --level 1`
   whose party speaks and whose rows fit 40 columns.
   `python -m unittest -v test_towns.py`.
+- `test_wars.py` — **the rolled wars & the campaign sim contract suite**
+  (2026-08-22, the medieval world arc's session 5 — the arc's LAST), four
+  parts. *The six templates*: the contract's six keys, every theater cell
+  land and inside the frame and owned by one of that template's own
+  possible belligerents, no theater on a capital, every theater holding
+  settlements to besiege, both posture tables summing to 100 over events
+  the sim knows, every written state carrying a word, the authored copy
+  ASCII, the crusade's four-crown pool and 1-3 draw, the raiding season on
+  both coasts, and `at-war` external with a road roster of real foes.
+  *The roll*: three distinct legal wars in every world and all six reached
+  over the sweep, the record's exact shape, every belligerent holding
+  `at-war` and nobody else, every herald posted to every belligerent at day
+  0, every rolled theater its own belligerents' ground, the same seed
+  rolling the same wars while the sweep rolls many, the crusade's crown
+  count, the d3 with only Andalusia carrying a liege, the Reconquista
+  reading it both ways, and the proof that the war stream moved no other
+  layer. *The campaign sim*: catching up equalling living through it, the
+  idempotent re-roll, the save round-trip, the watermark, marks only on
+  pulse days, both caps at 200/800/2000 days, a world left alone staying
+  under the 24-mark ceiling, nothing outliving its own days, only the war's
+  own words written, every mark inside its own theater, the siege decided
+  by `garrison_level` (forced to the floor it never takes a town, to the
+  ceiling it always does), a slot's garrison equalling its Area's, each
+  event heard by both sides and nobody else (counted at the door, because a
+  land in two wars trims its feed), a lull saying nothing, and the five
+  NON-GOALS one test each. *The surfaces*: both pages printing the marks,
+  an unmet settlement named by its tier, the 40-column fit, the map page
+  byte-identical, the legend's vassal mark, `world`'s wars block, the
+  polity page's attacking/defending line, the map page's `at-war`, and a
+  real `new --seed 5 --level 1` naming three wars.
+  `python -m unittest -v test_wars.py`.
 - `test_navigation.py` — **the GRID NAVIGATION AND MAP UI contract suite**
   (2026-08-15), four parts in build order. *The edge*: every case of the
   symmetric cost rule (east/west, north/south, a mountain at either end and
@@ -909,8 +953,23 @@ a pointer: what the file is, how it's run, where its docs are.
   rows. Every country now owes at least one SIGNATURE fact of its own
   (THE WOOL, THE KING'S TOUCH, THE ELECTORS, THE FROZEN ROAD, THE WATER
   COURT, THE FLOOD MARK).
+  **THE ROLLED WARS closed the arc** (2026-08-22, session 5; rules.md's
+  The Rolled Wars add-on): `WARS_ROLLED` (3), `VASSALAGE` (Andalusia's d3),
+  `CRUSADERS`, the six authored `WAR_TEMPLATES` (`WAR_TEMPLATES_BY_KEY`
+  beside them) with their belligerents, postures, authored heralds and
+  hand-drawn `theater` tuples of (row, column) map cells, and the roll
+  itself -- `_belligerents` / `war_herald` / `new_war` / `roll_wars`, which
+  `open_world` calls LAST as its world-level pass, on a stream of its own
+  (`random.Random(f"wars:{seed}")`) so no other layer moved. Readers:
+  `wars_of` / `war_side` / `land_names` / `war_lines` (the block
+  `world_lines` now opens with), plus the liege and the war list added to
+  `politics_lines`. One new state word, `at-war`, which is in
+  `EXTERNAL_STATES` (the roll sets it, no card does) and carries one
+  `STATE_ENCOUNTERS` row. The campaign sim over these records is
+  `conquest.roll_campaigns`; the words its marks read as are
+  `places.WAR_STATE_WORDS`.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
-  eyeball check).
+  eyeball check; since 2026-08-22 it settles the wars to the same day).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
   (2026-08-07), the ladder's own, imported by no sim and no bench. Sessions
   are NAMED here, not numbered — the ladder renumbers itself whenever a rung
@@ -1083,14 +1142,22 @@ a pointer: what the file is, how it's run, where its docs are.
   ~20x area reduction, the 2x2 slot lattice) is kept in the module
   docstring, where the designer will look for it.
 - `bench_worldgen.py` — **the tile economy arc's measured suite**
-  (2026-08-21, session 4), over REAL worldgen. Three sweeps —
+  (2026-08-21, session 4), over REAL worldgen. FOUR sweeps since
+  2026-08-22 —
   `harvest` (problem coverage, region count and size, the cause mix, the
   drought guarantee, and how often the campaign opens within five days of
   trouble), `census` (settlements per tier, slots per land tile, empty
   tiles, the fiction-anchored soul totals, the quiet-rich share, charters
-  and manors) and `trade` (routes, land tiles on a road, ports, sea-lane
-  tiles, crossroads, the unfed mines). `python bench_worldgen.py
-  [--seeds N] [--only harvest|census|trade]`; 100 seeds is the default and
+  and manors), `trade` (routes, land tiles on a road, ports, sea-lane
+  tiles, crossroads, the unfed mines) and `wars` (the medieval world arc's
+  session 5: how often each of the six templates is dealt, how many crowns
+  take the cross, where Andalusia's vassalage falls, how many countries end
+  up at war, and what a campaign year of the sim leaves standing — the
+  sweep that says the two caps hold). The wars sweep is the only one that
+  opens the world layer (`worldsim.open_world`) on top of
+  `create_geography`, because that is where the wars are rolled, and it
+  rolls each world's campaign to `WAR_DAYS` (365). `python bench_worldgen.py
+  [--seeds N] [--only harvest|census|trade|wars]`; 100 seeds is the default and
   takes about twenty seconds, the arc's PINS were measured at 500 (about
   two minutes). Unlike `bench_abilities.py` and `bench_quests.py` this one
   IS reproducible — the layers are deterministic per seed — so it can
@@ -1350,14 +1417,32 @@ a pointer: what the file is, how it's run, where its docs are.
   and collection, the lazy crown raids (`roll_raids` -- heads against
   heads, the engine never sees them), and `heat_floor`
   (`seize_by_occupation` went with the questline on 2026-08-21). The sims never import it; every knob is hand-set (the
-  karma layer's doctrine). `python conquest.py [--seed N]` dumps every
+  karma layer's doctrine).
+  **THE CAMPAIGN SIM** (2026-08-22, the medieval world arc's session 5;
+  rules.md's The Rolled Wars add-on) is the file's second half and it runs
+  the CROWNS' wars on exactly the same terms as the crown's raids:
+  `roll_campaigns(world, day)` -- lazy, day-stepped, watermarked on each war
+  record and seeded per war per day (`stable_seed(seed, war_key,
+  "campaign", day)`) -- plus the knobs `WAR_PULSE` (3), `OCCUPIED_CAP` (2),
+  `SCAR_CAP` (6), `EVENT_WEIGHTS` (the two postures' tables),
+  `EVENT_STATES`, `SCAR_DAYS` and `SIEGE_STRENGTH`, and the parts
+  `_pulse` / `_event` / `_mark` / `_siege` / `_stamp` / `_clear_expired` /
+  `_news`. `slot_garrison_level(world, slot)` is the one new reader of the
+  garrison authority: it asks `garrison_level` under the Area id the census
+  slot WILL wear (`places.slot_area_id`), so a town besieged before anybody
+  has walked into it fields the same garrison it will field on the day they
+  do. The output is ordinary since-stamped place states and one news line
+  per event to both belligerents -- and nothing else: no border, no board,
+  no quest, no holding, no recruit pool, and no war ever ends.
+  `python conquest.py [--seed N]` dumps every
   settlement's garrison level and one built job.
 - `test_conquest.py` — the CONQUEST contract suite (2026-07-27): garrison
   bands and stability, the merged city tier, the job's shape/pricing/boss,
   the holding ledger flips, tribute arithmetic, raid resolution (full
   garrison always repels; unguarded always falls; present party is never
   raided), the save round-trip, display fit.
-  `python -m unittest -v test_conquest.py`.
+  `python -m unittest -v test_conquest.py`. (The campaign sim added to the
+  same module on 2026-08-22 has its own suite, `test_wars.py`.)
 - `test_pact.py` — the HELL PACT assignment-ladder contract suite
   (2026-08-04, THE DARK REWORK session A): the template sort (occult ten
   vs. inert crime fodder — nothing rolls from the fodder), the per-save
@@ -1793,7 +1878,7 @@ python -m unittest -v test_trade.py   # mines, goods and the trade network
 python -m unittest -v test_hookup.py  # the read surface + the League
 python econmap.py character           # what each Tile is CALLED
 python econmap.py routes 7            # one built world's trade network
-python bench_worldgen.py              # the arc's three sweeps (100 seeds)
+python bench_worldgen.py              # the four worldgen sweeps (100 seeds)
 python bench_worldgen.py --seeds 500  # ...at the pins
 python session.py tile [COORD]        # the DM's page behind one Tile
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
@@ -1804,6 +1889,7 @@ python -m unittest -v test_wounds.py  # the wound system contract
 python -m unittest -v test_mercy.py   # defeat, ferocity, and Fate contracts
 python -m unittest -v test_ui_logs.py # fight snapshots + exact quest levels
 python -m unittest -v test_conquest.py # the conquest domain layer contract
+python -m unittest -v test_wars.py    # the rolled wars + the campaign sim
 python -m unittest -v test_pact.py    # hell's assignment ladder contract
 python session.py lore [LAND]         # the DM's facts page behind a land
 python session.py service [WORD ...]  # the land's own priced counter
@@ -2361,6 +2447,32 @@ mechanic *does* and *why* is rules.md's job.
   engine reader gates on a tongue** — that is deliberately a table rule
   in dm.md, and plan.md's "Languages with mechanics" is where an engine
   reader would be designed.
+- **The rolled wars & the campaign sim** (2026-08-22, the medieval world
+  arc's session 5 and the arc's LAST — rules.md's The Rolled Wars add-on,
+  dm.md's "The wars") — the layer is deliberately split three ways and it
+  is worth knowing which third owns what before touching any of it.
+  `worldsim.py` AUTHORS and ROLLS: the six `WAR_TEMPLATES` with their
+  hand-drawn theaters, `roll_wars` (called last inside `open_world`, on
+  `random.Random(f"wars:{seed}")`), the `at-war` state with its
+  `STATE_ENCOUNTERS` row, and the readouts `war_lines` / `wars_of` /
+  `war_side` plus the liege and war lines in `politics_lines`.
+  `conquest.py` RUNS: `roll_campaigns` and everything under it, on the
+  knobs `WAR_PULSE` / `OCCUPIED_CAP` / `SCAR_CAP` / `EVENT_WEIGHTS` /
+  `SCAR_DAYS` / `SIEGE_STRENGTH`, with `slot_garrison_level` as its one
+  reader of the garrison authority. `places.py` STORES and SPEAKS: the
+  `states` list on a Tile and on a census slot, `liege` on a land,
+  `WAR_STATE_WORDS` / `WAR_STATE_NAMED` / `place_state_line` /
+  `war_state_lines` / `land_label`, and the two pages that print them.
+  `session.py`: `war_start_lines` (the new-game print, where the scripted
+  questline's armed-layer line used to be), the `roll_campaigns` call at
+  the top of `conquest_news` (the day-settling seam — it runs BEFORE the
+  holdings check, because the crowns' wars run whether or not the party
+  holds anything), and the same call in `cmd_world`. `cmd_tile`
+  deliberately does NOT roll: `tile` writes nothing, which is a shipped
+  contract. `test_wars.py` is the suite and `bench_worldgen.py`'s `wars`
+  sweep the measurement. **The three non-goals are law** and each has a
+  test: no border moves, nothing outside the sim's own states is touched,
+  and no war ever ends.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -3321,7 +3433,9 @@ creature geography, tolls walking the routes — is plan.md's roadmap
 beyond it. **THE MEDIEVAL WORLD ARC is building on top of it**: the
 scripted conquest questline is gone (session 1, designlog (K)) and the
 world is NINE countries over four cultures (session 2, designlog (L)),
-with the town-name table and the tongues (session 3, designlog (M)) and
-the norse packet, the card audit and the twenty land-to-land relations
-(session 4, designlog (N)) on top of it; the rolled wars are still to
-come.
+with the town-name table and the tongues (session 3, designlog (M)), the
+norse packet, the card audit and the twenty land-to-land relations
+(session 4, designlog (N)) and finally THE ROLLED WARS and their campaign
+sim (session 5, designlog (O), 2026-08-22) on top of it. **The arc's Part 1
+contract is complete** and is gone from plan.md; what it left parked there
+is dynamic borders, languages with mechanics and vassalage with teeth.

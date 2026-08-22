@@ -31,6 +31,14 @@ dict in the save (`holdings`) plus an `owner` tag on held settlement
 records; no bench number can move from it. All knobs are hand-set and
 sim-unverified -- tune at the table.
 
+**THE CAMPAIGN SIM (2026-08-22, the medieval world arc's session 5)** lives
+here for the same reasons: `roll_campaigns` runs the crown's OWN wars --
+the three `worldsim.roll_wars` rolls at worldgen -- on exactly this file's
+terms. Numbers against numbers, the garrison authority deciding a siege,
+the combat engine never seeing it, ordinary since-stamped states on Tiles
+and census slots as the whole output. It never redraws a border and never
+ends a war (rules.md's The Rolled Wars add-on).
+
 Run:  python conquest.py [--seed N]   # eyeball dump: every settlement's
                                       # garrison level and one built job
 """
@@ -39,6 +47,8 @@ from __future__ import annotations
 import argparse
 import random
 
+import places
+import worldsim
 from rpg import quest_xp_total
 from quests import (LADDER_POOL, ROOM_SHARES, build_site_rooms,
                     split_encounters, threat_value, new_site, new_room,
@@ -303,6 +313,204 @@ def heat_floor(n_holdings: int) -> int:
     """What the flag alone keeps hot (capped by karma.HEAT_CAP at the call
     site). Zero holdings = the old game exactly."""
     return HOLDING_HEAT_STEP * n_holdings
+
+
+# --------------------------------------------------------------------------- #
+# THE CAMPAIGN SIM (2026-08-22, the medieval world arc's session 5)
+# --------------------------------------------------------------------------- #
+# The crown's wars, on the same terms as the crown's raids above: numbers
+# against numbers, the garrison authority doing the deciding, and the combat
+# engine never seeing any of it. `worldsim.roll_wars` rolls the three wars at
+# worldgen; this is what makes their fronts LOOK alive between them.
+#
+# What it does: every WAR_PULSE days each standing war rolls ONE event on its
+# posture's weights and writes an ordinary since-stamped STATE onto a theater
+# Tile or one of the census slots standing on it. What it never does
+# (rules.md's The Rolled Wars add-on states these as law): change a Tile's
+# country, touch a board, a quest, the party's holdings or a recruit pool, or
+# END a war. Occupation gates nothing -- it is a banner on the war record and
+# a line on the Tile's page.
+
+WAR_PULSE = 3               # days between one war's event rolls
+OCCUPIED_CAP = 2            # settlements one war may hold at a time
+SCAR_CAP = 6                # standing temporary states one war may have on
+                            # the map; the oldest is cleared to make room
+
+EVENT_WEIGHTS = {           # what a war of each posture does with a pulse
+    "invasion": (("lull", 45), ("raid", 25), ("army", 10),
+                 ("battle", 10), ("siege", 10)),
+    "raiding": (("lull", 55), ("raid", 40), ("siege", 5)),
+}
+EVENT_STATES = {"raid": "war-raided", "army": "war-camp",
+                "battle": "battlefield"}
+SCAR_DAYS = {               # how long each mark stands. `occupied` is not
+    "war-raided": 30,       # here: it is permanent, and capped by count
+    "war-camp": 10,
+    "battlefield": 60,
+    "under-siege": 12,
+    "sacked": 90,
+}
+SIEGE_STRENGTH = {          # the besieging column's heads, by the prize's
+    "hamlet": (1, 6),       # tier, rolled against `garrison_level`. Each
+    "village": (1, 6),      # band straddles its garrison band, so a town
+    "town": (3, 12),        # falls about half the time and a great city
+    "city": (7, 17),        # rather less
+    "metropolis": (7, 17),
+    "capital": (7, 17),
+}
+
+
+def slot_garrison_level(world: dict, slot: dict) -> int:
+    """The garrison a census SLOT fields -- the same number
+    `garrison_level` gives its Area once anybody materializes it, because
+    it is asked under the Area id the slot will wear
+    (`places.slot_area_id`). The campaign sim besieges towns nobody has
+    walked into, so it cannot wait for the Area to exist."""
+    return garrison_level(world, {"id": places.slot_area_id(slot),
+                                  "subtype": slot["tier"],
+                                  "capital": slot["capital"]})
+
+
+def _scar_place(world: dict, scar: dict) -> dict:
+    return (world["tiles"][scar["place"]] if scar["kind"] == "tile"
+            else world["settlement_slots"][scar["place"]])
+
+
+def _clear_expired(world: dict, war: dict, day: int) -> None:
+    """The sim cleans up after itself: every mark whose days are spent goes
+    off the map when the war next rolls."""
+    for scar in list(war["scars"]):
+        if day < scar["until"]:
+            continue
+        places.clear_state(world, _scar_place(world, scar), scar["state"],
+                           day=day)
+        war["scars"].remove(scar)
+
+
+def _stamp(world: dict, war: dict, kind: str, place: dict, state_id: str,
+           day: int, who: str | None = None) -> dict:
+    """Write one war mark onto a Tile or a slot, day-stamped, and book it in
+    the war's own scar ledger so it can expire and be counted. A mark laid
+    twice on one place is RE-DATED rather than doubled."""
+    state = places.replace_state(world, place, state_id, state_id, day=day)
+    if who is not None:
+        state["who"] = who
+    if state_id not in SCAR_DAYS:       # `occupied`: permanent, capped by
+        return state                    # OCCUPIED_CAP instead
+    for scar in list(war["scars"]):
+        if scar["place"] == place["id"] and scar["state"] == state_id:
+            war["scars"].remove(scar)
+    war["scars"].append({"kind": kind, "place": place["id"],
+                         "state": state_id, "until": day + SCAR_DAYS[state_id]})
+    while len(war["scars"]) > SCAR_CAP:
+        oldest = war["scars"].pop(0)
+        places.clear_state(world, _scar_place(world, oldest), oldest["state"],
+                           day=day)
+    return state
+
+
+def _event(rng: random.Random, posture: str) -> str:
+    table = EVENT_WEIGHTS[posture]
+    return rng.choices([row[0] for row in table],
+                       [row[1] for row in table])[0]
+
+
+def _news(world: dict, war: dict, day: int, line: str) -> None:
+    """One line, to both sides. A war is heard about in every country
+    fighting it, and nowhere else -- word travels within a land."""
+    for polity in war["attackers"] + war["defenders"]:
+        worldsim.post_news(world, polity, day, f"{war['name']}: {line}")
+
+
+def _attacker_name(world: dict, war: dict) -> str:
+    return world["lands"][war["attackers"][0]]["name"]
+
+
+def _theater_slots(world: dict, war: dict) -> list[dict]:
+    return [world["settlement_slots"][sid] for tid in war["theater"]
+            for sid in world["tiles"][tid]["settlement_slots"]]
+
+
+def _siege(world: dict, war: dict, day: int, rng: random.Random) -> None:
+    """A column sits down in front of a theater town, and the garrison
+    authority decides what happens: `garrison_level` against a strength
+    roll on the prize's own band. The town falls and is sacked -- and, while
+    the war holds fewer than OCCUPIED_CAP, occupied with the occupier named
+    -- or the siege stands its twelve days and lifts."""
+    slots = _theater_slots(world, war)
+    if not slots:                       # a theater of empty country: the
+        _mark(world, war, day, rng, "raid")          # column burns it instead
+        return
+    slot = rng.choice(slots)
+    tile = world["tiles"][slot["tile"]]
+    area = world["areas"].get(slot["area"]) if slot["area"] else None
+    who = area["name"] if area is not None and area.get("known") else None
+    # A settlement the party has met is named; one it has not is its tier
+    # standing on a Tile the DM can find. Never both -- a town on its own
+    # named Tile would otherwise read "Jerusalem (Jerusalem (R16C27))".
+    where = (f"{who} ({places.tile_coordinate(tile['row'], tile['column'])})"
+             if who else f"a {slot['tier']} at {places.tile_label(tile)}")
+    garrison = slot_garrison_level(world, slot)
+    strength = rng.randint(*SIEGE_STRENGTH[places.slot_tier(slot)])
+    if strength < garrison:
+        _stamp(world, war, "slot", slot, "under-siege", day)
+        _news(world, war, day,
+              f"{_attacker_name(world, war)}'s army sits before {where}.")
+        return
+    _stamp(world, war, "slot", slot, "sacked", day)
+    line = f"The walls are broken. {where} is taken and sacked."
+    if (slot["id"] not in war["occupied"]
+            and len(war["occupied"]) < OCCUPIED_CAP):
+        _stamp(world, war, "slot", slot, "occupied", day,
+               who=_attacker_name(world, war))
+        war["occupied"].append(slot["id"])
+        line += f" {_attacker_name(world, war)} holds it."
+    _news(world, war, day, line)
+
+
+def _mark(world: dict, war: dict, day: int, rng: random.Random,
+          event: str) -> None:
+    """The three marks a war leaves on open ground: a burned countryside, an
+    army sitting on it, and the field a battle was fought over."""
+    tile = world["tiles"][rng.choice(war["theater"])]
+    state_id = EVENT_STATES[event]
+    _stamp(world, war, "tile", tile, state_id, day)
+    where = places.tile_label(tile)
+    who = _attacker_name(world, war)
+    line = {"raid": f"{who}'s riders have burned the country at {where}.",
+            "army": f"An army of {who} is camped at {where}.",
+            "battle": f"A battle was fought at {where}. Both sides claim "
+                      f"it."}[event]
+    _news(world, war, day, line)
+
+
+def _pulse(world: dict, war: dict, day: int) -> None:
+    rng = random.Random(stable_seed(world.get("seed"), war["key"],
+                                    "campaign", day))
+    _clear_expired(world, war, day)
+    event = _event(rng, war["posture"])
+    if event == "lull":
+        return              # a quiet three days says nothing and marks
+                            # nothing: it is what a smouldering front does
+    if event == "siege":
+        _siege(world, war, day, rng)
+    else:
+        _mark(world, war, day, rng, event)
+
+
+def roll_campaigns(world: dict, day: int) -> None:
+    """Bring every standing war up to `day`. Lazy, day-stepped and seeded
+    per war per day, so catching up thirty days at an arrival gives exactly
+    the front that rolling them live would have -- the world layer's own
+    contract, applied to the war.
+
+    Driven from the same day-settling seam as `conquest_news`."""
+    for war in world.get("wars") or ():
+        while war["rolled_day"] < day:
+            today = war["rolled_day"] + 1
+            if today % WAR_PULSE == 0:
+                _pulse(world, war, today)
+            war["rolled_day"] = today
 
 
 # --------------------------------------------------------------------------- #

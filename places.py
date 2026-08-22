@@ -1483,6 +1483,10 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
         "culture": spec["culture"], "homeland": polity,
         "description": spec.get("description", ""),
         "seed": stable_seed(world_seed, "world", "land", index),
+        # WHOSE VASSAL (2026-08-22, session 5): a polity key or None. Only
+        # Andalusia's is ever rolled (`worldsim.roll_wars`), but every land
+        # carries the field, so a reader never has to tolerate its absence.
+        "liege": None,
         "areas": [], "tiles": [], "settlement_slots": [],
         "features": [], "states": [], "sequences": {},
     }
@@ -1806,6 +1810,10 @@ def _slot(slot_id: str, tier: str, seed: int, *, name: str | None = None,
     return {"id": slot_id, "tier": tier, "name": name,
             "capital": capital, "authored": authored, "area": None,
             "known": authored, "seed": seed,
+            # A SLOT holds states too (2026-08-22, session 5): a siege is
+            # laid on the town the census rolled, whether or not anybody has
+            # ever walked into it, so the state cannot wait for the Area.
+            "states": [],
             "charter": charter, "manor": manor}
 
 
@@ -2397,6 +2405,21 @@ def board_active_roll(seed: int | None, slot: dict) -> bool:
     return roll.random() < BOARD_ACTIVE_CHANCE[band]
 
 
+def slot_area_id(slot: dict) -> str:
+    """The Area id this census slot WILL have, computed without building it.
+    A slot materializes once and always under this key, so anything that has
+    to speak about a settlement nobody has met yet -- the campaign sim's
+    garrison roll (2026-08-22) -- can ask for the same identity the Area will
+    wear, instead of inventing a second one."""
+    return f"{slot['tile']}/area/settlement/{slot['index']:02d}"
+
+
+def slot_tier(slot: dict) -> str:
+    """A slot's MECHANICAL tier, the way `settlement_tier` reads an Area's:
+    a capital is its own tier whatever the census called it."""
+    return "capital" if slot["capital"] else slot["tier"]
+
+
 def materialize_slot(world: dict, slot: dict | str, *,
                      need: str | None = None, day: int | None = None,
                      known: bool = True) -> dict:
@@ -2412,7 +2435,7 @@ def materialize_slot(world: dict, slot: dict | str, *,
                                                  slot["tier"]))
     template, site_specs = _settlement_template(country, slot["tier"], slot,
                                                 tile["tags"])
-    aid = f"{tile['id']}/area/settlement/{slot['index']:02d}"
+    aid = slot_area_id(slot)
     spec = {**template, "id": aid, "name": slot["name"],
             "subtype": slot["tier"], "capital": slot["capital"]}
     area = _new_area_record(spec, country, tile, world["seed"],
@@ -2533,6 +2556,11 @@ def create_geography(seed: int | None) -> dict:
                     "known": True,
                     "visited": False, "neighbors": neighbors, "areas": [],
                     "natural_area": None, "settlement_slots": [],
+                    # A Tile holds STATES like any other place (2026-08-22,
+                    # the medieval world arc's session 5): the campaign sim
+                    # burns, camps on and fights over ground, and the record
+                    # shape is the one lands and Areas already share.
+                    "states": [],
                     "tags": tags, "seed": stable_seed(seed, tid, "tile", 0)}
             world["tiles"][tid] = tile
             world["tile_order"].append(tid)
@@ -3370,15 +3398,84 @@ def map_legend_lines(world: dict, width: int = 40,
             if slot["capital"]:
                 label += "*"
             (cities if slot["authored"] else others).append(label)
+        name = land_label(world, country)
         if cities:
-            lines.extend(_legend_group(f"{land['name']} cities: ", cities,
-                                       width))
+            lines.extend(_legend_group(f"{name} cities: ", cities, width))
         if others:
             shown = sorted(others)[:limit]
             if len(others) > limit:
                 shown.append(f"+{len(others) - limit} more")
-            lines.extend(_legend_group(f"{land['name']} known: ", shown,
-                                       width))
+            lines.extend(_legend_group(f"{name} known: ", shown, width))
+    return lines
+
+
+def land_label(world: dict, country: str) -> str:
+    """A country's name as a page prints it, with its LIEGE where it has
+    one (2026-08-22, the medieval world arc's session 5): Andalusia's
+    vassalage is rolled at worldgen and is the first thing a reader of the
+    map wants to know about it. Every other land carries `liege` as None."""
+    land = world["lands"][country]
+    liege = land["liege"]
+    if not liege:
+        return land["name"]
+    return f"{land['name']} ({world['lands'][liege]['name']}'s vassal)"
+
+
+# --------------------------------------------------------------------------- #
+# THE WAR STATES (2026-08-22, the medieval world arc's session 5)
+# --------------------------------------------------------------------------- #
+# `conquest.roll_campaigns` is the writer; this file owns the WORDS, because
+# it owns the record shape a Tile and a census slot carry and it owns the two
+# pages that print them. `worldsim.STATE_WORDS` is the same table for a
+# LAND's own states, and the two never overlap: a land is at war, a tile is
+# burnt.
+
+WAR_STATE_WORDS = {
+    "war-raided": "the war has burned the country here",
+    "war-camp": "an army is camped here",
+    "battlefield": "a battle was fought here",
+    "under-siege": "under siege",
+    "sacked": "sacked, and still burnt out",
+    "occupied": "held by the enemy",
+}
+WAR_STATE_NAMED = {         # ...and how the word reads once the state
+    "occupied": "held by {who}",    # carries a NAME (a state record may
+}                                   # carry `who`, the way a card's
+                                    # authority hook names a face)
+
+
+def place_state_line(entry: dict) -> str:
+    """One state on a place, as a page reads it -- the same shape
+    `worldsim.state_line` gives a land's own: the word, whoever is named in
+    it, and the day it started."""
+    who = entry.get("who")
+    named = WAR_STATE_NAMED.get(entry["id"]) if who else None
+    word = (named.format(who=who) if named else
+            WAR_STATE_WORDS.get(entry["id"], entry["id"].replace("-", " ")))
+    since = entry.get("since")
+    return word + (f" (day {since})" if since is not None else "")
+
+
+def _active_states(place: dict) -> list[dict]:
+    return [s for s in place.get("states", ()) if s.get("active")]
+
+
+def war_state_lines(world: dict, tile: dict) -> list[str]:
+    """What the wars have done to one Tile: the ground's own marks, then
+    each settlement's. A settlement nobody has met is named by its tier --
+    the campaign sim lays siege to towns the party has never walked into,
+    and the page must not leak a name the census has not spent yet."""
+    lines = [place_state_line(state) for state in _active_states(tile)]
+    for sid in tile["settlement_slots"]:
+        slot = world["settlement_slots"][sid]
+        states = _active_states(slot)
+        if not states:
+            continue
+        area = world["areas"].get(slot["area"]) if slot["area"] else None
+        who = (area["name"] if area is not None and area.get("known")
+               else f"a {slot['tier']}")
+        lines.extend(f"{who}: {place_state_line(state)}"
+                     for state in states)
     return lines
 
 
@@ -3533,6 +3630,7 @@ def tile_detail_lines(world: dict, tile: dict | str,
     harvest = harvest_line(world, tile)
     if harvest:
         lines.append(f"  {harvest}")
+    lines.extend(f"  {line}" for line in war_state_lines(world, tile))
     if tile["mine"]:
         lines.append(f"  mine: {tile['mine']}")
     if tile["goods"]:
@@ -3565,6 +3663,7 @@ def _slot_line(world: dict, slot: dict) -> str:
         marks.append(slot["manor"])
     if area is not None and not area.get("board_active"):
         marks.append("board quiet")
+    marks.extend(place_state_line(state) for state in _active_states(slot))
     return who + (f" -- {', '.join(marks)}" if marks else "")
 
 
@@ -3624,6 +3723,10 @@ def tile_brief_lines(world: dict, tile: dict | str,
     harvest = harvest_line(world, tile)
     if harvest:
         lines.append(f"  {harvest}")
+    # The Tile's OWN war marks here; a settlement's ride its census row
+    # below (`_slot_line`), where the DM is already reading the place.
+    lines.extend(f"  {place_state_line(state)}"
+                 for state in _active_states(tile))
     if tile["mine"]:
         metals = ", ".join(MINES[(tile["row"], tile["column"])][1])
         lines.append(f"  mine: {tile['mine']} ({metals})")

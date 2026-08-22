@@ -379,15 +379,22 @@ class TheOpeningGround(unittest.TestCase):
         _, out = run_new("--seed", "3", "--level", "10")
         self.assertIn("OPENING HOOK", out)
 
-    def test_a_new_game_says_nothing_about_a_war(self):
-        """The scripted questline is gone (2026-08-21): a new game arms no
-        war layer and says no word about one, at any start level."""
+    def test_a_new_game_names_the_three_standing_wars(self):
+        """The scripted questline is gone (2026-08-21) and the ROLLED wars
+        took its place in the print (2026-08-22, the medieval world arc's
+        session 5). What the line says is different in kind: these are not
+        the party's job, they are the wars the world is already fighting.
+        The old wave layer stays gone at any start level."""
         for level in ("1", "12"):
-            _, out = run_new("--seed", "3", "--level", level)
-            low = out.lower()
+            state, out = run_new("--seed", "3", "--level", level)
+            self.assertIn("Three wars are standing", out)
+            wars = state["world"]["wars"]
+            self.assertEqual(len(wars), 3)
+            for war in wars:
+                self.assertIn(war["name"], out)
             for word in ("story layer is armed", "a war is seeded",
-                         "the war"):
-                self.assertNotIn(word, low)
+                         "war wave"):
+                self.assertNotIn(word, out.lower())
 
 
 # --------------------------------------------------------------------------- #

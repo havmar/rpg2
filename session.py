@@ -1426,6 +1426,31 @@ def _starting_settlement(world: dict) -> dict:
     return world["areas"][world["start_area"]]
 
 
+def war_start_lines(world: dict) -> list[str]:
+    """The three standing wars, named at a new game (2026-08-22, the
+    medieval world arc's session 5). It sits where the scripted questline's
+    "the story layer is armed" line used to sit, and it says something
+    different: nothing here is the party's job. These are the wars the world
+    is already fighting, and the party will walk into their marks."""
+    wars = world.get("wars") or []
+    if not wars:
+        return []
+    # The count is spelled, and it is read off the roll rather than typed:
+    # `worldsim.WARS_ROLLED` is three today and the line must not lie if it
+    # ever is not.
+    how_many = {1: "One war is", 2: "Two wars are",
+                3: "Three wars are"}.get(len(wars), f"{len(wars)} wars are")
+    lines = [f"{how_many} standing in this world:"]
+    for war in wars:
+        lines.append(f"  {war['name']} -- "
+                     f"{worldsim.land_names(world, war['attackers'])} "
+                     f"against "
+                     f"{worldsim.land_names(world, war['defenders'])}.")
+    lines.append("(`world` has the heralds; the fronts show on the Tiles "
+                 "they are fought over.)")
+    return lines
+
+
 def opening_hook(state: dict) -> list[str]:
     """The job the game opens on (2026-07-13, designer call: the game
     starts at the doorstep of a combat quest, not in a tavern): the most
@@ -1563,6 +1588,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     print(f"The party stands at {location_line(state)} -- the local jobs "
           f"are `board`; the wider world is `map` and `travel`.")
     for line in opening_hook(state):
+        print(line)
+    for line in war_start_lines(state["world"]):
         print(line)
     if state.get("pact"):
         due = pending_pin(state["pact"], level)
@@ -2776,15 +2803,24 @@ def effective_heat(state: dict) -> int:
 
 def conquest_news(state: dict) -> None:
     """The domain layer's day-settling, run where news lands (arrivals,
-    settlement nights, the board): the crown's raids on holdings the party
-    is away from, and the tribute chests when the party stands in a
-    holding. Prints directly; every call site saves afterward (or hands
+    settlement nights, the board): FIRST the crowns' own standing wars
+    (2026-08-22 -- `conquest.roll_campaigns`, which prints nothing and
+    posts news `world_news` then tells), then the crown's raids on holdings
+    the party is away from, and the tribute chests when the party stands in
+    a holding. Prints directly; every call site saves afterward (or hands
     off to machinery that does)."""
+    world = state.get("world")
+    if not world:
+        return
+    day = state["clock"].day
+    # THE CAMPAIGN SIM (2026-08-22, session 5) settles here too, and BEFORE
+    # the holdings check: the crown's wars run whether or not the party
+    # holds anything. It prints nothing itself -- what it posts is news, and
+    # `world_news` (the next call at every one of these points) tells it.
+    conquest.roll_campaigns(world, day)
     holdings = state.get("holdings")
     if not holdings:
         return
-    world = state["world"]
-    day = state["clock"].day
     held_before = set(holdings)
     here = local_settlement(state)
     here_key = here["key"] if here is not None else None
@@ -5694,6 +5730,7 @@ def cmd_world(args: argparse.Namespace) -> None:
         print("No world in this save -- start one with `new`.")
         return
     worldsim.roll_world(world, state["clock"].day)
+    conquest.roll_campaigns(world, state["clock"].day)
     save(state)
     for line in worldsim.world_lines(world):
         print(line)
@@ -6996,6 +7033,10 @@ def cmd_tile(args: argparse.Namespace) -> None:
                   f"(e.g. R09C10).")
             return
         tid = tile_id_of(*parsed)
+    # The campaign sim is deliberately NOT rolled here (2026-08-22): `tile`
+    # writes nothing at all, which is a shipped contract (test_hookup), and
+    # the front settles wherever news lands -- arrivals, the board and every
+    # settlement night. What this page shows is the last settled front.
     print("\n".join(tile_brief_lines(world, tid)))
 
 

@@ -6876,3 +6876,185 @@ same contract: every country owes a fact whose scope is exactly itself,
 and a country's relations are its own rather than its culture's (the
 proof is that two lands of one culture no longer share an edge set --
 under the cross product they always did).
+
+## 2026-08-22 (O) — Session 5 of the medieval world arc: the rolled wars & the campaign sim (Part 1 complete)
+
+**What shipped.** plan.md's Session 5 whole, and with it the arc's Part 1
+contract: the file now carries no build contract at all. Every world rolls
+Andalusia's vassalage and THREE of six authored wars at worldgen; each war
+stamps `at-war` on its belligerents, posts an authored herald, and then
+smoulders through a lazy day-stepped campaign sim in `conquest.py` that
+burns countryside, camps armies, fights battles and lays sieges over a
+hand-drawn theater. A new game names the three wars where the scripted
+questline's armed-layer line used to be (session 1 removed it).
+
+**Where the layer lives, and why it is split three ways.** The import
+direction settled it: `conquest` imports `quests` imports `worldsim`
+imports `places`, so nothing upstream can reach the sim.
+
+- **`worldsim.py` AUTHORS and ROLLS.** `WAR_TEMPLATES` (six), `VASSALAGE`,
+  `WARS_ROLLED`, `roll_wars` — called LAST inside `open_world` as its
+  world-level pass, on `random.Random(f"wars:{seed}")`, a stream nothing
+  else touches — plus `war_lines` / `wars_of` / `war_side` / `land_names`
+  and the `at-war` state with its one `STATE_ENCOUNTERS` row.
+- **`conquest.py` RUNS.** `roll_campaigns(world, day)` on `WAR_PULSE` 3,
+  `OCCUPIED_CAP` 2, `SCAR_CAP` 6, `EVENT_WEIGHTS`, `SCAR_DAYS` and the new
+  `SIEGE_STRENGTH`, with `slot_garrison_level` as its one reader of the
+  garrison authority.
+- **`places.py` STORES and SPEAKS.** A Tile and a census slot each grew a
+  `states` list, a land grew `liege`, and `WAR_STATE_WORDS` /
+  `WAR_STATE_NAMED` / `place_state_line` / `war_state_lines` /
+  `land_label` are the words. `slot_area_id` and `slot_tier` are the two
+  readers the siege needed.
+
+**The six theaters, as drawn.** Every cell was checked against
+`resources/europe_map.txt` (land, never sea), `europe_countries.txt` (owned
+by one of that template's own possible belligerents) and a built world's
+census (enough settlements to besiege). No theater stands on a capital.
+
+| war | cells |
+|---|---|
+| THE CRUSADE | (15,28) (15,29) (15,30) (16,27) (16,28) (16,29) (16,30) (17,28) (17,29) (17,30) |
+| THE LONG WAR | (8,9) (8,10) (9,4) (9,5) (10,5) (10,6) (11,6) (11,7) (12,6) (12,7) |
+| THE HORDE RIDES WEST | (8,22)-(8,29) plus (9,20) (9,21) (10,20) (10,21) |
+| THE RAIDING SEASON | (4,4) (4,5) (5,2) (6,2) (7,4) (7,7) (8,9) (9,4) (9,5) (10,5) |
+| THE RECONQUISTA | (14,5) (15,3) (15,4) (15,5) (16,7) (16,8) (16,9) (17,6) (17,7) (17,8) |
+| THE EASTERN WAR | (14,28) (14,29) (14,30) (15,23) (15,24) (15,25) (15,26) (15,27) |
+
+Two of them deliberately OVERLAP: the Long War and the Raiding Season are
+both fought on Seraptania's channel and west coast, which is what those two
+wars historically share. Nothing in the sim minds — each war marks ground
+under its own ledger.
+
+**The calls the spec left open, and how the build settled them.**
+
+1. **A vassal fights for its liege, so Andalusia becomes a DEFENDER.** The
+   contract's Reconquista row says "andalusia (backed by byzantium) ->
+   Umaia's west; if Andalusia is Umaia's vassal, byzantium alone", which
+   fixes the attacker column and says nothing about where Andalusia goes.
+   Leaving it out of the war entirely would have made its own theater
+   half-illegal — south Iberia is Andalusia's ground, and a theater cell
+   has to belong to a belligerent — so the build put it on Umaia's side:
+   attackers `(byzantium,)`, defenders `(umaia, andalusia)`. That is also
+   the only thing vassalage means at this size, and it is what makes the
+   d3 worth rolling.
+2. **The Reconquista carries a SECOND authored herald.** One line cannot
+   truthfully open both versions of that war. `vassal_herald` sits beside
+   `herald` on that one template and `war_herald` picks; the record stores
+   the chosen line, so nothing downstream knows there were two.
+3. **Jerusalem's own tile joined the crusade theater.** The contract writes
+   the ground as "the Levant around Jerusalem, (15,28)-(17,30)", and
+   Jerusalem is at (16,27) — outside that box. The prose is the spec and
+   the box was a sketch: a crusade that cannot besiege Jerusalem is the one
+   thing that template must be able to do. Ten cells, not nine.
+4. **No theater stands on a capital.** Not stated anywhere; the build made
+   it a rule and a test. A war marks the country, never the crown's seat —
+   a sacked-and-occupied Constantinople or Cordoba would be a campaign
+   event, not background texture, and this layer is background texture.
+   Warsaw, Dublin and Jerusalem ARE in theaters and can fall, which is the
+   right size of loud.
+5. **A lull says nothing at all** — no state, no news. The contract says
+   "each event posts one news line to both belligerents", and a lull is
+   45-55% of every roll: posting it would have put "nothing happened"
+   on a land's feed every three days and drowned its own card news inside
+   `NEWS_KEPT`. A smouldering front is quiet most of the time, and quiet
+   is the absence of a line.
+6. **The war record grew `scars`, a field the contract's shape did not
+   name.** The cap ("at most 6 standing scar states per war, oldest
+   cleared first") and the expiries need a ledger of what this war wrote
+   and until when. The alternative — sweeping 314 tiles and every slot for
+   the sim's own words on every pulse — is the expensive way to store the
+   same list. `occupied` stays exactly as the contract names it.
+7. **A siege is decided at the EVENT, not when its state expires.** One
+   pulse, one answer: below the garrison the column sits and `under-siege`
+   stands its twelve days and lifts (which is the contract's "or the siege
+   lifts"); at or above it the walls go and `sacked` is written directly,
+   with no `under-siege` in between. The alternative — a pending-siege
+   record resolved twelve days later — is a second watermark for one bit
+   of information.
+8. **`SIEGE_STRENGTH` is a new authored table.** The contract says "a
+   strength roll of the attacker's tier band against
+   `conquest.garrison_level`" without giving the band. Each row straddles
+   the garrison band of the prize it is rolled for (hamlet/village 1-6
+   against 3-5, town 3-12 against 6-10, city-grade 7-17 against 11-15), so
+   a village or a town falls about half the time it is besieged and a
+   great city rather less. The measured share of sieges that take the town
+   is in benchlog.
+9. **The sim besieges a census SLOT, never a materialized Area**, and asks
+   the garrison authority under the Area id the slot WILL wear
+   (`places.slot_area_id`, factored out of `materialize_slot`). Wars
+   happen in country nobody has walked into, and materializing a
+   settlement from inside the sim would break the non-goals outright. The
+   suite pins that the two answers are the same number.
+10. **A Tile and a slot each grew `"states": []`; a land grew `"liege"`.**
+    Three new stored fields in the whole session. `liege` is on every land
+    record and built by `_new_land_record` rather than defaulted at the
+    reader, per develop.md's "never soften a reader for a state the code
+    cannot produce" — eight lands carry None and mean it.
+11. **The war state WORDS live in `places.py`, not in `worldsim.py`.**
+    `worldsim.STATE_WORDS` is the same table for a LAND's states, but
+    `places` cannot import `worldsim`, and `places` owns both the record
+    shape and the two pages that print it. The two vocabularies never
+    overlap: a land is at war, a tile is burnt.
+12. **The pulse is a property of the CALENDAR, not of the watermark.** An
+    event rolls on days divisible by `WAR_PULSE`, so all three wars pulse
+    together and a war caught up from any watermark lands on exactly the
+    same days. Offsetting from `rolled_day` would have made the schedule
+    depend on when the party last looked, which is the bug `roll_world`
+    was fixed for in 2026-08-21's session 4.
+13. **`roll_campaigns` runs at the TOP of `conquest_news`, before its
+    holdings early-return.** The crowns' wars run whether or not the party
+    owns anything; the reader that used to bail out on an empty ledger now
+    bails out after the wars have settled. It prints nothing itself —
+    `world_news`, the next call at all four of those points, tells what it
+    posted.
+14. **`cmd_tile` deliberately does NOT roll the campaign.** It was wired to
+    and then unwired: `tile` writing nothing is a shipped contract
+    (`test_hookup.TheDMsBrief`), and rolling moves the war's watermark. The
+    page shows the last settled front, and the front settles at arrivals,
+    the board, taverns, downtime and the healer's day. `cmd_world` and
+    `worldsim.py`'s own dump DO roll, because both already say they are
+    roll points.
+15. **`world_lines` opens with the wars rather than appending them.** The
+    DM's inventory is read top-down and the three wars are the first thing
+    that decides how to read the nine lands under them.
+16. **The news test counts at the DOOR, not on the feed.** A land in two
+    wars trims its news to `NEWS_KEPT` (24) like any other, so the surviving
+    lines are not what the sim posted — the test spies on `post_news`
+    instead. Worth writing down because the same trap catches the next
+    reader of a land's feed.
+
+**One observation from the chair, not acted on.** A land at war hears a
+war line roughly every five days, and a land in two hears one every two or
+three. Over a long absence that is most of what its feed still holds when
+the party finally arrives, and its own cards' news is what gets trimmed
+away. In play the party arrives every few days and hears one or two lines,
+which is right; the failure mode only shows on a long stretch away. If it
+reads badly at the table the cheap fixes are a quieter raid (no line for
+`raid`, keeping battle, siege and sack) or a per-war cap on the feed.
+
+**Measured** (benchlog 2026-08-22 (C)): the three older sweeps came back
+identical to session 4's run line for line — predicted, since the wars roll
+on their own stream and the bench's other three sweeps never open the world
+layer at all. The new `wars` sweep is the session's own numbers.
+
+**The suite.** 988 tests before, **1043 after, OK.** The new `test_wars.py`
+is the contract in four parts — the six templates (theaters land, in frame,
+belligerent-owned, capital-free and besiegeable; both posture tables
+summing to 100), the roll (three distinct legal wars, all six reached over
+a sweep, the record shape, `at-war` exactly on the belligerents, every
+herald posted at day 0, the d3 with only Andalusia carrying a liege, the
+Reconquista reading it both ways, and the proof the war stream moved no
+other layer), the campaign sim (catching up equalling living through it,
+the save round-trip, both caps at 200/800/2000 days, nothing outliving its
+own days, the siege forced to both outcomes through `garrison_level`, a
+slot's garrison equalling its Area's, and the five non-goals one test each)
+and the surfaces (both pages, the 40-column fit, the map page
+byte-identical, the legend's vassal mark, `world`'s wars block and a real
+`new --seed 5 --level 1`). `test_start`'s
+`test_a_new_game_says_nothing_about_a_war` became
+`test_a_new_game_names_the_three_standing_wars`: session 1 wrote it to pin
+the interim warless world, and this is the session that was coming.
+
+**Part 1 is complete.** Five sessions, 2026-08-21 to 2026-08-22, designlog
+(K) through (O). plan.md keeps the roadmap beyond it and nothing else.

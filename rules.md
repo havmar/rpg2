@@ -4541,6 +4541,11 @@ the play surface in `session.py` (`conquer` / `garrison` / `holdings`).
 The sims never import it: like karma, the layer is play-surface only, its
 knobs hand-set and table-tuned.
 
+Since 2026-08-22 the file carries a second, unrelated layer on the same
+terms — the CROWNS' own wars (The Rolled Wars add-on). The two share the
+garrison authority below and nothing else: a town the Horde occupies is
+not a holding, pays the party nothing, and takes nothing from it.
+
 ## Design spine
 
 - **The settlement is the unit of ownership.** No provinces, no tiles: the
@@ -5563,3 +5568,121 @@ every campaign. The four-character vocabulary stays deliberately plain
 because the *overlay* is what carries the campaign; the rejected algorithms
 and their original assumptions are preserved in `archive/` and in the dated
 designlog entries.
+
+
+# The Rolled Wars — Add-on (2026-08-22, the medieval world arc's fifth and last build session)
+
+The world is at war when the party arrives, and it stays at war. **Three
+wars are rolled once at worldgen** out of six authored templates, exactly
+the way the last harvest is rolled: they stand for the whole campaign,
+they smoulder rather than resolve, and nothing the party does ends one.
+The design reason is the era anchor — the game is static in time, so its
+wars are static too, and a war that could be won would need a whole
+strategic layer nobody asked for. What the wars ARE for is texture the
+player walks into: a burned countryside, an army camped across the road, a
+town that was sacked last spring, a country whose roads carry levies and
+deserters.
+
+## The roll
+
+At worldgen, after every land's world layer exists, on a stream of its own
+(so no other layer's numbers move):
+
+- **Andalusia's vassalage, on a d3**: Byzantium's vassal, Umaia's vassal,
+  or independent. It is stored as the land's `liege` (every other country
+  carries None) and it is read in three places — the DM's `world` page,
+  the map legend, and the Reconquista template. It has no other mechanical
+  effect: tribute, a pulled-in war and a court above the court are
+  undesigned.
+- **Three distinct templates of the six**, with no exclusion rules. Any
+  three coexist, which is what the age actually looked like.
+
+Each rolled war stamps **`at-war`** on every belligerent country — a state
+like any other, with its own line on the map page and its own row in the
+local encounter table (soldiery, deserters and stragglers on the roads) —
+posts its authored **herald** to every belligerent's news, and is stored on
+the world. A new game names the three wars in its opening print.
+
+## The six templates
+
+| war | who | ground | posture |
+|---|---|---|---|
+| THE CRUSADE | 1-3 of Byzantium, Seraptania, Teutonia, Phyrascia -> Umaia | the Levant around Jerusalem | invasion |
+| THE LONG WAR | Phyrascia -> Seraptania | Seraptania's north and west coast and Aquitaine | invasion |
+| THE HORDE RIDES WEST | Tergal -> Vellisclavia | the steppe frontier | invasion |
+| THE RAIDING SEASON | Thule -> Phyrascia and Seraptania | both coasts, the channel and the west | raiding |
+| THE RECONQUISTA | Andalusia backed by Byzantium -> Umaia | south Iberia and the west Maghreb coast | invasion |
+| THE EASTERN WAR | Umaia -> Byzantium | east Anatolia and the Levant border strip | invasion |
+
+A **theater** is an authored list of map cells, drawn by hand against the
+four overlays, and every cell in it belongs to one of that war's own
+belligerents. No theater stands on a capital: a war marks the country, not
+the crown's seat.
+
+**The Reconquista reads the vassalage**, and it is the only place in this
+arc where the liege has teeth. Andalusia normally rides, with Byzantine
+ships behind it. If Andalusia is UMAIA's vassal it fights for its liege
+instead: Byzantium comes alone, Andalusia stands with Umaia, and the war
+opens on the template's other authored herald.
+
+## The campaign sim
+
+Every three days each standing war rolls **one event**, on weights its
+posture picks:
+
+- **invasion** — lull 45, a raid 25, an army 10, a battle 10, a siege 10.
+- **raiding** — lull 55, a raid 40, a siege 5.
+
+A lull is the ordinary answer and says nothing at all: a smouldering front
+is quiet most of the time. Everything else writes an ordinary day-stamped
+STATE onto a theater Tile or onto one of the settlements standing on it —
+the same record shape a land and a place already share — and posts one news
+line to both sides of that war:
+
+| mark | where | stands |
+|---|---|---|
+| the war has burned the country here | a theater Tile | 30 days |
+| an army is camped here | a theater Tile | 10 days |
+| a battle was fought here | a theater Tile | 60 days |
+| under siege | a theater settlement | 12 days |
+| sacked, and still burnt out | a theater settlement | 90 days |
+| held by NAME | a theater settlement | permanent |
+
+**A siege is decided by the garrison authority** — the same fixed,
+stable-seeded garrison level the player's own conquest jobs are priced
+against (village 3-5, town 6-10, city and capital 11-15). The besieging
+column rolls its strength on the prize's own tier band. Under the garrison,
+the siege stands its twelve days and lifts. At or over it, the walls go and
+the town is **sacked**, and — while that war holds fewer than **two**
+settlements — **occupied**, with the occupier named. A war may lay siege to
+a town nobody has ever walked into: the census slot is the unit, and the
+garrison it fields is the same number the settlement will field the day the
+party arrives.
+
+**Two hard caps keep the map readable**: at most six standing temporary
+marks per war, the oldest cleared to make room, and at most two occupations
+per war. A world left alone for years therefore carries at most 24 war
+marks in all.
+
+The sim is **lazy and day-stepped**, watermarked on each war record, and
+seeded per war per day. Catching a war up thirty days at an arrival gives
+exactly the front that living through them would have — the world layer's
+own contract, applied to the war. It settles wherever news lands: travel
+arrivals, the board, and every settlement night.
+
+## What it deliberately does not do
+
+- It never changes a Tile's country. **Borders do not move** — real
+  dynamic conquest waits for the day tiles are worth taking.
+- It never touches a board, a quest, the party's holdings or a recruit
+  pool. **Occupation gates nothing**: an occupied town keeps its owner, its
+  work, its inn and its smith. The banner is a line on the page.
+- It never ends a war, and never adds one.
+
+## Where the player meets it
+
+The `at-war` state on the map page and the news at every arrival; the war
+marks on a Tile's own page and on the DM's tile brief; the war's own people
+on the roads of a country at war. The DM's `world` page opens with the
+three wars — who is fighting, the heralds, what each holds, and where
+Andalusia's vassalage fell.

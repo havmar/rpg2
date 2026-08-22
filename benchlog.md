@@ -2709,3 +2709,104 @@ themselves; develop.md's Files entries carry the warning).
 
 **Nothing was tuned.** No lever moved. The session authored content and
 re-scoped what was already there.
+
+## 2026-08-22 (C) — The rolled wars & the campaign sim (medieval arc session 5): three sweeps unmoved, one sweep new
+
+`python bench_worldgen.py --seeds 500`, run after the session. The bench
+grew a FOURTH sweep, `wars`, and it is the only one that opens the world
+layer (`worldsim.open_world`) on top of `create_geography` — that is where
+the wars are rolled — and then rolls each world's campaign to `WAR_DAYS`
+(365).
+
+### The three older sweeps: identical to session 4's run
+
+| line | before | after |
+|---|---|---|
+| problem coverage (% of land) | 17.7 | 17.7 |
+| regions a world | 5.1 | 5.1 |
+| region size (tiles) | 11.3 | 11.3 |
+| worlds with no drought region | 0 | 0 |
+| trouble within 5 days of the start | 87% | 87% |
+| causes (drought / rains / frost) | 1141 / 849 / 557 | 1141 / 849 / 557 |
+| metropolis / city / town / village / hamlet | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 | 4.0 / 18.7 / 101.4 / 401.9 / 91.5 |
+| total settlements | 617.5 | 617.5 |
+| slots filled a land tile | 1.97 | 1.97 |
+| empty tiles (of 314) | 49 | 49 |
+| souls (fiction anchors) | 1,497,393 | 1,497,393 |
+| quiet rich country (% no town) | 38% | 38% |
+| free (chartered) settlements | 66.6 | 66.6 |
+| manors | 50.9 | 50.9 |
+| routes after merging | 59.0 | 59.0 |
+| land tiles on a route (of 314) | 115.7 | 115.7 |
+| ports | 27.0 | 27.0 |
+| sea-lane tiles | 26.0 | 26.0 |
+| crossroads (3+ routes) | 31.7 | 31.7 |
+| unfed mines | Falun, 500/500 | Falun, 500/500 |
+
+The spoken harvest words are identical too (legendary 3.5%, excellent
+22.1%, ordinary 56.6%, poor 11.6%, failed 5.8%, apocalyptic 0.4%). This is
+the predicted result: the war roll runs on a stream of its own
+(`random.Random(f"wars:{seed}")`) inside `open_world`, which those three
+sweeps never call at all, and the campaign sim writes only its own states.
+
+### THE ROLLED WARS — the new sweep, 500 worlds, campaign to day 365
+
+```
+  rolled: horde 54%, hundred-years 53%, vikings 52%,
+          eastern-war 49%, crusade 47%, reconquista 46%
+  crowns taking the cross            mean 2.01
+  Andalusia: independent 36%, umaia 34%, byzantium 30%
+  countries at war (of 9)            mean 5.9 (min 3.0, max 8.0)
+  standing war marks a world         mean 20.0 (min 12.0, max 24.0)
+  scars a war                        mean 4.81 (min 1.00, max 6.00)
+  settlements occupied a world       mean 5.80 (min 3.00, max 6.00)
+  marks: war-raided 6.81, occupied 5.79, battlefield 3.48,
+         sacked 2.43, war-camp 0.99, under-siege 0.49
+  a siege takes the town: village 50%, town 50%, city 45%
+  (3 wars a world, 6 of 6 templates reached)
+```
+
+What the numbers say, read against the design:
+
+- **The deal is flat.** Three of six with no exclusion rules gives each
+  template 50% and the measured spread is 46-54% over 500 worlds, which is
+  sampling noise at this count. The crusade fields 2.01 crowns on a 1-3
+  draw, dead centre. The d3 is 36/34/30.
+- **Two thirds of the world is at war** — 5.9 countries of 9, and never
+  fewer than 3 or more than 8. Nine countries and three wars, one of which
+  (the Raiding Season) has two defenders and one of which (the Crusade)
+  can field four attackers, so the map is rarely quiet and never entirely
+  loud. That is the intended shape.
+- **The caps bind, and they bind early.** 20.0 standing marks a world
+  against a 24 ceiling, 4.81 scars a war against a cap of 6, and 5.80
+  occupations against a hard 6. A campaign year is long enough for nearly
+  every war to reach both caps, which means the map's war texture is
+  effectively a CONSTANT after the first months rather than a growing
+  scar — exactly what was wanted from "static wars", and the reason the
+  caps are the design and the event weights only decide which marks fill
+  them.
+- **The mark mix is raids and occupations.** `war-raided` (30 days) is the
+  commonest standing mark at 6.81 and `occupied` (permanent) is second at
+  5.79 for the obvious reason. `under-siege` at 0.49 is the rarest because
+  it stands only 12 days AND only when the siege fails; a successful one
+  becomes `sacked` (2.43, at 90 days).
+- **A siege is a coin-flip below city grade.** The odds are exact rather
+  than sampled (both rolls are uniform): 50% for a hamlet or village, 50%
+  for a town, 45% for a city, a metropolis or a capital. The band table
+  was authored to straddle `GARRISON_BANDS`, and this is the check that it
+  does.
+
+### What did not move
+
+`tune.py`, `bench_training.py`, `bench_weapons.py`, `bench_ranged.py`,
+`bench_bestiary.py`, `bench_party.py` and `bench_rout.py` are untouched by
+construction — none imports `worldsim`, `conquest` or `places`, and no
+combat, pay, threat or refill constant changed. `bench_abilities.py` and
+`bench_quests.py` were not compared and cannot be (both remain
+non-reproducible against themselves; develop.md's Files entries carry the
+warning).
+
+**Nothing was tuned.** No existing lever moved. Every number above comes
+out of tables this session authored (`WAR_PULSE`, `OCCUPIED_CAP`,
+`SCAR_CAP`, `EVENT_WEIGHTS`, `SCAR_DAYS`, `SIEGE_STRENGTH`), and they are
+hand-set and unverified at the table like every other conquest knob.
