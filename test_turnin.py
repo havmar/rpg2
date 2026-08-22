@@ -54,7 +54,7 @@ def hero(name: str, *, level: int = 3, mind: int = 5) -> rpg.Entity:
         power=4,
         pain=rpg.HERO_PAIN,
         records_wounds=True,
-        weapon=rpg.WEAPONS["katana"],
+        weapon=rpg.WEAPONS["schweizersäbel"],
         level=level,
     )
 
@@ -83,7 +83,7 @@ def _state(world: dict, *, day: int = 5, party=None, at=None) -> dict:
         "world": world,
         "party": party,
         "clock": rpg.Clock(day=day),
-        "purse": rpg.Purse(gold=0),
+        "purse": rpg.Purse(silver=0),
         "rng": random.Random(4),
         "karma": karma.new_karma(),
         "crimes": crime.new_crimes(),
@@ -119,7 +119,7 @@ def _quest_in(world: dict, state: dict, **fields) -> dict:
         "origin": here["key"], "level": 3, "skins": {},
         "sites": [site_id], "site_count": 1, "encounters": 1,
         "xp_total": rpg.quest_xp_total(3, 1),
-        "gold_total": rpg.quest_gold(3, 1),
+        "silver_total": rpg.quest_silver(3, 1),
         "next": {"site": 0, "room": 0},
         "status": "open", "align": "good",
         "epilogue": "The tunnel is clear.",
@@ -639,7 +639,7 @@ class TheProofGate(unittest.TestCase):
         out = _run(session.cmd_turnin, self.state, quest=self.quest["id"],
                    here=False)
         self.assertIn("proof wanted", out)
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
 
     def test_a_clean_kill_never_trips_the_gate(self):
         self._clear_the_last_room()
@@ -711,7 +711,7 @@ class TheThreeWaySplit(unittest.TestCase):
             rpg.quest_clear_xp(level, enc) / total, 0.40, places=2)
 
     def test_the_turn_in_tranche_is_the_smaller_half_of_the_lump(self):
-        # Reporting back diligently is real XP but smallish -- the gold is
+        # Reporting back diligently is real XP but smallish -- the silver is
         # the turn-in's real weight.
         for level in (1, 5, 12, 20):
             self.assertLess(rpg.quest_turnin_xp(level, 2),
@@ -812,16 +812,16 @@ class TheWorkDoneStage(unittest.TestCase):
         self.assertEqual(self.quest["status"], "work_done")
         self.assertEqual(self.quest["work_done_day"], 6)
 
-    def test_the_field_tranche_lands_and_the_gold_does_not(self):
+    def test_the_field_tranche_lands_and_the_silver_does_not(self):
         before = [h.xp for h in self.state["party"]]
         self._finish_the_work()
         field = rpg.quest_clear_xp(self.quest["level"], 1)
         for h, was in zip(self.state["party"], before):
             self.assertEqual(h.xp - was, field)
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
 
     def test_the_field_tranche_is_never_banded(self):
-        # Only the turn-in tranche and the gold are ever banded or lost.
+        # Only the turn-in tranche and the silver are ever banded or lost.
         self.state["clock"].day = self.quest["deadline_day"] + 1
         self.assertEqual(quests.quest_band(self.quest,
                                            self.state["clock"].day), "late")
@@ -851,7 +851,7 @@ class TheWorkDoneStage(unittest.TestCase):
     def test_the_reward_weapon_waits_for_the_giver(self):
         self.quest["reward_weapon"] = {"name": "a bright longsword",
                                        "description": "test steel"}
-        self.quest["gold_total"] = 0
+        self.quest["silver_total"] = 0
         self._finish_the_work()
         self.assertIsNone(self.state.get("pending_reward"))
 
@@ -869,14 +869,14 @@ class TheTurnIn(unittest.TestCase):
         args.setdefault("here", False)
         return _run(session.cmd_turnin, self.state, **args)
 
-    def test_it_pays_the_gold_and_the_turn_in_tranche(self):
+    def test_it_pays_the_silver_and_the_turn_in_tranche(self):
         before = self.state["party"][0].xp
         self._turnin()
         band = quests.quest_band(self.quest, 6)
         mult = quests.QUEST_PAY_BANDS[band]
         want_xp = round(rpg.quest_turnin_xp(self.quest["level"], 1) * mult)
         self.assertEqual(self.state["party"][0].xp - before, want_xp)
-        self.assertGreater(self.state["purse"].gold, 0)
+        self.assertGreater(self.state["purse"].silver, 0)
         self.assertEqual(self.quest["status"], "done")
         self.assertEqual(self.quest["turned_in_day"], 6)
 
@@ -886,7 +886,7 @@ class TheTurnIn(unittest.TestCase):
         self.state["position"] = session._area_position(far)
         out = self._turnin()
         self.assertEqual(self.quest["status"], "work_done")
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
         self.assertIn("business", out)
 
     def test_the_here_override_pays_anywhere(self):
@@ -895,7 +895,7 @@ class TheTurnIn(unittest.TestCase):
         self.state["position"] = session._area_position(far)
         self._turnin(here=True)
         self.assertEqual(self.quest["status"], "done")
-        self.assertGreater(self.state["purse"].gold, 0)
+        self.assertGreater(self.state["purse"].silver, 0)
 
     def test_the_band_is_read_off_the_turn_in_day_not_the_work_day(self):
         # The road home is finally inside the clock.
@@ -903,11 +903,11 @@ class TheTurnIn(unittest.TestCase):
         self._turnin()
         late = quests.QUEST_PAY_BANDS["late"]
         self.assertEqual(
-            self.state["purse"].gold,
-            round(quests.quest_gold_posted(self.quest) * late)
-            + rpg.cha_gold_bonus(
+            self.state["purse"].silver,
+            round(quests.quest_silver_posted(self.quest) * late)
+            + rpg.cha_silver_bonus(
                 self.state["party"],
-                round(quests.quest_gold_posted(self.quest) * late)))
+                round(quests.quest_silver_posted(self.quest) * late)))
 
     def test_the_epilogue_and_the_history_record_land_here(self):
         out = self._turnin()
@@ -931,14 +931,14 @@ class TheTurnIn(unittest.TestCase):
         self._turnin()
         self.assertEqual(ally.satisfaction, 6)
 
-    def test_the_cha_talk_up_applies_to_the_gold(self):
+    def test_the_cha_talk_up_applies_to_the_silver(self):
         pc = self.state["party"][0]
         pc.cha = rpg.PARTY_CAPACITY_BASE_CHA + 2
         self._turnin()
         band = quests.QUEST_PAY_BANDS[quests.quest_band(self.quest, 6)]
-        base = round(quests.quest_gold_posted(self.quest) * band)
-        self.assertEqual(self.state["purse"].gold,
-                         base + rpg.cha_gold_bonus(self.state["party"], base))
+        base = round(quests.quest_silver_posted(self.quest) * band)
+        self.assertEqual(self.state["purse"].silver,
+                         base + rpg.cha_silver_bonus(self.state["party"], base))
 
     def test_a_job_whose_work_is_not_done_is_refused(self):
         plain = _quest_in(self.world, self.state)
@@ -949,10 +949,10 @@ class TheTurnIn(unittest.TestCase):
 
     def test_paying_twice_is_refused(self):
         self._turnin()
-        gold = self.state["purse"].gold
+        silver = self.state["purse"].silver
         out = self._turnin()
         self.assertIn("already paid", out)
-        self.assertEqual(self.state["purse"].gold, gold)
+        self.assertEqual(self.state["purse"].silver, silver)
 
     def test_a_delivery_is_sent_to_its_destination_instead(self):
         delivery = {"id": "d1", "kind": "delivery", "name": "The Parcel",
@@ -981,7 +981,7 @@ class LostAfterTheWorkIsDone(unittest.TestCase):
     def test_the_banked_eighty_percent_stays(self):
         session.board_clock(self.state)
         self.assertEqual(self.state["party"][0].xp, self.xp_banked)
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
 
     def test_no_failure_rumor_fires(self):
         # The monsters are dead -- the world changed. The giver's grievance
@@ -1008,7 +1008,7 @@ class LostAfterTheWorkIsDone(unittest.TestCase):
         out = _run(session.cmd_turnin, self.state, quest=self.quest["id"],
                    here=False)
         self.assertEqual(self.quest["status"], "lost")
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
         self.assertIn("NEVER PAID", out)
 
     def test_an_unfinished_job_still_fails_the_old_way(self):
@@ -1040,17 +1040,17 @@ class TheExemptions(unittest.TestCase):
         with mock.patch("session.conquest.take_settlement", return_value=[]):
             quest, log = self._close(conquest=area["key"])
         self.assertEqual(quest["status"], "done")
-        self.assertGreater(self.state["purse"].gold, 0)
+        self.assertGreater(self.state["purse"].silver, 0)
 
     def test_a_hell_assignment_pays_at_work_done(self):
         quest, log = self._close(hell_task=True, align="dark")
         self.assertEqual(quest["status"], "done")
-        self.assertGreater(self.state["purse"].gold, 0)
+        self.assertGreater(self.state["purse"].silver, 0)
 
     def test_dark_work_pays_at_work_done(self):
         quest, log = self._close(align="dark")
         self.assertEqual(quest["status"], "done")
-        self.assertGreater(self.state["purse"].gold, 0)
+        self.assertGreater(self.state["purse"].silver, 0)
 
     def test_an_exempt_job_pays_both_lump_tranches_at_once(self):
         quest, log = self._close(align="dark")
@@ -1062,7 +1062,7 @@ class TheExemptions(unittest.TestCase):
     def test_honest_board_work_is_not_exempt(self):
         quest, log = self._close()
         self.assertEqual(quest["status"], "work_done")
-        self.assertEqual(self.state["purse"].gold, 0)
+        self.assertEqual(self.state["purse"].silver, 0)
 
 
 class TheCareerBenchStillPaysTheWholeJob(unittest.TestCase):

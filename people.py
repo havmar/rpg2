@@ -281,7 +281,7 @@ ARMORED_DEF_BONUS = 1       # the "armored" dress trait: worn protection --
                             # deliberately minor; armor-the-system stays a
                             # separate roadmap item (designer call: armor
                             # should not be important, so looks stay varied)
-TRAIT_GOLD = {"wealthy": 25, "luxurious": 10}   # joining gift to the purse
+TRAIT_SILVER = {"wealthy": 25, "luxurious": 10}   # joining gift to the purse
                             # (the swapped-in mechanic for luxurious, which
                             # lost its bandit-magnet idea -- 2026-07-11)
 
@@ -298,11 +298,11 @@ TRAIT_NOTES: dict[str, str] = {
     "cowardly": "satisfaction losses from blood and fear cut twice as deep",
     "brave": "satisfaction losses from blood and fear are halved",
     "armored": f"+{ARMORED_DEF_BONUS} defense pressure",
-    "wealthy": f"brings {TRAIT_GOLD['wealthy']}g to the purse",
-    "luxurious": f"brings {TRAIT_GOLD['luxurious']}g to the purse",
+    "wealthy": f"brings {TRAIT_SILVER['wealthy']}s to the purse",
+    "luxurious": f"brings {TRAIT_SILVER['luxurious']}s to the purse",
     "big": "+1 STR floor at creation",
     "short": "-1 STR ceiling at creation",
-    "needs meds": f"a dose every {MEDS_INTERVAL_DAYS} days ({MEDS_PRICE}g, "
+    "needs meds": f"a dose every {MEDS_INTERVAL_DAYS} days ({MEDS_PRICE}s, "
                   f"capitals only) or their spirits drain nightly",
     "patriotic": "downtime in their homeland suits them",
     "religious": "downtime in a capital (the temples) suits them",
@@ -351,10 +351,10 @@ def roll_traits(rng: random.Random, homeland: str, level: int,
     return traits
 
 
-def joining_gold(e: Entity) -> int:
+def joining_silver(e: Entity) -> int:
     """What a wealthy/luxurious character adds to the party purse on
     joining (or, for the PC, starts the game with)."""
-    return sum(gold for name, gold in TRAIT_GOLD.items()
+    return sum(silver for name, silver in TRAIT_SILVER.items()
                if rpg.has_trait(e, name))
 
 
@@ -537,8 +537,8 @@ def character_sheet(e: Entity) -> list[str]:
     `for_pc` switch existed to suppress satisfaction-trait notes on a sheet
     that no longer has traits to suppress)."""
     def wanted(value: str) -> bool:
-        # the gold traits get their own line below
-        return bool(trait_note(value)) and value not in TRAIT_GOLD
+        # the silver traits get their own line below
+        return bool(trait_note(value)) and value not in TRAIT_SILVER
 
     lines = [person_line(e), "  " + rpg.stat_line(e)]
     if e.tongues:
@@ -550,9 +550,9 @@ def character_sheet(e: Entity) -> list[str]:
         lines.append("  notes: " + "; ".join(notes))
     if e.skill_points:
         lines.append(f"  {e.skill_points} skill point(s) unspent")
-    gold = joining_gold(e)
-    if gold:
-        lines.append(f"  brings {gold}g to the party purse")
+    silver = joining_silver(e)
+    if silver:
+        lines.append(f"  brings {silver}s to the party purse")
     if e.bond:
         lines.append(f"  bound to {e.bond} ({e.bond_kind}) -- they join and "
                      f"leave together")

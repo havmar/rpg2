@@ -19,7 +19,7 @@ hold it, and bleed it for tribute. The design calls settled in the
   again. The strategy layer is the heat machinery the game already has.
 - **Holding costs levies, not heroes.** Party members are freely rehired,
   so a garrison is an ARMY resource: one number per holding, bought with
-  gold (`garrison N`), never entering the combat engine. Raids strike
+  silver (`garrison N`), never entering the combat engine. Raids strike
   while the party is elsewhere; the garrison absorbs them or the holding
   falls back to the crown. Numbers against numbers -- the engine only ever
   sees the party's own fights.
@@ -80,7 +80,7 @@ CONQUEST_ENCOUNTERS = {     # the job shape scales with the prize: a village
     "metropolis": 3,
     "capital": 3,
 }
-TRIBUTE_PER_DAY = {         # gold per held day, collected at the party's
+TRIBUTE_PER_DAY = {         # silver per held day, collected at the party's
     "hamlet": 1,            # holdings; deliberately small next to quest
     "village": 3,           # pay -- tribute is a trickle, not a wage
     "town": 8,
@@ -90,9 +90,9 @@ TRIBUTE_PER_DAY = {         # gold per held day, collected at the party's
 }
 PLUNDER_MULT = 10           # the keep's strongbox on the day it falls:
                             # this many days of tribute, paid as the
-                            # conquest job's gold (the dark premium rides
+                            # conquest job's silver (the dark premium rides
                             # on top like any dark work)
-GARRISON_HIRE_COST = 5      # gold per levy head (`garrison N`)
+GARRISON_HIRE_COST = 5      # silver per levy head (`garrison N`)
 GARRISON_CAP = {            # how many levies a holding can quarter
     "hamlet": 12,
     "village": 12,
@@ -185,7 +185,7 @@ def build_conquest_quest(world: dict, settlement: dict,
         "xp_total": quest_xp_total(level, encounters),
         # The strongbox: the one-day sack, in days of tribute. The dark
         # premium rides on top at the turn-in like any dark work.
-        "gold_total": PLUNDER_MULT * TRIBUTE_PER_DAY[tier],
+        "silver_total": PLUNDER_MULT * TRIBUTE_PER_DAY[tier],
         "next": {"site": 0, "room": 0},
         "status": "open",
         "align": "dark",
@@ -242,7 +242,7 @@ def take_settlement(world: dict, holdings: dict, settlement: dict,
             f"  Tribute: {TRIBUTE_PER_DAY[settlement_tier(settlement)]} g/day, "
             f"collected when the party stands in a holding.",
             f"  It is held by levies, not luck: `garrison N` buys "
-            f"{GARRISON_HIRE_COST}g-a-head guards (cap "
+            f"{GARRISON_HIRE_COST}s-a-head guards (cap "
             f"{GARRISON_CAP[settlement_tier(settlement)]}). An unguarded "
             f"holding falls to the first raid.",
             f"  Holding land is standing wickedness: the heat floor "
@@ -266,7 +266,7 @@ def tribute_pending(world: dict, holdings: dict, day: int) -> int:
 
 def collect_tribute(world: dict, holdings: dict, day: int) -> int:
     """Sweep every holding's accrued tribute (the party stands in one of
-    its holdings -- the stewards bring the chests). Returns the gold."""
+    its holdings -- the stewards bring the chests). Returns the silver."""
     total = tribute_pending(world, holdings, day)
     for rec in holdings.values():
         rec["last_tribute_day"] = day
@@ -376,15 +376,28 @@ def _scar_place(world: dict, scar: dict) -> dict:
             else world["settlement_slots"][scar["place"]])
 
 
+def _drop_scar(world: dict, war: dict, scar: dict, day: int) -> None:
+    """Take one mark out of a war's ledger, and off the map ONLY once no
+    war's ledger books it any more. Theaters overlap (the Long War and the
+    raiding season share four coast tiles) and both wars pulse on the same
+    three-day grid, while the map keeps ONE state record per place and
+    word: as long as any war still books the mark -- laid earlier, later,
+    or on the very same day -- clearing the shared record would cut that
+    war's mark short."""
+    war["scars"].remove(scar)
+    if any(s["place"] == scar["place"] and s["state"] == scar["state"]
+           for w in world["wars"] for s in w["scars"]):
+        return
+    places.clear_state(world, _scar_place(world, scar), scar["state"],
+                       day=day)
+
+
 def _clear_expired(world: dict, war: dict, day: int) -> None:
     """The sim cleans up after itself: every mark whose days are spent goes
     off the map when the war next rolls."""
     for scar in list(war["scars"]):
-        if day < scar["until"]:
-            continue
-        places.clear_state(world, _scar_place(world, scar), scar["state"],
-                           day=day)
-        war["scars"].remove(scar)
+        if day >= scar["until"]:
+            _drop_scar(world, war, scar, day)
 
 
 def _stamp(world: dict, war: dict, kind: str, place: dict, state_id: str,
@@ -403,9 +416,7 @@ def _stamp(world: dict, war: dict, kind: str, place: dict, state_id: str,
     war["scars"].append({"kind": kind, "place": place["id"],
                          "state": state_id, "until": day + SCAR_DAYS[state_id]})
     while len(war["scars"]) > SCAR_CAP:
-        oldest = war["scars"].pop(0)
-        places.clear_state(world, _scar_place(world, oldest), oldest["state"],
-                           day=day)
+        _drop_scar(world, war, war["scars"][0], day)
     return state
 
 
@@ -504,13 +515,21 @@ def roll_campaigns(world: dict, day: int) -> None:
     the front that rolling them live would have -- the world layer's own
     contract, applied to the war.
 
-    Driven from the same day-settling seam as `conquest_news`."""
-    for war in world.get("wars") or ():
-        while war["rolled_day"] < day:
-            today = war["rolled_day"] + 1
-            if today % WAR_PULSE == 0:
-                _pulse(world, war, today)
-            war["rolled_day"] = today
+    Driven from the same day-settling seam as `conquest_news`. The wars
+    advance TOGETHER, one day at a time -- never one war across the whole
+    span while the others stand still -- because theaters overlap and the
+    map keeps one state record per place and word: a war catching up
+    against another war's finished ledger would lay and clear shared marks
+    out of time order, and catching up would stop equalling living
+    through it exactly where the fronts touch."""
+    wars = world["wars"]
+    while any(war["rolled_day"] < day for war in wars):
+        for war in wars:
+            if war["rolled_day"] < day:
+                today = war["rolled_day"] + 1
+                if today % WAR_PULSE == 0:
+                    _pulse(world, war, today)
+                war["rolled_day"] = today
 
 
 # --------------------------------------------------------------------------- #
@@ -528,7 +547,7 @@ def holdings_lines(world: dict, holdings: dict, day: int) -> list[str]:
         lines.append(f"  {area['name']} ({subtype}) -- garrison "
                      f"{rec['garrison']}/{GARRISON_CAP[subtype]}, "
                      f"tribute {TRIBUTE_PER_DAY[subtype]} g/day"
-                     + (f" ({due}g waiting)" if due else ""))
+                     + (f" ({due}s waiting)" if due else ""))
     return lines
 
 
@@ -560,7 +579,7 @@ def main() -> None:
     print(f"  boss: {site['boss']['display']} "
           f"(over the {site['boss']['kind']} row)")
     print(f"  pay: {quest['xp_total']} xp (all sin), "
-          f"{quest['gold_total']}g strongbox")
+          f"{quest['silver_total']}s strongbox")
 
 
 if __name__ == "__main__":

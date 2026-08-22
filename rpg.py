@@ -216,7 +216,7 @@ ABILITIES = {a.name: a for a in [
 BOLT_POWER_COST = 1
 SCHOOLS = ("fire", "ice")   # the creation roll (books teach the rest)
 SPELL_RANK_MAX = 3
-SPELLBOOK_PRICE = 120       # gold; capitals only (session) -- a real saving
+SPELLBOOK_PRICE = 120       # silver; capitals only (session) -- a real saving
                             # goal (two quality weapons)
 CAST_DC_BASE = 7
 CAST_DC_PER_RANK = 2
@@ -400,7 +400,7 @@ LEVEL_CAP = 20          # the game runs levels 1-20 (rules.md, the doctrine);
 # party size. A duo gets the listed numbers unchanged; four swords split the
 # wages (level at half speed); a solo who overcomes the same work earns
 # double. The economic drag on big parties -- invisible in any one fight,
-# compounding across a campaign. Gold already works this way for free (the
+# compounding across a campaign. Silver already works this way for free (the
 # purse is shared, quests pay flat).
 XP_PARTY_BASELINE = 2
 # The point economy (2026-07-17, the levelling framework session A): a level
@@ -426,7 +426,7 @@ TRAINING_COST_MULT = 2  # rank n costs 2n points (was n): the measured
                         # would be strictly the best deal in the new
                         # economy. The OTHER session-A bench knob.
 
-# --- Gold & the potion economy ---------------------------------------------- #
+# --- Silver & the potion economy ---------------------------------------------- #
 POTION_KINDS = ("healing", "power", "stamina", "salve", "elixir")
                         # the full schema use_potion accepts
 STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and the
@@ -441,7 +441,7 @@ STOCKED_POTION_KINDS = ("healing", "stamina")   # what creation, drops, and the
                         # streams -- and the bestiary calibration behind them --
                         # exactly where they were.
 SHOP_POTION_KINDS = ("healing", "stamina", "salve")     # ...what a shop sells
-POTION_PRICE = 10       # gold per potion, the basic tiers
+POTION_PRICE = 10       # silver per potion, the basic tiers
 STARTING_POTIONS = 2    # random potions rolled at character creation
 # The traveling kit (2026-07-11): basic potions replenish THEMSELVES -- every
 # long rest tops each living hero back up to the kit line (herbs brewed at the
@@ -469,8 +469,8 @@ KIT_FORAGE_CHANCE = 0.5 # ...plus a good-forage night: this chance of one
                         # deterministic callers pass one, a bare long_rest
                         # skips the forage)
 DROP_POTION_CHANCE = 0.10   # per encounter won: a random potion drops
-DROP_GOLD_CHANCE = 0.20     # per encounter won: loose coin drops
-DROP_GOLD_AMOUNT = POTION_PRICE // 2
+DROP_SILVER_CHANCE = 0.20     # per encounter won: loose coin drops
+DROP_SILVER_AMOUNT = POTION_PRICE // 2
 
 # The QUARTERMASTER PASS (2026-07-26): who carries which potion stopped being
 # a decision worth a command. Out of combat, whenever the stock CHANGES
@@ -498,7 +498,7 @@ AUTO_POTION_KINDS = ("healing", "stamina")   # what the pass moves and drinks
 # rank + ALCHEMY_STOCK_BONUS carried items -- the freshness cap, ONE integer
 # (Entity.brewed), not per-potion spoil timestamps (the heroic tone forbids
 # upkeep meters). Brewed potions are UNSELLABLE (no guild seal -- rotgut to a
-# shopkeep): alchemy pays in kit, never gold, so the economy faucet stays shut.
+# shopkeep): alchemy pays in kit, never silver, so the economy faucet stays shut.
 ALCHEMY_MAX = 5
 ALCHEMY_COST_MULT = 2       # rank n costs 2n points (train_alchemy)
 ALCHEMY_BREW_DC = 9
@@ -566,11 +566,11 @@ BOMB_TARGETS_R5 = 3
 # the full step, so leveling SLOWS with rank.
 SITE_XP_PER_LEVEL = 50
 ENCOUNTER_XP_SHARE = 0.45   # fraction of a SITE fixture's XP paid per-encounter
-GOLD_PER_SITE_LEVEL = 15    # a level-L site fixture pays this * L gold
+SILVER_PER_SITE_LEVEL = 15    # a level-L site fixture pays this * L silver
 ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- the
                         # historic level-1 room rate
 QUEST_XP = 55           # the level-1 site-clear lump (the hideout's quest pay)
-QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
+QUEST_SILVER = 15         # the level-1 site's silver (the hideout's quest pay)
 
 # The QUEST ladder (2026-07-26). A quest is 1-3 encounters (quests.py's
 # QUEST_ENCOUNTERS); its pay is a level curve times an encounter multiplier
@@ -580,17 +580,17 @@ QUEST_GOLD = 15         # the level-1 site's gold (the hideout's quest pay)
 # fights do (flat per encounter -- no streak, no push-on carrot: attrition is
 # the wound track's job now, not the ledger's). The rest splits three ways
 # since 2026-08-08 (the turn-in stage): the FIELD tranche lands at work-done
-# where the last body falls, and QUEST_TURNIN_SHARE plus ALL of the gold
+# where the last body falls, and QUEST_TURNIN_SHARE plus ALL of the silver
 # lands where the giver stands, banded by the turn-in day.
 QUEST_XP_PER_LEVEL   = 44   # fitted by bench_quests --part career (2026-07-26):
                             # 38 quests to the cap, the pre-rework pace. The
                             # spec's starting estimate of 60 ran the career in
                             # 28.
-QUEST_GOLD_PER_LEVEL = 18   # the other career-pace knob. At the measured
+QUEST_SILVER_PER_LEVEL = 18   # the other career-pace knob. At the measured
                             # encounter mix (mult ~1.39) this pays ~25 x L a
                             # quest -- the old ladder's 15 x L over ~1.6 sites,
-                            # to within a coin. Career gold is deliberately
-                            # UNCHANGED: gold is the quantity that inflates,
+                            # to within a coin. Career silver is deliberately
+                            # UNCHANGED: silver is the quantity that inflates,
                             # and the rework's whole spine is not to price
                             # recovery in it.
 ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
@@ -600,7 +600,7 @@ QUEST_TURNIN_SHARE = 0.20       # paid where the GIVER stands (2026-08-08,
                                 # day; the remainder (0.40) is the FIELD
                                 # tranche, paid unbanded at work-done.
                                 # Reporting back diligently is real XP but
-                                # smallish -- the gold is the turn-in's
+                                # smallish -- the silver is the turn-in's
                                 # real weight.
 
 
@@ -623,10 +623,10 @@ def site_clear_xp(level: int, rooms: int) -> int:
     return site_xp_total(level) - rooms * site_encounter_xp(level, rooms)
 
 
-def site_gold(level: int) -> int:
-    """Gold a level-L site fixture pays on completion (flat to the party
+def site_silver(level: int) -> int:
+    """Silver a level-L site fixture pays on completion (flat to the party
     purse). L1 = 15 and L3 = 45: both hand-built sites' historic rates."""
-    return GOLD_PER_SITE_LEVEL * level
+    return SILVER_PER_SITE_LEVEL * level
 
 
 def quest_xp_total(level: int, encounters: int) -> int:
@@ -661,9 +661,9 @@ def quest_clear_xp(level: int, encounters: int) -> int:
             - quest_turnin_xp(level, enc))
 
 
-def quest_gold(level: int, encounters: int) -> int:
-    """A level-L quest's gold, paid whole at the turn-in."""
-    return round(QUEST_GOLD_PER_LEVEL * level
+def quest_silver(level: int, encounters: int) -> int:
+    """A level-L quest's silver, paid whole at the turn-in."""
+    return round(QUEST_SILVER_PER_LEVEL * level
                  * ENCOUNTER_MULT[max(1, min(3, encounters))])
 
 # --- Weapons (Phase 4 first slice) ------------------------------------------ #
@@ -698,7 +698,7 @@ HEALER_STAFF_CHANCE = 0.50  # hedge-healer heroes often carry the wooden staff
 
 # --- The weapon ladder (2026-07-28, the weapon generation system) ------------ #
 # The design currency is the SEVERITY-POINT (sp), the exchange rate the
-# quality four already encode (rapier = katana = zweihander when priced at
+# quality four already encode (rapier = schweizersäbel = zweihander when priced at
 # atk 2 / sev 1 / def 2 -- all three sit at exactly 3 sp; weapons.py owns
 # the full table and the generator). The ladder in sp: trash -1, soldier 0,
 # heavy +1, quality 3, masterwork 5, magic 6-7, legendary 8-9, mythic 10.
@@ -711,10 +711,10 @@ MASTERWORK_ATK_BONUS = 1    # masterwork = +1 attack pressure on the chassis
                             # rapiers and zweihanders unequally)
 MASTERWORK_DURABILITY = 5
 MASTERWORK_PRICE_MULT = 5   # a masterwork piece costs 5x its plain chassis
-                            # (the gold curve is superlinear in sp on
-                            # purpose: career gold is ~thousands, and gold
+                            # (the silver curve is superlinear in sp on
+                            # purpose: career silver is ~thousands, and silver
                             # must never buy DEX-axis power at HP-axis rates)
-MIDAS_FIGHT_CAP = 3         # a gold-on-kill weapon pays at most this many
+MIDAS_FIGHT_CAP = 3         # a silver-on-kill weapon pays at most this many
                             # kills per fight -- a swarm room is not a mint
 TRASH_WEAPONS = ("club", "dagger", "whip", "light hammer", "sling")
                             # the chargen deal (2026-07-28): a level-1 PC and
@@ -774,8 +774,8 @@ CAST_RANGE = 2      # how far every aimed cast carries (bolts, fireballs,
 REVOLVER_POWER_COST = 1     # the magic gun fires the wielder's own Power
 FOE_AMMO = 8        # what a spawned shooter carries (plenty for one fight)
 AMMO_CAPS = {"arrows": 20, "bolts": 20, "shells": 10, "knives": 6}
-# `buy HERO arrows|bolts|shells|knives`: (lot size, lot price in gold).
-# Arrows are deliberately trivial next to the 60g bow -- the recurring sink
+# `buy HERO arrows|bolts|shells|knives`: (lot size, lot price in silver).
+# Arrows are deliberately trivial next to the 60s bow -- the recurring sink
 # with real teeth is the blunderbuss shell (the design's own compensation:
 # the weapon needs no stats, so the ammo carries the price).
 AMMO_LOTS = {"arrows": (10, 5), "bolts": (10, 5),
@@ -842,7 +842,7 @@ class Weapon:
                             # capitals since 2026-07-28; the magic tiers are
                             # found, quested, robbed, or commissioned)
     base: str = ""          # the catalog CHASSIS this instance is built on
-                            # ("katana" under a masterwork or named magic
+                            # ("schweizersäbel" under a masterwork or named magic
                             # blade). Proficiency and the special move gates
                             # follow the chassis (prof_name), so the reward
                             # never costs the drilled ranks; a bare reskin
@@ -884,7 +884,7 @@ class Weapon:
     lunge: bool = False     # the first attack of the fight may be delivered
                             # at gap 1 as if the distance were already closed
                             # (the flying lunge; once per fight)
-    gold_on_kill: int = 0   # the Midas quirk: gold per felled foe, capped at
+    silver_on_kill: int = 0   # the Midas quirk: silver per felled foe, capped at
                             # MIDAS_FIGHT_CAP kills a fight (session collects)
     karma_on_kill: int = 0  # the dark quirk: sin per felled foe (the
                             # whip of sin -- session collects)
@@ -924,7 +924,7 @@ class Weapon:
                             # ("some moves don't fit the rapier" falls out of
                             # the tags -- no per-move exception lists). Assigned
                             # below via _WEAPON_MOVE_TAGS; see the moves block.
-    value: int = 0          # gold
+    value: int = 0          # silver
     description: str = ""   # the mechanical role in plain words (DM/player-facing)
 
 
@@ -971,7 +971,7 @@ WEAPONS = {w.name: w for w in [
                        "ALWAYS draws blood -- a landed thrust is never fully "
                        "deflected. Wins through the wound spiral; laughs at "
                        "heavy soak."),
-    Weapon("katana", 1, 1, 1, durability=4, quality=True, bulk=2, value=60,
+    Weapon("schweizersäbel", 1, 1, 1, durability=4, quality=True, bulk=2, value=60,
            description="The balanced blade: lands a little more, cuts a little "
                        "deeper. At home in any strong hand."),
     Weapon("zweihander", 1, 3, 1, durability=4, quality=True, def_pressure=-1,
@@ -1027,7 +1027,7 @@ WEAPONS = {w.name: w for w in [
            description="Thunder in a brass throat: the spread does "
                        "the aiming (a flat 4 -- no stats needed) and what "
                        "it hits it ruins, one bound away at most. The "
-                       "shells cost real gold, and the stock clubs "
+                       "shells cost real silver, and the stock clubs "
                        "honestly when they close."),
     Weapon("revolver", -1, 5, 1, durability=4, quality=True, bulk=1,
            tags=("ranged", "gun", "arcane"), value=250, range=2, reload=0,
@@ -1063,7 +1063,7 @@ _WEAPON_MOVE_TAGS = {
     "halberd": ("pierce", "blade", "heavy"),
     # The quality four.
     "rapier": ("pierce", "blade"),
-    "katana": ("blade", "pierce"),
+    "schweizersäbel": ("blade", "pierce"),
     "zweihander": ("blade", "heavy"),
     "wooden staff": ("blunt",),
     # Every ranged card is a skirmisher's tool (the one ranged move).
@@ -1081,7 +1081,7 @@ WEAPONS = {name: replace(w, move_tags=_WEAPON_MOVE_TAGS.get(name, ()))
 CRUDE_WEAPONS = ("club", "dagger", "whip", "light hammer")
 SOLDIER_WEAPONS = ("shortsword", "scimitar", "spear", "mace", "flail", "morningstar")
 HEAVY_WEAPONS = ("longsword", "battleaxe", "warhammer", "halberd")
-QUALITY_WEAPONS = ("rapier", "katana", "zweihander", "wooden staff",
+QUALITY_WEAPONS = ("rapier", "schweizersäbel", "zweihander", "wooden staff",
                    "longbow", "blunderbuss", "revolver")
 RANGED_WEAPONS = ("sling", "throwing knives", "shortbow", "crossbow",
                   "longbow", "blunderbuss", "revolver")
@@ -1096,7 +1096,7 @@ RUSTED_BLADE = Weapon("rusted blade", 0, 0, 1, durability=1, tags=("ancient",),
 def prof_name(w: "Weapon | None") -> str:
     """The proficiency (and special-move-gate) key for a weapon: the CHASSIS
     it is built on when it has one, else its own name. A masterwork or named
-    magic katana counts as a katana in every drilled hand -- the reward must
+    magic schweizersäbel counts as a schweizersäbel in every drilled hand -- the reward must
     never cost the ranks -- while a bare `give --as` reskin (no base) still
     follows the display name, by the reskin doctrine."""
     if w is None:
@@ -1259,10 +1259,10 @@ MOVES = {m.name: m for m in [
          lambda a, d, near, rnd: a.parried_last,
          f"the round after parrying a blow: +{RIPOSTE_ATK} attack pressure",
          brief=f"+{RIPOSTE_ATK} attack the round after your parry"),
-    Move("iaido", "Iaido", 2, ("blade",),      # katana-gated below, in weapon_ok
+    Move("iaido", "Iaido", 2, ("blade",),      # schweizersäbel-gated below, in weapon_ok
          lambda a, d, near, rnd: rnd == 1,
-         f"round 1 (katana only): +{IAIDO_ATK} attack, +{IAIDO_SEV} severity -- "
-         f"then a round stanced (no attack). The katana's signature",
+         f"round 1 (schweizersäbel only): +{IAIDO_ATK} attack, +{IAIDO_SEV} severity -- "
+         f"then a round stanced (no attack). The schweizersäbel's signature",
          brief=f"+{IAIDO_ATK} atk +{IAIDO_SEV} sev round 1, then stanced"),
     Move("finisher", "Finisher", 2, (),        # special gate, _finisher_ok
          lambda a, d, near, rnd: _below_frac(d, FINISHER_HP_NUM, FINISHER_HP_DEN),
@@ -1276,7 +1276,7 @@ MOVES = {m.name: m for m in [
          brief="reopen the gap when a charger closes"),
 ]}
 
-# Iaido is the katana's alone (a name gate on top of the blade tag); the
+# Iaido is the schweizersäbel's alone (a name gate on top of the blade tag); the
 # finisher's arc is the blade-or-heavy-blunt gate. The wooden staff joins
 # riposte and disarm past its blunt tag (2026-07-19, quarterstaff play: the
 # +1-parry weapon answers after a parry, and the bind-and-lever disarm is
@@ -1284,8 +1284,8 @@ MOVES = {m.name: m for m in [
 # the caster's focus a real small repertoire without a killing arc.
 _MOVE_WEAPON_OK = {
     # Special gates check the CHASSIS (prof_name), so a masterwork or named
-    # magic katana still draws iaido (2026-07-28).
-    "iaido": lambda w: w is not None and prof_name(w) == "katana",
+    # magic schweizersäbel still draws iaido (2026-07-28).
+    "iaido": lambda w: w is not None and prof_name(w) == "schweizersäbel",
     "finisher": _finisher_ok,
     "riposte": lambda w: (MOVES["riposte"].weapon_ok(w)
                           or (w is not None
@@ -1304,7 +1304,7 @@ MOVE_PRIORITY = ["finisher", "iaido", "disarm", "sweep", "trip", "pommel",
 
 def move_weapon_ok(key: str, weapon: "Weapon | None") -> bool:
     """Can `weapon` perform move `key`? The tag gate, plus the two name/arc
-    special cases (iaido = katana, finisher = blade-or-heavy-blunt)."""
+    special cases (iaido = schweizersäbel, finisher = blade-or-heavy-blunt)."""
     special = _MOVE_WEAPON_OK.get(key)
     if special is not None:
         return special(weapon)
@@ -1388,14 +1388,14 @@ def random_common_weapon(rng: random.Random) -> Weapon:
 # recover()); whatever is left is clamped away by the next long rest. Session
 # play gates it to settlements (`tavern`); camping in the wilds is free but
 # risks a night encounter (quests.CAMP_ENCOUNTER_CHANCE).
-TAVERN_COST_PER_HERO = 1    # gold per living member, per night
+TAVERN_COST_PER_HERO = 1    # silver per living member, per night
 TAVERN_OVERCHARGE = 0.10    # overcharge fraction of each maximum (min +1)
 
 # --- Charisma & the party cap (2026-07-11) ----------------------------------- #
 # CHA is the fourth hero stat, rolled on the DEX/STR band. Its two jobs:
 # it gates how many companions the party can HOLD (capacity = CHA - 3,
 # clamped 0..3: a minimum roll travels alone -- a hard cap, not a price),
-# and the PC's CHA talks quest pay up (gold only, never XP -- a compounding
+# and the PC's CHA talks quest pay up (silver only, never XP -- a compounding
 # XP bonus would make CHA the best stat in the game, and levels already
 # dominate everything). Sims never roll heroes through the people layer and
 # never set `protagonist`, so neither knob moves a single bench number.
@@ -1404,8 +1404,8 @@ HERO_CHA_RANGE = (3, 6)         # rolled like DEX/STR; trait mods may raise the
                                 # (people.py -- the natural cap 6 holds)
 PARTY_CAPACITY_BASE_CHA = 3     # capacity = CHA - this, clamped to 0..3
 PARTY_CAPACITY_MAX = 3          # the party tops out at 4 swords (PC + 3)
-CHA_GOLD_BONUS_PER_POINT = 0.10  # +10% quest gold per PC CHA point above the
-CHA_GOLD_BONUS_CAP = 0.30        # capacity base, capped at +30% (CHA 6)
+CHA_SILVER_BONUS_PER_POINT = 0.10  # +10% quest silver per PC CHA point above the
+CHA_SILVER_BONUS_CAP = 0.30        # capacity base, capped at +30% (CHA 6)
 
 
 def party_capacity(cha: int) -> int:
@@ -1840,7 +1840,7 @@ WOUND_MAIM_NAMES = {"arm": "a withered arm", "hand": "a crippled hand",
 # ACCESS, never price: a bed heals one severity a night wherever a bed is, and
 # a healer's reach is capped by the settlement's tier. That is why the fee can
 # stay flat forever (rules.md: "do not make rest expensive, make rest
-# incomplete") -- a flat 20g is worth nothing at level 20, but a village healer
+# incomplete") -- a flat 20s is worth nothing at level 20, but a village healer
 # who cannot touch your third wound is worth exactly as much then as now.
 BED_SEVERITY_PER_NIGHT = 1  # a night in a settlement bed knits this much
                             # severity back. The WILDS knit NONE: camping
@@ -2282,9 +2282,9 @@ class Clock:
 
 @dataclass
 class Purse:
-    """The party's shared gold. Potions are per-hero; coin is communal because
+    """The party's shared silver. Potions are per-hero; coin is communal because
     buying happens between adventures, where the party acts as one."""
-    gold: int = 0
+    silver: int = 0
 
 
 @dataclass
@@ -2518,7 +2518,7 @@ class Entity:
                                          # fight marker (per-fight state)
     quirk_kills: int = field(default=0) # kills paid by an on-kill quirk THIS
                                          # fight (per-fight; MIDAS_FIGHT_CAP)
-    quirk_gold: int = field(default=0)  # gold owed by a Midas weapon, until
+    quirk_silver: int = field(default=0)  # silver owed by a Midas weapon, until
                                          # the session drains it to the purse
                                          # (persists across a pause/save)
     quirk_karma: int = field(default=0) # sin owed by a dark weapon,
@@ -2623,7 +2623,7 @@ class Entity:
     # nothing here moves a bench number).
     cha: int = 0                        # the fourth hero stat: party capacity
                                         # (party_capacity) and the PC's quest-
-                                        # gold negotiation (award_quest).
+                                        # silver negotiation (award_quest).
                                         # 0 = never rolled (foes, old paths)
     def_bonus: int = 0                  # flat DEFENSE pressure (the "armored"
                                         # dress trait; armor-the-system is a
@@ -4220,14 +4220,14 @@ def _attack(attacker: Entity, defender: Entity, rng: random.Random,
         # the fight's end (the purse and the karma ledger live there).
         w = attacker.weapon
         if (w is not None and not attacker.weapon_broken
-                and (w.gold_on_kill or w.karma_on_kill)
+                and (w.silver_on_kill or w.karma_on_kill)
                 and attacker.quirk_kills < MIDAS_FIGHT_CAP):
             attacker.quirk_kills += 1
-            attacker.quirk_gold += w.gold_on_kill
+            attacker.quirk_silver += w.silver_on_kill
             attacker.quirk_karma += w.karma_on_kill
-            if w.gold_on_kill:
+            if w.silver_on_kill:
                 _debug(log, f"    (the {w.name} pays the kill: "
-                            f"+{w.gold_on_kill}g owed)")
+                            f"+{w.silver_on_kill}s owed)")
             if w.karma_on_kill:
                 _debug(log, f"    (the {w.name} drinks the kill: "
                             f"+{w.karma_on_kill} sin owed)")
@@ -6018,7 +6018,7 @@ def _clear_fight_states(entities: list[Entity]) -> None:
         e.break_tried = False
         e.lunge_spent = False
         e.quirk_kills = 0       # the per-fight payout cap only -- what is
-                                # OWED (quirk_gold/quirk_karma) persists
+                                # OWED (quirk_silver/quirk_karma) persists
                                 # until the session drains it
         e.adv = 0
         e.reload_left = 0
@@ -6498,7 +6498,7 @@ NAMES = ["Brand", "Sela", "Corvin", "Mira", "Doran", "Yssa", "Kael", "Rhea",
 
 def random_kit(rng: random.Random) -> dict[str, int]:
     """Two random potions at creation -- the whole starting stock. Nothing
-    refills for free; further potions are bought with gold or dropped."""
+    refills for free; further potions are bought with silver or dropped."""
     kit = {k: 0 for k in STOCKED_POTION_KINDS}
     for _ in range(STARTING_POTIONS):
         kit[rng.choice(STOCKED_POTION_KINDS)] += 1
@@ -6735,7 +6735,7 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
     for name, (w, count) in drops.items():
         n = f"{count}x " if count > 1 else "a "
         bits.append(f"{n}{name} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
-                    f"{w.value}g)")
+                    f"{w.value}s)")
     parts = ["Left among the dead:"]
     parts += [b + "," for b in bits[:-1]] + [bits[-1] + "."]
     return "\n".join(fit_lines(parts))
@@ -6793,7 +6793,7 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
     choosing between candidates IS the customization).
 
     The one divergence from the bench reference: the quality weapon SUITS
-    the frame instead of always being the katana -- a caster keeps the
+    the frame instead of always being the schweizersäbel -- a caster keeps the
     staff, a STR frame takes the zweihander, a DEX frame the rapier."""
     h.level = level
     points = (level - 1) * SKILL_POINTS_PER_LEVEL
@@ -6824,7 +6824,7 @@ def develop_hero(h: Entity, level: int, rng: random.Random) -> Entity:
         elif h.dex > h.str_:
             h.weapon = WEAPONS["rapier"]
         else:
-            h.weapon = WEAPONS["katana"]
+            h.weapon = WEAPONS["schweizersäbel"]
     # The proficiency sink: a wizard drills the SCHOOL SPELL (their real
     # offense); everyone else drills the wielded weapon.
     if h.school:
@@ -7135,7 +7135,7 @@ def learn_move(h: Entity, name: str, log: list[str]) -> bool:
     gate (the free-allocation doctrine) -- the prerequisites are PHYSICAL: the
     repertoire is capped at combat training + 1 (deeper fighting sense holds
     more techniques), and the move must be one the WIELDED weapon can perform
-    (learn what your steel can do -- iaido wants a katana, the finisher a
+    (learn what your steel can do -- iaido wants a schweizersäbel, the finisher a
     killing edge). Cost is the move's own (1, iaido and the finisher 2)."""
     m = MOVES.get(name)
     if m is None:
@@ -7154,7 +7154,7 @@ def learn_move(h: Entity, name: str, log: list[str]) -> bool:
         w = h.weapon.name if h.weapon is not None else "bare hands"
         need = " or ".join(m.any_tags) if m.any_tags else "a melee weapon"
         if name == "iaido":
-            need = "a katana"
+            need = "a schweizersäbel"
         elif name == "finisher":
             need = "a blade, or a heavy blunt"
         log.append(f"    {m.display} can't be done with {w} -- it needs "
@@ -7259,7 +7259,7 @@ def train_spell(h: Entity, name: str, log: list[str]) -> bool:
     rank = h.spells.get(name)
     if rank is None:
         log.append(f"    {h.name} has not learned {name} -- a spellbook "
-                   f"teaches it ({SPELLBOOK_PRICE}g, capitals).")
+                   f"teaches it ({SPELLBOOK_PRICE}s, capitals).")
         return False
     if rank >= spell.max_rank:
         log.append(f"    {h.name} has mastered {name} "
@@ -7282,7 +7282,7 @@ def train_spell(h: Entity, name: str, log: list[str]) -> bool:
 
 
 def learn_spell(h: Entity, name: str, log: list[str]) -> bool:
-    """Learn a NEW spell at rank 1 (the spellbook's teaching -- the gold
+    """Learn a NEW spell at rank 1 (the spellbook's teaching -- the silver
     gate on breadth; ranks past 1 are skill points, train_spell). Wizards
     only: the gift is rolled at creation, a book can't grant it."""
     if not h.is_wizard:
@@ -7308,7 +7308,7 @@ def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str],
                   markup: float = 1.0) -> bool:
     """Buy the spellbook that teaches `name` and learn it on the spot -- a
     between-adventures DM call (same shape as buy_weapon; session gates it
-    to capitals). SPELLBOOK_PRICE gold from the party purse."""
+    to capitals). SPELLBOOK_PRICE silver from the party purse."""
     spell = SPELLS.get(name)
     if spell is None:
         log.append(f"    No such spell: {name!r}. "
@@ -7317,13 +7317,13 @@ def buy_spellbook(h: Entity, purse: Purse, name: str, log: list[str],
     if not h.is_wizard or name in h.spells:
         return learn_spell(h, name, log)    # emits the right refusal
     price = marked_up(SPELLBOOK_PRICE, markup)
-    if purse.gold < price:
-        log.append(f"    Not enough gold for the {name} spellbook "
-                   f"({purse.gold}g / {price}g).")
+    if purse.silver < price:
+        log.append(f"    Not enough silver for the {name} spellbook "
+                   f"({purse.silver}s / {price}s).")
         return False
-    purse.gold -= price
+    purse.silver -= price
     log.append(f"    {h.name} buys the {name} spellbook for "
-               f"{price}g (purse: {purse.gold}g).")
+               f"{price}s (purse: {purse.silver}s).")
     return learn_spell(h, name, log)
 
 
@@ -7508,10 +7508,10 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
     living = [h for h in party if not h.dead]
     if not living:
         return
-    if rng.random() < DROP_GOLD_CHANCE:
-        purse.gold += DROP_GOLD_AMOUNT
-        log.append(f"    Loot: {DROP_GOLD_AMOUNT} gold "
-                   f"(purse {purse.gold}g).")
+    if rng.random() < DROP_SILVER_CHANCE:
+        purse.silver += DROP_SILVER_AMOUNT
+        log.append(f"    Loot: {DROP_SILVER_AMOUNT} silver "
+                   f"(purse {purse.silver}s).")
     if rng.random() < DROP_POTION_CHANCE:
         kind = rng.choice(STOCKED_POTION_KINDS)
         h = rng.choice(living)
@@ -7524,49 +7524,49 @@ def roll_loot(party: list[Entity], purse: Purse, rng: random.Random,
                          f"(x{h.items[kind]})."]))
 
 
-def cha_gold_bonus(party: list[Entity], gold: int) -> int:
-    """The PC's negotiation edge: +CHA_GOLD_BONUS_PER_POINT of the quoted
-    gold per CHA point above the capacity base, capped at CHA_GOLD_BONUS_CAP.
-    GOLD ONLY, never XP (an XP bonus would compound into CHA being the best
+def cha_silver_bonus(party: list[Entity], silver: int) -> int:
+    """The PC's negotiation edge: +CHA_SILVER_BONUS_PER_POINT of the quoted
+    silver per CHA point above the capacity base, capped at CHA_SILVER_BONUS_CAP.
+    SILVER ONLY, never XP (an XP bonus would compound into CHA being the best
     stat in the game). Zero when no protagonist is flagged -- i.e. in every
     sim path -- so the benches never see it."""
     pc = next((h for h in party if h.protagonist and not h.dead), None)
     if pc is None or pc.cha <= PARTY_CAPACITY_BASE_CHA:
         return 0
-    frac = min(CHA_GOLD_BONUS_CAP,
-               CHA_GOLD_BONUS_PER_POINT * (pc.cha - PARTY_CAPACITY_BASE_CHA))
-    return round(gold * frac)
+    frac = min(CHA_SILVER_BONUS_CAP,
+               CHA_SILVER_BONUS_PER_POINT * (pc.cha - PARTY_CAPACITY_BASE_CHA))
+    return round(silver * frac)
 
 
-def award_quest(party: list[Entity], purse: Purse, gold: int, xp: int,
+def award_quest(party: list[Entity], purse: Purse, silver: int, xp: int,
                 log: list[str], name: str,
                 banner: str = "QUEST COMPLETE",
                 reason: str = "quest") -> None:
-    """Clearing a whole site pays its lump: gold to the purse and an XP lump
+    """Clearing a whole site pays its lump: silver to the purse and an XP lump
     to everyone still alive (`banner` reads SITE CLEARED for the non-final
     sites of a multi-site quest). Skill points are BANKED, not auto-spent --
     with two sinks now (combat training vs weapon proficiency) spending is a
     real player choice (session.py `train`); only the sim paths auto-train.
-    A charismatic PC talks the gold up (cha_gold_bonus), and a paid-out job
+    A charismatic PC talks the silver up (cha_silver_bonus), and a paid-out job
     is the one thing that RAISES companion satisfaction on the road."""
     log.append("")
     bits = name.split(" -- ")
     name_parts = [b + " --" for b in bits[:-1]] + [bits[-1] + "."]
     _play(log,
-          f"  *** {banner}: {name}. Reward: {gold} gold. ***",
+          f"  *** {banner}: {name}. Reward: {silver} silver. ***",
           fit_lines([f"*** {banner}:"] + name_parts
-                    + [f"Reward: {gold} gold. ***"]))
-    bonus = cha_gold_bonus(party, gold)
+                    + [f"Reward: {silver} silver. ***"]))
+    bonus = cha_silver_bonus(party, silver)
     if bonus:
         pc = next(h for h in party if h.protagonist and not h.dead)
-        gold += bonus
+        silver += bonus
         _play(log,
-              f"    {pc.name} talks the pay up: +{bonus}g "
-              f"(CHA {pc.cha} -- {gold}g in all).",
+              f"    {pc.name} talks the pay up: +{bonus}s "
+              f"(CHA {pc.cha} -- {silver}s in all).",
               fit_lines([f"{pc.name} talks the pay up:",
-                         f"+{bonus}g ({gold}g in all)."]))
-    purse.gold += gold
-    log.append(f"    The party purse holds {purse.gold} gold.")
+                         f"+{bonus}s ({silver}s in all)."]))
+    purse.silver += silver
+    log.append(f"    The party purse holds {purse.silver} silver.")
     award_xp(party, xp, log, reason)
     for h in party:
         if not h.dead:
@@ -7585,7 +7585,7 @@ def marked_up(base: int, markup: float = 1.0) -> int:
     """A catalog price as a LOCAL price (2026-08-09, the world layer's
     priced menu). `markup` is whatever `worldsim.menu_terms` says this land
     is charging today -- 1.0 everywhere the world is not doing anything, and
-    never below 1 gold: the world moves a price, it does not abolish one.
+    never below 1 silver: the world moves a price, it does not abolish one.
 
     The engine takes the number and never asks where it came from, which is
     what keeps the sims and benches (who always pass 1.0) out of the world
@@ -7603,15 +7603,15 @@ def buy_potion(h: Entity, purse: Purse, kind: str, log: list[str],
         log.append(f"    No shop stocks a {kind} potion.")
         return False
     price = marked_up(potion_price(kind), markup)
-    if purse.gold < price:
-        log.append(f"    Not enough gold for a "
+    if purse.silver < price:
+        log.append(f"    Not enough silver for a "
                    f"{POTION_DISPLAY.get(kind, kind)} "
-                   f"({purse.gold}g / {price}g).")
+                   f"({purse.silver}s / {price}s).")
         return False
-    purse.gold -= price
+    purse.silver -= price
     h.items[kind] = h.items.get(kind, 0) + 1
     log.append(f"    {h.name} buys a {POTION_DISPLAY.get(kind, kind)} for "
-               f"{price}g ({kind} x{h.items[kind]}; purse: {purse.gold}g).")
+               f"{price}s ({kind} x{h.items[kind]}; purse: {purse.silver}s).")
     return True
 
 
@@ -7623,7 +7623,7 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
     worst wounds first up to the settlement's tier cap.
 
     THE CAP IS THE GATE, not the fee. A village herb-wife reaches
-    HEALER_TIER_CAP["village"] severity and no further, however much gold is
+    HEALER_TIER_CAP["village"] severity and no further, however much silver is
     on the table; a capital's surgeons clear everything short of a maiming.
     That is why the fee never has to scale: geography does not inflate, and a
     village that cannot touch your third wound is worth exactly as much at
@@ -7634,7 +7634,7 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
     layer -- a mill town under smog charges what a town full of coughing
     people will pay. The cap stays geography and geography does not inflate.
 
-    Returns (severity closed, gold spent)."""
+    Returns (severity closed, silver spent)."""
     fee = marked_up(HEALER_FEE, markup)
     cap = HEALER_TIER_CAP[subtype]
     hurt = [h for h in party
@@ -7652,16 +7652,16 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
         worst = max(
             (w for h in hurt for w in h.wounds if not w.permanent),
             key=lambda w: w.severity, default=None)
-        if worst is None or purse.gold < fee:
+        if worst is None or purse.silver < fee:
             break
         owner = next(h for h in hurt if worst in h.wounds)
         step = min(budget, worst.severity)
-        affordable = min(step, purse.gold // fee)
+        affordable = min(step, purse.silver // fee)
         if affordable <= 0:
             break
         name = worst.name
         gone = heal_wounds(owner, affordable, treat=True)
-        purse.gold -= fee * affordable
+        purse.silver -= fee * affordable
         spent += fee * affordable
         closed_total += affordable
         budget -= affordable
@@ -7674,15 +7674,15 @@ def healer_service(party: list[Entity], purse: Purse, subtype: str,
                        f"down to severity {worst.severity}, packed and "
                        f"dressed.")
     if not closed_total:
-        log.append(f"    The healer wants {fee}g a wound and the "
-                   f"purse holds {purse.gold}g.")
+        log.append(f"    The healer wants {fee}s a wound and the "
+                   f"purse holds {purse.silver}s.")
         return 0, 0
     if cap is not None and budget <= 0:
         log.append(f"    That is the whole of this {subtype}'s art "
                    f"({cap} severity a visit) -- the rest wants a bigger "
                    f"town, a salve, or time in a bed.")
-    log.append(f"    {closed_total} severity treated for {spent}g "
-               f"(purse: {purse.gold}g). It costs the day.")
+    log.append(f"    {closed_total} severity treated for {spent}s "
+               f"(purse: {purse.silver}s). It costs the day.")
     maimed = [h.name for h in party if not h.dead and h.maimed]
     if maimed:
         log.append(f"    The healer can do nothing for "
@@ -7778,13 +7778,13 @@ def buy_weapon(h: Entity, purse: Purse, name: str, log: list[str],
         log.append(f"    No shop sells a {w.tier} weapon.")
         return False
     price = marked_up(w.value, markup)
-    if purse.gold < price:
-        log.append(f"    Not enough gold for a {name} "
-                   f"({purse.gold}g / {price}g).")
+    if purse.silver < price:
+        log.append(f"    Not enough silver for a {name} "
+                   f"({purse.silver}s / {price}s).")
         return False
-    purse.gold -= price
-    log.append(f"    {h.name} buys a {name} for {price}g "
-               f"(purse: {purse.gold}g).")
+    purse.silver -= price
+    log.append(f"    {h.name} buys a {name} for {price}s "
+               f"(purse: {purse.silver}s).")
     equip_weapon(h, w, log)
     grant_starter_ammo(h, log)
     return True
@@ -7806,15 +7806,15 @@ def buy_ammo(h: Entity, purse: Purse, kind: str, log: list[str],
         log.append(f"    {h.name} already carries a full load of {kind} "
                    f"({have}/{cap}).")
         return False
-    if purse.gold < price:
-        log.append(f"    Not enough gold for {lot} {kind} "
-                   f"({purse.gold}g / {price}g).")
+    if purse.silver < price:
+        log.append(f"    Not enough silver for {lot} {kind} "
+                   f"({purse.silver}s / {price}s).")
         return False
-    purse.gold -= price
+    purse.silver -= price
     h.items[kind] = min(cap, have + lot)
     log.append(f"    {h.name} buys {h.items[kind] - have} {kind} for "
-               f"{price}g ({h.items[kind]}/{cap} carried; "
-               f"purse: {purse.gold}g).")
+               f"{price}s ({h.items[kind]}/{cap} carried; "
+               f"purse: {purse.silver}s).")
     return True
 
 
@@ -8481,7 +8481,7 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
                 log: list[str], rng: random.Random | None = None,
                 sky: str = "", markup: float = 1.0) -> bool:
     """A night at the inn (session play gates it to settlements): a long rest
-    plus a hot meal and a real bed, TAVERN_COST_PER_HERO gold per living
+    plus a hot meal and a real bed, TAVERN_COST_PER_HERO silver per living
     member from the purse. The party wakes OVERCHARGED: current HP and STA
     gain TAVERN_OVERCHARGE of their maximum (min 1) ON TOP of the overnight
     recovery, and may sit above max ("13/12 HP"). The excess is a one-day
@@ -8492,17 +8492,17 @@ def tavern_rest(party: list[Entity], clock: Clock, purse: Purse,
     boarders = [h for h in party if not h.dead]
     head = marked_up(TAVERN_COST_PER_HERO, markup)
     cost = head * len(boarders)
-    if purse.gold < cost:
-        log.append(f"    Not enough gold for beds ({purse.gold}g / {cost}g "
-                   f"at {head}g a head) -- the party can "
+    if purse.silver < cost:
+        log.append(f"    Not enough silver for beds ({purse.silver}s / {cost}s "
+                   f"at {head}s a head) -- the party can "
                    f"still camp for free.")
         return False
-    purse.gold -= cost
+    purse.silver -= cost
     _play(log,
-          f"  The party takes beds at the tavern ({cost}g -- purse: "
-          f"{purse.gold}g).",
+          f"  The party takes beds at the tavern ({cost}s -- purse: "
+          f"{purse.silver}s).",
           fit_lines(["The party takes beds at the tavern",
-                     f"({cost}g -- purse {purse.gold}g)."]))
+                     f"({cost}s -- purse {purse.silver}s)."]))
     long_rest(party, clock, log,
               banner="The party sleeps warm under a roof.", rng=rng,
               bed=True, sky=sky)
@@ -8538,7 +8538,7 @@ def storyteller_tale(party: list[Entity], rng: random.Random,
     +STORYTELLER_POWER_BONUS Power ABOVE max (overcharge rules: recovery
     never adds past max, so it is spent-only, and the next night's rest
     clamps it away). CHA's first in-mechanics job beyond capacity and
-    gold. Session play calls this from its night paths; returns whether
+    silver. Session play calls this from its night paths; returns whether
     a tale landed."""
     tellers = [h for h in party
                if not h.dead and "storyteller" in h.abilities]
@@ -8676,8 +8676,8 @@ def apply_defeat_mercy(party: list[Entity], foes: list[Entity],
         h.hp = min(1, h.hp_ceiling)
 
     if kind == "humanoid":
-        taken = purse.gold
-        purse.gold = 0
+        taken = purse.silver
+        purse.silver = 0
         weapons = []
         for h in active:
             if h.weapon is not None and h.weapon.quality:

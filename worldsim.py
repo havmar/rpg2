@@ -243,9 +243,9 @@ MENU_FLOOR, MENU_CEILING = 0.5, 4.0     # nothing is ever free and nothing is
                                         # ever unbuyable: the terms multiply,
                                         # so three bad states stacking gets
                                         # clamped rather than absurd
-ROAD_TOLL_GOLD = 6              # the base a toll state takes off a party
+ROAD_TOLL_SILVER = 6              # the base a toll state takes off a party
                                 # crossing one land, times the `toll` term
-ROAD_FERRY_GOLD = 4             # ...and what the ferry costs, times `ferry`.
+ROAD_FERRY_SILVER = 4             # ...and what the ferry costs, times `ferry`.
                                 # Both are small on purpose: the road tax is
                                 # a texture, not a wall (the fords cost a DAY,
                                 # and days are the expensive currency here)
@@ -824,7 +824,7 @@ def fact(land: str | tuple[str, ...], key: str, title: str,
 
 
 def option(key: str, name: str, land: str | tuple[str, ...], *,
-           does: str, gold: int, term: str, line: str,
+           does: str, silver: int, term: str, line: str,
            states: tuple[str, ...] = (), without: tuple[str, ...] = (),
            tension: tuple[str, ...] = (), kinds: tuple[str, ...] = (),
            days: int = 0, gives: int = 0, word: str = "",
@@ -833,7 +833,7 @@ def option(key: str, name: str, land: str | tuple[str, ...], *,
     -- the closed set of things the engine already knows how to do, because
     an option that needs new machinery is a feature request, not content.
 
-    `gold` is the catalog price and `term` the priced-menu term that moves
+    `silver` is the catalog price and `term` the priced-menu term that moves
     it, so a service is charged exactly the way a bed or a healer's day is:
     the world layer never owns a price, it moves one. `states` / `without` /
     `tension` gate it the way a card's admits do (an option nobody can reach
@@ -847,7 +847,7 @@ def option(key: str, name: str, land: str | tuple[str, ...], *,
         raise ValueError(f"{key}: no such service: {does}")
     lands = _expand(land)
     return {"key": key, "name": name, "land": lands, "does": does,
-            "gold": gold, "term": term, "line": line,
+            "silver": silver, "term": term, "line": line,
             "states": tuple(states), "without": tuple(without),
             "tension": tuple(tension), "kinds": tuple(kinds),
             "days": days, "gives": gives, "word": word, "holds": holds}
@@ -4188,7 +4188,7 @@ MAGIC_CARDS = (
          traits=("spell-friendly", "gifted", "brilliant"), days=(15, 25),
          news="Barely an organization: grumpy old wizards in scattered "
               "towers, hoarding books and meeting mostly to feud. One of "
-              "them has let it be known that gold might open his door, and "
+              "them has let it be known that silver might open his door, and "
               "that volunteering as the subject of an experiment opens it "
               "faster.",
          state={"while": ("tower-open",)},
@@ -4591,25 +4591,25 @@ FACTS_BY_LAND: dict[str, tuple[dict, ...]] = {
 OPTIONS = (
     # -- the Sun communion: one church, two rites, one counter ------------- #
     option("sun/burial", "a burial by the rite", ("western", "southern"),
-           does="bless", gold=25, term="healer", days=6, gives=1,
+           does="bless", silver=25, term="healer", days=6, gives=1,
            line="the ground, the rite and the name written in the book"),
     option("sun/blessing", "a blessing at the dawn service",
-           ("western", "southern"), does="bless", gold=18, term="healer",
+           ("western", "southern"), does="bless", silver=18, term="healer",
            days=4, gives=1,
            line="the dawn service, a hand on the head, a good week asked "
                 "for out loud"),
     option("western/pilgrim-badge", "a pilgrim badge", "western",
-           does="bless", gold=12, term="goods", days=8, gives=1,
+           does="bless", silver=12, term="goods", days=8, gives=1,
            line="the shrine circuit's badge -- every inn on the road knows "
                 "it and half of them charge less for it"),
     option("southern/brotherhood", "dues to a burial brotherhood",
-           "southern", does="bless", gold=20, term="lodging", days=7,
+           "southern", does="bless", silver=20, term="lodging", days=7,
            gives=1,
            line="a hooded burial brotherhood buries you whoever you turn "
                 "out to have been, and the hood is nobody's business"),
     # -- Tergal: the priced thumb on the weather's scale ------------------- #
     option("tergal/rain-stone", "the rain stone", "tergal", does="sky",
-           gold=60, term="goods", word="rain", holds=2,
+           silver=60, term="goods", word="rain", holds=2,
            without=("sky-bought",),
            line="a shaman who moves weather can be hired: two days of rain "
                 "over this land, dropped where you ask for it"),
@@ -4619,19 +4619,19 @@ OPTIONS = (
     # ship wants bought is WIND, and it is sold out of a cord with knots
     # in it, one knot a day.
     option("norse/weather-witch", "the weather-witch's cord", "norse",
-           does="sky", gold=55, term="goods", word="wind", holds=2,
+           does="sky", silver=55, term="goods", word="wind", holds=2,
            without=("sky-bought", "white-storm"),
            line="a woman who sells wind out of a knotted cord: two days "
                 "of it over this land, from the quarter you ask for"),
     # -- the south: the formal version of the whole business -------------- #
     option("southern/academy-fee", "a term at the academy", "southern",
-           does="book", gold=130, term="goods", kinds=("capital",),
+           does="book", silver=130, term="goods", kinds=("capital",),
            line="faculties, examinations, robes, and a commoner's fee "
                 "quoted twice as loudly as a noble's"),
     # -- the west: no ladder, one door ------------------------------------ #
     option("western/tower-fee", "the tower wizard's price", "western",
-           does="book", gold=150, term="goods", states=("tower-open",),
-           line="gold might open the door; volunteering as the subject of "
+           does="book", silver=150, term="goods", states=("tower-open",),
+           line="silver might open the door; volunteering as the subject of "
                 "the experiment opens it faster and costs less"),
 )
 
@@ -4695,7 +4695,7 @@ def option_price(world: dict, polity: str, spec: dict) -> int:
     """What the option costs here today: its catalog price, moved by the
     land's own priced term. A service is charged exactly the way a bed or a
     healer's day is -- the world state is on this counter too."""
-    return priced(world, polity, spec["term"], spec["gold"])
+    return priced(world, polity, spec["term"], spec["silver"])
 
 
 def service_lines(world: dict, polity: str, kind: str = "") -> list[str]:
@@ -4707,7 +4707,7 @@ def service_lines(world: dict, polity: str, kind: str = "") -> list[str]:
     lines = [f"-- what {world['lands'][polity]['name']} sells --"]
     for spec in open_now:
         lines.append(f"  {spec['name']}: "
-                     f"{option_price(world, polity, spec)}g "
+                     f"{option_price(world, polity, spec)}s "
                      f"(`service {option_word(spec)}`)")
         lines.append(f"    {spec['line']}")
     return lines
@@ -4880,7 +4880,7 @@ def roll_wars(world: dict, day: int = 0) -> list[dict]:
 
 def wars_of(world: dict, polity: str) -> list[dict]:
     """The wars this land is in, attacker or defender."""
-    return [war for war in world.get("wars", ())
+    return [war for war in world["wars"]
             if polity in war["attackers"] or polity in war["defenders"]]
 
 
@@ -4897,7 +4897,7 @@ def war_lines(world: dict) -> list[str]:
     the herald it opened with, how far its campaign has been rolled, and
     what it is holding. Vassalage rides here too -- it is the other thing
     the war roll settled."""
-    wars = world.get("wars") or []
+    wars = world["wars"]
     lines = ["-- the wars --"]
     for war in wars:
         lines.append(f"{war['name']} [{war['posture']}] "
@@ -5604,7 +5604,7 @@ def term(world: dict, polity: str, name: str) -> float:
 
 
 def priced(world: dict, polity: str, name: str, base: int) -> int:
-    """`base` gold, as this land currently charges it. Rounded, and never
+    """`base` silver, as this land currently charges it. Rounded, and never
     to zero: the world moves a price, it does not abolish one."""
     return max(1, round(base * term(world, polity, name)))
 
@@ -5645,7 +5645,7 @@ def road_charges(world: dict, lands) -> tuple[int, list[str]]:
     counter the party walks up to; these are asked at a bridge that is
     already in front of it (`worldsim.travel_delay` is the same trip's
     time cost)."""
-    gold, lines = 0, []
+    silver, lines = 0, []
     for polity in dict.fromkeys(lands):
         if polity is None or polity not in world.get("lands", {}):
             continue
@@ -5653,16 +5653,16 @@ def road_charges(world: dict, lands) -> tuple[int, list[str]]:
         name = world["lands"][polity]["name"]
         toll = term(world, polity, "toll")
         if toll > 1.0:
-            take = max(1, round(ROAD_TOLL_GOLD * toll))
-            gold += take
-            lines.append(f"  {name}: the toll-men take {take}g at the "
+            take = max(1, round(ROAD_TOLL_SILVER * toll))
+            silver += take
+            lines.append(f"  {name}: the toll-men take {take}s at the "
                          f"bridge.")
         ferry = term(world, polity, "ferry")
         if "fords-out" in held:
-            take = max(1, round(ROAD_FERRY_GOLD * ferry))
-            gold += take
-            lines.append(f"  {name}: the ferry across costs {take}g.")
-    return gold, lines
+            take = max(1, round(ROAD_FERRY_SILVER * ferry))
+            silver += take
+            lines.append(f"  {name}: the ferry across costs {take}s.")
+    return silver, lines
 
 
 # --- the ENCOUNTER outlet: what the world puts on the road ------------------ #
@@ -5875,7 +5875,7 @@ def world_lines(world: dict) -> list[str]:
         selling = options_here(world, polity)
         if selling:
             lines.append("  sells: " + ", ".join(
-                f"{o['name']} {option_price(world, polity, o)}g"
+                f"{o['name']} {option_price(world, polity, o)}s"
                 for o in selling))
         marks = sorted({cat for state_id in state_ids(world, polity)
                         for cat in STATE_MARKS.get(state_id, {})})
@@ -6216,7 +6216,7 @@ def _validate_lore_tables() -> None:
                 raise ValueError(f"{key}: no such land: {polity}")
         if spec["term"] not in MENU_TERMS:
             raise ValueError(f"{key}: not a priced term: {spec['term']}")
-        if spec["gold"] < 1:
+        if spec["silver"] < 1:
             raise ValueError(f"{key}: a service nobody charges for")
         for state_id in spec["states"] + spec["without"]:
             if state_id not in STATE_WORDS:

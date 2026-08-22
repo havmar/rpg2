@@ -34,7 +34,7 @@ def _hero(**over):
 
 class TestSpCurrency(unittest.TestCase):
     def test_quality_four_price_at_exactly_three_sp(self):
-        for name in ("rapier", "katana", "zweihander", "wooden staff"):
+        for name in ("rapier", "schweizersäbel", "zweihander", "wooden staff"):
             self.assertEqual(weapons.weapon_sp(WEAPONS[name]), 3, name)
 
     def test_common_lines_price_at_minus_one_zero_one(self):
@@ -43,7 +43,7 @@ class TestSpCurrency(unittest.TestCase):
         self.assertEqual(weapons.weapon_sp(WEAPONS["longsword"]), 1)
 
     def test_masterwork_prices_at_five_sp(self):
-        for name in ("rapier", "katana", "zweihander", "wooden staff"):
+        for name in ("rapier", "schweizersäbel", "zweihander", "wooden staff"):
             self.assertEqual(weapons.weapon_sp(rpg.masterwork_of(name)), 5,
                              name)
 
@@ -51,7 +51,7 @@ class TestSpCurrency(unittest.TestCase):
         with self.assertRaises(ValueError):
             weapons.weapon_sp(WEAPONS["longbow"])
 
-    def test_gold_curve_is_superlinear(self):
+    def test_silver_curve_is_superlinear(self):
         self.assertEqual(weapons.value_for_sp(3), 60)
         vals = [weapons.value_for_sp(sp) for sp in range(3, 11)]
         for a, b in zip(vals, vals[1:]):
@@ -94,7 +94,7 @@ class TestGenerator(unittest.TestCase):
         for _ in range(120):
             w = weapons.generate_weapon(rng, rng.choice((6, 7, 8, 9, 10)))
             self.assertIn(w.rider, ("", "bleed", "poison", "burn", "rime"))
-            quirks = sum((w.lunge, w.gold_on_kill > 0, w.karma_on_kill > 0))
+            quirks = sum((w.lunge, w.silver_on_kill > 0, w.karma_on_kill > 0))
             self.assertLessEqual(quirks, 1)
 
     def test_profile_rule_signature_axis_majority(self):
@@ -107,7 +107,7 @@ class TestGenerator(unittest.TestCase):
             w = weapons.generate_weapon(rng, sp)
             budget = sp - weapons.QUALITY_SP
             base = WEAPONS[w.base]
-            if w.base in ("rapier", "katana"):
+            if w.base in ("rapier", "schweizersäbel"):
                 sig = (weapons.SP_DEX * w.dex_bonus + weapons.SP_ATK
                        * (w.atk_pressure - base.atk_pressure))
             elif w.base == "zweihander":
@@ -123,10 +123,10 @@ class TestGenerator(unittest.TestCase):
                                     (w.name, sp, sig, budget))
 
     def test_generated_weapon_keeps_chassis_moves_and_prof(self):
-        w = weapons.generate_weapon(random.Random(5), 9, chassis="katana")
-        self.assertEqual(w.base, "katana")
-        self.assertEqual(rpg.prof_name(w), "katana")
-        self.assertEqual(w.move_tags, WEAPONS["katana"].move_tags)
+        w = weapons.generate_weapon(random.Random(5), 9, chassis="schweizersäbel")
+        self.assertEqual(w.base, "schweizersäbel")
+        self.assertEqual(rpg.prof_name(w), "schweizersäbel")
+        self.assertEqual(w.move_tags, WEAPONS["schweizersäbel"].move_tags)
         self.assertTrue(rpg.move_weapon_ok("iaido", w))
 
     def test_display_fits_forty_columns(self):
@@ -154,29 +154,29 @@ class TestMasterwork(unittest.TestCase):
     def test_shoppable_and_legendary_refused(self):
         h = _hero()
         purse = rpg.Purse()
-        purse.gold = 1000
+        purse.silver = 1000
         log = []
-        self.assertTrue(rpg.buy_weapon(h, purse, "masterwork katana", log))
-        self.assertEqual(purse.gold, 1000 - 300)
-        self.assertEqual(h.weapon.name, "masterwork katana")
+        self.assertTrue(rpg.buy_weapon(h, purse, "masterwork schweizersäbel", log))
+        self.assertEqual(purse.silver, 1000 - 300)
+        self.assertEqual(h.weapon.name, "masterwork schweizersäbel")
         # A non-quality masterwork ask is refused, not crashed.
         self.assertFalse(rpg.buy_weapon(h, purse, "masterwork club", log))
 
     def test_proficiency_follows_the_chassis(self):
         h = _hero()
-        h.proficiency["katana"] = 2
+        h.proficiency["schweizersäbel"] = 2
         log = []
-        rpg.equip_weapon(h, rpg.masterwork_of("katana"), log)
+        rpg.equip_weapon(h, rpg.masterwork_of("schweizersäbel"), log)
         self.assertEqual(h.prof_rank, 2)
         # ...and drilling it deepens the CHASSIS rank.
         h.skill_points = 5
         self.assertTrue(rpg.train_proficiency(h, log))
-        self.assertEqual(h.proficiency["katana"], 3)
-        self.assertNotIn("masterwork katana", h.proficiency)
+        self.assertEqual(h.proficiency["schweizersäbel"], 3)
+        self.assertNotIn("masterwork schweizersäbel", h.proficiency)
 
     def test_reskin_still_follows_the_display_name(self):
         # A bare `--as` reskin has no base: the old doctrine holds.
-        w = dataclasses.replace(WEAPONS["katana"], name="shock prod")
+        w = dataclasses.replace(WEAPONS["schweizersäbel"], name="shock prod")
         self.assertEqual(rpg.prof_name(w), "shock prod")
 
 
@@ -184,7 +184,7 @@ class TestEquipBookkeeping(unittest.TestCase):
     def test_full_symmetry_over_every_bonus(self):
         h = _hero()
         w = dataclasses.replace(
-            WEAPONS["katana"], name="test blade", base="katana",
+            WEAPONS["schweizersäbel"], name="test blade", base="schweizersäbel",
             tier="legendary", dex_bonus=2, str_bonus=1, sta_bonus=2,
             hp_bonus=4, power_bonus=1)
         before = (h.dex, h.str_, h.sta, h.max_hp, h.power)
@@ -193,17 +193,17 @@ class TestEquipBookkeeping(unittest.TestCase):
         self.assertEqual((h.dex, h.str_, h.sta, h.max_hp, h.power),
                          (before[0] + 2, before[1] + 1, before[2] + 2,
                           before[3] + 4, before[4] + 1))
-        rpg.equip_weapon(h, WEAPONS["katana"], log)
+        rpg.equip_weapon(h, WEAPONS["schweizersäbel"], log)
         self.assertEqual((h.dex, h.str_, h.sta, h.max_hp, h.power), before)
 
     def test_unequip_never_kills(self):
         h = _hero()
-        w = dataclasses.replace(WEAPONS["katana"], name="lifeblade",
-                                base="katana", hp_bonus=4)
+        w = dataclasses.replace(WEAPONS["schweizersäbel"], name="lifeblade",
+                                base="schweizersäbel", hp_bonus=4)
         log = []
         rpg.equip_weapon(h, w, log)
         h.hp = 2
-        rpg.equip_weapon(h, WEAPONS["katana"], log)
+        rpg.equip_weapon(h, WEAPONS["schweizersäbel"], log)
         self.assertGreaterEqual(h.hp, 1)
 
 
@@ -220,8 +220,8 @@ class TestRiderAndQuirks(unittest.TestCase):
         return atk, dfn
 
     def test_weapon_rider_applies_condition(self):
-        w = dataclasses.replace(WEAPONS["katana"], name="venom katana",
-                                base="katana", rider="poison",
+        w = dataclasses.replace(WEAPONS["schweizersäbel"], name="venom schweizersäbel",
+                                base="schweizersäbel", rider="poison",
                                 rider_power=1, rider_rounds=None)
         for seed in range(1, 20):
             atk, dfn = self._duel(w, seed)
@@ -234,8 +234,8 @@ class TestRiderAndQuirks(unittest.TestCase):
         self.fail("no landed hit in 19 seeded exchanges")
 
     def test_rime_rider_stacks_the_dex_debuff(self):
-        w = dataclasses.replace(WEAPONS["katana"], name="frost katana",
-                                base="katana", rider="rime", rider_power=1)
+        w = dataclasses.replace(WEAPONS["schweizersäbel"], name="frost schweizersäbel",
+                                base="schweizersäbel", rider="rime", rider_power=1)
         for seed in range(1, 20):
             atk, dfn = self._duel(w, seed)
             if dfn.max_hp - dfn.hp > 0 and dfn.alive:
@@ -246,7 +246,7 @@ class TestRiderAndQuirks(unittest.TestCase):
 
     def test_on_kill_quirks_accrue_and_cap(self):
         w = dataclasses.replace(WEAPONS["zweihander"], name="gilded zwei",
-                                base="zweihander", gold_on_kill=2,
+                                base="zweihander", silver_on_kill=2,
                                 karma_on_kill=1)
         atk = _hero()
         atk.dex, atk.str_, atk.training = 10, 10, 5
@@ -262,16 +262,16 @@ class TestRiderAndQuirks(unittest.TestCase):
                 felled += 1
         self.assertGreater(felled, rpg.MIDAS_FIGHT_CAP)
         self.assertEqual(atk.quirk_kills, rpg.MIDAS_FIGHT_CAP)
-        self.assertEqual(atk.quirk_gold, 2 * rpg.MIDAS_FIGHT_CAP)
+        self.assertEqual(atk.quirk_silver, 2 * rpg.MIDAS_FIGHT_CAP)
         self.assertEqual(atk.quirk_karma, 1 * rpg.MIDAS_FIGHT_CAP)
         # The per-fight cap clears; the owed counters do not.
         rpg._clear_fight_states([atk])
         self.assertEqual(atk.quirk_kills, 0)
-        self.assertEqual(atk.quirk_gold, 2 * rpg.MIDAS_FIGHT_CAP)
+        self.assertEqual(atk.quirk_silver, 2 * rpg.MIDAS_FIGHT_CAP)
 
     def test_lunge_reach_and_spend(self):
-        w = dataclasses.replace(WEAPONS["katana"], name="lunging katana",
-                                base="katana", lunge=True)
+        w = dataclasses.replace(WEAPONS["schweizersäbel"], name="lunging schweizersäbel",
+                                base="schweizersäbel", lunge=True)
         h = _hero(school="", spells={})     # no caster reach in the way
         log = []
         rpg.equip_weapon(h, w, log)
@@ -290,11 +290,11 @@ class TestSaveRoundTrip(unittest.TestCase):
         w = weapons.generate_weapon(random.Random(9), 9)
         log = []
         rpg.equip_weapon(h, w, log)
-        h.quirk_gold = 4
+        h.quirk_silver = 4
         d = json.loads(json.dumps(session._entity_to_dict(h)))
         h2 = session._entity_from_dict(d)
         self.assertEqual(h2.weapon, h.weapon)
-        self.assertEqual(h2.quirk_gold, 4)
+        self.assertEqual(h2.quirk_silver, 4)
         self.assertEqual(rpg.prof_name(h2.weapon), w.base)
 
 
@@ -358,7 +358,7 @@ class TestWorldLayer(unittest.TestCase):
                 if not rw:
                     continue
                 found += 1
-                self.assertEqual(q["gold_total"], 0)
+                self.assertEqual(q["silver_total"], 0)
                 lvl, tier = q["level"], rw["tier"]
                 if lvl <= 4:
                     self.assertEqual(tier, "plain")

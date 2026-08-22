@@ -32,7 +32,7 @@ def _state(day: int = 5, party=None, **extra) -> dict:
     """The minimum a history call needs: a clock, a party, the ledgers."""
     state = {"clock": rpg.Clock(day=day),
              "party": party if party is not None else [],
-             "purse": rpg.Purse(gold=0),
+             "purse": rpg.Purse(silver=0),
              "rng": random.Random(1),
              "karma": karma.new_karma(),
              "crimes": crime.new_crimes(),
@@ -475,7 +475,7 @@ class TheCrimeSheet(unittest.TestCase):
         hi = max(b["levels"][1] for b in bands)
         self.assertIn(f"L{lo}-{hi}", line)
         g_hi, _ = crime.take_of(cat, hi, random.Random(0))
-        self.assertIn(f"{g_hi}g", line)
+        self.assertIn(f"{g_hi}s", line)
 
     def test_a_takeless_crime_says_no_coin(self):
         self.assertIn("no coin",

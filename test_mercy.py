@@ -21,7 +21,7 @@ def hero(name: str, *, quality: bool = False, level: int = 1) -> rpg.Entity:
         power=4,
         pain=rpg.HERO_PAIN,
         records_wounds=True,
-        weapon=rpg.WEAPONS["katana" if quality else "dagger"],
+        weapon=rpg.WEAPONS["schweizersäbel" if quality else "dagger"],
         level=level,
     )
 
@@ -88,7 +88,7 @@ class DefeatMercy(unittest.TestCase):
             party, foes, purse, random.Random(2), [], participants=party)
 
         self.assertEqual(kind, "humanoid")
-        self.assertEqual(purse.gold, 0)
+        self.assertEqual(purse.silver, 0)
         self.assertIsNone(pc.weapon)
         self.assertEqual(pc.power, power_before - 1)
         self.assertLessEqual(pc.cur_power, pc.power)
@@ -110,7 +110,7 @@ class DefeatMercy(unittest.TestCase):
             party, foes, purse, random.Random(4), [], participants=party)
 
         self.assertEqual(kind, "monster")
-        self.assertEqual(purse.gold, 73)
+        self.assertEqual(purse.silver, 73)
         self.assertTrue(all(h.weapon is not None for h in party))
         self.assertTrue(all(h.alive and h.hp == 1 for h in party))
         permanents = [w for h in party for w in h.wounds if w.permanent]
@@ -171,7 +171,7 @@ class DefeatMercy(unittest.TestCase):
         self.assertTrue(session.apply_mercy(
             state, foes, "law", [], participants=party))
         self.assertEqual(state["party"], [pc])
-        self.assertEqual(state["purse"].gold, 0)
+        self.assertEqual(state["purse"].silver, 0)
         self.assertEqual(state["karma"]["sin"], 0)
         defeat(pc)
         self.assertFalse(session.apply_mercy(
@@ -316,7 +316,7 @@ class FateBargain(unittest.TestCase):
         award.assert_not_called()
         loot.assert_not_called()
         self.assertEqual(pc.mercy_level, 0)
-        self.assertEqual(state["purse"].gold, 0)
+        self.assertEqual(state["purse"].silver, 0)
         # The room remembers its survivor, as after any staggered-apart fight.
         self.assertIn(("the ritual ground", 1), state["rooms"])
         self.assertTrue(

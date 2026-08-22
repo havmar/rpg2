@@ -49,7 +49,7 @@ import re
 from typing import Iterable
 
 from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
-                 quest_gold, conspicuousness, NOTICE_BASE, CAST_RANGE)
+                 quest_silver, conspicuousness, NOTICE_BASE, CAST_RANGE)
 from sites import FOES, Site
 from places import (
     CULTURE_OF, LAND_SPECS, SITE_TEMPLATES, create_geography,
@@ -144,7 +144,7 @@ QUEST_WINDOW_DAYS = (3, 7)   # the posting window, rolled per quest
 QUEST_QUICK_SHARE = 1 / 3    # done within this fraction of the window: QUICK
 QUEST_GRACE_DAYS = 3         # ...and this long past the deadline is LATE,
                              # still payable; past it the job is gone
-QUEST_PAY_BANDS = {          # what the turn-in lump (and the gold) is worth
+QUEST_PAY_BANDS = {          # what the turn-in lump (and the silver) is worth
     "quick": 1.15,           # by the day it lands. The premium is small on
     "on time": 1.00,         # purpose: the clock is a pressure, not a
     "late": 0.60,            # second economy. A late job still pays --
@@ -494,7 +494,7 @@ TEMPLATES["norse"] = [
 # the roll comes up high (template_band gates them to the drake band).
 EPIC_TEMPLATES: list[dict] = [
     dict(title="The Dragon's Tribute",
-         desc="A dragon takes food and gold from an entire valley. Kill it "
+         desc="A dragon takes food and silver from an entire valley. Kill it "
               "and end the tribute. The general pays on its head.",
          pool=DRAKE_POOL, skins={}, proof="the dragon's head",
          sites=("the burned storehouses", "the mountain path",
@@ -603,17 +603,17 @@ for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
 # destination with the quest active completes it (session.deliver_if_arrived).
 # A couple per world at worldgen, homeland-agnostic templates.
 DELIVERIES_PER_WORLD = 2
-DELIVERY_GOLD_PER_DAY = 20  # the courier premium: gold-rich for the effort...
+DELIVERY_SILVER_PER_DAY = 20  # the courier premium: silver-rich for the effort...
 DELIVERY_XP_PER_DAY = 25    # ...XP-light next to site work (a 2-day cross-land
                             # run pays 50 XP, half a level-1 site) -- walking
                             # isn't fighting, and the interception pays its
                             # own wild XP on top
 
-# Crime pays (karma & heat, 2026-07-19): a DARK quest's gold is multiplied
+# Crime pays (karma & heat, 2026-07-19): a DARK quest's silver is multiplied
 # -- the shadow economy's premium. Its XP is the liability instead (every
 # point is SIN; karma.py). Dark quests never come from worldgen (the
 # shadow board rolls them lazily, session.py), so no bench sees this knob.
-DARK_GOLD_MULT = 1.5
+DARK_SILVER_MULT = 1.5
 
 DELIVERY_TEMPLATES: list[dict] = [
     dict(title="The Secret Message", cargo="a sealed letter",
@@ -654,11 +654,11 @@ DELIVERY_TEMPLATES: list[dict] = [
          epilogue="The family buries the ashes. They thank the party.",
          failure_epilogue="The urn is still here. The family has held the "
                           "funeral without it."),
-    dict(title="The Ransom Payment", cargo="a strongbox of ransom gold",
+    dict(title="The Ransom Payment", cargo="a strongbox of ransom silver",
          desc="A town is paying to free a hostage across the border. Deliver "
-              "the gold unopened.",
+              "the silver unopened.",
          giver="the town mayor", recipient="the kidnapper's agent",
-         epilogue="The gold is delivered. The hostage is released.",
+         epilogue="The silver is delivered. The hostage is released.",
          failure_epilogue="The ransom was never paid. The kidnappers have "
                           "sent the town a finger."),
 ]
@@ -698,7 +698,7 @@ def xp_to_cap(level: int = 1) -> int:
 
 
 # The board's QUOTES: what a posted quest says it pays. `quest_xp_total` /
-# `quest_gold` (rpg.py) are the FORMULAS -- these two read the numbers the
+# `quest_silver` (rpg.py) are the FORMULAS -- these two read the numbers the
 # formulas already stamped on the quest dict, with the dark premium folded in.
 def quest_xp_posted(quest: dict) -> int:
     if quest.get("kind") == "delivery":
@@ -706,12 +706,12 @@ def quest_xp_posted(quest: dict) -> int:
     return quest.get("xp_total", 0)
 
 
-def quest_gold_posted(quest: dict) -> int:
+def quest_silver_posted(quest: dict) -> int:
     if quest.get("kind") == "delivery":
-        return quest["gold"]
-    total = quest.get("gold_total", 0)
+        return quest["silver"]
+    total = quest.get("silver_total", 0)
     if quest.get("align") == "dark":
-        total = round(total * DARK_GOLD_MULT)
+        total = round(total * DARK_SILVER_MULT)
     return total
 
 
@@ -1110,7 +1110,7 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
                          name, kinds, quest=qid)
         site_ids.append(site_id)
     xp_total = quest_xp_total(level, encounters)
-    gold_total = quest_gold(level, encounters)
+    silver_total = quest_silver(level, encounters)
     # The caper fields ride the site dicts (plain JSON, like everything):
     # deed on the FIRST site (the attempt comes before the fighting),
     # twist on the LAST (the complication waits at the end of the job).
@@ -1132,7 +1132,7 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         "site_count": len(site_ids),
         "encounters": encounters,
         "xp_total": xp_total,
-        "gold_total": gold_total,
+        "silver_total": silver_total,
         "next": {"site": 0, "room": 0},     # the progress cursor
         "status": "open",
         "align": tpl.get("align", "good"),  # karma & heat (2026-07-19):
@@ -1197,7 +1197,7 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
         "dest": dest["key"],
         "dest_name": dest["name"],
         "days": days,
-        "gold": DELIVERY_GOLD_PER_DAY * days,
+        "silver": DELIVERY_SILVER_PER_DAY * days,
         "xp": DELIVERY_XP_PER_DAY * days,
         "level": 0,             # deliveries have no site level; readouts
                                 # print DELIVERY where a level would go
@@ -1219,7 +1219,7 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
-    forges a shadow job (karma & heat: bad-karma XP, the gold premium).
+    forges a shadow job (karma & heat: bad-karma XP, the silver premium).
     `proof` forges a bounty: the token the giver pays on -- the final
     site's roster must be dead before the job is done (2026-08-08).
 
@@ -1253,7 +1253,7 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
              "skins": {}, "sites": site_ids, "site_count": places,
              "encounters": encounters,
              "xp_total": quest_xp_total(level, encounters),
-             "gold_total": quest_gold(level, encounters),
+             "silver_total": quest_silver(level, encounters),
              "next": {"site": 0, "room": 0},
              # the DM's own job rides a board without being of it: it never
              # eats an ordinary slot and it posts where there is no board
@@ -1448,7 +1448,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     # both -- the crown's war debts pay 0.85, a province paying its swords
     # in paper notes quotes 1.5. Stamped in, not read out, so the job keeps
     # the terms it was taken at.
-    quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"])
+    quest["silver_total"] = _world_pay(world, settlement, quest["silver_total"])
     stamp_quest_clock(quest, day, rng,
                       extra_days=route_days(world, quest))
     _maybe_attach_weapon_reward(quest, qid)
@@ -1460,7 +1460,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
 
 
 WEAPON_REWARD_CHANCE = 0.15     # this share of posted jobs pays its turn-in
-                                # lump as a WEAPON instead of gold (2026-07-28,
+                                # lump as a WEAPON instead of silver (2026-07-28,
                                 # the weapon generation system): the level is
                                 # the pay grade here as everywhere -- quality
                                 # steel in the low band, masterwork in the
@@ -1484,7 +1484,7 @@ def _maybe_attach_weapon_reward(quest: dict, qid: str) -> None:
         return
     w = weapons.reward_weapon_for_level(quest["level"], wrng)
     quest["reward_weapon"] = dataclasses.asdict(w)
-    quest["gold_total"] = 0         # the lump IS the weapon; the encounter
+    quest["silver_total"] = 0         # the lump IS the weapon; the encounter
                                     # shares still pay as they are earned
 
 
@@ -1594,7 +1594,7 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
     The level is the settlement's own band clamped into the template's, the
     same clamp a rolled posting gets. No WEAPON REWARD rides a card job: the
     reward mode is a flat share of the ordinary board, and a card that pays
-    a premium in gold should not silently pay it in steel instead."""
+    a premium in silver should not silently pay it in steel instead."""
     tpl = posting["job"]
     lo, hi = SETTLEMENT_KINDS[settlement_tier(settlement)][1]
     t_lo, t_hi = template_band(tpl)
@@ -1608,7 +1608,7 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
                         radius=ORDINARY_TARGET_DAYS)
     quest["failure_epilogue"] = tpl.get("failure_epilogue", "")
     quest["world_card"] = posting["key"]
-    quest["gold_total"] = _world_pay(world, settlement, quest["gold_total"],
+    quest["silver_total"] = _world_pay(world, settlement, quest["silver_total"],
                                      posting["pay"])
     stamp_quest_clock(quest, day, rng,
                       extra_days=route_days(world, quest))
@@ -1619,14 +1619,14 @@ def _post_card_quest(world: dict, settlement: dict, posting: dict,
     return quest
 
 
-def _world_pay(world: dict, settlement: dict, gold: int,
+def _world_pay(world: dict, settlement: dict, silver: int,
                premium: float = 1.0) -> int:
     """What the world layer does to a posting's quoted lump: the land's
     band and whatever its live cards reprice, times the card's own premium
     where a card put the job up. Applied ONCE, at posting time -- the
     board's terms are the terms it was posted at."""
     mult = worldsim.board_pay(world, settlement["land"]) * premium
-    return max(1, round(gold * mult))
+    return max(1, round(silver * mult))
 
 
 def refresh_settlement_board(world: dict, settlement: dict, day: int,
@@ -2022,13 +2022,13 @@ def quest_line(quest: dict, day: int | None = None) -> str:
     if quest.get("kind") == "delivery":
         return (f"[{quest['id']}] DELIVERY {quest['name']} -- to "
                 f"{quest['dest_name']}, {quest_shape(quest)}; pays "
-                f"{quest_gold_posted(quest)}g, "
+                f"{quest_silver_posted(quest)}s, "
                 f"{quest_xp_posted(quest)} XP{mark}")
     dark = " DARK" if quest.get("align") == "dark" else ""
     xp_note = " (sin)" if dark else ""
     rw = quest.get("reward_weapon")
     pay = (f"pays a {rw['name']}" if rw
-           else f"pays {quest_gold_posted(quest)}g")
+           else f"pays {quest_silver_posted(quest)}s")
     proof = (f"; proof: {quest['proof']}" if quest.get("proof") else "")
     return (f"[{quest['id']}] {level_grade(quest)}{dark} "
             f"{quest['name']} -- "
@@ -2076,7 +2076,7 @@ def quest_detail_lines(world: dict, quest: dict,
     rw = quest.get("reward_weapon")
     if rw:
         lines.append(f"    the reward: a {rw['name']} in place of the "
-                     f"gold lump -- {rw['description']}")
+                     f"silver lump -- {rw['description']}")
     if quest.get("proof"):
         lines.append(f"    proof wanted: {quest['proof']} -- the giver "
                      f"pays on the target dead; driven off is not done")

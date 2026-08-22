@@ -59,7 +59,7 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
     counts = Counter()
     downed_runs = cleared_runs = fled_runs = early_runs = 0
     days = 0
-    pow_left = sta_left = heal_left = gold = 0.0
+    pow_left = sta_left = heal_left = silver = 0.0
     pow_max = sta_max = 0.0
     hp_hist = Counter()     # cleared runs only: party HP lost, bucketed --
                             # the "less binary outcomes" criterion (2026-07-09):
@@ -88,7 +88,7 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
         if early_pressure(log, [h.name for h in party]):
             early_runs += 1
         days += clock.day
-        gold += purse.gold
+        silver += purse.silver
         for h in party:
             pow_left += h.cur_power
             sta_left += h.cur_sta
@@ -106,7 +106,7 @@ def simulate(site_key, trials=20000, rooms=None, reckless=False):
         "pow_pct": 100 * pow_left / pow_max if pow_max else 0,
         "sta_pct": 100 * sta_left / sta_max if sta_max else 0,
         "heal_left": heal_left / n,
-        "gold": gold / trials,
+        "silver": silver / trials,
         "wipe_pct": 100 * counts["both"] / trials,
     }
     return counts, stats, trials
@@ -123,7 +123,7 @@ def main():
     ]
     print(f"{'rooms':<12}{'none':>7}{'one':>7}{'both':>7}"
           f"{'down%':>8}{'clear%':>8}{'flee%':>7}{'early%':>8}{'days':>6}"
-          f"{'Pow%':>7}{'STA%':>7}{'heal':>7}{'gold':>7}")
+          f"{'Pow%':>7}{'STA%':>7}{'heal':>7}{'silver':>7}")
     print("  (none/one/both = truly slain; down% = runs with a Down; "
           "clear% = quest done;\n   flee% = runs with a retreat; "
           "early% = rooms 1-2 forced a pause/Down/potion;\n   "
@@ -138,7 +138,7 @@ def main():
               f"{stats['flee_pct']:>6.1f}%{stats['early_pct']:>7.1f}%"
               f"{stats['days']:>6.2f}{stats['pow_pct']:>6.1f}%"
               f"{stats['sta_pct']:>6.1f}%{stats['heal_left']:>7.2f}"
-              f"{stats['gold']:>7.1f}")
+              f"{stats['silver']:>7.1f}")
 
     # The resource-pressure check: the same sites with resources vs without.
     # "reckless" = no pauses (no drink/convert/retreat) and no potions --

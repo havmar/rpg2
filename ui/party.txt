@@ -1,6 +1,6 @@
 RPG2 PARTY SHEET -- day 1, at Umaia >
   R17C11 > Dar Aziza
-purse: 0g
+purse: 0s
 party: 1/2 companion slot(s) filled (CHA
   5)
 

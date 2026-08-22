@@ -10,8 +10,8 @@ where you counter shooters). Two readouts:
   bench_weapons melee reference (a balanced frame with a shortsword), at
   field 0 / ROOM_FIELD / WILD_FIELD. Field 0 forces the card's melee grip
   from round 1 -- the floor every shooter pays for carrying reach; the
-  katana row prints alongside as the melee baseline.
-- escort: the played shape -- an archer + a katana partner vs a wolf pack
+  schweizersäbel row prints alongside as the melee baseline.
+- escort: the played shape -- an archer + a schweizersäbel partner vs a wolf pack
   at WILD_FIELD (does the line protect the bow; does the pack's spare wolf
   slip the press and walk it down).
 
@@ -41,7 +41,7 @@ RANGED_FRAMES = {
     "throwing knives": dict(dex=6, str_=3, sta=6),
     "sling":           dict(dex=5, str_=3, sta=6),
 }
-MELEE_BASELINE = ("katana", dict(dex=5, str_=5, sta=6))
+MELEE_BASELINE = ("schweizersäbel", dict(dex=5, str_=5, sta=6))
 
 REFERENCE = dict(dex=4, str_=4, sta=7)      # bench_weapons' sparring partner
 REFERENCE_WEAPON = "shortsword"
@@ -73,10 +73,10 @@ def duel(weapon_name: str, frame: dict, field: int,
 
 
 def escort(weapon_name: str, frame: dict, rng: random.Random) -> bool:
-    """The played shape: archer + katana line vs 3 wolves at WILD_FIELD."""
+    """The played shape: archer + schweizersäbel line vs 3 wolves at WILD_FIELD."""
     a = shooter("A", weapon_name, frame)
     b = Entity(name="B", max_hp=HP, pain=HERO_PAIN, records_wounds=True,
-               weapon=WEAPONS["katana"], **MELEE_BASELINE[1])
+               weapon=WEAPONS["schweizersäbel"], **MELEE_BASELINE[1])
     foes = [make_foe("wolf", i + 1, rng) for i in range(3)]
     group_combat([a, b], foes, rng, log=[], field=WILD_FIELD)
     return (a.alive or b.alive) and not any(f.alive for f in foes)
@@ -90,7 +90,7 @@ def main() -> None:
     print(f"duel = 1v1 vs reference (DEX {REFERENCE['dex']}/"
           f"STR {REFERENCE['str_']}/STA {REFERENCE['sta']}, "
           f"{REFERENCE_WEAPON}) by opening field; "
-          f"escort = +katana partner vs 3 wolves at field {WILD_FIELD}.")
+          f"escort = +schweizersäbel partner vs 3 wolves at field {WILD_FIELD}.")
     print(f"{args.trials} trials per cell; win%.\n")
     header = (f"{'card (suited frame)':<28}"
               + "".join(f"{'field ' + str(f):>10}" for f in FIELDS)

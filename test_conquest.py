@@ -135,7 +135,7 @@ class TheConquestJob(unittest.TestCase):
             conquest.garrison_pool("nowhere")
 
     def test_strongbox_pays_in_days_of_tribute(self):
-        self.assertEqual(self.quest["gold_total"],
+        self.assertEqual(self.quest["silver_total"],
                          conquest.PLUNDER_MULT
                          * conquest.TRIBUTE_PER_DAY["village"])
 

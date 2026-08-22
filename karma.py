@@ -40,7 +40,7 @@ Mechanically:
   refused job withdrawn -- the same closure. The punishment budget
   (plan.md) is ~0.5 punishment fights per level per side.
 - **Bribes.** Hell can be bribed to ease off for a while (`bribe`:
-  BRIBE_GOLD_PER_LEVEL x party level buys BRIBE_DAYS of no assignments
+  BRIBE_SILVER_PER_LEVEL x party level buys BRIBE_DAYS of no assignments
   and no enforcement).
 - **The caper structure.** Dark templates may carry a `deed` (a skill
   check that can do the job CLEAN -- or botch it into the fight, with
@@ -76,8 +76,8 @@ Mechanically:
 - **Dark quests are the same machinery flagged.** The occult templates
   below ride build_quest/attach_giver unchanged; they are rolled LAZILY
   (at a pin, or on a DM's `forge --dark`), so worldgen, the coverage
-  assert, and every bench never see them. Dark work pays a gold premium
-  (quests.DARK_GOLD_MULT); its XP is the liability.
+  assert, and every bench never see them. Dark work pays a silver premium
+  (quests.DARK_SILVER_MULT); its XP is the liability.
 - **The fights stay honest.** A dark quest's foes are always people/things
   that fight back (guards, militia, an aggrieved parent dire wolf); the
   wickedness itself -- the theft, the arson, the kicked puppy -- is
@@ -138,7 +138,7 @@ NEWS_DAYS = 6           # THE NEWS CYCLE (2026-08-04, the dark rework's
                         # the game wants
 
 # The hell pact's knobs (2026-07-19, second slice). ALL hand-set and
-# sim-unverified BY DIRECTIVE: the designer abandoned XP/gold balance for
+# sim-unverified BY DIRECTIVE: the designer abandoned XP/silver balance for
 # the dark layer this session -- quest VARIETY first, the table tunes
 # numbers later (develop.md, Balance / tuning).
 TASK_PIN_LEVELS = (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)
@@ -169,7 +169,7 @@ ENFORCE_SPREAD = (0, 2)     # that visit's level: party level + this roll.
                             # relentless and never repeated -- the
                             # escalating ladder (+1 per beating, capped)
                             # died 2026-08-04 on the punishment budget
-BRIBE_GOLD_PER_LEVEL = 30   # `bribe`: this x party level buys...
+BRIBE_SILVER_PER_LEVEL = 30   # `bribe`: this x party level buys...
 BRIBE_DAYS = 10             # ...this many days of no assignments and no
                             # enforcement (the task clock restarts after)
 DEED_FAIL_KARMA = 15    # witnesses are hard to avoid: a BOTCHED deed is
@@ -576,7 +576,7 @@ CRIME_FODDER: list[dict] = [
          giver="the wealthy rival",
          epilogue="The party robs the owner and leaves without paying."),
     dict(title="Loot the Village", align="dark",
-         desc="Attack a village at night and take its gold. The village has a "
+         desc="Attack a village at night and take its silver. The village has a "
               "wooden wall and a militia.",
          pool=LADDER_POOL[:5],
          skins={"cutthroat": "Village Thug", "archer": "Village Archer",
@@ -584,10 +584,10 @@ CRIME_FODDER: list[dict] = [
                 "veteran": "Militia Veteran"},
          sites=("the village gate", "the main street", "the town hall"),
          giver="the gang lieutenant",
-         epilogue="The party takes the village's gold. The survivors begin "
+         epilogue="The party takes the village's silver. The survivors begin "
                   "rebuilding."),
     dict(title="Rob the Vault", align="dark",
-         desc="A bank vault holds gold from three lands. Enter at night and "
+         desc="A bank vault holds silver from three lands. Enter at night and "
               "steal it. The bank has many guards.",
          pool=LADDER_POOL[:6],
          skins={"cutthroat": "Bank Clerk", "archer": "Hall Guard",
@@ -600,7 +600,7 @@ CRIME_FODDER: list[dict] = [
                         "the plan",
                    fail="the guards changed their patrol time"),
          giver="the banker's agent",
-         epilogue="The stolen gold ruins three banks. The broker sends a gift."),
+         epilogue="The stolen silver ruins three banks. The broker sends a gift."),
     dict(title="Poison the Feast", align="dark",
          desc="Hell wants you to put a sickness potion in the feast drink. "
               "Most guests will get sick. The guards who stay sober will "
